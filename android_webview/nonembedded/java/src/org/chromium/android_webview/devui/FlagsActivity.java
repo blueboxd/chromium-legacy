@@ -162,7 +162,11 @@ public class FlagsActivity extends Activity {
             Spinner flagToggle = view.findViewById(R.id.flag_toggle);
 
             Flag flag = getItem(position);
-            flagName.setText(flag.getName());
+            String label = flag.getName();
+            if (flag.getEnabledStateValue() != null) {
+                label += "=" + flag.getEnabledStateValue();
+            }
+            flagName.setText(label);
             flagDescription.setText(flag.getDescription());
             ArrayAdapter<String> adapter =
                     new ArrayAdapter<>(FlagsActivity.this, R.layout.flag_states, sFlagStates);

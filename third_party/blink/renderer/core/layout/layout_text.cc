@@ -2514,12 +2514,10 @@ PhysicalRect LayoutText::DebugRect() const {
 DOMNodeId LayoutText::EnsureNodeId() {
   if (node_id_ == kInvalidDOMNodeId) {
     auto* content_capture_manager = GetContentCaptureManager();
-    if (content_capture_manager)
+    if (content_capture_manager) {
       content_capture_manager->ScheduleTaskIfNeeded();
-
-    // If either content capture or accessibility are enabled, store a node ID.
-    if (content_capture_manager || GetDocument().ExistingAXObjectCache())
       node_id_ = DOMNodeIds::IdForNode(GetNode());
+    }
   }
   return node_id_;
 }

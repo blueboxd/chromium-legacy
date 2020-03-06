@@ -102,6 +102,8 @@ class MediaHistoryStore {
   void GetURLsInTableForTest(const std::string& table,
                              base::OnceCallback<void(std::set<GURL>)> callback);
 
+  void PostTaskToDBForTest(base::OnceClosure callback);
+
  private:
   scoped_refptr<MediaHistoryStoreInternal> db_;
 

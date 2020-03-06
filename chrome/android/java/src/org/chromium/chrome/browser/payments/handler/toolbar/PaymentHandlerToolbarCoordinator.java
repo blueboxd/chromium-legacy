@@ -37,12 +37,6 @@ public class PaymentHandlerToolbarCoordinator {
 
         /** Called when the close button is clicked. */
         void onToolbarCloseButtonClicked();
-
-        /**
-         * Called when the toolbar has just laid out, called exactly once, because it's used only
-         * for calculating the height, which does not change in the toolbar after the first layout.
-         */
-        void onToolbarLaidOut();
     }
 
     /**

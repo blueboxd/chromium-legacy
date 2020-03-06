@@ -110,8 +110,8 @@ void ReportGenerator::SetAndroidAppInfos(ReportRequest* basic_request) {
 
   AndroidAppInfoGenerator generator;
   for (std::string app_id : prefs->GetAppIds()) {
-    em::AndroidAppInfo* app_info = basic_request->add_android_app_infos();
-    generator.Generate(prefs, app_id)->Swap(app_info);
+    basic_request->mutable_android_app_infos()->AddAllocated(
+        generator.Generate(prefs, app_id).release());
   }
 }
 

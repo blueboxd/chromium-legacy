@@ -82,14 +82,6 @@ class ProcessNode : public Node {
   // of usage). See ProcessNodeObserver::OnMainThreadTaskLoadIsLow.
   virtual bool GetMainThreadTaskLoadIsLow() const = 0;
 
-  // Returns the current renderer process CPU usage. A value of 1.0 can mean 1
-  // core at 100%, or 2 cores at 50% each, for example.
-  virtual double GetCpuUsage() const = 0;
-
-  // Returns the cumulative CPU usage of the renderer process over its entire
-  // lifetime, expressed as CPU seconds.
-  virtual base::TimeDelta GetCumulativeCpuUsage() const = 0;
-
   // Returns the most recently measured private memory footprint of the process.
   // This is roughly private, anonymous, non-discardable, resident or swapped
   // memory in kilobytes. For more details, see https://goo.gl/3kPb9S.

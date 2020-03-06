@@ -30,8 +30,11 @@ class BrowserInterfaceBrokerImpl : public blink::mojom::BrowserInterfaceBroker {
     auto interface_name = receiver.interface_name().value();
     auto pipe = receiver.PassPipe();
     if (!binder_map_.TryBind(interface_name, &pipe)) {
-      binder_map_with_context_.TryBind(internal::GetContextForHost(host_),
-                                       interface_name, &pipe);
+      if (!binder_map_with_context_.TryBind(internal::GetContextForHost(host_),
+                                            interface_name, &pipe)) {
+        host_->ReportNoBinderForInterface("No binder found for interface " +
+                                          interface_name);
+      }
     }
   }
 

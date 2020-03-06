@@ -77,6 +77,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost {
 
   base::WeakPtr<ServiceWorkerProviderHost> GetWeakPtr();
 
+  void ReportNoBinderForInterface(const std::string& error);
+
  private:
   // Unique among all provider hosts.
   const int provider_id_;

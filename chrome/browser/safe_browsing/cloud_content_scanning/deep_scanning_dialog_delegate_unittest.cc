@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
@@ -1622,6 +1624,58 @@ TEST_F(DeepScanningFileContentsTest, LargeFiles) {
       0xf1, 0xc7, 0xd7, 0xdf, 0x68, 0xb8, 0xb7, 0x12, 0x91, 0xa6};
   TestFile(very_large_file_contents, very_large_expected_sha256,
            BinaryUploadService::Result::FILE_TOO_LARGE);
+}
+
+TEST(DeepScanningFileSourceRequestTest, PopulatesDigest) {
+  base::test::TaskEnvironment task_environment;
+  std::string file_contents = "Normal file contents";
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath file_path = temp_dir.GetPath().AppendASCII("foo.doc");
+
+  // Create the file.
+  base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
+
+  DeepScanningDialogDelegate::FileSourceRequest request(nullptr, file_path,
+                                                        base::DoNothing());
+
+  base::RunLoop run_loop;
+  request.GetRequestData(base::BindLambdaForTesting(
+      [&run_loop](BinaryUploadService::Result result,
+                  const BinaryUploadService::Request::Data& data) {
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  // printf "Normal file contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
+  EXPECT_EQ(request.deep_scanning_request().digest(),
+            "29644C10BD036866FCFD2BDACFF340DB5DE47A90002D6AB0C42DE6A22C26158B");
+}
+
+TEST(DeepScanningFileSourceRequestTest, PopulatesFilename) {
+  base::test::TaskEnvironment task_environment;
+  std::string file_contents = "contents";
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath file_path = temp_dir.GetPath().AppendASCII("foo.doc");
+
+  // Create the file.
+  base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
+
+  DeepScanningDialogDelegate::FileSourceRequest request(nullptr, file_path,
+                                                        base::DoNothing());
+
+  base::RunLoop run_loop;
+  request.GetRequestData(base::BindLambdaForTesting(
+      [&run_loop](BinaryUploadService::Result result,
+                  const BinaryUploadService::Request::Data& data) {
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  EXPECT_EQ(request.deep_scanning_request().filename(), "foo.doc");
 }
 
 }  // namespace safe_browsing

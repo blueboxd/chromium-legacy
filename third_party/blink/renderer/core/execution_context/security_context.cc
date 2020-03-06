@@ -72,7 +72,8 @@ SecurityContext::SecurityContext(const SecurityContextInit& init,
       context_type_(context_type),
       agent_(init.GetAgent()),
       secure_context_mode_(init.GetSecureContextMode()),
-      origin_trial_context_(init.GetOriginTrialContext()) {}
+      origin_trial_context_(init.GetOriginTrialContext()),
+      bind_csp_immediately_(init.BindCSPImmediately()) {}
 
 void SecurityContext::Trace(Visitor* visitor) {
   visitor->Trace(content_security_policy_);
@@ -133,8 +134,6 @@ bool SecurityContext::TrustedTypesRequiredByPolicy() const {
 
 void SecurityContext::SetFeaturePolicy(
     std::unique_ptr<FeaturePolicy> feature_policy) {
-  // This method should be called before a FeaturePolicy has been created.
-  DCHECK(!feature_policy_);
   feature_policy_ = std::move(feature_policy);
 }
 

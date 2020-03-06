@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_helpers.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/common/chrome_switches.h"
@@ -126,6 +128,17 @@ void BrowserTabStripModelDelegate::MoveTabsToNewWindow(
     const std::vector<int>& indices) {
   // chrome:: to disambiguate the free function from this method.
   chrome::MoveTabsToNewWindow(browser_, indices);
+}
+
+void BrowserTabStripModelDelegate::MoveGroupToNewWindow(
+    const tab_groups::TabGroupId& group) {
+  std::vector<int> indices = browser_->tab_strip_model()
+                                 ->group_model()
+                                 ->GetTabGroup(group)
+                                 ->ListTabs();
+  // chrome:: to disambiguate the free function from
+  // BrowserTabStripModelDelegate::MoveTabsToNewWindow().
+  chrome::MoveTabsToNewWindow(browser_, indices, group);
 }
 
 void BrowserTabStripModelDelegate::CreateHistoricalTab(

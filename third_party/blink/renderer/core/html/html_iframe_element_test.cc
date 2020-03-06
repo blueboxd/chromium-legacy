@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
@@ -25,23 +26,25 @@ class HTMLIFrameElementTest : public testing::Test {
 
   void SetUp() final {
     const KURL document_url("http://example.com");
-    DocumentInit init =
-        DocumentInit::Create()
-            .WithOriginToCommit(SecurityOrigin::Create(document_url))
-            .WithURL(document_url);
-    document_ = MakeGarbageCollected<Document>(init);
+    page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+    document_ = &page_holder_->GetDocument();
+    document_->SetURL(document_url);
+    document_->GetSecurityContext().SetSecurityOriginForTesting(
+        SecurityOrigin::Create(document_url));
     frame_element_ = MakeGarbageCollected<HTMLIFrameElement>(*document_);
   }
 
   void TearDown() final {
     frame_element_.Clear();
     document_.Clear();
+    page_holder_.reset();
   }
 
  protected:
   const PolicyValue min_value = PolicyValue(false);
   const PolicyValue max_value = PolicyValue(true);
 
+  std::unique_ptr<DummyPageHolder> page_holder_;
   Persistent<Document> document_;
   Persistent<HTMLIFrameElement> frame_element_;
 };

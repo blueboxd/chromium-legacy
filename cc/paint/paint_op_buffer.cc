@@ -84,6 +84,7 @@ SkRect MapRect(const SkMatrix& matrix, const SkRect& src) {
   M(SaveLayerAlphaOp) \
   M(ScaleOp)          \
   M(SetMatrixOp)      \
+  M(SetNodeIdOp)      \
   M(TranslateOp)
 
 static constexpr size_t kNumOpTypes =
@@ -293,6 +294,8 @@ std::string PaintOpTypeToString(PaintOpType type) {
       return "Scale";
     case PaintOpType::SetMatrix:
       return "SetMatrix";
+    case PaintOpType::SetNodeId:
+      return "SetNodeId";
     case PaintOpType::Translate:
       return "Translate";
   }
@@ -702,6 +705,13 @@ size_t SetMatrixOp::Serialize(const PaintOp* op,
   SetMatrixOp transformed(*static_cast<const SetMatrixOp*>(op));
   transformed.matrix.postConcat(options.original_ctm);
   return SimpleSerialize<SetMatrixOp>(&transformed, memory, size);
+}
+
+size_t SetNodeIdOp::Serialize(const PaintOp* op,
+                              void* memory,
+                              size_t size,
+                              const SerializeOptions& options) {
+  return SimpleSerialize<SetNodeIdOp>(op, memory, size);
 }
 
 size_t TranslateOp::Serialize(const PaintOp* op,
@@ -1169,6 +1179,15 @@ PaintOp* SetMatrixOp::Deserialize(const volatile void* input,
   return op;
 }
 
+PaintOp* SetNodeIdOp::Deserialize(const volatile void* input,
+                                  size_t input_size,
+                                  void* output,
+                                  size_t output_size,
+                                  const DeserializeOptions& options) {
+  DCHECK_GE(output_size, sizeof(SetNodeIdOp));
+  return SimpleDeserialize<SetNodeIdOp>(input, input_size, output, output_size);
+}
+
 PaintOp* TranslateOp::Deserialize(const volatile void* input,
                                   size_t input_size,
                                   void* output,
@@ -1434,11 +1453,13 @@ void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
                                      const PaintFlags* flags,
                                      SkCanvas* canvas,
                                      const PlaybackParams& params) {
-  SkPDF::SetNodeId(canvas, op->node_id);
+  if (op->node_id)
+    SkPDF::SetNodeId(canvas, op->node_id);
   flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
     c->drawTextBlob(op->blob.get(), op->x, op->y, p);
   });
-  SkPDF::SetNodeId(canvas, 0);
+  if (op->node_id)
+    SkPDF::SetNodeId(canvas, 0);
 }
 
 void RestoreOp::Raster(const RestoreOp* op,
@@ -1487,6 +1508,12 @@ void SetMatrixOp::Raster(const SetMatrixOp* op,
                          SkCanvas* canvas,
                          const PlaybackParams& params) {
   canvas->setMatrix(SkMatrix::Concat(params.original_ctm, op->matrix));
+}
+
+void SetNodeIdOp::Raster(const SetNodeIdOp* op,
+                         SkCanvas* canvas,
+                         const PlaybackParams& params) {
+  SkPDF::SetNodeId(canvas, op->node_id);
 }
 
 void TranslateOp::Raster(const TranslateOp* op,
@@ -1914,6 +1941,16 @@ bool SetMatrixOp::AreEqual(const PaintOp* base_left,
   if (!AreSkMatricesEqual(left->matrix, right->matrix))
     return false;
   return true;
+}
+
+bool SetNodeIdOp::AreEqual(const PaintOp* base_left,
+                           const PaintOp* base_right) {
+  auto* left = static_cast<const SetNodeIdOp*>(base_left);
+  auto* right = static_cast<const SetNodeIdOp*>(base_right);
+
+  DCHECK(left->IsValid());
+  DCHECK(right->IsValid());
+  return left->node_id == right->node_id;
 }
 
 bool TranslateOp::AreEqual(const PaintOp* base_left,

@@ -16,7 +16,7 @@ import org.chromium.content_public.browser.NavigationHandle;
  */
 public class EntryPointCoordinatorImpl implements EntryPointCoordinator {
     private EntryPointView mView;
-    private ProfileCardCoordinatorImpl mProfileCardCoordinator;
+    private ProfileCardCoordinator mProfileCardCoordinator;
     private CreatorMetadata mCreatorMetadata;
 
     @Override
@@ -47,7 +47,8 @@ public class EntryPointCoordinatorImpl implements EntryPointCoordinator {
     }
 
     void showProfileCard() {
-        mProfileCardCoordinator.init(mView, mCreatorMetadata);
+        mProfileCardCoordinator =
+                ProfileCardCoordinatorFactory.createProfileCardCoordinator(mView, mCreatorMetadata);
         mProfileCardCoordinator.show();
     }
 }

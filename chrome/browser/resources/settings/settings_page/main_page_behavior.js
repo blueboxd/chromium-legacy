@@ -209,7 +209,7 @@ cr.define('settings', function() {
       // TODO(rbpotter): Fix this to work correctly in Polymer 3, instead of
       // just removing the importHref lines.
       const lazyLoadPathPrefix =
-          window.origin === 'chrome://settings' ? '' : '/chromeos';
+          window.location.origin === 'chrome://settings' ? '' : '/chromeos';
       /* #ignore */ Polymer.importHref(
           /* #ignore */ `${lazyLoadPathPrefix}/lazy_load.html`, () => {});
 

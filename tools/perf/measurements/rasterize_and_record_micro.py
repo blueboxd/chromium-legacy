@@ -81,20 +81,13 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
                            paint_op_memory_usage)
     results.AddMeasurement('paint_op_count', 'count', paint_op_count)
 
-    record_time_painting_disabled = data['record_time_painting_disabled_ms']
     record_time_caching_disabled = data['record_time_caching_disabled_ms']
-    record_time_construction_disabled = \
-        data['record_time_construction_disabled_ms']
     record_time_subsequence_caching_disabled = \
         data['record_time_subsequence_caching_disabled_ms']
     record_time_partial_invalidation = \
         data['record_time_partial_invalidation_ms']
-    results.AddMeasurement('record_time_painting_disabled', 'ms',
-                           record_time_painting_disabled)
     results.AddMeasurement('record_time_caching_disabled', 'ms',
                            record_time_caching_disabled)
-    results.AddMeasurement('record_time_construction_disabled', 'ms',
-                           record_time_construction_disabled)
     results.AddMeasurement('record_time_subsequence_caching_disabled', 'ms',
                            record_time_subsequence_caching_disabled)
     results.AddMeasurement('record_time_partial_invalidation_ms', 'ms',

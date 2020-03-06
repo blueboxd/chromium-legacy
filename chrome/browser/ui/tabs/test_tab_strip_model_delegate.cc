@@ -8,12 +8,11 @@
 
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "components/tab_groups/tab_group_id.h"
 
-TestTabStripModelDelegate::TestTabStripModelDelegate() {
-}
+TestTabStripModelDelegate::TestTabStripModelDelegate() = default;
 
-TestTabStripModelDelegate::~TestTabStripModelDelegate() {
-}
+TestTabStripModelDelegate::~TestTabStripModelDelegate() = default;
 
 void TestTabStripModelDelegate::AddTabAt(
     const GURL& url,
@@ -61,8 +60,12 @@ bool TestTabStripModelDelegate::CanMoveTabsToWindow(
     const std::vector<int>& indices) {
   return false;
 }
+
 void TestTabStripModelDelegate::MoveTabsToNewWindow(
     const std::vector<int>& indices) {}
+
+void TestTabStripModelDelegate::MoveGroupToNewWindow(
+    const tab_groups::TabGroupId& group) {}
 
 void TestTabStripModelDelegate::CreateHistoricalTab(
     content::WebContents* contents) {

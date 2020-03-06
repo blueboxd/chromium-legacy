@@ -28,29 +28,4 @@ quic::QuicTagVector ParseQuicConnectionOptions(
   return options;
 }
 
-quic::ParsedQuicVersionVector ParseQuicVersions(
-    const std::string& quic_versions) {
-  quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllSupportedVersions();
-  quic::ParsedQuicVersionVector parsed_versions;
-  for (const base::StringPiece& version_string : base::SplitStringPiece(
-           quic_versions, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    auto it = all_supported_versions.begin();
-    while (it != all_supported_versions.end()) {
-      if ((it->handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO &&
-           quic::QuicVersionToString(it->transport_version) ==
-               version_string) ||
-          quic::AlpnForVersion(*it) == version_string) {
-        parsed_versions.push_back(*it);
-        // Remove the supported version to deduplicate versions extracted from
-        // |quic_versions|.
-        all_supported_versions.erase(it);
-        break;
-      }
-      it++;
-    }
-  }
-  return parsed_versions;
-}
-
 }  // namespace net

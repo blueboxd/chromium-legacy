@@ -101,6 +101,7 @@ static_library("ntp_snippets") {
   deps = [
     "//components/favicon/core",
     "//components/favicon_base",
+    "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/history/core/browser",
     "//components/image_fetcher/core",
     "//components/language/core/browser",
@@ -168,6 +169,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/image_fetcher/core",
     "//components/image_fetcher/core:test_support",
     "//components/leveldb_proto:test_support",

@@ -1926,7 +1926,7 @@ SkColor TabStrip::GetTabBackgroundColor(
           : color_utils::HSLShift(
                 frame, tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB));
 
-  return color_utils::GetResultingPaintColor(background, frame);
+  return background;
 }
 
 SkColor TabStrip::GetTabForegroundColor(TabActive active,
@@ -2721,11 +2721,10 @@ int TabStrip::GetViewInsertionIndex(Tab* tab,
     return 0;
 
   // If to_model_index is beyond the end of the tab strip, then the tab is newly
-  // added to the end of the tab strip. In that case we can just return the last
-  // TabSlotView view index, which should be at the sum of the number of tabs
-  // and groups.
+  // added to the end of the tab strip. In that case we can just return one
+  // beyond the view index of the last existing tab.
   if (to_model_index >= tab_count())
-    return tab_count() + group_views_.size();
+    return (tab_count() ? GetIndexOf(tab_at(tab_count() - 1)) + 1 : 0);
 
   // If there is no from_model_index, then the tab is newly added in the middle
   // of the tab strip. In that case we treat it as coming from the end of the
@@ -2739,6 +2738,9 @@ int TabStrip::GetViewInsertionIndex(Tab* tab,
   // anchor on the last known view index at the given to_model_index.
   Tab* other_tab = tab_at(to_model_index);
   int other_view_index = GetIndexOf(other_tab);
+
+  if (other_view_index <= 0)
+    return 0;
 
   // When moving to the right, just use the anchor index because the tab will
   // replace that position in both the model and the view. This happens because

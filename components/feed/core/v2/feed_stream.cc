@@ -5,7 +5,7 @@
 #include "components/feed/core/v2/feed_stream.h"
 
 #include "base/bind.h"
-#include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_stream_background.h"
 #include "components/prefs/pref_service.h"

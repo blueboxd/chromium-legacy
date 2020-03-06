@@ -27,6 +27,7 @@ android_library("java") {
     "//chrome/browser/util:java",
     "//components/download/internal/common:internal_java",
     "//components/download/public/common:public_java",
+    "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/offline_items_collection/core:core_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:com_android_support_support_compat_java",

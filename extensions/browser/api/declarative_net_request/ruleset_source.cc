@@ -110,6 +110,9 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
   bool unparsed_warnings_limit_exeeded = false;
   size_t unparsed_warning_count = 0;
 
+  int regex_rule_count = 0;
+  bool regex_rule_count_exceeded = false;
+
   // We don't use json_schema_compiler::util::PopulateArrayFromList since it
   // fails if a single Value can't be deserialized. However we want to ignore
   // values which can't be parsed to maintain backwards compatibility.
@@ -124,6 +127,19 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
         result.rule_parse_warnings.push_back(
             CreateInstallWarning(kRuleCountExceeded));
         break;
+      }
+
+      const bool is_regex_rule = !!parsed_rule.condition.regex_filter;
+      if (is_regex_rule &&
+          ++regex_rule_count > dnr_api::MAX_NUMBER_OF_REGEX_RULES) {
+        // Only add the install warning once.
+        if (!regex_rule_count_exceeded) {
+          regex_rule_count_exceeded = true;
+          result.rule_parse_warnings.push_back(
+              CreateInstallWarning(kRegexRuleCountExceeded));
+        }
+
+        continue;
       }
 
       result.rules.push_back(std::move(parsed_rule));

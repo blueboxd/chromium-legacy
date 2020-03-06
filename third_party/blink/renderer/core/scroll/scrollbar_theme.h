@@ -129,9 +129,9 @@ class CORE_EXPORT ScrollbarTheme {
   virtual int TrackPosition(const Scrollbar&);
   // The length of the track along the axis of the scrollbar.
   virtual int TrackLength(const Scrollbar&);
-  // The opacity to be applied to the thumb. A theme overriding ThumbOpacity()
+  // The opacity to be applied to the scrollbar. A theme overriding Opacity()
   // should also override PaintThumbWithOpacity().
-  virtual float ThumbOpacity(const Scrollbar&) const { return 1.0f; }
+  virtual float Opacity(const Scrollbar&) const { return 1.0f; }
 
   // Whether the native theme of the OS has scrollbar buttons.
   virtual bool NativeThemeHasButtons() = 0;
@@ -218,13 +218,13 @@ class CORE_EXPORT ScrollbarTheme {
                                     const Scrollbar&,
                                     const IntPoint& offset);
 
-  // Paint the thumb with ThumbOpacity() applied.
+  // Paint the thumb with Opacity() applied.
   virtual void PaintThumbWithOpacity(GraphicsContext& context,
                                      const Scrollbar& scrollbar,
                                      const IntRect& rect) {
     // By default this method just calls PaintThumb(). A theme with custom
-    // ThumbOpacity() should override this method to apply the opacity.
-    DCHECK_EQ(1.0f, ThumbOpacity(scrollbar));
+    // Opacity() should override this method to apply the opacity.
+    DCHECK_EQ(1.0f, Opacity(scrollbar));
     PaintThumb(context, scrollbar, rect);
   }
 

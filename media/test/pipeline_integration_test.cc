@@ -230,10 +230,10 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   std::unique_ptr<SimpleCdmPromise> CreatePromise(PromiseResult expected) {
     std::unique_ptr<media::SimpleCdmPromise> promise(
         new media::CdmCallbackPromise<>(
-            base::Bind(&KeyProvidingApp::OnResolve, base::Unretained(this),
-                       expected),
-            base::Bind(&KeyProvidingApp::OnReject, base::Unretained(this),
-                       expected)));
+            base::BindOnce(&KeyProvidingApp::OnResolve, base::Unretained(this),
+                           expected),
+            base::BindOnce(&KeyProvidingApp::OnReject, base::Unretained(this),
+                           expected)));
     return promise;
   }
 
@@ -241,10 +241,10 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
       PromiseResult expected) {
     std::unique_ptr<media::NewSessionCdmPromise> promise(
         new media::CdmCallbackPromise<std::string>(
-            base::Bind(&KeyProvidingApp::OnResolveWithSession,
-                       base::Unretained(this), expected),
-            base::Bind(&KeyProvidingApp::OnReject, base::Unretained(this),
-                       expected)));
+            base::BindOnce(&KeyProvidingApp::OnResolveWithSession,
+                           base::Unretained(this), expected),
+            base::BindOnce(&KeyProvidingApp::OnReject, base::Unretained(this),
+                           expected)));
     return promise;
   }
 
@@ -2126,7 +2126,8 @@ std::vector<std::unique_ptr<VideoDecoder>> CreateFailingVideoDecoder() {
 
 TEST_F(PipelineIntegrationTest, BasicFallback) {
   ASSERT_EQ(PIPELINE_OK,
-            Start("bear.mp4", kNormal, base::Bind(&CreateFailingVideoDecoder)));
+            Start("bear.mp4", kNormal,
+                  base::BindRepeating(&CreateFailingVideoDecoder)));
 
   Play();
 

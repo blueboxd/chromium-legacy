@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.h>
 #include <memory>
 
+#include "gpu/command_buffer/service/external_vk_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory.h"
 
 namespace gpu {
@@ -61,6 +62,8 @@ class ExternalVkImageFactory : public SharedImageBackingFactory {
 
   SharedContextState* const context_state_;
   std::unique_ptr<VulkanCommandPool> command_pool_;
+
+  const VulkanImageUsageCache image_usage_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageFactory);
 };

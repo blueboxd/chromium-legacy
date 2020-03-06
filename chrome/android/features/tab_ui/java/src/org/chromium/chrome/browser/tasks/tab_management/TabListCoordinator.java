@@ -77,6 +77,7 @@ public class TabListCoordinator implements Destroyable {
     private final @TabListMode int mMode;
     private final Rect mThumbnailLocationOfCurrentTab = new Rect();
     private final Context mContext;
+    private final TabListModel mModel;
 
     /**
      * Construct a coordinator for UI that shows a list of tabs.
@@ -113,8 +114,8 @@ public class TabListCoordinator implements Destroyable {
             boolean attachToParent, String componentName) {
         mMode = mode;
         mContext = context;
-        TabListModel modelList = new TabListModel();
-        mAdapter = new SimpleRecyclerViewAdapter(modelList);
+        mModel = new TabListModel();
+        mAdapter = new SimpleRecyclerViewAdapter(mModel);
         RecyclerView.RecyclerListener recyclerListener = null;
         if (mMode == TabListMode.GRID || mMode == TabListMode.CAROUSEL) {
             mAdapter.registerType(UiType.SELECTABLE, parent -> {
@@ -226,7 +227,7 @@ public class TabListCoordinator implements Destroyable {
         TabListFaviconProvider tabListFaviconProvider =
                 new TabListFaviconProvider(context, Profile.getLastUsedRegularProfile());
 
-        mMediator = new TabListMediator(context, modelList, tabModelSelector, thumbnailProvider,
+        mMediator = new TabListMediator(context, mModel, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,
                 selectionDelegateProvider, gridCardOnClickListenerProvider, dialogHandler,
                 this::endItemAnimationForPosition, componentName, itemType);
@@ -392,6 +393,14 @@ public class TabListCoordinator implements Destroyable {
      */
     void addSpecialListItem(int index, @UiType int uiType, PropertyModel model) {
         mMediator.addSpecialItemToModel(index, uiType, model);
+    }
+
+    /**
+     * Inserts a special {@link org.chromium.ui.modelutil.MVCListAdapter.ListItem} to the end of
+     * model list.
+     */
+    void addSpecialListItemToEnd(@UiType int uiType, PropertyModel model) {
+        mMediator.addSpecialItemToModel(mModel.size(), uiType, model);
     }
 
     /**

@@ -63,6 +63,7 @@ GetResourceFormat(gfx::BufferFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT bool GLSupportsFormat(ResourceFormat format);
 
 #if BUILDFLAG(ENABLE_VULKAN)
+VIZ_RESOURCE_FORMAT_EXPORT bool HasVkFormat(ResourceFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT VkFormat ToVkFormat(ResourceFormat format);
 #endif
 

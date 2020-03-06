@@ -3833,6 +3833,8 @@ class TabToWindowTestTabStripModelDelegate : public TestTabStripModelDelegate {
       move_calls_.push_back(index);
   }
 
+  void MoveGroupToNewWindow(const tab_groups::TabGroupId& group) override {}
+
   std::vector<int> can_move_calls() { return can_move_calls_; }
   std::vector<int> move_calls() { return move_calls_; }
 

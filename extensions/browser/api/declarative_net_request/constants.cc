@@ -67,6 +67,9 @@ const char kErrorListNotPassed[] = "Rules file must contain a list.";
 
 const char kRuleCountExceeded[] =
     "Declarative Net Request: Rule count exceeded. Some rules were ignored.";
+const char kRegexRuleCountExceeded[] =
+    "Declarative Net Request: Regex rule count exceeded. Some rules were "
+    "ignored.";
 const char kRuleNotParsedWarning[] =
     "Declarative Net Request: Rule with * couldn't be parsed. Parse error: "
     "*.";
@@ -78,6 +81,8 @@ const char kInternalErrorUpdatingDynamicRules[] =
 const char kInternalErrorGettingDynamicRules[] =
     "Internal error while getting dynamic rules.";
 const char kDynamicRuleCountExceeded[] = "Dynamic rule count exceeded.";
+const char kDynamicRegexRuleCountExceeded[] =
+    "Dynamic rule count for regex rules exceeded.";
 const char kIndexAndPersistRulesTimeHistogram[] =
     "Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime";
 const char kManifestRulesCountHistogram[] =

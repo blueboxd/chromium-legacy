@@ -147,6 +147,8 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
 
   base::WeakPtr<SharedWorkerHost> AsWeakPtr();
 
+  void ReportNoBinderForInterface(const std::string& error);
+
  private:
   friend class SharedWorkerHostTest;
 

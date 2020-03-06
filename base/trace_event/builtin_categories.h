@@ -189,6 +189,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("histogram_samples"))                      \
   X(TRACE_DISABLED_BY_DEFAULT("java-heap-profiler"))                     \
   X(TRACE_DISABLED_BY_DEFAULT("layer-element"))                          \
+  X(TRACE_DISABLED_BY_DEFAULT("layout_shift.debug"))                     \
   X(TRACE_DISABLED_BY_DEFAULT("lifecycles"))                             \
   X(TRACE_DISABLED_BY_DEFAULT("loading"))                                \
   X(TRACE_DISABLED_BY_DEFAULT("memory-infra"))                           \

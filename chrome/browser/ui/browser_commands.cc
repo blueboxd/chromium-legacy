@@ -57,6 +57,8 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_dialogs.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/buildflags.h"
@@ -76,6 +78,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/live_tab_context.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/version_info/version_info.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -771,12 +775,24 @@ bool CanMoveTabsToNewWindow(Browser* browser,
 }
 
 void MoveTabsToNewWindow(Browser* browser,
-                         const std::vector<int>& tab_indices) {
+                         const std::vector<int>& tab_indices,
+                         base::Optional<tab_groups::TabGroupId> group) {
   if (tab_indices.empty())
     return;
 
   Browser* new_browser =
       new Browser(Browser::CreateParams(browser->profile(), true));
+
+  base::Optional<tab_groups::TabGroupId> new_group = base::nullopt;
+  if (group.has_value()) {
+    new_group = tab_groups::TabGroupId::GenerateNew();
+    new_browser->tab_strip_model()->group_model()->AddTabGroup(
+        new_group.value(), *browser->tab_strip_model()
+                                ->group_model()
+                                ->GetTabGroup(group.value())
+                                ->visual_data());
+  }
+
   int indices_size = tab_indices.size();
   for (int i = 0; i < indices_size; i++) {
     // Adjust tab index to account for tabs already moved.
@@ -787,8 +803,9 @@ void MoveTabsToNewWindow(Browser* browser,
     int add_types = TabStripModel::ADD_ACTIVE |
                     TabStripModel::ADD_INHERIT_OPENER |
                     (pinned ? TabStripModel::ADD_PINNED : 0);
-    new_browser->tab_strip_model()->AddWebContents(
-        std::move(contents_move), -1, ui::PAGE_TRANSITION_LINK, add_types);
+    new_browser->tab_strip_model()->AddWebContents(std::move(contents_move), -1,
+                                                   ui::PAGE_TRANSITION_LINK,
+                                                   add_types, new_group);
   }
   new_browser->window()->Show();
 }

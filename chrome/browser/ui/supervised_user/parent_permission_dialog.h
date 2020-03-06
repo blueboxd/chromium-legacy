@@ -76,7 +76,7 @@ class ParentPermissionDialog : public GaiaAuthConsumer {
 
   using DoneCallback = base::OnceCallback<void(Result result)>;
 
-  ParentPermissionDialog(Profile* profile, DoneCallback callback);
+  explicit ParentPermissionDialog(Profile* profile);
 
   ParentPermissionDialog(const ParentPermissionDialog&) = delete;
   ParentPermissionDialog& operator=(const ParentPermissionDialog&) = delete;
@@ -88,7 +88,8 @@ class ParentPermissionDialog : public GaiaAuthConsumer {
   // |icon| specifies the icon to be displayed. It can be empty.
   void ShowPrompt(content::WebContents* web_contents,
                   const base::string16& message,
-                  const SkBitmap& icon);
+                  const SkBitmap& icon,
+                  DoneCallback callback);
 
   // Shows the Parent Permission Dialog for the specified extension
   // installation. The dialog's message will be generated from the extension
@@ -99,7 +100,8 @@ class ParentPermissionDialog : public GaiaAuthConsumer {
   void ShowPromptForExtensionInstallation(
       content::WebContents* web_contents,
       const extensions::Extension* extension,
-      const SkBitmap& fallback_icon);
+      const SkBitmap& fallback_icon,
+      DoneCallback callback);
 
   // Sets whether the prompt is shown again automatically after an
   // incorrect credential.  This defaults to true, and is only disabled for

@@ -92,7 +92,7 @@ class MockScreenOrientation final
 
 void DidEnterFullscreen(Document* document) {
   DCHECK(document);
-  Fullscreen::DidEnterFullscreen(*document);
+  Fullscreen::DidResolveEnterFullscreenRequest(*document, true /* granted */);
   document->ServiceScriptedAnimations(base::TimeTicks::Now());
 }
 

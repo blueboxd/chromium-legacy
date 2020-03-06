@@ -27,7 +27,9 @@ class VideoAutoFullscreenFrameHost : public FakeLocalFrameHost {
  public:
   VideoAutoFullscreenFrameHost() = default;
 
-  void EnterFullscreen(mojom::blink::FullscreenOptionsPtr options) override {
+  void EnterFullscreen(mojom::blink::FullscreenOptionsPtr options,
+                       EnterFullscreenCallback callback) override {
+    std::move(callback).Run(true);
     Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(

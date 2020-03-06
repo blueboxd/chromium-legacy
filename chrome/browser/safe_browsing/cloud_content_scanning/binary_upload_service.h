@@ -126,6 +126,7 @@ class BinaryUploadService {
     void set_dm_token(const std::string& token);
     void set_request_token(const std::string& token);
     void set_filename(const std::string& filename);
+    void set_digest(const std::string& digest);
 
     // Finish the request, with the given |result| and |response| from the
     // server.

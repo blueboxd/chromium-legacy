@@ -224,6 +224,28 @@ class DeepScanningDialogDelegate {
   // Callback used by FileSourceRequest to read file data on a blocking thread.
   static FileContents GetFileContentsSHA256Blocking(const base::FilePath& path);
 
+  // A BinaryUploadService::Request implementation that gets the data to scan
+  // from the contents of a file.
+  class FileSourceRequest : public BinaryUploadService::Request {
+   public:
+    FileSourceRequest(base::WeakPtr<DeepScanningDialogDelegate> delegate,
+                      base::FilePath path,
+                      BinaryUploadService::Callback callback);
+    FileSourceRequest(const FileSourceRequest&) = delete;
+    FileSourceRequest& operator=(const FileSourceRequest&) = delete;
+    ~FileSourceRequest() override;
+
+    // BinaryUploadService::Request implementation.
+    void GetRequestData(DataCallback callback) override;
+
+   private:
+    void OnGotFileContents(DataCallback callback, FileContents file_contents);
+
+    base::WeakPtr<DeepScanningDialogDelegate> delegate_;
+    base::FilePath path_;
+    base::WeakPtrFactory<FileSourceRequest> weakptr_factory_{this};
+  };
+
  protected:
   DeepScanningDialogDelegate(content::WebContents* web_contents,
                              Data data,
@@ -243,8 +265,6 @@ class DeepScanningDialogDelegate {
   }
 
  private:
-  class FileSourceRequest;
-
   // Uploads data for deep scanning.  Returns true if uploading is occurring in
   // the background and false if there is nothing to do.
   bool UploadData();

@@ -9,7 +9,8 @@
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
-#include "components/performance_manager/test_support/page_live_state_decorator.h"
+#include "components/performance_manager/public/decorators/page_live_state_decorator.h"
+#include "components/performance_manager/test_support/decorators_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
@@ -48,7 +49,7 @@ TEST_F(UsbTabHelperTest, IncrementDecrementConnectionCount) {
       UsbTabHelper::GetOrCreateForWebContents(web_contents());
   helper->CreateWebUsbService(main_rfh(), remote.BindNewPipeAndPassReceiver());
   EXPECT_FALSE(helper->IsDeviceConnected());
-  performance_manager::TestPageLiveStatePropertyOnPMSequence(
+  performance_manager::testing::TestPageNodePropertyOnPMSequence(
       web_contents(),
       &performance_manager::PageLiveStateDecorator::Data::
           IsConnectedToUSBDevice,
@@ -58,7 +59,7 @@ TEST_F(UsbTabHelperTest, IncrementDecrementConnectionCount) {
   // PerformanceManager to indicate that the tab is attached to USB.
   helper->IncrementConnectionCount(main_rfh());
   EXPECT_TRUE(helper->IsDeviceConnected());
-  performance_manager::TestPageLiveStatePropertyOnPMSequence(
+  performance_manager::testing::TestPageNodePropertyOnPMSequence(
       web_contents(),
       &performance_manager::PageLiveStateDecorator::Data::
           IsConnectedToUSBDevice,
@@ -68,7 +69,7 @@ TEST_F(UsbTabHelperTest, IncrementDecrementConnectionCount) {
   // USBTabHelper and in the PerformanceManager.
   helper->IncrementConnectionCount(main_rfh());
   EXPECT_TRUE(helper->IsDeviceConnected());
-  performance_manager::TestPageLiveStatePropertyOnPMSequence(
+  performance_manager::testing::TestPageNodePropertyOnPMSequence(
       web_contents(),
       &performance_manager::PageLiveStateDecorator::Data::
           IsConnectedToUSBDevice,
@@ -78,7 +79,7 @@ TEST_F(UsbTabHelperTest, IncrementDecrementConnectionCount) {
   // and in the PerformanceManager as one connection remains.
   helper->DecrementConnectionCount(main_rfh());
   EXPECT_TRUE(helper->IsDeviceConnected());
-  performance_manager::TestPageLiveStatePropertyOnPMSequence(
+  performance_manager::testing::TestPageNodePropertyOnPMSequence(
       web_contents(),
       &performance_manager::PageLiveStateDecorator::Data::
           IsConnectedToUSBDevice,
@@ -88,7 +89,7 @@ TEST_F(UsbTabHelperTest, IncrementDecrementConnectionCount) {
   // PerformanceManager to indicate that the tab is *not* attached to USB.
   helper->DecrementConnectionCount(main_rfh());
   EXPECT_FALSE(helper->IsDeviceConnected());
-  performance_manager::TestPageLiveStatePropertyOnPMSequence(
+  performance_manager::testing::TestPageNodePropertyOnPMSequence(
       web_contents(),
       &performance_manager::PageLiveStateDecorator::Data::
           IsConnectedToUSBDevice,
@@ -102,7 +103,7 @@ TEST_F(UsbTabHelperTest, Navigate) {
       UsbTabHelper::GetOrCreateForWebContents(web_contents());
   helper->CreateWebUsbService(main_rfh(), remote.BindNewPipeAndPassReceiver());
   EXPECT_FALSE(helper->IsDeviceConnected());
-  performance_manager::TestPageLiveStatePropertyOnPMSequence(
+  performance_manager::testing::TestPageNodePropertyOnPMSequence(
       web_contents(),
       &performance_manager::PageLiveStateDecorator::Data::
           IsConnectedToUSBDevice,
@@ -112,7 +113,7 @@ TEST_F(UsbTabHelperTest, Navigate) {
   // PerformanceManager to indicate that the tab is attached to USB.
   helper->IncrementConnectionCount(main_rfh());
   EXPECT_TRUE(helper->IsDeviceConnected());
-  performance_manager::TestPageLiveStatePropertyOnPMSequence(
+  performance_manager::testing::TestPageNodePropertyOnPMSequence(
       web_contents(),
       &performance_manager::PageLiveStateDecorator::Data::
           IsConnectedToUSBDevice,
@@ -123,7 +124,7 @@ TEST_F(UsbTabHelperTest, Navigate) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(url::kAboutBlankURL));
   EXPECT_FALSE(helper->IsDeviceConnected());
-  performance_manager::TestPageLiveStatePropertyOnPMSequence(
+  performance_manager::testing::TestPageNodePropertyOnPMSequence(
       web_contents(),
       &performance_manager::PageLiveStateDecorator::Data::
           IsConnectedToUSBDevice,

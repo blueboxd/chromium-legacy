@@ -1664,6 +1664,12 @@ void PushTranslateOps(PaintOpBuffer* buffer) {
   ValidateOps<TranslateOp>(buffer);
 }
 
+void PushSetNodeIdOps(PaintOpBuffer* buffer) {
+  for (size_t i = 0; i < test_ids.size(); i++)
+    buffer->push<SetNodeIdOp>(test_ids[i]);
+  ValidateOps<SetNodeIdOp>(buffer);
+}
+
 class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
  public:
   PaintOpType GetParamType() const {
@@ -1756,6 +1762,9 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
         break;
       case PaintOpType::Translate:
         PushTranslateOps(&buffer_);
+        break;
+      case PaintOpType::SetNodeId:
+        PushSetNodeIdOps(&buffer_);
         break;
     }
   }

@@ -4,16 +4,8 @@
 
 package org.chromium.chrome.browser.profile_card;
 
-import android.view.View;
-
 /** Interface for the Profile Card related UI. */
 public interface ProfileCardCoordinator {
-    /**
-     * Initiates the profile card coordinator.
-     * @param view {@link View} triggers the profile card.
-     * @param CreatorMetadata {@link CreatorMetadata} stores all data needed by profile card.
-     */
-    void init(View view, CreatorMetadata creatorMetadata);
 
     /**
      * Shows the profile card.

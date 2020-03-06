@@ -238,6 +238,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   base::TimeTicks last_presentation_time_ GUARDED_BY(current_frame_lock_);
   base::TimeTicks last_expected_presentation_time_
       GUARDED_BY(current_frame_lock_);
+  size_t presented_frames_ GUARDED_BY(current_frame_lock_) = 0u;
 
   bool stopped_;
   bool render_started_;

@@ -15,8 +15,8 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -38,6 +38,7 @@ public final class BrowserViewController
     // tab modal dialogs.
     private final FrameLayout mWebContentsOverlayView;
 
+    private final FragmentWindowAndroid mWindowAndroid;
     private final ModalDialogManager mModalDialogManager;
 
     private TabImpl mTab;
@@ -51,11 +52,13 @@ public final class BrowserViewController
      */
     private boolean mCachedDoBrowserControlsShrinkRendererSize;
 
-    public BrowserViewController(Context context, WindowAndroid windowAndroid) {
+    public BrowserViewController(FragmentWindowAndroid windowAndroid) {
+        mWindowAndroid = windowAndroid;
+        Context context = mWindowAndroid.getContext().get();
         mContentViewRenderView = new ContentViewRenderView(context);
 
         mContentViewRenderView.onNativeLibraryLoaded(
-                windowAndroid, ContentViewRenderView.MODE_SURFACE_VIEW);
+                mWindowAndroid, ContentViewRenderView.MODE_SURFACE_VIEW);
         mTopControlsContainerView =
                 new TopControlsContainerView(context, mContentViewRenderView, this);
         mTopControlsContainerView.setId(View.generateViewId());
@@ -74,16 +77,18 @@ public final class BrowserViewController
         overlayParams.addRule(RelativeLayout.BELOW, mTopControlsContainerView.getId());
         overlayParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         mContentView.addView(mWebContentsOverlayView, overlayParams);
-        windowAndroid.setAnimationPlaceholderView(mWebContentsOverlayView);
+        mWindowAndroid.setAnimationPlaceholderView(mWebContentsOverlayView);
 
-        mModalDialogManager = windowAndroid.getModalDialogManager();
+        mModalDialogManager = new ModalDialogManager(
+                new AppModalPresenter(context), ModalDialogManager.ModalDialogType.APP);
         mModalDialogManager.addObserver(this);
         mModalDialogManager.registerPresenter(
                 new WebLayerTabModalPresenter(this, context), ModalDialogType.TAB);
+        mWindowAndroid.setModalDialogManager(mModalDialogManager);
     }
 
     public void destroy() {
-        mModalDialogManager.removeObserver(this);
+        mWindowAndroid.setModalDialogManager(null);
         setActiveTab(null);
         mTopControlsContainerView.destroy();
         mContentViewRenderView.destroy();

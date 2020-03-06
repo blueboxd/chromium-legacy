@@ -7,8 +7,6 @@
  * 'settings-basic-page' is the settings page containing the actual settings.
  */
 (function() {
-'use strict';
-
 // <if expr="chromeos">
 const OS_BANNER_INTERACTION_METRIC_NAME =
     'ChromeOS.Settings.OsBannerInteraction';
@@ -32,7 +30,9 @@ Polymer({
   behaviors: [
     settings.MainPageBehavior,
     settings.RouteObserverBehavior,
+    // <if expr="chromeos">
     PrefsBehavior,
+    // </if>
   ],
 
   properties: {

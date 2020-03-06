@@ -941,6 +941,13 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
       return result;
   }
 
+  if (process_type == service_manager::switches::kGpuProcess &&
+      base::FeatureList::IsEnabled(
+          {"GpuLockdownDefaultDacl", base::FEATURE_ENABLED_BY_DEFAULT})) {
+    policy->SetLockdownDefaultDacl();
+    policy->AddRestrictingRandomSid();
+  }
+
 #if !defined(NACL_WIN64)
   if (process_type == service_manager::switches::kRendererProcess ||
       process_type == service_manager::switches::kPpapiPluginProcess ||

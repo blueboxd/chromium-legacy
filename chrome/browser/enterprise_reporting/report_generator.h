@@ -8,7 +8,6 @@
 #include <memory>
 #include <queue>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -16,8 +15,6 @@
 #include "chrome/browser/enterprise_reporting/report_request_definition.h"
 #include "chrome/browser/enterprise_reporting/report_request_queue_generator.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-
-namespace em = enterprise_management;
 
 namespace enterprise_reporting {
 
@@ -46,7 +43,7 @@ class ReportGenerator {
 
   // Returns an OS report contains basic OS information includes OS name, OS
   // architecture and OS version.
-  virtual std::unique_ptr<em::OSReport> GetOSReport();
+  virtual std::unique_ptr<enterprise_management::OSReport> GetOSReport();
 
   // Returns the name of computer.
   virtual std::string GetMachineName();
@@ -65,10 +62,11 @@ class ReportGenerator {
 #endif
 
  private:
-  void OnBrowserReportReady(bool with_profiles,
-                            ReportCallback callback,
-                            std::unique_ptr<ReportRequest> basic_request,
-                            std::unique_ptr<em::BrowserReport> browser_report);
+  void OnBrowserReportReady(
+      bool with_profiles,
+      ReportCallback callback,
+      std::unique_ptr<ReportRequest> basic_request,
+      std::unique_ptr<enterprise_management::BrowserReport> browser_report);
 
   ReportRequestQueueGenerator report_request_queue_generator_;
   BrowserReportGenerator browser_report_generator_;

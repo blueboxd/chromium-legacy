@@ -109,6 +109,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -1551,6 +1552,15 @@ void DocumentLoader::InstallNewDocument(
     if (frame_->GetDocument())
       frame_->GetDocument()->RemoveAllEventListenersRecursively();
     frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_));
+    if (origin_policy_.has_value()) {
+      // Convert from WebVector<WebString> to WTF::Vector<WTF::String>
+      Vector<String> ids;
+      for (const auto& id : origin_policy_->ids) {
+        ids.push_back(id);
+      }
+
+      frame_->DomWindow()->SetOriginPolicyIds(ids);
+    }
   }
 
   if (!loading_url_as_javascript_)

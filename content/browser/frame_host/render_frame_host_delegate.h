@@ -290,8 +290,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                       mojo::PendingReceiver<device::mojom::NFC> receiver);
 #endif
 
+  // Returns whether entering fullscreen with EnterFullscreenMode() is allowed.
+  virtual bool CanEnterFullscreenMode();
+
   // Notification that the frame wants to go into fullscreen mode.
-  // |origin| represents the origin of the frame that requests fullscreen.
+  // |origin| represents the origin of the frame that requests fullscreen. Must
+  // only be called if CanEnterFullscreenMode returns true.
   virtual void EnterFullscreenMode(
       const GURL& origin,
       const blink::mojom::FullscreenOptions& options) {}

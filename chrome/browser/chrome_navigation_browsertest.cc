@@ -1653,9 +1653,37 @@ IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
 }
 
 // Tests that a main frame hosting pdf does not get skipped because of history
-// manipulation intervention (crbug.com/965434).
+// manipulation intervention if there was a user gesture.
 IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
-                       PDFDoNotSkipOnBackForward) {
+                       PDFDoNotSkipOnBackForwardDueToUserGesture) {
+  GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  ui_test_utils::NavigateToURL(browser(), pdf_url);
+
+  GURL url(embedded_test_server()->GetURL("/title2.html"));
+
+  // Navigate to a new document from the renderer with a user gesture.
+  content::WebContents* main_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(main_contents);
+  EXPECT_TRUE(ExecuteScript(main_contents, "location = '" + url.spec() + "';"));
+  observer.Wait();
+  EXPECT_EQ(url, main_contents->GetLastCommittedURL());
+
+  // Since pdf_url initiated a navigation with a user gesture, it will
+  // not be skipped. Going back should be allowed and should navigate to
+  // pdf_url.
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BACK));
+
+  ASSERT_TRUE(chrome::CanGoBack(browser()));
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_TRUE(content::WaitForLoadStop(main_contents));
+  ASSERT_EQ(pdf_url, main_contents->GetLastCommittedURL());
+}
+
+// Tests that a main frame hosting pdf gets skipped because of history
+// manipulation intervention if there was no user gesture.
+IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
+                       PDFSkipOnBackForwardNoUserGesture) {
   GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ui_test_utils::NavigateToURL(browser(), pdf_url);
 
@@ -1670,15 +1698,15 @@ IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
   observer.Wait();
   EXPECT_EQ(url, main_contents->GetLastCommittedURL());
 
-  // Even though pdf_url initiated a navigation without a user gesture, it will
-  // not be skipped since it is a pdf.
-  // Going back should be allowed and should navigate to pdf_url.
+  // Since pdf_url initiated a navigation without a user gesture, it will
+  // be skipped. Going back should be allowed and should navigate to
+  // about:blank.
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BACK));
 
   ASSERT_TRUE(chrome::CanGoBack(browser()));
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(content::WaitForLoadStop(main_contents));
-  ASSERT_EQ(pdf_url, main_contents->GetLastCommittedURL());
+  ASSERT_EQ(GURL("about:blank"), main_contents->GetLastCommittedURL());
 }
 
 // This test class turns on the mode where sites where the user enters a

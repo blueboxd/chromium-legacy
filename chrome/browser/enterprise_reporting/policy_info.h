@@ -7,8 +7,6 @@
 
 #include "components/policy/proto/device_management_backend.pb.h"
 
-namespace em = enterprise_management;
-
 namespace base {
 class Value;
 }
@@ -17,14 +15,14 @@ namespace enterprise_reporting {
 
 void AppendChromePolicyInfoIntoProfileReport(
     const base::Value& policies,
-    em::ChromeUserProfileInfo* profile_info);
+    enterprise_management::ChromeUserProfileInfo* profile_info);
 
 void AppendExtensionPolicyInfoIntoProfileReport(
     const base::Value& policies,
-    em::ChromeUserProfileInfo* profile_info);
+    enterprise_management::ChromeUserProfileInfo* profile_info);
 
 void AppendMachineLevelUserCloudPolicyFetchTimestamp(
-    em::ChromeUserProfileInfo* profile_info);
+    enterprise_management::ChromeUserProfileInfo* profile_info);
 
 }  // namespace enterprise_reporting
 

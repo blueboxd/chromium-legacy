@@ -62,7 +62,8 @@ class HTMLVideoElementPersistentTest : public PageTestBase {
   FullscreenMockChromeClient& GetMockChromeClient() { return *chrome_client_; }
 
   void SimulateDidEnterFullscreen() {
-    Fullscreen::DidEnterFullscreen(GetDocument());
+    Fullscreen::DidResolveEnterFullscreenRequest(GetDocument(),
+                                                 true /* granted */);
   }
 
   void SimulateDidExitFullscreen() {

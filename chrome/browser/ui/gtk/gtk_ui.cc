@@ -917,13 +917,6 @@ void GtkUi::UpdateColors() {
   colors_[ThemeProperties::COLOR_TAB_TEXT] = tab_text_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = tab_text_color;
 
-  colors_[ThemeProperties::COLOR_BACKGROUND_TAB] = SK_ColorTRANSPARENT;
-  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE] = SK_ColorTRANSPARENT;
-  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
-      SK_ColorTRANSPARENT;
-  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE] =
-      SK_ColorTRANSPARENT;
-
   colors_[ThemeProperties::COLOR_NTP_LINK] = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
 

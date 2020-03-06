@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
@@ -302,6 +303,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::WrapUnique(AboutHandler::Create(html_source, profile)));
   AddSettingsPageUIHandler(
       base::WrapUnique(ResetSettingsHandler::Create(html_source, profile)));
+
+  // Add a handler to provide pluralized strings.
+  web_ui->AddMessageHandler(std::make_unique<PluralStringHandler>());
 
   // Add the metrics handler to write uma stats.
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());

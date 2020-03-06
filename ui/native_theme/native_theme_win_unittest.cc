@@ -16,8 +16,8 @@ using ColorId = NativeTheme::ColorId;
 
 class TestNativeThemeWin : public NativeThemeWin {
  public:
-  TestNativeThemeWin() {}
-  ~TestNativeThemeWin() override {}
+  TestNativeThemeWin() : NativeThemeWin(false, false) {}
+  ~TestNativeThemeWin() override = default;
 
   // NativeTheme:
   bool UsesHighContrastColors() const override { return high_contrast_; }

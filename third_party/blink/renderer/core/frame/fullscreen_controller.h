@@ -81,6 +81,10 @@ class CORE_EXPORT FullscreenController {
   void UpdatePageScaleConstraints(bool reset_constraints);
   void RestoreBackgroundColorOverride();
 
+  void NotifyFramesOfFullscreenEntry(bool granted);
+
+  void EnterFullscreenCallback(bool granted);
+
   WebViewImpl* web_view_base_;
 
   // State is used to avoid unnecessary enter/exit requests.

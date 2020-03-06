@@ -30,7 +30,7 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(scoped_refptr<Scrollbar> scrollbar)
                          scrollbar->IsLeftSideVerticalScrollbar()),
       scrollbar_(std::move(scrollbar)),
       internal_contents_scale_(1.f),
-      thumb_opacity_(scrollbar_->ThumbOpacity()),
+      painted_opacity_(scrollbar_->Opacity()),
       has_thumb_(scrollbar_->HasThumb()),
       supports_drag_snap_back_(scrollbar_->SupportsDragSnapBack()),
       is_overlay_(scrollbar_->IsOverlay()) {}
@@ -71,7 +71,7 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   else
     scrollbar_layer->set_thumb_ui_resource_id(0);
 
-  scrollbar_layer->set_thumb_opacity(thumb_opacity_);
+  scrollbar_layer->set_scrollbar_painted_opacity(painted_opacity_);
 
   scrollbar_layer->set_is_overlay_scrollbar(is_overlay_);
 }
@@ -182,7 +182,7 @@ bool PaintedScrollbarLayer::Update() {
       SetNeedsPushProperties();
       updated = true;
     }
-    updated |= UpdateProperty(scrollbar_->ThumbOpacity(), &thumb_opacity_);
+    updated |= UpdateProperty(scrollbar_->Opacity(), &painted_opacity_);
   }
 
   return updated;

@@ -50,6 +50,11 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/home_url_input.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_BASIC_PAGE_BASIC_PAGE_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/basic_page/basic_page.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
   <if expr="is_win">
     <include name="IDR_SETTINGS_CHROME_CLEANUP_PROXY_M_JS"
              file="${root_gen_dir}/chrome/browser/resources/settings/chrome_cleanup_page/chrome_cleanup_proxy.m.js"

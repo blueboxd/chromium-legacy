@@ -16,9 +16,6 @@ namespace media_history {
 // static
 MediaHistoryKeyedService* MediaHistoryKeyedServiceFactory::GetForProfile(
     Profile* profile) {
-  if (profile->IsOffTheRecord())
-    return nullptr;
-
   return static_cast<MediaHistoryKeyedService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
@@ -46,9 +43,14 @@ bool MediaHistoryKeyedServiceFactory::ServiceIsCreatedWithBrowserContext()
 
 KeyedService* MediaHistoryKeyedServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  DCHECK(!context->IsOffTheRecord());
-
   return new MediaHistoryKeyedService(Profile::FromBrowserContext(context));
+}
+
+content::BrowserContext*
+MediaHistoryKeyedServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  // Enable incognito profiles.
+  return context;
 }
 
 }  // namespace media_history

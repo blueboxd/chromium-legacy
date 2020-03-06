@@ -36,6 +36,10 @@ uint64_t MakeOldStyleId(content::RenderFrameHost* render_frame_host) {
          render_frame_host->GetRoutingID();
 }
 
+uint64_t MakeOldStyleId(const content::GlobalFrameRoutingId& id) {
+  return (static_cast<uint64_t>(id.child_id) << 32) | id.frame_routing_id;
+}
+
 // Converts gfx::Rect to its RectProto form.
 void RectToRectProto(const gfx::Rect& rect, RectProto* proto) {
   proto->set_x(rect.x());
@@ -247,13 +251,16 @@ void PaintPreviewClient::CapturePaintPreviewInternal(
       base::BindOnce(&CreateFileHandle, file_path),
       base::BindOnce(&PaintPreviewClient::RequestCaptureOnUIThread,
                      weak_ptr_factory_.GetWeakPtr(), params, frame_guid,
-                     base::Unretained(render_frame_host), file_path));
+                     content::GlobalFrameRoutingId(
+                         render_frame_host->GetProcess()->GetID(),
+                         render_frame_host->GetRoutingID()),
+                     file_path));
 }
 
 void PaintPreviewClient::RequestCaptureOnUIThread(
     const PaintPreviewParams& params,
     const base::UnguessableToken& frame_guid,
-    content::RenderFrameHost* render_frame_host,
+    const content::GlobalFrameRoutingId& render_frame_id,
     const base::FilePath& file_path,
     CreateResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -262,6 +269,14 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
     std::move(document_data->callback)
         .Run(params.document_guid,
              mojom::PaintPreviewStatus::kFileCreationError, nullptr);
+    return;
+  }
+
+  auto* render_frame_host = content::RenderFrameHost::FromID(render_frame_id);
+  if (!render_frame_host) {
+    std::move(document_data->callback)
+        .Run(params.document_guid, mojom::PaintPreviewStatus::kCaptureFailed,
+             nullptr);
     return;
   }
 
@@ -286,7 +301,7 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
       base::BindOnce(&PaintPreviewClient::OnPaintPreviewCapturedCallback,
                      weak_ptr_factory_.GetWeakPtr(), params.document_guid,
                      frame_guid, params.is_main_frame, file_path,
-                     base::Unretained(render_frame_host)));
+                     render_frame_id));
 }
 
 void PaintPreviewClient::OnPaintPreviewCapturedCallback(
@@ -294,7 +309,7 @@ void PaintPreviewClient::OnPaintPreviewCapturedCallback(
     const base::UnguessableToken& frame_guid,
     bool is_main_frame,
     const base::FilePath& filename,
-    content::RenderFrameHost* render_frame_host,
+    const content::GlobalFrameRoutingId& render_frame_id,
     mojom::PaintPreviewStatus status,
     mojom::PaintPreviewCaptureResponsePtr response) {
   // There is no retry logic so always treat a frame as processed regardless of
@@ -303,7 +318,7 @@ void PaintPreviewClient::OnPaintPreviewCapturedCallback(
 
   if (status == mojom::PaintPreviewStatus::kOk)
     status = RecordFrame(guid, frame_guid, is_main_frame, filename,
-                         render_frame_host, std::move(response));
+                         render_frame_id, std::move(response));
   auto* document_data = &all_document_data_[guid];
   if (status != mojom::PaintPreviewStatus::kOk)
     document_data->had_error = true;
@@ -327,7 +342,7 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
     const base::UnguessableToken& frame_guid,
     bool is_main_frame,
     const base::FilePath& filename,
-    content::RenderFrameHost* render_frame_host,
+    const content::GlobalFrameRoutingId& render_frame_id,
     mojom::PaintPreviewCaptureResponsePtr response) {
   auto it = all_document_data_.find(guid);
   DCHECK(it != all_document_data_.end());
@@ -343,7 +358,7 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
     it->second.main_frame_blink_recording_time = response->blink_recording_time;
     frame_proto = proto_ptr->mutable_root_frame();
     frame_proto->set_is_main_frame(true);
-    uint64_t old_style_id = MakeOldStyleId(render_frame_host);
+    uint64_t old_style_id = MakeOldStyleId(render_frame_id);
     main_frame_guids_.erase(old_style_id);
   } else {
     frame_proto = proto_ptr->add_subframes();

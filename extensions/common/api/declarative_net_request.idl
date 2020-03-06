@@ -402,6 +402,11 @@ namespace declarativeNetRequest {
     // The number of times <code>getMatchedRules</code> can be called within a
     // period of <code>GETMATCHEDRULES_QUOTA_INTERVAL</code>.
     [value=20] static long MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL();
+
+    // The maximum number of regular expression rules that an extension can
+    // add. This limit is evaluated separately for the set of dynamic rules and
+    // those specified in the rule resources file.
+    [value=1000] static long MAX_NUMBER_OF_REGEX_RULES();
   };
 
   interface Events {

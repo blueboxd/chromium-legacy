@@ -1,0 +1,42 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+assert(!is_ios, "Paint Previews are not supported on iOS.")
+
+source_set("services") {
+  sources = [
+    "paint_preview_tab_service.cc",
+    "paint_preview_tab_service.h",
+  ]
+
+  deps = [ "//base" ]
+
+  public_deps = [
+    "//components/paint_preview/browser",
+    "//components/paint_preview/common",
+    "//components/paint_preview/common/mojom",
+    "//components/paint_preview/common/proto",
+    "//components/paint_preview/public",
+    "//components/services/paint_preview_compositor/public/mojom",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "paint_preview_tab_service_unittest.cc" ]
+
+  deps = [
+    ":services",
+    "//base",
+    "//base/test:test_support",
+    "//components/paint_preview/common:test_utils",
+    "//content/public/browser",
+    "//content/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

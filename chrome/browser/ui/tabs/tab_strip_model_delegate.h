@@ -23,6 +23,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace tab_groups {
+class TabGroupId;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // TabStripModelDelegate
@@ -106,6 +110,11 @@ class TabStripModelDelegate {
   // Removes the contents at |indices| from this tab strip and places it into a
   // new window.
   virtual void MoveTabsToNewWindow(const std::vector<int>& indices) = 0;
+
+  // Moves all the tabs in the specified |group| to a new window, keeping them
+  // grouped. The group in the new window will have the same appearance as
+  // |group| but a different ID, since IDs can't be shared across windows.
+  virtual void MoveGroupToNewWindow(const tab_groups::TabGroupId& group) = 0;
 
   // Creates an entry in the historical tab database for the specified
   // WebContents.

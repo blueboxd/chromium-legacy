@@ -579,6 +579,17 @@ void WebContentsAccessibilityAndroid::HandleNavigate() {
   Java_WebContentsAccessibilityImpl_handleNavigate(env, obj);
 }
 
+void WebContentsAccessibilityAndroid::ClearNodeInfoCacheForGivenId(
+    int32_t unique_id) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_WebContentsAccessibilityImpl_clearNodeInfoCacheForGivenId(env, obj,
+                                                                 unique_id);
+}
+
 base::android::ScopedJavaLocalRef<jstring>
 WebContentsAccessibilityAndroid::GetSupportedHtmlElementTypes(
     JNIEnv* env,
@@ -670,6 +681,46 @@ static size_t ActualUnignoredChildCount(const ui::AXNode* node) {
   return count;
 }
 
+void WebContentsAccessibilityAndroid::UpdateAccessibilityNodeInfoBoundsRect(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& info,
+    jint unique_id,
+    BrowserAccessibilityAndroid* node) {
+  float dip_scale = use_zoom_for_dsf_enabled_
+                        ? 1 / root_manager_->device_scale_factor()
+                        : 1.0;
+  gfx::Rect absolute_rect = gfx::ScaleToEnclosingRect(
+      node->GetUnclippedRootFrameBoundsRect(), dip_scale, dip_scale);
+  gfx::Rect parent_relative_rect = absolute_rect;
+  if (node->PlatformGetParent()) {
+    gfx::Rect parent_rect = gfx::ScaleToEnclosingRect(
+        node->PlatformGetParent()->GetUnclippedRootFrameBoundsRect(), dip_scale,
+        dip_scale);
+    parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
+  }
+  bool is_root = node->PlatformGetParent() == NULL;
+  Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoLocation(
+      env, obj, info, unique_id, absolute_rect.x(), absolute_rect.y(),
+      parent_relative_rect.x(), parent_relative_rect.y(), absolute_rect.width(),
+      absolute_rect.height(), is_root);
+}
+
+jboolean WebContentsAccessibilityAndroid::UpdateCachedAccessibilityNodeInfo(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& info,
+    jint unique_id) {
+  BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
+  if (!node)
+    return false;
+
+  // Update cached nodes by providing new enclosing Rects
+  UpdateAccessibilityNodeInfoBoundsRect(env, obj, info, unique_id, node);
+
+  return true;
+}
+
 jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -744,23 +795,9 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
         base::android::ConvertUTF16ToJavaString(env, element_id));
   }
 
-  float dip_scale = use_zoom_for_dsf_enabled_
-                        ? 1 / root_manager_->device_scale_factor()
-                        : 1.0;
-  gfx::Rect absolute_rect = gfx::ScaleToEnclosingRect(
-      node->GetUnclippedRootFrameBoundsRect(), dip_scale, dip_scale);
-  gfx::Rect parent_relative_rect = absolute_rect;
-  if (node->PlatformGetParent()) {
-    gfx::Rect parent_rect = gfx::ScaleToEnclosingRect(
-        node->PlatformGetParent()->GetUnclippedRootFrameBoundsRect(), dip_scale,
-        dip_scale);
-    parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
-  }
+  UpdateAccessibilityNodeInfoBoundsRect(env, obj, info, unique_id, node);
+
   bool is_root = node->PlatformGetParent() == NULL;
-  Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoLocation(
-      env, obj, info, unique_id, absolute_rect.x(), absolute_rect.y(),
-      parent_relative_rect.x(), parent_relative_rect.y(), absolute_rect.width(),
-      absolute_rect.height(), is_root);
 
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoKitKatAttributes(
       env, obj, info, is_root, node->IsEditableText(),

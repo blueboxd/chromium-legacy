@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -143,6 +144,27 @@ void DragHandle::OnGestureEvent(ui::GestureEvent* event) {
     // time a session based nudge will be shown.
     ShowDragHandleNudge();
   }
+}
+
+gfx::Rect DragHandle::GetAnchorBoundsInScreen() const {
+  gfx::Rect anchor_bounds = ConvertRectToWidget(GetLocalBounds());
+  // Ignore any transform set on the drag handle - drag handle is used as an
+  // anchor for contextual nudges, and their bounds are set relative to the
+  // handle bounds without transform (for example, for in-app to home nudge both
+  // drag handle and the nudge will have non-indentity, identical transforms).
+  gfx::Point origin_in_screen = anchor_bounds.origin();
+  layer()->transform().TransformPointReverse(&origin_in_screen);
+
+  // If the parent widget has a transform set, it should be ignored as well (the
+  // transform is set during shelf widget animations, and will animate to
+  // identity transform), so the nudge bounds are set relative to the target
+  // shelf bounds.
+  aura::Window* const widget_window = GetWidget()->GetNativeWindow();
+  origin_in_screen += widget_window->bounds().origin().OffsetFromOrigin();
+  wm::ConvertPointToScreen(widget_window->parent(), &origin_in_screen);
+
+  anchor_bounds.set_origin(origin_in_screen);
+  return anchor_bounds;
 }
 
 void DragHandle::ShowDragHandleTooltip() {

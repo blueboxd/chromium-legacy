@@ -6,6 +6,7 @@ import './a11y_page/a11y_page.m.js';
 import './about_page/about_page.m.js';
 import './appearance_page/appearance_page.m.js';
 import './appearance_page/appearance_fonts_page.m.js';
+import './basic_page/basic_page.m.js';
 import './clear_browsing_data_dialog/clear_browsing_data_dialog.m.js';
 import './controls/controlled_button.m.js';
 import './controls/controlled_radio_button.m.js';

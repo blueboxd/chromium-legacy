@@ -34,6 +34,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/grit/chromium_strings.h"
@@ -69,7 +70,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/shell_dialogs/select_file_policy.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/android/android_about_app_info.h"
@@ -1054,13 +1054,9 @@ void PolicyUIHandler::HandleExportPoliciesJson(const base::ListValue* args) {
   base::FilePath initial_path =
       initial_dir.Append(FILE_PATH_LITERAL("policies.json"));
 
-  // Here we overwrite the actual value of SelectFileDialog policy by passing a
-  // nullptr to ui::SelectFileDialog::Create instead of the actual policy value.
-  // This is done for the following reason: the admin might want to set this
-  // policy for the user to forbid the select file dialogs, but this shouldn't
-  // block the possibility to export the policies.
   export_policies_select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, std::unique_ptr<ui::SelectFilePolicy>());
+      this,
+      std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions = {{FILE_PATH_LITERAL("json")}};
   gfx::NativeWindow owning_window = webcontents->GetTopLevelNativeWindow();

@@ -33,7 +33,8 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   static constexpr int TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP = 13;
   static constexpr int TAB_GROUP_HEADER_CXMENU_UNGROUP = 14;
   static constexpr int TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP = 15;
-  static constexpr int TAB_GROUP_HEADER_CXMENU_FEEDBACK = 16;
+  static constexpr int TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW = 16;
+  static constexpr int TAB_GROUP_HEADER_CXMENU_FEEDBACK = 17;
 
   // Shows the editor for |group| using a TabGroupHeader anchor. Should be used
   // in most cases to allow focus handling between the header and the bubble.

@@ -44,7 +44,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         mContext = new ContextThemeWrapper(
                 ClassLoaderContextWrapperFactory.get(context), R.style.Theme_BrowserUI);
         if (mBrowser != null) { // On first creation, onAttach is called before onCreate
-            mBrowser.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
+            mBrowser.onFragmentAttached(new FragmentWindowAndroid(mContext, this));
         }
     }
 
@@ -56,7 +56,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         assert mBrowser == null;
         // onCreate() is always called after onAttach(). onAttach() sets |mContext|.
         assert mContext != null;
-        mBrowser = new BrowserImpl(mProfile, mPersistenceId, savedInstanceState, mContext,
+        mBrowser = new BrowserImpl(mProfile, mPersistenceId, savedInstanceState,
                 new FragmentWindowAndroid(mContext, this));
     }
 

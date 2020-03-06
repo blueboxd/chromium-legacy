@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -43,6 +44,11 @@ class PaintPreviewCompositorCollectionImpl
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~PaintPreviewCompositorCollectionImpl() override;
 
+  PaintPreviewCompositorCollectionImpl(
+      const PaintPreviewCompositorCollectionImpl&) = delete;
+  PaintPreviewCompositorCollectionImpl& operator=(
+      const PaintPreviewCompositorCollectionImpl&) = delete;
+
   // PaintPreviewCompositorCollection implementation.
   void SetDiscardableSharedMemoryManager(
       mojo::PendingRemote<
@@ -72,10 +78,8 @@ class PaintPreviewCompositorCollectionImpl
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
 
-  PaintPreviewCompositorCollectionImpl(
-      const PaintPreviewCompositorCollectionImpl&) = delete;
-  PaintPreviewCompositorCollectionImpl& operator=(
-      const PaintPreviewCompositorCollectionImpl&) = delete;
+  base::WeakPtrFactory<PaintPreviewCompositorCollectionImpl> weak_ptr_factory_{
+      this};
 };
 
 }  // namespace paint_preview

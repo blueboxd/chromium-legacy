@@ -168,6 +168,23 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
 
     /**
+     * Interface to control message items in grid tab switcher.
+     */
+    interface MessageItemsController {
+        /**
+         * Remove all the message items in the model list. Right now this is used when all tabs are
+         * closed in the grid tab switcher.
+         */
+        void removeAllAppendedMessage();
+
+        /**
+         * Restore all the message items that should show. Right now this is only used to restore
+         * message items when the closure of the last tab in tab switcher is undone.
+         */
+        void restoreAllAppendedMessage();
+    }
+
+    /**
      * Basic constructor for the Mediator.
      * @param resetHandler The {@link ResetHandler} that handles reset for this Mediator.
      * @param containerViewModel The {@link PropertyModel} to keep state on the View containing the
@@ -184,7 +201,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
             ViewGroup containerView,
             TabSelectionEditorCoordinator.TabSelectionEditorController tabSelectionEditorController,
-            TabContentManager tabContentManager, @TabListCoordinator.TabListMode int mode) {
+            TabContentManager tabContentManager, MessageItemsController messageItemsController,
+            @TabListCoordinator.TabListMode int mode) {
         mResetHandler = resetHandler;
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
@@ -245,6 +263,20 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                         mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
                         false, mShowTabsInMruOrder);
                 setInitialScrollIndexOffset();
+            }
+
+            @Override
+            public void willCloseTab(Tab tab, boolean animate) {
+                if (mTabModelSelector.getCurrentModel().getCount() == 1) {
+                    messageItemsController.removeAllAppendedMessage();
+                }
+            }
+
+            @Override
+            public void tabClosureUndone(Tab tab) {
+                if (mTabModelSelector.getCurrentModel().getCount() == 1) {
+                    messageItemsController.restoreAllAppendedMessage();
+                }
             }
         };
 

@@ -80,7 +80,9 @@
 #include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 #include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom.h"
+#include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
@@ -90,6 +92,7 @@
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
+#include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_dispatcher_host.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
@@ -104,6 +107,7 @@
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
+#include "third_party/blink/public/public_buildflags.h"
 
 #if !defined(OS_ANDROID)
 #include "content/browser/installedapp/installed_app_provider_impl.h"
@@ -120,6 +124,7 @@
 #include "services/device/public/mojom/nfc.mojom.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #include "third_party/blink/public/mojom/input/input_host.mojom.h"
+#include "third_party/blink/public/mojom/unhandled_tap_notifier/unhandled_tap_notifier.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -449,6 +454,13 @@ BindServiceWorkerReceiverForOriginAndCOEP(
       base::Unretained(host), method, cross_origin_embedder_policy);
 }
 
+template <typename Interface>
+void EmptyBinderForFrame(RenderFrameHost* host,
+                         mojo::PendingReceiver<Interface> receiver) {
+  DLOG(ERROR) << "Empty binder for interface " << Interface::Name_
+              << " for the frame/document scope";
+}
+
 VibrationManagerBinder& GetVibrationManagerBinderOverride() {
   static base::NoDestructor<VibrationManagerBinder> binder;
   return *binder;
@@ -672,6 +684,23 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 void PopulateBinderMapWithContext(
     RenderFrameHostImpl* host,
     service_manager::BinderMapWithContext<RenderFrameHost*>* map) {
+  // Register empty binders for interfaces not bound by content but requested
+  // by blink.
+  // This avoids renderer kills when no binder is found in the absence of the
+  // production embedder (such as in tests).
+  map->Add<blink::mojom::InsecureInputService>(base::BindRepeating(
+      &EmptyBinderForFrame<blink::mojom::InsecureInputService>));
+  map->Add<blink::mojom::PrerenderProcessor>(base::BindRepeating(
+      &EmptyBinderForFrame<blink::mojom::PrerenderProcessor>));
+  map->Add<payments::mojom::PaymentRequest>(base::BindRepeating(
+      &EmptyBinderForFrame<payments::mojom::PaymentRequest>));
+  map->Add<blink::mojom::AnchorElementMetricsHost>(base::BindRepeating(
+      &EmptyBinderForFrame<blink::mojom::AnchorElementMetricsHost>));
+#if BUILDFLAG(ENABLE_UNHANDLED_TAP)
+  map->Add<blink::mojom::UnhandledTapNotifier>(base::BindRepeating(
+      &EmptyBinderForFrame<blink::mojom::UnhandledTapNotifier>));
+#endif
+
   map->Add<blink::mojom::BackgroundFetchService>(
       base::BindRepeating(&BackgroundFetchServiceImpl::CreateForFrame));
   map->Add<blink::mojom::ColorChooserFactory>(
@@ -724,6 +753,10 @@ const url::Origin& GetContextForHost(DedicatedWorkerHost* host) {
 
 void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
                                     service_manager::BinderMap* map) {
+  // Do nothing for interfaces that the renderer might request, but doesn't
+  // always expect to be bound.
+  map->Add<blink::mojom::FeatureObserver>(base::DoNothing());
+
   // static binders
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
@@ -808,6 +841,10 @@ url::Origin GetContextForHost(SharedWorkerHost* host) {
 
 void PopulateSharedWorkerBinders(SharedWorkerHost* host,
                                  service_manager::BinderMap* map) {
+  // Do nothing for interfaces that the renderer might request, but doesn't
+  // always expect to be bound.
+  map->Add<blink::mojom::FeatureObserver>(base::DoNothing());
+
   // static binders
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
@@ -883,6 +920,10 @@ ServiceWorkerVersionInfo GetContextForHost(ServiceWorkerProviderHost* host) {
 void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
                                   service_manager::BinderMap* map) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+  // Do nothing for interfaces that the renderer might request, but doesn't
+  // always expect to be bound.
+  map->Add<blink::mojom::FeatureObserver>(base::DoNothing());
 
   // static binders
   map->Add<blink::mojom::ScreenEnumeration>(

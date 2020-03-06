@@ -20,10 +20,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickScrimToExitDialog;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
 import android.content.res.Configuration;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.filters.MediumTest;
 import android.widget.TextView;
@@ -49,6 +52,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.UiRestriction;
@@ -181,6 +185,40 @@ public class TabGridIphTest {
 
         // Reset orientation.
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
+    }
+
+    @Test
+    @MediumTest
+    public void testIphItemChangeWithLastTab() throws Exception {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+
+        enterTabSwitcher(cta);
+        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+
+        // Close the last tab in tab switcher and the IPH item should not be showing.
+        closeFirstTabInTabSwitcher();
+        CriteriaHelper.pollUiThread(() -> !TabSwitcherCoordinator.hasAppendedMessagesForTesting());
+        verifyTabSwitcherCardCount(cta, 0);
+        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
+
+        // Undo the closure of the last tab and the IPH item should reshow.
+        CriteriaHelper.pollInstrumentationThread(TabUiTestHelper::verifyUndoBarShowingAndClickUndo);
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+
+        // Close the last tab in the tab switcher.
+        closeFirstTabInTabSwitcher();
+        CriteriaHelper.pollUiThread(() -> !TabSwitcherCoordinator.hasAppendedMessagesForTesting());
+        verifyTabSwitcherCardCount(cta, 0);
+        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
+
+        // Add the first tab to an empty tab switcher and the IPH item should show.
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), cta, false, true);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
     }
 
     private void verifyIphDialogShowing(ChromeTabbedActivity cta) {

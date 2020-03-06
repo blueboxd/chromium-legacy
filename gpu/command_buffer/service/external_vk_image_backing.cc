@@ -99,11 +99,13 @@ GrVkImageInfo CreateGrVkImageInfo(
 }
 
 VkResult CreateVkImage(SharedContextState* context_state,
+                       viz::ResourceFormat viz_format,
                        VkFormat format,
                        const gfx::Size& size,
                        bool is_transfer_dst,
                        bool is_external,
-                       bool use_protected_memory,
+                       uint32_t shared_image_usage,
+                       const VulkanImageUsageCache* image_usage_cache,
                        VkImage* image) {
   VkExternalMemoryImageCreateInfoKHR external_info = {
       .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
@@ -112,14 +114,26 @@ VkResult CreateVkImage(SharedContextState* context_state,
                          ->GetExternalImageHandleType(),
   };
 
-  auto usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+  VkImageUsageFlags usage =
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
   if (is_transfer_dst)
     usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+  // Requested usage flags must be supported.
+  DCHECK_EQ(usage & image_usage_cache->optimal_tiling_usage[viz_format], usage);
+
+  if (is_external && (shared_image_usage & SHARED_IMAGE_USAGE_GLES2)) {
+    // Must request all available image usage flags if aliasing GL texture. This
+    // is a spec requirement.
+    usage |= image_usage_cache->optimal_tiling_usage[viz_format];
+  }
 
   VkImageCreateInfo create_info = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
       .pNext = is_external ? &external_info : nullptr,
-      .flags = use_protected_memory ? VK_IMAGE_CREATE_PROTECTED_BIT : 0,
+      .flags = shared_image_usage & SHARED_IMAGE_USAGE_PROTECTED
+                   ? VK_IMAGE_CREATE_PROTECTED_BIT
+                   : 0,
       .imageType = VK_IMAGE_TYPE_2D,
       .format = format,
       .extent = {size.width(), size.height(), 1},
@@ -214,6 +228,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,
+    const VulkanImageUsageCache* image_usage_cache,
     base::span<const uint8_t> pixel_data,
     bool using_gmb) {
   VkDevice device =
@@ -228,8 +243,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     usage |= SHARED_IMAGE_USAGE_PROTECTED;
   }
   VkResult result =
-      CreateVkImage(context_state, vk_format, size, is_transfer_dst,
-                    is_external, usage & SHARED_IMAGE_USAGE_PROTECTED, &image);
+      CreateVkImage(context_state, format, vk_format, size, is_transfer_dst,
+                    is_external, usage, image_usage_cache, &image);
   if (result != VK_SUCCESS) {
     DLOG(ERROR) << "Failed to create external VkImage: " << result;
     return nullptr;
@@ -316,7 +331,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     gfx::BufferFormat buffer_format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    const VulkanImageUsageCache* image_usage_cache) {
   if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, buffer_format)) {
     DLOG(ERROR) << "Invalid image size for format.";
     return nullptr;
@@ -445,8 +461,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
   }
 
   auto backing = Create(context_state, command_pool, mailbox, resource_format,
-                        size, color_space, usage, base::span<const uint8_t>(),
-                        true /* using_gmb */);
+                        size, color_space, usage, image_usage_cache,
+                        base::span<const uint8_t>(), true /* using_gmb */);
   if (!backing)
     return nullptr;
 

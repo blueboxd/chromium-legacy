@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/policy/status_collector/activity_storage.h"
 
+#include <algorithm>
+#include <limits>
+#include <memory>
+
 #include "base/base64.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -43,39 +47,34 @@ void ActivityStorage::PruneActivityPeriods(
     base::TimeDelta max_future_activity_interval) {
   base::Time min_time = base_time - max_past_activity_interval;
   base::Time max_time = base_time + max_future_activity_interval;
-  TrimActivityPeriods(TimestampToDayKey(min_time), 0,
-                      TimestampToDayKey(max_time));
+  TrimActivityPeriods(TimestampToDayKey(min_time), TimestampToDayKey(max_time));
 }
 
 void ActivityStorage::TrimActivityPeriods(int64_t min_day_key,
-                                          int min_day_trim_duration,
                                           int64_t max_day_key) {
-  const base::DictionaryValue* activity_times =
-      pref_service_->GetDictionary(pref_name_);
+  const base::Value* activity_times = pref_service_->GetDictionary(pref_name_);
+  // Load collected activities into an interval map.
+  auto intervals = GetActivityPeriodsFromPref(*activity_times);
 
-  std::unique_ptr<base::DictionaryValue> copy(activity_times->DeepCopy());
-  for (base::DictionaryValue::Iterator it(*activity_times); !it.IsAtEnd();
-       it.Advance()) {
-    int64_t timestamp;
-    std::string active_user_email;
-    if (ParseActivityPeriodPrefKey(it.key(), &timestamp, &active_user_email)) {
-      // Remove data that is too old, or too far in the future.
-      if (timestamp >= min_day_key && timestamp < max_day_key) {
-        if (timestamp == min_day_key) {
-          int new_activity_duration = 0;
-          if (it.value().GetAsInteger(&new_activity_duration)) {
-            new_activity_duration =
-                std::max(new_activity_duration - min_day_trim_duration, 0);
-          }
-          copy->SetInteger(it.key(), new_activity_duration);
-        }
-        continue;
-      }
+  // Remove data that is too old, or too far in the future.
+  intervals.SetInterval(std::numeric_limits<int64_t>::min(), min_day_key,
+                        base::nullopt);
+  intervals.SetInterval(max_day_key, std::numeric_limits<int64_t>::max(),
+                        base::nullopt);
+
+  // Flush the activities into Dictionary
+  base::Value copy(base::Value::Type::DICTIONARY);
+  for (const auto& interval : intervals) {
+    if (!interval.second.has_value()) {
+      continue;
     }
-    // The entry is out of range or couldn't be parsed. Remove it.
-    copy->Remove(it.key(), NULL);
+    const auto key = MakeActivityPeriodPrefKey(
+        interval.first.begin, interval.second.value().user_email);
+    copy.SetIntPath(key, interval.first.end - interval.first.begin);
   }
-  pref_service_->Set(pref_name_, *copy);
+
+  // Flush the activities into pref_service_
+  pref_service_->Set(pref_name_, copy);
 }
 
 // static
@@ -105,16 +104,26 @@ bool ActivityStorage::ParseActivityPeriodPrefKey(const std::string& key,
 }
 
 // static
-std::vector<ActivityStorage::ActivityPeriod>
+IntervalMap<int64_t, ActivityStorage::Period>
 ActivityStorage::GetActivityPeriodsFromPref(
-    const base::DictionaryValue& stored_activity_periods) {
-  std::vector<ActivityStorage::ActivityPeriod> activity_periods;
-  for (const auto& it : stored_activity_periods.DictItems()) {
-    ActivityStorage::ActivityPeriod activity_period;
-    if (ParseActivityPeriodPrefKey(it.first, &activity_period.start_timestamp,
-                                   &activity_period.user_email) &&
-        it.second.GetAsInteger(&activity_period.activity_milliseconds)) {
-      activity_periods.push_back(activity_period);
+    const base::Value& stored_activity_periods) {
+  IntervalMap<int64_t, Period> activity_periods;
+  for (const auto& item : stored_activity_periods.DictItems()) {
+    int64_t timestamp;
+    ActivePeriod info;
+    if (!ParseActivityPeriodPrefKey(item.first, &timestamp, &info.user_email)) {
+      LOG(WARNING) << "Cannot parse recorded activity key: '" << item.first
+                   << "'";
+      continue;
+    }
+    int duration;
+    if (!item.second.GetAsInteger(&duration)) {
+      LOG(WARNING) << "Cannot parse recorded activity duration: '"
+                   << item.second << "'";
+      continue;
+    }
+    if (duration > 0) {
+      activity_periods.SetInterval(timestamp, timestamp + duration, info);
     }
   }
   return activity_periods;

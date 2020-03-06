@@ -222,6 +222,10 @@ void DedicatedWorkerHost::StartScriptLoad(
                      weak_factory_.GetWeakPtr()));
 }
 
+void DedicatedWorkerHost::ReportNoBinderForInterface(const std::string& error) {
+  broker_receiver_.ReportBadMessage(error + " for the dedicated worker scope");
+}
+
 void DedicatedWorkerHost::DidStartScriptLoad(
     bool success,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>

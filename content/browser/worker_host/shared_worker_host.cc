@@ -414,6 +414,10 @@ base::WeakPtr<SharedWorkerHost> SharedWorkerHost::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+void SharedWorkerHost::ReportNoBinderForInterface(const std::string& error) {
+  broker_receiver_.ReportBadMessage(error + " for the shared worker scope");
+}
+
 void SharedWorkerHost::AddClient(
     mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     GlobalFrameRoutingId client_render_frame_host_id,

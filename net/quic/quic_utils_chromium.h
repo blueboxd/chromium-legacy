@@ -21,11 +21,6 @@ namespace net {
 NET_EXPORT quic::QuicTagVector ParseQuicConnectionOptions(
     const std::string& connection_options);
 
-// Returns the list of QUIC versions represented by the comma separated
-// string in |quic_versions|.
-NET_EXPORT quic::ParsedQuicVersionVector ParseQuicVersions(
-    const std::string& quic_versions);
-
 }  // namespace net
 
 #endif  // NET_QUIC_QUIC_UTILS_CHROMIUM_H_

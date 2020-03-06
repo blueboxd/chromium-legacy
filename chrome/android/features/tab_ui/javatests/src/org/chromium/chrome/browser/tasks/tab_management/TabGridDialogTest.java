@@ -14,7 +14,6 @@ import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAct
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasExtras;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasType;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
-import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
@@ -42,7 +41,6 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import android.content.Intent;
 import android.graphics.Rect;
 import android.support.test.espresso.Espresso;
-import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.MediumTest;
@@ -265,7 +263,7 @@ public class TabGridDialogTest {
         // Exit dialog, wait for the undo bar showing and undo the closure.
         clickScrimToExitDialog(cta);
         waitForDialogHidingAnimationInTabSwitcher(cta);
-        CriteriaHelper.pollInstrumentationThread(this::verifyUndoBarShowingAndClickUndo);
+        CriteriaHelper.pollInstrumentationThread(TabUiTestHelper::verifyUndoBarShowingAndClickUndo);
 
         // Verify the undo has happened.
         onView(withId(R.id.tab_title)).check((v, noMatchException) -> {
@@ -302,7 +300,7 @@ public class TabGridDialogTest {
         // Exit dialog, wait for the undo bar showing and undo the closure.
         clickScrimToExitDialog(cta);
         waitForDialogHidingAnimation(cta);
-        CriteriaHelper.pollInstrumentationThread(this::verifyUndoBarShowingAndClickUndo);
+        CriteriaHelper.pollInstrumentationThread(TabUiTestHelper::verifyUndoBarShowingAndClickUndo);
 
         // Verify the undo has happened.
         verifyTabStripFaviconCount(cta, 2);
@@ -484,19 +482,6 @@ public class TabGridDialogTest {
                     // Verify if we can grab focus on the editText or not.
                     assertEquals(isEnabled, v.isFocused());
                 });
-    }
-
-    private boolean verifyUndoBarShowingAndClickUndo() {
-        boolean isShowing = true;
-        try {
-            onView(withId(R.id.snackbar_button)).check(matches(isCompletelyDisplayed()));
-            onView(withId(R.id.snackbar_button)).perform(click());
-        } catch (NoMatchingRootException | AssertionError e) {
-            isShowing = false;
-        } catch (Exception e) {
-            assert false : "error when verifying undo snack bar.";
-        }
-        return isShowing;
     }
 
     private void openDialogToolbarMenuAndVerify(ChromeTabbedActivity cta) {

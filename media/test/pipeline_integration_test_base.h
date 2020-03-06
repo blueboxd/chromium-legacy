@@ -204,7 +204,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
       FakeEncryptedMedia* encrypted_media);
 
   void OnSeeked(base::TimeDelta seek_time, PipelineStatus status);
-  void OnStatusCallback(const base::Closure& quit_run_loop_closure,
+  void OnStatusCallback(const base::RepeatingClosure& quit_run_loop_closure,
                         PipelineStatus status);
   void DemuxerEncryptedMediaInitDataCB(EmeInitDataType type,
                                        const std::vector<uint8_t>& init_data);

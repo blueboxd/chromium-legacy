@@ -449,18 +449,6 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
           std::string(policy::key::kDefaultImagesSetting),
       nullptr);
 
-#if !defined(OS_CHROMEOS)
-  // This also checks that we bypass the policy that blocks file selection
-  // dialogs. This is a desktop only policy.
-  values.Set(policy::key::kAllowFileSelectionDialogs,
-             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-             policy::POLICY_SOURCE_PLATFORM,
-             std::make_unique<base::Value>(false), nullptr);
-  SetExpectedPolicy(&expected_values, policy::key::kAllowFileSelectionDialogs,
-                    "mandatory", "machine", "platform", std::string(),
-                    std::string(), false, base::Value(false));
-#endif
-
   popups_blocked_for_urls.AppendString("ddd");
   values.Set(policy::key::kPopupsBlockedForUrls, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
@@ -474,6 +462,24 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
   // Check writing changed policies to the same file (should overwrite the
   // contents).
   VerifyExportingPolicies(expected_values);
+
+#if !defined(OS_CHROMEOS)
+  // This also checks that we do not bypass the policy that blocks file
+  // selection dialogs. This is a desktop only policy.
+  values.Set(policy::key::kAllowFileSelectionDialogs,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+             policy::POLICY_SOURCE_PLATFORM,
+             std::make_unique<base::Value>(false), nullptr);
+  popups_blocked_for_urls.AppendString("eeeeee");
+  values.Set(policy::key::kPopupsBlockedForUrls, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
+             popups_blocked_for_urls.CreateDeepCopy(), nullptr);
+  provider_.UpdateChromePolicy(values);
+
+  // Check writing changed policies did not overwrite the exported policies
+  // because the file selection dialog is not allowed.
+  VerifyExportingPolicies(expected_values);
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyNames) {

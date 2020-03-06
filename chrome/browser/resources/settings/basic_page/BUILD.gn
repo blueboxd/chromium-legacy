@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
+import("../settings.gni")
 
 js_type_check("closure_compile") {
   deps = [ ":basic_page" ]
@@ -22,28 +24,49 @@ js_library("basic_page") {
   externs_list = [ "$externs_path/pending_polymer.js" ]
 }
 
-# TODO(crbug.com/1026426): Fix and enable.
-#js_type_check("closure_compile_module") {
-#  is_polymer3 = true
-#  deps = [ ":basic_page.m" ]
-#}
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [ ":basic_page.m" ]
+}
 
 js_library("basic_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/basic_page/basic_page.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "..:page_visibility.m",
+    "..:route.m",
+    "..:router.m",
+    "..:search_settings.m",
+    "../chrome_cleanup_page:chrome_cleanup_proxy.m",
+    "../prefs:prefs_behavior.m",
+    "../settings_page:main_page_behavior.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   extra_deps = [ ":basic_page_module" ]
 }
 
-import("//tools/polymer/polymer.gni")
-
 group("polymer3_elements") {
-  deps = [ ":basic_page_module" ]
+  public_deps = [ ":basic_page_module" ]
 }
 
 polymer_modulizer("basic_page") {
   js_file = "basic_page.js"
   html_file = "basic_page.html"
   html_type = "dom-module"
+  ignore_imports = [
+    "chrome/browser/resources/settings/autofill_page/autofill_page.html",
+    "chrome/browser/resources/settings/controls/settings_idle_load.html",
+    "chrome/browser/resources/settings/people_page/people_page.html",
+    "chrome/browser/resources/settings/privacy_page/privacy_page.html",
+    "chrome/browser/resources/settings/safety_check_page/safety_check_page.html",
+  ]
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/page_visibility.html|PageVisibility",
+                   "chrome/browser/resources/settings/route.html|routes",
+                   "chrome/browser/resources/settings/router.html|Route, Router, RouteObserverBehavior",
+                   "chrome/browser/resources/settings/settings_page/main_page_behavior.html|MainPageBehavior",
+                   "chrome/browser/resources/settings/search_settings.html|getSearchManager, SearchResult",
+                   "ui/webui/resources/html/assert.html|assert",
+                   "ui/webui/resources/html/polymer.html|beforeNextRender,html,Polymer",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }

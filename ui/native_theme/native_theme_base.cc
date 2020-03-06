@@ -39,9 +39,6 @@ const int kCheckboxAndRadioHeight = 13;
 const int kSliderThumbWidth = 11;
 const int kSliderThumbHeight = 21;
 
-const int kDefaultScrollbarWidth = 15;
-const int kDefaultScrollbarButtonLength = 14;
-
 // Color constant pairs for light/default and dark color-schemes below.
 constexpr SkColor kThumbActiveColor[2] = {SkColorSetRGB(0xF4, 0xF4, 0xF4),
                                           gfx::kPlaceholderColor};
@@ -355,13 +352,12 @@ gfx::Rect NativeThemeBase::GetNinePatchAperture(Part part) const {
   return gfx::Rect();
 }
 
-NativeThemeBase::NativeThemeBase()
-    : scrollbar_width_(kDefaultScrollbarWidth),
-      scrollbar_button_length_(kDefaultScrollbarButtonLength) {
-}
+NativeThemeBase::NativeThemeBase() : NativeThemeBase(false) {}
 
-NativeThemeBase::~NativeThemeBase() {
-}
+NativeThemeBase::NativeThemeBase(bool should_only_use_dark_colors)
+    : NativeTheme(should_only_use_dark_colors) {}
+
+NativeThemeBase::~NativeThemeBase() = default;
 
 void NativeThemeBase::PaintArrowButton(
     cc::PaintCanvas* canvas,

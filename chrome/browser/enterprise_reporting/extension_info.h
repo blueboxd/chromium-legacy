@@ -7,15 +7,13 @@
 
 #include "components/policy/proto/device_management_backend.pb.h"
 
-namespace em = enterprise_management;
-
 class Profile;
 
 namespace enterprise_reporting {
 
 void AppendExtensionInfoIntoProfileReport(
     Profile* profile,
-    em::ChromeUserProfileInfo* profile_info);
+    enterprise_management::ChromeUserProfileInfo* profile_info);
 
 }  // namespace enterprise_reporting
 

@@ -26,6 +26,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.components.payments.ErrorStrings;
+import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -172,8 +173,9 @@ public class AndroidPaymentApp extends PaymentApp implements WindowAndroid.Inten
 
         mIsReadyToPayIntent.putExtras(WebPaymentIntentHelper.buildExtras(null /* id */,
                 null /* merchantName */, removeUrlScheme(origin), removeUrlScheme(iframeOrigin),
-                certificateChain, methodDataMap, null /* total */, null /* displayItems */,
-                null /* modifiers */));
+                certificateChain,
+                WebPaymentIntentHelperTypeConverter.fromMojoPaymentMethodDataMap(methodDataMap),
+                null /* total */, null /* displayItems */, null /* modifiers */));
 
         if (mBypassIsReadyToPayServiceInTest) {
             respondToIsReadyToPayQuery(true);
@@ -321,7 +323,11 @@ public class AndroidPaymentApp extends PaymentApp implements WindowAndroid.Inten
         }
 
         mPayIntent.putExtras(WebPaymentIntentHelper.buildExtras(id, merchantName, origin,
-                iframeOrigin, certificateChain, methodDataMap, total, displayItems, modifiers));
+                iframeOrigin, certificateChain,
+                WebPaymentIntentHelperTypeConverter.fromMojoPaymentMethodDataMap(methodDataMap),
+                WebPaymentIntentHelperTypeConverter.fromMojoPaymentItem(total),
+                WebPaymentIntentHelperTypeConverter.fromMojoPaymentItems(displayItems),
+                WebPaymentIntentHelperTypeConverter.fromMojoPaymentDetailsModifierMap(modifiers)));
         try {
             if (!window.showIntent(mPayIntent, this, R.string.payments_android_app_error)) {
                 notifyErrorInvokingPaymentApp(ErrorStrings.PAYMENT_APP_LAUNCH_FAIL);

@@ -7,7 +7,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
-#include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_stream_background.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -31,13 +31,7 @@ class TestFeedNetwork : public FeedNetwork {
 class FeedStreamTest : public testing::Test {
  public:
   void SetUp() override {
-    feed::RegisterProfilePrefs(profile_prefs_.registry());
-    // TODO(harringtond): Use the feed shared prefs registration function
-    // when it exists.
-    profile_prefs_.registry()->RegisterBooleanPref(prefs::kEnableSnippets,
-                                                   true);
-    profile_prefs_.registry()->RegisterBooleanPref(prefs::kArticlesListVisible,
-                                                   true);
+    feed::prefs::RegisterFeedSharedProfilePrefs(profile_prefs_.registry());
 
     stream_ = std::make_unique<FeedStream>(
         &profile_prefs_, &network_, &clock_, &tick_clock_,

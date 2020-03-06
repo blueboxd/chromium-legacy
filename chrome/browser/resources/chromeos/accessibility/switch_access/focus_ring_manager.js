@@ -43,17 +43,6 @@ class FocusRingManager {
      * characters (ignoring case).
      */
     this.colorPattern_ = /^#[0-9A-F]{3,8}$/i;
-
-    /**
-     * Reference to the menu panel object.
-     * @private {PanelInterface}
-     */
-    this.menuPanel_;
-  }
-
-  /** @param {!PanelInterface} panel */
-  setMenuPanel(panel) {
-    this.menuPanel_ = panel;
   }
 
   /**
@@ -87,10 +76,8 @@ class FocusRingManager {
     }
 
     if (primary instanceof BackButtonNode) {
-      // TODO(anastasi): Use standard focus rings.
-      if (this.menuPanel_) {
-        this.menuPanel_.setFocusRing(SAConstants.BACK_ID, true);
-      }
+      MenuManager.requestBackButtonFocusChange(true);
+
       this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [];
       // Clear the dashed ring between transitions, as the animation is
       // distracting.
@@ -100,8 +87,8 @@ class FocusRingManager {
       this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [group.location];
       this.updateFocusRings_();
       return;
-    } else if (this.menuPanel_) {
-      this.menuPanel_.setFocusRing(SAConstants.BACK_ID, false);
+    } else {
+      MenuManager.requestBackButtonFocusChange(false);
     }
 
     // If the primary node is a group, show its first child as the "next" focus.

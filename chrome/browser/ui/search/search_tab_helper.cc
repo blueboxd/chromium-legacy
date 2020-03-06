@@ -635,16 +635,9 @@ void SearchTabHelper::QueryAutocomplete(const base::string16& input,
     return;
 
   if (!autocomplete_controller_) {
-    int providers = AutocompleteProvider::TYPE_BOOKMARK |
-                    AutocompleteProvider::TYPE_BUILTIN |
-                    AutocompleteProvider::TYPE_HISTORY_QUICK |
-                    AutocompleteProvider::TYPE_HISTORY_URL |
-                    AutocompleteProvider::TYPE_SEARCH |
-                    AutocompleteProvider::TYPE_ZERO_SUGGEST |
-                    AutocompleteProvider::TYPE_ZERO_SUGGEST_LOCAL_HISTORY;
     autocomplete_controller_ = std::make_unique<AutocompleteController>(
         std::make_unique<ChromeAutocompleteProviderClient>(profile()), this,
-        providers);
+        AutocompleteClassifier::DefaultOmniboxProviders());
   }
 
   if (time_of_first_autocomplete_query_.is_null() && !input.empty())

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/enterprise_reporting/profile_report_generator.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -23,6 +25,8 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "extensions/common/extension_urls.h"
+
+namespace em = enterprise_management;
 
 namespace enterprise_reporting {
 namespace {

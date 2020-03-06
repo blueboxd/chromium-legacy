@@ -18812,6 +18812,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SessionCrashedInfobarClose">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <description>
+    Logged when user taps on close button that dismisses tab restoration UI when
+    the app was relaunched after the crash. iOS only.
+  </description>
+</action>
+
+<action name="SessionCrashedInfobarRestore">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <description>
+    Logged when user taps on Restore button that restores tabs when the app was
+    relaunched after the crash. iOS only.
+  </description>
+</action>
+
 <action name="Settings.Searching">
   <owner>dschuyler@chromium.org</owner>
   <description>

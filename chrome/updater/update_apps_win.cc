@@ -10,11 +10,11 @@
 
 namespace updater {
 
-std::unique_ptr<UpdateService> CreateUpdateService() {
+std::unique_ptr<UpdateService> CreateUpdateService(
+    scoped_refptr<update_client::Configurator> config) {
   // TODO(crbug.com/1048653): Try to connect to an existing OOP service. For
   // now, run an in-process service.
-  return std::make_unique<UpdateServiceInProcess>(
-      base::MakeRefCounted<Configurator>());
+  return std::make_unique<UpdateServiceInProcess>(config);
 }
 
 }  // namespace updater

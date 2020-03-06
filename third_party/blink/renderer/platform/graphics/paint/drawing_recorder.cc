@@ -31,9 +31,6 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
           context_.GetPaintController().NewDisplayItemList().size())
 #endif
 {
-  if (context.GetPaintController().DisplayItemConstructionIsDisabled())
-    return;
-
   // Must check DrawingRecorder::UseCachedDrawingIfPossible before creating the
   // DrawingRecorder.
   DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
@@ -43,11 +40,19 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
 
   context.SetInDrawingRecorder(true);
   context.BeginRecording(FloatRect());
+
+  if (context.Printing()) {
+    DOMNodeId dom_node_id = display_item_client.OwnerNodeId();
+    if (dom_node_id != kInvalidDOMNodeId) {
+      dom_node_id_to_restore_ = context.GetDOMNodeId();
+      context.SetDOMNodeId(dom_node_id);
+    }
+  }
 }
 
 DrawingRecorder::~DrawingRecorder() {
-  if (context_.GetPaintController().DisplayItemConstructionIsDisabled())
-    return;
+  if (context_.Printing() && dom_node_id_to_restore_)
+    context_.SetDOMNodeId(dom_node_id_to_restore_.value());
 
   context_.SetInDrawingRecorder(false);
 

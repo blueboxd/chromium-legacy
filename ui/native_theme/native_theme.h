@@ -346,7 +346,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Return a color from the system theme.
   virtual SkColor GetSystemColor(
       ColorId color_id,
-      ColorScheme color_scheme = ColorScheme::kDefault) const = 0;
+      ColorScheme color_scheme = ColorScheme::kDefault) const;
 
   // Returns a shared instance of the native theme that should be used for web
   // rendering. Do not use it in a normal application context (i.e. browser).
@@ -358,6 +358,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   // Returns a shared instance of the default native theme for native UI.
   static NativeTheme* GetInstanceForNativeUi();
+
+  // Returns a shared instance of the native theme for incognito UI.
+  static NativeTheme* GetInstanceForDarkUI();
 
   // Add or remove observers to be notified when the native theme changes.
   void AddObserver(NativeThemeObserver* observer);
@@ -405,7 +408,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   void set_preferred_color_scheme(PreferredColorScheme preferred_color_scheme) {
     preferred_color_scheme_ = preferred_color_scheme;
   }
-
   void set_system_colors(const std::map<SystemThemeColor, SkColor>& colors);
 
   // Updates the state of dark mode, high contrast, preferred color scheme,
@@ -417,7 +419,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
       const base::flat_map<SystemThemeColor, uint32_t>& colors);
 
  protected:
-  NativeTheme();
+  explicit NativeTheme(bool should_only_use_dark_colors);
   virtual ~NativeTheme();
 
   // Whether high contrast is forced via command-line flag.
@@ -439,6 +441,11 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Note, if the preferred color scheme is based on dark mode, it will never
   // be set to no-preference.
   virtual PreferredColorScheme CalculatePreferredColorScheme() const;
+
+  // A function to be called by native theme instances that need to set state
+  // or listeners with the webinstance in order to provide correct native
+  // platform behaviors.
+  virtual void ConfigureWebInstance() {}
 
   // Allows one native theme to observe changes in another. For example, the
   // web native theme for Windows observes the corresponding ui native theme in

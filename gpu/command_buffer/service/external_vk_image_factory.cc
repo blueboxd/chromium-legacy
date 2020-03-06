@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/external_vk_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
@@ -18,12 +19,59 @@
 
 namespace gpu {
 
+namespace {
+
+VkImageUsageFlags GetMaximalImageUsageFlags(
+    VkFormatFeatureFlags feature_flags) {
+  VkImageUsageFlags usage_flags = 0;
+  if (feature_flags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)
+    usage_flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+  if (feature_flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)
+    usage_flags |= VK_IMAGE_USAGE_STORAGE_BIT;
+  if (feature_flags & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT)
+    usage_flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  if (feature_flags & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+    usage_flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+  if (feature_flags & VK_FORMAT_FEATURE_TRANSFER_SRC_BIT)
+    usage_flags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+  if (feature_flags & VK_FORMAT_FEATURE_TRANSFER_DST_BIT)
+    usage_flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+  usage_flags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+  return usage_flags;
+}
+
+VulkanImageUsageCache CreateImageUsageCache(
+    VkPhysicalDevice vk_physical_device) {
+  VulkanImageUsageCache image_usage_cache = {};
+
+  for (int i = 0; i <= static_cast<int>(viz::RESOURCE_FORMAT_MAX); ++i) {
+    viz::ResourceFormat format = static_cast<viz::ResourceFormat>(i);
+    if (!viz::HasVkFormat(format))
+      continue;
+    VkFormat vk_format = viz::ToVkFormat(format);
+    DCHECK_NE(vk_format, VK_FORMAT_UNDEFINED);
+    VkFormatProperties format_props = {};
+    vkGetPhysicalDeviceFormatProperties(vk_physical_device, vk_format,
+                                        &format_props);
+    image_usage_cache.optimal_tiling_usage[format] =
+        GetMaximalImageUsageFlags(format_props.optimalTilingFeatures);
+  }
+
+  return image_usage_cache;
+}
+
+}  // namespace
+
 ExternalVkImageFactory::ExternalVkImageFactory(
     SharedContextState* context_state)
     : context_state_(context_state),
       command_pool_(context_state_->vk_context_provider()
                         ->GetDeviceQueue()
-                        ->CreateCommandPool()) {}
+                        ->CreateCommandPool()),
+      image_usage_cache_(
+          CreateImageUsageCache(context_state_->vk_context_provider()
+                                    ->GetDeviceQueue()
+                                    ->GetVulkanPhysicalDevice())) {}
 
 ExternalVkImageFactory::~ExternalVkImageFactory() {
   if (command_pool_) {
@@ -43,9 +91,9 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     uint32_t usage,
     bool is_thread_safe) {
   DCHECK(!is_thread_safe);
-  return ExternalVkImageBacking::Create(context_state_, command_pool_.get(),
-                                        mailbox, format, size, color_space,
-                                        usage, base::span<const uint8_t>());
+  return ExternalVkImageBacking::Create(
+      context_state_, command_pool_.get(), mailbox, format, size, color_space,
+      usage, &image_usage_cache_, base::span<const uint8_t>());
 }
 
 std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
@@ -57,7 +105,7 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     base::span<const uint8_t> pixel_data) {
   return ExternalVkImageBacking::Create(context_state_, command_pool_.get(),
                                         mailbox, format, size, color_space,
-                                        usage, pixel_data);
+                                        usage, &image_usage_cache_, pixel_data);
 }
 
 std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
@@ -72,7 +120,7 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
   DCHECK(CanImportGpuMemoryBuffer(handle.type));
   return ExternalVkImageBacking::CreateFromGMB(
       context_state_, command_pool_.get(), mailbox, std::move(handle),
-      buffer_format, size, color_space, usage);
+      buffer_format, size, color_space, usage, &image_usage_cache_);
 }
 
 bool ExternalVkImageFactory::CanImportGpuMemoryBuffer(

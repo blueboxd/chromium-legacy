@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -31,9 +32,11 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/common/web_application_info.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -224,6 +227,42 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, DesktopPWAsOpenLinksInApp) {
   NavigateToURLAndWait(app_browser, app_url);
   ASSERT_TRUE(app_browser->app_controller());
   NavigateAndCheckForToolbar(app_browser, GURL(kExampleURL), true);
+}
+
+// Tests that desktop PWAs open links in a new tab at the end of the tabstrip of
+// the last active browser.
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, DesktopPWAsOpenLinksInNewTab) {
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL app_url = GetSecureAppURL();
+  const AppId app_id = InstallPWA(app_url);
+  Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
+  NavigateToURLAndWait(app_browser, app_url);
+  ASSERT_TRUE(app_browser->app_controller());
+
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 2u);
+  Browser* browser2 = CreateBrowser(app_browser->profile());
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 3u);
+
+  TabStripModel* model2 = browser2->tab_strip_model();
+  chrome::AddTabAt(browser2, GURL(), -1, true);
+  EXPECT_EQ(model2->count(), 2);
+  model2->SelectPreviousTab();
+  EXPECT_EQ(model2->active_index(), 0);
+
+  NavigateParams param(app_browser, GURL("http://www.google.com/"),
+                       ui::PAGE_TRANSITION_LINK);
+  param.window_action = NavigateParams::SHOW_WINDOW;
+  param.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+
+  ui_test_utils::NavigateToURL(&param);
+
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 3u);
+  EXPECT_EQ(model2->count(), 3);
+  EXPECT_EQ(param.browser, browser2);
+  EXPECT_EQ(model2->active_index(), 2);
+  EXPECT_EQ(param.navigated_or_inserted_contents,
+            model2->GetActiveWebContents());
 }
 
 // Tests that desktop PWAs are opened at the correct size.

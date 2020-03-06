@@ -117,6 +117,15 @@ bool HasUnsafeMiddleDot(const icu::UnicodeString& label_string,
   return false;
 }
 
+bool IsSubdomainOf(base::StringPiece16 hostname,
+                   const base::string16& top_domain) {
+  DCHECK_NE(hostname, top_domain);
+  DCHECK(!hostname.empty());
+  DCHECK(!top_domain.empty());
+  return base::EndsWith(hostname, base::ASCIIToUTF16(".") + top_domain,
+                        base::CompareCase::INSENSITIVE_ASCII);
+}
+
 #include "components/url_formatter/spoof_checks/top_domains/domains-trie-inc.cc"
 
 // All the domains in the above file have 4 or fewer labels.
@@ -508,6 +517,15 @@ TopDomainEntry IDNSpoofChecker::GetSimilarTopDomain(
     DCHECK(!skeleton.empty());
     TopDomainEntry matching_top_domain = LookupSkeletonInTopDomains(skeleton);
     if (!matching_top_domain.domain.empty()) {
+      const base::string16 top_domain =
+          base::UTF8ToUTF16(matching_top_domain.domain);
+      // Return an empty result if hostname is a top domain itself, or a
+      // subdomain of top domain. This prevents subdomains of top domains from
+      // being marked as spoofs. Without this check, éxample.blogspot.com
+      // would return blogspot.com and treated as a top domain lookalike.
+      if (hostname == top_domain || IsSubdomainOf(hostname, top_domain)) {
+        return TopDomainEntry();
+      }
       return matching_top_domain;
     }
   }

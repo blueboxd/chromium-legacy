@@ -73,36 +73,6 @@ TEST_F(PageNodeImplTest, RemoveFrame) {
   EXPECT_EQ(0u, GraphImplOperations::GetFrameNodes(page_node.get()).size());
 }
 
-TEST_F(PageNodeImplTest, CalculatePageCPUUsageForSinglePageInSingleProcess) {
-  MockSinglePageInSingleProcessGraph mock_graph(graph());
-  mock_graph.process->SetCPUUsage(40);
-  EXPECT_EQ(40, mock_graph.page->GetCPUUsage());
-}
-
-TEST_F(PageNodeImplTest, CalculatePageCPUUsageForMultiplePagesInSingleProcess) {
-  MockMultiplePagesInSingleProcessGraph mock_graph(graph());
-  mock_graph.process->SetCPUUsage(40);
-  EXPECT_EQ(20, mock_graph.page->GetCPUUsage());
-  EXPECT_EQ(20, mock_graph.other_page->GetCPUUsage());
-}
-
-TEST_F(PageNodeImplTest,
-       CalculatePageCPUUsageForSinglePageWithMultipleProcesses) {
-  MockSinglePageWithMultipleProcessesGraph mock_graph(graph());
-  mock_graph.process->SetCPUUsage(40);
-  mock_graph.other_process->SetCPUUsage(30);
-  EXPECT_EQ(70, mock_graph.page->GetCPUUsage());
-}
-
-TEST_F(PageNodeImplTest,
-       CalculatePageCPUUsageForMultiplePagesWithMultipleProcesses) {
-  MockMultiplePagesWithMultipleProcessesGraph mock_graph(graph());
-  mock_graph.process->SetCPUUsage(40);
-  mock_graph.other_process->SetCPUUsage(30);
-  EXPECT_EQ(20, mock_graph.page->GetCPUUsage());
-  EXPECT_EQ(50, mock_graph.other_page->GetCPUUsage());
-}
-
 TEST_F(PageNodeImplTest, TimeSinceLastVisibilityChange) {
   MockSinglePageInSingleProcessGraph mock_graph(graph());
 

@@ -454,7 +454,7 @@ size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
 
 quic::ParsedQuicVersionVector GetQuicVersions(
     const VariationParameters& quic_trial_params) {
-  return net::ParseQuicVersions(
+  return quic::ParseQuicVersionVectorString(
       GetVariationParam(quic_trial_params, "quic_version"));
 }
 
@@ -646,8 +646,9 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
     }
 
     if (command_line.HasSwitch(switches::kQuicVersion)) {
-      quic::ParsedQuicVersionVector supported_versions = net::ParseQuicVersions(
-          command_line.GetSwitchValueASCII(switches::kQuicVersion));
+      quic::ParsedQuicVersionVector supported_versions =
+          quic::ParseQuicVersionVectorString(
+              command_line.GetSwitchValueASCII(switches::kQuicVersion));
       if (!supported_versions.empty())
         quic_params->supported_versions = supported_versions;
     }

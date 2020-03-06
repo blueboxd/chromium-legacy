@@ -397,8 +397,6 @@ void RemoteSuggestionsProviderImpl::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kRemoteSuggestionCategories);
   registry->RegisterInt64Pref(prefs::kLastSuccessfulBackgroundFetchTime, 0);
-
-  RemoteSuggestionsStatusServiceImpl::RegisterProfilePrefs(registry);
 }
 
 void RemoteSuggestionsProviderImpl::ReloadSuggestions() {

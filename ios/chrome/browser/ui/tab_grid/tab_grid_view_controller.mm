@@ -378,7 +378,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (base::FeatureList::IsEnabled(kContainedBVC)) {
     [self.incognitoTabsViewController contentWillAppearAnimated:animated];
     [self.regularTabsViewController contentWillAppearAnimated:animated];
-    self.remoteTabsViewController.preventUpdates = NO;
   }
 }
 
@@ -406,7 +405,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (base::FeatureList::IsEnabled(kContainedBVC)) {
     [self.incognitoTabsViewController contentWillDisappear];
     [self.regularTabsViewController contentWillDisappear];
-    self.remoteTabsViewController.preventUpdates = YES;
   }
 }
 

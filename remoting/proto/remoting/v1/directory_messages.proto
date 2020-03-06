@@ -72,8 +72,16 @@ message HeartbeatRequest {
 
 // Sent in response to a HeartbeatRequest.
 message HeartbeatResponse {
+  enum RemoteCommand {
+    REMOTE_COMMAND_UNSPECIFIED = 0;
+    RESTART_HOST = 1;
+  }
+
   // The amount of time to wait before the host should send its next update.
   optional int32 set_interval_seconds = 1;
+
+  // Command to execute upon reception of the heartbeat response.
+  optional RemoteCommand remote_command = 2;
 }
 
 // Requests that a new host entry to added to the Directory.

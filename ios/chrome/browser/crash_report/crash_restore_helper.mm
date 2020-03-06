@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
@@ -179,6 +181,7 @@ base::string16 SessionCrashedInfoBarDelegate::GetButtonLabel(
 }
 
 bool SessionCrashedInfoBarDelegate::Accept() {
+  base::RecordAction(base::UserMetricsAction("SessionCrashedInfobarRestore"));
   NSTimeInterval duration =
       [NSDate timeIntervalSinceReferenceDate] - delegate_creation_time_;
   [ConfirmInfobarMetricsRecorder
@@ -194,6 +197,7 @@ bool SessionCrashedInfoBarDelegate::Accept() {
 }
 
 void SessionCrashedInfoBarDelegate::InfoBarDismissed() {
+  base::RecordAction(base::UserMetricsAction("SessionCrashedInfobarClose"));
   [ConfirmInfobarMetricsRecorder
       recordConfirmInfobarEvent:MobileMessagesConfirmInfobarEvents::Dismissed
           forInfobarConfirmType:InfobarConfirmType::kInfobarConfirmTypeRestore];

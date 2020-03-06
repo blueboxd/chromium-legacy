@@ -483,11 +483,6 @@ void EnqueueEvent(const AtomicString& type,
                                                WrapWeakPersistent(&document)));
 }
 
-void DidEnterFullscreenTask(Document* document) {
-  DCHECK(document);
-  Fullscreen::DidEnterFullscreen(*document);
-}
-
 }  // anonymous namespace
 
 const char Fullscreen::kSupplementName[] = "Fullscreen";
@@ -663,14 +658,19 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
   return promise;
 }
 
-void Fullscreen::DidEnterFullscreen(Document& document) {
+void Fullscreen::DidResolveEnterFullscreenRequest(Document& document,
+                                                  bool granted) {
   // We may be called synchronously from within
   // |FullscreenController::EnterFullscreen()| if we were already fullscreen,
   // but must still not synchronously change the fullscreen element. Instead
   // enqueue a microtask to continue.
   if (RequestFullscreenScope::RunningRequestFullscreen()) {
-    Microtask::EnqueueMicrotask(
-        WTF::Bind(DidEnterFullscreenTask, WrapPersistent(&document)));
+    Microtask::EnqueueMicrotask(WTF::Bind(
+        [](Document* document, bool granted) {
+          DCHECK(document);
+          DidResolveEnterFullscreenRequest(*document, granted);
+        },
+        WrapPersistent(&document), granted));
     return;
   }
 
@@ -678,7 +678,7 @@ void Fullscreen::DidEnterFullscreen(Document& document) {
   requests.swap(From(document).pending_requests_);
   for (const Member<PendingRequest>& request : requests) {
     ContinueRequestFullscreen(document, *request->element(), request->type(),
-                              request->resolver(), false /* error */);
+                              request->resolver(), !granted);
   }
 }
 

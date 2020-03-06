@@ -6,15 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_STATUS_COLLECTOR_CHILD_ACTIVITY_STORAGE_H_
 
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/status_collector/activity_storage.h"
-
-namespace base {
-class DictionaryValue;
-}
+#include "chrome/browser/chromeos/policy/status_collector/interval_map.h"
 
 class PrefService;
 
@@ -39,7 +35,7 @@ class ChildActivityStorage : public ActivityStorage {
   void AddActivityPeriod(base::Time start, base::Time end, base::Time now);
 
   // Returns the list of stored activity periods.
-  std::vector<ActivityStorage::ActivityPeriod> GetStoredActivityPeriods();
+  IntervalMap<int64_t, Period> GetStoredActivityPeriods();
 
  private:
   // Uses the PrefService to store child screen time.

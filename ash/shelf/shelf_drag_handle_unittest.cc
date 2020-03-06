@@ -220,4 +220,64 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownOnTap) {
                   ->has_hide_drag_handle_timer_for_testing());
 }
 
+// Tests that the drag handle nudge is horizontally centered in screen, and
+// drawn above the shelf drag handle, even after display bounds are updated.
+TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeBoundsInScreen) {
+  UpdateDisplay("675x1200");
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+
+  ShelfWidget* const shelf_widget = GetShelfWidget();
+  DragHandle* const drag_handle = shelf_widget->GetDragHandle();
+
+  EXPECT_TRUE(drag_handle->GetVisible());
+  ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
+  drag_handle->fire_show_drag_handle_timer_for_testing();
+  EXPECT_TRUE(drag_handle->ShowingNudge());
+
+  // Calculates absolute difference between horizontal margins of |inner| rect
+  // within |outer| rect.
+  auto margin_diff = [](const gfx::Rect& inner, const gfx::Rect& outer) -> int {
+    const int left = inner.x() - outer.x();
+    EXPECT_GE(left, 0);
+
+    const int right = outer.right() - inner.right();
+    EXPECT_GE(right, 0);
+
+    return std::abs(left - right);
+  };
+
+  // Verify that nudge widget is centered in shelf.
+  gfx::Rect shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
+  gfx::Rect nudge_bounds = drag_handle->drag_handle_nudge_for_testing()
+                               ->label()
+                               ->GetBoundsInScreen();
+  EXPECT_LE(margin_diff(nudge_bounds, shelf_bounds), 1);
+
+  // Verify that the nudge vertical bounds - within the shelf bounds, and above
+  // the drag handle.
+  gfx::Rect drag_handle_bounds = drag_handle->GetBoundsInScreen();
+  EXPECT_LE(shelf_bounds.y(), nudge_bounds.y());
+  EXPECT_LE(nudge_bounds.bottom(), drag_handle_bounds.y());
+
+  // Change the display bounds, and verify the updated drag handle bounds.
+  UpdateDisplay("1200x675");
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+
+  // Verify that nudge widget is centered in shelf.
+  shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
+  nudge_bounds = drag_handle->drag_handle_nudge_for_testing()
+                     ->label()
+                     ->GetBoundsInScreen();
+  EXPECT_LE(margin_diff(nudge_bounds, shelf_bounds), 1);
+
+  // Verify that the nudge vertical bounds - within the shelf bounds, and above
+  // the drag handle.
+  drag_handle_bounds = drag_handle->GetBoundsInScreen();
+  EXPECT_LE(shelf_bounds.y(), nudge_bounds.y());
+  EXPECT_LE(nudge_bounds.bottom(), drag_handle_bounds.y());
+}
+
 }  // namespace ash

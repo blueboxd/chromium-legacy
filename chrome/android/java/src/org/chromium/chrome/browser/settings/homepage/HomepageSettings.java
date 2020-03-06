@@ -48,6 +48,8 @@ public class HomepageSettings extends PreferenceFragmentCompat {
         }
     }
 
+    private static boolean sIsHomeButtonOnBottomToolbar;
+
     private HomepageManager mHomepageManager;
     private Preference mHomepageEdit;
     private RadioButtonGroupHomepagePreference mRadioButtons;
@@ -75,7 +77,7 @@ public class HomepageSettings extends PreferenceFragmentCompat {
         setupPreferenceVisibility();
 
         // Set up listeners and update the page.
-        if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
+        if (isHomeButtonOnBottomToolbar()) {
             homepageSwitch.setVisible(false);
         } else {
             boolean isHomepageEnabled = HomepageManager.isHomepageEnabled();
@@ -111,8 +113,6 @@ public class HomepageSettings extends PreferenceFragmentCompat {
         mHomepageEdit.setVisible(!useNewUI);
 
         mRadioButtons.setVisible(useNewUI);
-        mTextManaged.setVisible(useNewUI && BottomToolbarVariationManager.isHomeButtonOnBottom()
-                && HomepagePolicyManager.isHomepageManagedByPolicy());
     }
 
     /**
@@ -120,11 +120,9 @@ public class HomepageSettings extends PreferenceFragmentCompat {
      */
     private void updatePreferenceState() {
         boolean isManagedByPolicy = HomepagePolicyManager.isHomepageManagedByPolicy();
+        mTextManaged.setVisible(isManagedByPolicy && isHomeButtonOnBottomToolbar());
 
         if (isHomepageSettingsUIConversionEnabled()) {
-            mTextManaged.setVisible(
-                    isManagedByPolicy && BottomToolbarVariationManager.isHomeButtonOnBottom());
-
             if (mRadioButtons != null) {
                 mRadioButtons.setupPreferenceValues(createPreferenceValuesForRadioGroup());
             }
@@ -136,6 +134,15 @@ public class HomepageSettings extends PreferenceFragmentCompat {
 
     private boolean isHomepageSettingsUIConversionEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION);
+    }
+
+    private boolean isHomeButtonOnBottomToolbar() {
+        return sIsHomeButtonOnBottomToolbar || BottomToolbarVariationManager.isHomeButtonOnBottom();
+    }
+
+    @VisibleForTesting
+    public static void setIsHomeButtonOnBottomToolbar(boolean isOnBottom) {
+        sIsHomeButtonOnBottomToolbar = isOnBottom;
     }
 
     @Override

@@ -45,8 +45,8 @@ void NativeTheme::NotifyObservers() {
     observer.OnNativeThemeUpdated(this);
 }
 
-NativeTheme::NativeTheme()
-    : should_use_dark_colors_(IsForcedDarkMode()),
+NativeTheme::NativeTheme(bool should_use_dark_colors)
+    : should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
       is_high_contrast_(IsForcedHighContrast()),
       preferred_color_scheme_(CalculatePreferredColorScheme()) {}
 

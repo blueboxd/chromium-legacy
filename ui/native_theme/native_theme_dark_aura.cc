@@ -28,8 +28,8 @@ NativeTheme::PreferredColorScheme NativeThemeDarkAura::GetPreferredColorScheme()
   return NativeTheme::PreferredColorScheme::kDark;
 }
 
-NativeThemeDarkAura::NativeThemeDarkAura() : NativeThemeAura(false) {}
+NativeThemeDarkAura::NativeThemeDarkAura() : NativeThemeAura(false, true) {}
 
-NativeThemeDarkAura::~NativeThemeDarkAura() {}
+NativeThemeDarkAura::~NativeThemeDarkAura() = default;
 
 }  // namespace ui

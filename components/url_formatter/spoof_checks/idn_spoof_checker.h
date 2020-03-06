@@ -68,8 +68,9 @@ class IDNSpoofChecker {
                               base::StringPiece16 top_level_domain_unicode);
 
   // Returns the matching top domain if |hostname| or the last few components of
-  // |hostname| looks similar to one of top domains listed i
-  // top_domains/alexa_domains.list.
+  // |hostname| looks similar to one of top domains listed in domains.list.
+  // Returns empty result if |hostname| is a top domain itself, or is a
+  // subdomain of a top domain.
   // Two checks are done:
   //   1. Calculate the skeleton of |hostname| based on the Unicode confusable
   //   character list and look it up in the pre-calculated skeleton list of

@@ -200,7 +200,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   IntRect InterestRect();
   bool PaintRecursively();
   // Returns true if this layer is repainted.
-  bool Paint(GraphicsContext::DisabledMode = GraphicsContext::kNothingDisabled);
+  bool Paint();
 
   PaintController& GetPaintController() const;
 
@@ -265,9 +265,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   void UpdateSafeOpaqueBackgroundColor();
 
   // Returns true if PaintController::PaintArtifact() changed and needs commit.
-  bool PaintWithoutCommit(
-      GraphicsContext::DisabledMode = GraphicsContext::kNothingDisabled,
-      const IntRect* interest_rect = nullptr);
+  bool PaintWithoutCommit(const IntRect* interest_rect = nullptr);
 
   // Adds a child without calling NotifyChildListChange(), so that adding
   // children can be batched before updating.

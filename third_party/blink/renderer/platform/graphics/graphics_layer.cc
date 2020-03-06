@@ -308,7 +308,7 @@ void GraphicsLayer::PaintRecursivelyInternal(
     child->PaintRecursivelyInternal(repainted_layers);
 }
 
-bool GraphicsLayer::Paint(GraphicsContext::DisabledMode disabled_mode) {
+bool GraphicsLayer::Paint() {
 #if !DCHECK_IS_ON()
   // TODO(crbug.com/853096): Investigate why we can ever reach here without
   // a valid layer state. Seems to only happen on Android builds.
@@ -316,7 +316,7 @@ bool GraphicsLayer::Paint(GraphicsContext::DisabledMode disabled_mode) {
     return false;
 #endif
 
-  if (PaintWithoutCommit(disabled_mode)) {
+  if (PaintWithoutCommit()) {
     GetPaintController().CommitNewDisplayItems();
     UpdateSafeOpaqueBackgroundColor();
   } else if (!needs_check_raster_invalidation_) {
@@ -366,13 +366,10 @@ void GraphicsLayer::UpdateSafeOpaqueBackgroundColor() {
 
 bool GraphicsLayer::PaintWithoutCommitForTesting(
     const base::Optional<IntRect>& interest_rect) {
-  return PaintWithoutCommit(GraphicsContext::kNothingDisabled,
-                            base::OptionalOrNullptr(interest_rect));
+  return PaintWithoutCommit(base::OptionalOrNullptr(interest_rect));
 }
 
-bool GraphicsLayer::PaintWithoutCommit(
-    GraphicsContext::DisabledMode disabled_mode,
-    const IntRect* interest_rect) {
+bool GraphicsLayer::PaintWithoutCommit(const IntRect* interest_rect) {
   DCHECK(PaintsContentOrHitTest());
 
   if (client_.ShouldThrottleRendering() || client_.IsUnderSVGHiddenContainer())
@@ -393,7 +390,7 @@ bool GraphicsLayer::PaintWithoutCommit(
     return false;
   }
 
-  GraphicsContext context(GetPaintController(), disabled_mode, nullptr);
+  GraphicsContext context(GetPaintController());
   DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
   GetPaintController().UpdateCurrentPaintChunkProperties(nullptr,
                                                          layer_state_->state);
@@ -788,8 +785,6 @@ scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
   TRACE_EVENT0("blink,benchmark", "GraphicsLayer::PaintContents");
 
   PaintController& paint_controller = GetPaintController();
-  paint_controller.SetDisplayItemConstructionIsDisabled(
-      painting_control == DISPLAY_LIST_CONSTRUCTION_DISABLED);
   paint_controller.SetSubsequenceCachingIsDisabled(
       painting_control == SUBSEQUENCE_CACHING_DISABLED);
 
@@ -799,23 +794,15 @@ scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
   // We also disable caching when Painting or Construction are disabled. In both
   // cases we would like to compare assuming the full cost of recording, not the
   // cost of re-using cached content.
-  if (painting_control == DISPLAY_LIST_CACHING_DISABLED ||
-      painting_control == DISPLAY_LIST_PAINTING_DISABLED ||
-      painting_control == DISPLAY_LIST_CONSTRUCTION_DISABLED)
+  if (painting_control == DISPLAY_LIST_CACHING_DISABLED)
     paint_controller.InvalidateAll();
-
-  GraphicsContext::DisabledMode disabled_mode =
-      GraphicsContext::kNothingDisabled;
-  if (painting_control == DISPLAY_LIST_PAINTING_DISABLED ||
-      painting_control == DISPLAY_LIST_CONSTRUCTION_DISABLED)
-    disabled_mode = GraphicsContext::kFullyDisabled;
 
   // Anything other than PAINTING_BEHAVIOR_NORMAL is for testing. In non-testing
   // scenarios, it is an error to call GraphicsLayer::Paint. Actual painting
   // occurs in LocalFrameView::PaintTree() which calls GraphicsLayer::Paint();
   // this method merely copies the painted output to the cc::DisplayItemList.
   if (painting_control != PAINTING_BEHAVIOR_NORMAL)
-    Paint(disabled_mode);
+    Paint();
 
   auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
 
@@ -826,7 +813,6 @@ scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
       VisualRectSubpixelOffset(),
       paint_controller.GetPaintArtifact().GetDisplayItemList(), *display_list);
 
-  paint_controller.SetDisplayItemConstructionIsDisabled(false);
   paint_controller.SetSubsequenceCachingIsDisabled(false);
 
   display_list->Finalize();

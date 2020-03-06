@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.payments.PaymentManifestVerifier.ManifestVeri
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
+import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.url.URI;

@@ -64,9 +64,6 @@ class RegistryLogger {
   // object.
   void ClearScanTimes();
 
-  // Write the scan time of PUP with ID |pup_id| to the key specified by |mode|.
-  void WriteScanTime(UwSId pup_id, const base::TimeDelta& scan_time);
-
   // Write |memory_usage_kb| to the key specified by |mode|. |memory_used_kb|
   // must be given in units of KBs.
   void WriteMemoryUsage(size_t memory_used_kb);

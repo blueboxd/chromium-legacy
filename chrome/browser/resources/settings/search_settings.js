@@ -22,7 +22,7 @@ cr.define('settings', function() {
    *   wasClearSearch: Boolean,
    * }}
    */
-  let SearchResult;
+  /* #export */ let SearchResult;
 
   /**
    * A CSS attribute indicating that a node should be ignored during searching.

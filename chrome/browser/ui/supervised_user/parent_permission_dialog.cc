@@ -39,10 +39,8 @@ const gfx::ImageSkia& GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 signin::IdentityManager* test_identity_manager = nullptr;
 }  // namespace
 
-ParentPermissionDialog::ParentPermissionDialog(Profile* profile,
-                                               DoneCallback callback)
-    : profile_(profile), callback_(std::move(callback)) {
-  DCHECK(callback_);
+ParentPermissionDialog::ParentPermissionDialog(Profile* profile)
+    : profile_(profile) {
   DCHECK(profile_);
   DCHECK(profile_->IsChild());
 }
@@ -55,7 +53,10 @@ ParentPermissionDialog::~ParentPermissionDialog() {
 
 void ParentPermissionDialog::ShowPrompt(content::WebContents* web_contents,
                                         const base::string16& message,
-                                        const SkBitmap& icon) {
+                                        const SkBitmap& icon,
+                                        DoneCallback callback) {
+  callback_ = std::move(callback);
+  DCHECK(callback_);
   DCHECK(!web_contents_);
   web_contents_ = web_contents;
   message_ = message;
@@ -72,7 +73,10 @@ void ParentPermissionDialog::ShowPrompt(content::WebContents* web_contents,
 void ParentPermissionDialog::ShowPromptForExtensionInstallation(
     content::WebContents* web_contents,
     const extensions::Extension* extension,
-    const SkBitmap& fallback_icon) {
+    const SkBitmap& fallback_icon,
+    DoneCallback callback) {
+  callback_ = std::move(callback);
+  DCHECK(callback_);
   DCHECK(!web_contents_);
   web_contents_ = web_contents;
   extension_ = extension;

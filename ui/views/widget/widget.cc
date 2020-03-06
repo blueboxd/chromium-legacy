@@ -372,14 +372,8 @@ void Widget::Init(InitParams params) {
     SetContentsView(delegate->GetContentsView());
     SetInitialBoundsForFramelessWindow(bounds);
   }
-  // TODO(https://crbug.com/953978): Use GetNativeTheme() for all platforms.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
-  if (native_theme)
-    observer_manager_.Add(native_theme);
-#else
+
   observer_manager_.Add(GetNativeTheme());
-#endif
   native_widget_initialized_ = true;
   native_widget_->OnWidgetInitDone();
 

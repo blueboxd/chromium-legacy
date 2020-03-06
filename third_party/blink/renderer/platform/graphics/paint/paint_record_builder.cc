@@ -16,11 +16,6 @@ PaintRecordBuilder::PaintRecordBuilder(
     PaintController* paint_controller,
     paint_preview::PaintPreviewTracker* tracker)
     : paint_controller_(nullptr) {
-  GraphicsContext::DisabledMode disabled_mode =
-      GraphicsContext::kNothingDisabled;
-  if (containing_context && containing_context->ContextDisabled())
-    disabled_mode = GraphicsContext::kFullyDisabled;
-
   if (paint_controller) {
     paint_controller_ = paint_controller;
   } else {
@@ -32,8 +27,8 @@ PaintRecordBuilder::PaintRecordBuilder(
   paint_controller_->UpdateCurrentPaintChunkProperties(
       nullptr, PropertyTreeState::Root());
 
-  context_ = std::make_unique<GraphicsContext>(
-      *paint_controller_, disabled_mode, metafile, tracker);
+  context_ =
+      std::make_unique<GraphicsContext>(*paint_controller_, metafile, tracker);
   if (containing_context) {
     context_->SetDarkMode(containing_context->dark_mode_settings());
     context_->SetDeviceScaleFactor(containing_context->DeviceScaleFactor());

@@ -127,24 +127,20 @@ void HeartbeatSender::HeartbeatClientImpl::CancelPendingRequests() {
 
 // end of HeartbeatSender::HeartbeatClientImpl
 
-HeartbeatSender::HeartbeatSender(
-    base::OnceClosure on_heartbeat_successful_callback,
-    base::OnceClosure on_unknown_host_id_error,
-    base::OnceClosure on_auth_error,
-    const std::string& host_id,
-    SignalStrategy* signal_strategy,
-    OAuthTokenGetter* oauth_token_getter,
-    LogToServer* log_to_server)
-    : on_heartbeat_successful_callback_(
-          std::move(on_heartbeat_successful_callback)),
-      on_unknown_host_id_error_(std::move(on_unknown_host_id_error)),
-      on_auth_error_(std::move(on_auth_error)),
+HeartbeatSender::HeartbeatSender(Delegate* delegate,
+                                 const std::string& host_id,
+                                 SignalStrategy* signal_strategy,
+                                 OAuthTokenGetter* oauth_token_getter,
+                                 LogToServer* log_to_server)
+    : delegate_(delegate),
       host_id_(host_id),
       signal_strategy_(signal_strategy),
       client_(std::make_unique<HeartbeatClientImpl>(oauth_token_getter)),
       log_to_server_(log_to_server),
       oauth_token_getter_(oauth_token_getter),
       backoff_(&kBackoffPolicy) {
+  DCHECK(delegate_);
+  DCHECK(signal_strategy_);
   DCHECK(log_to_server_);
 
   signal_strategy_->AddListener(this);
@@ -257,12 +253,12 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (status.ok()) {
-    heartbeat_succeeded_ = true;
     backoff_.Reset();
 
     // Notify listener of the first successful heartbeat.
-    if (on_heartbeat_successful_callback_) {
-      std::move(on_heartbeat_successful_callback_).Run();
+    if (!initial_heartbeat_sent_) {
+      delegate_->OnFirstHeartbeatSuccessful();
+      initial_heartbeat_sent_ = true;
     }
 
     // Notify caller of SetHostOfflineReason that we got an ack and don't
@@ -270,6 +266,10 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
     if (!host_offline_reason_.empty()) {
       OnHostOfflineReasonAck();
       return;
+    }
+
+    if (response.has_remote_command()) {
+      OnRemoteCommand(response.remote_command());
     }
   } else {
     backoff_.InformOfRequest(false);
@@ -285,20 +285,16 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
   // get a "host ID not found" error, that's not a good enough reason to
   // exit.
   if (status.error_code() == grpc::StatusCode::NOT_FOUND &&
-      (heartbeat_succeeded_ ||
+      (initial_heartbeat_sent_ ||
        (backoff_.failure_count() > kMaxResendOnHostNotFoundCount))) {
-    if (on_unknown_host_id_error_) {
-      std::move(on_unknown_host_id_error_).Run();
-    }
+    delegate_->OnHostNotFound();
     return;
   }
 
   if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
     oauth_token_getter_->InvalidateCache();
     if (backoff_.failure_count() > kMaxResendOnUnauthenticatedCount) {
-      if (on_auth_error_) {
-        std::move(on_auth_error_).Run();
-      }
+      delegate_->OnAuthFailed();
       return;
     }
   }
@@ -334,6 +330,21 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
                          &HeartbeatSender::SendHeartbeat);
 }
 
+void HeartbeatSender::OnRemoteCommand(
+    apis::v1::HeartbeatResponse::RemoteCommand remote_command) {
+  HOST_LOG << "Received remote command: "
+           << apis::v1::HeartbeatResponse::RemoteCommand_Name(remote_command)
+           << "(" << remote_command << ")";
+  switch (remote_command) {
+    case apis::v1::HeartbeatResponse::RESTART_HOST:
+      delegate_->OnRemoteRestartHost();
+      break;
+    default:
+      LOG(WARNING) << "Unknown remote command: " << remote_command;
+      break;
+  }
+}
+
 apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -347,7 +358,7 @@ apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
   // Append host version.
   heartbeat.set_host_version(STRINGIZE(VERSION));
   // If we have not recorded a heartbeat success, continue sending host OS info.
-  if (!heartbeat_succeeded_) {
+  if (!initial_heartbeat_sent_) {
     // Append host OS name.
     heartbeat.set_host_os_name(GetHostOperatingSystemName());
     // Append host OS version.

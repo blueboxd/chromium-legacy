@@ -26,8 +26,6 @@ namespace net {
 class BackoffEntry;
 }  // namespace net
 
-namespace em = enterprise_management;
-
 namespace enterprise_reporting {
 
 // A class that is responsible for uploading multiple requests and retrying in

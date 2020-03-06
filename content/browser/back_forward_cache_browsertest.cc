@@ -1802,6 +1802,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebGL) {
                            FROM_HERE);
 }
 
+// Since blink::mojom::HidService binder is not added in
+// content/browser/browser_interface_binders.cc for Android, this test is not
+// applicable for this OS.
+#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebHID) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1835,6 +1839,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebHID) {
   ExpectBlocklistedFeature(
       blink::scheduler::WebSchedulerTrackedFeature::kWebHID, FROM_HERE);
 }
+#endif  // !defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        DoesNotCacheIfAcquiredWakeLock) {

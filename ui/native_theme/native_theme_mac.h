@@ -68,9 +68,10 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   friend class NativeTheme;
   friend class base::NoDestructor<NativeThemeMac>;
   static NativeThemeMac* instance();
+  static NativeThemeMac* dark_instance();
 
  private:
-  NativeThemeMac();
+  NativeThemeMac(bool configure_web_instance, bool should_only_use_dark_colors);
   ~NativeThemeMac() override;
 
   // Paint the selected menu item background, and a border for emphasis when in
@@ -81,7 +82,7 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
 
   void InitializeDarkModeStateAndObserver();
 
-  void InitializeWebThemeState() const;
+  void ConfigureWebInstance() override;
 
   base::scoped_nsobject<NativeThemeEffectiveAppearanceObserver>
       appearance_observer_;

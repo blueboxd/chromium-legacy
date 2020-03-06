@@ -11168,7 +11168,6 @@ interface XPathResult
 interface XRAnchor
     attribute @@toStringTag
     getter anchorSpace
-    getter lastChangedTime
     method constructor
     method detach
 interface XRAnchorSet
@@ -11766,6 +11765,7 @@ interface webkitURL
     getter onwebkittransitionend
     getter onwheel
     getter origin
+    getter originPolicyIds
     getter outerHeight
     getter outerWidth
     getter pageXOffset

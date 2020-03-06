@@ -43,6 +43,7 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
+  gfx::Rect GetAnchorBoundsInScreen() const override;
 
   bool ShowingNudge() { return showing_nudge_; }
 
@@ -56,6 +57,10 @@ class ASH_EXPORT DragHandle : public views::View,
 
   bool has_hide_drag_handle_timer_for_testing() {
     return hide_drag_handle_nudge_timer_.IsRunning();
+  }
+
+  ContextualNudge* drag_handle_nudge_for_testing() {
+    return drag_handle_nudge_;
   }
 
  private:

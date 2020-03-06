@@ -595,7 +595,7 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   // load event from within the destructor.
   old_document.DecrementLoadEventDelayCount();
 
-  SetExecutionContext(GetDocument().ToExecutionContext());
+  SetExecutionContext(GetExecutionContext());
   HTMLElement::DidMoveToNewDocument(old_document);
 }
 

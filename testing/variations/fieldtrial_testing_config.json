@@ -568,6 +568,22 @@
             ]
         }
     ],
+    "AutofillAssistantChromeEntryLaunch": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "//1": "This launch is gated external to Chrome.",
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillAssistantChromeEntry"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillAssistantDirectActionsLaunch": [
         {
             "platforms": [
@@ -2222,6 +2238,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "FontSrcLocalMatching"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FormControlsRefresh": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FormControlsRefresh"
                     ]
                 }
             ]

@@ -68,18 +68,16 @@ struct CORE_EXPORT ViewportDescription {
     kTypeCount = 7
   };
 
-  enum {
-    kValueAuto = -1,
-    kValueDeviceWidth = -2,
-    kValueDeviceHeight = -3,
-    kValuePortrait = -4,
-    kValueLandscape = -5,
-    kValueDeviceDPI = -6,
-    kValueLowDPI = -7,
-    kValueMediumDPI = -8,
-    kValueHighDPI = -9,
-    kValueExtendToZoom = -10
-  };
+  constexpr static float kValueAuto = -1.;
+  constexpr static float kValueDeviceWidth = -2.;
+  constexpr static float kValueDeviceHeight = -3.;
+  constexpr static float kValuePortrait = -4.;
+  constexpr static float kValueLandscape = -5.;
+  constexpr static float kValueDeviceDPI = -6.;
+  constexpr static float kValueLowDPI = -7.;
+  constexpr static float kValueMediumDPI = -8.;
+  constexpr static float kValueHighDPI = -9.;
+  constexpr static float kValueExtendToZoom = -10.;
 
   ViewportDescription(Type type = kUserAgentStyleSheet)
       : type(type),

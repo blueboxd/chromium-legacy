@@ -365,6 +365,15 @@ bool BrowserAccessibilityManagerAndroid::PreviousAtGranularity(
   return true;
 }
 
+void BrowserAccessibilityManagerAndroid::ClearNodeInfoCacheForGivenId(
+    int32_t unique_id) {
+  WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
+  if (!wcax)
+    return;
+
+  wcax->ClearNodeInfoCacheForGivenId(unique_id);
+}
+
 bool BrowserAccessibilityManagerAndroid::OnHoverEvent(
     const ui::MotionEventAndroid& event) {
   WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
@@ -412,6 +421,17 @@ gfx::Rect BrowserAccessibilityManagerAndroid::GetViewBounds() {
     return bounds;
   }
   return gfx::Rect();
+}
+
+void BrowserAccessibilityManagerAndroid::OnNodeWillBeDeleted(ui::AXTree* tree,
+                                                             ui::AXNode* node) {
+  BrowserAccessibility* wrapper = GetFromAXNode(node);
+  BrowserAccessibilityAndroid* android_node =
+      static_cast<BrowserAccessibilityAndroid*>(wrapper);
+
+  ClearNodeInfoCacheForGivenId(android_node->unique_id());
+
+  BrowserAccessibilityManager::OnNodeWillBeDeleted(tree, node);
 }
 
 void BrowserAccessibilityManagerAndroid::OnAtomicUpdateFinished(

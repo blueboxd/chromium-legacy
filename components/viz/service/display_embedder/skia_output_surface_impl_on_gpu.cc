@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1071,18 +1070,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     offscreen.set_surface(SkSurface::MakeRenderTarget(
         gr_context(), ddl->characterization(), SkBudgeted::kNo));
     DCHECK(offscreen.surface());
-  } else {
-#if DCHECK_IS_ON()
-    // TODO(crbug.com/1022304): Remove aliasing after figuring out how
-    // characterizations are different.
-    SkSurfaceCharacterization characterization;
-    DCHECK(offscreen.surface()->characterize(&characterization));
-    base::debug::Alias(&characterization);
-    SkSurfaceCharacterization ddl_characterization = ddl->characterization();
-    base::debug::Alias(&ddl_characterization);
-    DCHECK(characterization == ddl_characterization);
-#endif
   }
+
   {
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
     if (dependency_->GetGrShaderCache()) {

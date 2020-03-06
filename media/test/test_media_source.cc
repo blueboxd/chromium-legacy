@@ -53,7 +53,8 @@ TestMediaSource::TestMediaSource(const std::string& filename,
       initial_sequence_mode_(initial_sequence_mode),
       mimetype_(mimetype),
       chunk_demuxer_(new ChunkDemuxer(
-          base::Bind(&TestMediaSource::DemuxerOpened, base::Unretained(this)),
+          base::BindOnce(&TestMediaSource::DemuxerOpened,
+                         base::Unretained(this)),
           base::DoNothing(),
           base::BindRepeating(&TestMediaSource::OnEncryptedMediaInitData,
                               base::Unretained(this)),
@@ -86,7 +87,8 @@ TestMediaSource::TestMediaSource(scoped_refptr<DecoderBuffer> data,
       initial_sequence_mode_(initial_sequence_mode),
       mimetype_(mimetype),
       chunk_demuxer_(new ChunkDemuxer(
-          base::Bind(&TestMediaSource::DemuxerOpened, base::Unretained(this)),
+          base::BindOnce(&TestMediaSource::DemuxerOpened,
+                         base::Unretained(this)),
           base::DoNothing(),
           base::BindRepeating(&TestMediaSource::OnEncryptedMediaInitData,
                               base::Unretained(this)),
@@ -225,8 +227,8 @@ void TestMediaSource::DemuxerOpenedTask() {
     return;
   }
   chunk_demuxer_->SetTracksWatcher(
-      kSourceId, base::Bind(&TestMediaSource::InitSegmentReceived,
-                            base::Unretained(this)));
+      kSourceId, base::BindRepeating(&TestMediaSource::InitSegmentReceived,
+                                     base::Unretained(this)));
 
   chunk_demuxer_->SetParseWarningCallback(
       kSourceId, base::BindRepeating(&TestMediaSource::OnParseWarningMock,

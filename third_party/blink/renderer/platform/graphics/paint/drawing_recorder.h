@@ -59,6 +59,7 @@ class PLATFORM_EXPORT DrawingRecorder final {
   GraphicsContext& context_;
   const DisplayItemClient& client_;
   const DisplayItem::Type type_;
+  base::Optional<DOMNodeId> dom_node_id_to_restore_;
 
   // True if there are no transparent areas. Only used for CompositeAfterPaint.
   bool known_to_be_opaque_;

@@ -676,6 +676,9 @@ void Navigate(NavigateParams* params) {
         contents_to_navigate_or_insert, params->transition,
         params->window_action, user_initiated);
   } else if (singleton_index == -1) {
+    if (source_browser != params->browser)
+      params->tabstrip_index = params->browser->tab_strip_model()->count();
+
     // If some non-default value is set for the index, we should tell the
     // TabStripModel to respect it.
     if (params->tabstrip_index != -1)

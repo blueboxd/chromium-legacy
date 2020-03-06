@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/native_file_system_permission_context.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -61,10 +60,6 @@ namespace ui {
 class WebDialogDelegate;
 struct SelectedFileInfo;
 }  // namespace ui
-
-namespace url {
-class Origin;
-}  // namespace url
 
 namespace chrome {
 
@@ -310,37 +305,6 @@ void ShowFolderUploadConfirmationDialog(
     const base::FilePath& path,
     base::OnceCallback<void(const std::vector<ui::SelectedFileInfo>&)> callback,
     std::vector<ui::SelectedFileInfo> selected_files,
-    content::WebContents* web_contents);
-
-// Displays a dialog to ask for write access to the given file or directory for
-// the native file system API.
-void ShowNativeFileSystemPermissionDialog(
-    const url::Origin& origin,
-    const base::FilePath& path,
-    bool is_directory,
-    base::OnceCallback<void(permissions::PermissionAction result)> callback,
-    content::WebContents* web_contents);
-
-// Displays a dialog to inform the user that the |path| they picked using the
-// native file system API is blocked by chrome. |is_directory| is true if the
-// user was selecting a directory, otherwise the user was selecting files within
-// a directory. |callback| is called when the user has dismissed the dialog.
-void ShowNativeFileSystemRestrictedDirectoryDialog(
-    const url::Origin& origin,
-    const base::FilePath& path,
-    bool is_directory,
-    base::OnceCallback<void(
-        content::NativeFileSystemPermissionContext::SensitiveDirectoryResult)>
-        callback,
-    content::WebContents* web_contents);
-
-// Displays a dialog to confirm that the user intended to give read access to a
-// specific directory. Similar to ShowFolderUploadConfirmationDialog above,
-// except for use by the Native File System API.
-void ShowNativeFileSystemDirectoryAccessConfirmationDialog(
-    const url::Origin& origin,
-    const base::FilePath& path,
-    base::OnceCallback<void(permissions::PermissionAction result)> callback,
     content::WebContents* web_contents);
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

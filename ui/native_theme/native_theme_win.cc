@@ -171,6 +171,10 @@ NativeTheme* NativeTheme::GetInstanceForNativeUi() {
   return NativeThemeWin::instance();
 }
 
+NativeTheme* NativeTheme::GetInstanceForDarkUI() {
+  return NativeThemeWin::dark_instance();
+}
+
 // static
 void NativeThemeWin::CloseHandles() {
   instance()->CloseHandlesInternal();
@@ -178,8 +182,14 @@ void NativeThemeWin::CloseHandles() {
 
 // static
 NativeThemeWin* NativeThemeWin::instance() {
-  static base::NoDestructor<NativeThemeWin> s_native_theme;
+  static base::NoDestructor<NativeThemeWin> s_native_theme(true, false);
   return s_native_theme.get();
+}
+
+// static
+NativeThemeWin* NativeThemeWin::dark_instance() {
+  static base::NoDestructor<NativeThemeWin> s_dark_native_theme(false, true);
+  return s_dark_native_theme.get();
 }
 
 gfx::Size NativeThemeWin::GetPartSize(Part part,
@@ -251,19 +261,14 @@ void NativeThemeWin::Paint(cc::PaintCanvas* canvas,
   }
 }
 
-NativeThemeWin::NativeThemeWin() : color_change_listener_(this) {
+NativeThemeWin::NativeThemeWin(bool configure_web_instance,
+                               bool should_only_use_dark_colors)
+    : NativeTheme(should_only_use_dark_colors), color_change_listener_(this) {
   // If there's no sequenced task runner handle, we can't be called back for
   // dark mode changes. This generally happens in tests. As a result, ignore
   // dark mode in this case.
-  if (!IsForcedDarkMode() && !IsForcedHighContrast() &&
-      base::SequencedTaskRunnerHandle::IsSet()) {
-    // Add the web native theme as an observer to stay in sync with dark mode,
-    // high contrast, and preferred color scheme changes.
-    color_scheme_observer_ =
-        std::make_unique<NativeTheme::ColorSchemeNativeThemeObserver>(
-            NativeTheme::GetInstanceForWeb());
-    AddObserver(color_scheme_observer_.get());
-
+  if (!should_only_use_dark_colors && !IsForcedDarkMode() &&
+      !IsForcedHighContrast() && base::SequencedTaskRunnerHandle::IsSet()) {
     // Dark Mode currently targets UWP apps, which means Win32 apps need to use
     // alternate, less reliable means of detecting the state. The following
     // can break in future Windows versions.
@@ -287,6 +292,21 @@ NativeThemeWin::NativeThemeWin() : color_change_listener_(this) {
 
   // Initialize the cached system colors.
   UpdateSystemColors();
+
+  if (configure_web_instance)
+    ConfigureWebInstance();
+}
+
+void NativeThemeWin::ConfigureWebInstance() {
+  if (!IsForcedDarkMode() && !IsForcedHighContrast() &&
+      base::SequencedTaskRunnerHandle::IsSet()) {
+    // Add the web native theme as an observer to stay in sync with dark mode,
+    // high contrast, and preferred color scheme changes.
+    color_scheme_observer_ =
+        std::make_unique<NativeTheme::ColorSchemeNativeThemeObserver>(
+            NativeTheme::GetInstanceForWeb());
+    AddObserver(color_scheme_observer_.get());
+  }
 
   // Initialize the native theme web instance with the system color info.
   NativeTheme* web_instance = NativeTheme::GetInstanceForWeb();

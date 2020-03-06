@@ -202,7 +202,7 @@ const char kTerminaVmKernelVersion[] =
 const char kActualLastLaunchTimeFormatted[] = "Sat, 1 Sep 2018 11:50:50 GMT";
 const char kLastLaunchTimeWindowStartFormatted[] =
     "Sat, 1 Sep 2018 00:00:00 GMT";
-const long kLastLaunchTimeWindowStartInJavaTime = 1535760000000;
+const int64_t kLastLaunchTimeWindowStartInJavaTime = 1535760000000;
 const char kDefaultPlatformVersion[] = "1234.0.0";
 
 class TestingDeviceStatusCollectorOptions {
@@ -1159,11 +1159,11 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
   }
 
   // After indicating a successful submit, the submitted status gets cleared,
-  // but what got collected meanwhile sticks around.
+  // and prior activity is no longer showing.
   status_collector_->Simulate(test_states, 1);
   status_collector_->OnSubmittedSuccessfully();
   GetStatus();
-  EXPECT_EQ(ActivePeriodMilliseconds(), GetActiveMilliseconds(device_status_));
+  EXPECT_EQ(0, GetActiveMilliseconds(device_status_));
 }
 
 TEST_F(DeviceStatusCollectorTest, ActivityNoUser) {

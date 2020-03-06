@@ -1264,6 +1264,12 @@ const IDNTestCase kIdnCases[] = {
 
     // IDN domain matching an IDN top-domain (fóó.com)
     {"xn--fo-5ja.com", L"fóo.com", kUnsafe},
+
+    // crbug.com/769547: Subdomains of top domains should be allowed.
+    {"xn--xample-9ua.test.net", L"éxample.test.net", kSafe},
+    // Skeleton of the eTLD+1 matches a top domain, but the eTLD+1 itself is
+    // not a top domain. Should not be decoded to unicode.
+    {"xn--xample-9ua.test.xn--nt-bja", L"éxample.test.nét", kUnsafe},
 };
 
 namespace test {
@@ -1329,6 +1335,29 @@ TEST_F(IDNSpoofCheckerTest, IDNToUnicode) {
                                       : ASCIIToUTF16(kIdnCases[i].input));
     EXPECT_EQ(expected, output)
         << "input # " << i << ": \"" << kIdnCases[i].input << "\"";
+  }
+}
+
+TEST_F(IDNSpoofCheckerTest, GetSimilarTopDomain) {
+  struct TestCase {
+    const wchar_t* const hostname;
+    const char* const expected_top_domain;
+  } kTestCases[] = {
+      {L"tést.net", "test.net"},
+      {L"subdomain.tést.net", "test.net"},
+      // A top domain should not return a similar top domain result.
+      {L"test.net", ""},
+      // A subdomain of a top domain should not return a similar top domain
+      // result.
+      {L"subdomain.test.net", ""},
+      // An IDN subdomain of a top domain should not return a similar top domain
+      // result.
+      {L"subdómain.test.net", ""}};
+  for (const TestCase& test_case : kTestCases) {
+    const TopDomainEntry entry = IDNSpoofChecker().GetSimilarTopDomain(
+        base::WideToUTF16(test_case.hostname));
+    EXPECT_EQ(test_case.expected_top_domain, entry.domain);
+    EXPECT_FALSE(entry.is_top_500);
   }
 }
 

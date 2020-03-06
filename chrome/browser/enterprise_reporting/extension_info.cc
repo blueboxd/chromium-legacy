@@ -4,6 +4,8 @@
 
 #include "chrome/browser/enterprise_reporting/extension_info.h"
 
+#include <string>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -11,65 +13,65 @@
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/permissions_data.h"
 
+namespace em = ::enterprise_management;
+
 namespace enterprise_reporting {
 
 namespace {
 
-enterprise_management::Extension_ExtensionType GetExtensionType(
+em::Extension_ExtensionType GetExtensionType(
     extensions::Manifest::Type extension_type) {
   switch (extension_type) {
     case extensions::Manifest::TYPE_UNKNOWN:
     case extensions::Manifest::TYPE_SHARED_MODULE:
-      return enterprise_management::Extension_ExtensionType_TYPE_UNKNOWN;
+      return em::Extension_ExtensionType_TYPE_UNKNOWN;
     case extensions::Manifest::TYPE_EXTENSION:
-      return enterprise_management::Extension_ExtensionType_TYPE_EXTENSION;
+      return em::Extension_ExtensionType_TYPE_EXTENSION;
     case extensions::Manifest::TYPE_THEME:
-      return enterprise_management::Extension_ExtensionType_TYPE_THEME;
+      return em::Extension_ExtensionType_TYPE_THEME;
     case extensions::Manifest::TYPE_USER_SCRIPT:
-      return enterprise_management::Extension_ExtensionType_TYPE_USER_SCRIPT;
+      return em::Extension_ExtensionType_TYPE_USER_SCRIPT;
     case extensions::Manifest::TYPE_HOSTED_APP:
-      return enterprise_management::Extension_ExtensionType_TYPE_HOSTED_APP;
+      return em::Extension_ExtensionType_TYPE_HOSTED_APP;
     case extensions::Manifest::TYPE_LEGACY_PACKAGED_APP:
-      return enterprise_management::
-          Extension_ExtensionType_TYPE_LEGACY_PACKAGED_APP;
+      return em::Extension_ExtensionType_TYPE_LEGACY_PACKAGED_APP;
     case extensions::Manifest::TYPE_PLATFORM_APP:
-      return enterprise_management::Extension_ExtensionType_TYPE_PLATFORM_APP;
+      return em::Extension_ExtensionType_TYPE_PLATFORM_APP;
     case extensions::Manifest::TYPE_LOGIN_SCREEN_EXTENSION:
-      return enterprise_management::
-          Extension_ExtensionType_TYPE_LOGIN_SCREEN_EXTENSION;
+      return em::Extension_ExtensionType_TYPE_LOGIN_SCREEN_EXTENSION;
     case extensions::Manifest::NUM_LOAD_TYPES:
       NOTREACHED();
-      return enterprise_management::Extension_ExtensionType_TYPE_UNKNOWN;
+      return em::Extension_ExtensionType_TYPE_UNKNOWN;
   }
 }
 
-enterprise_management::Extension_InstallType GetExtensionInstallType(
+em::Extension_InstallType GetExtensionInstallType(
     extensions::Manifest::Location extension_location) {
   switch (extension_location) {
     case extensions::Manifest::INTERNAL:
-      return enterprise_management::Extension_InstallType_TYPE_NORMAL;
+      return em::Extension_InstallType_TYPE_NORMAL;
     case extensions::Manifest::UNPACKED:
     case extensions::Manifest::COMMAND_LINE:
-      return enterprise_management::Extension_InstallType_TYPE_DEVELOPMENT;
+      return em::Extension_InstallType_TYPE_DEVELOPMENT;
     case extensions::Manifest::EXTERNAL_PREF:
     case extensions::Manifest::EXTERNAL_REGISTRY:
     case extensions::Manifest::EXTERNAL_PREF_DOWNLOAD:
-      return enterprise_management::Extension_InstallType_TYPE_SIDELOAD;
+      return em::Extension_InstallType_TYPE_SIDELOAD;
     case extensions::Manifest::EXTERNAL_POLICY:
     case extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD:
-      return enterprise_management::Extension_InstallType_TYPE_ADMIN;
+      return em::Extension_InstallType_TYPE_ADMIN;
     case extensions::Manifest::NUM_LOCATIONS:
       NOTREACHED();
       FALLTHROUGH;
     case extensions::Manifest::INVALID_LOCATION:
     case extensions::Manifest::COMPONENT:
     case extensions::Manifest::EXTERNAL_COMPONENT:
-      return enterprise_management::Extension_InstallType_TYPE_OTHER;
+      return em::Extension_InstallType_TYPE_OTHER;
   }
 }
 
 void AddPermission(const extensions::Extension* extension,
-                   enterprise_management::Extension* extension_info) {
+                   em::Extension* extension_info) {
   for (const std::string& permission :
        extension->permissions_data()->active_permissions().GetAPIsAsStrings()) {
     extension_info->add_permissions(permission);
@@ -77,7 +79,7 @@ void AddPermission(const extensions::Extension* extension,
 }
 
 void AddHostPermission(const extensions::Extension* extension,
-                       enterprise_management::Extension* extension_info) {
+                       em::Extension* extension_info) {
   for (const auto& url :
        extension->permissions_data()->active_permissions().explicit_hosts()) {
     extension_info->add_host_permissions(url.GetAsString());
@@ -85,7 +87,7 @@ void AddHostPermission(const extensions::Extension* extension,
 }
 
 void AddExtensions(const extensions::ExtensionSet& extensions,
-                   enterprise_management::ChromeUserProfileInfo* profile_info,
+                   em::ChromeUserProfileInfo* profile_info,
                    bool enabled) {
   for (const auto& extension : extensions) {
     // Skip the component extension.
@@ -113,7 +115,7 @@ void AddExtensions(const extensions::ExtensionSet& extensions,
 
 void AppendExtensionInfoIntoProfileReport(
     Profile* profile,
-    enterprise_management::ChromeUserProfileInfo* profile_info) {
+    em::ChromeUserProfileInfo* profile_info) {
   auto* registry = extensions::ExtensionRegistry::Get(profile);
   AddExtensions(registry->enabled_extensions(), profile_info, true);
   AddExtensions(registry->disabled_extensions(), profile_info, false);

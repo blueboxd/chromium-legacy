@@ -105,6 +105,10 @@ void RenderFrameHostDelegate::GetNFC(
     mojo::PendingReceiver<device::mojom::NFC> receiver) {}
 #endif
 
+bool RenderFrameHostDelegate::CanEnterFullscreenMode() {
+  return true;
+}
+
 bool RenderFrameHostDelegate::ShouldRouteMessageEvent(
     RenderFrameHost* target_rfh,
     SiteInstance* source_site_instance) const {

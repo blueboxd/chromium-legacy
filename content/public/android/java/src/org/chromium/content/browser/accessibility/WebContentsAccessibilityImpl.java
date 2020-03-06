@@ -178,6 +178,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     // to a single Runnable that will send an event after some delay.
     private SparseArray<Runnable> mPendingEvents = new SparseArray<>();
 
+    // This array maps a given virtualViewId to an |AccessibilityNodeInfo| for that view. We use
+    // this to update a node quickly rather than building from one scratch each time.
+    private SparseArray<AccessibilityNodeInfo> mNodeInfoCache = new SparseArray<>();
+
     /**
      * Create a WebContentsAccessibilityImpl object.
      */
@@ -313,6 +317,15 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         return this;
     }
 
+    @CalledByNative
+    public void clearNodeInfoCacheForGivenId(int virtualViewId) {
+        // Recycle and remove the element in our cache for this |virtualViewId|.
+        if (mNodeInfoCache.get(virtualViewId) != null) {
+            mNodeInfoCache.get(virtualViewId).recycle();
+            mNodeInfoCache.remove(virtualViewId);
+        }
+    }
+
     @Override
     public AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId) {
         if (!isAccessibilityEnabled()) {
@@ -329,20 +342,43 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             return null;
         }
 
-        final AccessibilityNodeInfo info = AccessibilityNodeInfo.obtain(mView);
-        info.setPackageName(mContext.getPackageName());
-        info.setSource(mView, virtualViewId);
+        // We need to create an |AccessibilityNodeInfo| object for this |virtualViewId|. If we have
+        // one in our cache, then communicate this so web_contents_accessibility_android.cc
+        // will update a fraction of the object and for the rest leverage what is already there.
+        if (mNodeInfoCache.get(virtualViewId) != null) {
+            AccessibilityNodeInfo cachedNode =
+                    AccessibilityNodeInfo.obtain(mNodeInfoCache.get(virtualViewId));
 
-        if (virtualViewId == rootId) {
-            info.setParent(mView);
-        }
+            if (WebContentsAccessibilityImplJni.get().updateCachedAccessibilityNodeInfo(
+                        mNativeObj, WebContentsAccessibilityImpl.this, cachedNode, virtualViewId)) {
+                // After successfully re-populating this cached node, return result.
+                return cachedNode;
+            } else {
+                // If the node is no longer valid, wipe it from the cache and return null
+                mNodeInfoCache.get(virtualViewId).recycle();
+                mNodeInfoCache.remove(virtualViewId);
+                return null;
+            }
 
-        if (WebContentsAccessibilityImplJni.get().populateAccessibilityNodeInfo(
-                    mNativeObj, WebContentsAccessibilityImpl.this, info, virtualViewId)) {
-            return info;
         } else {
-            info.recycle();
-            return null;
+            // If we have no copy of this node in our cache, build a new one from scratch.
+            final AccessibilityNodeInfo info = AccessibilityNodeInfo.obtain(mView);
+            info.setPackageName(mContext.getPackageName());
+            info.setSource(mView, virtualViewId);
+
+            if (virtualViewId == rootId) {
+                info.setParent(mView);
+            }
+
+            if (WebContentsAccessibilityImplJni.get().populateAccessibilityNodeInfo(
+                        mNativeObj, WebContentsAccessibilityImpl.this, info, virtualViewId)) {
+                // After successfully populating this node, add it to our cache then return.
+                mNodeInfoCache.put(virtualViewId, AccessibilityNodeInfo.obtain(info));
+                return info;
+            } else {
+                info.recycle();
+                return null;
+            }
         }
     }
 
@@ -1765,6 +1801,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 WebContentsAccessibilityImpl caller, int id);
         int getEditableTextSelectionEnd(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, int id);
+        boolean updateCachedAccessibilityNodeInfo(long nativeWebContentsAccessibilityAndroid,
+                WebContentsAccessibilityImpl caller, AccessibilityNodeInfo info, int id);
         boolean populateAccessibilityNodeInfo(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, AccessibilityNodeInfo info, int id);
         boolean populateAccessibilityEvent(long nativeWebContentsAccessibilityAndroid,

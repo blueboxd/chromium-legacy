@@ -103,12 +103,17 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
                              int32_t* start_index,
                              int32_t* end_index);
 
+  // Helper method to clear AccessibilityNodeInfo cache on given node
+  void ClearNodeInfoCacheForGivenId(int32_t unique_id);
+
  private:
   // AXTreeObserver overrides.
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
+
+  void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
 
   bool UseRootScrollOffsetsWhenComputingBounds() override;
 

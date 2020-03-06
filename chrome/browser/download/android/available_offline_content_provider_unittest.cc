@@ -17,6 +17,7 @@
 #include "chrome/common/available_offline_content.mojom-test-utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
@@ -234,8 +235,7 @@ TEST_F(AvailableOfflineContentTest, ListVisibilityChanges) {
   content_provider_.SetVisuals(
       {{SuggestedOfflinePageItem().id, TestThumbnail()}});
   // Set pref to hide the list.
-  profile_.GetPrefs()->SetBoolean(ntp_snippets::prefs::kArticlesListVisible,
-                                  false);
+  profile_.GetPrefs()->SetBoolean(feed::prefs::kArticlesListVisible, false);
 
   // Call List().
   bool list_visible_by_prefs;
@@ -249,8 +249,8 @@ TEST_F(AvailableOfflineContentTest, ListVisibilityChanges) {
   // Simulate visibility changed by the user to "shown".
   provider_.ListVisibilityChanged(true);
 
-  EXPECT_TRUE(profile_.GetPrefs()->GetBoolean(
-      ntp_snippets::prefs::kArticlesListVisible));
+  EXPECT_TRUE(
+      profile_.GetPrefs()->GetBoolean(feed::prefs::kArticlesListVisible));
 
   // Call List() again and check list is not visible.
   std::tie(list_visible_by_prefs, suggestions) = ListAndWait();

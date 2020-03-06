@@ -213,6 +213,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/about_page_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/appearance_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/appearance_fonts_page_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/basic_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/checkbox_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/clear_browsing_data_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/controlled_button_tests.m.js",

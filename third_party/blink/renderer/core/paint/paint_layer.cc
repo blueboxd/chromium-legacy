@@ -2711,6 +2711,14 @@ void PaintLayer::ExpandRectForStackingChildren(
     const PaintLayer& composited_layer,
     PhysicalRect& result,
     PaintLayer::CalculateBoundsOptions options) const {
+  // If we're locked, th en the subtree does not contribute painted output.
+  // Furthermore, we might not have up-to-date sizing and position information
+  // in the subtree, so skip recursing into the subtree.
+  if (GetLayoutObject().PaintBlockedByDisplayLock(
+          DisplayLockLifecycleTarget::kChildren)) {
+    return;
+  }
+
   PaintLayerPaintOrderIterator iterator(*this, kAllChildren);
   while (PaintLayer* child_layer = iterator.Next()) {
     // Here we exclude both directly composited layers and squashing layers

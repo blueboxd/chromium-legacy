@@ -76,7 +76,6 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
-#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_metrics_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
@@ -242,6 +241,7 @@
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration_win.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_select_file_dialog_factory.h"
+#include "chrome/browser/win/parental_controls.h"
 #include "chrome/install_static/install_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #endif  // defined(OS_WIN)
@@ -1158,7 +1158,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if defined(OS_WIN)
   // Windows parental controls calls can be slow, so we do an early init here
   // that calculates this value off of the UI thread.
-  IncognitoModePrefs::InitializePlatformParentalControls();
+  InitializeWinParentalControls();
 #endif
 
   // Now that the file thread has been started, start metrics.

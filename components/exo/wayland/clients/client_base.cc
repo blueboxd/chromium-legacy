@@ -140,7 +140,7 @@ void RegistryHandler(void* data,
         wl_registry_bind(registry, id, &wp_presentation_interface, 1)));
   } else if (strcmp(interface, "zaura_shell") == 0) {
     globals->aura_shell.reset(static_cast<zaura_shell*>(
-        wl_registry_bind(registry, id, &zaura_shell_interface, 5)));
+        wl_registry_bind(registry, id, &zaura_shell_interface, 7)));
   } else if (strcmp(interface, "zwp_linux_dmabuf_v1") == 0) {
     globals->linux_dmabuf.reset(static_cast<zwp_linux_dmabuf_v1*>(
         wl_registry_bind(registry, id, &zwp_linux_dmabuf_v1_interface, 2)));

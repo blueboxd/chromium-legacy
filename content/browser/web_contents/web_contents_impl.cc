@@ -593,8 +593,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_overlay_content_(false),
       showing_context_menu_(false),
       text_autosizer_page_info_({0, 0, 1.f}),
-      native_theme_observer_(this),
-      had_inner_webcontents_(false) {
+      native_theme_observer_(this) {
   frame_tree_.SetFrameRemoveListener(base::BindRepeating(
       &WebContentsImpl::OnFrameRemoved, base::Unretained(this)));
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -2495,9 +2494,15 @@ RenderWidgetHostImpl* WebContentsImpl::GetRenderWidgetHostWithPageFocus() {
   return focused_web_contents->GetMainFrame()->GetRenderWidgetHost();
 }
 
+bool WebContentsImpl::CanEnterFullscreenMode() {
+  return true;
+}
+
 void WebContentsImpl::EnterFullscreenMode(
     const GURL& origin,
     const blink::mojom::FullscreenOptions& options) {
+  DCHECK(CanEnterFullscreenMode());
+
   // This method is being called to enter renderer-initiated fullscreen mode.
   // Make sure any existing fullscreen widget is shut down first.
   RenderWidgetHostView* const widget_view = GetFullscreenRenderWidgetHostView();
@@ -3688,10 +3693,6 @@ void WebContentsImpl::DidProceedOnInterstitial() {
     LoadingStateChanged(true, true, nullptr);
 }
 
-bool WebContentsImpl::HadInnerWebContents() {
-  return had_inner_webcontents_;
-}
-
 void WebContentsImpl::DetachInterstitialPage(bool has_focus) {
   bool interstitial_pausing_throbber =
       ShowingInterstitialPage() && interstitial_page_->pause_throbber();
@@ -4672,9 +4673,6 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
   if (delegate_)
     delegate_->DidNavigateMainFramePostCommit(this);
   view_->SetOverscrollControllerEnabled(CanOverscrollContent());
-
-  if (!details.is_same_document && GetInnerWebContents().empty())
-    had_inner_webcontents_ = false;
 
   if (details.is_navigation_to_different_page() &&
       GetRenderViewHost()->did_first_visually_non_empty_paint()) {
@@ -5898,7 +5896,6 @@ void WebContentsImpl::FocusOuterAttachmentFrameChain() {
 }
 
 void WebContentsImpl::InnerWebContentsCreated(WebContents* inner_web_contents) {
-  had_inner_webcontents_ = true;
   for (auto& observer : observers_)
     observer.InnerWebContentsCreated(inner_web_contents);
 }

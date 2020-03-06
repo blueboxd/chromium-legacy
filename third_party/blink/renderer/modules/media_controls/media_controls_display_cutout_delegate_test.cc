@@ -30,7 +30,8 @@ class DisplayCutoutMockChromeClient : public EmptyChromeClient {
   void EnterFullscreen(LocalFrame& frame,
                        const FullscreenOptions*,
                        bool for_cross_process_descendant) override {
-    Fullscreen::DidEnterFullscreen(*frame.GetDocument());
+    Fullscreen::DidResolveEnterFullscreenRequest(*frame.GetDocument(),
+                                                 true /* granted */);
   }
   void ExitFullscreen(LocalFrame& frame) override {
     Fullscreen::DidExitFullscreen(*frame.GetDocument());

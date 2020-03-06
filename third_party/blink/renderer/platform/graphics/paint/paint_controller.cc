@@ -36,9 +36,6 @@ bool PaintController::UseCachedItemIfPossible(const DisplayItemClient& client,
   if (usage_ == kTransient)
     return false;
 
-  if (DisplayItemConstructionIsDisabled())
-    return false;
-
   if (!ClientCacheIsValid(client))
     return false;
 
@@ -89,7 +86,7 @@ bool PaintController::UseCachedSubsequenceIfPossible(
   if (usage_ == kTransient)
     return false;
 
-  if (DisplayItemConstructionIsDisabled() || SubsequenceCachingIsDisabled())
+  if (SubsequenceCachingIsDisabled())
     return false;
 
   if (!ClientCacheIsValid(client))
@@ -227,7 +224,6 @@ void PaintController::EndSubsequence(const DisplayItemClient& client,
 }
 
 void PaintController::DidAppendItem(DisplayItem& display_item) {
-  DCHECK(!construction_disabled_);
   if (usage_ == kTransient)
     return;
 

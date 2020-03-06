@@ -11,6 +11,7 @@ js_modulizer("modulize") {
     "about_page_tests.js",
     "appearance_fonts_page_test.js",
     "appearance_page_test.js",
+    "basic_page_test.js",
     "checkbox_tests.js",
     "clear_browsing_data_test.js",
     "controlled_button_tests.js",

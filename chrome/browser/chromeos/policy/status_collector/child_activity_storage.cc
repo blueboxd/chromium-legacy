@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/status_collector/child_activity_storage.h"
 
+#include <algorithm>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
@@ -50,7 +52,7 @@ void ChildActivityStorage::AddActivityPeriod(base::Time start,
   }
 }
 
-std::vector<ActivityStorage::ActivityPeriod>
+IntervalMap<int64_t, ActivityStorage::Period>
 ChildActivityStorage::GetStoredActivityPeriods() {
   DictionaryPrefUpdate update(pref_service_, pref_name_);
   base::DictionaryValue* stored_activity_periods = update.Get();

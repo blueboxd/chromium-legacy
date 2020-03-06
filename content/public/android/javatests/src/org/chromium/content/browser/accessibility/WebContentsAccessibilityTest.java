@@ -761,6 +761,9 @@ public class WebContentsAccessibilityTest {
         final WebContentsAccessibilityImpl wcax = mActivityTestRule.getWebContentsAccessibility();
         wcax.addSpellingErrorForTesting(textNodeVirtualViewId, 4, 9);
 
+        // Clear our cache for this node.
+        wcax.clearNodeInfoCacheForGivenId(textNodeVirtualViewId);
+
         // Now get that AccessibilityNodeInfo and retrieve its text.
         AccessibilityNodeInfo textNode =
                 provider.createAccessibilityNodeInfo(textNodeVirtualViewId);

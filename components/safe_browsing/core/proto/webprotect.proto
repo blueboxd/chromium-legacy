@@ -58,6 +58,9 @@ message DeepScanningClientRequest {
 
   // Name of file on user system (if applicable).
   optional string filename = 6;
+
+  // Sha256 digest of file.
+  optional string digest = 7;
 }
 
 // Malware-specific response given back for scanned content.

@@ -99,7 +99,7 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     public BrowserImpl(ProfileImpl profile, String persistenceId, Bundle savedInstanceState,
-            Context context, FragmentWindowAndroid windowAndroid) {
+            FragmentWindowAndroid windowAndroid) {
         profile.checkNotDestroyed();
         mProfile = profile;
 
@@ -113,7 +113,7 @@ public class BrowserImpl extends IBrowser.Stub {
                 ? savedInstanceState.getByteArray(SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY)
                 : null;
 
-        createAttachmentState(context, windowAndroid);
+        createAttachmentState(windowAndroid);
         mNativeBrowser = BrowserImplJni.get().createBrowser(profile.getNativeProfile(), this);
         mUrlBarController = new UrlBarControllerImpl(this, mNativeBrowser);
 
@@ -132,16 +132,16 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     // Called from constructor and onFragmentAttached() to configure state needed when attached.
-    private void createAttachmentState(Context context, FragmentWindowAndroid windowAndroid) {
+    private void createAttachmentState(FragmentWindowAndroid windowAndroid) {
         assert mViewController == null;
         assert mWindowAndroid == null;
         mWindowAndroid = windowAndroid;
-        mViewController = new BrowserViewController(context, windowAndroid);
-        mLocaleReceiver = new LocaleChangedBroadcastReceiver(context);
+        mViewController = new BrowserViewController(windowAndroid);
+        mLocaleReceiver = new LocaleChangedBroadcastReceiver(windowAndroid.getContext().get());
     }
 
-    public void onFragmentAttached(Context context, FragmentWindowAndroid windowAndroid) {
-        createAttachmentState(context, windowAndroid);
+    public void onFragmentAttached(FragmentWindowAndroid windowAndroid) {
+        createAttachmentState(windowAndroid);
         updateAllTabsAndSetActive();
     }
 

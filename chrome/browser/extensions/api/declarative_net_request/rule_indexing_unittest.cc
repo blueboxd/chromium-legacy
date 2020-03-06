@@ -560,6 +560,42 @@ TEST_P(RuleIndexingTest, WarningAndError) {
       GetParseError(ParseResult::ERROR_INVALID_REGEX_FILTER, kMinValidID + 1));
 }
 
+// Ensure that we get an install warning on exceeding the regex rule count
+// limit.
+TEST_P(RuleIndexingTest, RegexRuleCountExceeded) {
+  namespace dnr_api = extensions::api::declarative_net_request;
+
+  TestRule regex_rule = CreateGenericRule();
+  regex_rule.condition->url_filter.reset();
+  int rule_id = kMinValidID;
+  for (int i = 1; i <= dnr_api::MAX_NUMBER_OF_REGEX_RULES + 5; ++i, ++rule_id) {
+    regex_rule.id = rule_id;
+    regex_rule.condition->regex_filter = std::to_string(i);
+    AddRule(regex_rule);
+  }
+
+  const int kCountNonRegexRules = 5;
+  TestRule rule = CreateGenericRule();
+  for (int i = 1; i <= kCountNonRegexRules; i++, ++rule_id) {
+    rule.id = rule_id;
+    rule.condition->url_filter = std::to_string(i);
+    AddRule(rule);
+  }
+
+  extension_loader()->set_ignore_manifest_warnings(true);
+  LoadAndExpectSuccess(dnr_api::MAX_NUMBER_OF_REGEX_RULES +
+                       kCountNonRegexRules);
+  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
+  // which causes it to lose the install warning. This should be fixed.
+  if (GetParam() != ExtensionLoadType::PACKED) {
+    ASSERT_EQ(1u, extension()->install_warnings().size());
+    EXPECT_EQ(InstallWarning(kRegexRuleCountExceeded,
+                             manifest_keys::kDeclarativeNetRequestKey,
+                             manifest_keys::kDeclarativeRuleResourcesKey),
+              extension()->install_warnings()[0]);
+  }
+}
+
 TEST_P(RuleIndexingTest, InvalidJSONFile) {
   set_persist_invalid_json_file();
   // The error is returned by the JSON parser we use. Hence just test an error

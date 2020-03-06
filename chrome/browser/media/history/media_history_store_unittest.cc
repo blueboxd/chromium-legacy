@@ -55,7 +55,9 @@ std::unique_ptr<KeyedService> BuildTestHistoryService(
 
 }  // namespace
 
-class MediaHistoryStoreUnitTest : public testing::Test {
+// Runs the test with a param to signify the profile being incognito if true.
+class MediaHistoryStoreUnitTest : public testing::Test,
+                                  public testing::WithParamInterface<bool> {
  public:
   MediaHistoryStoreUnitTest() = default;
   void SetUp() override {
@@ -64,37 +66,42 @@ class MediaHistoryStoreUnitTest : public testing::Test {
     TestingProfile::Builder profile_builder;
     profile_builder.SetPath(temp_dir_.GetPath());
     g_temp_history_dir = temp_dir_.GetPath();
-
     profile_ = profile_builder.Build();
 
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         profile_.get(), base::BindRepeating(&BuildTestHistoryService));
 
-    // Set up the media history store.
-    service_ = std::make_unique<MediaHistoryKeyedService>(profile_.get());
-
     // Sleep the thread to allow the media history store to asynchronously
     // create the database and tables before proceeding with the tests and
     // tearing down the temporary directory.
-    content::RunAllTasksUntilIdle();
+    WaitForDB();
 
     // Set up the local DB connection used for assertions.
     base::FilePath db_file =
         temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Media History"));
     ASSERT_TRUE(db_.Open(db_file));
+
+    // Set up the media history store for OTR.
+    otr_service_ = std::make_unique<MediaHistoryKeyedService>(
+        profile_->GetOffTheRecordProfile());
   }
 
-  void TearDown() override {
-    service_->Shutdown();
+  void TearDown() override { WaitForDB(); }
 
-    content::RunAllTasksUntilIdle();
+  void WaitForDB() {
+    base::RunLoop run_loop;
+
+    MediaHistoryKeyedService::Get(profile_.get())
+        ->PostTaskToDBForTest(run_loop.QuitClosure());
+
+    run_loop.Run();
   }
 
-  mojom::MediaHistoryStatsPtr GetStatsSync() {
+  mojom::MediaHistoryStatsPtr GetStatsSync(MediaHistoryKeyedService* service) {
     base::RunLoop run_loop;
     mojom::MediaHistoryStatsPtr stats_out;
 
-    service()->GetMediaHistoryStats(
+    service->GetMediaHistoryStats(
         base::BindLambdaForTesting([&](mojom::MediaHistoryStatsPtr stats) {
           stats_out = std::move(stats);
           run_loop.Quit();
@@ -104,11 +111,12 @@ class MediaHistoryStoreUnitTest : public testing::Test {
     return stats_out;
   }
 
-  std::vector<mojom::MediaHistoryOriginRowPtr> GetOriginRowsSync() {
+  std::vector<mojom::MediaHistoryOriginRowPtr> GetOriginRowsSync(
+      MediaHistoryKeyedService* service) {
     base::RunLoop run_loop;
     std::vector<mojom::MediaHistoryOriginRowPtr> out;
 
-    service()->GetOriginRowsForDebug(base::BindLambdaForTesting(
+    service->GetOriginRowsForDebug(base::BindLambdaForTesting(
         [&](std::vector<mojom::MediaHistoryOriginRowPtr> rows) {
           out = std::move(rows);
           run_loop.Quit();
@@ -118,11 +126,12 @@ class MediaHistoryStoreUnitTest : public testing::Test {
     return out;
   }
 
-  std::vector<mojom::MediaHistoryPlaybackRowPtr> GetPlaybackRowsSync() {
+  std::vector<mojom::MediaHistoryPlaybackRowPtr> GetPlaybackRowsSync(
+      MediaHistoryKeyedService* service) {
     base::RunLoop run_loop;
     std::vector<mojom::MediaHistoryPlaybackRowPtr> out;
 
-    service()->GetMediaHistoryPlaybackRowsForDebug(base::BindLambdaForTesting(
+    service->GetMediaHistoryPlaybackRowsForDebug(base::BindLambdaForTesting(
         [&](std::vector<mojom::MediaHistoryPlaybackRowPtr> rows) {
           out = std::move(rows);
           run_loop.Quit();
@@ -132,7 +141,18 @@ class MediaHistoryStoreUnitTest : public testing::Test {
     return out;
   }
 
-  MediaHistoryKeyedService* service() const { return service_.get(); }
+  MediaHistoryKeyedService* service() const {
+    // If the param is true then we use the OTR service to simulate being in
+    // incognito.
+    if (GetParam())
+      return otr_service();
+
+    return MediaHistoryKeyedService::Get(profile_.get());
+  }
+
+  MediaHistoryKeyedService* otr_service() const { return otr_service_.get(); }
+
+  bool IsReadOnly() const { return GetParam(); }
 
  private:
   base::ScopedTempDir temp_dir_;
@@ -143,11 +163,13 @@ class MediaHistoryStoreUnitTest : public testing::Test {
 
  private:
   sql::Database db_;
-  std::unique_ptr<MediaHistoryKeyedService> service_;
+  std::unique_ptr<MediaHistoryKeyedService> otr_service_;
   std::unique_ptr<TestingProfile> profile_;
 };
 
-TEST_F(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
+INSTANTIATE_TEST_SUITE_P(All, MediaHistoryStoreUnitTest, testing::Bool());
+
+TEST_P(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
   ASSERT_TRUE(GetDB().DoesTableExist("origin"));
   ASSERT_TRUE(GetDB().DoesTableExist("playback"));
   ASSERT_TRUE(GetDB().DoesTableExist("playbackSession"));
@@ -156,7 +178,7 @@ TEST_F(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
   ASSERT_FALSE(GetDB().DoesTableExist("mediaFeed"));
 }
 
-TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
+TEST_P(MediaHistoryStoreUnitTest, SavePlayback) {
   const auto now_before =
       (base::Time::Now() - base::TimeDelta::FromMinutes(1)).ToJsTime();
 
@@ -172,41 +194,56 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
   service()->SavePlayback(watch_time);
 
   // Wait until the playbacks have finished saving.
-  content::RunAllTasksUntilIdle();
+  WaitForDB();
 
   const auto now_after_b = base::Time::Now().ToJsTime();
 
   // Verify that the playback table contains the expected number of items.
   std::vector<mojom::MediaHistoryPlaybackRowPtr> playbacks =
-      GetPlaybackRowsSync();
-  EXPECT_EQ(2u, playbacks.size());
+      GetPlaybackRowsSync(service());
 
-  EXPECT_EQ("http://google.com/test", playbacks[0]->url.spec());
-  EXPECT_FALSE(playbacks[0]->has_audio);
-  EXPECT_TRUE(playbacks[0]->has_video);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(60), playbacks[0]->watchtime);
-  EXPECT_LE(now_before, playbacks[0]->last_updated_time);
-  EXPECT_GE(now_after_a, playbacks[0]->last_updated_time);
+  if (IsReadOnly()) {
+    EXPECT_TRUE(playbacks.empty());
+  } else {
+    EXPECT_EQ(2u, playbacks.size());
 
-  EXPECT_EQ("http://google.com/test", playbacks[1]->url.spec());
-  EXPECT_FALSE(playbacks[1]->has_audio);
-  EXPECT_TRUE(playbacks[1]->has_video);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(60), playbacks[1]->watchtime);
-  EXPECT_LE(now_before, playbacks[1]->last_updated_time);
-  EXPECT_GE(now_after_b, playbacks[1]->last_updated_time);
+    EXPECT_EQ("http://google.com/test", playbacks[0]->url.spec());
+    EXPECT_FALSE(playbacks[0]->has_audio);
+    EXPECT_TRUE(playbacks[0]->has_video);
+    EXPECT_EQ(base::TimeDelta::FromSeconds(60), playbacks[0]->watchtime);
+    EXPECT_LE(now_before, playbacks[0]->last_updated_time);
+    EXPECT_GE(now_after_a, playbacks[0]->last_updated_time);
+
+    EXPECT_EQ("http://google.com/test", playbacks[1]->url.spec());
+    EXPECT_FALSE(playbacks[1]->has_audio);
+    EXPECT_TRUE(playbacks[1]->has_video);
+    EXPECT_EQ(base::TimeDelta::FromSeconds(60), playbacks[1]->watchtime);
+    EXPECT_LE(now_before, playbacks[1]->last_updated_time);
+    EXPECT_GE(now_after_b, playbacks[1]->last_updated_time);
+  }
 
   // Verify that the origin table contains the expected number of items.
-  std::vector<mojom::MediaHistoryOriginRowPtr> origins = GetOriginRowsSync();
-  EXPECT_EQ(1u, origins.size());
-  EXPECT_EQ("http://google.com", origins[0]->origin.Serialize());
-  EXPECT_LE(now_before, origins[0]->last_updated_time);
-  EXPECT_GE(now_after_b, origins[0]->last_updated_time);
+  std::vector<mojom::MediaHistoryOriginRowPtr> origins =
+      GetOriginRowsSync(service());
+
+  if (IsReadOnly()) {
+    EXPECT_TRUE(origins.empty());
+  } else {
+    EXPECT_EQ(1u, origins.size());
+    EXPECT_EQ("http://google.com", origins[0]->origin.Serialize());
+    EXPECT_LE(now_before, origins[0]->last_updated_time);
+    EXPECT_GE(now_after_b, origins[0]->last_updated_time);
+  }
+
+  // The OTR service should have the same data.
+  EXPECT_EQ(origins, GetOriginRowsSync(otr_service()));
+  EXPECT_EQ(playbacks, GetPlaybackRowsSync(otr_service()));
 }
 
-TEST_F(MediaHistoryStoreUnitTest, GetStats) {
+TEST_P(MediaHistoryStoreUnitTest, GetStats) {
   {
     // Check all the tables are empty.
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
     EXPECT_EQ(0, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
     EXPECT_EQ(0,
               stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
@@ -214,6 +251,9 @@ TEST_F(MediaHistoryStoreUnitTest, GetStats) {
     EXPECT_EQ(
         0, stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
     EXPECT_EQ(0, stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(stats, GetStatsSync(otr_service()));
   }
 
   {
@@ -227,24 +267,49 @@ TEST_F(MediaHistoryStoreUnitTest, GetStats) {
 
   {
     // Check the tables have records in them.
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
-    EXPECT_EQ(1, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
-    EXPECT_EQ(1,
-              stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
-    EXPECT_EQ(0, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
-    EXPECT_EQ(
-        0, stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
-    EXPECT_EQ(0, stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
+
+    if (IsReadOnly()) {
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+      EXPECT_EQ(
+          0,
+          stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
+    } else {
+      EXPECT_EQ(1,
+                stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+      EXPECT_EQ(1,
+                stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+      EXPECT_EQ(
+          0,
+          stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(stats, GetStatsSync(otr_service()));
   }
 }
 
-TEST_F(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
+TEST_P(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
   GURL url_a("https://www.google.com");
   GURL url_b("https://www.example.org");
 
   {
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
     EXPECT_EQ(0, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(stats, GetStatsSync(otr_service()));
   }
 
   // Save a couple of sessions on different URLs.
@@ -256,17 +321,27 @@ TEST_F(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
                                  std::vector<media_session::MediaImage>());
 
   // Wait until the sessions have finished saving.
-  content::RunAllTasksUntilIdle();
+  WaitForDB();
 
   {
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
-    EXPECT_EQ(2, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
 
-    sql::Statement s(GetDB().GetUniqueStatement(
-        "SELECT id FROM playbackSession WHERE url = ?"));
-    s.BindString(0, url_a.spec());
-    ASSERT_TRUE(s.Step());
-    EXPECT_EQ(1, s.ColumnInt(0));
+    if (IsReadOnly()) {
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+    } else {
+      EXPECT_EQ(2,
+                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+
+      sql::Statement s(GetDB().GetUniqueStatement(
+          "SELECT id FROM playbackSession WHERE url = ?"));
+      s.BindString(0, url_a.spec());
+      ASSERT_TRUE(s.Step());
+      EXPECT_EQ(1, s.ColumnInt(0));
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(stats, GetStatsSync(otr_service()));
   }
 
   // Save a session on the first URL.
@@ -275,22 +350,33 @@ TEST_F(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
                                  std::vector<media_session::MediaImage>());
 
   // Wait until the sessions have finished saving.
-  content::RunAllTasksUntilIdle();
+  WaitForDB();
 
   {
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
-    EXPECT_EQ(2, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
 
-    // The row for |url_a| should have been replaced so we should have a new ID.
-    sql::Statement s(GetDB().GetUniqueStatement(
-        "SELECT id FROM playbackSession WHERE url = ?"));
-    s.BindString(0, url_a.spec());
-    ASSERT_TRUE(s.Step());
-    EXPECT_EQ(3, s.ColumnInt(0));
+    if (IsReadOnly()) {
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+    } else {
+      EXPECT_EQ(2,
+                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+
+      // The OTR service should have the same data.
+      EXPECT_EQ(stats, GetStatsSync(otr_service()));
+
+      // The row for |url_a| should have been replaced so we should have a new
+      // ID.
+      sql::Statement s(GetDB().GetUniqueStatement(
+          "SELECT id FROM playbackSession WHERE url = ?"));
+      s.BindString(0, url_a.spec());
+      ASSERT_TRUE(s.Step());
+      EXPECT_EQ(3, s.ColumnInt(0));
+    }
   }
 }
 
-TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
+TEST_P(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
   GURL url("http://google.com/test");
   GURL url_alt("http://example.org/test");
 
@@ -302,7 +388,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
         url, url.GetOrigin(), base::TimeDelta::FromSeconds(30),
         base::TimeDelta(), true /* has_video */, true /* has_audio */);
     service()->SavePlayback(watch_time);
-    content::RunAllTasksUntilIdle();
+    WaitForDB();
   }
 
   {
@@ -311,7 +397,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
         url, url.GetOrigin(), base::TimeDelta::FromSeconds(60),
         base::TimeDelta(), true /* has_video */, true /* has_audio */);
     service()->SavePlayback(watch_time);
-    content::RunAllTasksUntilIdle();
+    WaitForDB();
   }
 
   {
@@ -320,7 +406,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
         url, url.GetOrigin(), base::TimeDelta::FromSeconds(30),
         base::TimeDelta(), false /* has_video */, true /* has_audio */);
     service()->SavePlayback(watch_time);
-    content::RunAllTasksUntilIdle();
+    WaitForDB();
   }
 
   {
@@ -329,7 +415,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
         url, url.GetOrigin(), base::TimeDelta::FromSeconds(30),
         base::TimeDelta(), true /* has_video */, false /* has_audio */);
     service()->SavePlayback(watch_time);
-    content::RunAllTasksUntilIdle();
+    WaitForDB();
   }
 
   const auto url_now_after = base::Time::Now().ToJsTime();
@@ -340,48 +426,74 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
         url_alt, url_alt.GetOrigin(), base::TimeDelta::FromSeconds(30),
         base::TimeDelta(), true /* has_video */, true /* has_audio */);
     service()->SavePlayback(watch_time);
-    content::RunAllTasksUntilIdle();
+    WaitForDB();
   }
 
   const auto url_alt_after = base::Time::Now().ToJsTime();
 
   {
     // Check the playbacks were recorded.
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
-    EXPECT_EQ(2, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
-    EXPECT_EQ(5,
-              stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
+
+    if (IsReadOnly()) {
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
+    } else {
+      EXPECT_EQ(2,
+                stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+      EXPECT_EQ(5,
+                stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(stats, GetStatsSync(otr_service()));
   }
 
-  std::vector<mojom::MediaHistoryOriginRowPtr> origins = GetOriginRowsSync();
-  EXPECT_EQ(2u, origins.size());
+  std::vector<mojom::MediaHistoryOriginRowPtr> origins =
+      GetOriginRowsSync(service());
 
-  EXPECT_EQ("http://google.com", origins[0]->origin.Serialize());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(90),
-            origins[0]->cached_audio_video_watchtime);
-  EXPECT_NEAR(url_now_before, origins[0]->last_updated_time, kTimeErrorMargin);
-  EXPECT_GE(url_now_after, origins[0]->last_updated_time);
-  EXPECT_EQ(origins[0]->cached_audio_video_watchtime,
-            origins[0]->actual_audio_video_watchtime);
+  if (IsReadOnly()) {
+    EXPECT_TRUE(origins.empty());
+  } else {
+    EXPECT_EQ(2u, origins.size());
 
-  EXPECT_EQ("http://example.org", origins[1]->origin.Serialize());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(30),
-            origins[1]->cached_audio_video_watchtime);
-  EXPECT_NEAR(url_now_before, origins[1]->last_updated_time, kTimeErrorMargin);
-  EXPECT_GE(url_alt_after, origins[1]->last_updated_time);
-  EXPECT_EQ(origins[1]->cached_audio_video_watchtime,
-            origins[1]->actual_audio_video_watchtime);
+    EXPECT_EQ("http://google.com", origins[0]->origin.Serialize());
+    EXPECT_EQ(base::TimeDelta::FromSeconds(90),
+              origins[0]->cached_audio_video_watchtime);
+    EXPECT_NEAR(url_now_before, origins[0]->last_updated_time,
+                kTimeErrorMargin);
+    EXPECT_GE(url_now_after, origins[0]->last_updated_time);
+    EXPECT_EQ(origins[0]->cached_audio_video_watchtime,
+              origins[0]->actual_audio_video_watchtime);
+
+    EXPECT_EQ("http://example.org", origins[1]->origin.Serialize());
+    EXPECT_EQ(base::TimeDelta::FromSeconds(30),
+              origins[1]->cached_audio_video_watchtime);
+    EXPECT_NEAR(url_now_before, origins[1]->last_updated_time,
+                kTimeErrorMargin);
+    EXPECT_GE(url_alt_after, origins[1]->last_updated_time);
+    EXPECT_EQ(origins[1]->cached_audio_video_watchtime,
+              origins[1]->actual_audio_video_watchtime);
+  }
+
+  // The OTR service should have the same data.
+  EXPECT_EQ(origins, GetOriginRowsSync(otr_service()));
 }
 
-TEST_F(MediaHistoryStoreUnitTest, SaveMediaFeed_Noop) {
+TEST_P(MediaHistoryStoreUnitTest, SaveMediaFeed_Noop) {
   service()->SaveMediaFeed(GURL("https://www.google.com/feed"));
-  content::RunAllTasksUntilIdle();
+  WaitForDB();
 
   {
     // Check the feeds were not recorded.
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
     EXPECT_FALSE(base::Contains(stats->table_row_counts,
                                 MediaHistoryFeedsTable::kTableName));
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(stats, GetStatsSync(otr_service()));
   }
 }
 
@@ -397,32 +509,41 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
   base::test::ScopedFeatureList features_;
 };
 
-TEST_F(MediaHistoryStoreFeedsTest, CreateDatabaseTables) {
+TEST_P(MediaHistoryStoreFeedsTest, CreateDatabaseTables) {
   ASSERT_TRUE(GetDB().DoesTableExist("mediaFeed"));
 }
 
-TEST_F(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
+TEST_P(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
   GURL url_a("https://www.google.com/feed");
   GURL url_b("https://www.google.co.uk/feed");
   GURL url_c("https://www.google.com/feed2");
 
   service()->SaveMediaFeed(url_a);
   service()->SaveMediaFeed(url_b);
-  content::RunAllTasksUntilIdle();
+  WaitForDB();
 
   {
     // Check the feeds were recorded.
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
-    EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
+
+    EXPECT_EQ(IsReadOnly() ? 0 : 2,
+              stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(stats, GetStatsSync(otr_service()));
   }
 
   service()->SaveMediaFeed(url_c);
-  content::RunAllTasksUntilIdle();
+  WaitForDB();
 
   {
     // Check the feeds were recorded.
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
-    EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
+    EXPECT_EQ(IsReadOnly() ? 0 : 2,
+              stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(stats, GetStatsSync(otr_service()));
   }
 }
 

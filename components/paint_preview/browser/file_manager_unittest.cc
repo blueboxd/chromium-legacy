@@ -170,7 +170,7 @@ TEST_F(FileManagerTest, TestCompressDirectoryFail) {
   EXPECT_FALSE(base::PathExists(zip_path));
 }
 
-TEST_F(FileManagerTest, TestDeleteArtifactsFor) {
+TEST_F(FileManagerTest, TestDeleteArtifacts) {
   auto manager =
       base::MakeRefCounted<FileManager>(Dir(), SecondaryTaskRunner());
 
@@ -190,7 +190,7 @@ TEST_F(FileManagerTest, TestDeleteArtifactsFor) {
                     .value_or(base::FilePath());
             EXPECT_FALSE(w3_directory.empty());
 
-            manager->DeleteArtifacts(cr_key);
+            manager->DeleteArtifactSet(cr_key);
             EXPECT_FALSE(base::PathExists(cr_directory));
             EXPECT_TRUE(base::PathExists(w3_directory));
 
@@ -199,7 +199,7 @@ TEST_F(FileManagerTest, TestDeleteArtifactsFor) {
                     .value_or(base::FilePath());
             EXPECT_EQ(cr_directory, new_cr_directory);
 
-            manager->DeleteArtifacts(
+            manager->DeleteArtifactSets(
                 std::vector<DirectoryKey>({cr_key, w3_key}));
             EXPECT_FALSE(base::PathExists(new_cr_directory));
             EXPECT_FALSE(base::PathExists(w3_directory));

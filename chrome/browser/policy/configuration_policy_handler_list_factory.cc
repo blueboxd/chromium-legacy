@@ -52,6 +52,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/embedder_support/pref_names.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -504,7 +505,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSSLVersionMin,
     base::Value::Type::STRING },
   { key::kNTPContentSuggestionsEnabled,
-    ntp_snippets::prefs::kEnableSnippets,
+    feed::prefs::kEnableSnippets,
     base::Value::Type::BOOLEAN },
   { key::kEnableMediaRouter,
     prefs::kEnableMediaRouter,

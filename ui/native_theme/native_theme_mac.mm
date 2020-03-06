@@ -162,9 +162,19 @@ NativeTheme* NativeTheme::GetInstanceForNativeUi() {
   return NativeThemeMac::instance();
 }
 
+NativeTheme* NativeTheme::GetInstanceForDarkUI() {
+  return NativeThemeMac::dark_instance();
+}
+
 // static
 NativeThemeMac* NativeThemeMac::instance() {
-  static base::NoDestructor<NativeThemeMac> s_native_theme;
+  static base::NoDestructor<NativeThemeMac> s_native_theme(true, false);
+  return s_native_theme.get();
+}
+
+// static
+NativeThemeMac* NativeThemeMac::dark_instance() {
+  static base::NoDestructor<NativeThemeMac> s_native_theme(false, true);
   return s_native_theme.get();
 }
 
@@ -179,6 +189,9 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
                                        ColorScheme color_scheme) const {
   if (color_scheme == ColorScheme::kDefault)
     color_scheme = GetDefaultSystemColorScheme();
+
+  if ((color_scheme == ColorScheme::kDark) != IsDarkMode())
+    return NativeTheme::GetSystemColor(color_id, color_scheme);
 
   // Empirically, currentAppearance is incorrect when switching
   // appearances. It's unclear exactly why right now, so work
@@ -238,7 +251,8 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
       break;
   }
 
-  return ApplySystemControlTint(GetAuraColor(color_id, this, color_scheme));
+  return ApplySystemControlTint(
+      NativeTheme::GetSystemColor(color_id, color_scheme));
 }
 
 void NativeThemeMac::PaintMenuPopupBackground(
@@ -281,8 +295,11 @@ bool NativeThemeMac::SystemDarkModeSupported() const {
   return false;
 }
 
-NativeThemeMac::NativeThemeMac() {
-  InitializeDarkModeStateAndObserver();
+NativeThemeMac::NativeThemeMac(bool configure_web_instance,
+                               bool should_only_use_dark_colors)
+    : NativeThemeBase(should_only_use_dark_colors) {
+  if (!should_only_use_dark_colors)
+    InitializeDarkModeStateAndObserver();
 
   if (!IsForcedHighContrast()) {
     set_high_contrast(IsHighContrast());
@@ -299,16 +316,8 @@ NativeThemeMac::NativeThemeMac() {
 //                    }];
   }
 
-  InitializeWebThemeState();
-
-  // Add the web native theme as an observer to stay in sync with dark mode,
-  // high contrast, and preferred color scheme changes.
-  if (features::IsFormControlsRefreshEnabled()) {
-    color_scheme_observer_ =
-        std::make_unique<NativeTheme::ColorSchemeNativeThemeObserver>(
-            NativeTheme::GetInstanceForWeb());
-    AddObserver(color_scheme_observer_.get());
-  }
+  if (configure_web_instance)
+    ConfigureWebInstance();
 }
 
 NativeThemeMac::~NativeThemeMac() {
@@ -338,7 +347,7 @@ void NativeThemeMac::InitializeDarkModeStateAndObserver() {
       }]);
 }
 
-void NativeThemeMac::InitializeWebThemeState() const {
+void NativeThemeMac::ConfigureWebInstance() {
   if (!features::IsFormControlsRefreshEnabled())
     return;
 
@@ -348,6 +357,13 @@ void NativeThemeMac::InitializeWebThemeState() const {
   web_instance->set_use_dark_colors(IsDarkMode());
   web_instance->set_preferred_color_scheme(CalculatePreferredColorScheme());
   web_instance->set_high_contrast(IsHighContrast());
+
+  // Add the web native theme as an observer to stay in sync with dark mode,
+  // high contrast, and preferred color scheme changes.
+  color_scheme_observer_ =
+      std::make_unique<NativeTheme::ColorSchemeNativeThemeObserver>(
+          NativeTheme::GetInstanceForWeb());
+  AddObserver(color_scheme_observer_.get());
 }
 
 }  // namespace ui

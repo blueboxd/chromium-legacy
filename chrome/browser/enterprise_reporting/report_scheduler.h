@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 #include <memory>
-#include <queue>
-#include <string>
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"

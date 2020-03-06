@@ -4,9 +4,6 @@
 
 #include "chrome/browser/enterprise_reporting/report_request_queue_generator.h"
 
-#include <string>
-#include <vector>
-
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"

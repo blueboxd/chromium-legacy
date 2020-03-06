@@ -4,6 +4,7 @@
 
 #include "chrome/browser/enterprise_reporting/report_scheduler.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 

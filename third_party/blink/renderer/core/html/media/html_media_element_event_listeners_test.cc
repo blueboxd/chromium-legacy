@@ -234,7 +234,8 @@ TEST_F(HTMLMediaElementEventListenersTest,
   SimulateReadyState(HTMLMediaElement::kHaveMetadata);
   LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
   Fullscreen::RequestFullscreen(*Video());
-  Fullscreen::DidEnterFullscreen(GetDocument());
+  Fullscreen::DidResolveEnterFullscreenRequest(GetDocument(),
+                                               true /* granted */);
 
   test::RunPendingTasks();
 

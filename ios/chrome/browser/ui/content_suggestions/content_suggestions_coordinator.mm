@@ -8,6 +8,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/scoped_observer.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
@@ -101,7 +102,7 @@
   bool contentSuggestionsEnabled =
       prefs->GetBoolean(prefs::kArticlesForYouEnabled);
   bool contentSuggestionsVisible =
-      prefs->GetBoolean(ntp_snippets::prefs::kArticlesListVisible);
+      prefs->GetBoolean(feed::prefs::kArticlesListVisible);
   if (contentSuggestionsEnabled) {
     if (contentSuggestionsVisible) {
       ntp_home::RecordNTPImpression(ntp_home::REMOTE_SUGGESTIONS);
@@ -165,7 +166,7 @@
   self.contentSuggestionsMediator.contentArticlesExpanded =
       [[PrefBackedBoolean alloc]
           initWithPrefService:prefs
-                     prefName:ntp_snippets::prefs::kArticlesListVisible];
+                     prefName:feed::prefs::kArticlesListVisible];
 
   self.headerController.promoCanShow =
       [self.contentSuggestionsMediator notificationPromo]->CanShow();

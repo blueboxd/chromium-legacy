@@ -16,6 +16,7 @@
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/common/refresh_throttler.h"
 #include "components/feed/core/common/user_classifier.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/time_serialization.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -58,7 +59,7 @@ class FeedSchedulerHostTest : public ::testing::Test {
     local_state()->registry()->RegisterBooleanPref(::prefs::kEulaAccepted,
                                                    true);
     profile_prefs()->registry()->RegisterBooleanPref(
-        prefs::kArticlesListVisible, true);
+        feed::prefs::kArticlesListVisible, true);
 
     Time now;
     EXPECT_TRUE(Time::FromUTCString(kNowString, &now));

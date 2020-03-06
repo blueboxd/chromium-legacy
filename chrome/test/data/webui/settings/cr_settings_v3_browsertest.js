@@ -460,3 +460,15 @@ TEST_F(
       runMochaSuite('ClearBrowsingDataDesktop');
     });
 GEN('#endif');
+
+// eslint-disable-next-line no-var
+var CrSettingsBasicPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/basic_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsBasicPageV3Test', 'All', function() {
+  mocha.run();
+});

@@ -81,7 +81,7 @@ base::Optional<base::FilePath> FileManager::CreateOrGetDirectory(
     bool clear) const {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   if (clear)
-    DeleteArtifacts(key);
+    DeleteArtifactSet(key);
 
   base::FilePath path;
   StorageType storage_type = GetPathForKey(key, &path);
@@ -142,7 +142,7 @@ bool FileManager::CompressDirectory(const DirectoryKey& key) const {
   }
 }
 
-void FileManager::DeleteArtifacts(const DirectoryKey& key) const {
+void FileManager::DeleteArtifactSet(const DirectoryKey& key) const {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::FilePath path;
   StorageType storage_type = GetPathForKey(key, &path);
@@ -151,10 +151,11 @@ void FileManager::DeleteArtifacts(const DirectoryKey& key) const {
   base::DeleteFileRecursively(path);
 }
 
-void FileManager::DeleteArtifacts(const std::vector<DirectoryKey>& keys) const {
+void FileManager::DeleteArtifactSets(
+    const std::vector<DirectoryKey>& keys) const {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   for (const auto& key : keys)
-    DeleteArtifacts(key);
+    DeleteArtifactSet(key);
 }
 
 void FileManager::DeleteAll() const {
@@ -180,6 +181,20 @@ std::unique_ptr<PaintPreviewProto> FileManager::DeserializePaintPreviewProto(
   if (!path.has_value())
     return nullptr;
   return ReadProtoFromFile(path->AppendASCII(kProtoName));
+}
+
+base::flat_set<DirectoryKey> FileManager::ListUsedKeys() const {
+  base::FileEnumerator enumerator(
+      root_directory_,
+      /*recursive=*/false,
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+  std::vector<DirectoryKey> keys;
+  for (base::FilePath name = enumerator.Next(); !name.empty();
+       name = enumerator.Next()) {
+    keys.push_back(
+        DirectoryKey{name.BaseName().RemoveExtension().MaybeAsASCII()});
+  }
+  return base::flat_set<DirectoryKey>(std::move(keys));
 }
 
 FileManager::StorageType FileManager::GetPathForKey(

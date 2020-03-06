@@ -25,6 +25,11 @@ namespace gpu {
 
 class VulkanCommandPool;
 
+struct VulkanImageUsageCache {
+  // Maximal usage flags for VK_IMAGE_TILING_OPTIMAL each ResourceFormat.
+  VkImageUsageFlags optimal_tiling_usage[viz::RESOURCE_FORMAT_MAX + 1];
+};
+
 class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
  public:
   static std::unique_ptr<ExternalVkImageBacking> Create(
@@ -35,6 +40,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage,
+      const VulkanImageUsageCache* image_usage_cache,
       base::span<const uint8_t> pixel_data,
       bool using_gmb = false);
 
@@ -46,7 +52,8 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
       gfx::BufferFormat buffer_format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
-      uint32_t usage);
+      uint32_t usage,
+      const VulkanImageUsageCache* image_usage_cache);
 
   ~ExternalVkImageBacking() override;
 

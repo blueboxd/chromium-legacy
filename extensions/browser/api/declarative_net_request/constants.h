@@ -74,10 +74,11 @@ enum class UpdateDynamicRulesStatus {
   kErrorCreateMatcher_ChecksumMismatch = 12,
   kErrorCreateMatcher_VersionMismatch = 13,
   kErrorRegexTooLarge = 14,
+  kErrorRegexRuleCountExceeded = 15,
 
   // Magic constant used by histograms code. Should be equal to the largest enum
   // value.
-  kMaxValue = kErrorRegexTooLarge,
+  kMaxValue = kErrorRegexRuleCountExceeded,
 };
 
 // Schemes which can be used as part of url transforms.
@@ -109,6 +110,7 @@ extern const char kErrorListNotPassed[];
 
 // Rule indexing install warnings.
 extern const char kRuleCountExceeded[];
+extern const char kRegexRuleCountExceeded[];
 extern const char kRuleNotParsedWarning[];
 extern const char kTooManyParseFailuresWarning[];
 
@@ -116,6 +118,7 @@ extern const char kTooManyParseFailuresWarning[];
 extern const char kInternalErrorUpdatingDynamicRules[];
 extern const char kInternalErrorGettingDynamicRules[];
 extern const char kDynamicRuleCountExceeded[];
+extern const char kDynamicRegexRuleCountExceeded[];
 
 // Histogram names.
 extern const char kIndexAndPersistRulesTimeHistogram[];

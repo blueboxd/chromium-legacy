@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 
-import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.IntentWindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -50,19 +49,10 @@ public class FragmentWindowAndroid extends IntentWindowAndroid {
 
     @Override
     public final ModalDialogManager getModalDialogManager() {
-        if (mModalDialogManager == null) {
-            mModalDialogManager = new ModalDialogManager(new AppModalPresenter(getContext().get()),
-                    ModalDialogManager.ModalDialogType.APP);
-        }
         return mModalDialogManager;
     }
 
-    @Override
-    public void destroy() {
-        if (mModalDialogManager != null) {
-            mModalDialogManager.destroy();
-            mModalDialogManager = null;
-        }
-        super.destroy();
+    public void setModalDialogManager(ModalDialogManager modalDialogManager) {
+        mModalDialogManager = modalDialogManager;
     }
 }

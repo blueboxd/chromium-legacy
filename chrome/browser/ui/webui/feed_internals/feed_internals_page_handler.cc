@@ -18,6 +18,7 @@
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/common/user_classifier.h"
 #include "components/feed/core/feed_scheduler_host.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/suggestions_provider.h"

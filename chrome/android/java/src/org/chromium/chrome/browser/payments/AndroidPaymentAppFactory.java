@@ -12,6 +12,7 @@ import android.util.Pair;
 
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
+import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 
 import java.util.HashMap;
 import java.util.List;

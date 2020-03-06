@@ -122,7 +122,6 @@ internal::SwReporterTestingDelegate* g_testing_delegate_ = nullptr;
 const char kFoundUwsMetricName[] = "SoftwareReporter.FoundUwS";
 const char kFoundUwsReadErrorMetricName[] =
     "SoftwareReporter.FoundUwSReadError";
-const char kScanTimesMetricName[] = "SoftwareReporter.UwSScanTimes";
 const char kMemoryUsedMetricName[] = "SoftwareReporter.MemoryUsed";
 const char kStepMetricName[] = "SoftwareReporter.Step";
 const char kLogsUploadEnabledMetricName[] =
@@ -314,45 +313,6 @@ class UMAHistogramReporter {
     }
   }
 
-  // Reports the UwS scan times of the software reporter tool via UMA.
-  void ReportScanTimes() const {
-    base::string16 scan_times_key_path = base::StringPrintf(
-        L"%ls\\%ls", registry_key_.c_str(), chrome_cleaner::kScanTimesSubKey);
-    // TODO(b/641081): This should only have KEY_QUERY_VALUE and KEY_SET_VALUE.
-    base::win::RegKey scan_times_key;
-    if (scan_times_key.Open(HKEY_CURRENT_USER, scan_times_key_path.c_str(),
-                            KEY_ALL_ACCESS) != ERROR_SUCCESS) {
-      return;
-    }
-
-    base::string16 value_name;
-    int uws_id = 0;
-    int64_t raw_scan_time = 0;
-    int num_scan_times = scan_times_key.GetValueCount();
-    for (int i = 0; i < num_scan_times; ++i) {
-      if (scan_times_key.GetValueNameAt(i, &value_name) == ERROR_SUCCESS &&
-          base::StringToInt(value_name, &uws_id) &&
-          scan_times_key.ReadInt64(value_name.c_str(), &raw_scan_time) ==
-              ERROR_SUCCESS) {
-        base::TimeDelta scan_time =
-            base::TimeDelta::FromInternalValue(raw_scan_time);
-        // We report the number of seconds plus one because it can take less
-        // than one second to scan some UwS and the count passed to |AddCount|
-        // must be at least one.
-        RecordSparseHistogramCount(kScanTimesMetricName, uws_id,
-                                   scan_time.InSeconds() + 1);
-      }
-    }
-    // Clean up by deleting the scan times key, which is a subkey of the main
-    // reporter key.
-    scan_times_key.Close();
-    base::win::RegKey reporter_key;
-    if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
-                          KEY_ENUMERATE_SUB_KEYS) == ERROR_SUCCESS) {
-      reporter_key.DeleteKey(chrome_cleaner::kScanTimesSubKey);
-    }
-  }
-
   void RecordReporterStep(SwReporterUmaValue value) {
     RecordEnumerationHistogram(kStepMetricName, value, SW_REPORTER_MAX);
   }
@@ -456,15 +416,6 @@ class UMAHistogramReporter {
         base::SparseHistogram::FactoryGet(FullName(name), kUmaHistogramFlag);
     if (histogram)
       histogram->Add(sample);
-  }
-
-  void RecordSparseHistogramCount(const std::string& name,
-                                  Sample sample,
-                                  int count) const {
-    auto* histogram =
-        base::SparseHistogram::FactoryGet(FullName(name), kUmaHistogramFlag);
-    if (histogram)
-      histogram->AddCount(sample, count);
   }
 
   const std::string suffix_;
@@ -759,7 +710,6 @@ class ReporterRunner {
                             now.ToInternalValue());
     }
     uma.ReportRuntime(reporter_running_time);
-    uma.ReportScanTimes();
     uma.ReportMemoryUsage();
     if (finished_invocation.reporter_logs_upload_enabled())
       uma.RecordLogsUploadResult();

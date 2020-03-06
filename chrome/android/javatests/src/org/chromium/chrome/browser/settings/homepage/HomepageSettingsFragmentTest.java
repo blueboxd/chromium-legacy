@@ -17,7 +17,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -30,8 +29,8 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.TextMessagePreference;
-import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 import org.chromium.components.browser_ui.widget.RadioButtonWithEditText;
@@ -52,7 +51,7 @@ import org.chromium.ui.test.util.UiRestriction;
  * org.chromium.chrome.browser.partnercustomizations.PartnerHomepageIntegrationTest} and {@link
  * org.chromium.chrome.browser.homepage.HomepagePolicyIntegrationTest}.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 // clang-format off
 @Features.EnableFeatures(ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION)
 @Features.DisableFeatures(ChromeFeatureList.CHROME_DUET)
@@ -166,14 +165,12 @@ public class HomepageSettingsFragmentTest {
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testStartUp_ChromeNTP_BottomToolbar() {
         mHomepageTestRule.useCustomizedHomepageForTest(TEST_URL_BAR);
         mHomepageTestRule.useChromeNTPForTest();
 
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, true);
-        Assert.assertTrue("BottomToolbar should be enabled after setting up feature flag.",
-                BottomToolbarConfiguration.isBottomToolbarEnabled());
+        HomepageSettings.setIsHomeButtonOnBottomToolbar(true);
 
         launchSettingsActivity();
 
@@ -189,7 +186,7 @@ public class HomepageSettingsFragmentTest {
         Assert.assertEquals(ASSERT_MESSAGE_EDIT_TEXT, TEST_URL_BAR,
                 mCustomUriRadioButton.getPrimaryText().toString());
 
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, false);
+        HomepageSettings.setIsHomeButtonOnBottomToolbar(false);
     }
 
     @Test
@@ -281,15 +278,13 @@ public class HomepageSettingsFragmentTest {
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testStartUp_Policies_Customized_BottomToolbar() {
         // Set mock policies
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
         mHomepageTestRule.setHomepagePolicyForTest(TEST_URL_BAR);
 
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, true);
-        Assert.assertTrue("BottomToolbar should be enabled after setting up feature flag.",
-                BottomToolbarConfiguration.isBottomToolbarEnabled());
+        HomepageSettings.setIsHomeButtonOnBottomToolbar(true);
 
         launchSettingsActivity();
 
@@ -313,7 +308,7 @@ public class HomepageSettingsFragmentTest {
 
         // Reset policy
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, null);
+        HomepageSettings.setIsHomeButtonOnBottomToolbar(false);
     }
 
     @Test

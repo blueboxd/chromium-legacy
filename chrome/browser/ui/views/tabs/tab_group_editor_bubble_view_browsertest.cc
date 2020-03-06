@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 
 #include "base/time/time.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -138,4 +140,42 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
   EXPECT_FALSE(group_model->ContainsTabGroup(group_list[0]));
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   EXPECT_TRUE(browser()->IsAttemptingToCloseBrowser());
+}
+
+IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
+                       MoveGroupToNewWindow) {
+  ShowUi("SetUp");
+
+  TabGroupModel* group_model = browser()->tab_strip_model()->group_model();
+  std::vector<tab_groups::TabGroupId> group_list = group_model->ListTabGroups();
+  ASSERT_EQ(1u, group_list.size());
+  ASSERT_EQ(1u, group_model->GetTabGroup(group_list[0])->ListTabs().size());
+
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  TabGroupHeader* header =
+      browser_view->tabstrip()->group_header(group_list[0]);
+  views::Widget* editor_bubble = GetEditorBubbleWidget(header);
+  ASSERT_NE(nullptr, editor_bubble);
+
+  views::Button* const move_group_button =
+      views::Button::AsButton(editor_bubble->GetContentsView()->GetViewByID(
+          TabGroupEditorBubbleView::
+              TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW));
+  EXPECT_NE(nullptr, move_group_button);
+
+  ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::PointF(),
+                                gfx::PointF(), base::TimeTicks(), 0, 0);
+  views::test::ButtonTestApi(move_group_button).NotifyClick(released_event);
+
+  EXPECT_EQ(0u, group_model->ListTabGroups().size());
+  EXPECT_FALSE(group_model->ContainsTabGroup(group_list[0]));
+  EXPECT_EQ(0, browser()->tab_strip_model()->count());
+
+  BrowserList* browser_list = BrowserList::GetInstance();
+  Browser* active_browser = browser_list->GetLastActive();
+  ASSERT_NE(active_browser, browser());
+  EXPECT_EQ(1, active_browser->tab_strip_model()->count());
+  EXPECT_EQ(
+      1u,
+      active_browser->tab_strip_model()->group_model()->ListTabGroups().size());
 }

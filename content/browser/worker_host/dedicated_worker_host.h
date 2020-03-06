@@ -121,6 +121,8 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
       mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client);
 
+  void ReportNoBinderForInterface(const std::string& error);
+
  private:
   // RenderProcessHostObserver:
   void RenderProcessExited(RenderProcessHost* render_process_host,

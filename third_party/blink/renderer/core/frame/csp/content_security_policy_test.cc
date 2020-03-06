@@ -79,21 +79,22 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
                           ContentSecurityPolicySource::kHTTP);
     EXPECT_EQ(test.expected_policy, csp->GetInsecureRequestPolicy());
 
-    DocumentInit init = DocumentInit::Create()
-                            .WithOriginToCommit(secure_origin)
-                            .WithURL(secure_url);
-    auto* document = MakeGarbageCollected<Document>(init);
-    csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
+    auto dummy = std::make_unique<DummyPageHolder>();
+    dummy->GetDocument().SetURL(secure_url);
+    auto& security_context = dummy->GetDocument().GetSecurityContext();
+    security_context.SetSecurityOriginForTesting(secure_origin);
+
+    csp->BindToDelegate(
+        dummy->GetDocument().GetContentSecurityPolicyDelegate());
     EXPECT_EQ(test.expected_policy,
-              document->GetSecurityContext().GetInsecureRequestPolicy());
+              security_context.GetInsecureRequestPolicy());
     bool expect_upgrade =
         (test.expected_policy &
          mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
         mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
-    EXPECT_EQ(
-        expect_upgrade,
-        document->GetSecurityContext().InsecureNavigationsToUpgrade().Contains(
-            document->Url().Host().Impl()->GetHash()));
+    EXPECT_EQ(expect_upgrade,
+              security_context.InsecureNavigationsToUpgrade().Contains(
+                  dummy->GetDocument().Url().Host().Impl()->GetHash()));
   }
 
   // Report-Only
@@ -717,8 +718,9 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
   WTF::OrdinalNumber context_line;
 
   // We need document for HTMLScriptElement tests.
-  DocumentInit init = DocumentInit::Create().WithOriginToCommit(secure_origin);
-  auto* document = MakeGarbageCollected<Document>(init);
+  auto dummy = std::make_unique<DummyPageHolder>();
+  auto& document = dummy->GetDocument();
+  document.GetSecurityContext().SetSecurityOriginForTesting(secure_origin);
 
   for (const auto& test : cases) {
     SCOPED_TRACE(testing::Message() << "Policy: `" << test.policy
@@ -726,12 +728,12 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     unsigned expected_reports = test.allowed ? 0u : 1u;
     auto* element = MakeGarbageCollected<HTMLScriptElement>(
-        *document, CreateElementFlags::ByParser());
+        document, CreateElementFlags::ByParser());
 
     // Enforce 'script-src'
     Persistent<ContentSecurityPolicy> policy =
         MakeGarbageCollected<ContentSecurityPolicy>();
-    policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
+    policy->BindToDelegate(document.GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              ContentSecurityPolicyType::kEnforce,
                              ContentSecurityPolicySource::kHTTP);
@@ -743,7 +745,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     // Enforce 'style-src'
     policy = MakeGarbageCollected<ContentSecurityPolicy>();
-    policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
+    policy->BindToDelegate(document.GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("style-src ") + test.policy,
                              ContentSecurityPolicyType::kEnforce,
                              ContentSecurityPolicySource::kHTTP);
@@ -755,7 +757,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     // Report 'script-src'
     policy = MakeGarbageCollected<ContentSecurityPolicy>();
-    policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
+    policy->BindToDelegate(document.GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              ContentSecurityPolicyType::kReport,
                              ContentSecurityPolicySource::kHTTP);
@@ -766,7 +768,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     // Report 'style-src'
     policy = MakeGarbageCollected<ContentSecurityPolicy>();
-    policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
+    policy->BindToDelegate(document.GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("style-src ") + test.policy,
                              ContentSecurityPolicyType::kReport,
                              ContentSecurityPolicySource::kHTTP);

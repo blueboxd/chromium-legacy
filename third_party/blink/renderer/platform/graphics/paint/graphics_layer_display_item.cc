@@ -48,8 +48,6 @@ void RecordGraphicsLayer(GraphicsContext& context,
   graphics_layer.CcLayer()->RemoveAllChildren();
 
   PaintController& paint_controller = context.GetPaintController();
-  if (paint_controller.DisplayItemConstructionIsDisabled())
-    return;
 
   // This is like ScopedPaintChunkProperties but uses null id because graphics
   // layer chunk doesn't need an id nor a client.

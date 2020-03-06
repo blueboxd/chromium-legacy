@@ -30,6 +30,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
@@ -259,6 +260,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
             (new TestMockTimeTaskRunner(GetDummyNow(),
                                         base::TimeTicks::Now()))) {
     RemoteSuggestionsProviderImpl::RegisterProfilePrefs(
+        utils_.pref_service()->registry());
+    feed::prefs::RegisterFeedSharedProfilePrefs(
         utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
   }
@@ -1142,7 +1145,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, DontNotifyIfNotAvailable) {
               SizeIs(1));
 
   // Set the pref that disables remote suggestions.
-  pref_service()->SetBoolean(prefs::kEnableSnippets, false);
+  pref_service()->SetBoolean(feed::prefs::kEnableSnippets, false);
 
   // Recreate the provider to simulate a Chrome start.
   ResetSuggestionsProvider(

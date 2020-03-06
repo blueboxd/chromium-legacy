@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PAINT_PREVIEW_BROWSER_FILE_MANAGER_H_
 #define COMPONENTS_PAINT_PREVIEW_BROWSER_FILE_MANAGER_H_
 
+#include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -62,8 +63,8 @@ class FileManager : public base::RefCountedThreadSafe<FileManager> {
   bool CompressDirectory(const DirectoryKey& key) const;
 
   // Deletes artifacts associated with |key| or |keys|.
-  void DeleteArtifacts(const DirectoryKey& key) const;
-  void DeleteArtifacts(const std::vector<DirectoryKey>& keys) const;
+  void DeleteArtifactSet(const DirectoryKey& key) const;
+  void DeleteArtifactSets(const std::vector<DirectoryKey>& keys) const;
 
   // Deletes all stored paint previews stored in the |root_directory_|.
   void DeleteAll() const;
@@ -78,6 +79,9 @@ class FileManager : public base::RefCountedThreadSafe<FileManager> {
   // found or the proto cannot be parsed.
   std::unique_ptr<PaintPreviewProto> DeserializePaintPreviewProto(
       const DirectoryKey& key) const;
+
+  // Lists the current set of in-use DirectoryKeys.
+  base::flat_set<DirectoryKey> ListUsedKeys() const;
 
  private:
   friend class base::RefCountedThreadSafe<FileManager>;

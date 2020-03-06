@@ -13,8 +13,6 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "ppapi/buildflags/buildflags.h"
 
-namespace em = enterprise_management;
-
 namespace content {
 struct WebPluginInfo;
 }
@@ -24,8 +22,8 @@ namespace enterprise_reporting {
 // A report generator that collects Browser related information.
 class BrowserReportGenerator {
  public:
-  using ReportCallback =
-      base::OnceCallback<void(std::unique_ptr<em::BrowserReport>)>;
+  using ReportCallback = base::OnceCallback<void(
+      std::unique_ptr<enterprise_management::BrowserReport>)>;
 
   BrowserReportGenerator();
   ~BrowserReportGenerator();
@@ -37,25 +35,20 @@ class BrowserReportGenerator {
   void Generate(ReportCallback callback);
 
  private:
-  // Generates browser_version, channel, executable_path info in the given
-  // report instance.
-  static void GenerateBasicInfos(em::BrowserReport* report);
-
-  // Generates user profiles info in the given report instance.
-  static void GenerateProfileInfos(em::BrowserReport* report);
-
   // Generates plugin info in the given report instance, if needed. Passes
   // |report| to |callback| either asynchronously when the plugin info is
   // available, or synchronously otherwise.
-  void GeneratePluginsIfNeeded(ReportCallback callback,
-                               std::unique_ptr<em::BrowserReport> report);
+  void GeneratePluginsIfNeeded(
+      ReportCallback callback,
+      std::unique_ptr<enterprise_management::BrowserReport> report);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Populates |report| with the plugin info in |plugins|, then passes the
   // report to |callback|.
-  void OnPluginsReady(ReportCallback callback,
-                      std::unique_ptr<em::BrowserReport> report,
-                      const std::vector<content::WebPluginInfo>& plugins);
+  void OnPluginsReady(
+      ReportCallback callback,
+      std::unique_ptr<enterprise_management::BrowserReport> report,
+      const std::vector<content::WebPluginInfo>& plugins);
 #endif
 
   base::WeakPtrFactory<BrowserReportGenerator> weak_ptr_factory_{this};

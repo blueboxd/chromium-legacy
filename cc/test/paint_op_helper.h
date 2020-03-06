@@ -213,6 +213,11 @@ class PaintOpHelper {
             << ", dy=" << PaintOpHelper::SkiaTypeToString(op->dy) << ")";
         break;
       }
+      case PaintOpType::SetNodeId: {
+        const auto* op = static_cast<const SetNodeIdOp*>(base_op);
+        str << "SetNodeIdOp(id=" << op->node_id << ")";
+        break;
+      }
     }
     return str.str();
   }

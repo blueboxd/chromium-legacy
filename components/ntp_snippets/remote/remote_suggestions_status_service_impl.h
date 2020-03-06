@@ -10,7 +10,6 @@
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
 #include "components/prefs/pref_change_registrar.h"
 
-class PrefRegistrySimple;
 class PrefService;
 
 namespace ntp_snippets {
@@ -23,8 +22,6 @@ class RemoteSuggestionsStatusServiceImpl
                                      const std::string& additional_toggle_pref);
 
   ~RemoteSuggestionsStatusServiceImpl() override;
-
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // RemoteSuggestionsStatusService implementation.
   void Init(const StatusChangeCallback& callback) override;

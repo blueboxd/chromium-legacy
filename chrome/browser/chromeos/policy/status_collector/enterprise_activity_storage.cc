@@ -6,6 +6,9 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+#include <set>
+
 #include "base/values.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -28,7 +31,7 @@ void EnterpriseActivityStorage::AddActivityPeriod(
   DCHECK(start <= end);
 
   DictionaryPrefUpdate update(pref_service_, pref_name_);
-  base::DictionaryValue* activity_times = update.Get();
+  base::Value* activity_times = update.Get();
 
   // Assign the period to day buckets in local time.
   base::Time midnight = GetBeginningOfDay(start);
@@ -38,19 +41,21 @@ void EnterpriseActivityStorage::AddActivityPeriod(
 
     const std::string key =
         MakeActivityPeriodPrefKey(TimestampToDayKey(start), active_user_email);
-    int previous_activity = 0;
-    activity_times->GetInteger(key, &previous_activity);
-    activity_times->SetInteger(key, previous_activity + activity);
+    const auto previous_activity = activity_times->FindIntPath(key);
+    if (previous_activity.has_value()) {
+      activity += previous_activity.value();
+    }
+    activity_times->SetIntKey(key, activity);
     start = midnight;
   }
 }
 
-std::vector<ActivityStorage::ActivityPeriod>
+IntervalMap<int64_t, ActivityStorage::Period>
 EnterpriseActivityStorage::GetFilteredActivityPeriods(bool omit_emails) {
   DictionaryPrefUpdate update(pref_service_, pref_name_);
-  base::DictionaryValue* stored_activity_periods = update.Get();
+  base::Value* stored_activity_periods = update.Get();
 
-  base::DictionaryValue filtered_activity_periods;
+  base::Value filtered_activity_periods(base::Value::Type::DICTIONARY);
   if (omit_emails) {
     std::vector<std::string> empty_user_list;
     ProcessActivityPeriods(*stored_activity_periods, empty_user_list,
@@ -63,9 +68,9 @@ EnterpriseActivityStorage::GetFilteredActivityPeriods(bool omit_emails) {
 
 void EnterpriseActivityStorage::FilterActivityPeriodsByUsers(
     const std::vector<std::string>& reporting_users) {
-  const base::DictionaryValue* stored_activity_periods =
+  const base::Value* stored_activity_periods =
       pref_service_->GetDictionary(pref_name_);
-  base::DictionaryValue filtered_activity_periods;
+  base::Value filtered_activity_periods(base::Value::Type::DICTIONARY);
   ProcessActivityPeriods(*stored_activity_periods, reporting_users,
                          &filtered_activity_periods);
   pref_service_->Set(pref_name_, filtered_activity_periods);
@@ -73,9 +78,9 @@ void EnterpriseActivityStorage::FilterActivityPeriodsByUsers(
 
 // static
 void EnterpriseActivityStorage::ProcessActivityPeriods(
-    const base::DictionaryValue& activity_times,
+    const base::Value& activity_times,
     const std::vector<std::string>& reporting_users,
-    base::DictionaryValue* const filtered_times) {
+    base::Value* const filtered_times) {
   std::set<std::string> reporting_users_set(reporting_users.begin(),
                                             reporting_users.end());
   const std::string empty;

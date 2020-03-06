@@ -199,6 +199,7 @@ const int kHostOfflineReasonTimeoutSeconds = 10;
 const char kHostOfflineReasonPolicyReadError[] = "POLICY_READ_ERROR";
 const char kHostOfflineReasonPolicyChangeRequiresRestart[] =
     "POLICY_CHANGE_REQUIRES_RESTART";
+const char kHostOfflineReasonRemoteRestartHost[] = "REMOTE_RESTART_HOST";
 
 }  // namespace
 
@@ -206,6 +207,7 @@ namespace remoting {
 
 class HostProcess : public ConfigWatcher::Delegate,
                     public FtlHostChangeNotificationListener::Listener,
+                    public HeartbeatSender::Delegate,
                     public IPC::Listener,
                     public base::RefCountedThreadSafe<HostProcess> {
  public:
@@ -323,12 +325,11 @@ class HostProcess : public ConfigWatcher::Delegate,
   void StartHostIfReady();
   void StartHost();
 
-  // Error handler for HeartbeatSender.
-  void OnHeartbeatSuccessful();
-  void OnUnknownHostIdError();
-
-  // Error handler for FtlSignalingConnector.
-  void OnAuthFailed();
+  // HeartbeatSender::Delegate implementations.
+  void OnFirstHeartbeatSuccessful() override;
+  void OnHostNotFound() override;
+  void OnAuthFailed() override;
+  void OnRemoteRestartHost() override;
 
   void RestartHost(const std::string& host_offline_reason);
   void ShutdownHost(HostExitCodes exit_code);
@@ -935,12 +936,12 @@ void HostProcess::ShutdownOnUiThread() {
 #endif
 }
 
-void HostProcess::OnUnknownHostIdError() {
+void HostProcess::OnHostNotFound() {
   LOG(ERROR) << "Host ID not found.";
   ShutdownHost(kInvalidHostIdExitCode);
 }
 
-void HostProcess::OnHeartbeatSuccessful() {
+void HostProcess::OnFirstHeartbeatSuccessful() {
   if (state_ != HOST_STARTED) {
     return;
   }
@@ -1438,12 +1439,7 @@ void HostProcess::InitializeSignaling() {
       base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)));
   ftl_signaling_connector_->Start();
   heartbeat_sender_ = std::make_unique<HeartbeatSender>(
-      base::BindOnce(&HostProcess::OnHeartbeatSuccessful,
-                     base::Unretained(this)),
-      base::BindOnce(&HostProcess::OnUnknownHostIdError,
-                     base::Unretained(this)),
-      base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)),
-      host_id_, ftl_signal_strategy.get(), oauth_token_getter_.get(),
+      this, host_id_, ftl_signal_strategy.get(), oauth_token_getter_.get(),
       log_to_server_.get());
   ftl_host_change_notification_listener_ =
       std::make_unique<FtlHostChangeNotificationListener>(
@@ -1571,6 +1567,10 @@ void HostProcess::StartHost() {
 
 void HostProcess::OnAuthFailed() {
   ShutdownHost(kInvalidOauthCredentialsExitCode);
+}
+
+void HostProcess::OnRemoteRestartHost() {
+  RestartHost(kHostOfflineReasonRemoteRestartHost);
 }
 
 void HostProcess::RestartHost(const std::string& host_offline_reason) {

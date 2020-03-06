@@ -5,6 +5,7 @@
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "content/common/frame_messages.h"
@@ -183,7 +184,8 @@ TEST_F(ScreenOrientationProviderTest, DelegateRequireFullScreenLockOnce) {
 
   // Simulates entering full screen.
   contents()->DidChangeScreenOrientation();
-  main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New());
+  main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New(),
+                                   base::DoNothing());
   ASSERT_TRUE(contents()->IsFullscreenForCurrentTab());
 
   base::Optional<ScreenOrientationLockResult> result_2;
@@ -286,7 +288,8 @@ TEST_F(ScreenOrientationProviderTest, UnlockWhenExitingFullScreen) {
 
   // Simulates entering full screen.
   contents()->DidChangeScreenOrientation();
-  main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New());
+  main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New(),
+                                   base::DoNothing());
   ASSERT_TRUE(contents()->IsFullscreenForCurrentTab());
 
   base::Optional<ScreenOrientationLockResult> result;

@@ -136,9 +136,6 @@ void ScrollbarDisplayItem::Record(
     const TransformPaintPropertyNode* scroll_translation,
     CompositorElementId element_id) {
   PaintController& paint_controller = context.GetPaintController();
-  if (paint_controller.DisplayItemConstructionIsDisabled())
-    return;
-
   // Must check PaintController::UseCachedItemIfPossible before this function.
   DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
          !paint_controller.UseCachedItemIfPossible(client, type));

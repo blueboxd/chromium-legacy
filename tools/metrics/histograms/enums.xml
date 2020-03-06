@@ -65252,6 +65252,7 @@ Full version information for the fingerprint enum values:
   <int value="12" label="kErrorCreateMatcher_ChecksumMismatch"/>
   <int value="13" label="kErrorCreateMatcher_VersionMismatch"/>
   <int value="14" label="kErrorRegexTooLarge"/>
+  <int value="15" label="kErrorRegexRuleCountExceeded"/>
 </enum>
 
 <enum name="UpdateEngineAttemptResult">

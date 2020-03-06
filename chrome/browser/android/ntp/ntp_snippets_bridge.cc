@@ -25,10 +25,10 @@
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_metrics.h"
-#include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "ui/base/window_open_disposition.h"
@@ -128,7 +128,7 @@ NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
 
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
-      ntp_snippets::prefs::kArticlesListVisible,
+      feed::prefs::kArticlesListVisible,
       base::BindRepeating(
           &NTPSnippetsBridge::OnSuggestionsVisibilityChanged,
           base::Unretained(this),

@@ -415,36 +415,6 @@ void ContextProviderImpl::Create(
     return;
   }
 
-  if (enable_vulkan) {
-    if (is_headless) {
-      LOG(ERROR) << "VULKAN and HEADLESS features cannot be used together.";
-      context_request.Close(ZX_ERR_INVALID_ARGS);
-      return;
-    }
-
-    DLOG(ERROR) << "Enabling Vulkan GPU acceleration.";
-    // Vulkan requires use of SkiaRenderer, configured to a use Vulkan context.
-    launch_command.AppendSwitch(switches::kUseVulkan);
-    const std::vector<base::StringPiece> enabled_features = {
-        features::kUseSkiaRenderer.name, features::kVulkan.name};
-    AppendFeature(switches::kEnableFeatures,
-                  base::JoinString(enabled_features, ","), &launch_command);
-
-    // SkiaRenderer requires out-of-process rasterization be enabled.
-    launch_command.AppendSwitch(switches::kEnableOopRasterization);
-
-    // TODO(https://crbug.com/766360): Provide a no-op GL implementation until
-    // vANGLE is available.
-    launch_command.AppendSwitchASCII(switches::kUseGL,
-                                     gl::kGLImplementationStubName);
-  } else {
-    DLOG(ERROR) << "Disabling GPU acceleration.";
-    // Disable use of Vulkan GPU, and use of the software-GL rasterizer. The
-    // Context will still run a GPU process, but will not support WebGL.
-    launch_command.AppendSwitch(switches::kDisableGpu);
-    launch_command.AppendSwitch(switches::kDisableSoftwareRasterizer);
-  }
-
   bool allow_protected_graphics =
       web_engine_config.FindBoolPath("allow-protected-graphics")
           .value_or(false);
@@ -463,6 +433,44 @@ void ContextProviderImpl::Create(
     if (force_protected_video_buffers) {
       launch_command.AppendSwitch(switches::kForceProtectedVideoOutputBuffers);
     }
+  }
+
+  if (enable_vulkan) {
+    if (is_headless) {
+      LOG(ERROR) << "VULKAN and HEADLESS features cannot be used together.";
+      context_request.Close(ZX_ERR_INVALID_ARGS);
+      return;
+    }
+
+    DLOG(ERROR) << "Enabling Vulkan GPU acceleration.";
+    // Vulkan requires use of SkiaRenderer, configured to a use Vulkan context.
+    launch_command.AppendSwitch(switches::kUseVulkan);
+    const std::vector<base::StringPiece> enabled_features = {
+        features::kUseSkiaRenderer.name, features::kVulkan.name};
+    AppendFeature(switches::kEnableFeatures,
+                  base::JoinString(enabled_features, ","), &launch_command);
+
+    // SkiaRenderer requires out-of-process rasterization be enabled.
+    launch_command.AppendSwitch(switches::kEnableOopRasterization);
+
+    if (!enable_protected_graphics) {
+      launch_command.AppendSwitchASCII(switches::kUseGL,
+                                       gl::kGLImplementationANGLEName);
+    } else {
+      DLOG(WARNING) << "ANGLE is not compatible with "
+                    << switches::kEnforceVulkanProtectedMemory
+                    << ", disabling GL";
+      // TODO(crbug.com/1059010): Fix this; probably don't protect canvas
+      // resources.
+      launch_command.AppendSwitchASCII(switches::kUseGL,
+                                       gl::kGLImplementationDisabledName);
+    }
+  } else {
+    DLOG(ERROR) << "Disabling GPU acceleration.";
+    // Disable use of Vulkan GPU, and use of the software-GL rasterizer. The
+    // Context will still run a GPU process, but will not support WebGL.
+    launch_command.AppendSwitch(switches::kDisableGpu);
+    launch_command.AppendSwitch(switches::kDisableSoftwareRasterizer);
   }
 
   if (enable_widevine) {

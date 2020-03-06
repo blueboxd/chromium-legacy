@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/class_property.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/range/range.h"
@@ -228,6 +229,10 @@ class VIEWS_EXPORT StyledLabel : public View {
   // |displayed_on_background_color_| if set.
   void UpdateLabelBackgroundColor();
 
+  // Remove all child views. Place all custom views back into custom_views_ and
+  // delete the rest.
+  void RemoveOrDeleteAllChildViews();
+
   // The text to display.
   base::string16 text_;
 
@@ -247,8 +252,10 @@ class VIEWS_EXPORT StyledLabel : public View {
   // that correspond to ranges with is_link style set will be added to the map.
   LinkTargets link_targets_;
 
-  // Owns the custom views used to replace ranges of text with icons, etc.
-  std::set<std::unique_ptr<View>> custom_views_;
+  // Temporarily owns the custom views until they've been been placed into the
+  // StyledLabel's child list. This list also holds the custom views during
+  // layout.
+  std::list<std::unique_ptr<View>> custom_views_;
 
   // Saves the effects of the last CalculateLayout() call to avoid repeated
   // calculation.  |layout_size_info_| can then be cached until the next

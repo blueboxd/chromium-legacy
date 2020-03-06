@@ -76,9 +76,12 @@ void QuotaTemporaryStorageEvictor::ReportPerRoundHistogram() {
   base::Time now = base::Time::Now();
   UMA_HISTOGRAM_TIMES("Quota.TimeSpentToAEvictionRound",
                       now - round_statistics_.start_time);
-  if (!time_of_end_of_last_round_.is_null())
+  if (!time_of_end_of_last_round_.is_null()) {
     UMA_HISTOGRAM_MINUTES("Quota.TimeDeltaOfEvictionRounds",
                           now - time_of_end_of_last_round_);
+  }
+  time_of_end_of_last_round_ = now;
+
   UMA_HISTOGRAM_MBYTES("Quota.DiskspaceShortage",
                        round_statistics_.diskspace_shortage_at_round);
   UMA_HISTOGRAM_MBYTES("Quota.EvictedBytesPerRound",

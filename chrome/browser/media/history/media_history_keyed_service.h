@@ -83,14 +83,18 @@ class MediaHistoryKeyedService : public KeyedService,
   // Saves a newly discovered media feed in the media history store.
   void SaveMediaFeed(const GURL& url);
 
- protected:
-  friend class MediaHistoryKeyedServiceTest;
-
   void GetURLsInTableForTest(const std::string& table,
                              base::OnceCallback<void(std::set<GURL>)> callback);
 
+  // Posts an empty task to the database thread. The callback will be called
+  // on the calling thread when the empty task is completed. This can be used
+  // for waiting for database operations in tests.
+  void PostTaskToDBForTest(base::OnceClosure callback);
+
  private:
-  std::unique_ptr<MediaHistoryStore> media_history_store_;
+  class StoreHolder;
+
+  std::unique_ptr<StoreHolder> store_;
 
   Profile* profile_;
 

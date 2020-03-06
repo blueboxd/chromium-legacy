@@ -16,6 +16,7 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.VerifiesOnP;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionMetricsLogger;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Smart Selection logger, wrapper of Android logger methods.
@@ -33,25 +34,28 @@ public class SmartSelectionMetricsLogger implements SelectionMetricsLogger {
     private static final String TAG = "SmartSelectionLogger";
     private static final boolean DEBUG = false;
 
-    private Context mContext;
+    private WindowAndroid mWindowAndroid;
 
     private TextClassifier mSession;
 
     private SelectionIndicesConverter mConverter;
 
-    public static SmartSelectionMetricsLogger create(Context context) {
-        if (context == null) {
+    public static SmartSelectionMetricsLogger create(WindowAndroid windowAndroid) {
+        if (windowAndroid.getContext().get() == null) {
             return null;
         }
-        return new SmartSelectionMetricsLogger(context);
+        return new SmartSelectionMetricsLogger(windowAndroid);
     }
 
-    private SmartSelectionMetricsLogger(Context context) {
-        mContext = context;
+    private SmartSelectionMetricsLogger(WindowAndroid windowAndroid) {
+        mWindowAndroid = windowAndroid;
     }
 
     public void logSelectionStarted(String selectionText, int startOffset, boolean editable) {
-        mSession = createSession(mContext, editable);
+        Context context = mWindowAndroid.getContext().get();
+        if (context == null) return;
+
+        mSession = createSession(context, editable);
         mConverter = new SelectionIndicesConverter();
         mConverter.updateSelectionState(selectionText, startOffset);
         mConverter.setInitialStartOffset(startOffset);
@@ -125,10 +129,10 @@ public class SmartSelectionMetricsLogger implements SelectionMetricsLogger {
         }
     }
 
-    public TextClassifier createSession(Context context, boolean editable) {
+    private TextClassifier createSession(Context context, boolean editable) {
         TextClassificationContext textClassificationContext =
                 new TextClassificationContext
-                        .Builder(mContext.getPackageName(),
+                        .Builder(context.getPackageName(),
                                 editable ? TextClassifier.WIDGET_TYPE_EDIT_WEBVIEW
                                          : TextClassifier.WIDGET_TYPE_WEBVIEW)
                         .build();

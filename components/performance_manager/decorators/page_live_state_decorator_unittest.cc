@@ -5,32 +5,10 @@
 #include "components/performance_manager/public/decorators/page_live_state_decorator.h"
 
 #include "components/performance_manager/performance_manager_test_harness.h"
-#include "components/performance_manager/test_support/page_live_state_decorator.h"
+#include "components/performance_manager/test_support/decorators_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
-
-namespace {
-
-void EndToEndPropertyTest(content::WebContents* contents,
-                          bool (PageLiveStateDecorator::Data::*pm_getter)()
-                              const,
-                          void (*ui_thread_setter)(content::WebContents*, bool),
-                          bool default_state = false) {
-  // By default all properties are set to the default value.
-  TestPageLiveStatePropertyOnPMSequence(contents, pm_getter, default_state);
-
-  // Pretend that the property changed and make sure that the PageNode data gets
-  // updated.
-  (*ui_thread_setter)(contents, !default_state);
-  TestPageLiveStatePropertyOnPMSequence(contents, pm_getter, !default_state);
-
-  // Switch back to the default state.
-  (*ui_thread_setter)(contents, default_state);
-  TestPageLiveStatePropertyOnPMSequence(contents, pm_getter, default_state);
-}
-
-}  // namespace
 
 class PageLiveStateDecoratorTest : public PerformanceManagerTestHarness {
  protected:
@@ -42,64 +20,57 @@ class PageLiveStateDecoratorTest : public PerformanceManagerTestHarness {
 
   void SetUp() override {
     PerformanceManagerTestHarness::SetUp();
-    auto contents = CreateTestWebContents();
-    contents_ = contents.get();
-    SetContents(std::move(contents));
+    SetContents(CreateTestWebContents());
   }
 
   void TearDown() override {
     DeleteContents();
-    contents_ = nullptr;
     PerformanceManagerTestHarness::TearDown();
   }
-
-  content::WebContents* contents() { return contents_; }
-
- private:
-  content::WebContents* contents_ = nullptr;
 };
 
 TEST_F(PageLiveStateDecoratorTest, OnIsConnectedToUSBDeviceChanged) {
-  EndToEndPropertyTest(
-      contents(), &PageLiveStateDecorator::Data::IsConnectedToUSBDevice,
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsConnectedToUSBDevice,
       &PageLiveStateDecorator::OnIsConnectedToUSBDeviceChanged);
 }
 
 TEST_F(PageLiveStateDecoratorTest, OnIsConnectedToBluetoothDeviceChanged) {
-  EndToEndPropertyTest(
-      contents(), &PageLiveStateDecorator::Data::IsConnectedToBluetoothDevice,
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(),
+      &PageLiveStateDecorator::Data::IsConnectedToBluetoothDevice,
       &PageLiveStateDecorator::OnIsConnectedToBluetoothDeviceChanged);
 }
 
 TEST_F(PageLiveStateDecoratorTest, OnIsCapturingVideoChanged) {
-  EndToEndPropertyTest(contents(),
-                       &PageLiveStateDecorator::Data::IsCapturingVideo,
-                       &PageLiveStateDecorator::OnIsCapturingVideoChanged);
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsCapturingVideo,
+      &PageLiveStateDecorator::OnIsCapturingVideoChanged);
 }
 
 TEST_F(PageLiveStateDecoratorTest, OnIsCapturingAudioChanged) {
-  EndToEndPropertyTest(contents(),
-                       &PageLiveStateDecorator::Data::IsCapturingAudio,
-                       &PageLiveStateDecorator::OnIsCapturingAudioChanged);
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsCapturingAudio,
+      &PageLiveStateDecorator::OnIsCapturingAudioChanged);
 }
 
 TEST_F(PageLiveStateDecoratorTest, OnIsBeingMirroredChanged) {
-  EndToEndPropertyTest(contents(),
-                       &PageLiveStateDecorator::Data::IsBeingMirrored,
-                       &PageLiveStateDecorator::OnIsBeingMirroredChanged);
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsBeingMirrored,
+      &PageLiveStateDecorator::OnIsBeingMirroredChanged);
 }
 
 TEST_F(PageLiveStateDecoratorTest, OnIsCapturingDesktopChanged) {
-  EndToEndPropertyTest(contents(),
-                       &PageLiveStateDecorator::Data::IsCapturingDesktop,
-                       &PageLiveStateDecorator::OnIsCapturingDesktopChanged);
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsCapturingDesktop,
+      &PageLiveStateDecorator::OnIsCapturingDesktopChanged);
 }
 
 TEST_F(PageLiveStateDecoratorTest, SetIsAutoDiscardable) {
-  EndToEndPropertyTest(contents(),
-                       &PageLiveStateDecorator::Data::IsAutoDiscardable,
-                       &PageLiveStateDecorator::SetIsAutoDiscardable,
-                       /*default_state=*/true);
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsAutoDiscardable,
+      &PageLiveStateDecorator::SetIsAutoDiscardable,
+      /*default_state=*/true);
 }
 
 }  // namespace performance_manager

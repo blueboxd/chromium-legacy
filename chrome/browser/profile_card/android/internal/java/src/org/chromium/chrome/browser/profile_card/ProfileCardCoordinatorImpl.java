@@ -21,8 +21,12 @@ public class ProfileCardCoordinatorImpl implements ProfileCardCoordinator {
     private PropertyModelChangeProcessor mModelChangeProcessor;
     private CreatorMetadata mCreatorMetadata;
 
-    @Override
-    public void init(View anchorView, CreatorMetadata creatorMetadata) {
+    /**
+     * Construct a new profile card coordinator.
+     * @param view The {@link View} triggers the profile card.
+     * @param CreatorMetadata The {@link CreatorMetadata} stores all data needed by profile card.
+     */
+    ProfileCardCoordinatorImpl(View anchorView, CreatorMetadata creatorMetadata) {
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
         mView = new ProfileCardView(anchorView.getContext(), anchorView, /*stringId=*/"",
                 /*accessibilityStringId=*/"", rectProvider);

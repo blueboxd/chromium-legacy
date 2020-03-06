@@ -570,4 +570,30 @@ TEST(PickleTest, ClaimBytes) {
   EXPECT_EQ(42, out_value);
 }
 
+TEST(PickleTest, ReachedEnd) {
+  Pickle pickle;
+  pickle.WriteInt(1);
+  pickle.WriteInt(2);
+  pickle.WriteInt(3);
+
+  PickleIterator iter(pickle);
+  int out;
+
+  EXPECT_FALSE(iter.ReachedEnd());
+  EXPECT_TRUE(iter.ReadInt(&out));
+  EXPECT_EQ(1, out);
+
+  EXPECT_FALSE(iter.ReachedEnd());
+  EXPECT_TRUE(iter.ReadInt(&out));
+  EXPECT_EQ(2, out);
+
+  EXPECT_FALSE(iter.ReachedEnd());
+  EXPECT_TRUE(iter.ReadInt(&out));
+  EXPECT_EQ(3, out);
+
+  EXPECT_TRUE(iter.ReachedEnd());
+  EXPECT_FALSE(iter.ReadInt(&out));
+  EXPECT_TRUE(iter.ReachedEnd());
+}
+
 }  // namespace base

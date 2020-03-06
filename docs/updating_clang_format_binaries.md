@@ -119,7 +119,7 @@ The `README.chromium` file ought to be updated with version and date info.
 
     The binaries were built at clang revision ####### on ####DATETIME####.
 
-    BUG=
+    Bug:
 
 The change should **always** include new `.sha1` files for each platform (we
 want to keep these in lockstep), should **never** include `clang-format`

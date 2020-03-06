@@ -41,7 +41,7 @@ PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
                              is_overlay),
       track_ui_resource_id_(0),
       thumb_ui_resource_id_(0),
-      thumb_opacity_(1.f),
+      painted_opacity_(1.f),
       internal_contents_scale_(1.f),
       supports_drag_snap_back_(false),
       thumb_thickness_(0),
@@ -75,14 +75,11 @@ void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->set_track_ui_resource_id(track_ui_resource_id_);
   scrollbar_layer->set_thumb_ui_resource_id(thumb_ui_resource_id_);
 
-  scrollbar_layer->set_thumb_opacity(thumb_opacity_);
+  scrollbar_layer->set_scrollbar_painted_opacity(painted_opacity_);
 }
 
 float PaintedScrollbarLayerImpl::OverlayScrollbarOpacity() const {
-  // This is relevant in case of Mac overlay scrollbars because they fade out by
-  // animating the opacity via Blink paint. This member will be renamed as a
-  // part of crbug.com/1055246.
-  return thumb_opacity_;
+  return painted_opacity_;
 }
 
 bool PaintedScrollbarLayerImpl::WillDraw(
@@ -125,8 +122,8 @@ void PaintedScrollbarLayerImpl::AppendQuads(
 
   if (thumb_resource_id && !visible_thumb_quad_rect.IsEmpty()) {
     bool needs_blending = true;
-    const float opacity[] = {thumb_opacity_, thumb_opacity_, thumb_opacity_,
-                             thumb_opacity_};
+    const float opacity[] = {painted_opacity_, painted_opacity_,
+                             painted_opacity_, painted_opacity_};
     auto* quad = render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
     quad->SetNew(shared_quad_state, scaled_thumb_quad_rect,
                  scaled_visible_thumb_quad_rect, needs_blending,

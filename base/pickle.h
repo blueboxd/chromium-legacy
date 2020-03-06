@@ -75,6 +75,8 @@ class BASE_EXPORT PickleIterator {
     return !!GetReadPointerAndAdvance(num_bytes);
   }
 
+  bool ReachedEnd() const { return read_index_ == end_index_; }
+
  private:
   // Read Type from Pickle.
   template <typename Type>

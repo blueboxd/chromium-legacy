@@ -21,12 +21,9 @@ class XRAnchor : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRAnchor(uint64_t id, XRSession* session);
-
   XRAnchor(uint64_t id,
            XRSession* session,
-           const device::mojom::blink::XRAnchorDataPtr& anchor_data,
-           double timestamp);
+           const device::mojom::blink::XRAnchorDataPtr& anchor_data);
 
   uint64_t id() const;
 
@@ -34,33 +31,24 @@ class XRAnchor : public ScriptWrappable {
 
   TransformationMatrix MojoFromObject() const;
 
-  double lastChangedTime(bool& is_null) const;
-
   void detach();
 
-  void Update(const device::mojom::blink::XRAnchorDataPtr& anchor_data,
-              double timestamp);
+  void Update(const device::mojom::blink::XRAnchorDataPtr& anchor_data);
 
   void Trace(Visitor* visitor) override;
 
  private:
-  // AnchorData will only be present in an XRAnchor after the anchor was updated
-  // for the first time (CreateAnchor returns a promise that will resolve to an
-  // XRAnchor prior to first update of the anchor).
-  struct AnchorData {
-    // Anchor's pose in device (mojo) space.
-    std::unique_ptr<TransformationMatrix> pose_matrix_;
-    double last_changed_time_;
-
-    AnchorData(const device::mojom::blink::XRAnchorDataPtr& anchor_data,
-               double timestamp);
-  };
-
   const uint64_t id_;
 
   Member<XRSession> session_;
 
-  base::Optional<AnchorData> anchor_data_;
+  // |mojo_from_anchor_| will be non-null in an XRAnchor after the anchor was
+  // updated for the first time - this *must* happen in the same frame in which
+  // the anchor was created for the anchor to be fully usable. It is currently
+  // ensured by XRSession - anchors that got created prior to receiving the
+  // result from mojo call to GetFrameData are not returned to the application
+  // until their poses are known.
+  std::unique_ptr<TransformationMatrix> mojo_from_anchor_;
 
   // Cached anchor space - it will be created by `anchorSpace()` if it's not
   // set.

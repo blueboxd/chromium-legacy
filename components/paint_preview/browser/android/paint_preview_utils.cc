@@ -127,11 +127,13 @@ void OnCaptured(scoped_refptr<FileManager> manager,
 
 void InitiateCapture(scoped_refptr<FileManager> manager,
                      const DirectoryKey& key,
-                     content::WebContents* contents,
+                     int frame_tree_node_id,
                      FinishedCallback finished,
                      bool keep_zip,
                      const base::Optional<base::FilePath>& url_path) {
-  if (!url_path.has_value()) {
+  auto* contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  if (!url_path.has_value() || !contents) {
     std::move(finished).Run(base::nullopt);
     return;
   }
@@ -177,7 +179,8 @@ void Capture(content::WebContents* contents,
   manager->GetTaskRunner()->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&FileManager::CreateOrGetDirectory, manager, key, true),
-      base::BindOnce(&InitiateCapture, manager, key, base::Unretained(contents),
+      base::BindOnce(&InitiateCapture, manager, key,
+                     contents->GetMainFrame()->GetFrameTreeNodeId(),
                      std::move(finished), keep_zip));
 }
 

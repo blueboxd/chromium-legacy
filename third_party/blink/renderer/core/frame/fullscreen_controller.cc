@@ -70,24 +70,7 @@ void FullscreenController::DidEnterFullscreen() {
 
   state_ = State::kFullscreen;
 
-  // Notify all pending local frames in order that we have entered fullscreen.
-  for (LocalFrame* frame : *pending_frames_) {
-    if (frame) {
-      if (Document* document = frame->GetDocument())
-        Fullscreen::DidEnterFullscreen(*document);
-    }
-  }
-
-  // Notify all local frames that we have entered fullscreen.
-  for (Frame* frame = web_view_base_->GetPage()->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    auto* local_frame = DynamicTo<LocalFrame>(frame);
-    if (!local_frame)
-      continue;
-    if (Document* document = local_frame->GetDocument())
-      Fullscreen::DidEnterFullscreen(*document);
-  }
-  pending_frames_->clear();
+  NotifyFramesOfFullscreenEntry(true /* success */);
 
   // TODO(foolip): If the top level browsing context (main frame) ends up with
   // no fullscreen element, exit fullscreen again to recover.
@@ -176,7 +159,9 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
   // ancestor frames if the subframe has already entered fullscreen.
   if (!for_cross_process_descendant) {
     frame.GetLocalFrameHostRemote().EnterFullscreen(
-        std::move(fullscreen_options));
+        std::move(fullscreen_options),
+        WTF::Bind(&FullscreenController::EnterFullscreenCallback,
+                  WTF::Unretained(this)));
   }
 
   state_ = State::kEnteringFullscreen;
@@ -249,6 +234,40 @@ void FullscreenController::RestoreBackgroundColorOverride() {
     } else {
       web_view_base_->ClearBackgroundColorOverride();
     }
+  }
+}
+
+void FullscreenController::NotifyFramesOfFullscreenEntry(bool granted) {
+  // Notify all pending local frames in order whether or not we successfully
+  // entered fullscreen.
+  for (LocalFrame* frame : *pending_frames_) {
+    if (frame) {
+      if (Document* document = frame->GetDocument()) {
+        Fullscreen::DidResolveEnterFullscreenRequest(*document, granted);
+      }
+    }
+  }
+
+  // Notify all local frames whether or not we successfully entered fullscreen.
+  for (Frame* frame = web_view_base_->GetPage()->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
+      continue;
+    if (Document* document = local_frame->GetDocument()) {
+      Fullscreen::DidResolveEnterFullscreenRequest(*document, granted);
+    }
+  }
+  pending_frames_->clear();
+}
+
+void FullscreenController::EnterFullscreenCallback(bool granted) {
+  if (granted) {
+    // If the fullscreen is granted, then the VisualPropertiesUpdated message
+    // will later be fired and the state will be updated then.
+  } else {
+    state_ = State::kInitial;
+    NotifyFramesOfFullscreenEntry(false /* granted */);
   }
 }
 

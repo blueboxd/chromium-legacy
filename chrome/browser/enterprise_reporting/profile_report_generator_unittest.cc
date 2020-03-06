@@ -22,6 +22,8 @@
 #include "extensions/browser/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace em = enterprise_management;
+
 namespace enterprise_reporting {
 namespace {
 

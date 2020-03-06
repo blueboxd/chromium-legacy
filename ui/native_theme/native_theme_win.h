@@ -80,8 +80,11 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   friend class base::NoDestructor<NativeThemeWin>;
   // Gets our singleton instance.
   static NativeThemeWin* instance();
+  static NativeThemeWin* dark_instance();
 
-  NativeThemeWin();
+  void ConfigureWebInstance() override;
+
+  NativeThemeWin(bool configure_web_instance, bool should_only_use_dark_colors);
   ~NativeThemeWin() override;
 
  private:

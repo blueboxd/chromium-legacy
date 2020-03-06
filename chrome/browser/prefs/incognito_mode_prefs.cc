@@ -8,121 +8,20 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
-#include "base/task/thread_pool.h"
-#include "base/threading/scoped_blocking_call.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
-#include <objbase.h>
-#include <wpcapi.h>
-#include <wrl/client.h>
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/memory/singleton.h"
+#include "chrome/browser/win/parental_controls.h"
 #endif  // OS_WIN
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/partner_browser_customizations.h"
 #endif  // defined(OS_ANDROID)
-
-using content::BrowserThread;
-
-#if defined(OS_WIN)
-namespace {
-
-// This singleton allows us to attempt to calculate the Platform Parental
-// Controls enabled value on a worker thread before the UI thread needs the
-// value. If the UI thread finishes sooner than we expect, that's no worse than
-// today where we block.
-class PlatformParentalControlsValue {
- public:
-  static PlatformParentalControlsValue* GetInstance() {
-    return base::Singleton<PlatformParentalControlsValue>::get();
-  }
-
-  bool is_enabled() const {
-    return is_enabled_;
-  }
-
- private:
-  friend struct base::DefaultSingletonTraits<PlatformParentalControlsValue>;
-
-  // Histogram enum for tracking the thread that checked parental controls.
-  enum class ThreadType {
-    UI = 0,
-    BLOCKING,
-    COUNT,
-  };
-
-  PlatformParentalControlsValue()
-      : is_enabled_(IsParentalControlActivityLoggingOn()) {}
-
-  ~PlatformParentalControlsValue() = default;
-
-  // Returns true if Windows Parental control activity logging is enabled. This
-  // feature is available on Windows 7 and beyond. This function should be
-  // called on a COM Initialized thread and is potentially blocking.
-  static bool IsParentalControlActivityLoggingOn() {
-    ThreadType thread_type = ThreadType::BLOCKING;
-    if (BrowserThread::IsThreadInitialized(BrowserThread::UI) &&
-        content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-      thread_type = ThreadType::UI;
-    }
-
-    UMA_HISTOGRAM_ENUMERATION(
-        "IncognitoModePrefs.WindowsParentalControlsInitThread",
-        static_cast<int32_t>(thread_type),
-        static_cast<int32_t>(ThreadType::COUNT));
-
-    base::Time begin_time = base::Time::Now();
-    bool result = IsParentalControlActivityLoggingOnImpl();
-    UMA_HISTOGRAM_TIMES("IncognitoModePrefs.WindowsParentalControlsInitTime",
-                        base::Time::Now() - begin_time);
-    return result;
-  }
-
-  // Does the work of determining if Windows Parental control activity logging
-  // is enabled.
-  static bool IsParentalControlActivityLoggingOnImpl() {
-    // Since we can potentially block, make sure the thread is okay with this.
-    base::ScopedBlockingCall scoped_blocking_call(
-        FROM_HERE, base::BlockingType::MAY_BLOCK);
-    Microsoft::WRL::ComPtr<IWindowsParentalControlsCore> parent_controls;
-    HRESULT hr = ::CoCreateInstance(__uuidof(WindowsParentalControls), nullptr,
-                                    CLSCTX_ALL, IID_PPV_ARGS(&parent_controls));
-    if (FAILED(hr))
-      return false;
-
-    Microsoft::WRL::ComPtr<IWPCSettings> settings;
-    hr = parent_controls->GetUserSettings(nullptr, settings.GetAddressOf());
-    if (FAILED(hr))
-      return false;
-
-    unsigned long restrictions = 0;
-    settings->GetRestrictions(&restrictions);
-
-    return (restrictions & WPCFLAG_LOGGING_REQUIRED) ==
-        WPCFLAG_LOGGING_REQUIRED;
-  }
-
-  const bool is_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformParentalControlsValue);
-};
-
-}  // namespace
-#endif  // OS_WIN
 
 // static
 // Sadly, this is required until c++17.
@@ -197,20 +96,10 @@ bool IncognitoModePrefs::CanOpenBrowser(Profile* profile) {
   }
 }
 
-#if defined(OS_WIN)
-// static
-void IncognitoModePrefs::InitializePlatformParentalControls() {
-  base::ThreadPool::CreateCOMSTATaskRunner(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
-      ->PostTask(FROM_HERE, base::BindOnce(base::IgnoreResult(
-                                &PlatformParentalControlsValue::GetInstance)));
-}
-#endif
-
 // static
 bool IncognitoModePrefs::ArePlatformParentalControlsEnabled() {
 #if defined(OS_WIN)
-  return PlatformParentalControlsValue::GetInstance()->is_enabled();
+  return GetWinParentalControls().logging_required;
 #elif defined(OS_ANDROID)
   return chrome::android::PartnerBrowserCustomizations::IsIncognitoDisabled();
 #else

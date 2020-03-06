@@ -122,22 +122,6 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
     observer->OnMainFrameDocumentChanged(this);
 }
 
-double PageNodeImpl::GetCPUUsage() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  double cpu_usage = 0;
-
-  // TODO(chrisha/siggi): This should all be ripped out / refactored.
-  for (auto* process_node :
-       GraphImplOperations::GetAssociatedProcessNodes(this)) {
-    size_t pages_in_process =
-        GraphImplOperations::GetAssociatedPageNodes(process_node).size();
-    DCHECK_LE(1u, pages_in_process);
-    cpu_usage += process_node->cpu_usage() / pages_in_process;
-  }
-
-  return cpu_usage;
-}
-
 base::TimeDelta PageNodeImpl::TimeSinceLastNavigation() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (navigation_committed_time_.is_null())
@@ -217,11 +201,6 @@ base::TimeTicks PageNodeImpl::usage_estimate_time() const {
   return usage_estimate_time_;
 }
 
-base::TimeDelta PageNodeImpl::cumulative_cpu_usage_estimate() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return cumulative_cpu_usage_estimate_;
-}
-
 uint64_t PageNodeImpl::private_footprint_kb_estimate() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return private_footprint_kb_estimate_;
@@ -256,12 +235,6 @@ void PageNodeImpl::set_usage_estimate_time(
     base::TimeTicks usage_estimate_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   usage_estimate_time_ = usage_estimate_time;
-}
-
-void PageNodeImpl::set_cumulative_cpu_usage_estimate(
-    base::TimeDelta cumulative_cpu_usage_estimate) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  cumulative_cpu_usage_estimate_ = cumulative_cpu_usage_estimate;
 }
 
 void PageNodeImpl::set_private_footprint_kb_estimate(

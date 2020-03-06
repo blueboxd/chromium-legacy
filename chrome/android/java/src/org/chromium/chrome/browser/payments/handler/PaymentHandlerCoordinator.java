@@ -4,8 +4,12 @@
 
 package org.chromium.chrome.browser.payments.handler;
 
+import android.content.Context;
+import android.view.View;
+
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
@@ -88,7 +92,8 @@ public class PaymentHandlerCoordinator {
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerProperties.ALL_KEYS).build();
         PaymentHandlerMediator mediator = new PaymentHandlerMediator(model, this::hide,
                 mWebContents, uiObserver, activity.getActivityTab().getView(),
-                mToolbarCoordinator.getView(), mToolbarCoordinator.getShadowHeightPx());
+                mToolbarCoordinator.getToolbarHeightPx(),
+                calculateBottomSheetToolbarContainerTopPadding(activity));
         activity.getWindow().getDecorView().addOnLayoutChangeListener(mediator);
         BottomSheetController bottomSheetController = activity.getBottomSheetController();
         bottomSheetController.addObserver(mediator);
@@ -119,6 +124,18 @@ public class PaymentHandlerCoordinator {
             mediator.destroy();
         };
         return bottomSheetController.requestShowContent(view, /*animate=*/true);
+    }
+
+    // TODO(crbug.com/1059269): This approach introduces coupling by assuming BottomSheet toolbar's
+    // layout. Remove it once we can calculate visible content height with better ways.
+    /**
+     * @return bottom_sheet_toolbar_container's top padding. This is used to calculate the visible
+     *         content height.
+     */
+    private int calculateBottomSheetToolbarContainerTopPadding(Context context) {
+        View view = new View(context);
+        view.setBackgroundResource(R.drawable.top_round);
+        return view.getPaddingTop();
     }
 
     /**

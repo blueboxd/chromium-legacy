@@ -18,15 +18,15 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
   friend class NativeThemeAuraTest;
   friend class base::NoDestructor<NativeThemeAura>;
 
-  explicit NativeThemeAura(bool use_overlay_scrollbars);
+  explicit NativeThemeAura(bool use_overlay_scrollbars,
+                           bool should_only_use_dark_colors);
   ~NativeThemeAura() override;
 
   static NativeThemeAura* instance();
+  static NativeThemeAura* dark_instance();
   static NativeThemeAura* web_instance();
 
   // NativeThemeBase:
-  SkColor GetSystemColor(ColorId color_id,
-                         ColorScheme color_scheme) const override;
   void PaintMenuPopupBackground(
       cc::PaintCanvas* canvas,
       const gfx::Size& size,

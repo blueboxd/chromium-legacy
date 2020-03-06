@@ -15,8 +15,6 @@
 #include "chrome/browser/enterprise_reporting/report_request_definition.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
-namespace em = enterprise_management;
-
 namespace enterprise_reporting {
 
 // Generate a report request queue that contains full profile information. The
@@ -26,7 +24,7 @@ class ReportRequestQueueGenerator {
   using ReportRequests = std::queue<std::unique_ptr<ReportRequest>>;
 
  public:
-  explicit ReportRequestQueueGenerator();
+  ReportRequestQueueGenerator();
   ReportRequestQueueGenerator(const ReportRequestQueueGenerator&) = delete;
   ReportRequestQueueGenerator& operator=(const ReportRequestQueueGenerator&) =
       delete;

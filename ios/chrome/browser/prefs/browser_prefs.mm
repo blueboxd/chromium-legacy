@@ -8,6 +8,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #import "components/handoff/handoff_manager.h"
 #include "components/history/core/common/pref_names.h"
@@ -138,10 +139,12 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   autofill::prefs::RegisterProfilePrefs(registry);
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
+  feed::prefs::RegisterFeedSharedProfilePrefs(registry);
   FirstRun::RegisterProfilePrefs(registry);
-  HostContentSettingsMap::RegisterProfilePrefs(registry);
-  language::LanguagePrefs::RegisterProfilePrefs(registry);
   FontSizeTabHelper::RegisterBrowserStatePrefs(registry);
+  HostContentSettingsMap::RegisterProfilePrefs(registry);
+  ios::NotificationPromo::RegisterProfilePrefs(registry);
+  language::LanguagePrefs::RegisterProfilePrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
   ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
   ntp_snippets::RemoteSuggestionsProviderImpl::RegisterProfilePrefs(registry);
@@ -150,16 +153,15 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ntp_snippets::UserClassifier::RegisterProfilePrefs(registry);
   ntp_tiles::MostVisitedSites::RegisterProfilePrefs(registry);
   ntp_tiles::PopularSitesImpl::RegisterProfilePrefs(registry);
-  ios::NotificationPromo::RegisterProfilePrefs(registry);
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   payments::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   RegisterVoiceSearchBrowserStatePrefs(registry);
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(registry);
-  syncer::SyncPrefs::RegisterProfilePrefs(registry);
-  syncer::PerUserTopicSubscriptionManager::RegisterProfilePrefs(registry);
   syncer::InvalidatorRegistrarWithMemory::RegisterProfilePrefs(registry);
+  syncer::PerUserTopicSubscriptionManager::RegisterProfilePrefs(registry);
+  syncer::SyncPrefs::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   unified_consent::UnifiedConsentService::RegisterPrefs(registry);

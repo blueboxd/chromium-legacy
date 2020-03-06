@@ -590,4 +590,9 @@ void MediaHistoryStore::SaveMediaFeed(const GURL& url) {
       base::BindOnce(&MediaHistoryStoreInternal::SaveMediaFeed, db_, url));
 }
 
+void MediaHistoryStore::PostTaskToDBForTest(base::OnceClosure callback) {
+  db_->db_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                         std::move(callback));
+}
+
 }  // namespace media_history

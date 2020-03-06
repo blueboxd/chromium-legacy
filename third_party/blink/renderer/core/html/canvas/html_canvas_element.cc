@@ -758,53 +758,51 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
                                       const PhysicalRect& r) {
   context_->PaintRenderingResultsToCanvas(kFrontBuffer);
   if (HasResourceProvider()) {
-    if (!context.ContextDisabled()) {
-      const ComputedStyle* style = GetComputedStyle();
-      // For 2D Canvas, there are two ways of render Canvas for printing:
-      // display list or image snapshot. Display list allows better PDF printing
-      // and we prefer this method.
-      // Here are the requirements for display list to be used:
-      //    1. We must have had a full repaint of the Canvas after beginprint
-      //       event has been fired. Otherwise, we don't have a PaintRecord.
-      //    2. CSS property 'image-rendering' must not be 'pixelated'.
+    const ComputedStyle* style = GetComputedStyle();
+    // For 2D Canvas, there are two ways of render Canvas for printing:
+    // display list or image snapshot. Display list allows better PDF printing
+    // and we prefer this method.
+    // Here are the requirements for display list to be used:
+    //    1. We must have had a full repaint of the Canvas after beginprint
+    //       event has been fired. Otherwise, we don't have a PaintRecord.
+    //    2. CSS property 'image-rendering' must not be 'pixelated'.
 
-      // display list rendering: we replay the last full PaintRecord, if Canvas
-      // has been redraw since beginprint happened.
-      if (IsPrinting() && !Is3d() && canvas2d_bridge_) {
-        canvas2d_bridge_->FlushRecording();
-        if (canvas2d_bridge_->getLastRecord()) {
-          if (style && style->ImageRendering() != EImageRendering::kPixelated) {
-            context.Canvas()->save();
-            context.Canvas()->translate(r.X(), r.Y());
-            context.Canvas()->scale(r.Width() / Size().Width(),
-                                    r.Height() / Size().Height());
-            context.Canvas()->drawPicture(canvas2d_bridge_->getLastRecord());
-            context.Canvas()->restore();
-            UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DPrintingAsVector", true);
-            return;
-          }
+    // display list rendering: we replay the last full PaintRecord, if Canvas
+    // has been redraw since beginprint happened.
+    if (IsPrinting() && !Is3d() && canvas2d_bridge_) {
+      canvas2d_bridge_->FlushRecording();
+      if (canvas2d_bridge_->getLastRecord()) {
+        if (style && style->ImageRendering() != EImageRendering::kPixelated) {
+          context.Canvas()->save();
+          context.Canvas()->translate(r.X(), r.Y());
+          context.Canvas()->scale(r.Width() / Size().Width(),
+                                  r.Height() / Size().Height());
+          context.Canvas()->drawPicture(canvas2d_bridge_->getLastRecord());
+          context.Canvas()->restore();
+          UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DPrintingAsVector", true);
+          return;
         }
-        UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DPrintingAsVector", false);
       }
-      // or image snapshot rendering: grab a snapshot and raster it.
-      SkBlendMode composite_operator =
-          !context_ || context_->CreationAttributes().alpha
-              ? SkBlendMode::kSrcOver
-              : SkBlendMode::kSrc;
-      FloatRect src_rect = FloatRect(FloatPoint(), FloatSize(Size()));
-      scoped_refptr<StaticBitmapImage> snapshot =
-          canvas2d_bridge_
-              ? canvas2d_bridge_->NewImageSnapshot(kPreferAcceleration)
-              : (ResourceProvider() ? ResourceProvider()->Snapshot() : nullptr);
-      if (snapshot) {
-        // GraphicsContext cannot handle gpu resource serialization.
-        snapshot = snapshot->MakeUnaccelerated();
-        DCHECK(!snapshot->IsTextureBacked());
-        context.DrawImage(snapshot.get(), Image::kSyncDecode,
-                          FloatRect(PixelSnappedIntRect(r)), &src_rect,
-                          style && style->HasFilterInducingProperty(),
-                          composite_operator);
-      }
+      UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DPrintingAsVector", false);
+    }
+    // or image snapshot rendering: grab a snapshot and raster it.
+    SkBlendMode composite_operator =
+        !context_ || context_->CreationAttributes().alpha
+            ? SkBlendMode::kSrcOver
+            : SkBlendMode::kSrc;
+    FloatRect src_rect = FloatRect(FloatPoint(), FloatSize(Size()));
+    scoped_refptr<StaticBitmapImage> snapshot =
+        canvas2d_bridge_
+            ? canvas2d_bridge_->NewImageSnapshot(kPreferAcceleration)
+            : (ResourceProvider() ? ResourceProvider()->Snapshot() : nullptr);
+    if (snapshot) {
+      // GraphicsContext cannot handle gpu resource serialization.
+      snapshot = snapshot->MakeUnaccelerated();
+      DCHECK(!snapshot->IsTextureBacked());
+      context.DrawImage(snapshot.get(), Image::kSyncDecode,
+                        FloatRect(PixelSnappedIntRect(r)), &src_rect,
+                        style && style->HasFilterInducingProperty(),
+                        composite_operator);
     }
   } else {
     // When alpha is false, we should draw to opaque black.

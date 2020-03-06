@@ -16,22 +16,59 @@
 
 namespace media_history {
 
+// StoreHolder will in most cases hold a local MediaHistoryStore. However, for
+// OTR profiles we hold a pointer to the original profile store. When accessing
+// MediaHistoryStore you should use GetForRead for read operations and
+// GetForWrite for write operations. This can be null if the store is read only.
+class MediaHistoryKeyedService::StoreHolder {
+ public:
+  explicit StoreHolder(std::unique_ptr<MediaHistoryStore> local)
+      : local_(std::move(local)) {}
+  explicit StoreHolder(MediaHistoryKeyedService* remote) : remote_(remote) {}
+
+  ~StoreHolder() = default;
+  StoreHolder(const StoreHolder& t) = delete;
+  StoreHolder& operator=(const StoreHolder&) = delete;
+
+  MediaHistoryStore* GetForRead() {
+    if (local_)
+      return local_.get();
+    return remote_->store_->GetForRead();
+  }
+
+  MediaHistoryStore* GetForWrite() {
+    if (local_)
+      return local_.get();
+    return nullptr;
+  }
+
+ private:
+  std::unique_ptr<MediaHistoryStore> local_;
+  MediaHistoryKeyedService* remote_ = nullptr;
+};
+
 MediaHistoryKeyedService::MediaHistoryKeyedService(Profile* profile)
     : profile_(profile) {
-  DCHECK(!profile->IsOffTheRecord());
-
   // May be null in tests.
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
   if (history)
     history->AddObserver(this);
 
-  auto db_task_runner = base::ThreadPool::CreateUpdateableSequencedTaskRunner(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  if (profile->IsOffTheRecord()) {
+    MediaHistoryKeyedService* original =
+        MediaHistoryKeyedService::Get(profile->GetOriginalProfile());
+    DCHECK(original);
 
-  media_history_store_ =
-      std::make_unique<MediaHistoryStore>(profile_, std::move(db_task_runner));
+    store_ = std::make_unique<StoreHolder>(original);
+  } else {
+    auto db_task_runner = base::ThreadPool::CreateUpdateableSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+
+    store_ = std::make_unique<StoreHolder>(std::make_unique<MediaHistoryStore>(
+        profile_, std::move(db_task_runner)));
+  }
 }
 
 // static
@@ -55,9 +92,14 @@ void MediaHistoryKeyedService::Shutdown() {
 void MediaHistoryKeyedService::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
+  // The store might not always be writable.
+  auto* store = store_->GetForWrite();
+  if (!store)
+    return;
+
   if (deletion_info.IsAllHistory()) {
     // Destroy the old database and create a new one.
-    media_history_store_->EraseDatabaseAndCreateNew();
+    store->EraseDatabaseAndCreateNew();
     return;
   }
 
@@ -80,7 +122,7 @@ void MediaHistoryKeyedService::OnURLsDeleted(
   }
 
   if (!no_more_origins.empty())
-    media_history_store_->DeleteAllOriginData(no_more_origins);
+    store->DeleteAllOriginData(no_more_origins);
 
   // TODO(https://crbug.com/1024352): For any origins that still have data we
   // should remove data by URL.
@@ -88,24 +130,25 @@ void MediaHistoryKeyedService::OnURLsDeleted(
 
 void MediaHistoryKeyedService::SavePlayback(
     const content::MediaPlayerWatchTime& watch_time) {
-  media_history_store_->SavePlayback(watch_time);
+  if (auto* store = store_->GetForWrite())
+    store->SavePlayback(watch_time);
 }
 
 void MediaHistoryKeyedService::GetMediaHistoryStats(
     base::OnceCallback<void(mojom::MediaHistoryStatsPtr)> callback) {
-  media_history_store_->GetMediaHistoryStats(std::move(callback));
+  store_->GetForRead()->GetMediaHistoryStats(std::move(callback));
 }
 
 void MediaHistoryKeyedService::GetOriginRowsForDebug(
     base::OnceCallback<void(std::vector<mojom::MediaHistoryOriginRowPtr>)>
         callback) {
-  media_history_store_->GetOriginRowsForDebug(std::move(callback));
+  store_->GetForRead()->GetOriginRowsForDebug(std::move(callback));
 }
 
 void MediaHistoryKeyedService::GetMediaHistoryPlaybackRowsForDebug(
     base::OnceCallback<void(std::vector<mojom::MediaHistoryPlaybackRowPtr>)>
         callback) {
-  media_history_store_->GetMediaHistoryPlaybackRowsForDebug(
+  store_->GetForRead()->GetMediaHistoryPlaybackRowsForDebug(
       std::move(callback));
 }
 
@@ -114,7 +157,7 @@ void MediaHistoryKeyedService::GetPlaybackSessions(
     base::Optional<GetPlaybackSessionsFilter> filter,
     base::OnceCallback<
         void(std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>)> callback) {
-  media_history_store_->GetPlaybackSessions(num_sessions, filter,
+  store_->GetForRead()->GetPlaybackSessions(num_sessions, filter,
                                             std::move(callback));
 }
 
@@ -123,17 +166,23 @@ void MediaHistoryKeyedService::SavePlaybackSession(
     const media_session::MediaMetadata& metadata,
     const base::Optional<media_session::MediaPosition>& position,
     const std::vector<media_session::MediaImage>& artwork) {
-  media_history_store_->SavePlaybackSession(url, metadata, position, artwork);
+  if (auto* store = store_->GetForWrite())
+    store->SavePlaybackSession(url, metadata, position, artwork);
 }
 
 void MediaHistoryKeyedService::GetURLsInTableForTest(
     const std::string& table,
     base::OnceCallback<void(std::set<GURL>)> callback) {
-  media_history_store_->GetURLsInTableForTest(table, std::move(callback));
+  store_->GetForRead()->GetURLsInTableForTest(table, std::move(callback));
 }
 
 void MediaHistoryKeyedService::SaveMediaFeed(const GURL& url) {
-  media_history_store_->SaveMediaFeed(url);
+  if (auto* store = store_->GetForWrite())
+    store->SaveMediaFeed(url);
+}
+
+void MediaHistoryKeyedService::PostTaskToDBForTest(base::OnceClosure callback) {
+  store_->GetForRead()->PostTaskToDBForTest(std::move(callback));
 }
 
 }  // namespace media_history

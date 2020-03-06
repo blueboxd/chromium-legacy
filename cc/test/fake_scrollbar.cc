@@ -49,7 +49,7 @@ gfx::Rect FakeScrollbar::TrackRect() const {
   return track_rect_;
 }
 
-float FakeScrollbar::ThumbOpacity() const {
+float FakeScrollbar::Opacity() const {
   return thumb_opacity_;
 }
 

@@ -1,0 +1,20 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("internal") {
+  visibility = [
+    ":*",
+    "//chrome/browser/upboarding/query_tiles:*",
+  ]
+  sources = [
+    "image_loader.cc",
+    "image_loader.h",
+  ]
+
+  deps = [
+    "//base",
+    "//skia",
+    "//url",
+  ]
+}

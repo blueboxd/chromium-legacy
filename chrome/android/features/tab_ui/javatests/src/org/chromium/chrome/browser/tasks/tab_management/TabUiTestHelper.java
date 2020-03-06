@@ -8,8 +8,8 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
+import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 
@@ -192,8 +192,7 @@ public class TabUiTestHelper {
      * @param index The index of the target tab to close.
      */
     static void closeNthTabInTabSwitcher(int index) {
-        onView(withId(R.id.tab_list_view))
-                .inRoot(withDecorView(isRoot()))
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
                 .perform(new ViewAction() {
                     @Override
                     public Matcher<View> getConstraints() {
@@ -538,6 +537,25 @@ public class TabUiTestHelper {
                         scrimView.performClick();
                     }
                 });
+    }
+
+    /**
+     * Verify that the snack bar is showing and click on the snack bar button. Right now it is only
+     * used for undoing a tab closure. This should be used with
+     * CriteriaHelper.pollInstrumentationThread().
+     * @return whether the visibility checking and the clicking have finished or not.
+     */
+    static boolean verifyUndoBarShowingAndClickUndo() {
+        boolean hasClicked = true;
+        try {
+            onView(withId(R.id.snackbar_button)).check(matches(isCompletelyDisplayed()));
+            onView(withId(R.id.snackbar_button)).perform(click());
+        } catch (NoMatchingRootException | AssertionError e) {
+            hasClicked = false;
+        } catch (Exception e) {
+            assert false : "error when verifying undo snack bar.";
+        }
+        return hasClicked;
     }
 
     /**

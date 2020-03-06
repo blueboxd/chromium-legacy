@@ -98,8 +98,8 @@ gfx::Rect ScrollbarLayerDelegate::ForwardButtonRect() const {
   return forward_button_rect;
 }
 
-float ScrollbarLayerDelegate::ThumbOpacity() const {
-  return scrollbar_->GetTheme().ThumbOpacity(*scrollbar_);
+float ScrollbarLayerDelegate::Opacity() const {
+  return scrollbar_->GetTheme().Opacity(*scrollbar_);
 }
 
 bool ScrollbarLayerDelegate::NeedsRepaintPart(cc::ScrollbarPart part) const {

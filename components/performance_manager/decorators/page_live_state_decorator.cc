@@ -4,6 +4,7 @@
 
 #include "components/performance_manager/public/decorators/page_live_state_decorator.h"
 
+#include "components/performance_manager/decorators/decorators_utils.h"
 #include "components/performance_manager/graph/node_attached_data_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/public/performance_manager.h"
@@ -80,38 +81,13 @@ class PageLiveStateDataImpl
   bool was_discarded_ = false;
 };
 
-// Helper function to set a property in PageLiveStateDataImpl. This does the
-// WebContents -> PageNode translation.
-// This can only be called from the UI thread.
-template <typename T>
-void SetPropertyForWebContents(
-    content::WebContents* contents,
-    void (PageLiveStateDataImpl::*setter_function)(T),
-    T value) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PerformanceManager::CallOnGraph(
-      FROM_HERE, base::BindOnce(
-                     [](base::WeakPtr<PageNode> node,
-                        void (PageLiveStateDataImpl::*setter_function)(T),
-                        T value, Graph* graph) {
-                       if (node) {
-                         auto* data = PageLiveStateDataImpl::GetOrCreate(
-                             PageNodeImpl::FromNode(node.get()));
-                         DCHECK(data);
-                         (data->*setter_function)(value);
-                       }
-                     },
-                     PerformanceManager::GetPageNodeForWebContents(contents),
-                     setter_function, value));
-}
-
 }  // namespace
 
 // static
 void PageLiveStateDecorator::OnIsConnectedToUSBDeviceChanged(
     content::WebContents* contents,
     bool is_connected_to_usb_device) {
-  SetPropertyForWebContents(
+  SetPropertyForWebContentsPageNode(
       contents, &PageLiveStateDataImpl::set_is_connected_to_usb_device,
       is_connected_to_usb_device);
 }
@@ -120,7 +96,7 @@ void PageLiveStateDecorator::OnIsConnectedToUSBDeviceChanged(
 void PageLiveStateDecorator::OnIsConnectedToBluetoothDeviceChanged(
     content::WebContents* contents,
     bool is_connected_to_bluetooth_device) {
-  SetPropertyForWebContents(
+  SetPropertyForWebContentsPageNode(
       contents, &PageLiveStateDataImpl::set_is_connected_to_bluetooth_device,
       is_connected_to_bluetooth_device);
 }
@@ -129,52 +105,52 @@ void PageLiveStateDecorator::OnIsConnectedToBluetoothDeviceChanged(
 void PageLiveStateDecorator::OnIsCapturingVideoChanged(
     content::WebContents* contents,
     bool is_capturing_video) {
-  SetPropertyForWebContents(contents,
-                            &PageLiveStateDataImpl::set_is_capturing_video,
-                            is_capturing_video);
+  SetPropertyForWebContentsPageNode(
+      contents, &PageLiveStateDataImpl::set_is_capturing_video,
+      is_capturing_video);
 }
 
 // static
 void PageLiveStateDecorator::OnIsCapturingAudioChanged(
     content::WebContents* contents,
     bool is_capturing_audio) {
-  SetPropertyForWebContents(contents,
-                            &PageLiveStateDataImpl::set_is_capturing_audio,
-                            is_capturing_audio);
+  SetPropertyForWebContentsPageNode(
+      contents, &PageLiveStateDataImpl::set_is_capturing_audio,
+      is_capturing_audio);
 }
 
 // static
 void PageLiveStateDecorator::OnIsBeingMirroredChanged(
     content::WebContents* contents,
     bool is_being_mirrored) {
-  SetPropertyForWebContents(contents,
-                            &PageLiveStateDataImpl::set_is_being_mirrored,
-                            is_being_mirrored);
+  SetPropertyForWebContentsPageNode(
+      contents, &PageLiveStateDataImpl::set_is_being_mirrored,
+      is_being_mirrored);
 }
 
 // static
 void PageLiveStateDecorator::OnIsCapturingDesktopChanged(
     content::WebContents* contents,
     bool is_capturing_desktop) {
-  SetPropertyForWebContents(contents,
-                            &PageLiveStateDataImpl::set_is_capturing_desktop,
-                            is_capturing_desktop);
+  SetPropertyForWebContentsPageNode(
+      contents, &PageLiveStateDataImpl::set_is_capturing_desktop,
+      is_capturing_desktop);
 }
 
 // static
 void PageLiveStateDecorator::SetIsAutoDiscardable(
     content::WebContents* contents,
     bool is_auto_discardable) {
-  SetPropertyForWebContents(contents,
-                            &PageLiveStateDataImpl::set_is_auto_discardable,
-                            is_auto_discardable);
+  SetPropertyForWebContentsPageNode(
+      contents, &PageLiveStateDataImpl::set_is_auto_discardable,
+      is_auto_discardable);
 }
 
 // static
 void PageLiveStateDecorator::SetWasDiscarded(content::WebContents* contents,
                                              bool was_discarded) {
-  SetPropertyForWebContents(contents, &PageLiveStateDataImpl::set_was_discarded,
-                            was_discarded);
+  SetPropertyForWebContentsPageNode(
+      contents, &PageLiveStateDataImpl::set_was_discarded, was_discarded);
 }
 
 PageLiveStateDecorator::Data::Data() = default;

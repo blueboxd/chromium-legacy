@@ -318,9 +318,11 @@ void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
                                    SkScalar y,
                                    NodeId node_id,
                                    const PaintFlags& flags) {
-  SkPDF::SetNodeId(canvas_, node_id);
+  if (node_id)
+    SkPDF::SetNodeId(canvas_, node_id);
   drawTextBlob(blob, x, y, flags);
-  SkPDF::SetNodeId(canvas_, 0);
+  if (node_id)
+    SkPDF::SetNodeId(canvas_, 0);
 }
 
 void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
@@ -351,6 +353,10 @@ void SkiaPaintCanvas::Annotate(AnnotationType type,
       break;
     }
   }
+}
+
+void SkiaPaintCanvas::setNodeId(int node_id) {
+  SkPDF::SetNodeId(canvas_, node_id);
 }
 
 void SkiaPaintCanvas::drawPicture(

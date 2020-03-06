@@ -92,7 +92,7 @@ void PaintPreviewCompositorCollectionImpl::CreateCompositor(
        std::make_unique<PaintPreviewCompositorImpl>(
            std::move(receiver),
            base::BindOnce(&PaintPreviewCompositorCollectionImpl::OnDisconnect,
-                          base::Unretained(this), token))});
+                          weak_ptr_factory_.GetWeakPtr(), token))});
   std::move(callback).Run(token);
 }
 

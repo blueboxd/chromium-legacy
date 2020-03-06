@@ -1846,6 +1846,10 @@ void BrowserAccessibilityAndroid::OnDataChanged() {
       new_value_ = value;
     }
   }
+
+  auto* manager =
+      static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
+  manager->ClearNodeInfoCacheForGivenId(unique_id());
 }
 
 int BrowserAccessibilityAndroid::CountChildrenWithRole(

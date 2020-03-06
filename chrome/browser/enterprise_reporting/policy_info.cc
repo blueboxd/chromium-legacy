@@ -4,8 +4,9 @@
 
 #include "chrome/browser/enterprise_reporting/policy_info.h"
 
+#include <string>
+
 #include "base/json/json_writer.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -14,6 +15,8 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/policy_types.h"
+
+namespace em = enterprise_management;
 
 namespace enterprise_reporting {
 

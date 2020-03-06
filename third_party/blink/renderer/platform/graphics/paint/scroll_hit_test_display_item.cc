@@ -67,9 +67,6 @@ void ScrollHitTestDisplayItem::Record(
   DCHECK_NE(&paint_controller.CurrentPaintChunkProperties().Transform(),
             scroll_offset_node);
 
-  if (paint_controller.DisplayItemConstructionIsDisabled())
-    return;
-
   if (paint_controller.UseCachedItemIfPossible(client, type))
     return;
 

@@ -87,18 +87,19 @@ class ParentPermissionDialogBrowserTest
   void ShowPrompt() {
     base::RunLoop run_loop;
 
-    parent_permission_dialog_ = std::make_unique<ParentPermissionDialog>(
-        browser()->profile(),
-        base::BindOnce(
-            &ParentPermissionDialogBrowserTest::OnParentPermissionDialogDone,
-            base::Unretained(this), run_loop.QuitClosure()));
+    parent_permission_dialog_ =
+        std::make_unique<ParentPermissionDialog>(browser()->profile());
+
+    ParentPermissionDialog::DoneCallback callback = base::BindOnce(
+        &ParentPermissionDialogBrowserTest::OnParentPermissionDialogDone,
+        base::Unretained(this), run_loop.QuitClosure());
 
     parent_permission_dialog_->set_reprompt_after_incorrect_credential(false);
     SkBitmap icon =
         *gfx::Image(extensions::util::GetDefaultExtensionIcon()).ToSkBitmap();
     parent_permission_dialog_->ShowPrompt(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        base::UTF8ToUTF16("Test Prompt Message"), icon);
+        base::UTF8ToUTF16("Test Prompt Message"), icon, std::move(callback));
     run_loop.Run();
   }
 
@@ -106,18 +107,19 @@ class ParentPermissionDialogBrowserTest
       scoped_refptr<const extensions::Extension> extension) {
     base::RunLoop run_loop;
 
-    parent_permission_dialog_ = std::make_unique<ParentPermissionDialog>(
-        browser()->profile(),
-        base::BindOnce(
-            &ParentPermissionDialogBrowserTest::OnParentPermissionDialogDone,
-            base::Unretained(this), run_loop.QuitClosure()));
+    parent_permission_dialog_ =
+        std::make_unique<ParentPermissionDialog>(browser()->profile());
+
+    ParentPermissionDialog::DoneCallback callback = base::BindOnce(
+        &ParentPermissionDialogBrowserTest::OnParentPermissionDialogDone,
+        base::Unretained(this), run_loop.QuitClosure());
 
     parent_permission_dialog_->set_reprompt_after_incorrect_credential(false);
     SkBitmap icon =
         *gfx::Image(extensions::util::GetDefaultExtensionIcon()).ToSkBitmap();
     parent_permission_dialog_->ShowPromptForExtensionInstallation(
         browser()->tab_strip_model()->GetActiveWebContents(), extension.get(),
-        icon);
+        icon, std::move(callback));
     run_loop.Run();
   }
 

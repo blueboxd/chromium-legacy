@@ -726,6 +726,10 @@ void AppsGridView::EndDrag(bool cancel) {
           DropTargetIsValidFolder()) {
         MaybeCreateFolderDroppingAccessibilityEvent();
         folder_item_view = MoveItemToFolder(drag_view_, drop_target_);
+        // If the view that the folder is replacing had a layer, ensure the new
+        // folder view has one too.
+        if (drag_view_ && drag_view_->layer())
+          folder_item_view->EnsureLayer();
       } else if (IsValidReorderTargetIndex(drop_target_)) {
         // Ensure reorder event has already been announced by the end of drag.
         MaybeCreateDragReorderAccessibilityEvent();

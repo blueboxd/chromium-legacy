@@ -273,6 +273,7 @@ android_library("chrome_java") {
     "//chrome/browser/notifications/chime/android:java",
     "//chrome/browser/performance_hints/android:java",
     "//chrome/browser/preferences:java",
+    "//chrome/browser/profile_card/android:factory_java",
     "//chrome/browser/profile_card/android:java",
     "//chrome/browser/settings:java",
     "//chrome/browser/share/android:java_resources",
@@ -373,7 +374,7 @@ android_library("chrome_java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_collection_collection_java",
     "//third_party/android_deps:androidx_legacy_legacy_support_v13_java",
-    "//third_party/android_deps:com_android_support_coordinatorlayout_java",
+    "//third_party/android_deps:androidx_coordinatorlayout_coordinatorlayout_java",
     "//third_party/android_deps:com_android_support_customview_java",
 
     # TODO(bjoyce): Change to AndroidX materials after
@@ -2440,8 +2441,10 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     if (defined(invoker.verify_android_configuration) &&
         invoker.verify_android_configuration) {
       verify_manifest = true
-      failed_manifest_expectation_file =
-          "monochrome_public_bundle.android_manifest.failed"
+      if (check_android_configuration) {
+        failed_manifest_expectation_file =
+            "monochrome_public_bundle.android_manifest.failed"
+      }
     }
 
     if (!_is_trichrome ||
@@ -2473,8 +2476,10 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
       if (defined(invoker.verify_android_configuration) &&
           invoker.verify_android_configuration) {
         verify_proguard_flags = true
-        failed_proguard_expectation_file =
-            "monochrome_public_bundle.proguard_flags.failed"
+        if (check_android_configuration) {
+          failed_proguard_expectation_file =
+              "monochrome_public_bundle.proguard_flags.failed"
+        }
       }
     }
   }

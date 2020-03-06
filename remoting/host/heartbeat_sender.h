@@ -41,25 +41,38 @@ class OAuthTokenGetter;
 // host_exit_codes.cc (i.e. "INVALID_HOST_CONFIGURATION" string) or one of
 // kHostOfflineReasonXxx constants (i.e. "POLICY_READ_ERROR" string).
 //
-// The sends a HeartbeatResponse in response to each successful heartbeat.
+// The heartbeat sender will verify that the channel is in fact active before
+// sending out the heartbeat. If not, it will disconnect the signaling strategy
+// so that the signaling connector will try to reconnect signaling.
+//
+// The server sends a HeartbeatResponse in response to each successful
+// heartbeat, which may contain a remote command to be executed on the host,
+// e.g. restarting the host process upon reception of the response.
 class HeartbeatSender final : public SignalStrategy::Listener {
  public:
-  // Signal strategies and |oauth_token_getter| must outlive this object.
-  // Heartbeats will start when either both of the signal strategies enter the
-  // CONNECTED state, or one of the strategy has been in CONNECTED state for
-  // a specific time interval.
-  //
-  // |on_heartbeat_successful_callback| is invoked after the first successful
-  // heartbeat.
-  //
-  // |on_unknown_host_id_error| is invoked when the host ID is permanently not
-  // recognized by the server.
-  //
-  // |on_auth_error| is invoked when the heartbeat sender permanently fails to
-  // authenticate the requests.
-  HeartbeatSender(base::OnceClosure on_heartbeat_successful_callback,
-                  base::OnceClosure on_unknown_host_id_error,
-                  base::OnceClosure on_auth_error,
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    // Invoked after the first successful heartbeat.
+    virtual void OnFirstHeartbeatSuccessful() = 0;
+
+    // Invoked when the host is not found in the directory.
+    virtual void OnHostNotFound() = 0;
+
+    // Invoked when the heartbeat sender permanently fails to authenticate the
+    // requests.
+    virtual void OnAuthFailed() = 0;
+
+    // Invoked when the host has been asked to restart.
+    virtual void OnRemoteRestartHost() = 0;
+
+   protected:
+    Delegate() = default;
+  };
+
+  // All raw pointers must be non-null and outlive this object.
+  HeartbeatSender(Delegate* delegate,
                   const std::string& host_id,
                   SignalStrategy* signal_strategy,
                   OAuthTokenGetter* oauth_token_getter,
@@ -110,14 +123,13 @@ class HeartbeatSender final : public SignalStrategy::Listener {
   void OnHostOfflineReasonTimeout();
   void OnHostOfflineReasonAck();
 
-  void OnWaitForAllStrategiesConnectedTimeout();
+  void OnRemoteCommand(
+      apis::v1::HeartbeatResponse::RemoteCommand remote_command);
 
   // Helper methods used by DoSendStanza() to generate heartbeat stanzas.
   apis::v1::HeartbeatRequest CreateHeartbeatRequest();
 
-  base::OnceClosure on_heartbeat_successful_callback_;
-  base::OnceClosure on_unknown_host_id_error_;
-  base::OnceClosure on_auth_error_;
+  Delegate* delegate_;
   std::string host_id_;
   SignalStrategy* const signal_strategy_;
   std::unique_ptr<HeartbeatClient> client_;
@@ -128,7 +140,7 @@ class HeartbeatSender final : public SignalStrategy::Listener {
 
   net::BackoffEntry backoff_;
 
-  bool heartbeat_succeeded_ = false;
+  bool initial_heartbeat_sent_ = false;
 
   // Fields to send and indicate completion of sending host-offline-reason.
   std::string host_offline_reason_;

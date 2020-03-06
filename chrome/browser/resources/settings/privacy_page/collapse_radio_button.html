@@ -1,0 +1,64 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button_style_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-collapse-radio-button">
+  <template>
+    <style include="settings-shared cr-radio-button-style">
+      :host {
+        display: block;
+      }
+
+      #radioCollapse {
+        display: flex;
+        padding: 0;
+      }
+
+      iron-collapse {
+        margin-inline-end: var(--cr-section-indent-width);
+        margin-inline-start: var(--cr-section-indent-width);
+      }
+
+      #labelWrapper {
+        padding-bottom: 6px;
+        padding-top: 6px;
+      }
+    </style>
+
+    <div id="radioCollapse" class="settings-box first">
+      <div aria-checked$="[[getAriaChecked_(checked)]]"
+          aria-disabled$="[[getAriaDisabled_(disabled)]]"
+          aria-labelledby="label"
+          class="disc-wrapper"
+          id="button"
+          role="radio"
+          tabindex$="[[buttonTabIndex_]]"
+          on-keydown="onInputKeydown_">
+        <div class="disc-border"></div>
+        <div class="disc"></div>
+      </div>
+      <div id="labelWrapper">
+        <div id="label" aria-hidden="true">
+          [[label]]
+          <slot name="label"></slot>
+        </div>
+        <div hidden$="[[!subLabel]]" class="secondary">
+          [[subLabel]]
+          <slot name="sub-label"></slot>
+        </div>
+      </div>
+      <div class="separator"></div>
+      <cr-expand-button expanded="{{expanded}}"></cr-expand-button>
+    </div>
+
+    <iron-collapse opened="[[expanded]]">
+      <slot name="collapse"></slot>
+    </iron-collapse>
+
+  </template>
+  <script src="collapse_radio_button.js"></script>
+</dom-module>

@@ -103,9 +103,6 @@ class PLATFORM_EXPORT PaintController {
                   "DisplayItem subclass alignment is not a factor of "
                   "kDisplayItemAlignment.");
 
-    if (DisplayItemConstructionIsDisabled())
-      return;
-
     EnsureNewDisplayItemListInitialCapacity();
     DisplayItemClass& display_item =
         new_display_item_list_.AllocateAndConstruct<DisplayItemClass>(
@@ -186,15 +183,6 @@ class PLATFORM_EXPORT PaintController {
   }
   const Vector<PaintChunk>& PaintChunks() const {
     return GetPaintArtifact().PaintChunks();
-  }
-
-  // For micro benchmarking of record time. If true, display item construction
-  // is disabled to isolate the costs of construction in performance metrics.
-  bool DisplayItemConstructionIsDisabled() const {
-    return construction_disabled_;
-  }
-  void SetDisplayItemConstructionIsDisabled(bool disable) {
-    construction_disabled_ = disable;
   }
 
   // For micro benchmarking of record time. If true, subsequence caching is
@@ -341,7 +329,6 @@ class PLATFORM_EXPORT PaintController {
   DisplayItemList new_display_item_list_;
   PaintChunker new_paint_chunks_;
 
-  bool construction_disabled_ = false;
   bool subsequence_caching_disabled_ = false;
 
   bool cache_is_all_invalid_ = true;

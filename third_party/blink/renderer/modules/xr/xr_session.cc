@@ -842,9 +842,9 @@ void XRSession::OnCreateAnchorResult(ScriptPromiseResolver* resolver,
   create_anchor_promises_.erase(resolver);
 
   if (result == device::mojom::CreateAnchorResult::SUCCESS) {
-    XRAnchor* anchor = MakeGarbageCollected<XRAnchor>(id, this);
-    anchor_ids_to_anchors_.insert(id, anchor);
-    resolver->Resolve(anchor);
+    // Anchor was created successfully on the device. Subsequent frame update
+    // must contain newly created anchor data.
+    newly_created_anchor_ids_to_resolvers_.insert(id, resolver);
   } else {
     resolver->Reject();
   }
@@ -910,25 +910,36 @@ void XRSession::ProcessAnchorsData(
 
   HeapHashMap<uint64_t, Member<XRAnchor>> updated_anchors;
 
-  // First, process all planes that had their information updated (new planes
+  // First, process all anchors that had their information updated (new anchors
   // are also processed here).
   for (const auto& anchor : tracked_anchors_data->updated_anchors_data) {
     auto it = anchor_ids_to_anchors_.find(anchor->id);
     if (it != anchor_ids_to_anchors_.end()) {
       updated_anchors.insert(anchor->id, it->value);
-      it->value->Update(anchor, timestamp);
+      it->value->Update(anchor);
     } else {
-      updated_anchors.insert(
-          anchor->id,
-          MakeGarbageCollected<XRAnchor>(anchor->id, this, anchor, timestamp));
+      auto resolver_it =
+          newly_created_anchor_ids_to_resolvers_.find(anchor->id);
+      if (resolver_it == newly_created_anchor_ids_to_resolvers_.end()) {
+        DCHECK(false)
+            << "Newly created anchor must have a corresponding resolver!";
+        continue;
+      }
+
+      XRAnchor* xr_anchor =
+          MakeGarbageCollected<XRAnchor>(anchor->id, this, anchor);
+      resolver_it->value->Resolve(xr_anchor);
+      newly_created_anchor_ids_to_resolvers_.erase(resolver_it);
+
+      updated_anchors.insert(anchor->id, xr_anchor);
     }
   }
 
-  // Then, copy over the planes that were not updated but are still present.
+  // Then, copy over the anchors that were not updated but are still present.
   for (const auto& anchor_id : tracked_anchors_data->all_anchors_ids) {
     auto it_updated = updated_anchors.find(anchor_id);
 
-    // If the plane was already updated, there is nothing to do as it was
+    // If the anchor was already updated, there is nothing to do as it was
     // already moved to |updated_anchors|. Otherwise just copy it over as-is.
     if (it_updated == updated_anchors.end()) {
       auto it = anchor_ids_to_anchors_.find(anchor_id);
@@ -938,6 +949,11 @@ void XRSession::ProcessAnchorsData(
   }
 
   anchor_ids_to_anchors_.swap(updated_anchors);
+
+  DCHECK(newly_created_anchor_ids_to_resolvers_.IsEmpty())
+      << "All newly created anchors should be updated in subsequent frame, got "
+      << newly_created_anchor_ids_to_resolvers_.size()
+      << " anchors that have not been updated";
 }
 
 void XRSession::CleanUpUnusedHitTestSources() {
@@ -1834,6 +1850,7 @@ void XRSession::Trace(Visitor* visitor) {
   visitor->Trace(request_hit_test_source_promises_);
   visitor->Trace(reference_spaces_);
   visitor->Trace(anchor_ids_to_anchors_);
+  visitor->Trace(newly_created_anchor_ids_to_resolvers_);
   visitor->Trace(prev_base_layer_);
   visitor->Trace(hit_test_source_ids_to_hit_test_sources_);
   visitor->Trace(hit_test_source_ids_to_transient_input_hit_test_sources_);

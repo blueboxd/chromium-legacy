@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/layout/line/inline_box.h"
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
@@ -98,6 +99,12 @@ IntRect InlineBox::VisualRect() const {
 
 IntRect InlineBox::PartialInvalidationVisualRect() const {
   return GetLineLayoutItem().PartialInvalidationVisualRectForInlineBox();
+}
+
+DOMNodeId InlineBox::OwnerNodeId() const {
+  return GetLineLayoutItem().GetNode()
+             ? DOMNodeIds::IdForNode(GetLineLayoutItem().GetNode())
+             : kInvalidDOMNodeId;
 }
 
 #if DCHECK_IS_ON()

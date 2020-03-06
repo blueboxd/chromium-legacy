@@ -442,6 +442,32 @@ bool GLSupportsFormat(ResourceFormat format) {
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)
+bool HasVkFormat(ResourceFormat format) {
+  switch (format) {
+    case RGBA_8888:
+    case RGBA_4444:
+    case BGRA_8888:
+    case RED_8:
+    case RGB_565:
+    case BGR_565:
+    case RG_88:
+    case RGBA_F16:
+    case R16_EXT:
+    case RGBX_8888:
+    case BGRX_8888:
+    case RGBA_1010102:
+    case BGRA_1010102:
+    case ALPHA_8:
+    case LUMINANCE_8:
+    case YVU_420:
+    case YUV_420_BIPLANAR:
+    case ETC1:
+      return true;
+    default:
+      return false;
+  }
+}
+
 VkFormat ToVkFormat(ResourceFormat format) {
   switch (format) {
     case RGBA_8888:

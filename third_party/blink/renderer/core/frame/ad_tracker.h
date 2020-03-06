@@ -60,7 +60,8 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
 
   // Called when an async task is created. Check at this point for ad script on
   // the stack and annotate the task if so.
-  void DidCreateAsyncTask(probe::AsyncTaskId* task);
+  void DidCreateAsyncTask(probe::AsyncTaskId* task,
+                          ExecutionContext* execution_context);
 
   // Called when an async task is eventually run.
   void DidStartAsyncTask(probe::AsyncTaskId* task);
@@ -69,8 +70,15 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
   void DidFinishAsyncTask(probe::AsyncTaskId* task);
 
   // Returns true if any script in the pseudo call stack has previously been
-  // identified as an ad resource.
-  bool IsAdScriptInStack();
+  // identified as an ad resource, if |execution_context| is a known ad
+  // execution context, or if the script at the top of |execution_context|'s
+  // stack is ad script.
+  bool IsAdScriptInStackForContext(ExecutionContext* execution_context);
+
+  // Determines the current ExecutionContext and then calls
+  // IsAdScriptInStackForContext with it. If you know the ExecutionContext*,
+  // call IsAdScriptInStackForContext, as it's faster than looking it up.
+  bool IsAdScriptInStackSlow();
 
   virtual void Trace(Visitor*);
 

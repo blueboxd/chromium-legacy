@@ -108,6 +108,7 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
                 const SkRect& rect,
                 sk_sp<SkData> data) override;
   void recordCustomData(uint32_t id) override;
+  void setNodeId(int) override;
 
   // Don't shadow non-virtual helper functions.
   using PaintCanvas::clipRect;

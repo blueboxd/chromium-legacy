@@ -53,11 +53,6 @@ class Version;
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-class SkBitmap;
-namespace content {
-class WebContents;
-}
-
 namespace extensions {
 class Extension;
 }
@@ -223,25 +218,6 @@ class SupervisedUserService : public KeyedService,
   bool CanInstallExtensions() const;
 
   bool IsExtensionAllowed(const extensions::Extension& extension) const;
-
-  // Show a parent permission dialog displaying |message| and call |callback|
-  // when it completes.
-  std::unique_ptr<ParentPermissionDialog> ShowParentPermissionDialog(
-      const base::string16& message,
-      content::WebContents* contents,
-      const SkBitmap& icon,
-      ParentPermissionDialog::DoneCallback callback,
-      bool reprompt_after_incorrect_credential);
-
-  // Show a parent permission dialog for |extension| and call |callback| when it
-  // completes.
-  std::unique_ptr<ParentPermissionDialog>
-  ShowParentPermissionDialogForExtension(
-      const extensions::Extension* extension,
-      content::WebContents* contents,
-      const SkBitmap& icon,
-      ParentPermissionDialog::DoneCallback callback,
-      bool reprompt_after_incorrect_credential);
 
   void MarkExtensionMatureForTesting(const std::string& extension_id,
                                      bool maturity_rating);

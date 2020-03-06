@@ -370,6 +370,11 @@ void XRFrameProvider::ProcessScheduledFrame(
   TRACE_EVENT2("gpu", "XRFrameProvider::ProcessScheduledFrame", "frame",
                frame_id_, "timestamp", high_res_now_ms);
 
+  LocalFrame* frame = xr_->GetFrame();
+  if (!frame) {
+    return;
+  }
+
   if (!xr_->IsFrameFocused() && !immersive_session_) {
     return;  // Not currently focused, so we won't expose poses (except to
              // immersive sessions).
@@ -429,7 +434,14 @@ void XRFrameProvider::ProcessScheduledFrame(
       immersive_session_->UpdateStageParameters(frame_data->stage_parameters);
     }
 
-    immersive_session_->OnFrame(high_res_now_ms, buffer_mailbox_holder_);
+    // Run immersive_session_->OnFrame() in a posted task to ensure that
+    // createAnchor promises get a chance to run - the presentation frame state
+    // is already updated.
+    frame->GetTaskRunner(blink::TaskType::kInternalMedia)
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&XRSession::OnFrame,
+                             WrapWeakPersistent(immersive_session_.Get()),
+                             high_res_now_ms, buffer_mailbox_holder_));
   } else {
     // In the process of fulfilling the frame requests for each session they are
     // extremely likely to request another frame. Work off of a separate list
@@ -470,7 +482,13 @@ void XRFrameProvider::ProcessScheduledFrame(
       if (session->ended())
         continue;
 
-      session->OnFrame(high_res_now_ms, base::nullopt);
+      // Run session->OnFrame() in a posted task to ensure that createAnchor
+      // promises get a chance to run - the presentation frame state is already
+      // updated.
+      frame->GetTaskRunner(blink::TaskType::kInternalMedia)
+          ->PostTask(FROM_HERE,
+                     WTF::Bind(&XRSession::OnFrame, WrapWeakPersistent(session),
+                               high_res_now_ms, base::nullopt));
     }
   }
 }

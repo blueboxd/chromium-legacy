@@ -273,7 +273,6 @@ class NavigationManager {
   connectMenuPanel(menuPanel) {
     menuPanel.backButtonElement().addEventListener(
         'click', this.exitGroup_.bind(this));
-    this.focusRingManager_.setMenuPanel(menuPanel);
   }
 
   /**

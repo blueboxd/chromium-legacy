@@ -376,3 +376,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr2_avoid_unnecessary_probe_rtt,
           false)
+
+// If true, use passed in ack_frame to calculate minimum size of the serialized
+// ACK frame.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_use_ack_frame_to_get_min_size,
+          false)

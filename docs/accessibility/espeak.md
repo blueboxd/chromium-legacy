@@ -125,8 +125,8 @@ cros deploy CHROMEBOOK_IP_ADDRESS espeak-ng
 
 To upload the change for review, use 'repo start' to start making changes
 in this package, then commit the change to git, ensuring that you're
-changing both the ebuild and manifest file and adding appropriate BUG=
-and TEST= lines, then use 'repo upload' to upload the change for review.
+changing both the ebuild and manifest file and adding appropriate Bug:
+and Test: lines, then use 'repo upload' to upload the change for review.
 
 ## Running on Chrome OS on Desktop Linux
 

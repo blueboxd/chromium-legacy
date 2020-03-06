@@ -122,6 +122,8 @@ jumbo_static_library("ui") {
     "login/login_navigation_throttle.h",
     "login/login_tab_helper.cc",
     "login/login_tab_helper.h",
+    "native_file_system_dialogs.cc",
+    "native_file_system_dialogs.h",
     "navigation_correction_tab_observer.cc",
     "navigation_correction_tab_observer.h",
     "page_info/page_info.cc",

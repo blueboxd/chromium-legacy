@@ -8,6 +8,7 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "decorators_utils.h",
     "frame_priority.cc",
     "frame_priority.h",
     "graph_impl.h",
@@ -15,8 +16,6 @@ source_set("test_support") {
     "graph_test_harness.h",
     "mock_graphs.cc",
     "mock_graphs.h",
-    "page_live_state_decorator.cc",
-    "page_live_state_decorator.h",
   ]
   deps = [
     "//base/test:test_support",

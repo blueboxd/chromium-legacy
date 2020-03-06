@@ -52,6 +52,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/status_collector/enterprise_activity_storage.h"
+#include "chrome/browser/chromeos/policy/status_collector/interval_map.h"
 #include "chrome/browser/chromeos/policy/status_collector/status_collector_state.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -214,7 +215,7 @@ std::string ReadCPUStatistics() {
 // which contains an appropriate label name for the given sensor.
 // Returns |true| iff there was at least one sensor value in given |sensor_dir|.
 bool ReadTemperatureSensorInfo(const base::FilePath& sensor_dir,
-                               std::vector<em::CPUTempInfo>& out_contents) {
+                               std::vector<em::CPUTempInfo>* out_contents) {
   bool has_data = false;
 
   base::FileEnumerator enumerator(
@@ -253,7 +254,7 @@ bool ReadTemperatureSensorInfo(const base::FilePath& sensor_dir,
       em::CPUTempInfo info;
       info.set_cpu_label(label);
       info.set_cpu_temp(temperature);
-      out_contents.push_back(info);
+      out_contents->push_back(info);
     } else {
       LOG(WARNING) << "Unable to read CPU temp from "
                    << temperature_path.MaybeAsASCII();
@@ -277,11 +278,11 @@ std::vector<em::CPUTempInfo> ReadCPUTempInfo() {
     base::FilePath device_path = hwmon_path.Append(kDeviceDir);
     if (base::PathExists(device_path)) {
       // We might have hwmon*/device/, but sensor values are still in hwmon*/
-      if (!ReadTemperatureSensorInfo(device_path, contents)) {
-        ReadTemperatureSensorInfo(hwmon_path, contents);
+      if (!ReadTemperatureSensorInfo(device_path, &contents)) {
+        ReadTemperatureSensorInfo(hwmon_path, &contents);
       }
     } else {
-      ReadTemperatureSensorInfo(hwmon_path, contents);
+      ReadTemperatureSensorInfo(hwmon_path, &contents);
     }
   }
   return contents;
@@ -688,7 +689,7 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       const std::vector<em::CPUTempInfo>& cpu_temp_info) {
     // Only one of OnCrosHealthdDataReceived or OnCPUTempInfoReceived should be
     // called.
-    DCHECK(response_params_.device_status->cpu_temp_infos_size() == 0);
+    DCHECK_EQ(response_params_.device_status->cpu_temp_infos_size(), 0);
 
     DLOG_IF(WARNING, cpu_temp_info.empty())
         << "Unable to read CPU temp information.";
@@ -858,8 +859,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       return;
     em::StatefulPartitionInfo* stateful_partition_info =
         response_params_.device_status->mutable_stateful_partition_info();
-    DCHECK(hdsi.available_space() >= 0);
-    DCHECK(hdsi.total_space() >= hdsi.available_space());
+    DCHECK_GE(hdsi.available_space(), 0);
+    DCHECK_GE(hdsi.total_space(), hdsi.available_space());
     stateful_partition_info->CopyFrom(hdsi);
   }
 
@@ -1489,28 +1490,32 @@ bool DeviceStatusCollector::GetActivityTimes(
     em::DeviceStatusReportRequest* status) {
   // If user reporting is off, data should be aggregated per day.
   // Signed-in user is reported in non-enterprise reporting.
-  std::vector<ActivityStorage::ActivityPeriod> activity_times =
-      activity_storage_->GetFilteredActivityPeriods(
-          !IncludeEmailsInActivityReports());
+  auto activity_times = activity_storage_->GetFilteredActivityPeriods(
+      !IncludeEmailsInActivityReports());
 
   bool anything_reported = false;
   for (const auto& activity_period : activity_times) {
+    // Skip intervals where there was no activity.
+    if (!activity_period.second.has_value()) {
+      continue;
+    }
     // This is correct even when there are leap seconds, because when a leap
     // second occurs, two consecutive seconds have the same timestamp.
     int64_t end_timestamp =
-        activity_period.start_timestamp + Time::kMillisecondsPerDay;
+        activity_period.first.begin + Time::kMillisecondsPerDay;
 
     em::ActiveTimePeriod* active_period = status->add_active_periods();
     em::TimePeriod* period = active_period->mutable_time_period();
-    period->set_start_timestamp(activity_period.start_timestamp);
+    period->set_start_timestamp(activity_period.first.begin);
     period->set_end_timestamp(end_timestamp);
-    active_period->set_active_duration(activity_period.activity_milliseconds);
+    active_period->set_active_duration(activity_period.first.end -
+                                       activity_period.first.begin);
     // Report user email only if users reporting is turned on.
-    if (!activity_period.user_email.empty())
-      active_period->set_user_email(activity_period.user_email);
-    if (activity_period.start_timestamp >= last_reported_day_) {
-      last_reported_day_ = activity_period.start_timestamp;
-      duration_for_last_reported_day_ = activity_period.activity_milliseconds;
+    if (!activity_period.second.value().user_email.empty()) {
+      active_period->set_user_email(activity_period.second.value().user_email);
+    }
+    if (last_reported_end_timestamp_ < end_timestamp) {
+      last_reported_end_timestamp_ = end_timestamp;
     }
     anything_reported = true;
   }
@@ -2112,8 +2117,7 @@ std::string DeviceStatusCollector::GetAppVersion(
 // TODO(crbug.com/827386): move public API methods above private ones after
 // common methods are extracted.
 void DeviceStatusCollector::OnSubmittedSuccessfully() {
-  activity_storage_->TrimActivityPeriods(last_reported_day_,
-                                         duration_for_last_reported_day_,
+  activity_storage_->TrimActivityPeriods(last_reported_end_timestamp_,
                                          std::numeric_limits<int64_t>::max());
 }
 

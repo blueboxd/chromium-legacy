@@ -250,3 +250,28 @@ IN_PROC_BROWSER_TEST_F(MojoWebUIControllerBrowserTest,
                    .error.empty());
   EXPECT_TRUE(web_contents->IsCrashed());
 }
+
+// Attempting to access bindings crashes the renderer when access not allowed.
+IN_PROC_BROWSER_TEST_F(MojoWebUIControllerBrowserTest, CrashForNoBinder) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ASSERT_TRUE(NavigateToURL(web_contents, content::GetWebUIURL("foo")));
+
+  content::ScopedAllowRendererCrashes allow;
+  content::RenderProcessHostWatcher watcher(
+      web_contents->GetMainFrame()->GetProcess(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // Attempt to bind an interface with no browser binders registered.
+  EXPECT_FALSE(content::EvalJs(web_contents,
+                               "(async () => {"
+                               "  let bazRemote = test.mojom.Baz.getRemote();"
+                               "  let resp = await bazRemote.getBaz();"
+                               "  return resp.value;"
+                               "})()")
+                   .error.empty());
+
+  watcher.Wait();
+  EXPECT_TRUE(web_contents->IsCrashed());
+}

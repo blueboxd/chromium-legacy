@@ -181,10 +181,6 @@ crbug.com/986110 external/wpt/css/css-transforms/perspective-transforms-equivale
 
 crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
 
-########## display-lock failures ##########
-wpt_internal/display-lock/css-subtree-visibility/subtree-visibility-047.html [ Failure ]
-wpt_internal/display-lock/css-subtree-visibility/subtree-visibility-008.html [ Pass Failure Crash ]
-
 ########## Ref tests can't be rebaselined ##########
 crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-antialiased.html [ Failure ]
 
@@ -3173,7 +3169,6 @@ crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processin
 crbug.com/626703 [ Linux ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] wpt_internal/display-lock/rendersubtree/activation/selection.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
@@ -6764,3 +6759,11 @@ crbug.com/1058073 [ Retina ] accessibility/content-changed-notification-causes-c
 
 # Sheriff 2020-03-06
 crbug.com/1058203 [ Mac10.11 ] virtual/form-controls-refresh-disabled/fast/forms/autofocus-opera-008.html [ Pass Failure ]
+crbug.com/1059262 http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
+crbug.com/1059262 virtual/threaded/http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
+crbug.com/1059322 [ Mac ] fast/forms/file/file-input-webkitdirectory-key-enter.html [ Pass Failure ]
+crbug.com/1059322 [ Mac ] fast/forms/file/file-input-webkitdirectory-click.html [ Pass Failure ]
+crbug.com/1059322 [ Mac ] fast/forms/file/file-input-webkitdirectory-key-space.html [ Pass Failure ]
+crbug.com/1059322 [ Mac ] fast/forms/file/file-input-click.html [ Pass Failure ]
+crbug.com/1059322 [ Mac ] fast/forms/autofocus-focus-only-once.html [ Pass Failure ]
+crbug.com/1059322 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/autofocus-focus-only-once.html [ Pass Failure ]

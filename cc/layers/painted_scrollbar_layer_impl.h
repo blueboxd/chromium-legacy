@@ -52,9 +52,9 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
     thumb_ui_resource_id_ = uid;
   }
 
-  // TODO(arakeri): Rename set_thumb_opacity to set_scrollbar_painted_opacity as
-  // a part of crbug.com/1055246.
-  void set_thumb_opacity(float opacity) { thumb_opacity_ = opacity; }
+  void set_scrollbar_painted_opacity(float opacity) {
+    painted_opacity_ = opacity;
+  }
   float OverlayScrollbarOpacity() const override;
 
   void set_internal_contents_scale_and_bounds(float content_scale,
@@ -91,7 +91,9 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
   UIResourceId track_ui_resource_id_;
   UIResourceId thumb_ui_resource_id_;
 
-  float thumb_opacity_;
+  // This is relevant in case of Mac overlay scrollbars because they fade out by
+  // animating the opacity via Blink paint.
+  float painted_opacity_;
 
   float internal_contents_scale_;
   gfx::Size internal_content_bounds_;

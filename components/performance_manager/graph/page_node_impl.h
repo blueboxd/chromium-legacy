@@ -54,13 +54,6 @@ class PageNodeImpl
                                       const GURL& url,
                                       const std::string& contents_mime_type);
 
-  // Returns the average CPU usage that can be attributed to this page over the
-  // last measurement period. CPU usage is expressed as the average percentage
-  // of cores occupied over the last measurement interval. One core fully
-  // occupied would be 100, while two cores at 5% each would be 10.
-  // TODO(chrisha): Make this 1.0 for 100%, and 0.1 for 10%.
-  double GetCPUUsage() const;
-
   // Returns 0 if no navigation has happened, otherwise returns the time since
   // the last navigation commit.
   base::TimeDelta TimeSinceLastNavigation() const;
@@ -87,7 +80,6 @@ class PageNodeImpl
   bool is_holding_indexeddb_lock() const;
   const base::flat_set<FrameNodeImpl*>& main_frame_nodes() const;
   base::TimeTicks usage_estimate_time() const;
-  base::TimeDelta cumulative_cpu_usage_estimate() const;
   uint64_t private_footprint_kb_estimate() const;
   const GURL& main_frame_url() const;
   int64_t navigation_id() const;
@@ -95,8 +87,6 @@ class PageNodeImpl
   bool had_form_interaction() const;
 
   void set_usage_estimate_time(base::TimeTicks usage_estimate_time);
-  void set_cumulative_cpu_usage_estimate(
-      base::TimeDelta cumulative_cpu_usage_estimate);
   void set_private_footprint_kb_estimate(
       uint64_t private_footprint_kb_estimate);
   void set_has_nonempty_beforeunload(bool has_nonempty_beforeunload);
@@ -174,14 +164,6 @@ class PageNodeImpl
 
   // The time the most recent resource usage estimate applies to.
   base::TimeTicks usage_estimate_time_;
-
-  // The most current CPU usage estimate. Note that this estimate is most
-  // generously described as "piecewise linear", as it attributes the CPU
-  // cost incurred since the last measurement was made equally to pages
-  // hosted by a process. If, e.g. a frame has come into existence and vanished
-  // from a given process between measurements, the entire cost to that frame
-  // will be mis-attributed to other frames hosted in that process.
-  base::TimeDelta cumulative_cpu_usage_estimate_;
 
   // The most current memory footprint estimate.
   uint64_t private_footprint_kb_estimate_ = 0;

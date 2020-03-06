@@ -455,7 +455,7 @@ void ScrollbarThemeMac::UpdateEnabledState(const Scrollbar& scrollbar) {
   [PainterForScrollbar(scrollbar) setEnabled:scrollbar.Enabled()];
 }
 
-float ScrollbarThemeMac::ThumbOpacity(const Scrollbar& scrollbar) const {
+float ScrollbarThemeMac::Opacity(const Scrollbar& scrollbar) const {
   ScrollbarPainter scrollbar_painter = PainterForScrollbar(scrollbar);
   return [scrollbar_painter knobAlpha];
 }

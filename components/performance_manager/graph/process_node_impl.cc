@@ -24,10 +24,6 @@ ProcessNodeImpl::~ProcessNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
-  cpu_usage_ = cpu_usage;
-}
-
 void ProcessNodeImpl::Bind(
     mojo::PendingReceiver<mojom::ProcessCoordinationUnit> receiver) {
   // A RenderProcessHost can be reused if the backing process suddenly dies, in
@@ -136,7 +132,6 @@ void ProcessNodeImpl::SetProcessImpl(base::Process process,
   // process.
   private_footprint_kb_ = 0;
   resident_set_kb_ = 0;
-  cumulative_cpu_usage_ = base::TimeDelta();
 
   process_id_ = new_pid;
   launch_time_ = launch_time;
@@ -193,16 +188,6 @@ base::TimeDelta ProcessNodeImpl::GetExpectedTaskQueueingDuration() const {
 bool ProcessNodeImpl::GetMainThreadTaskLoadIsLow() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return main_thread_task_load_is_low();
-}
-
-double ProcessNodeImpl::GetCpuUsage() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return cpu_usage();
-}
-
-base::TimeDelta ProcessNodeImpl::GetCumulativeCpuUsage() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return cumulative_cpu_usage();
 }
 
 uint64_t ProcessNodeImpl::GetPrivateFootprintKb() const {

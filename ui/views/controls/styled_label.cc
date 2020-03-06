@@ -20,8 +20,11 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/view_class_properties.h"
 
 namespace views {
+
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kStyledLabelCustomViewKey, false)
 
 StyledLabel::TestApi::TestApi(StyledLabel* view) : view_(view) {}
 
@@ -69,9 +72,8 @@ struct StyledLabel::LayoutViews {
   // All views to be added as children, line by line.
   std::vector<std::vector<View*>> views_per_line;
 
-  // The subset of |views| that are not owned anywhere else.  Basically, this is
-  // all non-custom views; custom views should be owned by
-  // StyledLabel::custom_views_.  These appear in the same order as |views|.
+  // The subset of |views| that are created by StyledLabel itself.  Basically,
+  // this is all non-custom views;  These appear in the same order as |views|.
   std::vector<std::unique_ptr<View>> owned_views;
 };
 
@@ -93,7 +95,7 @@ void StyledLabel::SetText(const base::string16& text) {
 
   text_ = text;
   style_ranges_.clear();
-  RemoveAllChildViews(true);
+  RemoveOrDeleteAllChildViews();
   OnPropertyChanged(&text_, kPropertyEffectsPreferredSizeChanged);
 }
 
@@ -116,8 +118,9 @@ void StyledLabel::AddStyleRange(const gfx::Range& range,
 }
 
 void StyledLabel::AddCustomView(std::unique_ptr<View> custom_view) {
-  DCHECK(custom_view->owned_by_client());
-  custom_views_.insert(std::move(custom_view));
+  DCHECK(!custom_view->owned_by_client());
+  custom_view->SetProperty(kStyledLabelCustomViewKey, true);
+  custom_views_.push_back(std::move(custom_view));
 }
 
 int StyledLabel::GetTextContext() const {
@@ -230,8 +233,9 @@ void StyledLabel::Layout() {
     }
     link_targets_ = std::move(layout_views_->link_targets);
 
-    // Delete all non-custom views on removal; custom views are owned-by-client.
-    RemoveAllChildViews(true);
+    // Delete all non-custom views on removal; custom views are temporarily
+    // moved to |custom_views_|.
+    RemoveOrDeleteAllChildViews();
 
     DCHECK_EQ(layout_size_info_.line_sizes.size(),
               layout_views_->views_per_line.size());
@@ -250,16 +254,22 @@ void StyledLabel::Layout() {
         view->SetBoundsRect({{x, line_y + y}, size});
         x += size.width();
 
-        // Transfer ownership for any views in layout_views_->owned_views.  The
-        // actual pointer passed is the same in both arms below, the only
-        // difference is whether we're using the unique_ptr or raw pointer
-        // version.
-        if ((next_owned_view != layout_views_->owned_views.end()) &&
-            (view == next_owned_view->get())) {
+        // Transfer ownership for any views in layout_views_->owned_views or
+        // custom_views_.  The actual pointer is the same in both arms below.
+        if (view->GetProperty(kStyledLabelCustomViewKey)) {
+          auto custom_view =
+              std::find_if(custom_views_.begin(), custom_views_.end(),
+                           [view](const auto& current_custom_view) {
+                             return current_custom_view.get() == view;
+                           });
+          DCHECK(custom_view != custom_views_.end());
+          AddChildView(std::move(*custom_view));
+          custom_views_.erase(custom_view);
+        } else {
+          DCHECK(next_owned_view != layout_views_->owned_views.end());
+          DCHECK(view == next_owned_view->get());
           AddChildView(std::move(*next_owned_view));
           ++next_owned_view;
-        } else {
-          AddChildView(view);
         }
       }
       line_y += line_size.height();
@@ -455,11 +465,8 @@ void StyledLabel::CalculateLayout(int width) const {
 
         if (style_info.custom_view) {
           custom_view = style_info.custom_view;
-          // Ownership of the custom view must be passed to StyledLabel.
-          DCHECK(std::find_if(custom_views_.cbegin(), custom_views_.cend(),
-                              [custom_view](const auto& view) {
-                                return view.get() == custom_view;
-                              }) != custom_views_.cend());
+          // Custom views must be marked as such.
+          DCHECK(custom_view->GetProperty(kStyledLabelCustomViewKey));
           // Do not allow wrap in custom view.
           DCHECK_EQ(position, range.start());
           chunk = remaining_string.substr(0, range.end() - position);
@@ -579,13 +586,21 @@ void StyledLabel::UpdateLabelBackgroundColor() {
       displayed_on_background_color_.value_or(GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_DialogBackground));
   for (View* child : children()) {
-    if (!child->owned_by_client()) {
+    if (!child->GetProperty(kStyledLabelCustomViewKey)) {
       // TODO (kylixrd): Should updating the label background color even be
       // allowed if there are custom views?
       DCHECK((child->GetClassName() == Label::kViewClassName) ||
              (child->GetClassName() == Link::kViewClassName));
       static_cast<Label*>(child)->SetBackgroundColor(new_color);
     }
+  }
+}
+
+void StyledLabel::RemoveOrDeleteAllChildViews() {
+  while (children().size() > 0) {
+    std::unique_ptr<View> view = RemoveChildViewT(children()[0]);
+    if (view->GetProperty(kStyledLabelCustomViewKey))
+      custom_views_.push_back(std::move(view));
   }
 }
 

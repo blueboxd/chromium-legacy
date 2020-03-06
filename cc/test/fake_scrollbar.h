@@ -29,7 +29,7 @@ class FakeScrollbar : public Scrollbar {
   gfx::Rect ForwardButtonRect() const override;
   bool SupportsDragSnapBack() const override;
   gfx::Rect TrackRect() const override;
-  float ThumbOpacity() const override;
+  float Opacity() const override;
   bool NeedsRepaintPart(ScrollbarPart part) const override;
   bool HasTickmarks() const override;
   void PaintPart(PaintCanvas* canvas,

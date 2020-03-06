@@ -197,6 +197,21 @@ class MenuManager {
     return true;
   }
 
+  /**
+   * This method allows the FocusRingManager to request a change to the back
+   *      button focus ring, without overriding navigation through the menu.
+   * @param {boolean} should_focus If false, indicates the focus ring aroun
+   *      the back button should be cleared.
+   */
+  static requestBackButtonFocusChange(should_focus) {
+    // Ignore attempts from outside the class to set focus when the menu is
+    // open.
+    if (MenuManager.instance.inMenu_) {
+      return;
+    }
+    MenuManager.instance.updateFocusRing_(should_focus);
+  }
+
   // ================= Instance Methods ==================
 
   /**
@@ -217,7 +232,7 @@ class MenuManager {
    * @private
    */
   clearFocusRing_() {
-    this.updateFocusRing_(true);
+    this.updateFocusRing_(false);
   }
 
   /**
@@ -584,26 +599,25 @@ class MenuManager {
    * Send a message to the menu to update the focus ring around the current
    * node.
    * TODO(anastasi): Use real focus rings in the menu
-   * @param {boolean=} opt_clear If true, will clear the focus ring.
+   * @param {boolean} should_set If true, will set the focus ring.
+   *      If false, will clear the focus ring.
    * @private
    */
-  updateFocusRing_(opt_clear) {
+  updateFocusRing_(should_set = true) {
     if (!this.menuPanel_) {
       console.log('Error: Menu panel has not loaded.');
       return;
     }
 
-    if (!this.inMenu_ || !this.node_) {
-      return;
-    }
-    let id = this.node_.automationNode.htmlAttributes.id;
+    let id = this.inMenu_ && this.node_ ?
+        this.node_.automationNode.htmlAttributes.id :
+        SAConstants.BACK_ID;
 
     // If the selection will close the menu, highlight the back button.
     if (id === this.menuPanel_.currentMenuId()) {
       id = SAConstants.BACK_ID;
     }
 
-    const enable = !opt_clear;
-    this.menuPanel_.setFocusRing(id, enable);
+    this.menuPanel_.setFocusRing(id, should_set);
   }
 }

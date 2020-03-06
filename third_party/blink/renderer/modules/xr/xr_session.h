@@ -396,6 +396,17 @@ class XRSession final
   bool is_tracked_anchors_null_ = true;
   HeapHashMap<uint64_t, Member<XRAnchor>> anchor_ids_to_anchors_;
 
+  // Set of promises returned from CreateAnchor that are still in-flight to the
+  // device. Once the device calls us back with the newly created anchor id, the
+  // resolver will be moved to |newly_created_anchor_ids_to_resolvers_|.
+  HeapHashSet<Member<ScriptPromiseResolver>> create_anchor_promises_;
+  // Promises for which anchors have already been created on the device side but
+  // have not yet been resolved as their data is not yet available to blink.
+  // Next frame update should contain the necessary data - the promise will be
+  // resolved then.
+  HeapHashMap<uint64_t, Member<ScriptPromiseResolver>>
+      newly_created_anchor_ids_to_resolvers_;
+
   // Mapping of hit test source ids (aka hit test subscription ids) to hit test
   // sources. Hit test source has to be stored via weak member - JavaScript side
   // will communicate that it's no longer interested in the subscription by
@@ -415,8 +426,6 @@ class XRSession final
   Member<Element> overlay_element_;
   Member<XRDOMOverlayState> dom_overlay_state_;
   bool environment_error_handler_subscribed_ = false;
-  // Set of promises returned from CreateAnchor that are still in-flight.
-  HeapHashSet<Member<ScriptPromiseResolver>> create_anchor_promises_;
   // Set of promises returned from requestHitTestSource and
   // requestHitTestSourceForTransientInput that are still in-flight.
   HeapHashSet<Member<ScriptPromiseResolver>> request_hit_test_source_promises_;

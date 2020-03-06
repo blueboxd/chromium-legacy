@@ -5,13 +5,14 @@
 #ifndef CHROME_BROWSER_ENTERPRISE_REPORTING_PROFILE_REPORT_GENERATOR_H_
 #define CHROME_BROWSER_ENTERPRISE_REPORTING_PROFILE_REPORT_GENERATOR_H_
 
+#include <memory>
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-
-namespace em = enterprise_management;
 
 namespace base {
 class FilePath;
@@ -27,7 +28,6 @@ namespace enterprise_reporting {
  */
 class ProfileReportGenerator {
  public:
-
   ProfileReportGenerator();
   ~ProfileReportGenerator();
 
@@ -36,7 +36,7 @@ class ProfileReportGenerator {
 
   // Generates report for Profile if it's activated. Returns the report with
   // |callback| once it's ready. The report is null if it can't be generated.
-  std::unique_ptr<em::ChromeUserProfileInfo> MaybeGenerate(
+  std::unique_ptr<enterprise_management::ChromeUserProfileInfo> MaybeGenerate(
       const base::FilePath& path,
       const std::string& name);
 
@@ -57,7 +57,8 @@ class ProfileReportGenerator {
   bool extensions_enabled_ = true;
   bool policies_enabled_ = true;
 
-  std::unique_ptr<em::ChromeUserProfileInfo> report_ = nullptr;
+  std::unique_ptr<enterprise_management::ChromeUserProfileInfo> report_ =
+      nullptr;
 
   base::WeakPtrFactory<ProfileReportGenerator> weak_ptr_factory_{this};
 

@@ -80,7 +80,7 @@ import org.chromium.content_public.browser.WebContents;
 
     @Override
     public float getFullHeightRatio() {
-        return BottomSheetContent.HeightMode.WRAP_CONTENT;
+        return PaymentHandlerMediator.FULL_HEIGHT_RATIO;
     }
 
     @Override

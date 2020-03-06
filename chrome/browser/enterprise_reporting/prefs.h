@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ENTERPRISE_REPORTING_PREFS_H_
 #define CHROME_BROWSER_ENTERPRISE_REPORTING_PREFS_H_
 
-#include "components/prefs/pref_registry_simple.h"
+class PrefRegistrySimple;
 
 namespace user_prefs {
 class PrefRegistrySyncable;

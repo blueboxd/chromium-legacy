@@ -60,10 +60,6 @@ class NavigationControllerDelegate {
   // preserved in the omnibox.  Defaults to false.
   virtual bool ShouldPreserveAbortedURLs() = 0;
 
-  // TODO(crbug.com/934637): Remove when pdf and any inner web contents user
-  // gesture is properly propagated.
-  virtual bool HadInnerWebContents() = 0;
-
   // This method is needed, since we are no longer guaranteed that the
   // embedder for NavigationController will be a WebContents object.
   virtual WebContents* GetWebContents() = 0;

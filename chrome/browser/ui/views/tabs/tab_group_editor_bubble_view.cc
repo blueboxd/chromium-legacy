@@ -209,6 +209,16 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   close_menu_item->SetBorder(views::CreateEmptyBorder(menu_item_border_inset));
   menu_items_container->AddChildView(std::move(close_menu_item));
 
+  std::unique_ptr<views::LabelButton> move_to_new_window_menu_item =
+      CreateBubbleMenuItem(
+          TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW,
+          l10n_util::GetStringUTF16(
+              IDS_TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW),
+          &button_listener_);
+  move_to_new_window_menu_item->SetBorder(
+      views::CreateEmptyBorder(menu_item_border_inset));
+  menu_items_container->AddChildView(std::move(move_to_new_window_menu_item));
+
   std::unique_ptr<views::LabelButton> feedback_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_FEEDBACK,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK),
@@ -363,6 +373,9 @@ void TabGroupEditorBubbleView::ButtonListener::ButtonPressed(
             tabs_in_group[i], TabStripModel::CLOSE_USER_GESTURE |
                                   TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
       }
+      break;
+    case TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW:
+      model->delegate()->MoveGroupToNewWindow(group_);
       break;
     case TAB_GROUP_HEADER_CXMENU_FEEDBACK: {
       base::RecordAction(

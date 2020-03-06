@@ -30,7 +30,8 @@ if (generate_linker_map) {
   assert(
       is_official_build,
       "Linker map files should only be generated when is_official_build = true")
-  assert(current_os == "android" || target_os == "linux",
+  assert(current_os == "android" || current_os == "linux" ||
+             target_os == "android" || target_os == "linux",
          "Linker map files should only be generated for Android and Linux")
 }
 

@@ -111,7 +111,7 @@ shift, and a calendar appointment.
         GPU bots.
     *   In this case you'll upload CLs to Gerrit to perform reverts (optionally
         using the new "Revert" button in the UI), and might consider using
-        `TBR=` to speed through trivial and urgent CLs. In general, try to send
+        `Tbr:` to speed through trivial and urgent CLs. In general, try to send
         all CLs through the commit queue.
     *   Contact bajones, kainino, kbr, vmiura, zmo, or another member of the
         Chrome GPU team who's already a committer for help landing patches or

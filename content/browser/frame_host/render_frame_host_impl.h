@@ -1341,7 +1341,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
 
   // blink::mojom::LocalFrameHost
-  void EnterFullscreen(blink::mojom::FullscreenOptionsPtr options) override;
+  void EnterFullscreen(blink::mojom::FullscreenOptionsPtr options,
+                       EnterFullscreenCallback callback) override;
   void ExitFullscreen() override;
   void FullscreenStateChanged(bool is_fullscreen) override;
   void RegisterProtocolHandler(const std::string& scheme,
@@ -1414,6 +1415,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
   void ContentsPreferredSizeChanged(const gfx::Size& pref_size) override;
+
+  void ReportNoBinderForInterface(const std::string& error);
 
  protected:
   friend class RenderFrameHostFactory;

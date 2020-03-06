@@ -11,11 +11,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
-
-namespace base {
-class DictionaryValue;
-}
+#include "base/values.h"
+#include "chrome/browser/chromeos/policy/status_collector/interval_map.h"
 
 class PrefService;
 
@@ -27,16 +26,18 @@ namespace policy {
 class ActivityStorage {
  public:
   // Stored activity period.
-  struct ActivityPeriod {
+  struct ActivePeriod {
     // Email can be empty.
     std::string user_email;
 
-    // Timestamp dating the beginning of the captured activity.
-    int64_t start_timestamp;
-
-    // User's activity in milliseconds.
-    int activity_milliseconds;
+    // Comparison operator for IntervalMap use; it must refer to all
+    // relevant fields of ActivePeriod.
+    bool operator==(const ActivityStorage::ActivePeriod& other) const {
+      return user_email == other.user_email;
+    }
   };
+  // Stored activity period for the IntervalMap.
+  using Period = base::Optional<ActivePeriod>;
 
   // Creates activity storage. Activity data will be stored in the given
   // |pref_service| under |pref_name| preference. Activity data are aggregated
@@ -57,11 +58,9 @@ class ActivityStorage {
                             base::TimeDelta max_past_activity_interval,
                             base::TimeDelta max_future_activity_interval);
 
-  // Trims the store activity periods to only retain data within the
-  // [|min_day_key|, |max_day_key|). The record for |min_day_key| will be
-  // adjusted by subtracting |min_day_trim_duration|.
+  // Trims the stored activity periods to only retain data within the
+  // [|min_day_key|, |max_day_key|).
   void TrimActivityPeriods(int64_t min_day_key,
-                           int min_day_trim_duration,
                            int64_t max_day_key);
 
  protected:
@@ -82,9 +81,10 @@ class ActivityStorage {
                                          std::string* user_email);
 
   // Retrieves all activity periods that are in the pref keys that can be parsed
-  // by |ParseActivityPeriodPrefKey|.
-  static std::vector<ActivityPeriod> GetActivityPeriodsFromPref(
-      const base::DictionaryValue& stored_activity_periods);
+  // by |ParseActivityPeriodPrefKey|, converting them into an interval map. The
+  // map is keyed by timestamps represented as int64_t (in milliseconds).
+  static IntervalMap<int64_t, Period> GetActivityPeriodsFromPref(
+      const base::Value& stored_activity_periods);
 
   // Determine the day key (milliseconds since epoch for corresponding
   // |GetBeginningOfDay()| in UTC) for a given |timestamp|.

@@ -37,7 +37,6 @@ std::unique_ptr<views::View> CreateSeparatorView() {
   separator_view->SetImage(
       gfx::CreateVectorIcon(kKsvSeparatorPlusIcon, kSeparatorColor));
   separator_view->SetImageSize(gfx::Size(kIconSize, kIconSize));
-  separator_view->set_owned_by_client();
   return separator_view;
 }
 
@@ -45,7 +44,6 @@ std::unique_ptr<views::View> CreateSeparatorView() {
 std::unique_ptr<views::View> CreateBubbleView(const base::string16& bubble_text,
                                               ui::KeyboardCode key_code) {
   auto bubble_view = std::make_unique<BubbleView>();
-  bubble_view->set_owned_by_client();
   const gfx::VectorIcon* vector_icon = GetVectorIconForKeyboardCode(key_code);
   if (vector_icon)
     bubble_view->SetIcon(*vector_icon);

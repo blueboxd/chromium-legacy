@@ -121,6 +121,8 @@ public class TabSwitcherMediatorUnitTest {
     Layout mLayout;
     @Mock
     TabGridDialogMediator.DialogController mTabGridDialogController;
+    @Mock
+    TabSwitcherMediator.MessageItemsController mMessageItemsController;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
@@ -185,7 +187,7 @@ public class TabSwitcherMediatorUnitTest {
         mModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         mModel.addObserver(mPropertyObserver);
         mMediator = new TabSwitcherMediator(mResetHandler, mModel, mTabModelSelector,
-                mFullscreenManager, mCompositorViewHolder, null, null,
+                mFullscreenManager, mCompositorViewHolder, null, null, mMessageItemsController,
                 TabListCoordinator.TabListMode.GRID);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
         mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
@@ -479,6 +481,35 @@ public class TabSwitcherMediatorUnitTest {
 
         mTabModelObserverCaptor.getValue().restoreCompleted();
         assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
+    }
+
+    @Test
+    public void removeMessageItemsWhenCloseLastTab() {
+        initAndAssertAllProperties();
+        // Mock that mTab1 is not the only tab in the current tab model and it will be closed.
+        doReturn(2).when(mTabModel).getCount();
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        verify(mMessageItemsController, never()).removeAllAppendedMessage();
+
+        // Mock that mTab1 is the only tab in the current tab model and it will be closed.
+        doReturn(1).when(mTabModel).getCount();
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        verify(mMessageItemsController).removeAllAppendedMessage();
+    }
+
+    @Test
+    public void restoreMessageItemsWhenUndoLastTabClosure() {
+        initAndAssertAllProperties();
+        // Mock that mTab1 was not the only tab in the current tab model and its closure will be
+        // undone.
+        doReturn(2).when(mTabModel).getCount();
+        mTabModelObserverCaptor.getValue().tabClosureUndone(mTab1);
+        verify(mMessageItemsController, never()).restoreAllAppendedMessage();
+
+        // Mock that mTab1 was the only tab in the current tab model and its closure will be undone.
+        doReturn(1).when(mTabModel).getCount();
+        mTabModelObserverCaptor.getValue().tabClosureUndone(mTab1);
+        verify(mMessageItemsController).restoreAllAppendedMessage();
     }
 
     @Test

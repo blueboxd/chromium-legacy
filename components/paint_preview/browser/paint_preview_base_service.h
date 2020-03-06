@@ -70,6 +70,11 @@ class PaintPreviewBaseService : public KeyedService {
   // Returns the file manager for the directory associated with the service.
   scoped_refptr<FileManager> GetFileManager() { return file_manager_; }
 
+  // Returns the task runner that IO tasks should be scheduled on.
+  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() {
+    return task_runner_;
+  }
+
   // Returns whether the created service is off the record.
   bool IsOffTheRecord() const { return is_off_the_record_; }
 

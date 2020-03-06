@@ -127,12 +127,14 @@ java_group("com_android_support_cardview_v7_java") {
   ]
 }
 
-java_group("com_android_support_coordinatorlayout_java") {
+java_group("com_android_support_cursoradapter_java") {
   deps = [
     ":${target_name}_orig__unpack_aar",
-    ":androidx_coordinatorlayout_coordinatorlayout_java",
+    ":androidx_cursoradapter_cursoradapter_java",
   ]
-  input_jars_paths = [ "${target_out_dir}/com_android_support_coordinatorlayout_java_orig/classes.jar" ]
+  input_jars_paths = [
+    "${target_out_dir}/com_android_support_cursoradapter_java_orig/classes.jar",
+  ]
 }
 
 java_group("com_android_support_customview_java") {

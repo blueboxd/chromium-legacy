@@ -30,6 +30,7 @@ import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.text.BreakIterator;
 
@@ -303,8 +304,8 @@ public class SmartSelectionMetricsLoggerTest {
     @Test
     @Feature({"TextInput", "SmartSelection"})
     public void testNormalLoggingFlow() {
-        SmartSelectionMetricsLogger logger =
-                SmartSelectionMetricsLogger.create(ApplicationProvider.getApplicationContext());
+        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(
+                new WindowAndroid(ApplicationProvider.getApplicationContext()));
         ArgumentCaptor<SelectionEvent> captor = ArgumentCaptor.forClass(SelectionEvent.class);
         InOrder inOrder = inOrder(mTextClassifier);
 
@@ -373,8 +374,8 @@ public class SmartSelectionMetricsLoggerTest {
     @Test
     @Feature({"TextInput", "SmartSelection"})
     public void testMultipleDrag() {
-        SmartSelectionMetricsLogger logger =
-                SmartSelectionMetricsLogger.create(ApplicationProvider.getApplicationContext());
+        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(
+                new WindowAndroid(ApplicationProvider.getApplicationContext()));
         ArgumentCaptor<SelectionEvent> captor = ArgumentCaptor.forClass(SelectionEvent.class);
         InOrder inOrder = inOrder(mTextClassifier);
 
@@ -423,8 +424,8 @@ public class SmartSelectionMetricsLoggerTest {
     @Test
     @Feature({"TextInput", "SmartSelection"})
     public void testTextShift() {
-        SmartSelectionMetricsLogger logger =
-                SmartSelectionMetricsLogger.create(ApplicationProvider.getApplicationContext());
+        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(
+                new WindowAndroid(ApplicationProvider.getApplicationContext()));
         ArgumentCaptor<SelectionEvent> captor = ArgumentCaptor.forClass(SelectionEvent.class);
         InOrder inOrder = inOrder(mTextClassifier);
 
@@ -467,8 +468,8 @@ public class SmartSelectionMetricsLoggerTest {
     @Test
     @Feature({"TextInput", "SmartSelection"})
     public void testSelectionChanged() {
-        SmartSelectionMetricsLogger logger =
-                SmartSelectionMetricsLogger.create(ApplicationProvider.getApplicationContext());
+        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(
+                new WindowAndroid(ApplicationProvider.getApplicationContext()));
         ArgumentCaptor<SelectionEvent> captor = ArgumentCaptor.forClass(SelectionEvent.class);
         InOrder inOrder = inOrder(mTextClassifier);
 

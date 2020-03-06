@@ -96,6 +96,7 @@ enum class PaintOpType : uint8_t {
   SaveLayerAlpha,
   Scale,
   SetMatrix,
+  SetNodeId,
   Translate,
   LastPaintOpType = Translate,
 };
@@ -899,6 +900,20 @@ class CC_PAINT_EXPORT SetMatrixOp final : public PaintOp {
   HAS_SERIALIZATION_FUNCTIONS();
 
   ThreadsafeMatrix matrix;
+};
+
+class CC_PAINT_EXPORT SetNodeIdOp final : public PaintOp {
+ public:
+  static constexpr PaintOpType kType = PaintOpType::SetNodeId;
+  explicit SetNodeIdOp(int node_id) : PaintOp(kType), node_id(node_id) {}
+  static void Raster(const SetNodeIdOp* op,
+                     SkCanvas* canvas,
+                     const PlaybackParams& params);
+  bool IsValid() const { return true; }
+  static bool AreEqual(const PaintOp* left, const PaintOp* right);
+  HAS_SERIALIZATION_FUNCTIONS();
+
+  int node_id;
 };
 
 class CC_PAINT_EXPORT TranslateOp final : public PaintOp {

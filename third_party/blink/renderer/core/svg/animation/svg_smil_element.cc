@@ -711,12 +711,7 @@ SMILTime SVGSMILElement::NextAfter(BeginOrEnd begin_or_end,
       });
   if (next_item == list.end())
     return SMILTime::Unresolved();
-  SMILTime next = next_item->Time();
-  // The special value "indefinite" does not yield an instance time in the
-  // begin list.
-  if (begin_or_end == kBegin && next.IsIndefinite())
-    return SMILTime::Unresolved();
-  return next;
+  return next_item->Time();
 }
 
 SMILTime SVGSMILElement::RepeatingDuration() const {
@@ -834,7 +829,12 @@ SMILTime SVGSMILElement::ComputeNextIntervalTime(
       next_interval_time = interval_.end;
     }
   }
-  return std::min(next_interval_time, NextAfter(kBegin, presentation_time));
+  SMILTime next_begin = NextAfter(kBegin, presentation_time);
+  // The special value "indefinite" does not yield an instance time in the
+  // begin list, so only consider finite values here.
+  if (next_begin.IsFinite())
+    next_interval_time = std::min(next_interval_time, next_begin);
+  return next_interval_time;
 }
 
 void SVGSMILElement::InstanceListChanged() {

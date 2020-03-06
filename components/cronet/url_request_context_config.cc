@@ -316,7 +316,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       std::string quic_version_string;
       if (quic_args->GetString(kQuicVersion, &quic_version_string)) {
         quic::ParsedQuicVersionVector supported_versions =
-            net::ParseQuicVersions(quic_version_string);
+            quic::ParseQuicVersionVectorString(quic_version_string);
         if (!supported_versions.empty())
           quic_params->supported_versions = supported_versions;
       }

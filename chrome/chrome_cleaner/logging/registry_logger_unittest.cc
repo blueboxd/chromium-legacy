@@ -132,30 +132,6 @@ TEST_F(RegistryLoggerTest, WriteReporterLogsUploadResult) {
       upload_result);
 }
 
-TEST_F(RegistryLoggerTest, WriteAndClearScanTimes) {
-  const RegistryLogger::Mode mode = RegistryLogger::Mode::REPORTER;
-  TestRegistryLogger logger(mode);
-  base::TimeDelta scan_time = base::TimeDelta::FromSeconds(3);
-  logger.WriteScanTime(42, scan_time);
-
-  base::win::RegKey scan_times_key;
-  ASSERT_TRUE(
-      OpenScanTimeRegKey(&scan_times_key, logger, KEY_QUERY_VALUE, mode));
-
-  int64_t us_scan_time = 0;
-  LONG result = scan_times_key.ReadInt64(L"42", &us_scan_time);
-  EXPECT_EQ(ERROR_SUCCESS, result);
-  base::TimeDelta read_scan_time =
-      base::TimeDelta::FromMicroseconds(us_scan_time);
-
-  EXPECT_EQ(read_scan_time, scan_time);
-
-  logger.ClearScanTimes();
-  ASSERT_TRUE(
-      OpenScanTimeRegKey(&scan_times_key, logger, KEY_QUERY_VALUE, mode));
-  EXPECT_EQ(0U, scan_times_key.GetValueCount());
-}
-
 TEST_F(RegistryLoggerTest, AppendLogUploadResultMaxLength) {
   const RegistryLogger::Mode mode = RegistryLogger::Mode::REMOVER;
   TestRegistryLogger logger(RegistryLogger::Mode::REMOVER);

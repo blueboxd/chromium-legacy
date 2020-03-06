@@ -32,19 +32,10 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(ALLOW_DELETING_BROWSER_HISTORY));
   EXPECT_EQ(prefs::kIncognitoModeAvailability,
             GetPrefName(INCOGNITO_MODE_AVAILABILITY));
-
-#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
   EXPECT_EQ(feed::prefs::kEnableSnippets,
             GetPrefName(NTP_ARTICLES_SECTION_ENABLED));
   EXPECT_EQ(feed::prefs::kArticlesListVisible,
             GetPrefName(NTP_ARTICLES_LIST_VISIBLE));
-#else   // BUILDFLAG(ENABLE_FEED_IN_CHROME)
-  EXPECT_EQ(ntp_snippets::prefs::kEnableSnippets,
-            GetPrefName(NTP_ARTICLES_SECTION_ENABLED));
-  EXPECT_EQ(ntp_snippets::prefs::kArticlesListVisible,
-            GetPrefName(NTP_ARTICLES_LIST_VISIBLE));
-#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
-
   EXPECT_EQ(prefs::kPromptForDownloadAndroid,
             GetPrefName(PROMPT_FOR_DOWNLOAD_ANDROID));
   EXPECT_EQ(dom_distiller::prefs::kReaderForAccessibility,

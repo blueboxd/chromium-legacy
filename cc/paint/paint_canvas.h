@@ -205,6 +205,9 @@ class CC_PAINT_EXPORT PaintCanvas {
   // Subclasses can override to handle custom data.
   virtual void recordCustomData(uint32_t id) {}
 
+  // Used for marked content in PDF files.
+  virtual void setNodeId(int) = 0;
+
  private:
   printing::MetafileSkia* metafile_ = nullptr;
   paint_preview::PaintPreviewTracker* tracker_ = nullptr;

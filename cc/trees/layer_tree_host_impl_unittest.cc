@@ -12566,14 +12566,14 @@ TEST_F(LayerTreeHostImplTest, FadedOutPaintedScrollbarHitTest) {
 
   // MouseDown on the track of a scrollbar with opacity 0 should not produce a
   // scroll.
-  scrollbar->set_thumb_opacity(0);
+  scrollbar->set_scrollbar_painted_opacity(0);
   InputHandlerPointerResult result =
       host_impl_->MouseDown(gfx::PointF(350, 100), /*shift_modifier*/ false);
   EXPECT_EQ(result.scroll_offset.y(), 0u);
 
   // MouseDown on the track of a scrollbar with opacity > 0 should produce a
   // scroll.
-  scrollbar->set_thumb_opacity(1);
+  scrollbar->set_scrollbar_painted_opacity(1);
   result =
       host_impl_->MouseDown(gfx::PointF(350, 100), /*shift_modifier*/ false);
   EXPECT_GT(result.scroll_offset.y(), 0u);

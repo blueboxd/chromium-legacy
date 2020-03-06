@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments;
+package org.chromium.components.payments.intent;
 
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -10,10 +10,10 @@ import android.util.JsonWriter;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.payments.mojom.PaymentCurrencyAmount;
-import org.chromium.payments.mojom.PaymentDetailsModifier;
-import org.chromium.payments.mojom.PaymentItem;
-import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentCurrencyAmount;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentDetailsModifier;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentItem;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentMethodData;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -70,7 +70,7 @@ public class WebPaymentIntentHelper {
      * @param modifiers The relevant payment details modifiers.
      * @return the 'extra' property built for the intent.
      */
-    /* package */ static Bundle buildExtras(@Nullable String id, @Nullable String merchantName,
+    public static Bundle buildExtras(@Nullable String id, @Nullable String merchantName,
             String schemelessOrigin, String schemelessIframeOrigin,
             @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
             @Nullable PaymentItem total, @Nullable List<PaymentItem> displayItems,

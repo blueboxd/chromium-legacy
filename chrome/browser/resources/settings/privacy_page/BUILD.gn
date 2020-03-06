@@ -6,6 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":collapse_radio_button",
     ":cookies_page",
     ":passwords_leak_detection_toggle",
     ":personalization_options",
@@ -19,6 +20,12 @@ js_type_check("closure_compile") {
     ":security_keys_set_pin_dialog",
     ":security_keys_subpage",
     ":security_page",
+  ]
+}
+
+js_library("collapse_radio_button") {
+  deps = [
+    "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button_behavior",
   ]
 }
 

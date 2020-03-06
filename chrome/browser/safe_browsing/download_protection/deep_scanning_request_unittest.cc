@@ -500,4 +500,24 @@ TEST_F(DeepScanningRequestTest, ShouldUploadItemByPolicy_MalwareListPolicy) {
   EXPECT_FALSE(DeepScanningRequest::ShouldUploadItemByPolicy(&item_));
 }
 
+TEST_F(DeepScanningRequestTest, PopulatesRequest) {
+  SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
+  SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
+
+  EnableFeatures({kMalwareScanEnabled, kContentComplianceEnabled});
+  DeepScanningRequest request(
+      &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
+      base::DoNothing(), &download_protection_service_);
+  request.Start();
+  EXPECT_EQ(download_protection_service_.GetFakeBinaryUploadService()
+                ->last_request()
+                .filename(),
+            "download.exe");
+  EXPECT_EQ(download_protection_service_.GetFakeBinaryUploadService()
+                ->last_request()
+                .digest(),
+            // Hex-encoding of 'hash'
+            "68617368");
+}
+
 }  // namespace safe_browsing

@@ -82,6 +82,11 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       jint id);
 
   // Populate Java accessibility data structures with info about a node.
+  jboolean UpdateCachedAccessibilityNodeInfo(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& info,
+      jint id);
   jboolean PopulateAccessibilityNodeInfo(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -264,6 +269,7 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   bool OnHoverEvent(const ui::MotionEventAndroid& event);
   void HandleHover(int32_t unique_id);
   void HandleNavigate();
+  void ClearNodeInfoCacheForGivenId(int32_t unique_id);
 
   base::WeakPtr<WebContentsAccessibilityAndroid> GetWeakPtr();
 
@@ -271,6 +277,12 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   BrowserAccessibilityAndroid* GetAXFromUniqueID(int32_t unique_id);
 
   void CollectStats();
+  void UpdateAccessibilityNodeInfoBoundsRect(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& info,
+      jint id,
+      BrowserAccessibilityAndroid* node);
 
   // A weak reference to the Java WebContentsAccessibilityAndroid object.
   JavaObjectWeakGlobalRef java_ref_;

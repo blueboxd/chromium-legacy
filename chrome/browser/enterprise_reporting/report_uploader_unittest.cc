@@ -19,6 +19,8 @@ using ::testing::InSequence;
 using ::testing::Property;
 using ::testing::WithArgs;
 
+namespace em = enterprise_management;
+
 namespace enterprise_reporting {
 namespace {
 constexpr const char* kBrowserVersionNames[] = {"name1", "name2"};

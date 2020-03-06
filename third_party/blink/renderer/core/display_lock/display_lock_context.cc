@@ -180,6 +180,12 @@ void DisplayLockContext::SetActivatable(uint16_t activatable_mask) {
   }
   activatable_mask_ = activatable_mask;
   UpdateActivationObservationIfNeeded();
+
+  // If we're no longer activatable, make sure we clear any existing activation.
+  // TODO(vmpstr): Figure out if we should clear activation on any activation
+  // changes not just "something" -> "nothing".
+  if (!IsActivatable(DisplayLockActivationReason::kAny))
+    ClearActivated();
 }
 
 void DisplayLockContext::StartAcquire() {

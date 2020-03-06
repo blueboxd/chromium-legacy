@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/declarative_net_request/file_sequence_helper.h"
 
+#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -198,6 +199,15 @@ bool GetNewDynamicRules(const RulesetSource& source,
   if (new_rules->size() > source.rule_count_limit()) {
     *status = UpdateDynamicRulesStatus::kErrorRuleCountExceeded;
     *error = kDynamicRuleCountExceeded;
+    return false;
+  }
+
+  int regex_rule_count = std::count_if(
+      new_rules->begin(), new_rules->end(),
+      [](const dnr_api::Rule& rule) { return !!rule.condition.regex_filter; });
+  if (regex_rule_count > dnr_api::MAX_NUMBER_OF_REGEX_RULES) {
+    *status = UpdateDynamicRulesStatus::kErrorRegexRuleCountExceeded;
+    *error = kDynamicRegexRuleCountExceeded;
     return false;
   }
 

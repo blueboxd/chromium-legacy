@@ -224,29 +224,6 @@ bool* UIEnabledStorage() {
 
 }  // namespace
 
-// A BinaryUploadService::Request implementation that gets the data to scan
-// from the contents of a file.
-class DeepScanningDialogDelegate::FileSourceRequest
-    : public BinaryUploadService::Request {
- public:
-  FileSourceRequest(base::WeakPtr<DeepScanningDialogDelegate> delegate,
-                    base::FilePath path,
-                    BinaryUploadService::Callback callback);
-  FileSourceRequest(const FileSourceRequest&) = delete;
-  FileSourceRequest& operator=(const FileSourceRequest&) = delete;
-  ~FileSourceRequest() override = default;
-
- private:
-  // BinaryUploadService::Request implementation.
-  void GetRequestData(DataCallback callback) override;
-
-  void OnGotFileContents(DataCallback callback, FileContents file_contents);
-
-  base::WeakPtr<DeepScanningDialogDelegate> delegate_;
-  base::FilePath path_;
-  base::WeakPtrFactory<FileSourceRequest> weakptr_factory_{this};
-};
-
 DeepScanningDialogDelegate::FileSourceRequest::FileSourceRequest(
     base::WeakPtr<DeepScanningDialogDelegate> delegate,
     base::FilePath path,
@@ -256,6 +233,8 @@ DeepScanningDialogDelegate::FileSourceRequest::FileSourceRequest(
       path_(std::move(path)) {
   set_filename(path_.BaseName().AsUTF8Unsafe());
 }
+
+DeepScanningDialogDelegate::FileSourceRequest::~FileSourceRequest() = default;
 
 void DeepScanningDialogDelegate::FileSourceRequest::GetRequestData(
     DataCallback callback) {
@@ -273,6 +252,9 @@ void DeepScanningDialogDelegate::FileSourceRequest::OnGotFileContents(
   if (delegate_)
     delegate_->SetFileInfo(path_, std::move(file_contents.sha256),
                            file_contents.size);
+
+  set_digest(base::HexEncode(file_contents.sha256.data(),
+                             file_contents.sha256.size()));
 
   std::move(callback).Run(file_contents.result, file_contents.data);
 }

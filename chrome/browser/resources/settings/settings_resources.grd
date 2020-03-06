@@ -808,6 +808,12 @@
       <structure name="IDR_SETTINGS_OPEN_WINDOW_PROXY_JS"
                  file="open_window_proxy.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_PLURAL_STRING_PROXY_HTML"
+                 file="plural_string_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PLURAL_STRING_PROXY_JS"
+                 file="plural_string_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PAGE_VISIBILITY_HTML"
                  file="page_visibility.html"
                  type="chrome_html" />
@@ -844,6 +850,12 @@
                  file="privacy_page/passwords_leak_detection_toggle.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_SETTINGS_COLLAPSE_RADIO_BUTTON_HTML"
+                 file="privacy_page/collapse_radio_button.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_COLLAPSE_RADIO_BUTTON_JS"
+                 file="privacy_page/collapse_radio_button.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SECURE_DNS_HTML"
                  file="privacy_page/secure_dns.html"
                  type="chrome_html" />

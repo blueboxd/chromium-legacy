@@ -1443,6 +1443,18 @@ TEST_F(WebContentsImplTest, NavigationEntryContentStateNewWindow) {
   EXPECT_TRUE(entry_impl2->site_instance()->HasSite());
 }
 
+namespace {
+
+void ExpectTrue(bool value) {
+  DCHECK(value);
+}
+
+void ExpectFalse(bool value) {
+  DCHECK(!value);
+}
+
+}  // namespace
+
 // Tests that fullscreen is exited throughout the object hierarchy when
 // navigating to a new page.
 TEST_F(WebContentsImplTest, NavigationExitsFullscreen) {
@@ -1460,7 +1472,8 @@ TEST_F(WebContentsImplTest, NavigationExitsFullscreen) {
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
   main_test_rfh()->frame_tree_node()->UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType::kNotifyActivation);
-  orig_rfh->EnterFullscreen(blink::mojom::FullscreenOptions::New());
+  orig_rfh->EnterFullscreen(blink::mojom::FullscreenOptions::New(),
+                            base::BindOnce(&ExpectTrue));
   EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
   EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
@@ -1500,7 +1513,8 @@ TEST_F(WebContentsImplTest, HistoryNavigationExitsFullscreen) {
     // Toggle fullscreen mode on (as if initiated via IPC from renderer).
     main_test_rfh()->frame_tree_node()->UpdateUserActivationState(
         blink::mojom::UserActivationUpdateType::kNotifyActivation);
-    orig_rfh->EnterFullscreen(blink::mojom::FullscreenOptions::New());
+    orig_rfh->EnterFullscreen(blink::mojom::FullscreenOptions::New(),
+                              base::BindOnce(&ExpectTrue));
     EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
     EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
@@ -1533,7 +1547,8 @@ TEST_F(WebContentsImplTest, CrashExitsFullscreen) {
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
   main_test_rfh()->frame_tree_node()->UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType::kNotifyActivation);
-  main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New());
+  main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New(),
+                                   base::BindOnce(&ExpectTrue));
   EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
   EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
@@ -1562,7 +1577,8 @@ TEST_F(WebContentsImplTest,
 
   // When there is no user activation and no orientation change, entering
   // fullscreen will fail.
-  main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New());
+  main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New(),
+                                   base::BindOnce(&ExpectFalse));
   EXPECT_FALSE(contents()->HasSeenRecentScreenOrientationChange());
   EXPECT_FALSE(
       main_test_rfh()->frame_tree_node()->HasTransientUserActivation());

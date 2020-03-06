@@ -36,12 +36,6 @@ TEST_F(ProcessNodeImplDeathTest, SafeDowncast) {
   ASSERT_DEATH_IF_SUPPORTED(FrameNodeImpl::FromNodeBase(process.get()), "");
 }
 
-TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
-  auto process_node = CreateNode<ProcessNodeImpl>();
-  process_node->SetCPUUsage(1.0);
-  EXPECT_EQ(1.0, process_node->cpu_usage());
-}
-
 TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
   auto process_node = CreateNode<ProcessNodeImpl>();
 
@@ -68,12 +62,9 @@ TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
 
   EXPECT_EQ(0U, process_node->private_footprint_kb());
   EXPECT_EQ(0U, process_node->resident_set_kb());
-  EXPECT_EQ(base::TimeDelta(), process_node->cumulative_cpu_usage());
 
-  constexpr base::TimeDelta kCpuUsage = base::TimeDelta::FromMicroseconds(1);
   process_node->set_private_footprint_kb(10u);
   process_node->set_resident_set_kb(20u);
-  process_node->set_cumulative_cpu_usage(kCpuUsage);
 
   // Kill it again.
   // Verify that the process is cleared, but the properties stick around.
@@ -84,7 +75,6 @@ TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
   EXPECT_EQ(launch_time, process_node->launch_time());
   EXPECT_EQ(10u, process_node->private_footprint_kb());
   EXPECT_EQ(20u, process_node->resident_set_kb());
-  EXPECT_EQ(kCpuUsage, process_node->cumulative_cpu_usage());
 
   // Resurrect again and verify the launch time and measurements
   // are cleared.
@@ -94,7 +84,6 @@ TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
   EXPECT_EQ(launch2_time, process_node->launch_time());
   EXPECT_EQ(0U, process_node->private_footprint_kb());
   EXPECT_EQ(0U, process_node->resident_set_kb());
-  EXPECT_EQ(base::TimeDelta(), process_node->cumulative_cpu_usage());
 }
 
 TEST_F(ProcessNodeImplTest, GetPageNodeIfExclusive) {
@@ -256,13 +245,6 @@ TEST_F(ProcessNodeImplTest, PublicInterface) {
   process_node->SetMainThreadTaskLoadIsLow(true);
   EXPECT_EQ(process_node->main_thread_task_load_is_low(),
             public_process_node->GetMainThreadTaskLoadIsLow());
-
-  process_node->SetCPUUsage(0.5);
-  EXPECT_EQ(process_node->cpu_usage(), public_process_node->GetCpuUsage());
-
-  process_node->set_cumulative_cpu_usage(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(process_node->cumulative_cpu_usage(),
-            public_process_node->GetCumulativeCpuUsage());
 
   process_node->set_private_footprint_kb(628);
   EXPECT_EQ(process_node->private_footprint_kb(),

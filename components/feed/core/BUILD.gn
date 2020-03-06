@@ -36,6 +36,7 @@ source_set("feed_core") {
     "//base",
     "//components/feed:feature_list",
     "//components/feed/core/proto",
+    "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/leveldb_proto",
     "//net",
     "//ui/base/mojom:mojom",

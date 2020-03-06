@@ -40,11 +40,11 @@ WebContentController::~WebContentController() {
     surface_->SetEmbeddedSurfaceId(base::RepeatingCallback<viz::SurfaceId()>());
   }
   if (!current_render_widget_set_.empty()) {
-    // A WebContentController can be destructed without us we have recieved
-    // RenderViewDeleted notifications for all observed RenderWidgetHosts,
-    // so we go through the current_render_widget_set_ to remove the input
-    // event observers. It has sometimes been the case (perhaps only on a
-    // renderer process crash -- TODO(kpschoedel) investiage this) that an
+    // TODO(b/150955487): A WebContentController can be destructed without us
+    // having received RenderViewDeleted notifications for all observed
+    // RenderWidgetHosts, so we go through the current_render_widget_set_ to
+    // remove the input event observers. It has sometimes been the case (perhaps
+    // only on a renderer process crash; requires investigation) that an
     // observed RenderWidgetHost has disappeared without notification.
     // Therefore, it is not safe to call RemoveInputEventObserver on every
     // RenderWidgetHost that we started observing; we need to remove only
@@ -486,8 +486,15 @@ void WebContentController::RenderFrameCreated(
 void WebContentController::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   current_render_frame_set_.erase(render_frame_host);
-  UnregisterRenderWidgetInputObserver(
-      render_frame_host->GetView()->GetRenderWidgetHost());
+  // The RenderFrameHost might not have a RenderWidgetHostView.
+  // TODO(b/150955487): Investigate the conditions for this (renderer process
+  // crash?) and Render.* relationships and notifications to see whether this
+  // can be cleaned up (and in particular not potentially retain stale
+  // |current_render_widget_set_| entries).
+  content::RenderWidgetHostView* const rwhv = render_frame_host->GetView();
+  if (rwhv) {
+    UnregisterRenderWidgetInputObserver(rwhv->GetRenderWidgetHost());
+  }
 }
 
 void WebContentController::RenderFrameHostChanged(

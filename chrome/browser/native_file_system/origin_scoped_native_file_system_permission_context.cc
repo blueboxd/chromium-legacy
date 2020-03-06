@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/native_file_system_dialogs.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"

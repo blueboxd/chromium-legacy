@@ -344,6 +344,7 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
       // Don't affect the canvas, so ignore.
       case PaintOpType::Annotate:
       case PaintOpType::CustomData:
+      case PaintOpType::SetNodeId:
       case PaintOpType::Noop:
         break;
 

@@ -219,6 +219,7 @@
 #include "chrome/browser/ssl/known_interception_disclosure_infobar_delegate.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/feed/buildflags.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/games/core/games_prefs.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
@@ -964,6 +965,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   RecentTabsPagePrefs::RegisterProfilePrefs(registry);
   usage_stats::UsageStatsBridge::RegisterProfilePrefs(registry);
   variations::VariationsService::RegisterProfilePrefs(registry);
+  feed::prefs::RegisterFeedSharedProfilePrefs(registry);
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
   feed::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)

@@ -310,6 +310,10 @@ void RecordPaintCanvas::recordCustomData(uint32_t id) {
   list_->push<CustomDataOp>(id);
 }
 
+void RecordPaintCanvas::setNodeId(int node_id) {
+  list_->push<SetNodeIdOp>(node_id);
+}
+
 const SkNoDrawCanvas* RecordPaintCanvas::GetCanvas() const {
   return const_cast<RecordPaintCanvas*>(this)->GetCanvas();
 }

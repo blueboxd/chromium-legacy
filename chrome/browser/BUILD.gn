@@ -337,7 +337,6 @@ jumbo_static_library("browser") {
     "component_updater/recovery_component_installer.h",
     "component_updater/recovery_improved_component_installer.cc",
     "component_updater/recovery_improved_component_installer.h",
-    "component_updater/recovery_improved_component_installer_win.cc",
     "component_updater/registration.cc",
     "component_updater/registration.h",
     "component_updater/safety_tips_component_installer.cc",
@@ -2275,6 +2274,9 @@ jumbo_static_library("browser") {
 
   if (is_win) {
     libs += [ "secur32.lib" ]
+    sources +=
+        [ "component_updater/recovery_improved_component_installer_win.cc" ]
+    deps += [ "//chrome/elevation_service:elevation_service_idl" ]
   }
 
   if (is_posix || is_fuchsia) {
@@ -2976,6 +2978,7 @@ jumbo_static_library("browser") {
       "//chrome/browser/notifications/scheduler/public",
       "//chrome/browser/offline_pages/prefetch/notifications",
       "//chrome/browser/share",
+      "//chrome/browser/upboarding",
       "//chrome/browser/updates",
       "//chrome/services/media_gallery_util/public/cpp",
       "//components/autofill_assistant/browser",
@@ -3983,6 +3986,8 @@ jumbo_static_library("browser") {
       "sync/roaming_profile_directory_deleter_win.h",
       "taskbar/taskbar_decorator_win.cc",
       "taskbar/taskbar_decorator_win.h",
+      "win/parental_controls.cc",
+      "win/parental_controls.h",
       "win/util_win_service.cc",
       "win/util_win_service.h",
     ]

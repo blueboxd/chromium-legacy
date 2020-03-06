@@ -10,26 +10,19 @@
 
 namespace blink {
 
-XRAnchor::XRAnchor(uint64_t id, XRSession* session)
-    : id_(id), session_(session), anchor_data_(base::nullopt) {}
-
 XRAnchor::XRAnchor(uint64_t id,
                    XRSession* session,
-                   const device::mojom::blink::XRAnchorDataPtr& anchor_data,
-                   double timestamp)
+                   const device::mojom::blink::XRAnchorDataPtr& anchor_data)
     : id_(id),
       session_(session),
-      anchor_data_(base::in_place, anchor_data, timestamp) {}
+      mojo_from_anchor_(std::make_unique<TransformationMatrix>(
+          mojo::ConvertTo<blink::TransformationMatrix>(anchor_data->pose))) {}
 
-void XRAnchor::Update(const device::mojom::blink::XRAnchorDataPtr& anchor_data,
-                      double timestamp) {
-  if (!anchor_data_) {
-    anchor_data_ = AnchorData(anchor_data, timestamp);
-  } else {
-    *anchor_data_->pose_matrix_ =
-        mojo::ConvertTo<blink::TransformationMatrix>(anchor_data->pose);
-    anchor_data_->last_changed_time_ = timestamp;
-  }
+void XRAnchor::Update(
+    const device::mojom::blink::XRAnchorDataPtr& anchor_data) {
+  // Just copy, already allocated.
+  *mojo_from_anchor_ =
+      mojo::ConvertTo<blink::TransformationMatrix>(anchor_data->pose);
 }
 
 uint64_t XRAnchor::id() const {
@@ -37,9 +30,7 @@ uint64_t XRAnchor::id() const {
 }
 
 XRSpace* XRAnchor::anchorSpace() const {
-  if (!anchor_data_) {
-    return nullptr;
-  }
+  DCHECK(mojo_from_anchor_);
 
   if (!anchor_space_) {
     anchor_space_ =
@@ -50,25 +41,9 @@ XRSpace* XRAnchor::anchorSpace() const {
 }
 
 TransformationMatrix XRAnchor::MojoFromObject() const {
-  if (anchor_data_) {
-    return *anchor_data_->pose_matrix_;
-  }
+  DCHECK(mojo_from_anchor_);
 
-  // |poseMatrix()| shouldn't be called by anyone except XRObjectSpace and if
-  // XRObjectSpace already exists for this anchor, then anchor_data_ should also
-  // exist for this anchor.
-  NOTREACHED();
-  return {};
-}
-
-double XRAnchor::lastChangedTime(bool& is_null) const {
-  if (!anchor_data_) {
-    is_null = true;
-    return 0;
-  }
-
-  is_null = false;
-  return anchor_data_->last_changed_time_;
+  return *mojo_from_anchor_;
 }
 
 void XRAnchor::detach() {
@@ -80,12 +55,5 @@ void XRAnchor::Trace(Visitor* visitor) {
   visitor->Trace(anchor_space_);
   ScriptWrappable::Trace(visitor);
 }
-
-XRAnchor::AnchorData::AnchorData(
-    const device::mojom::blink::XRAnchorDataPtr& anchor_data,
-    double timestamp)
-    : pose_matrix_(std::make_unique<TransformationMatrix>(
-          mojo::ConvertTo<blink::TransformationMatrix>(anchor_data->pose))),
-      last_changed_time_(timestamp) {}
 
 }  // namespace blink

@@ -202,7 +202,6 @@ struct ProcessInfo {
   int64 id;
 
   mojo_base.mojom.ProcessId pid;
-  mojo_base.mojom.TimeDelta cumulative_cpu_usage;
   uint64 private_footprint_kb;
 };
 

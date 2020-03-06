@@ -14,6 +14,7 @@ import android.view.View;
 import org.chromium.base.Callback;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
@@ -54,6 +55,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     // TODO(crbug/1001256): Use Context after removing dependency on OverlayPanelContent.
     private final ChromeActivity mActivity;
     private final BottomSheetController mBottomSheetController;
+    private final ActivityTabProvider mActivityTabProvider;
     private final FaviconLoader mFaviconLoader;
     private final EphemeralTabMetrics mMetrics = new EphemeralTabMetrics();
     private OverlayPanelContent mPanelContent;
@@ -69,11 +71,13 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
      * Constructor.
      * @param activity The associated {@link ChromeActivity}.
      * @param bottomSheetController The associated {@link BottomSheetController}.
+     * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
      */
-    public EphemeralTabCoordinator(
-            ChromeActivity activity, BottomSheetController bottomSheetController) {
+    public EphemeralTabCoordinator(ChromeActivity activity,
+            BottomSheetController bottomSheetController, ActivityTabProvider tabProvider) {
         mActivity = activity;
         mBottomSheetController = bottomSheetController;
+        mActivityTabProvider = tabProvider;
         mFaviconLoader = new FaviconLoader(mActivity);
         mBottomSheetController.addObserver(new EmptyBottomSheetObserver() {
             private int mCloseReason;
@@ -193,7 +197,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
             mBottomSheetController.hideContent(mSheetContent, /* animate= */ true);
             mActivity.getCurrentTabCreator().createNewTab(
                     new LoadUrlParams(mUrl, PageTransition.LINK), TabLaunchType.FROM_LINK,
-                    mActivity.getActivityTabProvider().get());
+                    mActivityTabProvider.get());
             mMetrics.recordOpenInNewTab();
         }
     }
@@ -246,7 +250,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     }
 
     private int getMaxSheetHeight() {
-        Tab tab = mActivity.getActivityTabProvider().get();
+        Tab tab = mActivityTabProvider.get();
         if (tab == null) return 0;
         return (int) (tab.getView().getHeight() * 0.9f);
     }

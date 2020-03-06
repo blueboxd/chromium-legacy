@@ -109,6 +109,10 @@ std::string CreateLibAssistantConfig(
     // Print logs to console if running in desktop mode.
     internal.SetKey("disable_log_files", Value(true));
   }
+
+  // Enable logging.
+  internal.SetBoolKey("enable_logging", true);
+
   config.SetKey("internal", std::move(internal));
 
   Value audio_input(Type::DICTIONARY);

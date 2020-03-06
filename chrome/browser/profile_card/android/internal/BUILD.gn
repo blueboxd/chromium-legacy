@@ -9,6 +9,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/profile_card/ContentPreviewPostView.java",
     "java/src/org/chromium/chrome/browser/profile_card/EntryPointCoordinatorImpl.java",
     "java/src/org/chromium/chrome/browser/profile_card/EntryPointView.java",
+    "java/src/org/chromium/chrome/browser/profile_card/ProfileCardCoordinatorFactory.java",
     "java/src/org/chromium/chrome/browser/profile_card/ProfileCardCoordinatorImpl.java",
     "java/src/org/chromium/chrome/browser/profile_card/ProfileCardMediator.java",
     "java/src/org/chromium/chrome/browser/profile_card/ProfileCardProperties.java",

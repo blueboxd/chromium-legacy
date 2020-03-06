@@ -1958,6 +1958,29 @@ TEST_F('CrSettingsSearchTest', 'All', function() {
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
+function CrCollapseRadioButtonTest() {}
+
+CrCollapseRadioButtonTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/privacy_page/collapse_radio_button.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    'collapse_radio_button_tests.js',
+  ]),
+};
+
+TEST_F('CrCollapseRadioButtonTest', 'All', function() {
+  mocha.run();
+});
+
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
 function CrControlledButtonTest() {}
 
 CrControlledButtonTest.prototype = {

@@ -116,4 +116,9 @@ ServiceWorkerProviderHost::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+void ServiceWorkerProviderHost::ReportNoBinderForInterface(
+    const std::string& error) {
+  broker_receiver_.ReportBadMessage(error + " for the service worker scope");
+}
+
 }  // namespace content

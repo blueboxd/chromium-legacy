@@ -11,10 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/status_collector/activity_storage.h"
-
-namespace base {
-class DictionaryValue;
-}
+#include "chrome/browser/chromeos/policy/status_collector/interval_map.h"
 
 class PrefService;
 
@@ -35,8 +32,7 @@ class EnterpriseActivityStorage : public ActivityStorage {
 
   // Returns the list of stored activity periods. Aggregated data is returned
   // without email addresses if |omit_emails| is set.
-  std::vector<ActivityStorage::ActivityPeriod> GetFilteredActivityPeriods(
-      bool omit_emails);
+  IntervalMap<int64_t, Period> GetFilteredActivityPeriods(bool omit_emails);
 
   // Updates stored activity period according to users' reporting preferences.
   // Removes user's email and aggregates the activity data if user's information
@@ -46,9 +42,9 @@ class EnterpriseActivityStorage : public ActivityStorage {
 
  private:
   static void ProcessActivityPeriods(
-      const base::DictionaryValue& activity_times,
+      const base::Value& activity_times,
       const std::vector<std::string>& reporting_users,
-      base::DictionaryValue* const filtered_times);
+      base::Value* const filtered_times);
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseActivityStorage);
 };

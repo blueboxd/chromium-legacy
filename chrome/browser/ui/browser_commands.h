@@ -109,7 +109,14 @@ bool CanMoveActiveTabToNewWindow(Browser* browser);
 void MoveActiveTabToNewWindow(Browser* browser);
 bool CanMoveTabsToNewWindow(Browser* browser,
                             const std::vector<int>& tab_indices);
-void MoveTabsToNewWindow(Browser* browser, const std::vector<int>& tab_indices);
+// Moves the specified |tab_indices| to a newly-created window. If |group| is
+// specified, adds all the moved tabs to a new group. This group will have the
+// appearance as |group| but a different ID, since IDs can't be shared across
+// windows.
+void MoveTabsToNewWindow(
+    Browser* browser,
+    const std::vector<int>& tab_indices,
+    base::Optional<tab_groups::TabGroupId> group = base::nullopt);
 bool CanCloseTabsToRight(const Browser* browser);
 bool CanCloseOtherTabs(const Browser* browser);
 content::WebContents* DuplicateTabAt(Browser* browser, int index);

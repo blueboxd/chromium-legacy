@@ -64,7 +64,7 @@ class Scrollbar : public base::RefCounted<Scrollbar> {
   virtual gfx::Rect BackButtonRect() const = 0;
   virtual gfx::Rect ForwardButtonRect() const = 0;
 
-  virtual float ThumbOpacity() const = 0;
+  virtual float Opacity() const = 0;
   virtual bool HasTickmarks() const = 0;
 
   // Whether we need to repaint the part. Only THUMB and TRACK_BUTTONS_TICKMARKS

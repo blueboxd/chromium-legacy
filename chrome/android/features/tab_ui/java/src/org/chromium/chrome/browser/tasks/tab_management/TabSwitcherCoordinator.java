@@ -49,7 +49,8 @@ import java.util.List;
  */
 public class TabSwitcherCoordinator
         implements Destroyable, TabSwitcher, TabSwitcher.TabListDelegate,
-                   TabSwitcher.TabDialogDelegation, TabSwitcherMediator.ResetHandler {
+                   TabSwitcher.TabDialogDelegation, TabSwitcherMediator.ResetHandler,
+                   TabSwitcherMediator.MessageItemsController {
     // TODO(crbug.com/982018): Rename 'COMPONENT_NAME' so as to add different metrics for carousel
     // tab switcher.
     static final String COMPONENT_NAME = "GridTabSwitcher";
@@ -106,7 +107,7 @@ public class TabSwitcherCoordinator
 
         mMediator = new TabSwitcherMediator(this, containerViewModel, tabModelSelector,
                 fullscreenManager, container, mTabSelectionEditorCoordinator.getController(),
-                tabContentManager, mode);
+                tabContentManager, this, mode);
 
         mMultiThumbnailCardProvider =
                 new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector);
@@ -334,9 +335,24 @@ public class TabSwitcherCoordinator
         return showQuickly;
     }
 
-    private void removeAllAppendedMessage() {
+    // MessageItemsController implementation.
+    @Override
+    public void removeAllAppendedMessage() {
         mTabListCoordinator.removeSpecialListItem(
                 TabProperties.UiType.MESSAGE, MessageService.MessageType.ALL);
+        sAppendedMessagesForTesting = false;
+    }
+
+    @Override
+    public void restoreAllAppendedMessage() {
+        sAppendedMessagesForTesting = false;
+        List<MessageCardProviderMediator.Message> messages =
+                mMessageCardProviderCoordinator.getMessageItems();
+        for (int i = 0; i < messages.size(); i++) {
+            mTabListCoordinator.addSpecialListItemToEnd(
+                    TabProperties.UiType.MESSAGE, messages.get(i).model);
+        }
+        sAppendedMessagesForTesting = messages.size() > 0;
     }
 
     private void appendMessagesTo(int index) {

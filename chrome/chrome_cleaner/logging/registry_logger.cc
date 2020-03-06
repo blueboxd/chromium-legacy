@@ -152,17 +152,6 @@ void RegistryLogger::ClearScanTimes() {
   CreateRegKey(&scan_times_key_, GetScanTimesKeyPath(mode_));
 }
 
-void RegistryLogger::WriteScanTime(UwSId pup_id,
-                                   const base::TimeDelta& scan_time) {
-  if (!scan_times_key_.Valid())
-    return;
-
-  int64_t scan_time_serialized = scan_time.InMicroseconds();
-  scan_times_key_.WriteValue(base::NumberToString16(pup_id).c_str(),
-                             &scan_time_serialized,
-                             sizeof(scan_time_serialized), REG_QWORD);
-}
-
 void RegistryLogger::WriteMemoryUsage(size_t memory_used_kb) {
   if (logging_key_.Valid()) {
     DWORD memory = memory_used_kb;

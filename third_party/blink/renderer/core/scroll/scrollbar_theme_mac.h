@@ -80,10 +80,10 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   void PaintThumbWithOpacity(GraphicsContext& context,
                              const Scrollbar& scrollbar,
                              const IntRect& rect) override {
-    PaintThumbInternal(context, scrollbar, rect, ThumbOpacity(scrollbar));
+    PaintThumbInternal(context, scrollbar, rect, Opacity(scrollbar));
   }
 
-  float ThumbOpacity(const Scrollbar&) const override;
+  float Opacity(const Scrollbar&) const override;
 
   static NSScrollerStyle RecommendedScrollerStyle();
 

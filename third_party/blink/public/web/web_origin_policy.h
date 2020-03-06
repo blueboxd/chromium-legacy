@@ -16,6 +16,9 @@ namespace blink {
 
 // Origin Policy spec: https://wicg.github.io/origin-policy/
 struct BLINK_EXPORT WebOriginPolicy {
+  // https://wicg.github.io/origin-policy/#origin-policy-ids
+  WebVector<WebString> ids;
+
   // The feature policy that is dictated by the origin policy, if any.
   // https://w3c.github.io/webappsec-feature-policy/
   WebString feature_policy;

@@ -13,13 +13,8 @@ void HitTestDisplayItem::Record(GraphicsContext& context,
                                 const DisplayItemClient& client,
                                 const HitTestRect& hit_test_rect) {
   auto& paint_controller = context.GetPaintController();
-  if (paint_controller.DisplayItemConstructionIsDisabled())
-    return;
-
-  if (paint_controller.UseCachedItemIfPossible(client, DisplayItem::kHitTest))
-    return;
-
-  paint_controller.CreateAndAppend<HitTestDisplayItem>(client, hit_test_rect);
+  if (!paint_controller.UseCachedItemIfPossible(client, DisplayItem::kHitTest))
+    paint_controller.CreateAndAppend<HitTestDisplayItem>(client, hit_test_rect);
 }
 
 #if DCHECK_IS_ON()

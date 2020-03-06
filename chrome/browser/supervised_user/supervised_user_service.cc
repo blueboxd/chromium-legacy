@@ -420,42 +420,6 @@ bool SupervisedUserService::IsExtensionAllowed(
   return GetExtensionState(extension) ==
          SupervisedUserService::ExtensionState::ALLOWED;
 }
-
-std::unique_ptr<ParentPermissionDialog>
-SupervisedUserService::ShowParentPermissionDialog(
-    const base::string16& message,
-    content::WebContents* contents,
-    const SkBitmap& icon,
-    ParentPermissionDialog::DoneCallback callback,
-    bool reprompt_after_incorrect_credential) {
-  auto parent_permission_dialog =
-      std::make_unique<ParentPermissionDialog>(profile_, std::move(callback));
-
-  parent_permission_dialog->set_reprompt_after_incorrect_credential(
-      reprompt_after_incorrect_credential);
-  parent_permission_dialog->ShowPrompt(contents, message, icon);
-
-  return parent_permission_dialog;
-}
-
-std::unique_ptr<ParentPermissionDialog>
-SupervisedUserService::ShowParentPermissionDialogForExtension(
-    const extensions::Extension* extension,
-    content::WebContents* contents,
-    const SkBitmap& icon,
-    ParentPermissionDialog::DoneCallback callback,
-    bool reprompt_after_incorrect_credential) {
-  auto parent_permission_dialog =
-      std::make_unique<ParentPermissionDialog>(profile_, std::move(callback));
-
-  parent_permission_dialog->set_reprompt_after_incorrect_credential(
-      reprompt_after_incorrect_credential);
-  parent_permission_dialog->ShowPromptForExtensionInstallation(contents,
-                                                               extension, icon);
-
-  return parent_permission_dialog;
-}
-
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 void SupervisedUserService::SetActive(bool active) {

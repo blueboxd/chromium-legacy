@@ -29,8 +29,8 @@ const char kCertData[] = {
 
 class FuzzerDelegate : public net::SpdyStream::Delegate {
  public:
-  explicit FuzzerDelegate(const base::Closure& done_closure)
-      : done_closure_(done_closure) {}
+  explicit FuzzerDelegate(base::OnceClosure done_closure)
+      : done_closure_(std::move(done_closure)) {}
 
   void OnHeadersSent() override {}
   void OnHeadersReceived(
@@ -39,7 +39,7 @@ class FuzzerDelegate : public net::SpdyStream::Delegate {
   void OnDataReceived(std::unique_ptr<net::SpdyBuffer> buffer) override {}
   void OnDataSent() override {}
   void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override {}
-  void OnClose(int status) override { done_closure_.Run(); }
+  void OnClose(int status) override { std::move(done_closure_).Run(); }
   bool CanGreaseFrameType() const override { return false; }
 
   net::NetLogSource source_dependency() const override {
@@ -47,7 +47,7 @@ class FuzzerDelegate : public net::SpdyStream::Delegate {
   }
 
  private:
-  base::Closure done_closure_;
+  base::OnceClosure done_closure_;
   DISALLOW_COPY_AND_ASSIGN(FuzzerDelegate);
 };
 

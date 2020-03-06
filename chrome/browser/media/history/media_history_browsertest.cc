@@ -36,7 +36,9 @@ constexpr base::TimeDelta kTestClipDuration =
 
 }  // namespace
 
-class MediaHistoryBrowserTest : public InProcessBrowserTest {
+// Runs the test with a param to signify the profile being incognito if true.
+class MediaHistoryBrowserTest : public InProcessBrowserTest,
+                                public testing::WithParamInterface<bool> {
  public:
   MediaHistoryBrowserTest() = default;
   ~MediaHistoryBrowserTest() override = default;
@@ -54,44 +56,51 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
-  bool SetupPageAndStartPlaying(const GURL& url) {
-    ui_test_utils::NavigateToURL(browser(), url);
+  static bool SetupPageAndStartPlaying(Browser* browser, const GURL& url) {
+    ui_test_utils::NavigateToURL(browser, url);
 
     bool played = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-        GetWebContents(), "attemptPlay();", &played));
+        browser->tab_strip_model()->GetActiveWebContents(), "attemptPlay();",
+        &played));
     return played;
   }
 
-  bool SetMediaMetadata() {
-    return content::ExecuteScript(GetWebContents(), "setMediaMetadata();");
+  static bool SetMediaMetadata(Browser* browser) {
+    return content::ExecuteScript(
+        browser->tab_strip_model()->GetActiveWebContents(),
+        "setMediaMetadata();");
   }
 
-  bool SetMediaMetadataWithArtwork() {
-    return content::ExecuteScript(GetWebContents(),
-                                  "setMediaMetadataWithArtwork();");
+  static bool SetMediaMetadataWithArtwork(Browser* browser) {
+    return content::ExecuteScript(
+        browser->tab_strip_model()->GetActiveWebContents(),
+        "setMediaMetadataWithArtwork();");
   }
 
-  bool FinishPlaying() {
-    return content::ExecuteScript(GetWebContents(), "finishPlaying();");
+  static bool FinishPlaying(Browser* browser) {
+    return content::ExecuteScript(
+        browser->tab_strip_model()->GetActiveWebContents(), "finishPlaying();");
   }
 
-  std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> GetPlaybackSessionsSync(
-      int max_sessions) {
+  static std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>
+  GetPlaybackSessionsSync(MediaHistoryKeyedService* service, int max_sessions) {
     return GetPlaybackSessionsSync(
-        max_sessions, base::BindRepeating([](const base::TimeDelta& duration,
-                                             const base::TimeDelta& position) {
+        service, max_sessions,
+        base::BindRepeating([](const base::TimeDelta& duration,
+                               const base::TimeDelta& position) {
           return duration.InSeconds() != position.InSeconds();
         }));
   }
 
-  std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> GetPlaybackSessionsSync(
-      int max_sessions,
-      MediaHistoryStore::GetPlaybackSessionsFilter filter) {
+  static std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>
+  GetPlaybackSessionsSync(MediaHistoryKeyedService* service,
+                          int max_sessions,
+                          MediaHistoryStore::GetPlaybackSessionsFilter filter) {
     base::RunLoop run_loop;
     std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> out;
 
-    GetMediaHistoryService()->GetPlaybackSessions(
+    service->GetPlaybackSessions(
         max_sessions, std::move(filter),
         base::BindLambdaForTesting(
             [&](std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>
@@ -104,11 +113,12 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
     return out;
   }
 
-  mojom::MediaHistoryStatsPtr GetStatsSync() {
+  static mojom::MediaHistoryStatsPtr GetStatsSync(
+      MediaHistoryKeyedService* service) {
     base::RunLoop run_loop;
     mojom::MediaHistoryStatsPtr stats_out;
 
-    GetMediaHistoryService()->GetMediaHistoryStats(
+    service->GetMediaHistoryStats(
         base::BindLambdaForTesting([&](mojom::MediaHistoryStatsPtr stats) {
           stats_out = std::move(stats);
           run_loop.Quit();
@@ -189,9 +199,9 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
     return expected_metadata;
   }
 
-  void SimulateNavigationToCommit() {
+  void SimulateNavigationToCommit(Browser* browser) {
     // Navigate to trigger the session to be saved.
-    ui_test_utils::NavigateToURL(browser(), embedded_test_server()->base_url());
+    ui_test_utils::NavigateToURL(browser, embedded_test_server()->base_url());
 
     // Wait until the session has finished saving.
     content::RunAllTasksUntilIdle();
@@ -205,33 +215,45 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
     return embedded_test_server()->GetURL("/media/media_history.html?alt=1");
   }
 
-  content::WebContents* GetWebContents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
+  static content::MediaSession* GetMediaSession(Browser* browser) {
+    return content::MediaSession::Get(
+        browser->tab_strip_model()->GetActiveWebContents());
   }
 
-  content::MediaSession* GetMediaSession() {
-    return content::MediaSession::Get(GetWebContents());
+  static MediaHistoryKeyedService* GetMediaHistoryService(Browser* browser) {
+    return MediaHistoryKeyedServiceFactory::GetForProfile(browser->profile());
   }
 
-  MediaHistoryKeyedService* GetMediaHistoryService() {
-    return MediaHistoryKeyedServiceFactory::GetForProfile(browser()->profile());
+  static MediaHistoryKeyedService* GetOTRMediaHistoryService(Browser* browser) {
+    return MediaHistoryKeyedServiceFactory::GetForProfile(
+        browser->profile()->GetOffTheRecordProfile());
   }
+
+  Browser* CreateBrowserFromParam() {
+    return GetParam() ? CreateIncognitoBrowser() : browser();
+  }
+
+  bool IsReadOnly() const { return GetParam(); }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
+INSTANTIATE_TEST_SUITE_P(All, MediaHistoryBrowserTest, testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
                        RecordMediaSession_OnNavigate_Incomplete) {
-  EXPECT_TRUE(SetupPageAndStartPlaying(GetTestURL()));
-  EXPECT_TRUE(SetMediaMetadataWithArtwork());
+  auto* browser = CreateBrowserFromParam();
+
+  EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+  EXPECT_TRUE(SetMediaMetadataWithArtwork(browser));
 
   auto expected_metadata = GetExpectedMetadata();
   auto expected_artwork = GetExpectedArtwork();
 
   {
     media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession());
+        *GetMediaSession(browser));
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_metadata);
@@ -240,253 +262,367 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
         expected_artwork);
   }
 
-  SimulateNavigationToCommit();
+  SimulateNavigationToCommit(browser);
 
   // Verify the session in the database.
-  auto sessions = GetPlaybackSessionsSync(1);
-  EXPECT_EQ(1u, sessions.size());
-  EXPECT_EQ(GetTestURL(), sessions[0]->url);
-  EXPECT_EQ(kTestClipDuration, sessions[0]->duration);
-  EXPECT_LT(base::TimeDelta(), sessions[0]->position);
-  EXPECT_EQ(expected_metadata.title, sessions[0]->metadata.title);
-  EXPECT_EQ(expected_metadata.artist, sessions[0]->metadata.artist);
-  EXPECT_EQ(expected_metadata.album, sessions[0]->metadata.album);
-  EXPECT_EQ(expected_metadata.source_title, sessions[0]->metadata.source_title);
-  EXPECT_EQ(expected_artwork, sessions[0]->artwork);
+  auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 1);
+
+  if (IsReadOnly()) {
+    EXPECT_TRUE(sessions.empty());
+  } else {
+    EXPECT_EQ(1u, sessions.size());
+    EXPECT_EQ(GetTestURL(), sessions[0]->url);
+    EXPECT_EQ(kTestClipDuration, sessions[0]->duration);
+    EXPECT_LT(base::TimeDelta(), sessions[0]->position);
+    EXPECT_EQ(expected_metadata.title, sessions[0]->metadata.title);
+    EXPECT_EQ(expected_metadata.artist, sessions[0]->metadata.artist);
+    EXPECT_EQ(expected_metadata.album, sessions[0]->metadata.album);
+    EXPECT_EQ(expected_metadata.source_title,
+              sessions[0]->metadata.source_title);
+    EXPECT_EQ(expected_artwork, sessions[0]->artwork);
+  }
+
+  // The OTR service should have the same data.
+  EXPECT_EQ(sessions,
+            GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 1));
 
   {
     // Check the tables have the expected number of records
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
-    EXPECT_EQ(1, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
-    EXPECT_EQ(1, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
-    EXPECT_EQ(
-        7, stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
-    EXPECT_EQ(6, stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
+    mojom::MediaHistoryStatsPtr stats =
+        GetStatsSync(GetMediaHistoryService(browser));
+
+    if (IsReadOnly()) {
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+      EXPECT_EQ(
+          0,
+          stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
+      EXPECT_EQ(0,
+                stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
+    } else {
+      EXPECT_EQ(1,
+                stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+      EXPECT_EQ(1,
+                stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+      EXPECT_EQ(
+          7,
+          stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
+      EXPECT_EQ(6,
+                stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(stats, GetStatsSync(GetOTRMediaHistoryService(browser)));
   }
 }
 
-IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
                        RecordMediaSession_DefaultMetadata) {
-  EXPECT_TRUE(SetupPageAndStartPlaying(GetTestURL()));
+  auto* browser = CreateBrowserFromParam();
+
+  EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
 
   media_session::MediaMetadata expected_metadata = GetExpectedDefaultMetadata();
 
   {
     media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession());
+        *GetMediaSession(browser));
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_metadata);
   }
 
-  SimulateNavigationToCommit();
+  SimulateNavigationToCommit(browser);
 
   // Verify the session in the database.
-  auto sessions = GetPlaybackSessionsSync(1);
-  EXPECT_EQ(1u, sessions.size());
-  EXPECT_EQ(GetTestURL(), sessions[0]->url);
-  EXPECT_EQ(kTestClipDuration, sessions[0]->duration);
-  EXPECT_LT(base::TimeDelta(), sessions[0]->position);
-  EXPECT_EQ(expected_metadata.title, sessions[0]->metadata.title);
-  EXPECT_EQ(expected_metadata.artist, sessions[0]->metadata.artist);
-  EXPECT_EQ(expected_metadata.album, sessions[0]->metadata.album);
-  EXPECT_EQ(expected_metadata.source_title, sessions[0]->metadata.source_title);
-  EXPECT_TRUE(sessions[0]->artwork.empty());
+  auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 1);
+
+  if (IsReadOnly()) {
+    EXPECT_TRUE(sessions.empty());
+  } else {
+    EXPECT_EQ(1u, sessions.size());
+    EXPECT_EQ(GetTestURL(), sessions[0]->url);
+    EXPECT_EQ(kTestClipDuration, sessions[0]->duration);
+    EXPECT_LT(base::TimeDelta(), sessions[0]->position);
+    EXPECT_EQ(expected_metadata.title, sessions[0]->metadata.title);
+    EXPECT_EQ(expected_metadata.artist, sessions[0]->metadata.artist);
+    EXPECT_EQ(expected_metadata.album, sessions[0]->metadata.album);
+    EXPECT_EQ(expected_metadata.source_title,
+              sessions[0]->metadata.source_title);
+    EXPECT_TRUE(sessions[0]->artwork.empty());
+  }
+
+  // The OTR service should have the same data.
+  EXPECT_EQ(sessions,
+            GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 1));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
                        RecordMediaSession_OnNavigate_Complete) {
-  EXPECT_TRUE(SetupPageAndStartPlaying(GetTestURL()));
-  EXPECT_TRUE(FinishPlaying());
+  auto* browser = CreateBrowserFromParam();
+
+  EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+  EXPECT_TRUE(FinishPlaying(browser));
 
   media_session::MediaMetadata expected_metadata = GetExpectedDefaultMetadata();
 
   {
     media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession());
+        *GetMediaSession(browser));
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_metadata);
   }
 
-  SimulateNavigationToCommit();
+  SimulateNavigationToCommit(browser);
 
   {
     // The session will not be returned since it is complete.
-    auto sessions = GetPlaybackSessionsSync(1);
+    auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 1);
     EXPECT_TRUE(sessions.empty());
+
+    // The OTR service should have the same data.
+    EXPECT_TRUE(
+        GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 1).empty());
   }
 
   {
     // If we remove the filter when we get the sessions we should see a result.
-    auto sessions = GetPlaybackSessionsSync(
-        1, base::BindRepeating(
-               [](const base::TimeDelta& duration,
-                  const base::TimeDelta& position) { return true; }));
+    auto filter = base::BindRepeating(
+        [](const base::TimeDelta& duration, const base::TimeDelta& position) {
+          return true;
+        });
 
-    EXPECT_EQ(1u, sessions.size());
-    EXPECT_EQ(GetTestURL(), sessions[0]->url);
+    auto sessions =
+        GetPlaybackSessionsSync(GetMediaHistoryService(browser), 1, filter);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(sessions.empty());
+    } else {
+      EXPECT_EQ(1u, sessions.size());
+      EXPECT_EQ(GetTestURL(), sessions[0]->url);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(sessions, GetPlaybackSessionsSync(
+                            GetOTRMediaHistoryService(browser), 1, filter));
   }
 }
 
-IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest, DoNotRecordSessionIfNotActive) {
-  ui_test_utils::NavigateToURL(browser(), GetTestURL());
-  EXPECT_TRUE(SetMediaMetadata());
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DoNotRecordSessionIfNotActive) {
+  auto* browser = CreateBrowserFromParam();
+
+  ui_test_utils::NavigateToURL(browser, GetTestURL());
+  EXPECT_TRUE(SetMediaMetadata(browser));
 
   media_session::MediaMetadata expected_metadata = GetExpectedDefaultMetadata();
 
   {
     media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession());
+        *GetMediaSession(browser));
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kInactive);
     observer.WaitForExpectedMetadata(expected_metadata);
   }
 
-  SimulateNavigationToCommit();
+  SimulateNavigationToCommit(browser);
 
   // Verify the session has not been stored in the database.
-  auto sessions = GetPlaybackSessionsSync(1);
+  auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 1);
   EXPECT_TRUE(sessions.empty());
+
+  // The OTR service should have the same data.
+  EXPECT_TRUE(
+      GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 1).empty());
 }
 
-IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest, GetPlaybackSessions) {
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, GetPlaybackSessions) {
+  auto* browser = CreateBrowserFromParam();
   auto expected_default_metadata = GetExpectedDefaultMetadata();
 
   {
     // Start a session.
-    EXPECT_TRUE(SetupPageAndStartPlaying(GetTestURL()));
-    EXPECT_TRUE(SetMediaMetadataWithArtwork());
+    EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+    EXPECT_TRUE(SetMediaMetadataWithArtwork(browser));
 
     media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession());
+        *GetMediaSession(browser));
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(GetExpectedMetadata());
   }
 
-  SimulateNavigationToCommit();
+  SimulateNavigationToCommit(browser);
 
   {
     // Start a second session on a different URL.
-    EXPECT_TRUE(SetupPageAndStartPlaying(GetTestAltURL()));
+    EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestAltURL()));
 
     media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession());
+        *GetMediaSession(browser));
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_default_metadata);
   }
 
-  SimulateNavigationToCommit();
+  SimulateNavigationToCommit(browser);
 
   {
     // Get the two most recent playback sessions and check they are in order.
-    auto sessions = GetPlaybackSessionsSync(2);
-    EXPECT_EQ(2u, sessions.size());
-    EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
-    EXPECT_EQ(GetTestURL(), sessions[1]->url);
+    auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 2);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(sessions.empty());
+    } else {
+      EXPECT_EQ(2u, sessions.size());
+      EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
+      EXPECT_EQ(GetTestURL(), sessions[1]->url);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(sessions,
+              GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 2));
   }
 
   {
     // Get the last playback session.
-    auto sessions = GetPlaybackSessionsSync(1);
-    EXPECT_EQ(1u, sessions.size());
-    EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
+    auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 1);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(sessions.empty());
+    } else {
+      EXPECT_EQ(1u, sessions.size());
+      EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(sessions,
+              GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 1));
   }
 
   {
     // Start the first page again and seek to 4 seconds in with different
     // metadata.
-    EXPECT_TRUE(SetupPageAndStartPlaying(GetTestURL()));
-    EXPECT_TRUE(content::ExecuteScript(GetWebContents(), "seekToFour()"));
+    EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+    EXPECT_TRUE(content::ExecuteScript(
+        browser->tab_strip_model()->GetActiveWebContents(), "seekToFour()"));
 
     media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession());
+        *GetMediaSession(browser));
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_default_metadata);
   }
 
-  SimulateNavigationToCommit();
+  SimulateNavigationToCommit(browser);
 
   {
     // Check that recent playback sessions only returns two playback sessions
     // because the first one was collapsed into the third one since they
     // have the same URL. We should also use the data from the most recent
     // playback.
-    auto sessions = GetPlaybackSessionsSync(3);
-    EXPECT_EQ(2u, sessions.size());
-    EXPECT_EQ(GetTestURL(), sessions[0]->url);
-    EXPECT_EQ(GetTestAltURL(), sessions[1]->url);
+    auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 3);
 
-    EXPECT_EQ(kTestClipDuration, sessions[0]->duration);
-    EXPECT_EQ(4, sessions[0]->position.InSeconds());
-    EXPECT_EQ(expected_default_metadata.title, sessions[0]->metadata.title);
-    EXPECT_EQ(expected_default_metadata.artist, sessions[0]->metadata.artist);
-    EXPECT_EQ(expected_default_metadata.album, sessions[0]->metadata.album);
-    EXPECT_EQ(expected_default_metadata.source_title,
-              sessions[0]->metadata.source_title);
+    if (IsReadOnly()) {
+      EXPECT_TRUE(sessions.empty());
+    } else {
+      EXPECT_EQ(2u, sessions.size());
+      EXPECT_EQ(GetTestURL(), sessions[0]->url);
+      EXPECT_EQ(GetTestAltURL(), sessions[1]->url);
+
+      EXPECT_EQ(kTestClipDuration, sessions[0]->duration);
+      EXPECT_EQ(4, sessions[0]->position.InSeconds());
+      EXPECT_EQ(expected_default_metadata.title, sessions[0]->metadata.title);
+      EXPECT_EQ(expected_default_metadata.artist, sessions[0]->metadata.artist);
+      EXPECT_EQ(expected_default_metadata.album, sessions[0]->metadata.album);
+      EXPECT_EQ(expected_default_metadata.source_title,
+                sessions[0]->metadata.source_title);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(sessions,
+              GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 3));
   }
 
   {
     // Start the first page again and finish playing.
-    EXPECT_TRUE(SetupPageAndStartPlaying(GetTestURL()));
-    EXPECT_TRUE(FinishPlaying());
+    EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+    EXPECT_TRUE(FinishPlaying(browser));
 
     media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession());
+        *GetMediaSession(browser));
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_default_metadata);
   }
 
-  SimulateNavigationToCommit();
+  SimulateNavigationToCommit(browser);
 
   {
     // Get the recent playbacks and the test URL should not appear at all
     // because playback has completed for that URL.
-    auto sessions = GetPlaybackSessionsSync(4);
-    EXPECT_EQ(1u, sessions.size());
-    EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
+    auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 4);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(sessions.empty());
+    } else {
+      EXPECT_EQ(1u, sessions.size());
+      EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(sessions,
+              GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 4));
   }
 
   {
     // Start the first session again.
-    EXPECT_TRUE(SetupPageAndStartPlaying(GetTestURL()));
-    EXPECT_TRUE(SetMediaMetadata());
+    EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+    EXPECT_TRUE(SetMediaMetadata(browser));
 
     media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession());
+        *GetMediaSession(browser));
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(GetExpectedMetadata());
   }
 
-  SimulateNavigationToCommit();
+  SimulateNavigationToCommit(browser);
 
   {
     // The test URL should now appear in the recent playbacks list again since
     // it is incomplete again.
-    auto sessions = GetPlaybackSessionsSync(2);
-    EXPECT_EQ(2u, sessions.size());
-    EXPECT_EQ(GetTestURL(), sessions[0]->url);
-    EXPECT_EQ(GetTestAltURL(), sessions[1]->url);
+    auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 2);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(sessions.empty());
+    } else {
+      EXPECT_EQ(2u, sessions.size());
+      EXPECT_EQ(GetTestURL(), sessions[0]->url);
+      EXPECT_EQ(GetTestAltURL(), sessions[1]->url);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(sessions,
+              GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 2));
   }
 }
 
-IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
                        SaveImagesWithDifferentSessions) {
+  auto* browser = CreateBrowserFromParam();
   auto expected_metadata = GetExpectedMetadata();
   auto expected_artwork = GetExpectedArtwork();
 
   {
     // Start a session.
-    EXPECT_TRUE(SetupPageAndStartPlaying(GetTestURL()));
-    EXPECT_TRUE(SetMediaMetadataWithArtwork());
+    EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+    EXPECT_TRUE(SetMediaMetadataWithArtwork(browser));
 
     media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession());
+        *GetMediaSession(browser));
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_metadata);
@@ -495,7 +631,7 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
         expected_artwork);
   }
 
-  SimulateNavigationToCommit();
+  SimulateNavigationToCommit(browser);
 
   std::vector<media_session::MediaImage> expected_alt_artwork;
 
@@ -517,12 +653,13 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
 
   {
     // Start a second session on a different URL.
-    EXPECT_TRUE(SetupPageAndStartPlaying(GetTestAltURL()));
-    EXPECT_TRUE(content::ExecuteScript(GetWebContents(),
-                                       "setMediaMetadataWithAltArtwork();"));
+    EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestAltURL()));
+    EXPECT_TRUE(content::ExecuteScript(
+        browser->tab_strip_model()->GetActiveWebContents(),
+        "setMediaMetadataWithAltArtwork();"));
 
     media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession());
+        *GetMediaSession(browser));
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_metadata);
@@ -531,15 +668,24 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
         expected_alt_artwork);
   }
 
-  SimulateNavigationToCommit();
+  SimulateNavigationToCommit(browser);
 
   // Verify the session in the database.
-  auto sessions = GetPlaybackSessionsSync(2);
-  EXPECT_EQ(2u, sessions.size());
-  EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
-  EXPECT_EQ(expected_alt_artwork, sessions[0]->artwork);
-  EXPECT_EQ(GetTestURL(), sessions[1]->url);
-  EXPECT_EQ(expected_artwork, sessions[1]->artwork);
+  auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 2);
+
+  if (IsReadOnly()) {
+    EXPECT_TRUE(sessions.empty());
+  } else {
+    EXPECT_EQ(2u, sessions.size());
+    EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
+    EXPECT_EQ(expected_alt_artwork, sessions[0]->artwork);
+    EXPECT_EQ(GetTestURL(), sessions[1]->url);
+    EXPECT_EQ(expected_artwork, sessions[1]->artwork);
+  }
+
+  // The OTR service should have the same data.
+  EXPECT_EQ(sessions,
+            GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 2));
 }
 
 }  // namespace media_history

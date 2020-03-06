@@ -79,7 +79,7 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
   paint_info.context.DrawImage(
       image.get(), decode_mode, dest_rect, &src_rect,
       layout_svg_image_.StyleRef().HasFilterInducingProperty());
-  if (!paint_info.context.ContextDisabled() && image_resource->CachedImage() &&
+  if (image_resource->CachedImage() &&
       image_resource->CachedImage()->IsLoaded()) {
     LocalDOMWindow* window = layout_svg_image_.GetDocument().domWindow();
     DCHECK(window);

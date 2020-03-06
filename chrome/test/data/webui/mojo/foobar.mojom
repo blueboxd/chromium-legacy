@@ -14,3 +14,6 @@ interface Bar {
   GetBar() => (string value);
 };
 
+interface Baz {
+  GetBaz() => (string value);
+};

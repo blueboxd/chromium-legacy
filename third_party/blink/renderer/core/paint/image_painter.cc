@@ -252,8 +252,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
 
   ImageResourceContent* image_content = image_resource.CachedImage();
   if ((IsA<HTMLImageElement>(node) || IsA<HTMLVideoElement>(node)) &&
-      !context.ContextDisabled() && image_content &&
-      image_content->IsLoaded()) {
+      image_content && image_content->IsLoaded()) {
     LocalDOMWindow* window = layout_image_.GetDocument().domWindow();
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyImagePainted(

@@ -31,12 +31,51 @@
 #include "content/public/browser/plugin_service.h"
 #endif
 
+namespace em = ::enterprise_management;
+
 namespace {
 
 std::string GetExecutablePath() {
   base::FilePath path;
-  base::PathService::Get(base::DIR_EXE, &path);
-  return path.AsUTF8Unsafe();
+  return base::PathService::Get(base::DIR_EXE, &path) ? path.AsUTF8Unsafe()
+                                                      : std::string();
+}
+
+// Generates browser_version, channel, executable_path info in the given
+// report instance.
+void GenerateBasicInfos(em::BrowserReport* report) {
+#if !defined(OS_CHROMEOS)
+  report->set_browser_version(version_info::GetVersionNumber());
+  report->set_channel(policy::ConvertToProtoChannel(chrome::GetChannel()));
+  const auto* const build_state = g_browser_process->GetBuildState();
+  if (build_state->update_type() != BuildState::UpdateType::kNone) {
+    const auto& installed_version = build_state->installed_version();
+    if (installed_version)
+      report->set_installed_browser_version(installed_version->GetString());
+  }
+#endif
+
+  report->set_executable_path(GetExecutablePath());
+}
+
+// Generates user profiles info in the given report instance.
+void GenerateProfileInfos(em::BrowserReport* report) {
+  for (const auto* entry : g_browser_process->profile_manager()
+                               ->GetProfileAttributesStorage()
+                               .GetAllProfilesAttributes()) {
+#if defined(OS_CHROMEOS)
+    // Skip sign-in and lock screen app profile on Chrome OS.
+    if (!chromeos::ProfileHelper::IsRegularProfilePath(
+            entry->GetPath().BaseName())) {
+      continue;
+    }
+#endif  // defined(OS_CHROMEOS)
+    em::ChromeUserProfileInfo* profile =
+        report->add_chrome_user_profile_infos();
+    profile->set_id(entry->GetPath().AsUTF8Unsafe());
+    profile->set_name(base::UTF16ToUTF8(entry->GetName()));
+    profile->set_is_full_report(false);
+  }
 }
 
 }  // namespace
@@ -57,42 +96,6 @@ void BrowserReportGenerator::Generate(ReportCallback callback) {
   GeneratePluginsIfNeeded(std::move(callback), std::move(report));
 }
 
-// static
-void BrowserReportGenerator::GenerateBasicInfos(em::BrowserReport* report) {
-#if !defined(OS_CHROMEOS)
-  report->set_browser_version(version_info::GetVersionNumber());
-  report->set_channel(policy::ConvertToProtoChannel(chrome::GetChannel()));
-  const auto* const build_state = g_browser_process->GetBuildState();
-  if (build_state->update_type() != BuildState::UpdateType::kNone) {
-    const auto& installed_version = build_state->installed_version();
-    if (installed_version)
-      report->set_installed_browser_version(installed_version->GetString());
-  }
-#endif
-
-  report->set_executable_path(GetExecutablePath());
-}
-
-// static
-void BrowserReportGenerator::GenerateProfileInfos(em::BrowserReport* report) {
-  for (auto* entry : g_browser_process->profile_manager()
-                         ->GetProfileAttributesStorage()
-                         .GetAllProfilesAttributes()) {
-#if defined(OS_CHROMEOS)
-    // Skip sign-in and lock screen app profile on Chrome OS.
-    if (!chromeos::ProfileHelper::IsRegularProfilePath(
-            entry->GetPath().BaseName())) {
-      continue;
-    }
-#endif  // defined(OS_CHROMEOS)
-    em::ChromeUserProfileInfo* profile =
-        report->add_chrome_user_profile_infos();
-    profile->set_id(entry->GetPath().AsUTF8Unsafe());
-    profile->set_name(base::UTF16ToUTF8(entry->GetName()));
-    profile->set_is_full_report(false);
-  }
-}
-
 void BrowserReportGenerator::GeneratePluginsIfNeeded(
     ReportCallback callback,
     std::unique_ptr<em::BrowserReport> report) {
@@ -110,7 +113,7 @@ void BrowserReportGenerator::OnPluginsReady(
     ReportCallback callback,
     std::unique_ptr<em::BrowserReport> report,
     const std::vector<content::WebPluginInfo>& plugins) {
-  for (content::WebPluginInfo plugin : plugins) {
+  for (const content::WebPluginInfo& plugin : plugins) {
     em::Plugin* plugin_info = report->add_plugins();
     plugin_info->set_name(base::UTF16ToUTF8(plugin.name));
     plugin_info->set_version(base::UTF16ToUTF8(plugin.version));

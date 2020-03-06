@@ -101,9 +101,6 @@ static void RecordForeignLayerInternal(GraphicsContext& context,
                                        const LayerAsJSONClient* json_client,
                                        const PropertyTreeState* properties) {
   PaintController& paint_controller = context.GetPaintController();
-  if (paint_controller.DisplayItemConstructionIsDisabled())
-    return;
-
   // This is like ScopedPaintChunkProperties but uses null id because foreign
   // layer chunk doesn't need an id nor a client.
   base::Optional<PropertyTreeState> previous_properties;

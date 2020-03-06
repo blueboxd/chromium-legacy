@@ -6,8 +6,8 @@
 
 namespace ui {
 
-TestNativeTheme::TestNativeTheme() {}
-TestNativeTheme::~TestNativeTheme() {}
+TestNativeTheme::TestNativeTheme() : NativeTheme(false) {}
+TestNativeTheme::~TestNativeTheme() = default;
 
 SkColor TestNativeTheme::GetSystemColor(ColorId color_id,
                                         ColorScheme color_scheme) const {

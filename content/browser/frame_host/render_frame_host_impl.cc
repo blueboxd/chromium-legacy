@@ -3350,6 +3350,10 @@ void RenderFrameHostImpl::DownloadURL(
   StartDownload(std::move(parameters), std::move(blob_url_token));
 }
 
+void RenderFrameHostImpl::ReportNoBinderForInterface(const std::string& error) {
+  broker_receiver_.ReportBadMessage(error + " for the frame/document scope");
+}
+
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
     blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback,
     int max_length) {
@@ -4201,7 +4205,8 @@ void RenderFrameHostImpl::SetIsXrOverlaySetup() {
 // TODO(alexmos): When the allowFullscreen flag is known in the browser
 // process, use it to double-check that fullscreen can be entered here.
 void RenderFrameHostImpl::EnterFullscreen(
-    blink::mojom::FullscreenOptionsPtr options) {
+    blink::mojom::FullscreenOptionsPtr options,
+    EnterFullscreenCallback callback) {
   // Consume the user activation when entering fullscreen mode in the browser
   // side when the renderer is compromised and the fullscreen is not triggered
   // by a user generated orientation change, because the fullscreen can be
@@ -4224,9 +4229,16 @@ void RenderFrameHostImpl::EnterFullscreen(
     if (!is_consumed) {
       DLOG(ERROR) << "Cannot enter fullscreen because there is no transient "
                   << "user activation, orientation change, or XR overlay.";
+      std::move(callback).Run(/*granted=*/false);
       return;
     }
   }
+
+  if (!delegate_->CanEnterFullscreenMode()) {
+    std::move(callback).Run(/*granted=*/false);
+    return;
+  }
+  std::move(callback).Run(/*granted=*/true);
 
   // Entering fullscreen from a cross-process subframe also affects all
   // renderers for ancestor frames, which will need to apply fullscreen CSS to

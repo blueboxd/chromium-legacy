@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
+#include "components/tab_groups/tab_group_id.h"
 
 namespace content {
 class WebContents;
@@ -37,6 +38,7 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   std::vector<base::string16> GetExistingWindowsForMoveMenu() const override;
   bool CanMoveTabsToWindow(const std::vector<int>& indices) override;
   void MoveTabsToNewWindow(const std::vector<int>& indices) override;
+  void MoveGroupToNewWindow(const tab_groups::TabGroupId& group) override;
   void CreateHistoricalTab(content::WebContents* contents) override;
   bool ShouldRunUnloadListenerBeforeClosing(
       content::WebContents* contents) override;

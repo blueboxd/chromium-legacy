@@ -181,6 +181,10 @@ void DeepScanningRequest::Start() {
                      weak_ptr_factory_.GetWeakPtr()));
   request->set_filename(item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
 
+  std::string raw_digest_sha256 = item_->GetHash();
+  request->set_digest(
+      base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()));
+
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(item_));
 

@@ -132,6 +132,8 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                 const SkRect& rect,
                 sk_sp<SkData> data) override;
 
+  void setNodeId(int) override;
+
   // Don't shadow non-virtual helper functions.
   using PaintCanvas::clipPath;
   using PaintCanvas::clipRect;

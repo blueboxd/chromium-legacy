@@ -403,7 +403,6 @@ void DiscardsGraphDumpImpl::SendProcessNotification(
 
   process_info->id = GetSerializationId(process);
   process_info->pid = process->GetProcessId();
-  process_info->cumulative_cpu_usage = process->GetCumulativeCpuUsage();
   process_info->private_footprint_kb = process->GetPrivateFootprintKb();
 
   if (created)

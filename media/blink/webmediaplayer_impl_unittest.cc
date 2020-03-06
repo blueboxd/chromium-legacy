@@ -24,12 +24,14 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "cc/layers/layer.h"
 #include "components/viz/test/test_context_provider.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/memory_dump_provider_proxy.h"
 #include "media/base/mock_audio_renderer_sink.h"
 #include "media/base/mock_filters.h"
 #include "media/base/mock_media_log.h"
@@ -88,6 +90,7 @@ namespace media {
 
 constexpr char kAudioOnlyTestFile[] = "sfx-opus-441.webm";
 constexpr char kVideoOnlyTestFile[] = "bear-320x240-video-only.webm";
+constexpr char kVideoAudioTestFile[] = "bear-320x240-16x9-aspect.webm";
 constexpr char kEncryptedVideoOnlyTestFile[] = "bear-320x240-av_enc-v.webm";
 
 constexpr base::TimeDelta kAudioOnlyTestFileDuration =
@@ -323,7 +326,9 @@ class WebMediaPlayerImplTest : public testing::Test {
                                                   nullptr,
                                                   nullptr)),
         context_provider_(viz::TestContextProvider::Create()),
-        audio_parameters_(TestAudioParameters::Normal()) {
+        audio_parameters_(TestAudioParameters::Normal()),
+        memory_dump_manager_(
+            base::trace_event::MemoryDumpManager::CreateInstanceForTesting()) {
     media_thread_.StartAndWaitForTesting();
   }
 
@@ -409,6 +414,8 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   ~WebMediaPlayerImplTest() override {
+    if (!wmpi_)
+      return;
     EXPECT_CALL(client_, SetCcLayer(nullptr));
     EXPECT_CALL(client_, MediaRemotingStopped(_));
 
@@ -793,6 +800,15 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->SetCdmInternal(web_cdm_.get());
   }
 
+  MemoryDumpProviderProxy* GetMainThreadMemDumper() {
+    return wmpi_->main_thread_mem_dumper_.get();
+  }
+  MemoryDumpProviderProxy* GetMediaThreadMemDumper() {
+    return wmpi_->media_thread_mem_dumper_.get();
+  }
+
+  int32_t GetMediaLogId() { return media_log_->id(); }
+
   // "Media" thread. This is necessary because WMPI destruction waits on a
   // WaitableEvent.
   base::Thread media_thread_;
@@ -851,6 +867,8 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   // The WebMediaPlayerImpl instance under test.
   std::unique_ptr<WebMediaPlayerImpl> wmpi_;
+
+  std::unique_ptr<base::trace_event::MemoryDumpManager> memory_dump_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImplTest);
@@ -2023,6 +2041,79 @@ TEST_F(WebMediaPlayerImplTest, OnProgressClearsStale) {
     EXPECT_EQ(delegate_.IsStale(delegate_.player_id()),
               rs >= blink::WebMediaPlayer::kReadyStateHaveFutureData);
   }
+}
+
+TEST_F(WebMediaPlayerImplTest, MemDumpProvidersRegistration) {
+  auto* dump_manager = base::trace_event::MemoryDumpManager::GetInstance();
+  InitializeWebMediaPlayerImpl();
+
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
+  auto* main_dumper = GetMainThreadMemDumper();
+  EXPECT_TRUE(dump_manager->IsDumpProviderRegisteredForTesting(main_dumper));
+  LoadAndWaitForCurrentData(kVideoAudioTestFile);
+
+  auto* media_dumper = GetMediaThreadMemDumper();
+  EXPECT_TRUE(dump_manager->IsDumpProviderRegisteredForTesting(media_dumper));
+  CycleThreads();
+
+  wmpi_.reset();
+  CycleThreads();
+
+  EXPECT_FALSE(dump_manager->IsDumpProviderRegisteredForTesting(main_dumper));
+  EXPECT_FALSE(dump_manager->IsDumpProviderRegisteredForTesting(media_dumper));
+}
+
+TEST_F(WebMediaPlayerImplTest, MemDumpReporting) {
+  InitializeWebMediaPlayerImpl();
+
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
+  LoadAndWaitForCurrentData(kVideoAudioTestFile);
+
+  CycleThreads();
+
+  base::trace_event::MemoryDumpRequestArgs args = {
+      1 /* dump_guid*/, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      base::trace_event::MemoryDumpLevelOfDetail::LIGHT};
+
+  struct TestContext {
+    int32_t id = 0;
+    bool dump_was_created = false;
+  } ctx;
+  ctx.id = GetMediaLogId();
+
+  auto on_memory_dump_done =
+      [](struct TestContext* ctx, bool success, uint64_t dump_guid,
+         std::unique_ptr<base::trace_event::ProcessMemoryDump> pmd) {
+        ASSERT_TRUE(success);
+        const auto& dumps = pmd->allocator_dumps();
+
+        std::vector<const char*> allocations = {"audio", "video", "data_source",
+                                                "demuxer"};
+
+        for (const char* name : allocations) {
+          auto it = dumps.find(base::StringPrintf(
+              "media/webmediaplayer/player_%d/%s", ctx->id, name));
+          ASSERT_NE(dumps.end(), it) << name;
+          ASSERT_GT(it->second->GetSizeInternal(), 0u) << name;
+        }
+
+        auto it = dumps.find(
+            base::StringPrintf("media/webmediaplayer/player_%d", ctx->id));
+        ASSERT_NE(dumps.end(), it);
+        const auto& entries = it->second->entries();
+        auto player_state_id =
+            find_if(entries.begin(), entries.end(), [](const auto& e) {
+              return e.name == "player_state" && !e.value_string.empty();
+            });
+        ASSERT_NE(entries.end(), player_state_id);
+
+        ctx->dump_was_created = true;
+      };
+  base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
+      args, base::BindOnce(on_memory_dump_done, base::Unretained(&ctx)));
+
+  CycleThreads();
+  EXPECT_TRUE(ctx.dump_was_created);
 }
 
 class WebMediaPlayerImplBackgroundBehaviorTest

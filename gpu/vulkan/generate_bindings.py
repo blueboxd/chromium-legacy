@@ -287,11 +287,7 @@ def WriteFunctions(file, functions, template, check_extension=False):
     file.write('\n')
 
 def WriteFunctionDeclarations(file, functions):
-  template = Template('  PFN_${name} ${name}Fn_ = nullptr;\n')
-  WriteFunctions(file, functions, template)
-
-def WriteTemplateMethods(file, functions):
-  template = Template('  DEFINE_METHOD(${name})\n')
+  template = Template('  VulkanFunction<PFN_${name}> ${name}Fn;\n')
   WriteFunctions(file, functions, template)
 
 def WriteMacros(file, functions):
@@ -335,12 +331,11 @@ def GenerateHeaderFile(file):
 
 namespace gpu {
 
-class VulkanFunctionPointers;
+struct VulkanFunctionPointers;
 
 VULKAN_EXPORT VulkanFunctionPointers* GetVulkanFunctionPointers();
 
-class VulkanFunctionPointers {
- public:
+struct VulkanFunctionPointers {
   VulkanFunctionPointers();
   ~VulkanFunctionPointers();
 
@@ -358,24 +353,38 @@ class VulkanFunctionPointers {
       uint32_t api_version,
       const gfx::ExtensionSet& enabled_extensions);
 
-  bool HasEnumerateInstanceVersion() const {
-    return !!vkEnumerateInstanceVersionFn_;
-  }
+  base::NativeLibrary vulkan_loader_library = nullptr;
 
-  base::NativeLibrary vulkan_loader_library() const {
-    return vulkan_loader_library_;
-  }
+  template<typename T>
+  class VulkanFunction;
+  template <typename R, typename ...Args>
+  class VulkanFunction <R(VKAPI_PTR*)(Args...)> {
+   public:
+    explicit operator bool() {
+      return !!fn_;
+    }
 
-  void set_vulkan_loader_library(base::NativeLibrary library) {
-    vulkan_loader_library_ = library;
-  }
+    NO_SANITIZE("cfi-icall")
+    R operator()(Args... args) {
+      return fn_(args...);
+    }
 
- private:
-  base::NativeLibrary vulkan_loader_library_ = nullptr;
+   private:
+    friend VulkanFunctionPointers;
+    using Fn = R(VKAPI_PTR*)(Args...);
+
+    Fn operator=(Fn fn) {
+      fn_ = fn;
+      return fn_;
+    }
+
+    Fn fn_ = nullptr;
+  };
 
   // Unassociated functions
-  PFN_vkEnumerateInstanceVersion vkEnumerateInstanceVersionFn_ = nullptr;
-  PFN_vkGetInstanceProcAddr vkGetInstanceProcAddrFn_ = nullptr;
+  VulkanFunction<PFN_vkEnumerateInstanceVersion> vkEnumerateInstanceVersionFn;
+  VulkanFunction<PFN_vkGetInstanceProcAddr> vkGetInstanceProcAddrFn;
+
 """)
 
   WriteFunctionDeclarations(file, VULKAN_UNASSOCIATED_FUNCTIONS)
@@ -394,38 +403,7 @@ class VulkanFunctionPointers {
 
   WriteFunctionDeclarations(file, VULKAN_DEVICE_FUNCTIONS)
 
-  file.write("""
- public:
-#define DEFINE_METHOD(name)                \
-  template <typename... Types>             \
-  NO_SANITIZE("cfi-icall")                 \
-  auto name ## Fn(Types... args)           \
-      -> decltype(name ## Fn_(args...)) {  \
-    return name ## Fn_(args...);           \
-  }
-
-  // Unassociated functions
-""")
-  WriteTemplateMethods(file, [{'functions': [ 'vkGetInstanceProcAddr' ,
-                                              'vkEnumerateInstanceVersion']}])
-  WriteTemplateMethods(file, VULKAN_UNASSOCIATED_FUNCTIONS)
-
   file.write("""\
-
-// Instance functions
-""")
-
-  WriteTemplateMethods(file, VULKAN_INSTANCE_FUNCTIONS);
-
-  file.write("""\
-
-// Device functions
-""")
-
-  WriteTemplateMethods(file, VULKAN_DEVICE_FUNCTIONS)
-
-  file.write("""\
-#undef DEFINE_METHOD
 };
 
 }  // namespace gpu
@@ -457,9 +435,9 @@ class VulkanFunctionPointers {
 
 def WriteFunctionPointerInitialization(file, proc_addr_function, parent,
                                        functions):
-  template = Template("""  ${name}Fn_ = reinterpret_cast<PFN_${name}>(
+  template = Template("""  ${name}Fn = reinterpret_cast<PFN_${name}>(
     ${get_proc_addr}(${parent}, "${name}${extension_suffix}"));
-  if (!${name}Fn_) {
+  if (!${name}Fn) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "${name}${extension_suffix}";
     return false;
@@ -512,13 +490,13 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
   // vkGetInstanceProcAddr must be handled specially since it gets its function
   // pointer through base::GetFunctionPOinterFromNativeLibrary(). Other Vulkan
   // functions don't do this.
-  vkGetInstanceProcAddrFn_ = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
-      base::GetFunctionPointerFromNativeLibrary(vulkan_loader_library_,
+  vkGetInstanceProcAddrFn = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+      base::GetFunctionPointerFromNativeLibrary(vulkan_loader_library,
                                                 "vkGetInstanceProcAddr"));
-  if (!vkGetInstanceProcAddrFn_)
+  if (!vkGetInstanceProcAddrFn)
     return false;
 
-  vkEnumerateInstanceVersionFn_ =
+  vkEnumerateInstanceVersionFn =
       reinterpret_cast<PFN_vkEnumerateInstanceVersion>(
           vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
   // vkEnumerateInstanceVersion didn't exist in Vulkan 1.0, so we should

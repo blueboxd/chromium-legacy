@@ -58,6 +58,9 @@ class FakeCrosHealthdService final
                           RunCpuCacheRoutineCallback callback) override;
   void RunCpuStressRoutine(uint32_t length_seconds,
                            RunCpuStressRoutineCallback callback) override;
+  void RunFloatingPointAccuracyRoutine(
+      uint32_t length_seconds,
+      RunFloatingPointAccuracyRoutineCallback callback) override;
 
   // CrosHealthdProbeService overrides:
   void ProbeTelemetryInfo(

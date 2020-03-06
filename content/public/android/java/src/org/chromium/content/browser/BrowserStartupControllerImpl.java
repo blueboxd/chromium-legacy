@@ -21,6 +21,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.PostTask;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content.browser.ServicificationStartupUma.ServicificationStartup;
@@ -245,7 +246,10 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         // If already started skip to checking the result
         if (!mFullBrowserStartupDone) {
             if (!mHasStartedInitializingBrowserProcess || !mPostResourceExtractionTasksCompleted) {
-                prepareToStartBrowserProcess(singleProcess, null);
+                try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
+                             "BrowserStartupController.prepareToStartBrowserProcess")) {
+                    prepareToStartBrowserProcess(singleProcess, null);
+                }
             }
 
             boolean startedSuccessfully = true;

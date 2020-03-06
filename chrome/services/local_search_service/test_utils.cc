@@ -29,7 +29,7 @@ std::vector<mojom::DataPtr> CreateTestData(
   std::vector<mojom::DataPtr> output;
   for (const auto& item : input) {
     const std::vector<base::string16> tags = MultiUTF8ToUTF16(item.second);
-    mojom::DataPtr data = mojom::Data::New(base::UTF8ToUTF16(item.first), tags);
+    mojom::DataPtr data = mojom::Data::New(item.first, tags);
     output.push_back(std::move(data));
   }
   return output;
@@ -53,7 +53,7 @@ void DeleteAndCheck(mojom::Index* index,
                     uint32_t expected_num_deleted) {
   DCHECK(index);
   uint32_t num_deleted = 0u;
-  mojom::IndexAsyncWaiter(index).Delete(MultiUTF8ToUTF16(ids), &num_deleted);
+  mojom::IndexAsyncWaiter(index).Delete(ids, &num_deleted);
   EXPECT_EQ(num_deleted, expected_num_deleted);
 }
 
@@ -77,7 +77,7 @@ void FindAndCheck(mojom::Index* index,
     // If results are returned, check size and values match the expected.
     EXPECT_EQ(results->size(), expected_result_ids.size());
     for (size_t i = 0; i < results->size(); ++i) {
-      EXPECT_EQ((*results)[i]->id, base::UTF8ToUTF16(expected_result_ids[i]));
+      EXPECT_EQ((*results)[i]->id, expected_result_ids[i]);
       // Scores should be non-increasing.
       if (i < results->size() - 1) {
         EXPECT_GE((*results)[i]->score, (*results)[i + 1]->score);

@@ -8,8 +8,11 @@
 #include <utility>
 
 #include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_concierge_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace crostini {
@@ -28,8 +31,8 @@ class CrostiniDiskTest : public testing::Test {
       base::Optional<vm_tools::concierge::ListVmDisksResponse>
           list_disks_response) {
     std::unique_ptr<CrostiniDiskInfo> result;
-    auto store =
-        base::BindLambdaForTesting([&](std::unique_ptr<CrostiniDiskInfo> info) {
+    auto store = base::BindLambdaForTesting(
+        [&result](std::unique_ptr<CrostiniDiskInfo> info) {
           result = std::move(info);
         });
 
@@ -38,6 +41,39 @@ class CrostiniDiskTest : public testing::Test {
     // the time it returns we know that result has been stored.
     return result;
   }
+};
+
+class CrostiniDiskTestDbus : public CrostiniDiskTest {
+ public:
+  CrostiniDiskTestDbus() {
+    chromeos::DBusThreadManager::Initialize();
+    fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
+        chromeos::DBusThreadManager::Get()->GetConciergeClient());
+  }
+  ~CrostiniDiskTestDbus() override { chromeos::DBusThreadManager::Shutdown(); }
+
+ protected:
+  // A wrapper for ResizeCrostiniDisk which returns the result.
+  bool OnResizeWithResult(Profile* profile,
+                          const char* vm_name,
+                          int64_t size_bytes) {
+    bool result;
+    auto store =
+        base::BindLambdaForTesting([&result, &run_loop = run_loop_](bool info) {
+          result = std::move(info);
+          run_loop.QuitClosure().Run();
+        });
+
+    ResizeCrostiniDisk(profile, vm_name, size_bytes, std::move(store));
+    run_loop_.Run();
+    return result;
+  }
+
+  base::test::SingleThreadTaskEnvironment task_environment;
+
+  base::RunLoop run_loop_;
+  // Owned by chromeos::DBusThreadManager
+  chromeos::FakeConciergeClient* fake_concierge_client_;
 };
 
 TEST_F(CrostiniDiskTest, NonResizeableDiskReturnsEarly) {
@@ -80,8 +116,9 @@ TEST_F(CrostiniDiskTest, IsUserChosenSizeIsReportedCorrectly) {
   image->set_name("vm_name");
   image->set_image_type(vm_tools::concierge::DiskImageType::DISK_IMAGE_RAW);
   image->set_user_chosen_size(true);
+  image->set_min_size(1);
 
-  auto disk_info_user_size = OnListVmDisksWithResult("vm_name", 0, response);
+  auto disk_info_user_size = OnListVmDisksWithResult("vm_name", 1, response);
 
   ASSERT_TRUE(disk_info_user_size);
   EXPECT_TRUE(disk_info_user_size->can_resize);
@@ -90,7 +127,7 @@ TEST_F(CrostiniDiskTest, IsUserChosenSizeIsReportedCorrectly) {
   image->set_user_chosen_size(false);
 
   auto disk_info_not_user_size =
-      OnListVmDisksWithResult("vm_name", 0, response);
+      OnListVmDisksWithResult("vm_name", 1, response);
 
   ASSERT_TRUE(disk_info_not_user_size);
   EXPECT_TRUE(disk_info_not_user_size->can_resize);
@@ -156,5 +193,54 @@ TEST_F(CrostiniDiskTest, VMRunningFailureIsHandled) {
               CrostiniResult::VM_START_FAILED);
   EXPECT_FALSE(disk_info);
 }
+
+TEST_F(CrostiniDiskTestDbus, DiskResizeImmediateFailureReportsFailure) {
+  vm_tools::concierge::ResizeDiskImageResponse response;
+  response.set_status(vm_tools::concierge::DiskImageStatus::DISK_STATUS_FAILED);
+  fake_concierge_client_->set_resize_disk_image_response(response);
+
+  auto result = OnResizeWithResult(nullptr, "vm_name", 12345);
+
+  EXPECT_EQ(result, false);
+}
+
+TEST_F(CrostiniDiskTestDbus, DiskResizeEventualFailureReportsFailure) {
+  vm_tools::concierge::ResizeDiskImageResponse response;
+  vm_tools::concierge::DiskImageStatusResponse in_progress;
+  vm_tools::concierge::DiskImageStatusResponse failed;
+  response.set_status(
+      vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS);
+  in_progress.set_status(
+      vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS);
+  failed.set_status(vm_tools::concierge::DiskImageStatus::DISK_STATUS_FAILED);
+  fake_concierge_client_->set_resize_disk_image_response(response);
+  std::vector<vm_tools::concierge::DiskImageStatusResponse> signals{in_progress,
+                                                                    failed};
+  fake_concierge_client_->set_disk_image_status_signals(signals);
+
+  auto result = OnResizeWithResult(nullptr, "vm_name", 12345);
+
+  EXPECT_EQ(result, false);
+}
+
+TEST_F(CrostiniDiskTestDbus, DiskResizeEventualSuccessReportsSuccess) {
+  vm_tools::concierge::ResizeDiskImageResponse response;
+  vm_tools::concierge::DiskImageStatusResponse in_progress;
+  vm_tools::concierge::DiskImageStatusResponse resized;
+  response.set_status(
+      vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS);
+  in_progress.set_status(
+      vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS);
+  resized.set_status(vm_tools::concierge::DiskImageStatus::DISK_STATUS_RESIZED);
+  fake_concierge_client_->set_resize_disk_image_response(response);
+  std::vector<vm_tools::concierge::DiskImageStatusResponse> signals{in_progress,
+                                                                    resized};
+  fake_concierge_client_->set_disk_image_status_signals(signals);
+
+  auto result = OnResizeWithResult(nullptr, "vm_name", 12345);
+
+  EXPECT_EQ(result, true);
+}
+
 }  // namespace disk
 }  // namespace crostini

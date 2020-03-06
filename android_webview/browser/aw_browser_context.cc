@@ -79,6 +79,7 @@ bool IgnoreOriginSecurityCheck(const GURL& url) {
 
 void MigrateProfileData(base::FilePath cache_path,
                         base::FilePath context_storage_path) {
+  TRACE_EVENT0("startup", "MigrateProfileData");
   FilePath old_cache_path;
   base::PathService::Get(base::DIR_CACHE, &old_cache_path);
   old_cache_path = old_cache_path.DirName().Append(
@@ -141,6 +142,8 @@ AwBrowserContext::AwBrowserContext()
     : context_storage_path_(GetContextStoragePath()),
       simple_factory_key_(GetPath(), IsOffTheRecord()) {
   DCHECK(!g_browser_context);
+
+  TRACE_EVENT0("startup", "AwBrowserContext::AwBrowserContext");
 
   if (IsDefaultBrowserContext()) {
     MigrateProfileData(GetCacheDir(), GetContextStoragePath());
@@ -253,6 +256,7 @@ void AwBrowserContext::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void AwBrowserContext::CreateUserPrefService() {
+  TRACE_EVENT0("startup", "AwBrowserContext::CreateUserPrefService");
   auto pref_registry = base::MakeRefCounted<user_prefs::PrefRegistrySyncable>();
 
   RegisterPrefs(pref_registry.get());

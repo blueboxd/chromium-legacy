@@ -66,6 +66,21 @@ mediaApp.AbstractFileList.prototype.length;
 mediaApp.AbstractFileList.prototype.item = function(index) {};
 
 /**
+ * The delegate which exposes open source privileged WebUi functions to
+ * MediaApp.
+ * @record
+ * @struct
+ */
+mediaApp.ClientApiDelegate = function() {};
+/**
+ * Opens up the built-in chrome feedback dialog.
+ * @return {!Promise<?string>} Promise which resolves when the request has been
+ *     acknowledged, if the dialog could not be opened the promise resolves with
+ *     an error message, resolves with null otherwise.
+ */
+mediaApp.ClientApiDelegate.prototype.openFeedbackDialog = function() {};
+
+/**
  * The client Api for interacting with the media app instance.
  * @record
  * @struct
@@ -77,6 +92,12 @@ mediaApp.ClientApi = function() {};
  * @return {!Promise<undefined>}
  */
 mediaApp.ClientApi.prototype.loadFiles = function(files) {};
+/**
+ * Sets the delegate through which MediaApp can access open-source privileged
+ * WebUI methods.
+ * @param {?mediaApp.ClientApiDelegate} delegate
+ */
+mediaApp.ClientApi.prototype.setDelegate = function(delegate) {};
 
 /**
  * The message structure sent to the guest over postMessage. The presence of

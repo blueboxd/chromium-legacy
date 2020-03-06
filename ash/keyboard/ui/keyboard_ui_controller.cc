@@ -653,7 +653,10 @@ void KeyboardUIController::ShowAnimationFinished() {
 
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
-  NotifyKeyboardBoundsChanging(GetKeyboardWindow()->GetBoundsInRootWindow());
+  // If the current state is not SHOWN, it means the state was changed after the
+  // animation started. Do not tell the observers the stale bounds.
+  if (model_.state() == KeyboardUIState::kShown)
+    NotifyKeyboardBoundsChanging(GetKeyboardWindow()->GetBoundsInRootWindow());
 }
 
 // private

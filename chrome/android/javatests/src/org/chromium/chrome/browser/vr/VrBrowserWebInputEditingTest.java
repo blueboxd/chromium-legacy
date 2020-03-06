@@ -26,7 +26,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.vr.keyboard.TextEditAction;
 import org.chromium.chrome.browser.vr.mock.MockBrowserKeyboardInterface;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;

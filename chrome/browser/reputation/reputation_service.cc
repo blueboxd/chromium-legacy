@@ -21,7 +21,6 @@
 #include "chrome/browser/reputation/safety_tips_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/security_state/core/security_state.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -29,9 +28,6 @@
 
 namespace {
 
-using chrome_browser_safety_tips::FlaggedPage;
-using chrome_browser_safety_tips::UrlPattern;
-using safe_browsing::V4ProtocolManagerUtil;
 using security_state::SafetyTipStatus;
 
 // This factory helps construct and find the singleton ReputationService linked
@@ -71,60 +67,11 @@ class ReputationServiceFactory : public BrowserContextKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(ReputationServiceFactory);
 };
 
-// Given a URL, generates all possible variant URLs to check the blocklist for.
-// This is conceptually almost identical to safe_browsing::UrlToFullHashes, but
-// without the hashing step.
-//
-// Note: Blocking "a.b/c/" does NOT block http://a.b/c without the trailing /.
-void UrlToPatterns(const GURL& url, std::vector<std::string>* patterns) {
-  std::string canon_host;
-  std::string canon_path;
-  std::string canon_query;
-  V4ProtocolManagerUtil::CanonicalizeUrl(url, &canon_host, &canon_path,
-                                         &canon_query);
-
-  std::vector<std::string> hosts;
-  if (url.HostIsIPAddress()) {
-    hosts.push_back(url.host());
-  } else {
-    V4ProtocolManagerUtil::GenerateHostVariantsToCheck(canon_host, &hosts);
-  }
-
-  std::vector<std::string> paths;
-  V4ProtocolManagerUtil::GeneratePathVariantsToCheck(canon_path, canon_query,
-                                                     &paths);
-
-  for (const std::string& host : hosts) {
-    for (const std::string& path : paths) {
-      DCHECK(path.length() == 0 || path[0] == '/');
-      patterns->push_back(host + path);
-    }
-  }
-}
-
-security_state::SafetyTipStatus FlagTypeToSafetyTipStatus(
-    FlaggedPage::FlagType type) {
-  switch (type) {
-    case FlaggedPage::FlagType::FlaggedPage_FlagType_UNKNOWN:
-    case FlaggedPage::FlagType::FlaggedPage_FlagType_YOUNG_DOMAIN:
-      // Reached if component includes these flags, which might happen to
-      // support newer Chrome releases.
-      return security_state::SafetyTipStatus::kNone;
-    case FlaggedPage::FlagType::FlaggedPage_FlagType_BAD_REP:
-      return security_state::SafetyTipStatus::kBadReputation;
-  }
-  NOTREACHED();
-  return security_state::SafetyTipStatus::kNone;
-}
-
 // Returns whether or not the Safety Tip should be suppressed for the given URL.
 // Checks SafeBrowsing-style permutations of |url| against the component updater
 // allowlist and returns whether the URL is explicitly allowed. Fails closed, so
 // that warnings are suppressed if the component is unavailable.
 bool ShouldSuppressWarning(const GURL& url) {
-  std::vector<std::string> patterns;
-  UrlToPatterns(url, &patterns);
-
   auto* proto = GetSafetyTipsRemoteConfigProto();
   if (!proto) {
     // This happens when the component hasn't downloaded yet. This should only
@@ -134,24 +81,7 @@ bool ShouldSuppressWarning(const GURL& url) {
     // flag on any known false positives until the client received the update.
     return true;
   }
-
-  auto allowed_pages = proto->allowed_pattern();
-  for (const auto& pattern : patterns) {
-    UrlPattern search_target;
-    search_target.set_pattern(pattern);
-
-    auto lower = std::lower_bound(
-        allowed_pages.begin(), allowed_pages.end(), search_target,
-        [](const UrlPattern& a, const UrlPattern& b) -> bool {
-          return a.pattern() < b.pattern();
-        });
-
-    if (lower != allowed_pages.end() && pattern == lower->pattern()) {
-      return true;
-    }
-  }
-
-  return false;
+  return IsUrlAllowlistedBySafetyTipsComponent(proto, url);
 }
 
 }  // namespace
@@ -249,8 +179,8 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   }
 
   // 2. Server-side blocklist check.
-  security_state::SafetyTipStatus status = GetSafetyTipUrlBlockType(url);
-  if (status != security_state::SafetyTipStatus::kNone) {
+  SafetyTipStatus status = GetSafetyTipUrlBlockType(url);
+  if (status != SafetyTipStatus::kNone) {
     if (!done_checking_reputation_status) {
       result.safety_tip_status = status;
     }
@@ -273,7 +203,7 @@ void ReputationService::GetReputationStatusWithEngagedSites(
                                           &safe_url)) {
     if (!done_checking_reputation_status) {
       result.suggested_url = safe_url;
-      result.safety_tip_status = security_state::SafetyTipStatus::kLookalike;
+      result.safety_tip_status = SafetyTipStatus::kLookalike;
     }
 
     result.triggered_heuristics.lookalike_heuristic_triggered = true;
@@ -285,7 +215,7 @@ void ReputationService::GetReputationStatusWithEngagedSites(
                                              sensitive_keywords_,
                                              num_sensitive_keywords_)) {
     if (!done_checking_reputation_status) {
-      result.safety_tip_status = security_state::SafetyTipStatus::kBadKeyword;
+      result.safety_tip_status = SafetyTipStatus::kBadKeyword;
     }
 
     result.triggered_heuristics.keywords_heuristic_triggered = true;
@@ -307,39 +237,4 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   DCHECK(done_checking_reputation_status ||
          !result.triggered_heuristics.triggered_any());
   std::move(callback).Run(result);
-}
-
-security_state::SafetyTipStatus GetSafetyTipUrlBlockType(const GURL& url) {
-  std::vector<std::string> patterns;
-  UrlToPatterns(url, &patterns);
-
-  auto* proto = GetSafetyTipsRemoteConfigProto();
-  if (!proto) {
-    return security_state::SafetyTipStatus::kNone;
-  }
-
-  auto flagged_pages = proto->flagged_page();
-  for (const auto& pattern : patterns) {
-    FlaggedPage search_target;
-    search_target.set_pattern(pattern);
-
-    auto lower = std::lower_bound(
-        flagged_pages.begin(), flagged_pages.end(), search_target,
-        [](const FlaggedPage& a, const FlaggedPage& b) -> bool {
-          return a.pattern() < b.pattern();
-        });
-
-    while (lower != flagged_pages.end() && pattern == lower->pattern()) {
-      // Skip over sites with unexpected flag types and keep looking for other
-      // matches. This allows components to include flag types not handled by
-      // this release.
-      auto type = FlagTypeToSafetyTipStatus(lower->type());
-      if (type != security_state::SafetyTipStatus::kNone) {
-        return type;
-      }
-      ++lower;
-    }
-  }
-
-  return security_state::SafetyTipStatus::kNone;
 }

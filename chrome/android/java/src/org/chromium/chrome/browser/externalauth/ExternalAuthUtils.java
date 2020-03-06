@@ -24,7 +24,7 @@ import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**

@@ -189,6 +189,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Return the size of the shelf item's ripple.
   int GetShelfItemRippleSize() const;
 
+  // Return the drag distance to fully show the hotseat widget from the state
+  // being hidden.
+  int GetHotseatFullDragAmount() const;
+
   // The animation time for dimming shelf icons, widgets, and buttons.
   base::TimeDelta DimAnimationDuration() const;
 

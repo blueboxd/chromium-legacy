@@ -19,6 +19,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -34,7 +35,7 @@ import java.io.IOException;
  * Integration tests of Instant Start which requires 2-stage initialization for Clank startup.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({org.chromium.chrome.browser.ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class InstantStartTest {
     private Bitmap mBitmap;
     private int mThumbnailFetchCount;
@@ -92,7 +93,7 @@ public class InstantStartTest {
      */
     @Test
     @SmallTest
-    @CommandLineFlags.Add(org.chromium.chrome.browser.ChromeSwitches.DISABLE_NATIVE_INITIALIZATION)
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_NATIVE_INITIALIZATION)
     public void fetchThumbnailsPreNativeTest() {
         int tabId = 0;
         mThumbnailFetchCount = 0;

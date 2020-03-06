@@ -405,6 +405,11 @@ void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
     EnablePreferredSizeMode();
 }
 
+// TODO(https://crbug.com/1006814): Delete this.
+int RenderViewHostImpl::GetMainFrameRoutingIdForCrbug1006814() {
+  return main_frame_routing_id_;
+}
+
 void RenderViewHostImpl::EnterBackForwardCache() {
   if (!will_enter_back_forward_cache_callback_for_testing_.is_null())
     will_enter_back_forward_cache_callback_for_testing_.Run();

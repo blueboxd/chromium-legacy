@@ -39,6 +39,7 @@ class COMPONENT_EXPORT(STORAGE_SERVICE_FILESYSTEM_SUPPORT) FilesystemImpl
   ~FilesystemImpl() override;
 
   // mojom::Directory:
+  void Clone(mojo::PendingReceiver<mojom::Directory> receiver) override;
   void PathExists(const base::FilePath& path,
                   PathExistsCallback callback) override;
   void GetEntries(const base::FilePath& path,

@@ -122,6 +122,11 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, ScrollableShelfAPITest) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, ShelfAPITest) {
+  ASSERT_TRUE(RunComponentExtensionTestWithArg("autotest_private", "shelf"))
+      << message_;
+}
+
 class AutotestPrivateApiOverviewTest : public AutotestPrivateApiTest {
  public:
   AutotestPrivateApiOverviewTest() = default;

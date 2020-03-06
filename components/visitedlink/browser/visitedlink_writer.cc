@@ -263,6 +263,7 @@ VisitedLinkWriter::~VisitedLinkWriter() {
 }
 
 bool VisitedLinkWriter::Init() {
+  TRACE_EVENT0("browser", "VisitedLinkWriter::Init");
   // Create the temporary table. If the table is rebuilt that temporary table
   // will be became the main table.
   // The salt must be generated before the table so that it can be copied to

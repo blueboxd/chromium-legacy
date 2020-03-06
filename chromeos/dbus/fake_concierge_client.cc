@@ -92,8 +92,10 @@ void FakeConciergeClient::ImportDiskImage(
   import_disk_image_called_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&FakeConciergeClient::FakeImportCallbacks,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindOnce(std::move(callback), import_disk_image_response_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FakeConciergeClient::NotifyDiskImageProgress,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakeConciergeClient::CancelDiskImageOperation(
@@ -106,9 +108,7 @@ void FakeConciergeClient::CancelDiskImageOperation(
       base::BindOnce(std::move(callback), cancel_disk_image_response_));
 }
 
-void FakeConciergeClient::FakeImportCallbacks(
-    DBusMethodCallback<vm_tools::concierge::ImportDiskImageResponse> callback) {
-  std::move(callback).Run(import_disk_image_response_);
+void FakeConciergeClient::NotifyDiskImageProgress() {
   // Trigger DiskImageStatus signals.
   for (auto const& signal : disk_image_status_signals_) {
     OnDiskImageProgress(signal);
@@ -275,6 +275,9 @@ void FakeConciergeClient::ResizeDiskImage(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), resize_disk_image_response_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FakeConciergeClient::NotifyDiskImageProgress,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakeConciergeClient::NotifyVmStarted(

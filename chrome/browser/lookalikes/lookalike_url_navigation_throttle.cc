@@ -23,6 +23,7 @@
 #include "chrome/browser/lookalikes/lookalike_url_tab_storage.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/reputation/safety_tips_config.h"
 #include "chrome/common/chrome_features.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -295,6 +296,12 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
 
   // Ignore subframe and same document navigations.
   if (!handle->IsInMainFrame() || handle->IsSameDocument()) {
+    return content::NavigationThrottle::PROCEED;
+  }
+
+  const auto* proto = GetSafetyTipsRemoteConfigProto();
+  if (proto &&
+      IsUrlAllowlistedBySafetyTipsComponent(proto, url.GetWithEmptyPath())) {
     return content::NavigationThrottle::PROCEED;
   }
 

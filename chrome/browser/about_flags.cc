@@ -4928,6 +4928,17 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kContextMenuPerformanceInfo)},
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+    {"drag-to-snap-in-clamshell-mode",
+     flag_descriptions::kDragToSnapInClamshellModeName,
+     flag_descriptions::kDragToSnapInClamshellModeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kDragToSnapInClamshellMode)},
+    {"multi-display-overview-and-split-view",
+     flag_descriptions::kMultiDisplayOverviewAndSplitViewName,
+     flag_descriptions::kMultiDisplayOverviewAndSplitViewDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kMultiDisplayOverviewAndSplitView)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

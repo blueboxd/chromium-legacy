@@ -646,5 +646,6 @@ async function mountCrostini(appId, initialEntries = BASIC_CROSTINI_ENTRY_SET) {
  */
 async function isFilesNg(appId) {
   const body = await remoteCall.waitForElement(appId, 'body');
-  return body.attributes['class'] === 'files-ng';
+  const cssClass = body.attributes['class'] || '';
+  return cssClass.includes('files-ng');
 }

@@ -61,6 +61,9 @@ class BacklightApp extends HTMLElement {
     this.replaceChild(child, this.currentMedia);
     this.currentMedia = child;
   }
+
+  /** @override */
+  setDelegate(delegate) {}
 }
 window.customElements.define('backlight-app', BacklightApp);
 

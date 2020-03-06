@@ -4,39 +4,19 @@
 
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 
-#include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "build/build_config.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/safe_browsing/core/common/test_task_environment.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "components/unified_consent/pref_names.h"
-#include "components/unified_consent/unified_consent_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/platform_test.h"
 
-#if defined(OS_ANDROID)
-#include "base/strings/string_number_conversions.h"
-#include "base/system/sys_info.h"
-#include "components/safe_browsing/core/realtime/policy_engine.h"
-#endif
-
-using ::testing::_;
-
 namespace safe_browsing {
-
-namespace {
-constexpr char kTestEmail[] = "test@example.com";
-constexpr char kRealTimeLookupUrlPrefix[] =
-    "https://safebrowsing.google.com/safebrowsing/clientreport/realtime";
-}  // namespace
 
 class RealTimeUrlLookupServiceTest : public PlatformTest {
  public:
@@ -58,10 +38,10 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
     cache_manager_ = std::make_unique<VerdictCacheManager>(
         nullptr, content_setting_map_.get());
 
-    identity_test_env_ = std::make_unique<signin::IdentityTestEnvironment>();
+    signin::IdentityTestEnvironment identity_test_env;
     rt_service_ = std::make_unique<RealTimeUrlLookupService>(
         test_shared_loader_factory_, cache_manager_.get(),
-        identity_test_env_->identity_manager(), &test_sync_service_,
+        identity_test_env.identity_manager(), &test_sync_service_,
         &test_pref_service_, /* is_off_the_record */ false);
   }
 
@@ -101,91 +81,14 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
     rt_service_->MayBeCacheRealTimeUrlVerdict(url, response);
   }
 
-  void SetUpRTLookupResponse(
-      RTLookupResponse::ThreatInfo::VerdictType verdict_type,
-      RTLookupResponse::ThreatInfo::ThreatType threat_type,
-      int cache_duration_sec,
-      const std::string& cache_expression,
-      RTLookupResponse::ThreatInfo::CacheExpressionMatchType
-          cache_expression_match_type) {
-    RTLookupResponse response;
-    RTLookupResponse::ThreatInfo* new_threat_info = response.add_threat_info();
-    RTLookupResponse::ThreatInfo threat_info;
-    threat_info.set_verdict_type(verdict_type);
-    threat_info.set_threat_type(threat_type);
-    threat_info.set_cache_duration_sec(cache_duration_sec);
-    threat_info.set_cache_expression_using_match_type(cache_expression);
-    threat_info.set_cache_expression_match_type(cache_expression_match_type);
-    *new_threat_info = threat_info;
-    std::string expected_response_str;
-    response.SerializeToString(&expected_response_str);
-    test_url_loader_factory_.AddResponse(kRealTimeLookupUrlPrefix,
-                                         expected_response_str);
-  }
-
-  RealTimeUrlLookupService* rt_service() { return rt_service_.get(); }
-
-  void EnableRealTimeUrlLookup(bool is_with_token_enabled) {
-    RegisterProfilePrefs(test_pref_service_.registry());
-    unified_consent::UnifiedConsentService::RegisterPrefs(
-        test_pref_service_.registry());
-    test_pref_service_.SetUserPref(
-        unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-        std::make_unique<base::Value>(true));
-#if defined(OS_ANDROID)
-    int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
-    int memory_size_threshold = system_memory_size - 1;
-    if (is_with_token_enabled) {
-      feature_list_.InitWithFeaturesAndParameters(
-          /* enabled_features */ {{kRealTimeUrlLookupEnabled,
-                                   { {
-                                     kRealTimeUrlLookupMemoryThresholdMb,
-                                     base::NumberToString(memory_size_threshold)
-                                   } }},
-                                  { kRealTimeUrlLookupEnabledWithToken,
-                                    {} }},
-          /* disabled_features */ {});
-    } else {
-      feature_list_.InitWithFeaturesAndParameters(
-          /* enabled_features */ {{
-            kRealTimeUrlLookupEnabled,
-            {
-              { kRealTimeUrlLookupMemoryThresholdMb,
-                base::NumberToString(memory_size_threshold) }
-            }
-          }},
-          /* disabled_features */ {});
-    }
-#else
-    if (is_with_token_enabled) {
-      feature_list_.InitWithFeatures(
-          {kRealTimeUrlLookupEnabled, kRealTimeUrlLookupEnabledWithToken}, {});
-    } else {
-      feature_list_.InitWithFeatures({kRealTimeUrlLookupEnabled}, {});
-    }
-#endif
-  }
-
-  void SetupPrimaryAccount() {
-    identity_test_env_->MakeUnconsentedPrimaryAccountAvailable(kTestEmail);
-  }
-
-  void WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      std::string token) {
-    identity_test_env_->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-        token, base::Time::Max());
-  }
-
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<RealTimeUrlLookupService> rt_service_;
   std::unique_ptr<VerdictCacheManager> cache_manager_;
   scoped_refptr<HostContentSettingsMap> content_setting_map_;
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
-  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
   syncer::TestSyncService test_sync_service_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(RealTimeUrlLookupServiceTest, TestFillRequestProto) {
@@ -543,111 +446,6 @@ TEST_F(RealTimeUrlLookupServiceTest, TestCacheInCacheManager) {
             cache_response->threat_info(0).verdict_type());
   EXPECT_EQ(RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING,
             cache_response->threat_info(0).threat_type());
-}
-
-TEST_F(RealTimeUrlLookupServiceTest, TestStartLookup_ResponseIsAlreadyCached) {
-  EnableRealTimeUrlLookup(/* is_with_token_enabled */ false);
-  GURL url("http://example.test/");
-  MayBeCacheRealTimeUrlVerdict(url, RTLookupResponse::ThreatInfo::DANGEROUS,
-                               RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING,
-                               60, "example.test/",
-                               RTLookupResponse::ThreatInfo::COVERING_MATCH);
-  task_environment_->RunUntilIdle();
-
-  base::MockCallback<RTLookupRequestCallback> request_callback;
-  base::MockCallback<RTLookupResponseCallback> response_callback;
-  rt_service()->StartLookup(url, request_callback.Get(),
-                            response_callback.Get());
-
-  // |request_callback| should not be called.
-  EXPECT_CALL(request_callback, Run(_)).Times(0);
-  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
-
-  task_environment_->RunUntilIdle();
-}
-
-TEST_F(RealTimeUrlLookupServiceTest,
-       TestStartLookup_AttachTokenWhenWithTokenIsEnabled) {
-  EnableRealTimeUrlLookup(/* is_with_token_enabled */ true);
-  SetupPrimaryAccount();
-  GURL url("http://example.test/");
-  SetUpRTLookupResponse(RTLookupResponse::ThreatInfo::DANGEROUS,
-                        RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
-                        "example.test/",
-                        RTLookupResponse::ThreatInfo::COVERING_MATCH);
-
-  base::MockCallback<RTLookupResponseCallback> response_callback;
-  rt_service()->StartLookup(
-      url, base::BindOnce([](std::unique_ptr<RTLookupRequest> request) {
-        // Check token is attached.
-        EXPECT_EQ("access_token_string", request->scoped_oauth_token());
-      }),
-      response_callback.Get());
-
-  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
-
-  WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      "access_token_string");
-  task_environment_->RunUntilIdle();
-
-  // Check the response is cached.
-  std::unique_ptr<RTLookupResponse> cache_response =
-      GetCachedRealTimeUrlVerdict(url);
-  EXPECT_NE(nullptr, cache_response);
-}
-
-TEST_F(RealTimeUrlLookupServiceTest, TestStartLookup_NoTokenWhenNotSignedIn) {
-  EnableRealTimeUrlLookup(/* is_with_token_enabled */ true);
-  GURL url("http://example.test/");
-  SetUpRTLookupResponse(RTLookupResponse::ThreatInfo::DANGEROUS,
-                        RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
-                        "example.test/",
-                        RTLookupResponse::ThreatInfo::COVERING_MATCH);
-
-  base::MockCallback<RTLookupResponseCallback> response_callback;
-  rt_service()->StartLookup(
-      url, base::BindOnce([](std::unique_ptr<RTLookupRequest> request) {
-        // Check the token field is empty.
-        EXPECT_FALSE(request->has_scoped_oauth_token());
-      }),
-      response_callback.Get());
-
-  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
-
-  task_environment_->RunUntilIdle();
-
-  // Check the response is cached.
-  std::unique_ptr<RTLookupResponse> cache_response =
-      GetCachedRealTimeUrlVerdict(url);
-  EXPECT_NE(nullptr, cache_response);
-}
-
-TEST_F(RealTimeUrlLookupServiceTest,
-       TestStartLookup_NoTokenWhenWithTokenIsDisabled) {
-  EnableRealTimeUrlLookup(/* is_with_token_enabled */ false);
-  SetupPrimaryAccount();
-  GURL url("http://example.test/");
-  SetUpRTLookupResponse(RTLookupResponse::ThreatInfo::DANGEROUS,
-                        RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
-                        "example.test/",
-                        RTLookupResponse::ThreatInfo::COVERING_MATCH);
-
-  base::MockCallback<RTLookupResponseCallback> response_callback;
-  rt_service()->StartLookup(
-      url, base::BindOnce([](std::unique_ptr<RTLookupRequest> request) {
-        // Check the token field is empty.
-        EXPECT_FALSE(request->has_scoped_oauth_token());
-      }),
-      response_callback.Get());
-
-  EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
-
-  task_environment_->RunUntilIdle();
-
-  // Check the response is cached.
-  std::unique_ptr<RTLookupResponse> cache_response =
-      GetCachedRealTimeUrlVerdict(url);
-  EXPECT_NE(nullptr, cache_response);
 }
 
 }  // namespace safe_browsing

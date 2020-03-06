@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -40,7 +41,7 @@ class IndexImpl : public mojom::Index {
   void AddOrUpdate(std::vector<mojom::DataPtr> data,
                    AddOrUpdateCallback callback) override;
 
-  void Delete(const std::vector<base::string16>& ids,
+  void Delete(const std::vector<std::string>& ids,
               DeleteCallback callback) override;
 
   void Find(const base::string16& query,
@@ -63,7 +64,7 @@ class IndexImpl : public mojom::Index {
       const base::string16& query) const;
 
   // A map from key to tokenized search-tags.
-  std::map<base::string16, std::vector<std::unique_ptr<TokenizedString>>> data_;
+  std::map<std::string, std::vector<std::unique_ptr<TokenizedString>>> data_;
 
   mojo::ReceiverSet<mojom::Index> receivers_;
 

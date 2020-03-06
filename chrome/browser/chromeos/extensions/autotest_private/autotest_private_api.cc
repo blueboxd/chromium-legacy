@@ -23,12 +23,12 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/overview_test_api.h"
-#include "ash/public/cpp/scrollable_shelf_info.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/shelf_test_api.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/shelf_ui_info.h"
 #include "ash/public/cpp/split_view_test_api.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
@@ -359,6 +359,23 @@ api::autotest_private::AppReadiness GetAppReadiness(
   return api::autotest_private::AppReadiness::APP_READINESS_NONE;
 }
 
+api::autotest_private::HotseatState GetHotseatState(
+    ash::HotseatState hotseat_state) {
+  switch (hotseat_state) {
+    case ash::HotseatState::kHidden:
+      return api::autotest_private::HotseatState::HOTSEAT_STATE_HIDDEN;
+    case ash::HotseatState::kShownClamshell:
+      return api::autotest_private::HotseatState::HOTSEAT_STATE_SHOWNCLAMSHELL;
+    case ash::HotseatState::kShownHomeLauncher:
+      return api::autotest_private::HotseatState::
+          HOTSEAT_STATE_SHOWNHOMELAUNCHER;
+    case ash::HotseatState::kExtended:
+      return api::autotest_private::HotseatState::HOTSEAT_STATE_EXTENDED;
+  }
+
+  NOTREACHED();
+}
+
 std::unique_ptr<bool> ConvertMojomOptionalBool(
     apps::mojom::OptionalBool optional) {
   switch (optional) {
@@ -525,6 +542,13 @@ api::autotest_private::Bounds ToBoundsDictionary(const gfx::Rect& bounds) {
   result.top = bounds.y();
   result.width = bounds.width();
   result.height = bounds.height();
+  return result;
+}
+
+api::autotest_private::Location ToLocationDictionary(const gfx::Point& point) {
+  api::autotest_private::Location result;
+  result.x = point.x();
+  result.y = point.y();
   return result;
 }
 
@@ -4066,7 +4090,7 @@ AutotestPrivateGetScrollableShelfInfoForStateFunction::Run() {
 
   ash::ShelfTestApi shelf_test_api;
 
-  ash::ScrollableShelfState state;
+  ash::ShelfState state;
 
   if (params->state.scroll_distance)
     state.scroll_distance = *params->state.scroll_distance;
@@ -4087,6 +4111,69 @@ AutotestPrivateGetScrollableShelfInfoForStateFunction::Run() {
   }
 
   return RespondNow(OneArgument(info.ToValue()));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetShelfUIInfoForStateFunction
+////////////////////////////////////////////////////////////////////////////////
+AutotestPrivateGetShelfUIInfoForStateFunction::
+    AutotestPrivateGetShelfUIInfoForStateFunction() = default;
+AutotestPrivateGetShelfUIInfoForStateFunction::
+    ~AutotestPrivateGetShelfUIInfoForStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetShelfUIInfoForStateFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetShelfUIInfoForStateFunction";
+  std::unique_ptr<api::autotest_private::GetShelfUIInfoForState::Params> params(
+      api::autotest_private::GetShelfUIInfoForState::Params::Create(*args_));
+
+  ash::ShelfState state;
+  if (params->state.scroll_distance)
+    state.scroll_distance = *params->state.scroll_distance;
+
+  api::autotest_private::ShelfUIInfo shelf_ui_info;
+  ash::ShelfTestApi shelf_test_api;
+
+  // Fetch scrollable shelf ui information.
+  {
+    ash::ScrollableShelfInfo fetched_info =
+        shelf_test_api.GetScrollableShelfInfoForState(state);
+
+    api::autotest_private::ScrollableShelfInfo scrollable_shelf_ui_info;
+    scrollable_shelf_ui_info.main_axis_offset = fetched_info.main_axis_offset;
+    scrollable_shelf_ui_info.page_offset = fetched_info.page_offset;
+    scrollable_shelf_ui_info.left_arrow_bounds =
+        ToBoundsDictionary(fetched_info.left_arrow_bounds);
+    scrollable_shelf_ui_info.right_arrow_bounds =
+        ToBoundsDictionary(fetched_info.right_arrow_bounds);
+    scrollable_shelf_ui_info.is_animating = fetched_info.is_animating;
+
+    if (state.scroll_distance) {
+      scrollable_shelf_ui_info.target_main_axis_offset =
+          std::make_unique<double>(fetched_info.target_main_axis_offset);
+    }
+
+    shelf_ui_info.scrollable_shelf_info = std::move(scrollable_shelf_ui_info);
+  }
+
+  // Fetch hotseat ui information.
+  {
+    ash::HotseatInfo hotseat_info = shelf_test_api.GetHotseatInfo();
+    api::autotest_private::HotseatSwipeDescriptor swipe_up_descriptor;
+    swipe_up_descriptor.swipe_start_location =
+        ToLocationDictionary(hotseat_info.swipe_up.swipe_start_location);
+    swipe_up_descriptor.swipe_end_location =
+        ToLocationDictionary(hotseat_info.swipe_up.swipe_end_location);
+
+    api::autotest_private::HotseatInfo hotseat_ui_info;
+    hotseat_ui_info.swipe_up = std::move(swipe_up_descriptor);
+    hotseat_ui_info.is_animating = hotseat_info.is_animating;
+    hotseat_ui_info.state = GetHotseatState(hotseat_info.hotseat_state);
+
+    shelf_ui_info.hotseat_info = std::move(hotseat_ui_info);
+  }
+
+  return RespondNow(OneArgument(shelf_ui_info.ToValue()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

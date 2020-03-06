@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/shelf_test_api.h"
 
-#include "ash/public/cpp/scrollable_shelf_info.h"
+#include "ash/public/cpp/shelf_ui_info.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ui/compositor/layer_animator.h"
 
 namespace {
 
@@ -28,8 +29,12 @@ ash::ShelfWidget* GetShelfWidget() {
       ->shelf_widget();
 }
 
+ash::HotseatWidget* GetHotseatWidget() {
+  return GetShelfWidget()->hotseat_widget();
+}
+
 ash::ScrollableShelfView* GetScrollableShelfView() {
-  return GetShelfWidget()->hotseat_widget()->scrollable_shelf_view();
+  return GetHotseatWidget()->scrollable_shelf_view();
 }
 
 }  // namespace
@@ -56,7 +61,7 @@ bool ShelfTestApi::HasLoginShelfGestureHandler() const {
 }
 
 ScrollableShelfInfo ShelfTestApi::GetScrollableShelfInfoForState(
-    const ScrollableShelfState& state) {
+    const ShelfState& state) {
   const auto* scrollable_shelf_view = GetScrollableShelfView();
 
   ScrollableShelfInfo info;
@@ -77,6 +82,27 @@ ScrollableShelfInfo ShelfTestApi::GetScrollableShelfInfoForState(
             info.main_axis_offset, state.scroll_distance);
     info.target_main_axis_offset = target_offset;
   }
+
+  return info;
+}
+
+HotseatInfo ShelfTestApi::GetHotseatInfo() {
+  HotseatInfo info;
+  auto* hotseat_widget = GetHotseatWidget();
+  info.is_animating =
+      hotseat_widget->GetNativeView()->layer()->GetAnimator()->is_animating();
+  info.hotseat_state = hotseat_widget->state();
+
+  const gfx::Rect shelf_widget_bounds =
+      GetShelf()->shelf_widget()->GetTargetBounds();
+  info.swipe_up.swipe_start_location = shelf_widget_bounds.CenterPoint();
+
+  // The swipe distance is small enough to avoid the window drag from shelf.
+  const int swipe_distance = ShelfConfig::Get()->GetHotseatFullDragAmount() / 2;
+
+  gfx::Point swipe_end_location = info.swipe_up.swipe_start_location;
+  swipe_end_location.set_y(swipe_end_location.y() - swipe_distance);
+  info.swipe_up.swipe_end_location = swipe_end_location;
 
   return info;
 }

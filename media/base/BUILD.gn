@@ -212,6 +212,8 @@ jumbo_source_set("base") {
     "media_url_params.h",
     "media_util.cc",
     "media_util.h",
+    "memory_dump_provider_proxy.cc",
+    "memory_dump_provider_proxy.h",
     "mime_util.cc",
     "mime_util.h",
     "mime_util_internal.cc",

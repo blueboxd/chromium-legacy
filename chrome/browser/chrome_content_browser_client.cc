@@ -107,6 +107,7 @@
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/renderer_updater.h"
 #include "chrome/browser/profiles/renderer_updater_factory.h"
 #include "chrome/browser/profiling_host/chrome_browser_main_extra_parts_profiling.h"
@@ -4998,6 +4999,11 @@ void ChromeContentBrowserClient::OnNetworkServiceDataUseUpdate(
         ->ReportNetworkServiceDataUse(network_traffic_annotation_id_hash,
                                       recv_bytes, sent_bytes);
   }
+}
+
+base::FilePath
+ChromeContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
+  return g_browser_process->profile_manager()->user_data_dir();
 }
 
 content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(

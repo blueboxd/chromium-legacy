@@ -14,6 +14,7 @@
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
+#include "chrome/browser/reputation/safety_tip_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_features.h"
@@ -725,6 +726,16 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
       browser(), kNavigatedUrl, kExpectedSuggestedUrl,
       LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
           kMatchSiteEngagement);
+}
+
+// The site is allowed by the component updater.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       AllowedByComponentUpdater) {
+  SetSafetyTipAllowlistPatterns(
+      {"xn--googl-fsa.com/",  // googlé.com in punycode
+       "site.test/", "another-site.test/"});
+  TestInterstitialNotShown(browser(), GetURL("googlé.com"));
+  CheckNoUkm();
 }
 
 // Tests negative examples for all heuristics.

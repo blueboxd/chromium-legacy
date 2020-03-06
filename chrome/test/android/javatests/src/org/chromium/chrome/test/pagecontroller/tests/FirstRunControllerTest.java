@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.params.ParameterizedCommandLineFlags.Switches;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.pagecontroller.controllers.first_run.TOSController;
 import org.chromium.chrome.test.pagecontroller.controllers.ntp.NewTabPageController;
 import org.chromium.chrome.test.pagecontroller.rules.ChromeUiApplicationTestRule;

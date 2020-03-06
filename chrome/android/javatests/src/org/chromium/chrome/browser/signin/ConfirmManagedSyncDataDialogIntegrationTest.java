@@ -10,18 +10,19 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
 
-import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DummyUiActivity;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+
+import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
 /**
  * Test for {@link ConfirmManagedSyncDataDialog}

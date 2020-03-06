@@ -112,6 +112,7 @@ class RealTimeUrlLookupService : public KeyedService {
       const GURL& url,
       RTLookupRequestCallback request_callback,
       RTLookupResponseCallback response_callback,
+      base::TimeTicks get_token_start_time,
       base::Optional<signin::AccessTokenInfo> access_token_info);
 
   // Called to send the request to the Safe Browsing backend over the network.

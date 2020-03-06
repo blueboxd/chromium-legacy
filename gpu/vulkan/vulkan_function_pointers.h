@@ -38,12 +38,11 @@
 
 namespace gpu {
 
-class VulkanFunctionPointers;
+struct VulkanFunctionPointers;
 
 VULKAN_EXPORT VulkanFunctionPointers* GetVulkanFunctionPointers();
 
-class VulkanFunctionPointers {
- public:
+struct VulkanFunctionPointers {
   VulkanFunctionPointers();
   ~VulkanFunctionPointers();
 
@@ -61,338 +60,201 @@ class VulkanFunctionPointers {
       uint32_t api_version,
       const gfx::ExtensionSet& enabled_extensions);
 
-  bool HasEnumerateInstanceVersion() const {
-    return !!vkEnumerateInstanceVersionFn_;
-  }
+  base::NativeLibrary vulkan_loader_library = nullptr;
 
-  base::NativeLibrary vulkan_loader_library() const {
-    return vulkan_loader_library_;
-  }
+  template <typename T>
+  class VulkanFunction;
+  template <typename R, typename... Args>
+  class VulkanFunction<R(VKAPI_PTR*)(Args...)> {
+   public:
+    explicit operator bool() { return !!fn_; }
 
-  void set_vulkan_loader_library(base::NativeLibrary library) {
-    vulkan_loader_library_ = library;
-  }
+    NO_SANITIZE("cfi-icall")
+    R operator()(Args... args) { return fn_(args...); }
 
- private:
-  base::NativeLibrary vulkan_loader_library_ = nullptr;
+   private:
+    friend VulkanFunctionPointers;
+    using Fn = R(VKAPI_PTR*)(Args...);
+
+    Fn operator=(Fn fn) {
+      fn_ = fn;
+      return fn_;
+    }
+
+    Fn fn_ = nullptr;
+  };
 
   // Unassociated functions
-  PFN_vkEnumerateInstanceVersion vkEnumerateInstanceVersionFn_ = nullptr;
-  PFN_vkGetInstanceProcAddr vkGetInstanceProcAddrFn_ = nullptr;
-  PFN_vkCreateInstance vkCreateInstanceFn_ = nullptr;
-  PFN_vkEnumerateInstanceExtensionProperties
-      vkEnumerateInstanceExtensionPropertiesFn_ = nullptr;
-  PFN_vkEnumerateInstanceLayerProperties vkEnumerateInstanceLayerPropertiesFn_ =
-      nullptr;
+  VulkanFunction<PFN_vkEnumerateInstanceVersion> vkEnumerateInstanceVersionFn;
+  VulkanFunction<PFN_vkGetInstanceProcAddr> vkGetInstanceProcAddrFn;
+
+  VulkanFunction<PFN_vkCreateInstance> vkCreateInstanceFn;
+  VulkanFunction<PFN_vkEnumerateInstanceExtensionProperties>
+      vkEnumerateInstanceExtensionPropertiesFn;
+  VulkanFunction<PFN_vkEnumerateInstanceLayerProperties>
+      vkEnumerateInstanceLayerPropertiesFn;
 
   // Instance functions
-  PFN_vkCreateDevice vkCreateDeviceFn_ = nullptr;
-  PFN_vkDestroyInstance vkDestroyInstanceFn_ = nullptr;
-  PFN_vkEnumerateDeviceExtensionProperties
-      vkEnumerateDeviceExtensionPropertiesFn_ = nullptr;
-  PFN_vkEnumerateDeviceLayerProperties vkEnumerateDeviceLayerPropertiesFn_ =
-      nullptr;
-  PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevicesFn_ = nullptr;
-  PFN_vkGetDeviceProcAddr vkGetDeviceProcAddrFn_ = nullptr;
-  PFN_vkGetPhysicalDeviceFeatures vkGetPhysicalDeviceFeaturesFn_ = nullptr;
-  PFN_vkGetPhysicalDeviceFormatProperties
-      vkGetPhysicalDeviceFormatPropertiesFn_ = nullptr;
-  PFN_vkGetPhysicalDeviceMemoryProperties
-      vkGetPhysicalDeviceMemoryPropertiesFn_ = nullptr;
-  PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDevicePropertiesFn_ = nullptr;
-  PFN_vkGetPhysicalDeviceQueueFamilyProperties
-      vkGetPhysicalDeviceQueueFamilyPropertiesFn_ = nullptr;
+  VulkanFunction<PFN_vkCreateDevice> vkCreateDeviceFn;
+  VulkanFunction<PFN_vkDestroyInstance> vkDestroyInstanceFn;
+  VulkanFunction<PFN_vkEnumerateDeviceExtensionProperties>
+      vkEnumerateDeviceExtensionPropertiesFn;
+  VulkanFunction<PFN_vkEnumerateDeviceLayerProperties>
+      vkEnumerateDeviceLayerPropertiesFn;
+  VulkanFunction<PFN_vkEnumeratePhysicalDevices> vkEnumeratePhysicalDevicesFn;
+  VulkanFunction<PFN_vkGetDeviceProcAddr> vkGetDeviceProcAddrFn;
+  VulkanFunction<PFN_vkGetPhysicalDeviceFeatures> vkGetPhysicalDeviceFeaturesFn;
+  VulkanFunction<PFN_vkGetPhysicalDeviceFormatProperties>
+      vkGetPhysicalDeviceFormatPropertiesFn;
+  VulkanFunction<PFN_vkGetPhysicalDeviceMemoryProperties>
+      vkGetPhysicalDeviceMemoryPropertiesFn;
+  VulkanFunction<PFN_vkGetPhysicalDeviceProperties>
+      vkGetPhysicalDevicePropertiesFn;
+  VulkanFunction<PFN_vkGetPhysicalDeviceQueueFamilyProperties>
+      vkGetPhysicalDeviceQueueFamilyPropertiesFn;
 
 #if DCHECK_IS_ON()
-  PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXTFn_ =
-      nullptr;
-  PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXTFn_ =
-      nullptr;
+  VulkanFunction<PFN_vkCreateDebugReportCallbackEXT>
+      vkCreateDebugReportCallbackEXTFn;
+  VulkanFunction<PFN_vkDestroyDebugReportCallbackEXT>
+      vkDestroyDebugReportCallbackEXTFn;
 #endif  // DCHECK_IS_ON()
 
-  PFN_vkDestroySurfaceKHR vkDestroySurfaceKHRFn_ = nullptr;
-  PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
-      vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn_ = nullptr;
-  PFN_vkGetPhysicalDeviceSurfaceFormatsKHR
-      vkGetPhysicalDeviceSurfaceFormatsKHRFn_ = nullptr;
-  PFN_vkGetPhysicalDeviceSurfaceSupportKHR
-      vkGetPhysicalDeviceSurfaceSupportKHRFn_ = nullptr;
+  VulkanFunction<PFN_vkDestroySurfaceKHR> vkDestroySurfaceKHRFn;
+  VulkanFunction<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>
+      vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn;
+  VulkanFunction<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>
+      vkGetPhysicalDeviceSurfaceFormatsKHRFn;
+  VulkanFunction<PFN_vkGetPhysicalDeviceSurfaceSupportKHR>
+      vkGetPhysicalDeviceSurfaceSupportKHRFn;
 
 #if defined(USE_VULKAN_XLIB)
-  PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHRFn_ = nullptr;
-  PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR
-      vkGetPhysicalDeviceXlibPresentationSupportKHRFn_ = nullptr;
+  VulkanFunction<PFN_vkCreateXlibSurfaceKHR> vkCreateXlibSurfaceKHRFn;
+  VulkanFunction<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>
+      vkGetPhysicalDeviceXlibPresentationSupportKHRFn;
 #endif  // defined(USE_VULKAN_XLIB)
 
 #if defined(OS_ANDROID)
-  PFN_vkCreateAndroidSurfaceKHR vkCreateAndroidSurfaceKHRFn_ = nullptr;
+  VulkanFunction<PFN_vkCreateAndroidSurfaceKHR> vkCreateAndroidSurfaceKHRFn;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_FUCHSIA)
-  PFN_vkCreateImagePipeSurfaceFUCHSIA vkCreateImagePipeSurfaceFUCHSIAFn_ =
-      nullptr;
+  VulkanFunction<PFN_vkCreateImagePipeSurfaceFUCHSIA>
+      vkCreateImagePipeSurfaceFUCHSIAFn;
 #endif  // defined(OS_FUCHSIA)
 
-  PFN_vkGetPhysicalDeviceImageFormatProperties2
-      vkGetPhysicalDeviceImageFormatProperties2Fn_ = nullptr;
+  VulkanFunction<PFN_vkGetPhysicalDeviceImageFormatProperties2>
+      vkGetPhysicalDeviceImageFormatProperties2Fn;
 
-  PFN_vkGetPhysicalDeviceFeatures2 vkGetPhysicalDeviceFeatures2Fn_ = nullptr;
+  VulkanFunction<PFN_vkGetPhysicalDeviceFeatures2>
+      vkGetPhysicalDeviceFeatures2Fn;
 
   // Device functions
-  PFN_vkAllocateCommandBuffers vkAllocateCommandBuffersFn_ = nullptr;
-  PFN_vkAllocateDescriptorSets vkAllocateDescriptorSetsFn_ = nullptr;
-  PFN_vkAllocateMemory vkAllocateMemoryFn_ = nullptr;
-  PFN_vkBeginCommandBuffer vkBeginCommandBufferFn_ = nullptr;
-  PFN_vkBindBufferMemory vkBindBufferMemoryFn_ = nullptr;
-  PFN_vkBindImageMemory vkBindImageMemoryFn_ = nullptr;
-  PFN_vkCmdBeginRenderPass vkCmdBeginRenderPassFn_ = nullptr;
-  PFN_vkCmdCopyBufferToImage vkCmdCopyBufferToImageFn_ = nullptr;
-  PFN_vkCmdEndRenderPass vkCmdEndRenderPassFn_ = nullptr;
-  PFN_vkCmdExecuteCommands vkCmdExecuteCommandsFn_ = nullptr;
-  PFN_vkCmdNextSubpass vkCmdNextSubpassFn_ = nullptr;
-  PFN_vkCmdPipelineBarrier vkCmdPipelineBarrierFn_ = nullptr;
-  PFN_vkCreateBuffer vkCreateBufferFn_ = nullptr;
-  PFN_vkCreateCommandPool vkCreateCommandPoolFn_ = nullptr;
-  PFN_vkCreateDescriptorPool vkCreateDescriptorPoolFn_ = nullptr;
-  PFN_vkCreateDescriptorSetLayout vkCreateDescriptorSetLayoutFn_ = nullptr;
-  PFN_vkCreateFence vkCreateFenceFn_ = nullptr;
-  PFN_vkCreateFramebuffer vkCreateFramebufferFn_ = nullptr;
-  PFN_vkCreateImage vkCreateImageFn_ = nullptr;
-  PFN_vkCreateImageView vkCreateImageViewFn_ = nullptr;
-  PFN_vkCreateRenderPass vkCreateRenderPassFn_ = nullptr;
-  PFN_vkCreateSampler vkCreateSamplerFn_ = nullptr;
-  PFN_vkCreateSemaphore vkCreateSemaphoreFn_ = nullptr;
-  PFN_vkCreateShaderModule vkCreateShaderModuleFn_ = nullptr;
-  PFN_vkDestroyBuffer vkDestroyBufferFn_ = nullptr;
-  PFN_vkDestroyCommandPool vkDestroyCommandPoolFn_ = nullptr;
-  PFN_vkDestroyDescriptorPool vkDestroyDescriptorPoolFn_ = nullptr;
-  PFN_vkDestroyDescriptorSetLayout vkDestroyDescriptorSetLayoutFn_ = nullptr;
-  PFN_vkDestroyDevice vkDestroyDeviceFn_ = nullptr;
-  PFN_vkDestroyFence vkDestroyFenceFn_ = nullptr;
-  PFN_vkDestroyFramebuffer vkDestroyFramebufferFn_ = nullptr;
-  PFN_vkDestroyImage vkDestroyImageFn_ = nullptr;
-  PFN_vkDestroyImageView vkDestroyImageViewFn_ = nullptr;
-  PFN_vkDestroyRenderPass vkDestroyRenderPassFn_ = nullptr;
-  PFN_vkDestroySampler vkDestroySamplerFn_ = nullptr;
-  PFN_vkDestroySemaphore vkDestroySemaphoreFn_ = nullptr;
-  PFN_vkDestroyShaderModule vkDestroyShaderModuleFn_ = nullptr;
-  PFN_vkDeviceWaitIdle vkDeviceWaitIdleFn_ = nullptr;
-  PFN_vkEndCommandBuffer vkEndCommandBufferFn_ = nullptr;
-  PFN_vkFreeCommandBuffers vkFreeCommandBuffersFn_ = nullptr;
-  PFN_vkFreeDescriptorSets vkFreeDescriptorSetsFn_ = nullptr;
-  PFN_vkFreeMemory vkFreeMemoryFn_ = nullptr;
-  PFN_vkGetBufferMemoryRequirements vkGetBufferMemoryRequirementsFn_ = nullptr;
-  PFN_vkGetDeviceQueue vkGetDeviceQueueFn_ = nullptr;
-  PFN_vkGetFenceStatus vkGetFenceStatusFn_ = nullptr;
-  PFN_vkGetImageMemoryRequirements vkGetImageMemoryRequirementsFn_ = nullptr;
-  PFN_vkMapMemory vkMapMemoryFn_ = nullptr;
-  PFN_vkQueueSubmit vkQueueSubmitFn_ = nullptr;
-  PFN_vkQueueWaitIdle vkQueueWaitIdleFn_ = nullptr;
-  PFN_vkResetCommandBuffer vkResetCommandBufferFn_ = nullptr;
-  PFN_vkResetFences vkResetFencesFn_ = nullptr;
-  PFN_vkUnmapMemory vkUnmapMemoryFn_ = nullptr;
-  PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn_ = nullptr;
-  PFN_vkWaitForFences vkWaitForFencesFn_ = nullptr;
+  VulkanFunction<PFN_vkAllocateCommandBuffers> vkAllocateCommandBuffersFn;
+  VulkanFunction<PFN_vkAllocateDescriptorSets> vkAllocateDescriptorSetsFn;
+  VulkanFunction<PFN_vkAllocateMemory> vkAllocateMemoryFn;
+  VulkanFunction<PFN_vkBeginCommandBuffer> vkBeginCommandBufferFn;
+  VulkanFunction<PFN_vkBindBufferMemory> vkBindBufferMemoryFn;
+  VulkanFunction<PFN_vkBindImageMemory> vkBindImageMemoryFn;
+  VulkanFunction<PFN_vkCmdBeginRenderPass> vkCmdBeginRenderPassFn;
+  VulkanFunction<PFN_vkCmdCopyBufferToImage> vkCmdCopyBufferToImageFn;
+  VulkanFunction<PFN_vkCmdEndRenderPass> vkCmdEndRenderPassFn;
+  VulkanFunction<PFN_vkCmdExecuteCommands> vkCmdExecuteCommandsFn;
+  VulkanFunction<PFN_vkCmdNextSubpass> vkCmdNextSubpassFn;
+  VulkanFunction<PFN_vkCmdPipelineBarrier> vkCmdPipelineBarrierFn;
+  VulkanFunction<PFN_vkCreateBuffer> vkCreateBufferFn;
+  VulkanFunction<PFN_vkCreateCommandPool> vkCreateCommandPoolFn;
+  VulkanFunction<PFN_vkCreateDescriptorPool> vkCreateDescriptorPoolFn;
+  VulkanFunction<PFN_vkCreateDescriptorSetLayout> vkCreateDescriptorSetLayoutFn;
+  VulkanFunction<PFN_vkCreateFence> vkCreateFenceFn;
+  VulkanFunction<PFN_vkCreateFramebuffer> vkCreateFramebufferFn;
+  VulkanFunction<PFN_vkCreateImage> vkCreateImageFn;
+  VulkanFunction<PFN_vkCreateImageView> vkCreateImageViewFn;
+  VulkanFunction<PFN_vkCreateRenderPass> vkCreateRenderPassFn;
+  VulkanFunction<PFN_vkCreateSampler> vkCreateSamplerFn;
+  VulkanFunction<PFN_vkCreateSemaphore> vkCreateSemaphoreFn;
+  VulkanFunction<PFN_vkCreateShaderModule> vkCreateShaderModuleFn;
+  VulkanFunction<PFN_vkDestroyBuffer> vkDestroyBufferFn;
+  VulkanFunction<PFN_vkDestroyCommandPool> vkDestroyCommandPoolFn;
+  VulkanFunction<PFN_vkDestroyDescriptorPool> vkDestroyDescriptorPoolFn;
+  VulkanFunction<PFN_vkDestroyDescriptorSetLayout>
+      vkDestroyDescriptorSetLayoutFn;
+  VulkanFunction<PFN_vkDestroyDevice> vkDestroyDeviceFn;
+  VulkanFunction<PFN_vkDestroyFence> vkDestroyFenceFn;
+  VulkanFunction<PFN_vkDestroyFramebuffer> vkDestroyFramebufferFn;
+  VulkanFunction<PFN_vkDestroyImage> vkDestroyImageFn;
+  VulkanFunction<PFN_vkDestroyImageView> vkDestroyImageViewFn;
+  VulkanFunction<PFN_vkDestroyRenderPass> vkDestroyRenderPassFn;
+  VulkanFunction<PFN_vkDestroySampler> vkDestroySamplerFn;
+  VulkanFunction<PFN_vkDestroySemaphore> vkDestroySemaphoreFn;
+  VulkanFunction<PFN_vkDestroyShaderModule> vkDestroyShaderModuleFn;
+  VulkanFunction<PFN_vkDeviceWaitIdle> vkDeviceWaitIdleFn;
+  VulkanFunction<PFN_vkEndCommandBuffer> vkEndCommandBufferFn;
+  VulkanFunction<PFN_vkFreeCommandBuffers> vkFreeCommandBuffersFn;
+  VulkanFunction<PFN_vkFreeDescriptorSets> vkFreeDescriptorSetsFn;
+  VulkanFunction<PFN_vkFreeMemory> vkFreeMemoryFn;
+  VulkanFunction<PFN_vkGetBufferMemoryRequirements>
+      vkGetBufferMemoryRequirementsFn;
+  VulkanFunction<PFN_vkGetDeviceQueue> vkGetDeviceQueueFn;
+  VulkanFunction<PFN_vkGetFenceStatus> vkGetFenceStatusFn;
+  VulkanFunction<PFN_vkGetImageMemoryRequirements>
+      vkGetImageMemoryRequirementsFn;
+  VulkanFunction<PFN_vkMapMemory> vkMapMemoryFn;
+  VulkanFunction<PFN_vkQueueSubmit> vkQueueSubmitFn;
+  VulkanFunction<PFN_vkQueueWaitIdle> vkQueueWaitIdleFn;
+  VulkanFunction<PFN_vkResetCommandBuffer> vkResetCommandBufferFn;
+  VulkanFunction<PFN_vkResetFences> vkResetFencesFn;
+  VulkanFunction<PFN_vkUnmapMemory> vkUnmapMemoryFn;
+  VulkanFunction<PFN_vkUpdateDescriptorSets> vkUpdateDescriptorSetsFn;
+  VulkanFunction<PFN_vkWaitForFences> vkWaitForFencesFn;
 
-  PFN_vkGetDeviceQueue2 vkGetDeviceQueue2Fn_ = nullptr;
-  PFN_vkGetImageMemoryRequirements2 vkGetImageMemoryRequirements2Fn_ = nullptr;
+  VulkanFunction<PFN_vkGetDeviceQueue2> vkGetDeviceQueue2Fn;
+  VulkanFunction<PFN_vkGetImageMemoryRequirements2>
+      vkGetImageMemoryRequirements2Fn;
 
 #if defined(OS_ANDROID)
-  PFN_vkGetAndroidHardwareBufferPropertiesANDROID
-      vkGetAndroidHardwareBufferPropertiesANDROIDFn_ = nullptr;
+  VulkanFunction<PFN_vkGetAndroidHardwareBufferPropertiesANDROID>
+      vkGetAndroidHardwareBufferPropertiesANDROIDFn;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  PFN_vkGetSemaphoreFdKHR vkGetSemaphoreFdKHRFn_ = nullptr;
-  PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHRFn_ = nullptr;
+  VulkanFunction<PFN_vkGetSemaphoreFdKHR> vkGetSemaphoreFdKHRFn;
+  VulkanFunction<PFN_vkImportSemaphoreFdKHR> vkImportSemaphoreFdKHRFn;
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  PFN_vkGetMemoryFdKHR vkGetMemoryFdKHRFn_ = nullptr;
-  PFN_vkGetMemoryFdPropertiesKHR vkGetMemoryFdPropertiesKHRFn_ = nullptr;
+  VulkanFunction<PFN_vkGetMemoryFdKHR> vkGetMemoryFdKHRFn;
+  VulkanFunction<PFN_vkGetMemoryFdPropertiesKHR> vkGetMemoryFdPropertiesKHRFn;
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_FUCHSIA)
-  PFN_vkImportSemaphoreZirconHandleFUCHSIA
-      vkImportSemaphoreZirconHandleFUCHSIAFn_ = nullptr;
-  PFN_vkGetSemaphoreZirconHandleFUCHSIA vkGetSemaphoreZirconHandleFUCHSIAFn_ =
-      nullptr;
+  VulkanFunction<PFN_vkImportSemaphoreZirconHandleFUCHSIA>
+      vkImportSemaphoreZirconHandleFUCHSIAFn;
+  VulkanFunction<PFN_vkGetSemaphoreZirconHandleFUCHSIA>
+      vkGetSemaphoreZirconHandleFUCHSIAFn;
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_FUCHSIA)
-  PFN_vkGetMemoryZirconHandleFUCHSIA vkGetMemoryZirconHandleFUCHSIAFn_ =
-      nullptr;
+  VulkanFunction<PFN_vkGetMemoryZirconHandleFUCHSIA>
+      vkGetMemoryZirconHandleFUCHSIAFn;
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_FUCHSIA)
-  PFN_vkCreateBufferCollectionFUCHSIA vkCreateBufferCollectionFUCHSIAFn_ =
-      nullptr;
-  PFN_vkSetBufferCollectionConstraintsFUCHSIA
-      vkSetBufferCollectionConstraintsFUCHSIAFn_ = nullptr;
-  PFN_vkGetBufferCollectionPropertiesFUCHSIA
-      vkGetBufferCollectionPropertiesFUCHSIAFn_ = nullptr;
-  PFN_vkDestroyBufferCollectionFUCHSIA vkDestroyBufferCollectionFUCHSIAFn_ =
-      nullptr;
+  VulkanFunction<PFN_vkCreateBufferCollectionFUCHSIA>
+      vkCreateBufferCollectionFUCHSIAFn;
+  VulkanFunction<PFN_vkSetBufferCollectionConstraintsFUCHSIA>
+      vkSetBufferCollectionConstraintsFUCHSIAFn;
+  VulkanFunction<PFN_vkGetBufferCollectionPropertiesFUCHSIA>
+      vkGetBufferCollectionPropertiesFUCHSIAFn;
+  VulkanFunction<PFN_vkDestroyBufferCollectionFUCHSIA>
+      vkDestroyBufferCollectionFUCHSIAFn;
 #endif  // defined(OS_FUCHSIA)
 
-  PFN_vkAcquireNextImageKHR vkAcquireNextImageKHRFn_ = nullptr;
-  PFN_vkCreateSwapchainKHR vkCreateSwapchainKHRFn_ = nullptr;
-  PFN_vkDestroySwapchainKHR vkDestroySwapchainKHRFn_ = nullptr;
-  PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHRFn_ = nullptr;
-  PFN_vkQueuePresentKHR vkQueuePresentKHRFn_ = nullptr;
-
- public:
-#define DEFINE_METHOD(name)                                    \
-  template <typename... Types>                                 \
-  NO_SANITIZE("cfi-icall")                                     \
-  auto name##Fn(Types... args)->decltype(name##Fn_(args...)) { \
-    return name##Fn_(args...);                                 \
-  }
-
-  // Unassociated functions
-  DEFINE_METHOD(vkGetInstanceProcAddr)
-  DEFINE_METHOD(vkEnumerateInstanceVersion)
-
-  DEFINE_METHOD(vkCreateInstance)
-  DEFINE_METHOD(vkEnumerateInstanceExtensionProperties)
-  DEFINE_METHOD(vkEnumerateInstanceLayerProperties)
-
-  // Instance functions
-  DEFINE_METHOD(vkCreateDevice)
-  DEFINE_METHOD(vkDestroyInstance)
-  DEFINE_METHOD(vkEnumerateDeviceExtensionProperties)
-  DEFINE_METHOD(vkEnumerateDeviceLayerProperties)
-  DEFINE_METHOD(vkEnumeratePhysicalDevices)
-  DEFINE_METHOD(vkGetDeviceProcAddr)
-  DEFINE_METHOD(vkGetPhysicalDeviceFeatures)
-  DEFINE_METHOD(vkGetPhysicalDeviceFormatProperties)
-  DEFINE_METHOD(vkGetPhysicalDeviceMemoryProperties)
-  DEFINE_METHOD(vkGetPhysicalDeviceProperties)
-  DEFINE_METHOD(vkGetPhysicalDeviceQueueFamilyProperties)
-
-#if DCHECK_IS_ON()
-  DEFINE_METHOD(vkCreateDebugReportCallbackEXT)
-  DEFINE_METHOD(vkDestroyDebugReportCallbackEXT)
-#endif  // DCHECK_IS_ON()
-
-  DEFINE_METHOD(vkDestroySurfaceKHR)
-  DEFINE_METHOD(vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
-  DEFINE_METHOD(vkGetPhysicalDeviceSurfaceFormatsKHR)
-  DEFINE_METHOD(vkGetPhysicalDeviceSurfaceSupportKHR)
-
-#if defined(USE_VULKAN_XLIB)
-  DEFINE_METHOD(vkCreateXlibSurfaceKHR)
-  DEFINE_METHOD(vkGetPhysicalDeviceXlibPresentationSupportKHR)
-#endif  // defined(USE_VULKAN_XLIB)
-
-#if defined(OS_ANDROID)
-  DEFINE_METHOD(vkCreateAndroidSurfaceKHR)
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_FUCHSIA)
-  DEFINE_METHOD(vkCreateImagePipeSurfaceFUCHSIA)
-#endif  // defined(OS_FUCHSIA)
-
-  DEFINE_METHOD(vkGetPhysicalDeviceImageFormatProperties2)
-
-  DEFINE_METHOD(vkGetPhysicalDeviceFeatures2)
-
-  // Device functions
-  DEFINE_METHOD(vkAllocateCommandBuffers)
-  DEFINE_METHOD(vkAllocateDescriptorSets)
-  DEFINE_METHOD(vkAllocateMemory)
-  DEFINE_METHOD(vkBeginCommandBuffer)
-  DEFINE_METHOD(vkBindBufferMemory)
-  DEFINE_METHOD(vkBindImageMemory)
-  DEFINE_METHOD(vkCmdBeginRenderPass)
-  DEFINE_METHOD(vkCmdCopyBufferToImage)
-  DEFINE_METHOD(vkCmdEndRenderPass)
-  DEFINE_METHOD(vkCmdExecuteCommands)
-  DEFINE_METHOD(vkCmdNextSubpass)
-  DEFINE_METHOD(vkCmdPipelineBarrier)
-  DEFINE_METHOD(vkCreateBuffer)
-  DEFINE_METHOD(vkCreateCommandPool)
-  DEFINE_METHOD(vkCreateDescriptorPool)
-  DEFINE_METHOD(vkCreateDescriptorSetLayout)
-  DEFINE_METHOD(vkCreateFence)
-  DEFINE_METHOD(vkCreateFramebuffer)
-  DEFINE_METHOD(vkCreateImage)
-  DEFINE_METHOD(vkCreateImageView)
-  DEFINE_METHOD(vkCreateRenderPass)
-  DEFINE_METHOD(vkCreateSampler)
-  DEFINE_METHOD(vkCreateSemaphore)
-  DEFINE_METHOD(vkCreateShaderModule)
-  DEFINE_METHOD(vkDestroyBuffer)
-  DEFINE_METHOD(vkDestroyCommandPool)
-  DEFINE_METHOD(vkDestroyDescriptorPool)
-  DEFINE_METHOD(vkDestroyDescriptorSetLayout)
-  DEFINE_METHOD(vkDestroyDevice)
-  DEFINE_METHOD(vkDestroyFence)
-  DEFINE_METHOD(vkDestroyFramebuffer)
-  DEFINE_METHOD(vkDestroyImage)
-  DEFINE_METHOD(vkDestroyImageView)
-  DEFINE_METHOD(vkDestroyRenderPass)
-  DEFINE_METHOD(vkDestroySampler)
-  DEFINE_METHOD(vkDestroySemaphore)
-  DEFINE_METHOD(vkDestroyShaderModule)
-  DEFINE_METHOD(vkDeviceWaitIdle)
-  DEFINE_METHOD(vkEndCommandBuffer)
-  DEFINE_METHOD(vkFreeCommandBuffers)
-  DEFINE_METHOD(vkFreeDescriptorSets)
-  DEFINE_METHOD(vkFreeMemory)
-  DEFINE_METHOD(vkGetBufferMemoryRequirements)
-  DEFINE_METHOD(vkGetDeviceQueue)
-  DEFINE_METHOD(vkGetFenceStatus)
-  DEFINE_METHOD(vkGetImageMemoryRequirements)
-  DEFINE_METHOD(vkMapMemory)
-  DEFINE_METHOD(vkQueueSubmit)
-  DEFINE_METHOD(vkQueueWaitIdle)
-  DEFINE_METHOD(vkResetCommandBuffer)
-  DEFINE_METHOD(vkResetFences)
-  DEFINE_METHOD(vkUnmapMemory)
-  DEFINE_METHOD(vkUpdateDescriptorSets)
-  DEFINE_METHOD(vkWaitForFences)
-
-  DEFINE_METHOD(vkGetDeviceQueue2)
-  DEFINE_METHOD(vkGetImageMemoryRequirements2)
-
-#if defined(OS_ANDROID)
-  DEFINE_METHOD(vkGetAndroidHardwareBufferPropertiesANDROID)
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  DEFINE_METHOD(vkGetSemaphoreFdKHR)
-  DEFINE_METHOD(vkImportSemaphoreFdKHR)
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  DEFINE_METHOD(vkGetMemoryFdKHR)
-  DEFINE_METHOD(vkGetMemoryFdPropertiesKHR)
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
-#if defined(OS_FUCHSIA)
-  DEFINE_METHOD(vkImportSemaphoreZirconHandleFUCHSIA)
-  DEFINE_METHOD(vkGetSemaphoreZirconHandleFUCHSIA)
-#endif  // defined(OS_FUCHSIA)
-
-#if defined(OS_FUCHSIA)
-  DEFINE_METHOD(vkGetMemoryZirconHandleFUCHSIA)
-#endif  // defined(OS_FUCHSIA)
-
-#if defined(OS_FUCHSIA)
-  DEFINE_METHOD(vkCreateBufferCollectionFUCHSIA)
-  DEFINE_METHOD(vkSetBufferCollectionConstraintsFUCHSIA)
-  DEFINE_METHOD(vkGetBufferCollectionPropertiesFUCHSIA)
-  DEFINE_METHOD(vkDestroyBufferCollectionFUCHSIA)
-#endif  // defined(OS_FUCHSIA)
-
-  DEFINE_METHOD(vkAcquireNextImageKHR)
-  DEFINE_METHOD(vkCreateSwapchainKHR)
-  DEFINE_METHOD(vkDestroySwapchainKHR)
-  DEFINE_METHOD(vkGetSwapchainImagesKHR)
-  DEFINE_METHOD(vkQueuePresentKHR)
-
-#undef DEFINE_METHOD
+  VulkanFunction<PFN_vkAcquireNextImageKHR> vkAcquireNextImageKHRFn;
+  VulkanFunction<PFN_vkCreateSwapchainKHR> vkCreateSwapchainKHRFn;
+  VulkanFunction<PFN_vkDestroySwapchainKHR> vkDestroySwapchainKHRFn;
+  VulkanFunction<PFN_vkGetSwapchainImagesKHR> vkGetSwapchainImagesKHRFn;
+  VulkanFunction<PFN_vkQueuePresentKHR> vkQueuePresentKHRFn;
 };
 
 }  // namespace gpu

@@ -1052,6 +1052,17 @@ var scrollableShelfTests = [
   }
 ];
 
+var shelfTests = [function fetchShelfUIInfo() {
+  chrome.autotestPrivate.setTabletModeEnabled(
+      false, chrome.test.callbackPass(isEnabled => {
+        chrome.test.assertFalse(isEnabled);
+        chrome.autotestPrivate.getShelfUIInfoForState(
+            {}, chrome.test.callbackPass(info => {
+              chrome.test.assertEq('ShownClamShell', info.hotseatInfo.state);
+            }));
+      }));
+}];
+
 var test_suites = {
   'default': defaultTests,
   'arcEnabled': arcEnabledTests,
@@ -1062,6 +1073,7 @@ var test_suites = {
   'splitviewLeftSnapped': splitviewLeftSnappedTests,
   'startStopTracing': startStopTracingTests,
   'scrollableShelf': scrollableShelfTests,
+  'shelf': shelfTests,
 };
 
 chrome.test.getConfig(function(config) {

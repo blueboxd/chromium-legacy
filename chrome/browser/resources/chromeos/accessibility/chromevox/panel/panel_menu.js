@@ -70,6 +70,9 @@ PanelMenu = class {
 
     this.menuElement.addEventListener(
         'keypress', this.onKeyPress_.bind(this), true);
+
+    /** @private {boolean} */
+    this.enabled_ = true;
   }
 
   /**
@@ -122,6 +125,11 @@ PanelMenu = class {
    * first item.
    */
   activate(activateFirstItem) {
+    if (!this.enabled_) {
+      this.menuBarItemElement.focus();
+      return;
+    }
+
     this.menuContainerElement.style.visibility = 'visible';
     this.menuContainerElement.style.opacity = 1;
     this.menuBarItemElement.classList.add('active');
@@ -143,6 +151,21 @@ PanelMenu = class {
     if (activateFirstItem) {
       this.activateItem(0);
     }
+  }
+
+  /**
+   * Disables this menu. When disabled, menu contents cannot be analyzed.
+   * When activated, focus gets placed on the menuBarItem (title element)
+   * instead of the first menu item.
+   */
+  disable() {
+    this.enabled_ = false;
+    this.menuBarItemElement.classList.add('disabled');
+    this.menuBarItemElement.setAttribute('aria-disabled', true);
+    this.menuBarItemElement.setAttribute('tabindex', 0);
+    this.menuBarItemElement.setAttribute(
+        'aria-label', this.menuBarItemElement.textContent);
+    this.activeIndex_ = -1;
   }
 
   /**
@@ -177,6 +200,10 @@ PanelMenu = class {
    * @param {number} delta The number to add to the active menu item index.
    */
   advanceItemBy(delta) {
+    if (!this.enabled_) {
+      return;
+    }
+
     if (this.activeIndex_ >= 0) {
       this.activeIndex_ += delta;
       this.activeIndex_ =
@@ -187,6 +214,13 @@ PanelMenu = class {
       } else {
         this.activeIndex_ = this.items_.length - 1;
       }
+    }
+
+    this.activeIndex_ = this.findEnabledItemIndex_(
+        this.activeIndex_, delta > 0 ? 1 : -1 /* delta */);
+
+    if (this.activeIndex_ === -1) {
+      return;
     }
 
     this.items_[this.activeIndex_].element.focus();
@@ -252,10 +286,35 @@ PanelMenu = class {
   }
 
   /**
+   * @return {boolean} The enabled state of this menu.
+   */
+  get enabled() {
+    return this.enabled_;
+  }
+
+  /**
    * @return {Array<PanelMenuItem>}
    */
   get items() {
     return this.items_;
+  }
+
+  /**
+   * Starting at |startIndex|, looks for an enabled menu item.
+   * @param {number} startIndex
+   * @param {number} delta
+   * @return {number} The index of the enabled item. -1 if not found.
+   * @private
+   */
+  findEnabledItemIndex_(startIndex, delta) {
+    const endIndex = (delta > 0) ? this.items_.length : -1;
+    while (startIndex !== endIndex) {
+      if (this.items_[startIndex].enabled) {
+        return startIndex;
+      }
+      startIndex += delta;
+    }
+    return -1;
   }
 };
 

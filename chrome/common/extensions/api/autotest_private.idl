@@ -346,6 +346,14 @@ namespace autotestPrivate {
     ExtensionApp
   };
 
+  // A mapping of HotseatState in ash/public/cpp/shelf_types.h.
+  enum HotseatState {
+    Hidden,
+    ShownClamShell,
+    ShownHomeLauncher,
+    Extended
+  };
+
   // The frame mode of a window. None if the window is framesless.
   enum FrameMode {
     Normal,
@@ -428,13 +436,19 @@ namespace autotestPrivate {
     boolean pressed;
   };
 
-  // Mapped to ScrollableShelfState in ash/public/cpp/scrollable_shelf_info.h.
+  // Mapped to ScrollableShelfState in ash/public/cpp/shelf_ui_info.h.
+  // [deprecated="Use ShelfState"]
   dictionary ScrollableShelfState {
     double? scrollDistance;
   };
 
-  // Mapped to ScrollableShelfInfo in ash/public/cpp/scrollable_shelf_info.h.
-  // |targetMainAxisOffset| is set when ScrollableShelfState used in query
+  // Mapped to ShelfState in ash/public/cpp/shelf_ui_info.h.
+  dictionary ShelfState {
+    double? scrollDistance;
+  };
+
+  // Mapped to ScrollableShelfInfo in ash/public/cpp/shelf_ui_info.h.
+  // |targetMainAxisOffset| is set when ShelfState used in query
   // specifies the scroll distance.
   dictionary ScrollableShelfInfo {
     double mainAxisOffset;
@@ -443,6 +457,26 @@ namespace autotestPrivate {
     Bounds leftArrowBounds;
     Bounds rightArrowBounds;
     boolean isAnimating;
+  };
+
+  // Mapped to HotseatSwipeDescriptor in ash/public/cpp/shelf_ui_info.h.
+  dictionary HotseatSwipeDescriptor {
+    Location swipeStartLocation;
+    Location swipeEndLocation;
+  };
+
+  // Mapped to HotseatInfo in ash/public/cpp/shelf_ui_info.h.
+  dictionary HotseatInfo {
+    HotseatSwipeDescriptor swipeUp;
+    HotseatState state;
+    boolean isAnimating;
+  };
+
+  // The ui information of shelf components, including hotseat and
+  // scrollable shelf.
+  dictionary ShelfUIInfo {
+    HotseatInfo hotseatInfo;
+    ScrollableShelfInfo scrollableShelfInfo;
   };
 
   callback GetShelfItemsCallback = void (ShelfItem[] items);
@@ -465,6 +499,8 @@ namespace autotestPrivate {
 
   callback GetScrollableShelfInfoForStateCallback = void (
       ScrollableShelfInfo info);
+
+  callback GetShelfUIInfoForStateCallback = void (ShelfUIInfo info);
 
   dictionary TraceConfig {
     // The recording mode of the trace. Possible options are:
@@ -940,9 +976,17 @@ namespace autotestPrivate {
 
     // Fetches ui information of scrollable shelf view for the given shelf
     // state. This function does not change scrollable shelf.
+    // [deprecated="Use getShelfUIInfoForState()"]
     static void getScrollableShelfInfoForState(
         ScrollableShelfState state,
         GetScrollableShelfInfoForStateCallback callback);
+
+    // Fetches UI information of shelf (including scrollable shelf and hotseat)
+    // for the given shelf state. This function does not change any shelf
+    // component.
+    static void getShelfUIInfoForState(
+        ShelfState state,
+        GetShelfUIInfoForStateCallback callback);
   };
 
   interface Events {

@@ -93,8 +93,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
       active_selection_state_(false),
       should_recalc_list_items_(false),
       is_autofilled_by_preview_(false),
-      index_to_select_on_cancel_(-1),
-      popup_is_visible_(false) {
+      index_to_select_on_cancel_(-1) {
   // Make sure SelectType is created after initializing |uses_menu_list_|.
   select_type_ = SelectType::Create(*this);
   SetHasCustomStyleCallbacks();
@@ -1180,12 +1179,8 @@ void HTMLSelectElement::ResetImpl() {
   SetNeedsValidityCheck();
 }
 
-void HTMLSelectElement::SetPopupIsVisible(bool popup_is_visible) {
-  popup_is_visible_ = popup_is_visible;
-  if (::features::IsFormControlsRefreshEnabled() && GetLayoutObject()) {
-    // Invalidate paint to ensure that the focus ring is updated.
-    GetLayoutObject()->SetShouldDoFullPaintInvalidation();
-  }
+bool HTMLSelectElement::PopupIsVisible() const {
+  return select_type_->PopupIsVisible();
 }
 
 void HTMLSelectElement::UpdateSelectedState(HTMLOptionElement* clicked_option,

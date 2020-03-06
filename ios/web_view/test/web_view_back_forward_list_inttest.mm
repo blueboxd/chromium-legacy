@@ -250,4 +250,33 @@ TEST_F(WebViewBackForwardListTest, TestBackForwardListItemAtIndex) {
   EXPECT_FALSE([list itemAtIndex:3]);
 }
 
+// Tests if a CWVBackForwardListItemArray can be correctly iterated using
+// a for-in statement.
+TEST_F(WebViewBackForwardListTest, TestCWVBackForwardListItemArrayForInLoop) {
+  ASSERT_TRUE(test_server_->Start());
+  GenerateTestPageUrls();
+
+  // Go to page3
+  ASSERT_TRUE(test::LoadUrl(web_view_, net::NSURLWithGURL(page1_url_)));
+  ASSERT_TRUE(test::LoadUrl(web_view_, net::NSURLWithGURL(page2_url_)));
+  ASSERT_TRUE(test::LoadUrl(web_view_, net::NSURLWithGURL(page3_url_)));
+  // Now it should be in page3
+  ASSERT_NSEQ(@"page3",
+              test::EvaluateJavaScript(web_view_, @"document.title", nil));
+
+  CWVBackForwardList* list = web_view_.backForwardList;
+  ASSERT_EQ(2UL, list.backList.count);
+  size_t i = 0;
+  for (CWVBackForwardListItem* item in list.backList) {
+    EXPECT_NSEQ(list.backList[i], item);
+    ++i;
+  }
+  EXPECT_EQ(i, list.backList.count);
+  i = 0;
+  for (CWVBackForwardListItem* _ __unused in list.forwardList) {
+    ++i;
+  }
+  EXPECT_EQ(i, list.forwardList.count);
+}
+
 }  // namespace ios_web_view

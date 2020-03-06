@@ -39,7 +39,7 @@ interface Index {
   // Deletes data with |ids| and returns number of items deleted.
   // If an id doesn't exist in the Index, no operation will be done.
   // Only the primary client should be allowed to do this operation.
-  Delete(array<mojo_base.mojom.String16> ids) => (uint32 num_deleted);
+  Delete(array<string> ids) => (uint32 num_deleted);
 
   // Takes an asynchronous search request call and returns results and status
   // code via a callback.

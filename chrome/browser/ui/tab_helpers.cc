@@ -196,12 +196,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   web_contents->SetUserData(&kTabContentsAttachedTabHelpersUserDataKey,
                             std::make_unique<base::SupportsUserData::Data>());
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Set the view type. This is done first because some tab helpers (TODO(avi):
-  // which ones? https://crbug.com/1058951) rely on it being set.
-  extensions::SetViewType(web_contents, extensions::VIEW_TYPE_TAB_CONTENTS);
-#endif
-
   // Create all the tab helpers.
 
   // SessionTabHelper comes first because it sets up the tab ID, and other
@@ -342,9 +336,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   banners::AppBannerManagerDesktop::CreateForWebContents(web_contents);
   BookmarkTabHelper::CreateForWebContents(web_contents);
   BrowserSyncedTabDelegate::CreateForWebContents(web_contents);
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      web_contents);
-  extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
   FocusTabAfterNavigationHelper::CreateForWebContents(web_contents);
   FormInteractionTabHelper::CreateForWebContents(web_contents);
   FramebustBlockTabHelper::CreateForWebContents(web_contents);
@@ -400,7 +391,12 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+  extensions::SetViewType(web_contents, extensions::VIEW_TYPE_TAB_CONTENTS);
+
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+      web_contents);
   extensions::TabHelper::CreateForWebContents(web_contents);
+  extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
   if (web_app::AreWebAppsEnabled(profile))
     web_app::WebAppTabHelper::CreateForWebContents(web_contents);
   if (SiteEngagementService::IsEnabled())

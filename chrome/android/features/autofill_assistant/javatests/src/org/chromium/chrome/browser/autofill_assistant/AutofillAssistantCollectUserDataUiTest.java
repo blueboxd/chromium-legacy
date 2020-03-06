@@ -51,7 +51,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantCollectUserDataTestHelper.ViewHolder;
 import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
@@ -68,6 +67,7 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.additional_secti
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection.TextInputFactory;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputType;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;

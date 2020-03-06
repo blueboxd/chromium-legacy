@@ -38,6 +38,7 @@ std::vector<mojom::DiagnosticRoutineEnum> MakeAvailableRoutines() {
       mojom::DiagnosticRoutineEnum::kSmartctlCheck,
       mojom::DiagnosticRoutineEnum::kCpuCache,
       mojom::DiagnosticRoutineEnum::kCpuStress,
+      mojom::DiagnosticRoutineEnum::kFloatingPointAccuracy,
   };
 }
 
@@ -317,6 +318,20 @@ TEST_F(CrosHealthdServiceConnectionTest, RunCpuStressRoutine) {
   base::RunLoop run_loop;
   ServiceConnection::GetInstance()->RunCpuStressRoutine(
       base::TimeDelta().FromSeconds(10),
+      base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
+        EXPECT_EQ(response, MakeRunRoutineResponse());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(CrosHealthdServiceConnectionTest, RunFloatingPointAccuracyRoutine) {
+  // Test that we can run the floating point accuracy routine.
+  auto response = MakeRunRoutineResponse();
+  FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(response);
+  base::RunLoop run_loop;
+  ServiceConnection::GetInstance()->RunFloatingPointAccuracyRoutine(
+      /*exec_duration=*/base::TimeDelta::FromSeconds(10),
       base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
         EXPECT_EQ(response, MakeRunRoutineResponse());
         run_loop.Quit();

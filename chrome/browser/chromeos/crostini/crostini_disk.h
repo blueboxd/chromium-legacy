@@ -75,6 +75,14 @@ std::vector<crostini::mojom::DiskSliderTickPtr> GetTicks(
     int64_t max,
     int* out_default_index);
 
+void ResizeCrostiniDisk(Profile* profile,
+                        std::string vm_name,
+                        uint64_t size_bytes,
+                        base::OnceCallback<void(bool)> callback);
+
+void OnResize(
+    base::OnceCallback<void(bool)> callback,
+    base::Optional<vm_tools::concierge::ResizeDiskImageResponse> response);
 }  // namespace disk
 }  // namespace crostini
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_DISK_H_

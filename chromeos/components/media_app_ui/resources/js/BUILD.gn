@@ -30,7 +30,10 @@ js_library("launch") {
     "web_app_file_handling.externs.js",
     "dom_draft.externs.js",
   ]
-  deps = [ ":message_pipe" ]
+  deps = [
+    ":message_pipe",
+    "//chromeos/components/media_app_ui:mojo_bindings_js_library_for_compile",
+  ]
 }
 
 js_library("message_pipe") {

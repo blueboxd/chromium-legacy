@@ -83,6 +83,7 @@ class CdmContextRef;
 class ChunkDemuxer;
 class VideoDecodeStatsReporter;
 class MediaLog;
+class MemoryDumpProviderProxy;
 class UrlIndex;
 class VideoFrameCompositor;
 class WatchTimeReporter;
@@ -470,12 +471,21 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetMemoryReportingState(bool is_memory_reporting_enabled);
   void SetSuspendState(bool is_suspended);
 
+  void SetDemuxer(std::unique_ptr<Demuxer> demuxer);
+
   // Called at low frequency to tell external observers how much memory we're
   // using for video playback.  Called by |memory_usage_reporting_timer_|.
   // Memory usage reporting is done in two steps, because |demuxer_| must be
   // accessed on the media thread.
   void ReportMemoryUsage();
   void FinishMemoryUsageReport(int64_t demuxer_memory_usage);
+
+  void OnMainThreadMemoryDump(int32_t id,
+                              base::trace_event::ProcessMemoryDump* pmd);
+  static void OnMediaThreadMemoryDump(
+      int32_t id,
+      Demuxer* demuxer,
+      base::trace_event::ProcessMemoryDump* pmd);
 
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
@@ -755,6 +765,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::RepeatingTimer memory_usage_reporting_timer_;
   WebMediaPlayerParams::AdjustAllocatedMemoryCB adjust_allocated_memory_cb_;
   int64_t last_reported_memory_usage_ = 0;
+  std::unique_ptr<MemoryDumpProviderProxy> main_thread_mem_dumper_;
+  std::unique_ptr<MemoryDumpProviderProxy> media_thread_mem_dumper_;
 
   // Routes audio playback to either AudioRendererSink or WebAudio.
   scoped_refptr<blink::WebAudioSourceProviderImpl> audio_source_provider_;

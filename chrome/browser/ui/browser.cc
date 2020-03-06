@@ -163,6 +163,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bubble/bubble_controller.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/find_in_page/find_tab_helper.h"
@@ -249,6 +250,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "components/session_manager/core/session_manager.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "components/captive_portal/content/captive_portal_tab_helper.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -798,6 +803,21 @@ base::string16 Browser::GetWindowTitleFromWebContents(
   if (contents) {
     title = FormatTitleForDisplay(app_controller_ ? app_controller_->GetTitle()
                                                   : contents->GetTitle());
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+    // If the app name is requested and this is a captive portal window, the
+    // title should indicate that this is a captive portal window. Captive
+    // portal windows should always be pop-ups, and the is_captive_portal_window
+    // condition should not change over the lifetime of a WebContents.
+    if (include_app_name &&
+        captive_portal::CaptivePortalTabHelper::FromWebContents(contents) &&
+        captive_portal::CaptivePortalTabHelper::FromWebContents(contents)
+            ->is_captive_portal_window()) {
+      DCHECK(is_type_popup());
+      return l10n_util::GetStringFUTF16(
+          IDS_CAPTIVE_PORTAL_BROWSER_WINDOW_TITLE_FORMAT,
+          title.empty() ? CoreTabHelper::GetDefaultTitle() : title);
+    }
+#endif
   }
 
   // If there is no title, leave it empty for apps.

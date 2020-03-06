@@ -73,9 +73,31 @@ PanelMenuItem = class {
       braille.textContent = menuItemBraille;
       this.element.appendChild(braille);
     }
+
+    /** @type {boolean} */
+    this.enabled_ = true;
   }
 
+  /**
+   * @return {string} The text content of this menu item.
+   */
   get text() {
     return this.element.textContent;
+  }
+
+  /**
+   * @return {boolean} The enabled state of this item.
+   */
+  get enabled() {
+    return this.enabled_;
+  }
+
+  /**
+   * Marks this item as disabled.
+   */
+  disable() {
+    this.enabled_ = false;
+    this.element.classList.add('disabled');
+    this.element.setAttribute('aria-disabled', true);
   }
 };

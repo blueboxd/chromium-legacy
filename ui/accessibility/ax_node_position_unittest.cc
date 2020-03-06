@@ -5528,10 +5528,7 @@ TEST_F(AXPositionTest, CreateNextAndPreviousCharacterPositionWithNullPosition) {
   EXPECT_TRUE(test_position->IsNullPosition());
 }
 
-TEST_F(AXPositionTest, SnapToMaxTextOffsetIfBeyond) {
-  // This test updates the tree structure to test a specific edge case -
-  // CreatePositionAtFormatBoundary when text lies at the and of a
-  // document, where MaxTextOffset on the final node is shortened.
+TEST_F(AXPositionTest, AsValidPosition) {
   AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
@@ -5545,61 +5542,83 @@ TEST_F(AXPositionTest, SnapToMaxTextOffsetIfBeyond) {
 
   SetTree(CreateAXTree({root_data, text_data}));
 
-  // Create a position at MaxTextOffset
+  // Create a text position at MaxTextOffset.
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
       GetTreeID(), text_data.id, 9 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_position);
-  ASSERT_TRUE(text_position->IsTextPosition());
+  EXPECT_TRUE(text_position->IsTextPosition());
+  EXPECT_TRUE(text_position->IsValid());
+  EXPECT_EQ(9, text_position->text_offset());
 
   // Test basic cases with static MaxTextOffset
   TestPositionType test_position = text_position->CreateNextCharacterPosition(
       AXBoundaryBehavior::StopIfAlreadyAtBoundary);
   EXPECT_TRUE(test_position->IsValid());
-  EXPECT_NE(nullptr, test_position);
+  ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(text_data.id, test_position->anchor_id());
   EXPECT_EQ(9, test_position->text_offset());
   test_position = text_position->CreateNextCharacterPosition(
       AXBoundaryBehavior::CrossBoundary);
-  EXPECT_NE(nullptr, test_position);
+  ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsNullPosition());
 
+  // AsValidPosition should not change any fields on already-valid positions.
+  EXPECT_TRUE(text_position->IsValid());
+  test_position = text_position->AsValidPosition();
+  EXPECT_TRUE(test_position->IsValid());
+  EXPECT_EQ(*test_position, *text_position);
+
   // Now make a change to shorten MaxTextOffset. Ensure that this position is
-  // invalid, then call SnapToMaxTextOffsetIfBeyond and ensure that it is now
-  // valid.
+  // invalid, then call AsValidPosition and ensure that it is now valid.
   text_data.SetName("some tex");
-  AXTreeUpdate update;
-  update.nodes = {text_data};
-  ASSERT_TRUE(GetTree()->Unserialize(update));
+  AXTreeUpdate shorten_text_update;
+  shorten_text_update.nodes = {text_data};
+  ASSERT_TRUE(GetTree()->Unserialize(shorten_text_update));
 
   EXPECT_FALSE(text_position->IsValid());
-  text_position->SnapToMaxTextOffsetIfBeyond();
+  text_position = text_position->AsValidPosition();
   EXPECT_TRUE(text_position->IsValid());
+  EXPECT_EQ(8, text_position->text_offset());
 
   // Now repeat the prior tests and ensure that we can create next character
   // positions with the new, valid MaxTextOffset (8).
   test_position = text_position->CreateNextCharacterPosition(
       AXBoundaryBehavior::StopIfAlreadyAtBoundary);
   EXPECT_TRUE(test_position->IsValid());
-  EXPECT_NE(nullptr, test_position);
+  ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(text_data.id, test_position->anchor_id());
   EXPECT_EQ(8, test_position->text_offset());
   test_position = text_position->CreateNextCharacterPosition(
       AXBoundaryBehavior::CrossBoundary);
-  EXPECT_NE(nullptr, test_position);
+  ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsNullPosition());
 
-  // Ensure that SnapToMaxTextOffsetIfBeyond does not impact nodes beyond
-  // MaxTextOffset
-  TestPositionType text_position_at_beginning =
-      AXNodePosition::CreateTextPosition(GetTreeID(), text_data.id,
-                                         0 /* text_offset */,
-                                         ax::mojom::TextAffinity::kDownstream);
-  EXPECT_EQ(0, text_position_at_beginning->text_offset());
-  text_position->SnapToMaxTextOffsetIfBeyond();
-  EXPECT_EQ(0, text_position_at_beginning->text_offset());
+  // AsValidPosition should create a NullPosition if a position's anchor is
+  // removed. This is true for both tree positions and text positions.
+  EXPECT_TRUE(text_position->IsValid());
+  TestPositionType tree_position = text_position->AsTreePosition();
+  ASSERT_NE(nullptr, tree_position);
+  EXPECT_TRUE(tree_position->IsTreePosition());
+  EXPECT_TRUE(tree_position->IsValid());
+  EXPECT_EQ(0, tree_position->child_index());
+
+  AXTreeUpdate remove_node_update;
+  root_data.child_ids = {};
+  remove_node_update.nodes = {root_data};
+  ASSERT_TRUE(GetTree()->Unserialize(remove_node_update));
+  EXPECT_FALSE(text_position->IsValid());
+  EXPECT_FALSE(tree_position->IsValid());
+
+  text_position = text_position->AsValidPosition();
+  EXPECT_TRUE(text_position->IsValid());
+  tree_position = tree_position->AsValidPosition();
+  EXPECT_TRUE(tree_position->IsValid());
+
+  EXPECT_TRUE(text_position->IsNullPosition());
+  EXPECT_TRUE(tree_position->IsNullPosition());
 }
 
 TEST_F(AXPositionTest, CreateNextCharacterPosition) {

@@ -404,6 +404,10 @@ int ShelfConfig::GetShelfItemRippleSize() const {
   return button_size() + 2 * scrollable_shelf_ripple_padding();
 }
 
+int ShelfConfig::GetHotseatFullDragAmount() const {
+  return shelf_size() + hotseat_bottom_padding() + hotseat_size();
+}
+
 base::TimeDelta ShelfConfig::DimAnimationDuration() const {
   return base::TimeDelta::FromMilliseconds(1000);
 }

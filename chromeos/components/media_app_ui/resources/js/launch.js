@@ -19,6 +19,14 @@ let entryIndex = -1;
 /** A pipe through which we can send messages to the guest frame. */
 const guestMessagePipe = new MessagePipe('chrome://media-app-guest');
 
+guestMessagePipe.registerHandler('openFeedbackDialog', () => {
+  let response = media_app.handler.openFeedbackDialog();
+  if (response === null) {
+    response = {errorMessage: 'Null response recieved'};
+  }
+  return response;
+});
+
 /**
  * Loads a file in the guest.
  *

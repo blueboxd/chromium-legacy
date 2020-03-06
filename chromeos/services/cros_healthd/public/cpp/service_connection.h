@@ -97,6 +97,14 @@ class ServiceConnection {
       mojom::CrosHealthdDiagnosticsService::RunCpuStressRoutineCallback
           callback) = 0;
 
+  // Requests that cros_healthd runs the floating point accuracy routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunFloatingPointAccuracyRoutine(
+      const base::TimeDelta& exec_duration,
+      mojom::CrosHealthdDiagnosticsService::
+          RunFloatingPointAccuracyRoutineCallback callback) = 0;
+
   // Gather pieces of information about the platform. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.

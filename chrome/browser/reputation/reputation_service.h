@@ -108,10 +108,4 @@ class ReputationService : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(ReputationService);
 };
 
-// Checks SafeBrowsing-style permutations of |url| against the component updater
-// blocklist and returns the match type. kNone means the URL is not blocked.
-// This method assumes that the flagged pages in the safety tip config proto are
-// in sorted order.
-security_state::SafetyTipStatus GetSafetyTipUrlBlockType(const GURL& url);
-
 #endif  // CHROME_BROWSER_REPUTATION_REPUTATION_SERVICE_H_

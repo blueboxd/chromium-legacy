@@ -240,11 +240,18 @@ def check_conflicting_definitions(basic_suites=None,
 def check_matrix_identifier(sub_suite=None,
                             suite=None,
                             suite_def=None,
+                            all_variants=None,
                             **kwargs):
   """Ensure 'idenfitier' is defined for each variant"""
   del kwargs
   sub_suite_config = suite_def[sub_suite]
   for variant in sub_suite_config.get('variants', []):
+    if isinstance(variant, str):
+      if variant not in all_variants:
+        raise BBGenErr('Missing variant definition for %s in variants.pyl'
+                       % variant)
+      variant = all_variants[variant]
+
     if not 'identifier' in variant:
       raise BBGenErr('Missing required identifier field in matrix '
                      'compound suite %s, %s' % (suite, sub_suite))
@@ -259,6 +266,7 @@ class BBJSONGenerator(object):
     self.exceptions = None
     self.mixins = None
     self.gn_isolate_map = None
+    self.variants = None
 
   def generate_abs_file_path(self, relative_path):
     return os.path.join(self.this_dir, relative_path) # pragma: no cover
@@ -872,6 +880,7 @@ class BBJSONGenerator(object):
                     suite_def=suite_def,
                     target_test_suites=target_suites,
                     test_type=test_type,
+                    all_variants=self.variants
                     )
 
   def flatten_test_suites(self):
@@ -943,6 +952,10 @@ class BBJSONGenerator(object):
     for test_name, test_config in basic_test_definition.iteritems():
       definitions = []
       for variant in variants:
+        # Unpack the variant from variants.pyl if it's string based.
+        if isinstance(variant, str):
+          variant = self.variants[variant]
+
         # Clone a copy of test_config so that we can have a uniquely updated
         # version of it per variant
         cloned_config = copy.deepcopy(test_config)
@@ -1020,6 +1033,7 @@ class BBJSONGenerator(object):
     self.exceptions = self.load_pyl_file('test_suite_exceptions.pyl')
     self.mixins = self.load_pyl_file('mixins.pyl')
     self.gn_isolate_map = self.load_pyl_file('gn_isolate_map.pyl')
+    self.variants = self.load_pyl_file('variants.pyl')
 
   def resolve_configuration_files(self):
     self.resolve_full_test_targets()
@@ -1398,6 +1412,24 @@ class BBJSONGenerator(object):
       raise BBGenErr('The following mixins are unreferenced: %s. They must be'
                      ' referenced in a waterfall, machine, or test suite.' % (
                          str(missing_mixins)))
+
+    # All variant references must be referenced
+    seen_variants = set()
+    for suite in self.test_suites.values():
+      if isinstance(suite, list):
+        continue
+
+      for test in suite.values():
+        if isinstance(test, dict):
+          for variant in test.get('variants', []):
+            if isinstance(variant, str):
+              seen_variants.add(variant)
+
+    missing_variants = set(self.variants.keys()) - seen_variants
+    if missing_variants:
+      raise BBGenErr('The following variants were unreferenced: %s. They must '
+                     'be referenced in a matrix test suite under the variants '
+                     'key.' % str(missing_variants))
 
 
   def type_assert(self, node, typ, filename, verbose=False):

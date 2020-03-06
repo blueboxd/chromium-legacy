@@ -1136,6 +1136,7 @@ float ShelfLayoutManager::GetOpacity() const {
 }
 
 void ShelfLayoutManager::OnShelfConfigUpdated() {
+  SetState(state_.visibility_state);
   LayoutShelf(/*animate=*/true);
   MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
   UpdateContextualNudges();
@@ -1296,7 +1297,9 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       ((overview_controller && overview_controller->InOverviewSession()) ||
        overview_mode_will_start_) &&
       !overview_controller->IsCompletingShutdownAnimations();
-  const bool app_list_visible = app_list_controller->GetTargetVisibility();
+  const bool app_list_visible =
+      app_list_controller->GetTargetVisibility() ||
+      app_list_controller->ShouldHomeLauncherBeVisible();
 
   // TODO(https://crbug.com/1058205): Test this behavior.
   if (ShelfConfig::Get()->is_virtual_keyboard_shown())
@@ -2573,10 +2576,8 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
   // If hotseat is hidden when drag starts, do not start drag window if hotseat
   // hasn't been fully dragged up.
   if (hotseat_state() == HotseatState::kHidden) {
-    ShelfConfig* shelf_config = ShelfConfig::Get();
     const int full_drag_amount =
-        -(shelf_config->shelf_size() + shelf_config->hotseat_bottom_padding() +
-          shelf_config->hotseat_size());
+        -ShelfConfig::Get()->GetHotseatFullDragAmount();
     if (drag_amount_ > full_drag_amount)
       return false;
   } else if (hotseat_state() == HotseatState::kExtended) {

@@ -14,6 +14,7 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "components/services/storage/filesystem_proxy_factory.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -27,7 +28,8 @@ const char kInvalidDatabaseMessage[] = "DomStorageDatabase no longer valid.";
 
 class DomStorageDatabaseEnv : public leveldb_env::ChromiumEnv {
  public:
-  DomStorageDatabaseEnv() : ChromiumEnv("ChromiumEnv.StorageService") {}
+  DomStorageDatabaseEnv()
+      : ChromiumEnv("ChromiumEnv.StorageService", CreateFilesystemProxy()) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DomStorageDatabaseEnv);

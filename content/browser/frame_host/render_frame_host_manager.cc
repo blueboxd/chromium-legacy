@@ -2130,6 +2130,7 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
       new_render_frame_host->render_view_host();
   // TODO(https://crbug.com/1006814): Remove this.
   bool recreated_main_frame = false;
+  bool widget_renderer_initialized = false;
   if (frame_tree_node_->IsMainFrame()) {
     if (render_view_host == render_frame_host_->render_view_host()) {
       // We are replacing the main frame's host with |new_render_frame_host|.
@@ -2140,6 +2141,8 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
       render_view_host->SetMainFrameRoutingId(
           new_render_frame_host->GetRoutingID());
       recreated_main_frame = true;
+      widget_renderer_initialized =
+          render_view_host->GetWidget()->renderer_initialized();
     }
 
     if (!InitRenderView(render_view_host, GetRenderFrameProxyHost(instance)))
@@ -2159,20 +2162,18 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   // TODO(https://crbug.com/1006814): Remove this.
   if (recreated_main_frame && !new_render_frame_host->IsRenderFrameLive()) {
     static auto* crash_key = base::debug::AllocateCrashKeyString(
-        "IsRenderFrameLive", base::debug::CrashKeySize::Size32);
+        "IsRenderFrameLive", base::debug::CrashKeySize::Size256);
+    int main_rfh_routing_id =
+        render_view_host->GetMainFrameRoutingIdForCrbug1006814();
     std::string message = base::StringPrintf(
-        "created=%d,process=%d,proxy=%d",
+        "created=%d,process=%d,proxy=%d,widget=%d,main_rfh=%d,new_rfh=%d",
         new_render_frame_host->IsRenderFrameCreated(),
         new_render_frame_host->GetProcess()->IsInitializedAndNotDead(),
-        !!GetRenderFrameProxyHost(instance));
+        !!GetRenderFrameProxyHost(instance), widget_renderer_initialized,
+        main_rfh_routing_id, new_render_frame_host->routing_id());
+    // This string is whitelisted for collection from Android Webview. It must
+    // only contain booleans to avoid leaking any PII.
     base::debug::SetCrashKeyString(crash_key, message);
-    DEBUG_ALIAS_FOR_CSTR(message_debug, message.c_str(), 32);
-    DEBUG_ALIAS_FOR_GURL(last_committed_url,
-                         current_frame_host()
-                             ? current_frame_host()->GetLastCommittedURL()
-                             : GURL());
-    DEBUG_ALIAS_FOR_GURL(new_last_committed_url,
-                         new_render_frame_host->GetLastCommittedURL());
     base::debug::DumpWithoutCrashing();
     NOTREACHED() << message;
   }

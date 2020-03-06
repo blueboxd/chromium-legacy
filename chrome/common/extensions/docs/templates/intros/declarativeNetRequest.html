@@ -195,7 +195,7 @@ installed extension gets priority.
 When an extension is queried for how to handle a request, the highest priority
 matching static or dynamic rule is returned. If more than one matching rule has
 the highest priority, the tie is broken based on the action type, in the
-following order:
+following order of decreasing precedence:
 </p>
 
 <ul>
@@ -258,13 +258,19 @@ are evaluated on the request and response headers. All matching
 
 <p><b>manifest.json</b></p>
 <pre data-filename="manifest.json">
-
+{
   "name": "declarativeNetRequest extension",
   "version": "1",
   "declarative_net_request": {
     "rule_resources": ["rules.json"]
   },
-  "permissions": ["*://*.google.com/*", "*://*.abcd.com/*", "*://*.example.com/*", "declarativeNetRequest"],
+  "permissions": [
+    "*://*.google.com/*",
+    "*://*.abcd.com/*",
+    "*://*.example.com/*",
+    "http://*.xyz.com/*",
+    "declarativeNetRequest"
+  ],
   "manifest_version": 2
 }
 </pre>
@@ -312,6 +318,22 @@ are evaluated on the request and response headers. All matching
       }
     },
     "condition": { "urlFilter": "||example.com", "resourceTypes": ["main_frame"] }
+  },
+  {
+    "id": 7,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://\\1.xyz.com/"
+      }
+    },
+    "condition": {
+      "regexFilter": "^http://www\\.(abc|def)\\.xyz\\.com/",
+      "resourceTypes": [
+        "main_frame"
+      ]
+    }
   }
 ]
 </pre>
@@ -345,5 +367,10 @@ are evaluated on the request and response headers. All matching
     Consider a navigation to <code>"http://example.com/path"</code>. The rule
     with id (6) matches. Since rule (6) specifies a url transform, the request
     is redirected to <code>"https://new.example.com/path"</code>.
+  </li>
+  <li>
+    Consider a navigation to <code>"http://www.abc.xyz.com/path"</code>. The
+    rule with id (7) matches. The request will be redirected to <code>
+    "https://abc.xyz.com/path"</code>.
   </li>
 </ul>

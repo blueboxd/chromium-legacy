@@ -357,6 +357,11 @@ std::unique_ptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
   return nullptr;
 }
 
+base::FilePath
+ShellContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
+  return browser_context()->GetPath();
+}
+
 std::string ShellContentBrowserClient::GetUserAgent() {
   return GetShellUserAgent();
 }

@@ -38,7 +38,6 @@ CrostiniDiskInfo& CrostiniDiskInfo::operator=(CrostiniDiskInfo&&) = default;
 CrostiniDiskInfo::~CrostiniDiskInfo() = default;
 
 namespace disk {
-
 void GetDiskInfo(OnceDiskInfoCallback callback,
                  Profile* profile,
                  std::string vm_name) {
@@ -78,6 +77,7 @@ void OnVMRunning(OnceDiskInfoCallback callback,
     vm_tools::concierge::ListVmDisksRequest request;
     request.set_cryptohome_id(CryptohomeIdForProfile(profile));
     request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
+    request.set_vm_name(vm_name);
     GetConciergeClient()->ListVmDisks(
         std::move(request), base::BindOnce(&OnListVmDisks, std::move(callback),
                                            std::move(vm_name), free_space));
@@ -118,6 +118,11 @@ void OnListVmDisks(
     std::move(callback).Run(std::move(disk_info));
     return;
   }
+  if (image->min_size() == 0) {
+    LOG(ERROR) << "Unable to get minimum disk size";
+    std::move(callback).Run(nullptr);
+    return;
+  }
   disk_info->is_user_chosen_size = image->user_chosen_size();
   disk_info->can_resize =
       image->image_type() == vm_tools::concierge::DiskImageType::DISK_IMAGE_RAW;
@@ -143,7 +148,15 @@ std::vector<crostini::mojom::DiskSliderTickPtr> GetTicks(
     int64_t current,
     int64_t max,
     int* out_default_index) {
-  if (min > current || current > max) {
+  if (current < min) {
+    // btrfs is conservative, sometimes it won't let us resize to what the user
+    // currently has. In those cases act like the current size is the same as
+    // the minimum.
+    VLOG(1) << "Minimum size is larger than the current, setting current = min";
+    current = min;
+  }
+  if (current > max) {
+    LOG(ERROR) << "current > max";
     return {};
   }
   std::vector<int64_t> values = GetTicksForDiskSize(min, max);
@@ -166,6 +179,68 @@ std::vector<crostini::mojom::DiskSliderTickPtr> GetTicks(
                                                             formatted_val));
   }
   return ticks;
+}
+
+class Observer : public chromeos::ConciergeClient::DiskImageObserver {
+ public:
+  Observer(std::string uuid, base::OnceCallback<void(bool)> callback)
+      : uuid_(std::move(uuid)), callback_(std::move(callback)) {}
+  ~Observer() override { GetConciergeClient()->RemoveDiskImageObserver(this); }
+  void OnDiskImageProgress(
+      const vm_tools::concierge::DiskImageStatusResponse& signal) override {
+    if (signal.command_uuid() != uuid_) {
+      return;
+    }
+    switch (signal.status()) {
+      case vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS:
+        break;
+      case vm_tools::concierge::DiskImageStatus::DISK_STATUS_RESIZED:
+        std::move(callback_).Run(true);
+        break;
+      default:
+        LOG(ERROR) << "Failed or unrecognised status when resizing: "
+                   << signal.status() << " " << signal.failure_reason();
+        std::move(callback_).Run(false);
+        delete this;
+    }
+  }
+
+ private:
+  std::string uuid_;
+  base::OnceCallback<void(bool)> callback_;
+};
+
+void ResizeCrostiniDisk(Profile* profile,
+                        std::string vm_name,
+                        uint64_t size_bytes,
+                        base::OnceCallback<void(bool)> callback) {
+  vm_tools::concierge::ResizeDiskImageRequest request;
+  request.set_cryptohome_id(CryptohomeIdForProfile(profile));
+  request.set_vm_name(vm_name);
+  request.set_disk_size(size_bytes);
+
+  GetConciergeClient()->ResizeDiskImage(
+      request, base::BindOnce(&OnResize, std::move(callback)));
+}
+
+void OnResize(
+    base::OnceCallback<void(bool)> callback,
+    base::Optional<vm_tools::concierge::ResizeDiskImageResponse> response) {
+  if (!response) {
+    LOG(ERROR) << "Got null response from concierge";
+    std::move(callback).Run(false);
+  } else if (response->status() ==
+             vm_tools::concierge::DiskImageStatus::DISK_STATUS_RESIZED) {
+    std::move(callback).Run(true);
+  } else if (response->status() ==
+             vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS) {
+    GetConciergeClient()->AddDiskImageObserver(
+        new Observer(response->command_uuid(), std::move(callback)));
+  } else {
+    LOG(ERROR) << "Got unexpected or error status from concierge: "
+               << response->status();
+    std::move(callback).Run(false);
+  }
 }
 }  // namespace disk
 }  // namespace crostini

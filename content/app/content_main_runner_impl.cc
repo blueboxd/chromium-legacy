@@ -735,6 +735,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
     // file is available we have to apply it _before_ the main ICU data file.
     // Otherwise, the languages of the extra ICU file will be overridden.
     if (process_type.empty()) {
+      TRACE_EVENT0("startup", "InitializeICU");
       // In browser process load ICU data files from disk.
       if (GetContentClient()->browser()->ShouldLoadExtraIcuDataFile()) {
         if (!base::i18n::InitializeExtraICU()) {

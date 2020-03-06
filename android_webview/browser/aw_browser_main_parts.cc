@@ -121,6 +121,7 @@ int AwBrowserMainParts::PreCreateThreads() {
 }
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
+  TRACE_EVENT0("startup", "AwBrowserMainParts::PreMainMessageLoopRun");
   AwBrowserProcess::GetInstance()->PreMainMessageLoopRun();
   browser_client_->InitBrowserContext();
   content::WebUIControllerFactory::RegisterFactory(

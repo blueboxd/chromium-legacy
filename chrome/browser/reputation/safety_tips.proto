@@ -22,7 +22,8 @@ message FlaggedPage {
 
 message UrlPattern {
   // |pattern| is a full URL, without scheme/username/password/port, such as
-  // example.test/test-path-for-safety-tips/test.html.
+  // example.test/test-path-for-safety-tips/test.html. Also see the comment for
+  // |allowed_pattern| field.
   optional string pattern = 1;
 }
 
@@ -37,6 +38,11 @@ message SafetyTipsConfig {
   repeated FlaggedPage flagged_page = 2;
 
   // List of patterns that are explicitly allowed. This must be sorted. Used to
-  // mitigate false positives.
+  // mitigate false positives in Safety Tips and Lookalike warnings.
+  // - For safety tips, the pattern can be a URL or a full suffix/prefix
+  //   expression used for SafeBrowsing. See
+  //   https://developers.google.com/safe-browsing/v4/urls-hashing#suffixprefix-expressions.
+  // - Lookalike warnings operate on eTLD+1, so it only makes sense for this
+  //   to be eTLD+1, such as "google.com/".
   repeated UrlPattern allowed_pattern = 3;
 }

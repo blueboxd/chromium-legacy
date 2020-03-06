@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
 #include "components/services/storage/storage_service_impl.h"
+#include "content/child/child_process.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
 #include "media/media_buildflags.h"
@@ -146,7 +147,8 @@ auto RunDataDecoder(
 
 auto RunStorageService(
     mojo::PendingReceiver<storage::mojom::StorageService> receiver) {
-  return std::make_unique<storage::StorageServiceImpl>(std::move(receiver));
+  return std::make_unique<storage::StorageServiceImpl>(
+      std::move(receiver), ChildProcess::current()->io_task_runner());
 }
 
 auto RunTracing(

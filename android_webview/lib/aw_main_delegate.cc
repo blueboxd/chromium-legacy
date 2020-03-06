@@ -75,6 +75,7 @@ AwMainDelegate::AwMainDelegate() = default;
 AwMainDelegate::~AwMainDelegate() = default;
 
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
+  TRACE_EVENT0("startup", "AwMainDelegate::BasicStartupComplete");
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
 
   // WebView uses the Android system's scrollbars and overscroll glow.
@@ -247,6 +248,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 }
 
 void AwMainDelegate::PreSandboxStartup() {
+  TRACE_EVENT0("startup", "AwMainDelegate::PreSandboxStartup");
 #if defined(ARCH_CPU_ARM_FAMILY)
   // Create an instance of the CPU class to parse /proc/cpuinfo and cache
   // cpu_brand info.

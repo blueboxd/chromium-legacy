@@ -19,6 +19,7 @@
 #include "ash/home_screen/drag_window_from_shelf_controller_test_api.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
@@ -26,6 +27,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -37,6 +39,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/drag_handle.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
@@ -2833,6 +2836,69 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingHomeInSplitModeWithOverview) {
       InAppShelfGestures::kFlingUpToShowHomeScreen, 1);
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
                                      InAppShelfGestures::kSwipeUpToShow, 0);
+}
+
+// Tests that hotseat transition animation is not delayed (i.e. that it happens
+// as soon as shelf opaque background changes) when virtual keyboard is hidden,
+// and the user swipes from shelf to home.
+TEST_F(ShelfLayoutManagerWindowDraggingTest,
+       NoDelayedAnimatingBackgroundForTransitionFromVirtualKeyboardToHome) {
+  std::unique_ptr<aura::Window> window1 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window1.get());
+
+  std::unique_ptr<aura::Window> window2 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window2.get());
+
+  // Show virtual keyboard.
+  KeyboardController* const keyboard_controller =
+      Shell::Get()->keyboard_controller();
+  keyboard_controller->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kShelfEnabled);
+  keyboard_controller->ShowKeyboard();
+
+  // Verify the shelf state.
+  EXPECT_TRUE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetAnimatingBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()
+                   ->GetAnimatingBackground()
+                   ->GetAnimator()
+                   ->is_animating());
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Make animations not end immediately for the rest of the test (so the test
+  // can test whether the animating shelf background is animating).
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+
+  // Simulate virtual keyboard closing, and a swipe from shelf to home.
+  StartScroll(shelf_widget_bounds.bottom_right());
+  keyboard_controller->HideKeyboard(HideReason::kUser);
+
+  UpdateScroll(-shelf_size - 3 * hotseat_size - hotseat_padding_size);
+  EndScroll(
+      true /* is_fling */,
+      -(DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
+
+  // Verify that the shelf background start animating immediately.
+  EXPECT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_TRUE(GetShelfWidget()->GetAnimatingBackground()->visible());
+  ASSERT_TRUE(GetShelfWidget()
+                  ->GetAnimatingBackground()
+                  ->GetAnimator()
+                  ->is_animating());
+
+  keyboard_controller->ClearEnableFlag(
+      keyboard::KeyboardEnableFlag::kShelfEnabled);
 }
 
 // Test that if shelf if hidden or auto-hide hidden, drag window from shelf is a

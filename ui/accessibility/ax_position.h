@@ -409,6 +409,8 @@ class AXPosition {
 
   // Returns true if this is a valid position, e.g. the child_index_ or
   // text_offset_ is within a valid range.
+  // TODO (crbug.com/1059111): We need to properly handle the case when the
+  // position is in the ignored child of an empty object.
   bool IsValid() const {
     switch (kind_) {
       case AXPositionKind::NULL_POSITION:
@@ -996,6 +998,49 @@ class AXPosition {
           ancestor_position->CreateParentPosition(move_direction);
     }
     return ancestor_position;
+  }
+
+  // If the position is not valid, we return a new valid position that is
+  // closest to the original position if possible, or a null position otherwise.
+  // TODO(crbug.com/1059111): We need to properly handle the case when the
+  // position is in the ignored child of an empty object.
+  AXPositionInstance AsValidPosition() const {
+    AXPositionInstance position = Clone();
+    switch (position->kind_) {
+      case AXPositionKind::NULL_POSITION:
+        // We avoid cloning to ensure that all fields will be valid.
+        return CreateNullPosition();
+      case AXPositionKind::TREE_POSITION: {
+        if (!position->GetAnchor())
+          return CreateNullPosition();
+
+        if (position->child_index_ == BEFORE_TEXT)
+          return position;
+
+        if (position->child_index_ < 0)
+          position->child_index_ = 0;
+        else if (position->child_index_ > position->AnchorChildCount())
+          position->child_index_ = position->AnchorChildCount();
+        break;
+      }
+      case AXPositionKind::TEXT_POSITION: {
+        if (!position->GetAnchor())
+          return CreateNullPosition();
+
+        if (position->text_offset_ <= 0) {
+          // 0 is always a valid offset, so skip calling MaxTextOffset in that
+          // case.
+          position->text_offset_ = 0;
+        } else {
+          int max_text_offset = position->MaxTextOffset();
+          if (position->text_offset_ > max_text_offset)
+            position->text_offset_ = max_text_offset;
+        }
+        break;
+      }
+    }
+    DCHECK(position->IsValid());
+    return position;
   }
 
   AXPositionInstance AsTreePosition() const {

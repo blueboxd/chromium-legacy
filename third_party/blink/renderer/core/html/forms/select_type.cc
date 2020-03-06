@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -89,6 +90,7 @@ class MenuListSelectType final : public SelectType {
   void ShowPopup() override;
   void HidePopup() override;
   void PopupDidHide() override;
+  bool PopupIsVisible() const override;
   PopupMenu* PopupForTesting() const override;
 
   void DidMutateSubtree();
@@ -98,6 +100,7 @@ class MenuListSelectType final : public SelectType {
   bool ShouldOpenPopupForKeyPressEvent(const KeyboardEvent& event);
   // Returns true if this function handled the event.
   bool HandlePopupOpenKeyboardEvent();
+  void SetPopupIsVisible(bool popup_is_visible);
   void DispatchEventsIfSelectedOptionChanged();
   String UpdateTextStyleInternal();
   void DidUpdateActiveOption(HTMLOptionElement* option);
@@ -109,6 +112,7 @@ class MenuListSelectType final : public SelectType {
   scoped_refptr<const ComputedStyle> option_style_;
   int ax_menulist_last_active_index_ = -1;
   bool has_updated_menulist_active_option_ = false;
+  bool popup_is_visible_ = false;
 };
 
 void MenuListSelectType::Trace(Visitor* visitor) {
@@ -220,7 +224,7 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
                                source_capabilities));
     if (select_->GetLayoutObject() && !will_be_destroyed_ &&
         !select_->IsDisabledFormControl()) {
-      if (select_->PopupIsVisible()) {
+      if (PopupIsVisible()) {
         HidePopup();
       } else {
         // Save the selection so it can be compared to the new selection
@@ -283,7 +287,7 @@ bool MenuListSelectType::HandlePopupOpenKeyboardEvent() {
 }
 
 void MenuListSelectType::ShowPopup() {
-  if (select_->PopupIsVisible())
+  if (PopupIsVisible())
     return;
   Document& document = select_->GetDocument();
   if (document.GetPage()->GetChromeClient().HasOpenedPopup())
@@ -300,7 +304,7 @@ void MenuListSelectType::ShowPopup() {
   if (!popup_)
     return;
 
-  select_->SetPopupIsVisible(true);
+  SetPopupIsVisible(true);
   ObserveTreeMutation();
 
   popup_->Show();
@@ -314,11 +318,25 @@ void MenuListSelectType::HidePopup() {
 }
 
 void MenuListSelectType::PopupDidHide() {
-  select_->SetPopupIsVisible(false);
+  SetPopupIsVisible(false);
   UnobserveTreeMutation();
   if (AXObjectCache* cache = select_->GetDocument().ExistingAXObjectCache()) {
     if (auto* layout_object = select_->GetLayoutObject())
       cache->DidHideMenuListPopup(layout_object);
+  }
+}
+
+bool MenuListSelectType::PopupIsVisible() const {
+  return popup_is_visible_;
+}
+
+void MenuListSelectType::SetPopupIsVisible(bool popup_is_visible) {
+  popup_is_visible_ = popup_is_visible;
+  if (!::features::IsFormControlsRefreshEnabled())
+    return;
+  if (auto* layout_object = select_->GetLayoutObject()) {
+    // Invalidate paint to ensure that the focus ring is updated.
+    layout_object->SetShouldDoFullPaintInvalidation();
   }
 }
 
@@ -338,7 +356,7 @@ void MenuListSelectType::DidSelectOption(
 
   UpdateTextStyleAndContent();
   // PopupMenu::UpdateFromElement() posts an O(N) task.
-  if (select_->PopupIsVisible() && should_update_popup)
+  if (PopupIsVisible() && should_update_popup)
     popup_->UpdateFromElement(PopupMenu::kBySelectionChange);
 
   SelectType::DidSelectOption(element, flags, should_update_popup);
@@ -371,21 +389,21 @@ void MenuListSelectType::DidBlur() {
   // change events for list boxes whenever the selection change is actually
   // made.  This matches other browsers' behavior.
   DispatchEventsIfSelectedOptionChanged();
-  if (select_->PopupIsVisible())
+  if (PopupIsVisible())
     HidePopup();
   SelectType::DidBlur();
 }
 
 void MenuListSelectType::DidSetSuggestedOption(HTMLOptionElement*) {
   UpdateTextStyleAndContent();
-  if (select_->PopupIsVisible())
+  if (PopupIsVisible())
     popup_->UpdateFromElement(PopupMenu::kBySelectionChange);
 }
 
 void MenuListSelectType::DidDetachLayoutTree() {
   if (popup_)
     popup_->DisconnectClient();
-  select_->SetPopupIsVisible(false);
+  SetPopupIsVisible(false);
   popup_ = nullptr;
   UnobserveTreeMutation();
 }
@@ -394,7 +412,7 @@ void MenuListSelectType::DidRecalcStyle(const StyleRecalcChange change) {
   if (change.ReattachLayoutTree())
     return;
   UpdateTextStyle();
-  if (select_->PopupIsVisible())
+  if (PopupIsVisible())
     popup_->UpdateFromElement(PopupMenu::kByStyleChange);
 }
 
@@ -512,7 +530,7 @@ class PopupUpdater : public MutationObserver::Delegate {
                MutationObserver&) override {
     // We disconnect the MutationObserver when a popup is closed.  However
     // MutationObserver can call back after disconnection.
-    if (!select_->PopupIsVisible())
+    if (!select_type_->PopupIsVisible())
       return;
     for (const auto& record : records) {
       if (record->type() == "attributes") {
@@ -556,7 +574,7 @@ void MenuListSelectType::UnobserveTreeMutation() {
 }
 
 void MenuListSelectType::DidMutateSubtree() {
-  DCHECK(select_->PopupIsVisible());
+  DCHECK(PopupIsVisible());
   DCHECK(popup_);
   popup_->UpdateFromElement(PopupMenu::kByDOMChange);
 }
@@ -943,6 +961,10 @@ void SelectType::HidePopup() {
 
 void SelectType::PopupDidHide() {
   NOTREACHED();
+}
+
+bool SelectType::PopupIsVisible() const {
+  return false;
 }
 
 PopupMenu* SelectType::PopupForTesting() const {

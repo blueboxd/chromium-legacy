@@ -47,7 +47,6 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
 
   const GURL& url = urls_[next_index_].url;
 
-  // TODO(crbug.com/1050859): Add a metric to log is_rt_lookup_successful.
   if (!is_rt_lookup_successful) {
     PerformHashBasedCheck(url);
     return;

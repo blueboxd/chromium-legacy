@@ -15,7 +15,8 @@ class View;
 
 namespace ash {
 struct ScrollableShelfInfo;
-struct ScrollableShelfState;
+struct ShelfState;
+struct HotseatInfo;
 
 // All methods operate on the shelf on the primary display.
 class ASH_EXPORT ShelfTestApi {
@@ -41,8 +42,10 @@ class ASH_EXPORT ShelfTestApi {
   // after scrolling by the distance, is also calculated. It is useful if you
   // want to know the offset before the real scroll starts. Note that this
   // function does not change the scrollable shelf.
-  ScrollableShelfInfo GetScrollableShelfInfoForState(
-      const ScrollableShelfState& state);
+  ScrollableShelfInfo GetScrollableShelfInfoForState(const ShelfState& state);
+
+  // Returns ui information of hotseat.
+  HotseatInfo GetHotseatInfo();
 };
 
 }  // namespace ash

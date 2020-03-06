@@ -254,10 +254,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   void NotifyTremplinStarted(
       const vm_tools::cicerone::TremplinStartedSignal& signal);
 
-  // Fakes a sequence of progress callbacks.
-  void FakeImportCallbacks(
-      DBusMethodCallback<vm_tools::concierge::ImportDiskImageResponse>
-          callback);
+  // Notifies observers with a sequence of DiskImageStatus signals.
+  void NotifyDiskImageProgress();
   // Notifies observers with a DiskImageStatus signal.
   void OnDiskImageProgress(
       const vm_tools::concierge::DiskImageStatusResponse& signal);

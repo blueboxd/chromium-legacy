@@ -296,6 +296,30 @@ void DeviceCommandRunRoutineJob::RunImpl(CallbackWithResult succeeded_callback,
                   std::move(failed_callback)));
       break;
     }
+    case chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
+        kFloatingPointAccuracy: {
+      constexpr char kLengthSecondsFieldName[] = "lengthSeconds";
+      base::Optional<int> length_seconds =
+          params_dict_.FindIntKey(kLengthSecondsFieldName);
+      // The floating point accuracy routine expects one integer >= 0.
+      if (!length_seconds.has_value() || length_seconds.value() < 0) {
+        SYSLOG(ERROR)
+            << "Invalid parameters for Floating Point Accuracy routine.";
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(failed_callback),
+                                      std::make_unique<Payload>(
+                                          MakeInvalidParametersResponse())));
+        break;
+      }
+      chromeos::cros_healthd::ServiceConnection::GetInstance()
+          ->RunFloatingPointAccuracyRoutine(
+              base::TimeDelta::FromSeconds(length_seconds.value()),
+              base::BindOnce(
+                  &DeviceCommandRunRoutineJob::OnCrosHealthdResponseReceived,
+                  weak_ptr_factory_.GetWeakPtr(), std::move(succeeded_callback),
+                  std::move(failed_callback)));
+      break;
+    }
   }
 }
 

@@ -1024,7 +1024,6 @@ test("content_browsertests") {
     "../browser/sms/sms_browsertest.cc",
     "../browser/snapshot_browsertest.cc",
     "../browser/storage_partition_impl_browsertest.cc",
-    "../browser/storage_service_restart_browsertest.cc",
     "../browser/tracing/background_tracing_manager_browsertest.cc",
     "../browser/tracing/memory_instrumentation_browsertest.cc",
     "../browser/tracing/memory_tracing_browsertest.cc",
@@ -1377,6 +1376,8 @@ test("content_browsertests") {
       "../browser/serial/serial_browsertest.cc",
       "../browser/speech/speech_recognition_browsertest.cc",
       "../browser/speech/tts_ssml_browsertest.cc",
+      "../browser/storage_service_restart_browsertest.cc",
+      "../browser/storage_service_sandbox_browsertest.cc",
       "../browser/zoom_browsertest.cc",
     ]
     deps += [ "//content/browser/speech/proto" ]

@@ -66,6 +66,10 @@ class ServiceConnectionImpl : public ServiceConnection {
       const base::TimeDelta& exec_duration,
       mojom::CrosHealthdDiagnosticsService::RunCpuStressRoutineCallback
           callback) override;
+  void RunFloatingPointAccuracyRoutine(
+      const base::TimeDelta& exec_duration,
+      mojom::CrosHealthdDiagnosticsService::
+          RunFloatingPointAccuracyRoutineCallback callback) override;
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
@@ -189,6 +193,16 @@ void ServiceConnectionImpl::RunCpuStressRoutine(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindCrosHealthdDiagnosticsServiceIfNeeded();
   cros_healthd_diagnostics_service_->RunCpuStressRoutine(
+      exec_duration.InSeconds(), std::move(callback));
+}
+
+void ServiceConnectionImpl::RunFloatingPointAccuracyRoutine(
+    const base::TimeDelta& exec_duration,
+    mojom::CrosHealthdDiagnosticsService::
+        RunFloatingPointAccuracyRoutineCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunFloatingPointAccuracyRoutine(
       exec_duration.InSeconds(), std::move(callback));
 }
 

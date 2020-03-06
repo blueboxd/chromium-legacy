@@ -45,6 +45,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) OriginPolicyContents {
   OriginPolicyContents();
   ~OriginPolicyContents();
   OriginPolicyContents(
+      const std::vector<std::string>& ids,
       const base::Optional<std::string>& feature_policy,
       const std::vector<std::string>& content_security_policies,
       const std::vector<std::string>& content_security_policies_report_only,
@@ -55,6 +56,18 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) OriginPolicyContents {
   bool operator==(const OriginPolicyContents& other) const;
 
   OriginPolicyContentsPtr ClonePtr();
+
+  // The origin policy's IDs, which are compared with the requested ID values
+  // from the Origin-Policy HTTP header to determine whether this origin policy
+  // can apply or not. For more information see:
+  // - https://wicg.github.io/origin-policy/#origin-policy-ids
+  // - https://wicg.github.io/origin-policy/#manifest-ids
+  // - https://github.com/WICG/origin-policy/blob/master/version-negotiation.md
+  // - https://wicg.github.io/origin-policy/#examples
+  //
+  // By the time it is stored in this structure, the vector is guaranteed to be
+  // non-empty and to contain only valid origin policy IDs.
+  std::vector<std::string> ids;
 
   // The feature policy that is dictated by the origin policy, if any.
   // https://w3c.github.io/webappsec-feature-policy/

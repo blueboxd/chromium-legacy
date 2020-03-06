@@ -29,7 +29,7 @@ import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.blink.mojom.MhtmlLoadResult;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.profiles.Profile;

@@ -906,4 +906,89 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+TEST_F(DeviceCommandRunRoutineJobTest, RunFloatingPointAccuracyRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  params_dict.SetIntKey(kLengthSecondsFieldName,
+                        /*length_seconds=*/2342);
+  std::unique_ptr<RemoteCommandJob> job =
+      std::make_unique<DeviceCommandRunRoutineJob>();
+  InitializeJob(job.get(), kUniqueID, test_start_time_,
+                base::TimeDelta::FromSeconds(30),
+                /*terminate_upon_input=*/false,
+                chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
+                    kFloatingPointAccuracy,
+                std::move(params_dict));
+  base::RunLoop run_loop;
+  bool success =
+      job->Run(base::Time::Now(), base::TimeTicks::Now(),
+               base::BindLambdaForTesting([&]() {
+                 EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+                 std::unique_ptr<std::string> payload = job->GetResultPayload();
+                 EXPECT_TRUE(payload);
+                 EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+                 run_loop.Quit();
+               }));
+  EXPECT_TRUE(success);
+  run_loop.Run();
+}
+
+TEST_F(DeviceCommandRunRoutineJobTest,
+       RunFloatingPointAccuracyRoutineMissingLengthSeconds) {
+  // Test that leaving out the lengthSeconds parameter causes the routine to
+  // fail.
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  std::unique_ptr<RemoteCommandJob> job =
+      std::make_unique<DeviceCommandRunRoutineJob>();
+  InitializeJob(job.get(), kUniqueID, test_start_time_,
+                base::TimeDelta::FromSeconds(30),
+                /*terminate_upon_input=*/false,
+                chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
+                    kFloatingPointAccuracy,
+                std::move(params_dict));
+  base::RunLoop run_loop;
+  bool success =
+      job->Run(base::Time::Now(), base::TimeTicks::Now(),
+               base::BindLambdaForTesting([&]() {
+                 EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+                 std::unique_ptr<std::string> payload = job->GetResultPayload();
+                 EXPECT_TRUE(payload);
+                 EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+                 run_loop.Quit();
+               }));
+  EXPECT_TRUE(success);
+  run_loop.Run();
+}
+
+TEST_F(DeviceCommandRunRoutineJobTest,
+       RunFloatingPointAccuracyRoutineInvalidLengthSeconds) {
+  // Test that a negative lengthSeconds parameter causes the routine to fail.
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  params_dict.SetIntKey(kLengthSecondsFieldName,
+                        /*length_seconds=*/-1);
+  std::unique_ptr<RemoteCommandJob> job =
+      std::make_unique<DeviceCommandRunRoutineJob>();
+  InitializeJob(job.get(), kUniqueID, test_start_time_,
+                base::TimeDelta::FromSeconds(30),
+                /*terminate_upon_input=*/false,
+                chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
+                    kFloatingPointAccuracy,
+                std::move(params_dict));
+  base::RunLoop run_loop;
+  bool success =
+      job->Run(base::Time::Now(), base::TimeTicks::Now(),
+               base::BindLambdaForTesting([&]() {
+                 EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+                 std::unique_ptr<std::string> payload = job->GetResultPayload();
+                 EXPECT_TRUE(payload);
+                 EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+                 run_loop.Quit();
+               }));
+  EXPECT_TRUE(success);
+  run_loop.Run();
+}
+
 }  // namespace policy

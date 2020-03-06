@@ -21,7 +21,7 @@ struct Data {
   // identifiers.
   // Ideally IDs should persist across sessions, but this is not strictly
   // required now because data is not persisted across sessions.
-  mojo_base.mojom.String16 id;
+  string id;
 
   // Data item will be matched between its search tags and query term.
   array<mojo_base.mojom.String16> search_tags;
@@ -31,7 +31,7 @@ struct Data {
 // and its matching score.
 struct Result {
   // Id of the data.
-  mojo_base.mojom.String16 id;
+  string id;
   // Relevance score, in the range of [0,1].
   double score;
   // Matching ranges.

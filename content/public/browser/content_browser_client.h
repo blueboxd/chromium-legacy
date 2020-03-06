@@ -1657,6 +1657,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       int64_t recv_bytes,
       int64_t sent_bytes);
 
+  // Returns the path to a root directory to which sandboxed out-of-process
+  // Storage Service instances should be confined. By default this is empty,
+  // and the browser cannot create sandboxed Storage Service instances.
+  virtual base::FilePath GetSandboxedStorageServiceDataDirectory();
+
   // Asks the embedder for the PreviewsState which says which previews should
   // be enabled for the given navigation. The PreviewsState is a bitmask of
   // potentially several Previews optimizations. |initial_state| is used to

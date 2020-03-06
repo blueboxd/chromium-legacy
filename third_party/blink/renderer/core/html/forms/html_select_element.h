@@ -164,7 +164,7 @@ class CORE_EXPORT HTMLSelectElement final
   // Provisional selection is a selection made using arrow keys or type ahead.
   void ProvisionalSelectionChanged(unsigned);
   void PopupDidHide();
-  bool PopupIsVisible() const { return popup_is_visible_; }
+  bool PopupIsVisible() const;
   HTMLOptionElement* OptionToBeShown() const;
   // Style of the selected OPTION. This is nullable, and only for
   // the menulist mode.
@@ -255,7 +255,6 @@ class CORE_EXPORT HTMLSelectElement final
   void ParseMultipleAttribute(const AtomicString&);
   HTMLOptionElement* LastSelectedOption() const;
   void UpdateSelectedState(HTMLOptionElement*, bool multi, bool shift);
-  void SetPopupIsVisible(bool);
   void SetOptionsChangedOnLayoutObject();
   wtf_size_t SearchOptionsForValue(const String&,
                                    wtf_size_t list_index_start,
@@ -308,7 +307,6 @@ class CORE_EXPORT HTMLSelectElement final
 
   Member<SelectType> select_type_;
   int index_to_select_on_cancel_;
-  bool popup_is_visible_;
 
   friend class ListBoxSelectType;
   friend class MenuListSelectType;

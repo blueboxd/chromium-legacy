@@ -97,7 +97,7 @@ void IndexImpl::AddOrUpdate(std::vector<mojom::DataPtr> data,
   std::move(callback).Run();
 }
 
-void IndexImpl::Delete(const std::vector<base::string16>& ids,
+void IndexImpl::Delete(const std::vector<std::string>& ids,
                        DeleteCallback callback) {
   uint32_t num_deleted = 0u;
   for (const auto& id : ids) {

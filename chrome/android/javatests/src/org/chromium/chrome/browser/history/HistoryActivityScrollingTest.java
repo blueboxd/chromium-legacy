@@ -25,7 +25,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryTestUtils.TestObserver;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.FooterItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;

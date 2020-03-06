@@ -1186,6 +1186,17 @@ class AutotestPrivateGetScrollableShelfInfoForStateFunction
   ResponseAction Run() override;
 };
 
+class AutotestPrivateGetShelfUIInfoForStateFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateGetShelfUIInfoForStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getShelfUIInfoForState",
+                             AUTOTESTPRIVATE_GETSHELFUIINFOFORSTATE)
+
+ private:
+  ~AutotestPrivateGetShelfUIInfoForStateFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

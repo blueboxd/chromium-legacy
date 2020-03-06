@@ -948,6 +948,10 @@ void ContentBrowserClient::OnNetworkServiceDataUseUpdate(
     int64_t recv_bytes,
     int64_t sent_bytes) {}
 
+base::FilePath ContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
+  return base::FilePath();
+}
+
 content::PreviewsState ContentBrowserClient::DetermineAllowedPreviews(
     content::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle,

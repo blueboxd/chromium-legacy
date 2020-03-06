@@ -6913,6 +6913,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Has strong validators"/>
 </enum>
 
+<enum name="BooleanHasToken">
+  <int value="0" label="Lacks token"/>
+  <int value="1" label="Has token"/>
+</enum>
+
 <enum name="BooleanHasWithheldHosts">
   <int value="0" label="Does not have withheld hosts"/>
   <int value="1" label="Has withheld hosts"/>
@@ -22477,6 +22482,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1454" label="PASSWORDSPRIVATE_CHANGECOMPROMISEDCREDENTIAL"/>
   <int value="1455" label="PASSWORDSPRIVATE_REMOVECOMPROMISEDCREDENTIAL"/>
   <int value="1456" label="TERMINALPRIVATE_GETA11YSTATUS"/>
+  <int value="1457" label="AUTOTESTPRIVATE_GETSHELFUIINFOFORSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -39567,6 +39573,7 @@ from previous Chrome versions.
   <int value="747076955" label="MobileIdentityConsistency:enabled"/>
   <int value="747847237" label="PhysicalWeb:enabled"/>
   <int value="749312701" label="ChromeOSAccountManager:disabled"/>
+  <int value="749516419" label="DragToSnapInClamshellMode:disabled"/>
   <int value="752194066" label="enable-app-window-cycling"/>
   <int value="752939691" label="disable-tab-for-desktop-share"/>
   <int value="760542355" label="ServiceWorkerScriptFullCodeCache:enabled"/>
@@ -39871,6 +39878,7 @@ from previous Chrome versions.
       label="SignedExchangePrefetchCacheForNavigations:disabled"/>
   <int value="1148284632" label="NewTabPageUIMd:disabled"/>
   <int value="1149417604" label="StreamlinedUsbPrinterSetup:disabled"/>
+  <int value="1149731024" label="MultiDisplayOverviewAndSplitView:enabled"/>
   <int value="1149823105" label="enable-input-ime-api"/>
   <int value="1150622273" label="enable-apps-file-associations"/>
   <int value="1152491093" label="MediaSessionService:disabled"/>
@@ -40043,6 +40051,7 @@ from previous Chrome versions.
   <int value="1343713259" label="ArcPrintSpoolerExperiment:disabled"/>
   <int value="1344833841" label="ImeThread:enabled"/>
   <int value="1346994602" label="SyncPseudoUSSDictionary:enabled"/>
+  <int value="1350197823" label="DragToSnapInClamshellMode:enabled"/>
   <int value="1351344112" label="ContentIndexingDownloadHome:enabled"/>
   <int value="1351830811" label="do-not-ignore-autocomplete-off"/>
   <int value="1352447982" label="enable-lcd-text"/>
@@ -40139,6 +40148,7 @@ from previous Chrome versions.
   <int value="1454363479" label="disable-storage-manager"/>
   <int value="1454527518" label="ArcNativeBridgeExperiment:enabled"/>
   <int value="1455881930" label="V8VmFuture:enabled"/>
+  <int value="1458085218" label="MultiDisplayOverviewAndSplitView:disabled"/>
   <int value="1458255488" label="BlinkGenPropertyTrees:enabled"/>
   <int value="1458475849" label="D3D11VideoDecoder:disabled"/>
   <int value="1458583431" label="arc-use-auth-endpoint"/>

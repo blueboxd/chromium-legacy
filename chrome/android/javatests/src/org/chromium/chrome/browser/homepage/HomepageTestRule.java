@@ -4,12 +4,24 @@
 
 package org.chromium.chrome.browser.homepage;
 
+import android.support.test.InstrumentationRegistry;
+import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.policy.AbstractAppRestrictionsProvider;
+import org.chromium.policy.AppRestrictionsProvider;
+import org.chromium.policy.CombinedPolicyProvider;
+import org.chromium.policy.test.PolicyData;
+
+import java.util.Arrays;
 
 /**
  * Test rule for homepage related tests. It fetches the latest values from shared preference
@@ -23,6 +35,7 @@ public class HomepageTestRule implements TestRule {
     private String mCustomizedHomepage;
 
     private final SharedPreferencesManager mManager;
+    private @Nullable AppRestrictionsProvider mTestProvider;
 
     public HomepageTestRule() {
         mManager = SharedPreferencesManager.getInstance();
@@ -38,6 +51,8 @@ public class HomepageTestRule implements TestRule {
                     base.evaluate();
                 } finally {
                     restoreHomepageRelatedPreferenceAfterTest();
+                    // Reset preference if a test policy override is provided in test.
+                    if (mTestProvider != null) setHomepagePolicyForTest(null);
                 }
             }
         };
@@ -58,6 +73,33 @@ public class HomepageTestRule implements TestRule {
                 ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, mIsUsingDefaultHomepage);
         mManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_USE_CHROME_NTP, mIsUsingChromeNTP);
         mManager.writeString(ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, mCustomizedHomepage);
+    }
+
+    /**
+     * Setup or disable HomepageLocation policy for test.
+     * @param homepage String value of HomepageLocation. If the input string is empty, policy for
+     *         test will be disabled.
+     */
+    public void setHomepagePolicyForTest(String homepage) {
+        if (TextUtils.isEmpty(homepage)) {
+            AbstractAppRestrictionsProvider.setTestRestrictions(null);
+        } else {
+            final PolicyData[] policies = {
+                    new PolicyData.Str("HomepageLocation", homepage),
+            };
+            AbstractAppRestrictionsProvider.setTestRestrictions(
+                    PolicyData.asBundle(Arrays.asList(policies)));
+        }
+
+        if (mTestProvider == null) {
+            mTestProvider = new AppRestrictionsProvider(
+                    InstrumentationRegistry.getInstrumentation().getContext());
+            CombinedPolicyProvider.get().registerProvider(mTestProvider);
+        }
+        TestThreadUtils.runOnUiThreadBlocking(mTestProvider::refresh);
+
+        // To avoid race conditions
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     // Utility functions that help setting up homepage related shared preference.

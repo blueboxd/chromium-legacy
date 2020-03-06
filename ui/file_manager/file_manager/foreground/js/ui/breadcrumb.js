@@ -112,9 +112,9 @@ const breadCrumbTemplate = `
 `;
 
 /**
- * Class breadCrumb.
+ * Class BreadCrumb.
  */
-class breadCrumb extends HTMLElement {
+class BreadCrumb extends HTMLElement {
   constructor() {
     /**
      * Create element content.
@@ -344,4 +344,4 @@ class breadCrumb extends HTMLElement {
   }
 }
 
-customElements.define('bread-crumb', breadCrumb);
+customElements.define('bread-crumb', BreadCrumb);

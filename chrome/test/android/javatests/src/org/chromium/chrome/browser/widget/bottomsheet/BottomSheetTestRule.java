@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-import static org.chromium.chrome.browser.ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE;
+import static org.chromium.chrome.browser.flags.ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.UiDevice;

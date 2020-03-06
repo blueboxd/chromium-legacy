@@ -71,6 +71,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/embedder_support/switches.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
@@ -450,6 +451,35 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
   EXPECT_EQ(test_title, tab_title);
 }
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+// Check that the title is different when a page is opened in a captive portal
+// window.
+IN_PROC_BROWSER_TEST_F(BrowserTest, CaptivePortalWindowTitle) {
+  const GURL url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(kTitle2File));
+  NavigateParams captive_portal_params(browser(), url,
+                                       ui::PAGE_TRANSITION_TYPED);
+  captive_portal_params.disposition = WindowOpenDisposition::NEW_POPUP;
+  captive_portal_params.is_captive_portal_popup = true;
+  ui_test_utils::NavigateToURL(&captive_portal_params);
+  base::string16 captive_portal_window_title =
+      chrome::FindBrowserWithWebContents(
+          captive_portal_params.navigated_or_inserted_contents)
+          ->GetWindowTitleForCurrentTab(true /* include_app_name */);
+
+  NavigateParams normal_params(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  normal_params.disposition = WindowOpenDisposition::NEW_POPUP;
+  ui_test_utils::NavigateToURL(&normal_params);
+  base::string16 normal_window_title =
+      chrome::FindBrowserWithWebContents(
+          normal_params.navigated_or_inserted_contents)
+          ->GetWindowTitleForCurrentTab(true /* include_app_name */);
+
+  ASSERT_NE(captive_portal_window_title, normal_window_title);
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, NoJavaScriptDialogsActivateTab) {
   // Set up two tabs, with the tab at index 0 active.

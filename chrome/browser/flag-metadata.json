@@ -830,6 +830,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "drag-to-snap-in-clamshell-mode",
+    "owners": [ "amusbach@chromium.org", "xdai@chromium.org" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "draw-vertically-edge-to-edge",
     "owners": [ "chrome-android-app@chromium.org" ],
     "expiry_milestone": 88
@@ -2554,6 +2559,11 @@
     "name": "mouse-subframe-no-implicit-capture",
     "owners": [ "eirage", "nzolghadr", "input-dev" ],
     "expiry_milestone": 84
+  },
+  {
+    "name": "multi-display-overview-and-split-view",
+    "owners": [ "amusbach@chromium.org", "xdai@chromium.org" ],
+    "expiry_milestone": 86
   },
   {
     "name": "native-file-system-api",

@@ -15,19 +15,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -102,9 +97,6 @@ public class HomepageSettingsFragmentTest {
     @Rule
     public TestRule mFeatureProcessor = new Features.InstrumentationProcessor();
 
-    @Mock
-    public HomepagePolicyManager mMockPolicyManager;
-
     private ChromeSwitchPreference mSwitch;
     private RadioButtonGroupHomepagePreference mRadioGroupPreference;
     private TextMessagePreference mManagedText;
@@ -115,8 +107,6 @@ public class HomepageSettingsFragmentTest {
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
-
         RecordHistogram.setDisabledForTests(true);
     }
 
@@ -176,8 +166,7 @@ public class HomepageSettingsFragmentTest {
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisabledTest(message = "crbug.com/1051213")
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testStartUp_ChromeNTP_BottomToolbar() {
         mHomepageTestRule.useCustomizedHomepageForTest(TEST_URL_BAR);
         mHomepageTestRule.useChromeNTPForTest();
@@ -228,15 +217,10 @@ public class HomepageSettingsFragmentTest {
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @DisabledTest
     public void testStartUp_Policies_Customized() {
         // Set mock policies
-        Mockito.when(mMockPolicyManager.isHomepageLocationPolicyEnabled()).thenReturn(true);
-        Mockito.when(mMockPolicyManager.getHomepagePreference()).thenReturn(TEST_URL_BAR);
-
-        HomepagePolicyManager origInstance = HomepagePolicyManager.getInstance();
-        HomepagePolicyManager.setInstanceForTests(mMockPolicyManager);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
+        mHomepageTestRule.setHomepagePolicyForTest(TEST_URL_BAR);
 
         launchSettingsActivity();
 
@@ -261,22 +245,16 @@ public class HomepageSettingsFragmentTest {
                 mManagedText.isVisible());
 
         // Reset policy
-        HomepagePolicyManager.setInstanceForTests(origInstance);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
     }
 
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @DisabledTest
     public void testStartUp_Policies_NTP() {
         // Set mock policies
-        Mockito.when(mMockPolicyManager.isHomepageLocationPolicyEnabled()).thenReturn(true);
-        Mockito.when(mMockPolicyManager.getHomepagePreference()).thenReturn(CHROME_NTP);
-
-        HomepagePolicyManager origInstance = HomepagePolicyManager.getInstance();
-        HomepagePolicyManager.setInstanceForTests(mMockPolicyManager);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
+        mHomepageTestRule.setHomepagePolicyForTest(CHROME_NTP);
 
         launchSettingsActivity();
 
@@ -297,23 +275,17 @@ public class HomepageSettingsFragmentTest {
                 mManagedText.isVisible());
 
         // Reset policy and feature flags
-        HomepagePolicyManager.setInstanceForTests(origInstance);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
     }
 
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisabledTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testStartUp_Policies_Customized_BottomToolbar() {
         // Set mock policies
-        Mockito.when(mMockPolicyManager.isHomepageLocationPolicyEnabled()).thenReturn(true);
-        Mockito.when(mMockPolicyManager.getHomepagePreference()).thenReturn(TEST_URL_BAR);
-
-        HomepagePolicyManager origInstance = HomepagePolicyManager.getInstance();
-        HomepagePolicyManager.setInstanceForTests(mMockPolicyManager);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
+        mHomepageTestRule.setHomepagePolicyForTest(TEST_URL_BAR);
 
         CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, true);
         Assert.assertTrue("BottomToolbar should be enabled after setting up feature flag.",
@@ -340,7 +312,6 @@ public class HomepageSettingsFragmentTest {
                 "Managed text message preference should be disabled.", mManagedText.isEnabled());
 
         // Reset policy
-        HomepagePolicyManager.setInstanceForTests(origInstance);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, null);
     }

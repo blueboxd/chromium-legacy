@@ -4,21 +4,75 @@
 
 #include "components/services/storage/storage_service_impl.h"
 
+#include "base/bind.h"
+#include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/services/storage/dom_storage/storage_area_impl.h"
+#include "components/services/storage/filesystem_proxy_factory.h"
 #include "components/services/storage/partition_impl.h"
+#include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
 #include "components/services/storage/test_api_stubs.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 namespace storage {
 
+namespace {
+
+// We don't use out-of-process Storage Service on Android, so we can avoid
+// pulling all the related code (including Directory mojom) into the build.
+#if !defined(OS_ANDROID)
+using DirectoryBinder =
+    base::RepeatingCallback<void(mojo::PendingReceiver<mojom::Directory>)>;
+std::unique_ptr<FilesystemProxy> CreateRestrictedFilesystemProxy(
+    const base::FilePath& directory_path,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+    DirectoryBinder binder,
+    scoped_refptr<base::SequencedTaskRunner> binder_task_runner) {
+  mojo::PendingRemote<mojom::Directory> directory;
+  binder_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(binder, directory.InitWithNewPipeAndPassReceiver()));
+  return std::make_unique<FilesystemProxy>(FilesystemProxy::RESTRICTED,
+                                           directory_path, std::move(directory),
+                                           std::move(io_task_runner));
+}
+#endif
+
+}  // namespace
+
 StorageServiceImpl::StorageServiceImpl(
-    mojo::PendingReceiver<mojom::StorageService> receiver)
-    : receiver_(this, std::move(receiver)) {}
+    mojo::PendingReceiver<mojom::StorageService> receiver,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
+    : receiver_(this, std::move(receiver)),
+      io_task_runner_(std::move(io_task_runner)) {}
 
 StorageServiceImpl::~StorageServiceImpl() = default;
 
 void StorageServiceImpl::EnableAggressiveDomStorageFlushing() {
   StorageAreaImpl::EnableAggressiveCommitDelay();
 }
+
+#if !defined(OS_ANDROID)
+void StorageServiceImpl::SetDataDirectory(
+    const base::FilePath& path,
+    mojo::PendingRemote<mojom::Directory> directory) {
+  remote_data_directory_path_ = path;
+  remote_data_directory_.Bind(std::move(directory));
+
+  // We can assume we must be sandboxed if we're getting a remote data
+  // directory handle. Override the default FilesystemProxy factory to produce
+  // instances restricted to operations within |path|, which can operate
+  // from within a sandbox.
+  SetFilesystemProxyFactory(base::BindRepeating(
+      &CreateRestrictedFilesystemProxy, remote_data_directory_path_,
+      io_task_runner_,
+      base::BindRepeating(&StorageServiceImpl::BindDataDirectoryReceiver,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::SequencedTaskRunnerHandle::Get()));
+}
+#endif  // !defined(OS_ANDROID)
 
 void StorageServiceImpl::BindPartition(
     const base::Optional<base::FilePath>& path,
@@ -58,5 +112,13 @@ void StorageServiceImpl::RemovePartition(PartitionImpl* partition) {
   if (iter != partitions_.end())
     partitions_.erase(iter);
 }
+
+#if !defined(OS_ANDROID)
+void StorageServiceImpl::BindDataDirectoryReceiver(
+    mojo::PendingReceiver<mojom::Directory> receiver) {
+  DCHECK(remote_data_directory_.is_bound());
+  remote_data_directory_->Clone(std::move(receiver));
+}
+#endif
 
 }  // namespace storage

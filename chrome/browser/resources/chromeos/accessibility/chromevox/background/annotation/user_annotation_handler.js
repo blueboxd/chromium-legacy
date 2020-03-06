@@ -95,7 +95,8 @@ UserAnnotationHandler = class {
    */
   static getAnnotationForNode(node) {
     const url = node.root.docUrl || '';
-    if (!UserAnnotationHandler.instance.enabled || !url) {
+    if (!UserAnnotationHandler.instance ||
+        !UserAnnotationHandler.instance.enabled || !url) {
       return null;
     }
 

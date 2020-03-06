@@ -25,7 +25,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.settings.website.ContentSettingValues;
 import org.chromium.chrome.browser.settings.website.PermissionInfo;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;

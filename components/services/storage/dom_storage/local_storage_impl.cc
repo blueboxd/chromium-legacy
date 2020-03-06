@@ -462,7 +462,8 @@ LocalStorageImpl::LocalStorageImpl(
     : directory_(storage_root.empty() ? storage_root
                                       : storage_root.Append(kLocalStoragePath)),
       leveldb_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       memory_dump_id_(base::StringPrintf("LocalStorage/0x%" PRIXPTR,
                                          reinterpret_cast<uintptr_t>(this))),
       legacy_task_runner_(std::move(legacy_task_runner)),

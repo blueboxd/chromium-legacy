@@ -88,6 +88,9 @@ interface FileLock {
 // filesystem, and all StrictRelatvePath references must be interpreted as
 // relative to that directory.
 interface Directory {
+  // Binds a new Directory receiver scoped to the same root as this Directory.
+  Clone(pending_receiver<Directory> receiver);
+
   // Indicates whether |path| exists.
   [Sync]
   PathExists(StrictRelativePath path) => (bool exists);

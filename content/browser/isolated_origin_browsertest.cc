@@ -191,7 +191,7 @@ class OriginIsolationOptInTest : public IsolatedOriginTestBase {
 // In this test the sub-origin is isolated because the origin policy requests
 // "isolation". It will have a different site instance than the main frame.
 IN_PROC_BROWSER_TEST_F(OriginIsolationOptInTest, SimpleSubOriginIsolationTest) {
-  SetOriginPolicyManifest(R"({ "isolation": true })");
+  SetOriginPolicyManifest(R"({ "ids": ["my-policy"], "isolation": true })");
   // Start off with an a(a) page, then navigate the subframe to an isolated sub
   // origin.
   GURL test_url(https_server()->GetURL("foo.com",
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInTest, SimpleSubOriginIsolationTest) {
 // request "isolation". It will have the same site instance as the main frame.
 IN_PROC_BROWSER_TEST_F(OriginIsolationOptInTest,
                        SimpleSubOriginNonIsolationTest) {
-  SetOriginPolicyManifest(R"({ })");
+  SetOriginPolicyManifest(R"({ "ids": ["my-policy"] })");
   // Start off with an a(a) page, then navigate the subframe to an isolated sub
   // origin.
   GURL test_url(https_server()->GetURL("foo.com",
@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInTest,
 // This test verifies that renderer-initiated navigations to/from isolated
 // sub-origins works as expected.
 IN_PROC_BROWSER_TEST_F(OriginIsolationOptInTest, RendererInitiatedNavigations) {
-  SetOriginPolicyManifest(R"({ "isolation": true })");
+  SetOriginPolicyManifest(R"({ "ids": ["my-policy"], "isolation": true })");
   GURL test_url(https_server()->GetURL("foo.com",
                                        "/cross_site_iframe_factory.html?"
                                        "foo.com(foo.com)"));
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInTest, RendererInitiatedNavigations) {
 // Note: this test is essentially identical to
 // IsolatedOriginTest.MainFrameNavigation.
 IN_PROC_BROWSER_TEST_F(OriginIsolationOptInTest, MainFrameNavigation) {
-  SetOriginPolicyManifest(R"({ "isolation": true })");
+  SetOriginPolicyManifest(R"({ "ids": ["my-policy"], "isolation": true })");
   GURL unisolated_url(https_server()->GetURL("www.foo.com", "/title1.html"));
   GURL isolated_url(https_server()->GetURL("isolated.foo.com", "/isolate_me"));
 
@@ -361,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInTest, MainFrameNavigation) {
 // if a new policy is received that removes the opt-in request.
 IN_PROC_BROWSER_TEST_F(OriginIsolationOptInTest,
                        OriginIsolationStateRetainedForBrowsingInstance) {
-  SetOriginPolicyManifest(R"({ "isolation": true })");
+  SetOriginPolicyManifest(R"({ "ids": ["my-policy"], "isolation": true })");
   // Start off with an a(a,a) page, then navigate the subframe to an isolated
   // sub origin.
   GURL test_url(https_server()->GetURL("foo.com",
@@ -406,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInTest,
 IN_PROC_BROWSER_TEST_F(
     OriginIsolationOptInTest,
     DISABLED_OriginNonIsolationStateRetainedForBrowsingInstance) {
-  SetOriginPolicyManifest(R"({ })");
+  SetOriginPolicyManifest(R"({ "ids": ["my-policy"] })");
   // Start off with an a(a,a) page, then navigate the subframe to an isolated
   // sub origin.
   GURL test_url(https_server()->GetURL("foo.com",
@@ -427,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Change OriginPolicy manifest to start isolating the sub-origin. It should
   // still be isolated, to remain consistent with the other frame.
-  SetOriginPolicyManifest(R"({ "isolation": true })");
+  SetOriginPolicyManifest(R"({ "ids": ["my-policy"], "isolation": true })");
   NavigateFrameToURL(child_frame_node1, isolated_sub_origin);
   EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
             child_frame_node1->current_frame_host()->GetSiteInstance());
@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(
 // site-keyed SiteInstance corresponding to the base-origin, and not the
 // origin-keyed SiteInstance the base origin is assigned to.
 IN_PROC_BROWSER_TEST_F(OriginIsolationOptInTest, IsolatedBaseOrigin) {
-  SetOriginPolicyManifest(R"({ "isolation": true })");
+  SetOriginPolicyManifest(R"({ "ids": ["my-policy"], "isolation": true })");
   // Start off with an isolated base-origin in an a(a) configuration, then
   // navigate the subframe to a sub-origin no requesting isolation.
   GURL test_url(https_server()->GetURL(

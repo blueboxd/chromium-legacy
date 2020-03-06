@@ -27,6 +27,7 @@
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/layers/video_layer.h"
@@ -40,6 +41,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_url_demuxer.h"
+#include "media/base/memory_dump_provider_proxy.h"
 #include "media/base/text_renderer.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
@@ -264,6 +266,24 @@ std::string SanitizeUserStringProperty(blink::WebString value) {
   return base::IsStringUTF8(converted) ? converted : "[invalid property]";
 }
 
+void CreateAllocation(base::trace_event::ProcessMemoryDump* pmd,
+                      int32_t id,
+                      const char* name,
+                      int64_t bytes) {
+  if (bytes <= 0)
+    return;
+  auto full_name =
+      base::StringPrintf("media/webmediaplayer/player_%d/%s", id, name);
+  auto* dump = pmd->CreateAllocatorDump(full_name);
+
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes, bytes);
+
+  auto* std_allocator = base::trace_event::MemoryDumpManager::GetInstance()
+                            ->system_allocator_pool_name();
+  pmd->AddSuballocation(dump->guid(), std_allocator);
+}
+
 }  // namespace
 
 class BufferedDataSourceHostImpl;
@@ -392,6 +412,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   memory_usage_reporting_timer_.SetTaskRunner(
       frame_->GetTaskRunner(blink::TaskType::kInternalMedia));
 
+  main_thread_mem_dumper_ = std::make_unique<MemoryDumpProviderProxy>(
+      "WebMediaPlayer_MainThread", main_task_runner_,
+      base::BindRepeating(&WebMediaPlayerImpl::OnMainThreadMemoryDump,
+                          weak_this_, media_log_->id()));
+
 #if defined(OS_ANDROID)
   renderer_factory_selector_->SetRemotePlayStateChangeCB(
       BindToCurrentLoop(base::BindRepeating(
@@ -417,6 +442,11 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
 
   // Finalize any watch time metrics before destroying the pipeline.
   watch_time_reporter_.reset();
+
+  // Unregister dump providers on their corresponding threads.
+  media_task_runner_->DeleteSoon(FROM_HERE,
+                                 std::move(media_thread_mem_dumper_));
+  main_thread_mem_dumper_.reset();
 
   // The underlying Pipeline must be stopped before it is destroyed.
   //
@@ -1777,6 +1807,8 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
 
     pipeline_controller_->Stop();
     SetMemoryReportingState(false);
+    media_task_runner_->DeleteSoon(FROM_HERE,
+                                   std::move(media_thread_mem_dumper_));
 
     // Trampoline through the media task runner to destruct the demuxer and
     // data source now that we're switching to HLS playback.
@@ -2714,11 +2746,11 @@ void WebMediaPlayerImpl::StartPipeline() {
     // reporter.
     video_decode_stats_reporter_.reset();
 
-    demuxer_ = std::make_unique<MediaUrlDemuxer>(
+    SetDemuxer(std::make_unique<MediaUrlDemuxer>(
         media_task_runner_, loaded_url_,
         frame_->GetDocument().SiteForCookies().RepresentativeUrl(),
         frame_->GetDocument().TopFrameOrigin(),
-        allow_media_player_renderer_credentials_, demuxer_found_hls_);
+        allow_media_player_renderer_credentials_, demuxer_found_hls_));
     pipeline_controller_->Start(Pipeline::StartType::kNormal, demuxer_.get(),
                                 this, false, false);
     return;
@@ -2735,9 +2767,9 @@ void WebMediaPlayerImpl::StartPipeline() {
         BindToCurrentLoop(base::BindRepeating(
             &WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated, weak_this_));
 
-    demuxer_ = std::make_unique<FFmpegDemuxer>(
+    SetDemuxer(std::make_unique<FFmpegDemuxer>(
         media_task_runner_, data_source_.get(), encrypted_media_init_data_cb,
-        media_tracks_updated_cb, media_log_.get(), IsLocalFile(loaded_url_));
+        media_tracks_updated_cb, media_log_.get(), IsLocalFile(loaded_url_)));
 #else
     OnError(PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
@@ -2752,7 +2784,7 @@ void WebMediaPlayerImpl::StartPipeline() {
                          BindToCurrentLoop(base::Bind(
                              &WebMediaPlayerImpl::OnProgress, weak_this_)),
                          encrypted_media_init_data_cb, media_log_.get());
-    demuxer_.reset(chunk_demuxer_);
+    SetDemuxer(std::unique_ptr<Demuxer>(chunk_demuxer_));
 
     if (base::FeatureList::IsEnabled(kMemoryPressureBasedSourceBufferGC)) {
       // base::Unretained is safe because |this| owns memory_pressure_listener_.
@@ -3104,6 +3136,23 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
   return result;
 }
 
+void WebMediaPlayerImpl::SetDemuxer(std::unique_ptr<Demuxer> demuxer) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(!demuxer_);
+  DCHECK(!media_thread_mem_dumper_);
+  DCHECK(demuxer);
+
+  demuxer_ = std::move(demuxer);
+
+  // base::Unretained() is safe here. |demuxer_| is destroyed on the main
+  // thread, but before doing it ~WebMediaPlayerImpl() posts a media thread task
+  // that deletes media_thread_mem_dumper_ and  waits for it to finish.
+  media_thread_mem_dumper_ = std::make_unique<MemoryDumpProviderProxy>(
+      "WebMediaPlayer_MediaThread", media_task_runner_,
+      base::BindRepeating(&WebMediaPlayerImpl::OnMediaThreadMemoryDump,
+                          media_log_->id(), base::Unretained(demuxer_.get())));
+}
+
 void WebMediaPlayerImpl::ReportMemoryUsage() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -3180,6 +3229,38 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
     UMA_HISTOGRAM_MEMORY_KB("Media.WebMediaPlayerImpl.Memory.Demuxer",
                             demuxer_memory_usage / 1024);
   }
+}
+
+void WebMediaPlayerImpl::OnMainThreadMemoryDump(
+    int32_t id,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  const PipelineStatistics stats = GetPipelineStatistics();
+
+  bool suspended = pipeline_controller_->IsPipelineSuspended();
+  auto parent_dump_name =
+      base::StringPrintf("media/webmediaplayer/player_%d", id);
+  auto player_state =
+      base::StringPrintf("Paused: %d Ended: %d ReadyState: %d Suspended: %d",
+                         paused_, ended_, GetReadyState(), suspended);
+  auto* parent_dump = pmd->CreateAllocatorDump(parent_dump_name);
+  parent_dump->AddString("player_state", "", player_state);
+
+  CreateAllocation(pmd, id, "audio", stats.audio_memory_usage);
+  CreateAllocation(pmd, id, "video", stats.video_memory_usage);
+
+  if (data_source_)
+    CreateAllocation(pmd, id, "data_source", data_source_->GetMemoryUsage());
+}
+
+// static
+void WebMediaPlayerImpl::OnMediaThreadMemoryDump(
+    int32_t id,
+    Demuxer* demuxer,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  if (!demuxer)
+    return;
+
+  CreateAllocation(pmd, id, "demuxer", demuxer->GetMemoryUsage());
 }
 
 void WebMediaPlayerImpl::ScheduleIdlePauseTimer() {

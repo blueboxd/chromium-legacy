@@ -57,7 +57,7 @@ bool VulkanInstance::Initialize(
   if (!vulkan_function_pointers->BindUnassociatedFunctionPointers())
     return false;
 
-  if (vulkan_function_pointers->HasEnumerateInstanceVersion())
+  if (vkEnumerateInstanceVersion)
     vkEnumerateInstanceVersion(&vulkan_info_.api_version);
 
 #if defined(OS_ANDROID)
@@ -329,10 +329,10 @@ void VulkanInstance::Destroy() {
   }
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
-  if (vulkan_function_pointers->vulkan_loader_library())
-    base::UnloadNativeLibrary(
-        vulkan_function_pointers->vulkan_loader_library());
-  vulkan_function_pointers->set_vulkan_loader_library(nullptr);
+  if (vulkan_function_pointers->vulkan_loader_library) {
+    base::UnloadNativeLibrary(vulkan_function_pointers->vulkan_loader_library);
+    vulkan_function_pointers->vulkan_loader_library = nullptr;
+  }
 }
 
 }  // namespace gpu

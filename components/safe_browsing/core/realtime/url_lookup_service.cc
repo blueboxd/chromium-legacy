@@ -102,7 +102,7 @@ void RealTimeUrlLookupService::StartLookup(
         base::BindOnce(&RealTimeUrlLookupService::OnGetAccessToken,
                        weak_factory_.GetWeakPtr(), url,
                        std::move(request_callback),
-                       std::move(response_callback)));
+                       std::move(response_callback), base::TimeTicks::Now()));
   } else {
     std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
     SendRequest(url, /* access_token_info */ base::nullopt, std::move(request),
@@ -114,8 +114,13 @@ void RealTimeUrlLookupService::OnGetAccessToken(
     const GURL& url,
     RTLookupRequestCallback request_callback,
     RTLookupResponseCallback response_callback,
+    base::TimeTicks get_token_start_time,
     base::Optional<signin::AccessTokenInfo> access_token_info) {
   std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
+  base::UmaHistogramTimes("SafeBrowsing.RT.GetToken.Time",
+                          base::TimeTicks::Now() - get_token_start_time);
+  base::UmaHistogramBoolean("SafeBrowsing.RT.HasTokenFromFetcher",
+                            access_token_info.has_value());
   SendRequest(url, access_token_info, std::move(request),
               std::move(request_callback), std::move(response_callback));
 }
@@ -173,6 +178,8 @@ void RealTimeUrlLookupService::SendRequest(
         net::HttpRequestHeaders::kAuthorization,
         base::StrCat({kAuthHeaderBearer, access_token_info.value().token}));
   }
+  base::UmaHistogramBoolean("SafeBrowsing.RT.HasTokenInRequest",
+                            access_token_info.has_value());
 
   std::unique_ptr<network::SimpleURLLoader> owned_loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
@@ -267,6 +274,8 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
   bool is_rt_lookup_successful = (net_error == net::OK) &&
                                  (response_code == net::HTTP_OK) &&
                                  response->ParseFromString(*response_body);
+  base::UmaHistogramBoolean("SafeBrowsing.RT.IsLookupSuccessful",
+                            is_rt_lookup_successful);
   is_rt_lookup_successful ? HandleLookupSuccess() : HandleLookupError();
 
   MayBeCacheRealTimeUrlVerdict(url, *response);

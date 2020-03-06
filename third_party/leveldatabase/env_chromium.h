@@ -35,6 +35,10 @@ class ProcessMemoryDump;
 }  // namespace trace_event
 }  // namespace base
 
+namespace storage {
+class FilesystemProxy;
+}
+
 namespace leveldb_env {
 
 // These entries map to values in tools/metrics/histograms/histograms.xml. New
@@ -157,11 +161,16 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
                                    public UMALogger,
                                    public RetrierProvider {
  public:
+  using ScheduleFunc = void(void*);
+
+  // Constructs a ChromiumEnv instance with an unrestricted FilesystemProxy
+  // instance that performs direct filesystem access.
   ChromiumEnv();
 
-  typedef void(ScheduleFunc)(void*);
+  // Constructs a ChromiumEnv instance with a custom FilesystemProxy instance.
+  explicit ChromiumEnv(std::unique_ptr<storage::FilesystemProxy> filesystem);
 
-  virtual ~ChromiumEnv();
+  ~ChromiumEnv() override;
 
   bool FileExists(const std::string& fname) override;
   leveldb::Status GetChildren(const std::string& dir,
@@ -195,7 +204,13 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
   void SetReadOnlyFileLimitForTesting(int max_open_files);
 
  protected:
+  // Constructs a ChromiumEnv instance with a local unrestricted FilesystemProxy
+  // instance that performs direct filesystem access.
   explicit ChromiumEnv(const std::string& name);
+
+  // Constructs a ChromiumEnv instance with a custom FilesystemProxy instance.
+  ChromiumEnv(const std::string& name,
+              std::unique_ptr<storage::FilesystemProxy> filesystem);
 
   static const char* FileErrorString(base::File::Error error);
 
@@ -206,23 +221,6 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
   void RecordBytesWritten(int amount) const override;
   base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
   void RemoveBackupFiles(const base::FilePath& dir);
-
-  // File locks may not be exclusive within a process (e.g. on POSIX). Track
-  // locks held by the ChromiumEnv to prevent access within the process.
-  class LockTable {
-   public:
-    bool Insert(const std::string& fname) {
-      leveldb::MutexLock l(&mu_);
-      return locked_files_.insert(fname).second;
-    }
-    bool Remove(const std::string& fname) {
-      leveldb::MutexLock l(&mu_);
-      return locked_files_.erase(fname) == 1;
-    }
-   private:
-    leveldb::port::Mutex mu_;
-    std::set<std::string> locked_files_;
-  };
 
   const int kMaxRetryTimeMillis;
   // BGThread() is the body of the background thread
@@ -238,6 +236,8 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
   base::HistogramBase* GetRetryTimeHistogram(MethodID method) const override;
   base::HistogramBase* GetRecoveredFromErrorHistogram(
       MethodID method) const override;
+
+  const std::unique_ptr<storage::FilesystemProxy> filesystem_;
 
   base::FilePath test_directory_;
 
@@ -255,7 +255,6 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
   };
   using BGQueue = base::circular_deque<BGItem>;
   BGQueue queue_;
-  LockTable locks_;
   std::unique_ptr<leveldb::Cache> file_cache_;
 };
 

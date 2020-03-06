@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "chrome/browser/reputation/safety_tip_test_utils.h"
+#include "chrome/browser/reputation/safety_tips_config.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/security_state/core/security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"

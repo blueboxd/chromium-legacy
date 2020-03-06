@@ -89,6 +89,17 @@ CommandStore.commandsForCategory = function(category) {
   return ret;
 };
 
+/**
+ * @param {string} command The command to query.
+ * @return {boolean} Whether or not this command is disallowed in the OOBE.
+ */
+CommandStore.disallowOOBE = function(command) {
+  if (!CommandStore.CMD_WHITELIST[command]) {
+    return false;
+  }
+  return !!CommandStore.CMD_WHITELIST[command].disallowOOBE;
+};
+
 
 /**
  * List of commands and their properties
@@ -102,7 +113,8 @@ CommandStore.commandsForCategory = function(category) {
  *                nodeList: (undefined|string),
  *                skipInput: (undefined|boolean),
  *                allowEvents: (undefined|boolean),
- *                disallowContinuation: (undefined|boolean)}>}
+ *                disallowContinuation: (undefined|boolean),
+ *                disallowOOBE: (undefined|boolean)}>}
  *  forward: Whether this command points forward.
  *  backward: Whether this command points backward. If neither forward or
  *            backward are specified, it stays facing in the current direction.

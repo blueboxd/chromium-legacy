@@ -113,9 +113,12 @@ namespace declarativeNetRequest {
      URLTransform? transform;
      // The redirect url. Redirects to JavaScript urls are not allowed.
      DOMString? url;
-     // TODO(crbug.com/974391): Add documentation once the implementation is
-     // complete.
-     [nodoc]
+
+     // Substitution pattern for rules which specify a <code>regexFilter</code>.
+     // The first match of <code>regexFilter</code> within the url will be
+     // replaced with this pattern. Within <code>regexSubstitution</code>,
+     // backslash-escaped digits (\1 to \9) can be used to insert the
+     // corresponding capture groups. \0 refers to the entire matching text.
      DOMString? regexSubstitution;
   };
 
@@ -144,6 +147,9 @@ namespace declarativeNetRequest {
     // A pattern beginning with <code>||*</code> is not allowed. Use
     // <code>*</code> instead.
     //
+    // Note: Only one of <code>urlFilter</code> or <code>regexFilter</code> can
+    // be specified.
+    //
     // Note: The <code>urlFilter</code> must be composed of only ASCII
     // characters. This is matched against a url where the host is encoded in
     // the punycode format (in case of internationalized domains) and any other
@@ -153,12 +159,20 @@ namespace declarativeNetRequest {
     // http://abc.xn--p1ai/?q=%D1%84.
     DOMString? urlFilter;
 
-    // TODO(crbug.com/974391): Add documentation once the implementation is
-    // complete.
-    [nodoc]
+    // Regular expression to match against the network request url. This follows
+    // the <a href = "https://github.com/google/re2/wiki/Syntax">RE2 syntax</a>.
+    //
+    // Note: Only one of <code>urlFilter</code> or <code>regexFilter</code> can
+    // be specified.
+    //
+    // Note: The <code>regexFilter</code> must be composed of only ASCII
+    // characters. This is matched against a url where the host is encoded in
+    // the punycode format (in case of internationalized domains) and any other
+    // non-ascii characters are url encoded in utf-8.
     DOMString? regexFilter;
 
-    // Whether the <code>urlFilter</code> is case sensitive. Default is true.
+    // Whether the <code>urlFilter</code> or <code>regexFilter</code>
+    // (whichever is specified) is case sensitive. Default is true.
     boolean? isUrlFilterCaseSensitive;
 
     // The rule will only match network requests originating from the list of

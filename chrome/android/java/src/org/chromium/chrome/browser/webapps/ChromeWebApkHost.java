@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import static org.chromium.chrome.browser.ChromeSwitches.SKIP_WEBAPK_VERIFICATION;
+import static org.chromium.chrome.browser.flags.ChromeSwitches.SKIP_WEBAPK_VERIFICATION;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;

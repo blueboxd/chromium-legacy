@@ -467,7 +467,6 @@ jumbo_source_set("unit_tests") {
     "//media:test_support",
     "//net:quic_test_tools",
     "//services/device/public/cpp:test_support",
-    "//services/viz/public/mojom:mojom_blink",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

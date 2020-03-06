@@ -210,6 +210,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // view is not considered active.
   void SetMainFrameRoutingId(int routing_id);
 
+  // TODO(https://crbug.com/1006814): Delete this.
+  // Do not use this for anything except debugging.
+  int GetMainFrameRoutingIdForCrbug1006814();
+
   // Called when the RenderFrameHostImpls/RenderFrameProxyHosts that own this
   // RenderViewHost enter the BackForwardCache.
   void EnterBackForwardCache();

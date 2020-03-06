@@ -26,6 +26,28 @@ parentMessagePipe.registerHandler('file', (message) => {
 })
 
 /**
+ * A delegate which exposes privileged WebUI functionality to the media
+ * app.
+ * @implements mediaApp.ClientApiDelegate
+ */
+class Delegate {
+  /** @override */
+  async openFeedbackDialog() {
+    let response = await parentMessagePipe.sendMessage('openFeedbackDialog');
+    return /** @type {?string} */ (response['errorMessage']);
+  }
+};
+
+/**
+ * Returns the media app if it can find it in the DOM.
+ * @return {?mediaApp.ClientApi}
+ */
+function getApp() {
+  return /** @type {?mediaApp.ClientApi} */ (
+      document.querySelector('backlight-app'));
+}
+
+/**
  * Loads files associated with a message received from the host.
  * @param {!File} file
  */
@@ -37,14 +59,49 @@ async function loadFile(file) {
     name: file.name,
   });
 
-  const app = /** @type {?mediaApp.ClientApi} */ (
-      document.querySelector('backlight-app'));
+  const app = getApp();
   if (app) {
     await app.loadFiles(fileList);
   } else {
     window.customLaunchData = {files: fileList};
   }
 }
+
+/**
+ * Runs any initialization code on the media app once it is in the dom.
+ * @param {!mediaApp.ClientApi} app
+ */
+function initializeApp(app) {
+  app.setDelegate(new Delegate());
+}
+
+/**
+ * Called when a mutation occurs on document.body to check if the media app is
+ * available.
+ * @param {!Array<!MutationRecord>} mutationsList
+ * @param {!MutationObserver} observer
+ */
+function mutationCallback(mutationsList, observer) {
+  const app = getApp();
+  if (!app) {
+    return;
+  }
+  // The media app now exists so we can initialize it.
+  initializeApp(app);
+  observer.disconnect();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const app = getApp();
+  if (app) {
+    initializeApp(app);
+    return;
+  }
+  // If translations need to be fetched, the app element may not be added yet.
+  // In that case, observe <body> until it is.
+  const observer = new MutationObserver(mutationCallback);
+  observer.observe(document.body, {childList: true});
+});
 
 // Attempting to execute chooseFileSystemEntries is guaranteed to result in a
 // SecurityError due to the fact that we are running in a unprivileged iframe.

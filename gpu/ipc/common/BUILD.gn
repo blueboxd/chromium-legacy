@@ -225,6 +225,10 @@ mojom("interfaces") {
   if (use_x11) {
     enabled_features += [ "use_x11" ]
   }
+
+  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/public/platform/web_common.h"
 }
 
 mojom("gpu_preferences_interface") {

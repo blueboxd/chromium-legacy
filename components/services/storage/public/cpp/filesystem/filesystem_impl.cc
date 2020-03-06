@@ -95,6 +95,11 @@ FilesystemImpl::FilesystemImpl(const base::FilePath& root) : root_(root) {}
 
 FilesystemImpl::~FilesystemImpl() = default;
 
+void FilesystemImpl::Clone(mojo::PendingReceiver<mojom::Directory> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FilesystemImpl>(root_),
+                              std::move(receiver));
+}
+
 void FilesystemImpl::PathExists(const base::FilePath& path,
                                 PathExistsCallback callback) {
   std::move(callback).Run(base::PathExists(MakeAbsolute(path)));

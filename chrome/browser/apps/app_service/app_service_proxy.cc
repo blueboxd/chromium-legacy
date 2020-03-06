@@ -272,6 +272,10 @@ void AppServiceProxy::PauseApps(
 
   for (auto& data : pause_data) {
     apps::mojom::AppType app_type = cache_.GetAppType(data.first);
+    if (app_type == apps::mojom::AppType::kUnknown) {
+      continue;
+    }
+
     constexpr bool kPaused = true;
     UpdatePausedStatus(app_type, data.first, kPaused);
 
@@ -294,6 +298,10 @@ void AppServiceProxy::UnpauseApps(const std::set<std::string>& app_ids) {
 
   for (auto& app_id : app_ids) {
     apps::mojom::AppType app_type = cache_.GetAppType(app_id);
+    if (app_type == apps::mojom::AppType::kUnknown) {
+      continue;
+    }
+
     constexpr bool kPaused = false;
     UpdatePausedStatus(app_type, app_id, kPaused);
 

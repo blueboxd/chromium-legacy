@@ -35,6 +35,10 @@ void OriginPolicyParser::DoParse(base::StringPiece policy_contents_text) {
   if (!json || !json->is_dict())
     return;
 
+  if (!ParseIds(*json)) {
+    return;
+  }
+
   if (base::Value* content_security = json->FindDictKey("content_security")) {
     ParseContentSecurity(*content_security);
   }
@@ -50,6 +54,23 @@ void OriginPolicyParser::DoParse(base::StringPiece policy_contents_text) {
   } else if (base::Value* isolation = json->FindDictKey("isolation")) {
     ParseIsolation(*isolation);
   }
+}
+
+bool OriginPolicyParser::ParseIds(const base::Value& json) {
+  const base::Value* raw_ids = json.FindListKey("ids");
+  if (!raw_ids) {
+    return false;
+  }
+  for (const auto& id : raw_ids->GetList()) {
+    if (id.is_string()) {
+      const std::string& id_string = id.GetString();
+      if (IsValidOriginPolicyId(id_string)) {
+        policy_contents_->ids.push_back(id_string);
+      }
+    }
+  }
+
+  return !policy_contents_->ids.empty();
 }
 
 void OriginPolicyParser::ParseContentSecurity(
@@ -101,6 +122,13 @@ void OriginPolicyParser::ParseIsolation(const base::Value& policy) {
     }
   }
   policy_contents_->isolation_optin_hints = hints;
+}
+
+// https://wicg.github.io/origin-policy/#valid-origin-policy-id
+bool OriginPolicyParser::IsValidOriginPolicyId(const std::string& id) {
+  return !id.empty() && std::none_of(id.begin(), id.end(), [](char ch) {
+    return ch < 0x20 || ch > 0x7E;
+  });
 }
 
 }  // namespace network

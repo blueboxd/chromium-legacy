@@ -3212,6 +3212,19 @@ const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Launcher, Shelf, Unified System Tray etc.";
 
+const char kDragToSnapInClamshellModeName[] = "Enable clamshell split view.";
+const char kDragToSnapInClamshellModeDescription[] =
+    "You can drag a window from clamshell overview and snap it. If you will be "
+    "using multiple displays, you should use this flag only in conjunction "
+    "with multi-display-overview-and-split-view (otherwise you are likely to "
+    "get a crash).";
+
+const char kMultiDisplayOverviewAndSplitViewName[] =
+    "Enable multi-display overview and split view.";
+const char kMultiDisplayOverviewAndSplitViewDescription[] =
+    "You can drag a window from one overview grid and drop into another "
+    "overview grid.";
+
 const char kEnableCrOSActionRecorderName[] = "Enable CrOS action recorder";
 const char kEnableCrOSActionRecorderDescription[] =
     "When enabled, each app launching, file opening, setting change, and url "

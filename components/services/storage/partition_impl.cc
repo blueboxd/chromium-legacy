@@ -59,7 +59,8 @@ void PartitionImpl::BindSessionStorageControl(
   session_storage_ = new SessionStorageImpl(
       path_.value_or(base::FilePath()),
       base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
       base::SequencedTaskRunnerHandle::Get(),
 #if defined(OS_ANDROID)
       // On Android there is no support for session storage restoring, and since

@@ -28,6 +28,14 @@ button {
   padding: 0;
 }
 
+
+button:disabled,
+.menu-item.disabled,
+.menu-bar-item.disabled {
+  background-color: grey;
+  color: white;
+}
+
 #menus_button {
   height: 35px;
   min-width: 52px;

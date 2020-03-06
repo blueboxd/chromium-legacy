@@ -1856,6 +1856,12 @@ extern const char kEnableAssistantRoutinesDescription[];
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 
+extern const char kDragToSnapInClamshellModeName[];
+extern const char kDragToSnapInClamshellModeDescription[];
+
+extern const char kMultiDisplayOverviewAndSplitViewName[];
+extern const char kMultiDisplayOverviewAndSplitViewDescription[];
+
 extern const char kEnableCrOSActionRecorderName[];
 extern const char kEnableCrOSActionRecorderDescription[];
 

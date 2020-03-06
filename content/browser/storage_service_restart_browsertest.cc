@@ -21,11 +21,6 @@
 namespace content {
 namespace {
 
-// TODO(https://crbug.com/1052045): Enable this on Android once we have
-// sandboxing for Storage Service. We do not support unsandboxed service
-// processes on Android.
-#if !defined(OS_ANDROID)
-
 class StorageServiceRestartBrowserTest : public ContentBrowserTest {
  public:
   StorageServiceRestartBrowserTest() {
@@ -44,9 +39,6 @@ class StorageServiceRestartBrowserTest : public ContentBrowserTest {
     dom_storage()->GetLocalStorageControl()->GetUsage(base::BindOnce(
         [](StorageServiceRestartBrowserTest* test, base::OnceClosure callback,
            std::vector<storage::mojom::LocalStorageUsageInfoPtr> usage) {
-          for (auto& entry : usage)
-            LOG(ERROR) << "ORIGIN " << entry->origin.Serialize() << " using "
-                       << entry->size_in_bytes;
           if (!usage.empty()) {
             std::move(callback).Run();
             return;
@@ -147,8 +139,6 @@ IN_PROC_BROWSER_TEST_F(StorageServiceRestartBrowserTest, LocalStorageRecovery) {
   EXPECT_EQ("42",
             EvalJs(shell()->web_contents(), R"(getLocalStorageValue("foo"))"));
 }
-
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 }  // namespace content

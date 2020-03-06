@@ -44,6 +44,16 @@ Panel = class {
    * Initialize the panel.
    */
   static init() {
+    /** @type {string} */
+    Panel.sessionState = '';
+
+    const updateSessionState = (sessionState) => {
+      Panel.sessionState = sessionState;
+      $('options').disabled = sessionState !== 'IN_SESSION';
+    };
+    chrome.loginState.getSessionState(updateSessionState);
+    chrome.loginState.onSessionStateChanged.addListener(updateSessionState);
+
     // Called directly for initialization. In the background page context,
     // |Background| subclasses |ChromeVoxState| (who's constructor is called as
     // part of |Background| construction).
@@ -407,44 +417,46 @@ Panel = class {
               const CommandHandler =
                   chrome.extension.getBackgroundPage()['CommandHandler'];
               CommandHandler['onCommand'](binding.command);
-            });
+            }, binding.command);
       }
     }, this));
 
-    // Only add all open tabs to the Tabs menu if we are logged in.
-    chrome.loginState.getSessionState(function(
-        /** @type {string} */ sessionState) {
-      if (sessionState === 'IN_OOBE_SCREEN' ||
-          sessionState === 'IN_LOGIN_SCREEN' ||
-          sessionState === 'IN_LOCK_SCREEN') {
-        tabsMenu.addMenuItem(
-            Msgs.getMsg('panel_menu_item_none'), '', '', '', function() {});
-        return;
-      }
-
-      // Add all open tabs to the Tabs menu.
-      bkgnd.chrome.windows.getLastFocused(function(lastFocusedWindow) {
-        bkgnd.chrome.windows.getAll({'populate': true}, function(windows) {
-          for (let i = 0; i < windows.length; i++) {
-            const tabs = windows[i].tabs;
-            for (let j = 0; j < tabs.length; j++) {
-              let title = tabs[j].title;
-              if (tabs[j].active && windows[i].id == lastFocusedWindow.id) {
-                title += ' ' + Msgs.getMsg('active_tab');
-              }
-              tabsMenu.addMenuItem(
-                  title, '', '', '', (function(win, tab) {
-                                       bkgnd.chrome.windows.update(
-                                           win.id, {focused: true}, function() {
-                                             bkgnd.chrome.tabs.update(
-                                                 tab.id, {active: true});
-                                           });
-                                     }).bind(this, windows[i], tabs[j]));
+    // Add all open tabs to the Tabs menu.
+    bkgnd.chrome.windows.getLastFocused(function(lastFocusedWindow) {
+      bkgnd.chrome.windows.getAll({'populate': true}, function(windows) {
+        for (let i = 0; i < windows.length; i++) {
+          const tabs = windows[i].tabs;
+          for (let j = 0; j < tabs.length; j++) {
+            let title = tabs[j].title;
+            if (tabs[j].active && windows[i].id == lastFocusedWindow.id) {
+              title += ' ' + Msgs.getMsg('active_tab');
             }
+            tabsMenu.addMenuItem(
+                title, '', '', '', (function(win, tab) {
+                                     bkgnd.chrome.windows.update(
+                                         win.id, {focused: true}, function() {
+                                           bkgnd.chrome.tabs.update(
+                                               tab.id, {active: true});
+                                         });
+                                   }).bind(this, windows[i], tabs[j]));
           }
-        });
+        }
       });
     });
+
+    if (Panel.sessionState !== 'IN_SESSION') {
+      tabsMenu.disable();
+      // Disable commands that contain the property 'disallowOOBE'.
+      for (let i = 0; i < Panel.menus_.length; ++i) {
+        const menu = Panel.menus_[i];
+        for (let j = 0; j < menu.items.length; ++j) {
+          const item = menu.items[j];
+          if (CommandStore.disallowOOBE(item.element.id)) {
+            item.disable();
+          }
+        }
+      }
+    }
 
     // Add a menu item that disables / closes ChromeVox.
     chromevoxMenu.addMenuItem(
@@ -795,7 +807,30 @@ Panel = class {
         activeIndex = Panel.menus_.length - 1;
       }
     }
+
+    activeIndex = Panel.findEnabledMenuIndex_(activeIndex, delta > 0 ? 1 : -1);
+    if (activeIndex === -1) {
+      return;
+    }
+
     Panel.activateMenu(Panel.menus_[activeIndex], true /* activateFirstItem */);
+  }
+
+  /**
+   * Starting at |startIndex|, looks for an enabled menu.
+   * @param {number} startIndex
+   * @param {number} delta
+   * @return {number} The index of the enabled menu. -1 if not found.
+   */
+  static findEnabledMenuIndex_(startIndex, delta) {
+    const endIndex = (delta > 0) ? Panel.menus_.length : -1;
+    while (startIndex !== endIndex) {
+      if (Panel.menus_[startIndex].enabled) {
+        return startIndex;
+      }
+      startIndex += delta;
+    }
+    return -1;
   }
 
   /**
@@ -1089,7 +1124,9 @@ Panel = class {
           }
           const itemText = item.text.toLowerCase();
           const match = itemText.includes(query) &&
-              (itemText !== Msgs.getMsg('panel_menu_item_none').toLowerCase());
+              (itemText !==
+               Msgs.getMsg('panel_menu_item_none').toLowerCase()) &&
+              item.enabled;
           if (match) {
             Panel.searchMenu.copyAndAddMenuItem(item);
           }

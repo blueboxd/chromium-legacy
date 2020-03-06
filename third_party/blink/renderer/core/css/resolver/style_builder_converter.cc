@@ -939,28 +939,6 @@ void StyleBuilderConverter::ConvertGridTrackList(
   DCHECK(!track_sizes.IsEmpty() || !auto_repeat_track_sizes.IsEmpty());
 }
 
-void StyleBuilderConverter::ConvertOrderedNamedGridLinesMapToNamedGridLinesMap(
-    const OrderedNamedGridLines& ordered_named_grid_lines,
-    NamedGridLinesMap& named_grid_lines) {
-  DCHECK_EQ(named_grid_lines.size(), 0u);
-
-  if (ordered_named_grid_lines.size() == 0)
-    return;
-
-  for (auto& ordered_named_grid_line : ordered_named_grid_lines) {
-    for (auto& line_name : ordered_named_grid_line.value) {
-      NamedGridLinesMap::AddResult start_result =
-          named_grid_lines.insert(line_name, Vector<size_t>());
-      start_result.stored_value->value.push_back(ordered_named_grid_line.key);
-    }
-  }
-
-  for (auto& named_grid_line : named_grid_lines) {
-    Vector<size_t>& grid_line_indexes = named_grid_line.value;
-    std::sort(grid_line_indexes.begin(), grid_line_indexes.end());
-  }
-}
-
 void StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
     const NamedGridAreaMap& named_grid_areas,
     NamedGridLinesMap& named_grid_lines,

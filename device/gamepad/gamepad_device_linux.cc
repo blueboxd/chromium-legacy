@@ -11,6 +11,7 @@
 #include <linux/joystick.h>
 #include <sys/ioctl.h>
 
+#include "base/callback_helpers.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

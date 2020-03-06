@@ -175,14 +175,16 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   ClientTagHash GetClientTagHash(const std::string& storage_key,
                                  const EntityData& data) const;
 
-
   // Create an entity in the entity map for |storage_key| and return a pointer
   // to it.
   // Requires that no entity for |storage_key| already exists in the map.
+  // Never returns nullptr.
   ProcessorEntity* CreateEntity(const std::string& storage_key,
                                 const EntityData& data);
 
   // Version of the above that generates a tag for |data|.
+  // Returns created entity or nullptr if generated storage key from the bridge
+  // is empty (i.e. the remote update is invalid and should be ignored).
   ProcessorEntity* CreateEntity(const EntityData& data);
 
   // Removes metadata for all entries unless they are unsynced.

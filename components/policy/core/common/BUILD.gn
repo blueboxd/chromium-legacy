@@ -78,6 +78,7 @@ jumbo_source_set("internal") {
     "cloud/machine_level_user_cloud_policy_manager.h",
     "cloud/machine_level_user_cloud_policy_store.cc",
     "cloud/machine_level_user_cloud_policy_store.h",
+    "cloud/policy_invalidation_scope.h",
     "cloud/policy_value_validator.h",
     "cloud/realtime_reporting_job_configuration.cc",
     "cloud/realtime_reporting_job_configuration.h",

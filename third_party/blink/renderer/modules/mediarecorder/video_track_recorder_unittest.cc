@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"

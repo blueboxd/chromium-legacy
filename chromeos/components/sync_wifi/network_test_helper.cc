@@ -4,6 +4,7 @@
 
 #include "chromeos/components/sync_wifi/network_test_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/components/sync_wifi/network_type_conversions.h"

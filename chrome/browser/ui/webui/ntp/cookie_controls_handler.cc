@@ -17,11 +17,12 @@ static const char* kSettingsIcon = "cr:settings_icon";
 static const char* kPolicyIcon = "cr20:domain";
 }  // namespace
 
-CookieControlsHandler::CookieControlsHandler(Profile* profile) {
-  service_ = CookieControlsServiceFactory::GetForProfile(profile);
-}
+CookieControlsHandler::CookieControlsHandler(Profile* profile)
+    : service_(CookieControlsServiceFactory::GetForProfile(profile)) {}
 
-CookieControlsHandler::~CookieControlsHandler() = default;
+CookieControlsHandler::~CookieControlsHandler() {
+  service_->RemoveObserver(this);
+}
 
 void CookieControlsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(

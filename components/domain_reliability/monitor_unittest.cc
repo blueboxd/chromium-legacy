@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/string_piece.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/domain_reliability/baked_in_configs.h"

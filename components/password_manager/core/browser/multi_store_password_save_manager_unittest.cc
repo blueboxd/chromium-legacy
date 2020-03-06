@@ -169,6 +169,12 @@ class MultiStorePasswordSaveManagerTest : public testing::Test {
     fetcher_->NotifyFetchCompleted();
   }
 
+  void SetFederatedAndNotifyFetchCompleted(
+      const std::vector<const autofill::PasswordForm*>& federated) {
+    fetcher_->set_federated(federated);
+    fetcher_->NotifyFetchCompleted();
+  }
+
   void SetAccountStoreEnabled(bool is_enabled) {
     ON_CALL(*client()->GetPasswordFeatureManager(),
             IsOptedInForAccountStorage())
@@ -178,6 +184,17 @@ class MultiStorePasswordSaveManagerTest : public testing::Test {
   void SetDefaultPasswordStore(const autofill::PasswordForm::Store& store) {
     ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
         .WillByDefault(Return(store));
+  }
+
+  PasswordForm CreateSavedFederated() {
+    autofill::PasswordForm federated;
+    federated.origin = GURL("https://example.in/login");
+    federated.signon_realm = "federation://example.in/google.com";
+    federated.type = autofill::PasswordForm::Type::kApi;
+    federated.federation_origin =
+        url::Origin::Create(GURL("https://google.com/"));
+    federated.username_value = ASCIIToUTF16("federated_username");
+    return federated;
   }
 
   MockPasswordManagerClient* client() { return &client_; }
@@ -492,4 +509,51 @@ TEST_F(
   password_save_manager()->MoveCredentialsToAccountStore();
 }
 
+TEST_F(MultiStorePasswordSaveManagerTest,
+       MovePSLMatchedCredentialsFromProfileToAccountStore) {
+  PasswordForm saved_match_in_profile_store(saved_match_);
+  saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
+  PasswordForm psl_saved_match_in_profile_store(psl_saved_match_);
+  psl_saved_match_in_profile_store.in_store =
+      PasswordForm::Store::kProfileStore;
+  SetNonFederatedAndNotifyFetchCompleted(
+      {&saved_match_in_profile_store, &psl_saved_match_in_profile_store});
+
+  password_save_manager()->CreatePendingCredentials(
+      saved_match_in_profile_store, observed_form_, submitted_form_,
+      /*is_http_auth=*/false,
+      /*is_credential_api_save=*/false);
+
+  EXPECT_CALL(*mock_profile_form_saver(), Remove(saved_match_in_profile_store));
+  EXPECT_CALL(*mock_profile_form_saver(),
+              Remove(psl_saved_match_in_profile_store));
+  EXPECT_CALL(*mock_account_form_saver(),
+              Save(saved_match_in_profile_store, _, _));
+  EXPECT_CALL(*mock_account_form_saver(),
+              Save(psl_saved_match_in_profile_store, _, _));
+
+  password_save_manager()->MoveCredentialsToAccountStore();
+}
+
+TEST_F(MultiStorePasswordSaveManagerTest,
+       MoveFederatedCredentialsFromProfileToAccountStore) {
+  PasswordForm federated_match_in_profile_store = CreateSavedFederated();
+  federated_match_in_profile_store.in_store =
+      PasswordForm::Store::kProfileStore;
+
+  SetFederatedAndNotifyFetchCompleted({&federated_match_in_profile_store});
+
+  password_save_manager()->CreatePendingCredentials(
+      federated_match_in_profile_store, observed_form_, submitted_form_,
+      /*is_http_auth=*/false,
+      /*is_credential_api_save=*/false);
+
+  EXPECT_CALL(*mock_profile_form_saver(),
+              Remove(federated_match_in_profile_store));
+
+  EXPECT_CALL(*mock_account_form_saver(),
+              Save(federated_match_in_profile_store, _, _));
+
+  password_save_manager()->MoveCredentialsToAccountStore();
+}
 }  // namespace password_manager

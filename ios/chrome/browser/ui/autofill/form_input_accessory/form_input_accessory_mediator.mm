@@ -23,7 +23,8 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
@@ -52,8 +53,8 @@
 // The object that manages the currently-shown custom accessory view.
 @property(nonatomic, weak) id<FormInputSuggestionsProvider> currentProvider;
 
-// YES if the first responder is a text input other than the web view.
-@property(nonatomic, assign) BOOL editingUIKitTextInput;
+// YES if the first responder is valid.
+@property(nonatomic, assign) BOOL firstResponderIsValid;
 
 // The form input handler. This is in charge of form navigation.
 @property(nonatomic, strong)
@@ -246,6 +247,10 @@
 }
 
 - (void)keyboardWillChangeToState:(KeyboardState)keyboardState {
+  if (keyboardState.isVisible) {
+    [self verifyFirstResponderAndUpdateCustomKeyboardView];
+  }
+
   [self updateSuggestionsIfNeeded];
   [self.consumer keyboardWillChangeToState:keyboardState];
   if (!keyboardState.isVisible) {
@@ -407,8 +412,8 @@
     return;
   }
 
-  // Return early if the current text input is not the web view.
-  if (self.editingUIKitTextInput) {
+  // Return early if the current input is not valid.
+  if (!self.firstResponderIsValid) {
     return;
   }
 
@@ -516,21 +521,47 @@
   [self.delegate mediatorDidDetectMovingToBackground:self];
 }
 
+// Verifies that the first responder is a child of WKWebView and that is is not
+// a child of SSOSignInViewController. Pause or try to continue the keyboard
+// custom view depending on the validity of the first responder.
+- (void)verifyFirstResponderAndUpdateCustomKeyboardView {
+  UIResponder* firstResponder = GetFirstResponder();
+  BOOL ancestorIsSSOSignInViewController = NO;
+  BOOL ancestorIsWkWebView = NO;
+  while (firstResponder) {
+    if ([firstResponder isKindOfClass:NSClassFromString(@"WKWebView")]) {
+      ancestorIsWkWebView = YES;
+    }
+    if ([firstResponder
+            isKindOfClass:NSClassFromString(@"SSOSignInViewController")]) {
+      ancestorIsSSOSignInViewController = YES;
+      break;
+    }
+    firstResponder = firstResponder.nextResponder;
+  }
+  self.firstResponderIsValid =
+      ancestorIsWkWebView && !ancestorIsSSOSignInViewController;
+  if (self.firstResponderIsValid) {
+    [self continueCustomKeyboardView];
+  } else {
+    [self pauseCustomKeyboardView];
+  }
+}
+
 #pragma mark - Keyboard Notifications
 
 // When any text field or text view (e.g. omnibox, settings search bar)
 // begins editing, pause the consumer so it doesn't present the custom view over
 // the keyboard.
 - (void)handleTextInputDidBeginEditing:(NSNotification*)notification {
-  self.editingUIKitTextInput = YES;
+  self.firstResponderIsValid = NO;
   [self pauseCustomKeyboardView];
 }
 
 // When any text field or text view (e.g. omnibox, settings, card unmask dialog)
 // ends editing, continue presenting.
 - (void)handleTextInputDidEndEditing:(NSNotification*)notification {
-  self.editingUIKitTextInput = NO;
-  [self continueCustomKeyboardView];
+  [self verifyFirstResponderAndUpdateCustomKeyboardView];
 }
 
 #pragma mark - PasswordFetcherDelegate

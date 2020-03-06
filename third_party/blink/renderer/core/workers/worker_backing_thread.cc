@@ -83,8 +83,13 @@ void WorkerBackingThread::InitializeOnBackingThread(
   V8PerIsolateData::From(isolate_)->SetThreadDebugger(
       std::make_unique<WorkerThreadDebugger>(isolate_));
 
-  // Optimize for memory usage instead of latency for the worker isolate.
-  isolate_->IsolateInBackgroundNotification();
+  if (!RuntimeEnabledFeatures::V8OptimizeWorkersForPerformanceEnabled()) {
+    // Optimize for memory usage instead of latency for the worker isolate.
+    // Service Workers that have the fetch event handler run with the Isolate
+    // in foreground notification regardless of this configuration.
+    // See ServiceWorkerGlobalScope::SetFetchHandlerExistence().
+    isolate_->IsolateInBackgroundNotification();
+  }
 
   if (startup_data.heap_limit_mode ==
       WorkerBackingThreadStartupData::HeapLimitMode::kIncreasedForDebugging) {

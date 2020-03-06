@@ -46,7 +46,6 @@ class ChromeBrowserState;
 - (BrowserViewController*)currentBVC;
 - (BrowserViewController*)mainBVC;
 - (BrowserViewController*)otrBVC;
-- (TabGridCoordinator*)mainCoordinator;
 - (id<BrowserInterfaceProvider>)interfaceProvider;
 - (UIWindow*)window;
 - (NSDictionary*)launchOptions;

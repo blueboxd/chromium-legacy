@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"

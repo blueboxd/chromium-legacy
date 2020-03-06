@@ -135,6 +135,7 @@ js2gtest("browser_tests_js_webui") {
       "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
       "../chromeos/oobe_webui_browsertest.js",
       "certificate_viewer_dialog_test.js",
+      "chromeos/edu_login/edu_login_browsertest.js",
       "set_time_dialog_browsertest.js",
       "settings/a11y/crostini_settings_details_a11y_test.js",
       "settings/a11y/crostini_settings_export_import_a11y_test.js",

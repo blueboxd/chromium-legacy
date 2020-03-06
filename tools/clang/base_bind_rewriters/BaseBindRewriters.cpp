@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_helpers.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/ParentMap.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"

@@ -17,14 +17,24 @@ const char kMetricUserPolicyInvalidationsFcm[] =
 const char kMetricUserPolicyChromeOSSessionAbort[] =
     "Enterprise.UserPolicyChromeOS.SessionAbort";
 
-const char kMetricDevicePolicyRefresh[] = "Enterprise.DevicePolicyRefresh2";
+const char kMetricDevicePolicyRefresh[] = "Enterprise.DevicePolicyRefresh3";
 const char kMetricDevicePolicyRefreshFcm[] =
-    "Enterprise.FCMInvalidationService.DevicePolicyRefresh2";
+    "Enterprise.FCMInvalidationService.DevicePolicyRefresh3";
 
 const char kMetricDevicePolicyInvalidations[] =
-    "Enterprise.DevicePolicyInvalidations";
+    "Enterprise.DevicePolicyInvalidations2";
 const char kMetricDevicePolicyInvalidationsFcm[] =
-    "Enterprise.FCMInvalidationService.DevicePolicyInvalidations";
+    "Enterprise.FCMInvalidationService.DevicePolicyInvalidations2";
+
+const char kMetricDeviceLocalAccountPolicyRefresh[] =
+    "Enterprise.DeviceLocalAccountPolicyRefresh3";
+const char kMetricDeviceLocalAccountPolicyRefreshFcm[] =
+    "Enterprise.FCMInvalidationService.DeviceLocalAccountPolicyRefresh3";
+
+const char kMetricDeviceLocalAccountPolicyInvalidations[] =
+    "Enterprise.DeviceLocalAccountPolicyInvalidations2";
+const char kMetricDeviceLocalAccountPolicyInvalidationsFcm[] =
+    "Enterprise.FCMInvalidationService.DeviceLocalAccountPolicyInvalidations2";
 
 const char kMetricPolicyInvalidationRegistration[] =
     "Enterprise.PolicyInvalidationsRegistrationResult";

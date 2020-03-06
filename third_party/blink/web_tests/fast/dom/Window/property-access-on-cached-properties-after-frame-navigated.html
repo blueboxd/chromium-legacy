@@ -13,7 +13,7 @@ function insertExpectedResult(path, expected)
 {
     if (path.length < 2)
         return;
-    var propertyDir = path.slice(0, -1).join('.');
+    var propertyDir = getPropertyPath(path, path.length - 1);
     var cachedPropertyDir = "cached_" + propertyDir.replace('.', '_');
     window[cachedPropertyDir] = eval("childWindow." + propertyDir);
     propertiesToVerify.push({

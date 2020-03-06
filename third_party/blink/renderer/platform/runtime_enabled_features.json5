@@ -1751,6 +1751,10 @@
       name: "V8IdleTasks",
     },
     {
+      name: "V8OptimizeWorkersForPerformance",
+      status: "experimental",
+    },
+    {
       // Whether a video element should automatically play fullscreen unless
       // 'playsinline' is set.
       name: "VideoAutoFullscreen",

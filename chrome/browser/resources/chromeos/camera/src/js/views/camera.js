@@ -21,7 +21,10 @@ import {PerfLogger} from '../perf.js';
 import * as sound from '../sound.js';
 import * as state from '../state.js';
 import * as toast from '../toast.js';
-import {Mode} from '../type.js';
+import {
+  Facing,  // eslint-disable-line no-unused-vars
+  Mode,
+} from '../type.js';
 import * as util from '../util.js';
 
 import {Layout} from './camera/layout.js';
@@ -136,10 +139,10 @@ export class Camera extends View {
         this.doSaveVideo_.bind(this), playShutterEffect);
 
     /**
-     * @type {?string}
+     * @type {!Facing}
      * @protected
      */
-    this.facingMode_ = null;
+    this.facingMode_ = Facing.UNKNOWN;
 
     /**
      * @type {boolean}

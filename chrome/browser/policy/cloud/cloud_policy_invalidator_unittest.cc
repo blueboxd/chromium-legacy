@@ -17,6 +17,7 @@
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -33,6 +34,7 @@
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
+#include "components/policy/core/common/cloud/policy_invalidation_scope.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -173,8 +175,8 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   // Get an invalidation version for the given time.
   int64_t GetVersion(base::Time time);
 
-  // Get the policy type that the |invalidator_| is responsible for.
-  virtual em::DeviceRegisterRequest::Type GetPolicyType() const;
+  // Get the invalidation scope that the |invalidator_| is responsible for.
+  virtual PolicyInvalidationScope GetPolicyInvalidationScope() const;
 
  private:
   // Checks that the policy was refreshed due to an invalidation with the given
@@ -240,9 +242,9 @@ void CloudPolicyInvalidatorTestBase::StartInvalidator(
     bool initialize,
     bool start_refresh_scheduler,
     int64_t highest_handled_invalidation_version) {
-  invalidator_.reset(
-      new CloudPolicyInvalidator(GetPolicyType(), &core_, task_runner_, &clock_,
-                                 highest_handled_invalidation_version));
+  invalidator_.reset(new CloudPolicyInvalidator(
+      GetPolicyInvalidationScope(), &core_, task_runner_, &clock_,
+      highest_handled_invalidation_version));
   if (start_refresh_scheduler) {
     ConnectCore();
     StartRefreshScheduler();
@@ -404,9 +406,9 @@ int64_t CloudPolicyInvalidatorTestBase::GetVersion(base::Time time) {
   return (time - base::Time::UnixEpoch()).InMicroseconds();
 }
 
-em::DeviceRegisterRequest::Type CloudPolicyInvalidatorTestBase::GetPolicyType()
-    const {
-  return UserCloudPolicyInvalidator::GetPolicyType();
+PolicyInvalidationScope
+CloudPolicyInvalidatorTestBase::GetPolicyInvalidationScope() const {
+  return PolicyInvalidationScope::kUser;
 }
 
 bool CloudPolicyInvalidatorTestBase::CheckPolicyRefreshed(
@@ -852,13 +854,10 @@ TEST_F(CloudPolicyInvalidatorTest, Disconnect) {
 
 class CloudPolicyInvalidatorUserTypedTest
     : public CloudPolicyInvalidatorTestBase,
-      public testing::WithParamInterface<em::DeviceRegisterRequest::Type> {
+      public testing::WithParamInterface<PolicyInvalidationScope> {
  protected:
-  CloudPolicyInvalidatorUserTypedTest();
-  // CloudPolicyInvalidatorTest:
-  void SetUp() override;
+  CloudPolicyInvalidatorUserTypedTest() = default;
 
-  // Get the current count for the given metric.
   base::HistogramBase::Count GetCount(MetricPolicyRefresh metric);
   base::HistogramBase::Count GetCountFcm(MetricPolicyRefresh metric);
   base::HistogramBase::Count GetInvalidationCount(PolicyInvalidationType type);
@@ -867,93 +866,50 @@ class CloudPolicyInvalidatorUserTypedTest
 
  private:
   // CloudPolicyInvalidatorTest:
-  em::DeviceRegisterRequest::Type GetPolicyType() const override;
+  PolicyInvalidationScope GetPolicyInvalidationScope() const override;
 
-  // Get histogram samples for the given histogram.
-  std::unique_ptr<base::HistogramSamples> GetHistogramSamples(
-      const std::string& name) const;
-
-  // Stores starting histogram counts for kMetricPolicyRefresh.
-  std::unique_ptr<base::HistogramSamples> refresh_samples_;
-  std::unique_ptr<base::HistogramSamples> refresh_samples_fcm_;
-
-  // Stores starting histogram counts for kMetricPolicyInvalidations.
-  std::unique_ptr<base::HistogramSamples> invalidations_samples_;
-  std::unique_ptr<base::HistogramSamples> invalidations_samples_fcm_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyInvalidatorUserTypedTest);
 };
 
-CloudPolicyInvalidatorUserTypedTest::CloudPolicyInvalidatorUserTypedTest() {}
-
-void CloudPolicyInvalidatorUserTypedTest::SetUp() {
-  refresh_samples_ = GetHistogramSamples(
-      GetPolicyType() == em::DeviceRegisterRequest::DEVICE ?
-          kMetricDevicePolicyRefresh : kMetricUserPolicyRefresh);
-  refresh_samples_fcm_ =
-      GetHistogramSamples(GetPolicyType() == em::DeviceRegisterRequest::DEVICE
-                              ? kMetricDevicePolicyRefreshFcm
-                              : kMetricUserPolicyRefreshFcm);
-  invalidations_samples_ = GetHistogramSamples(
-      GetPolicyType() == em::DeviceRegisterRequest::DEVICE ?
-          kMetricDevicePolicyInvalidations : kMetricUserPolicyInvalidations);
-  invalidations_samples_fcm_ =
-      GetHistogramSamples(GetPolicyType() == em::DeviceRegisterRequest::DEVICE
-                              ? kMetricDevicePolicyInvalidationsFcm
-                              : kMetricUserPolicyInvalidationsFcm);
-}
-
 base::HistogramBase::Count CloudPolicyInvalidatorUserTypedTest::GetCount(
     MetricPolicyRefresh metric) {
-  return GetHistogramSamples(
-      GetPolicyType() == em::DeviceRegisterRequest::DEVICE ?
-          kMetricDevicePolicyRefresh : kMetricUserPolicyRefresh)->
-              GetCount(metric) - refresh_samples_->GetCount(metric);
+  const char* metric_name = CloudPolicyInvalidator::GetPolicyRefreshMetricName(
+      GetPolicyInvalidationScope());
+  return histogram_tester_.GetHistogramSamplesSinceCreation(metric_name)
+      ->GetCount(metric);
 }
-
 base::HistogramBase::Count CloudPolicyInvalidatorUserTypedTest::GetCountFcm(
     MetricPolicyRefresh metric) {
-  return GetHistogramSamples(GetPolicyType() ==
-                                     em::DeviceRegisterRequest::DEVICE
-                                 ? kMetricDevicePolicyRefreshFcm
-                                 : kMetricUserPolicyRefreshFcm)
-             ->GetCount(metric) -
-         refresh_samples_fcm_->GetCount(metric);
+  const char* metric_name =
+      CloudPolicyInvalidator::GetPolicyRefreshFcmMetricName(
+          GetPolicyInvalidationScope());
+  return histogram_tester_.GetHistogramSamplesSinceCreation(metric_name)
+      ->GetCount(metric);
 }
-
 base::HistogramBase::Count
 CloudPolicyInvalidatorUserTypedTest::GetInvalidationCount(
     PolicyInvalidationType type) {
-  return GetHistogramSamples(
-      GetPolicyType() == em::DeviceRegisterRequest::DEVICE ?
-          kMetricDevicePolicyInvalidations : kMetricUserPolicyInvalidations)->
-          GetCount(type) - invalidations_samples_->GetCount(type);
+  const char* metric_name =
+      CloudPolicyInvalidator::GetPolicyInvalidationMetricName(
+          GetPolicyInvalidationScope());
+  return histogram_tester_.GetHistogramSamplesSinceCreation(metric_name)
+      ->GetCount(type);
 }
-
 base::HistogramBase::Count
 CloudPolicyInvalidatorUserTypedTest::GetInvalidationCountFcm(
     PolicyInvalidationType type) {
-  return GetHistogramSamples(GetPolicyType() ==
-                                     em::DeviceRegisterRequest::DEVICE
-                                 ? kMetricDevicePolicyInvalidationsFcm
-                                 : kMetricUserPolicyInvalidationsFcm)
-             ->GetCount(type) -
-         invalidations_samples_fcm_->GetCount(type);
+  const char* metric_name =
+      CloudPolicyInvalidator::GetPolicyInvalidationFcmMetricName(
+          GetPolicyInvalidationScope());
+  return histogram_tester_.GetHistogramSamplesSinceCreation(metric_name)
+      ->GetCount(type);
 }
 
-em::DeviceRegisterRequest::Type
-CloudPolicyInvalidatorUserTypedTest::GetPolicyType() const {
+PolicyInvalidationScope
+CloudPolicyInvalidatorUserTypedTest::GetPolicyInvalidationScope() const {
   return GetParam();
-}
-
-std::unique_ptr<base::HistogramSamples>
-CloudPolicyInvalidatorUserTypedTest::GetHistogramSamples(
-    const std::string& name) const {
-  base::HistogramBase* histogram =
-      base::StatisticsRecorder::FindHistogram(name);
-  if (!histogram)
-    return std::unique_ptr<base::HistogramSamples>(new base::SampleMap());
-  return histogram->SnapshotSamples();
 }
 
 TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsUnregistered) {
@@ -1166,20 +1122,11 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, ExpiredInvalidations) {
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-#if defined(OS_CHROMEOS)
-INSTANTIATE_TEST_SUITE_P(CloudPolicyInvalidatorUserTypedTestInstance,
-                         CloudPolicyInvalidatorUserTypedTest,
-                         testing::Values(em::DeviceRegisterRequest::USER,
-                                         em::DeviceRegisterRequest::DEVICE));
-#elif defined(OS_ANDROID)
 INSTANTIATE_TEST_SUITE_P(
     CloudPolicyInvalidatorUserTypedTestInstance,
     CloudPolicyInvalidatorUserTypedTest,
-    testing::Values(em::DeviceRegisterRequest::ANDROID_BROWSER));
-#else
-INSTANTIATE_TEST_SUITE_P(CloudPolicyInvalidatorUserTypedTestInstance,
-                         CloudPolicyInvalidatorUserTypedTest,
-                         testing::Values(em::DeviceRegisterRequest::BROWSER));
-#endif
+    testing::Values(PolicyInvalidationScope::kUser,
+                    PolicyInvalidationScope::kDevice,
+                    PolicyInvalidationScope::kDeviceLocalAccount));
 
 }  // namespace policy

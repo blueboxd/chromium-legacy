@@ -131,6 +131,9 @@ class NavigationItemImpl : public web::NavigationItem {
   void SetUntrusted();
   bool IsUntrusted();
 
+  // Restores the state of the |other| navigation item in this item.
+  void RestoreStateFromItem(NavigationItem* other);
+
 #ifndef NDEBUG
   // Returns a human-readable description of the state for debugging purposes.
   NSString* GetDescription() const;

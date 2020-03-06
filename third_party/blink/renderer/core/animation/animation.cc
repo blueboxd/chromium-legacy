@@ -261,7 +261,7 @@ bool Animation::Limited(base::Optional<double> current_time) const {
          (EffectivePlaybackRate() > 0 && current_time >= EffectEnd());
 }
 
-Document* Animation::GetDocument() {
+Document* Animation::GetDocument() const {
   return document_;
 }
 
@@ -387,6 +387,10 @@ base::Optional<double> Animation::UnlimitedCurrentTime() const {
   return CalculateAnimationPlayState() == kPaused || !start_time_
              ? CurrentTimeInternal()
              : CalculateCurrentTime();
+}
+
+String Animation::playState() const {
+  return PlayStateString();
 }
 
 bool Animation::PreCommit(
@@ -795,6 +799,10 @@ void Animation::setEffect(AnimationEffect* new_effect) {
 
   // Notify of a potential state change.
   NotifyProbe();
+}
+
+String Animation::PlayStateString() const {
+  return PlayStateString(CalculateAnimationPlayState());
 }
 
 const char* Animation::PlayStateString(AnimationPlayState play_state) {

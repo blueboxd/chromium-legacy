@@ -4,6 +4,7 @@
 
 #include "content/browser/download/data_url_blob_reader.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 
 namespace content {

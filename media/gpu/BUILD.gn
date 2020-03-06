@@ -545,4 +545,17 @@ if (use_v4l2_codec || use_vaapi) {
       "//testing/gtest",
     ]
   }
+
+  test("video_encode_accelerator_tests") {
+    sources = [ "video_encode_accelerator_tests.cc" ]
+    data = [ "//media/test/data/" ]
+    deps = [
+      ":buildflags",
+      "test:helpers",
+      "test:video_encoder",
+      "test:video_encoder_test_environment",
+      "//media:test_support",
+      "//testing/gtest",
+    ]
+  }
 }

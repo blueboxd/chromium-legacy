@@ -10,6 +10,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/intl_profile_watcher.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"

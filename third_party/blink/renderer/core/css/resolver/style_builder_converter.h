@@ -231,9 +231,6 @@ class StyleBuilderConverter {
       const NamedGridAreaMap&,
       NamedGridLinesMap&,
       GridTrackSizingDirection);
-  static void ConvertOrderedNamedGridLinesMapToNamedGridLinesMap(
-      const OrderedNamedGridLines&,
-      NamedGridLinesMap&);
 
   static cc::ScrollSnapType ConvertSnapType(StyleResolverState&,
                                             const CSSValue&);

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/flat_map.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
@@ -25,7 +26,9 @@ namespace {
 // order to sync tests with the work done here on the IO thread.
 void PeakMemoryCallback(PeakGpuMemoryTracker::Usage usage,
                         base::OnceClosure testing_callback,
-                        const uint64_t peak_memory) {
+                        const uint64_t peak_memory,
+                        const base::flat_map<gpu::GpuPeakMemoryAllocationSource,
+                                             uint64_t>& allocation_per_source) {
   uint64_t memory_in_kb = peak_memory / 1024u;
   switch (usage) {
     case PeakGpuMemoryTracker::Usage::CHANGE_TAB:
@@ -41,6 +44,9 @@ void PeakMemoryCallback(PeakGpuMemoryTracker::Usage usage,
                               memory_in_kb);
       break;
   }
+
+  // TODO(jonross): Report |allocation_per_source| to UMA is a follow up change.
+
   std::move(testing_callback).Run();
 }
 

@@ -24,6 +24,9 @@ class ImageSkia;
 }  // namespace gfx
 
 namespace views {
+class ImageView;
+class Label;
+class Throbber;
 class Widget;
 }  // namespace views
 
@@ -149,6 +152,11 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   // Returns the appropriate top image depending on |dialog_status_|.
   const gfx::ImageSkia* GetTopImage() const;
 
+  // Accessors used to validate the views in tests.
+  views::ImageView* GetTopImageForTesting() const;
+  views::Throbber* GetSideIconSpinnerForTesting() const;
+  views::Label* GetMessageForTesting() const;
+
  private:
   ~DeepScanningDialogViews() override;
 
@@ -203,10 +211,10 @@ class DeepScanningDialogViews : public views::DialogDelegate {
 
   // Views above the buttons. |contents_view_| owns every other view.
   std::unique_ptr<views::View> contents_view_;
-  DeepScanningTopImageView* image_;
-  DeepScanningSideIconImageView* side_icon_image_;
-  DeepScanningSideIconSpinnerView* side_icon_spinner_;
-  DeepScanningMessageView* message_;
+  DeepScanningTopImageView* image_ = nullptr;
+  DeepScanningSideIconImageView* side_icon_image_ = nullptr;
+  DeepScanningSideIconSpinnerView* side_icon_spinner_ = nullptr;
+  DeepScanningMessageView* message_ = nullptr;
 
   bool shown_ = false;
 

@@ -136,6 +136,12 @@ class PasswordsPrivateDelegate : public KeyedService {
   // the remove succeeded.
   virtual bool RemoveCompromisedCredential(
       const api::passwords_private::CompromisedCredential& credential) = 0;
+
+  // Starts a check for compromised passwords. Returns true if a new check was
+  // started.
+  virtual bool StartPasswordCheck() = 0;
+  // Stops a check for compromised passwords.
+  virtual void StopPasswordCheck() = 0;
 };
 
 }  // namespace extensions

@@ -222,15 +222,25 @@ enum class MetricUserPolicyChromeOSSessionAbortType {
 // Names for the UMA counters. They are shared from here since the events
 // from the same enum above can be triggered in different files, and must use
 // the same UMA histogram name.
+// Metrics name from UMA dashboard cloud be used in codesearch as is, so please
+// keep the names without format specifiers (e.g. %s).
 POLICY_EXPORT extern const char kMetricUserPolicyRefresh[];
 POLICY_EXPORT extern const char kMetricUserPolicyRefreshFcm[];
 POLICY_EXPORT extern const char kMetricUserPolicyInvalidations[];
 POLICY_EXPORT extern const char kMetricUserPolicyInvalidationsFcm[];
 POLICY_EXPORT extern const char kMetricUserPolicyChromeOSSessionAbort[];
+
 POLICY_EXPORT extern const char kMetricDevicePolicyRefresh[];
 POLICY_EXPORT extern const char kMetricDevicePolicyRefreshFcm[];
 POLICY_EXPORT extern const char kMetricDevicePolicyInvalidations[];
 POLICY_EXPORT extern const char kMetricDevicePolicyInvalidationsFcm[];
+
+POLICY_EXPORT extern const char kMetricDeviceLocalAccountPolicyRefresh[];
+POLICY_EXPORT extern const char kMetricDeviceLocalAccountPolicyRefreshFcm[];
+POLICY_EXPORT extern const char kMetricDeviceLocalAccountPolicyInvalidations[];
+POLICY_EXPORT extern const char
+    kMetricDeviceLocalAccountPolicyInvalidationsFcm[];
+
 POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistration[];
 POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistrationFcm[];
 

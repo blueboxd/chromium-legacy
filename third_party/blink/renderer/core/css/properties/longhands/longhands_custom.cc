@@ -3115,18 +3115,15 @@ void GridTemplateAreas::ApplyValue(StyleResolverState& state,
   const NamedGridAreaMap& new_named_grid_areas =
       grid_template_areas_value.GridAreaMap();
 
-  NamedGridLinesMap named_grid_column_lines;
-  NamedGridLinesMap named_grid_row_lines;
-  StyleBuilderConverter::ConvertOrderedNamedGridLinesMapToNamedGridLinesMap(
-      state.Style()->OrderedNamedGridColumnLines(), named_grid_column_lines);
-  StyleBuilderConverter::ConvertOrderedNamedGridLinesMapToNamedGridLinesMap(
-      state.Style()->OrderedNamedGridRowLines(), named_grid_row_lines);
+  NamedGridLinesMap implicit_named_grid_column_lines;
+  NamedGridLinesMap implicit_named_grid_row_lines;
   StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
-      new_named_grid_areas, named_grid_column_lines, kForColumns);
+      new_named_grid_areas, implicit_named_grid_column_lines, kForColumns);
   StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
-      new_named_grid_areas, named_grid_row_lines, kForRows);
-  state.Style()->SetNamedGridColumnLines(named_grid_column_lines);
-  state.Style()->SetNamedGridRowLines(named_grid_row_lines);
+      new_named_grid_areas, implicit_named_grid_row_lines, kForRows);
+  state.Style()->SetImplicitNamedGridColumnLines(
+      implicit_named_grid_column_lines);
+  state.Style()->SetImplicitNamedGridRowLines(implicit_named_grid_row_lines);
 
   state.Style()->SetNamedGridArea(new_named_grid_areas);
   state.Style()->SetNamedGridAreaRowCount(grid_template_areas_value.RowCount());

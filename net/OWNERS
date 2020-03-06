@@ -13,8 +13,7 @@ rch@chromium.org
 rsleevi@chromium.org
 zhongyi@chromium.org
 
-# For QUICHE rolls only.
-bnc@chromium.org
+file://net/quic/OWNERS # For QUICHE rolls only.
 
 per-file BUILD.gn=file://net/nqe/OWNERS
 per-file BUILD.gn=file://net/websockets/OWNERS

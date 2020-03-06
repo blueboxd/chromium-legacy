@@ -12,12 +12,12 @@ class AtomicMemcpyTest : public ::testing::Test {};
 
 template <size_t buffer_size>
 void TestAtomicMemcpy() {
-  unsigned char src[buffer_size];
+  alignas(sizeof(size_t)) unsigned char src[buffer_size];
   for (size_t i = 0; i < buffer_size; ++i)
     src[i] = static_cast<char>(i + 1);
   // Allocating extra memory before and after the buffer to make sure the
   // atomic memcpy doesn't exceed the buffer in any direction.
-  unsigned char tgt[buffer_size + (2 * sizeof(size_t))];
+  alignas(sizeof(size_t)) unsigned char tgt[buffer_size + (2 * sizeof(size_t))];
   memset(tgt, 0, buffer_size + (2 * sizeof(size_t)));
   AtomicMemcpy<buffer_size>(tgt + sizeof(size_t), src);
   // Check nothing before the buffer was changed

@@ -25,6 +25,7 @@
 
 #include <memory>
 
+#include "base/bits.h"
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
@@ -663,7 +664,7 @@ struct HashTableHelper {
     return IsEmptyBucket(key) || IsDeletedBucket(key);
   }
   static bool IsEmptyOrDeletedBucketSafe(const Value& value) {
-    char buf[sizeof(Key)];
+    alignas(std::max(alignof(Key), sizeof(size_t))) char buf[sizeof(Key)];
     const Key& key = Extractor::ExtractSafe(value, &buf);
     return IsEmptyBucket(key) || IsDeletedBucket(key);
   }

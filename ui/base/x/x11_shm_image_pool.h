@@ -6,7 +6,7 @@
 #define UI_BASE_X_X11_SHM_IMAGE_POOL_H_
 
 #include <cstring>
-#include <queue>
+#include <list>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -115,7 +115,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
   std::size_t frame_bytes_ = 0;
   std::vector<FrameState> frame_states_;
   std::size_t current_frame_index_ = 0;
-  std::queue<SwapClosure> swap_closures_;
+  std::list<SwapClosure> swap_closures_;
 
   DISALLOW_COPY_AND_ASSIGN(XShmImagePool);
 };

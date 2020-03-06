@@ -322,7 +322,10 @@ void StreamFromResponseCallback(
     return;
   }
 
-  if (response->MimeType() != "application/wasm") {
+  // The spec explicitly disallows any extras on the Content-Type header,
+  // so we check against ContentType() rather than MimeType(), which
+  // implicitly strips extras.
+  if (response->ContentType().LowerASCII() != "application/wasm") {
     exception_state.ThrowTypeError(
         "Incorrect response MIME type. Expected 'application/wasm'.");
     return;

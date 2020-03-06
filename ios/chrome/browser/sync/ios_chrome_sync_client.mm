@@ -231,18 +231,6 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return history ? history->GetDeleteDirectivesSyncableService()
                      : base::WeakPtr<syncer::SyncableService>();
     }
-    case syncer::FAVICON_IMAGES:
-    case syncer::FAVICON_TRACKING: {
-      if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes)) {
-        sync_sessions::FaviconCache* favicons =
-            SessionSyncServiceFactory::GetForBrowserState(browser_state_)
-                ->GetFaviconCache();
-        return favicons ? favicons->AsWeakPtr()
-                        : base::WeakPtr<syncer::SyncableService>();
-      }
-      NOTREACHED();
-      return nullptr;
-    }
     case syncer::PASSWORDS: {
       return password_store_ ? password_store_->GetPasswordSyncableService()
                              : base::WeakPtr<syncer::SyncableService>();

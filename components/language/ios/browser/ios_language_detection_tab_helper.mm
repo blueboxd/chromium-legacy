@@ -4,6 +4,7 @@
 
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/translate/core/common/language_detection_details.h"
 

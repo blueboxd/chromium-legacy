@@ -94,12 +94,9 @@ std::string BuildCpuInfo() {
   return cpuinfo;
 }
 
-std::string BuildOSCpuInfo(bool include_android_build_number) {
-  std::string cputype = BuildCpuInfo();
-  std::string os_cpu;
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS) || \
-    defined(OS_ANDROID)
+std::string GetOSVersion(bool include_android_build_number) {
+  std::string os_version;
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   int32_t os_major_version = 0;
   int32_t os_minor_version = 0;
   int32_t os_bugfix_version = 0;
@@ -110,7 +107,34 @@ std::string BuildOSCpuInfo(bool include_android_build_number) {
 #if defined(OS_ANDROID)
   std::string android_version_str = base::SysInfo::OperatingSystemVersion();
   std::string android_info_str = GetAndroidOSInfo(include_android_build_number);
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif
+
+  base::StringAppendF(&os_version,
+#if defined(OS_WIN)
+                      "%d.%d; ", os_major_version, os_minor_version
+#elif defined(OS_MACOSX)
+                      "%d_%d_%d", os_major_version, os_minor_version,
+                      os_bugfix_version
+#elif defined(OS_CHROMEOS)
+                      "CrOS "
+                      "%d.%d.%d",
+                      os_major_version, os_minor_version, os_bugfix_version
+#elif defined(OS_ANDROID)
+                      "%s%s", android_version_str.c_str(),
+                      android_info_str.c_str()
+#else
+                      ""
+#endif
+  );
+  return os_version;
+}
+
+std::string BuildOSCpuInfo(bool include_android_build_number) {
+  std::string cputype = BuildCpuInfo();
+  std::string os_version = GetOSVersion(include_android_build_number);
+  std::string os_cpu;
+
+#if !defined(OS_ANDROID) && defined(OS_POSIX) && !defined(OS_MACOSX)
   // Should work on any Posix system.
   struct utsname unixinfo;
   uname(&unixinfo);
@@ -118,19 +142,16 @@ std::string BuildOSCpuInfo(bool include_android_build_number) {
 
   base::StringAppendF(&os_cpu,
 #if defined(OS_WIN)
-                      "Windows NT %d.%d; %s", os_major_version,
-                      os_minor_version, cputype.c_str()
+                      "Windows NT %s%s", os_version.c_str(), cputype.c_str()
 #elif defined(OS_MACOSX)
-                      "%s Mac OS X %d_%d_%d", cputype.c_str(), os_major_version,
-                      os_minor_version, os_bugfix_version
+                      "%s Mac OS X %s", cputype.c_str(), os_version.c_str()
 #elif defined(OS_CHROMEOS)
                       "CrOS "
-                      "%s %d.%d.%d",
+                      "%s %s",
                       cputype.c_str(),  // e.g. i686
-                      os_major_version, os_minor_version, os_bugfix_version
+                      os_version.c_str()
 #elif defined(OS_ANDROID)
-                      "Android %s%s", android_version_str.c_str(),
-                      android_info_str.c_str()
+                      "Android %s", os_version.c_str()
 #elif defined(OS_FUCHSIA)
                       "Fuchsia"
 #elif defined(OS_POSIX)

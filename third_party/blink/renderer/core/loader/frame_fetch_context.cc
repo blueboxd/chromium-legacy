@@ -187,6 +187,24 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame) {
 }
 
 // Simple function to add quotes to make headers strings.
+const AtomicString AddBrandVersionQuotes(const std::string& brand,
+                                         const std::string& version) {
+  if (brand.empty())
+    return AtomicString("");
+
+  StringBuilder quoted_string;
+  quoted_string.Append("\"");
+  quoted_string.Append(brand.data());
+  quoted_string.Append("\"");
+  if (!version.empty()) {
+    quoted_string.Append(";v=\"");
+    quoted_string.Append(version.data());
+    quoted_string.Append("\"");
+  }
+  return quoted_string.ToAtomicString();
+}
+
+// Simple function to add quotes to make headers strings.
 const AtomicString AddQuotes(std::string str) {
   if (str.empty())
     return AtomicString("");
@@ -537,17 +555,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       ShouldSendClientHint(mojom::WebClientHintsType::kUA, hints_preferences,
                            enabled_hints);
   if (RuntimeEnabledFeatures::UserAgentClientHintEnabled()) {
-    StringBuilder result;
-    result.Append(ua.brand.data());
-    const auto& version = use_full_ua ? ua.full_version : ua.major_version;
-    if (!version.empty()) {
-      result.Append(' ');
-      result.Append(version.data());
-    }
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUA)],
-        AddQuotes(result.ToString().Ascii()));
+        AddBrandVersionQuotes(
+            ua.brand, use_full_ua ? ua.full_version : ua.major_version));
 
     // We also send Sec-CH-UA-Mobile to all hints. It is a one-bit header
     // identifying if the browser has opted for a "mobile" experience
@@ -743,7 +755,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAPlatform)],
-        AddQuotes(ua.platform));
+        AddBrandVersionQuotes(ua.platform, ua.platform_version));
   }
 
   if ((can_always_send_hints ||

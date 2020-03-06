@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/persistence/browser_persister.h"
 
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"

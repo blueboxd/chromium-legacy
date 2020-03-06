@@ -6,6 +6,7 @@
 #include "DiagnosticsReporter.h"
 
 #include <algorithm>
+#include "base/memory/ptr_util.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"

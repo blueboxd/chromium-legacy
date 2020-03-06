@@ -7,7 +7,8 @@
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.passwordsPrivate.FooType'.
 // Please run the closure compiler before committing changes.
-// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
+// See
+// https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
 
 /** @fileoverview Externs generated from namespace: passwordsPrivate */
 
@@ -117,7 +118,8 @@ chrome.passwordsPrivate.recordPasswordsPageAccessInSettings = function() {};
  * @param {string} new_username The new username.
  * @param {string=} new_password The new password.
  */
-chrome.passwordsPrivate.changeSavedPassword = function(id, new_username, new_password) {};
+chrome.passwordsPrivate.changeSavedPassword = function(
+    id, new_username, new_password) {};
 
 /**
  * Removes the saved password corresponding to |id|. If no saved password for
@@ -241,6 +243,18 @@ chrome.passwordsPrivate.changeCompromisedCredential = function(
  */
 chrome.passwordsPrivate.removeCompromisedCredential = function(
     credential, callback) {};
+
+/**
+ * Starts a check for compromised passwords. Invokes |callback| on completion.
+ * @param {function():void=} callback
+ */
+chrome.passwordsPrivate.startPasswordCheck = function(callback) {};
+
+/**
+ * Stops checking for compromised passwords. Invokes |callback| on completion.
+ * @param {function():void=} callback
+ */
+chrome.passwordsPrivate.stopPasswordCheck = function(callback) {};
 
 /**
  * Fired when the saved passwords list has changed, meaning that an entry has

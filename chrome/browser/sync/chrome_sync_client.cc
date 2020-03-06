@@ -576,15 +576,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
                  : nullptr;
     }
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
-    case syncer::FAVICON_IMAGES:
-    case syncer::FAVICON_TRACKING:
-      if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes)) {
-        return GetWeakPtrOrNull(
-            SessionSyncServiceFactory::GetForProfile(profile_)
-                ->GetFaviconCache());
-      }
-      NOTREACHED();
-      return nullptr;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::SUPERVISED_USER_SETTINGS:
       return SupervisedUserSettingsServiceFactory::GetForKey(
@@ -610,9 +601,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
           ->AsWeakPtr();
 #endif  // defined(OS_CHROMEOS)
     default:
-      // The following datatypes still need to be transitioned to the
-      // syncer::SyncableService API:
-      // Bookmarks
       NOTREACHED();
       return nullptr;
   }

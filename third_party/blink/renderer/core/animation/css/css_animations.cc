@@ -388,11 +388,29 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
       if (existing_animation) {
         cancel_running_animation_flags[existing_animation_index] = false;
 
-        Animation* animation = existing_animation->animation.Get();
+        CSSAnimation* animation =
+            DynamicTo<CSSAnimation>(existing_animation->animation.Get());
 
         const bool was_paused =
             CSSTimingData::GetRepeated(existing_animation->play_state_list,
                                        i) == EAnimPlayState::kPaused;
+
+        // Explicit calls to web-animation play controls override changes to
+        // play state via the animation-play-state style. Ensure that the new
+        // play state based on animation-play-state differs from the current
+        // play state and that the change is not blocked by a sticky state.
+        Animation::AnimationPlayState sticky_override =
+            animation->getWebAnimationOverriddenPlayState();
+        bool toggle_pause_state = false;
+        if (is_paused != was_paused) {
+          if (animation->Paused() && sticky_override != Animation::kPaused &&
+              !is_paused) {
+            toggle_pause_state = true;
+          } else if (animation->Playing() &&
+                     sticky_override != Animation::kRunning && is_paused) {
+            toggle_pause_state = true;
+          }
+        }
 
         if (keyframes_rule != existing_animation->style_rule ||
             keyframes_rule->Version() !=
@@ -409,7 +427,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
                   timing, is_paused, animation->UnlimitedCurrentTime()),
               specified_timing, keyframes_rule,
               animation_data->PlayStateList());
-          if (is_paused != was_paused)
+          if (toggle_pause_state)
             update.ToggleAnimationIndexPaused(existing_animation_index);
         }
       } else {
@@ -481,13 +499,18 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
 
   for (wtf_size_t paused_index :
        pending_update_.AnimationIndicesWithPauseToggled()) {
-    Animation& animation = *running_animations_[paused_index]->animation;
-    if (animation.Paused())
-      animation.Unpause();
-    else
-      animation.pause();
-    if (animation.Outdated())
-      animation.Update(kTimingUpdateOnDemand);
+    CSSAnimation* animation = DynamicTo<CSSAnimation>(
+        running_animations_[paused_index]->animation.Get());
+
+    if (animation->Paused()) {
+      animation->Unpause();
+      animation->ResetWebAnimationOverriddenPlayState();
+    } else {
+      animation->pause();
+      animation->ResetWebAnimationOverriddenPlayState();
+    }
+    if (animation->Outdated())
+      animation->Update(kTimingUpdateOnDemand);
   }
 
   for (const auto& animation : pending_update_.UpdatedCompositorKeyframes())
@@ -529,6 +552,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     animation->play();
     if (inert_animation->Paused())
       animation->pause();
+    animation->ResetWebAnimationOverriddenPlayState();
     animation->Update(kTimingUpdateOnDemand);
 
     running_animations_.push_back(

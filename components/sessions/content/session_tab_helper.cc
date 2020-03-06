@@ -4,6 +4,7 @@
 
 #include "components/sessions/content/session_tab_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/content/session_tab_helper_delegate.h"
 #include "components/sessions/core/serialized_navigation_entry.h"

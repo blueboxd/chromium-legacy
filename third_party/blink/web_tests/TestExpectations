@@ -2812,8 +2812,6 @@ crbug.com/832071 virtual/cache-storage-sequence/external/wpt/service-workers/ser
 crbug.com/832071 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # failures in external/wpt/css/css-animations/ and web-animations/ from Mozilla tests
-crbug.com/849859 external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure ]
-crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure ]
 crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
 crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
 
@@ -6166,11 +6164,6 @@ crbug.com/1019662 external/wpt/html/dom/idlharness.worker.html [ Pass Timeout ]
 
 # Temporarily disabled to a breakpoint non-determinism issue.
 crbug.com/1019613 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ Pass Failure ]
-
-# eval+Trusted Types failures while the feature is implemented.
-external/wpt/trusted-types/eval-csp-no-tt.tentative.html [ Failure ]
-external/wpt/trusted-types/eval-no-csp-no-tt.tentative.html [ Failure ]
-external/wpt/trusted-types/eval-no-csp-no-tt-default-policy.tentative.html [ Failure ]
 
 # First frame not always painted in time
 crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none.html [ Pass Failure ]

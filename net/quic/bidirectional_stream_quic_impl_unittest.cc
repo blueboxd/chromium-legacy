@@ -809,7 +809,7 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::string ConstructDataHeader(size_t body_len) {
-    if (version_.transport_version != quic::QUIC_VERSION_99) {
+    if (!version_.UsesHttp3()) {
       return "";
     }
     std::unique_ptr<char[]> buffer;
@@ -1065,7 +1065,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   AddWrite(ConstructRequestHeadersPacketInner(
       GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length));
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.UsesHttp3()) {
     AddWrite(
         ConstructClientDataPacket(kIncludeVersion, !kFin, kBody1 + kBody2));
   } else {
@@ -1081,7 +1081,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   std::string header3 = ConstructDataHeader(kBody3.length());
   std::string header4 = ConstructDataHeader(kBody4.length());
   std::string header5 = ConstructDataHeader(kBody5.length());
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.UsesHttp3()) {
     AddWrite(ConstructClientDataPacket(!kIncludeVersion, kFin,
                                        kBody3 + kBody4 + kBody5));
   } else {
@@ -1206,7 +1206,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   const char kBody1[] = "here are some data";
   std::string header = ConstructDataHeader(strlen(kBody1));
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.UsesHttp3()) {
     AddWrite(ConstructRequestHeadersAndMultipleDataFramesPacket(
         !kFin, DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
         {header, kBody1}));
@@ -1219,7 +1219,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   AddWrite(ConstructClientAckPacket(3, 1, 2));
   const char kBody2[] = "really small";
   std::string header2 = ConstructDataHeader(strlen(kBody2));
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.UsesHttp3()) {
     AddWrite(ConstructClientDataPacket(!kIncludeVersion, kFin,
                                        header2 + std::string(kBody2)));
   } else {
@@ -1330,7 +1330,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   std::string header = ConstructDataHeader(kBody1.length());
   std::string header2 = ConstructDataHeader(kBody2.length());
 
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.UsesHttp3()) {
     AddWrite(ConstructRequestHeadersAndMultipleDataFramesPacket(
         !kFin, DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
         {header + kBody1 + header2 + kBody2}));
@@ -1348,7 +1348,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   std::string header3 = ConstructDataHeader(kBody3.length());
   std::string header4 = ConstructDataHeader(kBody4.length());
   std::string header5 = ConstructDataHeader(kBody5.length());
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.UsesHttp3()) {
     AddWrite(ConstructClientDataPacket(
         !kIncludeVersion, kFin,
         header3 + kBody3 + header4 + kBody4 + header5 + kBody5));
@@ -1554,7 +1554,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
       GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length));
   std::string header = ConstructDataHeader(strlen(kUploadData));
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.UsesHttp3()) {
     AddWrite(ConstructClientDataPacket(kIncludeVersion, kFin,
                                        header + std::string(kUploadData)));
   } else {
@@ -1654,7 +1654,7 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
       GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length));
   std::string header = ConstructDataHeader(strlen(kUploadData));
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.UsesHttp3()) {
     AddWrite(ConstructClientDataPacket(kIncludeVersion, kFin,
                                        header + std::string(kUploadData)));
   } else {
@@ -1756,7 +1756,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
       &spdy_request_headers_frame_length));
 
   std::string header = ConstructDataHeader(strlen(kUploadData));
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.UsesHttp3()) {
     AddWrite(ConstructAckAndDataPacket(++packet_number_, !kIncludeVersion, 2, 1,
                                        2, !kFin, kUploadData, &client_maker_));
     AddWrite(ConstructAckAndDataPacket(++packet_number_, !kIncludeVersion, 3, 3,
@@ -2364,7 +2364,7 @@ TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
       GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length));
   std::string header = ConstructDataHeader(strlen(kBody));
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.UsesHttp3()) {
     AddWrite(ConstructClientDataPacket(kIncludeVersion, kFin, header + kBody));
   } else {
     AddWrite(ConstructClientDataPacket(kIncludeVersion, kFin, kBody));

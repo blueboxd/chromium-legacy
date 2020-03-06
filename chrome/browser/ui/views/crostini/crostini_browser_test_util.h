@@ -10,7 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
-#include "services/network/public/mojom/network_change_manager.mojom.h"
+#include "services/network/public/mojom/network_change_manager.mojom-forward.h"
 
 class CrostiniBrowserTestChromeBrowserMainExtraParts;
 

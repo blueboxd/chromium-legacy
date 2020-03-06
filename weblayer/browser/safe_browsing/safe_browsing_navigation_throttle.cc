@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/safe_browsing/safe_browsing_navigation_throttle.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/navigation_handle.h"

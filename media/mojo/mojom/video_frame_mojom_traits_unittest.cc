@@ -4,6 +4,7 @@
 
 #include "media/mojo/mojom/video_frame_mojom_traits.h"
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/task_environment.h"

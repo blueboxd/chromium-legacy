@@ -4,6 +4,7 @@
 
 #include "content/browser/sms/sms_fetcher_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/sms/test/mock_sms_provider.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"

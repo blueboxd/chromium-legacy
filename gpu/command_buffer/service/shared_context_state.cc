@@ -57,7 +57,7 @@ void SharedContextState::compileError(const char* shader, const char* errors) {
 }
 
 SharedContextState::MemoryTracker::MemoryTracker(
-    gpu::MemoryTracker::Observer* peak_memory_monitor)
+    base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor)
     : peak_memory_monitor_(peak_memory_monitor) {}
 
 SharedContextState::MemoryTracker::~MemoryTracker() {
@@ -67,10 +67,15 @@ SharedContextState::MemoryTracker::~MemoryTracker() {
 void SharedContextState::MemoryTracker::OnMemoryAllocatedChange(
     CommandBufferId id,
     uint64_t old_size,
-    uint64_t new_size) {
+    uint64_t new_size,
+    GpuPeakMemoryAllocationSource source) {
   size_ += new_size - old_size;
-  if (peak_memory_monitor_)
-    peak_memory_monitor_->OnMemoryAllocatedChange(id, old_size, new_size);
+  if (source == GpuPeakMemoryAllocationSource::UNKNOWN)
+    source = GpuPeakMemoryAllocationSource::SHARED_CONTEXT_STATE;
+  if (peak_memory_monitor_) {
+    peak_memory_monitor_->OnMemoryAllocatedChange(id, old_size, new_size,
+                                                  source);
+  }
 }
 
 SharedContextState::SharedContextState(
@@ -83,7 +88,7 @@ SharedContextState::SharedContextState(
     viz::VulkanContextProvider* vulkan_context_provider,
     viz::MetalContextProvider* metal_context_provider,
     viz::DawnContextProvider* dawn_context_provider,
-    gpu::MemoryTracker::Observer* peak_memory_monitor)
+    base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor)
     : use_virtualized_gl_contexts_(use_virtualized_gl_contexts),
       context_lost_callback_(std::move(context_lost_callback)),
       gr_context_type_(gr_context_type),

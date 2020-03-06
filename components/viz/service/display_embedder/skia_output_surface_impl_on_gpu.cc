@@ -51,6 +51,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
+#include "gpu/ipc/common/gpu_peak_memory.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
@@ -147,7 +148,9 @@ class SharedImageSubMemoryTracker : public gpu::MemoryTracker {
     uint64_t old_size = size_;
     size_ += delta;
     DCHECK(observer_);
-    observer_->OnMemoryAllocatedChange(command_buffer_id_, old_size, size_);
+    observer_->OnMemoryAllocatedChange(
+        command_buffer_id_, old_size, size_,
+        gpu::GpuPeakMemoryAllocationSource::SKIA);
   }
   uint64_t GetSize() const override { return size_; }
   uint64_t ClientTracingId() const override { return client_tracing_id_; }

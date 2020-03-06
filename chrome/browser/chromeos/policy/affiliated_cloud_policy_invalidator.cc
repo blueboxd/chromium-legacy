@@ -13,10 +13,10 @@
 namespace policy {
 
 AffiliatedCloudPolicyInvalidator::AffiliatedCloudPolicyInvalidator(
-    enterprise_management::DeviceRegisterRequest::Type type,
+    PolicyInvalidationScope scope,
     CloudPolicyCore* core,
     AffiliatedInvalidationServiceProvider* invalidation_service_provider)
-    : type_(type),
+    : scope_(scope),
       core_(core),
       invalidation_service_provider_(invalidation_service_provider),
       highest_handled_invalidation_version_(0) {
@@ -44,7 +44,7 @@ void AffiliatedCloudPolicyInvalidator::CreateInvalidator(
     invalidation::InvalidationService* invalidation_service) {
   DCHECK(!invalidator_);
   invalidator_.reset(new CloudPolicyInvalidator(
-      type_, core_, base::ThreadTaskRunnerHandle::Get(),
+      scope_, core_, base::ThreadTaskRunnerHandle::Get(),
       base::DefaultClock::GetInstance(),
       highest_handled_invalidation_version_));
   invalidator_->Initialize(invalidation_service);

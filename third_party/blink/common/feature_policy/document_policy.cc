@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "net/http/structured_headers.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"

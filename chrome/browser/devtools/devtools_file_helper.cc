@@ -55,6 +55,7 @@ namespace {
 
 static const char kRootName[] = "<root>";
 static const char kPermissionDenied[] = "<permission denied>";
+static const char kSelectionCancelled[] = "<selection cancelled>";
 
 base::LazyInstance<base::FilePath>::Leaky
     g_last_save_path = LAZY_INSTANCE_INITIALIZER;
@@ -313,7 +314,7 @@ void DevToolsFileHelper::AddFileSystem(
       Bind(&DevToolsFileHelper::InnerAddFileSystem, weak_factory_.GetWeakPtr(),
            show_info_bar_callback, type),
       Bind(&DevToolsFileHelper::FailedToAddFileSystem,
-           weak_factory_.GetWeakPtr(), kPermissionDenied),
+           weak_factory_.GetWeakPtr(), kSelectionCancelled),
       web_contents_);
   select_file_dialog->Show(ui::SelectFileDialog::SELECT_FOLDER,
                            base::FilePath());

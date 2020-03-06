@@ -4,6 +4,7 @@
 
 #include "services/network/dhcp_pac_file_fetcher_mojo.h"
 
+#include "base/memory/ptr_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/proxy_resolution/mock_pac_file_fetcher.h"
 #include "net/test/gtest_util.h"

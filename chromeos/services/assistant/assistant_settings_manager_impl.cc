@@ -9,6 +9,7 @@
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/cros_platform_api.h"

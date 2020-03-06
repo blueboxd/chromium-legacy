@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_EXTENSIONS_APP_LAUNCH_PARAMS_H_
 
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "ui/base/window_open_disposition.h"
 
 class Profile;

@@ -65,6 +65,8 @@ class CredentialLeakPasswordChangeControllerAndroid {
   bool ShouldShowCancelButton() const;
 
  private:
+  bool ShouldShowChangePasswordButton() const;
+
   // Used to customize the UI.
   const password_manager::CredentialLeakType leak_type_;
 

@@ -5,6 +5,7 @@
 #include "ui/views/animation/ink_drop_host_view.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"

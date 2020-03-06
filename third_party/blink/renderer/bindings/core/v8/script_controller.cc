@@ -35,6 +35,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"

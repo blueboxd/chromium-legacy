@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 124: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 124: Application Cache API use is deprecated and will be removed in M82, around April 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
+CONSOLE WARNING: line 138: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 138: Application Cache API use is deprecated and will be removed in M82, around April 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
 Tests property access on a cached DOMWindow after the associated frame is navigated. Test should not crash and properties read from the cached DOMWindow should be identical to properties through the 'current' DOMWindow.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -70,6 +70,9 @@ PASS oldChildWindow.navigator.usb.ondisconnect is newChildWindow.navigator.usb.o
 PASS oldChildWindow.navigator.userActivation.hasBeenActive is newChildWindow.navigator.userActivation.hasBeenActive
 PASS oldChildWindow.navigator.userActivation.isActive is newChildWindow.navigator.userActivation.isActive
 PASS oldChildWindow.navigator.userAgent is newChildWindow.navigator.userAgent
+PASS oldChildWindow.navigator.userAgentData.mobile is newChildWindow.navigator.userAgentData.mobile
+PASS oldChildWindow.navigator.userAgentData.uaList[0].brand is newChildWindow.navigator.userAgentData.uaList[0].brand
+PASS oldChildWindow.navigator.userAgentData.uaList[0].version is newChildWindow.navigator.userAgentData.uaList[0].version
 PASS oldChildWindow.navigator.vendor is newChildWindow.navigator.vendor
 PASS oldChildWindow.navigator.vendorSub is newChildWindow.navigator.vendorSub
 PASS oldChildWindow.navigator.xr.ondevicechange is newChildWindow.navigator.xr.ondevicechange

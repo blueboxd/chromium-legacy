@@ -12,9 +12,9 @@ namespace features {
 const base::Feature kAutofillAssistant{"AutofillAssistant",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether to query backend service to start any assisted actions.
+// Controls whether to enable Assistant Autofill in a normal Chrome tab.
 const base::Feature kAutofillAssistantChromeEntry{
-    "AutofillAssistantChromeEntry", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillAssistantChromeEntry", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutofillAssistantDirectActions{
     "AutofillAssistantDirectActions", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 // https://github.com/WICG/ua-client-hints
-dictionary UserAgent {
-  DOMString brand = "";
-  DOMString version = "";
+
+dictionary UADataValues {
   DOMString platform = "";
+  DOMString platformVersion = "";
   DOMString architecture = "";
   DOMString model = "";
 };

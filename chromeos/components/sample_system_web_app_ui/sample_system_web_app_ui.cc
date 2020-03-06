@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "chromeos/components/sample_system_web_app_ui/url_constants.h"
 #include "chromeos/grit/chromeos_sample_system_web_app_resources.h"
 #include "content/public/browser/web_contents.h"

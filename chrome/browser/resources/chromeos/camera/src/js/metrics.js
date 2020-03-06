@@ -6,6 +6,8 @@ import {browserProxy} from './browser_proxy/browser_proxy.js';
 // eslint-disable-next-line no-unused-vars
 import {Intent} from './intent.js';
 import * as state from './state.js';
+// eslint-disable-next-line no-unused-vars
+import {Facing} from './type.js';
 import {
   Mode,
   Resolution,  // eslint-disable-line no-unused-vars
@@ -94,7 +96,7 @@ export const IntentResultType = {
 
 /**
  * Returns event builder for the metrics type: capture.
- * @param {?string} facingMode Camera facing-mode of the capture.
+ * @param {!Facing} facingMode Camera facing-mode of the capture.
  * @param {number} length Length of 1 minute buckets for captured video.
  * @param {!Resolution} resolution Capture resolution.
  * @param {!IntentResultType} intentResult
@@ -120,7 +122,7 @@ function captureType(facingMode, length, resolution, intentResult) {
   const State = state.State;
   return base.category('capture')
       .action(condState(Object.values(Mode)))
-      .label(facingMode || '(not set)')
+      .label(facingMode)
       // Skips 3rd dimension for obsolete 'sound' state.
       .dimen(4, condState([State.MIRROR]))
       .dimen(

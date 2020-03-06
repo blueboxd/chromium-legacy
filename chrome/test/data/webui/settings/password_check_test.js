@@ -70,6 +70,7 @@ cr.define('settings_passwords_check', function() {
     test('testNoCompromisedCredentials', function() {
       const checkPasswordSection = createCheckPasswordSection();
       assertTrue(checkPasswordSection.$.passwordCheckBody.hidden);
+      assertFalse(checkPasswordSection.$.noCompromisedCredentials.hidden);
       validateLeakedPasswordsList(
           checkPasswordSection.$.leakedPasswordList, []);
     });
@@ -91,6 +92,7 @@ cr.define('settings_passwords_check', function() {
           .then(() => {
             Polymer.dom.flush();
             assertFalse(checkPasswordSection.$.passwordCheckBody.hidden);
+            assertTrue(checkPasswordSection.$.noCompromisedCredentials.hidden);
             validateLeakedPasswordsList(
                 checkPasswordSection.$.leakedPasswordList, leakedPasswords);
           });

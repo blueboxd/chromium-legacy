@@ -18,6 +18,10 @@
 #include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_frame.h"
+#include "media/base/video_types.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 namespace test {
@@ -66,6 +70,7 @@ StateEnum ClientStateNotification<StateEnum>::Wait() {
   return ret;
 }
 
+// Helper to extract fragments from encoded video stream.
 class EncodedDataHelper {
  public:
   EncodedDataHelper(const std::vector<uint8_t>& stream,
@@ -155,6 +160,53 @@ class AlignedAllocator : public std::allocator<T> {
   }
 };
 
+// Helper to align data and extract frames from raw video streams.
+// TODO(crbug.com/1045825): Reduces number of data copies performed.
+class AlignedDataHelper {
+ public:
+  AlignedDataHelper(const std::vector<uint8_t>& stream,
+                    uint32_t num_frames,
+                    VideoPixelFormat pixel_format,
+                    const gfx::Rect& visible_area,
+                    const gfx::Size& coded_size);
+  ~AlignedDataHelper();
+
+  // Compute and return the next frame to be sent to the encoder.
+  scoped_refptr<VideoFrame> GetNextFrame();
+
+  // Rewind to the position of the video stream.
+  void Rewind();
+  // Check whether we are at the start of the video stream.
+  bool AtHeadOfStream() const;
+  // Check whether we are at the end of the video stream.
+  bool AtEndOfStream() const;
+
+ private:
+  // Align the video stream to platform requirements.
+  void CreateAlignedInputStream(const std::vector<uint8_t>& stream);
+
+  // Current position in the video stream.
+  size_t data_pos_ = 0;
+  // The number of frames in the video stream.
+  uint32_t num_frames_ = 0;
+  // The video stream's pixel format.
+  VideoPixelFormat pixel_format_ = VideoPixelFormat::PIXEL_FORMAT_UNKNOWN;
+  // The video stream's visible area.
+  gfx::Rect visible_area_;
+  // The video's coded size, as requested by the encoder.
+  gfx::Size coded_size_;
+
+  // Aligned data, each plane is aligned to the specified platform alignment
+  // requirements.
+  std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
+      aligned_data_;
+  // Byte size of each frame in |aligned_data_|.
+  size_t aligned_frame_size_ = 0;
+  // Byte size for each aligned plane in a frame.
+  std::vector<size_t> aligned_plane_size_;
+};
+
 }  // namespace test
 }  // namespace media
+
 #endif  // MEDIA_GPU_TEST_VIDEO_TEST_HELPERS_H_

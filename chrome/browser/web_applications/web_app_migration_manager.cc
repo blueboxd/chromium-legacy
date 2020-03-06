@@ -180,8 +180,12 @@ std::unique_ptr<WebApp> WebAppMigrationManager::MigrateBookmarkApp(
 
   web_app->SetThemeColor(bookmark_app_registrar_.GetAppThemeColor(app_id));
   web_app->SetDisplayMode(bookmark_app_registrar_.GetAppDisplayMode(app_id));
-  web_app->SetUserDisplayMode(
-      bookmark_app_registrar_.GetAppUserDisplayMode(app_id));
+
+  DisplayMode user_display_mode =
+      bookmark_app_registrar_.GetAppUserDisplayMode(app_id);
+  if (user_display_mode != DisplayMode::kUndefined)
+    web_app->SetUserDisplayMode(user_display_mode);
+
   web_app->SetIsLocallyInstalled(
       bookmark_app_registrar_.IsLocallyInstalled(app_id));
   web_app->SetIconInfos(bookmark_app_registrar_.GetAppIconInfos(app_id));

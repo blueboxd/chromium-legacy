@@ -84,7 +84,7 @@ void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
   delegate_->OnNavigationItemCommitted(item);
 
   if (!wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
-    restored_visible_item_.reset();
+    RestoreVisibleItemState();
   }
 }
 
@@ -417,7 +417,7 @@ bool WKBasedNavigationManagerImpl::ShouldBlockUrlDuringRestore(
   // Abort restore.
   DiscardNonCommittedItems();
   last_committed_item_index_ = web_view_cache_.GetCurrentItemIndex();
-  restored_visible_item_.reset();
+  RestoreVisibleItemState();
   FinalizeSessionRestore();
   return true;
 }
@@ -733,6 +733,24 @@ void WKBasedNavigationManagerImpl::UnsafeRestore(
   if (last_committed_item_index > -1)
     restored_visible_item_ = std::move(items[last_committed_item_index]);
 
+  std::vector<std::unique_ptr<NavigationItem>> back_items;
+  for (int index = 0; index < last_committed_item_index; index++) {
+    back_items.push_back(std::move(items[index]));
+  }
+
+  std::vector<std::unique_ptr<NavigationItem>> forward_items;
+  for (size_t index = last_committed_item_index + 1; index < items.size();
+       index++) {
+    forward_items.push_back(std::move(items[index]));
+  }
+
+  AddRestoreCompletionCallback(base::BindOnce(
+      &WKBasedNavigationManagerImpl::RestoreItemsState, base::Unretained(this),
+      RestoreItemListType::kBackList, std::move(back_items)));
+  AddRestoreCompletionCallback(base::BindOnce(
+      &WKBasedNavigationManagerImpl::RestoreItemsState, base::Unretained(this),
+      RestoreItemListType::kForwardList, std::move(forward_items)));
+
   LoadURLWithParams(params);
 
   // On restore prime the first navigation item with the title.  The remaining
@@ -741,6 +759,49 @@ void WKBasedNavigationManagerImpl::UnsafeRestore(
   if (pendingItem) {
     pendingItem->SetTitle(firstTitle);
   }
+}
+
+void WKBasedNavigationManagerImpl::RestoreItemsState(
+    RestoreItemListType list_type,
+    std::vector<std::unique_ptr<NavigationItem>> items_restored) {
+  bool back_list = list_type == RestoreItemListType::kBackList;
+  size_t current_item_index = web_view_cache_.GetCurrentItemIndex();
+  size_t cache_offset = back_list ? 0 : current_item_index + 1;
+  size_t cache_limit = back_list
+                           ? current_item_index
+                           : web_view_cache_.GetBackForwardListItemCount();
+
+  for (size_t index = 0; index < items_restored.size(); index++) {
+    size_t cache_index = index + cache_offset;
+    if (cache_index >= cache_limit)
+      break;
+
+    NavigationItemImpl* cached_item =
+        web_view_cache_.GetNavigationItemImplAtIndex(
+            cache_index, true /* create_if_missing */);
+    NavigationItem* restore_item = items_restored[index].get();
+
+    bool is_same_url = cached_item->GetURL() == restore_item->GetURL();
+    if (wk_navigation_util::IsRestoreSessionUrl(cached_item->GetURL())) {
+      GURL target_url;
+      if (wk_navigation_util::ExtractTargetURL(cached_item->GetURL(),
+                                               &target_url))
+        is_same_url = target_url == restore_item->GetURL();
+    }
+
+    if (is_same_url) {
+      cached_item->RestoreStateFromItem(restore_item);
+    }
+  }
+}
+
+void WKBasedNavigationManagerImpl::RestoreVisibleItemState() {
+  NavigationItemImpl* last_committed_item =
+      GetLastCommittedItemInCurrentOrRestoredSession();
+  if (restored_visible_item_ && last_committed_item) {
+    last_committed_item->RestoreStateFromItem(restored_visible_item_.get());
+  }
+  restored_visible_item_.reset();
 }
 
 void WKBasedNavigationManagerImpl::LoadURLWithParams(

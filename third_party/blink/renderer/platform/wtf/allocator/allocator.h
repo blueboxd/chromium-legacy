@@ -168,6 +168,9 @@ ALWAYS_INLINE const std::atomic<T>* AsAtomicPtr(const T* t) {
 WTF_EXPORT void AtomicMemcpy(void* to, const void* from, size_t bytes);
 template <size_t bytes>
 ALWAYS_INLINE void AtomicMemcpy(void* to, const void* from) {
+  static_assert(bytes > 0, "Number of copied bytes should be greater than 0");
+  DCHECK_EQ(0u, reinterpret_cast<size_t>(from) & (sizeof(size_t) - 1));
+  DCHECK_EQ(0u, reinterpret_cast<size_t>(to) & (sizeof(size_t) - 1));
   AtomicMemcpy(to, from, bytes);
 }
 

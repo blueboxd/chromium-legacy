@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/renderer/internal_document_state_data.h"

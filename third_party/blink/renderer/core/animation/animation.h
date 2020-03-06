@@ -147,16 +147,20 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   base::Optional<double> UnlimitedCurrentTime() const;
 
   // https://drafts.csswg.org/web-animations/#play-states
+  String PlayStateString() const;
   static const char* PlayStateString(AnimationPlayState);
   AnimationPlayState CalculateAnimationPlayState() const;
-  String playState() const {
-    return PlayStateString(CalculateAnimationPlayState());
-  }
+
+  // Do not call this method directly except via the v8 bindings. Depending on
+  // the type of animation a style flush is required to ensure that pending
+  // style changes that affect play state are resolved. Instead call
+  // PlayStateString directly.
+  virtual String playState() const;
 
   bool pending() const;
 
-  void pause(ExceptionState& = ASSERT_NO_EXCEPTION);
-  void play(ExceptionState& = ASSERT_NO_EXCEPTION);
+  virtual void pause(ExceptionState& = ASSERT_NO_EXCEPTION);
+  virtual void play(ExceptionState& = ASSERT_NO_EXCEPTION);
   void reverse(ExceptionState& = ASSERT_NO_EXCEPTION);
   void finish(ExceptionState& = ASSERT_NO_EXCEPTION);
   void updatePlaybackRate(double playback_rate,
@@ -189,7 +193,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   double playbackRate() const;
   void setPlaybackRate(double, ExceptionState& = ASSERT_NO_EXCEPTION);
   AnimationTimeline* timeline() { return timeline_; }
-  Document* GetDocument();
+  Document* GetDocument() const;
 
   double startTime(bool& is_null) const;
   base::Optional<double> startTime() const;

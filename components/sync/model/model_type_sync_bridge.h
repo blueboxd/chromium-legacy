@@ -119,6 +119,11 @@ class ModelTypeSyncBridge {
   // on the same or different clients, but to keep things simple, it probably
   // should be. Storage keys are kept in memory at steady state, so each model
   // type should strive to keep these keys as small as possible.
+  // Returning an empty string means the remote creation should be ignored (i.e.
+  // it contains invalid data).
+  // TODO(crbug.com/1057947): introduce a dedicated method to validate data from
+  // the server to solve the inconsistency with bridges that don't support
+  // GetStorageKey() and with remote updates which are not creations.
   virtual std::string GetStorageKey(const EntityData& entity_data) = 0;
 
   // Whether or not the bridge is capable of producing a client tag from

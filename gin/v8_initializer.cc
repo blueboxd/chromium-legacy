@@ -225,6 +225,13 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
                                sizeof(tf_experiment_concurrent_inlining) - 1);
   }
 
+  if (base::FeatureList::IsEnabled(features::kV8PerContextMarkingWorklist)) {
+    static const char stress_per_context_marking_worklist[] =
+        "--stress-per-context-marking-worklist";
+    v8::V8::SetFlagsFromString(stress_per_context_marking_worklist,
+                               sizeof(stress_per_context_marking_worklist) - 1);
+  }
+
   if (IsolateHolder::kStrictMode == mode) {
     static const char use_strict[] = "--use_strict";
     v8::V8::SetFlagsFromString(use_strict, sizeof(use_strict) - 1);

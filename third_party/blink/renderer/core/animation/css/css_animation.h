@@ -24,8 +24,35 @@ class CORE_EXPORT CSSAnimation : public Animation {
 
   const String& animationName() const { return animation_name_; }
 
+  // Animation overrides.
+  // Various operations may affect the computed values of properties on
+  // elements. User agents may, as an optimization, defer recomputing these
+  // values until it becomes necessary; however, all operations included in the
+  // programming interfaces defined in the web-animations and css-animations
+  // specifications, must produce a result consistent with having fully
+  // processed any such pending changes to computed values.  Notably, changes
+  // to animation-play-state and display:none must update the play state.
+  // https://drafts.csswg.org/css-animations-2/#requirements-on-pending-style-changes
+  String playState() const override;
+
+  // Explicit calls to the web-animation API that update the play state are
+  // conditionally sticky and override the animation-play-state style.
+  void pause(ExceptionState& = ASSERT_NO_EXCEPTION) override;
+  void play(ExceptionState& = ASSERT_NO_EXCEPTION) override;
+
+  // When set, the override takes precedence over animation-play-state.
+  // https://drafts.csswg.org/css-animations-2/#interaction-between-animation-play-state-and-web-animations-API
+  AnimationPlayState getWebAnimationOverriddenPlayState() {
+    return sticky_play_state_;
+  }
+  void ResetWebAnimationOverriddenPlayState() { sticky_play_state_ = kUnset; }
+
  private:
   String animation_name_;
+
+  // When set, the web-animation API is overruling the animation-play-state
+  // style.
+  AnimationPlayState sticky_play_state_;
 };
 
 template <>

@@ -270,7 +270,7 @@ void HTMLMarqueeElement::ContinueAnimation() {
   if (!ShouldContinue())
     return;
 
-  if (player_ && player_->playState() == "paused") {
+  if (player_ && player_->PlayStateString() == "paused") {
     player_->play();
     return;
   }

@@ -5,6 +5,7 @@
 #include "chromecast/renderer/cast_url_loader_throttle_provider.h"
 
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "chromecast/common/activity_filtering_url_loader_throttle.h"
 #include "chromecast/common/cast_url_loader_throttle.h"
 #include "content/public/renderer/render_frame.h"

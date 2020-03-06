@@ -132,6 +132,35 @@ static_library("video_player_test_environment") {
   ]
 }
 
+static_library("video_encoder") {
+  testonly = true
+  sources = [
+    "bitstream_helpers.h",
+    "video_encoder/video_encoder.cc",
+    "video_encoder/video_encoder.h",
+    "video_encoder/video_encoder_client.cc",
+    "video_encoder/video_encoder_client.h",
+  ]
+  deps = [
+    ":test_helpers",
+    "//media/gpu",
+    "//testing/gtest:gtest",
+  ]
+}
+
+static_library("video_encoder_test_environment") {
+  testonly = true
+  sources = [
+    "video_encoder/video_encoder_test_environment.cc",
+    "video_encoder/video_encoder_test_environment.h",
+  ]
+  data = [ "//media/test/data/" ]
+  deps = [
+    ":helpers",
+    "//media/gpu",
+  ]
+}
+
 if (use_vaapi || use_v4l2_codec) {
   static_library("image_processor") {
     testonly = true

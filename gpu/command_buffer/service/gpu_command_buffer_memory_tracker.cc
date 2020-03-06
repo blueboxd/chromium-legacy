@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "gpu/ipc/common/command_buffer_id.h"
+#include "gpu/ipc/common/gpu_peak_memory.h"
 
 // Macro to reduce code duplication when logging memory in
 // GpuCommandBufferMemoryTracker. This is needed as the UMA_HISTOGRAM_* macros
@@ -66,7 +67,9 @@ void GpuCommandBufferMemoryTracker::TrackMemoryAllocatedChange(int64_t delta) {
   uint64_t old_size = size_;
   size_ += delta;
   if (observer_)
-    observer_->OnMemoryAllocatedChange(command_buffer_id_, old_size, size_);
+    observer_->OnMemoryAllocatedChange(
+        command_buffer_id_, old_size, size_,
+        GpuPeakMemoryAllocationSource::COMMAND_BUFFER);
 }
 
 uint64_t GpuCommandBufferMemoryTracker::GetSize() const {

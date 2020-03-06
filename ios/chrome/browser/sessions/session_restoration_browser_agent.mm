@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

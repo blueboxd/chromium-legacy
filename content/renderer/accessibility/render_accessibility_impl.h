@@ -121,6 +121,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void PerformAction(const ui::AXActionData& data);
+  void Reset(int32_t reset_token);
 
   // blink::mojom::RendererPreferenceObserver implementation.
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
@@ -161,7 +162,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   // Handlers for messages from the browser to the renderer.
   void OnEventsAck(int ack_token);
-  void OnReset(int reset_token);
 
   void OnHitTest(const gfx::Point& point,
                  ax::mojom::Event event_to_fire,

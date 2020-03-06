@@ -1,0 +1,54 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_NAVIGATOR_UA_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_NAVIGATOR_UA_DATA_H_
+
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/navigator_ua_brand_version.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+namespace blink {
+
+class ScriptState;
+
+class NavigatorUAData : public ScriptWrappable, DOMWindowClient {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(NavigatorUAData);
+
+ public:
+  static NavigatorUAData* Create(LocalFrame* frame) {
+    return MakeGarbageCollected<NavigatorUAData>(frame);
+  }
+
+  explicit NavigatorUAData(LocalFrame* frame);
+
+  void AddBrand(const String& brand, const String& version);
+  void SetMobile(bool mobile);
+  void SetPlatform(const String& brand, const String& version);
+  void SetArchitecture(const String& architecture);
+  void SetModel(const String& model);
+
+  // IDL implementation
+  const HeapVector<Member<NavigatorUABrandVersion>>& uaList() const;
+  bool mobile() const;
+  ScriptPromise getHighEntropyValues(ScriptState*, Vector<String>&) const;
+
+  void Trace(Visitor* visitor) final;
+
+ private:
+  HeapVector<Member<NavigatorUABrandVersion>> brand_set_;
+  HeapVector<Member<NavigatorUABrandVersion>> empty_brand_set_;
+  bool is_mobile_ = false;
+  String platform_;
+  String platform_version_;
+  String architecture_;
+  String model_;
+};
+
+}  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_NAVIGATOR_UA_DATA_H_

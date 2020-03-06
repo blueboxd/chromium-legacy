@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "components/media_message_center/media_notification_util.h"
 #include "services/media_session/public/mojom/media_session_service.mojom.h"

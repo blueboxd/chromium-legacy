@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel.MockTabModelDelegate;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
@@ -527,16 +528,42 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Feature({"Android-TabSwitcher"})
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    public void testStartSurfaceLayoutDisabled() {
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    public void testStartSurfaceLayout_Disabled_LowEndPhone() throws Exception {
+        // clang-format on
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
+        verifyOverviewListLayoutEnabled();
+
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
+        verifyOverviewListLayoutEnabled();
+
+        // Test accessibility
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        verifyOverviewListLayoutEnabled();
+    }
+
+    @Test
+    @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Feature({"Android-TabSwitcher"})
+    // clang-format off
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
+    public void testStartSurfaceLayout_Disabled_HighEndPhone() throws Exception {
         // clang-format on
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, false);
-        launchedChromeAndEnterTabSwitcher();
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
+        verifyStackLayoutEnabled();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Layout activeLayout = getActiveLayout();
-            Assert.assertTrue(activeLayout instanceof OverviewListLayout);
-        });
+        // Verify accessibility
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        verifyOverviewListLayoutEnabled();
     }
 
     @Test
@@ -546,17 +573,12 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
     @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    public void testStartSurfaceLayoutDisabled_Accessibility() {
+    public void testStartSurfaceLayout_Disabled_AllPhone_Accessibility_WithoutContinuationFlag() {
         // clang-format on
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         AccessibilityUtil.setAccessibilityEnabledForTesting(true);
-        launchedChromeAndEnterTabSwitcher();
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Layout activeLayout = getActiveLayout();
-            Assert.assertTrue(activeLayout instanceof OverviewListLayout);
-        });
+        verifyOverviewListLayoutEnabled();
     }
 
     @Test
@@ -565,51 +587,21 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Feature({"Android-TabSwitcher"})
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
-    public void testStartSurfaceLayoutEnabled_Grid() {
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    public void testStartSurfaceLayout_Enabled_HighEndPhone() throws Exception {
         // clang-format on
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
-        launchedChromeAndEnterTabSwitcher();
+        verifyStartSurfaceLayoutEnable(TabListCoordinator.TabListMode.GRID);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Layout activeLayout = getActiveLayout();
-            Assert.assertTrue(activeLayout instanceof StartSurfaceLayout);
-
-            StartSurfaceLayout startSurfaceLayout = (StartSurfaceLayout) activeLayout;
-
-            Assert.assertEquals(TabListCoordinator.TabListMode.GRID,
-                    startSurfaceLayout.getStartSurfaceForTesting()
-                            .getTabListDelegate()
-                            .getListModeForTesting());
-        });
-    }
-
-    @Test
-    @MediumTest
-    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @Feature({"Android-TabSwitcher"})
-    // clang-format off
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    public void testStartSurfaceLayoutEnabled_Grid_Accessibility() {
-        // clang-format on
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, false);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
+        verifyStartSurfaceLayoutEnable(TabListCoordinator.TabListMode.GRID);
+
+        // Verify accessibility
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
         AccessibilityUtil.setAccessibilityEnabledForTesting(true);
-        launchedChromeAndEnterTabSwitcher();
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Layout activeLayout = getActiveLayout();
-            Assert.assertTrue(activeLayout instanceof StartSurfaceLayout);
-
-            StartSurfaceLayout startSurfaceLayout = (StartSurfaceLayout) activeLayout;
-
-            Assert.assertEquals(TabListCoordinator.TabListMode.GRID,
-                    startSurfaceLayout.getStartSurfaceForTesting()
-                            .getTabListDelegate()
-                            .getListModeForTesting());
-        });
+        verifyStartSurfaceLayoutEnable(TabListCoordinator.TabListMode.GRID);
     }
 
     @Test
@@ -619,24 +611,17 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
-                    ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    public void testStartSurfaceLayoutEnabled_List() {
+    public void testStartSurfaceLayout_Enabled_LowEndPhone() throws Exception {
         // clang-format on
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
-        launchedChromeAndEnterTabSwitcher();
+        verifyStartSurfaceLayoutEnable(TabListCoordinator.TabListMode.LIST);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Layout activeLayout = getActiveLayout();
-            Assert.assertTrue(activeLayout instanceof StartSurfaceLayout);
-
-            StartSurfaceLayout startSurfaceLayout = (StartSurfaceLayout) activeLayout;
-
-            Assert.assertEquals(TabListCoordinator.TabListMode.LIST,
-                    startSurfaceLayout.getStartSurfaceForTesting()
-                            .getTabListDelegate()
-                            .getListModeForTesting());
-        });
+        // Test Accessibility
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        verifyStartSurfaceLayoutEnable(TabListCoordinator.TabListMode.LIST);
     }
 
     @Before
@@ -651,6 +636,49 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
         AccessibilityUtil.setAccessibilityEnabledForTesting(null);
+    }
+
+    /**
+     * Verify {@link StackLayout} is in used. The {@link StackLayout} is used when
+     * ChromeFeatureList.TAB_GROUPS_ANDROID or ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID is disabled
+     * in high end phone.
+     */
+    private void verifyStackLayoutEnabled() {
+        launchedChromeAndEnterTabSwitcher();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Layout activeLayout = getActiveLayout();
+            Assert.assertTrue(activeLayout instanceof StackLayout);
+        });
+    }
+
+    /**
+     * Verify the {@link OverviewListLayout} is in used. The {@link OverviewListLayout} is used when
+     * accessibility is turned on. It is also used for low end device.
+     */
+    private void verifyOverviewListLayoutEnabled() {
+        launchedChromeAndEnterTabSwitcher();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Layout activeLayout = getActiveLayout();
+            Assert.assertTrue(activeLayout instanceof OverviewListLayout);
+        });
+    }
+
+    private void verifyStartSurfaceLayoutEnable(
+            @TabListCoordinator.TabListMode int expectedTabListMode) {
+        launchedChromeAndEnterTabSwitcher();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Layout activeLayout = getActiveLayout();
+            Assert.assertTrue(activeLayout instanceof StartSurfaceLayout);
+
+            StartSurfaceLayout startSurfaceLayout = (StartSurfaceLayout) activeLayout;
+
+            Assert.assertEquals(expectedTabListMode,
+                    startSurfaceLayout.getStartSurfaceForTesting()
+                            .getTabListDelegate()
+                            .getListModeForTesting());
+        });
     }
 
     private void launchedChromeAndEnterTabSwitcher() {

@@ -100,7 +100,10 @@ PasswordCheckDelegate::PasswordCheckDelegate(Profile* profile)
           ServiceAccessType::EXPLICIT_ACCESS)),
       saved_passwords_presenter_(password_store_),
       compromised_credentials_provider_(password_store_,
-                                        &saved_passwords_presenter_) {
+                                        &saved_passwords_presenter_),
+      bulk_leak_check_service_adapter_(
+          &saved_passwords_presenter_,
+          BulkLeakCheckServiceFactory::GetForProfile(profile_)) {
   observed_compromised_credentials_provider_.Add(
       &compromised_credentials_provider_);
   observed_bulk_leak_check_service_.Add(
@@ -247,6 +250,14 @@ bool PasswordCheckDelegate::RemoveCompromisedCredential(
     password_store_->RemoveLogin(saved_password);
 
   return !saved_passwords.empty();
+}
+
+bool PasswordCheckDelegate::StartPasswordCheck() {
+  return bulk_leak_check_service_adapter_.StartBulkLeakCheck();
+}
+
+void PasswordCheckDelegate::StopPasswordCheck() {
+  bulk_leak_check_service_adapter_.StopBulkLeakCheck();
 }
 
 void PasswordCheckDelegate::OnCompromisedCredentialsChanged(

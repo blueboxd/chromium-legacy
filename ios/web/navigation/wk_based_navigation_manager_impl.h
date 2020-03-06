@@ -204,6 +204,12 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
     DISALLOW_COPY_AND_ASSIGN(WKWebViewCache);
   };
 
+  // Type of the list passed to restore items.
+  enum class RestoreItemListType {
+    kBackList,
+    kForwardList,
+  };
+
   // NavigationManagerImpl:
   NavigationItemImpl* GetNavigationItemImplAtIndex(size_t index) const override;
   NavigationItemImpl* GetLastCommittedItemInCurrentOrRestoredSession()
@@ -221,6 +227,17 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   void FinishLoadURLWithParams(
       NavigationInitiationType initiation_type) override;
   bool IsPlaceholderUrl(const GURL& url) const override;
+
+  // Restores the state of the |items_restored| in the navigation items
+  // associated with the WKBackForwardList. |back_list| is used to specify if
+  // the items passed are the list containing the back list or the forward list.
+  void RestoreItemsState(
+      RestoreItemListType list_type,
+      std::vector<std::unique_ptr<NavigationItem>> items_restored);
+
+  // Restores the state of the |restored_visible_item_| in the last committed
+  // item.
+  void RestoreVisibleItemState();
 
   // Restores the specified navigation session in the current web view. This
   // differs from Restore() in that it doesn't reset the current navigation

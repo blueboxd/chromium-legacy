@@ -13,6 +13,7 @@
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/ui/bulk_leak_check_service_adapter.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
@@ -64,6 +65,12 @@ class PasswordCheckDelegate
   // the remove succeeded.
   bool RemoveCompromisedCredential(
       const api::passwords_private::CompromisedCredential& credential);
+
+  // Starts a check for compromised passwords. Returns true if a new check was
+  // started.
+  bool StartPasswordCheck();
+  // Stops checking for compromised passwords.
+  void StopPasswordCheck();
 
  private:
   // password_manager::CompromisedCredentialsProvider::Observer:
@@ -121,6 +128,10 @@ class PasswordCheckDelegate
               int,
               password_manager::PasswordCredentialLess>
       compromised_credential_id_generator_;
+
+  // Starts, monitors and stops a leaked credential check.
+  password_manager::BulkLeakCheckServiceAdapter
+      bulk_leak_check_service_adapter_;
 };
 
 }  // namespace extensions

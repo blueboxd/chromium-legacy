@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/skia_utils.h"

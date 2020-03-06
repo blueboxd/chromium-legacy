@@ -87,6 +87,19 @@ export const Mode = {
   PORTRAIT: 'portrait',
 };
 
+/**
+ * Camera facings.
+ * @enum {string}
+ */
+export const Facing = {
+  USER: 'user',
+  ENVIRONMENT: 'environment',
+  EXTERNAL: 'external',
+  NOT_SET: '(not set)',
+  UNKNOWN: 'unknown',
+};
+
+
 // The types here are used only in jsdoc and are required to be explicitly
 // exported in order to be referenced by closure compiler.
 // TODO(inker): Exports/Imports these jsdoc only types by closure compiler

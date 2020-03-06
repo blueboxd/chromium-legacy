@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 124: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 124: Application Cache API use is deprecated and will be removed in M82, around April 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
+CONSOLE WARNING: line 138: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 138: Application Cache API use is deprecated and will be removed in M82, around April 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
 Tests access of cached DOMWindow properties after the associated frame is removed from a web page and garbage collected. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -63,6 +63,9 @@ PASS window.cached_navigator_usb.onconnect is null
 PASS window.cached_navigator_usb.ondisconnect is null
 PASS window.cached_navigator_userActivation.hasBeenActive is false
 PASS window.cached_navigator_userActivation.isActive is false
+PASS window.cached_navigator_userAgentData.mobile is false
+PASS window.cached_navigator_userAgentData.uaList[0].brand is ''
+PASS window.cached_navigator_userAgentData.uaList[0].version is ''
 PASS window.cached_navigator_xr.ondevicechange is null
 PASS window.cached_performance.onresourcetimingbufferfull is null
 PASS window.cached_performance_navigation.redirectCount is 0

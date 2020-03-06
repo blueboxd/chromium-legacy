@@ -200,9 +200,9 @@
               disabled$="[[hideActivityControlsUrl_]]">
             <div class="start settings-box-text">
               $i18n{personalizeGoogleServicesTitle}
-              <div id="history-usage-hint"
-                  class="secondary" hidden$="[[!isSwaaFetched_(Swaa_)]]">
-                [[getHistoryUsageHint_(Swaa_, syncPrefs.encryptAllData,
+              <div id="history-usage-off-hint"
+                  class="secondary" hidden$="[[!isSwaaOff_(Swaa_)]]">
+                [[getHistoryUsageOffHint_(Swaa_, syncPrefs.encryptAllData,
                       syncPrefs.typedUrlsSynced)]]
               </div>
             </div>

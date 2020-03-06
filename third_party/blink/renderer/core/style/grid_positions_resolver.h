@@ -38,9 +38,11 @@ class NamedLineCollection {
   bool Contains(size_t line);
 
  private:
-  size_t Find(size_t line);
+  bool HasExplicitNamedLines();
+  size_t FirstExplicitPosition();
   const Vector<size_t>* named_lines_indexes_ = nullptr;
   const Vector<size_t>* auto_repeat_named_lines_indexes_ = nullptr;
+  const Vector<size_t>* implicit_named_lines_indexes_ = nullptr;
 
   size_t insertion_point_;
   size_t last_line_;

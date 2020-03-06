@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -16,6 +17,9 @@ namespace gpu {
 
 class GpuChannelManagerTest : public GpuChannelTestCommon {
  public:
+  static constexpr uint64_t kUInt64_T_Max =
+      std::numeric_limits<uint64_t>::max();
+
   GpuChannelManagerTest()
       : GpuChannelTestCommon(true /* use_stub_bindings */) {}
   ~GpuChannelManagerTest() override = default;
@@ -24,9 +28,25 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
     return &channel_manager()->peak_memory_monitor_;
   }
 
+  // Returns the peak memory usage from the channel_manager(). This will stop
+  // tracking for |sequence_number|.
+  uint64_t GetManagersPeakMemoryUsage(uint32_t sequence_num) {
+    // Set default as max so that invalid cases can properly test 0u returns.
+    uint64_t peak_memory = kUInt64_T_Max;
+    auto allocation =
+        channel_manager()->GetPeakMemoryUsage(sequence_num, &peak_memory);
+    return peak_memory;
+  }
+
+  // Returns the peak memory usage currently stores in the GpuPeakMemoryMonitor.
+  // Does not shut down tracking for |sequence_num|.
   uint64_t GetMonitorsPeakMemoryUsage(uint32_t sequence_num) {
-    return channel_manager()->peak_memory_monitor_.GetPeakMemoryUsage(
-        sequence_num);
+    // Set default as max so that invalid cases can properly test 0u returns.
+    uint64_t peak_memory = kUInt64_T_Max;
+    auto allocation =
+        channel_manager()->peak_memory_monitor_.GetPeakMemoryUsage(
+            sequence_num, &peak_memory);
+    return peak_memory;
   }
 
   // Helpers to call MemoryTracker::Observer methods of
@@ -35,7 +55,8 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
                                uint64_t old_size,
                                uint64_t new_size) {
     static_cast<MemoryTracker::Observer*>(gpu_peak_memory_monitor())
-        ->OnMemoryAllocatedChange(id, old_size, new_size);
+        ->OnMemoryAllocatedChange(id, old_size, new_size,
+                                  GpuPeakMemoryAllocationSource::UNKNOWN);
   }
 
 #if defined(OS_ANDROID)
@@ -128,13 +149,13 @@ TEST_F(GpuChannelManagerTest, GpuPeakMemoryOnlyReportedForValidSequence) {
   // With no request to listen to memory it should report 0.
   const uint32_t invalid_sequence_num = 1337;
   EXPECT_EQ(0u, GetMonitorsPeakMemoryUsage(invalid_sequence_num));
-  EXPECT_EQ(0u, manager->GetPeakMemoryUsage(invalid_sequence_num));
+  EXPECT_EQ(0u, GetManagersPeakMemoryUsage(invalid_sequence_num));
 
   // The valid sequence should receive a report.
-  EXPECT_EQ(current_memory, manager->GetPeakMemoryUsage(sequence_num));
+  EXPECT_EQ(current_memory, GetManagersPeakMemoryUsage(sequence_num));
   // However it should be shut-down and no longer report anything.
   EXPECT_EQ(0u, GetMonitorsPeakMemoryUsage(sequence_num));
-  EXPECT_EQ(0u, manager->GetPeakMemoryUsage(sequence_num));
+  EXPECT_EQ(0u, GetManagersPeakMemoryUsage(sequence_num));
 }
 
 // Tests that while a channel may exist for longer than a request to monitor,
@@ -158,7 +179,7 @@ TEST_F(GpuChannelManagerTest,
   // the peak seen during the observation of |sequence_num|.
   const uint64_t localized_peak_memory = 24;
   OnMemoryAllocatedChange(buffer_id, reduced_memory, localized_peak_memory);
-  EXPECT_EQ(localized_peak_memory, manager->GetPeakMemoryUsage(sequence_num));
+  EXPECT_EQ(localized_peak_memory, GetManagersPeakMemoryUsage(sequence_num));
 }
 
 // Checks that when there are more than one sequence, that each has a separately
@@ -185,8 +206,8 @@ TEST_F(GpuChannelManagerTest, GetPeakMemoryUsageCalculatedPerSequence) {
   const uint64_t localized_peak_memory = 24;
   OnMemoryAllocatedChange(buffer_id, reduced_memory, localized_peak_memory);
 
-  EXPECT_EQ(initial_memory, manager->GetPeakMemoryUsage(sequence_num_1));
-  EXPECT_EQ(localized_peak_memory, manager->GetPeakMemoryUsage(sequence_num_2));
+  EXPECT_EQ(initial_memory, GetManagersPeakMemoryUsage(sequence_num_1));
+  EXPECT_EQ(localized_peak_memory, GetManagersPeakMemoryUsage(sequence_num_2));
 }
 
 }  // namespace gpu

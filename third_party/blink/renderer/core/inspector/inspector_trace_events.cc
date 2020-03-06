@@ -1400,7 +1400,7 @@ std::unique_ptr<TracedValue> inspector_animation_event::Data(
     const Animation& animation) {
   auto value = std::make_unique<TracedValue>();
   value->SetString("id", String::Number(animation.SequenceNumber()));
-  value->SetString("state", animation.playState());
+  value->SetString("state", animation.PlayStateString());
   if (const AnimationEffect* effect = animation.effect()) {
     value->SetString("name", animation.id());
     if (auto* frame_effect = DynamicTo<KeyframeEffect>(effect)) {
@@ -1414,7 +1414,7 @@ std::unique_ptr<TracedValue> inspector_animation_event::Data(
 std::unique_ptr<TracedValue> inspector_animation_state_event::Data(
     const Animation& animation) {
   auto value = std::make_unique<TracedValue>();
-  value->SetString("state", animation.playState());
+  value->SetString("state", animation.PlayStateString());
   return value;
 }
 

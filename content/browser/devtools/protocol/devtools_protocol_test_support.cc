@@ -5,6 +5,7 @@
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/security_style_explanations.h"

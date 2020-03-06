@@ -78,6 +78,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
       base::StringPiece new_password) override;
   bool RemoveCompromisedCredential(
       const api::passwords_private::CompromisedCredential& credential) override;
+  bool StartPasswordCheck() override;
+  void StopPasswordCheck() override;
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;

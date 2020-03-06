@@ -12,6 +12,20 @@ function collectProperties(object, windowHasBeenGCed)
     });
 }
 
+function getPropertyPath(path, length)
+{
+    var propertyDir = path[0];
+    for (var i = 1; i < length; ++i) {
+      var part = path[i];
+      if (part == "0") {
+        propertyDir += "[" + part + "]";
+      } else {
+        propertyDir += "." + part;
+      }
+    }
+    return propertyDir;
+}
+
 function emitExpectedResult(path, expected)
 {
     // Skip internals properties, since they aren't web accessible.

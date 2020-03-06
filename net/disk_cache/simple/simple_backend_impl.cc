@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/disk_cache/simple/simple_backend_impl.h"
+#include "base/callback_helpers.h"
 #include "base/task/thread_pool.h"
 
 #include <algorithm>

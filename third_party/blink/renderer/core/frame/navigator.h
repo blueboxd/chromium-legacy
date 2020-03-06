@@ -71,6 +71,9 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
 
   void Trace(Visitor*) override;
 
+ protected:
+  LocalFrame* GetLocalFrame() const override { return GetFrame(); }
+
  private:
   UserAgentMetadata metadata_;
 };

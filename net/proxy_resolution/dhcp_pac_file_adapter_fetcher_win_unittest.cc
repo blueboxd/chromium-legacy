@@ -4,6 +4,7 @@
 
 #include "net/proxy_resolution/dhcp_pac_file_adapter_fetcher_win.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"

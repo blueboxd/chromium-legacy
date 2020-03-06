@@ -1787,8 +1787,11 @@ float RenderFrameHostImpl::AccessibilityGetDeviceScaleFactor() const {
 }
 
 void RenderFrameHostImpl::AccessibilityReset() {
+  if (!render_accessibility_)
+    return;
+
   accessibility_reset_token_ = g_next_accessibility_reset_token++;
-  Send(new AccessibilityMsg_Reset(routing_id_, accessibility_reset_token_));
+  render_accessibility_->Reset(accessibility_reset_token_);
 }
 
 void RenderFrameHostImpl::AccessibilityFatalError() {
@@ -1800,8 +1803,7 @@ void RenderFrameHostImpl::AccessibilityFatalError() {
   if (accessibility_reset_count_ >= kMaxAccessibilityResets) {
     render_accessibility_->FatalError();
   } else {
-    accessibility_reset_token_ = g_next_accessibility_reset_token++;
-    Send(new AccessibilityMsg_Reset(routing_id_, accessibility_reset_token_));
+    AccessibilityReset();
   }
 }
 

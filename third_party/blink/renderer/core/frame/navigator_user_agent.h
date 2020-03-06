@@ -7,17 +7,18 @@
 
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/navigator_ua_data.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-class ScriptPromise;
-class ScriptState;
 class CORE_EXPORT NavigatorUserAgent {
  public:
-  ScriptPromise getUserAgent(ScriptState*);
+  NavigatorUAData* userAgentData();
 
+ protected:
   virtual UserAgentMetadata GetUserAgentMetadata() const = 0;
+  virtual LocalFrame* GetLocalFrame() const = 0;
 };
 
 }  // namespace blink

@@ -14,7 +14,6 @@ extern const base::Feature kSyncForceDisableScryptForCustomPassphrase;
 extern const base::Feature kSyncE2ELatencyMeasurement;
 extern const base::Feature kSyncCustomSharingMessageNudgeDelay;
 extern const base::FeatureParam<int> kSyncSharingMessageNudgeDelayMilliseconds;
-extern const base::Feature kDoNotSyncFaviconDataTypes;
 
 }  // namespace switches
 

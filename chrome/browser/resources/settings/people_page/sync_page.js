@@ -385,11 +385,7 @@ Polymer({
    * the history usage row.
    * @private
    */
-  getHistoryUsageHint_() {
-    if (this.Swaa_ === SwaaState.ON) {
-      return this.i18n('SwaaOnHint');
-    }
-
+  getHistoryUsageOffHint_() {
     if (this.Swaa_ === SwaaState.OFF) {
       if (this.syncPrefs.encryptAllData) {
         return this.i18n('dataEncryptedHint');
@@ -513,6 +509,14 @@ Polymer({
    */
   isSwaaFetched_() {
     return this.Swaa_ === SwaaState.ON || this.Swaa_ === SwaaState.OFF;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isSwaaOff_() {
+    return this.Swaa_ === SwaaState.OFF;
   },
 
   /** @private */

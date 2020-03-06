@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "media/base/bind_to_current_loop.h"
 #include "mojo/public/cpp/bindings/remote.h"

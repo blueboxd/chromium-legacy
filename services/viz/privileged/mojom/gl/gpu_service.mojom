@@ -19,6 +19,7 @@ import "components/chromeos_camera/common/jpeg_encode_accelerator.mojom";
 import "gpu/ipc/common/device_perf_info.mojom";
 import "gpu/ipc/common/dx_diag_node.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
+import "gpu/ipc/common/gpu_peak_memory.mojom";
 import "gpu/ipc/common/memory_stats.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "gpu/ipc/common/sync_token.mojom";
@@ -97,7 +98,9 @@ interface GpuService {
 
   // Ends tracking the peak GPU memory for the associated |sequence_num|.
   // Returning the value of the peak seen since StartPeakMemoryMonitorProcess.
-  GetPeakMemoryUsage(uint32 sequence_num) => (uint64 memory_usage);
+  GetPeakMemoryUsage(uint32 sequence_num) => (uint64 memory_usage,
+      map<gpu.mojom.GpuPeakMemoryAllocationSource, uint64>
+          memory_per_allocation_source);
 
   [EnableIf=is_win]
   RequestCompleteGpuInfo() => (gpu.mojom.DxDiagNode dx_diagnostics);

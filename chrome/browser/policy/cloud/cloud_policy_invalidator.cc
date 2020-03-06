@@ -28,8 +28,6 @@ namespace policy {
 
 namespace {
 
-// Get the kMetricPolicyInvalidations histogram metric which should be
-// incremented when an invalidation is received.
 MetricPolicyRefresh GetPolicyRefreshMetric(bool invalidations_enabled,
                                            bool policy_changed,
                                            bool invalidated) {
@@ -45,28 +43,43 @@ MetricPolicyRefresh GetPolicyRefreshMetric(bool invalidations_enabled,
   return METRIC_POLICY_REFRESH_UNCHANGED;
 }
 
-void RecordPolicyRefreshMetric(
-    enterprise_management::DeviceRegisterRequest::Type type,
-    bool invalidations_enabled,
-    bool policy_changed,
-    bool invalidated) {
-  MetricPolicyRefresh metric_policy_refresh = GetPolicyRefreshMetric(
-      invalidations_enabled, policy_changed, invalidated);
-  if (type == enterprise_management::DeviceRegisterRequest::DEVICE) {
-    base::UmaHistogramEnumeration(kMetricDevicePolicyRefresh,
-                                  metric_policy_refresh,
-                                  METRIC_POLICY_REFRESH_SIZE);
-    base::UmaHistogramEnumeration(kMetricDevicePolicyRefreshFcm,
-                                  metric_policy_refresh,
-                                  METRIC_POLICY_REFRESH_SIZE);
-  } else {
-    base::UmaHistogramEnumeration(kMetricUserPolicyRefresh,
-                                  metric_policy_refresh,
-                                  METRIC_POLICY_REFRESH_SIZE);
-    base::UmaHistogramEnumeration(kMetricUserPolicyRefreshFcm,
-                                  metric_policy_refresh,
-                                  METRIC_POLICY_REFRESH_SIZE);
+PolicyInvalidationType GetInvalidationMetric(bool is_missing_payload,
+                                             bool is_expired) {
+  if (is_expired) {
+    if (is_missing_payload)
+      return POLICY_INVALIDATION_TYPE_NO_PAYLOAD_EXPIRED;
+    return POLICY_INVALIDATION_TYPE_EXPIRED;
   }
+  if (is_missing_payload)
+    return POLICY_INVALIDATION_TYPE_NO_PAYLOAD;
+  return POLICY_INVALIDATION_TYPE_NORMAL;
+}
+
+void RecordPolicyRefreshMetric(PolicyInvalidationScope scope,
+                               bool invalidations_enabled,
+                               bool policy_changed,
+                               bool invalidated) {
+  const MetricPolicyRefresh metric_policy_refresh = GetPolicyRefreshMetric(
+      invalidations_enabled, policy_changed, invalidated);
+  base::UmaHistogramEnumeration(
+      CloudPolicyInvalidator::GetPolicyRefreshMetricName(scope),
+      metric_policy_refresh, METRIC_POLICY_REFRESH_SIZE);
+  base::UmaHistogramEnumeration(
+      CloudPolicyInvalidator::GetPolicyRefreshFcmMetricName(scope),
+      metric_policy_refresh, METRIC_POLICY_REFRESH_SIZE);
+}
+
+void RecordPolicyInvalidationMetric(PolicyInvalidationScope scope,
+                                    bool is_expired,
+                                    bool is_missing_payload) {
+  const PolicyInvalidationType policy_invalidation_type =
+      GetInvalidationMetric(is_missing_payload, is_expired);
+  base::UmaHistogramEnumeration(
+      CloudPolicyInvalidator::GetPolicyInvalidationMetricName(scope),
+      policy_invalidation_type, POLICY_INVALIDATION_TYPE_SIZE);
+  base::UmaHistogramEnumeration(
+      CloudPolicyInvalidator::GetPolicyInvalidationFcmMetricName(scope),
+      policy_invalidation_type, POLICY_INVALIDATION_TYPE_SIZE);
 }
 
 }  // namespace
@@ -79,18 +92,70 @@ const int CloudPolicyInvalidator::kInvalidationGracePeriod = 10;
 const int CloudPolicyInvalidator::kUnknownVersionIgnorePeriod = 30;
 const int CloudPolicyInvalidator::kMaxInvalidationTimeDelta = 300;
 
+// static
+const char* CloudPolicyInvalidator::GetPolicyRefreshMetricName(
+    PolicyInvalidationScope scope) {
+  switch (scope) {
+    case PolicyInvalidationScope::kUser:
+      return kMetricUserPolicyRefresh;
+    case PolicyInvalidationScope::kDevice:
+      return kMetricDevicePolicyRefresh;
+    case PolicyInvalidationScope::kDeviceLocalAccount:
+      return kMetricDeviceLocalAccountPolicyRefresh;
+  }
+}
+
+// static
+const char* CloudPolicyInvalidator::GetPolicyRefreshFcmMetricName(
+    PolicyInvalidationScope scope) {
+  switch (scope) {
+    case PolicyInvalidationScope::kUser:
+      return kMetricUserPolicyRefreshFcm;
+    case PolicyInvalidationScope::kDevice:
+      return kMetricDevicePolicyRefreshFcm;
+    case PolicyInvalidationScope::kDeviceLocalAccount:
+      return kMetricDeviceLocalAccountPolicyRefreshFcm;
+  }
+}
+
+// static
+const char* CloudPolicyInvalidator::GetPolicyInvalidationMetricName(
+    PolicyInvalidationScope scope) {
+  switch (scope) {
+    case PolicyInvalidationScope::kUser:
+      return kMetricUserPolicyInvalidations;
+    case PolicyInvalidationScope::kDevice:
+      return kMetricDevicePolicyInvalidations;
+    case PolicyInvalidationScope::kDeviceLocalAccount:
+      return kMetricDeviceLocalAccountPolicyInvalidations;
+  }
+}
+
+// static
+const char* CloudPolicyInvalidator::GetPolicyInvalidationFcmMetricName(
+    PolicyInvalidationScope scope) {
+  switch (scope) {
+    case PolicyInvalidationScope::kUser:
+      return kMetricUserPolicyInvalidationsFcm;
+    case PolicyInvalidationScope::kDevice:
+      return kMetricDevicePolicyInvalidationsFcm;
+    case PolicyInvalidationScope::kDeviceLocalAccount:
+      return kMetricDeviceLocalAccountPolicyInvalidationsFcm;
+  }
+}
+
 CloudPolicyInvalidator::CloudPolicyInvalidator(
-    enterprise_management::DeviceRegisterRequest::Type type,
+    PolicyInvalidationScope scope,
     CloudPolicyCore* core,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     base::Clock* clock,
     int64_t highest_handled_invalidation_version)
     : state_(UNINITIALIZED),
-      type_(type),
+      scope_(scope),
       core_(core),
       task_runner_(task_runner),
       clock_(clock),
-      invalidation_service_(NULL),
+      invalidation_service_(nullptr),
       invalidations_enabled_(false),
       invalidation_service_enabled_(false),
       is_registered_(false),
@@ -212,8 +277,8 @@ void CloudPolicyInvalidator::OnStoreLoaded(CloudPolicyStore* store) {
     const bool invalidated =
         invalid_ && store_invalidation_version == invalidation_version_;
 
-    bool invalidations_enabled = GetInvalidationsEnabled();
-    RecordPolicyRefreshMetric(type_, invalidations_enabled, policy_changed,
+    const bool invalidations_enabled = GetInvalidationsEnabled();
+    RecordPolicyRefreshMetric(scope_, invalidations_enabled, policy_changed,
                               invalidated);
 
     // If the policy was invalid and the version stored matches the latest
@@ -269,25 +334,11 @@ void CloudPolicyInvalidator::HandleInvalidation(
   }
 
   // Ignore the invalidation if it is expired.
-  bool is_expired = IsInvalidationExpired(version);
+  const bool is_expired = IsInvalidationExpired(version);
+  const bool is_missing_payload = payload.empty();
 
-  PolicyInvalidationType policy_invalidation_type =
-      GetInvalidationMetric(payload.empty(), is_expired);
-  if (type_ == enterprise_management::DeviceRegisterRequest::DEVICE) {
-    base::UmaHistogramEnumeration(kMetricDevicePolicyInvalidations,
-                                  policy_invalidation_type,
-                                  POLICY_INVALIDATION_TYPE_SIZE);
-    base::UmaHistogramEnumeration(kMetricDevicePolicyInvalidationsFcm,
-                                  policy_invalidation_type,
-                                  POLICY_INVALIDATION_TYPE_SIZE);
-  } else {
-    base::UmaHistogramEnumeration(kMetricUserPolicyInvalidations,
-                                  policy_invalidation_type,
-                                  POLICY_INVALIDATION_TYPE_SIZE);
-    base::UmaHistogramEnumeration(kMetricUserPolicyInvalidationsFcm,
-                                  policy_invalidation_type,
-                                  POLICY_INVALIDATION_TYPE_SIZE);
-  }
+  RecordPolicyInvalidationMetric(scope_, is_expired, is_missing_payload);
+
   if (is_expired) {
     invalidation.Acknowledge();
     return;
@@ -462,19 +513,6 @@ bool CloudPolicyInvalidator::IsInvalidationExpired(int64_t version) {
       base::TimeDelta::FromMicroseconds(version) +
       base::TimeDelta::FromSeconds(kMaxInvalidationTimeDelta);
   return invalidation_time < last_fetch_time;
-}
-
-PolicyInvalidationType CloudPolicyInvalidator::GetInvalidationMetric(
-    bool is_missing_payload,
-    bool is_expired) {
-  if (is_expired) {
-    if (is_missing_payload)
-      return POLICY_INVALIDATION_TYPE_NO_PAYLOAD_EXPIRED;
-    return POLICY_INVALIDATION_TYPE_EXPIRED;
-  }
-  if (is_missing_payload)
-    return POLICY_INVALIDATION_TYPE_NO_PAYLOAD;
-  return POLICY_INVALIDATION_TYPE_NORMAL;
 }
 
 bool CloudPolicyInvalidator::GetInvalidationsEnabled() {

@@ -4,6 +4,7 @@
 
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
 #include "fuchsia/base/string_util.h"
 #include "fuchsia/engine/url_request_rewrite_type_converters.h"

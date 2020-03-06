@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "make_unique_gc_object.h"
+#include "base/memory/ptr_util.h"
 
 namespace blink {
 

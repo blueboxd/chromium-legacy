@@ -44,7 +44,9 @@ class TestGpuService : public viz::mojom::GpuService {
 
   void GetPeakMemoryUsage(uint32_t sequence_num,
                           GetPeakMemoryUsageCallback callback) override {
-    std::move(callback).Run(kPeakMemory);
+    base::flat_map<gpu::GpuPeakMemoryAllocationSource, uint64_t>
+        allocation_per_source;
+    std::move(callback).Run(kPeakMemory, allocation_per_source);
   }
 
   bool peak_memory_monitor_started() const {

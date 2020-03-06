@@ -28,4 +28,13 @@ interface RenderAccessibility {
   // Relay a request from assistive technology to perform an action, such as
   // focusing or clicking on a node.
   PerformAction(ax.mojom.AXActionData action_data);
+
+  // Tell the renderer to reset and send a new accessibility tree from scratch
+  // because the browser is out of sync. It passes a sequential reset token.
+  // This should be rare, and if we need to reset the same renderer too many
+  // times we just kill it. After sending a reset, the browser ignores incoming
+  // accessibility IPCs until it receives one with the matching reset token.
+  // Conversely, it ignores IPCs with a reset token if it was not expecting a
+  // reset.
+  Reset(int32 reset_token);
 };

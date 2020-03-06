@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/safe_browsing/safe_browsing_subresource_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"

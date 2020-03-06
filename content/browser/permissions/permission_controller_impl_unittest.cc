@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "content/public/browser/permission_controller_delegate.h"
 #include "content/public/browser/permission_type.h"

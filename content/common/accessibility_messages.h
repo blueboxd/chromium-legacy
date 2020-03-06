@@ -131,16 +131,6 @@ IPC_STRUCT_END()
 // AccessibilityHostMsg_EventBundle.
 IPC_MESSAGE_ROUTED1(AccessibilityMsg_EventBundle_ACK, int /* ack_token */)
 
-// Tell the renderer to reset and send a new accessibility tree from
-// scratch because the browser is out of sync. It passes a sequential
-// reset token. This should be rare, and if we need reset the same renderer
-// too many times we just kill it. After sending a reset, the browser ignores
-// incoming accessibility IPCs until it receives one with the matching reset
-// token. Conversely, it ignores IPCs with a reset token if it was not
-// expecting a reset.
-IPC_MESSAGE_ROUTED1(AccessibilityMsg_Reset,
-                    int /* reset token */)
-
 // Request a one-time snapshot of the accessibility tree without
 // enabling accessibility if it wasn't already enabled. The passed id
 // will be returned in the AccessibilityHostMsg_SnapshotResponse message.

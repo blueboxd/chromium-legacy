@@ -9,6 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/leveldb_proto/internal/proto_database_impl.h"

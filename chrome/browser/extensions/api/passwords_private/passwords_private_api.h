@@ -251,6 +251,30 @@ class PasswordsPrivateRemoveCompromisedCredentialFunction
   ResponseAction Run() override;
 };
 
+class PasswordsPrivateStartPasswordCheckFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.startPasswordCheck",
+                             PASSWORDSPRIVATE_STARTPASSWORDCHECK)
+
+ protected:
+  ~PasswordsPrivateStartPasswordCheckFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+};
+
+class PasswordsPrivateStopPasswordCheckFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.stopPasswordCheck",
+                             PASSWORDSPRIVATE_STOPPASSWORDCHECK)
+
+ protected:
+  ~PasswordsPrivateStopPasswordCheckFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORDS_PRIVATE_API_H_

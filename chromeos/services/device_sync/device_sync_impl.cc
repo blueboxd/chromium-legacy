@@ -5,6 +5,7 @@
 #include "chromeos/services/device_sync/device_sync_impl.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"

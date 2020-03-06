@@ -7,8 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/page_info/page_info_consumer.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
+
+@protocol PageInfoNavigationCommands;
+
 // View Controller for displaying the page info.
-@interface PageInfoViewController : UIViewController
+@interface PageInfoViewController : ChromeTableViewController <PageInfoConsumer>
+
+// Handler used to navigate inside the page info.
+@property(nonatomic, weak) id<PageInfoNavigationCommands> handler;
 
 @end
 

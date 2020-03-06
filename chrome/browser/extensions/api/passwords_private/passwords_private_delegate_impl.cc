@@ -438,6 +438,14 @@ bool PasswordsPrivateDelegateImpl::RemoveCompromisedCredential(
   return password_check_delegate_.RemoveCompromisedCredential(credential);
 }
 
+bool PasswordsPrivateDelegateImpl::StartPasswordCheck() {
+  return password_check_delegate_.StartPasswordCheck();
+}
+
+void PasswordsPrivateDelegateImpl::StopPasswordCheck() {
+  password_check_delegate_.StopPasswordCheck();
+}
+
 void PasswordsPrivateDelegateImpl::OnPasswordsExportProgress(
     password_manager::ExportProgressStatus status,
     const std::string& folder_name) {

@@ -232,7 +232,6 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
              IDS_SETTINGS_USE_HISTORY_TO_PERSONALIZE_GOOGLE_SERVICES_TITLE},
             {"SwaaOn", IDS_SETTINGS_SWAA_ON},
             {"SwaaOff", IDS_SETTINGS_SWAA_OFF},
-            {"SwaaOnHint", IDS_SETTINGS_SWAA_ON_HINT},
             {"dataEncryptedHint", IDS_SETTINGS_DATA_ENCRYPTED_HINT},
             {"historySyncOffHint", IDS_SETTINGS_HISTORY_SYNC_OFF_HINT},
             {"SwaaOffHint", IDS_SETTINGS_SWAA_OFF_HINT},

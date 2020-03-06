@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
+#include "gpu/ipc/common/gpu_peak_memory.h"
 
 namespace gpu {
 
@@ -27,9 +28,11 @@ class MemoryTracker {
     Observer() = default;
     virtual ~Observer() = default;
 
-    virtual void OnMemoryAllocatedChange(CommandBufferId id,
-                                         uint64_t old_size,
-                                         uint64_t new_size) = 0;
+    virtual void OnMemoryAllocatedChange(
+        CommandBufferId id,
+        uint64_t old_size,
+        uint64_t new_size,
+        GpuPeakMemoryAllocationSource source) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);

@@ -7,7 +7,9 @@
 
 #include <array>
 #include <memory>
+#include <unordered_map>
 
+#include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "components/gc/core/gc_export.h"
 #include "components/gc/core/globals.h"
@@ -51,14 +53,13 @@ class GC_EXPORT MemoryRegion final {
 // PageMemory provides the backing of a single normal or large page.
 class GC_EXPORT PageMemory final {
  public:
-  PageMemory() = default;
-  PageMemory(MemoryRegion overall, MemoryRegion writable)
-      : overall_(overall), writable_(writable) {
-    DCHECK(overall.Contains(writable));
+  PageMemory(MemoryRegion overall, MemoryRegion writeable)
+      : overall_(overall), writable_(writeable) {
+    DCHECK(overall.Contains(writeable));
   }
 
-  const MemoryRegion overall_region() const { return overall_; }
   const MemoryRegion writeable_region() const { return writable_; }
+  const MemoryRegion overall_region() const { return overall_; }
 
  private:
   MemoryRegion overall_;
@@ -69,11 +70,15 @@ class GC_EXPORT PageMemoryRegion {
  public:
   virtual ~PageMemoryRegion();
 
-  MemoryRegion reserved_region() const { return reserved_region_; }
-
+  const MemoryRegion reserved_region() const { return reserved_region_; }
   bool is_large() const { return is_large_; }
 
-  // Disallow copy.
+  // Lookup writeable base for an |address| that's contained in
+  // PageMemoryRegion. Filters out addresses that are contained in non-writeable
+  // regions (e.g. guard pages).
+  inline Address Lookup(Address address) const;
+
+  // Disallow copy/move.
   PageMemoryRegion(const PageMemoryRegion&) = delete;
   PageMemoryRegion& operator=(const PageMemoryRegion&) = delete;
 
@@ -95,13 +100,40 @@ class GC_EXPORT NormalPageMemoryRegion final : public PageMemoryRegion {
   explicit NormalPageMemoryRegion(PageAllocator*);
   ~NormalPageMemoryRegion() override;
 
-  const PageMemory* begin() { return page_memories_.cbegin(); }
-  const PageMemory* end() { return page_memories_.cend(); }
+  const PageMemory GetPageMemory(size_t index) const {
+    DCHECK_LT(index, kNumPageRegions);
+    return PageMemory(
+        MemoryRegion(reserved_region().base() + kPageSize * index, kPageSize),
+        MemoryRegion(
+            reserved_region().base() + kPageSize * index + kGuardPageSize,
+            kPageSize - 2 * kGuardPageSize));
+  }
+
+  // Allocates a normal page at |writeable_base| address. Changes page
+  // protection.
+  void Allocate(Address writeable_base);
+
+  // Frees a normal page at at |writeable_base| address. Changes page
+  // protection.
+  void Free(Address);
+
+  inline Address Lookup(Address) const;
 
   void UnprotectForTesting() final;
 
  private:
-  std::array<PageMemory, kNumPageRegions> page_memories_ = {};
+  void ChangeUsed(size_t index, bool value) {
+    DCHECK_LT(index, kNumPageRegions);
+    DCHECK_EQ(value, !page_memories_in_use_[index]);
+    page_memories_in_use_[index] = value;
+  }
+
+  size_t GetIndex(Address address) const {
+    return static_cast<size_t>(address - reserved_region().base()) >>
+           kPageSizeLog2;
+  }
+
+  std::array<bool, kNumPageRegions> page_memories_in_use_ = {};
 };
 
 // LargePageMemoryRegion serves a single large PageMemory object.
@@ -110,13 +142,136 @@ class GC_EXPORT LargePageMemoryRegion final : public PageMemoryRegion {
   LargePageMemoryRegion(PageAllocator*, size_t);
   ~LargePageMemoryRegion() override;
 
-  const PageMemory* page_memory() const { return &page_memory_; }
+  const PageMemory GetPageMemory() const {
+    return PageMemory(
+        MemoryRegion(reserved_region().base(), reserved_region().size()),
+        MemoryRegion(reserved_region().base() + kGuardPageSize,
+                     reserved_region().size() - 2 * kGuardPageSize));
+  }
+
+  inline Address Lookup(Address) const;
 
   void UnprotectForTesting() final;
+};
+
+// A PageMemoryRegionTree is a binary search tree of PageMemoryRegions sorted
+// by reserved base addresses.
+//
+// The tree does not keep its elements alive but merely provides indexing
+// capabilities.
+class GC_EXPORT PageMemoryRegionTree final {
+ public:
+  PageMemoryRegionTree();
+  ~PageMemoryRegionTree();
+
+  void Add(PageMemoryRegion*);
+  void Remove(PageMemoryRegion*);
+
+  inline PageMemoryRegion* Lookup(Address) const;
 
  private:
-  PageMemory page_memory_;
+  // Using flat_map allows to improve locality to minimize cache misses and
+  // balance binary lookup.
+  base::flat_map<Address, PageMemoryRegion*> set_;
 };
+
+// A pool of PageMemory objects represented by the writeable base addresses.
+//
+// The pool does not keep its elements alive but merely provides pooling
+// capabilities.
+class GC_EXPORT NormalPageMemoryPool final {
+ public:
+  NormalPageMemoryPool();
+  ~NormalPageMemoryPool();
+
+  void Add(Address);
+  Address Take();
+
+ private:
+  std::vector<Address> pool_;
+};
+
+// A backend that is used for allocating and freeing normal and large pages.
+//
+// Internally maintaints a set of PageMemoryRegions. The backend keeps its used
+// regions alive.
+class GC_EXPORT PageBackend final {
+ public:
+  explicit PageBackend(PageAllocator*);
+  ~PageBackend();
+
+  // Allocates a normal page from the backend.
+  //
+  // Returns the writeable base of the region.
+  Address AllocateNormalPageMemory();
+
+  // Returns normal page memory back to the backend. Expects the
+  // |writeable_base| returned by |AllocateNormalMemory()|.
+  void FreeNormalPageMemory(Address writeable_base);
+
+  // Allocates a large page from the backend.
+  //
+  // Returns the writeable base of the region.
+  Address AllocateLargePageMemory(size_t size);
+
+  // Returns large page memory back to the backend. Expects the |writeable_base|
+  // returned by |AllocateLargePageMemory()|.
+  void FreeLargePageMemory(Address writeable_base);
+
+  // Returns the writeable base if |address| is contained in a valid page
+  // memory.
+  inline Address Lookup(Address) const;
+
+  // Disallow copy/move.
+  PageBackend(const PageBackend&) = delete;
+  PageBackend& operator=(const PageBackend&) = delete;
+
+ private:
+  PageAllocator* allocator_;
+  NormalPageMemoryPool page_pool_;
+  PageMemoryRegionTree page_memory_region_tree_;
+  std::vector<std::unique_ptr<PageMemoryRegion>> normal_page_memory_regions_;
+  std::unordered_map<PageMemoryRegion*, std::unique_ptr<PageMemoryRegion>>
+      large_page_memory_regions_;
+};
+
+Address NormalPageMemoryRegion::Lookup(Address address) const {
+  size_t index = GetIndex(address);
+  if (!page_memories_in_use_[index])
+    return nullptr;
+  const MemoryRegion writeable_region = GetPageMemory(index).writeable_region();
+  return writeable_region.Contains(address) ? writeable_region.base() : nullptr;
+}
+
+Address LargePageMemoryRegion::Lookup(Address address) const {
+  const MemoryRegion writeable_region = GetPageMemory().writeable_region();
+  return writeable_region.Contains(address) ? writeable_region.base() : nullptr;
+}
+
+Address PageMemoryRegion::Lookup(Address address) const {
+  DCHECK(reserved_region().Contains(address));
+  return is_large()
+             ? static_cast<const LargePageMemoryRegion*>(this)->Lookup(address)
+             : static_cast<const NormalPageMemoryRegion*>(this)->Lookup(
+                   address);
+}
+
+PageMemoryRegion* PageMemoryRegionTree::Lookup(Address address) const {
+  auto it = set_.upper_bound(address);
+  // This check also covers set_.size() > 0, since for empty vectors it is
+  // guaranteed that begin() == end().
+  if (it == set_.begin())
+    return nullptr;
+  auto* result = std::next(it, -1)->second;
+  if (address < result->reserved_region().end())
+    return result;
+  return nullptr;
+}
+
+Address PageBackend::Lookup(Address address) const {
+  PageMemoryRegion* pmr = page_memory_region_tree_.Lookup(address);
+  return pmr ? pmr->Lookup(address) : nullptr;
+}
 
 }  // namespace internal
 }  // namespace gc

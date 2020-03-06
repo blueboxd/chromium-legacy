@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"

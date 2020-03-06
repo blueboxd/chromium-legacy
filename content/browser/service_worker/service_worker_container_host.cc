@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_container_host.h"
 
+#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/service_worker/service_worker_consts.h"

@@ -295,7 +295,6 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderAccessibilityImpl, message)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_EventBundle_ACK, OnEventsAck)
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_Reset, OnReset)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -415,6 +414,23 @@ void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
     case ax::mojom::Action::kHideTooltip:
     case ax::mojom::Action::kInternalInvalidateTree:
       break;
+  }
+}
+
+void RenderAccessibilityImpl::Reset(int32_t reset_token) {
+  reset_token_ = reset_token;
+  serializer_.Reset();
+  pending_events_.clear();
+
+  const WebDocument& document = GetMainDocument();
+  if (!document.IsNull()) {
+    // Tree-only mode gets used by the automation extension API which requires a
+    // load complete event to invoke listener callbacks.
+    auto webax_object = WebAXObject::FromWebDocument(document);
+    ax::mojom::Event evt = webax_object.IsLoaded()
+                               ? ax::mojom::Event::kLoadComplete
+                               : ax::mojom::Event::kLayoutComplete;
+    HandleAXEvent(webax_object, evt);
   }
 }
 
@@ -958,23 +974,6 @@ void RenderAccessibilityImpl::OnGetImageData(const ui::AXActionTarget* target,
 
   serializer_.InvalidateSubtree(obj);
   HandleAXEvent(obj, ax::mojom::Event::kImageFrameUpdated);
-}
-
-void RenderAccessibilityImpl::OnReset(int reset_token) {
-  reset_token_ = reset_token;
-  serializer_.Reset();
-  pending_events_.clear();
-
-  const WebDocument& document = GetMainDocument();
-  if (!document.IsNull()) {
-    // Tree-only mode gets used by the automation extension API which requires a
-    // load complete event to invoke listener callbacks.
-    auto webax_object = WebAXObject::FromWebDocument(document);
-    ax::mojom::Event evt = webax_object.IsLoaded()
-                               ? ax::mojom::Event::kLoadComplete
-                               : ax::mojom::Event::kLayoutComplete;
-    HandleAXEvent(webax_object, evt);
-  }
 }
 
 void RenderAccessibilityImpl::OnDestruct() {

@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_image_representation_gl_ozone.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_format_utils.h"

@@ -125,7 +125,6 @@
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/scene_controller_guts.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -319,11 +318,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // The ChromeBrowserState associated with the main (non-OTR) browsing mode.
 @property(nonatomic, assign) ChromeBrowserState* mainBrowserState;  // Weak.
 
-// The main coordinator, lazily created the first time it is accessed. Manages
-// the main view controller. This property should not be accessed before the
-// browser has started up to the FOREGROUND stage.
-@property(nonatomic, readonly) TabGridCoordinator* mainCoordinator;
-
 // Returns whether the restore infobar should be displayed.
 - (bool)mustShowRestoreInfobar;
 // Returns the set of the sessions ids of the tabs in the given |tabModel|.
@@ -402,8 +396,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @synthesize isColdStart = _isColdStart;
 @synthesize startupParameters = _startupParameters;
 @synthesize appLaunchTime = _appLaunchTime;
-// Defined in private interface
-@synthesize mainCoordinator = _mainCoordinator;
 @synthesize tabSwitcherIsActive;
 
 #pragma mark - Application lifecycle
@@ -665,24 +657,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return self.sceneController.browserViewWrangler;
 }
 
-- (TabGridCoordinator*)mainCoordinator {
-  if (_browserInitializationStage == INITIALIZATION_STAGE_BASIC) {
-    NOTREACHED() << "mainCoordinator accessed too early in initialization.";
-    return nil;
-  }
-  if (!_mainCoordinator) {
-    // Lazily create the main coordinator.
-    TabGridCoordinator* tabGridCoordinator =
-        [[TabGridCoordinator alloc] initWithWindow:self.window
-                        applicationCommandEndpoint:self.sceneController
-                       browsingDataCommandEndpoint:self];
-    tabGridCoordinator.regularBrowser = self.mainBrowser;
-    tabGridCoordinator.incognitoBrowser = self.otrBrowser;
-    _mainCoordinator = tabGridCoordinator;
-  }
-  return _mainCoordinator;
-}
-
 - (BOOL)isFirstLaunchAfterUpgrade {
   return [[PreviousSessionInfo sharedInstance] isFirstSessionAfterUpgrade];
 }
@@ -718,15 +692,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Teardown UI state that is associated with scenes.
   [self.sceneController teardownUI];
-
-  [_mainCoordinator stop];
-  _mainCoordinator = nil;
-
-  // Invariant: The UI is stopped before the model is shutdown.
-  DCHECK(!_mainCoordinator);
-  [self.sceneController.browserViewWrangler shutdown];
-  self.sceneController.browserViewWrangler = nil;
-
   // End of per-window code.
 
   OmahaService::Stop();

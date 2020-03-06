@@ -934,7 +934,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UserAgentVersion) {
   // the major version, and not contain the full version.
   SetClientHintExpectationsOnMainFrame(false);
   ui_test_utils::NavigateToURL(browser(), gurl);
-  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.major_version,
+  std::string version = ua.major_version;
+  version.append(1, '"');
+  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), version,
                              base::CompareCase::SENSITIVE));
   EXPECT_EQ(std::string::npos, main_frame_ua_observed().find(ua.full_version));
 
@@ -942,7 +944,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UserAgentVersion) {
   // version.
   SetClientHintExpectationsOnMainFrame(true);
   ui_test_utils::NavigateToURL(browser(), gurl);
-  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.full_version,
+  version = ua.full_version;
+  version.append(1, '"');
+  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), version,
                              base::CompareCase::SENSITIVE));
 }
 
@@ -957,21 +961,21 @@ void ClientHintsBrowserTest::TestProfilesIndependent(Browser* browser_a,
   // end with the major version, and not contain the full version.
   SetClientHintExpectationsOnMainFrame(false);
   ui_test_utils::NavigateToURL(browser_a, gurl);
-  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.major_version,
+  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.major_version + "\"",
                              base::CompareCase::SENSITIVE));
   EXPECT_EQ(std::string::npos, main_frame_ua_observed().find(ua.full_version));
 
   // Try again on |browser_a|, the header should have an effect there.
   SetClientHintExpectationsOnMainFrame(true);
   ui_test_utils::NavigateToURL(browser_a, gurl);
-  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.full_version,
+  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.full_version + "\"",
                              base::CompareCase::SENSITIVE));
 
   // Navigate on |browser_b|. That should still only have the major
   // version.
   SetClientHintExpectationsOnMainFrame(false);
   ui_test_utils::NavigateToURL(browser_b, gurl);
-  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.major_version,
+  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.major_version + "\"",
                              base::CompareCase::SENSITIVE));
   EXPECT_EQ(std::string::npos, main_frame_ua_observed().find(ua.full_version));
 }

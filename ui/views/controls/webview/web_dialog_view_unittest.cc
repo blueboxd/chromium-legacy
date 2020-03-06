@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"

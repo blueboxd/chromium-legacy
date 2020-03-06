@@ -48,7 +48,6 @@ cr.define('settings_people_page_sync_page', function() {
         syncSetupFriendlySettings: true,
         SwaaOn: 'On',
         SwaaOff: 'Off',
-        SwaaOnHint: 'SwaaOnHint',
         SwaaOffHint: 'SwaaOffHint',
         historySyncOffHint: 'historySyncOffHint',
         dataEncryptedHint: 'dataEncryptedHint',
@@ -567,11 +566,12 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     test('Swaa', async function() {
-      function verifyResults(hidden, Swaa, SwaaHint, hideActivityControlsUrl) {
+      function verifyResults(
+          hidden, Swaa, SwaaOffHint, hideActivityControlsUrl) {
         const SwaaText = syncPage.$$('#history-usage-state .secondary');
-        const historyUsageHint = syncPage.$$('#history-usage-hint');
+        const historyUsageOffHint = syncPage.$$('#history-usage-off-hint');
         assertEquals(SwaaText.hidden, hidden);
-        assertEquals(historyUsageHint.hidden, hidden);
+        assertEquals(historyUsageOffHint.hidden, Swaa !== 'Off');
         assertEquals(
             syncPage.$$('#history-usage-row')
                 .querySelector('.icon-external')
@@ -580,7 +580,9 @@ cr.define('settings_people_page_sync_page', function() {
 
         if (!hidden) {
           assertEquals(SwaaText.textContent.trim(), Swaa);
-          assertEquals(historyUsageHint.textContent.trim(), SwaaHint);
+          if (Swaa === 'Off') {
+            assertEquals(historyUsageOffHint.textContent.trim(), SwaaOffHint);
+          }
         }
       }
 
@@ -604,8 +606,7 @@ cr.define('settings_people_page_sync_page', function() {
       assertFalse(syncSection.hidden);
       await browserProxy.whenCalled('queryIsHistoryRecordingEnabled');
       verifyResults(
-          /*hidden=*/ false, 'On', 'SwaaOnHint',
-          /*hideActivityControlsUrl=*/ false);
+          /*hidden=*/ false, 'On', '', /*hideActivityControlsUrl=*/ false);
 
       // Data encrypted with custom passphrase.
       setSyncPrefs({encryptAllData: true});

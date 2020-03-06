@@ -879,6 +879,22 @@
       include_paths: ["third_party/blink/renderer/core/style/ordered_named_grid_lines.h"],
     },
     {
+      name: "ImplicitNamedGridColumnLines",
+      field_template: "external",
+      type_name: "NamedGridLinesMap",
+      field_group: "*->grid",
+      default_value: "NamedGridLinesMap()",
+      include_paths: ["third_party/blink/renderer/core/style/named_grid_lines_map.h"],
+    },
+    {
+      name: "ImplicitNamedGridRowLines",
+      field_template: "external",
+      type_name: "NamedGridLinesMap",
+      field_group: "*->grid",
+      default_value: "NamedGridLinesMap()",
+      include_paths: ["third_party/blink/renderer/core/style/named_grid_lines_map.h"],
+    },
+    {
       name: "NamedGridArea",
       field_template: "external",
       type_name: "NamedGridAreaMap",

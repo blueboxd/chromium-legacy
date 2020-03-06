@@ -4,6 +4,7 @@
 
 #include "chromeos/services/secure_channel/single_client_message_proxy_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 
 namespace chromeos {

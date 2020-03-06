@@ -73,4 +73,9 @@ void RenderAccessibilityManager::PerformAction(const ui::AXActionData& data) {
   render_accessibility_->PerformAction(data);
 }
 
+void RenderAccessibilityManager::Reset(int32_t reset_token) {
+  DCHECK(render_accessibility_);
+  render_accessibility_->Reset(reset_token);
+}
+
 }  // namespace content

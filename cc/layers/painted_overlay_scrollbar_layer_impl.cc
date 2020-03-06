@@ -4,6 +4,7 @@
 
 #include "cc/layers/painted_overlay_scrollbar_layer_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"

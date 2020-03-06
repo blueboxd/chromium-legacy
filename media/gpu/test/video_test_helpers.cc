@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/video_frame_layout.h"
 #include "media/video/h264_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -245,6 +246,137 @@ bool EncodedDataHelper::HasConfigInfo(const uint8_t* data,
   // Shouldn't happen at this point.
   LOG(FATAL) << "Invalid profile: " << GetProfileName(profile);
   return false;
+}
+
+AlignedDataHelper::AlignedDataHelper(const std::vector<uint8_t>& stream,
+                                     uint32_t num_frames,
+                                     VideoPixelFormat pixel_format,
+                                     const gfx::Rect& visible_area,
+                                     const gfx::Size& coded_size)
+    : num_frames_(num_frames),
+      pixel_format_(pixel_format),
+      visible_area_(visible_area),
+      coded_size_(coded_size) {
+  // TODO(b/150257482): Rather than aligning the video stream data here, we
+  // could directly create a vector of aligned video frames.
+  CreateAlignedInputStream(stream);
+}
+
+AlignedDataHelper::~AlignedDataHelper() {}
+
+scoped_refptr<VideoFrame> AlignedDataHelper::GetNextFrame() {
+  size_t num_planes = VideoFrame::NumPlanes(pixel_format_);
+  CHECK_LE(num_planes, 3u);
+
+  uint8_t* frame_data[3] = {};
+  std::vector<ColorPlaneLayout> planes(num_planes);
+  size_t offset = data_pos_;
+
+  for (size_t i = 0; i < num_planes; i++) {
+    frame_data[i] = reinterpret_cast<uint8_t*>(&aligned_data_[0]) + offset;
+    planes[i].stride =
+        VideoFrame::RowBytes(i, pixel_format_, coded_size_.width());
+    planes[i].offset = offset;
+    planes[i].size = aligned_plane_size_[i];
+    offset += aligned_plane_size_[i];
+  }
+
+  auto layout = VideoFrameLayout::CreateWithPlanes(pixel_format_, coded_size_,
+                                                   std::move(planes));
+  if (!layout) {
+    LOG(ERROR) << "Failed to create VideoFrameLayout";
+    return nullptr;
+  }
+
+  // TODO(crbug.com/1045825): Investigate use of MOJO_SHARED_BUFFER, similar to
+  // changes made in crrev.com/c/2050895.
+  scoped_refptr<VideoFrame> video_frame =
+      VideoFrame::WrapExternalYuvDataWithLayout(
+          *layout, visible_area_, visible_area_.size(), frame_data[0],
+          frame_data[1], frame_data[2], base::TimeTicks::Now().since_origin());
+
+  data_pos_ += static_cast<off_t>(aligned_frame_size_);
+  DCHECK_LE(data_pos_, aligned_data_.size());
+
+  EXPECT_NE(nullptr, video_frame.get());
+  return video_frame;
+}
+
+void AlignedDataHelper::Rewind() {
+  data_pos_ = 0;
+}
+
+bool AlignedDataHelper::AtHeadOfStream() const {
+  return data_pos_ == 0;
+}
+
+bool AlignedDataHelper::AtEndOfStream() const {
+  return data_pos_ == aligned_data_.size();
+}
+
+void AlignedDataHelper::CreateAlignedInputStream(
+    const std::vector<uint8_t>& stream) {
+  ASSERT_NE(pixel_format_, PIXEL_FORMAT_UNKNOWN);
+  size_t num_planes = VideoFrame::NumPlanes(pixel_format_);
+  std::vector<size_t> coded_bpl(num_planes);
+  std::vector<size_t> visible_bpl(num_planes);
+  std::vector<size_t> visible_plane_rows(num_planes);
+
+  // Calculate padding in bytes to be added after each plane required to keep
+  // starting addresses of all planes at a byte boundary required by the
+  // platform. This padding will be added after each plane when copying to the
+  // temporary file.
+  // At the same time we also need to take into account coded_size requested by
+  // the VEA; each row of visible_bpl bytes in the original file needs to be
+  // copied into a row of coded_bpl bytes in the aligned file.
+  for (size_t i = 0; i < num_planes; i++) {
+    coded_bpl[i] = VideoFrame::RowBytes(i, pixel_format_, coded_size_.width());
+    visible_bpl[i] =
+        VideoFrame::RowBytes(i, pixel_format_, visible_area_.width());
+    visible_plane_rows[i] =
+        VideoFrame::Rows(i, pixel_format_, visible_area_.height());
+    size_t coded_area_size =
+        coded_bpl[i] * VideoFrame::Rows(i, pixel_format_, coded_size_.height());
+    const size_t aligned_size = AlignToPlatformRequirements(coded_area_size);
+    aligned_plane_size_.push_back(aligned_size);
+    aligned_frame_size_ += aligned_size;
+  }
+
+  // NOTE: VideoFrame::AllocationSize() cannot used here because the width and
+  // height on each plane is aligned by 2 for YUV format.
+  size_t frame_buffer_size = 0;
+  for (size_t i = 0; i < num_planes; ++i) {
+    size_t row_bytes =
+        VideoFrame::RowBytes(i, pixel_format_, visible_area_.width());
+    size_t rows = VideoFrame::Rows(i, pixel_format_, visible_area_.height());
+    frame_buffer_size += rows * row_bytes;
+  }
+
+  LOG_ASSERT(stream.size() % frame_buffer_size == 0U)
+      << "Stream byte size is not a product of calculated frame byte size";
+
+  LOG_ASSERT(aligned_frame_size_ > 0UL);
+  aligned_data_.resize(aligned_frame_size_ * num_frames_);
+
+  off_t src_offset = 0;
+  off_t dest_offset = 0;
+  for (size_t frame = 0; frame < num_frames_; frame++) {
+    const char* src_ptr = reinterpret_cast<const char*>(&stream[src_offset]);
+
+    for (size_t i = 0; i < num_planes; i++) {
+      // Assert that each plane of frame starts at required byte boundary.
+      ASSERT_EQ(0u, dest_offset & (kPlatformBufferAlignment - 1))
+          << "Planes of frame should be mapped per platform requirements";
+      char* dst_ptr = &aligned_data_[dest_offset];
+      for (size_t j = 0; j < visible_plane_rows[i]; j++) {
+        memcpy(dst_ptr, src_ptr, visible_bpl[i]);
+        src_ptr += visible_bpl[i];
+        dst_ptr += static_cast<off_t>(coded_bpl[i]);
+      }
+      dest_offset += aligned_plane_size_[i];
+    }
+    src_offset += static_cast<off_t>(frame_buffer_size);
+  }
 }
 
 }  // namespace test

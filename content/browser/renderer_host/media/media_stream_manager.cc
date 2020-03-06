@@ -17,6 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"

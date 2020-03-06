@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.device;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -44,9 +45,7 @@ public class DeviceClassManager {
         // Device based configurations.
         if (SysUtils.isLowEndDevice()) {
             mEnableLayerDecorationCache = true;
-            mEnableAccessibilityLayout =
-                    !ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
-                    || !ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID);
+            mEnableAccessibilityLayout = true;
             mEnableAnimations = false;
             mEnablePrerendering = false;
             mEnableToolbarSwipe = false;
@@ -87,9 +86,15 @@ public class DeviceClassManager {
      * @return Whether or not should use the accessibility tab switcher.
      */
     public static boolean enableAccessibilityLayout() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)) {
+        if (isPhone()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+                && (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
+                        || (!SysUtils.isLowEndDevice()
+                                && ChromeFeatureList.isEnabled(
+                                        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)))) {
             return false;
         }
+
         if (getInstance().mEnableAccessibilityLayout) return true;
         if (!AccessibilityUtil.isAccessibilityEnabled()) return false;
         return SharedPreferencesManager.getInstance().readBoolean(
@@ -125,5 +130,10 @@ public class DeviceClassManager {
      */
     public static boolean enableToolbarSwipe() {
         return getInstance().mEnableToolbarSwipe;
+    }
+
+    private static boolean isPhone() {
+        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
+                ContextUtils.getApplicationContext());
     }
 }

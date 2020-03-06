@@ -12,6 +12,7 @@ import {ChromeHelper} from '../../mojo/chrome_helper.js';
 import * as nav from '../../nav.js';
 import {PerfEvent} from '../../perf.js';
 import * as state from '../../state.js';
+import {Facing} from '../../type.js';
 import * as util from '../../util.js';
 import {ViewName} from '../view.js';
 
@@ -158,14 +159,33 @@ export class Options {
   }
 
   /**
+   * Maps MediaTrackSettings.facingMode to CCA facing type.
+   * @param {string|undefined} facing The target facingMode to map.
+   * @return {!Facing} The mapped CCA facing.
+   * @private
+   */
+  mapFacing_(facing) {
+    switch (facing) {
+      case undefined:
+        return Facing.EXTERNAL;
+      case 'user':
+        return Facing.USER;
+      case 'environment':
+        return Facing.ENVIRONMENT;
+      default:
+        throw new Error('Unknown facing: ' + facing);
+    }
+  }
+
+  /**
    * Updates the options' values for the current constraints and stream.
    * @param {!MediaStream} stream Current Stream in use.
-   * @return {!Promise<?string>} Facing-mode in use.
+   * @return {!Promise<!Facing>} Facing-mode in use.
    */
   async updateValues(stream) {
     const track = stream.getVideoTracks()[0];
     const trackSettings = track.getSettings && track.getSettings();
-    let facingMode = trackSettings && trackSettings.facingMode;
+    const facingMode = trackSettings && trackSettings.facingMode;
     if (this.isV1NoFacingConfig_ === null) {
       // Because the facing mode of external camera will be set to undefined on
       // all devices, to distinguish HALv1 device without facing configuration,
@@ -175,23 +195,24 @@ export class Options {
       // after CCA launched the logic here may misjudge it as this category.
       this.isV1NoFacingConfig_ = facingMode === undefined;
     }
-    facingMode = this.isV1NoFacingConfig_ ? null : facingMode || 'external';
+    const facing =
+        this.isV1NoFacingConfig_ ? Facing.NOT_SET : this.mapFacing_(facingMode);
     this.videoDeviceId_ = trackSettings && trackSettings.deviceId || null;
-    this.updateMirroring_(facingMode);
+    this.updateMirroring_(facing);
     this.audioTrack_ = stream.getAudioTracks()[0];
     this.updateAudioByMic_();
-    return facingMode;
+    return facing;
   }
 
   /**
    * Updates mirroring for a new stream.
-   * @param {?string} facingMode Facing-mode of the stream.
+   * @param {!Facing} facing Facing of the stream.
    * @private
    */
-  updateMirroring_(facingMode) {
+  updateMirroring_(facing) {
     // Update mirroring by detected facing-mode. Enable mirroring by default if
     // facing-mode isn't available.
-    let enabled = facingMode ? facingMode !== 'environment' : true;
+    let enabled = facing !== Facing.ENVIRONMENT;
 
     // Override mirroring only if mirroring was toggled manually.
     if (this.videoDeviceId_ in this.mirroringToggles_) {

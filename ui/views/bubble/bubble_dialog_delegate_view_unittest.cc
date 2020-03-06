@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"

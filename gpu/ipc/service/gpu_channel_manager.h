@@ -32,6 +32,7 @@
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/common/gpu_peak_memory.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -168,8 +169,11 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // |sequence_num|. Repeated calls with the same value are ignored.
   void StartPeakMemoryMonitor(uint32_t sequence_num);
 
-  // Ends the tracking for |sequence_num| and returns the peak memory usage.
-  uint64_t GetPeakMemoryUsage(uint32_t sequence_num);
+  // Ends the tracking for |sequence_num| and returns the peak memory per
+  // allocation source. Along with the total |out_peak_memory|.
+  base::flat_map<GpuPeakMemoryAllocationSource, uint64_t> GetPeakMemoryUsage(
+      uint32_t sequence_num,
+      uint64_t* out_peak_memory);
 
   scoped_refptr<SharedContextState> GetSharedContextState(
       ContextResult* result);
@@ -198,21 +202,44 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
     GpuPeakMemoryMonitor();
     ~GpuPeakMemoryMonitor() override;
 
-    uint64_t GetPeakMemoryUsage(uint32_t sequence_num);
+    base::flat_map<GpuPeakMemoryAllocationSource, uint64_t> GetPeakMemoryUsage(
+        uint32_t sequence_num,
+        uint64_t* out_peak_memory);
     void StartGpuMemoryTracking(uint32_t sequence_num);
     void StopGpuMemoryTracking(uint32_t sequence_num);
 
+    base::WeakPtr<MemoryTracker::Observer> GetWeakPtr();
+    void InvalidateWeakPtrs();
+
    private:
+    struct SequenceTracker {
+     public:
+      SequenceTracker(uint64_t current_memory,
+                      base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
+                          current_memory_per_source);
+      SequenceTracker(const SequenceTracker&);
+      ~SequenceTracker();
+
+      uint64_t total_memory_ = 0u;
+      base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
+          peak_memory_per_source_;
+    };
     // MemoryTracker::Observer:
-    void OnMemoryAllocatedChange(CommandBufferId id,
-                                 uint64_t old_size,
-                                 uint64_t new_size) override;
+    void OnMemoryAllocatedChange(
+        CommandBufferId id,
+        uint64_t old_size,
+        uint64_t new_size,
+        GpuPeakMemoryAllocationSource source =
+            GpuPeakMemoryAllocationSource::UNKNOWN) override;
 
     // Tracks all currently requested sequences mapped to the peak memory seen.
-    base::flat_map<uint32_t, uint64_t> sequence_trackers_;
+    base::flat_map<uint32_t, SequenceTracker> sequence_trackers_;
 
     // Tracks the total current memory across all MemoryTrackers.
     uint64_t current_memory_ = 0u;
+
+    base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
+        current_memory_per_source_;
 
     base::WeakPtrFactory<GpuPeakMemoryMonitor> weak_factory_;
     DISALLOW_COPY_AND_ASSIGN(GpuPeakMemoryMonitor);

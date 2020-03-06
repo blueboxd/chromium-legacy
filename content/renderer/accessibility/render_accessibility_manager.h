@@ -12,6 +12,7 @@
 #include "content/common/render_accessibility.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_mode.h"
 
 namespace content {
@@ -56,6 +57,7 @@ class CONTENT_EXPORT RenderAccessibilityManager
   void SetMode(uint32_t ax_mode) override;
   void FatalError() override;
   void PerformAction(const ui::AXActionData& data) override;
+  void Reset(int32_t reset_token) override;
 
  private:
   // The RenderFrameImpl that owns us.

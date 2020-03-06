@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
+#include "gpu/ipc/common/gpu_peak_memory.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/progress_reporter.h"
 
@@ -62,7 +63,8 @@ class GPU_GLES2_EXPORT SharedContextState
       viz::VulkanContextProvider* vulkan_context_provider = nullptr,
       viz::MetalContextProvider* metal_context_provider = nullptr,
       viz::DawnContextProvider* dawn_context_provider = nullptr,
-      gpu::MemoryTracker::Observer* peak_memory_monitor = nullptr);
+      base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor =
+          nullptr);
 
   void InitializeGrContext(const GpuPreferences& gpu_preferences,
                            const GpuDriverBugWorkarounds& workarounds,
@@ -157,22 +159,26 @@ class GPU_GLES2_EXPORT SharedContextState
   // shared image, and forward information to both histograms and task manager.
   class GPU_GLES2_EXPORT MemoryTracker : public gpu::MemoryTracker::Observer {
    public:
-    MemoryTracker(gpu::MemoryTracker::Observer* peak_memory_monitor);
+    explicit MemoryTracker(
+        base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor);
     MemoryTracker(MemoryTracker&) = delete;
     MemoryTracker& operator=(MemoryTracker&) = delete;
     ~MemoryTracker() override;
 
     // gpu::MemoryTracker::Observer implementation:
-    void OnMemoryAllocatedChange(CommandBufferId id,
-                                 uint64_t old_size,
-                                 uint64_t new_size) override;
+    void OnMemoryAllocatedChange(
+        CommandBufferId id,
+        uint64_t old_size,
+        uint64_t new_size,
+        GpuPeakMemoryAllocationSource source =
+            GpuPeakMemoryAllocationSource::UNKNOWN) override;
 
     // Reports to GpuServiceImpl::GetVideoMemoryUsageStats()
     uint64_t GetMemoryUsage() const { return size_; }
 
    private:
     uint64_t size_ = 0;
-    gpu::MemoryTracker::Observer* const peak_memory_monitor_;
+    base::WeakPtr<gpu::MemoryTracker::Observer> const peak_memory_monitor_;
   };
 
   ~SharedContextState() override;

@@ -66,16 +66,6 @@ class ScopedEnvironmentForThreadsImpl {
 
 std::string QuicGetTestMemoryCachePathImpl();
 
-namespace quic {
-// A utility function that returns all versions except v99.  Intended to be a
-// drop-in replacement for quic::AllSupportedVersion() when disabling v99 in a
-// large test file is required.
-//
-// TODO(vasilvv): all of the tests should be fixed for v99, so that this
-// function can be removed.
-ParsedQuicVersionVector AllVersionsExcept99();
-}  // namespace quic
-
 #if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
 #define EXPECT_QUIC_DEBUG_DEATH_IMPL(condition, message) \
   EXPECT_DEBUG_DEATH(condition, message)

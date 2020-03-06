@@ -7,6 +7,7 @@
 #include <wrl/implements.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/numerics/math_constants.h"
 #include "base/run_loop.h"

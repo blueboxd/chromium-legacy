@@ -32,6 +32,10 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::UserAgentMetadataDataView,
   static const std::string& platform(const ::blink::UserAgentMetadata& data) {
     return data.platform;
   }
+  static const std::string& platform_version(
+      const ::blink::UserAgentMetadata& data) {
+    return data.platform_version;
+  }
   static const std::string& architecture(
       const ::blink::UserAgentMetadata& data) {
     return data.architecture;

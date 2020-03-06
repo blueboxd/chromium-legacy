@@ -105,7 +105,7 @@ TEST(AffiliatedCloudPolicyInvalidatorTest, CreateUseDestroy) {
 
   FakeAffiliatedInvalidationServiceProvider provider;
   AffiliatedCloudPolicyInvalidator affiliated_invalidator(
-      em::DeviceRegisterRequest::DEVICE, &core, &provider);
+      PolicyInvalidationScope::kDevice, &core, &provider);
 
   // Verify that no invalidator exists initially.
   EXPECT_FALSE(affiliated_invalidator.GetInvalidatorForTest());

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "components/base32/base32.h"
 #include "content/public/browser/browser_context.h"

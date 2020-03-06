@@ -9,6 +9,7 @@
 #include "base/containers/span.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"

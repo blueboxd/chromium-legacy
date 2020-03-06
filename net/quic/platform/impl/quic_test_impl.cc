@@ -28,16 +28,3 @@ std::string QuicGetTestMemoryCachePathImpl() {
   return path.MaybeAsASCII();
 }
 
-namespace quic {
-ParsedQuicVersionVector AllVersionsExcept99() {
-  ParsedQuicVersionVector result;
-  // TODO(dschinazi): Remove QUIC_VERSION_IETF_DRAFT_25 from below.
-  for (const ParsedQuicVersion& version : AllSupportedVersions()) {
-    if (version.transport_version != QUIC_VERSION_99 &&
-        version.transport_version != QUIC_VERSION_IETF_DRAFT_25) {
-      result.push_back(version);
-    }
-  }
-  return result;
-}
-}  // namespace quic

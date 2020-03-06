@@ -16,6 +16,7 @@ struct BLINK_COMMON_EXPORT UserAgentMetadata {
   std::string full_version;
   std::string major_version;
   std::string platform;
+  std::string platform_version;
   std::string architecture;
   std::string model;
   bool mobile = false;

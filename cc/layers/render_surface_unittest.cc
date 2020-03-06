@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/test/fake_raster_source.h"
 
 namespace cc {

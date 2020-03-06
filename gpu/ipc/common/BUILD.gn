@@ -74,6 +74,7 @@ source_set("ipc_common_sources") {
     "gpu_param_traits.cc",
     "gpu_param_traits.h",
     "gpu_param_traits_macros.h",
+    "gpu_peak_memory.h",
     "gpu_watchdog_timeout.h",
     "memory_stats.cc",
     "memory_stats.h",
@@ -203,6 +204,7 @@ mojom("interfaces") {
     "gpu_extra_info.mojom",
     "gpu_feature_info.mojom",
     "gpu_info.mojom",
+    "gpu_peak_memory.mojom",
     "mailbox.mojom",
     "mailbox_holder.mojom",
     "memory_stats.mojom",
@@ -284,6 +286,7 @@ source_set("vulkan_types_mojom_traits") {
 source_set("mojom_traits") {
   sources = [
     "context_result_mojom_traits.h",
+    "gpu_peak_memory_mojom_traits.h",
     "mailbox_holder_mojom_traits.h",
     "mailbox_mojom_traits.h",
     "memory_stats_mojom_traits.h",

@@ -9,6 +9,7 @@ struct UserAgentMetadata {
   string full_version;
   string major_version;
   string platform;
+  string platform_version;
   string architecture;
   string model;
   bool mobile;

@@ -338,6 +338,17 @@ void NavigationItemImpl::ResetForCommit() {
   SetNavigationInitiationType(web::NavigationInitiationType::NONE);
 }
 
+void NavigationItemImpl::RestoreStateFromItem(NavigationItem* other) {
+  // Only restore the UserAgent type and the page display state. The other
+  // headers might not make sense after creating a new navigation to the page.
+  bool inherited_user_agent =
+      other->GetUserAgentType() == other->GetUserAgentForInheritance();
+  if (other->GetUserAgentType() != UserAgentType::NONE) {
+    SetUserAgentType(other->GetUserAgentType(), inherited_user_agent);
+  }
+  SetPageDisplayState(other->GetPageDisplayState());
+}
+
 ErrorRetryStateMachine& NavigationItemImpl::error_retry_state_machine() {
   DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   return error_retry_state_machine_;

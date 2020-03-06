@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_consts.h"

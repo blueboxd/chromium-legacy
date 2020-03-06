@@ -6,6 +6,7 @@
 
 #include "base/android/build_info.h"
 #include "base/android/bundle_utils.h"
+#include "base/memory/ptr_util.h"
 #include "device/vr/android/gvr/gvr_device.h"
 
 namespace device {

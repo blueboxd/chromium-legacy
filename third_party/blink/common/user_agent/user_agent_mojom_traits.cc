@@ -29,6 +29,10 @@ bool StructTraits<blink::mojom::UserAgentMetadataDataView,
     return false;
   out->platform = string;
 
+  if (!data.ReadPlatformVersion(&string))
+    return false;
+  out->platform_version = string;
+
   if (!data.ReadArchitecture(&string))
     return false;
   out->architecture = string;

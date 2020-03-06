@@ -4,6 +4,7 @@
 
 #include "components/download/public/common/download_item_impl_delegate.h"
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "components/download/public/common/auto_resumption_handler.h"

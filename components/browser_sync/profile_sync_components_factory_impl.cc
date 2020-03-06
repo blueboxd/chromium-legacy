@@ -255,26 +255,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                       .get()),
               history_disabled_pref_));
     }
-
-    // If |kDoNotSyncFaviconDataTypes| feature is enabled, never register
-    // controllers for favicon sync. Otherwise, it is enabled by default and we
-    // should register unless explicitly disabled.
-    if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes) &&
-        !disabled_types.Has(syncer::FAVICON_IMAGES) &&
-        !disabled_types.Has(syncer::FAVICON_TRACKING)) {
-      controllers.push_back(
-          std::make_unique<SyncableServiceBasedModelTypeController>(
-              syncer::FAVICON_IMAGES,
-              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-              sync_client_->GetSyncableServiceForType(syncer::FAVICON_IMAGES),
-              dump_stack));
-      controllers.push_back(
-          std::make_unique<SyncableServiceBasedModelTypeController>(
-              syncer::FAVICON_TRACKING,
-              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-              sync_client_->GetSyncableServiceForType(syncer::FAVICON_TRACKING),
-              dump_stack));
-    }
   }
 
   // Password sync is enabled by default.  Register unless explicitly

@@ -2328,11 +2328,22 @@ class HttpStreamFactoryBidirectionalQuicTest
   HttpNetworkSession::Params params_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    VersionIncludeStreamDependencySequence,
-    HttpStreamFactoryBidirectionalQuicTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllVersionsExcept99()),
-                       ::testing::Bool()));
+quic::ParsedQuicVersionVector TestVersions() {
+  quic::ParsedQuicVersionVector versions;
+  for (const quic::ParsedQuicVersion& version : quic::AllSupportedVersions()) {
+    if (version.HasIetfQuicFrames()) {
+      // TODO(crbug.com/1059073) test all versions.
+      continue;
+    }
+    versions.push_back(version);
+  }
+  return versions;
+}
+
+INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
+                         HttpStreamFactoryBidirectionalQuicTest,
+                         ::testing::Combine(::testing::ValuesIn(TestVersions()),
+                                            ::testing::Bool()));
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {
@@ -3539,7 +3550,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
       session_.get(), network_isolation_key, headers.get(), origin);
 
   quic::ParsedQuicVersionVector versions = {
-      {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_99},
+      {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_IETF_DRAFT_27},
       {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_IETF_DRAFT_25},
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_50},
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_49},

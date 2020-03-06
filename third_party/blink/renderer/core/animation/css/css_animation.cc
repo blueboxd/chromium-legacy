@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
 
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+
 namespace blink {
 
 CSSAnimation::CSSAnimation(ExecutionContext* execution_context,
@@ -11,6 +14,23 @@ CSSAnimation::CSSAnimation(ExecutionContext* execution_context,
                            AnimationEffect* content,
                            const String& animation_name)
     : Animation(execution_context, timeline, content),
-      animation_name_(animation_name) {}
+      animation_name_(animation_name),
+      sticky_play_state_(Animation::kUnset) {}
+
+String CSSAnimation::playState() const {
+  if (GetDocument())
+    GetDocument()->UpdateStyleAndLayoutTree();
+  return Animation::playState();
+}
+
+void CSSAnimation::pause(ExceptionState& exception_state) {
+  sticky_play_state_ = kPaused;
+  Animation::pause(exception_state);
+}
+
+void CSSAnimation::play(ExceptionState& exception_state) {
+  sticky_play_state_ = kRunning;
+  Animation::play(exception_state);
+}
 
 }  // namespace blink

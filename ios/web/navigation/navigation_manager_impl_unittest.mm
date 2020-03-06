@@ -103,6 +103,14 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   WebState* web_state_ = nullptr;
 };
 
+// Data holder for the informations to be restored in the items.
+struct ItemInfoToBeRestored {
+  GURL url;
+  UserAgentType user_agent;
+  bool user_agent_inherited;
+  PageDisplayState display_state;
+};
+
 }  // namespace
 
 // Test fixture for NavigationManagerImpl testing.
@@ -1824,12 +1832,22 @@ TEST_F(NavigationManagerTest, TestBackwardForwardItems) {
 
 // Tests that Restore() creates the correct navigation state.
 TEST_F(NavigationManagerTest, Restore) {
-  GURL urls[3] = {GURL("http://www.url.com/0"), GURL("http://www.url.com/1"),
-                  GURL("http://www.url.com/2")};
+  ItemInfoToBeRestored restore_information[3];
+  restore_information[0] = {GURL("http://www.url.com/0"), UserAgentType::MOBILE,
+                            true, PageDisplayState()};
+  restore_information[1] = {GURL("http://www.url.com/1"),
+                            UserAgentType::DESKTOP, true, PageDisplayState()};
+  restore_information[2] = {GURL("http://www.url.com/2"),
+                            UserAgentType::DESKTOP, false, PageDisplayState()};
+
   std::vector<std::unique_ptr<NavigationItem>> items;
-  for (size_t index = 0; index < base::size(urls); ++index) {
+  for (size_t index = 0; index < base::size(restore_information); ++index) {
     items.push_back(NavigationItem::Create());
-    items.back()->SetURL(urls[index]);
+    items.back()->SetURL(restore_information[index].url);
+    items.back()->SetUserAgentType(
+        restore_information[index].user_agent,
+        restore_information[index].user_agent_inherited);
+    items.back()->SetPageDisplayState(restore_information[index].display_state);
   }
 
   // Call Restore() and check that the NavigationItems are in the correct order
@@ -1838,6 +1856,7 @@ TEST_F(NavigationManagerTest, Restore) {
   navigation_manager()->Restore(1, std::move(items));
   __block bool restore_done = false;
   navigation_manager()->AddRestoreCompletionCallback(base::BindOnce(^{
+    navigation_manager()->CommitPendingItem();
     restore_done = true;
   }));
 
@@ -1857,7 +1876,7 @@ TEST_F(NavigationManagerTest, Restore) {
   navigation_manager()->OnNavigationStarted(pending_url);
 
   // Simulate the end effect of loading the restore session URL in web view.
-  pending_item->SetURL(urls[1]);
+  pending_item->SetURL(restore_information[1].url);
   [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
                   backListURLs:@[ @"http://www.url.com/0" ]
                forwardListURLs:@[ @"http://www.url.com/2" ]];
@@ -1870,10 +1889,29 @@ TEST_F(NavigationManagerTest, Restore) {
   EXPECT_FALSE(navigation_manager()->IsRestoreSessionInProgress());
   ASSERT_EQ(3, navigation_manager()->GetItemCount());
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
-  EXPECT_EQ(urls[1], navigation_manager()->GetLastCommittedItem()->GetURL());
+  EXPECT_EQ(restore_information[1].url,
+            navigation_manager()->GetLastCommittedItem()->GetURL());
 
-  for (size_t i = 0; i < base::size(urls); ++i) {
-    EXPECT_EQ(urls[i], navigation_manager()->GetItemAtIndex(i)->GetURL());
+  for (size_t i = 0; i < base::size(restore_information); ++i) {
+    NavigationItem* navigation_item = navigation_manager()->GetItemAtIndex(i);
+    EXPECT_EQ(restore_information[i].url, navigation_item->GetURL());
+    EXPECT_EQ(restore_information[i].user_agent,
+              navigation_item->GetUserAgentType());
+    if (restore_information[i].user_agent_inherited) {
+      EXPECT_EQ(restore_information[i].user_agent,
+                navigation_item->GetUserAgentForInheritance());
+    } else {
+      if (base::FeatureList::IsEnabled(
+              features::kUseDefaultUserAgentInWebClient)) {
+        EXPECT_EQ(UserAgentType::AUTOMATIC,
+                  navigation_item->GetUserAgentForInheritance());
+      } else {
+        EXPECT_EQ(UserAgentType::MOBILE,
+                  navigation_item->GetUserAgentForInheritance());
+      }
+    }
+    EXPECT_EQ(restore_information[i].display_state,
+              navigation_item->GetPageDisplayState());
   }
 
   histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);

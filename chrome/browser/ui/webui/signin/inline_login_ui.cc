@@ -28,6 +28,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/edu_account_login_handler_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_chromeos.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #else
 #include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
@@ -65,6 +66,9 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->AddResourcePath("gaia_auth_host.js", IDR_GAIA_AUTH_AUTHENTICATOR_JS);
 
 #if defined(OS_CHROMEOS)
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources chrome://test 'self';");
+
   source->AddResourcePath("edu", IDU_EDU_LOGIN_EDU_LOGIN_HTML);
   source->AddResourcePath("app.js", IDU_EDU_LOGIN_EDU_LOGIN_JS);
   source->AddResourcePath("edu_login_button.js",
@@ -74,6 +78,9 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->AddResourcePath("edu_login_css.js", IDR_EDU_LOGIN_EDU_LOGIN_CSS_JS);
   source->AddResourcePath("browser_proxy.js", IDR_EDU_LOGIN_BROWSER_PROXY_JS);
   source->AddResourcePath("edu_login_util.js", IDR_EDU_LOGIN_EDU_LOGIN_UTIL_JS);
+
+  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 
   AddEduStrings(source);
 #endif

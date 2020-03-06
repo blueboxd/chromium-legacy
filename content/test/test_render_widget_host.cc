@@ -4,6 +4,7 @@
 
 #include "content/test/test_render_widget_host.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/public/common/content_features.h"

@@ -362,6 +362,17 @@ void AddUAHeader(net::HttpRequestHeaders* headers,
   SetHeaderToString(headers, type, value);
 }
 
+std::string AddQuotes(std::string str) {
+  return base::StringPrintf("\"%s\"", str.c_str());
+}
+
+std::string AddBrandVersionQuotes(std::string brand, std::string version) {
+  if (version.empty()) {
+    return AddQuotes(brand);
+  }
+  return base::StringPrintf("\"%s\"; v=\"%s\"", brand.c_str(), version.c_str());
+}
+
 bool IsFeaturePolicyForClientHintsEnabled() {
   return base::FeatureList::IsEnabled(features::kFeaturePolicyForClientHints);
 }
@@ -491,9 +502,7 @@ void AddNavigationRequestClientHintsHeaders(
             ? ua.full_version
             : ua.major_version;
     AddUAHeader(headers, blink::mojom::WebClientHintsType::kUA,
-                version.empty() ? ua.brand
-                                : base::StringPrintf("%s %s", ua.brand.c_str(),
-                                                     version.c_str()));
+                AddBrandVersionQuotes(ua.brand, version));
     // The `Sec-CH-UA-Mobile client hint was also deemed "low entropy" and can
     // safely be sent with every request.
     AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAMobile,
@@ -504,7 +513,7 @@ void AddNavigationRequestClientHintsHeaders(
             blink::mojom::WebClientHintsType::kUAArch,
             blink::mojom::FeaturePolicyFeature::kClientHintUAArch)) {
       AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAArch,
-                  ua.architecture);
+                  AddQuotes(ua.architecture));
     }
 
     if (ShouldAddClientHint(
@@ -512,7 +521,7 @@ void AddNavigationRequestClientHintsHeaders(
             blink::mojom::WebClientHintsType::kUAPlatform,
             blink::mojom::FeaturePolicyFeature::kClientHintUAPlatform)) {
       AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAPlatform,
-                  ua.platform);
+                  AddBrandVersionQuotes(ua.platform, ua.platform_version));
     }
 
     if (ShouldAddClientHint(
@@ -520,7 +529,7 @@ void AddNavigationRequestClientHintsHeaders(
             blink::mojom::WebClientHintsType::kUAModel,
             blink::mojom::FeaturePolicyFeature::kClientHintUAModel)) {
       AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAModel,
-                  ua.model);
+                  AddQuotes(ua.model));
     }
   }
 

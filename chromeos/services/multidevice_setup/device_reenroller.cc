@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/multidevice/logging/logging.h"

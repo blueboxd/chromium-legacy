@@ -5,6 +5,7 @@
 #include "components/safe_browsing/content/triggers/suspicious_site_trigger.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"

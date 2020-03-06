@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/navigation/navigation_context.h"

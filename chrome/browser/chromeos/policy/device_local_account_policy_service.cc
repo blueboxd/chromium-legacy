@@ -212,7 +212,7 @@ void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
   core_.StartRefreshScheduler();
   UpdateRefreshDelay();
   invalidator_.reset(new AffiliatedCloudPolicyInvalidator(
-      em::DeviceRegisterRequest::DEVICE, &core_,
+      PolicyInvalidationScope::kDeviceLocalAccount, &core_,
       invalidation_service_provider_));
 }
 

@@ -347,6 +347,9 @@
   <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_REASON_PHISHED" desc="Password compromise reason shown when a password was reused on a phishing site.">
     Entered on deceptive site
   </message>
+  <message name="IDS_SETTINGS_NO_COMPROMISED_CREDENTIALS_LABEL" desc="Label which is shown when there were no compromised passwords detected.">
+    Chrome will notify you when you sign in with a compromised password
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVE_PASSWORDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to be prompted if they want to save their passwords when logging into webpages.">
     Offer to save passwords
   </message>
@@ -1798,7 +1801,7 @@
   <message name="IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES" desc="Label for the Manage Search Engines button.">
     Manage search engines
   </message>
-  
+
   <!-- Search Engines Page -->
   <message name="IDS_SETTINGS_SEARCH_ENGINES" desc="Name of the settings page which manages search engines.">
     Search Engines
@@ -2756,23 +2759,20 @@
   <message name="IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE" desc="Title of the personalize Google services section. When clicked, takes the user to the Google Activity Controls.">
     Control how your browsing history is used to personalize Search, ads, and more
   </message>
-  <message name="IDS_SETTINGS_USE_HISTORY_TO_PERSONALIZE_GOOGLE_SERVICES_TITLE" desc="Title of the use your history to personalize Google services section. When clicked, takes the user to the Google Activity Controls." translateable="false">
-    Use your History to personalize Search and other Google services
+  <message name="IDS_SETTINGS_USE_HISTORY_TO_PERSONALIZE_GOOGLE_SERVICES_TITLE" desc="Title of the use your history to personalize Google services section. When clicked, takes the user to the Google Activity Controls.">
+    Use your browsing history to personalize Search, ads and other Google services
   </message>
-  <message name="IDS_SETTINGS_SWAA_ON" desc="The sWAA state that shows in the use history to personalize google services row" translateable="false">
+  <message name="IDS_SETTINGS_SWAA_ON" desc="The sWAA state that shows in the use history to personalize google services row">
     On
   </message>
-  <message name="IDS_SETTINGS_SWAA_OFF" desc="The sWAA state that shows in the use history to personalize google services row" translateable="false">
+  <message name="IDS_SETTINGS_SWAA_OFF" desc="The sWAA state that shows in the use history to personalize google services row">
     Off
   </message>
-  <message name="IDS_SETTINGS_SWAA_ON_HINT" desc="Hint that shows when sWAA is On in the use history to personalize google services row" translateable="false">
-    For example, get suggestions in YouTube based on Chrome browsing
+  <message name="IDS_SETTINGS_DATA_ENCRYPTED_HINT" desc="Hint that shows when sWAA is off in the use history to personalize google services row because data is encrypted with custom passphrase">
+    Turned off because you encrypted your sync data with a passphrase
   </message>
-  <message name="IDS_SETTINGS_DATA_ENCRYPTED_HINT" desc="Hint that shows when sWAA is off in the use history to personalize google services row because data is encrypted with custom passphrase" translateable="false">
-    Your synced data was encrypted
-  </message>
-   <message name="IDS_SETTINGS_HISTORY_SYNC_OFF_HINT" desc="Hint that shows when sWAA is off in the use history to personalize google services row because history sync is off" translateable="false">
-    Turned off because you disabled syncing history
+   <message name="IDS_SETTINGS_HISTORY_SYNC_OFF_HINT" desc="Hint that shows when sWAA is off in the use history to personalize google services row because history sync is off">
+    Turned off because you disabled history sync
   </message>
    <message name="IDS_SETTINGS_SWAA_OFF_HINT" desc="Hint that shows when sWAA is off in the use history to personalize google services row because history recording is disabled in Web and App Activity" translateable="false">
     History recording is turned off in Activity controls.

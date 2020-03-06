@@ -308,4 +308,24 @@ ResponseAction PasswordsPrivateRemoveCompromisedCredentialFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+// PasswordsPrivateStartPasswordCheckFunction:
+PasswordsPrivateStartPasswordCheckFunction::
+    ~PasswordsPrivateStartPasswordCheckFunction() = default;
+
+ResponseAction PasswordsPrivateStartPasswordCheckFunction::Run() {
+  if (!GetDelegate(browser_context())->StartPasswordCheck()) {
+    return RespondNow(Error("Starting password check failed."));
+  }
+  return RespondNow(NoArguments());
+}
+
+// PasswordsPrivateStopPasswordCheckFunction:
+PasswordsPrivateStopPasswordCheckFunction::
+    ~PasswordsPrivateStopPasswordCheckFunction() = default;
+
+ResponseAction PasswordsPrivateStopPasswordCheckFunction::Run() {
+  GetDelegate(browser_context())->StopPasswordCheck();
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions

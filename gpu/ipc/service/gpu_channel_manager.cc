@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
@@ -76,43 +77,103 @@ void TrimD3DResources() {
   }
 }
 #endif
+
+std::unique_ptr<base::trace_event::TracedValue>
+FormatAllocationSourcesForTracing(
+    base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>&
+        allocation_sources) {
+  auto dict = std::make_unique<base::trace_event::TracedValue>();
+  dict->SetInteger("UNKNOWN",
+                   allocation_sources[GpuPeakMemoryAllocationSource::UNKNOWN]);
+  dict->SetInteger(
+      "COMMAND_BUFFER",
+      allocation_sources[GpuPeakMemoryAllocationSource::COMMAND_BUFFER]);
+  dict->SetInteger(
+      "SHARED_CONTEXT_STATE",
+      allocation_sources[GpuPeakMemoryAllocationSource::SHARED_CONTEXT_STATE]);
+  dict->SetInteger(
+      "SHARED_IMAGE_STUB",
+      allocation_sources[GpuPeakMemoryAllocationSource::SHARED_IMAGE_STUB]);
+  dict->SetInteger("SKIA",
+                   allocation_sources[GpuPeakMemoryAllocationSource::SKIA]);
+  return dict;
 }
+
+}  // namespace
 
 GpuChannelManager::GpuPeakMemoryMonitor::GpuPeakMemoryMonitor()
     : weak_factory_(this) {}
 
-GpuChannelManager::GpuPeakMemoryMonitor::~GpuPeakMemoryMonitor() {}
+GpuChannelManager::GpuPeakMemoryMonitor::~GpuPeakMemoryMonitor() = default;
 
-uint64_t GpuChannelManager::GpuPeakMemoryMonitor::GetPeakMemoryUsage(
-    uint32_t sequence_num) {
+base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
+GpuChannelManager::GpuPeakMemoryMonitor::GetPeakMemoryUsage(
+    uint32_t sequence_num,
+    uint64_t* out_peak_memory) {
   auto sequence = sequence_trackers_.find(sequence_num);
-  if (sequence != sequence_trackers_.end())
-    return sequence->second;
-  return 0u;
+  base::flat_map<GpuPeakMemoryAllocationSource, uint64_t> allocation_per_source;
+  *out_peak_memory = 0u;
+  if (sequence != sequence_trackers_.end()) {
+    *out_peak_memory = sequence->second.total_memory_;
+    allocation_per_source = sequence->second.peak_memory_per_source_;
+  }
+  return allocation_per_source;
 }
 
 void GpuChannelManager::GpuPeakMemoryMonitor::StartGpuMemoryTracking(
     uint32_t sequence_num) {
-  TRACE_EVENT_ASYNC_BEGIN1("gpu", "PeakMemoryTracking", sequence_num, "start",
-                           current_memory_);
-  sequence_trackers_.emplace(sequence_num, current_memory_);
+  sequence_trackers_.emplace(
+      sequence_num,
+      SequenceTracker(current_memory_, current_memory_per_source_));
+
+  auto dict = FormatAllocationSourcesForTracing(current_memory_per_source_);
+  TRACE_EVENT_ASYNC_BEGIN2("gpu", "PeakMemoryTracking", sequence_num, "start",
+                           current_memory_, "start_sources", std::move(dict));
 }
 
 void GpuChannelManager::GpuPeakMemoryMonitor::StopGpuMemoryTracking(
     uint32_t sequence_num) {
   auto sequence = sequence_trackers_.find(sequence_num);
   if (sequence != sequence_trackers_.end()) {
-    TRACE_EVENT_ASYNC_END1("gpu", "PeakMemoryTracking", sequence_num, "peak",
-                           sequence->second);
+    auto dict = FormatAllocationSourcesForTracing(
+        sequence->second.peak_memory_per_source_);
+    TRACE_EVENT_ASYNC_END2("gpu", "PeakMemoryTracking", sequence_num, "peak",
+                           sequence->second.total_memory_, "end_sources",
+                           std::move(dict));
     sequence_trackers_.erase(sequence);
   }
 }
 
+base::WeakPtr<MemoryTracker::Observer>
+GpuChannelManager::GpuPeakMemoryMonitor::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+void GpuChannelManager::GpuPeakMemoryMonitor::InvalidateWeakPtrs() {
+  weak_factory_.InvalidateWeakPtrs();
+}
+
+GpuChannelManager::GpuPeakMemoryMonitor::SequenceTracker::SequenceTracker(
+    uint64_t current_memory,
+    base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
+        current_memory_per_source)
+    : total_memory_(current_memory),
+      peak_memory_per_source_(std::move(current_memory_per_source)) {}
+
+GpuChannelManager::GpuPeakMemoryMonitor::SequenceTracker::SequenceTracker(
+    const SequenceTracker& other) = default;
+
+GpuChannelManager::GpuPeakMemoryMonitor::SequenceTracker::~SequenceTracker() =
+    default;
+
 void GpuChannelManager::GpuPeakMemoryMonitor::OnMemoryAllocatedChange(
     CommandBufferId id,
     uint64_t old_size,
-    uint64_t new_size) {
-  current_memory_ += new_size - old_size;
+    uint64_t new_size,
+    GpuPeakMemoryAllocationSource source) {
+  uint64_t diff = new_size - old_size;
+  current_memory_ += diff;
+  current_memory_per_source_[source] += diff;
   if (old_size < new_size) {
     // When memory has increased, iterate over the sequences to update their
     // peak.
@@ -122,12 +183,15 @@ void GpuChannelManager::GpuPeakMemoryMonitor::OnMemoryAllocatedChange(
     // |peak_since_last_sequence_update_| on the the memory changes. Then only
     // update the sequences with a new one is added, or the peak is requested.
     for (auto& sequence : sequence_trackers_) {
-      if (current_memory_ > sequence.second) {
-        sequence.second = current_memory_;
+      if (current_memory_ > sequence.second.total_memory_) {
+        sequence.second.total_memory_ = current_memory_;
         for (auto& sequence : sequence_trackers_) {
           TRACE_EVENT_ASYNC_STEP_INTO1("gpu", "PeakMemoryTracking",
                                        sequence.first, "Peak", "peak",
                                        current_memory_);
+        }
+        for (auto& source : current_memory_per_source_) {
+          sequence.second.peak_memory_per_source_[source.first] = source.second;
         }
       }
     }
@@ -205,6 +269,10 @@ GpuChannelManager::~GpuChannelManager() {
     default_offscreen_surface_->Destroy();
     default_offscreen_surface_ = nullptr;
   }
+
+  // Inavlidate here as the |shared_context_state_| attempts to call back to
+  // |this| in the middle of the deletion.
+  peak_memory_monitor_.InvalidateWeakPtrs();
 
   // Try to make the context current so that GPU resources can be destroyed
   // correctly.
@@ -378,12 +446,14 @@ void GpuChannelManager::StartPeakMemoryMonitor(uint32_t sequence_num) {
   peak_memory_monitor_.StartGpuMemoryTracking(sequence_num);
 }
 
-uint64_t GpuChannelManager::GetPeakMemoryUsage(uint32_t sequence_num) {
+base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
+GpuChannelManager::GetPeakMemoryUsage(uint32_t sequence_num,
+                                      uint64_t* out_peak_memory) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  uint64_t total_memory = peak_memory_monitor_.GetPeakMemoryUsage(sequence_num);
+  auto allocation_per_source =
+      peak_memory_monitor_.GetPeakMemoryUsage(sequence_num, out_peak_memory);
   peak_memory_monitor_.StopGpuMemoryTracking(sequence_num);
-  return total_memory;
+  return allocation_per_source;
 }
 
 #if defined(OS_ANDROID)
@@ -593,7 +663,8 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
       base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
                      /*synthetic_loss=*/false),
       gpu_preferences_.gr_context_type, vulkan_context_provider_,
-      metal_context_provider_, dawn_context_provider_, peak_memory_monitor());
+      metal_context_provider_, dawn_context_provider_,
+      peak_memory_monitor_.GetWeakPtr());
 
   // OOP-R needs GrContext for raster tiles.
   bool need_gr_context =

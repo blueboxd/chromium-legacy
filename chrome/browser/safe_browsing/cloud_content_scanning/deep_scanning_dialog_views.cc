@@ -285,6 +285,7 @@ void DeepScanningDialogViews::UpdateDialog() {
   image_->Update();
   side_icon_image_->Update();
   side_icon_spinner_->Update();
+  side_icon_spinner_ = nullptr;
 
   // Update the buttons.
   SetupButtons();
@@ -681,6 +682,18 @@ void DeepScanningDialogViews::SetSuccessDialogTimeoutForTesting(
 // static
 void DeepScanningDialogViews::SetObserverForTesting(TestObserver* observer) {
   observer_for_testing = observer;
+}
+
+views::ImageView* DeepScanningDialogViews::GetTopImageForTesting() const {
+  return image_;
+}
+
+views::Throbber* DeepScanningDialogViews::GetSideIconSpinnerForTesting() const {
+  return side_icon_spinner_;
+}
+
+views::Label* DeepScanningDialogViews::GetMessageForTesting() const {
+  return message_;
 }
 
 }  // namespace safe_browsing

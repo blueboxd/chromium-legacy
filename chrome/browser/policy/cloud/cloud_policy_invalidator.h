@@ -22,8 +22,7 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
-#include "components/policy/core/common/cloud/enterprise_metrics.h"
-#include "components/policy/proto/device_management_backend.pb.h"
+#include "components/policy/core/common/cloud/policy_invalidation_scope.h"
 
 namespace base {
 class Clock;
@@ -62,7 +61,21 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // invalidation timestamps when determining if an invalidation is expired.
   static const int kMaxInvalidationTimeDelta;
 
-  // |type| indicates the policy type that this invalidator is responsible for.
+  // Returns a name of a refresh metric associated with the given scope.
+  static const char* GetPolicyRefreshMetricName(PolicyInvalidationScope scope);
+  // Returns a name of a FCM refresh metric associated with the given scope.
+  static const char* GetPolicyRefreshFcmMetricName(
+      PolicyInvalidationScope scope);
+  // Returns a name of an invalidation metric associated with the given scope.
+  static const char* GetPolicyInvalidationMetricName(
+      PolicyInvalidationScope scope);
+  // Returns a name of an FCM invalidation metric associated with the given
+  // scope.
+  static const char* GetPolicyInvalidationFcmMetricName(
+      PolicyInvalidationScope scope);
+
+  // |scope| indicates the invalidation scope that this invalidator
+  // is responsible for.
   // |core| is the cloud policy core which connects the various policy objects.
   // It must remain valid until Shutdown is called.
   // |task_runner| is used for scheduling delayed tasks. It must post tasks to
@@ -71,7 +84,7 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // |highest_handled_invalidation_version| is the highest invalidation version
   // that was handled already before this invalidator was created.
   CloudPolicyInvalidator(
-      enterprise_management::DeviceRegisterRequest::Type type,
+      PolicyInvalidationScope scope,
       CloudPolicyCore* core,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       base::Clock* clock,
@@ -161,11 +174,6 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // |version| is the version of the invalidation, or zero for unknown.
   bool IsInvalidationExpired(int64_t version);
 
-  // Get the kMetricPolicyInvalidations histogram metric which should be
-  // incremented when an invalidation is received.
-  PolicyInvalidationType GetInvalidationMetric(bool is_missing_payload,
-                                               bool is_expired);
-
   // Determine if invalidations have been enabled longer than the grace period.
   bool GetInvalidationsEnabled();
 
@@ -178,8 +186,8 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   };
   State state_;
 
-  // The policy type this invalidator is responsible for.
-  const enterprise_management::DeviceRegisterRequest::Type type_;
+  // The invalidation scope this invalidator is responsible for.
+  const PolicyInvalidationScope scope_;
 
   // The cloud policy core.
   CloudPolicyCore* core_;

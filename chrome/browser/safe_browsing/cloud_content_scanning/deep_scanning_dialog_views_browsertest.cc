@@ -2,12 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_browsertest_base.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/throbber.h"
 
 namespace safe_browsing {
 
@@ -283,6 +290,143 @@ class DeepScanningDialogViewsWarningBrowserTest
   bool warning_shown_immediately_ = false;
 };
 
+// Tests the behavior of the dialog in the following ways:
+// - It shows the appropriate message depending on its access point and scan
+//   type (file or text).
+// - It shows the appropriate top image depending on its access point and scan
+//   type.
+// - It shows the appropriate spinner depending on its state.
+class DeepScanningDialogViewsAppearanceBrowserTest
+    : public DeepScanningBrowserTestBase,
+      public DeepScanningDialogViews::TestObserver,
+      public testing::WithParamInterface<
+          std::tuple<bool, bool, DeepScanAccessPoint>> {
+ public:
+  DeepScanningDialogViewsAppearanceBrowserTest() {
+    DeepScanningDialogViews::SetObserverForTesting(this);
+  }
+
+  void ViewsFirstShown(DeepScanningDialogViews* views,
+                       base::TimeTicks timestamp) override {
+    // The dialog initially shows the pending message for the appropriate access
+    // point and scan type.
+    base::string16 pending_message = views->GetMessageForTesting()->GetText();
+    int expected_message_id = 0;
+    switch (access_point()) {
+      case DeepScanAccessPoint::UPLOAD:
+        expected_message_id = IDS_DEEP_SCANNING_DIALOG_UPLOAD_PENDING_MESSAGE;
+        break;
+      case DeepScanAccessPoint::DRAG_AND_DROP:
+        expected_message_id =
+            file_scan() ? IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_PENDING_MESSAGE
+                        : IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_PENDING_MESSAGE;
+        break;
+      case DeepScanAccessPoint::PASTE:
+        expected_message_id = IDS_DEEP_SCANNING_DIALOG_PASTE_PENDING_MESSAGE;
+        break;
+      case DeepScanAccessPoint::DOWNLOAD:
+        NOTREACHED();
+    }
+    ASSERT_EQ(pending_message, l10n_util::GetStringUTF16(expected_message_id));
+
+    // The top image is the pending one corresponding to the access point.
+    const gfx::ImageSkia& actual_image =
+        views->GetTopImageForTesting()->GetImage();
+    int expected_image_id = 0;
+    switch (access_point()) {
+      case DeepScanAccessPoint::DRAG_AND_DROP:
+        expected_image_id =
+            file_scan() ? IDR_UPLOAD_SCANNING : IDR_PASTE_SCANNING;
+        break;
+      case DeepScanAccessPoint::UPLOAD:
+        expected_image_id = IDR_UPLOAD_SCANNING;
+        break;
+      case DeepScanAccessPoint::PASTE:
+        expected_image_id = IDR_PASTE_SCANNING;
+        break;
+      case DeepScanAccessPoint::DOWNLOAD:
+        NOTREACHED();
+    }
+    gfx::ImageSkia* expected_image =
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            expected_image_id);
+    ASSERT_TRUE(expected_image->BackedBySameObjectAs(actual_image));
+
+    // The spinner should be present.
+    ASSERT_TRUE(views->GetSideIconSpinnerForTesting());
+  }
+
+  void DialogUpdated(
+      DeepScanningDialogViews* views,
+      DeepScanningDialogDelegate::DeepScanningFinalResult result) override {
+    // The dialog shows the failure or success message for the appropriate
+    // access point and scan type.
+    base::string16 final_message = views->GetMessageForTesting()->GetText();
+    int expected_message_id = 0;
+    if (success()) {
+      expected_message_id = IDS_DEEP_SCANNING_DIALOG_SUCCESS_MESSAGE;
+    } else {
+      switch (access_point()) {
+        case DeepScanAccessPoint::UPLOAD:
+          expected_message_id = IDS_DEEP_SCANNING_DIALOG_UPLOAD_FAILURE_MESSAGE;
+          break;
+        case DeepScanAccessPoint::DRAG_AND_DROP:
+          expected_message_id =
+              file_scan() ? IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_FAILURE_MESSAGE
+                          : IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_FAILURE_MESSAGE;
+          break;
+        case DeepScanAccessPoint::PASTE:
+          expected_message_id = IDS_DEEP_SCANNING_DIALOG_PASTE_FAILURE_MESSAGE;
+          break;
+        case DeepScanAccessPoint::DOWNLOAD:
+          NOTREACHED();
+      }
+    }
+    ASSERT_EQ(final_message, l10n_util::GetStringUTF16(expected_message_id));
+
+    // The top image is the failure/success one corresponding to the access
+    // point and scan type.
+    const gfx::ImageSkia& actual_image =
+        views->GetTopImageForTesting()->GetImage();
+    int expected_image_id = 0;
+    switch (access_point()) {
+      case DeepScanAccessPoint::DRAG_AND_DROP:
+        expected_image_id =
+            file_scan() ? success() ? IDR_UPLOAD_SUCCESS : IDR_UPLOAD_VIOLATION
+                        : success() ? IDR_PASTE_SUCCESS : IDR_PASTE_VIOLATION;
+        break;
+      case DeepScanAccessPoint::UPLOAD:
+        expected_image_id =
+            success() ? IDR_UPLOAD_SUCCESS : IDR_UPLOAD_VIOLATION;
+        break;
+      case DeepScanAccessPoint::PASTE:
+        expected_image_id = success() ? IDR_PASTE_SUCCESS : IDR_PASTE_VIOLATION;
+        break;
+      case DeepScanAccessPoint::DOWNLOAD:
+        NOTREACHED();
+    }
+    gfx::ImageSkia* expected_image =
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            expected_image_id);
+    ASSERT_TRUE(expected_image->BackedBySameObjectAs(actual_image));
+
+    // The spinner should not be present in the final result since nothing is
+    // pending.
+    ASSERT_FALSE(views->GetSideIconSpinnerForTesting());
+  }
+
+  void DestructorCalled(DeepScanningDialogViews* views) override {
+    // End the test once the dialog gets destroyed.
+    CallQuitClosure();
+  }
+
+  bool file_scan() const { return std::get<0>(GetParam()); }
+
+  bool success() const { return std::get<1>(GetParam()); }
+
+  DeepScanAccessPoint access_point() const { return std::get<2>(GetParam()); }
+};
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsBehaviorBrowserTest, Test) {
@@ -465,5 +609,60 @@ INSTANTIATE_TEST_SUITE_P(
     DeepScanningDialogViewsWarningBrowserTest,
     DeepScanningDialogViewsWarningBrowserTest,
     testing::Combine(testing::Values(kNoDelay, kSmallDelay), testing::Bool()));
+
+IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsAppearanceBrowserTest, Test) {
+  // Setup policies to enable deep scanning, its UI and the responses to be
+  // simulated.
+  SetDlpPolicy(CHECK_UPLOADS);
+  SetMalwarePolicy(SEND_UPLOADS);
+
+  SetStatusCallbackResponse(
+      SimpleDeepScanningClientResponseForTesting(success(), success()));
+
+  // Always set this policy so the UI is shown.
+  SetWaitPolicy(DELAY_UPLOADS);
+
+  // Set up delegate test values.
+  FakeDeepScanningDialogDelegate::SetResponseDelay(kSmallDelay);
+  SetUpDelegate();
+
+  bool called = false;
+  base::RunLoop run_loop;
+  SetQuitClosure(run_loop.QuitClosure());
+
+  DeepScanningDialogDelegate::Data data;
+  data.do_dlp_scan = true;
+  data.do_malware_scan = true;
+
+  // Use a file path or text to validate the appearance of the dialog for both
+  // types of scans.
+  if (file_scan())
+    data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+  else
+    data.text.emplace_back(base::UTF8ToUTF16("foo"));
+
+  DeepScanningDialogDelegate::ShowForWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
+      base::BindLambdaForTesting(
+          [this, &called](const DeepScanningDialogDelegate::Data& data,
+                          const DeepScanningDialogDelegate::Result& result) {
+            for (bool result : result.paths_results)
+              ASSERT_EQ(result, success());
+            called = true;
+          }),
+      access_point());
+  run_loop.Run();
+  EXPECT_TRUE(called);
+}
+
+INSTANTIATE_TEST_SUITE_P(DeepScanningDialogViewsAppearanceBrowserTest,
+                         DeepScanningDialogViewsAppearanceBrowserTest,
+                         testing::Combine(
+                             /*file_scan=*/testing::Bool(),
+                             /*success=*/testing::Bool(),
+                             /*access_point=*/
+                             testing::Values(DeepScanAccessPoint::UPLOAD,
+                                             DeepScanAccessPoint::DRAG_AND_DROP,
+                                             DeepScanAccessPoint::PASTE)));
 
 }  // namespace safe_browsing

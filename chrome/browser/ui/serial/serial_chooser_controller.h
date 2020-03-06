@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "content/public/browser/serial_chooser.h"
-#include "services/device/public/mojom/serial.mojom.h"
+#include "services/device/public/mojom/serial.mojom-forward.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #include "url/origin.h"
 

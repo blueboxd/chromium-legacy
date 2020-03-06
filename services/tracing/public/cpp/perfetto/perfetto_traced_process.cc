@@ -4,6 +4,7 @@
 
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"

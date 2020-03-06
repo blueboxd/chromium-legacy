@@ -9,6 +9,12 @@ source_set("page_info") {
     "legacy_page_info_view_controller.mm",
     "page_info_config.h",
     "page_info_config.mm",
+    "page_info_consumer.h",
+    "page_info_description.h",
+    "page_info_description.mm",
+    "page_info_navigation_commands.h",
+    "page_info_site_security_view_controller.h",
+    "page_info_site_security_view_controller.mm",
     "page_info_view_controller.h",
     "page_info_view_controller.mm",
   ]
@@ -27,6 +33,7 @@ source_set("page_info") {
     "//ios/chrome/browser/ui/fancy_ui",
     "//ios/chrome/browser/ui/page_info/requirements",
     "//ios/chrome/browser/ui/popup_menu",
+    "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/chrome/common/ui/colors",
@@ -66,6 +73,8 @@ source_set("coordinator") {
     "page_info_coordinator.mm",
     "page_info_legacy_coordinator.h",
     "page_info_legacy_coordinator.mm",
+    "page_info_mediator.h",
+    "page_info_mediator.mm",
   ]
   deps = [
     ":page_info",

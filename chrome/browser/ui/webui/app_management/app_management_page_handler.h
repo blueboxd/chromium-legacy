@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
+#include "chrome/browser/ui/webui/app_management/app_management.mojom-forward.h"
 #include "chrome/browser/ui/webui/app_management/app_management_shelf_delegate_chromeos.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

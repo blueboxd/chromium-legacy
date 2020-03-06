@@ -255,16 +255,8 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q050, false)
 // If true, enable QUIC version T050.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t050, true)
 
-// If true, enable QUIC version T099.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t099, true)
-
 // A testonly reloadable flag that will always default to false.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_testonly_default_false, false)
-
-// If true, the QUIC dispatcher will drop INITIAL packets that are too small.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_drop_small_initial_packets,
-          true)
 
 // In BBR, slow pacing rate if it is likely causing overshoot.
 QUIC_FLAG(
@@ -274,12 +266,6 @@ QUIC_FLAG(
 
 // The default initial value of the max ack height filter's window length.
 QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_initial_ack_height_filter_window, 10)
-
-// If true, QUIC BBRv2 will always count the number of loss events in a round,
-// instead of just counting it in STARTUP.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr2_always_count_loss_events,
-          true)
 
 // The default minimum number of loss marking events to exit PROBE_UP phase.
 QUIC_FLAG(double, FLAGS_quic_bbr2_default_probe_bw_full_loss_count, 2)
@@ -293,17 +279,6 @@ QUIC_FLAG(bool,
 // If true, enable the 1ACK connection option to only send 1 immediate ACK after
 // reordering.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_immediate_ack, true)
-
-// If true, instead of getting handshake state from sent packet manager, ask
-// session for current handshake state.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_get_handshake_state, true)
-
-// If true, in QuicPacketReader, replace the use of QuicSocketUtils by
-// equivalent QuicUdpSocketApi or QuicLinuxSocketUtils functions."
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_restart_flag_quic_remove_quic_socket_utils_from_packet_reader,
-    true)
 
 // If true, QuicSentPacketManager::SetSendAlgorithm(CongestionControlType) will
 // become a no-op if the current and the requested cc_type are the same.
@@ -346,19 +321,22 @@ QUIC_FLAG(bool,
 // WallNow().
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_quic_time_for_received_timestamp2,
-          false)
+          true)
 
 // If true, enable QUIC version h3-25.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_enable_version_draft_25_v3,
-          false)
+          true)
+
+// If true, enable QUIC version h3-27.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_27, true)
 
 // If true, fix QUIC bandwidth sampler to avoid over estimating bandwidth in
 // the presence of ack aggregation.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_avoid_overestimate_bandwidth_with_aggregation,
-    false)
+    true)
 
 // If true, emit more granular errors instead of
 // SpdyFramerError::SPDY_DECOMPRESS_FAILURE in Http2DecoderAdapter.

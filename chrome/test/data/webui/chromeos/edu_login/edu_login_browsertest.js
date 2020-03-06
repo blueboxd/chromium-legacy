@@ -1,0 +1,68 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/** @fileoverview Runs the EDU login flow tests. */
+
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+
+const EduLoginTest = class extends PolymerTest {
+  /** @override */
+  get browsePreload() {
+    throw 'this is abstract and should be overridden by subclasses';
+  }
+
+  get suiteName() {
+    throw 'this is abstract and should be overridden by subclasses';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return [
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
+    ];
+  }
+
+  /** @param {string} testName The name of the test to run. */
+  runMochaTest(testName) {
+    runMochaTest(this.suiteName, testName);
+  }
+};
+
+// eslint-disable-next-line no-var
+var EduLoginButtonTest = class extends EduLoginTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://chrome-signin/test_loader.html?module=chromeos/edu_login/edu_login_button_test.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return edu_login_button_tests.suiteName;
+  }
+};
+
+TEST_F('EduLoginButtonTest', 'OkButtonProperties', function() {
+  this.runMochaTest(edu_login_button_tests.TestNames.OkButtonProperties);
+});
+
+TEST_F('EduLoginButtonTest', 'NextButtonProperties', function() {
+  this.runMochaTest(edu_login_button_tests.TestNames.NextButtonProperties);
+});
+
+TEST_F('EduLoginButtonTest', 'BackButtonProperties', function() {
+  this.runMochaTest(edu_login_button_tests.TestNames.BackButtonProperties);
+});
+
+TEST_F('EduLoginButtonTest', 'OkButtonRtlIcon', function() {
+  this.runMochaTest(edu_login_button_tests.TestNames.OkButtonRtlIcon);
+});
+
+TEST_F('EduLoginButtonTest', 'NextButtonRtlIcon', function() {
+  this.runMochaTest(edu_login_button_tests.TestNames.NextButtonRtlIcon);
+});
+
+TEST_F('EduLoginButtonTest', 'BackButtonRtlIcon', function() {
+  this.runMochaTest(edu_login_button_tests.TestNames.BackButtonRtlIcon);
+});

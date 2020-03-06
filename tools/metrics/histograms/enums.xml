@@ -22483,6 +22483,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1455" label="PASSWORDSPRIVATE_REMOVECOMPROMISEDCREDENTIAL"/>
   <int value="1456" label="TERMINALPRIVATE_GETA11YSTATUS"/>
   <int value="1457" label="AUTOTESTPRIVATE_GETSHELFUIINFOFORSTATE"/>
+  <int value="1458" label="PASSWORDSPRIVATE_STARTPASSWORDCHECK"/>
+  <int value="1459" label="PASSWORDSPRIVATE_STOPPASSWORDCHECK"/>
 </enum>
 
 <enum name="ExtensionIconState">

@@ -185,6 +185,16 @@ template("msvc_toolchain") {
       coverage_wrapper = ""
     }
 
+    if (toolchain_args.is_clang) {
+      # This flag omits system includes from /showIncludes output, to reduce the
+      # amount of data to parse and store in .ninja_deps. We do this on non-Windows too,
+      # and already make sure rebuilds after win sdk / libc++ / clang header updates happen via
+      # changing commandline flags.
+      show_includes = "/showIncludes:user"
+    } else {
+      show_includes = "/showIncludes"
+    }
+
     tool("cc") {
       precompiled_header_type = "msvc"
       pdbname = "{{target_out_dir}}/{{label_name}}_c.pdb"
@@ -196,7 +206,7 @@ template("msvc_toolchain") {
       description = "CC {{output}}"
       outputs = [ "$object_subdir/{{source_name_part}}.obj" ]
 
-      command = "$coverage_wrapper$env_wrapper$cl /nologo /showIncludes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+      command = "$coverage_wrapper$env_wrapper$cl /nologo $show_includes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     }
 
     tool("cxx") {
@@ -210,7 +220,7 @@ template("msvc_toolchain") {
       description = "CXX {{output}}"
       outputs = [ "$object_subdir/{{source_name_part}}.obj" ]
 
-      command = "$coverage_wrapper$env_wrapper$cl /nologo /showIncludes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+      command = "$coverage_wrapper$env_wrapper$cl /nologo $show_includes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     }
 
     tool("rc") {

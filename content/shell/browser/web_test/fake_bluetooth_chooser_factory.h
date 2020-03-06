@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

@@ -41,8 +41,7 @@ var availableTests = [
         numSavedPasswords = savedPasswordsList.length;
         chrome.passwordsPrivate.removeSavedPassword(savedPasswordsList[0].id);
       } else if (numCalls == 2) {
-        chrome.test.assertEq(
-            savedPasswordsList.length, numSavedPasswords - 1);
+        chrome.test.assertEq(savedPasswordsList.length, numSavedPasswords - 1);
         chrome.passwordsPrivate.undoRemoveSavedPasswordOrException();
       } else if (numCalls == 3) {
         chrome.test.assertEq(savedPasswordsList.length, numSavedPasswords);
@@ -338,6 +337,27 @@ var availableTests = [
           // Ensure that the callback is invoked.
           chrome.test.succeed();
         });
+  },
+
+  function startPasswordCheck() {
+    chrome.passwordsPrivate.startPasswordCheck(() => {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
+
+  function startPasswordCheckFailed() {
+    chrome.passwordsPrivate.startPasswordCheck(() => {
+      chrome.test.assertLastError('Starting password check failed.');
+      chrome.test.succeed();
+    });
+  },
+
+  function stopPasswordCheck() {
+    chrome.passwordsPrivate.stopPasswordCheck(() => {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
   },
 ];
 

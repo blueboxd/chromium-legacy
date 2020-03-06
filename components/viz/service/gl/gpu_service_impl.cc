@@ -34,6 +34,7 @@
 #include "gpu/config/skia_limits.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/common/gpu_peak_memory.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -994,9 +995,12 @@ void GpuServiceImpl::StartPeakMemoryMonitorOnMainThread(uint32_t sequence_num) {
 void GpuServiceImpl::GetPeakMemoryUsageOnMainThread(
     uint32_t sequence_num,
     GetPeakMemoryUsageCallback callback) {
-  uint64_t peak_memory = gpu_channel_manager_->GetPeakMemoryUsage(sequence_num);
+  uint64_t peak_memory = 0u;
+  auto allocation_per_source =
+      gpu_channel_manager_->GetPeakMemoryUsage(sequence_num, &peak_memory);
   io_runner_->PostTask(FROM_HERE,
-                       base::BindOnce(std::move(callback), peak_memory));
+                       base::BindOnce(std::move(callback), peak_memory,
+                                      std::move(allocation_per_source)));
 }
 
 void GpuServiceImpl::MaybeExit(bool for_context_loss) {

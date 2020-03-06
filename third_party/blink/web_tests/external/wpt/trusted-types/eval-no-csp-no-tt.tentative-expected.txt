@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL eval of TrustedScript works. assert_equals: expected (number) 2 but got (object) object "1+1"
+PASS eval of string works.
+PASS eval of !TrustedScript and !string works.
+Harness: the test ran to completion.
+

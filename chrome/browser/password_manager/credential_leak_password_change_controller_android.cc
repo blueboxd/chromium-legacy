@@ -9,7 +9,9 @@
 #include "chrome/browser/ui/android/passwords/credential_leak_dialog_password_change_view_android.h"
 #include "chrome/common/url_constants.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/android/window_android.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using password_manager::metrics_util::LeakDialogDismissalReason;
 using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
@@ -53,6 +55,9 @@ void CredentialLeakPasswordChangeControllerAndroid::OnCloseDialog() {
 
 base::string16
 CredentialLeakPasswordChangeControllerAndroid::GetAcceptButtonLabel() const {
+  if (ShouldShowChangePasswordButton()) {
+    return l10n_util::GetStringUTF16(IDS_PASSWORD_CHANGE);
+  }
   return password_manager::GetAcceptButtonLabel(leak_type_);
 }
 
@@ -77,5 +82,13 @@ bool CredentialLeakPasswordChangeControllerAndroid::ShouldCheckPasswords()
 
 bool CredentialLeakPasswordChangeControllerAndroid::ShouldShowCancelButton()
     const {
-  return password_manager::ShouldShowCancelButton(leak_type_);
+  return password_manager::ShouldShowCancelButton(leak_type_) ||
+         ShouldShowChangePasswordButton();
+}
+
+bool CredentialLeakPasswordChangeControllerAndroid::
+    ShouldShowChangePasswordButton() const {
+  return password_manager::IsPasswordSaved(leak_type_) &&
+         !password_manager::IsPasswordUsedOnOtherSites(leak_type_) &&
+         password_manager::IsSyncingPasswordsNormally(leak_type_);
 }

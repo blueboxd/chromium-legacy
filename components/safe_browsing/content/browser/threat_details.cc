@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"

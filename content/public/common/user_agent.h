@@ -44,6 +44,10 @@ CONTENT_EXPORT std::string BuildCpuInfo();
 // as an argument.
 CONTENT_EXPORT std::string BuildOSCpuInfo(bool include_android_build_number);
 
+// Returns the OS version. On Android, the string will only include the build
+// number if true is passed as an argument.
+CONTENT_EXPORT std::string GetOSVersion(bool include_android_build_number);
+
 // Returns the frozen User-agent string for
 // https://github.com/WICG/ua-client-hints.
 CONTENT_EXPORT base::StringPiece GetFrozenUserAgent(bool mobile);

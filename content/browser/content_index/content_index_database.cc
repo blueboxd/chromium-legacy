@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/barrier_closure.h"
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"

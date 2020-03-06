@@ -201,7 +201,7 @@ void BrowserPolicyConnectorChromeOS::Init(
   if (device_cloud_policy_manager_) {
     device_cloud_policy_invalidator_ =
         std::make_unique<AffiliatedCloudPolicyInvalidator>(
-            em::DeviceRegisterRequest::DEVICE,
+            PolicyInvalidationScope::kDevice,
             device_cloud_policy_manager_->core(),
             affiliated_invalidation_service_provider_.get());
     device_remote_commands_invalidator_ =

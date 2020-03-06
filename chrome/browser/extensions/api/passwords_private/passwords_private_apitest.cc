@@ -232,6 +232,13 @@ class TestDelegate : public PasswordsPrivateDelegate {
                          }) != 0;
   }
 
+  bool StartPasswordCheck() override {
+    start_password_check_triggered_ = true;
+    return start_password_check_return_success_;
+  }
+
+  void StopPasswordCheck() override { stop_password_check_triggered_ = true; }
+
   void SetOptedInForAccountStorage(bool opted_in) {
     is_opted_in_for_account_storage_ = opted_in;
   }
@@ -250,6 +257,11 @@ class TestDelegate : public PasswordsPrivateDelegate {
   bool importPasswordsTriggered = false;
   bool exportPasswordsTriggered = false;
   bool cancelExportPasswordsTriggered = false;
+
+  // Flags for detecting whether password check operations have been invoked.
+  bool start_password_check_triggered_ = false;
+  bool stop_password_check_triggered_ = false;
+  bool start_password_check_return_success_ = true;
 
  private:
   void SendSavedPasswordsList() {
@@ -306,9 +318,7 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
-  void SetUp() override {
-    ExtensionApiTest::SetUp();
-  }
+  void SetUp() override { ExtensionApiTest::SetUp(); }
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
@@ -335,6 +345,18 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
 
   bool cancelExportPasswordsWasTriggered() {
     return s_test_delegate_->cancelExportPasswordsTriggered;
+  }
+
+  bool start_password_check_triggered() {
+    return s_test_delegate_->start_password_check_triggered_;
+  }
+
+  bool stop_password_check_triggered() {
+    return s_test_delegate_->stop_password_check_triggered_;
+  }
+
+  void set_start_password_check_result(bool result) {
+    s_test_delegate_->start_password_check_return_success_ = result;
   }
 
   void SetOptedInForAccountStorage(bool opted_in) {
@@ -465,6 +487,26 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
   AddCompromisedCredential(0);
   EXPECT_TRUE(RunPasswordsSubtest("removeCompromisedCredentialSucceeds"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StartPasswordCheck) {
+  set_start_password_check_result(true);
+  EXPECT_FALSE(start_password_check_triggered());
+  EXPECT_TRUE(RunPasswordsSubtest("startPasswordCheck")) << message_;
+  EXPECT_TRUE(start_password_check_triggered());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StartPasswordCheckFailed) {
+  set_start_password_check_result(false);
+  EXPECT_FALSE(start_password_check_triggered());
+  EXPECT_TRUE(RunPasswordsSubtest("startPasswordCheckFailed")) << message_;
+  EXPECT_TRUE(start_password_check_triggered());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StopPasswordCheck) {
+  EXPECT_FALSE(stop_password_check_triggered());
+  EXPECT_TRUE(RunPasswordsSubtest("stopPasswordCheck")) << message_;
+  EXPECT_TRUE(stop_password_check_triggered());
 }
 
 }  // namespace extensions

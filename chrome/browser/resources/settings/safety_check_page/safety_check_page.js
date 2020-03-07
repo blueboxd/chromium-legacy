@@ -442,13 +442,8 @@ Polymer({
    * @return {boolean}
    */
   shouldShowPasswordsButton_: function() {
-    switch (this.passwordsStatus_) {
-      case settings.SafetyCheckPasswordsStatus.COMPROMISED:
-      case settings.SafetyCheckPasswordsStatus.ERROR:
-        return true;
-      default:
-        return false;
-    }
+    return this.passwordsStatus_ ==
+        settings.SafetyCheckPasswordsStatus.COMPROMISED;
   },
 
   /**
@@ -504,46 +499,12 @@ Polymer({
     }
   },
 
-  /**
-   * @private
-   * @return {?string}
-   */
-  getPasswordsButtonText_: function() {
-    switch (this.passwordsStatus_) {
-      case settings.SafetyCheckPasswordsStatus.COMPROMISED:
-        return this.i18n('safetyCheckPasswordsButtonCompromised');
-      case settings.SafetyCheckPasswordsStatus.ERROR:
-        return this.i18n('safetyCheckPasswordsButtonError');
-      default:
-        return null;
-    }
-  },
-
-  /**
-   * @private
-   * @return {string}
-   */
-  getPasswordsButtonClass_: function() {
-    switch (this.passwordsStatus_) {
-      case settings.SafetyCheckPasswordsStatus.COMPROMISED:
-        return 'action-button';
-      default:
-        return '';
-    }
-  },
-
   /** @private */
   onPasswordsButtonClick_: function() {
-    switch (this.passwordsStatus_) {
-      case settings.SafetyCheckPasswordsStatus.COMPROMISED:
-        // TODO(crbug.com/1010001): Implement once behavior has been agreed on.
-        break;
-      case settings.SafetyCheckPasswordsStatus.ERROR:
-        this.runSafetyCheck_();
-        break;
-      default:
-        break;
-    }
+    settings.Router.getInstance().navigateTo(
+        loadTimeData.getBoolean('enablePasswordCheck') ?
+            settings.routes.CHECK_PASSWORDS :
+            settings.routes.PASSWORDS);
   },
 
   /**
@@ -551,12 +512,8 @@ Polymer({
    * @return {boolean}
    */
   shouldShowSafeBrowsingButton_: function() {
-    switch (this.safeBrowsingStatus_) {
-      case settings.SafetyCheckSafeBrowsingStatus.DISABLED:
-        return true;
-      default:
-        return false;
-    }
+    return this.safeBrowsingStatus_ ==
+        settings.SafetyCheckSafeBrowsingStatus.DISABLED;
   },
 
   /**
@@ -643,7 +600,7 @@ Polymer({
 
   /** @private */
   onSafeBrowsingButtonClick_: function() {
-    // TODO(crbug.com/1010001): Implement once behavior has been agreed on.
+    settings.Router.getInstance().navigateTo(settings.routes.SECURITY);
   },
 
   /**
@@ -652,8 +609,11 @@ Polymer({
    */
   shouldShowExtensionsButton_: function() {
     switch (this.extensionsStatus_) {
-      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON:
-      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF:
+      case settings.SafetyCheckExtensionsStatus.BLACKLISTED_ALL_DISABLED:
+      case settings.SafetyCheckExtensionsStatus
+          .BLACKLISTED_REENABLED_ALL_BY_USER:
+      case settings.SafetyCheckExtensionsStatus
+          .BLACKLISTED_REENABLED_SOME_BY_USER:
         return true;
       default:
         return false;
@@ -666,12 +626,12 @@ Polymer({
    */
   shouldShowExtensionsManagedIcon_: function() {
     return this.extensionsStatus_ ==
-        settings.SafetyCheckExtensionsStatus.MANAGED_BY_ADMIN;
+        settings.SafetyCheckExtensionsStatus.BLACKLISTED_REENABLED_ALL_BY_ADMIN;
   },
 
   /** @private */
   onSafetyCheckExtensionsButtonClicked_: function() {
-    // TODO(crbug.com/1010001): Implement once behavior has been agreed on.
+    settings.OpenWindowProxyImpl.getInstance().openURL('chrome://extensions');
   },
 
   /**
@@ -683,12 +643,16 @@ Polymer({
       case settings.SafetyCheckExtensionsStatus.CHECKING:
         return null;
       case settings.SafetyCheckExtensionsStatus.ERROR:
-      case settings.SafetyCheckExtensionsStatus.MANAGED_BY_ADMIN:
+      case settings.SafetyCheckExtensionsStatus
+          .BLACKLISTED_REENABLED_ALL_BY_ADMIN:
         return 'cr:info';
-      case settings.SafetyCheckExtensionsStatus.SAFE:
-      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF:
+      case settings.SafetyCheckExtensionsStatus.NO_BLACKLISTED_EXTENSIONS:
+      case settings.SafetyCheckExtensionsStatus.BLACKLISTED_ALL_DISABLED:
         return 'cr:check';
-      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON:
+      case settings.SafetyCheckExtensionsStatus
+          .BLACKLISTED_REENABLED_ALL_BY_USER:
+      case settings.SafetyCheckExtensionsStatus
+          .BLACKLISTED_REENABLED_SOME_BY_USER:
         return 'cr:warning';
       default:
         assertNotReached();
@@ -715,10 +679,13 @@ Polymer({
   getExtensionsIconClass_: function() {
     switch (this.extensionsStatus_) {
       case settings.SafetyCheckExtensionsStatus.CHECKING:
-      case settings.SafetyCheckExtensionsStatus.SAFE:
-      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF:
+      case settings.SafetyCheckExtensionsStatus.NO_BLACKLISTED_EXTENSIONS:
+      case settings.SafetyCheckExtensionsStatus.BLACKLISTED_ALL_DISABLED:
         return 'icon-blue';
-      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON:
+      case settings.SafetyCheckExtensionsStatus
+          .BLACKLISTED_REENABLED_ALL_BY_USER:
+      case settings.SafetyCheckExtensionsStatus
+          .BLACKLISTED_REENABLED_SOME_BY_USER:
         return 'icon-red';
       default:
         return '';
@@ -731,7 +698,10 @@ Polymer({
    */
   getExtensionsButtonClass_: function() {
     switch (this.extensionsStatus_) {
-      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON:
+      case settings.SafetyCheckExtensionsStatus
+          .BLACKLISTED_REENABLED_ALL_BY_USER:
+      case settings.SafetyCheckExtensionsStatus
+          .BLACKLISTED_REENABLED_SOME_BY_USER:
         return 'action-button';
       default:
         return '';

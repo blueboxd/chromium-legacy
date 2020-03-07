@@ -1053,14 +1053,6 @@ void WebViewGuest::CanDownload(const GURL& url,
                                            std::move(callback));
 }
 
-void WebViewGuest::RequestPointerLockPermission(
-    bool user_gesture,
-    bool last_unlocked_by_target,
-    base::OnceCallback<void(bool)> callback) {
-  web_view_permission_helper_->RequestPointerLockPermission(
-      user_gesture, last_unlocked_by_target, std::move(callback));
-}
-
 void WebViewGuest::SignalWhenReady(base::OnceClosure callback) {
   auto* manager = WebViewContentScriptManager::Get(browser_context());
   manager->SignalOnScriptsLoaded(std::move(callback));
@@ -1446,9 +1438,9 @@ bool WebViewGuest::IsFullscreenForTabOrPending(
 void WebViewGuest::RequestToLockMouse(WebContents* web_contents,
                                       bool user_gesture,
                                       bool last_unlocked_by_target) {
-  RequestPointerLockPermission(
+  web_view_permission_helper_->RequestPointerLockPermission(
       user_gesture, last_unlocked_by_target,
-      base::Bind(
+      base::BindOnce(
           base::IgnoreResult(&WebContents::GotResponseToLockMouseRequest),
           base::Unretained(web_contents)));
 }

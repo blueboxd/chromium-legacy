@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "content/common/input/input_handler.mojom.h"
 
 namespace blink {
 class WebMouseEvent;
@@ -63,6 +64,10 @@ class CONTENT_EXPORT MouseLockDispatcher {
                                     bool request_unadjusted_movement) = 0;
   virtual void SendUnlockMouseRequest() = 0;
 
+  base::WeakPtr<MouseLockDispatcher> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   bool MouseLockedOrPendingAction() const {
     return mouse_locked_ || pending_lock_request_ || pending_unlock_request_;
@@ -80,6 +85,8 @@ class CONTENT_EXPORT MouseLockDispatcher {
   // owning reference here that must be cleared by |OnLockTargetDestroyed|
   // when it is destroyed.
   LockTarget* target_;
+
+  base::WeakPtrFactory<MouseLockDispatcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MouseLockDispatcher);
 };

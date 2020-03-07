@@ -196,6 +196,7 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
   // mojom::WidgetInputHandler override.
   void SetFocus(bool focused) override;
   void MouseCaptureLost() override;
+  void MouseLockLost() override;
   void SetEditCommandsForNextKeyEvent(
       const std::vector<content::EditCommand>& commands) override;
   void CursorVisibilityChanged(bool visible) override;

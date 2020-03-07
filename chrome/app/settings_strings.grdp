@@ -1537,28 +1537,25 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL" desc="'Updates' is an element in safety check that shows the update status of Chrome.">
     Updates
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_DISABLED_BY_ADMIN" desc="This text describles that updates are managed by the administrator.">
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_DISABLED_BY_ADMIN" desc="This text describles that updates are managed by the administrator.">
     Updates are managed by your <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>administrator<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PRIMARY_LABEL" desc="'Passwords' is an element in safety check that allows users to check for their passwords being compromised.">
     Passwords
   </message>
-  <message name="IDS_SAFETY_CHECK_PASSWORDS_BUTTON_COMPROMISED" desc="This button allows users to change their compromised passwords.">
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_BUTTON" desc="This button allows users to change their compromised passwords.">
     Change passwords
   </message>
-  <message name="IDS_SAFETY_CHECK_PASSWORDS_BUTTON_ERROR" desc="This button allows users to try the password check again.">
-    Try again
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_ENABLED" desc="This text points out that Safe Browsing is enabled and that the user is protected.">
+  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED" desc="This text points out that Safe Browsing is enabled and that the user is protected.">
     Safe Browsing is up to date and protecting you from harmful sites and downloads
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_DISABLED" desc="This text points out that Safe Browsing is disabled and that the user is not protected.">
+  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED" desc="This text points out that Safe Browsing is disabled and that the user is not protected.">
     Safe Browsing is off. To stay safe on the web, turn it on.
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_DISABLED_BY_ADMIN" desc="This text points out that Safe Browsing is disabled by an administrator.">
+  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_BY_ADMIN" desc="This text points out that Safe Browsing is disabled by an administrator.">
     Your <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>administrator<ph name="END_LINK">&lt;/a&gt;</ph> has turned off Safe Browsing
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_DISABLED_BY_EXTENSION" desc="This text points out that Safe Browsing is disabled by an extension.">
+  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_BY_EXTENSION" desc="This text points out that Safe Browsing is disabled by an extension.">
     An extension has turned off Safe Browsing
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_BUTTON" desc="This is the text for the button that allows users to manage their Safe Browsing settings.">

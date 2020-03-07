@@ -79,7 +79,8 @@ suite('SafetyCheckUiTests', function() {
     fireSafetyCheckPasswordsEvent(settings.SafetyCheckPasswordsStatus.SAFE);
     fireSafetyCheckSafeBrowsingEvent(
         settings.SafetyCheckSafeBrowsingStatus.ENABLED);
-    fireSafetyCheckExtensionsEvent(settings.SafetyCheckExtensionsStatus.SAFE);
+    fireSafetyCheckExtensionsEvent(
+        settings.SafetyCheckExtensionsStatus.NO_BLACKLISTED_EXTENSIONS);
 
     Polymer.dom.flush();
 
@@ -147,16 +148,10 @@ suite('SafetyCheckUiTests', function() {
       fireSafetyCheckPasswordsEvent(state);
       Polymer.dom.flush();
 
-      // button is only visible in COMPROMISED and ERROR states
-      switch (state) {
-        case settings.SafetyCheckPasswordsStatus.COMPROMISED:
-        case settings.SafetyCheckPasswordsStatus.ERROR:
-          assertTrue(!!page.$$('#safetyCheckPasswordsButton'));
-          break;
-        default:
-          assertFalse(!!page.$$('#safetyCheckPasswordsButton'));
-          break;
-      }
+      // button is only visible in COMPROMISED state
+      assertEquals(
+          state === settings.SafetyCheckPasswordsStatus.COMPROMISED,
+          !!page.$$('#safetyCheckPasswordsButton'));
     }
   });
 
@@ -215,32 +210,57 @@ suite('SafetyCheckUiTests', function() {
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
-  test('extensionsSafeUiTest', function() {
-    fireSafetyCheckExtensionsEvent(settings.SafetyCheckExtensionsStatus.SAFE);
+
+  test('extensionsCheckingUiTest', function() {
+    fireSafetyCheckExtensionsEvent(
+        settings.SafetyCheckExtensionsStatus.CHECKING);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
-  test('extensionsBadExtensionsOnUiTest', function() {
+  test('extensionsErrorUiTest', function() {
+    fireSafetyCheckExtensionsEvent(settings.SafetyCheckExtensionsStatus.ERROR);
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
+    assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+  });
+
+  test('extensionsSafeUiTest', function() {
     fireSafetyCheckExtensionsEvent(
-        settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON);
+        settings.SafetyCheckExtensionsStatus.NO_BLACKLISTED_EXTENSIONS);
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
+    assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+  });
+
+  test('extensionsBlacklistedOffUiTest', function() {
+    fireSafetyCheckExtensionsEvent(
+        settings.SafetyCheckExtensionsStatus.BLACKLISTED_ALL_DISABLED);
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
-  test('extensionsBadExtensionsOffUiTest', function() {
+  test('extensionsBlacklistedOnAllUserUiTest', function() {
     fireSafetyCheckExtensionsEvent(
-        settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF);
+        settings.SafetyCheckExtensionsStatus.BLACKLISTED_REENABLED_ALL_BY_USER);
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
-  test('extensionsManagedByAdminUiTest', function() {
-    fireSafetyCheckExtensionsEvent(
-        settings.SafetyCheckExtensionsStatus.MANAGED_BY_ADMIN);
+  test('extensionsBlacklistedOnUserAdminUiTest', function() {
+    fireSafetyCheckExtensionsEvent(settings.SafetyCheckExtensionsStatus
+                                       .BLACKLISTED_REENABLED_SOME_BY_USER);
+    Polymer.dom.flush();
+    assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
+    assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+  });
+
+  test('extensionsBlacklistedOnAllAdminUiTest', function() {
+    fireSafetyCheckExtensionsEvent(settings.SafetyCheckExtensionsStatus
+                                       .BLACKLISTED_REENABLED_ALL_BY_ADMIN);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertTrue(!!page.$$('#safetyCheckExtensionsManagedIcon'));

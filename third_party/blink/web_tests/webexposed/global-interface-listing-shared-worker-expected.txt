@@ -1303,10 +1303,17 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] interface TrustedTypePolicyFactory
 [Worker]     attribute @@toStringTag
+[Worker]     getter defaultPolicy
+[Worker]     getter emptyHTML
+[Worker]     getter emptyScript
 [Worker]     method constructor
+[Worker]     method createPolicy
 [Worker]     method getAttributeType
 [Worker]     method getPropertyType
 [Worker]     method getTypeMapping
+[Worker]     method isHTML
+[Worker]     method isScript
+[Worker]     method isScriptURL
 [Worker] interface URL
 [Worker]     static method createObjectURL
 [Worker]     static method revokeObjectURL
@@ -3574,6 +3581,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter origin
 [Worker]     getter performance
 [Worker]     getter self
+[Worker]     getter trustedTypes
 [Worker]     method atob
 [Worker]     method btoa
 [Worker]     method clearInterval
@@ -3701,7 +3709,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute internals
 [Worker]     getter name
 [Worker]     getter onconnect
-[Worker]     getter trustedTypes
 [Worker]     method close
 [Worker]     method gc
 [Worker]     method webkitRequestFileSystem

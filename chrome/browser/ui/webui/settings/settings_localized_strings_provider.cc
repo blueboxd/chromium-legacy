@@ -1130,17 +1130,15 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       {"safetyCheckUpdatesPrimaryLabel",
        IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL},
       {"safetyCheckUpdatesSubLabelFailedOffline",
-       IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_FAILED_OFFLINE},
-      {"safetyCheckPasswordsButtonCompromised",
-       IDS_SAFETY_CHECK_PASSWORDS_BUTTON_COMPROMISED},
-      {"safetyCheckPasswordsButtonError",
-       IDS_SAFETY_CHECK_PASSWORDS_BUTTON_ERROR},
+       IDS_SETTINGS_SAFETY_CHECK_UPDATES_FAILED_OFFLINE},
+      {"safetyCheckPasswordsButton",
+       IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_BUTTON},
       {"safetyCheckSafeBrowsingSubLabelEnabled",
-       IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_ENABLED},
+       IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED},
       {"safetyCheckSafeBrowsingSubLabelDisabled",
-       IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_DISABLED},
+       IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED},
       {"safetyCheckSafeBrowsingSubLabelDisabledByExtension",
-       IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_DISABLED_BY_EXTENSION},
+       IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_BY_EXTENSION},
       {"safetyCheckSafeBrowsingButton",
        IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_BUTTON},
       {"safetyCheckExtensionsPrimaryLabel",
@@ -1175,17 +1173,17 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddString(
       "safetyCheckUpdatesSubLabelFailed",
       l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_FAILED,
+          IDS_SETTINGS_SAFETY_CHECK_UPDATES_FAILED,
           base::ASCIIToUTF16(chrome::kChromeFixUpdateProblems)));
   html_source->AddString(
       "safetyCheckUpdatesSubLabelDisabledByAdmin",
       l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_DISABLED_BY_ADMIN,
+          IDS_SETTINGS_SAFETY_CHECK_UPDATES_DISABLED_BY_ADMIN,
           base::ASCIIToUTF16(chrome::kWhoIsMyAdministratorHelpURL)));
   html_source->AddString(
       "safetyCheckSafeBrowsingSubLabelDisabledByAdmin",
       l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_DISABLED_BY_ADMIN,
+          IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_BY_ADMIN,
           base::ASCIIToUTF16(chrome::kWhoIsMyAdministratorHelpURL)));
 
   // The link to the Advanced Protection Program landing page, with a referrer

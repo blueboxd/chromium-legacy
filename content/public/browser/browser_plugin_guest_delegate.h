@@ -57,13 +57,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Returns the WebContents that currently owns this guest.
   virtual WebContents* GetOwnerWebContents();
 
-  // Asks the delegate if the given guest can lock the pointer.
-  // Invoking the |callback| synchronously is OK.
-  virtual void RequestPointerLockPermission(
-      bool user_gesture,
-      bool last_unlocked_by_target,
-      const base::OnceCallback<void(bool)> callback) {}
-
   // Provides the delegate with an interface with which to communicate with the
   // content module.
   virtual void SetGuestHost(GuestHost* guest_host) {}

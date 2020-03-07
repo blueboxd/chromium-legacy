@@ -209,7 +209,7 @@
     [DisableInNewIDLCompiler] attribute DOMMatrixConstructor WebKitCSSMatrix;
 
     // TrustedTypes API: http://github.com/wicg/trusted-types
-    [RuntimeEnabled=TrustedDOMTypes, Unforgeable] readonly attribute TrustedTypePolicyFactory trustedTypes;
+    [RuntimeEnabled=TrustedDOMTypes] readonly attribute TrustedTypePolicyFactory trustedTypes;
 };
 
 Window includes GlobalEventHandlers;

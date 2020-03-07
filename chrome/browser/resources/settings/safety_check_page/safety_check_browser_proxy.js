@@ -64,10 +64,11 @@ cr.define('settings', function() {
   const SafetyCheckExtensionsStatus = {
     CHECKING: 0,
     ERROR: 1,
-    SAFE: 2,
-    BAD_EXTENSIONS_ON: 3,
-    BAD_EXTENSIONS_OFF: 4,
-    MANAGED_BY_ADMIN: 5,
+    NO_BLACKLISTED_EXTENSIONS: 2,
+    BLACKLISTED_ALL_DISABLED: 3,
+    BLACKLISTED_REENABLED_ALL_BY_USER: 4,
+    BLACKLISTED_REENABLED_SOME_BY_USER: 5,
+    BLACKLISTED_REENABLED_ALL_BY_ADMIN: 6,
   };
 
   /** @interface */

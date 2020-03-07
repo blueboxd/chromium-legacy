@@ -328,10 +328,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
           : "hidden";
   replacements["cookieControlsToolTipIcon"] =
       CookieControlsHandler::GetEnforcementIcon(profile_);
-  replacements["cookieControlsTooltipText"] = l10n_util::GetStringFUTF8(
-      IDS_NEW_TAB_OTR_COOKIE_CONTROLS_CONTROLLED_TOOLTIP_TEXT,
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE),
-      l10n_util::GetStringUTF16(IDS_SETTINGS_SITE_SETTINGS_COOKIES));
+  replacements["cookieControlsTooltipText"] = l10n_util::GetStringUTF8(
+      IDS_NEW_TAB_OTR_COOKIE_CONTROLS_CONTROLLED_TOOLTIP_TEXT);
 
   const ui::ThemeProvider& tp =
       ThemeService::GetThemeProviderForProfile(profile_);

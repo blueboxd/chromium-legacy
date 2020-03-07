@@ -32,8 +32,6 @@ import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.widget.ChromeBulletSpan;
 
-import java.util.Locale;
-
 /**
  * The view to describle incognito mode.
  */
@@ -355,18 +353,8 @@ public class IncognitoDescriptionView extends LinearLayout {
                 break;
             case CookieControlsEnforcement.ENFORCED_BY_COOKIE_SETTING:
                 iconRes = R.drawable.settings_cog;
-                int placeholderTextId =
-                        R.string.new_tab_otr_cookie_controls_controlled_tooltip_text;
-                // Need to construct the string by replacing the placeholder text with the correct
-                // strings. However, since this text is shared with desktop, the placeholder
-                // characters for arguments are different, so we first need to swap in the correct
-                // placeholder characters.
-                // TODO(crbug.com/1040091): Look into changing this string on Android and Desktop
-                // to not use placeholders at all.
-                addition = String.format(Locale.getDefault(),
-                        resources.getString(placeholderTextId).replaceAll("\\$(\\d+)", "%$1\\$s"),
-                        resources.getString(R.string.block_third_party_cookies_title),
-                        resources.getString(R.string.cookies_title));
+                addition = resources.getString(
+                        R.string.new_tab_otr_cookie_controls_controlled_tooltip_text);
                 break;
             default:
                 return;

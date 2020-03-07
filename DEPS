@@ -899,7 +899,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '57d4742bbb10a6d885a4ff4ea44e3703ca36116b',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ffd02955e6680f9f5a32872682bd03227487014e',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1529,7 +1529,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@11f5795a70a2aab20e62f1af2a6691225651b6ed',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bcc417c0598c8dd0707908a74fb81c7936fd60b5',
     'condition': 'checkout_src_internal',
   },
 

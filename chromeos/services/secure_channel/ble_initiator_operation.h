@@ -27,19 +27,29 @@ class BleInitiatorOperation
  public:
   class Factory {
    public:
-    static Factory* Get();
+    static std::unique_ptr<ConnectToDeviceOperation<BleInitiatorFailureType>>
+    Create(BleConnectionManager* ble_connection_manager,
+           ConnectToDeviceOperation<BleInitiatorFailureType>::
+               ConnectionSuccessCallback success_callback,
+           const ConnectToDeviceOperation<BleInitiatorFailureType>::
+               ConnectionFailedCallback& failure_callback,
+           const DeviceIdPair& device_id_pair,
+           ConnectionPriority connection_priority,
+           scoped_refptr<base::TaskRunner> task_runner =
+               base::ThreadTaskRunnerHandle::Get());
     static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
     virtual std::unique_ptr<ConnectToDeviceOperation<BleInitiatorFailureType>>
-    BuildInstance(BleConnectionManager* ble_connection_manager,
-                  ConnectToDeviceOperation<BleInitiatorFailureType>::
-                      ConnectionSuccessCallback success_callback,
-                  const ConnectToDeviceOperation<BleInitiatorFailureType>::
-                      ConnectionFailedCallback& failure_callback,
-                  const DeviceIdPair& device_id_pair,
-                  ConnectionPriority connection_priority,
-                  scoped_refptr<base::TaskRunner> task_runner =
-                      base::ThreadTaskRunnerHandle::Get());
+    CreateInstance(BleConnectionManager* ble_connection_manager,
+                   ConnectToDeviceOperation<BleInitiatorFailureType>::
+                       ConnectionSuccessCallback success_callback,
+                   const ConnectToDeviceOperation<BleInitiatorFailureType>::
+                       ConnectionFailedCallback& failure_callback,
+                   const DeviceIdPair& device_id_pair,
+                   ConnectionPriority connection_priority,
+                   scoped_refptr<base::TaskRunner> task_runner) = 0;
 
    private:
     static Factory* test_factory_;

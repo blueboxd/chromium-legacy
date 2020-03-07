@@ -13,8 +13,9 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.SmallTest;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.After;
 import org.junit.AfterClass;

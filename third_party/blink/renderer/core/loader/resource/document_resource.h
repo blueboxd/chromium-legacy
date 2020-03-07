@@ -35,11 +35,12 @@ namespace blink {
 
 class Document;
 class FetchParameters;
+class ResourceFetcher;
 
 class CORE_EXPORT DocumentResource final : public TextResource {
  public:
   static DocumentResource* FetchSVGDocument(FetchParameters&,
-                                            const Document& context_document,
+                                            ResourceFetcher*,
                                             ResourceClient*);
 
   DocumentResource(const ResourceRequest&,
@@ -73,7 +74,6 @@ class CORE_EXPORT DocumentResource final : public TextResource {
   Document* CreateDocument(const KURL&);
 
   Member<Document> document_;
-  WeakMember<Document> context_document_;
 };
 
 template <>

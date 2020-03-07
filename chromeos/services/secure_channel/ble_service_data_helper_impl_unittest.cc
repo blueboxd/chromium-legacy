@@ -125,8 +125,7 @@ class SecureChannelBleServiceDataHelperImplTest : public testing::Test {
         std::make_unique<FakeBackgroundEidGenerator>();
     fake_background_eid_generator_ = fake_background_eid_generator.get();
 
-    remote_device_cache_ =
-        multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance();
+    remote_device_cache_ = multidevice::RemoteDeviceCache::Factory::Create();
 
     multidevice::RemoteDeviceList devices;
     devices.push_back(
@@ -140,8 +139,8 @@ class SecureChannelBleServiceDataHelperImplTest : public testing::Test {
         });
     remote_device_cache_->SetRemoteDevices(devices);
 
-    helper_ = BleServiceDataHelperImpl::Factory::Get()->BuildInstance(
-        remote_device_cache_.get());
+    helper_ =
+        BleServiceDataHelperImpl::Factory::Create(remote_device_cache_.get());
 
     static_cast<BleServiceDataHelperImpl*>(helper_.get())
         ->SetTestDoubles(std::move(fake_background_eid_generator),

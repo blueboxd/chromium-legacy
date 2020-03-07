@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -36,12 +35,21 @@ BleAdvertiserImpl::ActiveAdvertisementRequest::~ActiveAdvertisementRequest() =
 BleAdvertiserImpl::Factory* BleAdvertiserImpl::Factory::test_factory_ = nullptr;
 
 // static
-BleAdvertiserImpl::Factory* BleAdvertiserImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<BleAdvertiser> BleAdvertiserImpl::Factory::Create(
+    Delegate* delegate,
+    BleServiceDataHelper* ble_service_data_helper,
+    BleSynchronizerBase* ble_synchronizer_base,
+    TimerFactory* timer_factory,
+    scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(delegate, ble_service_data_helper,
+                                         ble_synchronizer_base, timer_factory,
+                                         sequenced_task_runner);
+  }
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new BleAdvertiserImpl(
+      delegate, ble_service_data_helper, ble_synchronizer_base, timer_factory,
+      sequenced_task_runner));
 }
 
 // static
@@ -53,17 +61,6 @@ BleAdvertiserImpl::Factory::~Factory() = default;
 
 // static
 const int64_t BleAdvertiserImpl::kNumSecondsPerAdvertisementTimeslot = 10;
-
-std::unique_ptr<BleAdvertiser> BleAdvertiserImpl::Factory::BuildInstance(
-    Delegate* delegate,
-    BleServiceDataHelper* ble_service_data_helper,
-    BleSynchronizerBase* ble_synchronizer_base,
-    TimerFactory* timer_factory,
-    scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner) {
-  return base::WrapUnique(new BleAdvertiserImpl(
-      delegate, ble_service_data_helper, ble_synchronizer_base, timer_factory,
-      sequenced_task_runner));
-}
 
 BleAdvertiserImpl::BleAdvertiserImpl(
     Delegate* delegate,
@@ -316,7 +313,7 @@ void BleAdvertiserImpl::AttemptToAddActiveAdvertisement(size_t index_to_add) {
   }
 
   active_advertisements_[index_to_add] =
-      ErrorTolerantBleAdvertisementImpl::Factory::Get()->BuildInstance(
+      ErrorTolerantBleAdvertisementImpl::Factory::Create(
           pair, std::move(service_data), ble_synchronizer_base_);
 }
 

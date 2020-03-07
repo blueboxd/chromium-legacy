@@ -244,5 +244,6 @@ try_.chromium_win_builder(
     goma_jobs = goma.jobs.J150,
     os = os.WINDOWS_10,
     ssd = True,
+    use_clang_coverage = True,
     tryjob = try_.job(),
 )

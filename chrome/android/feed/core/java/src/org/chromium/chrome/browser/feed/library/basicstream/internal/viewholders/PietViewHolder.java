@@ -8,13 +8,13 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkNo
 
 import android.content.Context;
 import android.support.annotation.VisibleForTesting;
-import android.support.v7.widget.RecyclerView.LayoutParams;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -41,7 +41,7 @@ import org.chromium.components.feed.core.proto.ui.piet.PietProto.PietSharedState
 import java.util.List;
 
 /**
- * {@link android.support.v7.widget.RecyclerView.ViewHolder} for {@link
+ * {@link androidx.recyclerview.widget.RecyclerView.ViewHolder} for {@link
  * org.chromium.components.feed.core.proto.ui.stream.StreamStructureProto.PietContent}.
  */
 public class PietViewHolder extends FeedViewHolder implements SwipeableViewHolder {

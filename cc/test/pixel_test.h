@@ -116,9 +116,9 @@ class PixelTest : public testing::Test {
   viz::SoftwareRenderer* software_renderer_ = nullptr;
   std::unique_ptr<SkBitmap> result_bitmap_;
 
-  void SetUpGLWithoutRenderer(bool flipped_output_surface);
-  void SetUpGLRenderer(bool flipped_output_surface);
-  void SetUpSkiaRenderer(bool flipped_output_surface);
+  void SetUpGLWithoutRenderer(gfx::SurfaceOrigin output_surface_origin);
+  void SetUpGLRenderer(gfx::SurfaceOrigin output_surface_origin);
+  void SetUpSkiaRenderer(gfx::SurfaceOrigin output_surface_origin);
   void SetUpSoftwareRenderer();
 
   void TearDown() override;
@@ -174,12 +174,12 @@ class VulkanSkiaRendererWithFlippedSurface : public viz::SkiaRenderer {};
 
 template <>
 inline void RendererPixelTest<viz::GLRenderer>::SetUp() {
-  SetUpGLRenderer(false);
+  SetUpGLRenderer(gfx::SurfaceOrigin::kBottomLeft);
 }
 
 template <>
 inline void RendererPixelTest<GLRendererWithFlippedSurface>::SetUp() {
-  SetUpGLRenderer(true);
+  SetUpGLRenderer(gfx::SurfaceOrigin::kTopLeft);
 }
 
 template <>
@@ -189,22 +189,22 @@ inline void RendererPixelTest<viz::SoftwareRenderer>::SetUp() {
 
 template <>
 inline void RendererPixelTest<viz::SkiaRenderer>::SetUp() {
-  SetUpSkiaRenderer(false);
+  SetUpSkiaRenderer(gfx::SurfaceOrigin::kBottomLeft);
 }
 
 template <>
 inline void RendererPixelTest<SkiaRendererWithFlippedSurface>::SetUp() {
-  SetUpSkiaRenderer(true);
+  SetUpSkiaRenderer(gfx::SurfaceOrigin::kTopLeft);
 }
 
 template <>
 inline void RendererPixelTest<VulkanSkiaRenderer>::SetUp() {
-  SetUpSkiaRenderer(false);
+  SetUpSkiaRenderer(gfx::SurfaceOrigin::kBottomLeft);
 }
 
 template <>
 inline void RendererPixelTest<VulkanSkiaRendererWithFlippedSurface>::SetUp() {
-  SetUpSkiaRenderer(true);
+  SetUpSkiaRenderer(gfx::SurfaceOrigin::kTopLeft);
 }
 
 typedef RendererPixelTest<viz::GLRenderer> GLRendererPixelTest;

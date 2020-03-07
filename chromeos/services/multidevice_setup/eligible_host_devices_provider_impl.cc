@@ -6,7 +6,6 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -20,13 +19,14 @@ EligibleHostDevicesProviderImpl::Factory*
     EligibleHostDevicesProviderImpl::Factory::test_factory_ = nullptr;
 
 // static
-EligibleHostDevicesProviderImpl::Factory*
-EligibleHostDevicesProviderImpl::Factory::Get() {
+std::unique_ptr<EligibleHostDevicesProvider>
+EligibleHostDevicesProviderImpl::Factory::Create(
+    device_sync::DeviceSyncClient* device_sync_client) {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance(device_sync_client);
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(
+      new EligibleHostDevicesProviderImpl(device_sync_client));
 }
 
 // static
@@ -36,13 +36,6 @@ void EligibleHostDevicesProviderImpl::Factory::SetFactoryForTesting(
 }
 
 EligibleHostDevicesProviderImpl::Factory::~Factory() = default;
-
-std::unique_ptr<EligibleHostDevicesProvider>
-EligibleHostDevicesProviderImpl::Factory::BuildInstance(
-    device_sync::DeviceSyncClient* device_sync_client) {
-  return base::WrapUnique(
-      new EligibleHostDevicesProviderImpl(device_sync_client));
-}
 
 EligibleHostDevicesProviderImpl::EligibleHostDevicesProviderImpl(
     device_sync::DeviceSyncClient* device_sync_client)

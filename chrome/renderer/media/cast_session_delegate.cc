@@ -126,8 +126,8 @@ void CastSessionDelegate::StartAudio(
   audio_frame_input_available_callback_ = callback;
   cast_sender_->InitializeAudio(
       config,
-      base::Bind(&CastSessionDelegate::OnOperationalStatusChange,
-                 weak_factory_.GetWeakPtr(), true, error_callback));
+      base::BindRepeating(&CastSessionDelegate::OnOperationalStatusChange,
+                          weak_factory_.GetWeakPtr(), true, error_callback));
 }
 
 void CastSessionDelegate::StartVideo(
@@ -148,10 +148,9 @@ void CastSessionDelegate::StartVideo(
 
   cast_sender_->InitializeVideo(
       config,
-      base::Bind(&CastSessionDelegate::OnOperationalStatusChange,
-                 weak_factory_.GetWeakPtr(), false, error_callback),
-      create_vea_cb,
-      create_video_encode_mem_cb);
+      base::BindRepeating(&CastSessionDelegate::OnOperationalStatusChange,
+                          weak_factory_.GetWeakPtr(), false, error_callback),
+      create_vea_cb, create_video_encode_mem_cb);
 }
 
 void CastSessionDelegate::StartRemotingStream(

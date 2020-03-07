@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Tests for the {@link android.support.v7.widget.RecyclerView.ViewHolder} classes for {@link
+ * Tests for the {@link androidx.recyclerview.widget.RecyclerView.ViewHolder} classes for {@link
  * TabListCoordinator}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)

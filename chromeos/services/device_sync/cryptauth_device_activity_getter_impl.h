@@ -43,8 +43,10 @@ class CryptAuthDeviceActivityGetterImpl : public CryptAuthDeviceActivityGetter {
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
     static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthDeviceActivityGetter> BuildInstance(
+    virtual std::unique_ptr<CryptAuthDeviceActivityGetter> CreateInstance(
         CryptAuthClientFactory* client_factory,
         ClientAppMetadataProvider* client_app_metadata_provider,
         CryptAuthGCMManager* gcm_manager,

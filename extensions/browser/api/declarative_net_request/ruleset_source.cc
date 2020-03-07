@@ -207,8 +207,6 @@ IndexAndPersistJSONRulesetResult IndexAndPersistRuleset(
   // the regex filter will exceed the memory limit or not. Also, the re2
   // implementation can change causing the memory consumption of a regex to
   // change as well.
-  // TODO(crbug.com/974391): Add UMA to find how often regex rules exceed memory
-  // limit.
   std::vector<InstallWarning> warnings =
       std::move(read_result.rule_parse_warnings);
   AddRegexLimitExceededWarnings(&warnings, info.regex_limit_exceeded_rules());

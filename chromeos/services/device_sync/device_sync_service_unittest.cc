@@ -190,7 +190,7 @@ class FakeCryptAuthGCMManagerFactory : public CryptAuthGCMManagerImpl::Factory {
 
  private:
   // CryptAuthGCMManagerImpl::Factory:
-  std::unique_ptr<CryptAuthGCMManager> BuildInstance(
+  std::unique_ptr<CryptAuthGCMManager> CreateInstance(
       gcm::GCMDriver* gcm_driver,
       PrefService* pref_service) override {
     EXPECT_EQ(fake_gcm_driver_, gcm_driver);
@@ -229,7 +229,7 @@ class FakeCryptAuthDeviceManagerFactory
 
  private:
   // CryptAuthDeviceManagerImpl::Factory:
-  std::unique_ptr<CryptAuthDeviceManager> BuildInstance(
+  std::unique_ptr<CryptAuthDeviceManager> CreateInstance(
       base::Clock* clock,
       CryptAuthClientFactory* client_factory,
       CryptAuthGCMManager* gcm_manager,
@@ -278,7 +278,7 @@ class FakeCryptAuthDeviceRegistryFactory
 
  private:
   // CryptAuthDeviceRegistryImpl::Factory:
-  std::unique_ptr<CryptAuthDeviceRegistry> BuildInstance(
+  std::unique_ptr<CryptAuthDeviceRegistry> CreateInstance(
       PrefService* pref_service) override {
     EXPECT_TRUE(features::ShouldUseV2DeviceSync());
     EXPECT_EQ(test_pref_service_, pref_service);
@@ -317,7 +317,7 @@ class FakeCryptAuthKeyRegistryFactory
 
  private:
   // CryptAuthKeyRegistryImpl::Factory:
-  std::unique_ptr<CryptAuthKeyRegistry> BuildInstance(
+  std::unique_ptr<CryptAuthKeyRegistry> CreateInstance(
       PrefService* pref_service) override {
     EXPECT_TRUE(base::FeatureList::IsEnabled(features::kCryptAuthV2Enrollment));
     EXPECT_EQ(test_pref_service_, pref_service);
@@ -345,7 +345,7 @@ class FakeCryptAuthSchedulerFactory : public CryptAuthSchedulerImpl::Factory {
 
  private:
   // CryptAuthSchedulerImpl::Factory:
-  std::unique_ptr<CryptAuthScheduler> BuildInstance(
+  std::unique_ptr<CryptAuthScheduler> CreateInstance(
       PrefService* pref_service,
       NetworkStateHandler* network_state_handler,
       base::Clock* clock,
@@ -390,7 +390,7 @@ class FakeCryptAuthV2DeviceManagerFactory
 
  private:
   // CryptAuthV2DeviceManagerImpl::Factory:
-  std::unique_ptr<CryptAuthV2DeviceManager> BuildInstance(
+  std::unique_ptr<CryptAuthV2DeviceManager> CreateInstance(
       ClientAppMetadataProvider* client_app_metadata_provider,
       CryptAuthDeviceRegistry* device_registry,
       CryptAuthKeyRegistry* key_registry,
@@ -447,7 +447,7 @@ class FakeCryptAuthEnrollmentManagerFactory
   FakeCryptAuthEnrollmentManager* instance() { return instance_; }
 
   // CryptAuthEnrollmentManagerImpl::Factory:
-  std::unique_ptr<CryptAuthEnrollmentManager> BuildInstance(
+  std::unique_ptr<CryptAuthEnrollmentManager> CreateInstance(
       base::Clock* clock,
       std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
       std::unique_ptr<multidevice::SecureMessageDelegate>
@@ -510,7 +510,7 @@ class FakeCryptAuthV2EnrollmentManagerFactory
   FakeCryptAuthEnrollmentManager* instance() { return instance_; }
 
   // CryptAuthV2EnrollmentManagerImpl::Factory:
-  std::unique_ptr<CryptAuthEnrollmentManager> BuildInstance(
+  std::unique_ptr<CryptAuthEnrollmentManager> CreateInstance(
       ClientAppMetadataProvider* client_app_metadata_provider,
       CryptAuthKeyRegistry* key_registry,
       CryptAuthClientFactory* client_factory,
@@ -578,7 +578,7 @@ class FakeRemoteDeviceProviderFactory
   FakeRemoteDeviceProvider* instance() { return instance_; }
 
   // RemoteDeviceProviderImpl::Factory:
-  std::unique_ptr<RemoteDeviceProvider> BuildInstance(
+  std::unique_ptr<RemoteDeviceProvider> CreateInstance(
       CryptAuthDeviceManager* device_manager,
       CryptAuthV2DeviceManager* v2_device_manager,
       const std::string& user_email,
@@ -635,7 +635,7 @@ class FakeSoftwareFeatureManagerFactory
   FakeSoftwareFeatureManager* instance() { return instance_; }
 
   // SoftwareFeatureManagerImpl::Factory:
-  std::unique_ptr<SoftwareFeatureManager> BuildInstance(
+  std::unique_ptr<SoftwareFeatureManager> CreateInstance(
       CryptAuthClientFactory* cryptauth_client_factory,
       CryptAuthFeatureStatusSetter* feature_status_setter) override {
     EXPECT_TRUE(features::ShouldUseV1DeviceSync());
@@ -671,7 +671,7 @@ class DeviceSyncServiceTest
     ~FakeDeviceSyncImplFactory() override = default;
 
     // DeviceSyncImpl::Factory:
-    std::unique_ptr<DeviceSyncBase> BuildInstance(
+    std::unique_ptr<DeviceSyncBase> CreateInstance(
         signin::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
         PrefService* profile_prefs,
@@ -751,7 +751,7 @@ class DeviceSyncServiceTest
     fake_cryptauth_gcm_manager_factory_ =
         std::make_unique<FakeCryptAuthGCMManagerFactory>(
             fake_gcm_driver_.get(), test_pref_service_.get());
-    CryptAuthGCMManagerImpl::Factory::SetInstanceForTesting(
+    CryptAuthGCMManagerImpl::Factory::SetFactoryForTesting(
         fake_cryptauth_gcm_manager_factory_.get());
 
     // ---------- Begin: Only used for v2 Enrollment ----------
@@ -786,7 +786,7 @@ class DeviceSyncServiceTest
         std::make_unique<FakeCryptAuthEnrollmentManagerFactory>(
             simple_test_clock_.get(), fake_cryptauth_gcm_manager_factory_.get(),
             test_pref_service_.get());
-    CryptAuthEnrollmentManagerImpl::Factory::SetInstanceForTesting(
+    CryptAuthEnrollmentManagerImpl::Factory::SetFactoryForTesting(
         fake_cryptauth_enrollment_manager_factory_.get());
     // ---------- End: Only used for v1 Enrollment ----------
 
@@ -795,12 +795,12 @@ class DeviceSyncServiceTest
         std::make_unique<FakeCryptAuthDeviceManagerFactory>(
             simple_test_clock_.get(), fake_cryptauth_gcm_manager_factory_.get(),
             test_pref_service_.get());
-    CryptAuthDeviceManagerImpl::Factory::SetInstanceForTesting(
+    CryptAuthDeviceManagerImpl::Factory::SetFactoryForTesting(
         fake_cryptauth_device_manager_factory_.get());
 
     fake_software_feature_manager_factory_ =
         std::make_unique<FakeSoftwareFeatureManagerFactory>();
-    SoftwareFeatureManagerImpl::Factory::SetInstanceForTesting(
+    SoftwareFeatureManagerImpl::Factory::SetFactoryForTesting(
         fake_software_feature_manager_factory_.get());
     // ---------- Begin: Only used for v1 DeviceSync ----------
 
@@ -839,7 +839,7 @@ class DeviceSyncServiceTest
             fake_cryptauth_v2_device_manager_factory_.get(),
             fake_cryptauth_enrollment_manager_factory_.get(),
             fake_cryptauth_v2_enrollment_manager_factory_.get());
-    RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(
+    RemoteDeviceProviderImpl::Factory::SetFactoryForTesting(
         fake_remote_device_provider_factory_.get());
 
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
@@ -848,7 +848,7 @@ class DeviceSyncServiceTest
     fake_device_sync_impl_factory_ =
         std::make_unique<FakeDeviceSyncImplFactory>(std::move(mock_timer),
                                                     simple_test_clock_.get());
-    DeviceSyncImpl::Factory::SetInstanceForTesting(
+    DeviceSyncImpl::Factory::SetFactoryForTesting(
         fake_device_sync_impl_factory_.get());
 
     fake_gcm_device_info_provider_ =
@@ -856,14 +856,14 @@ class DeviceSyncServiceTest
   }
 
   void TearDown() override {
-    CryptAuthGCMManagerImpl::Factory::SetInstanceForTesting(nullptr);
-    CryptAuthDeviceManagerImpl::Factory::SetInstanceForTesting(nullptr);
+    CryptAuthGCMManagerImpl::Factory::SetFactoryForTesting(nullptr);
+    CryptAuthDeviceManagerImpl::Factory::SetFactoryForTesting(nullptr);
     CryptAuthKeyRegistryImpl::Factory::SetFactoryForTesting(nullptr);
     CryptAuthV2EnrollmentManagerImpl::Factory::SetFactoryForTesting(nullptr);
-    CryptAuthEnrollmentManagerImpl::Factory::SetInstanceForTesting(nullptr);
-    RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(nullptr);
-    SoftwareFeatureManagerImpl::Factory::SetInstanceForTesting(nullptr);
-    DeviceSyncImpl::Factory::SetInstanceForTesting(nullptr);
+    CryptAuthEnrollmentManagerImpl::Factory::SetFactoryForTesting(nullptr);
+    RemoteDeviceProviderImpl::Factory::SetFactoryForTesting(nullptr);
+    SoftwareFeatureManagerImpl::Factory::SetFactoryForTesting(nullptr);
+    DeviceSyncImpl::Factory::SetFactoryForTesting(nullptr);
 
     NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
@@ -893,7 +893,7 @@ class DeviceSyncServiceTest
               return nullptr;
             }));
 
-    device_sync_ = DeviceSyncImpl::Factory::Get()->BuildInstance(
+    device_sync_ = DeviceSyncImpl::Factory::Create(
         identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
         test_pref_service_.get(), fake_gcm_device_info_provider_.get(),
         fake_client_app_metadata_provider_.get(), shared_url_loader_factory,

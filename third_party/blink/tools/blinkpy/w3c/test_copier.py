@@ -35,7 +35,8 @@ import logging
 
 from blinkpy.w3c.common import is_basename_skipped
 from blinkpy.common import path_finder
-from blinkpy.web_tests.models.typ_types import ResultType, TestExpectations
+from blinkpy.web_tests.models.test_expectations import TestExpectations
+from blinkpy.web_tests.models.typ_types import ResultType
 
 _log = logging.getLogger(__name__)
 
@@ -139,17 +140,17 @@ class TestCopier(object):
         port = self.host.port_factory.get()
         w3c_import_expectations_path = self.path_finder.path_from_web_tests('W3CImportExpectations')
         w3c_import_expectations = self.filesystem.read_text_file(w3c_import_expectations_path)
-        expectations = TestExpectations()
-        ret, errors = expectations.parse_tagged_list(w3c_import_expectations)
-        assert not ret, errors
+        expectations = TestExpectations(port, {w3c_import_expectations_path: w3c_import_expectations})
 
         # get test names that should be skipped
-        for path in expectations.individual_exps.keys():
-            exp = expectations.expectations_for(path)
-            if ResultType.Skip in exp.results:
-                if exp.tags:
-                    _log.warning('W3CImportExpectations:%d should not have any specifiers' % exp.lineno)
-                paths_to_skip.add(path)
+        for line in expectations.get_updated_lines(w3c_import_expectations_path):
+            if line.is_glob:
+                _log.warning('W3CImportExpectations:%d Globs are not allowed in this file.' % line.lineno)
+                continue
+            if ResultType.Skip in line.results:
+                if line.tags:
+                    _log.warning('W3CImportExpectations:%d should not have any specifiers' % line.lineno)
+                paths_to_skip.add(line.test)
 
         return paths_to_skip
 

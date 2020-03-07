@@ -35,13 +35,17 @@ class CryptAuthGroupPrivateKeySharerImpl
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthGroupPrivateKeySharer> BuildInstance(
+    static std::unique_ptr<CryptAuthGroupPrivateKeySharer> Create(
         CryptAuthClientFactory* client_factory,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<CryptAuthGroupPrivateKeySharer> CreateInstance(
+        CryptAuthClientFactory* client_factory,
+        std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
     static Factory* test_factory_;

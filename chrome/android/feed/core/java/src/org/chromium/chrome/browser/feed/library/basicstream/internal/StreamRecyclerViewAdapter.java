@@ -11,16 +11,16 @@ import static org.chromium.chrome.browser.feed.library.basicstream.internal.view
 
 import android.content.Context;
 import android.support.annotation.VisibleForTesting;
-import android.support.v7.util.DiffUtil;
-import android.support.v7.util.DiffUtil.DiffResult;
-import android.support.v7.util.ListUpdateCallback;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.DiffUtil.DiffResult;
+import androidx.recyclerview.widget.ListUpdateCallback;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;

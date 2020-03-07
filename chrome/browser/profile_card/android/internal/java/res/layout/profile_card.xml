@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.profile_card.ProfileCardView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/profile_card"
     android:layout_width="match_parent"
@@ -36,4 +36,4 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         layout="@layout/content_preview_posts_container" />
-</org.chromium.chrome.browser.profile_card.ProfileCardView>
+</LinearLayout>

@@ -9,7 +9,6 @@
 
 #include "base/base64.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -104,12 +103,21 @@ CryptAuthSchedulerImpl::Factory*
     CryptAuthSchedulerImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthSchedulerImpl::Factory* CryptAuthSchedulerImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<CryptAuthScheduler> CryptAuthSchedulerImpl::Factory::Create(
+    PrefService* pref_service,
+    NetworkStateHandler* network_state_handler,
+    base::Clock* clock,
+    std::unique_ptr<base::OneShotTimer> enrollment_timer,
+    std::unique_ptr<base::OneShotTimer> device_sync_timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(pref_service, network_state_handler,
+                                         clock, std::move(enrollment_timer),
+                                         std::move(device_sync_timer));
+  }
 
-  static base::NoDestructor<CryptAuthSchedulerImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthSchedulerImpl(
+      pref_service, network_state_handler, clock, std::move(enrollment_timer),
+      std::move(device_sync_timer)));
 }
 
 // static
@@ -119,18 +127,6 @@ void CryptAuthSchedulerImpl::Factory::SetFactoryForTesting(
 }
 
 CryptAuthSchedulerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthScheduler>
-CryptAuthSchedulerImpl::Factory::BuildInstance(
-    PrefService* pref_service,
-    NetworkStateHandler* network_state_handler,
-    base::Clock* clock,
-    std::unique_ptr<base::OneShotTimer> enrollment_timer,
-    std::unique_ptr<base::OneShotTimer> device_sync_timer) {
-  return base::WrapUnique(new CryptAuthSchedulerImpl(
-      pref_service, network_state_handler, clock, std::move(enrollment_timer),
-      std::move(device_sync_timer)));
-}
 
 // static
 void CryptAuthSchedulerImpl::RegisterPrefs(PrefRegistrySimple* registry) {

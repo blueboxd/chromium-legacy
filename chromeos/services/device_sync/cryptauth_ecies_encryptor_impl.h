@@ -56,10 +56,12 @@ class CryptAuthEciesEncryptorImpl : public CryptAuthEciesEncryptor {
  public:
   class Factory {
    public:
-    static Factory* Get();
+    static std::unique_ptr<CryptAuthEciesEncryptor> Create();
     static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthEciesEncryptor> BuildInstance();
+    virtual std::unique_ptr<CryptAuthEciesEncryptor> CreateInstance() = 0;
 
    private:
     static Factory* test_factory_;

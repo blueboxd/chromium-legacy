@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_violation_report_body.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/report.h"
@@ -242,8 +241,7 @@ SecurityContext& ExecutionContextCSPDelegate::GetSecurityContext() {
 }
 
 Document* ExecutionContextCSPDelegate::GetDocument() {
-  auto* window = DynamicTo<LocalDOMWindow>(execution_context_.Get());
-  return window ? window->document() : nullptr;
+  return Document::DynamicFrom(execution_context_.Get());
 }
 
 void ExecutionContextCSPDelegate::DispatchViolationEventInternal(

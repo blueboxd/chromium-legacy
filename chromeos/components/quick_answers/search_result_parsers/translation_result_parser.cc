@@ -12,7 +12,6 @@
 namespace chromeos {
 namespace quick_answers {
 namespace {
-
 using base::Value;
 
 constexpr char kSourceTextPath[] = "translateResult.sourceText";
@@ -45,7 +44,7 @@ bool TranslationResultParser::Parse(const Value* result,
     LOG(ERROR) << "Can't find a translated text.";
     return false;
   }
-  std::string secondary_answer =
+  const std::string& secondary_answer =
       base::StringPrintf(kSourceTextTemplate, source_text->c_str(),
                          source_text_language_localized_name->c_str());
   quick_answer->result_type = ResultType::kTranslationResult;

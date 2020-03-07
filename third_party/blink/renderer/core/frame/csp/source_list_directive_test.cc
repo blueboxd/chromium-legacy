@@ -5,9 +5,10 @@
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_source.h"
-#include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -32,19 +33,23 @@ class SourceListDirectiveTest : public testing::Test {
 
   void SetUp() override {
     KURL secure_url("https://example.test/image.png");
-    context = MakeGarbageCollected<NullExecutionContext>();
-    context->GetSecurityContext().SetSecurityOrigin(
+    scoped_refptr<SecurityOrigin> secure_origin(
         SecurityOrigin::Create(secure_url));
-    csp->BindToDelegate(context->GetContentSecurityPolicyDelegate());
+    DocumentInit init =
+        DocumentInit::Create().WithOriginToCommit(secure_origin);
+    document = MakeGarbageCollected<Document>(init);
+    csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
   }
 
   ContentSecurityPolicy* SetUpWithOrigin(const String& origin) {
     KURL secure_url(origin);
-    auto* context = MakeGarbageCollected<NullExecutionContext>();
-    context->GetSecurityContext().SetSecurityOrigin(
+    scoped_refptr<SecurityOrigin> secure_origin(
         SecurityOrigin::Create(secure_url));
+    DocumentInit init =
+        DocumentInit::Create().WithOriginToCommit(secure_origin);
+    auto* document = MakeGarbageCollected<Document>(init);
     auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-    csp->BindToDelegate(context->GetContentSecurityPolicyDelegate());
+    csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     return csp;
   }
 
@@ -55,7 +60,7 @@ class SourceListDirectiveTest : public testing::Test {
   }
 
   Persistent<ContentSecurityPolicy> csp;
-  Persistent<ExecutionContext> context;
+  Persistent<Document> document;
 };
 
 TEST_F(SourceListDirectiveTest, BasicMatchingNone) {

@@ -346,12 +346,17 @@ CryptAuthV2EnrollerImpl::Factory*
     CryptAuthV2EnrollerImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthV2EnrollerImpl::Factory* CryptAuthV2EnrollerImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<CryptAuthV2Enroller> CryptAuthV2EnrollerImpl::Factory::Create(
+    CryptAuthKeyRegistry* key_registry,
+    CryptAuthClientFactory* client_factory,
+    std::unique_ptr<base::OneShotTimer> timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(key_registry, client_factory,
+                                         std::move(timer));
+  }
 
-  static base::NoDestructor<CryptAuthV2EnrollerImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthV2EnrollerImpl(
+      key_registry, client_factory, std::move(timer)));
 }
 
 // static
@@ -361,15 +366,6 @@ void CryptAuthV2EnrollerImpl::Factory::SetFactoryForTesting(
 }
 
 CryptAuthV2EnrollerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthV2Enroller>
-CryptAuthV2EnrollerImpl::Factory::BuildInstance(
-    CryptAuthKeyRegistry* key_registry,
-    CryptAuthClientFactory* client_factory,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new CryptAuthV2EnrollerImpl(
-      key_registry, client_factory, std::move(timer)));
-}
 
 CryptAuthV2EnrollerImpl::CryptAuthV2EnrollerImpl(
     CryptAuthKeyRegistry* key_registry,
@@ -596,7 +592,7 @@ void CryptAuthV2EnrollerImpl::OnSyncKeysSuccess(
 
   SetState(State::kWaitingForKeyCreation);
 
-  key_creator_ = CryptAuthKeyCreatorImpl::Factory::Get()->BuildInstance();
+  key_creator_ = CryptAuthKeyCreatorImpl::Factory::Create();
   key_creator_->CreateKeys(
       new_keys_to_create, server_ephemeral_dh,
       base::BindOnce(&CryptAuthV2EnrollerImpl::OnKeysCreated,
@@ -752,7 +748,7 @@ void CryptAuthV2EnrollerImpl::OnKeysCreated(
     request.set_client_ephemeral_dh(client_ephemeral_dh->public_key());
 
   std::unique_ptr<CryptAuthKeyProofComputer> key_proof_computer =
-      CryptAuthKeyProofComputerImpl::Factory::Get()->BuildInstance();
+      CryptAuthKeyProofComputerImpl::Factory::Create();
 
   for (const std::pair<CryptAuthKeyBundle::Name, base::Optional<CryptAuthKey>>&
            name_key_pair : new_keys) {

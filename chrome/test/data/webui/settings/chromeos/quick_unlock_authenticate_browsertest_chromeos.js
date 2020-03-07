@@ -664,6 +664,31 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertDeepEquals(['1111'], quickUnlockPrivateApi.credentials);
       });
 
+      // Submitting a new pin disables the 'Confirm' continue button and the pin
+      // field until the asynchronous update completes.
+      test('SubmittingPinDisablesConfirmButtonAndPinInput', function() {
+        pinKeyboard.value = '1111';
+        continueButton.click();
+        pinKeyboard.value = '1111';
+        assertFalse(continueButton.disabled);
+
+        let isPinInputDisabled = pinInput.disabled;
+        assertFalse(isPinInputDisabled);
+
+        return new Promise(resolve => {
+          getFromElement('setup-pin-keyboard')
+              .addEventListener(
+                  'is-set-modes-call-pending_-changed', function() {
+                    assertNotEquals(isPinInputDisabled, pinInput.disabled);
+                    isPinInputDisabled = pinInput.disabled;
+                    resolve();
+                  });
+
+          continueButton.click();
+          assertTrue(continueButton.disabled);
+        });
+      });
+
       test('TestContinueButtonState', function() {
         pinKeyboard.value = '1111';
         continueButton.click();

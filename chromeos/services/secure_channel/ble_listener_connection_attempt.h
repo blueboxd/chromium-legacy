@@ -23,13 +23,19 @@ class BleListenerConnectionAttempt
  public:
   class Factory {
    public:
-    static Factory* Get();
+    static std::unique_ptr<ConnectionAttempt<BleListenerFailureType>> Create(
+        BleConnectionManager* ble_connection_manager,
+        ConnectionAttemptDelegate* delegate,
+        const ConnectionAttemptDetails& connection_attempt_details);
     static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
     virtual std::unique_ptr<ConnectionAttempt<BleListenerFailureType>>
-    BuildInstance(BleConnectionManager* ble_connection_manager,
-                  ConnectionAttemptDelegate* delegate,
-                  const ConnectionAttemptDetails& connection_attempt_details);
+    CreateInstance(
+        BleConnectionManager* ble_connection_manager,
+        ConnectionAttemptDelegate* delegate,
+        const ConnectionAttemptDetails& connection_attempt_details) = 0;
 
    private:
     static Factory* test_factory_;

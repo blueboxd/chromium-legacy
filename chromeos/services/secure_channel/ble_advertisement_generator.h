@@ -52,6 +52,7 @@ class BleAdvertisementGenerator {
 
   static BleAdvertisementGenerator* instance_;
 
+  // TODO(dcheng): Update this to follow the standard factory pattern.
   static void SetInstanceForTesting(BleAdvertisementGenerator* test_generator);
 
   void SetEidGeneratorForTesting(

@@ -89,7 +89,8 @@ void ShowWritePermissionPromptOnUIThread(
   web_contents->ForSecurityDropFullscreen();
 
   request_manager->AddRequest(
-      {origin, path, is_directory},
+      {origin, path, is_directory,
+       NativeFileSystemPermissionRequestManager::Access::kWrite},
       base::BindOnce(
           [](base::OnceCallback<void(PermissionRequestOutcome outcome,
                                      permissions::PermissionAction result)>

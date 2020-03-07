@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
@@ -63,13 +62,21 @@ CryptAuthDeviceNotifierImpl::Factory*
     CryptAuthDeviceNotifierImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthDeviceNotifierImpl::Factory*
-CryptAuthDeviceNotifierImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<CryptAuthDeviceNotifier>
+CryptAuthDeviceNotifierImpl::Factory::Create(
+    ClientAppMetadataProvider* client_app_metadata_provider,
+    CryptAuthClientFactory* client_factory,
+    CryptAuthGCMManager* gcm_manager,
+    std::unique_ptr<base::OneShotTimer> timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(client_app_metadata_provider,
+                                         client_factory, gcm_manager,
+                                         std::move(timer));
+  }
 
-  static base::NoDestructor<CryptAuthDeviceNotifierImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthDeviceNotifierImpl(
+      client_app_metadata_provider, client_factory, gcm_manager,
+      std::move(timer)));
 }
 
 // static
@@ -79,17 +86,6 @@ void CryptAuthDeviceNotifierImpl::Factory::SetFactoryForTesting(
 }
 
 CryptAuthDeviceNotifierImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthDeviceNotifier>
-CryptAuthDeviceNotifierImpl::Factory::BuildInstance(
-    ClientAppMetadataProvider* client_app_metadata_provider,
-    CryptAuthClientFactory* client_factory,
-    CryptAuthGCMManager* gcm_manager,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new CryptAuthDeviceNotifierImpl(
-      client_app_metadata_provider, client_factory, gcm_manager,
-      std::move(timer)));
-}
 
 CryptAuthDeviceNotifierImpl::CryptAuthDeviceNotifierImpl(
     ClientAppMetadataProvider* client_app_metadata_provider,

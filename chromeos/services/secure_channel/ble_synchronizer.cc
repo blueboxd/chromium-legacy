@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "chromeos/components/multidevice/logging/logging.h"
@@ -28,12 +27,12 @@ const int64_t kTimeBetweenEachCommandMs = 200;
 BleSynchronizer::Factory* BleSynchronizer::Factory::test_factory_ = nullptr;
 
 // static
-BleSynchronizer::Factory* BleSynchronizer::Factory::Get() {
+std::unique_ptr<BleSynchronizerBase> BleSynchronizer::Factory::Create(
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance(std::move(bluetooth_adapter));
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new BleSynchronizer(std::move(bluetooth_adapter)));
 }
 
 // static
@@ -42,11 +41,6 @@ void BleSynchronizer::Factory::SetFactoryForTesting(Factory* test_factory) {
 }
 
 BleSynchronizer::Factory::~Factory() = default;
-
-std::unique_ptr<BleSynchronizerBase> BleSynchronizer::Factory::BuildInstance(
-    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
-  return base::WrapUnique(new BleSynchronizer(bluetooth_adapter));
-}
 
 BleSynchronizer::BleSynchronizer(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)

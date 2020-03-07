@@ -39,15 +39,22 @@ class AccountStatusChangeDelegateNotifierImpl
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<AccountStatusChangeDelegateNotifier> BuildInstance(
+    static std::unique_ptr<AccountStatusChangeDelegateNotifier> Create(
         HostStatusProvider* host_status_provider,
         PrefService* pref_service,
         HostDeviceTimestampManager* host_device_timestamp_manager,
         OobeCompletionTracker* oobe_completion_tracker,
         base::Clock* clock);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<AccountStatusChangeDelegateNotifier> CreateInstance(
+        HostStatusProvider* host_status_provider,
+        PrefService* pref_service,
+        HostDeviceTimestampManager* host_device_timestamp_manager,
+        OobeCompletionTracker* oobe_completion_tracker,
+        base::Clock* clock) = 0;
 
    private:
     static Factory* test_factory_;

@@ -34,17 +34,17 @@ class SoftwareFeatureManagerImpl : public SoftwareFeatureManager {
  public:
   class Factory {
    public:
-    static std::unique_ptr<SoftwareFeatureManager> NewInstance(
+    static std::unique_ptr<SoftwareFeatureManager> Create(
         CryptAuthClientFactory* cryptauth_client_factory,
         CryptAuthFeatureStatusSetter* feature_status_setter);
 
-    static void SetInstanceForTesting(Factory* test_factory);
+    static void SetFactoryForTesting(Factory* test_factory);
 
    protected:
     virtual ~Factory();
-    virtual std::unique_ptr<SoftwareFeatureManager> BuildInstance(
+    virtual std::unique_ptr<SoftwareFeatureManager> CreateInstance(
         CryptAuthClientFactory* cryptauth_client_factory,
-        CryptAuthFeatureStatusSetter* feature_status_setter);
+        CryptAuthFeatureStatusSetter* feature_status_setter) = 0;
 
    private:
     static Factory* test_factory_instance_;

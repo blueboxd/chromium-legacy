@@ -25,13 +25,18 @@ class SingleClientMessageProxyImpl : public SingleClientMessageProxy,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetInstanceForTesting(Factory* factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<SingleClientMessageProxy> BuildInstance(
+    static std::unique_ptr<SingleClientMessageProxy> Create(
         SingleClientMessageProxy::Delegate* delegate,
         std::unique_ptr<ClientConnectionParameters>
             client_connection_parameters);
+    static void SetFactoryForTesting(Factory* factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<SingleClientMessageProxy> CreateInstance(
+        SingleClientMessageProxy::Delegate* delegate,
+        std::unique_ptr<ClientConnectionParameters>
+            client_connection_parameters) = 0;
 
    private:
     static Factory* test_factory_;

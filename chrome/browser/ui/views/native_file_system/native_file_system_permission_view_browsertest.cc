@@ -11,39 +11,55 @@
 #include "components/permissions/permission_util.h"
 #include "ui/views/controls/button/label_button.h"
 
+using AccessType = NativeFileSystemPermissionRequestManager::Access;
+
 class NativeFileSystemPermissionViewTest : public DialogBrowserTest {
  public:
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    base::FilePath path;
-    url::Origin origin = kTestOrigin;
-    bool is_directory = false;
+    NativeFileSystemPermissionView::Request request(
+        kTestOrigin, base::FilePath(), /*is_directory=*/false,
+        AccessType::kWrite);
     if (name == "LongFileName") {
-      path = base::FilePath(FILE_PATH_LITERAL(
+      request.path = base::FilePath(FILE_PATH_LITERAL(
           "/foo/bar/Some Really Really Really Really Long File Name.txt"));
     } else if (name == "Folder") {
-      path = base::FilePath(FILE_PATH_LITERAL("/bar/MyProject"));
-      is_directory = true;
+      request.path = base::FilePath(FILE_PATH_LITERAL("/bar/MyProject"));
+      request.is_directory = true;
     } else if (name == "LongOrigin") {
-      path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
-      origin =
+      request.path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
+      request.origin =
           url::Origin::Create(GURL("https://"
                                    "longextendedsubdomainnamewithoutdashesinord"
                                    "ertotestwordwrapping.appspot.com"));
     } else if (name == "FileOrigin") {
-      path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
-      origin = url::Origin::Create(GURL("file:///foo/bar/bla"));
+      request.path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
+      request.origin = url::Origin::Create(GURL("file:///foo/bar/bla"));
     } else if (name == "ExtensionOrigin") {
-      path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
-      origin = url::Origin::Create(GURL(
+      request.path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
+      request.origin = url::Origin::Create(GURL(
           "chrome-extension://ehoadneljpdggcbbknedodolkkjodefl/capture.html"));
+    } else if (name == "FolderRead") {
+      request.path = base::FilePath(FILE_PATH_LITERAL("/bar/MyProject"));
+      request.is_directory = true;
+      request.access = AccessType::kRead;
+    } else if (name == "FolderReadWrite") {
+      request.path = base::FilePath(FILE_PATH_LITERAL("/bar/MyProject"));
+      request.is_directory = true;
+      request.access = AccessType::kReadWrite;
+    } else if (name == "FileRead") {
+      request.path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
+      request.access = AccessType::kRead;
+    } else if (name == "FileReadWrite") {
+      request.path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
+      request.access = AccessType::kReadWrite;
     } else if (name == "default") {
-      path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
+      request.path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
     } else {
       NOTREACHED() << "Unimplemented test: " << name;
     }
     widget_ = NativeFileSystemPermissionView::ShowDialog(
-        origin, path, is_directory,
+        request,
         base::BindLambdaForTesting([&](permissions::PermissionAction result) {
           callback_called_ = true;
           callback_result_ = result;
@@ -120,5 +136,24 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
 
 IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
                        InvokeUi_ExtensionOrigin) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
+                       InvokeUi_FolderRead) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
+                       InvokeUi_FolderReadWrite) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest, InvokeUi_FileRead) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
+                       InvokeUi_FileReadWrite) {
   ShowAndVerifyUi();
 }

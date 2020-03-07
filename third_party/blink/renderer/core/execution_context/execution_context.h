@@ -90,7 +90,7 @@ enum ReasonForCallingCanExecuteScripts {
 
 // An environment in which script can execute. This class exposes the common
 // properties of script execution environments on the web (i.e, common between
-// script executing in a window and script executing in a worker), such as:
+// script executing in a document and script executing in a worker), such as:
 //
 // - a base URL for the resolution of relative URLs
 // - a security context that defines the privileges associated with the
@@ -101,20 +101,25 @@ enum ReasonForCallingCanExecuteScripts {
 //   been closed permanently
 // - a console logging facility for debugging
 //
-// Typically, the ExecutionContext is an instance of LocalDOMWindow or of
+// Typically, the ExecutionContext is an instance of Document or of
 // WorkerOrWorkletGlobalScope.
 //
 // Note that this is distinct from the notion of a ScriptState or v8::Context,
 // which are associated with a single script context (with a single global
 // object). For example, there are separate JavaScript globals for "main world"
 // script written by a web author and an "isolated world" content script written
-// by an extension developer, but these share an ExecutionContext (the window)
+// by an extension developer, but these share an ExecutionContext (the document)
 // in common.
-class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
-                                     public ContextLifecycleNotifier,
-                                     public ConsoleLogger,
-                                     public UseCounter,
-                                     public FeaturePolicyParserDelegate {
+// TODO(crbug.com/1029822): Virtual inheritance is used here temporarily to
+// enable moving ExecutionContext from Document to LocalDOMWindow. This allows
+// Document's inheritance of ExecutionContext to be hidden, while still allowing
+// Document to inherit from some of ExecutionContext's parent classes publicly.
+class CORE_EXPORT ExecutionContext
+    : public Supplementable<ExecutionContext>,
+      public ContextLifecycleNotifier,
+      public virtual ConsoleLogger,
+      public virtual UseCounter,
+      public virtual FeaturePolicyParserDelegate {
   MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:

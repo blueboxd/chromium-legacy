@@ -69,7 +69,7 @@ class TetherHostFetcherImplTest : public testing::Test {
   void InitializeTest() {
     SetSyncedDevices(test_remote_device_list_);
 
-    tether_host_fetcher_ = TetherHostFetcherImpl::Factory::NewInstance(
+    tether_host_fetcher_ = TetherHostFetcherImpl::Factory::Create(
         fake_device_sync_client_.get(), fake_multidevice_setup_client_.get());
 
     fake_device_sync_client_->NotifyReady();

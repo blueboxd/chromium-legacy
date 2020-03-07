@@ -89,7 +89,7 @@ void LogVideoCaptureTimestamps(CastEnvironment* cast_environment,
 VideoSender::VideoSender(
     scoped_refptr<CastEnvironment> cast_environment,
     const FrameSenderConfig& video_config,
-    const StatusChangeCallback& status_change_cb,
+    StatusChangeCallback status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
     CastTransport* const transport_sender,
@@ -120,7 +120,7 @@ VideoSender::VideoSender(
   if (!video_encoder_) {
     cast_environment_->PostTask(
         CastEnvironment::MAIN, FROM_HERE,
-        base::BindOnce(status_change_cb, STATUS_UNSUPPORTED_CODEC));
+        base::BindOnce(std::move(status_change_cb), STATUS_UNSUPPORTED_CODEC));
   }
 }
 

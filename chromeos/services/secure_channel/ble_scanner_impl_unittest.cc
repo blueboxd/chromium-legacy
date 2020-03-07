@@ -90,7 +90,7 @@ class SecureChannelBleScannerImplTest : public testing::Test {
     mock_adapter_ =
         base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
 
-    ble_scanner_ = BleScannerImpl::Factory::Get()->BuildInstance(
+    ble_scanner_ = BleScannerImpl::Factory::Create(
         fake_delegate_.get(), fake_ble_service_data_helper_.get(),
         fake_ble_synchronizer_.get(), mock_adapter_);
 

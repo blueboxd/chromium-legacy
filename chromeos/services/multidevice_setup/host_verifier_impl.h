@@ -36,10 +36,7 @@ class HostVerifierImpl : public HostVerifier,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<HostVerifier> BuildInstance(
+    static std::unique_ptr<HostVerifier> Create(
         HostBackendDelegate* host_backend_delegate,
         device_sync::DeviceSyncClient* device_sync_client,
         PrefService* pref_service,
@@ -48,6 +45,17 @@ class HostVerifierImpl : public HostVerifier,
             std::make_unique<base::OneShotTimer>(),
         std::unique_ptr<base::OneShotTimer> sync_timer =
             std::make_unique<base::OneShotTimer>());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<HostVerifier> CreateInstance(
+        HostBackendDelegate* host_backend_delegate,
+        device_sync::DeviceSyncClient* device_sync_client,
+        PrefService* pref_service,
+        base::Clock* clock,
+        std::unique_ptr<base::OneShotTimer> retry_timer,
+        std::unique_ptr<base::OneShotTimer> sync_timer) = 0;
 
    private:
     static Factory* test_factory_;

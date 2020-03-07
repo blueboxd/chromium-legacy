@@ -39,7 +39,7 @@ bool IsEnrollmentAllowedByPolicy(content::BrowserContext* context) {
 
 std::unique_ptr<DeviceSyncBase> CreateDeviceSyncImplForProfile(
     Profile* profile) {
-  return DeviceSyncImpl::Factory::Get()->BuildInstance(
+  return DeviceSyncImpl::Factory::Create(
       IdentityManagerFactory::GetForProfile(profile),
       gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
       profile->GetPrefs(), chromeos::GcmDeviceInfoProviderImpl::GetInstance(),
@@ -55,8 +55,7 @@ class DeviceSyncClientHolder : public KeyedService {
   explicit DeviceSyncClientHolder(content::BrowserContext* context)
       : device_sync_(CreateDeviceSyncImplForProfile(
             Profile::FromBrowserContext(context))),
-        device_sync_client_(
-            DeviceSyncClientImpl::Factory::Get()->BuildInstance()) {
+        device_sync_client_(DeviceSyncClientImpl::Factory::Create()) {
     // Connect the client's mojo remote to the implementation.
     device_sync_->BindReceiver(device_sync_client_->GetDeviceSyncRemote()
                                    ->BindNewPipeAndPassReceiver());

@@ -117,7 +117,7 @@ TEST_F(PrintBackendCupsIppHelperTest, CopiesCapable) {
   PrinterSemanticCapsAndDefaults caps;
   CapsAndDefaultsFromPrinter(*printer_, &caps);
 
-  EXPECT_TRUE(caps.copies_capable);
+  EXPECT_EQ(2, caps.copies_max);
 }
 
 TEST_F(PrintBackendCupsIppHelperTest, CopiesNotCapable) {
@@ -125,7 +125,7 @@ TEST_F(PrintBackendCupsIppHelperTest, CopiesNotCapable) {
   PrinterSemanticCapsAndDefaults caps;
   CapsAndDefaultsFromPrinter(*printer_, &caps);
 
-  EXPECT_FALSE(caps.copies_capable);
+  EXPECT_EQ(1, caps.copies_max);
 }
 
 TEST_F(PrintBackendCupsIppHelperTest, ColorPrinter) {

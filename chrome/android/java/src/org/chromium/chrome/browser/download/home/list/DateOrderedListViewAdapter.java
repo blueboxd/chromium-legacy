@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.download.home.list.holder.ListItemViewHolder;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;

@@ -29,13 +29,18 @@ class HostDeviceTimestampManagerImpl : public HostDeviceTimestampManager,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<HostDeviceTimestampManager> BuildInstance(
+    static std::unique_ptr<HostDeviceTimestampManager> Create(
         HostStatusProvider* host_status_provider,
         PrefService* pref_service,
         base::Clock* clock);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<HostDeviceTimestampManager> CreateInstance(
+        HostStatusProvider* host_status_provider,
+        PrefService* pref_service,
+        base::Clock* clock) = 0;
 
    private:
     static Factory* test_factory_;

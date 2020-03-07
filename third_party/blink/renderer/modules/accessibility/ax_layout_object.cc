@@ -2525,7 +2525,7 @@ bool AXLayoutObject::IsDataTable() const {
       }
 
       LayoutObject* cell_layout_object = cell->GetLayoutObject();
-      if (!cell_layout_object)
+      if (!cell_layout_object || !cell_layout_object->IsLayoutBlock())
         continue;
 
       const LayoutBlock* cell_layout_block =

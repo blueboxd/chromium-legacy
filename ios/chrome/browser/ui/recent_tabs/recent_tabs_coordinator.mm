@@ -6,6 +6,8 @@
 
 #include "base/ios/block_types.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
@@ -59,7 +61,7 @@
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
-                           action:@selector(stop)];
+                           action:@selector(dismissButtonTapped)];
   [dismissButton
       setAccessibilityIdentifier:kTableViewNavigationDismissButtonId];
   recentTabsTableViewController.navigationItem.rightBarButtonItem =
@@ -127,6 +129,11 @@
   self.recentTabsNavigationController = nil;
   self.recentTabsTransitioningDelegate = nil;
   [self.mediator disconnect];
+}
+
+- (void)dismissButtonTapped {
+  base::RecordAction(base::UserMetricsAction("MobileRecentTabsClose"));
+  [self stop];
 }
 
 #pragma mark - RecentTabsPresentationDelegate

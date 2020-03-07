@@ -631,6 +631,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
                                              distantTabAtIndexPath:indexPath]];
       break;
     case ItemTypeShowFullHistory:
+      base::RecordAction(
+          base::UserMetricsAction("MobileRecentTabManagerShowFullHistory"));
       [tableView deselectRowAtIndexPath:indexPath animated:NO];
 
       // Tapping "show full history" attempts to dismiss recent tabs to show the
@@ -1176,8 +1178,10 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 #pragma mark - UIAdaptivePresentationControllerDelegate
+
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
+  base::RecordAction(base::UserMetricsAction("IOSRecentTabsCloseWithSwipe"));
   // Call dismissRecentTabs so the Coordinator cleans up any state it needs to.
   [self.presentationDelegate dismissRecentTabs];
 }

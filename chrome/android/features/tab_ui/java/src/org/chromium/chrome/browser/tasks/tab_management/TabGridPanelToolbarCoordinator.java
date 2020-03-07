@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.tab_ui.R;

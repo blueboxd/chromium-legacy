@@ -296,7 +296,7 @@ HostsParseWinResult AddLocalhostEntries(DnsHosts* hosts) {
 // Watches a single registry key for changes.
 class RegistryWatcher {
  public:
-  typedef base::Callback<void(bool succeeded)> CallbackType;
+  typedef base::RepeatingCallback<void(bool succeeded)> CallbackType;
   RegistryWatcher() {}
 
   ~RegistryWatcher() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
@@ -607,9 +607,8 @@ class DnsConfigServiceWin::Watcher
   ~Watcher() override { NetworkChangeNotifier::RemoveIPAddressObserver(this); }
 
   bool Watch() {
-    RegistryWatcher::CallbackType callback =
-        base::Bind(&DnsConfigServiceWin::OnConfigChanged,
-                   base::Unretained(service_));
+    RegistryWatcher::CallbackType callback = base::BindRepeating(
+        &DnsConfigServiceWin::OnConfigChanged, base::Unretained(service_));
 
     bool success = true;
 
@@ -635,8 +634,8 @@ class DnsConfigServiceWin::Watcher
     policy_watcher_.Watch(kPolicyPath, callback);
 
     if (!hosts_watcher_.Watch(GetHostsPath(), false,
-                              base::Bind(&Watcher::OnHostsChanged,
-                                         base::Unretained(this)))) {
+                              base::BindRepeating(&Watcher::OnHostsChanged,
+                                                  base::Unretained(this)))) {
       UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",
                                 DNS_CONFIG_WATCH_FAILED_TO_START_HOSTS,
                                 DNS_CONFIG_WATCH_MAX);

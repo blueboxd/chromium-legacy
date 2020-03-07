@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/secure_channel_impl.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -20,12 +19,12 @@ SecureChannelInitializer::Factory*
     SecureChannelInitializer::Factory::test_factory_ = nullptr;
 
 // static
-SecureChannelInitializer::Factory* SecureChannelInitializer::Factory::Get() {
+std::unique_ptr<SecureChannelBase> SecureChannelInitializer::Factory::Create(
+    scoped_refptr<base::TaskRunner> task_runner) {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance(std::move(task_runner));
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new SecureChannelInitializer(std::move(task_runner)));
 }
 
 // static
@@ -35,12 +34,6 @@ void SecureChannelInitializer::Factory::SetFactoryForTesting(
 }
 
 SecureChannelInitializer::Factory::~Factory() = default;
-
-std::unique_ptr<SecureChannelBase>
-SecureChannelInitializer::Factory::BuildInstance(
-    scoped_refptr<base::TaskRunner> task_runner) {
-  return base::WrapUnique(new SecureChannelInitializer(task_runner));
-}
 
 SecureChannelInitializer::ConnectionRequestArgs::ConnectionRequestArgs(
     const multidevice::RemoteDevice& device_to_connect,
@@ -120,8 +113,7 @@ void SecureChannelInitializer::OnBluetoothAdapterReceived(
                   << "Bluetooth adapter has been fetched. Passing all queued "
                   << "requests to the service.";
 
-  secure_channel_impl_ =
-      SecureChannelImpl::Factory::Get()->BuildInstance(bluetooth_adapter);
+  secure_channel_impl_ = SecureChannelImpl::Factory::Create(bluetooth_adapter);
 
   while (!pending_args_.empty()) {
     std::unique_ptr<ConnectionRequestArgs> args_to_pass =

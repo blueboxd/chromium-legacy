@@ -31,11 +31,14 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetInstanceForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<MultiDeviceSetupClient> BuildInstance(
+    static std::unique_ptr<MultiDeviceSetupClient> Create(
         mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<MultiDeviceSetupClient> CreateInstance(
+        mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup) = 0;
 
    private:
     static Factory* test_factory_;

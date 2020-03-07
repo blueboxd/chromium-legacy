@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
@@ -106,14 +105,15 @@ CryptAuthGroupPrivateKeySharerImpl::Factory*
     CryptAuthGroupPrivateKeySharerImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthGroupPrivateKeySharerImpl::Factory*
-CryptAuthGroupPrivateKeySharerImpl::Factory::Get() {
+std::unique_ptr<CryptAuthGroupPrivateKeySharer>
+CryptAuthGroupPrivateKeySharerImpl::Factory::Create(
+    CryptAuthClientFactory* client_factory,
+    std::unique_ptr<base::OneShotTimer> timer) {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance(client_factory, std::move(timer));
 
-  static base::NoDestructor<CryptAuthGroupPrivateKeySharerImpl::Factory>
-      factory;
-  return factory.get();
+  return base::WrapUnique(
+      new CryptAuthGroupPrivateKeySharerImpl(client_factory, std::move(timer)));
 }
 
 // static
@@ -123,14 +123,6 @@ void CryptAuthGroupPrivateKeySharerImpl::Factory::SetFactoryForTesting(
 }
 
 CryptAuthGroupPrivateKeySharerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthGroupPrivateKeySharer>
-CryptAuthGroupPrivateKeySharerImpl::Factory::BuildInstance(
-    CryptAuthClientFactory* client_factory,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(
-      new CryptAuthGroupPrivateKeySharerImpl(client_factory, std::move(timer)));
-}
 
 CryptAuthGroupPrivateKeySharerImpl::CryptAuthGroupPrivateKeySharerImpl(
     CryptAuthClientFactory* client_factory,
@@ -251,7 +243,7 @@ void CryptAuthGroupPrivateKeySharerImpl::OnAttemptStarted(
 
   SetState(State::kWaitingForGroupPrivateKeyEncryption);
 
-  encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Get()->BuildInstance();
+  encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Create();
   encryptor_->BatchEncrypt(
       group_private_keys_to_encrypt,
       base::BindOnce(

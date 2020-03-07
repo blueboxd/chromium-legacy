@@ -19,11 +19,12 @@ class SecureMessageDelegateImpl : public SecureMessageDelegate {
  public:
   class Factory {
    public:
-    static std::unique_ptr<SecureMessageDelegate> NewInstance();
-    static void SetInstanceForTesting(Factory* test_factory);
+    static std::unique_ptr<SecureMessageDelegate> Create();
+    static void SetFactoryForTesting(Factory* test_factory);
 
+   protected:
     virtual ~Factory();
-    virtual std::unique_ptr<SecureMessageDelegate> BuildInstance();
+    virtual std::unique_ptr<SecureMessageDelegate> CreateInstance() = 0;
 
    private:
     static Factory* test_factory_instance_;

@@ -170,7 +170,7 @@ class FakeDeviceLoader final : public RemoteDeviceLoader {
     TestRemoteDeviceLoaderFactory() = default;
     ~TestRemoteDeviceLoaderFactory() = default;
 
-    std::unique_ptr<RemoteDeviceLoader> BuildInstance(
+    std::unique_ptr<RemoteDeviceLoader> CreateInstance(
         const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
         const std::string& user_email,
         const std::string& user_private_key,
@@ -237,12 +237,12 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
 
     fake_secure_message_delegate_factory_ =
         std::make_unique<multidevice::FakeSecureMessageDelegateFactory>();
-    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
         fake_secure_message_delegate_factory_.get());
 
     test_device_loader_factory_ =
         std::make_unique<FakeDeviceLoader::TestRemoteDeviceLoaderFactory>();
-    RemoteDeviceLoader::Factory::SetInstanceForTesting(
+    RemoteDeviceLoader::Factory::SetFactoryForTesting(
         test_device_loader_factory_.get());
     fake_remote_device_v2_loader_factory_ =
         std::make_unique<FakeRemoteDeviceV2LoaderFactory>();
@@ -253,9 +253,9 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
         nullptr);
-    RemoteDeviceLoader::Factory::SetInstanceForTesting(nullptr);
+    RemoteDeviceLoader::Factory::SetFactoryForTesting(nullptr);
     RemoteDeviceV2LoaderImpl::Factory::SetFactoryForTesting(nullptr);
   }
 

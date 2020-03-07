@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_key.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
@@ -54,13 +53,12 @@ CryptAuthKeyProofComputerImpl::Factory*
     CryptAuthKeyProofComputerImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthKeyProofComputerImpl::Factory*
-CryptAuthKeyProofComputerImpl::Factory::Get() {
+std::unique_ptr<CryptAuthKeyProofComputer>
+CryptAuthKeyProofComputerImpl::Factory::Create() {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance();
 
-  static base::NoDestructor<CryptAuthKeyProofComputerImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthKeyProofComputerImpl());
 }
 
 // static
@@ -70,11 +68,6 @@ void CryptAuthKeyProofComputerImpl::Factory::SetFactoryForTesting(
 }
 
 CryptAuthKeyProofComputerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthKeyProofComputer>
-CryptAuthKeyProofComputerImpl::Factory::BuildInstance() {
-  return base::WrapUnique(new CryptAuthKeyProofComputerImpl());
-}
 
 CryptAuthKeyProofComputerImpl::CryptAuthKeyProofComputerImpl() = default;
 

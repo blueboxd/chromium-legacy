@@ -77,12 +77,12 @@ class FakeCryptAuthDeviceSyncerFactory
 
  private:
   // CryptAuthDeviceSyncerImpl::Factory:
-  std::unique_ptr<CryptAuthDeviceSyncer> BuildInstance(
+  std::unique_ptr<CryptAuthDeviceSyncer> CreateInstance(
       CryptAuthDeviceRegistry* device_registry,
       CryptAuthKeyRegistry* key_registry,
       CryptAuthClientFactory* client_factory,
       PrefService* pref_service,
-      std::unique_ptr<base::OneShotTimer> timer = nullptr) override;
+      std::unique_ptr<base::OneShotTimer> timer) override;
 
   std::vector<FakeCryptAuthDeviceSyncer*> instances_;
   CryptAuthDeviceRegistry* last_device_registry_ = nullptr;

@@ -65,27 +65,6 @@
       </div>
     </oobe-dialog>
 
-    <oobe-dialog id="gestureBack" has-buttons
-        hidden="[[!isEqual_(currentPage_, 'gestureBack')]]"
-        title-key="gestureNavigationBackTitle"
-        subtitle-key="gestureNavigationBackDescription"
-        aria-label$="[[i18nDynamic(locale, 'gestureNavigationBackTitle')]]">
-      <img slot="oobe-icon" src="images/back.svg" width="32" height="32">
-      <div slot="footer" class="flex layout vertical center">
-        <div class="gesture-animation-container">
-          <cr-lottie animation-url="gesture_go_back.json"
-                      class="gesture-animation">
-          </cr-lottie>
-        </div>
-      </div>
-      <div slot="bottom-buttons" class="flex layout horizontal justified">
-        <oobe-back-button on-tap="onBack_"
-            id="gesture-back-back-button"></oobe-back-button>
-        <oobe-next-button on-tap="onNext_"
-            id="gesture-back-next-button"></oobe-next-button>
-      </div>
-    </oobe-dialog>
-
     <oobe-dialog id="gestureOverview" has-buttons
         hidden="[[!isEqual_(currentPage_, 'gestureOverview')]]"
         title-key="gestureNavigationOverviewTitle"
@@ -104,6 +83,27 @@
             id="gesture-overview-back-button"></oobe-back-button>
         <oobe-next-button on-tap="onNext_"
             id="gesture-overview-next-button"></oobe-next-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog id="gestureBack" has-buttons
+        hidden="[[!isEqual_(currentPage_, 'gestureBack')]]"
+        title-key="gestureNavigationBackTitle"
+        subtitle-key="gestureNavigationBackDescription"
+        aria-label$="[[i18nDynamic(locale, 'gestureNavigationBackTitle')]]">
+      <img slot="oobe-icon" src="images/back.svg" width="32" height="32">
+      <div slot="footer" class="flex layout vertical center">
+        <div class="gesture-animation-container">
+          <cr-lottie animation-url="gesture_go_back.json"
+                      class="gesture-animation">
+          </cr-lottie>
+        </div>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal justified">
+        <oobe-back-button on-tap="onBack_"
+            id="gesture-back-back-button"></oobe-back-button>
+        <oobe-next-button on-tap="onNext_"
+            id="gesture-back-next-button"></oobe-next-button>
       </div>
     </oobe-dialog>
   </template>

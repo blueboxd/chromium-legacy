@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_feature_status_setter_impl.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
@@ -24,32 +23,23 @@ SoftwareFeatureManagerImpl::Factory*
 
 // static
 std::unique_ptr<SoftwareFeatureManager>
-SoftwareFeatureManagerImpl::Factory::NewInstance(
+SoftwareFeatureManagerImpl::Factory::Create(
     CryptAuthClientFactory* cryptauth_client_factory,
     CryptAuthFeatureStatusSetter* feature_status_setter) {
   if (test_factory_instance_)
-    return test_factory_instance_->BuildInstance(cryptauth_client_factory,
-                                                 feature_status_setter);
+    return test_factory_instance_->CreateInstance(cryptauth_client_factory,
+                                                  feature_status_setter);
 
-  static base::NoDestructor<Factory> factory;
-  return factory->BuildInstance(cryptauth_client_factory,
-                                feature_status_setter);
+  return base::WrapUnique(new SoftwareFeatureManagerImpl(
+      cryptauth_client_factory, feature_status_setter));
 }
 
-void SoftwareFeatureManagerImpl::Factory::SetInstanceForTesting(
+void SoftwareFeatureManagerImpl::Factory::SetFactoryForTesting(
     Factory* test_factory) {
   test_factory_instance_ = test_factory;
 }
 
 SoftwareFeatureManagerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<SoftwareFeatureManager>
-SoftwareFeatureManagerImpl::Factory::BuildInstance(
-    CryptAuthClientFactory* cryptauth_client_factory,
-    CryptAuthFeatureStatusSetter* feature_status_setter) {
-  return base::WrapUnique(new SoftwareFeatureManagerImpl(
-      cryptauth_client_factory, feature_status_setter));
-}
 
 SoftwareFeatureManagerImpl::Request::Request(
     std::unique_ptr<cryptauth::ToggleEasyUnlockRequest> toggle_request,

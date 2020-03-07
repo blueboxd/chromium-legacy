@@ -44,6 +44,10 @@ WEAK_CUPS_FN(httpConnect2);
 // able to start and respond on all systems within this duration.
 constexpr base::TimeDelta kCupsTimeout = base::TimeDelta::FromSeconds(5);
 
+// CUPS default max copies value (taken from default cupsMaxCopies parsing in
+// cups/ppd-cache.c).
+constexpr int32_t kDefaultMaxCopies = 9999;
+
 constexpr char kColorDevice[] = "ColorDevice";
 constexpr char kColorModel[] = "ColorModel";
 constexpr char kColorMode[] = "ColorMode";
@@ -608,7 +612,8 @@ bool ParsePpdCapabilities(base::StringPiece printer_name,
   PrinterSemanticCapsAndDefaults caps;
   caps.collate_capable = true;
   caps.collate_default = true;
-  caps.copies_capable = true;
+  // TODO(crbug.com/1027830): Parse PPD for cupsMaxCopies value.
+  caps.copies_max = kDefaultMaxCopies;
 
   GetDuplexSettings(ppd, &caps.duplex_modes, &caps.duplex_default);
 

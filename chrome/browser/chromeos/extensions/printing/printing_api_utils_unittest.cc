@@ -99,7 +99,7 @@ printing::PrinterSemanticCapsAndDefaults ConstructPrinterCapabilities() {
   printing::PrinterSemanticCapsAndDefaults capabilities;
   capabilities.color_model = printing::COLOR;
   capabilities.duplex_modes.push_back(printing::LONG_EDGE);
-  capabilities.copies_capable = true;
+  capabilities.copies_max = 2;
   capabilities.dpis.push_back(gfx::Size(kHorizontalDpi, kVerticalDpi));
   printing::PrinterSemanticCapsAndDefaults::Paper paper;
   paper.vendor_id = kMediaSizeVendorId;
@@ -210,7 +210,7 @@ TEST(PrintingApiUtilsTest, CheckSettingsAndCapabilitiesCompatibility_Copies) {
   std::unique_ptr<printing::PrintSettings> settings = ConstructPrintSettings();
   printing::PrinterSemanticCapsAndDefaults capabilities =
       ConstructPrinterCapabilities();
-  capabilities.copies_capable = false;
+  capabilities.copies_max = 1;
   EXPECT_FALSE(
       CheckSettingsAndCapabilitiesCompatibility(*settings, capabilities));
 }

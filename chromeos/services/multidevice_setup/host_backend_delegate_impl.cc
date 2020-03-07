@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/software_feature.h"
@@ -61,12 +60,20 @@ HostBackendDelegateImpl::Factory*
     HostBackendDelegateImpl::Factory::test_factory_ = nullptr;
 
 // static
-HostBackendDelegateImpl::Factory* HostBackendDelegateImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<HostBackendDelegate> HostBackendDelegateImpl::Factory::Create(
+    EligibleHostDevicesProvider* eligible_host_devices_provider,
+    PrefService* pref_service,
+    device_sync::DeviceSyncClient* device_sync_client,
+    std::unique_ptr<base::OneShotTimer> timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(eligible_host_devices_provider,
+                                         pref_service, device_sync_client,
+                                         std::move(timer));
+  }
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(
+      new HostBackendDelegateImpl(eligible_host_devices_provider, pref_service,
+                                  device_sync_client, std::move(timer)));
 }
 
 // static
@@ -76,17 +83,6 @@ void HostBackendDelegateImpl::Factory::SetFactoryForTesting(
 }
 
 HostBackendDelegateImpl::Factory::~Factory() = default;
-
-std::unique_ptr<HostBackendDelegate>
-HostBackendDelegateImpl::Factory::BuildInstance(
-    EligibleHostDevicesProvider* eligible_host_devices_provider,
-    PrefService* pref_service,
-    device_sync::DeviceSyncClient* device_sync_client,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(
-      new HostBackendDelegateImpl(eligible_host_devices_provider, pref_service,
-                                  device_sync_client, std::move(timer)));
-}
 
 // static
 void HostBackendDelegateImpl::RegisterPrefs(PrefRegistrySimple* registry) {

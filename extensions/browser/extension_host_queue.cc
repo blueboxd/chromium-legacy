@@ -40,9 +40,11 @@ void ExtensionHostQueue::Remove(DeferredStartRenderHost* host) {
 
 void ExtensionHostQueue::PostTask() {
   if (!pending_create_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ExtensionHostQueue::ProcessOneHost,
-                                  ptr_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ExtensionHostQueue::ProcessOneHost,
+                       ptr_factory_.GetWeakPtr()),
+        delay_);
     pending_create_ = true;
   }
 }

@@ -1222,6 +1222,19 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
           IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_DISABLED_BY_ADMIN,
           base::ASCIIToUTF16(chrome::kWhoIsMyAdministratorHelpURL)));
 
+  // The link to the Advanced Protection Program landing page, with a referrer
+  // from Chrome settings.
+  GURL advanced_protection_url(
+      "https://landing.google.com/advancedprotection/");
+  advanced_protection_url = net::AppendQueryParameter(advanced_protection_url,
+                                                      "utm_source", "Chrome");
+  advanced_protection_url = net::AppendQueryParameter(
+      advanced_protection_url, "utm_medium", "ChromeSecuritySettings");
+  advanced_protection_url = net::AppendQueryParameter(
+      advanced_protection_url, "utm_campaign", "ChromeSettings");
+  html_source->AddString("advancedProtectionURL",
+                         advanced_protection_url.spec());
+
   AddPersonalizationOptionsStrings(html_source);
 }
 

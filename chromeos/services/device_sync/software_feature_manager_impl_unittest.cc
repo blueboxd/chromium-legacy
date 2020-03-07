@@ -92,10 +92,9 @@ class DeviceSyncSoftwareFeatureManagerImplTest
         std::make_unique<FakeCryptAuthFeatureStatusSetter>();
     fake_cryptauth_feature_status_setter_->set_delegate(this);
 
-    software_feature_manager_ =
-        SoftwareFeatureManagerImpl::Factory::NewInstance(
-            mock_cryptauth_client_factory_.get(),
-            fake_cryptauth_feature_status_setter_.get());
+    software_feature_manager_ = SoftwareFeatureManagerImpl::Factory::Create(
+        mock_cryptauth_client_factory_.get(),
+        fake_cryptauth_feature_status_setter_.get());
   }
 
   void TearDown() override {

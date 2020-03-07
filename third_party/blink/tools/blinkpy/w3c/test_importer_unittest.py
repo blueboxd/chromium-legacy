@@ -281,6 +281,7 @@ class TestImporterTest(LoggingTestCase):
             '# results: [ Failure ]\n'
             'some/test/a.html [ Failure ]\n'
             'some/test/b.html [ Failure ]\n'
+            'ignore/globs/* [ Failure ]\n'
             'some/test/c\*.html [ Failure ]\n'
             # default test case, line below should exist in new file
             'some/test/d.html [ Failure ]\n')
@@ -308,6 +309,7 @@ class TestImporterTest(LoggingTestCase):
             host.filesystem.read_text_file(MOCK_WEB_TESTS + 'TestExpectations'),
             ('# results: [ Failure ]\n'
              'new/a.html [ Failure ]\n'
+             'ignore/globs/* [ Failure ]\n'
              'new/c\*.html [ Failure ]\n'
              'some/test/d.html [ Failure ]\n'))
         self.assertMultiLineEqual(

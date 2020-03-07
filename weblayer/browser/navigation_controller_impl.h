@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "weblayer/browser/navigation_impl.h"
 #include "weblayer/public/navigation_controller.h"
@@ -34,6 +35,9 @@ class NavigationControllerImpl : public NavigationController,
   void Navigate(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,
                 const base::android::JavaParamRef<jstring>& url);
+  void Replace(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& obj,
+               const base::android::JavaParamRef<jstring>& url);
   void GoBack(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
     GoBack();
   }
@@ -80,6 +84,7 @@ class NavigationControllerImpl : public NavigationController,
   void AddObserver(NavigationObserver* observer) override;
   void RemoveObserver(NavigationObserver* observer) override;
   void Navigate(const GURL& url) override;
+  void Replace(const GURL& url) override;
   void GoBack() override;
   void GoForward() override;
   bool CanGoBack() override;
@@ -107,6 +112,8 @@ class NavigationControllerImpl : public NavigationController,
   void DidFirstVisuallyNonEmptyPaint() override;
 
   void NotifyLoadStateChanged();
+
+  void DoNavigate(content::NavigationController::LoadURLParams&& params);
 
   base::ObserverList<NavigationObserver>::Unchecked observers_;
   std::map<content::NavigationHandle*, std::unique_ptr<NavigationImpl>>

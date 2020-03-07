@@ -34,17 +34,22 @@ class MultiplexedChannelImpl : public MultiplexedChannel,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-
-    virtual ~Factory();
-
-    virtual std::unique_ptr<MultiplexedChannel> BuildInstance(
+    static std::unique_ptr<MultiplexedChannel> Create(
         std::unique_ptr<AuthenticatedChannel> authenticated_channel,
         MultiplexedChannel::Delegate* delegate,
         ConnectionDetails connection_details,
         std::vector<std::unique_ptr<ClientConnectionParameters>>*
             initial_clients);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<MultiplexedChannel> CreateInstance(
+        std::unique_ptr<AuthenticatedChannel> authenticated_channel,
+        MultiplexedChannel::Delegate* delegate,
+        ConnectionDetails connection_details,
+        std::vector<std::unique_ptr<ClientConnectionParameters>>*
+            initial_clients) = 0;
 
    private:
     static Factory* test_factory_;

@@ -24,13 +24,17 @@ class SecureChannelClientImpl : public SecureChannelClient {
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetInstanceForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<SecureChannelClient> BuildInstance(
+    static std::unique_ptr<SecureChannelClient> Create(
         mojo::PendingRemote<mojom::SecureChannel> channel,
         scoped_refptr<base::TaskRunner> task_runner =
             base::ThreadTaskRunnerHandle::Get());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<SecureChannelClient> CreateInstance(
+        mojo::PendingRemote<mojom::SecureChannel> channel,
+        scoped_refptr<base::TaskRunner> task_runner) = 0;
 
    private:
     static Factory* test_factory_;

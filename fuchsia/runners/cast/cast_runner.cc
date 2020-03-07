@@ -33,11 +33,23 @@ fuchsia::web::CreateContextParams BuildCreateContextParamsForIsolatedRunners(
   fuchsia::web::CreateContextParams output;
 
   // Isolated contexts receive only a limited set of features.
-  output.set_features(
-      fuchsia::web::ContextFeatureFlags::AUDIO |
-      fuchsia::web::ContextFeatureFlags::VULKAN |
-      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
-      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY);
+  fuchsia::web::ContextFeatureFlags features =
+      fuchsia::web::ContextFeatureFlags::AUDIO;
+
+  if ((create_context_params.features() &
+       fuchsia::web::ContextFeatureFlags::HEADLESS) ==
+      fuchsia::web::ContextFeatureFlags::HEADLESS) {
+    features |= fuchsia::web::ContextFeatureFlags::HEADLESS;
+  } else {
+    features |= fuchsia::web::ContextFeatureFlags::VULKAN |
+                fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
+                fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY;
+  }
+
+  // The rest of |create_context_params.features()| is ignored.
+  // TODO(crbug.com/1059497): Respect the flags or don't pass them in tests.
+
+  output.set_features(features);
 
   if (create_context_params.has_user_agent_product()) {
     output.set_user_agent_product(create_context_params.user_agent_product());

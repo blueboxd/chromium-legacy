@@ -54,7 +54,7 @@ FakeCryptAuthFeatureStatusSetterFactory::
     ~FakeCryptAuthFeatureStatusSetterFactory() = default;
 
 std::unique_ptr<CryptAuthFeatureStatusSetter>
-FakeCryptAuthFeatureStatusSetterFactory::BuildInstance(
+FakeCryptAuthFeatureStatusSetterFactory::CreateInstance(
     ClientAppMetadataProvider* client_app_metadata_provider,
     CryptAuthClientFactory* client_factory,
     CryptAuthGCMManager* gcm_manager,

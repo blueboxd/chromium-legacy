@@ -229,6 +229,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_issue.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
@@ -655,6 +656,7 @@ Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags document_classes)
     : ContainerNode(nullptr, kCreateDocument),
       TreeScope(*this),
+      ExecutionContext(V8PerIsolateData::MainThreadIsolate()),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
       window_agent_factory_(initializer.GetWindowAgentFactory()),
@@ -756,9 +758,10 @@ Document::Document(const DocumentInit& initializer,
               HeapHashMap<int, Member<ContentSecurityPolicy>>>()),
       permission_service_(this->ToExecutionContext()),
       font_preload_manager_(*this) {
+  // TODO(crbug.com/1029822): SecurityContextInit will eventually not be
+  // passed to the Document constructor. These will need to move.
   security_initializer.ApplyPendingDataToDocument(*this);
-  GetOriginTrialContext()->BindExecutionContext(GetExecutionContext());
-
+  GetSecurityContext().GetOriginTrialContext()->BindExecutionContext(this);
   if (frame_) {
     pending_fp_headers_ = security_initializer.FeaturePolicyHeader();
     pending_dp_headers_ = initializer.GetDocumentPolicy();
@@ -938,10 +941,12 @@ Location* Document::location() const {
   return domWindow()->location();
 }
 
+bool Document::ShouldInstallV8Extensions() const {
+  return frame_->Client()->AllowScriptExtensions();
+}
+
 ContentSecurityPolicy* Document::GetContentSecurityPolicyForWorld() {
   v8::Isolate* isolate = GetIsolate();
-  if (!isolate)
-    return GetContentSecurityPolicy();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
 
@@ -968,48 +973,6 @@ ContentSecurityPolicy* Document::GetContentSecurityPolicyForWorld() {
   return policy;
 }
 
-// static
-Document& Document::From(ExecutionContext& context) {
-  SECURITY_DCHECK(context.IsDocument());
-  return *static_cast<LocalDOMWindow&>(context).document();
-}
-
-// static
-const Document& Document::From(const ExecutionContext& context) {
-  SECURITY_DCHECK(context.IsDocument());
-  return *static_cast<const LocalDOMWindow&>(context).document();
-}
-
-ExecutionContext* Document::ToExecutionContext() {
-  return domWindow();
-}
-
-const ExecutionContext* Document::ToExecutionContext() const {
-  return domWindow();
-}
-
-bool Document::FeatureEnabled(OriginTrialFeature feature) const {
-  return GetOriginTrialContext()->IsFeatureEnabled(feature);
-}
-
-void Document::CountFeaturePolicyUsage(mojom::WebFeature feature) {
-  UseCounter::Count(*this, feature);
-}
-
-bool Document::FeaturePolicyFeatureObserved(
-    mojom::blink::FeaturePolicyFeature feature) {
-  wtf_size_t feature_index = static_cast<wtf_size_t>(feature);
-  if (parsed_feature_policies_.size() == 0) {
-    parsed_feature_policies_.resize(
-        static_cast<wtf_size_t>(mojom::blink::FeaturePolicyFeature::kMaxValue) +
-        1);
-  } else if (parsed_feature_policies_[feature_index]) {
-    return true;
-  }
-  parsed_feature_policies_[feature_index] = true;
-  return false;
-}
-
 const SecurityOrigin* Document::GetSecurityOrigin() const {
   return GetSecurityContext().GetSecurityOrigin();
 }
@@ -1031,50 +994,47 @@ bool Document::IsSandboxed(mojom::blink::WebSandboxFlags mask) const {
 }
 
 PublicURLManager& Document::GetPublicURLManager() {
-  DCHECK(GetExecutionContext());
-  return GetExecutionContext()->GetPublicURLManager();
+  return ExecutionContext::GetPublicURLManager();
 }
 
 bool Document::IsContextPaused() const {
-  return GetExecutionContext() ? GetExecutionContext()->IsContextPaused()
-                               : false;
+  return ExecutionContext::IsContextPaused();
 }
 
 bool Document::IsContextDestroyed() const {
-  return GetExecutionContext() ? GetExecutionContext()->IsContextDestroyed()
-                               : true;
+  return ExecutionContext::IsContextDestroyed();
 }
 
 ContentSecurityPolicyDelegate& Document::GetContentSecurityPolicyDelegate() {
-  return GetExecutionContext()->GetContentSecurityPolicyDelegate();
+  return ExecutionContext::GetContentSecurityPolicyDelegate();
 }
 
 SecureContextMode Document::GetSecureContextMode() const {
-  return GetSecurityContext().GetSecureContextMode();
+  return ExecutionContext::GetSecureContextMode();
 }
 
 bool Document::IsSecureContext() const {
-  return GetExecutionContext()->IsSecureContext();
+  return ExecutionContext::IsSecureContext();
 }
 
 bool Document::IsSecureContext(String& error_message) const {
-  return GetExecutionContext()->IsSecureContext(error_message);
+  return ExecutionContext::IsSecureContext(error_message);
 }
 
 void Document::SetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
-  GetExecutionContext()->SetReferrerPolicy(policy);
+  ExecutionContext::SetReferrerPolicy(policy);
 }
 
 v8::Isolate* Document::GetIsolate() const {
-  return GetExecutionContext() ? GetExecutionContext()->GetIsolate() : nullptr;
+  return ExecutionContext::GetIsolate();
 }
 
 Agent* Document::GetAgent() const {
-  return GetSecurityContext().GetAgent();
+  return ExecutionContext::GetAgent();
 }
 
 OriginTrialContext* Document::GetOriginTrialContext() const {
-  return MasterDocument().GetSecurityContext().GetOriginTrialContext();
+  return ExecutionContext::GetOriginTrialContext();
 }
 
 void Document::SetSecureContextModeForTesting(SecureContextMode mode) {
@@ -1085,9 +1045,8 @@ bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
                                 ReportOptions report_on_failure,
                                 const String& message,
                                 const String& source_file) const {
-  return GetExecutionContext() &&
-         GetExecutionContext()->IsFeatureEnabled(feature, report_on_failure,
-                                                 message, source_file);
+  return ExecutionContext::IsFeatureEnabled(feature, report_on_failure, message,
+                                            source_file);
 }
 
 bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
@@ -1095,18 +1054,16 @@ bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
                                 ReportOptions report_on_failure,
                                 const String& message,
                                 const String& source_file) const {
-  return GetExecutionContext() &&
-         GetExecutionContext()->IsFeatureEnabled(
-             feature, threshold_value, report_on_failure, message, source_file);
+  return ExecutionContext::IsFeatureEnabled(
+      feature, threshold_value, report_on_failure, message, source_file);
 }
 
 bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
                                 ReportOptions report_option,
                                 const String& message,
                                 const String& source_file) {
-  return GetExecutionContext() &&
-         GetExecutionContext()->IsFeatureEnabled(feature, report_option,
-                                                 message, source_file);
+  return ExecutionContext::IsFeatureEnabled(feature, report_option, message,
+                                            source_file);
 }
 
 bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
@@ -1114,13 +1071,12 @@ bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
                                 ReportOptions report_option,
                                 const String& message,
                                 const String& source_file) {
-  return GetExecutionContext() &&
-         GetExecutionContext()->IsFeatureEnabled(
-             feature, threshold_value, report_option, message, source_file);
+  return ExecutionContext::IsFeatureEnabled(
+      feature, threshold_value, report_option, message, source_file);
 }
 
 String Document::addressSpaceForBindings() const {
-  return GetExecutionContext()->addressSpaceForBindings();
+  return ExecutionContext::addressSpaceForBindings();
 }
 
 void Document::ChildrenChanged(const ChildrenChange& change) {
@@ -3167,9 +3123,10 @@ void Document::Initialize() {
   // ExecutionContextLifecycleObserver::contextDestroyed wouldn't be fired.
   network_state_observer_ = MakeGarbageCollected<NetworkStateObserver>(*this);
 
-  // Check for frame_ so we only attach documents with its own scheduler.
+  // Check for frame_ so we only attach execution contexts with its own
+  // scheduler.
   if (frame_)
-    GetAgent()->AttachDocument(this);
+    GetAgent()->AttachExecutionContext(this);
 }
 
 void Document::Shutdown() {
@@ -3324,12 +3281,22 @@ void Document::Shutdown() {
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!View()->IsAttached());
 
-  // Check for frame_ so we only detach documents with its own scheduler.
+  // Check for frame_ so we only detach execution contexts with its own
+  // scheduler.
   // TODO(bokan): Can this happen? |frame_| is dereferenced above and CHECKed
   // at top.
   if (frame_)
-    GetAgent()->DetachDocument(this);
+    GetAgent()->DetachExecutionContext(this);
 
+  // TODO(haraken): Call contextDestroyed() before we start any disruptive
+  // operations.
+  // TODO(haraken): Currently we call notifyContextDestroyed() only in
+  // Document::detachLayoutTree(), which means that we don't call
+  // notifyContextDestroyed() for a document that doesn't get detached.
+  // If such a document has any observer, the observer won't get
+  // a contextDestroyed() notification. This can happen for a document
+  // created by DOMImplementation::createDocument().
+  ExecutionContext::NotifyContextDestroyed();
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!View()->IsAttached());
 
@@ -4378,12 +4345,12 @@ void Document::write(const String& text,
 
   DCHECK(parser_);
   PerformanceMonitor::ReportGenericViolation(
-      domWindow(), PerformanceMonitor::kDiscouragedAPIUse,
+      this, PerformanceMonitor::kDiscouragedAPIUse,
       "Avoid using document.write(). "
       "https://developers.google.com/web/updates/2016/08/"
       "removing-document-write",
       base::TimeDelta(), nullptr);
-  probe::BreakableLocation(domWindow(), "Document.write");
+  probe::BreakableLocation(this, "Document.write");
   parser_->insert(text);
 }
 
@@ -4431,7 +4398,7 @@ void Document::writeln(v8::Isolate* isolate,
 }
 
 bool Document::IsTrustedTypesEnabledForDoc() const {
-  return GetExecutionContext()->RequireTrustedTypes();
+  return ExecutionContext::RequireTrustedTypes();
 }
 
 void Document::write(v8::Isolate* isolate,
@@ -4448,6 +4415,14 @@ void Document::writeln(v8::Isolate* isolate,
   DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this));
   writeln(text->toString(), EnteredDOMWindow(isolate)->document(),
           exception_state);
+}
+
+EventTarget* Document::ErrorEventTarget() {
+  return domWindow();
+}
+
+void Document::ExceptionThrown(ErrorEvent* event) {
+  MainThreadDebugger::Instance()->ExceptionThrown(this, event);
 }
 
 KURL Document::urlForBinding() const {
@@ -4653,6 +4628,13 @@ String Document::UserAgent() const {
   return GetFrame() ? GetFrame()->Loader().UserAgent() : String();
 }
 
+void Document::DisableEval(const String& error_message) {
+  if (!GetFrame())
+    return;
+
+  GetFrame()->GetScriptController().DisableEval(error_message);
+}
+
 void Document::DidLoadAllImports() {
   if (!HaveScriptBlockingStylesheetsLoaded())
     return;
@@ -4785,8 +4767,17 @@ String Document::OutgoingReferrer() const {
 }
 
 network::mojom::ReferrerPolicy Document::GetReferrerPolicy() const {
-  return GetExecutionContext() ? GetExecutionContext()->GetReferrerPolicy()
-                               : network::mojom::ReferrerPolicy::kDefault;
+  network::mojom::ReferrerPolicy policy = ExecutionContext::GetReferrerPolicy();
+  // For srcdoc documents without their own policy, walk up the frame
+  // tree to find the document that is either not a srcdoc or doesn't
+  // have its own policy. This algorithm is defined in
+  // https://html.spec.whatwg.org/C/#set-up-a-window-environment-settings-object.
+  if (!frame_ || policy != network::mojom::ReferrerPolicy::kDefault ||
+      !IsSrcdocDocument()) {
+    return policy;
+  }
+  LocalFrame* frame = To<LocalFrame>(frame_->Tree().Parent());
+  return frame->GetDocument()->GetReferrerPolicy();
 }
 
 MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
@@ -6511,8 +6502,11 @@ Document& Document::TopDocument() const {
 }
 
 Document* Document::ContextDocument() const {
-  return context_document_ ? context_document_.Get()
-                           : const_cast<Document*>(this);
+  if (context_document_)
+    return context_document_;
+  if (frame_)
+    return const_cast<Document*>(this);
+  return nullptr;
 }
 
 Attr* Document::createAttribute(const AtomicString& name,
@@ -6699,7 +6693,7 @@ void Document::FinishedParsing() {
     // Forward origin trial freeze policy to the corresponding frame object in
     // the resource coordinator.
     if (auto* document_resource_coordinator = GetResourceCoordinator())
-      SetOriginTrialFreezePolicy(document_resource_coordinator, domWindow());
+      SetOriginTrialFreezePolicy(document_resource_coordinator, this);
   }
 
   // Schedule dropping of the ElementDataCache. We keep it alive for a while
@@ -6967,6 +6961,7 @@ void Document::InitContentSecurityPolicy(ContentSecurityPolicy* csp) {
 
 void Document::InitSecurityContext(const DocumentInit& initializer) {
   DCHECK(GetSecurityOrigin());
+
   // If the CSP was provided by the DocumentLoader or is from ImportsController
   // it doesn't need to be bound right now. ImportsController takes a reference
   // to a master document's CSP which is already bound. Document construction
@@ -7013,7 +7008,7 @@ bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
   // main world's CSP (such as for privileged isolated worlds). See
   // https://crbug.com/811528.
   if (IsSandboxed(mojom::blink::WebSandboxFlags::kScripts) &&
-      !ContentSecurityPolicy::ShouldBypassMainWorld(domWindow())) {
+      !ContentSecurityPolicy::ShouldBypassMainWorld(this)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     if (reason == kAboutToExecuteScript) {
@@ -7076,6 +7071,10 @@ bool Document::AllowInlineEventHandler(Node* node,
     return false;
 
   return true;
+}
+
+bool Document::IsContextThread() const {
+  return IsMainThread();
 }
 
 void Document::UpdateFocusAppearanceAfterLayout() {
@@ -7171,11 +7170,61 @@ ResizeObserverController& Document::EnsureResizeObserverController() {
   return *resize_observer_controller_;
 }
 
+static void RunAddConsoleMessageTask(mojom::ConsoleMessageSource source,
+                                     mojom::ConsoleMessageLevel level,
+                                     const String& message,
+                                     Document* document,
+                                     bool discard_duplicates) {
+  auto* console_message =
+      MakeGarbageCollected<ConsoleMessage>(source, level, message);
+  document->AddConsoleMessage(console_message, discard_duplicates);
+}
+
+void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
+                                     bool discard_duplicates) {
+  if (!IsContextThread()) {
+    PostCrossThreadTask(
+        *GetTaskRunner(TaskType::kInternalInspector), FROM_HERE,
+        CrossThreadBindOnce(
+            &RunAddConsoleMessageTask, console_message->Source(),
+            console_message->Level(), console_message->Message(),
+            WrapCrossThreadPersistent(this), discard_duplicates));
+    return;
+  }
+
+  if (!frame_) {
+    if (imports_controller_) {
+      imports_controller_->Master()->GetFrame()->Console().AddMessage(
+          console_message);
+    }
+    return;
+  }
+
+  if (console_message->Location()->IsUnknown()) {
+    // TODO(dgozman): capture correct location at call places instead.
+    unsigned line_number = 0;
+    if (!IsInDocumentWrite() && GetScriptableDocumentParser()) {
+      ScriptableDocumentParser* parser = GetScriptableDocumentParser();
+      if (parser->IsParsingAtLineNumber())
+        line_number = parser->LineNumber().OneBasedInt();
+    }
+    Vector<DOMNodeId> nodes(console_message->Nodes());
+    console_message = MakeGarbageCollected<ConsoleMessage>(
+        console_message->Source(), console_message->Level(),
+        console_message->Message(),
+        std::make_unique<SourceLocation>(Url().GetString(), line_number, 0,
+                                         nullptr));
+    console_message->SetNodes(frame_, std::move(nodes));
+  }
+
+  frame_->Console().AddMessage(console_message, discard_duplicates);
+}
+
 void Document::AddConsoleMessageImpl(mojom::ConsoleMessageSource source,
                                      mojom::ConsoleMessageLevel level,
                                      const String& message,
                                      bool discard_duplicates) {
-  AddConsoleMessage(
+  AddConsoleMessageImpl(
       MakeGarbageCollected<ConsoleMessage>(source, level, message),
       discard_duplicates);
 }
@@ -7187,8 +7236,7 @@ void Document::AddInspectorIssue(InspectorIssue* issue) {
     return;
   }
 
-  page->GetInspectorIssueStorage().AddInspectorIssue(GetExecutionContext(),
-                                                     issue);
+  page->GetInspectorIssueStorage().AddInspectorIssue(this, issue);
 }
 
 void Document::AddToTopLayer(Element* element, const Element* before) {
@@ -7337,10 +7385,11 @@ void Document::RunPostAnimationFrameCallbacks() {
 
 ScriptedIdleTaskController& Document::EnsureScriptedIdleTaskController() {
   if (!scripted_idle_task_controller_) {
-    scripted_idle_task_controller_ =
-        ScriptedIdleTaskController::Create(domWindow());
-    // We need to make sure that we don't start up if we're detached.
-    if (!domWindow() || domWindow()->IsContextDestroyed()) {
+    scripted_idle_task_controller_ = ScriptedIdleTaskController::Create(this);
+    // We need to make sure that we don't start up the idle controller if we
+    // don't have an attached frame and if execution context is destroyed.
+    if (!frame_ || !frame_->IsAttached() ||
+        ExecutionContext::IsContextDestroyed()) {
       scripted_idle_task_controller_->ContextLifecycleStateChanged(
           mojom::FrameLifecycleState::kFrozen);
     }
@@ -8173,6 +8222,7 @@ void Document::Trace(Visitor* visitor) {
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
+  ExecutionContext::Trace(visitor);
 }
 
 void Document::RecordUkmOutliveTimeAfterShutdown(int outlive_time_count) {
@@ -8326,7 +8376,7 @@ void Document::ReportFeaturePolicyViolation(
       ReportType::kFeaturePolicyViolation, Url().GetString(), body);
 
   // Send the feature policy violation report to any ReportingObservers.
-  auto* reporting_context = ReportingContext::From(domWindow());
+  auto* reporting_context = ReportingContext::From(this);
   reporting_context->QueueReport(report);
 
   // TODO(iclelland): Report something different in report-only mode
@@ -8550,6 +8600,26 @@ void Document::SetShowBeforeUnloadDialog(bool show_dialog) {
   }
   mime_handler_view_before_unload_event_listener_->SetShowBeforeUnloadDialog(
       show_dialog);
+}
+
+const Document* DocumentForTrustedTypes(const Document* doc) {
+  // The Trusted Type factory & friends are stored on the window. For
+  // programmatically created docs (like createHTMLDocument) let's use the one
+  // from the context document.
+  DCHECK(doc);
+  while (doc->ContextDocument() && !doc->ExecutingWindow())
+    doc = doc->ContextDocument();
+  return doc;
+}
+
+TrustedTypePolicyFactory* Document::GetTrustedTypes() const {
+  const Document* doc = DocumentForTrustedTypes(this);
+  return doc->ExecutingWindow() ? doc->ExecutingWindow()->trustedTypes()
+                                : nullptr;
+}
+
+bool Document::RequireTrustedTypes() const {
+  return DocumentForTrustedTypes(this)->ExecutionContext::RequireTrustedTypes();
 }
 
 void Document::ColorSchemeChanged() {

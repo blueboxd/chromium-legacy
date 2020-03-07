@@ -52,7 +52,7 @@ ConstructPrinterCapabilities() {
       std::make_unique<printing::PrinterSemanticCapsAndDefaults>();
   capabilities->color_model = printing::COLOR;
   capabilities->duplex_modes.push_back(printing::SIMPLEX);
-  capabilities->copies_capable = true;
+  capabilities->copies_max = 2;
   capabilities->dpis.push_back(gfx::Size(kHorizontalDpi, kVerticalDpi));
   printing::PrinterSemanticCapsAndDefaults::Paper paper;
   paper.vendor_id = kMediaSizeVendorId;

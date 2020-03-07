@@ -46,17 +46,29 @@ suite('ModelSettingsAvailabilityTest', function() {
   test('copies', function() {
     assertTrue(model.settings.copies.available);
 
-    // Remove copies capability.
-    let capabilities = getCddTemplate(model.destination.id).capabilities;
-    delete capabilities.printer.copies;
-    model.set('destination.capabilities', capabilities);
+    // Set max copies to 1.
+    let caps = getCddTemplate(model.destination.id).capabilities;
+    const copiesCap = {max: 1};
+    caps.printer.copies = copiesCap;
+    model.set('destination.capabilities', caps);
+    assertFalse(model.settings.copies.available);
 
-    // Copies is no longer available.
+    // Set max copies to 2 (> 1).
+    caps = getCddTemplate(model.destination.id).capabilities;
+    copiesCap.max = 2;
+    caps.printer.copies = copiesCap;
+    model.set('destination.capabilities', caps);
+    assertTrue(model.settings.copies.available);
+
+    // Remove copies capability.
+    caps = getCddTemplate(model.destination.id).capabilities;
+    delete caps.printer.copies;
+    model.set('destination.capabilities', caps);
     assertFalse(model.settings.copies.available);
 
     // Copies is restored.
-    capabilities = getCddTemplate(model.destination.id).capabilities;
-    model.set('destination.capabilities', capabilities);
+    caps = getCddTemplate(model.destination.id).capabilities;
+    model.set('destination.capabilities', caps);
     assertTrue(model.settings.copies.available);
     assertFalse(model.settings.copies.setFromUi);
   });

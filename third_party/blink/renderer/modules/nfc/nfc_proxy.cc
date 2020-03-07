@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_reader.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_writer.h"
@@ -21,23 +20,23 @@ namespace blink {
 const char NFCProxy::kSupplementName[] = "NFCProxy";
 
 // static
-NFCProxy* NFCProxy::From(LocalDOMWindow& window) {
+NFCProxy* NFCProxy::From(Document& document) {
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
-  DCHECK(window.GetFrame()->IsMainFrame());
+  DCHECK(document.IsInMainFrame());
 
-  NFCProxy* nfc_proxy = Supplement<LocalDOMWindow>::From<NFCProxy>(window);
+  NFCProxy* nfc_proxy = Supplement<Document>::From<NFCProxy>(document);
   if (!nfc_proxy) {
-    nfc_proxy = MakeGarbageCollected<NFCProxy>(window);
-    Supplement<LocalDOMWindow>::ProvideTo(window, nfc_proxy);
+    nfc_proxy = MakeGarbageCollected<NFCProxy>(document);
+    Supplement<Document>::ProvideTo(document, nfc_proxy);
   }
   return nfc_proxy;
 }
 
 // NFCProxy
-NFCProxy::NFCProxy(LocalDOMWindow& window)
-    : PageVisibilityObserver(window.GetFrame()->GetPage()),
-      Supplement<LocalDOMWindow>(window),
+NFCProxy::NFCProxy(Document& document)
+    : PageVisibilityObserver(document.GetPage()),
+      Supplement<Document>(document),
       client_receiver_(this) {}
 
 NFCProxy::~NFCProxy() = default;
@@ -50,7 +49,7 @@ void NFCProxy::Trace(Visitor* visitor) {
   visitor->Trace(writers_);
   visitor->Trace(readers_);
   PageVisibilityObserver::Trace(visitor);
-  Supplement<LocalDOMWindow>::Trace(visitor);
+  Supplement<Document>::Trace(visitor);
 }
 
 void NFCProxy::StartReading(NDEFReader* reader,

@@ -29,14 +29,20 @@ class HostStatusProviderImpl : public HostStatusProvider,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<HostStatusProvider> BuildInstance(
+    static std::unique_ptr<HostStatusProvider> Create(
         EligibleHostDevicesProvider* eligible_host_devices_provider,
         HostBackendDelegate* host_backend_delegate,
         HostVerifier* host_verifier,
         device_sync::DeviceSyncClient* device_sync_client);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<HostStatusProvider> CreateInstance(
+        EligibleHostDevicesProvider* eligible_host_devices_provider,
+        HostBackendDelegate* host_backend_delegate,
+        HostVerifier* host_verifier,
+        device_sync::DeviceSyncClient* device_sync_client) = 0;
 
    private:
     static Factory* test_factory_;

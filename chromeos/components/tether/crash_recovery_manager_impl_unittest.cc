@@ -57,7 +57,7 @@ class CrashRecoveryManagerImplTest : public testing::Test {
     fake_active_host_ = std::make_unique<FakeActiveHost>();
     fake_host_scan_cache_ = std::make_unique<FakeHostScanCache>();
 
-    crash_recovery_manager_ = CrashRecoveryManagerImpl::Factory::NewInstance(
+    crash_recovery_manager_ = CrashRecoveryManagerImpl::Factory::Create(
         helper_.network_state_handler(), fake_active_host_.get(),
         fake_host_scan_cache_.get());
 

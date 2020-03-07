@@ -64,7 +64,12 @@ IN_PROC_BROWSER_TEST_P(ManagementApiNonPersistentApiTest, UninstallSelf) {
       extensions::ExtensionRegistry::Get(browser()->profile()));
 
   base::FilePath path = test_dir.Pack();
-  scoped_refptr<const Extension> extension = LoadExtension(path);
+  // Note: We pass kFlagDontWaitForExtensionRenderers because the extension
+  // uninstalls itself, so the ExtensionHost never fully finishes loading. Since
+  // we wait for the uninstall explicitly, this isn't racy.
+  scoped_refptr<const Extension> extension =
+      LoadExtensionWithFlags(path, kFlagDontWaitForExtensionRenderers);
+
   EXPECT_EQ(extension, observer.WaitForExtensionUninstalled());
 }
 

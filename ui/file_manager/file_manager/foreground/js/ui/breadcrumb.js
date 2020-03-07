@@ -26,10 +26,17 @@ const breadCrumbTemplate = `
     }
 
     p + p:before {
-      content: '>';
-      min-width: 20px;
-      margin: 0;
-      vertical-align: middle;
+      -webkit-mask-image: url(../../images/files/ui/arrow_right.svg);
+      -webkit-mask-repeat: no-repeat;
+      background-color: currentColor;
+      content: '...';
+      display: inline-block;
+      height: 20px;
+      width: 20px;
+    }
+
+    :host-context(html[dir='rtl']) p + p:before {
+      transform: rotate(-180deg);
     }
 
     p[hidden] button[elider] {

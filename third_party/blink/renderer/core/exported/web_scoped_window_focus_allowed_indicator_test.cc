@@ -33,14 +33,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 TEST(WebScopedWindowFocusAllowedIndicatorTest, Basic) {
-  auto dummy = std::make_unique<DummyPageHolder>();
-  auto* document = &dummy->GetDocument();
+  Persistent<Document> document = MakeGarbageCollected<Document>();
   WebDocument web_document(document);
 
   EXPECT_FALSE(document->ToExecutionContext()->IsWindowInteractionAllowed());

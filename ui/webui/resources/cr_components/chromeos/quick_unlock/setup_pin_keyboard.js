@@ -135,6 +135,13 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private {boolean} */
+    isSetModesCallPending_: {
+      notify: true,
+      type: Boolean,
+      value: false,
+    },
   },
 
   focus() {
@@ -308,8 +315,10 @@ Polymer({
    * @param {boolean} didSet
    */
   onSetModesCompleted_(didSet) {
+    this.isSetModesCallPending_ = false;
     if (!didSet) {
       console.error('Failed to update pin');
+      this.enableSubmit = true;
       return;
     }
 
@@ -343,6 +352,8 @@ Polymer({
     }
 
     assert(this.setModes);
+    this.isSetModesCallPending_ = true;
+    this.enableSubmit = false;
     this.setModes.call(
         null, [chrome.quickUnlockPrivate.QuickUnlockMode.PIN],
         [this.pinKeyboardValue_], this.onSetModesCompleted_.bind(this));

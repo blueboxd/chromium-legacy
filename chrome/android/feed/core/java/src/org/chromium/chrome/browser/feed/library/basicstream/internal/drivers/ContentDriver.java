@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.drivers;
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
 import android.support.annotation.VisibleForTesting;
-import android.support.v7.widget.RecyclerView;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Consumer;
 import org.chromium.base.supplier.Supplier;

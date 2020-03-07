@@ -40,7 +40,7 @@ class HostScannerOperation : public MessageTransferOperation {
  public:
   class Factory {
    public:
-    static std::unique_ptr<HostScannerOperation> NewInstance(
+    static std::unique_ptr<HostScannerOperation> Create(
         const multidevice::RemoteDeviceRefList& devices_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
@@ -48,16 +48,17 @@ class HostScannerOperation : public MessageTransferOperation {
         TetherHostResponseRecorder* tether_host_response_recorder,
         ConnectionPreserver* connection_preserver);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<HostScannerOperation> BuildInstance(
+    virtual ~Factory();
+    virtual std::unique_ptr<HostScannerOperation> CreateInstance(
         const multidevice::RemoteDeviceRefList& devices_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         HostScanDevicePrioritizer* host_scan_device_prioritizer,
         TetherHostResponseRecorder* tether_host_response_recorder,
-        ConnectionPreserver* connection_preserver);
+        ConnectionPreserver* connection_preserver) = 0;
 
    private:
     static Factory* factory_instance_;

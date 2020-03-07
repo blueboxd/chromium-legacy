@@ -236,56 +236,29 @@ class ExpectationsRemover(object):
         """
         generic_exp_path = self._port.path_to_generic_test_expectations_file()
         raw_test_expectations = self._host.filesystem.read_text_file(generic_exp_path)
-        expectations_dict = {self._host.filesystem.basename(generic_exp_path): raw_test_expectations}
+        expectations_dict = {generic_exp_path: raw_test_expectations}
         test_expectations = TestExpectations(port=self._port, expectations_dict=expectations_dict)
+        removed_exps = []
+        lines = []
 
-        # only get expectations objects for non glob patterns
-        if test_expectations.general_expectations.individual_exps.values():
-            lineno_to_exps = {
-                e.lineno: e for e in reduce(
-                    lambda x,y: x+y, test_expectations.general_expectations.individual_exps.values())}
-        else:
-            lineno_to_exps = {}
+        for exp in test_expectations.get_updated_lines(generic_exp_path):
+            # only get expectations objects for non glob patterns
+            if not exp.test or exp.is_glob:
+                continue
 
-        new_raw_exp_lines = []
-
-        for lineno, line in enumerate(raw_test_expectations.splitlines(), 1):
-            if lineno in lineno_to_exps and self._can_delete_line(lineno_to_exps[lineno]):
-                exp = lineno_to_exps[lineno]
+            if  self._can_delete_line(exp):
                 reason = exp.reason or ''
                 self._bug_numbers.update(
                     [reason[len(CHROMIUM_BUG_PREFIX):] for reason in reason.split()
                      if reason.startswith(CHROMIUM_BUG_PREFIX)])
                 self._removed_test_names.add(exp.test)
+                removed_exps.append(exp)
+                _log.info('Deleting line "%s"' % exp.to_string().strip())
 
-                if lineno + 1 not in lineno_to_exps:
-                   self._remove_associated_comments_and_whitespace(new_raw_exp_lines)
+        if removed_exps:
+            test_expectations.remove_expectations(generic_exp_path, removed_exps)
 
-                _log.info('Deleting line "%s"' % line.strip())
-            else:
-                new_raw_exp_lines.append(line)
-        return '\n'.join(new_raw_exp_lines)
-
-    @staticmethod
-    def _remove_associated_comments_and_whitespace(new_raw_exp_lines):
-        """Removes comments and whitespace from an empty expectation block.
-
-        If the removed expectation was the last in a block of expectations, this method
-        will remove any associated comments and whitespace.
-
-        Args:
-            new_raw_exp_lines: A list of strings for the updated expectations file.
-        """
-
-        # remove comments associated with deleted expectation
-        while (new_raw_exp_lines and new_raw_exp_lines[-1].strip().startswith('#') and
-               not any(new_raw_exp_lines[-1].strip().startswith(prefix) for prefix in SPECIAL_PREFIXES)):
-            new_raw_exp_lines.pop(-1)
-
-        # remove spaces above expectation
-        while new_raw_exp_lines and new_raw_exp_lines[-1].strip() == '':
-            new_raw_exp_lines.pop(-1)
-
+        return '\n'.join([e.to_string() for e in test_expectations.get_updated_lines(generic_exp_path)])
 
     def show_removed_results(self):
         """Opens a browser showing the removed lines in the results dashboard.

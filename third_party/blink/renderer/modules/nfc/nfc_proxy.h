@@ -8,14 +8,14 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
-class LocalDOMWindow;
+class Document;
 class NDEFScanOptions;
 class NDEFReader;
 class NDEFWriter;
@@ -24,16 +24,16 @@ class NDEFWriter;
 // to implementation of device::mojom::blink::NFC interface.
 class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
                                       public PageVisibilityObserver,
-                                      public Supplement<LocalDOMWindow>,
+                                      public Supplement<Document>,
                                       public device::mojom::blink::NFCClient {
   USING_GARBAGE_COLLECTED_MIXIN(NFCProxy);
   USING_PRE_FINALIZER(NFCProxy, Dispose);
 
  public:
   static const char kSupplementName[];
-  static NFCProxy* From(LocalDOMWindow&);
+  static NFCProxy* From(Document&);
 
-  explicit NFCProxy(LocalDOMWindow&);
+  explicit NFCProxy(Document&);
   ~NFCProxy() override;
 
   void Dispose();

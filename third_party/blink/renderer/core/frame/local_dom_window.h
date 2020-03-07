@@ -83,7 +83,6 @@ enum PageTransitionEventPersistence {
 // Note: if you're thinking of returning something DOM-related by reference,
 // please ping dcheng@chromium.org first. You probably don't want to do that.
 class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
-                                         public ExecutionContext,
                                          public Supplementable<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
   USING_PRE_FINALIZER(LocalDOMWindow, Dispose);
@@ -107,53 +106,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   LocalFrame* GetFrame() const { return To<LocalFrame>(DOMWindow::GetFrame()); }
 
   void Trace(Visitor*) override;
-
-  // ExecutionContext overrides:
-  // TODO(crbug.com/1029822): Most of these just call in to Document, but should
-  // move entirely here.
-  bool IsDocument() const final { return true; }
-  bool IsContextThread() const final;
-  bool ShouldInstallV8Extensions() const final;
-  ContentSecurityPolicy* GetContentSecurityPolicyForWorld() final;
-  const KURL& Url() const final;
-  const KURL& BaseURL() const final;
-  KURL CompleteURL(const String&) const final;
-  void DisableEval(const String& error_message) final;
-  LocalDOMWindow* ExecutingWindow() const final {
-    // TODO(crbug.com/1029822): This const_cast is gross.
-    return const_cast<LocalDOMWindow*>(this);
-  }
-  String UserAgent() const final;
-  HttpsState GetHttpsState() const final;
-  ResourceFetcher* Fetcher() const final;
-  SecurityContext& GetSecurityContext() final;
-  const SecurityContext& GetSecurityContext() const final;
-  bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
-  void ExceptionThrown(ErrorEvent*) final;
-  EventTarget* ErrorEventTarget() final { return this; }
-  String OutgoingReferrer() const final;
-  network::mojom::ReferrerPolicy GetReferrerPolicy() const final;
-  CoreProbeSink* GetProbeSink() final;
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
-  FrameOrWorkerScheduler* GetScheduler() final;
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) final;
-  TrustedTypePolicyFactory* GetTrustedTypes() const final {
-    return trustedTypes();
-  }
-  void CountPotentialFeaturePolicyViolation(
-      mojom::blink::FeaturePolicyFeature) const final;
-  void ReportFeaturePolicyViolation(
-      mojom::blink::FeaturePolicyFeature,
-      mojom::FeaturePolicyDisposition,
-      const String& message = g_empty_string,
-      // If source_file is set to empty string,
-      // current JS file would be used as source_file instead.
-      const String& source_file = g_empty_string) const final;
-  void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
-
-  // UseCounter orverrides:
-  void CountUse(mojom::WebFeature feature) final;
-  void CountDeprecation(mojom::WebFeature feature) final;
 
   Document* InstallNewDocument(const DocumentInit&, bool force_xhtml);
 
@@ -429,9 +381,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
 template <>
 struct DowncastTraits<LocalDOMWindow> {
-  static bool AllowFrom(const ExecutionContext& context) {
-    return context.IsDocument();
-  }
   static bool AllowFrom(const DOMWindow& window) {
     return window.IsLocalDOMWindow();
   }

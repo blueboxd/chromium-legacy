@@ -27,11 +27,8 @@ class BleListenerOperation
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<ConnectToDeviceOperation<BleListenerFailureType>>
-    BuildInstance(
+    static std::unique_ptr<ConnectToDeviceOperation<BleListenerFailureType>>
+    Create(
         BleConnectionManager* ble_connection_manager,
         ConnectToDeviceOperation<
             BleListenerFailureType>::ConnectionSuccessCallback success_callback,
@@ -41,6 +38,20 @@ class BleListenerOperation
         ConnectionPriority connection_priority,
         scoped_refptr<base::TaskRunner> task_runner =
             base::ThreadTaskRunnerHandle::Get());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<ConnectToDeviceOperation<BleListenerFailureType>>
+    CreateInstance(
+        BleConnectionManager* ble_connection_manager,
+        ConnectToDeviceOperation<
+            BleListenerFailureType>::ConnectionSuccessCallback success_callback,
+        const ConnectToDeviceOperation<
+            BleListenerFailureType>::ConnectionFailedCallback& failure_callback,
+        const DeviceIdPair& device_id_pair,
+        ConnectionPriority connection_priority,
+        scoped_refptr<base::TaskRunner> task_runner) = 0;
 
    private:
     static Factory* test_factory_;

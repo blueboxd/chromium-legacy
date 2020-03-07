@@ -2613,7 +2613,7 @@ const AtomicString& Node::InterfaceName() const {
 
 ExecutionContext* Node::GetExecutionContext() const {
   if (auto* document = GetDocument().ContextDocument())
-    return document->domWindow();
+    return document->ToExecutionContext();
   return nullptr;
 }
 

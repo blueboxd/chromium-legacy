@@ -169,7 +169,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void UpdateElementId();
 
   // GraphicsLayerClient interface
-  void InvalidateTargetElementForTesting() override;
   IntRect ComputeInterestRect(
       const GraphicsLayer*,
       const IntRect& previous_interest_rect) const override;

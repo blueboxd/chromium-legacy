@@ -71,6 +71,8 @@ const char kCdd[] = R"(
           } ]
         },
         "copies": {
+          "default": 1,
+          "max": 1
         },
         "margins": {
           "option": [ {

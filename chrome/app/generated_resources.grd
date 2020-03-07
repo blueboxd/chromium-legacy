@@ -10024,8 +10024,35 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_NATIVE_FILE_SYSTEM_ORIGIN_SCOPED_WRITE_PERMISSION_DIRECTORY_TEXT" desc="Text of the dialog for confirming origin scoped write access to a directory using the Native File System API">
       <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to edit files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph> until you close all <ph name="ORIGIN">$1</ph> tabs
     </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_ORIGIN_SCOPED_READ_PERMISSION_FILE_TEXT" desc="Text of dialog for confirming read access to files using the Native File System API">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to view <ph name="FILENAME">$2<ex>README.md</ex></ph> until you close all <ph name="ORIGIN">$1</ph> tabs
+    </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_ORIGIN_SCOPED_READ_PERMISSION_DIRECTORY_TEXT" desc="Text of dialog asking user if they intended to share a particular directory">
       <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to view files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph> until you close all <ph name="ORIGIN">$1</ph> tabs
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_EDIT_FILE_PERMISSION_TITLE" desc="Title of dialog asking user to confirm giving read and write access to a file using the Native File System API">
+      Let site edit <ph name="FILE_NAME">$1<ex>README.md</ex></ph>?
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_EDIT_DIRECTORY_PERMISSION_TITLE" desc="Title of dialog asking user to confirm giving read and write access to (files in) a directory using the Native File System API">
+      Let site edit files?
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_READ_FILE_PERMISSION_TITLE" desc="Title of dialog asking user to confirm giving read access to a file using the Native File System API">
+      Let site view <ph name="FILE_NAME">$1<ex>README.md</ex></ph>?
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_READ_DIRECTORY_PERMISSION_TITLE" desc="Title of dialog asking user if they intended to share a particular directory">
+      Let site view files?
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_EDIT_FILE_PERMISSION_ALLOW_TEXT" desc="Text of the 'allow' button in the dialog for confirming write access to a file using the Native File System API">
+      Edit file
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_EDIT_DIRECTORY_PERMISSION_ALLOW_TEXT" desc="Text of the 'allow' button in the dialog for confirming write access to a directory (and the files in it) using the Native File System API">
+      Edit files
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_VIEW_FILE_PERMISSION_ALLOW_TEXT" desc="Text of the 'allow' button in the dialog for confirming read access to a file using the Native File System API">
+      View file
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_VIEW_DIRECTORY_PERMISSION_ALLOW_TEXT" desc="Text of the 'allow' button in the dialog for confirming read access to a directory (and the files in it) using the Native File System API">
+      View files
     </message>
 
     <!-- Native File System usage indicator -->
@@ -10594,6 +10621,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <!-- App uninstall prompt for Google -->
     <message name="IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_GOOGLE" desc="Checkbox text to ask the user whether they want to remove associated data at uninstall time for Google hostnames. Only used when uninstalling an app associated with a Google hostname.">
         Also clear browsing data (<ph name="URL">$1<ex>www.google.com</ex></ph>) which may sign you out of Google.com.
+    </message>
+
+    <!-- Speech On-Device API -->
+    <message name="IDS_UTILITY_PROCESS_SODA_SERVICE_NAME" desc="The name of the service process used to interface with the Speech On-Demand API.">
+      SODA Service
     </message>
 
     <!-- App pause prompt -->

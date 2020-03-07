@@ -205,7 +205,7 @@ void SVGUseElement::UpdateTargetReference() {
   FetchParameters params(ResourceRequest(element_url_), options);
   params.MutableResourceRequest().SetMode(
       network::mojom::RequestMode::kSameOrigin);
-  auto* context_document = &GetDocument();
+  ResourceFetcher* fetcher = GetDocument().Fetcher();
   if (base::FeatureList::IsEnabled(
           features::kHtmlImportsRequestInitiatorLock) &&
       GetDocument().ImportsController()) {
@@ -217,9 +217,9 @@ void SVGUseElement::UpdateTargetReference() {
       ClearResource();
       return;
     }
-    context_document = GetDocument().ContextDocument();
+    fetcher = GetDocument().ContextDocument()->Fetcher();
   }
-  DocumentResource::FetchSVGDocument(params, *context_document, this);
+  DocumentResource::FetchSVGDocument(params, fetcher, this);
 }
 
 void SVGUseElement::SvgAttributeChanged(const QualifiedName& attr_name) {

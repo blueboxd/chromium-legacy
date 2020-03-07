@@ -114,12 +114,10 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
         fake_cryptauth_group_private_key_sharer_factory_(
             std::make_unique<FakeCryptAuthGroupPrivateKeySharerFactory>()) {
     CryptAuthKeyRegistryImpl::RegisterPrefs(pref_service_.registry());
-    key_registry_ =
-        CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(&pref_service_);
+    key_registry_ = CryptAuthKeyRegistryImpl::Factory::Create(&pref_service_);
     CryptAuthDeviceRegistryImpl::RegisterPrefs(pref_service_.registry());
     device_registry_ =
-        CryptAuthDeviceRegistryImpl::Factory::Get()->BuildInstance(
-            &pref_service_);
+        CryptAuthDeviceRegistryImpl::Factory::Create(&pref_service_);
   }
 
   ~DeviceSyncCryptAuthDeviceSyncerImplTest() override = default;
@@ -138,7 +136,7 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = mock_timer.get();
 
-    syncer_ = CryptAuthDeviceSyncerImpl::Factory::Get()->BuildInstance(
+    syncer_ = CryptAuthDeviceSyncerImpl::Factory::Create(
         device_registry_.get(), key_registry_.get(), client_factory_.get(),
         &pref_service_, std::move(mock_timer));
 

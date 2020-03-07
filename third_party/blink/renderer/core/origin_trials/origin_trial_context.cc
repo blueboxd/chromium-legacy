@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
@@ -282,8 +281,7 @@ bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
   // For the purposes of origin trials, we consider imported documents to be
   // part of the master document. Thus, check if the trial is enabled in the
   // master document and use that result.
-  auto* window = DynamicTo<LocalDOMWindow>(context_.Get());
-  auto* document = window ? window->document() : nullptr;
+  auto* document = Document::DynamicFrom(context_.Get());
   if (!document || !document->IsHTMLImport())
     return false;
 

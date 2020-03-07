@@ -56,7 +56,7 @@ class FakeCryptAuthKeyCreatorFactory : public CryptAuthKeyCreatorImpl::Factory {
 
  private:
   // CryptAuthKeyCreatorImpl::Factory:
-  std::unique_ptr<CryptAuthKeyCreator> BuildInstance() override;
+  std::unique_ptr<CryptAuthKeyCreator> CreateInstance() override;
 
   FakeCryptAuthKeyCreator* instance_ = nullptr;
 

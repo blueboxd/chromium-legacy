@@ -58,8 +58,10 @@ class OtaActivatorImpl : public OtaActivator,
         scoped_refptr<base::TaskRunner> task_runner =
             base::ThreadTaskRunnerHandle::Get());
     static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
-    virtual std::unique_ptr<OtaActivator> BuildInstance(
+    virtual std::unique_ptr<OtaActivator> CreateInstance(
         mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
         base::OnceClosure on_finished_callback,
         NetworkStateHandler* network_state_handler,

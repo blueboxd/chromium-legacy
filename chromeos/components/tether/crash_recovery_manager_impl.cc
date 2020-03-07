@@ -24,34 +24,25 @@ CrashRecoveryManagerImpl::Factory*
     CrashRecoveryManagerImpl::Factory::factory_instance_ = nullptr;
 
 // static
-std::unique_ptr<CrashRecoveryManager>
-CrashRecoveryManagerImpl::Factory::NewInstance(
+std::unique_ptr<CrashRecoveryManager> CrashRecoveryManagerImpl::Factory::Create(
     NetworkStateHandler* network_state_handler,
     ActiveHost* active_host,
     HostScanCache* host_scan_cache) {
-  if (!factory_instance_)
-    factory_instance_ = new Factory();
+  if (factory_instance_) {
+    return factory_instance_->CreateInstance(network_state_handler, active_host,
+                                             host_scan_cache);
+  }
 
-  return factory_instance_->BuildInstance(network_state_handler, active_host,
-                                          host_scan_cache);
+  return base::WrapUnique(new CrashRecoveryManagerImpl(
+      network_state_handler, active_host, host_scan_cache));
 }
 
 // static
-void CrashRecoveryManagerImpl::Factory::SetInstanceForTesting(
-    Factory* factory) {
+void CrashRecoveryManagerImpl::Factory::SetFactoryForTesting(Factory* factory) {
   factory_instance_ = factory;
 }
 
 CrashRecoveryManagerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CrashRecoveryManager>
-CrashRecoveryManagerImpl::Factory::BuildInstance(
-    NetworkStateHandler* network_state_handler,
-    ActiveHost* active_host,
-    HostScanCache* host_scan_cache) {
-  return base::WrapUnique(new CrashRecoveryManagerImpl(
-      network_state_handler, active_host, host_scan_cache));
-}
 
 CrashRecoveryManagerImpl::CrashRecoveryManagerImpl(
     NetworkStateHandler* network_state_handler,

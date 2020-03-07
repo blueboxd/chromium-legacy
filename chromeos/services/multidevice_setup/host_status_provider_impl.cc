@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider.h"
 
@@ -29,12 +28,20 @@ HostStatusProviderImpl::Factory*
     HostStatusProviderImpl::Factory::test_factory_ = nullptr;
 
 // static
-HostStatusProviderImpl::Factory* HostStatusProviderImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<HostStatusProvider> HostStatusProviderImpl::Factory::Create(
+    EligibleHostDevicesProvider* eligible_host_devices_provider,
+    HostBackendDelegate* host_backend_delegate,
+    HostVerifier* host_verifier,
+    device_sync::DeviceSyncClient* device_sync_client) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(eligible_host_devices_provider,
+                                         host_backend_delegate, host_verifier,
+                                         device_sync_client);
+  }
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new HostStatusProviderImpl(
+      eligible_host_devices_provider, host_backend_delegate, host_verifier,
+      device_sync_client));
 }
 
 // static
@@ -44,17 +51,6 @@ void HostStatusProviderImpl::Factory::SetFactoryForTesting(
 }
 
 HostStatusProviderImpl::Factory::~Factory() = default;
-
-std::unique_ptr<HostStatusProvider>
-HostStatusProviderImpl::Factory::BuildInstance(
-    EligibleHostDevicesProvider* eligible_host_devices_provider,
-    HostBackendDelegate* host_backend_delegate,
-    HostVerifier* host_verifier,
-    device_sync::DeviceSyncClient* device_sync_client) {
-  return base::WrapUnique(new HostStatusProviderImpl(
-      eligible_host_devices_provider, host_backend_delegate, host_verifier,
-      device_sync_client));
-}
 
 HostStatusProviderImpl::HostStatusProviderImpl(
     EligibleHostDevicesProvider* eligible_host_devices_provider,

@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
-#include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
@@ -151,7 +150,13 @@ TEST_F(WindowPerformanceTest, NavigateAway) {
   EXPECT_TRUE(ObservingLongTasks());
 
   // Simulate navigation commit.
-  GetFrame()->DomWindow()->FrameDestroyed();
+  DocumentInit init =
+      DocumentInit::Create()
+          .WithDocumentLoader(GetFrame()->Loader().GetDocumentLoader())
+          .WithTypeFrom("text/html");
+  GetDocument()->Shutdown();
+  GetFrame()->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*GetFrame()));
+  GetFrame()->DomWindow()->InstallNewDocument(init, false);
 
   // m_performance is still alive, and should not crash when notified.
   SimulateDidProcessLongTask();

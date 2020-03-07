@@ -148,7 +148,8 @@ bool InstallServiceWorkItemImpl::DoImpl() {
       return succeeded;
     }
 
-    PLOG(ERROR) << "Failed to install service";
+    PLOG(ERROR) << "Failed to install service "
+                << GetCurrentServiceName().c_str();
     RecordServiceInstallResult(ServiceInstallResult::kFailedFreshInstall);
     RecordWin32ApiErrorCode(kCreateService);
     // Fall through to try installing the service by generating a new name.
@@ -158,6 +159,9 @@ bool InstallServiceWorkItemImpl::DoImpl() {
     // likely to fail. Less intrusive to the SCM and to AV/Anti-malware
     // programs.
     return true;
+  } else {
+    LOG(ERROR) << "Failed to upgrade service "
+               << GetCurrentServiceName().c_str();
   }
 
   // Save the original service name. Then create a new service name so as to not
@@ -183,7 +187,8 @@ bool InstallServiceWorkItemImpl::DoImpl() {
     return true;
   }
 
-  PLOG(ERROR) << "Failed to install service with new name";
+  PLOG(ERROR) << "Failed to install service with new name "
+              << GetCurrentServiceName().c_str();
   RecordServiceInstallResult(
       ServiceInstallResult::kFailedInstallNewAfterFailedUpgrade);
   RecordWin32ApiErrorCode(kCreateService);
@@ -307,7 +312,8 @@ bool InstallServiceWorkItemImpl::GetServiceConfig(ServiceConfig* config) const {
   if (!::QueryServiceConfig(service_.Get(), service_config,
                             kMaxQueryConfigBufferBytes,
                             &bytes_needed_ignored)) {
-    DPLOG(ERROR) << "QueryServiceConfig failed";
+    PLOG(ERROR) << "QueryServiceConfig failed "
+                << GetCurrentServiceName().c_str();
     return false;
   }
 
@@ -340,14 +346,14 @@ bool InstallServiceWorkItemImpl::SetServiceName(
                            KEY_SET_VALUE | KEY_WOW64_32KEY);
   if (result != ERROR_SUCCESS) {
     ::SetLastError(result);
-    DPLOG(ERROR) << "key.Create failed";
+    PLOG(ERROR) << "key.Create failed";
     return false;
   }
 
   result = key.WriteValue(service_name_.c_str(), service_name.c_str());
   if (result != ERROR_SUCCESS) {
     ::SetLastError(result);
-    DPLOG(ERROR) << "key.WriteValue failed";
+    PLOG(ERROR) << "key.WriteValue failed";
     return false;
   }
 
@@ -450,7 +456,8 @@ bool InstallServiceWorkItemImpl::InstallService(const ServiceConfig& config) {
       !config.dependencies.empty() ? config.dependencies.data() : nullptr,
       nullptr, nullptr));
   if (!service.IsValid()) {
-    DPLOG(WARNING) << "Failed to create service";
+    PLOG(WARNING) << "Failed to create service "
+                  << GetCurrentServiceName().c_str();
     return false;
   }
 
@@ -468,7 +475,8 @@ bool InstallServiceWorkItemImpl::ChangeServiceConfig(
           config.cmd_line.c_str(), nullptr, nullptr,
           !config.dependencies.empty() ? config.dependencies.data() : nullptr,
           nullptr, nullptr, nullptr)) {
-    DPLOG(WARNING) << "Failed to change service config";
+    PLOG(WARNING) << "Failed to change service config "
+                  << GetCurrentServiceName().c_str();
     return false;
   }
 
@@ -481,7 +489,7 @@ bool InstallServiceWorkItemImpl::DeleteService(ScopedScHandle service) const {
 
   if (!::DeleteService(service.Get())) {
     DWORD error = ::GetLastError();
-    DPLOG(WARNING) << "DeleteService failed";
+    PLOG(WARNING) << "DeleteService failed " << GetCurrentServiceName().c_str();
     return error == ERROR_SERVICE_MARKED_FOR_DELETE;
   }
 

@@ -32,11 +32,14 @@ class BleSynchronizer : public BleSynchronizerBase {
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<BleSynchronizerBase> BuildInstance(
+    static std::unique_ptr<BleSynchronizerBase> Create(
         scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<BleSynchronizerBase> CreateInstance(
+        scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) = 0;
 
    private:
     static Factory* test_factory_;

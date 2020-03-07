@@ -127,7 +127,7 @@ class FakeCryptAuthKeyProofComputerFactory
 
  private:
   // CryptAuthKeyProofComputerImpl::Factory:
-  std::unique_ptr<CryptAuthKeyProofComputer> BuildInstance() override {
+  std::unique_ptr<CryptAuthKeyProofComputer> CreateInstance() override {
     auto instance = std::make_unique<FakeCryptAuthKeyProofComputer>();
     instance->set_should_return_null(should_return_null_key_proof_);
     return instance;
@@ -292,8 +292,7 @@ class DeviceSyncCryptAuthV2EnrollerImplTest
         fake_cryptauth_key_proof_computer_factory_(
             std::make_unique<FakeCryptAuthKeyProofComputerFactory>()) {
     CryptAuthKeyRegistryImpl::RegisterPrefs(pref_service_.registry());
-    key_registry_ =
-        CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(&pref_service_);
+    key_registry_ = CryptAuthKeyRegistryImpl::Factory::Create(&pref_service_);
 
     client_factory_->AddObserver(this);
   }
@@ -312,7 +311,7 @@ class DeviceSyncCryptAuthV2EnrollerImplTest
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = mock_timer.get();
 
-    enroller_ = CryptAuthV2EnrollerImpl::Factory::Get()->BuildInstance(
+    enroller_ = CryptAuthV2EnrollerImpl::Factory::Create(
         key_registry(), client_factory(), std::move(mock_timer));
   }
 
@@ -465,11 +464,10 @@ class DeviceSyncCryptAuthV2EnrollerImplTest
     EXPECT_EQ(new_key.IsAsymmetricKey() ? new_key.public_key() : std::string(),
               single_request_user_key_pair.key_material());
 
-    EXPECT_EQ(CryptAuthKeyProofComputerImpl::Factory::Get()
-                  ->BuildInstance()
-                  ->ComputeKeyProof(new_key, kRandomSessionId,
-                                    kCryptAuthKeyProofSalt, bundle_name_str),
-              single_request_user_key_pair.key_proof());
+    EXPECT_EQ(
+        CryptAuthKeyProofComputerImpl::Factory::Create()->ComputeKeyProof(
+            new_key, kRandomSessionId, kCryptAuthKeyProofSalt, bundle_name_str),
+        single_request_user_key_pair.key_proof());
   }
 
   CryptAuthV2Enroller* enroller() { return enroller_.get(); }

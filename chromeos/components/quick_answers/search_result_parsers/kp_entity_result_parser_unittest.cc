@@ -7,15 +7,14 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 namespace quick_answers {
 namespace {
-
 using base::Value;
-
 }
 
 class KpEntityResultParserTest : public testing::Test {
@@ -50,9 +49,10 @@ TEST_F(KpEntityResultParserTest, SuccessWithRating) {
 
   EXPECT_EQ(0u, quick_answer.title.size());
   EXPECT_EQ(1u, quick_answer.first_answer_row.size());
-  EXPECT_EQ("4.5 ★ (100 reviews)", static_cast<QuickAnswerText*>(
-                                       quick_answer.first_answer_row[0].get())
-                                       ->text_);
+  EXPECT_EQ(
+      base::UTF8ToUTF16("4.5 ★ (100 reviews)"),
+      static_cast<QuickAnswerText*>(quick_answer.first_answer_row[0].get())
+          ->text);
 }
 
 TEST_F(KpEntityResultParserTest, SuccessWithRatingScoreRound) {
@@ -77,8 +77,8 @@ TEST_F(KpEntityResultParserTest, SuccessWithRatingScoreRound) {
   EXPECT_EQ(1u, quick_answer.first_answer_row.size());
   auto* answer =
       static_cast<QuickAnswerText*>(quick_answer.first_answer_row[0].get());
-  EXPECT_EQ("4.5 ★ (100 reviews)", answer->text_);
-  EXPECT_EQ(gfx::kGoogleGrey700, answer->color_);
+  EXPECT_EQ(base::UTF8ToUTF16("4.5 ★ (100 reviews)"), answer->text);
+  EXPECT_EQ(gfx::kGoogleGrey700, answer->color);
 
   result.SetDoublePath(
       "knowledgePanelEntityResult.entity.ratingsAndReviews.google."
@@ -93,8 +93,8 @@ TEST_F(KpEntityResultParserTest, SuccessWithRatingScoreRound) {
   EXPECT_EQ(1u, quick_answer2.first_answer_row.size());
   answer =
       static_cast<QuickAnswerText*>(quick_answer2.first_answer_row[0].get());
-  EXPECT_EQ("4.6 ★ (100 reviews)", answer->text_);
-  EXPECT_EQ(gfx::kGoogleGrey700, answer->color_);
+  EXPECT_EQ(base::UTF8ToUTF16("4.6 ★ (100 reviews)"), answer->text);
+  EXPECT_EQ(gfx::kGoogleGrey700, answer->color);
 }
 
 TEST_F(KpEntityResultParserTest, SuccessWithKnownForReason) {
@@ -114,8 +114,8 @@ TEST_F(KpEntityResultParserTest, SuccessWithKnownForReason) {
   EXPECT_EQ(1u, quick_answer.first_answer_row.size());
   auto* answer =
       static_cast<QuickAnswerText*>(quick_answer.first_answer_row[0].get());
-  EXPECT_EQ("44th U.S. President", answer->text_);
-  EXPECT_EQ(gfx::kGoogleGrey700, answer->color_);
+  EXPECT_EQ(base::UTF8ToUTF16("44th U.S. President"), answer->text);
+  EXPECT_EQ(gfx::kGoogleGrey700, answer->color);
 }
 
 TEST_F(KpEntityResultParserTest, EmptyValue) {

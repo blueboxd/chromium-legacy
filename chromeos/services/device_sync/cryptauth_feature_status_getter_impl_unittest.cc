@@ -122,9 +122,8 @@ class DeviceSyncCryptAuthFeatureStatusGetterImplTest
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = mock_timer.get();
 
-    feature_status_getter_ =
-        CryptAuthFeatureStatusGetterImpl::Factory::Get()->BuildInstance(
-            client_factory_.get(), std::move(mock_timer));
+    feature_status_getter_ = CryptAuthFeatureStatusGetterImpl::Factory::Create(
+        client_factory_.get(), std::move(mock_timer));
   }
 
   // MockCryptAuthClientFactory::Observer:

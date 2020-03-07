@@ -7,10 +7,8 @@ package org.chromium.chrome.browser.customtabs;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
-import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.share.ShareDelegate;
-import org.chromium.chrome.browser.toolbar.top.TopToolbarThemeColorProvider;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 
 /**
@@ -19,23 +17,15 @@ import org.chromium.chrome.browser.ui.RootUiCoordinator;
 public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
     private final CustomTabToolbarCoordinator mToolbarCoordinator;
     private final CustomTabActivityNavigationController mNavigationController;
-    private final CustomTabToolbarColorController mCustomTabTopToolbarThemeColorProvider;
 
     public BaseCustomTabRootUiCoordinator(ChromeActivity activity,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             CustomTabToolbarCoordinator customTabToolbarCoordinator,
-            CustomTabActivityNavigationController customTabNavigationController,
-            CustomTabToolbarColorController customTabToolbarColorController) {
+            CustomTabActivityNavigationController customTabNavigationController) {
         super(activity, null, shareDelegateSupplier);
 
         mToolbarCoordinator = customTabToolbarCoordinator;
         mNavigationController = customTabNavigationController;
-        mCustomTabTopToolbarThemeColorProvider = customTabToolbarColorController;
-    }
-
-    @Override
-    protected TopToolbarThemeColorProvider getOrCreateTopToolbarThemeColorProvider() {
-        return mCustomTabTopToolbarThemeColorProvider;
     }
 
     @Override
@@ -44,6 +34,5 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
 
         mToolbarCoordinator.onToolbarInitialized(mToolbarManager);
         mNavigationController.onToolbarInitialized(mToolbarManager);
-        mCustomTabTopToolbarThemeColorProvider.onToolbarInitialized(mToolbarManager);
     }
 }

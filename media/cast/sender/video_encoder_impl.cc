@@ -59,7 +59,7 @@ bool VideoEncoderImpl::IsSupported(const FrameSenderConfig& video_config) {
 VideoEncoderImpl::VideoEncoderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
     const FrameSenderConfig& video_config,
-    const StatusChangeCallback& status_change_cb)
+    StatusChangeCallback status_change_cb)
     : cast_environment_(cast_environment) {
   CHECK(cast_environment_->HasVideoThread());
   DCHECK(status_change_cb);
@@ -83,9 +83,9 @@ VideoEncoderImpl::VideoEncoderImpl(
 
   cast_environment_->PostTask(
       CastEnvironment::MAIN, FROM_HERE,
-      base::BindOnce(status_change_cb, encoder_.get()
-                                           ? STATUS_INITIALIZED
-                                           : STATUS_UNSUPPORTED_CODEC));
+      base::BindOnce(
+          std::move(status_change_cb),
+          encoder_.get() ? STATUS_INITIALIZED : STATUS_UNSUPPORTED_CODEC));
 }
 
 VideoEncoderImpl::~VideoEncoderImpl() {

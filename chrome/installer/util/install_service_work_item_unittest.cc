@@ -139,6 +139,7 @@ TEST_F(InstallServiceWorkItemTest, Do_ServiceName) {
             key.Create(HKEY_LOCAL_MACHINE,
                        install_static::GetClientStateKeyPath().c_str(),
                        KEY_WRITE | KEY_WOW64_32KEY));
+  key.DeleteValue(kServiceName);
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)));

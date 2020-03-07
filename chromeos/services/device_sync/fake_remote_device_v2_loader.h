@@ -77,14 +77,14 @@ class FakeRemoteDeviceV2LoaderFactory
   ~FakeRemoteDeviceV2LoaderFactory() override;
 
   // Returns a vector of all FakeRemoteDeviceV2Loader instances created by
-  // BuildInstance().
+  // CreateInstance().
   const std::vector<FakeRemoteDeviceV2Loader*>& instances() const {
     return instances_;
   }
 
  private:
   // RemoteDeviceV2LoaderImpl::Factory:
-  std::unique_ptr<RemoteDeviceV2Loader> BuildInstance() override;
+  std::unique_ptr<RemoteDeviceV2Loader> CreateInstance() override;
 
   std::vector<FakeRemoteDeviceV2Loader*> instances_;
 };

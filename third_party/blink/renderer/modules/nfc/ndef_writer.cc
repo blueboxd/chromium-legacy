@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ndef_write_options.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
@@ -158,7 +157,7 @@ void NDEFWriter::InitNfcProxyIfNeeded() {
   if (nfc_proxy_)
     return;
 
-  nfc_proxy_ = NFCProxy::From(*To<LocalDOMWindow>(GetExecutionContext()));
+  nfc_proxy_ = NFCProxy::From(*Document::From(GetExecutionContext()));
   DCHECK(nfc_proxy_);
 
   // Add the writer to proxy's writer list for mojo connection error

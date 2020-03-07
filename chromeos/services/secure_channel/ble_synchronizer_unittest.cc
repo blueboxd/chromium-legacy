@@ -189,8 +189,7 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
     test_clock_.Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
-    synchronizer_ =
-        BleSynchronizer::Factory::Get()->BuildInstance(mock_adapter_);
+    synchronizer_ = BleSynchronizer::Factory::Create(mock_adapter_);
 
     BleSynchronizer* derived_type =
         static_cast<BleSynchronizer*>(synchronizer_.get());

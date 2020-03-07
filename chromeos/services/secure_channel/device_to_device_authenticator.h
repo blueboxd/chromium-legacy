@@ -51,18 +51,18 @@ class DeviceToDeviceAuthenticator : public Authenticator,
  public:
   class Factory {
    public:
-    static std::unique_ptr<Authenticator> NewInstance(
+    static std::unique_ptr<Authenticator> Create(
         Connection* connection,
         std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<Authenticator> BuildInstance(
+    virtual std::unique_ptr<Authenticator> CreateInstance(
         Connection* connection,
         std::unique_ptr<multidevice::SecureMessageDelegate>
-            secure_message_delegate);
+            secure_message_delegate) = 0;
 
    private:
     static Factory* factory_instance_;

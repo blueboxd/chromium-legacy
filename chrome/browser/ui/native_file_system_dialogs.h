@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "build/build_config.h"
+#include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "content/public/browser/native_file_system_permission_context.h"
 
 namespace base {
@@ -31,9 +32,7 @@ class Origin;
 // Displays a dialog to ask for write access to the given file or directory for
 // the native file system API.
 void ShowNativeFileSystemPermissionDialog(
-    const url::Origin& origin,
-    const base::FilePath& path,
-    bool is_directory,
+    const NativeFileSystemPermissionRequestManager::RequestData& request,
     base::OnceCallback<void(permissions::PermissionAction result)> callback,
     content::WebContents* web_contents);
 

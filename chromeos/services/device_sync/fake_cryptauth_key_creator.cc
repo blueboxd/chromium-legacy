@@ -31,7 +31,7 @@ FakeCryptAuthKeyCreatorFactory::FakeCryptAuthKeyCreatorFactory() = default;
 FakeCryptAuthKeyCreatorFactory::~FakeCryptAuthKeyCreatorFactory() = default;
 
 std::unique_ptr<CryptAuthKeyCreator>
-FakeCryptAuthKeyCreatorFactory::BuildInstance() {
+FakeCryptAuthKeyCreatorFactory::CreateInstance() {
   auto instance = std::make_unique<FakeCryptAuthKeyCreator>();
   instance_ = instance.get();
 

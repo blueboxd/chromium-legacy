@@ -27,8 +27,7 @@ class SecureChannelSecureChannelDisconnectorImplTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    disconnector_ =
-        SecureChannelDisconnectorImpl::Factory::Get()->BuildInstance();
+    disconnector_ = SecureChannelDisconnectorImpl::Factory::Create();
   }
 
   // Returns an ID associated with the request as well as a pointer to the

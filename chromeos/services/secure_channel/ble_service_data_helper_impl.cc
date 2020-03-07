@@ -6,7 +6,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/beacon_seed.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_cache.h"
@@ -40,12 +39,12 @@ BleServiceDataHelperImpl::Factory*
     BleServiceDataHelperImpl::Factory::test_factory_ = nullptr;
 
 // static
-BleServiceDataHelperImpl::Factory* BleServiceDataHelperImpl::Factory::Get() {
+std::unique_ptr<BleServiceDataHelper> BleServiceDataHelperImpl::Factory::Create(
+    multidevice::RemoteDeviceCache* remote_device_cache) {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance(remote_device_cache);
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new BleServiceDataHelperImpl(remote_device_cache));
 }
 
 // static
@@ -55,12 +54,6 @@ void BleServiceDataHelperImpl::Factory::SetFactoryForTesting(
 }
 
 BleServiceDataHelperImpl::Factory::~Factory() = default;
-
-std::unique_ptr<BleServiceDataHelper>
-BleServiceDataHelperImpl::Factory::BuildInstance(
-    multidevice::RemoteDeviceCache* remote_device_cache) {
-  return base::WrapUnique(new BleServiceDataHelperImpl(remote_device_cache));
-}
 
 BleServiceDataHelperImpl::BleServiceDataHelperImpl(
     multidevice::RemoteDeviceCache* remote_device_cache)

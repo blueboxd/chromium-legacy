@@ -44,11 +44,9 @@ bool SecureDnsPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
     if (mode_str.size() == 0) {
       errors->AddError(key::kDnsOverHttpsMode, IDS_POLICY_NOT_SPECIFIED_ERROR);
       mode_is_applicable = false;
-    } else if (mode_str == chrome_browser_net::kDnsOverHttpsModeSecure) {
-      errors->AddError(key::kDnsOverHttpsMode,
-                       IDS_POLICY_SECURE_DNS_MODE_NOT_SUPPORTED_ERROR);
     } else if (mode_str != chrome_browser_net::kDnsOverHttpsModeOff &&
-               mode_str != chrome_browser_net::kDnsOverHttpsModeAutomatic) {
+               mode_str != chrome_browser_net::kDnsOverHttpsModeAutomatic &&
+               mode_str != chrome_browser_net::kDnsOverHttpsModeSecure) {
       errors->AddError(key::kDnsOverHttpsMode,
                        IDS_POLICY_INVALID_SECURE_DNS_MODE_ERROR);
       mode_is_applicable = false;
@@ -94,12 +92,11 @@ void SecureDnsPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   base::StringPiece mode_str;
   if (mode && mode->is_string()) {
     mode_str = mode->GetString();
-    // TODO(http://crbug.com/955454): Include secure in conditional when
-    // support is implemented.
-    if (mode_str == chrome_browser_net::kDnsOverHttpsModeAutomatic) {
+    if (mode_str == chrome_browser_net::kDnsOverHttpsModeAutomatic ||
+        mode_str == chrome_browser_net::kDnsOverHttpsModeSecure) {
       prefs->SetString(prefs::kDnsOverHttpsMode, mode_str.as_string());
     } else {
-      // Captures "off" and "secure".
+      // Captures "off".
       prefs->SetString(prefs::kDnsOverHttpsMode,
                        chrome_browser_net::kDnsOverHttpsModeOff);
     }

@@ -65,14 +65,14 @@ class DeviceSyncCryptAuthKeyCreatorImplTest : public testing::Test {
   ~DeviceSyncCryptAuthKeyCreatorImplTest() override = default;
 
   void SetUp() override {
-    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
         fake_secure_message_delegate_factory_.get());
 
-    key_creator_ = CryptAuthKeyCreatorImpl::Factory::Get()->BuildInstance();
+    key_creator_ = CryptAuthKeyCreatorImpl::Factory::Create();
   }
 
   void TearDown() override {
-    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
         nullptr);
   }
 

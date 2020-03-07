@@ -56,8 +56,6 @@ class PLATFORM_EXPORT GraphicsLayerClient {
  public:
   virtual ~GraphicsLayerClient() = default;
 
-  virtual void InvalidateTargetElementForTesting() {}
-
   virtual IntRect ComputeInterestRect(
       const GraphicsLayer*,
       const IntRect& previous_interest_rect) const = 0;

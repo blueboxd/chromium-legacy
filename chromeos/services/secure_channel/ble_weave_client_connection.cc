@@ -58,36 +58,27 @@ BluetoothLowEnergyWeaveClientConnection::Factory*
 
 // static
 std::unique_ptr<Connection>
-BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
+BluetoothLowEnergyWeaveClientConnection::Factory::Create(
     multidevice::RemoteDeviceRef remote_device,
     scoped_refptr<device::BluetoothAdapter> adapter,
     const device::BluetoothUUID remote_service_uuid,
     const std::string& device_address,
     bool should_set_low_connection_latency) {
-  if (!factory_instance_) {
-    factory_instance_ = new Factory();
+  if (factory_instance_) {
+    return factory_instance_->CreateInstance(
+        remote_device, adapter, remote_service_uuid, device_address,
+        should_set_low_connection_latency);
   }
-  return factory_instance_->BuildInstance(remote_device, adapter,
-                                          remote_service_uuid, device_address,
-                                          should_set_low_connection_latency);
-}
 
-// static
-void BluetoothLowEnergyWeaveClientConnection::Factory::SetInstanceForTesting(
-    Factory* factory) {
-  factory_instance_ = factory;
-}
-
-std::unique_ptr<Connection>
-BluetoothLowEnergyWeaveClientConnection::Factory::BuildInstance(
-    multidevice::RemoteDeviceRef remote_device,
-    scoped_refptr<device::BluetoothAdapter> adapter,
-    const device::BluetoothUUID remote_service_uuid,
-    const std::string& device_address,
-    bool should_set_low_connection_latency) {
   return std::make_unique<BluetoothLowEnergyWeaveClientConnection>(
       remote_device, adapter, remote_service_uuid, device_address,
       should_set_low_connection_latency);
+}
+
+// static
+void BluetoothLowEnergyWeaveClientConnection::Factory::SetFactoryForTesting(
+    Factory* factory) {
+  factory_instance_ = factory;
 }
 
 // static

@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
@@ -35,12 +34,18 @@ const size_t kMinNumBytesInServiceData = 2;
 BleScannerImpl::Factory* BleScannerImpl::Factory::test_factory_ = nullptr;
 
 // static
-BleScannerImpl::Factory* BleScannerImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<BleScanner> BleScannerImpl::Factory::Create(
+    Delegate* delegate,
+    BleServiceDataHelper* service_data_helper,
+    BleSynchronizerBase* ble_synchronizer,
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(delegate, service_data_helper,
+                                         ble_synchronizer, adapter);
+  }
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new BleScannerImpl(delegate, service_data_helper,
+                                             ble_synchronizer, adapter));
 }
 
 // static
@@ -48,14 +53,7 @@ void BleScannerImpl::Factory::SetFactoryForTesting(Factory* test_factory) {
   test_factory_ = test_factory;
 }
 
-std::unique_ptr<BleScanner> BleScannerImpl::Factory::BuildInstance(
-    Delegate* delegate,
-    BleServiceDataHelper* service_data_helper,
-    BleSynchronizerBase* ble_synchronizer,
-    scoped_refptr<device::BluetoothAdapter> adapter) {
-  return base::WrapUnique(new BleScannerImpl(delegate, service_data_helper,
-                                             ble_synchronizer, adapter));
-}
+BleScannerImpl::Factory::~Factory() = default;
 
 BleScannerImpl::ServiceDataProvider::~ServiceDataProvider() = default;
 

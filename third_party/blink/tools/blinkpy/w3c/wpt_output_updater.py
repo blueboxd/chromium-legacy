@@ -90,12 +90,13 @@ class WPTOutputUpdater(object):
         delim = output_json['path_delimiter']
         # Go through each WPT expectation, try to find it in the output, and
         # then update the expected statuses in the output file.
-        for typ_expectation in self.expectations.expectations:
-            for exp_list in typ_expectation.individual_exps.values():
-                for e in exp_list:
-                    test_leaf = self._find_test_for_expectation(e, delim, output_json)
-                    if test_leaf is not None:
-                        self._update_output_for_test(e, test_leaf)
+        for path in self.expectations.expectations_dict:
+            for line in self.expectations.get_updated_lines(path):
+                if not line.test or line.is_glob:
+                    continue
+                test_leaf = self._find_test_for_expectation(line, delim, output_json)
+                if test_leaf is not None:
+                    self._update_output_for_test(line, test_leaf)
         return output_json
 
     def _find_test_for_expectation(self, exp, delim, output_json):

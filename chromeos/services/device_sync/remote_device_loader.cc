@@ -57,34 +57,26 @@ RemoteDeviceLoader::Factory* RemoteDeviceLoader::Factory::factory_instance_ =
     nullptr;
 
 // static
-std::unique_ptr<RemoteDeviceLoader> RemoteDeviceLoader::Factory::NewInstance(
+std::unique_ptr<RemoteDeviceLoader> RemoteDeviceLoader::Factory::Create(
     const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
     const std::string& user_email,
     const std::string& user_private_key,
     std::unique_ptr<multidevice::SecureMessageDelegate>
         secure_message_delegate) {
-  if (!factory_instance_) {
-    factory_instance_ = new Factory();
+  if (factory_instance_) {
+    return factory_instance_->CreateInstance(
+        device_info_list, user_email, user_private_key,
+        std::move(secure_message_delegate));
   }
-  return factory_instance_->BuildInstance(device_info_list, user_email,
-                                          user_private_key,
-                                          std::move(secure_message_delegate));
-}
 
-// static
-void RemoteDeviceLoader::Factory::SetInstanceForTesting(Factory* factory) {
-  factory_instance_ = factory;
-}
-
-std::unique_ptr<RemoteDeviceLoader> RemoteDeviceLoader::Factory::BuildInstance(
-    const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
-    const std::string& user_email,
-    const std::string& user_private_key,
-    std::unique_ptr<multidevice::SecureMessageDelegate>
-        secure_message_delegate) {
   return base::WrapUnique(
       new RemoteDeviceLoader(device_info_list, user_email, user_private_key,
                              std::move(secure_message_delegate)));
+}
+
+// static
+void RemoteDeviceLoader::Factory::SetFactoryForTesting(Factory* factory) {
+  factory_instance_ = factory;
 }
 
 RemoteDeviceLoader::RemoteDeviceLoader(

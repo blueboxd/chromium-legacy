@@ -42,17 +42,16 @@ MultiDeviceSetupService::MultiDeviceSetupService(
     AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
     AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
     const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider)
-    : multidevice_setup_(
-          MultiDeviceSetupInitializer::Factory::Get()->BuildInstance(
-              pref_service,
-              device_sync_client,
-              auth_token_validator,
-              oobe_completion_tracker,
-              android_sms_app_helper_delegate,
-              android_sms_pairing_state_tracker,
-              gcm_device_info_provider)),
+    : multidevice_setup_(MultiDeviceSetupInitializer::Factory::Create(
+          pref_service,
+          device_sync_client,
+          auth_token_validator,
+          oobe_completion_tracker,
+          android_sms_app_helper_delegate,
+          android_sms_pairing_state_tracker,
+          gcm_device_info_provider)),
       privileged_host_device_setter_(
-          PrivilegedHostDeviceSetterImpl::Factory::Get()->BuildInstance(
+          PrivilegedHostDeviceSetterImpl::Factory::Create(
               multidevice_setup_.get())) {}
 
 MultiDeviceSetupService::~MultiDeviceSetupService() {

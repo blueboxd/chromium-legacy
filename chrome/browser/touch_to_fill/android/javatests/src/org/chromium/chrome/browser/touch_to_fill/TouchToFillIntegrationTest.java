@@ -19,11 +19,11 @@ import static org.chromium.content_public.browser.test.util.TestThreadUtils.runO
 import android.annotation.SuppressLint;
 import android.support.test.espresso.Espresso;
 import android.support.test.filters.MediumTest;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Before;
 import org.junit.Rule;

@@ -357,8 +357,8 @@ void HandleGestureNavigationScreen() {
     std::string button_id;
   } kPages[] = {{"gestureIntro", "gesture-intro-next-button"},
                 {"gestureHome", "gesture-home-next-button"},
-                {"gestureBack", "gesture-back-next-button"},
-                {"gestureOverview", "gesture-overview-next-button"}};
+                {"gestureOverview", "gesture-overview-next-button"},
+                {"gestureBack", "gesture-back-next-button"}};
 
   for (const auto& page : kPages) {
     SCOPED_TRACE(page.page_id);

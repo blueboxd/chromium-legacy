@@ -206,28 +206,22 @@ CryptAuthGCMManagerImpl::Factory*
     CryptAuthGCMManagerImpl::Factory::factory_instance_ = nullptr;
 
 // static
-std::unique_ptr<CryptAuthGCMManager>
-CryptAuthGCMManagerImpl::Factory::NewInstance(gcm::GCMDriver* gcm_driver,
-                                              PrefService* pref_service) {
-  if (!factory_instance_)
-    factory_instance_ = new Factory();
+std::unique_ptr<CryptAuthGCMManager> CryptAuthGCMManagerImpl::Factory::Create(
+    gcm::GCMDriver* gcm_driver,
+    PrefService* pref_service) {
+  if (factory_instance_)
+    return factory_instance_->CreateInstance(gcm_driver, pref_service);
 
-  return factory_instance_->BuildInstance(gcm_driver, pref_service);
+  return base::WrapUnique(
+      new CryptAuthGCMManagerImpl(gcm_driver, pref_service));
 }
 
 // static
-void CryptAuthGCMManagerImpl::Factory::SetInstanceForTesting(Factory* factory) {
+void CryptAuthGCMManagerImpl::Factory::SetFactoryForTesting(Factory* factory) {
   factory_instance_ = factory;
 }
 
 CryptAuthGCMManagerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthGCMManager>
-CryptAuthGCMManagerImpl::Factory::BuildInstance(gcm::GCMDriver* gcm_driver,
-                                                PrefService* pref_service) {
-  return base::WrapUnique(
-      new CryptAuthGCMManagerImpl(gcm_driver, pref_service));
-}
 
 CryptAuthGCMManagerImpl::CryptAuthGCMManagerImpl(gcm::GCMDriver* gcm_driver,
                                                  PrefService* pref_service)

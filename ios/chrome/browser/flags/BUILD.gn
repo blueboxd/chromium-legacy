@@ -63,3 +63,25 @@ source_set("flags") {
     "//ios/web/public",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "about_flags_unittest.mm" ]
+  deps = [
+    ":flags",
+    ":test_data",
+    "//base",
+    "//components/flags_ui",
+    "//components/flags_ui:test_support",
+    "//testing/gtest",
+  ]
+}
+
+bundle_data("test_data") {
+  sources = [
+    "//chrome/browser/flag-metadata.json",
+    "//chrome/browser/flag-never-expire-list.json",
+  ]
+  outputs = [ "{{bundle_resources_dir}}/{{source_root_relative_dir}}/{{source_file_part}}" ]
+}

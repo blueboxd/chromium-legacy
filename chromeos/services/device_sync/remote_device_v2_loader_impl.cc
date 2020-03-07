@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/beacon_seed.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
@@ -24,12 +23,12 @@ RemoteDeviceV2LoaderImpl::Factory*
     RemoteDeviceV2LoaderImpl::Factory::test_factory_ = nullptr;
 
 // static
-RemoteDeviceV2LoaderImpl::Factory* RemoteDeviceV2LoaderImpl::Factory::Get() {
+std::unique_ptr<RemoteDeviceV2Loader>
+RemoteDeviceV2LoaderImpl::Factory::Create() {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance();
 
-  static base::NoDestructor<RemoteDeviceV2LoaderImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new RemoteDeviceV2LoaderImpl());
 }
 
 // static
@@ -40,14 +39,9 @@ void RemoteDeviceV2LoaderImpl::Factory::SetFactoryForTesting(
 
 RemoteDeviceV2LoaderImpl::Factory::~Factory() = default;
 
-std::unique_ptr<RemoteDeviceV2Loader>
-RemoteDeviceV2LoaderImpl::Factory::BuildInstance() {
-  return base::WrapUnique(new RemoteDeviceV2LoaderImpl());
-}
-
 RemoteDeviceV2LoaderImpl::RemoteDeviceV2LoaderImpl()
     : secure_message_delegate_(
-          multidevice::SecureMessageDelegateImpl::Factory::NewInstance()) {}
+          multidevice::SecureMessageDelegateImpl::Factory::Create()) {}
 
 RemoteDeviceV2LoaderImpl::~RemoteDeviceV2LoaderImpl() = default;
 

@@ -5,9 +5,6 @@
 <script src="/resources/testdriver.js"></script>
 <script src="/resources/testdriver-vendor.js"></script>
 <script>
-// TODO(https://crbug.com/1015327): Move this to WPT once we can change
-// permissions via testdriver.js.
-
 async_test(async t => {
   await test_driver.set_permission({name: 'wake-lock', type: 'screen'}, 'granted', false);
 

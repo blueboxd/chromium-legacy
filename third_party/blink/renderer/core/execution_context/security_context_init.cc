@@ -89,6 +89,10 @@ bool SecurityContextInit::FeatureEnabled(OriginTrialFeature feature) const {
 }
 
 void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
+  if (BindCSPImmediately()) {
+    document.GetContentSecurityPolicy()->BindToDelegate(
+        document.GetContentSecurityPolicyDelegate());
+  }
   for (auto feature : feature_count_)
     UseCounter::Count(document, feature);
   for (auto feature : parsed_feature_policies_)

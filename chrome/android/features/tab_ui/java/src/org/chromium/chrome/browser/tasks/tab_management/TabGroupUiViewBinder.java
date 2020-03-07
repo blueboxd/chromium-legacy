@@ -12,9 +12,10 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiPropert
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.RIGHT_BUTTON_ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.TINT;
 
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;

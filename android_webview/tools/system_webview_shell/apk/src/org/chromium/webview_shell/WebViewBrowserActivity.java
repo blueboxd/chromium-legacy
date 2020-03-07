@@ -121,6 +121,10 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     private SparseArray<PermissionRequest> mPendingRequests = new SparseArray<PermissionRequest>();
     private int mNextRequestKey;
 
+    // Permit any number of slashes, since chromium seems to canonicalize bad values.
+    private static final Pattern FILE_ANDROID_ASSET_PATTERN =
+            Pattern.compile("^file:///android_(asset|res)/.*");
+
     // Work around our wonky API by wrapping a geo permission prompt inside a regular
     // PermissionRequest.
     @SuppressLint("NewApi") // GeoPermissionRequest class requires API level 21.
@@ -366,9 +370,12 @@ public class WebViewBrowserActivity extends AppCompatActivity {
             @SuppressWarnings("deprecation") // because we support api level 19 and up.
             @Override
             public boolean shouldOverrideUrlLoading(WebView webView, String url) {
-                // "about:" and "chrome:" schemes are internal to Chromium;
-                // don't want these to be dispatched to other apps.
-                if (url.startsWith("about:") || url.startsWith("chrome:")) {
+                // Treat some URLs as internal, always open them in the WebView:
+                // * about: scheme URIs
+                // * chrome:// scheme URIs
+                // * file:///android_asset/ or file:///android_res/ URIs
+                if (url.startsWith("about:") || url.startsWith("chrome://")
+                        || FILE_ANDROID_ASSET_PATTERN.matcher(url).matches()) {
                     return false;
                 }
                 return startBrowsingIntent(WebViewBrowserActivity.this, url);

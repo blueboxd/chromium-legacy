@@ -22,10 +22,12 @@ class SecureChannelDisconnectorImpl : public SecureChannelDisconnector,
  public:
   class Factory {
    public:
-    static Factory* Get();
+    static std::unique_ptr<SecureChannelDisconnector> Create();
     static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
-    virtual std::unique_ptr<SecureChannelDisconnector> BuildInstance();
+    virtual std::unique_ptr<SecureChannelDisconnector> CreateInstance() = 0;
 
    private:
     static Factory* test_factory_;

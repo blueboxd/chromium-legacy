@@ -84,7 +84,7 @@ class SkiaReadbackPixelTest : public cc::PixelTest,
   bool ScaleByHalf() const { return GetParam(); }
 
   void SetUp() override {
-    SetUpSkiaRenderer(false);
+    SetUpSkiaRenderer(gfx::SurfaceOrigin::kBottomLeft);
 
     ASSERT_TRUE(cc::ReadPNGFile(
         GetTestFilePath(FILE_PATH_LITERAL("16_color_rects.png")),

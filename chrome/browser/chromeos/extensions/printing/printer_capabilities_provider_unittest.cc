@@ -128,7 +128,7 @@ TEST_F(PrinterCapabilitiesProviderTest, GetPrinterInfo_NotInstalledPrinter) {
 
   auto capabilities =
       std::make_unique<printing::PrinterSemanticCapsAndDefaults>();
-  capabilities->copies_capable = true;
+  capabilities->copies_max = 2;
   capabilities->color_changeable = true;
   // Add printer capabilities to |test_backend_|.
   test_backend_->AddValidPrinter(kPrinterId, std::move(capabilities));
@@ -143,7 +143,7 @@ TEST_F(PrinterCapabilitiesProviderTest, GetPrinterInfo_NotInstalledPrinter) {
 
   EXPECT_TRUE(printer_configurer_->IsConfigured(kPrinterId));
   ASSERT_TRUE(capabilities_);
-  EXPECT_TRUE(capabilities_->copies_capable);
+  EXPECT_EQ(2, capabilities_->copies_max);
   EXPECT_TRUE(capabilities_->color_changeable);
   EXPECT_FALSE(capabilities_->color_default);
 }
@@ -169,7 +169,7 @@ TEST_F(PrinterCapabilitiesProviderTest, GetPrinterInfo_InstalledPrinter) {
 
   EXPECT_FALSE(printer_configurer_->IsConfigured(kPrinterId));
   ASSERT_TRUE(capabilities_);
-  EXPECT_FALSE(capabilities_->copies_capable);
+  EXPECT_EQ(1, capabilities_->copies_max);
 }
 
 // Tests that capabilities are cached but not fetched after every
@@ -195,7 +195,7 @@ TEST_F(PrinterCapabilitiesProviderTest, GetPrinterInfo_CachedCapabilities) {
   // capabilities.
   EXPECT_EQ(1, test_backend_->capabilities_requests_counter());
   ASSERT_TRUE(capabilities_);
-  EXPECT_FALSE(capabilities_->copies_capable);
+  EXPECT_EQ(1, capabilities_->copies_max);
 
   base::RunLoop cached_capabilities_run_loop;
   printer_capabilities_provider_->GetPrinterCapabilities(
@@ -208,7 +208,7 @@ TEST_F(PrinterCapabilitiesProviderTest, GetPrinterInfo_CachedCapabilities) {
   // GetPrinterSemanticCapsAndDefaults() shouldn't be called again.
   EXPECT_EQ(1, test_backend_->capabilities_requests_counter());
   ASSERT_TRUE(capabilities_);
-  EXPECT_FALSE(capabilities_->copies_capable);
+  EXPECT_EQ(1, capabilities_->copies_max);
 }
 
 }  // namespace extensions

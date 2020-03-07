@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
@@ -82,13 +81,12 @@ CryptAuthEciesEncryptorImpl::Factory*
     CryptAuthEciesEncryptorImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthEciesEncryptorImpl::Factory*
-CryptAuthEciesEncryptorImpl::Factory::Get() {
+std::unique_ptr<CryptAuthEciesEncryptor>
+CryptAuthEciesEncryptorImpl::Factory::Create() {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance();
 
-  static base::NoDestructor<CryptAuthEciesEncryptorImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthEciesEncryptorImpl());
 }
 
 // static
@@ -99,14 +97,9 @@ void CryptAuthEciesEncryptorImpl::Factory::SetFactoryForTesting(
 
 CryptAuthEciesEncryptorImpl::Factory::~Factory() = default;
 
-std::unique_ptr<CryptAuthEciesEncryptor>
-CryptAuthEciesEncryptorImpl::Factory::BuildInstance() {
-  return base::WrapUnique(new CryptAuthEciesEncryptorImpl());
-}
-
 CryptAuthEciesEncryptorImpl::CryptAuthEciesEncryptorImpl()
     : secure_message_delegate_(
-          multidevice::SecureMessageDelegateImpl::Factory::NewInstance()) {}
+          multidevice::SecureMessageDelegateImpl::Factory::Create()) {}
 
 CryptAuthEciesEncryptorImpl::~CryptAuthEciesEncryptorImpl() = default;
 

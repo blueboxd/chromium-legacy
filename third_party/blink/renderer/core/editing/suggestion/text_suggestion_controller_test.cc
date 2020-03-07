@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 
 using ui::mojom::ImeTextSpanThickness;
 using ui::mojom::ImeTextSpanUnderlineStyle;
@@ -470,7 +469,7 @@ TEST_F(TextSuggestionControllerTest,
 
 TEST_F(TextSuggestionControllerTest, CallbackHappensAfterDocumentDestroyed) {
   LocalFrame& frame = *GetDocument().GetFrame();
-  frame.DomWindow()->FrameDestroyed();
+  GetDocument().Shutdown();
 
   // Shouldn't crash
   frame.GetTextSuggestionController().SuggestionMenuTimeoutCallback(0);

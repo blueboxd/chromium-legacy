@@ -25,12 +25,18 @@ class AuthenticatedChannelImpl : public AuthenticatedChannel,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual std::unique_ptr<AuthenticatedChannel> BuildInstance(
+    static std::unique_ptr<AuthenticatedChannel> Create(
         const std::vector<mojom::ConnectionCreationDetail>&
             connection_creation_details,
         std::unique_ptr<SecureChannel> secure_channel);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<AuthenticatedChannel> CreateInstance(
+        const std::vector<mojom::ConnectionCreationDetail>&
+            connection_creation_details,
+        std::unique_ptr<SecureChannel> secure_channel) = 0;
 
    private:
     static Factory* test_factory_;

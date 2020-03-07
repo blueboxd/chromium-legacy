@@ -30,11 +30,14 @@ class BleServiceDataHelperImpl : public BleServiceDataHelper {
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<BleServiceDataHelper> BuildInstance(
+    static std::unique_ptr<BleServiceDataHelper> Create(
         multidevice::RemoteDeviceCache* remote_device_cache);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<BleServiceDataHelper> CreateInstance(
+        multidevice::RemoteDeviceCache* remote_device_cache) = 0;
 
    private:
     static Factory* test_factory_;

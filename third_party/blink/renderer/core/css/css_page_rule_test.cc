@@ -6,7 +6,7 @@
 
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
-#include "third_party/blink/renderer/core/testing/null_execution_context.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,22 +36,25 @@ TEST(CSSPageRule, selectorText) {
 
   auto* page_rule = To<CSSPageRule>(sheet.CssRules()->item(0));
   EXPECT_EQ(":left", page_rule->selectorText());
-  auto* context = MakeGarbageCollected<NullExecutionContext>();
 
   // set invalid page selector.
-  page_rule->setSelectorText(context, ":hover");
+  page_rule->setSelectorText(sheet.GetDocument().ToExecutionContext(),
+                             ":hover");
   EXPECT_EQ(":left", page_rule->selectorText());
 
   // set invalid page selector.
-  page_rule->setSelectorText(context, "right { bla");
+  page_rule->setSelectorText(sheet.GetDocument().ToExecutionContext(),
+                             "right { bla");
   EXPECT_EQ(":left", page_rule->selectorText());
 
   // set page pseudo class selector.
-  page_rule->setSelectorText(context, ":right");
+  page_rule->setSelectorText(sheet.GetDocument().ToExecutionContext(),
+                             ":right");
   EXPECT_EQ(":right", page_rule->selectorText());
 
   // set page type selector.
-  page_rule->setSelectorText(context, "namedpage");
+  page_rule->setSelectorText(sheet.GetDocument().ToExecutionContext(),
+                             "namedpage");
   EXPECT_EQ("namedpage", page_rule->selectorText());
 }
 

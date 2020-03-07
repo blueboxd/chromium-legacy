@@ -766,6 +766,17 @@ export class Destination {
   }
 
   /**
+   * @return (Object} Copies capability of this destination.
+   * @private
+   */
+  copiesCapability_() {
+    return this.capabilities && this.capabilities.printer &&
+            this.capabilities.printer.copies ?
+        this.capabilities.printer.copies :
+        null;
+  }
+
+  /**
    * @return {Object} Color capability of this destination.
    * @private
    */
@@ -806,6 +817,15 @@ export class Destination {
   }
 
   // </if>
+
+  /** @return {boolean} Whether the printer supports copies. */
+  get hasCopiesCapability() {
+    const capability = this.copiesCapability_();
+    if (!capability) {
+      return false;
+    }
+    return capability.max ? capability.max > 1 : true;
+  }
 
   /**
    * @return {boolean} Whether the printer supports both black and white and

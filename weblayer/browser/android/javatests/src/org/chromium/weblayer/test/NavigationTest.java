@@ -243,6 +243,22 @@ public class NavigationTest {
 
     @Test
     @SmallTest
+    public void testReplace() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationCallback(activity);
+
+        navigateAndWaitForCompletion(
+                URL2, () -> activity.getTab().getNavigationController().replace(Uri.parse(URL2)));
+        runOnUiThreadBlocking(() -> {
+            NavigationController navigationController = activity.getTab().getNavigationController();
+            assertFalse(navigationController.canGoForward());
+            assertFalse(navigationController.canGoBack());
+            assertEquals(1, navigationController.getNavigationListSize());
+        });
+    }
+
+    @Test
+    @SmallTest
     public void testGoBackAndForward() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
         setNavigationCallback(activity);

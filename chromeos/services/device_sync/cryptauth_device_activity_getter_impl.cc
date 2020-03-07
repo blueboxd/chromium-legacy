@@ -98,9 +98,9 @@ CryptAuthDeviceActivityGetterImpl::Factory::Create(
     CryptAuthGCMManager* gcm_manager,
     std::unique_ptr<base::OneShotTimer> timer) {
   if (test_factory_)
-    return test_factory_->BuildInstance(client_factory,
-                                        client_app_metadata_provider,
-                                        gcm_manager, std::move(timer));
+    return test_factory_->CreateInstance(client_factory,
+                                         client_app_metadata_provider,
+                                         gcm_manager, std::move(timer));
 
   return base::WrapUnique(new CryptAuthDeviceActivityGetterImpl(
       client_factory, client_app_metadata_provider, gcm_manager,

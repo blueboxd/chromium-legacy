@@ -27,11 +27,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.view.View;
 import android.widget.FrameLayout;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 

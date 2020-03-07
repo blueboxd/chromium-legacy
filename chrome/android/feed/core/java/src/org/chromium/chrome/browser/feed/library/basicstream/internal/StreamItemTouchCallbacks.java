@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.feed.library.basicstream.internal;
 
 import android.graphics.Canvas;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.animation.Interpolator;
 
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.SwipeableViewHolder;
 

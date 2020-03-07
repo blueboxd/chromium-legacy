@@ -15,7 +15,6 @@ import static org.chromium.chrome.browser.keyboard_accessory.bar_component.Keybo
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
 
 import android.os.Build;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +22,7 @@ import android.view.ViewParent;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BarItem;
@@ -48,7 +48,7 @@ class KeyboardAccessoryViewBinder {
         return null;
     }
 
-    static abstract class BarItemViewHolder<T extends BarItem, V extends View>
+    abstract static class BarItemViewHolder<T extends BarItem, V extends View>
             extends RecyclerView.ViewHolder {
         BarItemViewHolder(ViewGroup parent, @LayoutRes int layout) {
             super(LayoutInflater.from(parent.getContext()).inflate(layout, parent, false));

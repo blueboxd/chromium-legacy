@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
@@ -41,13 +40,21 @@ GrandfatheredEasyUnlockHostDisabler::Factory*
     GrandfatheredEasyUnlockHostDisabler::Factory::test_factory_ = nullptr;
 
 // static
-GrandfatheredEasyUnlockHostDisabler::Factory*
-GrandfatheredEasyUnlockHostDisabler::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<GrandfatheredEasyUnlockHostDisabler>
+GrandfatheredEasyUnlockHostDisabler::Factory::Create(
+    HostBackendDelegate* host_backend_delegate,
+    device_sync::DeviceSyncClient* device_sync_client,
+    PrefService* pref_service,
+    std::unique_ptr<base::OneShotTimer> timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(host_backend_delegate,
+                                         device_sync_client, pref_service,
+                                         std::move(timer));
+  }
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new GrandfatheredEasyUnlockHostDisabler(
+      host_backend_delegate, device_sync_client, pref_service,
+      std::move(timer)));
 }
 
 // static
@@ -57,17 +64,6 @@ void GrandfatheredEasyUnlockHostDisabler::Factory::SetFactoryForTesting(
 }
 
 GrandfatheredEasyUnlockHostDisabler::Factory::~Factory() = default;
-
-std::unique_ptr<GrandfatheredEasyUnlockHostDisabler>
-GrandfatheredEasyUnlockHostDisabler::Factory::BuildInstance(
-    HostBackendDelegate* host_backend_delegate,
-    device_sync::DeviceSyncClient* device_sync_client,
-    PrefService* pref_service,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new GrandfatheredEasyUnlockHostDisabler(
-      host_backend_delegate, device_sync_client, pref_service,
-      std::move(timer)));
-}
 
 // static
 void GrandfatheredEasyUnlockHostDisabler::RegisterPrefs(

@@ -50,7 +50,7 @@ class FakeAsynchronousShutdownObjectContainerFactory
   ~FakeAsynchronousShutdownObjectContainerFactory() override = default;
 
   // AsynchronousShutdownObjectContainerImpl::Factory:
-  std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
+  std::unique_ptr<AsynchronousShutdownObjectContainer> CreateInstance(
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       TetherHostFetcher* tether_host_fetcher,
@@ -75,7 +75,7 @@ class FakeSynchronousShutdownObjectContainerFactory
   ~FakeSynchronousShutdownObjectContainerFactory() override = default;
 
   // SynchronousShutdownObjectContainerImpl::Factory:
-  std::unique_ptr<SynchronousShutdownObjectContainer> BuildInstance(
+  std::unique_ptr<SynchronousShutdownObjectContainer> CreateInstance(
       AsynchronousShutdownObjectContainer* asychronous_container,
       NotificationPresenter* notification_presenter,
       GmsCoreNotificationsStateTrackerImpl*
@@ -104,7 +104,7 @@ class FakeCrashRecoveryManagerFactory
   ~FakeCrashRecoveryManagerFactory() override = default;
 
   // CrashRecoveryManagerImpl::Factory:
-  std::unique_ptr<CrashRecoveryManager> BuildInstance(
+  std::unique_ptr<CrashRecoveryManager> CreateInstance(
       NetworkStateHandler* network_state_handler,
       ActiveHost* active_host,
       HostScanCache* host_scan_cache) override {
@@ -141,7 +141,7 @@ class TetherComponentImplTest : public testing::Test {
     fake_synchronous_container_factory_ =
         base::WrapUnique(new FakeSynchronousShutdownObjectContainerFactory(
             fake_synchronous_container_));
-    SynchronousShutdownObjectContainerImpl::Factory::SetInstanceForTesting(
+    SynchronousShutdownObjectContainerImpl::Factory::SetFactoryForTesting(
         fake_synchronous_container_factory_.get());
 
     fake_asynchronous_container_ = new FakeAsynchronousShutdownObjectContainer(
@@ -150,16 +150,16 @@ class TetherComponentImplTest : public testing::Test {
     fake_asynchronous_container_factory_ =
         base::WrapUnique(new FakeAsynchronousShutdownObjectContainerFactory(
             fake_asynchronous_container_));
-    AsynchronousShutdownObjectContainerImpl::Factory::SetInstanceForTesting(
+    AsynchronousShutdownObjectContainerImpl::Factory::SetFactoryForTesting(
         fake_asynchronous_container_factory_.get());
 
     fake_crash_recovery_manager_ = new FakeCrashRecoveryManager();
     fake_crash_recovery_manager_factory_ = base::WrapUnique(
         new FakeCrashRecoveryManagerFactory(fake_crash_recovery_manager_));
-    CrashRecoveryManagerImpl::Factory::SetInstanceForTesting(
+    CrashRecoveryManagerImpl::Factory::SetFactoryForTesting(
         fake_crash_recovery_manager_factory_.get());
 
-    component_ = TetherComponentImpl::Factory::NewInstance(
+    component_ = TetherComponentImpl::Factory::Create(
         nullptr /* device_sync_client */, nullptr /* secure_channel_client */,
         nullptr /* tether_host_fetcher */, nullptr /* notification_presenter */,
         nullptr /* gms_core_notifications_state_tracker */,

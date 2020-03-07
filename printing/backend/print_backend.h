@@ -93,7 +93,10 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   bool collate_capable = false;
   bool collate_default = false;
 
-  bool copies_capable = false;
+  // If |copies_max| > 1, copies are supported.
+  // If |copies_max| = 1, copies are not supported.
+  // |copies_max| should never be < 1.
+  int32_t copies_max = 1;
 
   std::vector<DuplexMode> duplex_modes;
   DuplexMode duplex_default = UNKNOWN_DUPLEX_MODE;

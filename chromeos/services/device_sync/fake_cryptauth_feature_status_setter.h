@@ -97,11 +97,11 @@ class FakeCryptAuthFeatureStatusSetterFactory
 
  private:
   // CryptAuthFeatureStatusSetterImpl::Factory:
-  std::unique_ptr<CryptAuthFeatureStatusSetter> BuildInstance(
+  std::unique_ptr<CryptAuthFeatureStatusSetter> CreateInstance(
       ClientAppMetadataProvider* client_app_metadata_provider,
       CryptAuthClientFactory* client_factory,
       CryptAuthGCMManager* gcm_manager,
-      std::unique_ptr<base::OneShotTimer> timer = nullptr) override;
+      std::unique_ptr<base::OneShotTimer> timer) override;
 
   std::vector<FakeCryptAuthFeatureStatusSetter*> instances_;
   ClientAppMetadataProvider* last_client_app_metadata_provider_ = nullptr;

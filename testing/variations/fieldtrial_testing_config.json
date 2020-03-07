@@ -5401,6 +5401,24 @@
             ]
         }
     ],
+    "TabHoverCardImages": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabHoverCardImages"
+                    ]
+                }
+            ]
+        }
+    ],
     "TabHoverCards": [
         {
             "platforms": [

@@ -5,7 +5,6 @@
 #include "weblayer/browser/navigation_controller_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -51,6 +50,12 @@ void NavigationControllerImpl::Navigate(JNIEnv* env,
   Navigate(GURL(base::android::ConvertJavaStringToUTF8(env, url)));
 }
 
+void NavigationControllerImpl::Replace(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj,
+                                       const JavaParamRef<jstring>& url) {
+  Replace(GURL(base::android::ConvertJavaStringToUTF8(env, url)));
+}
+
 ScopedJavaLocalRef<jstring>
 NavigationControllerImpl::GetNavigationEntryDisplayUri(
     JNIEnv* env,
@@ -78,13 +83,13 @@ void NavigationControllerImpl::RemoveObserver(NavigationObserver* observer) {
 }
 
 void NavigationControllerImpl::Navigate(const GURL& url) {
+  DoNavigate(content::NavigationController::LoadURLParams(url));
+}
+
+void NavigationControllerImpl::Replace(const GURL& url) {
   content::NavigationController::LoadURLParams params(url);
-  params.transition_type = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  web_contents()->GetController().LoadURLWithParams(params);
-  // So that if the user had entered the UI in a bar it stops flashing the
-  // caret.
-  web_contents()->Focus();
+  params.should_replace_current_entry = true;
+  DoNavigate(std::move(params));
 }
 
 void NavigationControllerImpl::GoBack() {
@@ -284,6 +289,16 @@ void NavigationControllerImpl::NotifyLoadStateChanged() {
     observer.LoadStateChanged(web_contents()->IsLoading(),
                               web_contents()->IsLoadingToDifferentDocument());
   }
+}
+
+void NavigationControllerImpl::DoNavigate(
+    content::NavigationController::LoadURLParams&& params) {
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  web_contents()->GetController().LoadURLWithParams(params);
+  // So that if the user had entered the UI in a bar it stops flashing the
+  // caret.
+  web_contents()->Focus();
 }
 
 #if defined(OS_ANDROID)

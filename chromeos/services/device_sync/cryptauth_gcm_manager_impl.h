@@ -30,17 +30,17 @@ class CryptAuthGCMManagerImpl : public CryptAuthGCMManager,
  public:
   class Factory {
    public:
-    static std::unique_ptr<CryptAuthGCMManager> NewInstance(
+    static std::unique_ptr<CryptAuthGCMManager> Create(
         gcm::GCMDriver* gcm_driver,
         PrefService* pref_service);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
     virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthGCMManager> BuildInstance(
+    virtual std::unique_ptr<CryptAuthGCMManager> CreateInstance(
         gcm::GCMDriver* gcm_driver,
-        PrefService* pref_service);
+        PrefService* pref_service) = 0;
 
    private:
     static Factory* factory_instance_;

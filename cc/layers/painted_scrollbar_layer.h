@@ -45,8 +45,8 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
   UIResourceId thumb_resource_id() {
     return thumb_resource_.get() ? thumb_resource_->id() : 0;
   }
-  bool UpdateInternalContentScale();
-  bool UpdateThumbAndTrackGeometry();
+  void UpdateInternalContentScale();
+  void UpdateThumbAndTrackGeometry();
 
  private:
   gfx::Size LayerSizeToContentSize(const gfx::Size& layer_size) const;

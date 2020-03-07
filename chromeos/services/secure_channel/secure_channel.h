@@ -67,14 +67,14 @@ class SecureChannel : public ConnectionObserver {
 
   class Factory {
    public:
-    static std::unique_ptr<SecureChannel> NewInstance(
+    static std::unique_ptr<SecureChannel> Create(
         std::unique_ptr<Connection> connection);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<SecureChannel> BuildInstance(
-        std::unique_ptr<Connection> connection);
+    virtual std::unique_ptr<SecureChannel> CreateInstance(
+        std::unique_ptr<Connection> connection) = 0;
 
    private:
     static Factory* factory_instance_;

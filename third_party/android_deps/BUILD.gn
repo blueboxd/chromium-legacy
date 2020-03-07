@@ -187,16 +187,6 @@ java_group("com_android_support_interpolator_java") {
   ]
 }
 
-java_group("com_android_support_leanback_v17_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_leanback_leanback_java",
-  ]
-  input_jars_paths = [
-    "${target_out_dir}/com_android_support_leanback_v17_java_orig/classes.jar",
-  ]
-}
-
 java_group("com_android_support_loader_java") {
   deps = [
     ":${target_name}_orig__unpack_aar",
@@ -239,14 +229,6 @@ java_group("com_android_support_palette_v7_java") {
   input_jars_paths = [
     "${target_out_dir}/com_android_support_palette_v7_java_orig/classes.jar",
   ]
-}
-
-java_group("com_android_support_preference_leanback_v17_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_leanback_leanback_preference_java",
-  ]
-  input_jars_paths = [ "${target_out_dir}/com_android_support_preference_leanback_v17_java_orig/classes.jar" ]
 }
 
 java_group("com_android_support_preference_v14_java") {
@@ -388,10 +370,10 @@ java_group("android_support_v14_preference_java") {
   input_jars_paths = [ "${target_out_dir}/com_android_support_preference_v14_java_orig/classes.jar" ]
 }
 java_group("android_support_v17_leanback_java") {
-  deps = [ ":com_android_support_leanback_v17_java" ]
+  deps = [ ":androidx_leanback_leanback_java" ]
 }
 java_group("android_support_v17_preference_java") {
-  deps = [ ":com_android_support_preference_leanback_v17_java" ]
+  deps = [ ":androidx_leanback_leanback_preference_java" ]
 }
 
 java_annotation_processor("auto_service_processor") {

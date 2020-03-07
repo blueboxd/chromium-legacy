@@ -24,11 +24,14 @@ class CryptAuthKeyRegistryImpl : public CryptAuthKeyRegistry {
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthKeyRegistry> BuildInstance(
+    static std::unique_ptr<CryptAuthKeyRegistry> Create(
         PrefService* pref_service);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<CryptAuthKeyRegistry> CreateInstance(
+        PrefService* pref_service) = 0;
 
    private:
     static Factory* test_factory_;

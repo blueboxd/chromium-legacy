@@ -64,10 +64,6 @@ class CORE_EXPORT ScriptRunner final
 
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
 
-  void SetTaskRunnerForTesting(base::SingleThreadTaskRunner* task_runner) {
-    task_runner_ = task_runner;
-  }
-
   void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "ScriptRunner"; }
 

@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import androidx.annotation.CallSuper;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;

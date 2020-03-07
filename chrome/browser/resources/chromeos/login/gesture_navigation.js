@@ -11,8 +11,8 @@
 const GesturePage = {
   INTRO: 'gestureIntro',
   HOME: 'gestureHome',
-  BACK: 'gestureBack',
-  OVERVIEW: 'gestureOverview'
+  OVERVIEW: 'gestureOverview',
+  BACK: 'gestureBack'
 };
 
 Polymer({
@@ -55,12 +55,12 @@ Polymer({
         this.setCurrentPage_(GesturePage.HOME);
         break;
       case GesturePage.HOME:
-        this.setCurrentPage_(GesturePage.BACK);
-        break;
-      case GesturePage.BACK:
         this.setCurrentPage_(GesturePage.OVERVIEW);
         break;
       case GesturePage.OVERVIEW:
+        this.setCurrentPage_(GesturePage.BACK);
+        break;
+      case GesturePage.BACK:
         // Exiting the last page in the sequence - stop the animation, and
         // report exit. Keep the currentPage_ value so the UI does not get
         // updated until the next screen is shown.
@@ -79,11 +79,11 @@ Polymer({
       case GesturePage.HOME:
         this.setCurrentPage_(GesturePage.INTRO);
         break;
-      case GesturePage.BACK:
+      case GesturePage.OVERVIEW:
         this.setCurrentPage_(GesturePage.HOME);
         break;
-      case GesturePage.OVERVIEW:
-        this.setCurrentPage_(GesturePage.BACK);
+      case GesturePage.BACK:
+        this.setCurrentPage_(GesturePage.OVERVIEW);
         break;
     }
   },

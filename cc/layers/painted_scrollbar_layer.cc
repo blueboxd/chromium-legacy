@@ -96,7 +96,7 @@ gfx::Size PaintedScrollbarLayer::LayerSizeToContentSize(
   return content_size;
 }
 
-bool PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
+void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
   // These properties should never change.
   DCHECK_EQ(supports_drag_snap_back_, scrollbar_->SupportsDragSnapBack());
   DCHECK_EQ(is_left_side_vertical_scrollbar(),
@@ -104,23 +104,20 @@ bool PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
   DCHECK_EQ(is_overlay_, scrollbar_->IsOverlay());
   DCHECK_EQ(orientation(), scrollbar_->Orientation());
 
-  bool updated = false;
-  updated |= UpdateProperty(scrollbar_->TrackRect(), &track_rect_);
-  updated |= UpdateProperty(scrollbar_->BackButtonRect(), &back_button_rect_);
-  updated |=
-      UpdateProperty(scrollbar_->ForwardButtonRect(), &forward_button_rect_);
-  updated |= UpdateProperty(scrollbar_->HasThumb(), &has_thumb_);
+  UpdateProperty(scrollbar_->TrackRect(), &track_rect_);
+  UpdateProperty(scrollbar_->BackButtonRect(), &back_button_rect_);
+  UpdateProperty(scrollbar_->ForwardButtonRect(), &forward_button_rect_);
+  UpdateProperty(scrollbar_->HasThumb(), &has_thumb_);
   if (has_thumb_) {
     // Ignore ThumbRect's location because the PaintedScrollbarLayerImpl will
     // compute it from scroll offset.
-    updated |= UpdateProperty(scrollbar_->ThumbRect().size(), &thumb_size_);
+    UpdateProperty(scrollbar_->ThumbRect().size(), &thumb_size_);
   } else {
-    updated |= UpdateProperty(gfx::Size(), &thumb_size_);
+    UpdateProperty(gfx::Size(), &thumb_size_);
   }
-  return updated;
 }
 
-bool PaintedScrollbarLayer::UpdateInternalContentScale() {
+void PaintedScrollbarLayer::UpdateInternalContentScale() {
   gfx::Transform transform;
   transform = draw_property_utils::ScreenSpaceTransform(
       this, layer_tree_host()->property_trees()->transform_tree);
@@ -129,23 +126,30 @@ bool PaintedScrollbarLayer::UpdateInternalContentScale() {
       transform, layer_tree_host()->device_scale_factor());
   float scale = std::max(transform_scales.x(), transform_scales.y());
 
-  bool updated = false;
-  updated |= UpdateProperty(scale, &internal_contents_scale_);
-  updated |=
+  bool changed = false;
+  changed |= UpdateProperty(scale, &internal_contents_scale_);
+  changed |=
       UpdateProperty(gfx::ScaleToCeiledSize(bounds(), internal_contents_scale_),
                      &internal_content_bounds_);
-  return updated;
+  if (changed) {
+    // If the content scale or bounds change, repaint.
+    SetNeedsDisplay();
+  }
 }
 
 bool PaintedScrollbarLayer::Update() {
-  bool updated = false;
+  {
+    auto ignore_set_needs_commit = IgnoreSetNeedsCommit();
+    ScrollbarLayerBase::Update();
+    UpdateInternalContentScale();
+  }
 
-  updated |= ScrollbarLayerBase::Update();
-  updated |= UpdateInternalContentScale();
-  updated |= UpdateThumbAndTrackGeometry();
+  UpdateThumbAndTrackGeometry();
 
   gfx::Size size = bounds();
   gfx::Size scaled_size = internal_content_bounds_;
+
+  bool updated = false;
 
   if (scaled_size.IsEmpty()) {
     if (track_resource_) {
@@ -163,13 +167,14 @@ bool PaintedScrollbarLayer::Update() {
     updated = true;
   }
 
+  if (update_rect().IsEmpty() && track_resource_)
+    return updated;
+
   if (!track_resource_ ||
       scrollbar_->NeedsRepaintPart(TRACK_BUTTONS_TICKMARKS)) {
     track_resource_ = ScopedUIResource::Create(
         layer_tree_host()->GetUIResourceManager(),
         RasterizeScrollbarPart(size, scaled_size, TRACK_BUTTONS_TICKMARKS));
-    SetNeedsPushProperties();
-    updated = true;
   }
 
   gfx::Size scaled_thumb_size = LayerSizeToContentSize(thumb_size_);
@@ -179,12 +184,13 @@ bool PaintedScrollbarLayer::Update() {
       thumb_resource_ = ScopedUIResource::Create(
           layer_tree_host()->GetUIResourceManager(),
           RasterizeScrollbarPart(thumb_size_, scaled_thumb_size, THUMB));
-      SetNeedsPushProperties();
-      updated = true;
     }
-    updated |= UpdateProperty(scrollbar_->Opacity(), &painted_opacity_);
+    painted_opacity_ = scrollbar_->Opacity();
   }
 
+  // UI resources changed so push properties is needed.
+  SetNeedsPushProperties();
+  updated = true;
   return updated;
 }
 

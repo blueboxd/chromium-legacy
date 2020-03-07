@@ -27,18 +27,19 @@ class KeepAliveOperation : public MessageTransferOperation {
  public:
   class Factory {
    public:
-    static std::unique_ptr<KeepAliveOperation> NewInstance(
+    static std::unique_ptr<KeepAliveOperation> Create(
         multidevice::RemoteDeviceRef device_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<KeepAliveOperation> BuildInstance(
+    virtual ~Factory();
+    virtual std::unique_ptr<KeepAliveOperation> CreateInstance(
         multidevice::RemoteDeviceRef device_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
-        secure_channel::SecureChannelClient* secure_channel_client);
+        secure_channel::SecureChannelClient* secure_channel_client) = 0;
 
    private:
     static Factory* factory_instance_;

@@ -34,18 +34,18 @@ class TetherHostFetcherImpl
  public:
   class Factory {
    public:
-    static std::unique_ptr<TetherHostFetcher> NewInstance(
+    static std::unique_ptr<TetherHostFetcher> Create(
         device_sync::DeviceSyncClient* device_sync_client,
         chromeos::multidevice_setup::MultiDeviceSetupClient*
             multidevice_setup_client);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<TetherHostFetcher> BuildInstance(
+    virtual std::unique_ptr<TetherHostFetcher> CreateInstance(
         device_sync::DeviceSyncClient* device_sync_client,
         chromeos::multidevice_setup::MultiDeviceSetupClient*
-            multidevice_setup_client);
+            multidevice_setup_client) = 0;
 
    private:
     static Factory* factory_instance_;

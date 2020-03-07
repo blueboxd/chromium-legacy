@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -64,12 +63,22 @@ const double kExponentialBackoffMultiplier = 1.5;
 HostVerifierImpl::Factory* HostVerifierImpl::Factory::test_factory_ = nullptr;
 
 // static
-HostVerifierImpl::Factory* HostVerifierImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<HostVerifier> HostVerifierImpl::Factory::Create(
+    HostBackendDelegate* host_backend_delegate,
+    device_sync::DeviceSyncClient* device_sync_client,
+    PrefService* pref_service,
+    base::Clock* clock,
+    std::unique_ptr<base::OneShotTimer> retry_timer,
+    std::unique_ptr<base::OneShotTimer> sync_timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(
+        host_backend_delegate, device_sync_client, pref_service, clock,
+        std::move(retry_timer), std::move(sync_timer));
+  }
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new HostVerifierImpl(
+      host_backend_delegate, device_sync_client, pref_service, clock,
+      std::move(retry_timer), std::move(sync_timer)));
 }
 
 // static
@@ -78,18 +87,6 @@ void HostVerifierImpl::Factory::SetFactoryForTesting(Factory* test_factory) {
 }
 
 HostVerifierImpl::Factory::~Factory() = default;
-
-std::unique_ptr<HostVerifier> HostVerifierImpl::Factory::BuildInstance(
-    HostBackendDelegate* host_backend_delegate,
-    device_sync::DeviceSyncClient* device_sync_client,
-    PrefService* pref_service,
-    base::Clock* clock,
-    std::unique_ptr<base::OneShotTimer> retry_timer,
-    std::unique_ptr<base::OneShotTimer> sync_timer) {
-  return base::WrapUnique(new HostVerifierImpl(
-      host_backend_delegate, device_sync_client, pref_service, clock,
-      std::move(retry_timer), std::move(sync_timer)));
-}
 
 // static
 void HostVerifierImpl::RegisterPrefs(PrefRegistrySimple* registry) {

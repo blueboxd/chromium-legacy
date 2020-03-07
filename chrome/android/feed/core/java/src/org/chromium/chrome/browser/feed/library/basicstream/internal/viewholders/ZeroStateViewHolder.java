@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguratio
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.feed.R;
 
-/** {@link android.support.v7.widget.RecyclerView.ViewHolder} for zero state. */
+/** {@link androidx.recyclerview.widget.RecyclerView.ViewHolder} for zero state. */
 public class ZeroStateViewHolder extends FeedViewHolder {
     private final View mZeroStateView;
     private final View mLoadingSpinner;

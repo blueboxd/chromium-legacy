@@ -293,7 +293,7 @@ class TabletModeController::DestroyObserver : public aura::WindowObserver {
 constexpr char TabletModeController::kLidAngleHistogramName[];
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabletModeContrller, public:
+// TabletModeController, public:
 
 // static
 void TabletModeController::SetUseScreenshotForTest(bool use_screenshot) {
@@ -683,11 +683,10 @@ bool TabletModeController::ShouldShowOverviewButton() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabletModeContrller, private:
+// TabletModeController, private:
 
 void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
-  if (InTabletMode() == should_enable)
-    return;
+  DCHECK_NE(InTabletMode(), should_enable);
 
   // Hide the context menu on entering tablet mode to prevent users from
   // accessing forbidden options. Hide the context menu on exiting tablet mode

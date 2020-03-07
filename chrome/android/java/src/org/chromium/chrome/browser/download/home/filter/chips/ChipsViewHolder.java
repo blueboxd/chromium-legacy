@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.download.home.filter.chips;
 
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.chromium.chrome.R;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;

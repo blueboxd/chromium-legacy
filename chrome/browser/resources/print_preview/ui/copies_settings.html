@@ -3,11 +3,12 @@
      margin-inline-start: 16px;
    }
 </style>
-<print-preview-number-settings-section max-value="999" min-value="1"
+<print-preview-number-settings-section max-value="[[copiesMax_]]" min-value="1"
     default-value="1" input-label="$i18n{copiesLabel}"
     input-aria-label="$i18n{copiesLabel}"
     disabled="[[disabled]]" current-value="{{currentValue_}}"
-    input-valid="{{inputValid_}}" hint-message="$i18n{copiesInstruction}">
+    input-valid="{{inputValid_}}"
+    hint-message="[[getHintMessage_(copiesMax_)]]">
   <div slot="opt-inside-content" class="checkbox" aria-live="polite"
       hidden$="[[collateHidden_(currentValue_, inputValid_)]]">
     <cr-checkbox id="collate" on-change="onCollateChange_"

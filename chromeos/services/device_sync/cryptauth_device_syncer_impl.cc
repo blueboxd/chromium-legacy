@@ -10,7 +10,6 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
@@ -72,12 +71,22 @@ CryptAuthDeviceSyncerImpl::Factory*
     CryptAuthDeviceSyncerImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthDeviceSyncerImpl::Factory* CryptAuthDeviceSyncerImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<CryptAuthDeviceSyncer>
+CryptAuthDeviceSyncerImpl::Factory::Create(
+    CryptAuthDeviceRegistry* device_registry,
+    CryptAuthKeyRegistry* key_registry,
+    CryptAuthClientFactory* client_factory,
+    PrefService* pref_service,
+    std::unique_ptr<base::OneShotTimer> timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(device_registry, key_registry,
+                                         client_factory, pref_service,
+                                         std::move(timer));
+  }
 
-  static base::NoDestructor<CryptAuthDeviceSyncerImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthDeviceSyncerImpl(
+      device_registry, key_registry, client_factory, pref_service,
+      std::move(timer)));
 }
 
 // static
@@ -87,18 +96,6 @@ void CryptAuthDeviceSyncerImpl::Factory::SetFactoryForTesting(
 }
 
 CryptAuthDeviceSyncerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthDeviceSyncer>
-CryptAuthDeviceSyncerImpl::Factory::BuildInstance(
-    CryptAuthDeviceRegistry* device_registry,
-    CryptAuthKeyRegistry* key_registry,
-    CryptAuthClientFactory* client_factory,
-    PrefService* pref_service,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new CryptAuthDeviceSyncerImpl(
-      device_registry, key_registry, client_factory, pref_service,
-      std::move(timer)));
-}
 
 CryptAuthDeviceSyncerImpl::CryptAuthDeviceSyncerImpl(
     CryptAuthDeviceRegistry* device_registry,
@@ -253,7 +250,7 @@ void CryptAuthDeviceSyncerImpl::AttemptNextStep() {
 void CryptAuthDeviceSyncerImpl::SyncMetadata() {
   SetState(State::kWaitingForMetadataSync);
 
-  metadata_syncer_ = CryptAuthMetadataSyncerImpl::Factory::Get()->BuildInstance(
+  metadata_syncer_ = CryptAuthMetadataSyncerImpl::Factory::Create(
       client_factory_, pref_service_);
   metadata_syncer_->SyncMetadata(
       request_context_, local_better_together_device_metadata_,
@@ -346,8 +343,7 @@ void CryptAuthDeviceSyncerImpl::GetFeatureStatuses() {
     device_ids.insert(id_packet_pair.first);
 
   feature_status_getter_ =
-      CryptAuthFeatureStatusGetterImpl::Factory::Get()->BuildInstance(
-          client_factory_);
+      CryptAuthFeatureStatusGetterImpl::Factory::Create(client_factory_);
   feature_status_getter_->GetFeatureStatuses(
       request_context_, device_ids,
       base::Bind(&CryptAuthDeviceSyncerImpl::OnGetFeatureStatusesFinished,
@@ -449,7 +445,7 @@ void CryptAuthDeviceSyncerImpl::ProcessEncryptedGroupPrivateKey() {
     return;
   }
 
-  encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Get()->BuildInstance();
+  encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Create();
   encryptor_->Decrypt(
       encrypted_group_private_key_->encrypted_private_key(),
       device_sync_better_together_key->private_key(),
@@ -531,7 +527,7 @@ void CryptAuthDeviceSyncerImpl::ProcessEncryptedDeviceMetadata() {
                                                group_key->private_key());
   }
 
-  encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Get()->BuildInstance();
+  encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Create();
   encryptor_->BatchDecrypt(
       id_to_encrypted_metadata_map,
       base::BindOnce(&CryptAuthDeviceSyncerImpl::OnDeviceMetadataDecrypted,
@@ -637,8 +633,7 @@ void CryptAuthDeviceSyncerImpl::ShareGroupPrivateKey() {
   DCHECK(group_key);
 
   group_private_key_sharer_ =
-      CryptAuthGroupPrivateKeySharerImpl::Factory::Get()->BuildInstance(
-          client_factory_);
+      CryptAuthGroupPrivateKeySharerImpl::Factory::Create(client_factory_);
   group_private_key_sharer_->ShareGroupPrivateKey(
       request_context_, *group_key, id_to_encrypting_key_map,
       base::Bind(&CryptAuthDeviceSyncerImpl::OnShareGroupPrivateKeyFinished,

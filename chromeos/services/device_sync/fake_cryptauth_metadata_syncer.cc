@@ -44,7 +44,7 @@ FakeCryptAuthMetadataSyncerFactory::~FakeCryptAuthMetadataSyncerFactory() =
     default;
 
 std::unique_ptr<CryptAuthMetadataSyncer>
-FakeCryptAuthMetadataSyncerFactory::BuildInstance(
+FakeCryptAuthMetadataSyncerFactory::CreateInstance(
     CryptAuthClientFactory* client_factory,
     PrefService* pref_service,
     std::unique_ptr<base::OneShotTimer> timer) {

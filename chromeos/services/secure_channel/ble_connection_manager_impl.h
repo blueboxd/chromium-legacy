@@ -46,14 +46,20 @@ class BleConnectionManagerImpl : public BleConnectionManager,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<BleConnectionManager> BuildInstance(
+    static std::unique_ptr<BleConnectionManager> Create(
         scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
         BleServiceDataHelper* ble_service_data_helper,
         TimerFactory* timer_factory,
         base::Clock* clock = base::DefaultClock::GetInstance());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<BleConnectionManager> CreateInstance(
+        scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
+        BleServiceDataHelper* ble_service_data_helper,
+        TimerFactory* timer_factory,
+        base::Clock* clock = base::DefaultClock::GetInstance()) = 0;
 
    private:
     static Factory* test_factory_;

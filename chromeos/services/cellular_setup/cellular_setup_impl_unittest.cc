@@ -38,7 +38,7 @@ class FakeOtaActivatorFactory : public OtaActivatorImpl::Factory {
 
  private:
   // OtaActivatorImpl::Factory:
-  std::unique_ptr<OtaActivator> BuildInstance(
+  std::unique_ptr<OtaActivator> CreateInstance(
       mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
       base::OnceClosure on_finished_callback,
       NetworkStateHandler* network_state_handler,

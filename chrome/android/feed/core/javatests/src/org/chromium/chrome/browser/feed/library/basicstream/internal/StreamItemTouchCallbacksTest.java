@@ -11,12 +11,13 @@ import static org.mockito.Mockito.mock;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.widget.FrameLayout;
+
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.junit.Before;
 import org.junit.Test;

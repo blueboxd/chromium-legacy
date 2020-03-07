@@ -38,7 +38,7 @@ class SecureChannelBleInitiatorOperationTest : public testing::Test {
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
 
     auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-    operation_ = BleInitiatorOperation::Factory::Get()->BuildInstance(
+    operation_ = BleInitiatorOperation::Factory::Create(
         fake_ble_connection_manager_.get(),
         base::BindOnce(&SecureChannelBleInitiatorOperationTest::
                            OnSuccessfulConnectionAttempt,

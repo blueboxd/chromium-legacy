@@ -17,8 +17,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.Gravity;
@@ -32,6 +30,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;

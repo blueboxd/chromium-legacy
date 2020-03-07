@@ -105,10 +105,8 @@ TEST(DeviceSyncCryptAuthKeyProofComputerImplTest,
                    CryptAuthKey::Status::kActive, cryptauthv2::KeyType::P256);
 
   base::Optional<std::string> key_proof =
-      CryptAuthKeyProofComputerImpl::Factory::Get()
-          ->BuildInstance()
-          ->ComputeKeyProof(key, kTestPayload, kAsymmetricTestSalt,
-                            base::nullopt /* info */);
+      CryptAuthKeyProofComputerImpl::Factory::Create()->ComputeKeyProof(
+          key, kTestPayload, kAsymmetricTestSalt, base::nullopt /* info */);
   EXPECT_TRUE(key_proof);
 
   // Verify the key proof which should be of the form:
@@ -130,11 +128,9 @@ TEST(DeviceSyncCryptAuthKeyProofComputerImplTest,
                    CryptAuthKey::Status::kActive, cryptauthv2::KeyType::RAW256);
 
   base::Optional<std::string> key_proof =
-      CryptAuthKeyProofComputerImpl::Factory::Get()
-          ->BuildInstance()
-          ->ComputeKeyProof(key, kTestPayload,
-                            ByteVectorToString(kSymmetricTestSaltBytes),
-                            ByteVectorToString(kSymmetricTestInfoBytes));
+      CryptAuthKeyProofComputerImpl::Factory::Create()->ComputeKeyProof(
+          key, kTestPayload, ByteVectorToString(kSymmetricTestSaltBytes),
+          ByteVectorToString(kSymmetricTestInfoBytes));
 
   EXPECT_TRUE(key_proof);
 
@@ -152,11 +148,9 @@ TEST(DeviceSyncCryptAuthKeyProofComputerImplTest,
                    CryptAuthKey::Status::kActive, cryptauthv2::KeyType::RAW128);
 
   base::Optional<std::string> key_proof =
-      CryptAuthKeyProofComputerImpl::Factory::Get()
-          ->BuildInstance()
-          ->ComputeKeyProof(key, kTestPayload,
-                            ByteVectorToString(kSymmetricTestSaltBytes),
-                            ByteVectorToString(kSymmetricTestInfoBytes));
+      CryptAuthKeyProofComputerImpl::Factory::Create()->ComputeKeyProof(
+          key, kTestPayload, ByteVectorToString(kSymmetricTestSaltBytes),
+          ByteVectorToString(kSymmetricTestInfoBytes));
   EXPECT_TRUE(key_proof);
 
   crypto::HMAC hmac(crypto::HMAC::HashAlgorithm::SHA256);
@@ -171,10 +165,8 @@ TEST(DeviceSyncCryptAuthKeyProofComputerImplTest,
                    CryptAuthKey::Status::kActive, cryptauthv2::KeyType::P256);
 
   base::Optional<std::string> key_proof =
-      CryptAuthKeyProofComputerImpl::Factory::Get()
-          ->BuildInstance()
-          ->ComputeKeyProof(key, kTestPayload, kAsymmetricTestSalt,
-                            base::nullopt /* info */);
+      CryptAuthKeyProofComputerImpl::Factory::Create()->ComputeKeyProof(
+          key, kTestPayload, kAsymmetricTestSalt, base::nullopt /* info */);
 
   EXPECT_FALSE(key_proof);
 }

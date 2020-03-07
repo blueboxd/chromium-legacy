@@ -57,22 +57,23 @@ class ConnectTetheringOperation : public MessageTransferOperation {
 
   class Factory {
    public:
-    static std::unique_ptr<ConnectTetheringOperation> NewInstance(
+    static std::unique_ptr<ConnectTetheringOperation> Create(
         multidevice::RemoteDeviceRef device_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostResponseRecorder* tether_host_response_recorder,
         bool setup_required);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<ConnectTetheringOperation> BuildInstance(
+    virtual ~Factory();
+    virtual std::unique_ptr<ConnectTetheringOperation> CreateInstance(
         multidevice::RemoteDeviceRef devices_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostResponseRecorder* tether_host_response_recorder,
-        bool setup_required);
+        bool setup_required) = 0;
 
    private:
     static Factory* factory_instance_;

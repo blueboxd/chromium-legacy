@@ -464,9 +464,9 @@ TEST(ComputedStyleTest, AnimationFlags) {
 }
 
 TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
-  auto dummy = std::make_unique<DummyPageHolder>(IntSize(0, 0));
-  css_test_helpers::RegisterProperty(dummy->GetDocument(), "--x", "<length>",
-                                     "0px", false);
+  auto* document = MakeGarbageCollected<Document>();
+  css_test_helpers::RegisterProperty(*document, "--x", "<length>", "0px",
+                                     false);
 
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
@@ -494,9 +494,9 @@ TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
 }
 
 TEST(ComputedStyleTest, CustomPropertiesEqual_Data) {
-  auto dummy = std::make_unique<DummyPageHolder>(IntSize(0, 0));
-  css_test_helpers::RegisterProperty(dummy->GetDocument(), "--x", "<length>",
-                                     "0px", false);
+  auto* document = MakeGarbageCollected<Document>();
+  css_test_helpers::RegisterProperty(*document, "--x", "<length>", "0px",
+                                     false);
 
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();

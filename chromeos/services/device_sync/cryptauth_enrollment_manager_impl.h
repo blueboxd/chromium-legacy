@@ -60,7 +60,7 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
  public:
   class Factory {
    public:
-    static std::unique_ptr<CryptAuthEnrollmentManager> NewInstance(
+    static std::unique_ptr<CryptAuthEnrollmentManager> Create(
         base::Clock* clock,
         std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
         std::unique_ptr<multidevice::SecureMessageDelegate>
@@ -69,18 +69,18 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
         CryptAuthGCMManager* gcm_manager,
         PrefService* pref_service);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
     virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthEnrollmentManager> BuildInstance(
+    virtual std::unique_ptr<CryptAuthEnrollmentManager> CreateInstance(
         base::Clock* clock,
         std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
         std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate,
         const cryptauth::GcmDeviceInfo& device_info,
         CryptAuthGCMManager* gcm_manager,
-        PrefService* pref_service);
+        PrefService* pref_service) = 0;
 
    private:
     static Factory* factory_instance_;

@@ -40,15 +40,22 @@ class CryptAuthFeatureStatusSetterImpl : public CryptAuthFeatureStatusSetter {
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthFeatureStatusSetter> BuildInstance(
+    static std::unique_ptr<CryptAuthFeatureStatusSetter> Create(
         ClientAppMetadataProvider* client_app_metadata_provider,
         CryptAuthClientFactory* client_factory,
         CryptAuthGCMManager* gcm_manager,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
+
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<CryptAuthFeatureStatusSetter> CreateInstance(
+        ClientAppMetadataProvider* client_app_metadata_provider,
+        CryptAuthClientFactory* client_factory,
+        CryptAuthGCMManager* gcm_manager,
+        std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
     static Factory* test_factory_;

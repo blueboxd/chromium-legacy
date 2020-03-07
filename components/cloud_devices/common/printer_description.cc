@@ -85,9 +85,9 @@ constexpr char kPwgRasterDocumentSheetBack[] = "document_sheet_back";
 constexpr char kPwgRasterReverseOrderStreaming[] = "reverse_order_streaming";
 constexpr char kPwgRasterRotateAllPages[] = "rotate_all_pages";
 
-constexpr char kVendorCapabilityMinValue[] = "min";
-constexpr char kVendorCapabilityMaxValue[] = "max";
-constexpr char kVendorCapabilityDefaultValue[] = "default";
+constexpr char kMinValue[] = "min";
+constexpr char kMaxValue[] = "max";
+constexpr char kDefaultValue[] = "default";
 
 #if defined(OS_CHROMEOS)
 constexpr char kPinSupported[] = "supported";
@@ -566,18 +566,15 @@ bool RangeVendorCapability::LoadFrom(const base::Value& dict) {
                                          *value_type_str, &value_type_)) {
     return false;
   }
-  const std::string* min_value_str =
-      dict.FindStringKey(kVendorCapabilityMinValue);
+  const std::string* min_value_str = dict.FindStringKey(kMinValue);
   if (!min_value_str)
     return false;
   min_value_ = *min_value_str;
-  const std::string* max_value_str =
-      dict.FindStringKey(kVendorCapabilityMaxValue);
+  const std::string* max_value_str = dict.FindStringKey(kMaxValue);
   if (!max_value_str)
     return false;
   max_value_ = *max_value_str;
-  const std::string* default_value_str =
-      dict.FindStringKey(kVendorCapabilityDefaultValue);
+  const std::string* default_value_str = dict.FindStringKey(kDefaultValue);
   if (default_value_str)
     default_value_ = *default_value_str;
   return IsValid();
@@ -588,10 +585,10 @@ void RangeVendorCapability::SaveTo(base::Value* dict) const {
   dict->SetStringKey(
       kKeyValueType,
       TypeToString(kRangeVendorCapabilityTypeNames, value_type_));
-  dict->SetStringKey(kVendorCapabilityMinValue, min_value_);
-  dict->SetStringKey(kVendorCapabilityMaxValue, max_value_);
+  dict->SetStringKey(kMinValue, min_value_);
+  dict->SetStringKey(kMaxValue, max_value_);
   if (!default_value_.empty())
-    dict->SetStringKey(kVendorCapabilityDefaultValue, default_value_);
+    dict->SetStringKey(kDefaultValue, default_value_);
 }
 
 SelectVendorCapabilityOption::SelectVendorCapabilityOption() = default;
@@ -663,8 +660,7 @@ bool TypedValueVendorCapability::LoadFrom(const base::Value& dict) {
                                          *value_type_str, &value_type_)) {
     return false;
   }
-  const std::string* default_value_str =
-      dict.FindStringKey(kVendorCapabilityDefaultValue);
+  const std::string* default_value_str = dict.FindStringKey(kDefaultValue);
   if (default_value_str)
     default_value_ = *default_value_str;
   return IsValid();
@@ -676,7 +672,7 @@ void TypedValueVendorCapability::SaveTo(base::Value* dict) const {
       kKeyValueType,
       TypeToString(kTypedValueVendorCapabilityTypeNames, value_type_));
   if (!default_value_.empty())
-    dict->SetStringKey(kVendorCapabilityDefaultValue, default_value_);
+    dict->SetStringKey(kDefaultValue, default_value_);
 }
 
 VendorCapability::VendorCapability() : type_(Type::NONE) {}
@@ -1211,20 +1207,43 @@ class OrientationTraits : public NoValueValidation,
   }
 };
 
-class CopiesTraits : public ItemsTraits<kOptionCopies> {
+class CopiesTicketItemTraits : public NoValueValidation,
+                               public ItemsTraits<kOptionCopies> {
  public:
-  static bool IsValid(int32_t option) { return option >= 1; }
-
   static bool Load(const base::Value& dict, int32_t* option) {
     base::Optional<int> copies = dict.FindIntKey(kOptionCopies);
     if (!copies)
       return false;
+
     *option = copies.value();
     return true;
   }
 
   static void Save(int32_t option, base::Value* dict) {
     dict->SetKey(kOptionCopies, base::Value(option));
+  }
+};
+
+class CopiesCapabilityTraits : public NoValueValidation,
+                               public ItemsTraits<kOptionCopies> {
+ public:
+  static bool Load(const base::Value& dict, Copies* option) {
+    base::Optional<int> default_copies = dict.FindIntKey(kDefaultValue);
+    if (!default_copies)
+      return false;
+
+    base::Optional<int> max_copies = dict.FindIntKey(kMaxValue);
+    if (!max_copies)
+      return false;
+
+    option->default_value = default_copies.value();
+    option->max_value = max_copies.value();
+    return true;
+  }
+
+  static void Save(const Copies& option, base::Value* dict) {
+    dict->SetKey(kDefaultValue, base::Value(option.default_value));
+    dict->SetKey(kMaxValue, base::Value(option.max_value));
   }
 };
 
@@ -1451,7 +1470,8 @@ template class SelectionCapability<printer::Dpi, printer::DpiTraits>;
 template class SelectionCapability<printer::FitToPageType,
                                    printer::FitToPageTraits>;
 template class SelectionCapability<printer::Media, printer::MediaTraits>;
-template class EmptyCapability<printer::CopiesTraits>;
+template class ValueCapability<printer::Copies,
+                               printer::CopiesCapabilityTraits>;
 template class EmptyCapability<printer::PageRangeTraits>;
 template class BooleanCapability<printer::CollateTraits>;
 template class BooleanCapability<printer::ReverseTraits>;
@@ -1468,7 +1488,7 @@ template class TicketItem<printer::Margins, printer::MarginsTraits>;
 template class TicketItem<printer::Dpi, printer::DpiTraits>;
 template class TicketItem<printer::FitToPageType, printer::FitToPageTraits>;
 template class TicketItem<printer::Media, printer::MediaTraits>;
-template class TicketItem<int32_t, printer::CopiesTraits>;
+template class TicketItem<int32_t, printer::CopiesTicketItemTraits>;
 template class TicketItem<printer::PageRange, printer::PageRangeTraits>;
 template class TicketItem<bool, printer::CollateTraits>;
 template class TicketItem<bool, printer::ReverseTraits>;

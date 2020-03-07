@@ -115,7 +115,7 @@
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
-                           action:@selector(stop)];
+                           action:@selector(dismissButtonTapped)];
   [dismissButton
       setAccessibilityIdentifier:kTableViewNavigationDismissButtonId];
   self.tableViewController.navigationItem.rightBarButtonItem = dismissButton;
@@ -155,6 +155,11 @@
 
   [super start];
   self.started = YES;
+}
+
+- (void)dismissButtonTapped {
+  base::RecordAction(base::UserMetricsAction("MobileReadingListClose"));
+  [self stop];
 }
 
 - (void)stop {

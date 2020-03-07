@@ -77,6 +77,9 @@ class ChromeTestExtensionLoader {
   void set_install_param(const std::string& install_param) {
     install_param_ = install_param;
   }
+  void set_wait_for_renderers(bool wait_for_renderers) {
+    wait_for_renderers_ = wait_for_renderers;
+  }
 
  private:
   // Packs the extension at |unpacked_path| and returns the path to the created
@@ -155,6 +158,12 @@ class ChromeTestExtensionLoader {
 
   // Whether or not to enforce a minimum manifest version requirement.
   bool require_modern_manifest_version_ = true;
+
+  // Whether to wait for extension renderers to be ready before continuing.
+  // If unspecified, this will default to true if there is at least one existent
+  // renderer and false otherwise (this roughly maps to "true in browser tests,
+  // false in unit tests").
+  base::Optional<bool> wait_for_renderers_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTestExtensionLoader);
 };

@@ -9,7 +9,6 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/time/default_clock.h"
 #include "base/unguessable_token.h"
@@ -197,22 +196,7 @@ DeviceSyncImpl::Factory* DeviceSyncImpl::Factory::test_factory_instance_ =
     nullptr;
 
 // static
-DeviceSyncImpl::Factory* DeviceSyncImpl::Factory::Get() {
-  if (test_factory_instance_)
-    return test_factory_instance_;
-
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
-}
-
-// static
-void DeviceSyncImpl::Factory::SetInstanceForTesting(Factory* test_factory) {
-  test_factory_instance_ = test_factory;
-}
-
-DeviceSyncImpl::Factory::~Factory() = default;
-
-std::unique_ptr<DeviceSyncBase> DeviceSyncImpl::Factory::BuildInstance(
+std::unique_ptr<DeviceSyncBase> DeviceSyncImpl::Factory::Create(
     signin::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
     PrefService* profile_prefs,
@@ -220,11 +204,25 @@ std::unique_ptr<DeviceSyncBase> DeviceSyncImpl::Factory::BuildInstance(
     ClientAppMetadataProvider* client_app_metadata_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<base::OneShotTimer> timer) {
+  if (test_factory_instance_) {
+    return test_factory_instance_->CreateInstance(
+        identity_manager, gcm_driver, profile_prefs, gcm_device_info_provider,
+        client_app_metadata_provider, std::move(url_loader_factory),
+        std::move(timer));
+  }
+
   return base::WrapUnique(new DeviceSyncImpl(
       identity_manager, gcm_driver, profile_prefs, gcm_device_info_provider,
       client_app_metadata_provider, std::move(url_loader_factory),
       base::DefaultClock::GetInstance(), std::move(timer)));
 }
+
+// static
+void DeviceSyncImpl::Factory::SetFactoryForTesting(Factory* test_factory) {
+  test_factory_instance_ = test_factory;
+}
+
+DeviceSyncImpl::Factory::~Factory() = default;
 
 DeviceSyncImpl::PendingSetSoftwareFeatureRequest::
     PendingSetSoftwareFeatureRequest(
@@ -810,8 +808,8 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
 
   // Initialize |cryptauth_gcm_manager_| and have it start listening for GCM
   // tickles.
-  cryptauth_gcm_manager_ = CryptAuthGCMManagerImpl::Factory::NewInstance(
-      gcm_driver_, profile_prefs_);
+  cryptauth_gcm_manager_ =
+      CryptAuthGCMManagerImpl::Factory::Create(gcm_driver_, profile_prefs_);
   cryptauth_gcm_manager_->StartListening();
 
   cryptauth_client_factory_ = std::make_unique<CryptAuthClientFactoryImpl>(
@@ -823,23 +821,23 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
   if (base::FeatureList::IsEnabled(
           chromeos::features::kCryptAuthV2Enrollment)) {
     cryptauth_key_registry_ =
-        CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(profile_prefs_);
+        CryptAuthKeyRegistryImpl::Factory::Create(profile_prefs_);
 
     cryptauth_scheduler_ =
-        CryptAuthSchedulerImpl::Factory::Get()->BuildInstance(profile_prefs_);
+        CryptAuthSchedulerImpl::Factory::Create(profile_prefs_);
 
     cryptauth_enrollment_manager_ =
-        CryptAuthV2EnrollmentManagerImpl::Factory::Get()->BuildInstance(
+        CryptAuthV2EnrollmentManagerImpl::Factory::Create(
             client_app_metadata_provider_, cryptauth_key_registry_.get(),
             cryptauth_client_factory_.get(), cryptauth_gcm_manager_.get(),
             cryptauth_scheduler_.get(), profile_prefs_, clock_);
   } else {
     cryptauth_enrollment_manager_ =
-        CryptAuthEnrollmentManagerImpl::Factory::NewInstance(
+        CryptAuthEnrollmentManagerImpl::Factory::Create(
             clock_,
             std::make_unique<CryptAuthEnrollerFactoryImpl>(
                 cryptauth_client_factory_.get()),
-            multidevice::SecureMessageDelegateImpl::Factory::NewInstance(),
+            multidevice::SecureMessageDelegateImpl::Factory::Create(),
             gcm_device_info_provider_->GetGcmDeviceInfo(),
             cryptauth_gcm_manager_.get(), profile_prefs_);
   }
@@ -848,18 +846,16 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
   // flags). Start() is not called yet since the device has not completed
   // enrollment.
   if (features::ShouldUseV1DeviceSync()) {
-    cryptauth_device_manager_ =
-        CryptAuthDeviceManagerImpl::Factory::NewInstance(
-            clock_, cryptauth_client_factory_.get(),
-            cryptauth_gcm_manager_.get(), profile_prefs_);
+    cryptauth_device_manager_ = CryptAuthDeviceManagerImpl::Factory::Create(
+        clock_, cryptauth_client_factory_.get(), cryptauth_gcm_manager_.get(),
+        profile_prefs_);
   }
   if (features::ShouldUseV2DeviceSync()) {
     cryptauth_device_registry_ =
-        CryptAuthDeviceRegistryImpl::Factory::Get()->BuildInstance(
-            profile_prefs_);
+        CryptAuthDeviceRegistryImpl::Factory::Create(profile_prefs_);
 
     cryptauth_v2_device_manager_ =
-        CryptAuthV2DeviceManagerImpl::Factory::Get()->BuildInstance(
+        CryptAuthV2DeviceManagerImpl::Factory::Create(
             client_app_metadata_provider_, cryptauth_device_registry_.get(),
             cryptauth_key_registry_.get(), cryptauth_client_factory_.get(),
             cryptauth_gcm_manager_.get(), cryptauth_scheduler_.get(),
@@ -883,28 +879,25 @@ void DeviceSyncImpl::CompleteInitializationAfterSuccessfulEnrollment() {
     cryptauth_v2_device_manager_->Start();
   }
 
-  remote_device_provider_ = RemoteDeviceProviderImpl::Factory::NewInstance(
+  remote_device_provider_ = RemoteDeviceProviderImpl::Factory::Create(
       cryptauth_device_manager_.get(), cryptauth_v2_device_manager_.get(),
       primary_account_info_.email,
       cryptauth_enrollment_manager_->GetUserPrivateKey());
   remote_device_provider_->AddObserver(this);
 
   if (features::ShouldUseV2DeviceSync()) {
-    feature_status_setter_ =
-        CryptAuthFeatureStatusSetterImpl::Factory::Get()->BuildInstance(
-            client_app_metadata_provider_, cryptauth_client_factory_.get(),
-            cryptauth_gcm_manager_.get());
+    feature_status_setter_ = CryptAuthFeatureStatusSetterImpl::Factory::Create(
+        client_app_metadata_provider_, cryptauth_client_factory_.get(),
+        cryptauth_gcm_manager_.get());
 
-    device_notifier_ =
-        CryptAuthDeviceNotifierImpl::Factory::Get()->BuildInstance(
-            client_app_metadata_provider_, cryptauth_client_factory_.get(),
-            cryptauth_gcm_manager_.get());
+    device_notifier_ = CryptAuthDeviceNotifierImpl::Factory::Create(
+        client_app_metadata_provider_, cryptauth_client_factory_.get(),
+        cryptauth_gcm_manager_.get());
   }
 
   if (features::ShouldUseV1DeviceSync()) {
-    software_feature_manager_ =
-        SoftwareFeatureManagerImpl::Factory::NewInstance(
-            cryptauth_client_factory_.get(), feature_status_setter_.get());
+    software_feature_manager_ = SoftwareFeatureManagerImpl::Factory::Create(
+        cryptauth_client_factory_.get(), feature_status_setter_.get());
   }
 
   status_ = Status::READY;

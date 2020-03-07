@@ -98,11 +98,11 @@ class FakeCryptAuthDeviceNotifierFactory
 
  private:
   // CryptAuthDeviceNotifierImpl::Factory:
-  std::unique_ptr<CryptAuthDeviceNotifier> BuildInstance(
+  std::unique_ptr<CryptAuthDeviceNotifier> CreateInstance(
       ClientAppMetadataProvider* client_app_metadata_provider,
       CryptAuthClientFactory* client_factory,
       CryptAuthGCMManager* gcm_manager,
-      std::unique_ptr<base::OneShotTimer> timer = nullptr) override;
+      std::unique_ptr<base::OneShotTimer> timer) override;
 
   std::vector<FakeCryptAuthDeviceNotifier*> instances_;
   ClientAppMetadataProvider* last_client_app_metadata_provider_ = nullptr;

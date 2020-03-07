@@ -91,6 +91,8 @@ const char kUpdateDynamicRulesStatusHistogram[] =
     "Extensions.DeclarativeNetRequest.UpdateDynamicRulesStatus";
 const char kReadDynamicRulesJSONStatusHistogram[] =
     "Extensions.DeclarativeNetRequest.ReadDynamicRulesJSONStatus";
+const char kIsLargeRegexHistogram[] =
+    "Extensions.DeclarativeNetRequest.IsLargeRegexRule";
 
 const char kActionCountPlaceholderBadgeText[] =
     "<<declarativeNetRequestActionCount>>";

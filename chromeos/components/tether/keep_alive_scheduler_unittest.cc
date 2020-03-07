@@ -64,7 +64,7 @@ class FakeKeepAliveOperationFactory final : public KeepAliveOperation::Factory,
  public:
   FakeKeepAliveOperationFactory()
       : num_created_(0), num_deleted_(0), last_created_(nullptr) {}
-  ~FakeKeepAliveOperationFactory() = default;
+  ~FakeKeepAliveOperationFactory() override = default;
 
   uint32_t num_created() { return num_created_; }
 
@@ -75,7 +75,7 @@ class FakeKeepAliveOperationFactory final : public KeepAliveOperation::Factory,
   void OnOperationDeleted() override { num_deleted_++; }
 
  protected:
-  std::unique_ptr<KeepAliveOperation> BuildInstance(
+  std::unique_ptr<KeepAliveOperation> CreateInstance(
       multidevice::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client) override {
@@ -111,7 +111,7 @@ class KeepAliveSchedulerTest : public testing::Test {
 
     fake_operation_factory_ =
         base::WrapUnique(new FakeKeepAliveOperationFactory());
-    KeepAliveOperation::Factory::SetInstanceForTesting(
+    KeepAliveOperation::Factory::SetFactoryForTesting(
         fake_operation_factory_.get());
 
     scheduler_ = base::WrapUnique(new KeepAliveScheduler(

@@ -60,16 +60,23 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthDeviceSyncer> BuildInstance(
+    static std::unique_ptr<CryptAuthDeviceSyncer> Create(
         CryptAuthDeviceRegistry* device_registry,
         CryptAuthKeyRegistry* key_registry,
         CryptAuthClientFactory* client_factory,
         PrefService* pref_service,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<CryptAuthDeviceSyncer> CreateInstance(
+        CryptAuthDeviceRegistry* device_registry,
+        CryptAuthKeyRegistry* key_registry,
+        CryptAuthClientFactory* client_factory,
+        PrefService* pref_service,
+        std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
     static Factory* test_factory_;

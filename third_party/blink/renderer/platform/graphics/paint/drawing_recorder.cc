@@ -34,6 +34,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
   // Must check DrawingRecorder::UseCachedDrawingIfPossible before creating the
   // DrawingRecorder.
   DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
+         context_.GetPaintController().ShouldForcePaintForBenchmark() ||
          !UseCachedDrawingIfPossible(context_, client_, type_));
 
   DCHECK(DisplayItem::IsDrawingType(display_item_type));

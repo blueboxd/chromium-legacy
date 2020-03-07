@@ -68,21 +68,21 @@ class FakeCryptAuthGroupPrivateKeySharerFactory
   ~FakeCryptAuthGroupPrivateKeySharerFactory() override;
 
   // Returns a vector of all FakeCryptAuthGroupPrivateKeySharer instances
-  // created by BuildInstance().
+  // created by CreateInstance().
   const std::vector<FakeCryptAuthGroupPrivateKeySharer*>& instances() const {
     return instances_;
   }
 
-  // Returns the most recent CryptAuthClientFactory input into BuildInstance().
+  // Returns the most recent CryptAuthClientFactory input into CreateInstance().
   const CryptAuthClientFactory* last_client_factory() const {
     return last_client_factory_;
   }
 
  private:
   // CryptAuthGroupPrivateKeySharerImpl::Factory:
-  std::unique_ptr<CryptAuthGroupPrivateKeySharer> BuildInstance(
+  std::unique_ptr<CryptAuthGroupPrivateKeySharer> CreateInstance(
       CryptAuthClientFactory* client_factory,
-      std::unique_ptr<base::OneShotTimer> timer = nullptr) override;
+      std::unique_ptr<base::OneShotTimer> timer) override;
 
   std::vector<FakeCryptAuthGroupPrivateKeySharer*> instances_;
   CryptAuthClientFactory* last_client_factory_ = nullptr;

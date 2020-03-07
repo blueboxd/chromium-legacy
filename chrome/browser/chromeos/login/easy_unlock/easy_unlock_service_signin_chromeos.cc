@@ -175,8 +175,7 @@ EasyUnlockServiceSignin::EasyUnlockServiceSignin(
     : EasyUnlockService(profile, secure_channel_client),
       account_id_(EmptyAccountId()),
       user_pod_last_focused_timestamp_(base::TimeTicks::Now()),
-      remote_device_cache_(
-          multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance()) {}
+      remote_device_cache_(multidevice::RemoteDeviceCache::Factory::Create()) {}
 
 EasyUnlockServiceSignin::~EasyUnlockServiceSignin() {}
 

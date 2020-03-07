@@ -292,6 +292,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
+  base::RecordAction(base::UserMetricsAction("IOSReadingListCloseWithSwipe"));
   // Call the delegate dismissReadingListListViewController to clean up state
   // and stop the Coordinator.
   [self.delegate dismissReadingListListViewController:self];

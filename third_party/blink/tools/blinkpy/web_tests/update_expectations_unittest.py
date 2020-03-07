@@ -86,6 +86,10 @@ class MockWebBrowser(object):
         self.opened_url = url
 
 
+def _strip_multiline_string_spaces(raw_string):
+    return '\n'.join([s.strip() for s in raw_string.splitlines()])
+
+
 class UpdateTestExpectationsTest(LoggingTestCase):
     FLAKE_TYPE = 'flake'
     FAIL_TYPE = 'fail'
@@ -142,13 +146,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         Lines are flaky if they contain a PASS as well as at least one other
         failing result.
         """
-        test_expectations_before = """
+        test_expectations_before = _strip_multiline_string_spaces("""
             # results: [ Pass Timeout Failure ]
             # Even though the results show all passing, none of the
             # expectations are flaky so we shouldn't remove any.
             test/a.html [ Pass ]
             test/b.html [ Timeout ]
-            test/c.html [ Failure Timeout ]"""
+            test/c.html [ Failure Timeout ]""")
 
         self._expectations_remover = (
             self._create_expectations_remover(self.FLAKE_TYPE))
@@ -183,13 +187,14 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         Lines are failing if they contain only 'Failure', 'Timeout', or
         'Crash' results.
         """
-        test_expectations_before = """
+        test_expectations_before = _strip_multiline_string_spaces(
+            """
             # results: [ Pass Failure Timeout ]
             # Even though the results show all passing, none of the
             # expectations are failing so we shouldn't remove any.
             test/a.html [ Pass ]
             test/b.html [ Failure Pass ]
-            test/c.html [ Failure Pass Timeout ]"""
+            test/c.html [ Failure Pass Timeout ]""")
 
         self._define_builders({
             'WebKit Linux Trusty': {
@@ -220,10 +225,11 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
     def test_dont_remove_directory_flake(self):
         """Tests that flake lines with directories are untouched."""
-        test_expectations_before = """
+        test_expectations_before = _strip_multiline_string_spaces(
+            """
             # results: [ Failure Pass ]
             # This expectation is for a whole directory.
-            test/* [ Failure Pass ]"""
+            test/* [ Failure Pass ]""")
 
         self._define_builders({
             'WebKit Linux Trusty': {
@@ -254,10 +260,11 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
     def test_dont_remove_directory_fail(self):
         """Tests that fail lines with directories are untouched."""
-        test_expectations_before = """
+        test_expectations_before = _strip_multiline_string_spaces(
+            """
             # results: [ Failure ]
             # This expectation is for a whole directory.
-            test/* [ Failure ]"""
+            test/* [ Failure ]""")
 
         self._define_builders({
             'WebKit Linux Trusty': {
@@ -293,12 +300,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         which is indistinguishable from "All Passing" so don't remove since we
         don't know what the results actually are.
         """
-        test_expectations_before = """
+        test_expectations_before = _strip_multiline_string_spaces(
+            """
             # results: [ Skip ]
             # Skip expectations should never be removed.
             test/a.html [ Skip ]
             test/b.html [ Skip ]
-            test/c.html [ Skip ]"""
+            test/c.html [ Skip ]""")
 
         self._define_builders({
             'WebKit Linux Trusty': {
@@ -324,7 +332,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
     def test_all_failure_result_types(self):
         """Tests that all failure types are treated as failure."""
-        test_expectations_before = (
+        test_expectations_before = _strip_multiline_string_spaces(
             """# results: [ Failure Pass ]
             test/a.html [ Failure Pass ]
             test/b.html [ Failure Pass ]
@@ -358,7 +366,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, (
+        self.assertEquals(updated_expectations, _strip_multiline_string_spaces(
             """# results: [ Failure Pass ]
             test/a.html [ Failure Pass ]
             test/b.html [ Failure Pass ]
@@ -370,7 +378,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
         Fail expectation types include Failure, Timeout, and Crash.
         """
-        test_expectations_before = (
+        test_expectations_before = _strip_multiline_string_spaces(
             """# results: [ Timeout Crash Failure ]
             test/a.html [ Failure ]
             test/b.html [ Timeout ]
@@ -403,8 +411,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         # tests with no actual results are kept.
         self.assertEquals(
             updated_expectations,
+            _strip_multiline_string_spaces(
             """# results: [ Timeout Crash Failure ]
-            test/d.html [ Failure ]""")
+            test/d.html [ Failure ]"""))
 
     def test_basic_one_builder(self):
         """Tests basic functionality with a single builder.
@@ -414,7 +423,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         of the expected type shouldn't be removed but other kinds of failures
         allow removal.
         """
-        test_expectations_before = (
+        test_expectations_before = _strip_multiline_string_spaces(
             """# results: [ Failure Pass Crash Timeout ]
             # Remove these two since they're passing all runs.
             test/a.html [ Failure Pass ]
@@ -447,14 +456,14 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, (
+        self.assertEquals(updated_expectations, _strip_multiline_string_spaces(
             """# results: [ Failure Pass Crash Timeout ]
             # Keep since we have both crashes and passes.
             test/e.html [ Crash Pass ]"""))
 
     def test_flake_mode_all_failure_case(self):
         """Tests that results with all failures are not treated as non-flaky."""
-        test_expectations_before = (
+        test_expectations_before = _strip_multiline_string_spaces(
             """# results: [ Failure Pass ]
             # Keep since it's all failures.
             test/a.html [ Failure Pass ]""")
@@ -478,7 +487,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             self._create_expectations_remover(self.FLAKE_TYPE))
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, (
+        self.assertEquals(updated_expectations, _strip_multiline_string_spaces(
             """# results: [ Failure Pass ]
             # Keep since it's all failures.
             test/a.html [ Failure Pass ]"""))
@@ -546,7 +555,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
     def test_basic_multiple_builders(self):
         """Tests basic functionality with multiple builders."""
-        test_expectations_before = (
+        test_expectations_before = _strip_multiline_string_spaces(
             """# results: [ Failure Pass ]
             # Remove these two since they're passing on both builders.
             test/a.html [ Failure Pass ]
@@ -595,7 +604,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, (
+        self.assertEquals(updated_expectations, _strip_multiline_string_spaces(
             """# results: [ Failure Pass ]
             # Keep these two since they're failing on the Mac builder.
             test/c.html [ Failure Pass ]
@@ -606,7 +615,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
     def test_multiple_builders_and_platform_specifiers(self):
         """Tests correct operation with platform specifiers."""
-        test_expectations_before = ("""
+        test_expectations_before = _strip_multiline_string_spaces("""
             # tags: [ Linux Mac Win Mac ]
             # results: [ Failure Pass ]
             # Keep these two since they're failing in the Mac10.10 results.
@@ -698,7 +707,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, ("""
+        self.assertEquals(updated_expectations, _strip_multiline_string_spaces("""
             # tags: [ Linux Mac Win Mac ]
             # results: [ Failure Pass ]
             # Keep these two since they're failing in the Mac10.10 results.
@@ -710,7 +719,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
     def test_debug_release_specifiers(self):
         """Tests correct operation of Debug/Release specifiers."""
-        test_expectations_before = (
+        test_expectations_before = _strip_multiline_string_spaces(
             """# Keep these two since they fail in debug.
             # tags: [ Linux ]
             # tags: [ Debug Release ]
@@ -806,7 +815,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, (
+        self.assertEquals(updated_expectations, _strip_multiline_string_spaces(
             """# Keep these two since they fail in debug.
             # tags: [ Linux ]
             # tags: [ Debug Release ]
@@ -818,7 +827,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             [ Release ] test/f.html [ Failure ]"""))
 
     def test_preserve_comments_and_whitespace(self):
-        test_expectations_before = """
+        test_expectations_before = _strip_multiline_string_spaces("""
             # results: [ Failure Pass ]
             # Comment A - Keep since these aren't part of any test.
             # Comment B - Keep since these aren't part of any test.
@@ -835,7 +844,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
             # Comment G - Should be removed since both d and e will be removed.
             test/d.html [ Failure Pass ]
-            test/e.html [ Failure Pass ]"""
+            test/e.html [ Failure Pass ]""")
 
         self._define_builders({
             'WebKit Linux Trusty': {
@@ -859,7 +868,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._expectations_remover = self._create_expectations_remover()
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, ("""
+        self.assertEquals(updated_expectations, (_strip_multiline_string_spaces("""
             # results: [ Failure Pass ]
             # Comment A - Keep since these aren't part of any test.
             # Comment B - Keep since these aren't part of any test.
@@ -867,7 +876,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
 
             # Comment F - Keep since only b is removed
-            test/c.html [ Failure Pass ]"""))
+            test/c.html [ Failure Pass ]""")))
 
     def test_lines_with_no_results_on_builders_kept_by_default(self):
         """Tests the case where there are lines with no results on the builders.
@@ -880,7 +889,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         In the former case, we may want to keep the line; but it may also be
         useful to be able to remove it.
         """
-        test_expectations_before = """
+        test_expectations_before = _strip_multiline_string_spaces("""
             # results: [ Failure Skip Timeout Pass Crash ]
             # A Skip expectation probably won't have any results but we
             # shouldn't consider those passing so this line should remain.
@@ -890,7 +899,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             test/b.html [ Failure Timeout ]
             test/c.html [ Failure Pass ]
             test/d.html [ Pass Timeout ]
-            test/e.html [ Crash Pass ]"""
+            test/e.html [ Crash Pass ]""")
 
         self._define_builders({
             'WebKit Linux Trusty': {
@@ -916,7 +925,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         In this test, we simulate what would happen when --remove-missing
         is passed.
         """
-        test_expectations_before = """
+        test_expectations_before = _strip_multiline_string_spaces("""
             # results: [ Failure Timeout Pass Crash Skip ]
             # A Skip expectation probably won't have any results but we
             # shouldn't consider those passing so this line should remain.
@@ -926,7 +935,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             test/b.html [ Failure Timeout ]
             test/e.html [ Crash Pass ]
             test/c.html [ Failure Pass ]
-            test/d.html [ Pass Timeout ]"""
+            test/d.html [ Pass Timeout ]""")
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -944,11 +953,11 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             remove_missing=True)
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self.assertEquals(updated_expectations, """
+        self.assertEquals(updated_expectations, _strip_multiline_string_spaces("""
             # results: [ Failure Timeout Pass Crash Skip ]
             # A Skip expectation probably won't have any results but we
             # shouldn't consider those passing so this line should remain.
-            test/a.html [ Skip ]""")
+            test/a.html [ Skip ]"""))
 
     def test_missing_builders_for_some_configurations(self):
         """Tests the behavior when there are no builders for some configurations.
@@ -962,7 +971,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         # messages with a "debug" severity level.
         self.set_logging_level(logging.DEBUG)
 
-        test_expectations_before = """
+        test_expectations_before = _strip_multiline_string_spaces("""
             # tags: [ Win Linux ]
             # tags: [ Release ]
             # results: [ Failure Pass ]
@@ -991,7 +1000,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             # No message should be emitted for this one because it's not
             # marked as flaky or failing, so we don't need to check builder
             # results.
-            test/f.html [ Pass ]"""
+            test/f.html [ Pass ]""")
 
         self._define_builders({
             'WebKit Linux Trusty': {
@@ -1022,7 +1031,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
         self.assertEquals(
-            updated_expectations, """
+            updated_expectations, _strip_multiline_string_spaces("""
             # tags: [ Win Linux ]
             # tags: [ Release ]
             # results: [ Failure Pass ]
@@ -1034,7 +1043,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             # No message should be emitted for this one because it's not
             # marked as flaky or failing, so we don't need to check builder
             # results.
-            test/f.html [ Pass ]""")
+            test/f.html [ Pass ]"""))
 
     def test_log_missing_results(self):
         """Tests that we emit the appropriate error for missing results.
@@ -1043,7 +1052,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         results from one of the builders we matched we should have logged an
         error.
         """
-        test_expectations_before = """
+        test_expectations_before = _strip_multiline_string_spaces("""
             # tags: [ Linux ]
             # tags: [ Release ]
             # results: [ Failure Pass ]
@@ -1054,7 +1063,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             [ Release ] test/c.html [ Failure ]
             # This line is not flaky or failing so we shouldn't even check the
             # results.
-            [ Linux ] test/d.html [ Pass ]"""
+            [ Linux ] test/d.html [ Pass ]""")
 
         self._define_builders({
             'WebKit Linux Trusty': {
@@ -1140,7 +1149,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         # Write out a fake TestExpectations file.
         test_expectation_path = (
             host.port_factory.get().path_to_generic_test_expectations_file())
-        test_expectations = """
+        test_expectations = _strip_multiline_string_spaces("""
             # tags: [ Linux ]
             # tags: [ Release ]
             # results: [ Failure Pass ]
@@ -1151,7 +1160,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             # Remove since it's passing on both builders.
             test/c.html [ Failure ]
             # Keep since there's a failure on debug bot.
-            [ Linux ] test/d.html [ Failure ]"""
+            [ Linux ] test/d.html [ Failure ]""")
         files = {
             test_expectation_path: test_expectations
         }
@@ -1177,7 +1186,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
         main(host, expectation_factory, [])
         self.assertEqual(
-            host.filesystem.files[test_expectation_path], ("""
+            host.filesystem.files[test_expectation_path], _strip_multiline_string_spaces("""
             # tags: [ Linux ]
             # tags: [ Release ]
             # results: [ Failure Pass ]

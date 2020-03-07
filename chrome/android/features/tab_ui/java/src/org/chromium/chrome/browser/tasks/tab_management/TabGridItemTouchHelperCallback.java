@@ -10,12 +10,12 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.Card
 
 import android.graphics.Canvas;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;

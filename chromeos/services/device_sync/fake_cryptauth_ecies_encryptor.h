@@ -48,7 +48,7 @@ class FakeCryptAuthEciesEncryptorFactory
 
  private:
   // CryptAuthEciesEncryptorImpl::Factory:
-  std::unique_ptr<CryptAuthEciesEncryptor> BuildInstance() override;
+  std::unique_ptr<CryptAuthEciesEncryptor> CreateInstance() override;
 
   FakeCryptAuthEciesEncryptor* instance_ = nullptr;
 

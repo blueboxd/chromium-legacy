@@ -22,10 +22,12 @@ class CryptAuthKeyProofComputerImpl : public CryptAuthKeyProofComputer {
  public:
   class Factory {
    public:
-    static Factory* Get();
+    static std::unique_ptr<CryptAuthKeyProofComputer> Create();
     static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthKeyProofComputer> BuildInstance();
+    virtual std::unique_ptr<CryptAuthKeyProofComputer> CreateInstance() = 0;
 
    private:
     static Factory* test_factory_;

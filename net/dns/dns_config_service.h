@@ -27,7 +27,7 @@ class NET_EXPORT_PRIVATE DnsConfigService {
  public:
   // Callback interface for the client, called on the same thread as
   // ReadConfig() and WatchConfig().
-  typedef base::Callback<void(const DnsConfig& config)> CallbackType;
+  typedef base::RepeatingCallback<void(const DnsConfig& config)> CallbackType;
 
   // DHCP and user-induced changes are on the order of seconds, so 150ms should
   // not add perceivable delay. On the other hand, config readers should finish

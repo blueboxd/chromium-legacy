@@ -13,7 +13,7 @@ class PrefValueMap;
 
 namespace policy {
 
-// Handles DnsOverHttpsMode policy.
+// Handles DnsOverHttpsMode and DnsOverHttpsTemplates policies.
 class SecureDnsPolicyHandler : public ConfigurationPolicyHandler {
  public:
   SecureDnsPolicyHandler();

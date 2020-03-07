@@ -37,31 +37,23 @@ DeviceToDeviceAuthenticator::Factory*
     DeviceToDeviceAuthenticator::Factory::factory_instance_ = nullptr;
 
 // static
-std::unique_ptr<Authenticator>
-DeviceToDeviceAuthenticator::Factory::NewInstance(
+std::unique_ptr<Authenticator> DeviceToDeviceAuthenticator::Factory::Create(
     Connection* connection,
     std::unique_ptr<multidevice::SecureMessageDelegate>
         secure_message_delegate) {
-  if (!factory_instance_) {
-    factory_instance_ = new Factory();
+  if (factory_instance_) {
+    return factory_instance_->CreateInstance(
+        connection, std::move(secure_message_delegate));
   }
-  return factory_instance_->BuildInstance(connection,
-                                          std::move(secure_message_delegate));
+
+  return base::WrapUnique(new DeviceToDeviceAuthenticator(
+      connection, std::move(secure_message_delegate)));
 }
 
 // static
-void DeviceToDeviceAuthenticator::Factory::SetInstanceForTesting(
+void DeviceToDeviceAuthenticator::Factory::SetFactoryForTesting(
     Factory* factory) {
   factory_instance_ = factory;
-}
-
-std::unique_ptr<Authenticator>
-DeviceToDeviceAuthenticator::Factory::BuildInstance(
-    Connection* connection,
-    std::unique_ptr<multidevice::SecureMessageDelegate>
-        secure_message_delegate) {
-  return base::WrapUnique(new DeviceToDeviceAuthenticator(
-      connection, std::move(secure_message_delegate)));
 }
 
 DeviceToDeviceAuthenticator::DeviceToDeviceAuthenticator(

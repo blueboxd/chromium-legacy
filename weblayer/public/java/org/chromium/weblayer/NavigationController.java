@@ -49,6 +49,25 @@ public class NavigationController {
         }
     }
 
+    /**
+     * Navigates to the given URI, replacing the current navigation entry rather than appending.
+     *
+     * @param uri the destination URI.
+     *
+     * @since 82
+     */
+    public void replace(@NonNull Uri uri) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mNavigationController.replace(uri.toString());
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     public void goBack() {
         ThreadCheck.ensureOnUiThread();
         try {

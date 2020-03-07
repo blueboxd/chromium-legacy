@@ -62,7 +62,7 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
   FakeMultiDeviceSetup* instance() { return instance_; }
 
  private:
-  std::unique_ptr<MultiDeviceSetupBase> BuildInstance(
+  std::unique_ptr<MultiDeviceSetupBase> CreateInstance(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
       AuthTokenValidator* auth_token_validator,

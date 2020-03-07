@@ -385,7 +385,9 @@ const AtomicString& PresentationConnection::InterfaceName() const {
 }
 
 ExecutionContext* PresentationConnection::GetExecutionContext() const {
-  return ExecutionContextLifecycleObserver::GetExecutionContext();
+  if (!GetFrame())
+    return nullptr;
+  return GetFrame()->GetDocument()->ToExecutionContext();
 }
 
 void PresentationConnection::AddedEventListener(

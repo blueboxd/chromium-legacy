@@ -198,7 +198,7 @@ std::string FakeSecureMessageDelegate::GetPrivateKeyForPublicKey(
 }
 
 std::unique_ptr<multidevice::SecureMessageDelegate>
-FakeSecureMessageDelegateFactory::BuildInstance() {
+FakeSecureMessageDelegateFactory::CreateInstance() {
   auto instance = std::make_unique<multidevice::FakeSecureMessageDelegate>();
   instance_ = instance.get();
 

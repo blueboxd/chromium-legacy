@@ -61,8 +61,8 @@ class DnsConfigServiceTest : public TestWithTaskEnvironment {
 
   void SetUp() override {
     service_.reset(new TestDnsConfigService());
-    service_->WatchConfig(base::Bind(&DnsConfigServiceTest::OnConfigChanged,
-                                     base::Unretained(this)));
+    service_->WatchConfig(base::BindRepeating(
+        &DnsConfigServiceTest::OnConfigChanged, base::Unretained(this)));
     EXPECT_FALSE(last_config_.IsValid());
   }
 

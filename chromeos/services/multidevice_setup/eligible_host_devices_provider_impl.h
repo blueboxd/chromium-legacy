@@ -22,11 +22,14 @@ class EligibleHostDevicesProviderImpl
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<EligibleHostDevicesProvider> BuildInstance(
+    static std::unique_ptr<EligibleHostDevicesProvider> Create(
         device_sync::DeviceSyncClient* device_sync_client);
+    static void SetFactoryForTesting(Factory* factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<EligibleHostDevicesProvider> CreateInstance(
+        device_sync::DeviceSyncClient* device_sync_client) = 0;
 
    private:
     static Factory* test_factory_;

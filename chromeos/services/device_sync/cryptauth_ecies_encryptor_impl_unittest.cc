@@ -72,13 +72,13 @@ class DeviceSyncCryptAuthEciesEncryptorImplTest : public testing::Test {
   ~DeviceSyncCryptAuthEciesEncryptorImplTest() override = default;
 
   void SetUp() override {
-    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
         fake_secure_message_delegate_factory_.get());
   }
 
   void Encrypt(const std::string& unencrypted_payload,
                const std::string& encrypting_public_key) {
-    encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Get()->BuildInstance();
+    encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Create();
     fake_secure_message_delegate()->set_next_public_key(kSessionPublicKey);
 
     base::RunLoop run_loop;
@@ -95,7 +95,7 @@ class DeviceSyncCryptAuthEciesEncryptorImplTest : public testing::Test {
 
   void BatchEncrypt(const CryptAuthEciesEncryptor::IdToInputMap&
                         id_to_unencrypted_payload_map) {
-    encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Get()->BuildInstance();
+    encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Create();
     fake_secure_message_delegate()->set_next_public_key(kSessionPublicKey);
 
     base::RunLoop run_loop;
@@ -112,7 +112,7 @@ class DeviceSyncCryptAuthEciesEncryptorImplTest : public testing::Test {
 
   void Decrypt(const std::string& encrypted_payload,
                const std::string& decrypting_private_key) {
-    encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Get()->BuildInstance();
+    encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Create();
 
     base::RunLoop run_loop;
     encryptor_->Decrypt(
@@ -125,7 +125,7 @@ class DeviceSyncCryptAuthEciesEncryptorImplTest : public testing::Test {
 
   void BatchDecrypt(const CryptAuthEciesEncryptor::IdToInputMap&
                         id_to_encrypted_payload_map) {
-    encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Get()->BuildInstance();
+    encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Create();
 
     base::RunLoop run_loop;
     encryptor_->BatchDecrypt(

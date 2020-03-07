@@ -47,7 +47,7 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
     fake_secure_channel->set_channel_binding_data(kTestChannelBindingData);
     fake_secure_channel_ = fake_secure_channel.get();
 
-    channel_ = AuthenticatedChannelImpl::Factory::Get()->BuildInstance(
+    channel_ = AuthenticatedChannelImpl::Factory::Create(
         std::vector<mojom::ConnectionCreationDetail>(
             std::begin(kTestConnectionCreationDetails),
             std::end(kTestConnectionCreationDetails)),

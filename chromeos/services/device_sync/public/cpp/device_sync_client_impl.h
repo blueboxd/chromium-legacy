@@ -42,10 +42,12 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetInstanceForTesting(Factory* test_factory);
+    static std::unique_ptr<DeviceSyncClient> Create();
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
-    virtual std::unique_ptr<DeviceSyncClient> BuildInstance();
+    virtual std::unique_ptr<DeviceSyncClient> CreateInstance() = 0;
 
    private:
     static Factory* test_factory_;

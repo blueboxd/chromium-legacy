@@ -140,9 +140,8 @@ class DeviceSyncCryptAuthMetadataSyncerImplTest
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = mock_timer.get();
 
-    metadata_syncer_ =
-        CryptAuthMetadataSyncerImpl::Factory::Get()->BuildInstance(
-            client_factory_.get(), &pref_service_, std::move(mock_timer));
+    metadata_syncer_ = CryptAuthMetadataSyncerImpl::Factory::Create(
+        client_factory_.get(), &pref_service_, std::move(mock_timer));
 
     metadata_syncer_->SyncMetadata(
         GetRequestContext(),

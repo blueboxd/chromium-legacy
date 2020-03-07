@@ -185,14 +185,11 @@ class PLATFORM_EXPORT PaintController {
     return GetPaintArtifact().PaintChunks();
   }
 
-  // For micro benchmarking of record time. If true, subsequence caching is
-  // disabled to test the cost of display item caching.
-  bool SubsequenceCachingIsDisabled() const {
-    return subsequence_caching_disabled_;
-  }
-  void SetSubsequenceCachingIsDisabled(bool disable) {
-    subsequence_caching_disabled_ = disable;
-  }
+  // For micro benchmarks of record time.
+  static void SetSubsequenceCachingDisabledForBenchmark();
+  static void SetPartialInvalidationForBenchmark();
+  static bool ShouldForcePaintForBenchmark();
+  static void ClearFlagsForBenchmark();
 
   void SetFirstPainted();
   void SetTextPainted();
@@ -328,8 +325,6 @@ class PLATFORM_EXPORT PaintController {
   // Data being used to build the next paint artifact.
   DisplayItemList new_display_item_list_;
   PaintChunker new_paint_chunks_;
-
-  bool subsequence_caching_disabled_ = false;
 
   bool cache_is_all_invalid_ = true;
   bool committed_ = false;

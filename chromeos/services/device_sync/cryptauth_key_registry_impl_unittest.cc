@@ -22,8 +22,7 @@ class DeviceSyncCryptAuthKeyRegistryImplTest : public testing::Test {
 
   void SetUp() override {
     CryptAuthKeyRegistryImpl::RegisterPrefs(pref_service_.registry());
-    key_registry_ =
-        CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(&pref_service_);
+    key_registry_ = CryptAuthKeyRegistryImpl::Factory::Create(&pref_service_);
   }
 
   // Verify that changing the in-memory key bundle map updates the pref.
@@ -246,7 +245,7 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest,
 
   // A new registry using the same pref service that was just written.
   std::unique_ptr<CryptAuthKeyRegistry> new_registry =
-      CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(pref_service());
+      CryptAuthKeyRegistryImpl::Factory::Create(pref_service());
 
   EXPECT_EQ(2u, new_registry->key_bundles().size());
 

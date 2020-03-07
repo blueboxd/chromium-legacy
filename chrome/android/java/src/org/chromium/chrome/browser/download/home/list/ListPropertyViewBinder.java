@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ItemAnimator;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ItemAnimator;
 
 import org.chromium.chrome.R;
 import org.chromium.ui.modelutil.PropertyKey;

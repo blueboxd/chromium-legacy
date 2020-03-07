@@ -662,7 +662,8 @@ Polymer({
    * @private
    */
   updateSettingsAvailabilityFromDestination_(caps) {
-    this.setSettingPath_('copies.available', !!caps && !!caps.copies);
+    this.setSettingPath_(
+        'copies.available', this.destination.hasCopiesCapability);
     this.setSettingPath_('collate.available', !!caps && !!caps.collate);
     this.setSettingPath_(
         'color.available', this.destination.hasColorCapability);

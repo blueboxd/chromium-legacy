@@ -141,7 +141,7 @@ void ExternalSVGResource::Load(const Document& document) {
   params.MutableResourceRequest().SetMode(
       network::mojom::blink::RequestMode::kSameOrigin);
   resource_document_ =
-      DocumentResource::FetchSVGDocument(params, document, this);
+      DocumentResource::FetchSVGDocument(params, document.Fetcher(), this);
   target_ = ResolveTarget();
 }
 
@@ -156,7 +156,7 @@ void ExternalSVGResource::LoadWithoutCSP(const Document& document) {
   params.MutableResourceRequest().SetMode(
       network::mojom::blink::RequestMode::kSameOrigin);
   resource_document_ =
-      DocumentResource::FetchSVGDocument(params, document, this);
+      DocumentResource::FetchSVGDocument(params, document.Fetcher(), this);
   target_ = ResolveTarget();
 }
 

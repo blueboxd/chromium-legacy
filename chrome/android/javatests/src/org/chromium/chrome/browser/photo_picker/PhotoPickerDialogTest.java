@@ -8,11 +8,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.StrictMode;
 import android.support.test.filters.LargeTest;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.Button;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -79,7 +79,7 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
 
   void BuildAccountStatusChangeDelegateNotifier() {
     delegate_notifier_ =
-        AccountStatusChangeDelegateNotifierImpl::Factory::Get()->BuildInstance(
+        AccountStatusChangeDelegateNotifierImpl::Factory::Create(
             fake_host_status_provider_.get(), test_pref_service_.get(),
             fake_host_device_timestamp_manager_.get(),
             fake_oobe_completion_tracker_.get(), test_clock_.get());

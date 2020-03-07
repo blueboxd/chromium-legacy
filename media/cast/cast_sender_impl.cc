@@ -111,8 +111,8 @@ void CastSenderImpl::InitializeAudio(
 
   audio_sender_ = std::make_unique<AudioSender>(
       cast_environment_, audio_config,
-      base::Bind(&CastSenderImpl::OnAudioStatusChange,
-                 weak_factory_.GetWeakPtr(), status_change_cb),
+      base::BindRepeating(&CastSenderImpl::OnAudioStatusChange,
+                          weak_factory_.GetWeakPtr(), status_change_cb),
       transport_sender_);
   if (video_sender_) {
     DCHECK(audio_sender_->GetTargetPlayoutDelay() ==
@@ -131,8 +131,8 @@ void CastSenderImpl::InitializeVideo(
 
   video_sender_ = std::make_unique<VideoSender>(
       cast_environment_, video_config,
-      base::Bind(&CastSenderImpl::OnVideoStatusChange,
-                 weak_factory_.GetWeakPtr(), status_change_cb),
+      base::BindRepeating(&CastSenderImpl::OnVideoStatusChange,
+                          weak_factory_.GetWeakPtr(), status_change_cb),
       create_vea_cb, create_video_encode_mem_cb, transport_sender_,
       base::BindRepeating(&CastSenderImpl::SetTargetPlayoutDelay,
                           weak_factory_.GetWeakPtr()));

@@ -80,7 +80,7 @@ class AudioFrameInput : public base::RefCountedThreadSafe<AudioFrameInput> {
 // to allow the client to wait for asynchronous initialization to complete
 // before sending frames, and also to be notified of any runtime errors that
 // have halted the session.
-using StatusChangeCallback = base::Callback<void(OperationalStatus)>;
+using StatusChangeCallback = base::RepeatingCallback<void(OperationalStatus)>;
 
 // All methods of CastSender must be called on the main thread.
 // Provided CastTransport will also be called on the main thread.

@@ -13,10 +13,11 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import android.app.Activity;
-import android.support.v7.widget.RecyclerView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.common.collect.ImmutableList;
 

@@ -293,20 +293,20 @@ void QuickAnswersView::UpdateOneRowAnswer(
   int label_start = kDefaultIconLeftPaddingDip + kAssistantIconSizeDip +
                     kDefaultIconRightPaddingDip;
   for (const auto& element : answers) {
-    switch (element->type()) {
+    switch (element->type) {
       case QuickAnswerUiElementType::kText: {
         QuickAnswerUiElement* ui_element = element.get();
         auto* text_element =
             static_cast<chromeos::quick_answers::QuickAnswerText*>(ui_element);
-        auto* label = AddChildView(std::make_unique<views::Label>(
-            base::UTF8ToUTF16(text_element->text_)));
+        auto* label =
+            AddChildView(std::make_unique<views::Label>(text_element->text));
         // TODO(yanxiao):Add more padding if there is image on the right side.
         int label_max_width = anchor_view_bounds_.width() - label_start -
                               kDefaultLabelRightPaddingDip;
         int label_width =
             std::min(label_max_width, label->CalculatePreferredSize().width());
         label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-        label->SetEnabledColor(text_element->color_);
+        label->SetEnabledColor(text_element->color);
         label->SetFontList(gfx::FontList());
         label->SetBoundsRect({label_start, y, label_width, kLineHeightDip});
         label->SetLineHeight(kLineHeightDip);

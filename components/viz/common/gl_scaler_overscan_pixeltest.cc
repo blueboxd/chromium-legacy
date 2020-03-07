@@ -168,7 +168,7 @@ class GLScalerOverscanPixelTest : public cc::PixelTest,
 
  protected:
   void SetUp() final {
-    cc::PixelTest::SetUpGLWithoutRenderer(false);
+    cc::PixelTest::SetUpGLWithoutRenderer(gfx::SurfaceOrigin::kBottomLeft);
 
     scaler_ = std::make_unique<GLScaler>(context_provider());
     gl_ = context_provider()->ContextGL();

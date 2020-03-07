@@ -31,18 +31,19 @@ class DisconnectTetheringRequestSenderImpl
  public:
   class Factory {
    public:
-    static std::unique_ptr<DisconnectTetheringRequestSender> NewInstance(
+    static std::unique_ptr<DisconnectTetheringRequestSender> Create(
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<DisconnectTetheringRequestSender> BuildInstance(
+    virtual ~Factory();
+    virtual std::unique_ptr<DisconnectTetheringRequestSender> CreateInstance(
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
-        TetherHostFetcher* tether_host_fetcher);
+        TetherHostFetcher* tether_host_fetcher) = 0;
 
    private:
     static Factory* factory_instance_;

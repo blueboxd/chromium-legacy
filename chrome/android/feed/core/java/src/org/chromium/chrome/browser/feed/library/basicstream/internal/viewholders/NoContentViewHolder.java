@@ -5,18 +5,19 @@
 package org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView.LayoutParams;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
 
+import androidx.recyclerview.widget.RecyclerView.LayoutParams;
+
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.feed.R;
 
-/** {@link android.support.v7.widget.RecyclerView.ViewHolder} for no content card. */
+/** {@link androidx.recyclerview.widget.RecyclerView.ViewHolder} for no content card. */
 public class NoContentViewHolder extends FeedViewHolder {
     private final CardConfiguration mCardConfiguration;
     private final View mView;

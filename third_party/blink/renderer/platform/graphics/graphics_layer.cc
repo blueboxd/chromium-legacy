@@ -382,7 +382,7 @@ bool GraphicsLayer::PaintWithoutCommit(const IntRect* interest_rect) {
     interest_rect = &new_interest_rect;
   }
 
-  if (!GetPaintController().SubsequenceCachingIsDisabled() &&
+  if (!GetPaintController().ShouldForcePaintForBenchmark() &&
       !client_.NeedsRepaint(*this) &&
       !GetPaintController().CacheIsAllInvalid() &&
       previous_interest_rect_ == *interest_rect) {
@@ -784,13 +784,12 @@ scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
     PaintingControlSetting painting_control) {
   TRACE_EVENT0("blink,benchmark", "GraphicsLayer::PaintContents");
 
+  if (painting_control == SUBSEQUENCE_CACHING_DISABLED)
+    PaintController::SetSubsequenceCachingDisabledForBenchmark();
+  else if (painting_control == PARTIAL_INVALIDATION)
+    PaintController::SetPartialInvalidationForBenchmark();
+
   PaintController& paint_controller = GetPaintController();
-  paint_controller.SetSubsequenceCachingIsDisabled(
-      painting_control == SUBSEQUENCE_CACHING_DISABLED);
-
-  if (painting_control == PARTIAL_INVALIDATION)
-    client_.InvalidateTargetElementForTesting();
-
   // We also disable caching when Painting or Construction are disabled. In both
   // cases we would like to compare assuming the full cost of recording, not the
   // cost of re-using cached content.
@@ -813,7 +812,7 @@ scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
       VisualRectSubpixelOffset(),
       paint_controller.GetPaintArtifact().GetDisplayItemList(), *display_list);
 
-  paint_controller.SetSubsequenceCachingIsDisabled(false);
+  PaintController::ClearFlagsForBenchmark();
 
   display_list->Finalize();
   return display_list;

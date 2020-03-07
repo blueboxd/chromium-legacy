@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -418,6 +419,10 @@ uint8_t GetActionTypePriority(dnr_api::RuleActionType action_type) {
   return 0;
 }
 
+void RecordLargeRegexUMA(bool is_large_regex) {
+  UMA_HISTOGRAM_BOOLEAN(kIsLargeRegexHistogram, is_large_regex);
+}
+
 }  // namespace
 
 IndexedRule::IndexedRule() = default;
@@ -467,8 +472,6 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   if (parsed_rule.condition.url_filter && parsed_rule.condition.regex_filter)
     return ParseResult::ERROR_MULTIPLE_FILTERS_SPECIFIED;
 
-  // TODO(crbug.com/974391): Implement limits on the number of regex rules an
-  // extension can specify.
   const bool is_regex_rule = !!parsed_rule.condition.regex_filter;
 
   if (!is_regex_rule && indexed_rule->regex_substitution)
@@ -490,8 +493,10 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
         *parsed_rule.condition.regex_filter,
         CreateRE2Options(IsCaseSensitive(parsed_rule), require_capturing));
 
-    if (regex.error_code() == re2::RE2::ErrorPatternTooLarge)
+    if (regex.error_code() == re2::RE2::ErrorPatternTooLarge) {
+      RecordLargeRegexUMA(true);
       return ParseResult::ERROR_REGEX_TOO_LARGE;
+    }
 
     if (!regex.ok())
       return ParseResult::ERROR_INVALID_REGEX_FILTER;
@@ -501,6 +506,8 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
         !regex.CheckRewriteString(*indexed_rule->regex_substitution, &error)) {
       return ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION;
     }
+
+    RecordLargeRegexUMA(false);
   }
 
   if (parsed_rule.condition.url_filter) {

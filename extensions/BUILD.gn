@@ -113,6 +113,8 @@ jumbo_static_library("test_support") {
     "renderer/test_extensions_renderer_client.h",
     "test/background_page_watcher.cc",
     "test/background_page_watcher.h",
+    "test/extension_background_page_waiter.cc",
+    "test/extension_background_page_waiter.h",
     "test/extension_test_message_listener.cc",
     "test/extension_test_message_listener.h",
     "test/extension_test_notification_observer.cc",

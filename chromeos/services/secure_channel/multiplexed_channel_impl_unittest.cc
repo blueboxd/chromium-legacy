@@ -52,7 +52,7 @@ class FakeSingleClientMessageProxyImplFactory
   }
 
  private:
-  std::unique_ptr<SingleClientMessageProxy> BuildInstance(
+  std::unique_ptr<SingleClientMessageProxy> CreateInstance(
       SingleClientMessageProxy::Delegate* delegate,
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters)
       override {
@@ -102,7 +102,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
   void SetUp() override {
     fake_proxy_factory_ =
         std::make_unique<FakeSingleClientMessageProxyImplFactory>();
-    SingleClientMessageProxyImpl::Factory::SetInstanceForTesting(
+    SingleClientMessageProxyImpl::Factory::SetFactoryForTesting(
         fake_proxy_factory_.get());
 
     fake_delegate_ = std::make_unique<FakeMultiplexedChannelDelegate>();
@@ -113,7 +113,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
   }
 
   void TearDown() override {
-    SingleClientMessageProxyImpl::Factory::SetInstanceForTesting(nullptr);
+    SingleClientMessageProxyImpl::Factory::SetFactoryForTesting(nullptr);
   }
 
   void CreateChannel() {
@@ -121,16 +121,14 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
         std::make_unique<FakeAuthenticatedChannel>();
     fake_authenticated_channel_ = fake_authenticated_channel.get();
 
-    multiplexed_channel_ =
-        MultiplexedChannelImpl::Factory::Get()->BuildInstance(
-            std::move(fake_authenticated_channel), fake_delegate_.get(),
-            ConnectionDetails(kTestDeviceId,
-                              ConnectionMedium::kBluetoothLowEnergy),
-            &initial_client_list_);
+    multiplexed_channel_ = MultiplexedChannelImpl::Factory::Create(
+        std::move(fake_authenticated_channel), fake_delegate_.get(),
+        ConnectionDetails(kTestDeviceId, ConnectionMedium::kBluetoothLowEnergy),
+        &initial_client_list_);
 
-    // Once BuildInstance() has finished, |fake_proxy_factory_| is expected to
-    // have already created one or more instances. Verify that the delegate
-    // passed to the factory is actually |multiplexed_channel_|.
+    // Once Create() has finished, |fake_proxy_factory_| is expected to have
+    // already created one or more instances. Verify that the delegate passed to
+    // the factory is actually |multiplexed_channel_|.
     EXPECT_EQ(static_cast<MultiplexedChannelImpl*>(multiplexed_channel_.get()),
               fake_proxy_factory_->expected_delegate());
   }

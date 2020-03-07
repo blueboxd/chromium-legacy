@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/gc_object_liveness_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -182,7 +181,7 @@ TEST(CredentialsContainerTest,
       context.GetScriptState(), CredentialRequestOptions::Create());
   mock_credential_manager.WaitForCallToGet();
 
-  context.Frame()->DomWindow()->FrameDestroyed();
+  context.GetDocument()->Shutdown();
 
   mock_credential_manager.InvokeGetCallback();
   proxy->FlushCredentialManagerConnectionForTesting();

@@ -266,6 +266,12 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithInstallParam(
   loader.set_allow_incognito_access(flags & kFlagEnableIncognito);
   loader.set_allow_file_access(flags & kFlagEnableFileAccess);
   loader.set_install_param(install_param);
+
+  // Note: Rely on the default value to wait for renderers unless otherwise
+  // specified.
+  if (flags & kFlagDontWaitForExtensionRenderers)
+    loader.set_wait_for_renderers(false);
+
   if ((flags & kFlagLoadForLoginScreen) != 0) {
     loader.add_creation_flag(Extension::FOR_LOGIN_SCREEN);
     loader.set_location(Manifest::EXTERNAL_POLICY);

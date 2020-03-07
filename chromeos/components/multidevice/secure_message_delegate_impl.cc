@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/easy_unlock_client.h"
@@ -80,26 +79,20 @@ SecureMessageDelegateImpl::Factory*
 
 // static
 std::unique_ptr<SecureMessageDelegate>
-SecureMessageDelegateImpl::Factory::NewInstance() {
+SecureMessageDelegateImpl::Factory::Create() {
   if (test_factory_instance_)
-    return test_factory_instance_->BuildInstance();
+    return test_factory_instance_->CreateInstance();
 
-  static base::NoDestructor<SecureMessageDelegateImpl::Factory> factory;
-  return factory->BuildInstance();
+  return base::WrapUnique(new SecureMessageDelegateImpl());
 }
 
 // static
-void SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+void SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
     Factory* test_factory) {
   test_factory_instance_ = test_factory;
 }
 
 SecureMessageDelegateImpl::Factory::~Factory() = default;
-
-std::unique_ptr<SecureMessageDelegate>
-SecureMessageDelegateImpl::Factory::BuildInstance() {
-  return base::WrapUnique(new SecureMessageDelegateImpl());
-}
 
 SecureMessageDelegateImpl::SecureMessageDelegateImpl()
     : dbus_client_(chromeos::DBusThreadManager::Get()->GetEasyUnlockClient()) {}

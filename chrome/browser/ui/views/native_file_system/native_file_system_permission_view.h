@@ -7,11 +7,8 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "ui/views/window/dialog_delegate.h"
-
-namespace base {
-class FilePath;
-}  // namespace base
 
 namespace content {
 class WebContents;
@@ -21,10 +18,6 @@ namespace permissions {
 enum class PermissionAction;
 }
 
-namespace url {
-class Origin;
-}  // namespace url
-
 namespace views {
 class Widget;
 }  // namespace views
@@ -33,6 +26,8 @@ class Widget;
 // native file system API.
 class NativeFileSystemPermissionView : public views::DialogDelegateView {
  public:
+  using Request = NativeFileSystemPermissionRequestManager::RequestData;
+
   ~NativeFileSystemPermissionView() override;
 
   // Shows a dialog asking the user if they want to give write access to the
@@ -40,9 +35,7 @@ class NativeFileSystemPermissionView : public views::DialogDelegateView {
   // |callback| will be called with the users choice, either GRANTED or
   // DISMISSED.
   static views::Widget* ShowDialog(
-      const url::Origin& origin,
-      const base::FilePath& path,
-      bool is_directory,
+      const Request& request,
       base::OnceCallback<void(permissions::PermissionAction result)> callback,
       content::WebContents* web_contents);
 
@@ -55,12 +48,10 @@ class NativeFileSystemPermissionView : public views::DialogDelegateView {
 
  private:
   NativeFileSystemPermissionView(
-      const url::Origin& origin,
-      const base::FilePath& path,
-      bool is_directory,
+      const Request& request,
       base::OnceCallback<void(permissions::PermissionAction result)> callback);
 
-  const base::FilePath path_;
+  const Request request_;
   base::OnceCallback<void(permissions::PermissionAction result)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemPermissionView);

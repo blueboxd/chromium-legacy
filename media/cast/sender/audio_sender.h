@@ -33,7 +33,7 @@ class AudioSender : public FrameSender {
  public:
   AudioSender(scoped_refptr<CastEnvironment> cast_environment,
               const FrameSenderConfig& audio_config,
-              const StatusChangeCallback& status_change_cb,
+              StatusChangeCallback status_change_cb,
               CastTransport* const transport_sender);
 
   ~AudioSender() final;

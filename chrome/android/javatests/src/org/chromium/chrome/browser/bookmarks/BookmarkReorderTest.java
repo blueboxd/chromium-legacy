@@ -14,9 +14,10 @@ import static org.chromium.components.browser_ui.widget.highlight.ViewHighlighte
 
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.support.v7.widget.RecyclerView.AdapterDataObserver;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
+
+import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.junit.Assert;
 import org.junit.Test;

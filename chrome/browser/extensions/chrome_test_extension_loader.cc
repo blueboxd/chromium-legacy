@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_creator.h"
 #include "extensions/browser/extension_registry.h"
@@ -27,7 +28,10 @@
 #include "extensions/browser/shared_user_script_master.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/user_script_loader.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/test/extension_background_page_waiter.h"
 #include "extensions/test/extension_test_notification_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -154,8 +158,33 @@ bool ChromeTestExtensionLoader::WaitForExtensionReady(
       ContentScriptLoadWaiter(user_script_loader, host_id).Wait();
   }
 
-  return ChromeExtensionTestNotificationObserver(browser_context_)
-      .WaitForExtensionViewsToLoad();
+  const int num_processes =
+      content::RenderProcessHost::GetCurrentRenderProcessCountForTesting();
+  // Determine whether or not to wait for extension renderers. By default, we
+  // base this on whether any renderer processes exist (which is also a proxy
+  // for whether this is a browser test, since MockRenderProcessHosts and
+  // similar don't count towards the render process host count), but we allow
+  // tests to override this behavior.
+  const bool should_wait_for_ready =
+      wait_for_renderers_.value_or(num_processes > 0);
+
+  if (!should_wait_for_ready)
+    return true;
+
+  content::BrowserContext* context_to_use =
+      IncognitoInfo::IsSplitMode(&extension)
+          ? browser_context_
+          : Profile::FromBrowserContext(browser_context_)->GetOriginalProfile();
+  ExtensionBackgroundPageWaiter(context_to_use, extension).Wait();
+
+  // TODO(devlin): Should this use |context_to_use|? Or should
+  // WaitForExtensionViewsToLoad check both contexts if one is OTR?
+  if (!ChromeExtensionTestNotificationObserver(browser_context_)
+           .WaitForExtensionViewsToLoad()) {
+    return false;
+  }
+
+  return true;
 }
 
 base::FilePath ChromeTestExtensionLoader::PackExtension(

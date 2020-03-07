@@ -9,10 +9,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +17,10 @@ import android.widget.ImageView;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.MathUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -311,7 +311,7 @@ public class TabListCoordinator implements Destroyable {
     }
 
     /**
-     * @return The container {@link android.support.v7.widget.RecyclerView} that is showing the
+     * @return The container {@link androidx.recyclerview.widget.RecyclerView} that is showing the
      *         tab list UI.
      */
     public TabListRecyclerView getContainerView() {

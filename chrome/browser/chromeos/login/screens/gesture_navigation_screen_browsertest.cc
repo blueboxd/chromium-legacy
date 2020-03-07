@@ -55,7 +55,7 @@ class GestureNavigationScreenTest : public OobeBaseTest {
     // |oobe_dialogs| is a list of all pages within the gesture navigation
     // screen.
     const std::vector<std::string> oobe_dialogs = {
-        "gestureIntro", "gestureHome", "gestureBack", "gestureOverview"};
+        "gestureIntro", "gestureHome", "gestureOverview", "gestureBack"};
     bool dialog_page_exists = false;
 
     for (const std::string& current_page : oobe_dialogs) {
@@ -106,16 +106,17 @@ IN_PROC_BROWSER_TEST_F(GestureNavigationScreenTest, FlowTest) {
   CheckPageIsShown("gestureHome");
   test::OobeJS().TapOnPath({"gesture-navigation", "gesture-home-next-button"});
 
-  CheckPageIsShown("gestureBack");
-  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-back-next-button"});
+  CheckPageIsShown("gestureOverview");
+  test::OobeJS().TapOnPath(
+      {"gesture-navigation", "gesture-overview-next-button"});
 
   // Now tap back buttons until intro screen is shown once again.
+  CheckPageIsShown("gestureBack");
+  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-back-back-button"});
+
   CheckPageIsShown("gestureOverview");
   test::OobeJS().TapOnPath(
       {"gesture-navigation", "gesture-overview-back-button"});
-
-  CheckPageIsShown("gestureBack");
-  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-back-back-button"});
 
   CheckPageIsShown("gestureHome");
   test::OobeJS().TapOnPath({"gesture-navigation", "gesture-home-back-button"});
@@ -127,12 +128,12 @@ IN_PROC_BROWSER_TEST_F(GestureNavigationScreenTest, FlowTest) {
   CheckPageIsShown("gestureHome");
   test::OobeJS().TapOnPath({"gesture-navigation", "gesture-home-next-button"});
 
-  CheckPageIsShown("gestureBack");
-  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-back-next-button"});
-
   CheckPageIsShown("gestureOverview");
   test::OobeJS().TapOnPath(
       {"gesture-navigation", "gesture-overview-next-button"});
+
+  CheckPageIsShown("gestureBack");
+  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-back-next-button"});
 
   WaitForScreenExit();
 }

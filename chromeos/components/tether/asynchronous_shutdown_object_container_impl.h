@@ -42,7 +42,7 @@ class AsynchronousShutdownObjectContainerImpl
  public:
   class Factory {
    public:
-    static std::unique_ptr<AsynchronousShutdownObjectContainer> NewInstance(
+    static std::unique_ptr<AsynchronousShutdownObjectContainer> Create(
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher,
@@ -51,10 +51,10 @@ class AsynchronousShutdownObjectContainerImpl
             managed_network_configuration_handler,
         NetworkConnectionHandler* network_connection_handler,
         PrefService* pref_service);
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
+    virtual std::unique_ptr<AsynchronousShutdownObjectContainer> CreateInstance(
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher,
@@ -62,7 +62,7 @@ class AsynchronousShutdownObjectContainerImpl
         ManagedNetworkConfigurationHandler*
             managed_network_configuration_handler,
         NetworkConnectionHandler* network_connection_handler,
-        PrefService* pref_service);
+        PrefService* pref_service) = 0;
     virtual ~Factory();
 
    private:

@@ -31,12 +31,57 @@ PaintController::~PaintController() {
   DCHECK(usage_ == kTransient || new_display_item_list_.IsEmpty());
 }
 
+// For micro benchmarks of record time.
+static bool g_subsequence_caching_disabled = false;
+static bool g_partial_invalidation = false;
+static int g_partial_invalidation_display_item_count = 0;
+static int g_partial_invalidation_subsequence_count = 0;
+
+// This is used to invalidate one out of every |kInvalidateDisplayItemInterval|
+// display items for the micro benchmark of record time with partial
+// invalidation.
+static bool ShouldInvalidateDisplayItemForBenchmark() {
+  constexpr int kInvalidateDisplayItemInterval = 8;
+  return g_partial_invalidation &&
+         !(g_partial_invalidation_display_item_count++ %
+           kInvalidateDisplayItemInterval);
+}
+// Similar to the above, but for subsequences.
+static bool ShouldInvalidateSubsequenceForBenchmark() {
+  constexpr int kInvalidateSubsequenceInterval = 2;
+  return g_partial_invalidation &&
+         !(g_partial_invalidation_subsequence_count++ %
+           kInvalidateSubsequenceInterval);
+}
+
+void PaintController::SetSubsequenceCachingDisabledForBenchmark() {
+  g_subsequence_caching_disabled = true;
+}
+
+void PaintController::SetPartialInvalidationForBenchmark() {
+  g_partial_invalidation = true;
+  g_partial_invalidation_display_item_count = 0;
+  g_partial_invalidation_subsequence_count = 0;
+}
+
+bool PaintController::ShouldForcePaintForBenchmark() {
+  return g_subsequence_caching_disabled || g_partial_invalidation;
+}
+
+void PaintController::ClearFlagsForBenchmark() {
+  g_subsequence_caching_disabled = false;
+  g_partial_invalidation = false;
+}
+
 bool PaintController::UseCachedItemIfPossible(const DisplayItemClient& client,
                                               DisplayItem::Type type) {
   if (usage_ == kTransient)
     return false;
 
   if (!ClientCacheIsValid(client))
+    return false;
+
+  if (ShouldInvalidateDisplayItemForBenchmark())
     return false;
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
@@ -86,7 +131,10 @@ bool PaintController::UseCachedSubsequenceIfPossible(
   if (usage_ == kTransient)
     return false;
 
-  if (SubsequenceCachingIsDisabled())
+  if (g_subsequence_caching_disabled)
+    return false;
+
+  if (ShouldInvalidateSubsequenceForBenchmark())
     return false;
 
   if (!ClientCacheIsValid(client))

@@ -31,7 +31,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
   SizeAdaptableVideoEncoderBase(
       const scoped_refptr<CastEnvironment>& cast_environment,
       const FrameSenderConfig& video_config,
-      const StatusChangeCallback& status_change_cb);
+      StatusChangeCallback status_change_cb);
 
   ~SizeAdaptableVideoEncoderBase() override;
 

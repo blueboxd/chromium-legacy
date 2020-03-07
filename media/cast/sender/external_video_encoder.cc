@@ -93,12 +93,12 @@ class ExternalVideoEncoder::VEAClientImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& encoder_task_runner,
       std::unique_ptr<media::VideoEncodeAccelerator> vea,
       double max_frame_rate,
-      const StatusChangeCallback& status_change_cb,
+      StatusChangeCallback status_change_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb)
       : cast_environment_(cast_environment),
         task_runner_(encoder_task_runner),
         max_frame_rate_(max_frame_rate),
-        status_change_cb_(status_change_cb),
+        status_change_cb_(std::move(status_change_cb)),
         create_video_encode_memory_cb_(create_video_encode_memory_cb),
         video_encode_accelerator_(std::move(vea)),
         encoder_active_(false),
@@ -640,7 +640,7 @@ ExternalVideoEncoder::ExternalVideoEncoder(
     const FrameSenderConfig& video_config,
     const gfx::Size& frame_size,
     FrameId first_frame_id,
-    const StatusChangeCallback& status_change_cb,
+    StatusChangeCallback status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb)
     : cast_environment_(cast_environment),
@@ -658,10 +658,8 @@ ExternalVideoEncoder::ExternalVideoEncoder(
 
   create_vea_cb.Run(
       base::Bind(&ExternalVideoEncoder::OnCreateVideoEncodeAccelerator,
-                 weak_factory_.GetWeakPtr(),
-                 video_config,
-                 first_frame_id,
-                 status_change_cb));
+                 weak_factory_.GetWeakPtr(), video_config, first_frame_id,
+                 std::move(status_change_cb)));
 }
 
 ExternalVideoEncoder::~ExternalVideoEncoder() {
@@ -797,12 +795,12 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
 SizeAdaptableExternalVideoEncoder::SizeAdaptableExternalVideoEncoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const FrameSenderConfig& video_config,
-    const StatusChangeCallback& status_change_cb,
+    StatusChangeCallback status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb)
     : SizeAdaptableVideoEncoderBase(cast_environment,
                                     video_config,
-                                    status_change_cb),
+                                    std::move(status_change_cb)),
       create_vea_cb_(create_vea_cb),
       create_video_encode_memory_cb_(create_video_encode_memory_cb) {}
 
@@ -811,10 +809,10 @@ SizeAdaptableExternalVideoEncoder::~SizeAdaptableExternalVideoEncoder() =
 
 std::unique_ptr<VideoEncoder>
 SizeAdaptableExternalVideoEncoder::CreateEncoder() {
-  return std::unique_ptr<VideoEncoder>(new ExternalVideoEncoder(
+  return std::make_unique<ExternalVideoEncoder>(
       cast_environment(), video_config(), frame_size(), next_frame_id(),
       CreateEncoderStatusChangeCallback(), create_vea_cb_,
-      create_video_encode_memory_cb_));
+      create_video_encode_memory_cb_);
 }
 
 QuantizerEstimator::QuantizerEstimator() = default;

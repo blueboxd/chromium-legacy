@@ -11,7 +11,6 @@ class StubGraphicsLayerClient : public GraphicsLayerClient {
   ~StubGraphicsLayerClient() override = default;
 
   // GraphicsLayerClient implementation.
-  void InvalidateTargetElementForTesting() override {}
   IntRect ComputeInterestRect(
       const GraphicsLayer*,
       const IntRect& previous_interest_rect) const override {

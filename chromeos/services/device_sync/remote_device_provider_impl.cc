@@ -24,37 +24,26 @@ RemoteDeviceProviderImpl::Factory*
     RemoteDeviceProviderImpl::Factory::factory_instance_ = nullptr;
 
 // static
-std::unique_ptr<RemoteDeviceProvider>
-RemoteDeviceProviderImpl::Factory::NewInstance(
+std::unique_ptr<RemoteDeviceProvider> RemoteDeviceProviderImpl::Factory::Create(
     CryptAuthDeviceManager* v1_device_manager,
     CryptAuthV2DeviceManager* v2_device_manager,
     const std::string& user_email,
     const std::string& user_private_key) {
-  if (!factory_instance_) {
-    factory_instance_ = new Factory();
+  if (factory_instance_) {
+    return factory_instance_->CreateInstance(
+        v1_device_manager, v2_device_manager, user_email, user_private_key);
   }
 
-  return factory_instance_->BuildInstance(v1_device_manager, v2_device_manager,
-                                          user_email, user_private_key);
+  return base::WrapUnique(new RemoteDeviceProviderImpl(
+      v1_device_manager, v2_device_manager, user_email, user_private_key));
 }
 
 // static
-void RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(
-    Factory* factory) {
+void RemoteDeviceProviderImpl::Factory::SetFactoryForTesting(Factory* factory) {
   factory_instance_ = factory;
 }
 
 RemoteDeviceProviderImpl::Factory::~Factory() = default;
-
-std::unique_ptr<RemoteDeviceProvider>
-RemoteDeviceProviderImpl::Factory::BuildInstance(
-    CryptAuthDeviceManager* v1_device_manager,
-    CryptAuthV2DeviceManager* v2_device_manager,
-    const std::string& user_email,
-    const std::string& user_private_key) {
-  return base::WrapUnique(new RemoteDeviceProviderImpl(
-      v1_device_manager, v2_device_manager, user_email, user_private_key));
-}
 
 RemoteDeviceProviderImpl::RemoteDeviceProviderImpl(
     CryptAuthDeviceManager* v1_device_manager,
@@ -109,17 +98,16 @@ void RemoteDeviceProviderImpl::OnDeviceSyncFinished(
 }
 
 void RemoteDeviceProviderImpl::LoadV1RemoteDevices() {
-  remote_device_v1_loader_ = RemoteDeviceLoader::Factory::NewInstance(
+  remote_device_v1_loader_ = RemoteDeviceLoader::Factory::Create(
       v1_device_manager_->GetSyncedDevices(), user_email_, user_private_key_,
-      multidevice::SecureMessageDelegateImpl::Factory::NewInstance());
+      multidevice::SecureMessageDelegateImpl::Factory::Create());
   remote_device_v1_loader_->Load(
       base::Bind(&RemoteDeviceProviderImpl::OnV1RemoteDevicesLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RemoteDeviceProviderImpl::LoadV2RemoteDevices() {
-  remote_device_v2_loader_ =
-      RemoteDeviceV2LoaderImpl::Factory::Get()->BuildInstance();
+  remote_device_v2_loader_ = RemoteDeviceV2LoaderImpl::Factory::Create();
   remote_device_v2_loader_->Load(
       v2_device_manager_->GetSyncedDevices(), user_email_, user_private_key_,
       base::Bind(&RemoteDeviceProviderImpl::OnV2RemoteDevicesLoaded,

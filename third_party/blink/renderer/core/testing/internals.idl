@@ -427,11 +427,11 @@
     // Sets the scale for devtools device emulation.
     [RaisesException] void setDeviceEmulationScale(float scale);
 
-    // Return a string that identifies |window|'s WindowAgent. You can use it
+    // Return a string that identifies |document|'s WindowAgent. You can use it
     // to distinguish different Agent instances (perhaps in a remote process).
     // The returned string is composed of the process ID and the memory address
     // of the Agent object.
-    DOMString getAgentId(Window window);
+    DOMString getDocumentAgentId(Document document);
 
     void useMockOverlayScrollbars();
     readonly attribute boolean overlayScrollbarsEnabled;

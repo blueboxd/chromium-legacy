@@ -8,7 +8,6 @@
 #include <sstream>
 
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/active_connection_manager_impl.h"
@@ -29,24 +28,17 @@ namespace secure_channel {
 SecureChannelImpl::Factory* SecureChannelImpl::Factory::test_factory_ = nullptr;
 
 // static
-SecureChannelImpl::Factory* SecureChannelImpl::Factory::Get() {
+std::unique_ptr<mojom::SecureChannel> SecureChannelImpl::Factory::Create(
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance(bluetooth_adapter);
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new SecureChannelImpl(bluetooth_adapter));
 }
 
 // static
 void SecureChannelImpl::Factory::SetFactoryForTesting(Factory* test_factory) {
   test_factory_ = test_factory;
-}
-
-SecureChannelImpl::Factory::~Factory() = default;
-
-std::unique_ptr<mojom::SecureChannel> SecureChannelImpl::Factory::BuildInstance(
-    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
-  return base::WrapUnique(new SecureChannelImpl(bluetooth_adapter));
 }
 
 SecureChannelImpl::ConnectionRequestWaitingForDisconnection::
@@ -72,25 +64,20 @@ SecureChannelImpl::ConnectionRequestWaitingForDisconnection::
 SecureChannelImpl::SecureChannelImpl(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)
     : bluetooth_adapter_(std::move(bluetooth_adapter)),
-      timer_factory_(TimerFactoryImpl::Factory::Get()->BuildInstance()),
-      remote_device_cache_(
-          multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance()),
-      ble_service_data_helper_(
-          BleServiceDataHelperImpl::Factory::Get()->BuildInstance(
-              remote_device_cache_.get())),
-      ble_connection_manager_(
-          BleConnectionManagerImpl::Factory::Get()->BuildInstance(
-              bluetooth_adapter_,
-              ble_service_data_helper_.get(),
-              timer_factory_.get())),
-      pending_connection_manager_(
-          PendingConnectionManagerImpl::Factory::Get()->BuildInstance(
-              this /* delegate */,
-              ble_connection_manager_.get(),
-              bluetooth_adapter_)),
+      timer_factory_(TimerFactoryImpl::Factory::Create()),
+      remote_device_cache_(multidevice::RemoteDeviceCache::Factory::Create()),
+      ble_service_data_helper_(BleServiceDataHelperImpl::Factory::Create(
+          remote_device_cache_.get())),
+      ble_connection_manager_(BleConnectionManagerImpl::Factory::Create(
+          bluetooth_adapter_,
+          ble_service_data_helper_.get(),
+          timer_factory_.get())),
+      pending_connection_manager_(PendingConnectionManagerImpl::Factory::Create(
+          this /* delegate */,
+          ble_connection_manager_.get(),
+          bluetooth_adapter_)),
       active_connection_manager_(
-          ActiveConnectionManagerImpl::Factory::Get()->BuildInstance(
-              this /* delegate */)) {}
+          ActiveConnectionManagerImpl::Factory::Create(this /* delegate */)) {}
 
 SecureChannelImpl::~SecureChannelImpl() = default;
 
@@ -100,12 +87,12 @@ void SecureChannelImpl::ListenForConnectionFromDevice(
     const std::string& feature,
     ConnectionPriority connection_priority,
     mojo::PendingRemote<mojom::ConnectionDelegate> delegate) {
-  ProcessConnectionRequest(
-      ApiFunctionName::kListenForConnection, device_to_connect, local_device,
-      ClientConnectionParametersImpl::Factory::Get()->BuildInstance(
-          feature, std::move(delegate)),
-      ConnectionRole::kListenerRole, connection_priority,
-      ConnectionMedium::kBluetoothLowEnergy);
+  ProcessConnectionRequest(ApiFunctionName::kListenForConnection,
+                           device_to_connect, local_device,
+                           ClientConnectionParametersImpl::Factory::Create(
+                               feature, std::move(delegate)),
+                           ConnectionRole::kListenerRole, connection_priority,
+                           ConnectionMedium::kBluetoothLowEnergy);
 }
 
 void SecureChannelImpl::InitiateConnectionToDevice(
@@ -114,12 +101,12 @@ void SecureChannelImpl::InitiateConnectionToDevice(
     const std::string& feature,
     ConnectionPriority connection_priority,
     mojo::PendingRemote<mojom::ConnectionDelegate> delegate) {
-  ProcessConnectionRequest(
-      ApiFunctionName::kInitiateConnection, device_to_connect, local_device,
-      ClientConnectionParametersImpl::Factory::Get()->BuildInstance(
-          feature, std::move(delegate)),
-      ConnectionRole::kInitiatorRole, connection_priority,
-      ConnectionMedium::kBluetoothLowEnergy);
+  ProcessConnectionRequest(ApiFunctionName::kInitiateConnection,
+                           device_to_connect, local_device,
+                           ClientConnectionParametersImpl::Factory::Create(
+                               feature, std::move(delegate)),
+                           ConnectionRole::kInitiatorRole, connection_priority,
+                           ConnectionMedium::kBluetoothLowEnergy);
 }
 
 void SecureChannelImpl::OnDisconnected(

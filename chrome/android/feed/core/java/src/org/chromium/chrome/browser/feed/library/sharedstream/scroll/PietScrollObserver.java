@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.feed.library.sharedstream.scroll;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.feed.library.piet.FrameAdapter;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;

@@ -65,7 +65,7 @@ class MultiDeviceSetupDeviceReenrollerTest : public testing::Test {
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
 
-    device_reenroller_ = DeviceReenroller::Factory::Get()->BuildInstance(
+    device_reenroller_ = DeviceReenroller::Factory::Create(
         fake_device_sync_client_.get(), fake_gcm_device_info_provider_.get(),
         std::move(mock_timer));
   }

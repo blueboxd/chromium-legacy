@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 
 namespace chromeos {
@@ -19,12 +18,17 @@ AuthenticatedChannelImpl::Factory*
     AuthenticatedChannelImpl::Factory::test_factory_ = nullptr;
 
 // static
-AuthenticatedChannelImpl::Factory* AuthenticatedChannelImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<AuthenticatedChannel> AuthenticatedChannelImpl::Factory::Create(
+    const std::vector<mojom::ConnectionCreationDetail>&
+        connection_creation_details,
+    std::unique_ptr<SecureChannel> secure_channel) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(connection_creation_details,
+                                         std::move(secure_channel));
+  }
 
-  static base::NoDestructor<AuthenticatedChannelImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new AuthenticatedChannelImpl(
+      connection_creation_details, std::move(secure_channel)));
 }
 
 // static
@@ -33,14 +37,7 @@ void AuthenticatedChannelImpl::Factory::SetFactoryForTesting(
   test_factory_ = test_factory;
 }
 
-std::unique_ptr<AuthenticatedChannel>
-AuthenticatedChannelImpl::Factory::BuildInstance(
-    const std::vector<mojom::ConnectionCreationDetail>&
-        connection_creation_details,
-    std::unique_ptr<SecureChannel> secure_channel) {
-  return base::WrapUnique(new AuthenticatedChannelImpl(
-      connection_creation_details, std::move(secure_channel)));
-}
+AuthenticatedChannelImpl::Factory::~Factory() = default;
 
 AuthenticatedChannelImpl::AuthenticatedChannelImpl(
     const std::vector<mojom::ConnectionCreationDetail>&

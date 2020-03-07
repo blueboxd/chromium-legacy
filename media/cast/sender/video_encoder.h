@@ -39,7 +39,7 @@ class VideoEncoder {
   static std::unique_ptr<VideoEncoder> Create(
       const scoped_refptr<CastEnvironment>& cast_environment,
       const FrameSenderConfig& video_config,
-      const StatusChangeCallback& status_change_cb,
+      StatusChangeCallback status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
 

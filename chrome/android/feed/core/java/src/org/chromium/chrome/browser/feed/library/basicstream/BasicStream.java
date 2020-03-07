@@ -13,15 +13,15 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Base64;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 

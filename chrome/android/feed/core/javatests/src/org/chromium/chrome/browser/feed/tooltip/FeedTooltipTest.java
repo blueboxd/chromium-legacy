@@ -19,7 +19,8 @@ import static org.chromium.chrome.browser.feed.library.basicstream.internal.view
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.filters.MediumTest;
-import android.support.v7.widget.RecyclerView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.After;
 import org.junit.Assert;

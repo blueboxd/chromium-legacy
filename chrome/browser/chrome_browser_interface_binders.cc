@@ -21,6 +21,8 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_processor_impl.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/soda/soda_service.h"
+#include "chrome/browser/soda/soda_service_factory.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals.mojom.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
@@ -49,6 +51,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
+#include "media/mojo/mojom/soda_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
@@ -323,6 +326,15 @@ void BindNetworkHintsHandler(
   predictors::NetworkHintsHandlerImpl::Create(frame_host, std::move(receiver));
 }
 
+void BindSodaContextHandler(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<media::mojom::SodaContext> receiver) {
+  SodaServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(
+          frame_host->GetProcess()->GetBrowserContext()))
+      ->Create(std::move(receiver));
+}
+
 void PopulateChromeFrameBinders(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<image_annotation::mojom::Annotator>(
@@ -400,6 +412,9 @@ void PopulateChromeFrameBinders(
 
   map->Add<network_hints::mojom::NetworkHintsHandler>(
       base::BindRepeating(&BindNetworkHintsHandler));
+
+  map->Add<media::mojom::SodaContext>(
+      base::BindRepeating(&BindSodaContextHandler));
 }
 
 void PopulateChromeWebUIFrameBinders(

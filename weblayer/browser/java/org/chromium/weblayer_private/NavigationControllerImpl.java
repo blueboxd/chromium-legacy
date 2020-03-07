@@ -37,6 +37,13 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     }
 
     @Override
+    public void replace(String uri) {
+        StrictModeWorkaround.apply();
+        NavigationControllerImplJni.get().replace(
+                mNativeNavigationController, NavigationControllerImpl.this, uri);
+    }
+
+    @Override
     public void goBack() {
         StrictModeWorkaround.apply();
         NavigationControllerImplJni.get().goBack(
@@ -165,6 +172,8 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
                 long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         long getNavigationController(long tab);
         void navigate(
+                long nativeNavigationControllerImpl, NavigationControllerImpl caller, String uri);
+        void replace(
                 long nativeNavigationControllerImpl, NavigationControllerImpl caller, String uri);
         void goBack(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         void goForward(long nativeNavigationControllerImpl, NavigationControllerImpl caller);

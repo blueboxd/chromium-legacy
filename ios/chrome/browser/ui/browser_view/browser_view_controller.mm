@@ -3072,10 +3072,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   CGPoint originPoint = [params.view convertPoint:params.location toView:nil];
 
   if (isLink) {
+    base::RecordAction(
+        base::UserMetricsAction("MobileWebContextMenuLinkImpression"));
     if (link.SchemeIs(url::kJavaScriptScheme)) {
       // Open
       title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPEN);
       action = ^{
+        base::RecordAction(
+            base::UserMetricsAction("MobileWebContextMenuOpenJS"));
         Record(ACTION_OPEN_JAVASCRIPT, isImage, isLink);
         [weakSelf openJavascript:base::SysUTF8ToNSString(link.GetContent())];
       };
@@ -3089,6 +3093,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       title = l10n_util::GetNSStringWithFixup(
           IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
       action = ^{
+        base::RecordAction(
+            base::UserMetricsAction("MobileWebContextMenuOpenInNewTab"));
         Record(ACTION_OPEN_IN_NEW_TAB, isImage, isLink);
         // The "New Tab" item in the context menu opens a new tab in the current
         // browser state. |isOffTheRecord| indicates whether or not the current
@@ -3112,6 +3118,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         title = l10n_util::GetNSStringWithFixup(
             IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
         action = ^{
+          base::RecordAction(base::UserMetricsAction(
+              "MobileWebContextMenuOpenInIncognitoTab"));
           BrowserViewController* strongSelf = weakSelf;
           if (!strongSelf)
             return;
@@ -3135,6 +3143,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         title = l10n_util::GetNSStringWithFixup(
             IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST);
         action = ^{
+          base::RecordAction(
+              base::UserMetricsAction("MobileWebContextMenuReadLater"));
           Record(ACTION_READ_LATER, isImage, isLink);
           [weakSelf addToReadingListURL:link title:innerText];
         };
@@ -3144,16 +3154,22 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // Copy Link.
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_COPY);
     action = ^{
+      base::RecordAction(
+          base::UserMetricsAction("MobileWebContextMenuCopyLink"));
       Record(ACTION_COPY_LINK_ADDRESS, isImage, isLink);
       StoreURLInPasteboard(link);
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
   }
   if (isImage) {
+    base::RecordAction(
+        base::UserMetricsAction("MobileWebContextMenuImageImpression"));
     web::Referrer referrer(lastCommittedURL, params.referrer_policy);
     // Save Image.
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE);
     action = ^{
+      base::RecordAction(
+          base::UserMetricsAction("MobileWebContextMenuSaveImage"));
       Record(ACTION_SAVE_IMAGE, isImage, isLink);
       [weakSelf.imageSaver saveImageAtURL:imageUrl
                                  referrer:referrer
@@ -3163,6 +3179,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // Copy Image.
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_COPYIMAGE);
     action = ^{
+      base::RecordAction(
+          base::UserMetricsAction("MobileWebContextMenuCopyImage"));
       Record(ACTION_COPY_IMAGE, isImage, isLink);
       DCHECK(imageUrl.is_valid());
       [weakSelf.imageCopier copyImageAtURL:imageUrl
@@ -3173,6 +3191,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // Open Image.
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENIMAGE);
     action = ^{
+      base::RecordAction(
+          base::UserMetricsAction("MobileWebContextMenuOpenImage"));
       BrowserViewController* strongSelf = weakSelf;
       if (!strongSelf)
         return;
@@ -3186,6 +3206,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     title = l10n_util::GetNSStringWithFixup(
         IDS_IOS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
     action = ^{
+      base::RecordAction(
+          base::UserMetricsAction("MobileWebContextMenuOpenImageInNewTab"));
       Record(ACTION_OPEN_IMAGE_IN_NEW_TAB, isImage, isLink);
       BrowserViewController* strongSelf = weakSelf;
       if (!strongSelf)
@@ -3209,6 +3231,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       title = l10n_util::GetNSStringF(IDS_IOS_CONTEXT_MENU_SEARCHWEBFORIMAGE,
                                       defaultURL->short_name());
       action = ^{
+        base::RecordAction(
+            base::UserMetricsAction("MobileWebContextMenuSearchByImage"));
         Record(ACTION_SEARCH_BY_IMAGE, isImage, isLink);
         ImageFetchTabHelper* image_fetcher =
             ImageFetchTabHelper::FromWebState(self.currentWebState);

@@ -55,7 +55,7 @@ class TetherComponentImpl : public TetherComponent {
 
   class Factory {
    public:
-    static std::unique_ptr<TetherComponent> NewInstance(
+    static std::unique_ptr<TetherComponent> Create(
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher,
@@ -71,10 +71,10 @@ class TetherComponentImpl : public TetherComponent {
         scoped_refptr<device::BluetoothAdapter> adapter,
         session_manager::SessionManager* session_manager);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<TetherComponent> BuildInstance(
+    virtual std::unique_ptr<TetherComponent> CreateInstance(
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher,
@@ -88,7 +88,7 @@ class TetherComponentImpl : public TetherComponent {
         NetworkConnect* network_connect,
         NetworkConnectionHandler* network_connection_handler,
         scoped_refptr<device::BluetoothAdapter> adapter,
-        session_manager::SessionManager* session_manager);
+        session_manager::SessionManager* session_manager) = 0;
 
    private:
     static Factory* factory_instance_;

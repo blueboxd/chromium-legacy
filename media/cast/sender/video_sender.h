@@ -41,7 +41,7 @@ class VideoSender : public FrameSender {
  public:
   VideoSender(scoped_refptr<CastEnvironment> cast_environment,
               const FrameSenderConfig& video_config,
-              const StatusChangeCallback& status_change_cb,
+              StatusChangeCallback status_change_cb,
               const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
               const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
               CastTransport* const transport_sender,

@@ -28,4 +28,6 @@ interface INavigationController {
   void goToIndex(in int index) = 10;
 
   String getNavigationEntryTitle(in int index) = 11;
+
+  void replace(in String uri) = 12;
 }

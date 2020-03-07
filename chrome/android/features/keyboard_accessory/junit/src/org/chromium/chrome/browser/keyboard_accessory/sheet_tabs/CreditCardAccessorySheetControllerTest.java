@@ -21,7 +21,8 @@ import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.Accessor
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.getType;
 
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.RecyclerView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Before;
 import org.junit.Rule;

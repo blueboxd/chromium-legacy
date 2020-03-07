@@ -21,31 +21,26 @@ DisconnectTetheringRequestSenderImpl::Factory*
 
 // static
 std::unique_ptr<DisconnectTetheringRequestSender>
-DisconnectTetheringRequestSenderImpl::Factory::NewInstance(
+DisconnectTetheringRequestSenderImpl::Factory::Create(
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostFetcher* tether_host_fetcher) {
-  if (!factory_instance_)
-    factory_instance_ = new Factory();
+  if (factory_instance_) {
+    return factory_instance_->CreateInstance(
+        device_sync_client, secure_channel_client, tether_host_fetcher);
+  }
 
-  return factory_instance_->BuildInstance(
-      device_sync_client, secure_channel_client, tether_host_fetcher);
+  return base::WrapUnique(new DisconnectTetheringRequestSenderImpl(
+      device_sync_client, secure_channel_client, tether_host_fetcher));
 }
 
 // static
-void DisconnectTetheringRequestSenderImpl::Factory::SetInstanceForTesting(
+void DisconnectTetheringRequestSenderImpl::Factory::SetFactoryForTesting(
     Factory* factory) {
   factory_instance_ = factory;
 }
 
-std::unique_ptr<DisconnectTetheringRequestSender>
-DisconnectTetheringRequestSenderImpl::Factory::BuildInstance(
-    device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client,
-    TetherHostFetcher* tether_host_fetcher) {
-  return base::WrapUnique(new DisconnectTetheringRequestSenderImpl(
-      device_sync_client, secure_channel_client, tether_host_fetcher));
-}
+DisconnectTetheringRequestSenderImpl::Factory::~Factory() = default;
 
 DisconnectTetheringRequestSenderImpl::DisconnectTetheringRequestSenderImpl(
     device_sync::DeviceSyncClient* device_sync_client,
@@ -96,7 +91,7 @@ void DisconnectTetheringRequestSenderImpl::OnTetherHostFetched(
                          device_id);
 
   std::unique_ptr<DisconnectTetheringOperation> disconnect_tethering_operation =
-      DisconnectTetheringOperation::Factory::NewInstance(
+      DisconnectTetheringOperation::Factory::Create(
           *tether_host, device_sync_client_, secure_channel_client_);
 
   // Add to the map.

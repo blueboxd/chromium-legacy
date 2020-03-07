@@ -63,7 +63,7 @@ class SynchronousShutdownObjectContainerImpl
  public:
   class Factory {
    public:
-    static std::unique_ptr<SynchronousShutdownObjectContainer> NewInstance(
+    static std::unique_ptr<SynchronousShutdownObjectContainer> Create(
         AsynchronousShutdownObjectContainer* asychronous_container,
         NotificationPresenter* notification_presenter,
         GmsCoreNotificationsStateTrackerImpl*
@@ -75,10 +75,10 @@ class SynchronousShutdownObjectContainerImpl
         session_manager::SessionManager* session_manager,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client);
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<SynchronousShutdownObjectContainer> BuildInstance(
+    virtual std::unique_ptr<SynchronousShutdownObjectContainer> CreateInstance(
         AsynchronousShutdownObjectContainer* asychronous_container,
         NotificationPresenter* notification_presenter,
         GmsCoreNotificationsStateTrackerImpl*
@@ -89,7 +89,7 @@ class SynchronousShutdownObjectContainerImpl
         NetworkConnectionHandler* network_connection_handler,
         session_manager::SessionManager* session_manager,
         device_sync::DeviceSyncClient* device_sync_client,
-        secure_channel::SecureChannelClient* secure_channel_client);
+        secure_channel::SecureChannelClient* secure_channel_client) = 0;
     virtual ~Factory();
 
    private:

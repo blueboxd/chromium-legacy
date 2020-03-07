@@ -7,6 +7,8 @@
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "base/no_destructor.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -27,6 +29,10 @@ const std::string& UrlForContent() {
 
 SwitchAccessPanel::SwitchAccessPanel(content::BrowserContext* browser_context)
     : AccessibilityPanel(browser_context, UrlForContent(), kWidgetName) {
+  content::RenderWidgetHostView* view =
+      GetWebContents()->GetMainFrame()->GetView();
+  view->SetBackgroundColor(SK_ColorTRANSPARENT);
+  view->GetNativeView()->SetTransparent(true);
   Hide();
 }
 

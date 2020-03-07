@@ -62,7 +62,7 @@ class FakeBleInitiatorConnectionAttemptFactory
 
  private:
   // BleInitiatorConnectionAttempt::Factory:
-  std::unique_ptr<ConnectionAttempt<BleInitiatorFailureType>> BuildInstance(
+  std::unique_ptr<ConnectionAttempt<BleInitiatorFailureType>> CreateInstance(
       BleConnectionManager* ble_connection_manager,
       ConnectionAttemptDelegate* delegate,
       const ConnectionAttemptDetails& connection_attempt_details) override {
@@ -139,7 +139,7 @@ class FakeBleListenerConnectionAttemptFactory
 
  private:
   // BleListenerConnectionAttempt::Factory:
-  std::unique_ptr<ConnectionAttempt<BleListenerFailureType>> BuildInstance(
+  std::unique_ptr<ConnectionAttempt<BleListenerFailureType>> CreateInstance(
       BleConnectionManager* ble_connection_manager,
       ConnectionAttemptDelegate* delegate,
       const ConnectionAttemptDetails& connection_attempt_details) override {
@@ -209,7 +209,7 @@ class FakePendingBleInitiatorConnectionRequestFactory
  private:
   // PendingBleInitiatorConnectionRequest::Factory:
   std::unique_ptr<PendingConnectionRequest<BleInitiatorFailureType>>
-  BuildInstance(
+  CreateInstance(
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionPriority connection_priority,
       PendingConnectionRequestDelegate* delegate,
@@ -256,7 +256,7 @@ class FakePendingBleListenerConnectionRequestFactory
  private:
   // PendingBleListenerConnectionRequest::Factory:
   std::unique_ptr<PendingConnectionRequest<BleListenerFailureType>>
-  BuildInstance(
+  CreateInstance(
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionPriority connection_priority,
       PendingConnectionRequestDelegate* delegate,
@@ -343,7 +343,7 @@ class SecureChannelPendingConnectionManagerImplTest : public testing::Test {
     mock_adapter_ =
         base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
 
-    manager_ = PendingConnectionManagerImpl::Factory::Get()->BuildInstance(
+    manager_ = PendingConnectionManagerImpl::Factory::Create(
         fake_delegate_.get(), fake_ble_connection_manager_.get(),
         mock_adapter_);
   }

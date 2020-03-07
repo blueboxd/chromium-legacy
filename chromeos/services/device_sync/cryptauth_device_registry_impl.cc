@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_device.h"
@@ -26,13 +25,12 @@ CryptAuthDeviceRegistryImpl::Factory*
     CryptAuthDeviceRegistryImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthDeviceRegistryImpl::Factory*
-CryptAuthDeviceRegistryImpl::Factory::Get() {
+std::unique_ptr<CryptAuthDeviceRegistry>
+CryptAuthDeviceRegistryImpl::Factory::Create(PrefService* pref_service) {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance(pref_service);
 
-  static base::NoDestructor<CryptAuthDeviceRegistryImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthDeviceRegistryImpl(pref_service));
 }
 
 // static
@@ -42,11 +40,6 @@ void CryptAuthDeviceRegistryImpl::Factory::SetFactoryForTesting(
 }
 
 CryptAuthDeviceRegistryImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthDeviceRegistry>
-CryptAuthDeviceRegistryImpl::Factory::BuildInstance(PrefService* pref_service) {
-  return base::WrapUnique(new CryptAuthDeviceRegistryImpl(pref_service));
-}
 
 // static
 void CryptAuthDeviceRegistryImpl::RegisterPrefs(PrefRegistrySimple* registry) {

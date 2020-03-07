@@ -50,7 +50,7 @@ class FakeErrorTolerantBleAdvertisementFactory
 
  private:
   // ErrorTolerantBleAdvertisementImpl::Factory:
-  std::unique_ptr<ErrorTolerantBleAdvertisement> BuildInstance(
+  std::unique_ptr<ErrorTolerantBleAdvertisement> CreateInstance(
       const DeviceIdPair& device_id_pair,
       std::unique_ptr<DataWithTimestamp> advertisement_data,
       BleSynchronizerBase* ble_synchronizer) override {
@@ -119,7 +119,7 @@ class SecureChannelBleAdvertiserImplTest : public testing::Test {
 
     test_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
-    advertiser_ = BleAdvertiserImpl::Factory::Get()->BuildInstance(
+    advertiser_ = BleAdvertiserImpl::Factory::Create(
         fake_delegate_.get(), fake_ble_service_data_helper_.get(),
         fake_ble_synchronizer_.get(), fake_timer_factory_.get(), test_runner_);
   }

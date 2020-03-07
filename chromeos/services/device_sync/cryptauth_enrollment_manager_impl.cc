@@ -83,23 +83,26 @@ CryptAuthEnrollmentManagerImpl::Factory*
 
 // static
 std::unique_ptr<CryptAuthEnrollmentManager>
-CryptAuthEnrollmentManagerImpl::Factory::NewInstance(
+CryptAuthEnrollmentManagerImpl::Factory::Create(
     base::Clock* clock,
     std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
     std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate,
     const cryptauth::GcmDeviceInfo& device_info,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service) {
-  if (!factory_instance_)
-    factory_instance_ = new Factory();
+  if (factory_instance_) {
+    return factory_instance_->CreateInstance(
+        clock, std::move(enroller_factory), std::move(secure_message_delegate),
+        device_info, gcm_manager, pref_service);
+  }
 
-  return factory_instance_->BuildInstance(
+  return base::WrapUnique(new CryptAuthEnrollmentManagerImpl(
       clock, std::move(enroller_factory), std::move(secure_message_delegate),
-      device_info, gcm_manager, pref_service);
+      device_info, gcm_manager, pref_service));
 }
 
 // static
-void CryptAuthEnrollmentManagerImpl::Factory::SetInstanceForTesting(
+void CryptAuthEnrollmentManagerImpl::Factory::SetFactoryForTesting(
     Factory* factory) {
   factory_instance_ = factory;
 }
@@ -119,19 +122,6 @@ void CryptAuthEnrollmentManagerImpl::RegisterPrefs(
                                std::string());
   registry->RegisterStringPref(prefs::kCryptAuthEnrollmentUserPrivateKey,
                                std::string());
-}
-
-std::unique_ptr<CryptAuthEnrollmentManager>
-CryptAuthEnrollmentManagerImpl::Factory::BuildInstance(
-    base::Clock* clock,
-    std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
-    std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate,
-    const cryptauth::GcmDeviceInfo& device_info,
-    CryptAuthGCMManager* gcm_manager,
-    PrefService* pref_service) {
-  return base::WrapUnique(new CryptAuthEnrollmentManagerImpl(
-      clock, std::move(enroller_factory), std::move(secure_message_delegate),
-      device_info, gcm_manager, pref_service));
 }
 
 CryptAuthEnrollmentManagerImpl::CryptAuthEnrollmentManagerImpl(

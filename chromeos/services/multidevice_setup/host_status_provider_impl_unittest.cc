@@ -43,11 +43,10 @@ class MultiDeviceSetupHostStatusProviderImplTest : public testing::Test {
         std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_device_sync_client_->set_synced_devices(test_devices_);
 
-    host_status_provider_ =
-        HostStatusProviderImpl::Factory::Get()->BuildInstance(
-            fake_eligible_host_devices_provider_.get(),
-            fake_host_backend_delegate_.get(), fake_host_verifier_.get(),
-            fake_device_sync_client_.get());
+    host_status_provider_ = HostStatusProviderImpl::Factory::Create(
+        fake_eligible_host_devices_provider_.get(),
+        fake_host_backend_delegate_.get(), fake_host_verifier_.get(),
+        fake_device_sync_client_.get());
 
     fake_observer_ = std::make_unique<FakeHostStatusProviderObserver>();
     host_status_provider_->AddObserver(fake_observer_.get());

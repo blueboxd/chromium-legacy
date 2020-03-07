@@ -43,11 +43,10 @@ class SecureChannelErrorTolerantBleAdvertisementImplTest
 
     fake_synchronizer_ = std::make_unique<FakeBleSynchronizer>();
 
-    advertisement_ =
-        ErrorTolerantBleAdvertisementImpl::Factory::Get()->BuildInstance(
-            DeviceIdPair(kDeviceId, kLocalDeviceId),
-            std::make_unique<DataWithTimestamp>(*fake_advertisement_data_),
-            fake_synchronizer_.get());
+    advertisement_ = ErrorTolerantBleAdvertisementImpl::Factory::Create(
+        DeviceIdPair(kDeviceId, kLocalDeviceId),
+        std::make_unique<DataWithTimestamp>(*fake_advertisement_data_),
+        fake_synchronizer_.get());
 
     VerifyServiceDataMatches(0u /* command_index */);
   }

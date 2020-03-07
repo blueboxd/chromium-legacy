@@ -25,15 +25,13 @@ SecureChannelClientProvider* SecureChannelClientProvider::GetInstance() {
 
 SecureChannelClient* SecureChannelClientProvider::GetClient() {
   if (!secure_channel_client_) {
-    static base::NoDestructor<std::unique_ptr<SecureChannelBase>> instance{[] {
-      return SecureChannelInitializer::Factory::Get()->BuildInstance();
-    }()};
+    static base::NoDestructor<std::unique_ptr<SecureChannelBase>> instance{
+        [] { return SecureChannelInitializer::Factory::Create(); }()};
 
     mojo::PendingRemote<mojom::SecureChannel> channel;
     (*instance)->BindReceiver(channel.InitWithNewPipeAndPassReceiver());
     secure_channel_client_ =
-        SecureChannelClientImpl::Factory::Get()->BuildInstance(
-            std::move(channel));
+        SecureChannelClientImpl::Factory::Create(std::move(channel));
   }
 
   return secure_channel_client_.get();

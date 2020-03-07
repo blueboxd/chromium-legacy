@@ -337,6 +337,9 @@ as required builders.
 * [linux-ozone-x11-and-wayland-rel](https://ci.chromium.org/p/chromium/builders/try/linux-ozone-x11-and-wayland-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux-ozone-x11-and-wayland-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux-ozone-x11-and-wayland-rel))
   * Experiment percentage: 1
 
+* [mac-coverage-rel](https://ci.chromium.org/p/chromium/builders/try/mac-coverage-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+mac-coverage-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+mac-coverage-rel))
+  * Experiment percentage: 3
+
 * [win10_chromium_x64_coverage_rel_ng](https://ci.chromium.org/p/chromium/builders/try/win10_chromium_x64_coverage_rel_ng) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+win10_chromium_x64_coverage_rel_ng)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+win10_chromium_x64_coverage_rel_ng))
   * Experiment percentage: 3
 

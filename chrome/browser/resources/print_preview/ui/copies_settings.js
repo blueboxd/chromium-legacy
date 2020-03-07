@@ -6,9 +6,17 @@ import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import './number_settings_section.js';
 import './print_preview_shared_css.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsBehavior} from './settings_behavior.js';
+
+/**
+ * Maximum number of copies supported by the printer if not explicitly
+ * specified.
+ * @type {number}
+ */
+export const DEFAULT_MAX_COPIES = 999;
 
 Polymer({
   is: 'print-preview-copies-settings',
@@ -18,6 +26,14 @@ Polymer({
   behaviors: [SettingsBehavior],
 
   properties: {
+    capability: Object,
+
+    /** @private {number} */
+    copiesMax_: {
+      type: Number,
+      computed: 'computeCopiesMax_(capability)',
+    },
+
     /** @private {string} */
     currentValue_: {
       type: String,
@@ -30,8 +46,26 @@ Polymer({
     disabled: Boolean,
   },
 
-  observers:
-      ['onSettingsChanged_(settings.copies.value, settings.collate.value)'],
+  observers: [
+    'onSettingsChanged_(settings.copies.value, settings.collate.value)',
+  ],
+
+  /**
+   * @return {number} The maximum number of copies this printer supports.
+   * @private
+   */
+  computeCopiesMax_() {
+    return (this.capability && this.capability.max) ? this.capability.max :
+                                                      DEFAULT_MAX_COPIES;
+  },
+
+  /**
+   * @return {string} The message to show as hint.
+   * @private
+   */
+  getHintMessage_() {
+    return loadTimeData.getStringF('copiesInstruction', this.copiesMax_);
+  },
 
   /**
    * Updates the input string when the setting has been initialized.

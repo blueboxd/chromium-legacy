@@ -8,13 +8,14 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkNo
 
 import android.content.Context;
 import android.support.annotation.VisibleForTesting;
-import android.support.v7.widget.RecyclerView.LayoutParams;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
+
+import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
@@ -23,7 +24,7 @@ import org.chromium.chrome.browser.feed.library.sharedstream.logging.LoggingList
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.VisibilityMonitor;
 import org.chromium.chrome.feed.R;
 
-/** {@link android.support.v7.widget.RecyclerView.ViewHolder} for the more button. */
+/** {@link androidx.recyclerview.widget.RecyclerView.ViewHolder} for the more button. */
 public class ContinuationViewHolder extends FeedViewHolder {
     private final View mActionButton;
     private final View mSpinner;

@@ -14,7 +14,6 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ndef_scan_options.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_reader.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_proxy.h"
@@ -163,14 +162,14 @@ class NFCProxyTest : public PageTestBase {
 
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    GetFrame().DomWindow()->GetBrowserInterfaceBroker().SetBinderForTesting(
+    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
         device::mojom::blink::NFC::Name_,
         WTF::BindRepeating(&FakeNfcService::BindRequest,
                            WTF::Unretained(nfc_service())));
   }
 
   void TearDown() override {
-    GetFrame().DomWindow()->GetBrowserInterfaceBroker().SetBinderForTesting(
+    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
         device::mojom::blink::NFC::Name_, {});
   }
 
@@ -181,11 +180,12 @@ class NFCProxyTest : public PageTestBase {
 };
 
 TEST_F(NFCProxyTest, SuccessfulPath) {
-  auto* window = GetFrame().DomWindow();
-  auto* nfc_proxy = NFCProxy::From(*window);
+  auto& document = GetDocument();
+  auto* nfc_proxy = NFCProxy::From(document);
   auto* scan_options = NDEFScanOptions::Create();
   scan_options->setId(kFakeRecordId);
-  auto* reader = MakeGarbageCollected<MockNDEFReader>(window);
+  auto* reader =
+      MakeGarbageCollected<MockNDEFReader>(document.ToExecutionContext());
 
   {
     base::RunLoop loop;
@@ -234,11 +234,12 @@ TEST_F(NFCProxyTest, SuccessfulPath) {
 }
 
 TEST_F(NFCProxyTest, ErrorPath) {
-  auto* window = GetFrame().DomWindow();
-  auto* nfc_proxy = NFCProxy::From(*window);
+  auto& document = GetDocument();
+  auto* nfc_proxy = NFCProxy::From(document);
   auto* scan_options = NDEFScanOptions::Create();
   scan_options->setId(kFakeRecordId);
-  auto* reader = MakeGarbageCollected<MockNDEFReader>(window);
+  auto* reader =
+      MakeGarbageCollected<MockNDEFReader>(document.ToExecutionContext());
 
   // Make the fake NFC service return an error for the incoming watch request.
   nfc_service()->set_watch_error(device::mojom::blink::NDEFError::New(

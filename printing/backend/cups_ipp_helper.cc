@@ -255,7 +255,8 @@ void ExtractCopies(const CupsOptionProvider& printer,
   int lower_bound;
   int upper_bound;
   CopiesRange(printer, &lower_bound, &upper_bound);
-  printer_info->copies_capable = (lower_bound != -1) && (upper_bound >= 2);
+  printer_info->copies_max =
+      (lower_bound != -1 && upper_bound >= 2) ? upper_bound : 1;
 }
 
 // Reads resolution from |attr| and puts into |size| in dots per inch.

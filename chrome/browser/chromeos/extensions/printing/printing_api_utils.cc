@@ -29,9 +29,6 @@ constexpr char kKind[] = "kind";
 constexpr char kIdPattern[] = "idPattern";
 constexpr char kNamePattern[] = "namePattern";
 
-constexpr int kMinCopies = 1;
-constexpr int kMaxCopies = 999;
-
 idl::PrinterSource PrinterSourceToIdl(chromeos::Printer::Source source) {
   switch (source) {
     case chromeos::Printer::Source::SRC_USER_PREFS:
@@ -190,9 +187,7 @@ std::unique_ptr<printing::PrintSettings> ParsePrintTicket(base::Value ticket) {
   }
 
   cloud_devices::printer::CopiesTicketItem copies;
-  if (!copies.LoadFrom(description))
-    return nullptr;
-  if (copies.value() < kMinCopies || copies.value() > kMaxCopies)
+  if (!copies.LoadFrom(description) || copies.value() < 1)
     return nullptr;
   settings->set_copies(copies.value());
 
@@ -229,7 +224,7 @@ bool CheckSettingsAndCapabilitiesCompatibility(
   if (settings.collate() && !capabilities.collate_capable)
     return false;
 
-  if (settings.copies() != 1 && !capabilities.copies_capable)
+  if (settings.copies() > capabilities.copies_max)
     return false;
 
   if (!base::Contains(capabilities.duplex_modes, settings.duplex_mode()))

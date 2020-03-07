@@ -87,7 +87,7 @@ class MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest
     mock_timer_ = mock_timer.get();
 
     grandfathered_easy_unlock_host_disabler_ =
-        GrandfatheredEasyUnlockHostDisabler::Factory::Get()->BuildInstance(
+        GrandfatheredEasyUnlockHostDisabler::Factory::Create(
             fake_host_backend_delegate_.get(), fake_device_sync_client_.get(),
             test_pref_service_.get(), std::move(mock_timer));
   }

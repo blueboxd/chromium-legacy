@@ -30,7 +30,6 @@
 #include <utility>
 
 #include "cc/input/snap_selection_strategy.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
@@ -56,7 +55,6 @@
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
-#include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -64,8 +62,6 @@
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/pop_state_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/execution_context/security_context_init.h"
-#include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/frame/bar_prop.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
@@ -89,7 +85,6 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
-#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
@@ -111,10 +106,8 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
-#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -220,7 +213,6 @@ static void UntrackAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : DOMWindow(frame),
-      ExecutionContext(V8PerIsolateData::MainThreadIsolate()),
       visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
       unused_preloads_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                              this,
@@ -272,174 +264,6 @@ LocalDOMWindow* LocalDOMWindow::From(const ScriptState* script_state) {
   return blink::ToLocalDOMWindow(script_state->GetContext());
 }
 
-bool LocalDOMWindow::IsContextThread() const {
-  return IsMainThread();
-}
-
-bool LocalDOMWindow::ShouldInstallV8Extensions() const {
-  return GetFrame()->Client()->AllowScriptExtensions();
-}
-
-ContentSecurityPolicy* LocalDOMWindow::GetContentSecurityPolicyForWorld() {
-  return document()->GetContentSecurityPolicyForWorld();
-}
-
-const KURL& LocalDOMWindow::Url() const {
-  return document()->Url();
-}
-
-const KURL& LocalDOMWindow::BaseURL() const {
-  return document()->BaseURL();
-}
-
-KURL LocalDOMWindow::CompleteURL(const String& url) const {
-  return document()->CompleteURL(url);
-}
-
-void LocalDOMWindow::DisableEval(const String& error_message) {
-  if (GetFrame())
-    GetFrame()->GetScriptController().DisableEval(error_message);
-}
-
-String LocalDOMWindow::UserAgent() const {
-  return document()->UserAgent();
-}
-
-HttpsState LocalDOMWindow::GetHttpsState() const {
-  return document()->GetHttpsState();
-}
-
-ResourceFetcher* LocalDOMWindow::Fetcher() const {
-  return document()->Fetcher();
-}
-
-SecurityContext& LocalDOMWindow::GetSecurityContext() {
-  return document()->GetSecurityContext();
-}
-
-const SecurityContext& LocalDOMWindow::GetSecurityContext() const {
-  return document()->GetSecurityContext();
-}
-
-bool LocalDOMWindow::CanExecuteScripts(
-    ReasonForCallingCanExecuteScripts reason) {
-  return document()->CanExecuteScripts(reason);
-}
-
-void LocalDOMWindow::ExceptionThrown(ErrorEvent* event) {
-  MainThreadDebugger::Instance()->ExceptionThrown(this, event);
-}
-
-String LocalDOMWindow::OutgoingReferrer() const {
-  return document()->OutgoingReferrer();
-}
-
-network::mojom::ReferrerPolicy LocalDOMWindow::GetReferrerPolicy() const {
-  network::mojom::ReferrerPolicy policy = ExecutionContext::GetReferrerPolicy();
-  // For srcdoc documents without their own policy, walk up the frame
-  // tree to find the document that is either not a srcdoc or doesn't
-  // have its own policy. This algorithm is defined in
-  // https://html.spec.whatwg.org/C/#set-up-a-window-environment-settings-object.
-  if (!GetFrame() || policy != network::mojom::ReferrerPolicy::kDefault ||
-      !document()->IsSrcdocDocument()) {
-    return policy;
-  }
-  LocalFrame* frame = To<LocalFrame>(GetFrame()->Tree().Parent());
-  return frame->DomWindow()->GetReferrerPolicy();
-}
-
-CoreProbeSink* LocalDOMWindow::GetProbeSink() {
-  return document()->GetProbeSink();
-}
-
-BrowserInterfaceBrokerProxy& LocalDOMWindow::GetBrowserInterfaceBroker() {
-  if (!GetFrame())
-    return GetEmptyBrowserInterfaceBroker();
-
-  return GetFrame()->GetBrowserInterfaceBroker();
-}
-
-FrameOrWorkerScheduler* LocalDOMWindow::GetScheduler() {
-  return GetFrame() ? GetFrame()->GetFrameScheduler() : nullptr;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner> LocalDOMWindow::GetTaskRunner(
-    TaskType type) {
-  return document()->GetTaskRunner(type);
-}
-
-void LocalDOMWindow::CountPotentialFeaturePolicyViolation(
-    mojom::blink::FeaturePolicyFeature feature) const {
-  document()->CountPotentialFeaturePolicyViolation(feature);
-}
-
-void LocalDOMWindow::ReportFeaturePolicyViolation(
-    mojom::blink::FeaturePolicyFeature feature,
-    mojom::FeaturePolicyDisposition disposition,
-    const String& message,
-    const String& source_file) const {
-  document()->ReportFeaturePolicyViolation(feature, disposition, message,
-                                           source_file);
-}
-
-static void RunAddConsoleMessageTask(mojom::ConsoleMessageSource source,
-                                     mojom::ConsoleMessageLevel level,
-                                     const String& message,
-                                     LocalDOMWindow* window,
-                                     bool discard_duplicates) {
-  window->AddConsoleMessageImpl(
-      MakeGarbageCollected<ConsoleMessage>(source, level, message),
-      discard_duplicates);
-}
-
-void LocalDOMWindow::AddConsoleMessageImpl(ConsoleMessage* console_message,
-                                           bool discard_duplicates) {
-  if (!IsContextThread()) {
-    PostCrossThreadTask(
-        *GetTaskRunner(TaskType::kInternalInspector), FROM_HERE,
-        CrossThreadBindOnce(
-            &RunAddConsoleMessageTask, console_message->Source(),
-            console_message->Level(), console_message->Message(),
-            WrapCrossThreadPersistent(this), discard_duplicates));
-    return;
-  }
-
-  if (!GetFrame())
-    return;
-
-  if (document() && console_message->Location()->IsUnknown()) {
-    // TODO(dgozman): capture correct location at call places instead.
-    unsigned line_number = 0;
-    if (!document()->IsInDocumentWrite() &&
-        document()->GetScriptableDocumentParser()) {
-      ScriptableDocumentParser* parser =
-          document()->GetScriptableDocumentParser();
-      if (parser->IsParsingAtLineNumber())
-        line_number = parser->LineNumber().OneBasedInt();
-    }
-    Vector<DOMNodeId> nodes(console_message->Nodes());
-    console_message = MakeGarbageCollected<ConsoleMessage>(
-        console_message->Source(), console_message->Level(),
-        console_message->Message(),
-        std::make_unique<SourceLocation>(Url().GetString(), line_number, 0,
-                                         nullptr));
-    console_message->SetNodes(GetFrame(), std::move(nodes));
-  }
-
-  GetFrame()->Console().AddMessage(console_message, discard_duplicates);
-}
-
-void LocalDOMWindow::CountUse(mojom::WebFeature feature) {
-  if (!GetFrame())
-    return;
-  if (auto* loader = GetFrame()->Loader().GetDocumentLoader())
-    loader->CountUse(feature);
-}
-
-void LocalDOMWindow::CountDeprecation(mojom::WebFeature feature) {
-  document()->CountDeprecation(feature);
-}
-
 Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init,
                                              bool force_xhtml) {
   DCHECK_EQ(init.GetFrame(), GetFrame());
@@ -448,13 +272,6 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init,
 
   document_ = CreateDocument(init, force_xhtml);
   document_->Initialize();
-
-  // The CSP delegate doesn't have access to all of the state it needs until
-  // document_ is set.
-  if (GetSecurityContext().BindCSPImmediately()) {
-    GetSecurityContext().GetContentSecurityPolicy()->BindToDelegate(
-        GetContentSecurityPolicyDelegate());
-  }
 
   if (!GetFrame())
     return document_;
@@ -607,7 +424,6 @@ MediaQueryList* LocalDOMWindow::matchMedia(const String& media) {
 }
 
 void LocalDOMWindow::FrameDestroyed() {
-  NotifyContextDestroyed();
   RemoveAllEventListeners();
   DisconnectFromFrame();
 }
@@ -619,6 +435,7 @@ void LocalDOMWindow::RegisterEventListenerObserver(
 
 void LocalDOMWindow::Reset() {
   DCHECK(document());
+  DCHECK(document()->IsContextDestroyed());
   FrameDestroyed();
 
   screen_ = nullptr;
@@ -1834,7 +1651,6 @@ void LocalDOMWindow::Trace(Visitor* visitor) {
   visitor->Trace(event_listener_observers_);
   visitor->Trace(trusted_types_);
   DOMWindow::Trace(visitor);
-  ExecutionContext::Trace(visitor);
   Supplementable<LocalDOMWindow>::Trace(visitor);
 }
 

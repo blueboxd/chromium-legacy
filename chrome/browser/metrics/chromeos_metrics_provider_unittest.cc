@@ -71,7 +71,7 @@ class FakeMultiDeviceSetupClientImplFactory
   // chromeos::multidevice_setup::MultiDeviceSetupClientImpl::Factory:
   // NOTE: At most, one client should be created per-test.
   std::unique_ptr<chromeos::multidevice_setup::MultiDeviceSetupClient>
-  BuildInstance(
+  CreateInstance(
       mojo::PendingRemote<chromeos::multidevice_setup::mojom::MultiDeviceSetup>)
       override {
     EXPECT_TRUE(fake_multidevice_setup_client_);
@@ -149,8 +149,7 @@ class ChromeOSMetricsProviderTest : public testing::Test {
         std::make_unique<FakeMultiDeviceSetupClientImplFactory>(
             std::move(fake_multidevice_setup_client));
     chromeos::multidevice_setup::MultiDeviceSetupClientImpl::Factory::
-        SetInstanceForTesting(
-            fake_multidevice_setup_client_impl_factory_.get());
+        SetFactoryForTesting(fake_multidevice_setup_client_impl_factory_.get());
 
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
@@ -173,7 +172,7 @@ class ChromeOSMetricsProviderTest : public testing::Test {
     chromeos::LoginState::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
     chromeos::multidevice_setup::MultiDeviceSetupClientImpl::Factory::
-        SetInstanceForTesting(nullptr);
+        SetFactoryForTesting(nullptr);
     profile_manager_.reset();
   }
 

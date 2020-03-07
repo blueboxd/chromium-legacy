@@ -24,10 +24,12 @@ class TimerFactoryImpl : public TimerFactory {
  public:
   class Factory {
    public:
-    static Factory* Get();
+    static std::unique_ptr<TimerFactory> Create();
     static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
-    virtual std::unique_ptr<TimerFactory> BuildInstance();
+    virtual std::unique_ptr<TimerFactory> CreateInstance() = 0;
 
    private:
     static Factory* test_factory_;

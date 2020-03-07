@@ -12,8 +12,7 @@ namespace chromeos {
 namespace multidevice {
 
 ExpiringRemoteDeviceCache::ExpiringRemoteDeviceCache()
-    : remote_device_cache_(RemoteDeviceCache::Factory::Get()->BuildInstance()) {
-}
+    : remote_device_cache_(RemoteDeviceCache::Factory::Create()) {}
 
 ExpiringRemoteDeviceCache::~ExpiringRemoteDeviceCache() = default;
 

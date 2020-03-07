@@ -48,7 +48,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexShortEdge) {
   EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
-  EXPECT_TRUE(caps.copies_capable);
+  EXPECT_GT(caps.copies_max, 1);
   EXPECT_THAT(caps.duplex_modes,
               testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
   EXPECT_EQ(SHORT_EDGE, caps.duplex_default);
@@ -76,7 +76,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexSimples) {
   EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
-  EXPECT_TRUE(caps.copies_capable);
+  EXPECT_GT(caps.copies_max, 1);
   EXPECT_THAT(caps.duplex_modes,
               testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
   EXPECT_EQ(SIMPLEX, caps.duplex_default);
@@ -101,7 +101,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorNoDuplex) {
   EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
-  EXPECT_TRUE(caps.copies_capable);
+  EXPECT_GT(caps.copies_max, 1);
   EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre());
   EXPECT_EQ(UNKNOWN_DUPLEX_MODE, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
@@ -134,7 +134,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorTrueDuplexShortEdge) {
   EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
-  EXPECT_TRUE(caps.copies_capable);
+  EXPECT_GT(caps.copies_max, 1);
   EXPECT_THAT(caps.duplex_modes,
               testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
   EXPECT_EQ(SHORT_EDGE, caps.duplex_default);
@@ -174,7 +174,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorFalseDuplexLongEdge) {
   EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
-  EXPECT_TRUE(caps.copies_capable);
+  EXPECT_GT(caps.copies_max, 1);
   EXPECT_THAT(caps.duplex_modes,
               testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
   EXPECT_EQ(LONG_EDGE, caps.duplex_default);

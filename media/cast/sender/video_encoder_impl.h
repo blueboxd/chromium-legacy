@@ -32,7 +32,7 @@ class VideoEncoderImpl : public VideoEncoder {
 
   VideoEncoderImpl(scoped_refptr<CastEnvironment> cast_environment,
                    const FrameSenderConfig& video_config,
-                   const StatusChangeCallback& status_change_cb);
+                   StatusChangeCallback status_change_cb);
 
   ~VideoEncoderImpl() final;
 

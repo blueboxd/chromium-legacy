@@ -41,7 +41,7 @@ class FakeMultiDeviceSetupInitializerFactory
   ~FakeMultiDeviceSetupInitializerFactory() override = default;
 
   // MultiDeviceSetupInitializer::Factory:
-  std::unique_ptr<MultiDeviceSetupBase> BuildInstance(
+  std::unique_ptr<MultiDeviceSetupBase> CreateInstance(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
       AuthTokenValidator* auth_token_validator,
@@ -139,8 +139,8 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
     mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup;
     service_->BindMultiDeviceSetup(
         remote_setup.InitWithNewPipeAndPassReceiver());
-    client_ = MultiDeviceSetupClientImpl::Factory::Get()->BuildInstance(
-        std::move(remote_setup));
+    client_ =
+        MultiDeviceSetupClientImpl::Factory::Create(std::move(remote_setup));
     SendPendingMojoMessages();
 
     // When |client_| is created, it requests the current host status and

@@ -34,7 +34,7 @@ class GLI420ConverterPixelTest : public cc::PixelTest,
 
  protected:
   void SetUp() final {
-    cc::PixelTest::SetUpGLWithoutRenderer(false);
+    cc::PixelTest::SetUpGLWithoutRenderer(gfx::SurfaceOrigin::kBottomLeft);
     converter_.reset(new GLI420Converter(context_provider(), allow_mrt_path()));
     texture_helper_ = std::make_unique<GLScalerTestTextureHelper>(
         context_provider()->ContextGL());

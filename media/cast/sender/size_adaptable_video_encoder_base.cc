@@ -16,10 +16,10 @@ namespace cast {
 SizeAdaptableVideoEncoderBase::SizeAdaptableVideoEncoderBase(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const FrameSenderConfig& video_config,
-    const StatusChangeCallback& status_change_cb)
+    StatusChangeCallback status_change_cb)
     : cast_environment_(cast_environment),
       video_config_(video_config),
-      status_change_cb_(status_change_cb),
+      status_change_cb_(std::move(status_change_cb)),
       frames_in_encoder_(0),
       next_frame_id_(FrameId::first()) {
   cast_environment_->PostTask(
@@ -95,8 +95,9 @@ void SizeAdaptableVideoEncoderBase::EmitFrames() {
 StatusChangeCallback
     SizeAdaptableVideoEncoderBase::CreateEncoderStatusChangeCallback() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  return base::Bind(&SizeAdaptableVideoEncoderBase::OnEncoderStatusChange,
-                    weak_factory_.GetWeakPtr());
+  return base::BindRepeating(
+      &SizeAdaptableVideoEncoderBase::OnEncoderStatusChange,
+      weak_factory_.GetWeakPtr());
 }
 
 void SizeAdaptableVideoEncoderBase::OnEncoderReplaced(

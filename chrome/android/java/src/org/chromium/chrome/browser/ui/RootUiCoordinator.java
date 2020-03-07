@@ -21,6 +21,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.TabThemeColorProvider;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
@@ -43,12 +44,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
-import org.chromium.chrome.browser.toolbar.top.TopToolbarThemeColorProvider;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinatorFactory;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -93,11 +92,10 @@ public class RootUiCoordinator
     private OverviewModeBehavior mOverviewModeBehavior;
     private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
 
-    /** A means of providing the theme color for the top toolbar. */
-    private TopToolbarThemeColorProvider mTopToolbarThemeColorProvider;
+    /** A means of providing the theme color to different features. */
+    private TabThemeColorProvider mTabThemeColorProvider;
     @Nullable
     private Callback<Boolean> mOnOmniboxFocusChangedListener;
-    protected StatusBarColorController mStatusBarColorController;
     protected ToolbarManager mToolbarManager;
     private ModalDialogManagerObserver mModalDialogManagerObserver;
 
@@ -175,9 +173,9 @@ public class RootUiCoordinator
             mAppMenuCoordinator.destroy();
         }
 
-        if (mTopToolbarThemeColorProvider != null) {
-            mTopToolbarThemeColorProvider.destroy();
-            mTopToolbarThemeColorProvider = null;
+        if (mTabThemeColorProvider != null) {
+            mTabThemeColorProvider.destroy();
+            mTabThemeColorProvider = null;
         }
 
         if (mFindToolbarManager != null) mFindToolbarManager.removeObserver(mFindToolbarObserver);
@@ -204,23 +202,16 @@ public class RootUiCoordinator
     @Override
     public void onPreInflationStartup() {
         initializeBottomSheetController();
-
-        mTopToolbarThemeColorProvider = getOrCreateTopToolbarThemeColorProvider();
-        mTopToolbarThemeColorProvider.updateThemeColor();
-
-        // TODO(https://crbug.com/943371): Initialize in SystemUiCoordinator.
-        mStatusBarColorController =
-                new StatusBarColorController(mActivity, mTopToolbarThemeColorProvider);
-        mStatusBarColorController.updateStatusBarColor();
     }
 
     @Override
     public void onPostInflationStartup() {
         ViewGroup coordinator = mActivity.findViewById(R.id.coordinator);
-        mScrimView = new ScrimView(
-                mActivity, mStatusBarColorController.getStatusBarScrimDelegate(), coordinator);
+        mScrimView = new ScrimView(mActivity,
+                mActivity.getStatusBarColorController().getStatusBarScrimDelegate(), coordinator);
 
-        mStatusBarColorController.setTabModelSelector(mActivity.getTabModelSelector());
+        mTabThemeColorProvider = new TabThemeColorProvider(mActivity);
+        mTabThemeColorProvider.setActivityTabProvider(mActivity.getActivityTabProvider());
 
         initializeToolbar();
         initAppMenu();
@@ -374,17 +365,6 @@ public class RootUiCoordinator
     }
 
     /**
-     * Returns {@link TopToolbarThemeColorProvider} instance.
-     */
-    protected TopToolbarThemeColorProvider getOrCreateTopToolbarThemeColorProvider() {
-        if (mTopToolbarThemeColorProvider == null) {
-            mTopToolbarThemeColorProvider =
-                    new TopToolbarThemeColorProvider(mActivity, mActivity.getActivityTabProvider());
-        }
-        return mTopToolbarThemeColorProvider;
-    }
-
-    /**
      * Constructs {@link ToolbarManager} and the handler necessary for controlling the menu on the
      * {@link Toolbar}.
      */
@@ -411,10 +391,9 @@ public class RootUiCoordinator
             mButtonDataProviders = Arrays.asList(mIdentityDiscController, shareButtonController);
             mToolbarManager = new ToolbarManager(mActivity, mActivity.getFullscreenManager(),
                     toolbarContainer, mActivity.getCompositorViewHolder().getInvalidator(),
-                    urlFocusChangedCallback, mTopToolbarThemeColorProvider, mTabObscuringHandler,
+                    urlFocusChangedCallback, mTabThemeColorProvider, mTabObscuringHandler,
                     mShareDelegateSupplier, bottomToolbarVisibilitySupplier,
-                    mStatusBarColorController, mIdentityDiscController, mButtonDataProviders,
-                    mActivityTabProvider);
+                    mIdentityDiscController, mButtonDataProviders, mActivityTabProvider);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }
@@ -591,10 +570,5 @@ public class RootUiCoordinator
     @VisibleForTesting
     public AppMenuCoordinator getAppMenuCoordinatorForTesting() {
         return mAppMenuCoordinator;
-    }
-
-    @VisibleForTesting
-    public StatusBarColorController getStatusBarColorControllerForTesting() {
-        return mStatusBarColorController;
     }
 }

@@ -87,13 +87,13 @@ public abstract class OptionalLeaf
      * Display the data for this item.
      * @param holder The view holder that should be updated.
      * @see #onBindViewHolder(NewTabPageViewHolder, int)
-     * @see android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder
+     * @see androidx.recyclerview.widget.RecyclerView.Adapter#onBindViewHolder
      */
     protected abstract void onBindViewHolder(NewTabPageViewHolder holder);
 
     /**
      * @return The view type of this item.
-     * @see android.support.v7.widget.RecyclerView.Adapter#getItemViewType
+     * @see androidx.recyclerview.widget.RecyclerView.Adapter#getItemViewType
      */
     @ItemViewType
     protected abstract int getItemViewType();

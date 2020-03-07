@@ -56,7 +56,7 @@ FakeCryptAuthDeviceNotifierFactory::~FakeCryptAuthDeviceNotifierFactory() =
     default;
 
 std::unique_ptr<CryptAuthDeviceNotifier>
-FakeCryptAuthDeviceNotifierFactory::BuildInstance(
+FakeCryptAuthDeviceNotifierFactory::CreateInstance(
     ClientAppMetadataProvider* client_app_metadata_provider,
     CryptAuthClientFactory* client_factory,
     CryptAuthGCMManager* gcm_manager,

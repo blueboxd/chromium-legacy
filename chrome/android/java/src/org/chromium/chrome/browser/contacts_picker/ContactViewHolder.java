@@ -8,9 +8,9 @@ import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.chromium.base.task.AsyncTask;
 

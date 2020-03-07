@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.history;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v7.widget.RecyclerView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Assert;
 

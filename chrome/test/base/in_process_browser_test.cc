@@ -124,7 +124,7 @@ class FakeDeviceSyncImplFactory
   ~FakeDeviceSyncImplFactory() override = default;
 
   // chromeos::device_sync::DeviceSyncImpl::Factory:
-  std::unique_ptr<chromeos::device_sync::DeviceSyncBase> BuildInstance(
+  std::unique_ptr<chromeos::device_sync::DeviceSyncBase> CreateInstance(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       PrefService* profile_prefs,
@@ -269,7 +269,7 @@ void InProcessBrowserTest::SetUp() {
   google_util::SetMockLinkDoctorBaseURLForTesting();
 
 #if defined(OS_CHROMEOS)
-  chromeos::device_sync::DeviceSyncImpl::Factory::SetInstanceForTesting(
+  chromeos::device_sync::DeviceSyncImpl::Factory::SetFactoryForTesting(
       GetFakeDeviceSyncImplFactory());
 
   // On Chrome OS, access to files via file: scheme is restricted. Enable
@@ -321,8 +321,7 @@ void InProcessBrowserTest::TearDown() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  chromeos::device_sync::DeviceSyncImpl::Factory::SetInstanceForTesting(
-      nullptr);
+  chromeos::device_sync::DeviceSyncImpl::Factory::SetFactoryForTesting(nullptr);
 #endif
 }
 

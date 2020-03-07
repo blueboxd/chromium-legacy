@@ -761,6 +761,9 @@ ChromiumEnv::ChromiumEnv(const std::string& name,
       bgsignal_(&mu_),
       started_bgthread_(false) {
   DCHECK(filesystem_);
+
+  bgsignal_.declare_only_used_while_idle();
+
   size_t max_open_files = base::GetMaxFds();
   if (base::FeatureList::IsEnabled(kLevelDBFileHandleEviction) &&
       max_open_files < kFileLimitToDisableEviction) {

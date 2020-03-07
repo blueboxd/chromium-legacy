@@ -28,7 +28,6 @@
 #include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
-#include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
@@ -45,7 +44,6 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "third_party/zlib/google/zip.h"
-#include "ui/base/text/bytes_formatting.h"
 #include "url/origin.h"
 
 using base::DictionaryValue;
@@ -291,7 +289,7 @@ void IndexedDBContextImpl::GetAllOriginsDetails(
     std::unique_ptr<base::DictionaryValue> info(
         std::make_unique<base::DictionaryValue>());
     info->SetString("url", origin.Serialize());
-    info->SetString("size", ui::FormatBytes(GetOriginDiskUsage(origin)));
+    info->SetDouble("size", static_cast<double>(GetOriginDiskUsage(origin)));
     info->SetDouble("last_modified", GetOriginLastModified(origin).ToJsTime());
 
     auto paths = std::make_unique<base::ListValue>();

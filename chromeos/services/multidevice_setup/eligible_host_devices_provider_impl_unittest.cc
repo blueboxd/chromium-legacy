@@ -48,7 +48,7 @@ class MultiDeviceSetupEligibleHostDevicesProviderImplTest
         std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_device_sync_client_->set_synced_devices(test_devices_);
 
-    provider_ = EligibleHostDevicesProviderImpl::Factory::Get()->BuildInstance(
+    provider_ = EligibleHostDevicesProviderImpl::Factory::Create(
         fake_device_sync_client_.get());
   }
 

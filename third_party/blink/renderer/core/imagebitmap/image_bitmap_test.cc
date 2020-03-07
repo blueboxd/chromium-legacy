@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
-#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
@@ -105,9 +104,8 @@ class ImageBitmapTest : public testing::Test {
 
 TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   const ImageBitmapOptions* default_options = ImageBitmapOptions::Create();
-  auto dummy = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   auto* image_element =
-      MakeGarbageCollected<HTMLImageElement>(dummy->GetDocument());
+      MakeGarbageCollected<HTMLImageElement>(*MakeGarbageCollected<Document>());
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
   SkImageInfo raster_image_info =
       SkImageInfo::MakeN32Premul(5, 5, src_rgb_color_space);
@@ -177,8 +175,8 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a
 // reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
-  auto dummy = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  auto* image = MakeGarbageCollected<HTMLImageElement>(dummy->GetDocument());
+  auto* image =
+      MakeGarbageCollected<HTMLImageElement>(*MakeGarbageCollected<Document>());
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
   SkImageInfo raster_image_info =
       SkImageInfo::MakeN32Premul(5, 5, src_rgb_color_space);
@@ -313,9 +311,8 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
 }
 
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
-  auto dummy = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   auto* image_element =
-      MakeGarbageCollected<HTMLImageElement>(dummy->GetDocument());
+      MakeGarbageCollected<HTMLImageElement>(*MakeGarbageCollected<Document>());
 
   SkPaint p;
   p.setColor(SK_ColorRED);

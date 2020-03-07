@@ -57,21 +57,21 @@ class BluetoothLowEnergyWeaveClientConnection
  public:
   class Factory {
    public:
-    static std::unique_ptr<Connection> NewInstance(
+    static std::unique_ptr<Connection> Create(
         multidevice::RemoteDeviceRef remote_device,
         scoped_refptr<device::BluetoothAdapter> adapter,
         const device::BluetoothUUID remote_service_uuid,
         const std::string& device_address,
         bool should_set_low_connection_latency);
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<Connection> BuildInstance(
+    virtual std::unique_ptr<Connection> CreateInstance(
         multidevice::RemoteDeviceRef remote_device,
         scoped_refptr<device::BluetoothAdapter> adapter,
         const device::BluetoothUUID remote_service_uuid,
         const std::string& device_address,
-        bool should_set_low_connection_latency);
+        bool should_set_low_connection_latency) = 0;
 
    private:
     static Factory* factory_instance_;

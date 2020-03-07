@@ -83,7 +83,9 @@ class MockContextProvider : public ContextProvider {
 
 class GLScalerTest : public cc::PixelTest {
  protected:
-  void SetUp() final { cc::PixelTest::SetUpGLWithoutRenderer(false); }
+  void SetUp() final {
+    cc::PixelTest::SetUpGLWithoutRenderer(gfx::SurfaceOrigin::kBottomLeft);
+  }
 
   void TearDown() final { cc::PixelTest::TearDown(); }
 };

@@ -415,26 +415,6 @@ void ContextProviderImpl::Create(
     return;
   }
 
-  bool allow_protected_graphics =
-      web_engine_config.FindBoolPath("allow-protected-graphics")
-          .value_or(false);
-  bool force_protected_graphics =
-      web_engine_config.FindBoolPath("force-protected-graphics")
-          .value_or(false);
-  bool enable_protected_graphics =
-      (enable_drm && allow_protected_graphics) || force_protected_graphics;
-
-  if (enable_protected_graphics) {
-    launch_command.AppendSwitch(switches::kEnforceVulkanProtectedMemory);
-    launch_command.AppendSwitch(switches::kEnableProtectedVideoBuffers);
-    bool force_protected_video_buffers =
-        web_engine_config.FindBoolPath("force-protected-video-buffers")
-            .value_or(false);
-    if (force_protected_video_buffers) {
-      launch_command.AppendSwitch(switches::kForceProtectedVideoOutputBuffers);
-    }
-  }
-
   if (enable_vulkan) {
     if (is_headless) {
       LOG(ERROR) << "VULKAN and HEADLESS features cannot be used together.";
@@ -453,24 +433,36 @@ void ContextProviderImpl::Create(
     // SkiaRenderer requires out-of-process rasterization be enabled.
     launch_command.AppendSwitch(switches::kEnableOopRasterization);
 
-    if (!enable_protected_graphics) {
-      launch_command.AppendSwitchASCII(switches::kUseGL,
-                                       gl::kGLImplementationANGLEName);
-    } else {
-      DLOG(WARNING) << "ANGLE is not compatible with "
-                    << switches::kEnforceVulkanProtectedMemory
-                    << ", disabling GL";
-      // TODO(crbug.com/1059010): Fix this; probably don't protect canvas
-      // resources.
-      launch_command.AppendSwitchASCII(switches::kUseGL,
-                                       gl::kGLImplementationDisabledName);
-    }
+    // TODO(https://crbug.com/766360): Provide a no-op GL implementation until
+    // vANGLE is available.
+    launch_command.AppendSwitchASCII(switches::kUseGL,
+                                     gl::kGLImplementationStubName);
   } else {
     DLOG(ERROR) << "Disabling GPU acceleration.";
     // Disable use of Vulkan GPU, and use of the software-GL rasterizer. The
     // Context will still run a GPU process, but will not support WebGL.
     launch_command.AppendSwitch(switches::kDisableGpu);
     launch_command.AppendSwitch(switches::kDisableSoftwareRasterizer);
+  }
+
+  bool allow_protected_graphics =
+      web_engine_config.FindBoolPath("allow-protected-graphics")
+          .value_or(false);
+  bool force_protected_graphics =
+      web_engine_config.FindBoolPath("force-protected-graphics")
+          .value_or(false);
+  bool enable_protected_graphics =
+      (enable_drm && allow_protected_graphics) || force_protected_graphics;
+
+  if (enable_protected_graphics) {
+    launch_command.AppendSwitch(switches::kEnforceVulkanProtectedMemory);
+    launch_command.AppendSwitch(switches::kEnableProtectedVideoBuffers);
+    bool force_protected_video_buffers =
+        web_engine_config.FindBoolPath("force-protected-video-buffers")
+            .value_or(false);
+    if (force_protected_video_buffers) {
+      launch_command.AppendSwitch(switches::kForceProtectedVideoOutputBuffers);
+    }
   }
 
   if (enable_widevine) {

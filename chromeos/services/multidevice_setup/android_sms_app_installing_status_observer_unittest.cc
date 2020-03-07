@@ -38,7 +38,7 @@ class MultiDeviceSetupAndroidSmsAppInstallingStatusObserverTest
     fake_host_status_provider_ = std::make_unique<FakeHostStatusProvider>();
     fake_feature_state_manager_ = std::make_unique<FakeFeatureStateManager>();
     android_sms_app_installing_status_observer_ =
-        AndroidSmsAppInstallingStatusObserver::Factory::Get()->BuildInstance(
+        AndroidSmsAppInstallingStatusObserver::Factory::Create(
             fake_host_status_provider_.get(), fake_feature_state_manager_.get(),
             fake_android_sms_app_helper_delegate_.get());
 

@@ -6767,3 +6767,4 @@ crbug.com/1059322 [ Mac ] fast/forms/file/file-input-webkitdirectory-key-space.h
 crbug.com/1059322 [ Mac ] fast/forms/file/file-input-click.html [ Pass Failure ]
 crbug.com/1059322 [ Mac ] fast/forms/autofocus-focus-only-once.html [ Pass Failure ]
 crbug.com/1059322 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/autofocus-focus-only-once.html [ Pass Failure ]
+crbug.com/1058244 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Pass Failure ]

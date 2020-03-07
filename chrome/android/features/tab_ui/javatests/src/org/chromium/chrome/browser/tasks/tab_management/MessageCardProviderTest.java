@@ -15,10 +15,11 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import android.support.test.filters.SmallTest;
-import android.support.v7.widget.GridLayoutManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
+import androidx.recyclerview.widget.GridLayoutManager;
 
 import org.junit.After;
 import org.junit.Rule;

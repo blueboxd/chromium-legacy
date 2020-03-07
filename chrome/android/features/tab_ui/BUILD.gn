@@ -145,7 +145,7 @@ android_library("java") {
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_legacy_legacy_support_v13_java",
-    "//third_party/android_deps:com_android_support_recyclerview_v7_java",
+    "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_deps:com_google_android_material_material_java",
     "//ui/android:ui_java",

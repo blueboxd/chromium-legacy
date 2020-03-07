@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 
 namespace chromeos {
 
@@ -16,12 +15,16 @@ namespace secure_channel {
 ClientChannelImpl::Factory* ClientChannelImpl::Factory::test_factory_ = nullptr;
 
 // static
-ClientChannelImpl::Factory* ClientChannelImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<ClientChannel> ClientChannelImpl::Factory::Create(
+    mojo::PendingRemote<mojom::Channel> channel,
+    mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(std::move(channel),
+                                         std::move(message_receiver_receiver));
+  }
 
-  static base::NoDestructor<ClientChannelImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new ClientChannelImpl(
+      std::move(channel), std::move(message_receiver_receiver)));
 }
 
 // static
@@ -30,13 +33,6 @@ void ClientChannelImpl::Factory::SetFactoryForTesting(Factory* test_factory) {
 }
 
 ClientChannelImpl::Factory::~Factory() = default;
-
-std::unique_ptr<ClientChannel> ClientChannelImpl::Factory::BuildInstance(
-    mojo::PendingRemote<mojom::Channel> channel,
-    mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver) {
-  return base::WrapUnique(new ClientChannelImpl(
-      std::move(channel), std::move(message_receiver_receiver)));
-}
 
 ClientChannelImpl::ClientChannelImpl(
     mojo::PendingRemote<mojom::Channel> channel,

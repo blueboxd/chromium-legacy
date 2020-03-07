@@ -43,7 +43,7 @@ class FakeSecureChannelInitializerFactory
   ~FakeSecureChannelInitializerFactory() override = default;
 
   // SecureChannelInitializer::Factory:
-  std::unique_ptr<SecureChannelBase> BuildInstance(
+  std::unique_ptr<SecureChannelBase> CreateInstance(
       scoped_refptr<base::TaskRunner> task_runner) override {
     EXPECT_TRUE(fake_secure_channel_);
     return std::move(fake_secure_channel_);
@@ -59,7 +59,7 @@ class FakeConnectionAttemptFactory : public ConnectionAttemptImpl::Factory {
   ~FakeConnectionAttemptFactory() override = default;
 
   // ConnectionAttemptImpl::Factory:
-  std::unique_ptr<ConnectionAttemptImpl> BuildInstance() override {
+  std::unique_ptr<ConnectionAttemptImpl> CreateInstance() override {
     return std::make_unique<FakeConnectionAttempt>();
   }
 };
@@ -74,7 +74,7 @@ class FakeClientChannelImplFactory : public ClientChannelImpl::Factory {
   }
 
   // ClientChannelImpl::Factory:
-  std::unique_ptr<ClientChannel> BuildInstance(
+  std::unique_ptr<ClientChannel> CreateInstance(
       mojo::PendingRemote<mojom::Channel> channel,
       mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver)
       override {
@@ -147,13 +147,12 @@ class SecureChannelClientImplTest : public testing::Test {
         std::make_unique<TestConnectionAttemptDelegate>();
 
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-    service_ = SecureChannelInitializer::Factory::Get()->BuildInstance(
-        test_task_runner_);
+    service_ = SecureChannelInitializer::Factory::Create(test_task_runner_);
 
     mojo::PendingRemote<mojom::SecureChannel> channel;
     service_->BindReceiver(channel.InitWithNewPipeAndPassReceiver());
-    client_ = SecureChannelClientImpl::Factory::Get()->BuildInstance(
-        std::move(channel), test_task_runner_);
+    client_ = SecureChannelClientImpl::Factory::Create(std::move(channel),
+                                                       test_task_runner_);
   }
 
   void TearDown() override {

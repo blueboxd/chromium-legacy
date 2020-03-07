@@ -54,16 +54,16 @@ std::unique_ptr<OtaActivator> OtaActivatorImpl::Factory::Create(
     NetworkActivationHandler* network_activation_handler,
     scoped_refptr<base::TaskRunner> task_runner) {
   if (g_test_factory) {
-    return g_test_factory->BuildInstance(
+    return g_test_factory->CreateInstance(
         std::move(activation_delegate), std::move(on_finished_callback),
         network_state_handler, network_connection_handler,
-        network_activation_handler, task_runner);
+        network_activation_handler, std::move(task_runner));
   }
 
   return base::WrapUnique(new OtaActivatorImpl(
       std::move(activation_delegate), std::move(on_finished_callback),
       network_state_handler, network_connection_handler,
-      network_activation_handler, task_runner));
+      network_activation_handler, std::move(task_runner)));
 }
 
 // static

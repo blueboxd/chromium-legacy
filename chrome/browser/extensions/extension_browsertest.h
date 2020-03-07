@@ -82,10 +82,13 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     // Load the provided extension as Service Worker based extension.
     kFlagRunAsServiceWorkerBasedExtension = 1 << 5,
 
+    // Don't wait for extension renderers to fully load.
+    kFlagDontWaitForExtensionRenderers = 1 << 6,
+
     // Always maintain this as the next flag value. The flags in
     // ExtensionApiTest depend on this to avoid having overlapping
     // values with these flags.
-    kFlagNextValue = 1 << 6
+    kFlagNextValue = 1 << 7,
   };
 
   ExtensionBrowserTest();

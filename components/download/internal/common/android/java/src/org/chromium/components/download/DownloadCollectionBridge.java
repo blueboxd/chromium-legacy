@@ -196,11 +196,14 @@ public class DownloadCollectionBridge {
 
         PendingSession session = openPendingUri(intermediateUri);
         Uri publishedUri = session.publish();
-
         if (!TextUtils.isEmpty(mimeType)) {
-            final ContentValues updateValues = new ContentValues();
-            updateValues.put(MediaColumns.MIME_TYPE, mimeType);
-            resolver.update(publishedUri, updateValues, null, null);
+            try {
+                final ContentValues updateValues = new ContentValues();
+                updateValues.put(MediaColumns.MIME_TYPE, mimeType);
+                resolver.update(publishedUri, updateValues, null, null);
+            } catch (Exception e) {
+                Log.e(TAG, "Unable to modify mimeType.", e);
+            }
         }
         return publishedUri.toString();
     }

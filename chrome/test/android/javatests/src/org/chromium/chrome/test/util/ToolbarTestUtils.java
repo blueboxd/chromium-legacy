@@ -13,17 +13,9 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsNot.not;
 
-import android.os.SystemClock;
-import android.view.View;
-
 import androidx.annotation.IdRes;
 
-import org.junit.Assert;
-
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
-import org.chromium.content_public.browser.test.util.TouchCommon;
 
 /**
  * A utility class that contains methods generic to both the top toolbar and bottom toolbar,
@@ -60,31 +52,5 @@ public class ToolbarTestUtils {
         // so toolbarId is required in order to get the target view correctly.
         onView(allOf(withId(buttonId), isDescendantOfA(withId(toolbarId))))
                 .check(matches(isVisible ? isDisplayed() : not(isDisplayed())));
-    }
-
-    /**
-     * Performs side swipe on the toolbar.
-     * @param activity Activity to perform side swipe on.
-     * @param direction Direction to perform swipe in.
-     */
-    public static void performToolbarSideSwipe(
-            ChromeActivity activity, @ScrollDirection int direction) {
-        Assert.assertTrue("Unexpected direction for side swipe " + direction,
-                direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT);
-        final View toolbar = activity.findViewById(R.id.toolbar);
-        int[] toolbarPos = new int[2];
-        toolbar.getLocationOnScreen(toolbarPos);
-        final int width = toolbar.getWidth();
-        final int height = toolbar.getHeight();
-
-        final int fromX = toolbarPos[0] + width / 2;
-        final int toX = toolbarPos[0] + (direction == ScrollDirection.LEFT ? 0 : width);
-        final int y = toolbarPos[1] + height / 2;
-        final int stepCount = 10;
-
-        long downTime = SystemClock.uptimeMillis();
-        TouchCommon.dragStart(activity, fromX, y, downTime);
-        TouchCommon.dragTo(activity, fromX, toX, y, y, stepCount, downTime);
-        TouchCommon.dragEnd(activity, toX, y, downTime);
     }
 }

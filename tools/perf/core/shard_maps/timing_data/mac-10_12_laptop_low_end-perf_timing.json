@@ -2156,10 +2156,6 @@
         "name": "power.desktop/uol"
     },
     {
-        "duration": "16.0",
-        "name": "rasterize_and_record_micro.partial_invalidation/800_relpos_divs.html"
-    },
-    {
         "duration": "26.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/amazon.html"
     },

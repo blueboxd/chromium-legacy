@@ -4,11 +4,10 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
-import android.support.v7.widget.RecyclerView;
-
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.tabs.TabLayout;
 

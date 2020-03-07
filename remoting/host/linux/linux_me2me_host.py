@@ -1702,7 +1702,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
       desktop.host_ready = False
 
       # These exit-codes must match the ones used by the host.
-      # See remoting/host/host_error_codes.h.
+      # See remoting/host/host_exit_codes.h.
       # Delete the host or auth configuration depending on the returned error
       # code, so the next time this script is run, a new configuration
       # will be created and registered.

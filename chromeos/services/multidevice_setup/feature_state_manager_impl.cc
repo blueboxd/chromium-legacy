@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
@@ -145,12 +144,20 @@ FeatureStateManagerImpl::Factory*
     FeatureStateManagerImpl::Factory::test_factory_ = nullptr;
 
 // static
-FeatureStateManagerImpl::Factory* FeatureStateManagerImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<FeatureStateManager> FeatureStateManagerImpl::Factory::Create(
+    PrefService* pref_service,
+    HostStatusProvider* host_status_provider,
+    device_sync::DeviceSyncClient* device_sync_client,
+    AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(pref_service, host_status_provider,
+                                         device_sync_client,
+                                         android_sms_pairing_state_tracker);
+  }
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new FeatureStateManagerImpl(
+      pref_service, host_status_provider, device_sync_client,
+      android_sms_pairing_state_tracker));
 }
 
 // static
@@ -160,17 +167,6 @@ void FeatureStateManagerImpl::Factory::SetFactoryForTesting(
 }
 
 FeatureStateManagerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<FeatureStateManager>
-FeatureStateManagerImpl::Factory::BuildInstance(
-    PrefService* pref_service,
-    HostStatusProvider* host_status_provider,
-    device_sync::DeviceSyncClient* device_sync_client,
-    AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker) {
-  return base::WrapUnique(new FeatureStateManagerImpl(
-      pref_service, host_status_provider, device_sync_client,
-      android_sms_pairing_state_tracker));
-}
 
 FeatureStateManagerImpl::FeatureStateManagerImpl(
     PrefService* pref_service,

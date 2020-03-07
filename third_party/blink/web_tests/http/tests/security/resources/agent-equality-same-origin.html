@@ -20,9 +20,9 @@ function run(evt) {
 
   let message = [
     'same-origin test',
-    internals.getAgentId(window),
-    internals.getAgentId(sub1.contentWindow),
-    internals.getAgentId(sub2.contentWindow)
+    internals.getDocumentAgentId(document),
+    internals.getDocumentAgentId(sub1.contentDocument),
+    internals.getDocumentAgentId(sub2.contentDocument)
   ];
 
   window.parent.postMessage(message, '*');

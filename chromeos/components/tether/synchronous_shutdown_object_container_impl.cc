@@ -44,7 +44,7 @@ SynchronousShutdownObjectContainerImpl::Factory*
 
 // static
 std::unique_ptr<SynchronousShutdownObjectContainer>
-SynchronousShutdownObjectContainerImpl::Factory::NewInstance(
+SynchronousShutdownObjectContainerImpl::Factory::Create(
     AsynchronousShutdownObjectContainer* asychronous_container,
     NotificationPresenter* notification_presenter,
     GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker,
@@ -55,42 +55,28 @@ SynchronousShutdownObjectContainerImpl::Factory::NewInstance(
     session_manager::SessionManager* session_manager,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client) {
-  if (!factory_instance_)
-    factory_instance_ = new Factory();
+  if (factory_instance_) {
+    return factory_instance_->CreateInstance(
+        asychronous_container, notification_presenter,
+        gms_core_notifications_state_tracker, pref_service,
+        network_state_handler, network_connect, network_connection_handler,
+        session_manager, device_sync_client, secure_channel_client);
+  }
 
-  return factory_instance_->BuildInstance(
-      asychronous_container, notification_presenter,
-      gms_core_notifications_state_tracker, pref_service, network_state_handler,
-      network_connect, network_connection_handler, session_manager,
-      device_sync_client, secure_channel_client);
-}
-
-// static
-void SynchronousShutdownObjectContainerImpl::Factory::SetInstanceForTesting(
-    Factory* factory) {
-  factory_instance_ = factory;
-}
-
-SynchronousShutdownObjectContainerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<SynchronousShutdownObjectContainer>
-SynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
-    AsynchronousShutdownObjectContainer* asychronous_container,
-    NotificationPresenter* notification_presenter,
-    GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker,
-    PrefService* pref_service,
-    NetworkStateHandler* network_state_handler,
-    NetworkConnect* network_connect,
-    NetworkConnectionHandler* network_connection_handler,
-    session_manager::SessionManager* session_manager,
-    device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client) {
   return base::WrapUnique(new SynchronousShutdownObjectContainerImpl(
       asychronous_container, notification_presenter,
       gms_core_notifications_state_tracker, pref_service, network_state_handler,
       network_connect, network_connection_handler, session_manager,
       device_sync_client, secure_channel_client));
 }
+
+// static
+void SynchronousShutdownObjectContainerImpl::Factory::SetFactoryForTesting(
+    Factory* factory) {
+  factory_instance_ = factory;
+}
+
+SynchronousShutdownObjectContainerImpl::Factory::~Factory() = default;
 
 SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
     AsynchronousShutdownObjectContainer* asychronous_container,

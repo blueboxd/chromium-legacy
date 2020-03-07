@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType} from 'chrome://print/print_preview.js';
+import {DEFAULT_MAX_COPIES, Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType} from 'chrome://print/print_preview.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -46,7 +46,7 @@ export function getCddTemplate(printerId, opt_printerName) {
       printer: {
         supported_content_type: [{content_type: 'application/pdf'}],
         collate: {default: true},
-        copies: {default: 1, max: 1000},
+        copies: {default: 1, max: DEFAULT_MAX_COPIES},
         color: {
           option: [
             {type: 'STANDARD_COLOR', is_default: true},

@@ -55,10 +55,7 @@ class CryptAuthSchedulerImpl : public CryptAuthScheduler,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthScheduler> BuildInstance(
+    static std::unique_ptr<CryptAuthScheduler> Create(
         PrefService* pref_service,
         NetworkStateHandler* network_state_handler =
             NetworkHandler::Get()->network_state_handler(),
@@ -67,6 +64,16 @@ class CryptAuthSchedulerImpl : public CryptAuthScheduler,
             std::make_unique<base::OneShotTimer>(),
         std::unique_ptr<base::OneShotTimer> device_sync_timer =
             std::make_unique<base::OneShotTimer>());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<CryptAuthScheduler> CreateInstance(
+        PrefService* pref_service,
+        NetworkStateHandler* network_state_handler,
+        base::Clock* clock,
+        std::unique_ptr<base::OneShotTimer> enrollment_timer,
+        std::unique_ptr<base::OneShotTimer> device_sync_timer) = 0;
 
    private:
     static Factory* test_factory_;

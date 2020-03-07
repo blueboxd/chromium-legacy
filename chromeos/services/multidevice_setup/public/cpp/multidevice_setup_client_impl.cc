@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 
@@ -22,35 +21,28 @@ MultiDeviceSetupClientImpl::Factory*
     MultiDeviceSetupClientImpl::Factory::test_factory_ = nullptr;
 
 // static
-MultiDeviceSetupClientImpl::Factory*
-MultiDeviceSetupClientImpl::Factory::Get() {
+std::unique_ptr<MultiDeviceSetupClient>
+MultiDeviceSetupClientImpl::Factory::Create(
+    mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup) {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance(std::move(remote_setup));
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(
+      new MultiDeviceSetupClientImpl(std::move(remote_setup)));
 }
 
 // static
-void MultiDeviceSetupClientImpl::Factory::SetInstanceForTesting(
+void MultiDeviceSetupClientImpl::Factory::SetFactoryForTesting(
     Factory* test_factory) {
   test_factory_ = test_factory;
 }
 
 MultiDeviceSetupClientImpl::Factory::~Factory() = default;
 
-std::unique_ptr<MultiDeviceSetupClient>
-MultiDeviceSetupClientImpl::Factory::BuildInstance(
-    mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup) {
-  return base::WrapUnique(
-      new MultiDeviceSetupClientImpl(std::move(remote_setup)));
-}
-
 MultiDeviceSetupClientImpl::MultiDeviceSetupClientImpl(
     mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup)
     : multidevice_setup_remote_(std::move(remote_setup)),
-      remote_device_cache_(
-          multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance()),
+      remote_device_cache_(multidevice::RemoteDeviceCache::Factory::Create()),
       host_status_with_device_(GenerateDefaultHostStatusWithDevice()),
       feature_states_map_(GenerateDefaultFeatureStatesMap()) {
   multidevice_setup_remote_->AddHostStatusObserver(

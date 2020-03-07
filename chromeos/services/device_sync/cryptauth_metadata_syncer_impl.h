@@ -45,14 +45,19 @@ class CryptAuthMetadataSyncerImpl : public CryptAuthMetadataSyncer {
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthMetadataSyncer> BuildInstance(
+    static std::unique_ptr<CryptAuthMetadataSyncer> Create(
         CryptAuthClientFactory* client_factory,
         PrefService* pref_service,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<CryptAuthMetadataSyncer> CreateInstance(
+        CryptAuthClientFactory* client_factory,
+        PrefService* pref_service,
+        std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
     static Factory* test_factory_;

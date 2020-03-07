@@ -33,21 +33,21 @@ class CryptAuthDeviceManagerImpl : public CryptAuthDeviceManager,
  public:
   class Factory {
    public:
-    static std::unique_ptr<CryptAuthDeviceManager> NewInstance(
+    static std::unique_ptr<CryptAuthDeviceManager> Create(
         base::Clock* clock,
         CryptAuthClientFactory* cryptauth_client_factory,
         CryptAuthGCMManager* gcm_manager,
         PrefService* pref_service);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
     virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthDeviceManager> BuildInstance(
+    virtual std::unique_ptr<CryptAuthDeviceManager> CreateInstance(
         base::Clock* clock,
         CryptAuthClientFactory* cryptauth_client_factory,
         CryptAuthGCMManager* gcm_manager,
-        PrefService* pref_service);
+        PrefService* pref_service) = 0;
 
    private:
     static Factory* factory_instance_;

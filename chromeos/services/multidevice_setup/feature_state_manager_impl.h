@@ -32,14 +32,20 @@ class FeatureStateManagerImpl : public FeatureStateManager,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<FeatureStateManager> BuildInstance(
+    static std::unique_ptr<FeatureStateManager> Create(
         PrefService* pref_service,
         HostStatusProvider* host_status_provider,
         device_sync::DeviceSyncClient* device_sync_client,
         AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<FeatureStateManager> CreateInstance(
+        PrefService* pref_service,
+        HostStatusProvider* host_status_provider,
+        device_sync::DeviceSyncClient* device_sync_client,
+        AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker) = 0;
 
    private:
     static Factory* test_factory_;

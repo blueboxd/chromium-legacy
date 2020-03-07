@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
+import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.ExternalIntentsPolicyProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
@@ -46,6 +47,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     private final CurrentPageVerifier mCurrentPageVerifier;
     private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private final CustomTabToolbarColorController mToolbarColorController;
+    private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
     private final Lazy<ImmersiveModeController> mImmersiveModeController;
     private final TwaRegistrar mTwaRegistrar;
     private final ClientPackageNameProvider mClientPackageNameProvider;
@@ -68,6 +70,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             BrowserServicesIntentDataProvider intentDataProvider,
             TrustedWebActivityUmaRecorder umaRecorder,
             CustomTabToolbarColorController toolbarColorController,
+            CustomTabStatusBarColorProvider statusBarColorProvider,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             TrustedWebActivityBrowserControlsVisibilityManager browserControlsVisibilityManager,
             Lazy<ImmersiveModeController> immersiveModeController,
@@ -79,6 +82,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
         mCurrentPageVerifier = currentPageVerifier;
         mBrowserControlsVisibilityManager = browserControlsVisibilityManager;
         mToolbarColorController = toolbarColorController;
+        mStatusBarColorProvider = statusBarColorProvider;
         mImmersiveModeController = immersiveModeController;
         mTwaRegistrar = twaRegistrar;
         mClientPackageNameProvider = clientPackageNameProvider;
@@ -146,6 +150,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     private void updateUi(boolean inTwaMode) {
         updateImmersiveMode(inTwaMode);
         mToolbarColorController.setUseTabThemeColor(inTwaMode);
+        mStatusBarColorProvider.setUseTabThemeColor(inTwaMode);
         mBrowserControlsVisibilityManager.updateIsInTwaMode(inTwaMode);
     }
 

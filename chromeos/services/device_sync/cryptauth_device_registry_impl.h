@@ -26,11 +26,14 @@ class CryptAuthDeviceRegistryImpl : public CryptAuthDeviceRegistry {
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthDeviceRegistry> BuildInstance(
+    static std::unique_ptr<CryptAuthDeviceRegistry> Create(
         PrefService* pref_service);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<CryptAuthDeviceRegistry> CreateInstance(
+        PrefService* pref_service) = 0;
 
    private:
     static Factory* test_factory_;

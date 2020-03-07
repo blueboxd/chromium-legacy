@@ -69,10 +69,9 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
     CryptAuthKeyRegistryImpl::RegisterPrefs(test_pref_service_.registry());
 
     device_registry_ =
-        CryptAuthDeviceRegistryImpl::Factory::Get()->BuildInstance(
-            &test_pref_service_);
-    key_registry_ = CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(
-        &test_pref_service_);
+        CryptAuthDeviceRegistryImpl::Factory::Create(&test_pref_service_);
+    key_registry_ =
+        CryptAuthKeyRegistryImpl::Factory::Create(&test_pref_service_);
 
     fake_device_syncer_factory_ =
         std::make_unique<FakeCryptAuthDeviceSyncerFactory>();
@@ -102,11 +101,10 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
 
-    device_manager_ =
-        CryptAuthV2DeviceManagerImpl::Factory::Get()->BuildInstance(
-            &fake_client_app_metadata_provider_, device_registry_.get(),
-            key_registry_.get(), &mock_client_factory_, &fake_gcm_manager_,
-            &fake_scheduler_, &test_pref_service_, std::move(mock_timer));
+    device_manager_ = CryptAuthV2DeviceManagerImpl::Factory::Create(
+        &fake_client_app_metadata_provider_, device_registry_.get(),
+        key_registry_.get(), &mock_client_factory_, &fake_gcm_manager_,
+        &fake_scheduler_, &test_pref_service_, std::move(mock_timer));
 
     device_manager_->AddObserver(this);
 

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "chrome/services/soda/soda_service_impl.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/patch/file_patcher_impl.h"
@@ -20,6 +21,7 @@
 #include "content/public/utility/utility_thread.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
+#include "media/mojo/mojom/soda_service.mojom.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
 #include "printing/buildflags/buildflags.h"
 
@@ -99,6 +101,10 @@ auto RunFilePatcher(mojo::PendingReceiver<patch::mojom::FilePatcher> receiver) {
 
 auto RunUnzipper(mojo::PendingReceiver<unzip::mojom::Unzipper> receiver) {
   return std::make_unique<unzip::UnzipperImpl>(std::move(receiver));
+}
+
+auto RunSodaService(mojo::PendingReceiver<media::mojom::SodaService> receiver) {
+  return std::make_unique<soda::SodaServiceImpl>(std::move(receiver));
 }
 
 #if defined(OS_WIN)
@@ -242,6 +248,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
   // clang-format off
   static base::NoDestructor<mojo::ServiceFactory> factory {
     RunFilePatcher,
+    RunSodaService,
     RunUnzipper,
 
 #if !defined(OS_ANDROID)

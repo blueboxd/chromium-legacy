@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_check_test_base.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 
@@ -116,25 +115,25 @@ TEST_F(IdleSpellCheckControllerTest, ColdModeToInactive) {
 
 TEST_F(IdleSpellCheckControllerTest, DetachWhenInactive) {
   TransitTo(State::kInactive);
-  GetFrame().DomWindow()->FrameDestroyed();
+  GetDocument().Shutdown();
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckControllerTest, DetachWhenHotModeRequested) {
   TransitTo(State::kHotModeRequested);
-  GetFrame().DomWindow()->FrameDestroyed();
+  GetDocument().Shutdown();
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckControllerTest, DetachWhenColdModeTimerStarted) {
   TransitTo(State::kColdModeTimerStarted);
-  GetFrame().DomWindow()->FrameDestroyed();
+  GetDocument().Shutdown();
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckControllerTest, DetachWhenColdModeRequested) {
   TransitTo(State::kColdModeRequested);
-  GetFrame().DomWindow()->FrameDestroyed();
+  GetDocument().Shutdown();
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 

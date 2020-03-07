@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/software_feature.h"
@@ -168,13 +167,15 @@ CryptAuthFeatureStatusGetterImpl::Factory*
     CryptAuthFeatureStatusGetterImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthFeatureStatusGetterImpl::Factory*
-CryptAuthFeatureStatusGetterImpl::Factory::Get() {
+std::unique_ptr<CryptAuthFeatureStatusGetter>
+CryptAuthFeatureStatusGetterImpl::Factory::Create(
+    CryptAuthClientFactory* client_factory,
+    std::unique_ptr<base::OneShotTimer> timer) {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance(client_factory, std::move(timer));
 
-  static base::NoDestructor<CryptAuthFeatureStatusGetterImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(
+      new CryptAuthFeatureStatusGetterImpl(client_factory, std::move(timer)));
 }
 
 // static
@@ -184,14 +185,6 @@ void CryptAuthFeatureStatusGetterImpl::Factory::SetFactoryForTesting(
 }
 
 CryptAuthFeatureStatusGetterImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthFeatureStatusGetter>
-CryptAuthFeatureStatusGetterImpl::Factory::BuildInstance(
-    CryptAuthClientFactory* client_factory,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(
-      new CryptAuthFeatureStatusGetterImpl(client_factory, std::move(timer)));
-}
 
 CryptAuthFeatureStatusGetterImpl::CryptAuthFeatureStatusGetterImpl(
     CryptAuthClientFactory* client_factory,

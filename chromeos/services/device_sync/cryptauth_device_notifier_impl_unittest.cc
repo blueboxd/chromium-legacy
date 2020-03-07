@@ -113,10 +113,9 @@ class DeviceSyncCryptAuthDeviceNotifierImplTest
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
 
-    device_notifier_ =
-        CryptAuthDeviceNotifierImpl::Factory::Get()->BuildInstance(
-            &fake_client_app_metadata_provider_, &mock_client_factory_,
-            &fake_gcm_manager_, std::move(mock_timer));
+    device_notifier_ = CryptAuthDeviceNotifierImpl::Factory::Create(
+        &fake_client_app_metadata_provider_, &mock_client_factory_,
+        &fake_gcm_manager_, std::move(mock_timer));
   }
 
   // MockCryptAuthClientFactory::Observer:

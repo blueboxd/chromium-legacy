@@ -8344,6 +8344,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="IOSBookmarkManagerCloseWithSwipe">
+  <owner>eugenebut@chromium.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Recorded when a user closes bookmark manager by swiping down. iOS-only.
+  </description>
+</action>
+
+<action name="IOSHistoryCloseWithSwipe">
+  <owner>eugenebut@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Recorded when a user closes History using swipe down gesture. iOS-only.
+  </description>
+</action>
+
 <action name="IOSInspectPageVisited">
   <owner>eugenebut@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
@@ -8362,6 +8378,22 @@ should be able to be added at any place in this file.
   <owner>justincohen@chromium.org</owner>
   <description>
     User opened Chrome with a `Search in Chrome` Siri Shortcut.
+  </description>
+</action>
+
+<action name="IOSReadingListCloseWithSwipe">
+  <owner>eugenebut@google.com</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <description>
+    Recorded when a user closes Reading List with swipe down gesture. iOS-only.
+  </description>
+</action>
+
+<action name="IOSRecentTabsCloseWithSwipe">
+  <owner>gambard@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Recorded when a user closes Recent Tabs using swipe down gesture. iOS-only.
   </description>
 </action>
 
@@ -11908,9 +11940,10 @@ should be able to be added at any place in this file.
 
 <action name="MobileBookmarkManagerClose">
   <owner>twellington@google.com</owner>
+  <owner>sczs@chromium.org</owner>
   <owner>chrome-android-app@chromium.org</owner>
   <description>
-    Recorded when a user closes the Android bookmark manager.
+    Recorded when a user closes bookmark manager on iOS or Android.
   </description>
 </action>
 
@@ -12543,6 +12576,12 @@ should be able to be added at any place in this file.
 <action name="MobileHelpAndFeedback">
   <owner>wychen@chromium.org</owner>
   <description>The Help and Feedback dialog is shown.</description>
+</action>
+
+<action name="MobileHistoryClose">
+  <owner>eugenebut@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>Recorded when a user closes History on iOS.</description>
 </action>
 
 <action name="MobileHistoryPage_EntryLinkOpenNewIncognitoTab">
@@ -13369,6 +13408,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileReadingListClose">
+  <owner>eugenebut@google.com</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <description>Recorded when a user closes Reading List on iOS.</description>
+</action>
+
 <action name="MobileReadingListDeleteEntry">
   <owner>gambard@chromium.org</owner>
   <description>
@@ -13468,6 +13513,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileRecentTabManagerShowFullHistory">
+  <owner>gambard@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Recorded when a user opens History from Recent Tabs on iOS.
+  </description>
+</action>
+
 <action name="MobileRecentTabManagerTabFromOtherDeviceOpened">
   <owner>finkm@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -13479,6 +13532,12 @@ should be able to be added at any place in this file.
     This user action is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
   </description>
+</action>
+
+<action name="MobileRecentTabsClose">
+  <owner>gambard@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>Recorded when a user closes Recent Tabs on iOS.</description>
 </action>
 
 <action name="MobileRendererCrashed">
@@ -14169,6 +14228,102 @@ should be able to be added at any place in this file.
   <owner>kkimlabs@chromium.org</owner>
   <description>
     Only for Android. Menu is shown by tapping software menu button.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuCopyImage">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user taps Copy Image in context menu. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuCopyLink">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user taps Copy Link in context menu. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuImageImpression">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user invokes context menu for web contents image. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuLinkImpression">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user invokes context menu for web contents link. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuOpenImage">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user taps Open Image in context menu. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuOpenImageInNewTab">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user taps Open Image In New Tab in context menu. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuOpenInIncognitoTab">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user taps Open In Incognito Tab in context menu. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuOpenInNewTab">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user taps Open In New Tab in context menu. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuOpenJS">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user taps Open Java Script in context menu. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuReadLater">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user taps Read Later in context menu. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuSaveImage">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user taps Save Image in context menu. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebContextMenuSearchByImage">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Recorded when user taps Search By Image in context menu. iOS only.
   </description>
 </action>
 

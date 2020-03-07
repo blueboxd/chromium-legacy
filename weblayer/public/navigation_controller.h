@@ -23,6 +23,8 @@ class NavigationController {
 
   virtual void Navigate(const GURL& url) = 0;
 
+  virtual void Replace(const GURL& url) = 0;
+
   virtual void GoBack() = 0;
 
   virtual void GoForward() = 0;

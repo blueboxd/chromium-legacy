@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.feed.library.sharedstream.scroll;
 
 import static org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener.UNKNOWN_SCROLL_DELTA;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;

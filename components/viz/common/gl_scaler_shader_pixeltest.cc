@@ -102,7 +102,7 @@ class GLScalerShaderPixelTest
   std::pair<GLuint, GLuint> RenderToNewTextures(GLuint src_texture,
                                                 const gfx::Size& size,
                                                 bool dual_outputs) {
-    auto dst_textures = std::make_pair<GLuint, GLuint>(
+    std::pair<GLuint, GLuint> dst_textures(
         CreateTexture(size), dual_outputs ? CreateTexture(size) : 0u);
     GLuint framebuffer = 0;
     gl_->GenFramebuffers(1, &framebuffer);
@@ -309,7 +309,7 @@ class GLScalerShaderPixelTest
 
  protected:
   void SetUp() final {
-    cc::PixelTest::SetUpGLWithoutRenderer(false);
+    cc::PixelTest::SetUpGLWithoutRenderer(gfx::SurfaceOrigin::kBottomLeft);
 
     scaler_ = std::make_unique<GLScaler>(context_provider());
     gl_ = context_provider()->ContextGL();

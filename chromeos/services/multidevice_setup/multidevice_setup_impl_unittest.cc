@@ -84,7 +84,7 @@ class FakeEligibleHostDevicesProviderFactory
 
  private:
   // EligibleHostDevicesProviderImpl::Factory:
-  std::unique_ptr<EligibleHostDevicesProvider> BuildInstance(
+  std::unique_ptr<EligibleHostDevicesProvider> CreateInstance(
       device_sync::DeviceSyncClient* device_sync_client) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(expected_device_sync_client_, device_sync_client);
@@ -120,7 +120,7 @@ class FakeHostBackendDelegateFactory : public HostBackendDelegateImpl::Factory {
 
  private:
   // HostBackendDelegateImpl::Factory:
-  std::unique_ptr<HostBackendDelegate> BuildInstance(
+  std::unique_ptr<HostBackendDelegate> CreateInstance(
       EligibleHostDevicesProvider* eligible_host_devices_provider,
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
@@ -163,7 +163,7 @@ class FakeHostVerifierFactory : public HostVerifierImpl::Factory {
 
  private:
   // HostVerifierImpl::Factory:
-  std::unique_ptr<HostVerifier> BuildInstance(
+  std::unique_ptr<HostVerifier> CreateInstance(
       HostBackendDelegate* host_backend_delegate,
       device_sync::DeviceSyncClient* device_sync_client,
       PrefService* pref_service,
@@ -210,7 +210,7 @@ class FakeHostStatusProviderFactory : public HostStatusProviderImpl::Factory {
 
  private:
   // HostStatusProviderImpl::Factory:
-  std::unique_ptr<HostStatusProvider> BuildInstance(
+  std::unique_ptr<HostStatusProvider> CreateInstance(
       EligibleHostDevicesProvider* eligible_host_devices_provider,
       HostBackendDelegate* host_backend_delegate,
       HostVerifier* host_verifier,
@@ -255,7 +255,7 @@ class FakeGrandfatheredEasyUnlockHostDisablerFactory
 
  private:
   // GrandfatheredEasyUnlockHostDisabler::Factory:
-  std::unique_ptr<GrandfatheredEasyUnlockHostDisabler> BuildInstance(
+  std::unique_ptr<GrandfatheredEasyUnlockHostDisabler> CreateInstance(
       HostBackendDelegate* host_backend_delegate,
       device_sync::DeviceSyncClient* device_sync_client,
       PrefService* pref_service,
@@ -297,7 +297,7 @@ class FakeFeatureStateManagerFactory : public FeatureStateManagerImpl::Factory {
 
  private:
   // FeatureStateManagerImpl::Factory:
-  std::unique_ptr<FeatureStateManager> BuildInstance(
+  std::unique_ptr<FeatureStateManager> CreateInstance(
       PrefService* pref_service,
       HostStatusProvider* host_status_provider,
       device_sync::DeviceSyncClient* device_sync_client,
@@ -343,7 +343,7 @@ class FakeHostDeviceTimestampManagerFactory
 
  private:
   // HostDeviceTimestampManagerImpl::Factory:
-  std::unique_ptr<HostDeviceTimestampManager> BuildInstance(
+  std::unique_ptr<HostDeviceTimestampManager> CreateInstance(
       HostStatusProvider* host_status_provider,
       PrefService* pref_service,
       base::Clock* clock) override {
@@ -387,7 +387,7 @@ class FakeAccountStatusChangeDelegateNotifierFactory
 
  private:
   // AccountStatusChangeDelegateNotifierImpl::Factory:
-  std::unique_ptr<AccountStatusChangeDelegateNotifier> BuildInstance(
+  std::unique_ptr<AccountStatusChangeDelegateNotifier> CreateInstance(
       HostStatusProvider* host_status_provider,
       PrefService* pref_service,
       HostDeviceTimestampManager* host_device_timestamp_manager,
@@ -430,7 +430,7 @@ class FakeDeviceReenrollerFactory : public DeviceReenroller::Factory {
 
  private:
   // DeviceReenroller::Factory:
-  std::unique_ptr<DeviceReenroller> BuildInstance(
+  std::unique_ptr<DeviceReenroller> CreateInstance(
       device_sync::DeviceSyncClient* device_sync_client,
       const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
       std::unique_ptr<base::OneShotTimer> timer) override {
@@ -463,7 +463,7 @@ class FakeAndroidSmsAppInstallingStatusObserverFactory
 
  private:
   // AndroidSmsAppInstallingStatusObserver::Factory:
-  std::unique_ptr<AndroidSmsAppInstallingStatusObserver> BuildInstance(
+  std::unique_ptr<AndroidSmsAppInstallingStatusObserver> CreateInstance(
       HostStatusProvider* host_status_provider,
       FeatureStateManager* feature_state_manager,
       AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate) override {
@@ -588,7 +588,7 @@ class MultiDeviceSetupImplTest : public ::testing::TestWithParam<bool> {
     AndroidSmsAppInstallingStatusObserver::Factory::SetFactoryForTesting(
         fake_android_sms_app_installing_status_observer_factory_.get());
 
-    multidevice_setup_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
+    multidevice_setup_ = MultiDeviceSetupImpl::Factory::Create(
         test_pref_service_.get(), fake_device_sync_client_.get(),
         fake_auth_token_validator_.get(), fake_oobe_completion_tracker_.get(),
         fake_android_sms_app_helper_delegate_.get(),

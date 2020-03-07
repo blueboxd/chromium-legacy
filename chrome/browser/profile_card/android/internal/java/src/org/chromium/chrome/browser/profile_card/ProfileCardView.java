@@ -58,7 +58,7 @@ public class ProfileCardView extends TextBubble {
     }
 
     void setAvatarBitmap(Bitmap avatarBitmap) {
-        mAvatarView.setImageBitmap(avatarBitmap);
+        if (avatarBitmap != null) mAvatarView.setImageBitmap(avatarBitmap);
     }
 
     void setTitle(String title) {

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
@@ -70,12 +69,17 @@ std::string CreateSoftwareFeaturesString(
 DeviceReenroller::Factory* DeviceReenroller::Factory::test_factory_ = nullptr;
 
 // static
-DeviceReenroller::Factory* DeviceReenroller::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<DeviceReenroller> DeviceReenroller::Factory::Create(
+    device_sync::DeviceSyncClient* device_sync_client,
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
+    std::unique_ptr<base::OneShotTimer> timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(
+        device_sync_client, gcm_device_info_provider, std::move(timer));
+  }
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new DeviceReenroller(
+      device_sync_client, gcm_device_info_provider, std::move(timer)));
 }
 
 // static
@@ -84,14 +88,6 @@ void DeviceReenroller::Factory::SetFactoryForTesting(Factory* test_factory) {
 }
 
 DeviceReenroller::Factory::~Factory() = default;
-
-std::unique_ptr<DeviceReenroller> DeviceReenroller::Factory::BuildInstance(
-    device_sync::DeviceSyncClient* device_sync_client,
-    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new DeviceReenroller(
-      device_sync_client, gcm_device_info_provider, std::move(timer)));
-}
 
 DeviceReenroller::~DeviceReenroller() {
   device_sync_client_->RemoveObserver(this);

@@ -24,7 +24,7 @@ function onMessage(evt) {
   let agentIdB = evt.data;
   let message = [
     'different-schemes test',
-    internals.getAgentId(window),
+    internals.getDocumentAgentId(document),
     agentIdB
   ];
   window.parent.postMessage(message, '*');

@@ -42,7 +42,7 @@ class SecureChannelPendingBleListenerConnectionRequestTest
         base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
 
     pending_ble_listener_request_ =
-        PendingBleListenerConnectionRequest::Factory::Get()->BuildInstance(
+        PendingBleListenerConnectionRequest::Factory::Create(
             std::move(fake_client_connection_parameters),
             ConnectionPriority::kLow,
             fake_pending_connection_request_delegate_.get(), mock_adapter_);

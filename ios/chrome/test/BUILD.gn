@@ -182,6 +182,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/drag_and_drop:unit_tests",
     "//ios/chrome/browser/favicon:unit_tests",
     "//ios/chrome/browser/find_in_page:unit_tests",
+    "//ios/chrome/browser/flags:unit_tests",
     "//ios/chrome/browser/geolocation:unit_tests",
     "//ios/chrome/browser/history:unit_tests",
     "//ios/chrome/browser/infobars:unit_tests",

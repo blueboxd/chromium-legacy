@@ -346,6 +346,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         mDelegateFactory = component.resolveTabDelegateFactory();
 
         mToolbarColorController.setUseTabThemeColor(true /* useTabThemeColor */);
+        mStatusBarColorProvider.setUseTabThemeColor(true /* useTabThemeColor */);
 
         mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
         mNavigationController.setLandingPageOnCloseCriterion(

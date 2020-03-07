@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.feed;
 
 import static org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.ViewHolderType.TYPE_CARD;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Assert;
 import org.junit.rules.TestWatcher;

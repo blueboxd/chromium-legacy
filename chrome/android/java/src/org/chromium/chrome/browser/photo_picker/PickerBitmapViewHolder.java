@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.photo_picker;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.SystemClock;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
+
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;

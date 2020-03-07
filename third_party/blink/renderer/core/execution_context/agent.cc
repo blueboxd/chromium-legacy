@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 
 namespace blink {
@@ -21,12 +21,12 @@ Agent::~Agent() = default;
 
 void Agent::Trace(Visitor* visitor) {}
 
-void Agent::AttachDocument(Document* document) {
-  event_loop_->AttachScheduler(document->GetScheduler());
+void Agent::AttachExecutionContext(ExecutionContext* execution_context) {
+  event_loop_->AttachScheduler(execution_context->GetScheduler());
 }
 
-void Agent::DetachDocument(Document* document) {
-  event_loop_->DetachScheduler(document->GetScheduler());
+void Agent::DetachExecutionContext(ExecutionContext* execution_context) {
+  event_loop_->DetachScheduler(execution_context->GetScheduler());
 }
 
 }  // namespace blink

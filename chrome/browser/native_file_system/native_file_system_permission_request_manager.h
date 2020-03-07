@@ -33,17 +33,33 @@ class NativeFileSystemPermissionRequestManager
  public:
   ~NativeFileSystemPermissionRequestManager() override;
 
+  enum class Access {
+    // Only ask for read access.
+    kRead,
+    // Only ask for write access, assuming read access has already been granted.
+    kWrite,
+    // Ask for both read and write access.
+    kReadWrite
+  };
+
   struct RequestData {
     RequestData(const url::Origin& origin,
                 const base::FilePath& path,
-                bool is_directory)
-        : origin(origin), path(path), is_directory(is_directory) {}
+                bool is_directory,
+                Access access)
+        : origin(origin),
+          path(path),
+          is_directory(is_directory),
+          access(access) {}
     RequestData(RequestData&&) = default;
+    RequestData(const RequestData&) = default;
     RequestData& operator=(RequestData&&) = default;
+    RequestData& operator=(const RequestData&) = default;
 
     url::Origin origin;
     base::FilePath path;
     bool is_directory;
+    Access access;
   };
 
   void AddRequest(

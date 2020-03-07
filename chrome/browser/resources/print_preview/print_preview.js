@@ -21,6 +21,7 @@ export {Size} from './data/size.js';
 export {Error, State} from './data/state.js';
 export {BackgroundGraphicsModeRestriction, NativeLayer} from './native_layer.js';
 export {getSelectDropdownBackground} from './print_preview_utils.js';
+export {DEFAULT_MAX_COPIES} from './ui/copies_settings.js';
 export {DestinationState} from './ui/destination_settings.js';
 export {PluginProxy} from './ui/plugin_proxy.js';
 export {PreviewAreaState} from './ui/preview_area.js';

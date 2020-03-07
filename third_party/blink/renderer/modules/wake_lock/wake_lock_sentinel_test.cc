@@ -11,8 +11,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_manager.h"
@@ -114,7 +112,7 @@ TEST(WakeLockSentinelTest, ContextDestruction) {
   sentinel->addEventListener(event_type_names::kRelease, event_listener);
   EXPECT_TRUE(sentinel->HasPendingActivity());
 
-  context.Frame()->DomWindow()->FrameDestroyed();
+  context.GetDocument()->Shutdown();
 
   // If the method returns false the object can be GC'ed.
   EXPECT_FALSE(sentinel->HasPendingActivity());

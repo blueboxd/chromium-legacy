@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.bookmarks;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +14,8 @@ import android.view.accessibility.AccessibilityManager;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;

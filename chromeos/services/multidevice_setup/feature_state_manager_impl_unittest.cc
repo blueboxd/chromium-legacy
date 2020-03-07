@@ -74,7 +74,7 @@ class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
         std::make_unique<FakeAndroidSmsPairingStateTracker>();
     fake_android_sms_pairing_state_tracker_->SetPairingComplete(true);
 
-    manager_ = FeatureStateManagerImpl::Factory::Get()->BuildInstance(
+    manager_ = FeatureStateManagerImpl::Factory::Create(
         test_pref_service_.get(), fake_host_status_provider_.get(),
         fake_device_sync_client_.get(),
         fake_android_sms_pairing_state_tracker_.get());

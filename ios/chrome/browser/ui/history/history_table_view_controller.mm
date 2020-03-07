@@ -486,6 +486,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
+  base::RecordAction(base::UserMetricsAction("IOSHistoryCloseWithSwipe"));
   // Call the delegate dismissHistoryWithCompletion to clean up state and
   // stop the Coordinator.
   [self.delegate dismissHistoryWithCompletion:nil];
@@ -1079,6 +1080,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Dismisses this ViewController.
 - (void)dismissHistory {
+  base::RecordAction(base::UserMetricsAction("MobileHistoryClose"));
   [self.delegate dismissHistoryWithCompletion:nil];
 }
 

@@ -5,7 +5,6 @@
 #include "chromeos/services/secure_channel/single_client_message_proxy_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 
 namespace chromeos {
 
@@ -16,30 +15,26 @@ SingleClientMessageProxyImpl::Factory*
     SingleClientMessageProxyImpl::Factory::test_factory_ = nullptr;
 
 // static
-SingleClientMessageProxyImpl::Factory*
-SingleClientMessageProxyImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<SingleClientMessageProxy>
+SingleClientMessageProxyImpl::Factory::Create(
+    SingleClientMessageProxy::Delegate* delegate,
+    std::unique_ptr<ClientConnectionParameters> client_connection_parameters) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(
+        delegate, std::move(client_connection_parameters));
+  }
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new SingleClientMessageProxyImpl(
+      delegate, std::move(client_connection_parameters)));
 }
 
 // static
-void SingleClientMessageProxyImpl::Factory::SetInstanceForTesting(
+void SingleClientMessageProxyImpl::Factory::SetFactoryForTesting(
     Factory* factory) {
   test_factory_ = factory;
 }
 
 SingleClientMessageProxyImpl::Factory::~Factory() = default;
-
-std::unique_ptr<SingleClientMessageProxy>
-SingleClientMessageProxyImpl::Factory::BuildInstance(
-    SingleClientMessageProxy::Delegate* delegate,
-    std::unique_ptr<ClientConnectionParameters> client_connection_parameters) {
-  return base::WrapUnique(new SingleClientMessageProxyImpl(
-      delegate, std::move(client_connection_parameters)));
-}
 
 SingleClientMessageProxyImpl::SingleClientMessageProxyImpl(
     SingleClientMessageProxy::Delegate* delegate,

@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 import static org.chromium.components.embedder_support.util.UrlUtilities.stripScheme;
 
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;

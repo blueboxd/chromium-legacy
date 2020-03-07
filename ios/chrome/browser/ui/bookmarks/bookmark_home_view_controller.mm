@@ -666,6 +666,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 #pragma mark - Navigation Bar Callbacks
 
 - (void)navigationBarCancel:(id)sender {
+  base::RecordAction(base::UserMetricsAction("MobileBookmarkManagerClose"));
   [self navigateAway];
   [self dismissWithURL:GURL()];
 }
@@ -2003,6 +2004,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
+  base::RecordAction(
+      base::UserMetricsAction("IOSBookmarkManagerCloseWithSwipe"));
   // Cleanup once the dismissal is complete.
   [self dismissWithURL:GURL()];
 }

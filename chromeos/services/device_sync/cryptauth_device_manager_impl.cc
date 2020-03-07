@@ -535,35 +535,27 @@ CryptAuthDeviceManagerImpl::Factory*
 
 // static
 std::unique_ptr<CryptAuthDeviceManager>
-CryptAuthDeviceManagerImpl::Factory::NewInstance(
+CryptAuthDeviceManagerImpl::Factory::Create(
     base::Clock* clock,
     CryptAuthClientFactory* cryptauth_client_factory,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service) {
-  if (!factory_instance_)
-    factory_instance_ = new Factory();
+  if (factory_instance_) {
+    return factory_instance_->CreateInstance(clock, cryptauth_client_factory,
+                                             gcm_manager, pref_service);
+  }
 
-  return factory_instance_->BuildInstance(clock, cryptauth_client_factory,
-                                          gcm_manager, pref_service);
+  return base::WrapUnique(new CryptAuthDeviceManagerImpl(
+      clock, cryptauth_client_factory, gcm_manager, pref_service));
 }
 
 // static
-void CryptAuthDeviceManagerImpl::Factory::SetInstanceForTesting(
+void CryptAuthDeviceManagerImpl::Factory::SetFactoryForTesting(
     Factory* factory) {
   factory_instance_ = factory;
 }
 
 CryptAuthDeviceManagerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthDeviceManager>
-CryptAuthDeviceManagerImpl::Factory::BuildInstance(
-    base::Clock* clock,
-    CryptAuthClientFactory* cryptauth_client_factory,
-    CryptAuthGCMManager* gcm_manager,
-    PrefService* pref_service) {
-  return base::WrapUnique(new CryptAuthDeviceManagerImpl(
-      clock, cryptauth_client_factory, gcm_manager, pref_service));
-}
 
 CryptAuthDeviceManagerImpl::CryptAuthDeviceManagerImpl(
     base::Clock* clock,

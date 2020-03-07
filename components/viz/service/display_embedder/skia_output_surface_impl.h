@@ -147,7 +147,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   // Set the fields of |capabilities_| and propagates to |impl_on_gpu_|. Should
   // be called after BindToClient().
-  void SetCapabilitiesForTesting(bool flipped_output_surface);
+  void SetCapabilitiesForTesting(gfx::SurfaceOrigin output_surface_origin);
 
   // Used in unit tests.
   void ScheduleGpuTaskForTesting(

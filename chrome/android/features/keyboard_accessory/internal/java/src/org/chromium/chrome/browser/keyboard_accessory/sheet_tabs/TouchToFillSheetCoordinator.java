@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
 import android.content.Context;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.RecyclerView;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;

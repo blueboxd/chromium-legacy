@@ -44,7 +44,7 @@ class FakeMultiplexedChannelFactory : public MultiplexedChannelImpl::Factory {
   }
 
   // MultiplexedChannelImpl::Factory:
-  std::unique_ptr<MultiplexedChannel> BuildInstance(
+  std::unique_ptr<MultiplexedChannel> CreateInstance(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel,
       MultiplexedChannel::Delegate* delegate,
       ConnectionDetails connection_details,
@@ -107,8 +107,8 @@ class SecureChannelActiveConnectionManagerImplTest : public testing::Test {
   void SetUp() override {
     fake_delegate_ = std::make_unique<FakeActiveConnectionManagerDelegate>();
 
-    manager_ = ActiveConnectionManagerImpl::Factory::Get()->BuildInstance(
-        fake_delegate_.get());
+    manager_ =
+        ActiveConnectionManagerImpl::Factory::Create(fake_delegate_.get());
 
     ActiveConnectionManagerImpl* ptr_as_impl =
         static_cast<ActiveConnectionManagerImpl*>(manager_.get());

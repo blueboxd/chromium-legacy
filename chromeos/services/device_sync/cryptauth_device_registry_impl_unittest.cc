@@ -46,8 +46,7 @@ class DeviceSyncCryptAuthDeviceRegistryImplTest : public testing::Test {
 
   void CreateDeviceRegistry() {
     device_registry_ =
-        CryptAuthDeviceRegistryImpl::Factory::Get()->BuildInstance(
-            &pref_service_);
+        CryptAuthDeviceRegistryImpl::Factory::Create(&pref_service_);
   }
 
   const CryptAuthDevice& GetDeviceForTest(size_t index) const {

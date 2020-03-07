@@ -24,13 +24,19 @@ class AndroidSmsAppInstallingStatusObserver
  public:
   class Factory {
    public:
-    static Factory* Get();
+    static std::unique_ptr<AndroidSmsAppInstallingStatusObserver> Create(
+        HostStatusProvider* host_status_provider,
+        FeatureStateManager* feature_state_manager,
+        AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate);
     static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
     virtual std::unique_ptr<AndroidSmsAppInstallingStatusObserver>
-    BuildInstance(HostStatusProvider* host_status_provider,
-                  FeatureStateManager* feature_state_manager,
-                  AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate);
+    CreateInstance(
+        HostStatusProvider* host_status_provider,
+        FeatureStateManager* feature_state_manager,
+        AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate) = 0;
 
    private:
     static Factory* test_factory_;

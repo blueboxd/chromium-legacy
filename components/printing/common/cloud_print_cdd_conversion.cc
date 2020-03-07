@@ -73,10 +73,12 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
     collate.SaveTo(&description);
   }
 
-  if (semantic_info.copies_capable) {
-    printer::CopiesCapability copies;
-    copies.SaveTo(&description);
-  }
+  printer::Copies copies_val;
+  copies_val.max_value = semantic_info.copies_max;
+
+  printer::CopiesCapability copies_cap;
+  copies_cap.set_value(copies_val);
+  copies_cap.SaveTo(&description);
 
   if (semantic_info.duplex_modes.size() > 1) {
     printer::DuplexCapability duplex;

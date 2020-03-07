@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
@@ -31,13 +30,18 @@ ErrorTolerantBleAdvertisementImpl::Factory*
     ErrorTolerantBleAdvertisementImpl::Factory::test_factory_ = nullptr;
 
 // static
-ErrorTolerantBleAdvertisementImpl::Factory*
-ErrorTolerantBleAdvertisementImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<ErrorTolerantBleAdvertisement>
+ErrorTolerantBleAdvertisementImpl::Factory::Create(
+    const DeviceIdPair& device_id_pair,
+    std::unique_ptr<DataWithTimestamp> advertisement_data,
+    BleSynchronizerBase* ble_synchronizer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(
+        device_id_pair, std::move(advertisement_data), ble_synchronizer);
+  }
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new ErrorTolerantBleAdvertisementImpl(
+      device_id_pair, std::move(advertisement_data), ble_synchronizer));
 }
 
 // static
@@ -47,15 +51,6 @@ void ErrorTolerantBleAdvertisementImpl::Factory::SetFactoryForTesting(
 }
 
 ErrorTolerantBleAdvertisementImpl::Factory::~Factory() = default;
-
-std::unique_ptr<ErrorTolerantBleAdvertisement>
-ErrorTolerantBleAdvertisementImpl::Factory::BuildInstance(
-    const DeviceIdPair& device_id_pair,
-    std::unique_ptr<DataWithTimestamp> advertisement_data,
-    BleSynchronizerBase* ble_synchronizer) {
-  return base::WrapUnique(new ErrorTolerantBleAdvertisementImpl(
-      device_id_pair, std::move(advertisement_data), ble_synchronizer));
-}
 
 ErrorTolerantBleAdvertisementImpl::ErrorTolerantBleAdvertisementImpl(
     const DeviceIdPair& device_id_pair,

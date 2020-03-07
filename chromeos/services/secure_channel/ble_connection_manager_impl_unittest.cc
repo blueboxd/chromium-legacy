@@ -69,7 +69,7 @@ class FakeBleSynchronizerFactory : public BleSynchronizer::Factory {
 
  private:
   // BleSynchronizer::Factory:
-  std::unique_ptr<BleSynchronizerBase> BuildInstance(
+  std::unique_ptr<BleSynchronizerBase> CreateInstance(
       scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) override {
     EXPECT_EQ(expected_mock_adapter_, bluetooth_adapter);
     EXPECT_FALSE(instance_);
@@ -104,7 +104,7 @@ class FakeBleAdvertiserFactory : public BleAdvertiserImpl::Factory {
 
  private:
   // BleAdvertiserImpl::Factory:
-  std::unique_ptr<BleAdvertiser> BuildInstance(
+  std::unique_ptr<BleAdvertiser> CreateInstance(
       BleAdvertiser::Delegate* delegate,
       BleServiceDataHelper* ble_service_data_helper,
       BleSynchronizerBase* ble_synchronizer_base,
@@ -142,13 +142,13 @@ class FakeBleScannerFactory : public BleScannerImpl::Factory {
             expected_fake_ble_service_data_helper),
         fake_ble_synchronizer_factory_(fake_ble_synchronizer_factory) {}
 
-  virtual ~FakeBleScannerFactory() = default;
+  ~FakeBleScannerFactory() override = default;
 
   FakeBleScanner* instance() { return instance_; }
 
  private:
   // BleScannerImpl::Factory:
-  std::unique_ptr<BleScanner> BuildInstance(
+  std::unique_ptr<BleScanner> CreateInstance(
       BleScanner::Delegate* delegate,
       BleServiceDataHelper* service_data_helper,
       BleSynchronizerBase* ble_synchronizer_base,
@@ -184,7 +184,7 @@ class FakeSecureChannelDisconnectorFactory
 
  private:
   // SecureChannelDisconnectorImpl::Factory:
-  std::unique_ptr<SecureChannelDisconnector> BuildInstance() override {
+  std::unique_ptr<SecureChannelDisconnector> CreateInstance() override {
     auto instance = std::make_unique<FakeSecureChannelDisconnector>();
     instance_ = instance.get();
     return instance;
@@ -214,7 +214,7 @@ class FakeWeaveClientConnectionFactory
 
  private:
   // cryptauth::BluetoothLowEnergyWeaveClientConnection::Factory:
-  std::unique_ptr<Connection> BuildInstance(
+  std::unique_ptr<Connection> CreateInstance(
       multidevice::RemoteDeviceRef remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
@@ -253,7 +253,7 @@ class FakeSecureChannelFactory : public SecureChannel::Factory {
 
  private:
   // SecureChannel::Factory:
-  std::unique_ptr<SecureChannel> BuildInstance(
+  std::unique_ptr<SecureChannel> CreateInstance(
       std::unique_ptr<Connection> connection) override {
     EXPECT_EQ(fake_weave_client_connection_factory_->last_created_instance(),
               connection.get());
@@ -275,7 +275,7 @@ class FakeAuthenticatedChannelFactory
     : public AuthenticatedChannelImpl::Factory {
  public:
   FakeAuthenticatedChannelFactory() = default;
-  virtual ~FakeAuthenticatedChannelFactory() = default;
+  ~FakeAuthenticatedChannelFactory() override = default;
 
   void SetExpectationsForNextCall(
       FakeSecureChannelConnection* expected_fake_secure_channel,
@@ -291,7 +291,7 @@ class FakeAuthenticatedChannelFactory
 
  private:
   // AuthenticatedChannelImpl::Factory:
-  std::unique_ptr<AuthenticatedChannel> BuildInstance(
+  std::unique_ptr<AuthenticatedChannel> CreateInstance(
       const std::vector<mojom::ConnectionCreationDetail>&
           connection_creation_details,
       std::unique_ptr<SecureChannel> secure_channel) override {
@@ -370,11 +370,11 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
     fake_weave_client_connection_factory_ =
         std::make_unique<FakeWeaveClientConnectionFactory>(mock_adapter_);
     weave::BluetoothLowEnergyWeaveClientConnection::Factory::
-        SetInstanceForTesting(fake_weave_client_connection_factory_.get());
+        SetFactoryForTesting(fake_weave_client_connection_factory_.get());
 
     fake_secure_channel_factory_ = std::make_unique<FakeSecureChannelFactory>(
         fake_weave_client_connection_factory_.get());
-    SecureChannel::Factory::SetInstanceForTesting(
+    SecureChannel::Factory::SetFactoryForTesting(
         fake_secure_channel_factory_.get());
 
     fake_authenticated_channel_factory_ =
@@ -382,7 +382,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
     AuthenticatedChannelImpl::Factory::SetFactoryForTesting(
         fake_authenticated_channel_factory_.get());
 
-    manager_ = BleConnectionManagerImpl::Factory::Get()->BuildInstance(
+    manager_ = BleConnectionManagerImpl::Factory::Create(
         mock_adapter_, fake_ble_service_data_helper_.get(),
         fake_timer_factory_.get(), test_clock_.get());
   }
@@ -393,8 +393,8 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
     BleScannerImpl::Factory::SetFactoryForTesting(nullptr);
     SecureChannelDisconnectorImpl::Factory::SetFactoryForTesting(nullptr);
     weave::BluetoothLowEnergyWeaveClientConnection::Factory::
-        SetInstanceForTesting(nullptr);
-    SecureChannel::Factory::SetInstanceForTesting(nullptr);
+        SetFactoryForTesting(nullptr);
+    SecureChannel::Factory::SetFactoryForTesting(nullptr);
     AuthenticatedChannelImpl::Factory::SetFactoryForTesting(nullptr);
   }
 

@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders;
 
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 
-/** {@link android.support.v7.widget.RecyclerView.ViewHolder} for the Feed. */
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
+
+/** {@link androidx.recyclerview.widget.RecyclerView.ViewHolder} for the Feed. */
 public abstract class FeedViewHolder extends ViewHolder {
     public FeedViewHolder(View view) {
         super(view);

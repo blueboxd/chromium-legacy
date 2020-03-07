@@ -64,7 +64,7 @@ class FakeSecureMessageDelegateFactory
 
  private:
   // multidevice::SecureMessageDelegateImpl::Factory:
-  std::unique_ptr<multidevice::SecureMessageDelegate> BuildInstance() override;
+  std::unique_ptr<multidevice::SecureMessageDelegate> CreateInstance() override;
 
   multidevice::FakeSecureMessageDelegate* instance_ = nullptr;
 

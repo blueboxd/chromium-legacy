@@ -27,11 +27,14 @@ class ActiveConnectionManagerImpl : public ActiveConnectionManager,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<ActiveConnectionManager> BuildInstance(
+    static std::unique_ptr<ActiveConnectionManager> Create(
         ActiveConnectionManager::Delegate* delegate);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<ActiveConnectionManager> CreateInstance(
+        ActiveConnectionManager::Delegate* delegate) = 0;
 
    private:
     static Factory* test_factory_;

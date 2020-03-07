@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -78,20 +79,23 @@ TEST_F(DefinitionResultParserTest, Success) {
                             "incapable of being fully explored or understood.");
   QuickAnswer quick_answer;
   EXPECT_TRUE(parser_->Parse(&result, &quick_answer));
+
+  const auto& expected_title = "unfathomable · /ˌənˈfaT͟Həməb(ə)/";
+  const auto& expected_answer =
+      "incapable of being fully explored or understood.";
   EXPECT_EQ(ResultType::kDefinitionResult, quick_answer.result_type);
-  EXPECT_EQ("incapable of being fully explored or understood.",
-            quick_answer.primary_answer);
-  EXPECT_EQ("unfathomable · /ˌənˈfaT͟Həməb(ə)/", quick_answer.secondary_answer);
+  EXPECT_EQ(expected_answer, quick_answer.primary_answer);
+  EXPECT_EQ(expected_title, quick_answer.secondary_answer);
 
   EXPECT_EQ(1u, quick_answer.title.size());
   EXPECT_EQ(1u, quick_answer.first_answer_row.size());
   auto* answer =
       static_cast<QuickAnswerText*>(quick_answer.first_answer_row[0].get());
-  EXPECT_EQ("incapable of being fully explored or understood.", answer->text_);
-  EXPECT_EQ(gfx::kGoogleGrey700, answer->color_);
+  EXPECT_EQ(base::UTF8ToUTF16(expected_answer), answer->text);
+  EXPECT_EQ(gfx::kGoogleGrey700, answer->color);
   auto* title = static_cast<QuickAnswerText*>(quick_answer.title[0].get());
-  EXPECT_EQ("unfathomable · /ˌənˈfaT͟Həməb(ə)/", title->text_);
-  EXPECT_EQ(gfx::kGoogleGrey900, title->color_);
+  EXPECT_EQ(base::UTF8ToUTF16(expected_title), title->text);
+  EXPECT_EQ(gfx::kGoogleGrey900, title->color);
 }
 
 TEST_F(DefinitionResultParserTest, EmptyValue) {

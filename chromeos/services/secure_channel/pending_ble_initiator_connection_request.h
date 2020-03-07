@@ -23,15 +23,23 @@ class PendingBleInitiatorConnectionRequest
  public:
   class Factory {
    public:
-    static Factory* Get();
+    static std::unique_ptr<PendingConnectionRequest<BleInitiatorFailureType>>
+    Create(std::unique_ptr<ClientConnectionParameters>
+               client_connection_parameters,
+           ConnectionPriority connection_priority,
+           PendingConnectionRequestDelegate* delegate,
+           scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
     static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
     virtual std::unique_ptr<PendingConnectionRequest<BleInitiatorFailureType>>
-    BuildInstance(std::unique_ptr<ClientConnectionParameters>
-                      client_connection_parameters,
-                  ConnectionPriority connection_priority,
-                  PendingConnectionRequestDelegate* delegate,
-                  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
+    CreateInstance(
+        std::unique_ptr<ClientConnectionParameters>
+            client_connection_parameters,
+        ConnectionPriority connection_priority,
+        PendingConnectionRequestDelegate* delegate,
+        scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) = 0;
 
    private:
     static Factory* test_factory_;

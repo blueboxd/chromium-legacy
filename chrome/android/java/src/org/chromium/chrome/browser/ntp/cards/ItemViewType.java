@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import android.support.v7.widget.RecyclerView.Adapter;
-
 import androidx.annotation.IntDef;
+import androidx.recyclerview.widget.RecyclerView.Adapter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

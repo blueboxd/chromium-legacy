@@ -11,12 +11,16 @@
 #include "components/permissions/switches.h"
 #include "content/public/browser/browser_task_traits.h"
 
-bool operator==(
+namespace {
+
+bool RequestsAreIdentical(
     const NativeFileSystemPermissionRequestManager::RequestData& a,
     const NativeFileSystemPermissionRequestManager::RequestData& b) {
   return a.origin == b.origin && a.path == b.path &&
-         a.is_directory == b.is_directory;
+         a.is_directory == b.is_directory && a.access == b.access;
 }
+
+}  // namespace
 
 struct NativeFileSystemPermissionRequestManager::Request {
   Request(
@@ -44,12 +48,12 @@ void NativeFileSystemPermissionRequestManager::AddRequest(
   }
 
   // Check if any pending requests are identical to the new request.
-  if (current_request_ && current_request_->data == data) {
+  if (current_request_ && RequestsAreIdentical(current_request_->data, data)) {
     current_request_->callbacks.push_back(std::move(callback));
     return;
   }
   for (const auto& request : queued_requests_) {
-    if (request->data == data) {
+    if (RequestsAreIdentical(request->data, data)) {
       request->callbacks.push_back(std::move(callback));
       return;
     }
@@ -96,8 +100,7 @@ void NativeFileSystemPermissionRequestManager::DequeueAndShowRequest() {
   }
 
   ShowNativeFileSystemPermissionDialog(
-      current_request_->data.origin, current_request_->data.path,
-      current_request_->data.is_directory,
+      current_request_->data,
       base::BindOnce(
           &NativeFileSystemPermissionRequestManager::OnPermissionDialogResult,
           weak_factory_.GetWeakPtr()),

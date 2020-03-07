@@ -525,8 +525,13 @@ TEST_P(RuleIndexingTest, LargeRegexIgnored) {
     AddRule(rule);
   }
 
+  base::HistogramTester tester;
   extension_loader()->set_ignore_manifest_warnings(true);
+
   LoadAndExpectSuccess(kNumSmallRegex);
+
+  tester.ExpectBucketCount(kIsLargeRegexHistogram, true, kNumLargeRegex);
+  tester.ExpectBucketCount(kIsLargeRegexHistogram, false, kNumSmallRegex);
 
   // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
   // which causes it to lose the install warning. This should be fixed.

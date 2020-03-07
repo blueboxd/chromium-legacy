@@ -678,12 +678,10 @@ void SkiaOutputSurfaceImpl::SetEnableDCLayers(bool enable) {
 #endif
 
 void SkiaOutputSurfaceImpl::SetCapabilitiesForTesting(
-    bool flipped_output_surface) {
+    gfx::SurfaceOrigin output_surface_origin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(impl_on_gpu_);
-  capabilities_.output_surface_origin = flipped_output_surface
-                                            ? gfx::SurfaceOrigin::kTopLeft
-                                            : gfx::SurfaceOrigin::kBottomLeft;
+  capabilities_.output_surface_origin = output_surface_origin;
   auto callback =
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting,
                      base::Unretained(impl_on_gpu_.get()), capabilities_);

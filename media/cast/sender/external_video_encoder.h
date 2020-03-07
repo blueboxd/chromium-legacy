@@ -35,7 +35,7 @@ class ExternalVideoEncoder : public VideoEncoder {
       const FrameSenderConfig& video_config,
       const gfx::Size& frame_size,
       FrameId first_frame_id,
-      const StatusChangeCallback& status_change_cb,
+      StatusChangeCallback status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
 
@@ -90,7 +90,7 @@ class SizeAdaptableExternalVideoEncoder : public SizeAdaptableVideoEncoderBase {
   SizeAdaptableExternalVideoEncoder(
       const scoped_refptr<CastEnvironment>& cast_environment,
       const FrameSenderConfig& video_config,
-      const StatusChangeCallback& status_change_cb,
+      StatusChangeCallback status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
 

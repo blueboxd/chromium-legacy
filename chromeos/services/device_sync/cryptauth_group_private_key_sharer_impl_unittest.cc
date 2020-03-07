@@ -105,7 +105,7 @@ class DeviceSyncCryptAuthGroupPrivateKeySharerImplTest
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = mock_timer.get();
 
-    sharer_ = CryptAuthGroupPrivateKeySharerImpl::Factory::Get()->BuildInstance(
+    sharer_ = CryptAuthGroupPrivateKeySharerImpl::Factory::Create(
         client_factory_.get(), std::move(mock_timer));
   }
 

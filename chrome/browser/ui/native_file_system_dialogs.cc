@@ -8,9 +8,7 @@
 
 #if !defined(TOOLKIT_VIEWS)
 void ShowNativeFileSystemPermissionDialog(
-    const url::Origin& origin,
-    const base::FilePath& path,
-    bool is_directory,
+    const NativeFileSystemPermissionRequestManager::RequestData& request,
     base::OnceCallback<void(permissions::PermissionAction result)> callback,
     content::WebContents* web_contents) {
   // There's no dialog version of this available outside views, run callback as

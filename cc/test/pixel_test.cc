@@ -226,7 +226,8 @@ viz::ResourceId PixelTest::AllocateAndFillSoftwareResource(
       viz::SingleReleaseCallback::Create(base::DoNothing()));
 }
 
-void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
+void PixelTest::SetUpGLWithoutRenderer(
+    gfx::SurfaceOrigin output_surface_origin) {
   enable_pixel_output_ = std::make_unique<gl::DisableNullDrawGLBindings>();
 
   auto context_provider =
@@ -235,9 +236,7 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
   gpu::ContextResult result = context_provider->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   output_surface_ = std::make_unique<PixelTestOutputSurface>(
-      std::move(context_provider), flipped_output_surface
-                                       ? gfx::SurfaceOrigin::kTopLeft
-                                       : gfx::SurfaceOrigin::kBottomLeft);
+      std::move(context_provider), output_surface_origin);
   output_surface_->BindToClient(output_surface_client_.get());
 
   shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
@@ -253,8 +252,8 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
   child_resource_provider_ = std::make_unique<viz::ClientResourceProvider>();
 }
 
-void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
-  SetUpGLWithoutRenderer(flipped_output_surface);
+void PixelTest::SetUpGLRenderer(gfx::SurfaceOrigin output_surface_origin) {
+  SetUpGLWithoutRenderer(output_surface_origin);
   renderer_ = std::make_unique<viz::GLRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get(),
       nullptr, base::ThreadTaskRunnerHandle::Get());
@@ -262,7 +261,7 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   renderer_->SetVisible(true);
 }
 
-void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface) {
+void PixelTest::SetUpSkiaRenderer(gfx::SurfaceOrigin output_surface_origin) {
   enable_pixel_output_ = std::make_unique<gl::DisableNullDrawGLBindings>();
   // Set up the GPU service.
   gpu_service_holder_ = viz::TestGpuServiceHolder::GetInstance();
@@ -274,7 +273,7 @@ void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface) {
       renderer_settings_);
   output_surface_->BindToClient(output_surface_client_.get());
   static_cast<viz::SkiaOutputSurfaceImpl*>(output_surface_.get())
-      ->SetCapabilitiesForTesting(flipped_output_surface);
+      ->SetCapabilitiesForTesting(output_surface_origin);
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       viz::DisplayResourceProvider::kGpu,
       /*compositor_context_provider=*/nullptr,

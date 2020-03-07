@@ -32,7 +32,7 @@ from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 from blinkpy.w3c.wpt_github import WPTGitHub
 from blinkpy.w3c.wpt_manifest import WPTManifest, BASE_MANIFEST_NAME
 from blinkpy.web_tests.port.base import Port
-from blinkpy.web_tests.models.typ_types import TestExpectations, Expectation
+from blinkpy.web_tests.models.test_expectations import TestExpectations
 
 
 # Settings for how often to check try job results and how long to wait.
@@ -592,30 +592,16 @@ class TestImporter(object):
 
     def _update_single_test_expectations_file(self, port, path, file_contents, deleted_tests, renamed_tests):
         """Updates a single test expectations file."""
-        test_expectations = TestExpectations()
-        ret, errors = test_expectations.parse_tagged_list(file_contents)
-        assert not ret, errors
+        test_expectations = TestExpectations(port, expectations_dict={path: file_contents})
 
-        if not test_expectations.individual_exps:
-            return
-
-        exps = reduce(lambda x, y: x + y, test_expectations.individual_exps.values())
-        if test_expectations.glob_exps:
-            exps.extend(reduce(lambda x, y: x + y, test_expectations.glob_exps.values()))
-
-        lineno_to_exps = {e.lineno: e for e in exps}
         new_lines = []
-        for lineno, line in enumerate(file_contents.splitlines(), 1):
-            if lineno not in lineno_to_exps:
-                new_lines.append(line)
-                continue
-            exp = lineno_to_exps[lineno]
-            test_name = exp.test
-            # if a test is a glob type expectation then add it to the updated
+        for line in test_expectations.get_updated_lines(path):
+            # if a test is a glob type expectation or empty line or comment then add it to the updated
             # expectations file without modifications
-            if exp.is_glob:
-                new_lines.append(line)
+            if not line.test or line.is_glob:
+                new_lines.append(line.to_string())
                 continue
+            test_name = line.test
             if self.finder.is_webdriver_test_path(test_name):
                 root_test_file, subtest_suffix = port.split_webdriver_test_name(test_name)
             else:
@@ -628,8 +614,8 @@ class TestImporter(object):
                     test_name = port.add_webdriver_subtest_suffix(renamed_test, subtest_suffix)
                 else:
                     test_name = renamed_tests[root_test_file]
-            exp.test = test_name
-            new_lines.append(exp.to_string())
+            line.test = test_name
+            new_lines.append(line.to_string())
         self.host.filesystem.write_text_file(path, '\n'.join(new_lines) + '\n')
 
     def _list_deleted_tests(self):

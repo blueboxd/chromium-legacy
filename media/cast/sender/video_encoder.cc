@@ -19,7 +19,7 @@ namespace cast {
 std::unique_ptr<VideoEncoder> VideoEncoder::Create(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const FrameSenderConfig& video_config,
-    const StatusChangeCallback& status_change_cb,
+    StatusChangeCallback status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb) {
 // On MacOS or IOS, attempt to use the system VideoToolbox library to
@@ -35,8 +35,8 @@ std::unique_ptr<VideoEncoder> VideoEncoder::Create(
   // If the system provides a hardware-accelerated encoder, use it.
   if (ExternalVideoEncoder::IsSupported(video_config)) {
     return std::unique_ptr<VideoEncoder>(new SizeAdaptableExternalVideoEncoder(
-        cast_environment, video_config, status_change_cb, create_vea_cb,
-        create_video_encode_memory_cb));
+        cast_environment, video_config, std::move(status_change_cb),
+        create_vea_cb, create_video_encode_memory_cb));
   }
 
   // Attempt to use the software encoder implementation.

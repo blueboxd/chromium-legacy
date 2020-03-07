@@ -116,7 +116,7 @@ class MultiDeviceSetupHostBackendDelegateImplTest
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
 
-    delegate_ = HostBackendDelegateImpl::Factory::Get()->BuildInstance(
+    delegate_ = HostBackendDelegateImpl::Factory::Create(
         fake_eligible_host_devices_provider_.get(), test_pref_service_.get(),
         fake_device_sync_client_.get(), std::move(mock_timer));
     EXPECT_EQ(initial_host, delegate_->GetMultiDeviceHostFromBackend());

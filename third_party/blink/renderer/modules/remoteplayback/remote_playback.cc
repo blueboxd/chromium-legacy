@@ -103,7 +103,7 @@ const AtomicString& RemotePlayback::InterfaceName() const {
 }
 
 ExecutionContext* RemotePlayback::GetExecutionContext() const {
-  return ExecutionContextLifecycleObserver::GetExecutionContext();
+  return media_element_->GetDocument().ToExecutionContext();
 }
 
 ScriptPromise RemotePlayback::watchAvailability(
@@ -283,9 +283,6 @@ int RemotePlayback::WatchAvailabilityInternal(
       IsBackgroundAvailabilityMonitoringDisabled()) {
     return kWatchAvailabilityNotSupported;
   }
-
-  if (!GetExecutionContext())
-    return kWatchAvailabilityNotSupported;
 
   int id;
   do {

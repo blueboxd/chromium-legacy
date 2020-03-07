@@ -71,14 +71,9 @@ class DeviceSyncImpl : public DeviceSyncBase,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetInstanceForTesting(Factory* test_factory);
-
-    virtual ~Factory();
-
     // Note: |timer| should be a newly-created base::OneShotTimer object; this
     // parameter only exists for testing via dependency injection.
-    virtual std::unique_ptr<DeviceSyncBase> BuildInstance(
+    static std::unique_ptr<DeviceSyncBase> Create(
         signin::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
         PrefService* profile_prefs,
@@ -86,6 +81,18 @@ class DeviceSyncImpl : public DeviceSyncBase,
         ClientAppMetadataProvider* client_app_metadata_provider,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         std::unique_ptr<base::OneShotTimer> timer);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<DeviceSyncBase> CreateInstance(
+        signin::IdentityManager* identity_manager,
+        gcm::GCMDriver* gcm_driver,
+        PrefService* profile_prefs,
+        const GcmDeviceInfoProvider* gcm_device_info_provider,
+        ClientAppMetadataProvider* client_app_metadata_provider,
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+        std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
     static Factory* test_factory_instance_;

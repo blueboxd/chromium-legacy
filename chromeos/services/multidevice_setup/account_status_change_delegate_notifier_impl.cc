@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/time/clock.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/host_device_timestamp_manager.h"
@@ -32,13 +31,21 @@ AccountStatusChangeDelegateNotifierImpl::Factory*
     AccountStatusChangeDelegateNotifierImpl::Factory::test_factory_ = nullptr;
 
 // static
-AccountStatusChangeDelegateNotifierImpl::Factory*
-AccountStatusChangeDelegateNotifierImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
-
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+std::unique_ptr<AccountStatusChangeDelegateNotifier>
+AccountStatusChangeDelegateNotifierImpl::Factory::Create(
+    HostStatusProvider* host_status_provider,
+    PrefService* pref_service,
+    HostDeviceTimestampManager* host_device_timestamp_manager,
+    OobeCompletionTracker* oobe_completion_tracker,
+    base::Clock* clock) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(host_status_provider, pref_service,
+                                         host_device_timestamp_manager,
+                                         oobe_completion_tracker, clock);
+  }
+  return base::WrapUnique(new AccountStatusChangeDelegateNotifierImpl(
+      host_status_provider, pref_service, host_device_timestamp_manager,
+      oobe_completion_tracker, clock));
 }
 
 // static
@@ -48,18 +55,6 @@ void AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
 }
 
 AccountStatusChangeDelegateNotifierImpl::Factory::~Factory() = default;
-
-std::unique_ptr<AccountStatusChangeDelegateNotifier>
-AccountStatusChangeDelegateNotifierImpl::Factory::BuildInstance(
-    HostStatusProvider* host_status_provider,
-    PrefService* pref_service,
-    HostDeviceTimestampManager* host_device_timestamp_manager,
-    OobeCompletionTracker* oobe_completion_tracker,
-    base::Clock* clock) {
-  return base::WrapUnique(new AccountStatusChangeDelegateNotifierImpl(
-      host_status_provider, pref_service, host_device_timestamp_manager,
-      oobe_completion_tracker, clock));
-}
 
 // static
 void AccountStatusChangeDelegateNotifierImpl::RegisterPrefs(

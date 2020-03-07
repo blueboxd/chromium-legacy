@@ -116,7 +116,7 @@ class MultiDeviceSetupHostVerifierImplTest
     auto mock_sync_timer = std::make_unique<base::MockOneShotTimer>();
     mock_sync_timer_ = mock_sync_timer.get();
 
-    host_verifier_ = HostVerifierImpl::Factory::Get()->BuildInstance(
+    host_verifier_ = HostVerifierImpl::Factory::Create(
         fake_host_backend_delegate_.get(), fake_device_sync_client_.get(),
         test_pref_service_.get(), test_clock_.get(),
         std::move(mock_retry_timer), std::move(mock_sync_timer));

@@ -24,9 +24,8 @@ class MultiDeviceSetupPrivilegedHostDeviceSetterImplTest
 
   void SetUp() override {
     fake_multidevice_setup_ = std::make_unique<FakeMultiDeviceSetup>();
-    host_setter_ =
-        PrivilegedHostDeviceSetterImpl::Factory::Get()->BuildInstance(
-            fake_multidevice_setup_.get());
+    host_setter_ = PrivilegedHostDeviceSetterImpl::Factory::Create(
+        fake_multidevice_setup_.get());
   }
 
   void CallSetHostDevice(

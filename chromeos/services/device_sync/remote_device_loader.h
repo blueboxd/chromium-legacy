@@ -29,22 +29,22 @@ class RemoteDeviceLoader {
  public:
   class Factory {
    public:
-    static std::unique_ptr<RemoteDeviceLoader> NewInstance(
+    static std::unique_ptr<RemoteDeviceLoader> Create(
         const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
         const std::string& user_email,
         const std::string& user_private_key,
         std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<RemoteDeviceLoader> BuildInstance(
+    virtual std::unique_ptr<RemoteDeviceLoader> CreateInstance(
         const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
         const std::string& user_email,
         const std::string& user_private_key,
         std::unique_ptr<multidevice::SecureMessageDelegate>
-            secure_message_delegate);
+            secure_message_delegate) = 0;
 
    private:
     static Factory* factory_instance_;

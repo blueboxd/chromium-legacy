@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_constants.h"
@@ -62,12 +61,12 @@ CryptAuthKeyCreatorImpl::Factory*
     CryptAuthKeyCreatorImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthKeyCreatorImpl::Factory* CryptAuthKeyCreatorImpl::Factory::Get() {
+std::unique_ptr<CryptAuthKeyCreator>
+CryptAuthKeyCreatorImpl::Factory::Create() {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance();
 
-  static base::NoDestructor<CryptAuthKeyCreatorImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthKeyCreatorImpl());
 }
 
 // static
@@ -78,14 +77,9 @@ void CryptAuthKeyCreatorImpl::Factory::SetFactoryForTesting(
 
 CryptAuthKeyCreatorImpl::Factory::~Factory() = default;
 
-std::unique_ptr<CryptAuthKeyCreator>
-CryptAuthKeyCreatorImpl::Factory::BuildInstance() {
-  return base::WrapUnique(new CryptAuthKeyCreatorImpl());
-}
-
 CryptAuthKeyCreatorImpl::CryptAuthKeyCreatorImpl()
     : secure_message_delegate_(
-          multidevice::SecureMessageDelegateImpl::Factory::NewInstance()) {}
+          multidevice::SecureMessageDelegateImpl::Factory::Create()) {}
 
 CryptAuthKeyCreatorImpl::~CryptAuthKeyCreatorImpl() = default;
 

@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.feed.library.basicstream.internal;
 
 import android.support.annotation.VisibleForTesting;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.RecyclerView;
+
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 

@@ -108,7 +108,7 @@ Polymer({
 
   /** @private */
   onAdvancedProtectionProgramLinkClick_() {
-    window.open('https://landing.google.com/advancedprotection/');
+    window.open(loadTimeData.getString('advancedProtectionURL'));
   },
 
   /** @private */

@@ -121,13 +121,13 @@ class DeviceSyncRemoteDeviceV2LoaderImplTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
         fake_secure_message_delegate_factory_.get());
   }
 
   // testing::Test:
   void TearDown() override {
-    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
         nullptr);
   }
 
@@ -136,7 +136,7 @@ class DeviceSyncRemoteDeviceV2LoaderImplTest : public testing::Test {
     for (const auto& device : device_list)
       id_to_device_map.insert_or_assign(device.instance_id(), device);
 
-    loader_ = RemoteDeviceV2LoaderImpl::Factory::Get()->BuildInstance();
+    loader_ = RemoteDeviceV2LoaderImpl::Factory::Create();
     loader_->Load(
         id_to_device_map, kUserId, user_private_key_,
         base::BindOnce(&DeviceSyncRemoteDeviceV2LoaderImplTest::OnLoadFinished,

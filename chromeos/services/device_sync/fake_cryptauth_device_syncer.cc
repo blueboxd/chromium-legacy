@@ -33,7 +33,7 @@ FakeCryptAuthDeviceSyncerFactory::FakeCryptAuthDeviceSyncerFactory() = default;
 FakeCryptAuthDeviceSyncerFactory::~FakeCryptAuthDeviceSyncerFactory() = default;
 
 std::unique_ptr<CryptAuthDeviceSyncer>
-FakeCryptAuthDeviceSyncerFactory::BuildInstance(
+FakeCryptAuthDeviceSyncerFactory::CreateInstance(
     CryptAuthDeviceRegistry* device_registry,
     CryptAuthKeyRegistry* key_registry,
     CryptAuthClientFactory* client_factory,

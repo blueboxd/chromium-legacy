@@ -304,8 +304,8 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   caps.collate_capable =
       (DeviceCapabilities(name, port, DC_COLLATE, nullptr, nullptr) == 1);
 
-  caps.copies_capable =
-      (DeviceCapabilities(name, port, DC_COPIES, nullptr, nullptr) > 1);
+  caps.copies_max =
+      std::max(1, DeviceCapabilities(name, port, DC_COPIES, nullptr, nullptr));
 
   LoadPaper(name, port, user_settings.get(), &caps);
   LoadDpi(name, port, user_settings.get(), &caps);

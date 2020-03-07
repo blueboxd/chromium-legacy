@@ -33,7 +33,7 @@ class SecureChannelClientConnectionParametersImplTest : public testing::Test {
         fake_connection_delegate_->GenerateRemote();
 
     client_connection_parameters_ =
-        ClientConnectionParametersImpl::Factory::Get()->BuildInstance(
+        ClientConnectionParametersImpl::Factory::Create(
             kTestFeature, std::move(fake_connection_delegate_remote));
 
     fake_observer_ = std::make_unique<FakeClientConnectionParametersObserver>();

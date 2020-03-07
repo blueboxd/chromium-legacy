@@ -17,7 +17,7 @@ namespace cast {
 
 AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const FrameSenderConfig& audio_config,
-                         const StatusChangeCallback& status_change_cb,
+                         StatusChangeCallback status_change_cb,
                          CastTransport* const transport_sender)
     : FrameSender(cast_environment,
                   transport_sender,
@@ -37,7 +37,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   // to start sending frames.
   cast_environment_->PostTask(
       CastEnvironment::MAIN, FROM_HERE,
-      base::BindOnce(status_change_cb,
+      base::BindOnce(std::move(status_change_cb),
                      audio_encoder_ ? audio_encoder_->InitializationResult()
                                     : STATUS_INVALID_CONFIGURATION));
 

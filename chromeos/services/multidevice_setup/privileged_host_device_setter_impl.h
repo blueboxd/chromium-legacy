@@ -20,11 +20,14 @@ class PrivilegedHostDeviceSetterImpl : public PrivilegedHostDeviceSetterBase {
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<PrivilegedHostDeviceSetterBase> BuildInstance(
+    static std::unique_ptr<PrivilegedHostDeviceSetterBase> Create(
         MultiDeviceSetupBase* multidevice_setup);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<PrivilegedHostDeviceSetterBase> CreateInstance(
+        MultiDeviceSetupBase* multidevice_setup) = 0;
 
    private:
     static Factory* test_factory_;

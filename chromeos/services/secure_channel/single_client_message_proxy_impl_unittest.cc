@@ -45,7 +45,7 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
     fake_client_connection_parameters_->set_message_receiver(
         std::move(fake_message_receiver));
 
-    proxy_ = SingleClientMessageProxyImpl::Factory::Get()->BuildInstance(
+    proxy_ = SingleClientMessageProxyImpl::Factory::Create(
         fake_proxy_delegate_.get(),
         std::move(fake_client_connection_parameters));
 

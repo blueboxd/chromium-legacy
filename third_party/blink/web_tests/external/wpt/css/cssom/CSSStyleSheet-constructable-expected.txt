@@ -29,5 +29,6 @@ PASS Adopting a shadow host will empty adoptedStyleSheets if adopting to a diffe
 PASS Adopting a shadow host's ancestor will empty adoptedStyleSheets if adopting to a different document
 PASS Forcing a style update after adding an adopted stylesheet on a disconnected shadow root should not crash.
 PASS Modifying an adopted stylesheet on a disconnected shadow root should not crash.
+PASS Constructing a sheet with the default base URL uses the constructor document's base URL for CSS rules
 Harness: the test ran to completion.
 

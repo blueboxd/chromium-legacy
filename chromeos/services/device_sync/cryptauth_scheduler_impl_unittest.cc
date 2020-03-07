@@ -113,7 +113,7 @@ class DeviceSyncCryptAuthSchedulerImplTest : public testing::Test {
     auto mock_device_sync_timer = std::make_unique<base::MockOneShotTimer>();
     mock_device_sync_timer_ = mock_device_sync_timer.get();
 
-    scheduler_ = CryptAuthSchedulerImpl::Factory::Get()->BuildInstance(
+    scheduler_ = CryptAuthSchedulerImpl::Factory::Create(
         &pref_service_, network_helper_.network_state_handler(), &test_clock_,
         std::move(mock_enrollment_timer), std::move(mock_device_sync_timer));
 

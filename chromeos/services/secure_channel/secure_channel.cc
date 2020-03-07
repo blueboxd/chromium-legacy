@@ -20,22 +20,17 @@ namespace secure_channel {
 SecureChannel::Factory* SecureChannel::Factory::factory_instance_ = nullptr;
 
 // static
-std::unique_ptr<SecureChannel> SecureChannel::Factory::NewInstance(
+std::unique_ptr<SecureChannel> SecureChannel::Factory::Create(
     std::unique_ptr<Connection> connection) {
-  if (!factory_instance_) {
-    factory_instance_ = new Factory();
-  }
-  return factory_instance_->BuildInstance(std::move(connection));
+  if (factory_instance_)
+    return factory_instance_->CreateInstance(std::move(connection));
+
+  return base::WrapUnique(new SecureChannel(std::move(connection)));
 }
 
 // static
-void SecureChannel::Factory::SetInstanceForTesting(Factory* factory) {
+void SecureChannel::Factory::SetFactoryForTesting(Factory* factory) {
   factory_instance_ = factory;
-}
-
-std::unique_ptr<SecureChannel> SecureChannel::Factory::BuildInstance(
-    std::unique_ptr<Connection> connection) {
-  return base::WrapUnique(new SecureChannel(std::move(connection)));
 }
 
 // static
@@ -245,9 +240,9 @@ void SecureChannel::Authenticate() {
   DCHECK(status_ == Status::CONNECTED);
   DCHECK(!authenticator_);
 
-  authenticator_ = DeviceToDeviceAuthenticator::Factory::NewInstance(
+  authenticator_ = DeviceToDeviceAuthenticator::Factory::Create(
       connection_.get(),
-      multidevice::SecureMessageDelegateImpl::Factory::NewInstance());
+      multidevice::SecureMessageDelegateImpl::Factory::Create());
   authenticator_->Authenticate(base::Bind(
       &SecureChannel::OnAuthenticationResult, weak_ptr_factory_.GetWeakPtr()));
 

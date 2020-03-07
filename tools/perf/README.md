@@ -3,15 +3,50 @@
      found in the LICENSE file.
 -->
 
+# Chrome Benchmarking System
+
+This directory contains benchmarks and infrastructure to test Chrome and
+Chromium and output performance measurements. The benchmarks are run on the
+[perf waterfall](https://ci.chromium.org/p/chrome/g/chrome.perf/console). Most of the
+benchmarks are run using
+[Telemetry](https://chromium.googlesource.com/catapult.git/+/HEAD/telemetry/README.md),
+which is a framework for driving Chrome through test cases ("stories").
+
+Telemetry often
+makes use of [Web Page Replay
+(WPR)](https://chromium.googlesource.com/catapult.git/+/HEAD/web_page_replay_go/README.md)
+to save a version of a website so that we can measure performance without fear
+of the website changing underneath us.
+
+For doing measurements, Telemetry usually
+makes use of an event tracing system built into Chromium. Event data is tracked as
+Chromium runs. After Chromium finishes running that event data is processed by either 
+[TBMv2](https://chromium.googlesource.com/catapult.git/+/HEAD/tracing/tracing/metrics)
+(which is the current system) or
+[TBMv3](https://chromium.googlesource.com/chromium/src/+/HEAD/tools/perf/core/tbmv3)
+(which is an experimental new system) to create measurements.
+
+Those measurements
+are uploaded to [ChromePerf Dashboard](https://chromeperf.appspot.com/) which
+charts measurements over time and alerts on regressions. Regressions can be
+bisected using [Pinpoint](https://pinpoint-dot-chromeperf.appspot.com/) to
+figure out which Chromium change caused them.
+
+Pinpoint can also be used to run
+try jobs against machines in our data centers. Information about available
+platforms for testing is available to Googlers at [Chrome Benchmarking
+Sheet](https://goto.google.com/chrome-benchmarking-sheet).
+
+Please also read the [Chrome Speed][speed] documentation to
+learn more about the team organization and, in particular, the top level view
+of [How Chrome Measures Performance][chrome_perf_how].
+
 # Performance tools
 
-This directory contains a variety of command line tools that can be used to run
+This directory contains a variety of tools that can be used to run
 benchmarks, interact with speed services, and manage performance waterfall
 configurations. It also has commands for running functional unittests.
 
-Note you can also read the higher level [Chrome Speed][speed] documentation to
-learn more about the team organization and, in particular, the top level view
-of [How Chrome Measures Performance][chrome_perf_how].
 
 [speed]: /docs/speed/README.md
 [chrome_perf_how]: /docs/speed/how_does_chrome_measure_performance.md

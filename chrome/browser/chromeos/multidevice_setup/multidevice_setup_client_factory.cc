@@ -38,8 +38,7 @@ class MultiDeviceSetupClientHolder : public KeyedService {
     mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup;
     auto receiver = remote_setup.InitWithNewPipeAndPassReceiver();
     multidevice_setup_client_ =
-        MultiDeviceSetupClientImpl::Factory::Get()->BuildInstance(
-            std::move(remote_setup));
+        MultiDeviceSetupClientImpl::Factory::Create(std::move(remote_setup));
 
     // NOTE: We bind the receiver asynchronously, because we can't synchronously
     // depend on MultiDeviceSetupServiceFactory at construction time. This is

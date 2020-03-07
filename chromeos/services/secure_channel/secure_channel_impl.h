@@ -44,11 +44,14 @@ class SecureChannelImpl : public mojom::SecureChannel,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<mojom::SecureChannel> BuildInstance(
+    static std::unique_ptr<mojom::SecureChannel> Create(
         scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<mojom::SecureChannel> CreateInstance(
+        scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) = 0;
 
    private:
     static Factory* test_factory_;

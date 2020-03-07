@@ -54,7 +54,7 @@ class FakeTimerFactoryFactory : public TimerFactoryImpl::Factory {
 
  private:
   // TimerFactoryImpl::Factory:
-  std::unique_ptr<TimerFactory> BuildInstance() override {
+  std::unique_ptr<TimerFactory> CreateInstance() override {
     EXPECT_FALSE(instance_);
     auto instance = std::make_unique<FakeTimerFactory>();
     instance_ = instance.get();
@@ -76,9 +76,13 @@ class TestRemoteDeviceCacheFactory
 
  private:
   // multidevice::RemoteDeviceCache::Factory:
-  std::unique_ptr<multidevice::RemoteDeviceCache> BuildInstance() override {
+  std::unique_ptr<multidevice::RemoteDeviceCache> CreateInstance() override {
     EXPECT_FALSE(instance_);
-    auto instance = multidevice::RemoteDeviceCache::Factory::BuildInstance();
+    // Silly hack to avoid infinite recursion: this factory really just wants to
+    // save a pointer to the created object.
+    multidevice::RemoteDeviceCache::Factory::SetFactoryForTesting(nullptr);
+    auto instance = multidevice::RemoteDeviceCache::Factory::Create();
+    multidevice::RemoteDeviceCache::Factory::SetFactoryForTesting(this);
     instance_ = instance.get();
     return instance;
   }
@@ -101,7 +105,7 @@ class FakeBleServiceDataHelperFactory
 
  private:
   // BleServiceDataHelperImpl::Factory:
-  std::unique_ptr<BleServiceDataHelper> BuildInstance(
+  std::unique_ptr<BleServiceDataHelper> CreateInstance(
       multidevice::RemoteDeviceCache* remote_device_cache) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(test_remote_device_cache_factory_->instance(),
@@ -137,7 +141,7 @@ class FakeBleConnectionManagerFactory
 
  private:
   // BleConnectionManagerImpl::Factory:
-  std::unique_ptr<BleConnectionManager> BuildInstance(
+  std::unique_ptr<BleConnectionManager> CreateInstance(
       scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
       BleServiceDataHelper* ble_service_data_helper,
       TimerFactory* timer_factory,
@@ -176,7 +180,7 @@ class FakePendingConnectionManagerFactory
 
  private:
   // PendingConnectionManagerImpl::Factory:
-  std::unique_ptr<PendingConnectionManager> BuildInstance(
+  std::unique_ptr<PendingConnectionManager> CreateInstance(
       PendingConnectionManager::Delegate* delegate,
       BleConnectionManager* ble_connection_manager,
       scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) override {
@@ -206,7 +210,7 @@ class FakeActiveConnectionManagerFactory
 
  private:
   // ActiveConnectionManagerImpl::Factory:
-  std::unique_ptr<ActiveConnectionManager> BuildInstance(
+  std::unique_ptr<ActiveConnectionManager> CreateInstance(
       ActiveConnectionManager::Delegate* delegate) override {
     EXPECT_FALSE(instance_);
     auto instance = std::make_unique<FakeActiveConnectionManager>(delegate);
@@ -230,11 +234,15 @@ class TestSecureChannelInitializerFactory
 
  private:
   // SecureChannelInitializer::Factory:
-  std::unique_ptr<SecureChannelBase> BuildInstance(
+  std::unique_ptr<SecureChannelBase> CreateInstance(
       scoped_refptr<base::TaskRunner> task_runner) override {
     EXPECT_FALSE(instance_);
+    // Silly hack to avoid infinite recursion: this factory really just wants to
+    // save a pointer to the created object.
+    SecureChannelInitializer::Factory::SetFactoryForTesting(nullptr);
     auto instance =
-        SecureChannelInitializer::Factory::BuildInstance(test_task_runner_);
+        SecureChannelInitializer::Factory::Create(test_task_runner_);
+    SecureChannelInitializer::Factory::SetFactoryForTesting(this);
     instance_ = instance.get();
     return instance;
   }
@@ -273,7 +281,7 @@ class FakeClientConnectionParametersFactory
 
  private:
   // ClientConnectionParametersImpl::Factory:
-  std::unique_ptr<ClientConnectionParameters> BuildInstance(
+  std::unique_ptr<ClientConnectionParameters> CreateInstance(
       const std::string& feature,
       mojo::PendingRemote<mojom::ConnectionDelegate> connection_delegate_remote)
       override {
@@ -379,7 +387,7 @@ class SecureChannelServiceTest : public testing::Test {
     ClientConnectionParametersImpl::Factory::SetFactoryForTesting(
         fake_client_connection_parameters_factory_.get());
 
-    service_ = SecureChannelInitializer::Factory::Get()->BuildInstance();
+    service_ = SecureChannelInitializer::Factory::Create();
     service_->BindReceiver(secure_channel_remote_.BindNewPipeAndPassReceiver());
     secure_channel_remote_.FlushForTesting();
   }

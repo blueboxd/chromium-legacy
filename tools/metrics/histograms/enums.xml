@@ -54978,6 +54978,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Fixed timer"/>
 </enum>
 
+<enum name="RegexRuleStatus">
+  <int value="0" label="Normal regex (indexed)"/>
+  <int value="1" label="Large Regex (ignored)"/>
+</enum>
+
 <enum name="RegulatoryDomain">
   <int value="1" label="00"/>
   <int value="2" label="AA (unused)"/>

@@ -23,13 +23,18 @@ class ClientChannelImpl : public ClientChannel, public mojom::MessageReceiver {
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<ClientChannel> BuildInstance(
+    static std::unique_ptr<ClientChannel> Create(
         mojo::PendingRemote<mojom::Channel> channel,
         mojo::PendingReceiver<mojom::MessageReceiver>
             message_receiver_receiver);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<ClientChannel> CreateInstance(
+        mojo::PendingRemote<mojom::Channel> channel,
+        mojo::PendingReceiver<mojom::MessageReceiver>
+            message_receiver_receiver) = 0;
 
    private:
     static Factory* test_factory_;

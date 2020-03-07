@@ -180,30 +180,27 @@ TEST_F(SecureDnsPolicyHandlerTest, ValidModePolicyValueAutomatic) {
   EXPECT_EQ(mode, test_policy_value);
 }
 
-// TODO(http://crbug.com/955454) This test should be modified once secure is a
-// valid policy value for DnsOverHttpsMode.
-TEST_F(SecureDnsPolicyHandlerTest, ModePolicySecureShouldError) {
-  // Secure will eventually be a valid option, but for the moment it should
-  // error.
+TEST_F(SecureDnsPolicyHandlerTest, ValidModePolicySecure) {
+  const std::string test_policy_value =
+      chrome_browser_net::kDnsOverHttpsModeSecure;
+
   SetPolicyValue(key::kDnsOverHttpsMode,
-                 std::make_unique<base::Value>(
-                     chrome_browser_net::kDnsOverHttpsModeSecure));
+                 std::make_unique<base::Value>(test_policy_value));
+
+  // The template policy requires a value if the mode is set to secure, so set
+  // it to anything.
+  SetPolicyValue(key::kDnsOverHttpsTemplates,
+                 std::make_unique<base::Value>("https://foo.test/"));
 
   CheckAndApplyPolicySettings();
 
-  // Should have errors.
-  auto expected_error =
-      l10n_util::GetStringUTF16(IDS_POLICY_SECURE_DNS_MODE_NOT_SUPPORTED_ERROR);
-  // The templates policy will also throw an error but we're not interested in
-  // it for this test. Check the total count, but only look at the error we
-  // want.
-  EXPECT_EQ(errors().size(), 2U);
-  EXPECT_EQ(errors().begin()->second, expected_error);
+  // Shouldn't error.
+  EXPECT_EQ(errors().size(), 0U);
 
   std::string mode;
   EXPECT_TRUE(prefs().GetString(prefs::kDnsOverHttpsMode, &mode));
-  // Pref should have changed to "off."
-  EXPECT_EQ(mode, chrome_browser_net::kDnsOverHttpsModeOff);
+  // Pref should now be the test value.
+  EXPECT_EQ(mode, test_policy_value);
 }
 
 TEST_F(SecureDnsPolicyHandlerTest, InvalidTemplatesPolicyValue) {
@@ -332,8 +329,6 @@ TEST_F(SecureDnsPolicyHandlerTest, TemplatesWithModeInvalid) {
   EXPECT_EQ(templates, test_policy_value);
 }
 
-// TODO(http://crbug.com/955454) These tests should be modified once secure is a
-// valid policy value for DnsOverHttpsMode.
 TEST_F(SecureDnsPolicyHandlerTest, TemplatesNotSetWithModeSecure) {
   SetPolicyValue(key::kDnsOverHttpsMode,
                  std::make_unique<base::Value>(
@@ -341,17 +336,12 @@ TEST_F(SecureDnsPolicyHandlerTest, TemplatesNotSetWithModeSecure) {
 
   CheckAndApplyPolicySettings();
 
-  // Should have errors.
-  // TODO(http://crbug.com/955454) Secure will eventually be a valid option, but
-  // for the moment it should error.
-  auto expected_error1 =
-      l10n_util::GetStringUTF16(IDS_POLICY_SECURE_DNS_MODE_NOT_SUPPORTED_ERROR);
-  auto expected_error2 = l10n_util::GetStringUTF16(
+  // Should have an error.
+  auto expected_error = l10n_util::GetStringUTF16(
       IDS_POLICY_SECURE_DNS_TEMPLATES_NOT_SPECIFIED_ERROR);
-  ASSERT_EQ(errors().size(), 2U);
+  ASSERT_EQ(errors().size(), 1U);
   auto it = errors().begin();
-  EXPECT_EQ(it++->second, expected_error1);
-  EXPECT_EQ(it->second, expected_error2);
+  EXPECT_EQ(it->second, expected_error);
 
   // Pref should be set.
   std::string templates;
@@ -369,17 +359,12 @@ TEST_F(SecureDnsPolicyHandlerTest, TemplatesNotStringWithModeSecure) {
 
   CheckAndApplyPolicySettings();
 
-  // Should have errors.
-  // TODO(http://crbug.com/955454) Secure will eventually be a valid option, but
-  // for the moment it should error.
-  auto expected_error1 =
-      l10n_util::GetStringUTF16(IDS_POLICY_SECURE_DNS_MODE_NOT_SUPPORTED_ERROR);
-  auto expected_error2 = l10n_util::GetStringUTF16(
+  // Should have an error.
+  auto expected_error = l10n_util::GetStringUTF16(
       IDS_POLICY_SECURE_DNS_TEMPLATES_NOT_SPECIFIED_ERROR);
-  ASSERT_EQ(errors().size(), 2U);
+  ASSERT_EQ(errors().size(), 1U);
   auto it = errors().begin();
-  EXPECT_EQ(it++->second, expected_error1);
-  EXPECT_EQ(it->second, expected_error2);
+  EXPECT_EQ(it->second, expected_error);
 
   // Pref should be set.
   std::string templates;
@@ -398,16 +383,11 @@ TEST_F(SecureDnsPolicyHandlerTest, TemplatesEmptyWithModeSecure) {
 
   CheckAndApplyPolicySettings();
 
-  // Should have errors.
-  // TODO(http://crbug.com/955454) For now the value "secure" for the mode
-  // policy will throw an error but we're not interested in it for this test.
-  // Check the total count but only look at the error we want. Modify this test
-  // when "secure" becomes valid.
+  // Should have an error.
   auto expected_error = l10n_util::GetStringUTF16(
       IDS_POLICY_SECURE_DNS_TEMPLATES_NOT_SPECIFIED_ERROR);
-  ASSERT_EQ(errors().size(), 2U);
+  ASSERT_EQ(errors().size(), 1U);
   auto it = errors().begin();
-  ++it;
   EXPECT_EQ(it->second, expected_error);
 
   // Pref should be set.
@@ -461,8 +441,6 @@ TEST_F(SecureDnsPolicyHandlerTest, TemplatesPolicyWithModeAutomatic) {
   EXPECT_EQ(templates, test_policy_value);
 }
 
-// TODO(http://crbug.com/955454) This test should be modified once secure is a
-// valid policy value for DnsOverHttpsMode.
 TEST_F(SecureDnsPolicyHandlerTest, TemplatesPolicyWithModeSecure) {
   // The templates policy requires a valid Mode policy or it will give an error
   // we're not testing for.
@@ -477,11 +455,8 @@ TEST_F(SecureDnsPolicyHandlerTest, TemplatesPolicyWithModeSecure) {
 
   CheckAndApplyPolicySettings();
 
-  // Should have an error
-  auto expected_error =
-      l10n_util::GetStringUTF16(IDS_POLICY_SECURE_DNS_MODE_NOT_SUPPORTED_ERROR);
-  EXPECT_EQ(errors().size(), 1U);
-  EXPECT_EQ(errors().begin()->second, expected_error);
+  // Shouldn't error.
+  EXPECT_EQ(errors().size(), 0U);
 
   std::string templates;
   EXPECT_TRUE(prefs().GetString(prefs::kDnsOverHttpsTemplates, &templates));

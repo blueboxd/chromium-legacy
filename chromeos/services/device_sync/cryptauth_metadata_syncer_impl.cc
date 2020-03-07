@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
@@ -122,13 +121,18 @@ CryptAuthMetadataSyncerImpl::Factory*
     CryptAuthMetadataSyncerImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthMetadataSyncerImpl::Factory*
-CryptAuthMetadataSyncerImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<CryptAuthMetadataSyncer>
+CryptAuthMetadataSyncerImpl::Factory::Create(
+    CryptAuthClientFactory* client_factory,
+    PrefService* pref_service,
+    std::unique_ptr<base::OneShotTimer> timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(client_factory, pref_service,
+                                         std::move(timer));
+  }
 
-  static base::NoDestructor<CryptAuthMetadataSyncerImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthMetadataSyncerImpl(
+      client_factory, pref_service, std::move(timer)));
 }
 
 // static
@@ -138,15 +142,6 @@ void CryptAuthMetadataSyncerImpl::Factory::SetFactoryForTesting(
 }
 
 CryptAuthMetadataSyncerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthMetadataSyncer>
-CryptAuthMetadataSyncerImpl::Factory::BuildInstance(
-    CryptAuthClientFactory* client_factory,
-    PrefService* pref_service,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new CryptAuthMetadataSyncerImpl(
-      client_factory, pref_service, std::move(timer)));
-}
 
 // static
 void CryptAuthMetadataSyncerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -393,7 +388,7 @@ void CryptAuthMetadataSyncerImpl::EncryptLocalDeviceMetadata() {
     return;
   }
 
-  encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Get()->BuildInstance();
+  encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Create();
   encryptor_->Encrypt(
       local_device_metadata_.SerializeAsString(), GetGroupKey()->public_key(),
       base::BindOnce(
@@ -425,7 +420,7 @@ void CryptAuthMetadataSyncerImpl::OnLocalDeviceMetadataEncrypted(
 void CryptAuthMetadataSyncerImpl::CreateGroupKey() {
   SetState(State::kWaitingForGroupKeyCreation);
 
-  key_creator_ = CryptAuthKeyCreatorImpl::Factory::Get()->BuildInstance();
+  key_creator_ = CryptAuthKeyCreatorImpl::Factory::Create();
   key_creator_->CreateKeys(
       {{CryptAuthKeyBundle::Name::kDeviceSyncBetterTogetherGroupKey,
         CryptAuthKeyCreator::CreateKeyData(CryptAuthKey::Status::kActive,

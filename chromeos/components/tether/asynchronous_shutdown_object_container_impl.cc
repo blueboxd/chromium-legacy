@@ -22,7 +22,7 @@ AsynchronousShutdownObjectContainerImpl::Factory*
 
 // static
 std::unique_ptr<AsynchronousShutdownObjectContainer>
-AsynchronousShutdownObjectContainerImpl::Factory::NewInstance(
+AsynchronousShutdownObjectContainerImpl::Factory::Create(
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostFetcher* tether_host_fetcher,
@@ -30,37 +30,26 @@ AsynchronousShutdownObjectContainerImpl::Factory::NewInstance(
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnectionHandler* network_connection_handler,
     PrefService* pref_service) {
-  if (!factory_instance_)
-    factory_instance_ = new Factory();
+  if (factory_instance_) {
+    return factory_instance_->CreateInstance(
+        device_sync_client, secure_channel_client, tether_host_fetcher,
+        network_state_handler, managed_network_configuration_handler,
+        network_connection_handler, pref_service);
+  }
 
-  return factory_instance_->BuildInstance(
-      device_sync_client, secure_channel_client, tether_host_fetcher,
-      network_state_handler, managed_network_configuration_handler,
-      network_connection_handler, pref_service);
-}
-
-// static
-void AsynchronousShutdownObjectContainerImpl::Factory::SetInstanceForTesting(
-    Factory* factory) {
-  factory_instance_ = factory;
-}
-
-AsynchronousShutdownObjectContainerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<AsynchronousShutdownObjectContainer>
-AsynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
-    device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client,
-    TetherHostFetcher* tether_host_fetcher,
-    NetworkStateHandler* network_state_handler,
-    ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
-    NetworkConnectionHandler* network_connection_handler,
-    PrefService* pref_service) {
   return base::WrapUnique(new AsynchronousShutdownObjectContainerImpl(
       device_sync_client, secure_channel_client, tether_host_fetcher,
       network_state_handler, managed_network_configuration_handler,
       network_connection_handler, pref_service));
 }
+
+// static
+void AsynchronousShutdownObjectContainerImpl::Factory::SetFactoryForTesting(
+    Factory* factory) {
+  factory_instance_ = factory;
+}
+
+AsynchronousShutdownObjectContainerImpl::Factory::~Factory() = default;
 
 AsynchronousShutdownObjectContainerImpl::
     AsynchronousShutdownObjectContainerImpl(
@@ -74,7 +63,7 @@ AsynchronousShutdownObjectContainerImpl::
         PrefService* pref_service)
     : tether_host_fetcher_(tether_host_fetcher),
       disconnect_tethering_request_sender_(
-          DisconnectTetheringRequestSenderImpl::Factory::NewInstance(
+          DisconnectTetheringRequestSenderImpl::Factory::Create(
               device_sync_client,
               secure_channel_client,
               tether_host_fetcher_)),

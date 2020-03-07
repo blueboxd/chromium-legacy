@@ -31,15 +31,21 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<HostBackendDelegate> BuildInstance(
+    static std::unique_ptr<HostBackendDelegate> Create(
         EligibleHostDevicesProvider* eligible_host_devices_provider,
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<HostBackendDelegate> CreateInstance(
+        EligibleHostDevicesProvider* eligible_host_devices_provider,
+        PrefService* pref_service,
+        device_sync::DeviceSyncClient* device_sync_client,
+        std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
     static Factory* test_factory_;

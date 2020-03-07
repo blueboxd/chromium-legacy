@@ -138,26 +138,16 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
     // Drop fullscreen mode so that the user sees the URL bar.
     web_contents->ForSecurityDropFullscreen();
 
-    if (type_ == GrantType::kRead) {
-      if (!is_directory_) {
-        // TODO(mek): Implement requesting read permissions for files.
-        RunCallbackAndRecordPermissionRequestOutcome(
-            std::move(callback), PermissionRequestOutcome::kRequestAborted);
-        return;
-      }
+    NativeFileSystemPermissionRequestManager::Access access =
+        type_ == GrantType::kRead
+            ? NativeFileSystemPermissionRequestManager::Access::kRead
+            : NativeFileSystemPermissionRequestManager::Access::kWrite;
 
-      // TODO(mek): Handle directory read access prompting in RequestManager.
-      ShowNativeFileSystemDirectoryAccessConfirmationDialog(
-          origin_, path_,
-          base::BindOnce(&PermissionGrantImpl::OnPermissionRequestResult, this,
-                         std::move(callback)),
-          web_contents);
-
-      return;
-    }
+    // TODO(mek): We need to somehow deal with the case where both read and
+    // write access are being asked for at the same time.
 
     request_manager->AddRequest(
-        {origin_, path_, is_directory_},
+        {origin_, path_, is_directory_, access},
         base::BindOnce(&PermissionGrantImpl::OnPermissionRequestResult, this,
                        std::move(callback)));
   }

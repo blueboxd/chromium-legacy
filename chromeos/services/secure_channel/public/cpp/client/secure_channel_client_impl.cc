@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/task_runner.h"
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt_impl.h"
 
@@ -19,29 +18,25 @@ SecureChannelClientImpl::Factory*
     SecureChannelClientImpl::Factory::test_factory_ = nullptr;
 
 // static
-SecureChannelClientImpl::Factory* SecureChannelClientImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<SecureChannelClient> SecureChannelClientImpl::Factory::Create(
+    mojo::PendingRemote<mojom::SecureChannel> channel,
+    scoped_refptr<base::TaskRunner> task_runner) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(std::move(channel),
+                                         std::move(task_runner));
+  }
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return base::WrapUnique(
+      new SecureChannelClientImpl(std::move(channel), std::move(task_runner)));
 }
 
 // static
-void SecureChannelClientImpl::Factory::SetInstanceForTesting(
+void SecureChannelClientImpl::Factory::SetFactoryForTesting(
     Factory* test_factory) {
   test_factory_ = test_factory;
 }
 
 SecureChannelClientImpl::Factory::~Factory() = default;
-
-std::unique_ptr<SecureChannelClient>
-SecureChannelClientImpl::Factory::BuildInstance(
-    mojo::PendingRemote<mojom::SecureChannel> channel,
-    scoped_refptr<base::TaskRunner> task_runner) {
-  return base::WrapUnique(
-      new SecureChannelClientImpl(std::move(channel), task_runner));
-}
 
 SecureChannelClientImpl::SecureChannelClientImpl(
     mojo::PendingRemote<mojom::SecureChannel> channel,
@@ -56,8 +51,7 @@ SecureChannelClientImpl::InitiateConnectionToDevice(
     multidevice::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority) {
-  auto connection_attempt =
-      ConnectionAttemptImpl::Factory::Get()->BuildInstance();
+  auto connection_attempt = ConnectionAttemptImpl::Factory::Create();
 
   // Delay directly calling mojom::SecureChannel::InitiateConnectionToDevice()
   // until the caller has added itself as a Delegate of the ConnectionAttempt.
@@ -77,8 +71,7 @@ SecureChannelClientImpl::ListenForConnectionFromDevice(
     multidevice::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority) {
-  auto connection_attempt =
-      ConnectionAttemptImpl::Factory::Get()->BuildInstance();
+  auto connection_attempt = ConnectionAttemptImpl::Factory::Create();
 
   // Delay directly calling
   // mojom::SecureChannel::ListenForConnectionFromDevice() until the caller has

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -148,13 +147,25 @@ CryptAuthV2EnrollmentManagerImpl::Factory*
     CryptAuthV2EnrollmentManagerImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthV2EnrollmentManagerImpl::Factory*
-CryptAuthV2EnrollmentManagerImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<CryptAuthEnrollmentManager>
+CryptAuthV2EnrollmentManagerImpl::Factory::Create(
+    ClientAppMetadataProvider* client_app_metadata_provider,
+    CryptAuthKeyRegistry* key_registry,
+    CryptAuthClientFactory* client_factory,
+    CryptAuthGCMManager* gcm_manager,
+    CryptAuthScheduler* scheduler,
+    PrefService* pref_service,
+    base::Clock* clock,
+    std::unique_ptr<base::OneShotTimer> timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(
+        client_app_metadata_provider, key_registry, client_factory, gcm_manager,
+        scheduler, pref_service, clock, std::move(timer));
+  }
 
-  static base::NoDestructor<CryptAuthV2EnrollmentManagerImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthV2EnrollmentManagerImpl(
+      client_app_metadata_provider, key_registry, client_factory, gcm_manager,
+      scheduler, pref_service, clock, std::move(timer)));
 }
 
 // static
@@ -162,6 +173,8 @@ void CryptAuthV2EnrollmentManagerImpl::Factory::SetFactoryForTesting(
     Factory* test_factory) {
   test_factory_ = test_factory;
 }
+
+CryptAuthV2EnrollmentManagerImpl::Factory::~Factory() = default;
 
 // static
 void CryptAuthV2EnrollmentManagerImpl::RegisterPrefs(
@@ -171,23 +184,6 @@ void CryptAuthV2EnrollmentManagerImpl::RegisterPrefs(
                                std::string());
   registry->RegisterStringPref(prefs::kCryptAuthEnrollmentUserPrivateKey,
                                std::string());
-}
-
-CryptAuthV2EnrollmentManagerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthEnrollmentManager>
-CryptAuthV2EnrollmentManagerImpl::Factory::BuildInstance(
-    ClientAppMetadataProvider* client_app_metadata_provider,
-    CryptAuthKeyRegistry* key_registry,
-    CryptAuthClientFactory* client_factory,
-    CryptAuthGCMManager* gcm_manager,
-    CryptAuthScheduler* scheduler,
-    PrefService* pref_service,
-    base::Clock* clock,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new CryptAuthV2EnrollmentManagerImpl(
-      client_app_metadata_provider, key_registry, client_factory, gcm_manager,
-      scheduler, pref_service, clock, std::move(timer)));
 }
 
 CryptAuthV2EnrollmentManagerImpl::CryptAuthV2EnrollmentManagerImpl(
@@ -411,8 +407,8 @@ void CryptAuthV2EnrollmentManagerImpl::Enroll() {
   DCHECK(current_client_metadata_);
   DCHECK(client_app_metadata_);
 
-  enroller_ = CryptAuthV2EnrollerImpl::Factory::Get()->BuildInstance(
-      key_registry_, client_factory_);
+  enroller_ =
+      CryptAuthV2EnrollerImpl::Factory::Create(key_registry_, client_factory_);
 
   SetState(State::kWaitingForEnrollment);
 

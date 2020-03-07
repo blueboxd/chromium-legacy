@@ -8,7 +8,7 @@ import android.view.View;
 
 /**
  * Implementation of {@link DisplayStyleObserver} designed to play nicely with
- * {@link android.support.v7.widget.RecyclerView}. It will not notify of changes when the
+ * {@link androidx.recyclerview.widget.RecyclerView}. It will not notify of changes when the
  * associated view is not attached to the window.
  */
 public class DisplayStyleObserverAdapter

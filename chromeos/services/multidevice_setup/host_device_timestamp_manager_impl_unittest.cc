@@ -38,7 +38,7 @@ class HostDeviceTimestampManagerImplTest : public testing::Test {
     test_clock_ = std::make_unique<base::SimpleTestClock>();
     SetNow(kTestTime);
 
-    manager_ = HostDeviceTimestampManagerImpl::Factory::Get()->BuildInstance(
+    manager_ = HostDeviceTimestampManagerImpl::Factory::Create(
         fake_host_status_provider_.get(), test_pref_service_.get(),
         test_clock_.get());
   }

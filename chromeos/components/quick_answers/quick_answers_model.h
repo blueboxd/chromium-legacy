@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 
@@ -52,46 +54,40 @@ enum class QuickAnswerUiElementType {
   kImage = 2,
 };
 
-class QuickAnswerUiElement {
- public:
-  explicit QuickAnswerUiElement(QuickAnswerUiElementType type) : type_(type) {}
+struct QuickAnswerUiElement {
+  explicit QuickAnswerUiElement(QuickAnswerUiElementType type) : type(type) {}
   QuickAnswerUiElement(const QuickAnswerUiElement&) = default;
   QuickAnswerUiElement& operator=(const QuickAnswerUiElement&) = default;
   QuickAnswerUiElement(QuickAnswerUiElement&&) = default;
 
-  QuickAnswerUiElementType type() const { return type_; }
-
- private:
-  QuickAnswerUiElementType type_ = QuickAnswerUiElementType::kUnknown;
+  QuickAnswerUiElementType type = QuickAnswerUiElementType::kUnknown;
 };
 
 // class to describe an answer text.
-class QuickAnswerText : public QuickAnswerUiElement {
- public:
+struct QuickAnswerText : public QuickAnswerUiElement {
   QuickAnswerText(const std::string& text, SkColor color = gfx::kGoogleGrey900)
       : QuickAnswerUiElement(QuickAnswerUiElementType::kText),
-        text_(text),
-        color_(color) {}
+        text(base::UTF8ToUTF16(text)),
+        color(color) {}
 
-  const std::string text_;
+  base::string16 text;
 
   // Attributes for text style.
-  SkColor color_ = SK_ColorBLACK;
+  SkColor color = SK_ColorBLACK;
 };
 
-class QuickAnswerResultText : public QuickAnswerText {
+struct QuickAnswerResultText : public QuickAnswerText {
  public:
   QuickAnswerResultText(const std::string& text,
                         SkColor color = gfx::kGoogleGrey700)
       : QuickAnswerText(text, color) {}
 };
 
-class QuickAnswerImage : public QuickAnswerUiElement {
- public:
+struct QuickAnswerImage : public QuickAnswerUiElement {
   explicit QuickAnswerImage(const gfx::Image& image)
-      : QuickAnswerUiElement(QuickAnswerUiElementType::kImage), image_(image) {}
+      : QuickAnswerUiElement(QuickAnswerUiElementType::kImage), image(image) {}
 
-  gfx::Image image_;
+  gfx::Image image;
 };
 
 // Structure to describe a quick answer.

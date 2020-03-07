@@ -39,7 +39,7 @@ class SecureChannelClientChannelImplTest : public testing::Test {
   void SetUp() override {
     fake_channel_ = std::make_unique<FakeChannel>();
 
-    client_channel_ = ClientChannelImpl::Factory::Get()->BuildInstance(
+    client_channel_ = ClientChannelImpl::Factory::Create(
         fake_channel_->GenerateRemote(),
         message_receiver_remote_.BindNewPipeAndPassReceiver());
 

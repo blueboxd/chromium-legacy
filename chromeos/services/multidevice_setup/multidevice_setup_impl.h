@@ -49,10 +49,7 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<MultiDeviceSetupBase> BuildInstance(
+    static std::unique_ptr<MultiDeviceSetupBase> Create(
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
         AuthTokenValidator* auth_token_validator,
@@ -60,6 +57,18 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
         AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
         AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
         const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<MultiDeviceSetupBase> CreateInstance(
+        PrefService* pref_service,
+        device_sync::DeviceSyncClient* device_sync_client,
+        AuthTokenValidator* auth_token_validator,
+        OobeCompletionTracker* oobe_completion_tracker,
+        AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+        AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
+        const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider) = 0;
 
    private:
     static Factory* test_factory_;

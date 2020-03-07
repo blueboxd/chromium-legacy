@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
@@ -215,7 +214,7 @@ void NDEFReader::Abort(ScriptPromiseResolver* resolver) {
 
 NFCProxy* NDEFReader::GetNfcProxy() const {
   DCHECK(GetExecutionContext());
-  return NFCProxy::From(*To<LocalDOMWindow>(GetExecutionContext()));
+  return NFCProxy::From(*Document::From(GetExecutionContext()));
 }
 
 }  // namespace blink

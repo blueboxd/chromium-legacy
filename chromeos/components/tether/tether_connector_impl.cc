@@ -258,11 +258,10 @@ void TetherConnectorImpl::OnTetherHostToConnectFetched(
   const std::string tether_network_guid =
       device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
           device_id);
-  connect_tethering_operation_ =
-      ConnectTetheringOperation::Factory::NewInstance(
-          *tether_host_to_connect, device_sync_client_, secure_channel_client_,
-          tether_host_response_recorder_,
-          host_scan_cache_->DoesHostRequireSetup(tether_network_guid));
+  connect_tethering_operation_ = ConnectTetheringOperation::Factory::Create(
+      *tether_host_to_connect, device_sync_client_, secure_channel_client_,
+      tether_host_response_recorder_,
+      host_scan_cache_->DoesHostRequireSetup(tether_network_guid));
   connect_tethering_operation_->AddObserver(this);
   connect_tethering_operation_->Initialize();
 }

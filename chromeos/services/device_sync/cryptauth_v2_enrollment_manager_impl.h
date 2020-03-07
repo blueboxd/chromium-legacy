@@ -64,10 +64,7 @@ class CryptAuthV2EnrollmentManagerImpl
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthEnrollmentManager> BuildInstance(
+    static std::unique_ptr<CryptAuthEnrollmentManager> Create(
         ClientAppMetadataProvider* client_app_metadata_provider,
         CryptAuthKeyRegistry* key_registry,
         CryptAuthClientFactory* client_factory,
@@ -77,6 +74,19 @@ class CryptAuthV2EnrollmentManagerImpl
         base::Clock* clock = base::DefaultClock::GetInstance(),
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<CryptAuthEnrollmentManager> CreateInstance(
+        ClientAppMetadataProvider* client_app_metadata_provider,
+        CryptAuthKeyRegistry* key_registry,
+        CryptAuthClientFactory* client_factory,
+        CryptAuthGCMManager* gcm_manager,
+        CryptAuthScheduler* scheduler,
+        PrefService* pref_service,
+        base::Clock* clock,
+        std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
     static Factory* test_factory_;

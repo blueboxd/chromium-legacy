@@ -351,6 +351,9 @@ def _process_dom_module(js_file, html_file):
   # Replace export annotations with 'export'.
   EXPORT_LINE_REGEX = '/* #export */'
 
+  # Ignore lines with an ignore annotation.
+  IGNORE_LINE_REGEX = '\s*/\* #ignore \*/(\S|\s)*'
+
   with io.open(js_file, encoding='utf-8') as f:
     lines = f.readlines()
 
@@ -392,6 +395,9 @@ def _process_dom_module(js_file, html_file):
       assert cr_define_found, 'Found cr_define_end without cr.define()'
       cr_define_end_line = i
       break
+
+    if re.match(IGNORE_LINE_REGEX, line):
+      line = ''
 
     line = _rewrite_namespaces(line)
     lines[i] = line

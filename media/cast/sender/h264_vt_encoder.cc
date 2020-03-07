@@ -153,10 +153,10 @@ bool H264VideoToolboxEncoder::IsSupported(
 H264VideoToolboxEncoder::H264VideoToolboxEncoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const FrameSenderConfig& video_config,
-    const StatusChangeCallback& status_change_cb)
+    StatusChangeCallback status_change_cb)
     : cast_environment_(cast_environment),
       video_config_(video_config),
-      status_change_cb_(status_change_cb),
+      status_change_cb_(std::move(status_change_cb)),
       next_frame_id_(FrameId::first()),
       encode_next_frame_as_keyframe_(false),
       power_suspended_(false),

@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.testing.shadows;
 
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

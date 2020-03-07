@@ -97,5 +97,31 @@ cr.define('settings_passwords_check', function() {
                 checkPasswordSection.$.leakedPasswordList, leakedPasswords);
           });
     });
+
+    // Verify that the More Actions menu opens when the button is clicked.
+    test('testMoreActionsMenu', function() {
+      const leakedPasswords = [
+        autofill_test_util.makeCompromisedCredentials(
+            'google.com', 'jdoerrie', 'LEAKED'),
+      ];
+      const leakedPasswordsInfo =
+          autofill_test_util.makeCompromisedCredentialsInfo(
+              leakedPasswords, '5 min ago');
+      passwordManager.data.leakedCredentials = leakedPasswordsInfo;
+      const checkPasswordSection = createCheckPasswordSection();
+
+      return passwordManager.whenCalled('getCompromisedCredentialsInfo')
+          .then(() => {
+            Polymer.dom.flush();
+            assertFalse(checkPasswordSection.$.passwordCheckBody.hidden);
+            const listElements = checkPasswordSection.$.leakedPasswordList;
+            const node = Polymer.dom(listElements).children[1];
+            const menu = checkPasswordSection.$.moreActionsMenu;
+
+            assertFalse(menu.open);
+            node.$.more.click();
+            assertTrue(menu.open);
+          });
+    });
   });
 });

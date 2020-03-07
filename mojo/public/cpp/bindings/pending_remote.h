@@ -72,7 +72,9 @@ class PendingRemote {
   // Temporary helper for transitioning away from old bindings types. This is
   // intentionally an implicit conversion.
   operator InterfacePtrInfo<Interface>() && {
-    return InterfacePtrInfo<Interface>(PassPipe(), version());
+    // |PassPipe()| invalidates all state, so capture |version()| first.
+    uint32_t version = this->version();
+    return InterfacePtrInfo<Interface>(PassPipe(), version);
   }
 
   // Resets this PendingRemote to an invalid state. If it was entangled with a

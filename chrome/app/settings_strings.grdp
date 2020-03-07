@@ -350,6 +350,15 @@
   <message name="IDS_SETTINGS_NO_COMPROMISED_CREDENTIALS_LABEL" desc="Label which is shown when there were no compromised passwords detected.">
     Chrome will notify you when you sign in with a compromised password
   </message>
+  <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_SHOW" desc="Action menu item for a row which displays a compromised password. The password value, which is initialy obfuscated, will be show in plain text.">
+    Show password
+  </message>
+  <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_EDIT" desc="Action menu item for a row which displays a compromised password. It will open a modal dialog which will allow the user to edit the password and other metadata (username, website).">
+    Edit password
+  </message>
+  <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_REMOVE" desc="Action menu item for a row which displays a compromised password. It will open a confirmation dialog for deleting the password.">
+    Remove password
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVE_PASSWORDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to be prompted if they want to save their passwords when logging into webpages.">
     Offer to save passwords
   </message>

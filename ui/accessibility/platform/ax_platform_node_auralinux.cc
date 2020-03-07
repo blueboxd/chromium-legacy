@@ -263,6 +263,7 @@ const char* GetUniqueAccessibilityGTypeName(
 }
 
 void SetWeakGPtrToAtkObject(AtkObject** weak_pointer, AtkObject* new_value) {
+  DCHECK(weak_pointer);
   if (*weak_pointer == new_value)
     return;
 

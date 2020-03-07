@@ -40,8 +40,16 @@ Polymer({
    */
   onChangePasswordClick_() {
     const url = this.item.changePasswordUrl;
-    if(url) {
+    if (url) {
       settings.OpenWindowProxyImpl.getInstance().openURL(url);
     }
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onMoreClick_(event) {
+    this.fire('more-actions-click', {moreActionsButton: event.target});
   },
 });

@@ -5,6 +5,9 @@
 #include <atk/atk.h>
 #include <dlfcn.h>
 
+#include <string>
+#include <vector>
+
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -195,6 +198,62 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestTextAtOffsetWithBoundaryCharacterAndEmbeddedObject) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(<!DOCTYPE html>
+      <div contenteditable>
+        Before<img alt="image">after.
+      </div>
+      )HTML");
+
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_EQ(1, atk_object_get_n_accessible_children(document));
+
+  AtkObject* contenteditable = atk_object_ref_accessible_child(document, 0);
+  ASSERT_NE(nullptr, contenteditable);
+  ASSERT_EQ(ATK_ROLE_SECTION, atk_object_get_role(contenteditable));
+  ASSERT_TRUE(ATK_IS_TEXT(contenteditable));
+
+  AtkText* contenteditable_text = ATK_TEXT(contenteditable);
+  int character_count = atk_text_get_character_count(contenteditable_text);
+  ASSERT_EQ(13, character_count);
+
+  const base::string16 embedded_character(
+      1, ui::AXPlatformNodeAuraLinux::kEmbeddedCharacter);
+  const std::vector<const std::string> expected_hypertext = {
+      "B", "e", "f", "o", "r", "e", base::UTF16ToUTF8(embedded_character),
+      "a", "f", "t", "e", "r", "."};
+
+  // "Before".
+  //
+  // The embedded object character representing the image is at offset 6.
+  for (int i = 0; i <= 6; ++i) {
+    CheckTextAtOffset(contenteditable_text, i, ATK_TEXT_BOUNDARY_CHAR, i,
+                      (i + 1), expected_hypertext[i].c_str());
+  }
+
+  // "after.".
+  //
+  // Note that according to the ATK Spec, an offset that is equal to
+  // "character_count" is not permitted.
+  for (int i = 7; i < character_count; ++i) {
+    CheckTextAtOffset(contenteditable_text, i, ATK_TEXT_BOUNDARY_CHAR, i,
+                      (i + 1), expected_hypertext[i].c_str());
+  }
+
+  ASSERT_EQ(3, atk_object_get_n_accessible_children(contenteditable));
+  // The image is the second child.
+  AtkObject* image = atk_object_ref_accessible_child(contenteditable, 1);
+  ASSERT_NE(nullptr, image);
+  ASSERT_EQ(ATK_ROLE_IMAGE, atk_object_get_role(image));
+
+  // The alt text of the image is not navigable as text.
+  ASSERT_FALSE(ATK_IS_TEXT(image));
+
+  g_object_unref(image);
+  g_object_unref(contenteditable_text);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                        TestMultilingualTextAtOffsetWithBoundaryCharacter) {
   AtkText* atk_text = SetUpInputField();
   ASSERT_NE(nullptr, atk_text);
@@ -288,10 +347,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   int n_characters = atk_text_get_character_count(atk_text);
   ASSERT_LT(newline_offset, n_characters);
 
-  const base::string16 string16_embed(
+  const base::string16 embedded_character(
       1, ui::AXPlatformNodeAuraLinux::kEmbeddedCharacter);
   std::string expected_string = "Game theory is \"the study of " +
-                                base::UTF16ToUTF8(string16_embed) +
+                                base::UTF16ToUTF8(embedded_character) +
                                 " of conflict and\n";
   for (int i = 0; i <= newline_offset; ++i) {
     CheckTextAtOffset(atk_text, i, ATK_TEXT_BOUNDARY_LINE_START, 0,

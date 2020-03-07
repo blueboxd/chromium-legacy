@@ -176,7 +176,9 @@ struct Serializer<InterfacePtrDataView<Base>, PendingRemote<T>> {
   static void Serialize(PendingRemote<T>& input,
                         Interface_Data* output,
                         SerializationContext* context) {
-    context->AddInterfaceInfo(input.PassPipe(), input.version(), output);
+    // |PassPipe()| invalidates all state, so capture |version()| first.
+    uint32_t version = input.version();
+    context->AddInterfaceInfo(input.PassPipe(), version, output);
   }
 
   static bool Deserialize(Interface_Data* input,

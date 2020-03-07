@@ -41,6 +41,13 @@ Polymer({
    */
   passwordManager_: null,
 
+  /**
+   * The element to return focus to, when the currently active dialog is
+   * closed.
+   * @private {?HTMLElement}
+   */
+  activeDialogAnchor_: null,
+
   /** @override */
   attached() {
     // Set the manager. These can be overridden by tests.
@@ -96,5 +103,36 @@ Polymer({
    */
   hasLeakedCredentials_(list) {
     return !!list.length;
+  },
+
+  /**
+   * @param {!CustomEvent<{moreActionsButton: !HTMLElement}>} event
+   * @private
+   */
+  onMoreActionsClick_(event) {
+    const target = event.detail.moreActionsButton;
+    this.$.moreActionsMenu.showAt(target);
+    this.activeDialogAnchor_ = target;
+  },
+
+  /** @private */
+  onMenuShowPasswordClick_() {
+    this.$.moreActionsMenu.close();
+
+    // TODO(crbug.com/1047726) Implement dialog.
+  },
+
+  /** @private */
+  onMenuEditPasswordClick_() {
+    this.$.moreActionsMenu.close();
+
+    // TODO(crbug.com/1047726) Implement dialog.
+  },
+
+  /** @private */
+  onMenuRemovePasswordClick_() {
+    this.$.moreActionsMenu.close();
+
+    // TODO(crbug.com/1047726) Implement dialog.
   },
 });

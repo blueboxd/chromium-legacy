@@ -5,6 +5,7 @@
 #ifndef UI_ACCESSIBILITY_AX_POSITION_H_
 #define UI_ACCESSIBILITY_AX_POSITION_H_
 
+#include <math.h>
 #include <stdint.h>
 
 #include <functional>
@@ -2258,7 +2259,8 @@ class AXPosition {
     // be in the shadow DOM if the original position was not.
     const AXNodeType* common_anchor = tree_position->LowestCommonAnchor(*this);
     if (GetAnchor() == common_anchor) {
-      tree_position = tree_position->CreateAncestorPosition(common_anchor);
+      tree_position = tree_position->CreateAncestorPosition(
+          common_anchor, ax::mojom::MoveDirection::kBackward);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return CreatePositionAtStartOfAnchor();
     }
@@ -2323,7 +2325,8 @@ class AXPosition {
     // be in the shadow DOM if the original position was not.
     const AXNodeType* common_anchor = tree_position->LowestCommonAnchor(*this);
     if (GetAnchor() == common_anchor) {
-      tree_position = tree_position->CreateAncestorPosition(common_anchor);
+      tree_position = tree_position->CreateAncestorPosition(
+          common_anchor, ax::mojom::MoveDirection::kForward);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return CreatePositionAtEndOfAnchor();
     }
@@ -2768,13 +2771,16 @@ class AXPosition {
     // Normalize any text positions at the end of an anchor to equivalent
     // positions at the start of the next anchor.
     AXPositionInstance normalized_this_position = Clone();
-    if (normalized_this_position->IsTextPosition())
+    if (normalized_this_position->IsTextPosition()) {
       normalized_this_position =
           normalized_this_position->AsLeafTextPositionBeforeCharacter();
+    }
+
     AXPositionInstance normalized_other_position = other.Clone();
-    if (normalized_other_position->IsTextPosition())
+    if (normalized_other_position->IsTextPosition()) {
       normalized_other_position =
           normalized_other_position->AsLeafTextPositionBeforeCharacter();
+    }
 
     if (normalized_this_position->IsNullPosition()) {
       if (normalized_other_position->IsNullPosition()) {
@@ -2812,23 +2818,76 @@ class AXPosition {
     // If each position has an uncommon ancestor node, we can compare those
     // instead of needing to compute ancestor positions.
     if (!our_ancestors.empty() && !other_ancestors.empty()) {
+      AXPositionInstance this_uncommon_tree_position = CreateTreePosition(
+          GetTreeID(our_ancestors.top()), GetAnchorID(our_ancestors.top()),
+          0 /*child_index*/);
       int this_uncommon_ancestor_index =
-          CreateTreePosition(GetTreeID(our_ancestors.top()),
-                             GetAnchorID(our_ancestors.top()),
-                             0 /*child_index*/)
-              ->AnchorIndexInParent();
+          this_uncommon_tree_position->AnchorIndexInParent();
+      AXPositionInstance other_uncommon_tree_position = CreateTreePosition(
+          GetTreeID(other_ancestors.top()), GetAnchorID(other_ancestors.top()),
+          0 /*child_index*/);
       int other_uncommon_ancestor_index =
-          CreateTreePosition(GetTreeID(other_ancestors.top()),
-                             GetAnchorID(other_ancestors.top()),
-                             0 /*child_index*/)
-              ->AnchorIndexInParent();
-      DCHECK(this_uncommon_ancestor_index != other_uncommon_ancestor_index);
+          other_uncommon_tree_position->AnchorIndexInParent();
+      DCHECK_NE(this_uncommon_ancestor_index, other_uncommon_ancestor_index)
+          << "Deepest uncommon ancestors should truly be uncommon, i.e. not "
+             "the same.";
       int result = this_uncommon_ancestor_index - other_uncommon_ancestor_index;
+
+      // On platforms that support embedded objects, if a text position is
+      // within an embedded object and if it is not at the start of that object,
+      // the resulting ancestor position should be adjusted to point after the
+      // embedded object. Otherwise, assistive software will not be able to get
+      // out of the embedded object if its text is not editable when navigating
+      // by character.
+      //
+      // For example, look at the following accessibility tree and the two
+      // example text positions together with their equivalent ancestor
+      // positions.
+      // ++1 kRootWebArea
+      // ++++2 kTextField "Before<embedded_object>after"
+      // ++++++3 kStaticText "Before"
+      // ++++++++4 kInlineTextBox "Before"
+      // ++++++5 kImage "Test image"
+      // ++++++6 kStaticText "after"
+      // ++++++++7 kInlineTextBox "after"
+      //
+      // Note that the alt text of an image cannot be navigated with cursor
+      // left/right, even when the rest of the contents are in a
+      // contenteditable.
+      //
+      // Ancestor position should not be adjusted:
+      // TextPosition anchor_id=kImage text_offset=0 affinity=downstream
+      // annotated_text=<T>est image AncestorTextPosition anchor_id=kTextField
+      // text_offset=6 affinity=downstream
+      // annotated_text=Before<embedded_object>after
+      //
+      // Ancestor position should be adjusted:
+      // TextPosition anchor_id=kImage text_offset=1 affinity=downstream
+      // annotated_text=T<e>st image AncestorTextPosition anchor_id=kTextField
+      // text_offset=7 affinity=downstream
+      // annotated_text=Beforeembedded_object<a>fter
+      //
+      // Note that since the adjustment to the distance between the ancestor
+      // positions could at most be by one, we skip doing this check if the
+      // ancestor positions have a distance of more than one since it can never
+      // change the outcome of the comparison. Note too that if both ancestor
+      // positions need to be adjusted, the adjustments will cancel out.
+      if (abs(result) == 1) {
+        if (!normalized_this_position->AtStartOfAnchor() &&
+            this_uncommon_tree_position->IsEmbeddedObjectInParent()) {
+          result += 1;
+        }
+        if (!normalized_other_position->AtStartOfAnchor() &&
+            other_uncommon_tree_position->IsEmbeddedObjectInParent()) {
+          result -= 1;
+        }
+      }
 
 #if DCHECK_IS_ON()
       // Validate the optimization.
       int slow_result = SlowCompareTo(other).value();
-      DCHECK((result < 0 && slow_result < 0) ||
+      DCHECK((result == 0 && slow_result == 0) ||
+             (result < 0 && slow_result < 0) ||
              (result > 0 && slow_result > 0));
 #endif
 

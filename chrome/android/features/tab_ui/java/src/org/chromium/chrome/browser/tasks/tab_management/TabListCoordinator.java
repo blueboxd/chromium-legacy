@@ -24,7 +24,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.MathUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -33,6 +32,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.ui.modelutil.MVCListAdapter;
@@ -298,7 +298,7 @@ public class TabListCoordinator implements Destroyable {
      *         animations for tab switcher.
      */
     int getTabListTopOffset() {
-        if (!CachedFeatureFlags.isStartSurfaceEnabled()) return 0;
+        if (!StartSurfaceConfiguration.isStartSurfaceEnabled()) return 0;
         Rect tabListRect = getRecyclerViewLocation();
         Rect parentRect = new Rect();
         ((ChromeActivity) mContext).getCompositorViewHolder().getGlobalVisibleRect(parentRect);

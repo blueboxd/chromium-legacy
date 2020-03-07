@@ -105,7 +105,7 @@ public class PaymentHandlerCoordinator {
         ThinWebView thinWebView = ThinWebViewFactory.create(
                 activity, new ActivityWindowAndroid(activity), new ThinWebViewConstraints());
         assert webContentView.getParent() == null;
-        thinWebView.attachWebContents(mWebContents, webContentView);
+        thinWebView.attachWebContents(mWebContents, webContentView, null);
         PaymentHandlerView view = new PaymentHandlerView(
                 activity, mWebContents, mToolbarCoordinator.getView(), thinWebView.getView());
         assert mToolbarCoordinator.getToolbarHeightPx() == view.getToolbarHeightPx();

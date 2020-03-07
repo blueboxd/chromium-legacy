@@ -12,7 +12,6 @@ import android.view.ViewStub;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -25,6 +24,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 
 /**
@@ -72,7 +72,7 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
             mIncognitoSwitchCoordinator.destroy();
             mIncognitoSwitchCoordinator = null;
         }
-        if (CachedFeatureFlags.isStartSurfaceEnabled()) {
+        if (StartSurfaceConfiguration.isStartSurfaceEnabled()) {
             TemplateUrlServiceFactory.get().removeObserver(this);
         }
         if (mTabModelSelector != null && mTabModelObserver != null) {
@@ -263,7 +263,7 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
             incognitoTabModel.addObserver(mTabModelObserver);
             mTabSwitcherModeToolbar.onIncognitoTabsCountChanged(incognitoTabModel.getCount());
         }
-        if (CachedFeatureFlags.isStartSurfaceEnabled()) {
+        if (StartSurfaceConfiguration.isStartSurfaceEnabled()) {
             mIncognitoSwitchCoordinator =
                     new IncognitoSwitchCoordinator(mTabSwitcherModeToolbar, mTabModelSelector);
             mLogo = mTabSwitcherModeToolbar.findViewById(R.id.logo);

@@ -61,7 +61,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -1930,7 +1933,7 @@ class ExtensionServiceTestSupervised
 TEST_F(ExtensionServiceTestSupervised, SupervisedUserCannotInstallExtension) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(false));
@@ -1948,7 +1951,7 @@ TEST_F(ExtensionServiceTestSupervised,
        AddSupervisionAndSyncShouldNotReenablePreinstalledExtension) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(false /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/false);
 
   // Install an extension.
   base::FilePath path = data_dir().AppendASCII("good.crx");
@@ -1990,7 +1993,7 @@ TEST_F(ExtensionServiceTestSupervised,
        CustodianApprovalDoesNotAffectRegularUsers) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(false /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/false);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(false));
@@ -2017,7 +2020,7 @@ TEST_F(ExtensionServiceTestSupervised,
        InstallAllowedButDisabledForSupervisedUser) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2038,7 +2041,7 @@ TEST_F(ExtensionServiceTestSupervised,
        PreinstalledExtensionWithSUInitiatedInstalls) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(false /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/false);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2063,7 +2066,7 @@ TEST_F(ExtensionServiceTestSupervised,
        PreinstalledExtensionWithoutSUInitiatedInstalls) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(false /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/false);
 
   // Install an extension.
   base::FilePath path = data_dir().AppendASCII("good.crx");
@@ -2088,7 +2091,7 @@ TEST_F(ExtensionServiceTestSupervised,
 TEST_F(ExtensionServiceTestSupervised, ExtensionApprovalBeforeInstallation) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2112,7 +2115,7 @@ TEST_F(ExtensionServiceTestSupervised, ExtensionApprovalBeforeInstallation) {
 TEST_F(ExtensionServiceTestSupervised, UpdateWithoutPermissionIncrease) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2138,7 +2141,7 @@ TEST_F(ExtensionServiceTestSupervised,
        UpdateWithPermissionIncreaseApprovalOldVersion) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2170,7 +2173,7 @@ TEST_F(ExtensionServiceTestSupervised,
        UpdateWithPermissionIncreaseApprovalMatchingVersion) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2197,7 +2200,21 @@ TEST_F(ExtensionServiceTestSupervised,
        UpdateWithPermissionIncreaseApprovalNewVersion) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  base::HistogramTester histogram_tester;
+
+  // Should see 0 SupervisedUsers.Extensions metrics at first.
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 0);
+
+  base::UserActionTester user_action_tester;
+  // Should see 0 user actions at first.
+  EXPECT_EQ(0, user_action_tester.GetActionCount(
+                   "SupervisedUsers_Extensions_NewExtensionApprovalGranted"));
+  EXPECT_EQ(0, user_action_tester.GetActionCount(
+                   "SupervisedUsers_Extensions_NewVersionApprovalGranted"));
+  EXPECT_EQ(0, user_action_tester.GetActionCount(
+                   "SupervisedUsers_Extensions_Removed"));
+
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2205,6 +2222,18 @@ TEST_F(ExtensionServiceTestSupervised,
   std::string id = InstallPermissionsTestExtension();
   const std::string version1("1");
   SimulateApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
+
+  // Should see 1 kNewExtensionApprovalGranted metric count recorded.
+  histogram_tester.ExpectUniqueSample(
+      "SupervisedUsers.Extensions",
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kNewExtensionApprovalGranted,
+      1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 1);
+
+  // Should see 1 NewExtensionApprovalGranted action.
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "SupervisedUsers_Extensions_NewExtensionApprovalGranted"));
 
   // Update to a new version with increased permissions.
   const std::string version2("2");
@@ -2227,12 +2256,37 @@ TEST_F(ExtensionServiceTestSupervised,
 
   // Update to the matching version. Now the extension should get enabled.
   UpdatePermissionsTestExtension(id, version3, ENABLED);
+
+  // Should see 1 kNewVersionApprovalGranted metric count recorded.
+  histogram_tester.ExpectBucketCount(
+      "SupervisedUsers.Extensions",
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kNewVersionApprovalGranted,
+      1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 2);
+
+  // Should see 1 NewVersionApprovalGranted action.
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "SupervisedUsers_Extensions_NewVersionApprovalGranted"));
+
+  // Uninstall the extension.
+  UninstallExtension(id);
+
+  // Should see 1 kRemoved metric count recorded.
+  histogram_tester.ExpectBucketCount(
+      "SupervisedUsers.Extensions",
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::kRemoved, 1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 3);
+
+  // Should see 1 Removed action.
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "SupervisedUsers_Extensions_Removed"));
 }
 
 TEST_F(ExtensionServiceTestSupervised, SupervisedUserInitiatedInstalls) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2265,7 +2319,7 @@ TEST_F(ExtensionServiceTestSupervised,
        UpdateSUInitiatedInstallWithoutPermissionIncrease) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2307,7 +2361,7 @@ TEST_F(ExtensionServiceTestSupervised,
        UpdateSUInitiatedInstallWithPermissionIncrease) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2353,7 +2407,7 @@ TEST_F(ExtensionServiceTestSupervised,
        UpdateSUInitiatedInstallWithPermissionIncreaseApprovalArrivesFirst) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2387,7 +2441,7 @@ TEST_F(ExtensionServiceTestSupervised,
        SupervisedUserExtensionsMayRequestPermissionsToggleOff) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(false /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/false);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(false));
@@ -2421,7 +2475,7 @@ TEST_F(ExtensionServiceTestSupervised,
        SupervisedUserExtensionsMayRequestPermissionsDoesNotAffectExisting) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   ASSERT_NO_FATAL_FAILURE(
       SetSupervisedUserExtensionsMayRequestPermissionsPref(true));
@@ -2473,7 +2527,7 @@ TEST_F(ExtensionServiceTestSupervised,
        ChildUserCannotApproveAdditionalPermissions) {
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
-  InitServices(true /* profile_is_supervised */);
+  InitServices(/*profile_is_supervised=*/true);
 
   SetSupervisedUserExtensionsMayRequestPermissionsPref(true);
 

@@ -5,6 +5,7 @@
 #include "chrome/updater/win/ui/ui_displayed_event.h"
 
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chrome/updater/win/ui/constants.h"
 #include "chrome/updater/win/util.h"
@@ -16,7 +17,7 @@ HRESULT UIDisplayedEventManager::CreateEvent(bool is_machine) {
   DCHECK(!IsEventHandleInitialized());
   return CreateUniqueEventInEnvironment(
       kLegacyUiDisplayedEventEnvironmentVariableName, is_machine,
-      ScopedKernelHANDLE::Receiver(ui_displayed_event_).get());
+      ScopedKernelHANDLE::Receiver(GetUIDisplayedEvent()).get());
 }
 
 HRESULT UIDisplayedEventManager::GetEvent(bool is_machine,
@@ -24,42 +25,45 @@ HRESULT UIDisplayedEventManager::GetEvent(bool is_machine,
   DCHECK(ui_displayed_event);
   *ui_displayed_event = nullptr;
   if (IsEventHandleInitialized()) {
-    *ui_displayed_event = ui_displayed_event_.get();
+    *ui_displayed_event = GetUIDisplayedEvent().get();
     return S_OK;
   }
 
   HRESULT hr = OpenUniqueEventFromEnvironment(
       kLegacyUiDisplayedEventEnvironmentVariableName, is_machine,
-      ScopedKernelHANDLE::Receiver(ui_displayed_event_).get());
+      ScopedKernelHANDLE::Receiver(GetUIDisplayedEvent()).get());
   if (FAILED(hr))
     return hr;
 
-  *ui_displayed_event = ui_displayed_event_.get();
+  *ui_displayed_event = GetUIDisplayedEvent().get();
   return S_OK;
 }
 
 void UIDisplayedEventManager::SignalEvent(bool is_machine) {
   if (!IsEventHandleInitialized()) {
     HRESULT hr = GetEvent(
-        is_machine, ScopedKernelHANDLE::Receiver(ui_displayed_event_).get());
+        is_machine, ScopedKernelHANDLE::Receiver(GetUIDisplayedEvent()).get());
     if (HRESULT_FROM_WIN32(ERROR_ENVVAR_NOT_FOUND) == hr)
       hr = CreateEvent(is_machine);
     if (FAILED(hr)) {
       // We may display two UIs in this case.
-      ui_displayed_event_.reset();
+      GetUIDisplayedEvent().reset();
       return;
     }
   }
 
   DCHECK(IsEventHandleInitialized());
-  ::SetEvent(ui_displayed_event_.get());
+  ::SetEvent(GetUIDisplayedEvent().get());
 }
 
 bool UIDisplayedEventManager::IsEventHandleInitialized() {
-  return ui_displayed_event_.is_valid();
+  return GetUIDisplayedEvent().is_valid();
 }
 
-ScopedKernelHANDLE UIDisplayedEventManager::ui_displayed_event_;
+ScopedKernelHANDLE& UIDisplayedEventManager::GetUIDisplayedEvent() {
+  static base::NoDestructor<ScopedKernelHANDLE> ui_displayed_event;
+  return *ui_displayed_event;
+}
 
 }  // namespace ui
 }  // namespace updater

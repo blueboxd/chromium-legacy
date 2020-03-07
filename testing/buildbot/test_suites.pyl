@@ -3076,11 +3076,14 @@
           '--test-launcher-retry-limit=0',
           '--enable-pixel-output-in-tests',
         ],
-        'precommit_args': [
-          '--issue=${patch_issue}',
-          '--patchset=${patch_set}',
-          '--jobid=${buildbucket_build_id}',
-        ],
+        # Temporarily disable args so Gold will not make comments.
+        # TODO(crbug.com/1059469): Re-enable once we stabilize the system so that it won't
+        # comment on non-related changes.
+        # 'precommit_args': [
+        #   '--issue=${patch_issue}',
+        #   '--patchset=${patch_set}',
+        #   '--jobid=${buildbucket_build_id}',
+        # ],
         'experiment_percentage': 100,
         'swarming': {
           'service_account': 'chrome-gold@chops-service-accounts.iam.gserviceaccount.com'

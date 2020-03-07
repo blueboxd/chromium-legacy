@@ -161,7 +161,6 @@ void RemoteSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
       return;
     }
   }
-  NOTREACHED();
 }
 
 bool RemoteSafeBrowsingDatabaseManager::CanCheckResourceType(

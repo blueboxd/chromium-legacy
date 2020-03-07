@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -90,7 +91,7 @@ public class BottomToolbarVariationManager {
      */
     public static boolean shouldBottomToolbarBeVisibleInOverviewMode() {
         return (getVariation().equals(Variations.NEW_TAB_SEARCH_SHARE)
-                       && !CachedFeatureFlags.isStartSurfaceEnabled())
+                       && !StartSurfaceConfiguration.isStartSurfaceEnabled())
                 || ((!TabUiFeatureUtilities.isGridTabSwitcherEnabled()
                             || !IncognitoUtils.isIncognitoModeEnabled())
                         && getVariation().equals(Variations.HOME_SEARCH_TAB_SWITCHER));

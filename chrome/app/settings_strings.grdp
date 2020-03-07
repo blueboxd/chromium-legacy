@@ -1543,18 +1543,6 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PRIMARY_LABEL" desc="'Passwords' is an element in safety check that allows users to check for their passwords being compromised.">
     Passwords
   </message>
-  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_SAFE" desc="This text points out that the safety check password check has not found any compromised passwords.">
-    No compromised passwords found
-  </message>
-  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_COMPROMISED_SINGULAR" desc="This text points out that the safety check password check has found one compromised password.">
-    1 compromised password
-  </message>
-  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_COMPROMISED_PLURAL" desc="This text points out that the safety check password check has found multiple compromised passwords. The placeholder will be a numeral.">
-    <ph name="NUM_PASSWORDS">$1<ex>42</ex></ph> compromised passwords
-  </message>
-  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_NO_PASSWORDS" desc="This text points out that password check cannot run due to the user not having saved passwords.">
-    No saved passwords
-  </message>
   <message name="IDS_SAFETY_CHECK_PASSWORDS_BUTTON_COMPROMISED" desc="This button allows users to change their compromised passwords.">
     Change passwords
   </message>
@@ -1578,27 +1566,6 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_PRIMARY_LABEL" desc="'Extensions' is an element in safety check that shows the safety check status of installed extensions.">
     Extensions
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_SAFE" desc="This text describles that the user is protected from bad extensions.">
-    You're protected from bad extensions
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_BAD_EXTENSIONS_ON_SINGULAR" desc="This text describles that the user has turned bad extensions back on.">
-    You turned 1 bad extension back on
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_BAD_EXTENSIONS_ON_PLURAL" desc="This text describles that the user has turned bad extensions back on.">
-    You turned <ph name="NUM_EXTENSIONS">$1<ex>42</ex></ph> bad extensions back on
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_BAD_EXTENSIONS_OFF_SINGULAR" desc="This text describles that bad extensions have been disabled.">
-    1 bad extension is off. You can also remove it.
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_BAD_EXTENSIONS_OFF_PLURAL" desc="This text describles that bad extensions have been disabled.">
-    <ph name="NUM_EXTENSIONS">$1<ex>42</ex></ph> bad extensions are off. You can also remove them.
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_MANAGED_BY_ADMIN_SINGULAR" desc="This text describles that an administrator has turned bad extensions back on.">
-    Your administrator turned 1 bad extension back on
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_MANAGED_BY_ADMIN_PLURAL" desc="This text describles that an administrator has turned bad extensions back on.">
-    Your administrator turned <ph name="NUM_EXTENSIONS">$1<ex>42</ex></ph> bad extensions back on
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON" desc="This button allows users to review their extensions settings.">
     Review

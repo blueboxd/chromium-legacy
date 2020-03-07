@@ -226,8 +226,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   // AddOsLocalizedStrings must be added after AddBrowserLocalizedStrings
   // as repeated keys used by the OS strings should override the same keys
   // that may be used in the Browser string provider.
-  ::chromeos::settings::AddOsLocalizedStrings(html_source, profile,
-                                              web_ui->GetWebContents());
+  OsSettingsLocalizedStringsProvider::AddOsLocalizedStrings(
+      html_source, profile, web_ui->GetWebContents());
 
   auto plural_string_handler = std::make_unique<PluralStringHandler>();
   plural_string_handler->AddLocalizedString("profileLabel",

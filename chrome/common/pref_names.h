@@ -1035,6 +1035,8 @@ extern const char kWebComponentsV0Enabled[];
 
 extern const char kUseLegacyFormControls[];
 
+extern const char kScrollToTextFragmentEnabled[];
+
 #if defined(OS_ANDROID)
 extern const char kKnownInterceptionDisclosureInfobarLastShown[];
 #endif

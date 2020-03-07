@@ -39,6 +39,18 @@ bool IsPreconnectAllowed(Profile* profile) {
          chrome_browser_net::CanPreresolveAndPreconnectUI(profile->GetPrefs());
 }
 
+std::string GetStringNameForHintOrigin(HintOrigin hint_origin) {
+  switch (hint_origin) {
+    case HintOrigin::NAVIGATION:
+      return "Navigation";
+    case HintOrigin::OPTIMIZATION_GUIDE:
+      return "OptimizationGuide";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
 LoadingPredictorConfig::LoadingPredictorConfig()
     : max_navigation_lifetime_seconds(base::GetFieldTrialParamByFeatureAsInt(
           features::kLoadingPredictorTableConfig,

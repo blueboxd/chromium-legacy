@@ -58,15 +58,6 @@ cr.define('settings_privacy_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.PRIVACY);
         testMetricsBrowserProxy.reset();
 
-        page.$$('#doNotTrack').click();
-        result = await testMetricsBrowserProxy.whenCalled(
-            'recordSettingsPageHistogram');
-        assertEquals(
-            settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK, result);
-
-        settings.Router.getInstance().navigateTo(settings.routes.PRIVACY);
-        testMetricsBrowserProxy.reset();
-
         page.$$('#canMakePaymentToggle').click();
         result = await testMetricsBrowserProxy.whenCalled(
             'recordSettingsPageHistogram');
@@ -90,16 +81,6 @@ cr.define('settings_privacy_page', function() {
             'recordSettingsPageHistogram');
         assertEquals(
             settings.SettingsPageInteractions.PRIVACY_SAFE_BROWSING, result);
-      });
-
-      test('LogDoNotTrackClick', function() {
-        page.$$('#doNotTrack').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK,
-                  result);
-            });
       });
 
       test('LogSafeBrowsingReportingToggleClick', function() {

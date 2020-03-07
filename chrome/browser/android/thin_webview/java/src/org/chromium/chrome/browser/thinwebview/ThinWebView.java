@@ -8,6 +8,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -26,8 +27,12 @@ public interface ThinWebView {
      * interactability is provided through the {@code contentView}.
      * @param webContents A {@link WebContents} for providing the contents to be rendered.
      * @param contentView A {@link ContentView} that can handle user inputs.
+     * @param delegate A {@link WebContentsDelegateAndroid} responding to requests on WebContents.
+     *        This is recommended for the WebContents created explicitly for ThisWebView, in case
+     *        it needs one.
      */
-    void attachWebContents(WebContents webContents, @Nullable View contentView);
+    void attachWebContents(WebContents webContents, @Nullable View contentView,
+            @Nullable WebContentsDelegateAndroid delegate);
 
     /**
      * Sets opacity for the view. {@link ThinWebViewConstraints#supportsOpacity} must be true for

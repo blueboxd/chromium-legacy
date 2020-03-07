@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_PREDICTORS_LOADING_PREDICTOR_TAB_HELPER_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/predictors/navigation_id.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -23,6 +25,7 @@ class OptimizationMetadata;
 namespace predictors {
 
 class LoadingPredictor;
+
 // Observes various page load events from the navigation start to onload
 // completed and notifies the LoadingPredictor associated with the current
 // profile.
@@ -75,6 +78,11 @@ class LoadingPredictorTabHelper
   // The optimization guide decider to consult for remote predictions.
   optimization_guide::OptimizationGuideDecider* optimization_guide_decider_ =
       nullptr;
+
+  // The optimization guide preconnect prediction for the current navigation. If
+  // set, this will be cleared on |DocumentOnLoadCompletedInMainFrame|..
+  base::Optional<PreconnectPrediction>
+      last_optimization_guide_preconnect_prediction_;
 
   // Used to get a weak pointer to |this|.
   base::WeakPtrFactory<LoadingPredictorTabHelper> weak_ptr_factory_{this};

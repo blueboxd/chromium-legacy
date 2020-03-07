@@ -41,8 +41,6 @@ namespace taskbar {
 namespace {
 
 constexpr int kOverlayIconSize = 16;
-static const SkRRect kOverlayIconClip =
-    SkRRect::MakeOval(SkRect::MakeWH(kOverlayIconSize, kOverlayIconSize));
 
 // Responsible for invoking TaskbarList::SetOverlayIcon(). The call to
 // TaskbarList::SetOverlayIcon() runs a nested run loop that proves
@@ -83,7 +81,10 @@ void SetOverlayIcon(HWND hwnd,
     offscreen_bitmap.allocN32Pixels(kOverlayIconSize, kOverlayIconSize);
     SkCanvas offscreen_canvas(offscreen_bitmap);
     offscreen_canvas.clear(SK_ColorTRANSPARENT);
-    offscreen_canvas.clipRRect(kOverlayIconClip, true);
+
+    static const SkRRect overlay_icon_clip =
+        SkRRect::MakeOval(SkRect::MakeWH(kOverlayIconSize, kOverlayIconSize));
+    offscreen_canvas.clipRRect(overlay_icon_clip, true);
 
     // Note: the original code used kOverlayIconSize - resized_height, but in
     // order to center the icon in the circle clip area, we're going to center

@@ -115,6 +115,7 @@ class SafeBrowsingDatabaseManager
   // Called on the IO thread to cancel a pending check if the result is no
   // longer needed.  Also called after the result has been handled. Api checks
   // are handled separately. To cancel an API check use CancelApiCheck.
+  // If |client| doesn't exist anymore, ignore this call.
   virtual void CancelCheck(Client* client) = 0;
 
   //

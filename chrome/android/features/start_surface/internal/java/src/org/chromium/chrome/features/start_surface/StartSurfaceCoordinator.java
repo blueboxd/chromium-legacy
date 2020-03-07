@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
@@ -159,7 +158,7 @@ public class StartSurfaceCoordinator implements StartSurface {
     private @SurfaceMode int computeSurfaceMode() {
         // Check the cached flag before getting the parameter to be consistent with the other
         // places. Note that the cached flag may have been set before native initialization.
-        if (!CachedFeatureFlags.isStartSurfaceEnabled()) {
+        if (!StartSurfaceConfiguration.isStartSurfaceEnabled()) {
             return SurfaceMode.NO_START_SURFACE;
         }
 
@@ -182,7 +181,7 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         // Default to SurfaceMode.TASKS_ONLY. This could happen when the start surface has been
         // changed from enabled to disabled in native side, but the cached flag has not been updated
-        // yet, so CachedFeatureFlags.isStartSurfaceEnabled() above returns true.
+        // yet, so StartSurfaceConfiguration.isStartSurfaceEnabled() above returns true.
         // TODO(crbug.com/1016548): Remember the last surface mode so as to default to it.
         return SurfaceMode.TASKS_ONLY;
     }

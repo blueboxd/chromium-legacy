@@ -43,13 +43,13 @@ public class BottomToolbarWithStartSurfaceTest {
     @Before
     public void setUp() {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, true);
-        CachedFeatureFlags.setStartSurfaceEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
     }
 
     @After
     public void tearDown() {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, null);
-        CachedFeatureFlags.setStartSurfaceEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, null);
     }
 
     private void launchActivity(@Variations String variation) {

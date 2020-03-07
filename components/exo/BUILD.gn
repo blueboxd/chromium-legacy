@@ -156,6 +156,8 @@ source_set("test_support") {
     "test/exo_test_suite_aura.h",
   ]
 
+  public_deps = [ "//testing/gtest" ]
+
   deps = [
     ":exo",
     "//base",
@@ -163,7 +165,6 @@ source_set("test_support") {
     "//components/viz/service",
     "//gpu",
     "//skia",
-    "//testing/gtest",
     "//ui/aura",
     "//ui/base/ime/init",
     "//ui/compositor",

@@ -143,8 +143,10 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
             ? NativeFileSystemPermissionRequestManager::Access::kRead
             : NativeFileSystemPermissionRequestManager::Access::kWrite;
 
-    // TODO(mek): We need to somehow deal with the case where both read and
-    // write access are being asked for at the same time.
+    // If a website wants both read and write access, code in content will
+    // request those as two separate requests. The |request_manager| will then
+    // detect this and combine the two requests into one prompt. As such this
+    // code does not have to have any way to request Access::kReadWrite.
 
     request_manager->AddRequest(
         {origin_, path_, is_directory_, access},

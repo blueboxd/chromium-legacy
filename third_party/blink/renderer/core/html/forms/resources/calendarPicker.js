@@ -1869,7 +1869,18 @@ ListView.prototype.addCellIfNecessary = function(row) {
   if (cell)
     return cell;
   cell = this.prepareNewCell(row);
-  cell.attachTo(this.scrollView.contentElement);
+
+  // Ensure that the DOM tree positions of the rows are in increasing
+  // chronological order.  This is needed for correct application of
+  // the :hover selector for the week control, which spans across multiple
+  // calendar rows.
+  var rowIndices = Object.keys(this._cells);
+  var shouldPrepend = (rowIndices.length) > 0 && (row < rowIndices[0]);
+  cell.attachTo(
+      this.scrollView.contentElement,
+      shouldPrepend ? this.scrollView.contentElement.firstElementChild :
+                      undefined);
+
   cell.setWidth(this._width);
   cell.setPosition(this.scrollView.contentPositionForContentOffset(
       this.scrollOffsetForRow(row)));
@@ -2515,7 +2526,9 @@ function YearListView(minimumMonth, maximumMonth, config) {
   /**
    * @type {?Month}
    */
-  this.highlightedMonth = null;
+  if (!global.params.isFormControlsRefreshEnabled) {
+    this.highlightedMonth = null;
+  }
   /**
    * @type {?Month}
    */
@@ -2564,10 +2577,12 @@ function YearListView(minimumMonth, maximumMonth, config) {
   this.scrubbyScrollBar = new ScrubbyScrollBar(this.scrollView);
   this.scrubbyScrollBar.attachTo(this);
 
-  this.element.addEventListener('mouseover', this.onMouseOver, false);
-  this.element.addEventListener('mouseout', this.onMouseOut, false);
   this.element.addEventListener('keydown', this.onKeyDown, false);
-  this.element.addEventListener('touchstart', this.onTouchStart, false);
+  if (!global.params.isFormControlsRefreshEnabled) {
+    this.element.addEventListener('mouseover', this.onMouseOver, false);
+    this.element.addEventListener('mouseout', this.onMouseOut, false);
+    this.element.addEventListener('touchstart', this.onTouchStart, false);
+  }
 
   if (global.params.isFormControlsRefreshEnabled && config &&
       config.mode == 'month') {
@@ -2591,6 +2606,16 @@ function YearListView(minimumMonth, maximumMonth, config) {
     }
 
     this._initialSelectedMonth = this._selectedMonth;
+  } else if (global.params.isFormControlsRefreshEnabled) {
+    // This is a month switcher menu embedded in another calendar control.
+    // Set up our config so that getNearestValidRangeLookingForward(Backward)
+    // when called on this YearListView will navigate by month.
+    this.config = {};
+    this.config.minimumValue = minimumMonth;
+    this.config.maximumValue = maximumMonth;
+    this.config.step = Month.DefaultStep;
+    this.config.stepBase = Month.DefaultStepBase;
+    this._dateTypeConstructor = Month;
   }
 }
 
@@ -2743,8 +2768,8 @@ YearListView.prototype.onClick = function(event) {
   if (this.selectedRow !== oldSelectedRow) {
     // Always start with first month when changing the year.
     const month = new Month(year, 0);
-    this.highlightMonth(month);
     if (!global.params.isFormControlsRefreshEnabled) {
+      this.highlightMonth(month);
       this.dispatchEvent(
           YearListView.EventTypeYearListViewDidSelectMonth, this, month);
     }
@@ -2842,7 +2867,8 @@ YearListView.prototype.prepareNewCell = function(row) {
     }
     cell.monthButtons[i].setAttribute('aria-label', month.toLocaleString());
   }
-  if (this.highlightedMonth && row === this.highlightedMonth.year - 1) {
+  if (!global.params.isFormControlsRefreshEnabled && this.highlightedMonth &&
+      row === this.highlightedMonth.year - 1) {
     var monthButton = cell.monthButtons[this.highlightedMonth.month];
     monthButton.classList.add(YearListCell.ClassNameHighlighted);
     // aria-activedescendant assumes both elements have layoutObjects, and
@@ -2939,8 +2965,7 @@ YearListView.prototype.select = function(row) {
         this.selectedRow, YearListView.RowAnimationDirection.Opening);
     if (selectedCell)
       selectedCell.setSelected(true);
-    if (!(global.params.isFormControlsRefreshEnabled &&
-          this.type === 'month')) {
+    if (!global.params.isFormControlsRefreshEnabled) {
       var month = this.highlightedMonth ? this.highlightedMonth.month : 0;
       this.highlightMonth(new Month(this.selectedRow + 1, month));
     }
@@ -3048,7 +3073,9 @@ YearListView.prototype.show = function(month) {
 
   this.scrollToRow(month.year - 1, false);
   this.selectWithoutAnimating(month.year - 1);
-  this.highlightMonth(month);
+  if (!global.params.isFormControlsRefreshEnabled) {
+    this.highlightMonth(month);
+  }
   this.showSelectedMonth();
 };
 
@@ -3088,8 +3115,7 @@ YearListView.prototype.onKeyDown = function(event) {
       }
     }
   } else if (
-      global.params.isFormControlsRefreshEnabled && this.type === 'month' &&
-      this._selectedMonth) {
+      global.params.isFormControlsRefreshEnabled && this._selectedMonth) {
     if (global.params.isLocaleRTL ? key == 'ArrowRight' : key == 'ArrowLeft') {
       var newSelection = this.getNearestValidRangeLookingBackward(
           this._selectedMonth.previous());
@@ -3127,10 +3153,18 @@ YearListView.prototype.onKeyDown = function(event) {
       if (newSelection) {
         this.setSelectedMonthAndUpdateView(newSelection);
       }
+    } else if (this.type !== 'month') {
+      if (key == 'Enter') {
+        this.dispatchEvent(
+            YearListView.EventTypeYearListViewDidSelectMonth, this,
+            this._selectedMonth);
+      } else if (key == 'Escape') {
+        this.hide();
+        eventHandled = true;
+      }
     }
   } else if (
-      !(global.params.isFormControlsRefreshEnabled && this.type === 'month') &&
-      this.highlightedMonth) {
+      !global.params.isFormControlsRefreshEnabled && this.highlightedMonth) {
     if (global.params.isLocaleRTL ? key == 'ArrowRight' : key == 'ArrowLeft')
       eventHandled = this._moveHighlightTo(this.highlightedMonth.previous());
     else if (key == 'ArrowUp')
@@ -3152,11 +3186,6 @@ YearListView.prototype.onKeyDown = function(event) {
       this.dispatchEvent(
           YearListView.EventTypeYearListViewDidSelectMonth, this,
           this.highlightedMonth);
-      if (!global.params.isFormControlsRefreshEnabled) {
-        this.hide();
-        eventHandled = true;
-      }
-    } else if (key == 'Escape' && global.params.isFormControlsRefreshEnabled) {
       this.hide();
       eventHandled = true;
     }
@@ -3880,6 +3909,7 @@ CalendarTableHeaderView.GetHeight = function() {
  */
 function CalendarRowCell() {
   ListCell.call(this);
+
   this.element.classList.add(CalendarRowCell.ClassNameCalendarRowCell);
   this.element.style.height = CalendarRowCell.GetHeight() + 'px';
   this.element.setAttribute('role', 'row');
@@ -4022,8 +4052,10 @@ function CalendarTableView(calendarPicker) {
   this._ignoreMouseOutUntillNextMouseOver = false;
 
   this.element.addEventListener('click', this.onClick, false);
-  this.element.addEventListener('mouseover', this.onMouseOver, false);
-  this.element.addEventListener('mouseout', this.onMouseOut, false);
+  if (!global.params.isFormControlsRefreshEnabled) {
+    this.element.addEventListener('mouseover', this.onMouseOver, false);
+    this.element.addEventListener('mouseout', this.onMouseOut, false);
+  }
 
   // You shouldn't be able to use the mouse wheel to scroll.
   this.scrollView.element.removeEventListener(
@@ -4237,14 +4269,17 @@ CalendarTableView.prototype.updateCells = function() {
     dayCell.setIsToday(Day.createFromToday().equals(day));
     dayCell.setSelected(
         day >= firstDayInSelection && day <= lastDayInSelection);
-    var isHighlighted = day >= firstDayInHighlight && day <= lastDayInHighlight;
-    dayCell.setHighlighted(isHighlighted);
-    if (isHighlighted) {
-      if (firstDayInHighlight == lastDayInHighlight)
-        activeCell = dayCell;
-      else if (
-          this.calendarPicker.type == 'month' && day == firstDayInHighlight)
-        activeCell = dayCell;
+    if (!global.params.isFormControlsRefreshEnabled) {
+      var isHighlighted =
+          day >= firstDayInHighlight && day <= lastDayInHighlight;
+      dayCell.setHighlighted(isHighlighted);
+      if (isHighlighted) {
+        if (firstDayInHighlight == lastDayInHighlight)
+          activeCell = dayCell;
+        else if (
+            this.calendarPicker.type == 'month' && day == firstDayInHighlight)
+          activeCell = dayCell;
+      }
     }
     dayCell.setIsInCurrentMonth(
         day >= firstDayInCurrentMonth && day <= lastDayInCurrentMonth);
@@ -4254,11 +4289,13 @@ CalendarTableView.prototype.updateCells = function() {
     for (var weekString in this._weekNumberCells) {
       var weekNumberCell = this._weekNumberCells[weekString];
       var week = weekNumberCell.week;
-      var isWeekHighlighted = highlight && highlight.equals(week);
       weekNumberCell.setSelected(selection && selection.equals(week));
-      weekNumberCell.setHighlighted(isWeekHighlighted);
-      if (isWeekHighlighted)
-        activeCell = weekNumberCell;
+      if (!global.params.isFormControlsRefreshEnabled) {
+        var isWeekHighlighted = highlight && highlight.equals(week);
+        weekNumberCell.setHighlighted(isWeekHighlighted);
+        if (isWeekHighlighted)
+          activeCell = weekNumberCell;
+      }
       weekNumberCell.setDisabled(!this.calendarPicker.isValid(week));
     }
   }
@@ -4337,6 +4374,10 @@ function CalendarPicker(type, config) {
 
   this._setValidDateConfig(config);
 
+  if (global.params.isFormControlsRefreshEnabled && this.type === 'week') {
+    this.element.classList.add(CalendarPicker.ClassNameWeekPicker);
+  }
+
   /**
    * @type {!Month}
    * @const
@@ -4389,11 +4430,10 @@ function CalendarPicker(type, config) {
   /**
    * @type {?DateType}
    * @protected
-   * TODO(crbug.com/1046054) Once pre-FormControlsRefresh code is deleted,
-   * remove _highlight and the code to manage it; replace with a :hover
-   * style.
    */
-  this._highlight = null;
+  if (!global.params.isFormControlsRefreshEnabled) {
+    this._highlight = null;
+  }
 
   this.calendarTableView.element.addEventListener(
       'keydown',
@@ -4455,6 +4495,7 @@ Object.assign(CalendarPicker.prototype, DateRangeManager);
 CalendarPicker.Padding = 10;
 CalendarPicker.BorderWidth = 1;
 CalendarPicker.ClassNameCalendarPicker = 'calendar-picker';
+CalendarPicker.ClassNameWeekPicker = 'week-picker';
 CalendarPicker.ClassNamePreparing = 'preparing';
 CalendarPicker.EventTypeCurrentMonthChanged = 'currentMonthChanged';
 CalendarPicker.commitDelayMs = 100;
@@ -4664,7 +4705,9 @@ CalendarPicker.prototype.setSelection = function(dayOrWeekOrMonth) {
     return;
   if (this._selection && !dayOrWeekOrMonth) {
     this._selection = null;
-    this._setHighlight(null);
+    if (!global.params.isFormControlsRefreshEnabled) {
+      this._setHighlight(null);
+    }
     return;
   }
   var firstDayInSelection = dayOrWeekOrMonth.firstDay();
@@ -4698,7 +4741,9 @@ CalendarPicker.prototype.setSelection = function(dayOrWeekOrMonth) {
           candidateCurrentMonth,
           CalendarPicker.NavigationBehavior.WithAnimation);
   }
-  this._setHighlight(dayOrWeekOrMonth);
+  if (!global.params.isFormControlsRefreshEnabled) {
+    this._setHighlight(dayOrWeekOrMonth);
+  }
   if (!this.isValid(dayOrWeekOrMonth))
     return;
   this._selection = dayOrWeekOrMonth;

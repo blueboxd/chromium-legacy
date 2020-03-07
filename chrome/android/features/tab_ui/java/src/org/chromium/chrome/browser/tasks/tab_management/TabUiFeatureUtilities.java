@@ -12,6 +12,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.Arrays;
@@ -91,7 +92,7 @@ public class TabUiFeatureUtilities {
                        && SysUtils.isLowEndDevice())
                 && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
                 && isTabManagementModuleSupported()
-                || isTabGroupsAndroidEnabled() || CachedFeatureFlags.isStartSurfaceEnabled();
+                || isTabGroupsAndroidEnabled() || StartSurfaceConfiguration.isStartSurfaceEnabled();
     }
 
     /**

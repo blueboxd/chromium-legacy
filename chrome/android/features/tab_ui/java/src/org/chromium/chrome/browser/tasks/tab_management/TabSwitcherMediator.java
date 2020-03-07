@@ -30,7 +30,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -50,6 +49,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -294,7 +294,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         if (mode != TabListCoordinator.TabListMode.CAROUSEL) {
             // The start surface checks in this block are for top controls height and shadow margin
             //  to be set correctly for displaying the omnibox above the tab switcher.
-            int topControlsHeight = CachedFeatureFlags.isStartSurfaceEnabled()
+            int topControlsHeight = StartSurfaceConfiguration.isStartSurfaceEnabled()
                     ? 0
                     : fullscreenManager.getTopControlsHeight();
             mContainerViewModel.set(TOP_CONTROLS_HEIGHT, topControlsHeight);
@@ -305,7 +305,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
                             R.dimen.toolbar_height_no_shadow);
             mContainerViewModel.set(SHADOW_TOP_MARGIN,
-                    CachedFeatureFlags.isStartSurfaceEnabled() ? 0 : toolbarHeight);
+                    StartSurfaceConfiguration.isStartSurfaceEnabled() ? 0 : toolbarHeight);
         }
 
         mContainerView = containerView;

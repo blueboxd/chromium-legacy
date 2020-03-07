@@ -91,7 +91,7 @@ const uint8_t kServerPublicKey[] = {
 const uint32_t kServerPublicKeyVersion = 1;
 
 // For the HTTP date headers, the resolution of the server time is 1 second.
-const base::TimeDelta kServerTimeResolution = base::TimeDelta::FromSeconds(1);
+const uint32_t kServerTimeResolutionInSeconds = 1;
 
 // Whether the VariationsService should fetch the seed for testing.
 bool g_should_fetch_for_testing = false;
@@ -795,7 +795,9 @@ void VariationsService::OnSimpleLoaderCompleteOrRedirect(
     const base::TimeTicks now = base::TimeTicks::Now();
     const base::TimeDelta latency = now - last_request_started_time_;
     client_->GetNetworkTimeTracker()->UpdateNetworkTime(
-        response_date, kServerTimeResolution, latency, now);
+        response_date,
+        base::TimeDelta::FromSeconds(kServerTimeResolutionInSeconds), latency,
+        now);
   }
 
   if (response_code == net::HTTP_NOT_MODIFIED) {

@@ -254,6 +254,7 @@ CONTENT_EXPORT extern const char kWebRtcStunProbeTrialParameter[];
 CONTENT_EXPORT extern const char kWebRtcLocalEventLogging[];
 CONTENT_EXPORT extern const char kWebComponentsV0Enabled[];
 CONTENT_EXPORT extern const char kUseLegacyFormControls[];
+CONTENT_EXPORT extern const char kDisableScrollToTextFragment[];
 
 CONTENT_EXPORT extern const char kWebXrForceRuntime[];
 CONTENT_EXPORT extern const char kWebXrRuntimeNone[];

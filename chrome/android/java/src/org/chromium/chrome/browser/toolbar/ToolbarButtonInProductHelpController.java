@@ -5,6 +5,7 @@ package org.chromium.chrome.browser.toolbar;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -49,13 +50,13 @@ public class ToolbarButtonInProductHelpController
     private UserEducationHelper mUserEducationHelper;
 
     public ToolbarButtonInProductHelpController(final ChromeActivity activity,
-            AppMenuCoordinator appMenuCoordinator,
-            ActivityLifecycleDispatcher lifecycleDispatcher) {
+            AppMenuCoordinator appMenuCoordinator, ActivityLifecycleDispatcher lifecycleDispatcher,
+            ActivityTabProvider tabProvider) {
         mActivity = activity;
         mUserEducationHelper = new UserEducationHelper(mActivity);
         mScreenshotMonitor = new ScreenshotMonitor(this);
         lifecycleDispatcher.register(this);
-        mPageLoadObserver = new ActivityTabTabObserver(activity.getActivityTabProvider()) {
+        mPageLoadObserver = new ActivityTabTabObserver(tabProvider) {
             /**
              * Stores total data saved at the start of a page load. Used to calculate delta at the
              * end of page load, which is just an estimate of the data saved for the current page

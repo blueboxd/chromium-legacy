@@ -15,7 +15,6 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -23,6 +22,7 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -167,7 +167,7 @@ public final class ReturnToChromeExperimentsUtil {
      * @return The ChromeActivity if it is presenting the omnibox on the tab switcher, else null.
      */
     private static ChromeActivity getActivityPresentingOverviewWithOmnibox() {
-        if (!CachedFeatureFlags.isStartSurfaceEnabled()) return null;
+        if (!StartSurfaceConfiguration.isStartSurfaceEnabled()) return null;
 
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (!(activity instanceof ChromeActivity)) return null;
@@ -186,7 +186,7 @@ public final class ReturnToChromeExperimentsUtil {
         // Note that we should only show StartSurface as the HomePage if Single Pane is enabled,
         // HomePage is not customized, accessibility is not enabled and not on tablet.
         String homePageUrl = HomepageManager.getHomepageUri();
-        return CachedFeatureFlags.isStartSurfaceSinglePaneEnabled()
+        return StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled()
                 && (TextUtils.isEmpty(homePageUrl) || NewTabPage.isNTPUrl(homePageUrl))
                 && !AccessibilityUtil.isAccessibilityEnabled()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(

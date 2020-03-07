@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 
 import java.util.Arrays;
 import java.util.List;
@@ -55,6 +56,7 @@ public class ChromeCachedFlags {
 
         List<CachedFieldTrialParameter> fieldTrialsToCache =
                 Arrays.asList(BottomToolbarVariationManager.BOTTOM_TOOLBAR_VARIATION,
+                        StartSurfaceConfiguration.START_SURFACE_VARIATION,
                         TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION);
         CachedFeatureFlags.cacheFieldTrialParameters(fieldTrialsToCache);
 

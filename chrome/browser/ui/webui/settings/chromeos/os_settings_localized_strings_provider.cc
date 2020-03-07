@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,14 +36,17 @@
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "chrome/services/local_search_service/public/mojom/types.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -69,6 +73,74 @@
 namespace chromeos {
 namespace settings {
 namespace {
+
+const std::vector<SearchConcept>& GetNetworkSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_SETTINGS_TAG_NETWORK_SETTINGS,
+       chrome::kNetworksSubPage,
+       mojom::SearchResultIcon::kWifi,
+       {IDS_SETTINGS_TAG_NETWORK_SETTINGS_ALT1, SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetEthernetSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_SETTINGS_TAG_ETHERNET_SETTINGS,
+       chrome::kEthernetSettingsSubPage,
+       mojom::SearchResultIcon::kEthernet,
+       {IDS_SETTINGS_TAG_ETHERNET_SETTINGS_ALT1, SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetWifiSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_SETTINGS_TAG_WIFI_SETTINGS, chrome::kWiFiSettingsSubPage,
+       mojom::SearchResultIcon::kWifi},
+      {IDS_SETTINGS_TAG_TURN_ON_WIFI,
+       chrome::kWiFiSettingsSubPage,
+       mojom::SearchResultIcon::kWifi,
+       {IDS_SETTINGS_TAG_TURN_ON_WIFI_ALT1, SearchConcept::kAltTagEnd}},
+      {IDS_SETTINGS_TAG_TURN_OFF_WIFI,
+       chrome::kWiFiSettingsSubPage,
+       mojom::SearchResultIcon::kWifi,
+       {IDS_SETTINGS_TAG_TURN_OFF_WIFI_ALT1, SearchConcept::kAltTagEnd}},
+      {IDS_SETTINGS_TAG_CONNECT_WIFI, chrome::kWiFiSettingsSubPage,
+       mojom::SearchResultIcon::kWifi},
+      {IDS_SETTINGS_TAG_DISCONNECT_WIFI, chrome::kWiFiSettingsSubPage,
+       mojom::SearchResultIcon::kWifi},
+  });
+  return *tags;
+}
+
+std::vector<local_search_service::mojom::DataPtr> ConceptVectorToDataPtrVector(
+    const std::vector<SearchConcept>& tags_group) {
+  std::vector<local_search_service::mojom::DataPtr> data_list;
+
+  for (const auto& concept : tags_group) {
+    std::vector<base::string16> search_tags;
+
+    // Add the canonical tag.
+    search_tags.push_back(
+        l10n_util::GetStringUTF16(concept.canonical_message_id));
+
+    // Add all alternate tags.
+    for (size_t i = 0; i < SearchConcept::kMaxAltTagsPerConcept; ++i) {
+      int curr_alt_tag = concept.alt_tag_ids[i];
+      if (curr_alt_tag == SearchConcept::kAltTagEnd)
+        break;
+      search_tags.push_back(l10n_util::GetStringUTF16(curr_alt_tag));
+    }
+
+    // Note: A stringified version of the canonical tag message ID is used as
+    // the identifier for this search data.
+    data_list.push_back(local_search_service::mojom::Data::New(
+        base::NumberToString(concept.canonical_message_id), search_tags));
+  }
+
+  return data_list;
+}
 
 // Generates a Google Help URL which includes a "board type" parameter. Some
 // help pages need to be adjusted depending on the type of CrOS device that is
@@ -2057,9 +2129,11 @@ void AddPageVisibilityStrings(content::WebUIDataSource* html_source) {
 
 }  // namespace
 
-void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
-                           Profile* profile,
-                           content::WebContents* web_contents) {
+// static
+void OsSettingsLocalizedStringsProvider::AddOsLocalizedStrings(
+    content::WebUIDataSource* html_source,
+    Profile* profile,
+    content::WebContents* web_contents) {
   AddAboutStrings(html_source, profile);
   AddA11yStrings(html_source);
   AddAndroidAppStrings(html_source);
@@ -2091,6 +2165,72 @@ void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
   policy_indicator::AddLocalizedStrings(html_source);
 
   html_source->UseStringsJs();
+}
+
+OsSettingsLocalizedStringsProvider::OsSettingsLocalizedStringsProvider(
+    local_search_service::mojom::LocalSearchService* local_search_service) {
+  local_search_service->GetIndex(
+      local_search_service::mojom::LocalSearchService::IndexId::CROS_SETTINGS,
+      index_remote_.BindNewPipeAndPassReceiver());
+}
+
+OsSettingsLocalizedStringsProvider::~OsSettingsLocalizedStringsProvider() =
+    default;
+
+void OsSettingsLocalizedStringsProvider::AddNetworkSearchTags() {
+  AddSearchTagsGroup(GetNetworkSearchConcepts());
+}
+
+void OsSettingsLocalizedStringsProvider::RemoveNetworkSearchTags() {
+  RemoveSearchTagsGroup(GetNetworkSearchConcepts());
+}
+
+void OsSettingsLocalizedStringsProvider::AddEthernetSearchTags() {
+  AddSearchTagsGroup(GetEthernetSearchConcepts());
+}
+
+void OsSettingsLocalizedStringsProvider::RemoveEthernetSearchTags() {
+  RemoveSearchTagsGroup(GetEthernetSearchConcepts());
+}
+
+void OsSettingsLocalizedStringsProvider::AddWifiSearchTags() {
+  AddSearchTagsGroup(GetWifiSearchConcepts());
+}
+
+void OsSettingsLocalizedStringsProvider::RemoveWifiSearchTags() {
+  RemoveSearchTagsGroup(GetWifiSearchConcepts());
+}
+
+const SearchConcept*
+OsSettingsLocalizedStringsProvider::GetCanonicalTagMetadata(
+    int canonical_message_id) const {
+  const auto it = canonical_id_to_metadata_map_.find(canonical_message_id);
+  if (it == canonical_id_to_metadata_map_.end())
+    return nullptr;
+  return it->second;
+}
+
+void OsSettingsLocalizedStringsProvider::AddSearchTagsGroup(
+    const std::vector<SearchConcept>& tags_group) {
+  index_remote_->AddOrUpdate(ConceptVectorToDataPtrVector(tags_group),
+                             /*callback=*/base::DoNothing());
+
+  // Add each concept to the map. Note that it is safe to take the address of
+  // each concept because all concepts are allocated via static
+  // base::NoDestructor objects in the Get*SearchConcepts() helper functions.
+  for (const auto& concept : tags_group)
+    canonical_id_to_metadata_map_[concept.canonical_message_id] = &concept;
+}
+
+void OsSettingsLocalizedStringsProvider::RemoveSearchTagsGroup(
+    const std::vector<SearchConcept>& tags_group) {
+  std::vector<std::string> ids;
+  for (const auto& concept : tags_group) {
+    canonical_id_to_metadata_map_.erase(concept.canonical_message_id);
+    ids.push_back(base::NumberToString(concept.canonical_message_id));
+  }
+
+  index_remote_->Delete(ids, /*callback=*/base::DoNothing());
 }
 
 }  // namespace settings

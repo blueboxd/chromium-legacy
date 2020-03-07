@@ -835,6 +835,13 @@
       <structure name="IDR_SETTINGS_COOKIES_PAGE_JS"
                  file="privacy_page/cookies_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_DO_NOT_TRACK_TOGGLE_HTML"
+                 file="privacy_page/do_not_track_toggle.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DO_NOT_TRACK_TOGGLE_JS"
+                 file="privacy_page/do_not_track_toggle.js"
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_PERSONALIZATION_OPTIONS_HTML"
                  file="privacy_page/personalization_options.html"
                  type="chrome_html"

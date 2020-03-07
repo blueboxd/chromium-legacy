@@ -943,6 +943,9 @@ const char kWebComponentsV0Enabled[] = "web-components-v0-enabled";
 // TODO(1034611): Remove this after M84.
 const char kUseLegacyFormControls[] = "use-legacy-form-controls";
 
+// This switch disables the ScrollToTextFragment feature.
+const char kDisableScrollToTextFragment[] = "disable-scroll-to-text-fragment";
+
 #if defined(OS_ANDROID)
 // Disable Media Session API
 const char kDisableMediaSessionAPI[] = "disable-media-session-api";

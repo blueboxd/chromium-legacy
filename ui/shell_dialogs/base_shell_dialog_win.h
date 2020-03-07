@@ -85,7 +85,7 @@ class SHELL_DIALOGS_EXPORT BaseShellDialogImpl {
   // of this object.
   // This set only contains non-null HWNDs. NULL hwnds are not added to this
   // list.
-  static Owners owners_;
+  static Owners& GetOwners();
   static int instance_count_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseShellDialogImpl);

@@ -53,6 +53,12 @@ enum class HintOrigin {
   OPTIMIZATION_GUIDE,
 };
 
+// Gets the string that can be used to record histograms for the hint origin.
+//
+// Keep in sync with LoadingPredictorHintOrigin in histograms.xml. Will DCHECK
+// if an origin is added that is not listed in histograms.xml.
+std::string GetStringNameForHintOrigin(HintOrigin hint_origin);
+
 // Represents the config for the Loading predictor.
 struct LoadingPredictorConfig {
   // Initializes the config with default values.

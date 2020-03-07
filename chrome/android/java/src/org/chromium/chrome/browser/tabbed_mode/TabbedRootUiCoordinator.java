@@ -15,6 +15,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -38,7 +39,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
-import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.tablet.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -71,12 +71,14 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
      *         changes.
      * @param intentWithEffect Whether or not {@code activity} was launched with an
      *         intent to open a single tab.
-     * @param tabObscuringHandler {@link TabObscuringHandler} object.
+     * @param shareDelegateSupplier
+     * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
      */
     public TabbedRootUiCoordinator(ChromeActivity activity,
             Callback<Boolean> onOmniboxFocusChangedListener, boolean intentWithEffect,
-            ObservableSupplier<ShareDelegate> shareDelegateSupplier) {
-        super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier);
+            ObservableSupplier<ShareDelegate> shareDelegateSupplier,
+            ActivityTabProvider tabProvider) {
+        super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier, tabProvider);
         mIntentWithEffect = intentWithEffect;
     }
 
@@ -164,8 +166,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
 
     private void initializeIPH() {
         WindowAndroid window = mActivity.getWindowAndroid();
-        mToolbarButtonInProductHelpController = new ToolbarButtonInProductHelpController(
-                mActivity, mAppMenuCoordinator, mActivity.getLifecycleDispatcher());
+        mToolbarButtonInProductHelpController =
+                new ToolbarButtonInProductHelpController(mActivity, mAppMenuCoordinator,
+                        mActivity.getLifecycleDispatcher(), mActivity.getActivityTabProvider());
         if (!triggerPromo()) {
             mToolbarButtonInProductHelpController.showColdStartIPH();
         }

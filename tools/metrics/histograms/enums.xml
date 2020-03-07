@@ -19823,6 +19823,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="684" label="SafeBrowsingEnhancedProtection"/>
   <int value="685" label="AdvancedProtectionExtraSecurityAllowed"/>
   <int value="686" label="ReportDeviceBacklightInfo"/>
+  <int value="687" label="ScrollToTextFragmentEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -62628,6 +62629,15 @@ would be helpful to identify which type is being sent.
   <int value="0" label="Empty response received from the server."/>
   <int value="1" label="Invalid response received from the server."/>
   <int value="2" label="Valid response received from the server."/>
+</enum>
+
+<enum name="SupervisedUserExtension">
+  <summary>
+    Tracks the state of a supervised user trying to install an extension.
+  </summary>
+  <int value="0" label="New Extension Approval Granted"/>
+  <int value="1" label="New Version Approval Granted"/>
+  <int value="2" label="Removed"/>
 </enum>
 
 <enum name="SupervisedUserSafetyFilterResult">

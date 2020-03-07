@@ -691,8 +691,8 @@ TEST_F(MDnsTest, TransactionWithEmptyCache) {
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
               MDnsTransaction::SINGLE_RESULT,
-          base::Bind(&MDnsTest::MockableRecordCallback,
-                     base::Unretained(this)));
+          base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                              base::Unretained(this)));
 
   ASSERT_TRUE(transaction_privet->Start());
 
@@ -714,8 +714,8 @@ TEST_F(MDnsTest, TransactionCacheOnlyNoResult) {
       test_client_->CreateTransaction(
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_CACHE | MDnsTransaction::SINGLE_RESULT,
-          base::Bind(&MDnsTest::MockableRecordCallback,
-                     base::Unretained(this)));
+          base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                              base::Unretained(this)));
 
   EXPECT_CALL(*this,
               MockableRecordCallback(MDnsTransaction::RESULT_NO_RESULTS, _))
@@ -748,8 +748,8 @@ TEST_F(MDnsTest, TransactionWithCache) {
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
               MDnsTransaction::SINGLE_RESULT,
-          base::Bind(&MDnsTest::MockableRecordCallback,
-                     base::Unretained(this)));
+          base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                              base::Unretained(this)));
 
   ASSERT_TRUE(transaction_privet->Start());
 
@@ -788,8 +788,8 @@ TEST_F(MDnsTest, TransactionTimeout) {
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
               MDnsTransaction::SINGLE_RESULT,
-          base::Bind(&MDnsTest::MockableRecordCallback,
-                     base::Unretained(this)));
+          base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                              base::Unretained(this)));
 
   ASSERT_TRUE(transaction_privet->Start());
 
@@ -808,8 +808,8 @@ TEST_F(MDnsTest, TransactionMultipleRecords) {
       test_client_->CreateTransaction(
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE,
-          base::Bind(&MDnsTest::MockableRecordCallback,
-                     base::Unretained(this)));
+          base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                              base::Unretained(this)));
 
   ASSERT_TRUE(transaction_privet->Start());
 
@@ -845,7 +845,8 @@ TEST_F(MDnsTest, TransactionReentrantDelete) {
       dns_protocol::kTypePTR, "_privet._tcp.local",
       MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
           MDnsTransaction::SINGLE_RESULT,
-      base::Bind(&MDnsTest::MockableRecordCallback, base::Unretained(this)));
+      base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                          base::Unretained(this)));
 
   ASSERT_TRUE(transaction_->Start());
 
@@ -873,7 +874,8 @@ TEST_F(MDnsTest, TransactionReentrantDeleteFromCache) {
   transaction_ = test_client_->CreateTransaction(
       dns_protocol::kTypePTR, "_privet._tcp.local",
       MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE,
-      base::Bind(&MDnsTest::MockableRecordCallback, base::Unretained(this)));
+      base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                          base::Unretained(this)));
 
   EXPECT_CALL(*this, MockableRecordCallback(MDnsTransaction::RESULT_RECORD, _))
       .Times(Exactly(1))
@@ -892,15 +894,15 @@ TEST_F(MDnsTest, TransactionReentrantCacheLookupStart) {
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
               MDnsTransaction::SINGLE_RESULT,
-          base::Bind(&MDnsTest::MockableRecordCallback,
-                     base::Unretained(this)));
+          base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                              base::Unretained(this)));
 
   std::unique_ptr<MDnsTransaction> transaction2 =
       test_client_->CreateTransaction(
           dns_protocol::kTypePTR, "_printer._tcp.local",
           MDnsTransaction::QUERY_CACHE | MDnsTransaction::SINGLE_RESULT,
-          base::Bind(&MDnsTest::MockableRecordCallback2,
-                     base::Unretained(this)));
+          base::BindRepeating(&MDnsTest::MockableRecordCallback2,
+                              base::Unretained(this)));
 
   EXPECT_CALL(*this, MockableRecordCallback2(MDnsTransaction::RESULT_RECORD,
                                              _))
@@ -1028,8 +1030,8 @@ TEST_F(MDnsTest, NsecWithTransactionFromNetwork) {
           dns_protocol::kTypeA, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
               MDnsTransaction::SINGLE_RESULT,
-          base::Bind(&MDnsTest::MockableRecordCallback,
-                     base::Unretained(this)));
+          base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                              base::Unretained(this)));
 
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
 
@@ -1061,8 +1063,8 @@ TEST_F(MDnsTest, NsecWithTransactionFromCache) {
           dns_protocol::kTypeA, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
               MDnsTransaction::SINGLE_RESULT,
-          base::Bind(&MDnsTest::MockableRecordCallback,
-                     base::Unretained(this)));
+          base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                              base::Unretained(this)));
 
   ASSERT_TRUE(transaction_privet_a->Start());
 
@@ -1074,8 +1076,8 @@ TEST_F(MDnsTest, NsecWithTransactionFromCache) {
           dns_protocol::kTypePTR, "_privet._tcp.local",
           MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
               MDnsTransaction::SINGLE_RESULT,
-          base::Bind(&MDnsTest::MockableRecordCallback,
-                     base::Unretained(this)));
+          base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                              base::Unretained(this)));
 
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
 

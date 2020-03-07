@@ -37,7 +37,7 @@ class UIDisplayedEventManager {
   //
   // TODO(sorin): fix the static user-defined type instance. It may go away
   // with the rest of the class, https://crbug.com/1016986.
-  static ScopedKernelHANDLE ui_displayed_event_;
+  static ScopedKernelHANDLE& GetUIDisplayedEvent();
 };
 
 }  // namespace ui

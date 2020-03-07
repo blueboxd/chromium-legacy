@@ -287,6 +287,7 @@ are declared in tools/grit/grit_rule.gni.
       <if expr="chromeos">
         <part file="chromeos_strings.grdp" />
         <part file="os_settings_strings.grdp" />
+        <part file="os_settings_search_tag_strings.grdp" />
       </if>
 
       <!-- Settings specific strings -->

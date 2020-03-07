@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script>
+testRunner.waitUntilDone();
+</script>
+<script src="../../../../fast/forms/resources/common.js"></script>
+<script src="../../../../fast/forms/resources/picker-common.js"></script>
+<script src="../../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
+<input type="week" id="week" value="2018-W06">
+<script>
+openPicker(document.getElementById('week'), function() {
+  hoverOverDayCellAt(3, 4);
+  testRunner.notifyDone()
+});
+</script>

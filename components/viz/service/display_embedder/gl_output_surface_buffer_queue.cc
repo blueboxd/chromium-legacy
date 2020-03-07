@@ -148,9 +148,9 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
   if (may_have_freed_buffers || (stencil_buffer_ && !use_stencil)) {
     auto* gl = context_provider_->ContextGL();
     gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                                GL_RENDERBUFFER, 0);
     if (stencil_buffer_) {
+      gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                  GL_RENDERBUFFER, 0);
       gl->DeleteRenderbuffers(1, &stencil_buffer_);
       stencil_buffer_ = 0u;
     }
@@ -160,7 +160,6 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
     if (texture_target_ && may_have_freed_buffers) {
       gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                texture_target_, 0, 0);
-      gl->BindFramebuffer(GL_FRAMEBUFFER, 0u);
       for (const auto& buffer_texture : buffer_queue_textures_)
         gl->DeleteTextures(1u, &buffer_texture.second);
       buffer_queue_textures_.clear();
@@ -229,6 +228,30 @@ void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
     buffer_queue_->FreeAllSurfaces();
+
+    // TODO(andrescj): centralize the logic that deletes the stencil buffer and
+    // the textures since we do this in multiple places.
+    auto* gl = context_provider_->ContextGL();
+    gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    if (stencil_buffer_) {
+      gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                  GL_RENDERBUFFER, 0);
+      gl->DeleteRenderbuffers(1, &stencil_buffer_);
+      stencil_buffer_ = 0u;
+    }
+
+    // Reshape() must have been called before we got here, so |texture_target_|
+    // should contain a valid value.
+    DCHECK(texture_target_);
+    gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             texture_target_, 0, 0);
+    for (const auto& buffer_texture : buffer_queue_textures_)
+      gl->DeleteTextures(1u, &buffer_texture.second);
+    buffer_queue_textures_.clear();
+    current_texture_ = 0u;
+    last_bound_texture_ = 0u;
+    last_bound_mailbox_.SetZero();
+
     force_swap = true;
   }
 

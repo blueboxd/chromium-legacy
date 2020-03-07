@@ -32,7 +32,9 @@ class MockLoadingDataCollector : public LoadingDataCollector {
   MOCK_METHOD2(RecordResourceLoadComplete,
                void(const NavigationID&,
                     const blink::mojom::ResourceLoadInfo&));
-  MOCK_METHOD1(RecordMainFrameLoadComplete, void(const NavigationID&));
+  MOCK_METHOD2(RecordMainFrameLoadComplete,
+               void(const NavigationID&,
+                    const base::Optional<PreconnectPrediction>&));
   MOCK_METHOD2(RecordFirstContentfulPaint,
                void(const NavigationID&, const base::TimeTicks&));
 };
@@ -194,7 +196,12 @@ TEST_F(LoadingPredictorTabHelperTest, DocumentOnLoadCompleted) {
   NavigateAndCommitInFrame("http://sub.test.org", subframe);
 
   auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
-  EXPECT_CALL(*mock_collector_, RecordMainFrameLoadComplete(navigation_id));
+  const base::Optional<PreconnectPrediction>
+      null_optimization_guide_preconnect_prediction;
+  EXPECT_CALL(
+      *mock_collector_,
+      RecordMainFrameLoadComplete(
+          navigation_id, null_optimization_guide_preconnect_prediction));
   tab_helper_->DocumentOnLoadCompletedInMainFrame();
 }
 
@@ -265,8 +272,10 @@ class TestLoadingDataCollector : public LoadingDataCollector {
     EXPECT_EQ(expected_request_priority_, resource_load_info.request_priority);
   }
 
-  void RecordMainFrameLoadComplete(const NavigationID& navigation_id) override {
-  }
+  void RecordMainFrameLoadComplete(
+      const NavigationID& navigation_id,
+      const base::Optional<PreconnectPrediction>&
+          optimization_guide_preconnect_prediction) override {}
 
   void RecordFirstContentfulPaint(
       const NavigationID& navigation_id,

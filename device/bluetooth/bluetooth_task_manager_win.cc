@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -144,9 +145,17 @@ typedef std::unordered_map<
     std::unique_ptr<CharacteristicValueChangedRegistration>>
     CharacteristicValueChangedRegistrationMap;
 
-CharacteristicValueChangedRegistrationMap
-    g_characteristic_value_changed_registrations;
-base::Lock g_characteristic_value_changed_registrations_lock;
+CharacteristicValueChangedRegistrationMap&
+GetCharacteristicValueChangedRegistrations() {
+  static base::NoDestructor<CharacteristicValueChangedRegistrationMap>
+      registrations;
+  return *registrations;
+}
+
+base::Lock& GetCharacteristicValueChangedRegistrationsLock() {
+  static base::NoDestructor<base::Lock> lock;
+  return *lock;
+}
 
 // Function to be registered to OS to monitor Bluetooth LE GATT event. It is
 // invoked in BluetoothApis.dll thread.
@@ -167,10 +176,10 @@ void CALLBACK OnGetGattEventWin(BTH_LE_GATT_EVENT_TYPE type,
   for (ULONG i = 0; i < new_value_win->DataSize; i++)
     (*new_value)[i] = new_value_win->Data[i];
 
-  base::AutoLock auto_lock(g_characteristic_value_changed_registrations_lock);
+  base::AutoLock auto_lock(GetCharacteristicValueChangedRegistrationsLock());
   CharacteristicValueChangedRegistrationMap::const_iterator it =
-      g_characteristic_value_changed_registrations.find(context);
-  if (it == g_characteristic_value_changed_registrations.end())
+      GetCharacteristicValueChangedRegistrations().find(context);
+  if (it == GetCharacteristicValueChangedRegistrations().end())
     return;
 
   it->second->callback_task_runner->PostTask(
@@ -918,8 +927,8 @@ void BluetoothTaskManagerWin::RegisterGattCharacteristicValueChangedEvent(
     registration->win_event_handle = win_event_handle;
     registration->callback = registered_callback;
     registration->callback_task_runner = ui_task_runner_;
-    base::AutoLock auto_lock(g_characteristic_value_changed_registrations_lock);
-    g_characteristic_value_changed_registrations[user_event_handle] =
+    base::AutoLock auto_lock(GetCharacteristicValueChangedRegistrationsLock());
+    GetCharacteristicValueChangedRegistrations()[user_event_handle] =
         std::move(registration);
   }
 
@@ -931,12 +940,12 @@ void BluetoothTaskManagerWin::UnregisterGattCharacteristicValueChangedEvent(
     PVOID event_handle) {
   DCHECK(bluetooth_task_runner_->RunsTasksInCurrentSequence());
 
-  base::AutoLock auto_lock(g_characteristic_value_changed_registrations_lock);
+  base::AutoLock auto_lock(GetCharacteristicValueChangedRegistrationsLock());
   CharacteristicValueChangedRegistrationMap::const_iterator it =
-      g_characteristic_value_changed_registrations.find(event_handle);
-  if (it != g_characteristic_value_changed_registrations.end()) {
+      GetCharacteristicValueChangedRegistrations().find(event_handle);
+  if (it != GetCharacteristicValueChangedRegistrations().end()) {
     le_wrapper_->UnregisterGattEvent(it->second->win_event_handle);
-    g_characteristic_value_changed_registrations.erase(event_handle);
+    GetCharacteristicValueChangedRegistrations().erase(event_handle);
   }
 }
 

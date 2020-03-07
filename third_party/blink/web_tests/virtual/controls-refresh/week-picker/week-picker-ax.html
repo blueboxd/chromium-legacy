@@ -27,7 +27,7 @@ promise_test(() => {
           markDirtyCounter++;
         }
 
-        if (focusCounter == 1 && markDirtyCounter == 1) {
+        if (focusCounter == 1 && markDirtyCounter == 0) {
           resolve();
         }
       });

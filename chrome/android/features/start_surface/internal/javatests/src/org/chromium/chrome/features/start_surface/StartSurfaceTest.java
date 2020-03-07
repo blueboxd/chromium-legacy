@@ -77,7 +77,7 @@ public class StartSurfaceTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setStartSurfaceEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
 
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());

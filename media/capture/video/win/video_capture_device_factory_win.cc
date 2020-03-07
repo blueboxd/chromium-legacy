@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -109,17 +110,23 @@ const char* const kDisplayNamesBlacklistedForMediaFoundation[] = {
     // See https://crbug.com/1044974.
     "VMware Virtual Webcam"};
 
-const std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>
-    kMfAttributes[] = {{VideoCaptureApi::WIN_MEDIA_FOUNDATION,
-                        {
-                            {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-                             MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
-                        }},
-                       {VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR,
-                        {{MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-                          MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
-                         {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_CATEGORY,
-                          KSCATEGORY_SENSOR_CAMERA}}}};
+const std::vector<
+    std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>>&
+GetMFAttributes() {
+  static const base::NoDestructor<std::vector<
+      std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>>>
+      mf_attributes({{{VideoCaptureApi::WIN_MEDIA_FOUNDATION,
+                       {
+                           {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                            MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
+                       }},
+                      {VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR,
+                       {{MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                         MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
+                        {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_CATEGORY,
+                         KSCATEGORY_SENSOR_CAMERA}}}}});
+  return *mf_attributes;
+}
 
 bool IsDeviceBlacklistedForQueryingDetailedFrameRates(
     const std::string& display_name) {
@@ -175,14 +182,11 @@ bool PrepareVideoCaptureAttributesMediaFoundation(
 bool CreateVideoCaptureDeviceMediaFoundation(const Descriptor& descriptor,
                                              IMFMediaSource** source) {
   ComPtr<IMFAttributes> attributes;
-  static_assert(
-      base::size(kMfAttributes) == 2,
-      "Implementation here asumes that kMfAttributes has size of two.");
-  DCHECK_EQ(kMfAttributes[0].first, VideoCaptureApi::WIN_MEDIA_FOUNDATION);
+  DCHECK_EQ(GetMFAttributes()[0].first, VideoCaptureApi::WIN_MEDIA_FOUNDATION);
   const auto& attributes_data =
       descriptor.capture_api == VideoCaptureApi::WIN_MEDIA_FOUNDATION
-          ? kMfAttributes[0].second
-          : kMfAttributes[1].second;
+          ? GetMFAttributes()[0].second
+          : GetMFAttributes()[1].second;
   // We allocate attributes_data.size() + 1 (+1 is for sym_link below) elements
   // in attributes store.
   if (!PrepareVideoCaptureAttributesMediaFoundation(
@@ -633,7 +637,7 @@ void VideoCaptureDeviceFactoryWin::GetDeviceDescriptorsMediaFoundation(
   // KSCATEGORY_SENSOR_CAMERA is supplied. We enumerate twice. As it is possible
   // that SENSOR_CAMERA is also in VIDEO_CAMERA category, we prevent duplicate
   // entries. https://crbug.com/807293
-  for (const auto& api_attributes : kMfAttributes) {
+  for (const auto& api_attributes : GetMFAttributes()) {
     ScopedCoMem<IMFActivate*> devices;
     UINT32 count;
     if (!EnumerateVideoDevicesMediaFoundation(api_attributes.second, &devices,

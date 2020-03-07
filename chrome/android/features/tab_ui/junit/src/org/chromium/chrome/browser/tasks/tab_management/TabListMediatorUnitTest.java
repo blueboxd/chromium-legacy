@@ -256,7 +256,7 @@ public class TabListMediatorUnitTest {
         mMocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
 
         CachedFeatureFlags.setForTesting(TAB_GROUPS_ANDROID, false);
-        CachedFeatureFlags.setStartSurfaceEnabledForTesting(false);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, false);
         TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(true);
         mTab1 = prepareTab(TAB1_ID, TAB1_TITLE, TAB1_URL);
         mTab2 = prepareTab(TAB2_ID, TAB2_TITLE, TAB2_URL);
@@ -336,7 +336,7 @@ public class TabListMediatorUnitTest {
         RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
         CachedFeatureFlags.setForTesting(TAB_GROUPS_ANDROID, null);
-        CachedFeatureFlags.setStartSurfaceEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, null);
         TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(null);
         TabAttributeCache.clearAllForTesting();
         getGroupTitleSharedPreferences().edit().clear();

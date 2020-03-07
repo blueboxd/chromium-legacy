@@ -93,8 +93,10 @@ public class StatusBarColorController
 
     /**
      * @param chromeActivity The {@link ChromeActivity} that this class is attached to.
+     * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
      */
-    public StatusBarColorController(ChromeActivity chromeActivity) {
+    public StatusBarColorController(
+            ChromeActivity chromeActivity, ActivityTabProvider tabProvider) {
         mWindow = chromeActivity.getWindow();
         mIsTablet = chromeActivity.isTablet();
         mOverviewModeBehavior = chromeActivity.getOverviewModeBehavior();
@@ -112,8 +114,7 @@ public class StatusBarColorController
 
         mStatusIndicatorColor = UNDEFINED_STATUS_BAR_COLOR;
 
-        mStatusBarColorTabObserver = new ActivityTabProvider.ActivityTabTabObserver(
-                chromeActivity.getActivityTabProvider()) {
+        mStatusBarColorTabObserver = new ActivityTabProvider.ActivityTabTabObserver(tabProvider) {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
                 updateStatusBarColor();

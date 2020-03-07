@@ -113,8 +113,8 @@ bool ServiceWatcherImpl::CreateTransaction(
   if (transaction_flags) {
     *transaction = mdns_client_->CreateTransaction(
         net::dns_protocol::kTypePTR, service_type_, transaction_flags,
-        base::Bind(&ServiceWatcherImpl::OnTransactionResponse,
-                   AsWeakPtr(), transaction));
+        base::BindRepeating(&ServiceWatcherImpl::OnTransactionResponse,
+                            AsWeakPtr(), transaction));
     return (*transaction)->Start();
   }
 
@@ -213,9 +213,10 @@ void ServiceWatcherImpl::ServiceListeners::SetActiveRefresh(
     srv_transaction_ = mdns_client_->CreateTransaction(
         net::dns_protocol::kTypeSRV, service_name_,
         net::MDnsTransaction::SINGLE_RESULT |
-        net::MDnsTransaction::QUERY_CACHE | net::MDnsTransaction::QUERY_NETWORK,
-        base::Bind(&ServiceWatcherImpl::ServiceListeners::OnSRVRecord,
-                   base::Unretained(this)));
+            net::MDnsTransaction::QUERY_CACHE |
+            net::MDnsTransaction::QUERY_NETWORK,
+        base::BindRepeating(&ServiceWatcherImpl::ServiceListeners::OnSRVRecord,
+                            base::Unretained(this)));
     srv_transaction_->Start();
   } else if (!active_refresh) {
     srv_transaction_.reset();
@@ -352,20 +353,19 @@ bool ServiceResolverImpl::CreateTxtTransaction() {
   txt_transaction_ = mdns_client_->CreateTransaction(
       net::dns_protocol::kTypeTXT, service_name_,
       net::MDnsTransaction::SINGLE_RESULT | net::MDnsTransaction::QUERY_CACHE |
-      net::MDnsTransaction::QUERY_NETWORK,
-      base::Bind(&ServiceResolverImpl::TxtRecordTransactionResponse,
-                 AsWeakPtr()));
+          net::MDnsTransaction::QUERY_NETWORK,
+      base::BindRepeating(&ServiceResolverImpl::TxtRecordTransactionResponse,
+                          AsWeakPtr()));
   return txt_transaction_->Start();
 }
 
 // TODO(noamsml): quick-resolve for AAAA records.  Since A records tend to be in
 void ServiceResolverImpl::CreateATransaction() {
   a_transaction_ = mdns_client_->CreateTransaction(
-      net::dns_protocol::kTypeA,
-      service_staging_.address.host(),
+      net::dns_protocol::kTypeA, service_staging_.address.host(),
       net::MDnsTransaction::SINGLE_RESULT | net::MDnsTransaction::QUERY_CACHE,
-      base::Bind(&ServiceResolverImpl::ARecordTransactionResponse,
-                 AsWeakPtr()));
+      base::BindRepeating(&ServiceResolverImpl::ARecordTransactionResponse,
+                          AsWeakPtr()));
   a_transaction_->Start();
 }
 
@@ -373,9 +373,9 @@ bool ServiceResolverImpl::CreateSrvTransaction() {
   srv_transaction_ = mdns_client_->CreateTransaction(
       net::dns_protocol::kTypeSRV, service_name_,
       net::MDnsTransaction::SINGLE_RESULT | net::MDnsTransaction::QUERY_CACHE |
-      net::MDnsTransaction::QUERY_NETWORK,
-      base::Bind(&ServiceResolverImpl::SrvRecordTransactionResponse,
-                 AsWeakPtr()));
+          net::MDnsTransaction::QUERY_NETWORK,
+      base::BindRepeating(&ServiceResolverImpl::SrvRecordTransactionResponse,
+                          AsWeakPtr()));
   return srv_transaction_->Start();
 }
 
@@ -512,11 +512,11 @@ void LocalDomainResolverImpl::Start() {
 std::unique_ptr<net::MDnsTransaction>
 LocalDomainResolverImpl::CreateTransaction(uint16_t type) {
   return mdns_client_->CreateTransaction(
-      type, domain_, net::MDnsTransaction::SINGLE_RESULT |
-                     net::MDnsTransaction::QUERY_CACHE |
-                     net::MDnsTransaction::QUERY_NETWORK,
-      base::Bind(&LocalDomainResolverImpl::OnTransactionComplete,
-                 base::Unretained(this)));
+      type, domain_,
+      net::MDnsTransaction::SINGLE_RESULT | net::MDnsTransaction::QUERY_CACHE |
+          net::MDnsTransaction::QUERY_NETWORK,
+      base::BindRepeating(&LocalDomainResolverImpl::OnTransactionComplete,
+                          base::Unretained(this)));
 }
 
 void LocalDomainResolverImpl::OnTransactionComplete(

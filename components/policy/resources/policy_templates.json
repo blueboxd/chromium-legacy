@@ -20257,6 +20257,26 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
       'tags': [],
       'desc': '''This policy controls whether users enrolled in the Advanced Protection program receive extra security features. Some of these features may involve the sharing of data with Google (for example, Advanced Protection users will be able to send their downloads to Google for malware scanning). If set to True or not set, enrolled users will receive extra security features. If set to False, Advanced Protection users will receive only the consumer security features.''',
     },
+    {
+      'name': 'ScrollToTextFragmentEnabled',
+      'owners': ['dlibby@microsoft.com', 'bokan@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:82-', 'chrome_os:82-', 'android:82-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 687,
+      'caption': '''Enable scrolling to text specified in URL fragments''',
+      'tags': [],
+      'desc': '''This feature allows for hyperlinks and address bar URL navigations to target specific text within a web page, which will be scrolled to once the loading of the web page is complete.
+
+If you enable or don't configure this policy, web page scrolling to specific text fragments via URL will be enabled.
+
+If you disable this policy, web page scrolling to specific text fragments via URL will be disabled.''',
+    },
   ],
 
   'messages': {
@@ -21100,6 +21120,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 686,
+  'highest_id_currently_used': 687,
   'highest_atomic_group_id_currently_used': 38
 }

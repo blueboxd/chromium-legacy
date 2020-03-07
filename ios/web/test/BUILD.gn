@@ -48,6 +48,10 @@ source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
+  # This public_dep is a workaround because there is a circular dependency
+  # (this target should public_dep on //ios/web/public/test).
+  public_deps = [ "//testing/gtest" ]
+
   deps = [
     ":test_constants",
     "//base",
@@ -61,7 +65,6 @@ source_set("test_support") {
     "//ios/web/public/test/http_server",
     "//ios/web/test/fakes",
     "//net",
-    "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",
   ]

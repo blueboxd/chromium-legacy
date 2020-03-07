@@ -437,6 +437,8 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnablePermissionsAPI, switches::kDisablePermissionsAPI, false},
       {wrf::EnableWebGPU, switches::kEnableUnsafeWebGPU, true},
       {wrf::EnablePresentationAPI, switches::kDisablePresentationAPI, false},
+      {wrf::EnableTextFragmentAnchor, switches::kDisableScrollToTextFragment,
+       false},
       {wrf::EnableRemotePlaybackAPI, switches::kDisableRemotePlaybackAPI,
        false},
       {wrf::EnableTimerThrottlingForBackgroundTabs,

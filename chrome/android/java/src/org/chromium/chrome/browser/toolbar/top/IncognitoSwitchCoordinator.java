@@ -13,12 +13,12 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -82,7 +82,7 @@ class IncognitoSwitchCoordinator {
 
     // TODO(crbug.com/1042997): refactor the logic and share with StartSurfaceCoordinator.
     private boolean isOmniboxOnlyStartSurface() {
-        if (!CachedFeatureFlags.isStartSurfaceEnabled()) {
+        if (!StartSurfaceConfiguration.isStartSurfaceEnabled()) {
             return false;
         }
 

@@ -785,10 +785,11 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
 
   DCHECK(base::Contains(windows, first_window));
   DCHECK_NE(Mode::kNone, mode);
-  base::RecordAction(base::UserMetricsAction(
+  base::RecordAction(
       mode == Mode::kSlideDownToHide
-          ? "AppList_HomeLauncherToMRUWindowAttempt"
-          : "AppList_CurrentWindowToHomeLauncherAttempt"));
+          ? base::UserMetricsAction("AppList_HomeLauncherToMRUWindowAttempt")
+          : base::UserMetricsAction(
+                "AppList_CurrentWindowToHomeLauncherAttempt"));
   active_window_ = std::make_unique<ScopedWindowModifier>(first_window);
   GetActiveWindow()->AddObserver(this);
   base::EraseIf(windows, [this](aura::Window* elem) {

@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display_embedder/gl_output_surface_buffer_queue.h"
 
+#include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/buffer_queue.h"
 #include "components/viz/test/test_context_provider.h"
@@ -17,6 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/swap_result.h"
 
 using testing::_;
 using testing::DoAll;
@@ -31,7 +33,6 @@ using testing::SetArgPointee;
 using testing::StrictMock;
 
 namespace viz {
-namespace {
 
 class MockGLES2Interface : public TestGLES2Interface {
  public:
@@ -40,6 +41,9 @@ class MockGLES2Interface : public TestGLES2Interface {
 
   MOCK_METHOD2(DeleteTextures, void(GLsizei, const GLuint*));
   MOCK_METHOD2(BindFramebuffer, void(GLenum, GLuint));
+  MOCK_METHOD2(GenRenderbuffers, void(GLsizei, GLuint*));
+  MOCK_METHOD2(BindRenderbuffer, void(GLenum, GLuint));
+  MOCK_METHOD2(DeleteRenderbuffers, void(GLsizei n, const GLuint*));
   MOCK_METHOD1(CreateAndTexStorage2DSharedImageCHROMIUM, GLuint(const GLbyte*));
   MOCK_METHOD1(WaitSyncTokenCHROMIUM, void(const GLbyte*));
   MOCK_METHOD2(BeginSharedImageAccessDirectCHROMIUM, void(GLuint, GLenum));
@@ -70,7 +74,8 @@ class MockBufferQueue : public BufferQueue {
   }
 };
 
-class GLOutputSurfaceBufferQueueTest : public ::testing::Test {
+class GLOutputSurfaceBufferQueueTest : public ::testing::Test,
+                                       public OutputSurfaceClient {
  public:
   GLOutputSurfaceBufferQueueTest() = default;
   ~GLOutputSurfaceBufferQueueTest() override = default;
@@ -87,10 +92,20 @@ class GLOutputSurfaceBufferQueueTest : public ::testing::Test {
         base::MakeRefCounted<TestVizProcessContextProvider>(
             std::make_unique<TestContextSupport>(), std::move(gles2_interface)),
         gpu::kNullSurfaceHandle, std::move(buffer_queue));
+    surface_->BindToClient(this);
 
     Mock::VerifyAndClearExpectations(gles2_interface_);
     Mock::VerifyAndClearExpectations(buffer_queue_);
   }
+
+  // OutputSurfaceClient implementation.
+  void DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) override {}
+  void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override {}
+  void DidReceiveTextureInUseResponses(
+      const gpu::TextureInUseResponses& responses) override {}
+  void DidReceiveCALayerParams(
+      const gfx::CALayerParams& ca_layer_params) override {}
+  void DidSwapWithSize(const gfx::Size& pixel_size) override {}
 
  protected:
   std::unique_ptr<OutputSurface> surface_;
@@ -217,5 +232,76 @@ TEST_F(GLOutputSurfaceBufferQueueTest, EmptySwap) {
   surface_->SwapBuffers(OutputSurfaceFrame());
 }
 
-}  // namespace
+// Make sure that receiving a swap NAK doesn't cause us to leak resources.
+TEST_F(GLOutputSurfaceBufferQueueTest, HandleSwapNAK) {
+  const gpu::SyncToken fake_sync_token(
+      gpu::CommandBufferNamespace::GPU_IO,
+      gpu::CommandBufferId::FromUnsafeValue(567u),
+      /*release_count=*/5u);
+  constexpr gfx::Size kBufferSize(100, 100);
+  const gpu::Mailbox fake_shared_image = gpu::Mailbox::GenerateForSharedImage();
+  constexpr GLuint kFakeTexture = 123u;
+  constexpr GLuint kFakeStencilBuffer = 456u;
+  {
+    InSequence dummy_sequence;
+
+    EXPECT_CALL(*buffer_queue_, Reshape(_, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Ne(0u)));
+
+    // The call to |surface_|->BindFramebuffer() should result in binding the GL
+    // framebuffer, requesting a new buffer, waiting on the corresponding sync
+    // token, beginning read/write access to the shared image, and creating a
+    // stencil buffer.
+    EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Ne(0u)));
+    EXPECT_CALL(*buffer_queue_, GetCurrentBuffer(NotNull()))
+        .WillOnce(DoAll(SetArgPointee<0>(fake_sync_token),
+                        Return(fake_shared_image)));
+
+    EXPECT_CALL(*gles2_interface_,
+                WaitSyncTokenCHROMIUM(SyncTokenEqualTo(fake_sync_token)));
+    EXPECT_CALL(*gles2_interface_, CreateAndTexStorage2DSharedImageCHROMIUM(
+                                       SharedImageEqualTo(fake_shared_image)))
+        .WillOnce(Return(kFakeTexture));
+    EXPECT_CALL(
+        *gles2_interface_,
+        BeginSharedImageAccessDirectCHROMIUM(
+            kFakeTexture, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM));
+    EXPECT_CALL(*gles2_interface_, GenRenderbuffers(1u, NotNull()))
+        .WillOnce(SetArgPointee<1>(kFakeStencilBuffer));
+    EXPECT_CALL(*gles2_interface_,
+                BindRenderbuffer(GL_RENDERBUFFER, kFakeStencilBuffer));
+    EXPECT_CALL(*gles2_interface_, BindRenderbuffer(GL_RENDERBUFFER, 0u));
+
+    // Calling |surface_|->SwapBuffers() should result in ending read/write
+    // access to the underlying buffer and unbinding the GL framebuffer.
+    EXPECT_CALL(*gles2_interface_,
+                EndSharedImageAccessDirectCHROMIUM(kFakeTexture));
+    EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Eq(0u)));
+    EXPECT_CALL(*buffer_queue_, SwapBuffers(_));
+
+    // Receiving a swap NAK should result in the deletion of the texture
+    // obtained from consuming the shared image. It should also result in the
+    // deletion of the stencil buffer.
+    EXPECT_CALL(*buffer_queue_, FreeAllSurfaces());
+    EXPECT_CALL(*gles2_interface_, BindFramebuffer(_, Ne(0u)));
+    EXPECT_CALL(*gles2_interface_,
+                DeleteRenderbuffers(1u, Pointee(Eq(kFakeStencilBuffer))));
+    EXPECT_CALL(*gles2_interface_,
+                DeleteTextures(1u, Pointee(Eq(kFakeTexture))));
+    EXPECT_CALL(*buffer_queue_, PageFlipComplete());
+  }
+
+  surface_->Reshape(kBufferSize, /*device_scale_factor=*/1.0,
+                    gfx::ColorSpace::CreateSRGB(), gfx::BufferFormat::BGRA_8888,
+                    /*use_stencil=*/true);
+  surface_->BindFramebuffer();
+  OutputSurfaceFrame frame;
+  frame.size = kBufferSize;
+  surface_->SwapBuffers(std::move(frame));
+  gfx::SwapResponse swap_response{};
+  swap_response.result = gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS;
+  (static_cast<GLOutputSurfaceBufferQueue*>(surface_.get()))
+      ->DidReceiveSwapBuffersAck(swap_response);
+}
+
 }  // namespace viz

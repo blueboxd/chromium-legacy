@@ -2959,6 +2959,9 @@ const char kWebComponentsV0Enabled[] = "web_components_v0_enabled";
 // TODO(1034611): Remove this after M84.
 const char kUseLegacyFormControls[] = "use_legacy_form_controls";
 
+// This pref enables the ScrollToTextFragment feature.
+const char kScrollToTextFragmentEnabled[] = "scroll_to_text_fragment_enabled";
+
 #if defined(OS_ANDROID)
 // Last time the known interception disclosure message was dismissed. Used to
 // ensure a cooldown period passes before the disclosure message is displayed

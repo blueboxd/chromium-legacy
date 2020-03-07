@@ -159,12 +159,12 @@ static_library("test_support") {
     "//base",
     "//base:base_static",
     "//base:i18n",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 
   deps = [
     "//base/third_party/dynamic_annotations",
-    "//testing/gmock",
-    "//testing/gtest",
     "//third_party/icu:icuuc",
     "//third_party/libxml:libxml_utils",
     "//third_party/libxml:xml_reader",

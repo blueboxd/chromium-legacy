@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/system/system_monitor.h"
 #include "base/win/wrapped_window_proc.h"
@@ -19,19 +20,28 @@ namespace {
 const wchar_t kWindowClassName[] = L"Chrome_SystemMessageWindow";
 
 // A static map from a device category guid to base::SystemMonitor::DeviceType.
-struct {
+struct DeviceCategoryToType {
   const GUID device_category;
   const base::SystemMonitor::DeviceType device_type;
-} const kDeviceCategoryMap[] = {
-    {KSCATEGORY_AUDIO, base::SystemMonitor::DEVTYPE_AUDIO},
-    {KSCATEGORY_VIDEO, base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE},
 };
+
+const std::vector<DeviceCategoryToType>& GetDeviceCategoryToType() {
+  static const base::NoDestructor<std::vector<DeviceCategoryToType>>
+      device_category_to_type(
+          {{KSCATEGORY_AUDIO, base::SystemMonitor::DEVTYPE_AUDIO},
+           {KSCATEGORY_VIDEO, base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE}});
+  return *device_category_to_type;
+}
+
 }  // namespace
 
 // Manages the device notification handles for SystemMessageWindowWin.
 class SystemMessageWindowWin::DeviceNotifications {
  public:
-  explicit DeviceNotifications(HWND hwnd) : notifications_() { Register(hwnd); }
+  explicit DeviceNotifications(HWND hwnd)
+      : notifications_(base::size(GetDeviceCategoryToType())) {
+    Register(hwnd);
+  }
 
   ~DeviceNotifications() { Unregister(); }
 
@@ -43,15 +53,15 @@ class SystemMessageWindowWin::DeviceNotifications {
     filter.dbcc_size = sizeof(filter);
     filter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
     bool core_audio_support = media::CoreAudioUtil::IsSupported();
-    for (size_t i = 0; i < base::size(kDeviceCategoryMap); ++i) {
+    for (size_t i = 0; i < GetDeviceCategoryToType().size(); ++i) {
       // If CoreAudio is supported, AudioDeviceListenerWin will
       // take care of monitoring audio devices.
       if (core_audio_support &&
-          KSCATEGORY_AUDIO == kDeviceCategoryMap[i].device_category) {
+          KSCATEGORY_AUDIO == GetDeviceCategoryToType()[i].device_category) {
         continue;
       }
 
-      filter.dbcc_classguid = kDeviceCategoryMap[i].device_category;
+      filter.dbcc_classguid = GetDeviceCategoryToType()[i].device_category;
       DCHECK_EQ(notifications_[i], static_cast<HDEVNOTIFY>(NULL));
       notifications_[i] = RegisterDeviceNotification(
           hwnd, &filter, DEVICE_NOTIFY_WINDOW_HANDLE);
@@ -61,7 +71,7 @@ class SystemMessageWindowWin::DeviceNotifications {
   }
 
   void Unregister() {
-    for (size_t i = 0; i < base::size(notifications_); ++i) {
+    for (size_t i = 0; i < notifications_.size(); ++i) {
       if (notifications_[i]) {
         UnregisterDeviceNotification(notifications_[i]);
         notifications_[i] = NULL;
@@ -70,7 +80,7 @@ class SystemMessageWindowWin::DeviceNotifications {
   }
 
  private:
-  HDEVNOTIFY notifications_[base::size(kDeviceCategoryMap)];
+  std::vector<HDEVNOTIFY> notifications_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DeviceNotifications);
 };
@@ -118,7 +128,7 @@ LRESULT SystemMessageWindowWin::OnDeviceChange(UINT event_type, LPARAM data) {
           reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE*>(data);
       if (device_interface->dbcc_devicetype != DBT_DEVTYP_DEVICEINTERFACE)
         return TRUE;
-      for (const auto& map_entry : kDeviceCategoryMap) {
+      for (const auto& map_entry : GetDeviceCategoryToType()) {
         if (map_entry.device_category == device_interface->dbcc_classguid) {
           device_type = map_entry.device_type;
           break;

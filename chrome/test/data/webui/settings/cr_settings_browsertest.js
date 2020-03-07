@@ -736,6 +736,34 @@ TEST_F('CrSettingsIncompatibleApplicationsPageTest', 'All', function() {
 GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 
 /**
+ * Test fixture for
+ * chrome/browser/resources/settings/privacy_page/
+ *        do-not-track-toggle.html
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsDoNotTrackToggleTest() {}
+
+CrSettingsDoNotTrackToggleTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/privacy_page/do_not_track_toggle.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    '../test_browser_proxy.js',
+    'test_metrics_browser_proxy.js',
+    'do_not_track_toggle_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsDoNotTrackToggleTest', 'All', function() {
+  mocha.run();
+});
+
+/**
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */

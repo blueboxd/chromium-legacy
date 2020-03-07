@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.translate.TranslateUtils;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.appmenu.CustomViewBinder;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -187,7 +188,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 menuGroup = MenuGroup.TABLET_EMPTY_MODE_MENU;
             }
         } else if (isOverview) {
-            menuGroup = CachedFeatureFlags.isStartSurfaceEnabled()
+            menuGroup = StartSurfaceConfiguration.isStartSurfaceEnabled()
                     ? MenuGroup.START_SURFACE_MODE_MENU
                     : MenuGroup.OVERVIEW_MODE_MENU;
         }

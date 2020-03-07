@@ -957,7 +957,6 @@ jumbo_source_set("test_support") {
     "//ipc:test_support",
     "//mojo/core/embedder",
     "//skia",
-    "//testing/gtest",
     "//ui/base",
     "//ui/base:test_support",
     "//ui/base/clipboard:clipboard_test_support",
@@ -972,6 +971,7 @@ jumbo_source_set("test_support") {
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
   ]
+  public_deps = [ "//testing/gtest" ]
 
   if (is_win) {
     sources += [

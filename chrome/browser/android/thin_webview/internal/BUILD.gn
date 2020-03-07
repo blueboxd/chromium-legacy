@@ -22,6 +22,7 @@ static_library("internal") {
   public_deps = [
     "//base",
     "//chrome/browser/android/thin_webview",
+    "//components/embedder_support/android:web_contents_delegate",
     "//content/public/browser",
     "//ui/android",
   ]
@@ -37,6 +38,7 @@ android_library("internal_java") {
     "//base:base_java",
     "//base:jni_java",
     "//chrome/browser/android/thin_webview:java",
+    "//components/embedder_support/android:web_contents_delegate_java",
     "//content/public/android:content_java",
     "//ui/android:ui_java",
   ]

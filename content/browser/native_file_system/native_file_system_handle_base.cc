@@ -144,10 +144,16 @@ void NativeFileSystemHandleBase::DoRequestPermission(
     return;
   }
 
-  // TODO(https://crbug.com/971401): Today we can't prompt for read permission,
-  // and should never be in state "ASK". Since we already checked for DENIED
-  // above current status here should always be GRANTED.
-  DCHECK_EQ(GetReadPermissionStatus(), PermissionStatus::GRANTED);
+  // Ask for both read and write permission at the same time, the permission
+  // context should coalesce these into one prompt.
+  if (GetReadPermissionStatus() == PermissionStatus::ASK) {
+    // Ignore callback for the read permission request; if the request fails,
+    // the write permission request probably fails the same way. And we check
+    // the final permission status after the permission request completes
+    // anyway.
+    handle_state_.read_grant->RequestPermission(
+        context().process_id, context().frame_id, base::DoNothing());
+  }
 
   handle_state_.write_grant->RequestPermission(
       context().process_id, context().frame_id,

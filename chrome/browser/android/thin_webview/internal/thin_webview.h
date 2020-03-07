@@ -14,6 +14,10 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"
 
+namespace web_contents_delegate_android {
+class WebContentsDelegateAndroid;
+}  // namespace web_contents_delegate_android
+
 namespace thin_webview {
 namespace android {
 
@@ -31,7 +35,8 @@ class ThinWebView {
   void SetWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
-      const base::android::JavaParamRef<jobject>& jweb_contents);
+      const base::android::JavaParamRef<jobject>& jweb_contents,
+      const base::android::JavaParamRef<jobject>& jweb_contents_delegate);
 
   void SizeChanged(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& object,
@@ -39,13 +44,17 @@ class ThinWebView {
                    jint height);
 
  private:
-  void SetWebContents(content::WebContents* web_contents);
+  void SetWebContents(
+      content::WebContents* web_contents,
+      web_contents_delegate_android::WebContentsDelegateAndroid* delegate);
   void ResizeWebContents(const gfx::Size& size);
 
   base::android::ScopedJavaGlobalRef<jobject> obj_;
   CompositorView* compositor_view_;
   ui::WindowAndroid* window_android_;
   content::WebContents* web_contents_;
+  std::unique_ptr<web_contents_delegate_android::WebContentsDelegateAndroid>
+      web_contents_delegate_;
   gfx::Size view_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ThinWebView);

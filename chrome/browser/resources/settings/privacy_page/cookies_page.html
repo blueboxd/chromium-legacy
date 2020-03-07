@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="do_not_track_toggle.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../site_settings/category_setting_exceptions.html">
 <link rel="import" href="../site_settings/constants.html">
@@ -15,6 +16,9 @@
     <div class="settings-box first">
       <h2>$i18n{cookiesManageSiteSpecificExceptions}</h2>
     </div>
+    <settings-do-not-track-toggle id="doNotTrack"
+        prefs="{{prefs}}">
+    </settings-do-not-track-toggle>
     <category-setting-exceptions
         category="[[ContentSettingsTypes.COOKIES]]"
         block-header="$i18n{siteSettingsBlock}">

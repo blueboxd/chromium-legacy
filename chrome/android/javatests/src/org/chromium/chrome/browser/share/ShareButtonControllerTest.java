@@ -46,7 +46,7 @@ public final class ShareButtonControllerTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setStartSurfaceEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR, true);
         SigninTestUtil.setUpAuthForTest();
         mActivityTestRule.startMainActivityOnBlankPage();

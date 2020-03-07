@@ -20,6 +20,13 @@ bool RequestsAreIdentical(
          a.is_directory == b.is_directory && a.access == b.access;
 }
 
+bool RequestsAreForSamePath(
+    const NativeFileSystemPermissionRequestManager::RequestData& a,
+    const NativeFileSystemPermissionRequestManager::RequestData& b) {
+  return a.origin == b.origin && a.path == b.path &&
+         a.is_directory == b.is_directory;
+}
+
 }  // namespace
 
 struct NativeFileSystemPermissionRequestManager::Request {
@@ -30,7 +37,7 @@ struct NativeFileSystemPermissionRequestManager::Request {
     callbacks.push_back(std::move(callback));
   }
 
-  const RequestData data;
+  RequestData data;
   std::vector<base::OnceCallback<void(permissions::PermissionAction result)>>
       callbacks;
 };
@@ -54,6 +61,13 @@ void NativeFileSystemPermissionRequestManager::AddRequest(
   }
   for (const auto& request : queued_requests_) {
     if (RequestsAreIdentical(request->data, data)) {
+      request->callbacks.push_back(std::move(callback));
+      return;
+    }
+    if (RequestsAreForSamePath(request->data, data)) {
+      // This means access levels are different. Change the existing request
+      // to kReadWrite, and add the new callback.
+      request->data.access = Access::kReadWrite;
       request->callbacks.push_back(std::move(callback));
       return;
     }

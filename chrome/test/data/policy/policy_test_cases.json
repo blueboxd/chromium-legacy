@@ -3431,6 +3431,12 @@
     "policy_pref_mapping_tests": { "use_legacy_form_controls": {} }
   },
 
+  "ScrollToTextFragmentEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "ScrollToTextFragmentEnabled": true },
+    "policy_pref_mapping_tests": { "scroll_to_text_fragment_enabled": {} }
+  },
+
   "GloballyScopeHTTPAuthCacheEnabled": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "GloballyScopeHTTPAuthCacheEnabled": true },

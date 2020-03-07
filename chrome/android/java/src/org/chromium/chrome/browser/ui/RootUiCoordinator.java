@@ -117,26 +117,27 @@ public class RootUiCoordinator
      * @param onOmniboxFocusChangedListener Callback<Boolean> callback to invoke when Omnibox focus
      *         changes.
      * @param shareDelegateSupplier Supplies {@link ShareDelegate} object.
+     * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
      */
     public RootUiCoordinator(ChromeActivity activity,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
-            ObservableSupplier<ShareDelegate> shareDelegateSupplier) {
+            ObservableSupplier<ShareDelegate> shareDelegateSupplier,
+            ActivityTabProvider tabProvider) {
         mActivity = activity;
         mOnOmniboxFocusChangedListener = onOmniboxFocusChangedListener;
         mActivity.getLifecycleDispatcher().register(this);
 
         mMenuOrKeyboardActionController = mActivity.getMenuOrKeyboardActionController();
         mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(this);
-        mActivityTabProvider = mActivity.getActivityTabProvider();
+        mActivityTabProvider = tabProvider;
 
         mLayoutManagerSupplierCallback = this::onLayoutManagerAvailable;
         mActivity.getLayoutManagerSupplier().addObserver(mLayoutManagerSupplierCallback);
 
         mShareDelegateSupplier = shareDelegateSupplier;
         mTabObscuringHandler = new TabObscuringHandler();
-        mAccessibilityVisibilityHandler =
-                new AccessibilityVisibilityHandler(activity.getLifecycleDispatcher(),
-                        activity.getActivityTabProvider(), mTabObscuringHandler);
+        mAccessibilityVisibilityHandler = new AccessibilityVisibilityHandler(
+                activity.getLifecycleDispatcher(), mActivityTabProvider, mTabObscuringHandler);
 
         initOverviewModeSupplierObserver();
     }
@@ -269,7 +270,7 @@ public class RootUiCoordinator
 
             mFindToolbarManager.showToolbar();
 
-            Tab tab = mActivity.getActivityTabProvider().get();
+            Tab tab = mActivityTabProvider.get();
             if (fromMenu) {
                 RecordUserAction.record("MobileMenuFindInPage");
                 new UkmRecorder.Bridge().recordEventWithBooleanMetric(
@@ -386,7 +387,7 @@ public class RootUiCoordinator
             mIdentityDiscController = new IdentityDiscController(
                     mActivity, mActivity.getLifecycleDispatcher(), bottomToolbarVisibilitySupplier);
             ShareButtonController shareButtonController = new ShareButtonController(mActivity,
-                    mActivity.getActivityTabProvider(), mShareDelegateSupplier, new ShareUtils(),
+                    mActivityTabProvider, mShareDelegateSupplier, new ShareUtils(),
                     bottomToolbarVisibilitySupplier);
             mButtonDataProviders = Arrays.asList(mIdentityDiscController, shareButtonController);
             mToolbarManager = new ToolbarManager(mActivity, mActivity.getFullscreenManager(),

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.status_indicator;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
@@ -20,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -83,6 +85,8 @@ public class StatusIndicatorTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
+            sdk_is_less_than = Build.VERSION_CODES.M, message = "crbug.com/1059421")
     public void testShowAndHide() {
         final ChromeFullscreenManager fullscreenManager =
                 mActivityTestRule.getActivity().getFullscreenManager();

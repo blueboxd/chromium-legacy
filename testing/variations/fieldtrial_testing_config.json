@@ -4459,6 +4459,21 @@
             ]
         }
     ],
+    "ReportSaveDataSavings": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ReportSaveDataSavings"
+                    ]
+                }
+            ]
+        }
+    ],
     "ReportingAPIAndNetworkErrorLogging": [
         {
             "platforms": [
@@ -5187,6 +5202,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SqlSkipPreload"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SubresourceRedirect": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "enable_lite_page_redirect": "false"
+                    },
+                    "enable_features": [
+                        "SubresourceRedirect"
                     ]
                 }
             ]

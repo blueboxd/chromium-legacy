@@ -13,6 +13,14 @@ Polymer({
 
   properties: {
     /**
+     * Preferences state.
+     */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
+    /**
      * @private {!settings.ContentSettingsTypes}
      */
     ContentSettingsTypes: {type: Object, value: settings.ContentSettingsTypes},

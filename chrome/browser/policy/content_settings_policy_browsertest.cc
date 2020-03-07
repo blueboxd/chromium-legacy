@@ -20,6 +20,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -268,5 +269,52 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
   EXPECT_FALSE(
       context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
 }
+
+class ScrollToTextFragmentPolicyTest
+    : public PolicyTest,
+      public ::testing::WithParamInterface<bool> {
+ protected:
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    // Set policies before the browser starts up.
+    PolicyMap policies;
+    policies.Set(key::kScrollToTextFragmentEnabled, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(IsScrollToTextFragmentEnabled()),
+                 nullptr);
+    UpdateProviderPolicy(policies);
+    PolicyTest::CreatedBrowserMainParts(browser_main_parts);
+  }
+
+  bool IsScrollToTextFragmentEnabled() { return GetParam(); }
+};
+
+IN_PROC_BROWSER_TEST_P(ScrollToTextFragmentPolicyTest, RunPolicyTest) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL target_text_url(embedded_test_server()->GetURL(
+      "/scroll/scrollable_page_with_content.html#:~:text=text"));
+
+  ui_test_utils::NavigateToURL(browser(), target_text_url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(contents);
+  ASSERT_TRUE(content::WaitForRenderFrameReady(contents->GetMainFrame()));
+
+  content::RenderFrameSubmissionObserver frame_observer(contents);
+  if (IsScrollToTextFragmentEnabled()) {
+    frame_observer.WaitForScrollOffsetAtTop(false);
+  } else {
+    // Force a frame - if it were going to happen, the scroll would complete
+    // before this forced frame makes its way through the pipeline.
+    content::RunUntilInputProcessed(
+        contents->GetMainFrame()->GetView()->GetRenderWidgetHost());
+  }
+  EXPECT_EQ(IsScrollToTextFragmentEnabled(),
+            !contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ScrollToTextFragmentPolicyTest,
+                         ::testing::Bool());
 
 }  // namespace policy

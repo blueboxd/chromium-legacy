@@ -90,7 +90,7 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
                            record_time_caching_disabled)
     results.AddMeasurement('record_time_subsequence_caching_disabled', 'ms',
                            record_time_subsequence_caching_disabled)
-    results.AddMeasurement('record_time_partial_invalidation_ms', 'ms',
+    results.AddMeasurement('record_time_partial_invalidation', 'ms',
                            record_time_partial_invalidation)
 
     if self._report_detailed_results:

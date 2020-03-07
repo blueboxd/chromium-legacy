@@ -77,7 +77,6 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -152,6 +151,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.features.start_surface.StartSurface;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -1465,8 +1465,8 @@ public class ChromeTabbedActivity
 
     @Override
     protected RootUiCoordinator createRootUiCoordinator() {
-        return new TabbedRootUiCoordinator(
-                this, this::onOmniboxFocusChanged, mIntentWithEffect, getShareDelegateSupplier());
+        return new TabbedRootUiCoordinator(this, this::onOmniboxFocusChanged, mIntentWithEffect,
+                getShareDelegateSupplier(), getActivityTabProvider());
     }
 
     @Override
@@ -1570,7 +1570,7 @@ public class ChromeTabbedActivity
 
         ChromeTabCreator.OverviewNTPCreator overviewNTPCreator = null;
 
-        if (CachedFeatureFlags.isStartSurfaceEnabled()) {
+        if (StartSurfaceConfiguration.isStartSurfaceEnabled()) {
             overviewNTPCreator = new ChromeTabCreator.OverviewNTPCreator() {
                 @Override
                 public boolean handleCreateNTPIfNeeded(boolean isNTP, boolean incognito) {

@@ -34,22 +34,23 @@ namespace {
 
 #if defined(OS_MACOSX)
 const int kDesiredIconSizesForShortcut[] = {16, 32, 128, 256, 512};
-const size_t kNumDesiredIconSizesForShortcut =
-    base::size(kDesiredIconSizesForShortcut);
 #elif defined(OS_LINUX)
 // Linux supports icons of any size. FreeDesktop Icon Theme Specification states
 // that "Minimally you should install a 48x48 icon in the hicolor theme."
 const int kDesiredIconSizesForShortcut[] = {16, 32, 48, 128, 256, 512};
-const size_t kNumDesiredIconSizesForShortcut =
-    base::size(kDesiredIconSizesForShortcut);
 #elif defined(OS_WIN)
 const int* kDesiredIconSizesForShortcut = IconUtil::kIconDimensions;
-const size_t kNumDesiredIconSizesForShortcut = IconUtil::kNumIconDimensions;
 #else
 const int kDesiredIconSizesForShortcut[] = {32};
-const size_t kNumDesiredIconSizesForShortcut =
-    base::size(kDesiredIconSizesForShortcut);
 #endif
+
+size_t GetNumDesiredIconSizesForShortcut() {
+#if defined(OS_WIN)
+  return IconUtil::kNumIconDimensions;
+#else
+  return base::size(kDesiredIconSizesForShortcut);
+#endif
+}
 
 void DeleteShortcutInfoOnUIThread(std::unique_ptr<ShortcutInfo> shortcut_info,
                                   base::OnceClosure callback) {
@@ -119,7 +120,7 @@ base::FilePath GetOsIntegrationResourcesDirectoryForApp(
 
 base::span<const int> GetDesiredIconSizesForShortcut() {
   return base::span<const int>(kDesiredIconSizesForShortcut,
-                               kNumDesiredIconSizesForShortcut);
+                               GetNumDesiredIconSizesForShortcut());
 }
 
 gfx::ImageSkia CreateDefaultApplicationIcon(int size) {

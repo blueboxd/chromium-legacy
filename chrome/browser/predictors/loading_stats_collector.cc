@@ -7,7 +7,9 @@
 #include <set>
 #include <vector>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
@@ -39,8 +41,15 @@ RedirectStatus GetPredictionRedirectStatus(const GURL& initial_url,
              : RedirectStatus::REDIRECT_WRONG_PREDICTED;
 }
 
+std::string GetHistogramNameForHintOrigin(HintOrigin hint_origin,
+                                          const char* histogram_base) {
+  return base::StringPrintf("%s.%s", histogram_base,
+                            GetStringNameForHintOrigin(hint_origin).c_str());
+}
+
 void ReportPreconnectPredictionAccuracy(const PreconnectPrediction& prediction,
-                                        const PageRequestSummary& summary) {
+                                        const PageRequestSummary& summary,
+                                        HintOrigin hint_origin) {
   if (prediction.requests.empty() || summary.origins.empty())
     return;
 
@@ -56,21 +65,28 @@ void ReportPreconnectPredictionAccuracy(const PreconnectPrediction& prediction,
   size_t recall_percentage =
       (100 * correctly_predicted_count) / actual_origins.size();
 
-  UMA_HISTOGRAM_PERCENTAGE(
-      internal::kLoadingPredictorPreconnectLearningPrecision,
+  base::UmaHistogramPercentage(
+      GetHistogramNameForHintOrigin(
+          hint_origin, internal::kLoadingPredictorPreconnectLearningPrecision),
       precision_percentage);
-  UMA_HISTOGRAM_PERCENTAGE(internal::kLoadingPredictorPreconnectLearningRecall,
-                           recall_percentage);
-  UMA_HISTOGRAM_COUNTS_100(internal::kLoadingPredictorPreconnectLearningCount,
-                           prediction.requests.size());
+  base::UmaHistogramPercentage(
+      GetHistogramNameForHintOrigin(
+          hint_origin, internal::kLoadingPredictorPreconnectLearningRecall),
+      recall_percentage);
+  base::UmaHistogramCounts100(
+      GetHistogramNameForHintOrigin(
+          hint_origin, internal::kLoadingPredictorPreconnectLearningCount),
+      prediction.requests.size());
 
   RedirectStatus redirect_status = GetPredictionRedirectStatus(
       summary.initial_url, summary.main_frame_url, prediction.host,
       prediction.is_redirected, true /* is_host */);
 
-  UMA_HISTOGRAM_ENUMERATION(
-      internal::kLoadingPredictorPreconnectLearningRedirectStatus,
-      static_cast<int>(redirect_status), static_cast<int>(RedirectStatus::MAX));
+  base::UmaHistogramEnumeration(
+      GetHistogramNameForHintOrigin(
+          hint_origin,
+          internal::kLoadingPredictorPreconnectLearningRedirectStatus),
+      redirect_status, RedirectStatus::MAX);
 }
 
 void ReportPreconnectAccuracy(
@@ -143,12 +159,22 @@ void LoadingStatsCollector::RecordPreconnectStats(
 }
 
 void LoadingStatsCollector::RecordPageRequestSummary(
-    const PageRequestSummary& summary) {
+    const PageRequestSummary& summary,
+    const base::Optional<PreconnectPrediction>&
+        optimization_guide_preconnect_prediction) {
   const GURL& initial_url = summary.initial_url;
 
   PreconnectPrediction preconnect_prediction;
-  if (predictor_->PredictPreconnectOrigins(initial_url, &preconnect_prediction))
-    ReportPreconnectPredictionAccuracy(preconnect_prediction, summary);
+  if (predictor_->PredictPreconnectOrigins(initial_url,
+                                           &preconnect_prediction)) {
+    ReportPreconnectPredictionAccuracy(preconnect_prediction, summary,
+                                       HintOrigin::NAVIGATION);
+  }
+  if (optimization_guide_preconnect_prediction) {
+    ReportPreconnectPredictionAccuracy(
+        *optimization_guide_preconnect_prediction, summary,
+        HintOrigin::OPTIMIZATION_GUIDE);
+  }
 
   auto it = preconnect_stats_.find(initial_url);
   if (it != preconnect_stats_.end()) {

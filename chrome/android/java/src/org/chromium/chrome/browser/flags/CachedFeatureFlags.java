@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.FieldTrialList;
-import org.chromium.base.SysUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -28,7 +27,7 @@ import java.util.Map;
  *
  * To cache a flag from ChromeFeatureList:
  * - Set its default value by adding an entry to {@link #sDefaults}.
- * - Add it to the list passed to {@link #cacheNativeFlags()}.
+ * - Add it to the list passed to {@link #cacheNativeFlags(List)}.
  * - Call {@link #isEnabled(String)} to query whether the cached flag is enabled.
  *   Consider this the source of truth for whether the flag is turned on in the current session.
  * - When querying whether a cached feature is enabled from native, a @CalledByNative method can be
@@ -226,7 +225,6 @@ public class CachedFeatureFlags {
     public static void cacheAdditionalNativeFlags() {
         cacheNetworkServiceWarmUpEnabled();
         cacheReachedCodeProfilerTrialGroup();
-        cacheStartSurfaceVariation();
 
         // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
@@ -274,39 +272,6 @@ public class CachedFeatureFlags {
     public static int getValue(IntCachedFieldTrialParameter parameter) {
         return getConsistentIntValue(
                 parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
-    }
-
-    private static void cacheStartSurfaceVariation() {
-        String feature = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
-        SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY,
-                feature.equals("single"));
-    }
-
-    /**
-     * @return Whether the Start Surface is enabled.
-     */
-    public static boolean isStartSurfaceEnabled() {
-        return isEnabled(ChromeFeatureList.START_SURFACE_ANDROID) && !SysUtils.isLowEndDevice();
-    }
-
-    /**
-     * @return Whether the Start Surface SinglePane is enabled.
-     */
-    public static boolean isStartSurfaceSinglePaneEnabled() {
-        return isStartSurfaceEnabled()
-                && getConsistentBooleanValue(
-                        ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY, false);
-    }
-
-    /**
-     * Toggles whether the StartSurface is enabled for testing. Should be reset back to null after
-     * the test has finished.
-     */
-    @VisibleForTesting
-    public static void setStartSurfaceEnabledForTesting(@Nullable Boolean isEnabled) {
-        setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, isEnabled);
     }
 
     /**

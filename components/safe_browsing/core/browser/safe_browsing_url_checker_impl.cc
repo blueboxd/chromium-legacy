@@ -215,9 +215,7 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
 void SafeBrowsingUrlCheckerImpl::OnTimeout() {
   RecordCheckUrlTimeout(/*timed_out=*/true);
 
-  if (browse_url_check_sent_) {
-    database_manager_->CancelCheck(this);
-  }
+  database_manager_->CancelCheck(this);
 
   // Any pending callbacks on this URL check should be skipped.
   weak_factory_.InvalidateWeakPtrs();
@@ -339,7 +337,6 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     } else {
       safe_synchronously = database_manager_->CheckBrowseUrl(
           url, url_checker_delegate_->GetThreatTypes(), this);
-      browse_url_check_sent_ = true;
     }
 
     if (safe_synchronously) {
@@ -478,7 +475,6 @@ void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
 
 void SafeBrowsingUrlCheckerImpl::PerformHashBasedCheck(const GURL& url) {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
-  browse_url_check_sent_ = true;
   if (database_manager_->CheckBrowseUrl(
           url, url_checker_delegate_->GetThreatTypes(), this)) {
     // No match found in the local database. Safe to call |OnUrlResult| here

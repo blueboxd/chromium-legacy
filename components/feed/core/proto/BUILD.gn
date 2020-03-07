@@ -19,6 +19,7 @@ proto_library("proto") {
 proto_library("proto_v2") {
   proto_in_dir = "../../../../"
   sources = [
+    "libraries/api/internal/stream_data.proto",
     "ui/action/feed_action_payload.proto",
     "ui/action/ui_feed_action.proto",
     "ui/piet/accessibility.proto",
@@ -39,6 +40,7 @@ proto_library("proto_v2") {
     "ui/piet/text.proto",
     "ui/stream/stream_structure.proto",
     "v2/store.proto",
+    "v2/ui.proto",
     "wire/action_payload.proto",
     "wire/action_payload_for_test.proto",
     "wire/action_request.proto",

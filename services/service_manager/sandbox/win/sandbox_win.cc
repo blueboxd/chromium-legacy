@@ -21,6 +21,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
@@ -455,7 +456,11 @@ sandbox::ResultCode AddPolicyForSandboxedProcess(
 // This code is test only, and attempts to catch unsafe uses of
 // DuplicateHandle() that copy privileged handles into sandboxed processes.
 #if !defined(OFFICIAL_BUILD) && !defined(COMPONENT_BUILD)
-base::win::IATPatchFunction g_iat_patch_duplicate_handle;
+base::win::IATPatchFunction& GetIATPatchFunctionHandle() {
+  static base::NoDestructor<base::win::IATPatchFunction>
+      iat_patch_duplicate_handle;
+  return *iat_patch_duplicate_handle;
+}
 
 typedef BOOL(WINAPI* DuplicateHandleFunctionPtr)(HANDLE source_process_handle,
                                                  HANDLE source_handle,
@@ -805,7 +810,7 @@ bool SandboxWin::InitBrokerServices(sandbox::BrokerServices* broker_services) {
 #if !defined(OFFICIAL_BUILD) && !defined(COMPONENT_BUILD)
   BOOL is_in_job = FALSE;
   CHECK(::IsProcessInJob(::GetCurrentProcess(), NULL, &is_in_job));
-  if (!is_in_job && !g_iat_patch_duplicate_handle.is_patched()) {
+  if (!is_in_job && !GetIATPatchFunctionHandle().is_patched()) {
     HMODULE module = NULL;
     wchar_t module_name[MAX_PATH];
     CHECK(::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
@@ -814,13 +819,13 @@ bool SandboxWin::InitBrokerServices(sandbox::BrokerServices* broker_services) {
     DWORD result = ::GetModuleFileNameW(module, module_name, MAX_PATH);
     if (result && (result != MAX_PATH)) {
       ResolveNTFunctionPtr("NtQueryObject", &g_QueryObject);
-      result = g_iat_patch_duplicate_handle.Patch(
+      result = GetIATPatchFunctionHandle().Patch(
           module_name, "kernel32.dll", "DuplicateHandle",
           reinterpret_cast<void*>(DuplicateHandlePatch));
       CHECK_EQ(0u, result);
       g_iat_orig_duplicate_handle =
           reinterpret_cast<DuplicateHandleFunctionPtr>(
-              g_iat_patch_duplicate_handle.original_function());
+              GetIATPatchFunctionHandle().original_function());
     }
   }
 #endif

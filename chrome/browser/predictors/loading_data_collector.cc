@@ -199,7 +199,9 @@ void LoadingDataCollector::RecordResourceLoadComplete(
 }
 
 void LoadingDataCollector::RecordMainFrameLoadComplete(
-    const NavigationID& navigation_id) {
+    const NavigationID& navigation_id,
+    const base::Optional<PreconnectPrediction>&
+        optimization_guide_preconnect_prediction) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Initialize |predictor_| no matter whether the |navigation_id| is present in
@@ -216,8 +218,10 @@ void LoadingDataCollector::RecordMainFrameLoadComplete(
   std::unique_ptr<PageRequestSummary> summary = std::move(nav_it->second);
   inflight_navigations_.erase(nav_it);
 
-  if (stats_collector_)
-    stats_collector_->RecordPageRequestSummary(*summary);
+  if (stats_collector_) {
+    stats_collector_->RecordPageRequestSummary(
+        *summary, optimization_guide_preconnect_prediction);
+  }
 
   if (predictor_)
     predictor_->RecordPageRequestSummary(std::move(summary));

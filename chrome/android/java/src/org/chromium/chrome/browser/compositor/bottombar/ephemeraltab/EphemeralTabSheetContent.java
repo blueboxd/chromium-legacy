@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.FadingShadow;
 import org.chromium.components.browser_ui.widget.FadingShadowView;
+import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -81,14 +82,16 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
      * Add web contents to the sheet.
      * @param webContents The {@link WebContents} to be displayed.
      * @param contentView The {@link ContentView} associated with the web contents.
+     * @param delegate The {@link WebContentsDelegateAndroid} that handles requests on WebContents.
      */
-    public void attachWebContents(WebContents webContents, ContentView contentView) {
+    public void attachWebContents(
+            WebContents webContents, ContentView contentView, WebContentsDelegateAndroid delegate) {
         mWebContents = webContents;
         mWebContentView = contentView;
         if (mWebContentView.getParent() != null) {
             ((ViewGroup) mWebContentView.getParent()).removeView(mWebContentView);
         }
-        mThinWebView.attachWebContents(mWebContents, mWebContentView);
+        mThinWebView.attachWebContents(mWebContents, mWebContentView, delegate);
     }
 
     /**

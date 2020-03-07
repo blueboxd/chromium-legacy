@@ -1610,7 +1610,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithOptimizationGuide,
                        MAYBE_UsesPredictionsFromOptimizationGuideIfAvailable) {
   base::HistogramTester histogram_tester;
 
-  GURL url = embedded_test_server()->GetURL("m.hints.com", "/");
+  GURL url = embedded_test_server()->GetURL("m.hints.com", "/simple.html");
   url::Origin origin = url::Origin::Create(url);
   net::NetworkIsolationKey network_isolation_key(origin, origin);
   // Navigate to a setup URL with the same host suffix as |url| to guarantee
@@ -1646,6 +1646,22 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithOptimizationGuide,
     EXPECT_TRUE(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
         GURL(base::StringPrintf("http://%s/", host))));
   }
+  EXPECT_TRUE(observer->WaitForResponse());
+  observer->ResumeNavigation();
+  content::AwaitDocumentOnLoadCompleted(observer->web_contents());
+  observer->WaitForNavigationFinished();
+
+  // Navigate to another URL - make sure optimization guide prediction is
+  // cleared.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("nohints.com", "/"));
+
+  histogram_tester.ExpectUniqueSample(
+      "LoadingPredictor.PreconnectLearningRecall.OptimizationGuide", 0, 1);
+  histogram_tester.ExpectUniqueSample(
+      "LoadingPredictor.PreconnectLearningPrecision.OptimizationGuide", 0, 1);
+  histogram_tester.ExpectUniqueSample(
+      "LoadingPredictor.PreconnectLearningCount.OptimizationGuide", 2, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(

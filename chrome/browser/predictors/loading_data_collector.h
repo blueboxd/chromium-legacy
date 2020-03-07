@@ -20,6 +20,7 @@
 namespace predictors {
 
 class LoadingStatsCollector;
+struct PreconnectPrediction;
 class ResourcePrefetchPredictor;
 
 // Data collected for origin-based prediction, for a single origin during a
@@ -81,7 +82,10 @@ class LoadingDataCollector {
   // Called when the main frame of a page completes loading. We treat this point
   // as the "completion" of the navigation. The resources requested by the page
   // up to this point are the only ones considered.
-  virtual void RecordMainFrameLoadComplete(const NavigationID& navigation_id);
+  virtual void RecordMainFrameLoadComplete(
+      const NavigationID& navigation_id,
+      const base::Optional<PreconnectPrediction>&
+          optimization_guide_preconnect_prediction);
 
   // Called after the main frame's first contentful paint.
   virtual void RecordFirstContentfulPaint(

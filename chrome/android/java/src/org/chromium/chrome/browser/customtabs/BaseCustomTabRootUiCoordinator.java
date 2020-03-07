@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs;
 
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
@@ -21,8 +22,9 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
     public BaseCustomTabRootUiCoordinator(ChromeActivity activity,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             CustomTabToolbarCoordinator customTabToolbarCoordinator,
-            CustomTabActivityNavigationController customTabNavigationController) {
-        super(activity, null, shareDelegateSupplier);
+            CustomTabActivityNavigationController customTabNavigationController,
+            ActivityTabProvider tabProvider) {
+        super(activity, null, shareDelegateSupplier, tabProvider);
 
         mToolbarCoordinator = customTabToolbarCoordinator;
         mNavigationController = customTabNavigationController;

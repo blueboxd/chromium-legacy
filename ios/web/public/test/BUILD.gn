@@ -9,6 +9,7 @@ source_set("test") {
   public_deps = [
     ":util",
     "//ios/web/public/test/fakes",
+    "//testing/gtest",
   ]
 
   deps = [
@@ -21,7 +22,6 @@ source_set("test") {
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public/deprecated",
     "//ios/web/test:test_support",
-    "//testing/gtest",
     "//ui/base",
   ]
 

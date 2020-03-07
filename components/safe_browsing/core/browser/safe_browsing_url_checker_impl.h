@@ -232,13 +232,6 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // Whether real time lookup is enabled for this request.
   bool real_time_lookup_enabled_;
 
-  // Whether the browse url check request is sent to |database_manager_|.
-  // This boolean is set to true once the first url check is sent, and never
-  // reset to false, because there are separate pending checks for each request
-  // to |database_manager_|. As long as the redirection is still happening,
-  // there is at least one check that needs to be cancelled.
-  bool browse_url_check_sent_ = false;
-
   // This object is used to perform real time url check. Can only be accessed in
   // UI thread.
   base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui_;

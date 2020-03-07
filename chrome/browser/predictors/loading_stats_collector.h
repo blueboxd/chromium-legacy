@@ -17,6 +17,7 @@
 namespace predictors {
 
 class ResourcePrefetchPredictor;
+struct PreconnectPrediction;
 struct PreconnectStats;
 struct LoadingPredictorConfig;
 struct PageRequestSummary;
@@ -54,9 +55,12 @@ class LoadingStatsCollector {
   void RecordPreconnectStats(std::unique_ptr<PreconnectStats> stats);
   // Records a summary of a page load. The summary is collated with speculative
   // actions taken for a given page load if any. The summary is compared with a
-  // prediction by ResourcePrefetchPredictor as well.
+  // prediction by ResourcePrefetchPredictor and the Optimization Guide, if
+  // |optimization_guide_preconnect_prediction| is present.
   // All results are reported to UMA.
-  void RecordPageRequestSummary(const PageRequestSummary& summary);
+  void RecordPageRequestSummary(const PageRequestSummary& summary,
+                                const base::Optional<PreconnectPrediction>&
+                                    optimization_guide_preconnect_prediction);
   // Evicts all stale stats that are kept in memory. All speculative actions are
   // reported and considered as waste.
   void CleanupAbandonedStats();

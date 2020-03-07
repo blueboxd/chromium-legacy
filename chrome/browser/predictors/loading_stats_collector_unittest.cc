@@ -91,11 +91,11 @@ void LoadingStatsCollectorTest::TestRedirectStatusHistogram(
   PageRequestSummary summary =
       CreatePageRequestSummary(navigation_url, initial_url, resources);
 
-  stats_collector_->RecordPageRequestSummary(summary);
+  stats_collector_->RecordPageRequestSummary(summary, base::nullopt);
 
   // Histogram check.
   histogram_tester_->ExpectUniqueSample(
-      internal::kLoadingPredictorPreconnectLearningRedirectStatus,
+      "LoadingPredictor.PreconnectLearningRedirectStatus.Navigation",
       static_cast<int>(expected_status), 1);
 }
 
@@ -128,14 +128,70 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallHistograms) {
   PageRequestSummary summary =
       CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 
-  stats_collector_->RecordPageRequestSummary(summary);
+  stats_collector_->RecordPageRequestSummary(summary, base::nullopt);
 
   histogram_tester_->ExpectUniqueSample(
-      internal::kLoadingPredictorPreconnectLearningRecall, 66, 1);
+      "LoadingPredictor.PreconnectLearningRecall.Navigation", 66, 1);
   histogram_tester_->ExpectUniqueSample(
-      internal::kLoadingPredictorPreconnectLearningPrecision, 50, 1);
+      "LoadingPredictor.PreconnectLearningPrecision.Navigation", 50, 1);
   histogram_tester_->ExpectUniqueSample(
-      internal::kLoadingPredictorPreconnectLearningCount, 4, 1);
+      "LoadingPredictor.PreconnectLearningCount.Navigation", 4, 1);
+  histogram_tester_->ExpectTotalCount(
+      "LoadingPredictor.PreconnectLearningRecall.OptimizationGuide", 0);
+  histogram_tester_->ExpectTotalCount(
+      "LoadingPredictor.PreconnectLearningPrecision.OptimizationGuide", 0);
+  histogram_tester_->ExpectTotalCount(
+      "LoadingPredictor.PreconnectLearningCount.OptimizationGuide", 0);
+}
+
+TEST_F(LoadingStatsCollectorTest,
+       TestPreconnectPrecisionRecallHistogramsWithOptimizationGuide) {
+  const std::string main_frame_url = "http://google.com/?query=cats";
+  auto gen = [](int index) {
+    return base::StringPrintf("http://cdn%d.google.com/script.js", index);
+  };
+
+  PreconnectPrediction local_prediction;
+  EXPECT_CALL(*mock_predictor_,
+              PredictPreconnectOrigins(GURL(main_frame_url), _))
+      .WillOnce(DoAll(SetArgPointee<1>(local_prediction), Return(false)));
+
+  // Optimization Guide predicts 4 origins: 2 useful, 2 useless.
+  base::Optional<PreconnectPrediction> optimization_guide_prediction =
+      CreatePreconnectPrediction(
+          GURL(main_frame_url).host(), false,
+          {{url::Origin::Create(GURL(main_frame_url)), 1,
+            net::NetworkIsolationKey()},
+           {url::Origin::Create(GURL(gen(1))), 1, net::NetworkIsolationKey()},
+           {url::Origin::Create(GURL(gen(2))), 1, net::NetworkIsolationKey()},
+           {url::Origin::Create(GURL(gen(3))), 0, net::NetworkIsolationKey()}});
+
+  // Simulate a page load with 2 resources, one we know, one we don't, plus we
+  // know the main frame origin.
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
+  resources.push_back(CreateResourceLoadInfo(main_frame_url));
+  resources.push_back(CreateResourceLoadInfo(
+      gen(1), network::mojom::RequestDestination::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      gen(100), network::mojom::RequestDestination::kScript));
+  PageRequestSummary summary =
+      CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
+
+  stats_collector_->RecordPageRequestSummary(summary,
+                                             optimization_guide_prediction);
+
+  histogram_tester_->ExpectUniqueSample(
+      "LoadingPredictor.PreconnectLearningRecall.OptimizationGuide", 66, 1);
+  histogram_tester_->ExpectUniqueSample(
+      "LoadingPredictor.PreconnectLearningPrecision.OptimizationGuide", 50, 1);
+  histogram_tester_->ExpectUniqueSample(
+      "LoadingPredictor.PreconnectLearningCount.OptimizationGuide", 4, 1);
+  histogram_tester_->ExpectTotalCount(
+      "LoadingPredictor.PreconnectLearningRecall.Navigation", 0);
+  histogram_tester_->ExpectTotalCount(
+      "LoadingPredictor.PreconnectLearningPrecision.Navigation", 0);
+  histogram_tester_->ExpectTotalCount(
+      "LoadingPredictor.PreconnectLearningCount.Navigation", 0);
 }
 
 TEST_F(LoadingStatsCollectorTest, TestRedirectStatusNoRedirect) {
@@ -202,7 +258,7 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
     PageRequestSummary summary =
         CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 
-    stats_collector_->RecordPageRequestSummary(summary);
+    stats_collector_->RecordPageRequestSummary(summary, base::nullopt);
   }
 
   histogram_tester_->ExpectUniqueSample(
@@ -233,7 +289,7 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsEmpty) {
                              network::mojom::RequestDestination::kScript));
   PageRequestSummary summary =
       CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
-  stats_collector_->RecordPageRequestSummary(summary);
+  stats_collector_->RecordPageRequestSummary(summary, base::nullopt);
 
   // No histograms should be recorded.
   histogram_tester_->ExpectTotalCount(
@@ -286,7 +342,7 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsPreresolvesOnly) {
     PageRequestSummary summary =
         CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 
-    stats_collector_->RecordPageRequestSummary(summary);
+    stats_collector_->RecordPageRequestSummary(summary, base::nullopt);
   }
 
   histogram_tester_->ExpectUniqueSample(

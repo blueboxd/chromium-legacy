@@ -8,6 +8,7 @@ js_type_check("closure_compile") {
   deps = [
     ":collapse_radio_button",
     ":cookies_page",
+    ":do_not_track_toggle",
     ":passwords_leak_detection_toggle",
     ":personalization_options",
     ":privacy_page",
@@ -33,6 +34,14 @@ js_library("cookies_page") {
   deps = [
     "../site_settings:constants",
     "//ui/webui/resources/js:load_time_data",
+  ]
+}
+
+js_library("do_not_track_toggle") {
+  deps = [
+    "..:metrics_browser_proxy",
+    "../controls:settings_toggle_button",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
 }
 

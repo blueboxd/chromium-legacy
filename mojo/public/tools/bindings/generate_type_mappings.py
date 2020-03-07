@@ -81,6 +81,36 @@ def ParseTypemapArgs(args):
   return result
 
 
+def LoadCppTypemapConfigs(paths):
+  _SUPPORTED_KEYS = set([
+      'mojom', 'cpp', 'public_headers', 'copyable_pass_by_value',
+      'force_serialize', 'hashable', 'move_only', 'nullable_is_same_type'
+  ])
+
+  configs = {}
+  for path in paths:
+    with open(path) as f:
+      config = json.load(f)
+      for entry in config['types']:
+        for key in entry.iterkeys():
+          if key not in _SUPPORTED_KEYS:
+            raise IOError('Invalid typemap property "%s" when processing %s' %
+                          (key, path))
+
+        configs[entry['mojom']] = {
+            'typename': entry['cpp'],
+            'public_headers': config.get('public_headers', []),
+            'copyable_pass_by_value': entry.get('copyable_pass_by_value',
+                                                False),
+            'force_serialize': entry.get('force_serialize', False),
+            'hashable': entry.get('hashable', False),
+            'move_only': entry.get('move_only', False),
+            'nullable_is_same_type': entry.get('nullable_is_same_type', False),
+            'non_copyable_non_movable': False,
+        }
+  return configs
+
+
 def ParseTypemap(typemap):
   values = {'type_mappings': [], 'public_headers': [], 'traits_headers': []}
   for line in typemap.split('\n'):
@@ -137,12 +167,21 @@ def main():
       default=[],
       help=('A path to another JSON typemap to merge into the output. '
             'This may be repeated to merge multiple typemaps.'))
+  parser.add_argument(
+      '--cpp-typemap-config',
+      type=str,
+      action='append',
+      default=[],
+      dest='cpp_config_paths',
+      help=('A path to a single JSON-formatted typemap config as emitted by'
+            'GN when processing a mojom_cpp_typemap build rule.'))
   parser.add_argument('--output',
                       type=str,
                       required=True,
                       help='The path to which to write the generated JSON.')
   params, typemap_params = parser.parse_known_args()
   typemaps = ParseTypemapArgs(typemap_params)
+  typemaps.update(LoadCppTypemapConfigs(params.cpp_config_paths))
   missing = [path for path in params.dependency if not os.path.exists(path)]
   if missing:
     raise IOError('Missing dependencies: %s' % ', '.join(missing))

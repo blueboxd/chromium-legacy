@@ -9,7 +9,7 @@
  */
 cr.define('settings', function() {
   /**
-   * Values used to identify safety check components in the callback dictionary.
+   * Values used to identify safety check components in the callback event.
    * Needs to be kept in sync with SafetyCheckComponent in
    * chrome/browser/ui/webui/settings/safety_check_handler.h
    * @enum {number}
@@ -20,8 +20,26 @@ cr.define('settings', function() {
     SAFE_BROWSING: 2,
     EXTENSIONS: 3,
   };
+
+  /**
+   * Constants used in safety check C++ to JS communication.
+   * Their values need be kept in sync with their counterparts in
+   * chrome/browser/ui/webui/settings/safety_check_handler.h and
+   * chrome/browser/ui/webui/settings/safety_check_handler.cc
+   * @enum {string}
+   */
+  const SafetyCheckCallbackConstants = {
+    UPDATES_CHANGED: 'safety-check-updates-status-changed',
+    PASSWORDS_CHANGED: 'safety-check-passwords-status-changed',
+    SAFE_BROWSING_CHANGED: 'safety-check-safe-browsing-status-changed',
+    EXTENSIONS_CHANGED: 'safety-check-extensions-status-changed',
+  };
+
   // #cr_define_end
-  return {SafetyCheckComponent};
+  return {
+    SafetyCheckComponent,
+    SafetyCheckCallbackConstants,
+  };
 });
 
 (function() {
@@ -37,13 +55,33 @@ const ParentStatus = {
 
 /**
  * @typedef {{
- *   safetyCheckComponent: settings.SafetyCheckComponent,
- *   newState: number,
- *   passwordsCompromised: (number|undefined),
- *   badExtensions: (number|undefined),
+ *   newState: settings.SafetyCheckUpdatesStatus,
  * }}
  */
-/* #export */ let SafetyCheckStatusChangedEvent;
+let UpdatesChangedEvent;
+
+/**
+ * @typedef {{
+ *   newState: settings.SafetyCheckPasswordsStatus,
+ *   passwordsDisplayString: string,
+ * }}
+ */
+let PasswordsChangedEvent;
+
+/**
+ * @typedef {{
+ *   newState: settings.SafetyCheckSafeBrowsingStatus,
+ * }}
+ */
+let SafeBrowsingChangedEvent;
+
+/**
+ * @typedef {{
+ *   newState: settings.SafetyCheckExtensionsStatus,
+ *   extensionsDisplayString: string,
+ * }}
+ */
+let ExtensionsChangedEvent;
 
 Polymer({
   is: 'settings-safety-check-page',
@@ -82,14 +120,6 @@ Polymer({
     },
 
     /**
-     * Number of password compromises.
-     * @private {number}
-     */
-    passwordsCompromisedCount_: {
-      type: Number,
-    },
-
-    /**
      * Current state of the safety check safe browsing element.
      * @private {!settings.SafetyCheckSafeBrowsingStatus}
      */
@@ -108,12 +138,16 @@ Polymer({
     },
 
     /**
-     * Number of bad extensions.
-     * @private {number}
+     * UI string to display for the updates status.
+     * @private
      */
-    badExtensionsCount_: {
-      type: Number,
-    },
+    passwordsDisplayString_: String,
+
+    /**
+     * UI string to display for the extensions status.
+     * @private
+     */
+    extensionsDisplayString_: String,
   },
 
   /** @private {settings.SafetyCheckBrowserProxy} */
@@ -131,8 +165,17 @@ Polymer({
 
     // Register for safety check status updates.
     this.addWebUIListener(
-        'safety-check-status-changed',
-        this.onSafetyCheckStatusUpdate_.bind(this));
+        settings.SafetyCheckCallbackConstants.UPDATES_CHANGED,
+        this.onSafetyCheckUpdatesChanged_.bind(this));
+    this.addWebUIListener(
+        settings.SafetyCheckCallbackConstants.PASSWORDS_CHANGED,
+        this.onSafetyCheckPasswordsChanged_.bind(this));
+    this.addWebUIListener(
+        settings.SafetyCheckCallbackConstants.SAFE_BROWSING_CHANGED,
+        this.onSafetyCheckSafeBrowsingChanged_.bind(this));
+    this.addWebUIListener(
+        settings.SafetyCheckCallbackConstants.EXTENSIONS_CHANGED,
+        this.onSafetyCheckExtensionsChanged_.bind(this));
   },
 
   /**
@@ -151,48 +194,55 @@ Polymer({
     this.safetyCheckBrowserProxy_.runSafetyCheck();
   },
 
-  /**
-   * Safety check callback to update UI from safety check result.
-   * @param {SafetyCheckStatusChangedEvent} event
-   * @private
-   */
-  onSafetyCheckStatusUpdate_: function(event) {
-    const status = event['newState'];
-    switch (event.safetyCheckComponent) {
-      case settings.SafetyCheckComponent.UPDATES:
-        this.updatesStatus_ = status;
-        break;
-      case settings.SafetyCheckComponent.PASSWORDS:
-        this.passwordsCompromisedCount_ = event['passwordsCompromised'];
-        this.passwordsStatus_ = status;
-        break;
-      case settings.SafetyCheckComponent.SAFE_BROWSING:
-        this.safeBrowsingStatus_ = status;
-        break;
-      case settings.SafetyCheckComponent.EXTENSIONS:
-        this.badExtensionsCount_ = event['badExtensions'];
-        this.extensionsStatus_ = status;
-        break;
-      default:
-        assertNotReached();
-    }
-
+  /** @private */
+  updateParentFromChildren_: function() {
     // If all children elements received updates: update parent element.
-    if (this.areAllChildrenStatesSet_()) {
+    if (this.updatesStatus_ != settings.SafetyCheckUpdatesStatus.CHECKING &&
+        this.passwordsStatus_ != settings.SafetyCheckPasswordsStatus.CHECKING &&
+        this.safeBrowsingStatus_ !=
+            settings.SafetyCheckSafeBrowsingStatus.CHECKING &&
+        this.extensionsStatus_ !=
+            settings.SafetyCheckExtensionsStatus.CHECKING) {
       this.parentStatus_ = ParentStatus.AFTER;
     }
   },
 
   /**
+   * @param {!UpdatesChangedEvent} event
    * @private
-   * @return {boolean}
    */
-  areAllChildrenStatesSet_: function() {
-    return this.updatesStatus_ != settings.SafetyCheckUpdatesStatus.CHECKING &&
-        this.passwordsStatus_ != settings.SafetyCheckPasswordsStatus.CHECKING &&
-        this.safeBrowsingStatus_ !=
-        settings.SafetyCheckSafeBrowsingStatus.CHECKING &&
-        this.extensionsStatus_ != settings.SafetyCheckExtensionsStatus.CHECKING;
+  onSafetyCheckUpdatesChanged_: function(event) {
+    this.updatesStatus_ = event.newState;
+    this.updateParentFromChildren_();
+  },
+
+  /**
+   * @param {!PasswordsChangedEvent} event
+   * @private
+   */
+  onSafetyCheckPasswordsChanged_: function(event) {
+    this.passwordsDisplayString_ = event.passwordsDisplayString;
+    this.passwordsStatus_ = event.newState;
+    this.updateParentFromChildren_();
+  },
+
+  /**
+   * @param {!SafeBrowsingChangedEvent} event
+   * @private
+   */
+  onSafetyCheckSafeBrowsingChanged_: function(event) {
+    this.safeBrowsingStatus_ = event.newState;
+    this.updateParentFromChildren_();
+  },
+
+  /**
+   * @param {!ExtensionsChangedEvent} event
+   * @private
+   */
+  onSafetyCheckExtensionsChanged_: function(event) {
+    this.extensionsDisplayString_ = event.extensionsDisplayString;
+    this.extensionsStatus_ = event.newState;
+    this.updateParentFromChildren_();
   },
 
   /**
@@ -403,40 +453,6 @@ Polymer({
 
   /**
    * @private
-   * @return {string}
-   */
-  getPasswordsSubLabelText_: function() {
-    switch (this.passwordsStatus_) {
-      case settings.SafetyCheckPasswordsStatus.CHECKING:
-        return this.i18n('safetyCheckRunning');
-      case settings.SafetyCheckPasswordsStatus.SAFE:
-        return this.i18n('safetyCheckPasswordsSubLabelSafe');
-      case settings.SafetyCheckPasswordsStatus.COMPROMISED:
-        if (this.passwordsCompromisedCount_ == 1) {
-          return this.i18n('safetyCheckPasswordsSubLabelCompromisedSingular');
-        }
-        return this.i18n(
-            'safetyCheckPasswordsSubLabelCompromisedPlural',
-            this.passwordsCompromisedCount_);
-      case settings.SafetyCheckPasswordsStatus.OFFLINE:
-        return this.i18n('safetyCheckPasswordsSubLabelOffline');
-      case settings.SafetyCheckPasswordsStatus.NO_PASSWORDS:
-        return this.i18n('safetyCheckPasswordsSubLabelNoPasswords');
-      case settings.SafetyCheckPasswordsStatus.SIGNED_OUT:
-        return this.i18n('safetyCheckPasswordsSubLabelSignedOut');
-      case settings.SafetyCheckPasswordsStatus.QUOTA_LIMIT:
-        return this.i18n('safetyCheckPasswordsSubLabelQuotaLimit');
-      case settings.SafetyCheckPasswordsStatus.TOO_MANY_PASSWORDS:
-        return this.i18n('safetyCheckPasswordsSubLabelTooManyPasswords');
-      case settings.SafetyCheckPasswordsStatus.ERROR:
-        return this.i18n('safetyCheckPasswordsSubLabelError');
-      default:
-        assertNotReached();
-    }
-  },
-
-  /**
-   * @private
    * @return {?string}
    */
   getPasswordsIcon_: function() {
@@ -564,7 +580,7 @@ Polymer({
   getSafeBrowsingSubLabelText_: function() {
     switch (this.safeBrowsingStatus_) {
       case settings.SafetyCheckSafeBrowsingStatus.CHECKING:
-        return '';
+        return this.i18n('safetyCheckRunning');
       case settings.SafetyCheckSafeBrowsingStatus.ENABLED:
         return this.i18n('safetyCheckSafeBrowsingSubLabelEnabled');
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED:
@@ -706,47 +722,6 @@ Polymer({
         return 'icon-red';
       default:
         return '';
-    }
-  },
-
-  /**
-   * @private
-   * @return {string}
-   */
-  getExtensionsSubLabelText_: function() {
-    switch (this.extensionsStatus_) {
-      case settings.SafetyCheckExtensionsStatus.CHECKING:
-        return this.i18n('safetyCheckRunning');
-      case settings.SafetyCheckExtensionsStatus.ERROR:
-        return this.i18n('safetyCheckExtensionsSubLabelError');
-      case settings.SafetyCheckExtensionsStatus.SAFE:
-        return this.i18n('safetyCheckExtensionsSubLabelSafe');
-      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON:
-        if (this.badExtensionsCount_ == 1) {
-          return this.i18n(
-              'safetyCheckExtensionsSubLabelBadExtensionsOnSingular');
-        }
-        return this.i18n(
-            'safetyCheckExtensionsSubLabelBadExtensionsOnPlural',
-            this.badExtensionsCount_);
-      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF:
-        if (this.badExtensionsCount_ == 1) {
-          return this.i18n(
-              'safetyCheckExtensionsSubLabelBadExtensionsOffSingular');
-        }
-        return this.i18n(
-            'safetyCheckExtensionsSubLabelBadExtensionsOffPlural',
-            this.badExtensionsCount_);
-      case settings.SafetyCheckExtensionsStatus.MANAGED_BY_ADMIN:
-        if (this.badExtensionsCount_ == 1) {
-          return this.i18n(
-              'safetyCheckExtensionsSubLabelManagedByAdminSingular');
-        }
-        return this.i18n(
-            'safetyCheckExtensionsSubLabelManagedByAdminPlural',
-            this.badExtensionsCount_);
-      default:
-        assertNotReached();
     }
   },
 

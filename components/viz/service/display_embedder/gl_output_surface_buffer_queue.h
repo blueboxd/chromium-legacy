@@ -53,6 +53,8 @@ class VIZ_SERVICE_EXPORT GLOutputSurfaceBufferQueue
                bool use_stencil) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(GLOutputSurfaceBufferQueueTest, HandleSwapNAK);
+
   // OutputSurface implementation.
   void BindFramebuffer() override;
   void SwapBuffers(OutputSurfaceFrame frame) override;

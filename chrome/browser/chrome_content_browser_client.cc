@@ -2134,6 +2134,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(switches::kUseLegacyFormControls);
       }
 
+      if (prefs->HasPrefPath(prefs::kScrollToTextFragmentEnabled) &&
+          !prefs->GetBoolean(prefs::kScrollToTextFragmentEnabled)) {
+        command_line->AppendSwitch(switches::kDisableScrollToTextFragment);
+      }
+
       if (!profile->ShouldEnableOutOfBlinkCors()) {
         command_line->AppendSwitch(
             network::switches::kForceToDisableOutOfBlinkCors);

@@ -17,6 +17,36 @@ suite('SafetyCheckUiTests', function() {
     page.remove();
   });
 
+  function fireSafetyCheckUpdatesEvent(state) {
+    const event = {};
+    event.newState = state;
+    cr.webUIListenerCallback(
+        settings.SafetyCheckCallbackConstants.UPDATES_CHANGED, event);
+  }
+
+  function fireSafetyCheckPasswordsEvent(state) {
+    const event = {};
+    event.newState = state;
+    event.passwordsDisplayString = null;
+    cr.webUIListenerCallback(
+        settings.SafetyCheckCallbackConstants.PASSWORDS_CHANGED, event);
+  }
+
+  function fireSafetyCheckSafeBrowsingEvent(state) {
+    const event = {};
+    event.newState = state;
+    cr.webUIListenerCallback(
+        settings.SafetyCheckCallbackConstants.SAFE_BROWSING_CHANGED, event);
+  }
+
+  function fireSafetyCheckExtensionsEvent(state) {
+    const event = {};
+    event.newState = state;
+    event.extensionsDisplayString = null;
+    cr.webUIListenerCallback(
+        settings.SafetyCheckCallbackConstants.EXTENSIONS_CHANGED, event);
+  }
+
   /** Tests parent element and collapse. */
   test('beforeCheckUiTest', function() {
     // Only the text button is present.
@@ -45,22 +75,11 @@ suite('SafetyCheckUiTests', function() {
     page.$$('#safetyCheckParentButton').click();
 
     // Mock all incoming messages that indicate safety check completion.
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
-      newState: settings.SafetyCheckUpdatesStatus.UPDATED,
-    });
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.PASSWORDS,
-      newState: settings.SafetyCheckPasswordsStatus.SAFE,
-    });
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
-      newState: settings.SafetyCheckSafeBrowsingStatus.ENABLED,
-    });
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
-      newState: settings.SafetyCheckExtensionsStatus.SAFE,
-    });
+    fireSafetyCheckUpdatesEvent(settings.SafetyCheckUpdatesStatus.UPDATED);
+    fireSafetyCheckPasswordsEvent(settings.SafetyCheckPasswordsStatus.SAFE);
+    fireSafetyCheckSafeBrowsingEvent(
+        settings.SafetyCheckSafeBrowsingStatus.ENABLED);
+    fireSafetyCheckExtensionsEvent(settings.SafetyCheckExtensionsStatus.SAFE);
 
     Polymer.dom.flush();
 
@@ -72,70 +91,51 @@ suite('SafetyCheckUiTests', function() {
   });
 
   test('updatesCheckingUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
-      newState: settings.SafetyCheckUpdatesStatus.CHECKING,
-    });
+    fireSafetyCheckUpdatesEvent(settings.SafetyCheckUpdatesStatus.CHECKING);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
   });
 
   test('updatesUpdatedUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
-      newState: settings.SafetyCheckUpdatesStatus.UPDATED,
-    });
+    fireSafetyCheckUpdatesEvent(settings.SafetyCheckUpdatesStatus.UPDATED);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
   });
 
   test('updatesUpdatingUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
-      newState: settings.SafetyCheckUpdatesStatus.UPDATING,
-    });
+    fireSafetyCheckUpdatesEvent(settings.SafetyCheckUpdatesStatus.UPDATING);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
   });
 
   test('updatesRelaunchUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
-      newState: settings.SafetyCheckUpdatesStatus.RELAUNCH,
-    });
+    fireSafetyCheckUpdatesEvent(settings.SafetyCheckUpdatesStatus.RELAUNCH);
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
   });
 
   test('updatesDisabledByAdminUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
-      newState: settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN,
-    });
+    fireSafetyCheckUpdatesEvent(
+        settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertTrue(!!page.$$('#safetyCheckUpdatesManagedIcon'));
   });
 
   test('updatesFailedOfflineUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
-      newState: settings.SafetyCheckUpdatesStatus.FAILED_OFFLINE,
-    });
+    fireSafetyCheckUpdatesEvent(
+        settings.SafetyCheckUpdatesStatus.FAILED_OFFLINE);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
   });
 
   test('updatesFailedUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
-      newState: settings.SafetyCheckUpdatesStatus.FAILED,
-    });
+    fireSafetyCheckUpdatesEvent(settings.SafetyCheckUpdatesStatus.FAILED);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
@@ -144,10 +144,7 @@ suite('SafetyCheckUiTests', function() {
   test('passwordsButtonVisibilityUiTest', function() {
     // Iterate over all states
     for (const state of Object.values(settings.SafetyCheckPasswordsStatus)) {
-      cr.webUIListenerCallback('safety-check-status-changed', {
-        safetyCheckComponent: settings.SafetyCheckComponent.PASSWORDS,
-        newState: state,
-      });
+      fireSafetyCheckPasswordsEvent(state);
       Polymer.dom.flush();
 
       // button is only visible in COMPROMISED and ERROR states
@@ -164,110 +161,86 @@ suite('SafetyCheckUiTests', function() {
   });
 
   test('safeBrowsingCheckingUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
-      newState: settings.SafetyCheckSafeBrowsingStatus.CHECKING,
-    });
+    fireSafetyCheckSafeBrowsingEvent(
+        settings.SafetyCheckSafeBrowsingStatus.CHECKING);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
   });
 
   test('safeBrowsingCheckingUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
-      newState: settings.SafetyCheckSafeBrowsingStatus.ENABLED,
-    });
+    fireSafetyCheckSafeBrowsingEvent(
+        settings.SafetyCheckSafeBrowsingStatus.ENABLED);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
   });
 
   test('safeBrowsingCheckingUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
-      newState: settings.SafetyCheckSafeBrowsingStatus.DISABLED,
-    });
+    fireSafetyCheckSafeBrowsingEvent(
+        settings.SafetyCheckSafeBrowsingStatus.DISABLED);
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
   });
 
   test('safeBrowsingCheckingUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
-      newState: settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN,
-    });
+    fireSafetyCheckSafeBrowsingEvent(
+        settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertTrue(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
   });
 
   test('safeBrowsingCheckingUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
-      newState: settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION,
-    });
+    fireSafetyCheckSafeBrowsingEvent(
+        settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertTrue(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
   });
 
   test('extensionsCheckingUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
-      newState: settings.SafetyCheckExtensionsStatus.CHECKING,
-    });
+    fireSafetyCheckExtensionsEvent(
+        settings.SafetyCheckExtensionsStatus.CHECKING);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
   test('extensionsErrorUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
-      newState: settings.SafetyCheckExtensionsStatus.ERROR,
-    });
+    fireSafetyCheckExtensionsEvent(settings.SafetyCheckExtensionsStatus.ERROR);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
   test('extensionsSafeUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
-      newState: settings.SafetyCheckExtensionsStatus.SAFE,
-    });
+    fireSafetyCheckExtensionsEvent(settings.SafetyCheckExtensionsStatus.SAFE);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
   test('extensionsBadExtensionsOnUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
-      newState: settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON,
-    });
+    fireSafetyCheckExtensionsEvent(
+        settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON);
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
   test('extensionsBadExtensionsOffUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
-      newState: settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF,
-    });
+    fireSafetyCheckExtensionsEvent(
+        settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF);
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
   test('extensionsManagedByAdminUiTest', function() {
-    cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
-      newState: settings.SafetyCheckExtensionsStatus.MANAGED_BY_ADMIN,
-    });
+    fireSafetyCheckExtensionsEvent(
+        settings.SafetyCheckExtensionsStatus.MANAGED_BY_ADMIN);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertTrue(!!page.$$('#safetyCheckExtensionsManagedIcon'));

@@ -81,12 +81,6 @@ cr.define('settings', function() {
       /** @private */
       showClearBrowsingDataDialog_: Boolean,
 
-      /** @private */
-      showDoNotTrackDialog_: {
-        type: Boolean,
-        value: false,
-      },
-
       /**
        * Used for HTML bindings. This is defined as a property rather than
        * within the ready callback, because the value needs to be available
@@ -381,15 +375,6 @@ cr.define('settings', function() {
           settings.routes.CLEAR_BROWSER_DATA;
     },
 
-    /**
-     * @param {!Event} event
-     * @private
-     */
-    onDoNotTrackDomChange_(event) {
-      if (this.showDoNotTrackDialog_) {
-        this.maybeShowDoNotTrackDialog_();
-      }
-    },
 
     /**
      * Called when the block autoplay status changes.
@@ -419,67 +404,6 @@ cr.define('settings', function() {
     onCanMakePaymentChange_() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
           settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD);
-    },
-
-    /**
-     * Handles the change event for the do-not-track toggle. Shows a
-     * confirmation dialog when enabling the setting.
-     * @param {!Event} event
-     * @private
-     */
-    onDoNotTrackChange_(event) {
-      this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK);
-      const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
-      if (!target.checked) {
-        // Always allow disabling the pref.
-        target.sendPrefChange();
-        return;
-      }
-      this.showDoNotTrackDialog_ = true;
-      // If the dialog has already been stamped, show it. Otherwise it will be
-      // shown in onDomChange_.
-      this.maybeShowDoNotTrackDialog_();
-    },
-
-    /** @private */
-    maybeShowDoNotTrackDialog_() {
-      const dialog = this.$$('#confirmDoNotTrackDialog');
-      if (dialog && !dialog.open) {
-        dialog.showModal();
-      }
-    },
-
-    /** @private */
-    closeDoNotTrackDialog_() {
-      this.$$('#confirmDoNotTrackDialog').close();
-      this.showDoNotTrackDialog_ = false;
-    },
-
-    /** @private */
-    onDoNotTrackDialogClosed_() {
-      cr.ui.focusWithoutInk(assert(this.$$('#doNotTrack')));
-    },
-
-    /**
-     * Handles the shared proxy confirmation dialog 'Confirm' button.
-     * @private
-     */
-    onDoNotTrackDialogConfirm_() {
-      /** @type {!SettingsToggleButtonElement} */ (this.$$('#doNotTrack'))
-          .sendPrefChange();
-      this.closeDoNotTrackDialog_();
-    },
-
-    /**
-     * Handles the shared proxy confirmation dialog 'Cancel' button or a cancel
-     * event.
-     * @private
-     */
-    onDoNotTrackDialogCancel_() {
-      /** @type {!SettingsToggleButtonElement} */ (this.$$('#doNotTrack'))
-          .resetToPrefValue();
-      this.closeDoNotTrackDialog_();
     },
 
     /** @private */

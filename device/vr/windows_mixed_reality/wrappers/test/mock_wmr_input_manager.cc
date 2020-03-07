@@ -7,34 +7,40 @@
 #include <map>
 
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "device/vr/test/test_hook.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_input_source_state.h"
 
 namespace {
 
-static const std::map<
-    uint64_t,
-    ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind>
-    mask_to_press_kind = {
-        // Select/trigger.
-        {device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger),
-         ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind_Select},
-        // Menu.
-        {device::XrButtonMaskFromId(device::XrButtonId::kMenu),
-         ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind_Menu},
-        // Grasp/grip.
-        {device::XrButtonMaskFromId(device::XrButtonId::kGrip),
-         ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind_Grasp},
-        // Touchpad.
-        {device::XrButtonMaskFromId(device::XrButtonId::kAxisTrackpad),
-         ABI::Windows::UI::Input::Spatial::
-             SpatialInteractionPressKind_Touchpad},
-        // Joystick.
-        {device::XrButtonMaskFromId(device::XrButtonId::kAxisThumbstick),
-         ABI::Windows::UI::Input::Spatial::
-             SpatialInteractionPressKind_Thumbstick},
-};
+const std::map<uint64_t,
+               ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind>&
+GetMaskToPressKindMap() {
+  static const base::NoDestructor<std::map<
+      uint64_t, ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind>>
+      mask_to_press_kind({
+          // Select/trigger.
+          {device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger),
+           ABI::Windows::UI::Input::Spatial::
+               SpatialInteractionPressKind_Select},
+          // Menu.
+          {device::XrButtonMaskFromId(device::XrButtonId::kMenu),
+           ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind_Menu},
+          // Grasp/grip.
+          {device::XrButtonMaskFromId(device::XrButtonId::kGrip),
+           ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind_Grasp},
+          // Touchpad.
+          {device::XrButtonMaskFromId(device::XrButtonId::kAxisTrackpad),
+           ABI::Windows::UI::Input::Spatial::
+               SpatialInteractionPressKind_Touchpad},
+          // Joystick.
+          {device::XrButtonMaskFromId(device::XrButtonId::kAxisThumbstick),
+           ABI::Windows::UI::Input::Spatial::
+               SpatialInteractionPressKind_Thumbstick},
+      });
+  return *mask_to_press_kind;
+}
 
 }  // namespace
 
@@ -112,7 +118,7 @@ void MockWMRInputManager::MaybeNotifyCallbacks(const ControllerFrameData& data,
 
   // Determine which buttons changed - if more than one changed, we'll have to
   // fire the callbacks multiple times.
-  for (const auto& pair : mask_to_press_kind) {
+  for (const auto& pair : GetMaskToPressKindMap()) {
     // pair.first is the button mask for the button type being checked and
     // pair.second is the corresponding WMR SpatialInteractionPressKind. So, if
     // the button being checked changed, handle the correct callback with the

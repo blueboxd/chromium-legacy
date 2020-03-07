@@ -16,6 +16,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.thinwebview.CompositorView;
 import org.chromium.chrome.browser.thinwebview.ThinWebView;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
+import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -55,13 +56,14 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
     }
 
     @Override
-    public void attachWebContents(WebContents webContents, @Nullable View contentView) {
+    public void attachWebContents(WebContents webContents, @Nullable View contentView,
+            @Nullable WebContentsDelegateAndroid delegate) {
         if (mNativeThinWebViewImpl == 0) return;
         mWebContents = webContents;
 
         setContentView(contentView);
         ThinWebViewImplJni.get().setWebContents(
-                mNativeThinWebViewImpl, ThinWebViewImpl.this, mWebContents);
+                mNativeThinWebViewImpl, ThinWebViewImpl.this, mWebContents, delegate);
         mWebContents.onShow();
     }
 
@@ -104,8 +106,8 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
         long init(
                 ThinWebViewImpl caller, CompositorView compositorView, WindowAndroid windowAndroid);
         void destroy(long nativeThinWebView, ThinWebViewImpl caller);
-        void setWebContents(
-                long nativeThinWebView, ThinWebViewImpl caller, WebContents webContents);
+        void setWebContents(long nativeThinWebView, ThinWebViewImpl caller, WebContents webContents,
+                WebContentsDelegateAndroid delegate);
         void sizeChanged(long nativeThinWebView, ThinWebViewImpl caller, int width, int height);
     }
 }

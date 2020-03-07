@@ -24,6 +24,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -90,7 +91,10 @@ bool is_sw_reporter_enabled = false;
 
 // Callback function to be called once the registration of the component
 // is complete.  This is used only in tests.
-base::OnceClosure* registration_cb_for_testing = new base::OnceClosure();
+base::OnceClosure& GetRegistrationCBForTesting() {
+  static base::NoDestructor<base::OnceClosure> registration_cb_for_testing;
+  return *registration_cb_for_testing;
+}
 
 void SRTHasCompleted(SRTCompleted value) {
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.HasCompleted", value,
@@ -404,7 +408,7 @@ void SwReporterOnDemandFetcher::OnEvent(Events event, const std::string& id) {
 }
 
 void RegisterSwReporterComponent(ComponentUpdateService* cus) {
-  base::ScopedClosureRunner runner(std::move(*registration_cb_for_testing));
+  base::ScopedClosureRunner runner(std::move(GetRegistrationCBForTesting()));
 
   // Don't install the component if not allowed by policy.  This prevents
   // downloads and background scans.
@@ -435,7 +439,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
 void SetRegisterSwReporterComponentCallbackForTesting(
     base::OnceClosure registration_cb) {
   is_sw_reporter_enabled = true;
-  *registration_cb_for_testing = std::move(registration_cb);
+  GetRegistrationCBForTesting() = std::move(registration_cb);
 }
 
 void RegisterPrefsForSwReporter(PrefRegistrySimple* registry) {

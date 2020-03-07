@@ -361,7 +361,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // to the RootUiCoordinator, passing the activity is an easy way to get access to a
         // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
         // a recommended pattern.
-        return new RootUiCoordinator(this, null, getShareDelegateSupplier());
+        return new RootUiCoordinator(
+                this, null, getShareDelegateSupplier(), getActivityTabProvider());
     }
 
     private C createComponent() {
@@ -820,7 +821,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // TODO(https://crbug.com/943371): Initialize in SystemUiCoordinator. This requires
         // SystemUiCoordinator to be created before WebappActivty#onResume().
         if (mStatusBarColorController == null) {
-            mStatusBarColorController = new StatusBarColorController(this);
+            mStatusBarColorController =
+                    new StatusBarColorController(this, getActivityTabProvider());
         }
 
         return mStatusBarColorController;
@@ -1339,8 +1341,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 mManualFillingComponent.getKeyboardExtensionViewResizer());
 
         if (EphemeralTabCoordinator.isSupported()) {
-            mEphemeralTabCoordinator = new EphemeralTabCoordinator(
-                    this, getBottomSheetController(), getActivityTabProvider());
+            mEphemeralTabCoordinator = new EphemeralTabCoordinator(this, getWindowAndroid(),
+                    getWindow().getDecorView(), getActivityTabProvider(),
+                    this::getCurrentTabCreator, getBottomSheetController(), () -> !isCustomTab());
         }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE_TAB_REPARENTING)) {

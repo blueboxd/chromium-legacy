@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_filtering_switches.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -380,6 +381,8 @@ void SupervisedUserService::UpdateApprovedExtensions(
   for (const auto& extension_id : extensions_to_be_checked) {
     ChangeExtensionStateIfNecessary(extension_id);
   }
+
+  SupervisedUserExtensionsMetricsRecorder::RecordExtensionsUmaMetrics(type);
 }
 
 bool SupervisedUserService::

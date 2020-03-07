@@ -216,7 +216,8 @@ void LoadingPredictorTabHelper::DocumentOnLoadCompletedInMainFrame() {
     return;
 
   predictor_->loading_data_collector()->RecordMainFrameLoadComplete(
-      navigation_id);
+      navigation_id, last_optimization_guide_preconnect_prediction_);
+  last_optimization_guide_preconnect_prediction_ = base::nullopt;
 }
 
 void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
@@ -270,6 +271,7 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
     prediction.requests.emplace_back(subresource_origin, 1,
                                      network_isolation_key);
   }
+  last_optimization_guide_preconnect_prediction_ = prediction;
   predictor_->PrepareForPageLoad(navigation_id.main_frame_url,
                                  HintOrigin::OPTIMIZATION_GUIDE,
                                  /*preconnectable=*/false, prediction);

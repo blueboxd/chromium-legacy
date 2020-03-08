@@ -153,12 +153,17 @@ void SubresourceRedirectURLLoaderThrottle::BeforeWillProcessResponse(
       response_head.headers->response_code() == 304) {
     return;
   }
+  redirect_result_ =
+      SubresourceRedirectHintsAgent::RedirectResult::kIneligibleOtherImage;
+  if (!base::GetFieldTrialParamByFeatureAsBool(
+          blink::features::kSubresourceRedirect, "enable_lite_page_redirect",
+          false)) {
+    return;
+  }
 
   // Non 2XX responses from the compression server need to have unaltered
   // requests sent to the original resource.
   delegate_->RestartWithURLResetAndFlags(net::LOAD_NORMAL);
-  redirect_result_ =
-      SubresourceRedirectHintsAgent::RedirectResult::kIneligibleOtherImage;
 }
 
 void SubresourceRedirectURLLoaderThrottle::WillProcessResponse(
@@ -210,13 +215,19 @@ void SubresourceRedirectURLLoaderThrottle::WillProcessResponse(
 void SubresourceRedirectURLLoaderThrottle::WillOnCompleteWithError(
     const network::URLLoaderCompletionStatus& status,
     bool* defer) {
+  redirect_result_ =
+      SubresourceRedirectHintsAgent::RedirectResult::kIneligibleOtherImage;
+  if (!base::GetFieldTrialParamByFeatureAsBool(
+          blink::features::kSubresourceRedirect, "enable_lite_page_redirect",
+          false)) {
+    return;
+  }
+
   // If the server fails, restart the request to the original resource, and
   // record it.
   delegate_->RestartWithURLResetAndFlags(net::LOAD_NORMAL);
   UMA_HISTOGRAM_BOOLEAN(
       "SubresourceRedirect.CompressionAttempt.ServerResponded", false);
-  redirect_result_ =
-      SubresourceRedirectHintsAgent::RedirectResult::kIneligibleOtherImage;
 }
 
 void SubresourceRedirectURLLoaderThrottle::DetachFromCurrentSequence() {}

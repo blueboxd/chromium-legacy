@@ -1250,7 +1250,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '454474d4f31c93207bdb36ecf66ba85ae4f28e57',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '3f3ca3d9d2baaec72de696b33495386825afbac5',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1529,7 +1529,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6931a535daf42f6987aa12cd37f715ff0d0526f8',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2a0756a09cceab39525af85467a90acc9ec2d54e',
     'condition': 'checkout_src_internal',
   },
 

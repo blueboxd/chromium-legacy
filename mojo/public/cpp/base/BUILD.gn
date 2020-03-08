@@ -23,6 +23,23 @@ component("base") {
   ]
 }
 
+component("typemap_traits") {
+  output_name = "mojo_base_typemap_traits"
+
+  sources = [
+    "big_string_mojom_traits.cc",
+    "big_string_mojom_traits.h",
+  ]
+
+  defines = [ "IS_MOJO_BASE_TRAITS_IMPL" ]
+
+  public_deps = [
+    ":shared_typemap_traits",
+    "//base",
+    "//mojo/public/cpp/base",
+  ]
+}
+
 # Normally typemap traits sources should be build directly into mojom targets
 # via the typemap file. This target is for typemapped mojo_base types whose
 # traits are shared between chromium and blink variants.

@@ -210,8 +210,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kEnableOnly},
           {wf::EnableBuiltInModuleInfra, features::kBuiltInModuleInfra,
            kEnableOnly},
-          {wf::EnableBuiltInModuleKvStorage, features::kBuiltInModuleKvStorage,
-           kEnableOnly},
           {wf::EnableLazyInitializeMediaControls,
            features::kLazyInitializeMediaControls, kUseFeatureState},
           {wf::EnableMediaEngagementBypassAutoplayPolicies,

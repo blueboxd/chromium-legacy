@@ -45,7 +45,7 @@ const base::Feature kAudioServiceLaunchOnStartup{
     "AudioServiceLaunchOnStartup", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Runs the audio service in a separate process.
-const base::Feature kAudioServiceOutOfProcess{
+const base::Feature kAudioServiceOutOfProcess {
   "AudioServiceOutOfProcess",
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -277,9 +277,6 @@ const base::Feature kIsolateOrigins{"IsolateOrigins",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 
-const base::Feature kBuiltInModuleKvStorage{"BuiltInModuleKvStorage",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kBuiltInModuleAll{"BuiltInModuleAll",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -288,7 +285,7 @@ const base::Feature kBuiltInModuleInfra{"BuiltInModuleInfra",
 
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kLazyFrameVisibleLoadTimeMetrics{
+const base::Feature kLazyFrameVisibleLoadTimeMetrics {
   "LazyFrameVisibleLoadTimeMetrics",
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -298,7 +295,7 @@ const base::Feature kLazyFrameVisibleLoadTimeMetrics{
 };
 const base::Feature kLazyImageLoading{"LazyImageLoading",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kLazyImageVisibleLoadTimeMetrics{
+const base::Feature kLazyImageVisibleLoadTimeMetrics {
   "LazyImageVisibleLoadTimeMetrics",
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT

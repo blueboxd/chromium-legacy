@@ -56,8 +56,7 @@ def main():
     for module_name, module_path in modules:
         for root, _, filenames in sorted(os.walk(module_path)):
             for filename in sorted(filenames):
-                if filename.startswith('.') or filename.startswith(
-                        'README') or filename.startswith('OWNERS'):
+                if not filename.endswith('.mjs'):
                     continue
                 relpath = os.path.relpath(os.path.join(root, filename), input_path)
                 relpath = relpath.replace('\\', '/')

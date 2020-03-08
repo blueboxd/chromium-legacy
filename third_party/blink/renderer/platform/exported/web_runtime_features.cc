@@ -239,10 +239,6 @@ void WebRuntimeFeatures::EnableBuiltInModuleInfra(bool enable) {
   RuntimeEnabledFeatures::SetBuiltInModuleInfraEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableBuiltInModuleKvStorage(bool enable) {
-  RuntimeEnabledFeatures::SetBuiltInModuleKvStorageEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableLayoutNG(bool enable) {
   RuntimeEnabledFeatures::SetLayoutNGEnabled(enable);
 }

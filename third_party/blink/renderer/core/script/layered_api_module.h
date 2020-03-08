@@ -19,7 +19,6 @@ enum class Module {
   kElementsSwitch,
   kElementsToast,
   kElementsVirtualScroller,
-  kKvStorage,
 };
 
 }  // namespace layered_api

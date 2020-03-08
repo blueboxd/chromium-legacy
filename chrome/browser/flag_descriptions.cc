@@ -638,12 +638,6 @@ const char kBuiltInModuleInfraDescription[] =
     "built-in modules should be enabled by other flags. The syntax and the "
     "APIs exposed are experimental and will change over time.";
 
-const char kBuiltInModuleKvStorageName[] = "kv-storage built-in module";
-const char kBuiltInModuleKvStorageDescription[] =
-    "Enable kv-storage built-in module, as well as built-in module "
-    "infrastructure and import maps. The syntax and the APIs exposed are "
-    "experimental and will change over time.";
-
 const char kDownloadAutoResumptionNativeName[] =
     "Enable download auto-resumption in native";
 const char kDownloadAutoResumptionNativeDescription[] =

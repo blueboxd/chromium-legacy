@@ -267,13 +267,7 @@
       origin_trial_feature_name: "BuiltInModuleInfra",
       implied_by: ["ExperimentalProductivityFeatures",
                    "BuiltInModuleAll",
-                   "BuiltInModuleKvStorage",
                    "BuiltInModuleSwitchElement"],
-    },
-    {
-      name: "BuiltInModuleKvStorage",
-      origin_trial_feature_name: "BuiltInModuleKvStorage",
-      implied_by: ["ExperimentalProductivityFeatures"],
     },
     {
       name: "BuiltInModuleSwitchElement",

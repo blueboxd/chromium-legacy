@@ -567,8 +567,7 @@ void AppSearchProvider::UpdateQueriedResults() {
       if (match.IsRelevant(query_terms, *indexed_name, kRelevanceThreshold,
                            kUsePrefixOnly, kUseWeightedRatio, kUseEditDistance,
                            kPartialMatchPenaltyRate) ||
-          app->MatchSearchableText(query_terms, use_exact_match) ||
-          base::EqualsCaseInsensitiveASCII(query_, app->name())) {
+          app->MatchSearchableText(query_terms, use_exact_match)) {
         std::unique_ptr<AppResult> result = app->data_source()->CreateResult(
             app->id(), list_controller_, false);
 

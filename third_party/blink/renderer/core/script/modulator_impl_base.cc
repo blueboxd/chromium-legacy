@@ -73,9 +73,6 @@ bool ModulatorImplBase::BuiltInModuleEnabled(layered_api::Module module) const {
   switch (module) {
     case layered_api::Module::kBlank:
       return true;
-    case layered_api::Module::kKvStorage:
-      return RuntimeEnabledFeatures::BuiltInModuleKvStorageEnabled(
-          GetExecutionContext());
     case layered_api::Module::kElementsInternal:
       // Union of conditions of KElementsSwitch and kElementsToast.
       return RuntimeEnabledFeatures::BuiltInModuleSwitchElementEnabled();
@@ -97,8 +94,6 @@ bool ModulatorImplBase::BuiltInModuleRequireSecureContext(
     case layered_api::Module::kElementsToast:
     case layered_api::Module::kElementsVirtualScroller:
       return false;
-    case layered_api::Module::kKvStorage:
-      return true;
   }
 }
 
@@ -121,10 +116,6 @@ void ModulatorImplBase::BuiltInModuleUseCount(
     case layered_api::Module::kElementsVirtualScroller:
       UseCounter::Count(GetExecutionContext(),
                         WebFeature::kBuiltInModuleVirtualScroller);
-      break;
-    case layered_api::Module::kKvStorage:
-      UseCounter::Count(GetExecutionContext(),
-                        WebFeature::kBuiltInModuleKvStorage);
       break;
   }
 }

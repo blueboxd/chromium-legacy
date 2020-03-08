@@ -4089,11 +4089,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBuiltInModuleInfraDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBuiltInModuleInfra)},
 
-    {"enable-built-in-module-kv-storage",
-     flag_descriptions::kBuiltInModuleKvStorageName,
-     flag_descriptions::kBuiltInModuleKvStorageDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBuiltInModuleKvStorage)},
-
     {"native-file-system-api", flag_descriptions::kNativeFileSystemAPIName,
      flag_descriptions::kNativeFileSystemAPIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kNativeFileSystemAPI)},

@@ -42,6 +42,34 @@ class InstallServiceWorkItemTest : public ::testing::Test {
 
     return GetImpl(item)->IsServiceCorrectlyConfigured(config);
   }
+
+  void SetUp() override {
+    base::win::RegKey key;
+    if (ERROR_SUCCESS ==
+        key.Open(HKEY_LOCAL_MACHINE,
+                 install_static::GetClientStateKeyPath().c_str(),
+                 KEY_READ | KEY_WOW64_32KEY)) {
+      preexisting_clientstate_key_ = true;
+    } else {
+      ASSERT_EQ(ERROR_SUCCESS,
+                key.Create(HKEY_LOCAL_MACHINE,
+                           install_static::GetClientStateKeyPath().c_str(),
+                           KEY_READ | KEY_WOW64_32KEY));
+    }
+  }
+
+  void TearDown() override {
+    if (!preexisting_clientstate_key_) {
+      base::win::RegKey key;
+      if (key.Open(HKEY_LOCAL_MACHINE,
+                   install_static::GetClientStateKeyPath().c_str(),
+                   DELETE | KEY_WOW64_32KEY)) {
+        EXPECT_EQ(ERROR_SUCCESS, key.DeleteKey(L""));
+      }
+    }
+  }
+
+  bool preexisting_clientstate_key_ = false;
 };
 
 TEST_F(InstallServiceWorkItemTest, Do_MultiSzToVector) {
@@ -134,12 +162,6 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
 }
 
 TEST_F(InstallServiceWorkItemTest, Do_ServiceName) {
-  base::win::RegKey key;
-  ASSERT_EQ(ERROR_SUCCESS,
-            key.Create(HKEY_LOCAL_MACHINE,
-                       install_static::GetClientStateKeyPath().c_str(),
-                       KEY_WRITE | KEY_WOW64_32KEY));
-  key.DeleteValue(kServiceName);
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)));
@@ -163,6 +185,11 @@ TEST_F(InstallServiceWorkItemTest, Do_ServiceName) {
           .c_str(),
       GetImpl(item.get())->GetCurrentServiceDisplayName().c_str());
 
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE,
+                     install_static::GetClientStateKeyPath().c_str(),
+                     KEY_WRITE | KEY_WOW64_32KEY));
   EXPECT_EQ(ERROR_SUCCESS, key.DeleteValue(kServiceName));
 }
 

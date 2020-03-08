@@ -55,13 +55,6 @@ const LayeredAPIResource kLayeredAPIResources[] = {
      IDR_LAYERED_API_ELEMENTS_VIRTUAL_SCROLLER_VISIBILITY_MANAGER_MJS,
      Module::kElementsVirtualScroller},
 
-    {"kv-storage/async_iterator.mjs",
-     IDR_LAYERED_API_KV_STORAGE_ASYNC_ITERATOR_MJS, Module::kKvStorage},
-    {"kv-storage/idb_utils.mjs", IDR_LAYERED_API_KV_STORAGE_IDB_UTILS_MJS,
-     Module::kKvStorage},
-    {"kv-storage/index.mjs", IDR_LAYERED_API_KV_STORAGE_INDEX_MJS,
-     Module::kKvStorage},
-
 };
 
 }  // namespace

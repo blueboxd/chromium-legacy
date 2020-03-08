@@ -2160,7 +2160,6 @@ enum WebFeature {
   kCSSValueAppearanceSearchCancel = 2820,
   kCSSValueAppearanceTextarea = 2821,
   kCSSValueAppearanceTextFieldForTemporalRendered = 2823,
-  kBuiltInModuleKvStorage = 2824,
   kBuiltInModuleVirtualScroller = 2825,
   kAdClickNavigation = 2826,
   kRTCStatsRelativePacketArrivalDelay = 2827,

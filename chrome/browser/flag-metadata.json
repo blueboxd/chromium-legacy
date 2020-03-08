@@ -1059,11 +1059,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-built-in-module-kv-storage",
-    "owners": [ "hiroshige", "domenic" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-bulk-printers",
     "owners": [ "skau" ],
     "expiry_milestone": 76

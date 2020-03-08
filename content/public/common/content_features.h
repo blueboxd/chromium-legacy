@@ -71,7 +71,6 @@ CONTENT_EXPORT extern const base::Feature kIsolateOrigins;
 CONTENT_EXPORT extern const char kIsolateOriginsFieldTrialParamName[];
 CONTENT_EXPORT extern const base::Feature kBuiltInModuleAll;
 CONTENT_EXPORT extern const base::Feature kBuiltInModuleInfra;
-CONTENT_EXPORT extern const base::Feature kBuiltInModuleKvStorage;
 CONTENT_EXPORT extern const base::Feature kLazyFrameLoading;
 CONTENT_EXPORT extern const base::Feature kLazyFrameVisibleLoadTimeMetrics;
 CONTENT_EXPORT extern const base::Feature kLazyImageLoading;

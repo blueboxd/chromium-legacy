@@ -106,7 +106,7 @@ RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access) {
   }
 }
 
-RegKey::RegKey(RegKey&& other)
+RegKey::RegKey(RegKey&& other) noexcept
     : key_(other.key_),
       wow64access_(other.wow64access_),
       key_watcher_(std::move(other.key_watcher_)) {

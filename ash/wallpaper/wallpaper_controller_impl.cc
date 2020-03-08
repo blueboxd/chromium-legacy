@@ -293,7 +293,7 @@ void OnWallpaperDataRead(LoadedCallback callback,
     return;
   }
   // This image was once encoded to JPEG by |ResizeAndEncodeImage|.
-  DecodeWallpaper(*data, data_decoder::mojom::ImageCodec::ROBUST_JPEG,
+  DecodeWallpaper(*data, data_decoder::mojom::ImageCodec::DEFAULT,
                   std::move(callback));
 }
 
@@ -1020,9 +1020,7 @@ void WallpaperControllerImpl::SetPolicyWallpaper(
     std::move(callback).Run(CreateSolidColorWallpaper(kDefaultWallpaperColor));
     return;
   }
-  // The default codec cannot be used here because the image data is provided by
-  // user and thus not trusted. In addition, only JPEG |data| is accepted.
-  DecodeWallpaper(data, data_decoder::mojom::ImageCodec::ROBUST_JPEG,
+  DecodeWallpaper(data, data_decoder::mojom::ImageCodec::DEFAULT,
                   std::move(callback));
 }
 

@@ -139,8 +139,6 @@ void ImageDecoder::StartWithOptionsImpl(
   data_decoder::mojom::ImageCodec codec =
       data_decoder::mojom::ImageCodec::DEFAULT;
 #if defined(OS_CHROMEOS)
-  if (image_codec == ROBUST_JPEG_CODEC)
-    codec = data_decoder::mojom::ImageCodec::ROBUST_JPEG;
   if (image_codec == ROBUST_PNG_CODEC)
     codec = data_decoder::mojom::ImageCodec::ROBUST_PNG;
 #endif  // defined(OS_CHROMEOS)

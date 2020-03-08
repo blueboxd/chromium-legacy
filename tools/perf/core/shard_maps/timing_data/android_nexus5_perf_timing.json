@@ -1,6 +1,6 @@
 [
     {
-        "duration": "68.0",
+        "duration": "70.0",
         "name": "loading.mobile/Dramaq"
     },
     {
@@ -8,7 +8,7 @@
         "name": "loading.mobile/Facebook"
     },
     {
-        "duration": "48.0",
+        "duration": "54.0",
         "name": "loading.mobile/FranceTVInfo"
     },
     {
@@ -20,7 +20,7 @@
         "name": "loading.mobile/Hongkiat"
     },
     {
-        "duration": "54.0",
+        "duration": "52.0",
         "name": "loading.mobile/LocalMoxie"
     },
     {
@@ -28,11 +28,11 @@
         "name": "startup.mobile/cct:coldish:bbc"
     },
     {
-        "duration": "446.0",
+        "duration": "448.0",
         "name": "startup.mobile/intent:coldish:bbc"
     },
     {
-        "duration": "394.0",
+        "duration": "402.0",
         "name": "startup.mobile/intent:warm:bbc"
     },
     {
@@ -40,19 +40,19 @@
         "name": "startup.mobile/maps_pwa:with_http_cache"
     },
     {
-        "duration": "98.0",
+        "duration": "92.0",
         "name": "system_health.common_mobile/background:social:facebook:2019"
     },
     {
-        "duration": "108.0",
+        "duration": "106.0",
         "name": "system_health.common_mobile/background:tools:gmail:2019"
     },
     {
-        "duration": "290.0",
+        "duration": "288.0",
         "name": "system_health.common_mobile/browse:news:cnn:2018"
     },
     {
-        "duration": "200.0",
+        "duration": "198.0",
         "name": "system_health.common_mobile/browse:news:reddit:2019"
     },
     {
@@ -60,7 +60,7 @@
         "name": "system_health.common_mobile/browse:social:pinterest_infinite_scroll:2019"
     },
     {
-        "duration": "182.0",
+        "duration": "180.0",
         "name": "system_health.common_mobile/browse:social:tumblr_infinite_scroll:2018"
     },
     {
@@ -72,19 +72,19 @@
         "name": "system_health.common_mobile/browse:tools:maps:2019"
     },
     {
-        "duration": "66.0",
+        "duration": "68.0",
         "name": "system_health.common_mobile/load:media:youtube:2018"
     },
     {
-        "duration": "102.0",
+        "duration": "106.0",
         "name": "system_health.common_mobile/load:news:cnn:2018"
     },
     {
-        "duration": "102.0",
+        "duration": "106.0",
         "name": "system_health.common_mobile/load:tools:gmail:2019"
     },
     {
-        "duration": "70.0",
+        "duration": "76.0",
         "name": "system_health.common_mobile/load:tools:weather:2019"
     },
     {

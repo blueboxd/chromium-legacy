@@ -127,21 +127,10 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustJpegCodecWithJpegData) {
   base::RunLoop run_loop;
   TestImageRequest test_request(run_loop.QuitClosure());
   ImageDecoder::StartWithOptions(
-      &test_request, GetValidJpgData(), ImageDecoder::ROBUST_JPEG_CODEC,
+      &test_request, GetValidJpgData(), ImageDecoder::DEFAULT_CODEC,
       /*shrink_to_fit=*/false, /*desired_image_frame_size=*/gfx::Size());
   run_loop.Run();
   EXPECT_TRUE(test_request.decode_succeeded());
-}
-
-IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustJpegCodecWithPngData) {
-  base::RunLoop run_loop;
-  TestImageRequest test_request(run_loop.QuitClosure());
-  ImageDecoder::StartWithOptions(
-      &test_request, GetValidPngData(), ImageDecoder::ROBUST_JPEG_CODEC,
-      /*shrink_to_fit=*/false, /*desired_image_frame_size=*/gfx::Size());
-  run_loop.Run();
-  // Should fail with PNG data because only JPEG data is allowed.
-  EXPECT_FALSE(test_request.decode_succeeded());
 }
 
 IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustPngCodecWithPngData) {

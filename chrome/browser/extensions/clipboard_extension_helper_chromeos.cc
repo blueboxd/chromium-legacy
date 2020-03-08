@@ -41,7 +41,7 @@ class ClipboardExtensionHelper::ClipboardImageDataDecoder
         codec = ImageDecoder::ROBUST_PNG_CODEC;
         break;
       case clipboard::IMAGE_TYPE_JPEG:
-        codec = ImageDecoder::ROBUST_JPEG_CODEC;
+        codec = ImageDecoder::DEFAULT_CODEC;
         break;
       case clipboard::IMAGE_TYPE_NONE:
         NOTREACHED();

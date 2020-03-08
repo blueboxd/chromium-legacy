@@ -372,8 +372,6 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveAndLoadUserImage) {
   // Wait for image load.
   if (user->image_index() == user_manager::User::USER_IMAGE_INVALID)
     UserImageChangeWaiter().Wait();
-  // The image should be in the safe format.
-  EXPECT_TRUE(user->image_is_safe_format());
   // Check image dimensions. Images can't be compared since JPEG is lossy.
   const gfx::ImageSkia& saved_image = default_user_image::GetDefaultImage(
       default_user_image::kFirstDefaultImageIndex);

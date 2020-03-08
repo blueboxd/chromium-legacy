@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'eefc8a8dd7b8838f644b04bea677129f4c9658bf',
+  'devtools_frontend_revision': 'af6644ed4dacb6bf80ed4f528a7de86b2936ef40',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1250,7 +1250,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'ea6e1f04de4d30896ff0ee68a4bea53065e2da37',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '454474d4f31c93207bdb36ecf66ba85ae4f28e57',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1529,7 +1529,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2d30170001a72c9626b23b080ba900872be0cddc',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@425a0b186f0cf9e11133525b999d7f59e9cbf53c',
     'condition': 'checkout_src_internal',
   },
 

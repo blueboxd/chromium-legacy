@@ -136,7 +136,7 @@ void SetCustomizedDefaultWallpaperAfterCheck(
             {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
     user_image_loader::StartWithFilePath(
-        task_runner, file_path, ImageDecoder::ROBUST_JPEG_CODEC,
+        task_runner, file_path, ImageDecoder::DEFAULT_CODEC,
         0,  // Do not crop.
         base::Bind(&OnCustomizedDefaultWallpaperDecoded, wallpaper_url,
                    resized_small_path, resized_large_path));

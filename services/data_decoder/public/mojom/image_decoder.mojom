@@ -10,7 +10,6 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 
 enum ImageCodec {
   DEFAULT,
-  ROBUST_JPEG,
   ROBUST_PNG,
 };
 

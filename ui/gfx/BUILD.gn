@@ -819,10 +819,6 @@ test("gfx_unittests") {
     sources -= [ "nine_image_painter_unittest.cc" ]
   }
 
-  if (is_chromeos) {
-    sources += [ "codec/chromeos/jpeg_codec_robust_slow_unittest.cc" ]
-  }
-
   if (is_win) {
     sources += [
       "icon_util_unittest.cc",

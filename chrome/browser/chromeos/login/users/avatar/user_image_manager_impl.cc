@@ -170,17 +170,13 @@ bool SaveAndDeleteImage(scoped_refptr<base::RefCountedBytes> image_bytes,
   return true;
 }
 
-// Returns the robust codec enum for the given image path's extension.
-// The user image is always stored in either JPEG or PNG.
-ImageDecoder::ImageCodec ChooseRobustCodecFromPath(
+// Returns the codec enum for the given image path's extension.
+ImageDecoder::ImageCodec ChooseCodecFromPath(
     const base::FilePath& image_path) {
-  if (image_path.Extension() == FILE_PATH_LITERAL(".jpg"))
-    return ImageDecoder::ROBUST_JPEG_CODEC;
   if (image_path.Extension() == FILE_PATH_LITERAL(".png"))
     return ImageDecoder::ROBUST_PNG_CODEC;
 
-  NOTREACHED() << "Invalid path: " << image_path.AsUTF8Unsafe();
-  return ImageDecoder::ROBUST_JPEG_CODEC;
+  return ImageDecoder::DEFAULT_CODEC;
 }
 
 // Returns the suffix for the given image format, that should be JPEG or PNG.
@@ -333,14 +329,13 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
   } else if (image_index_ == user_manager::User::USER_IMAGE_EXTERNAL ||
              image_index_ == user_manager::User::USER_IMAGE_PROFILE) {
     // Load the user image from a file referenced by |image_path|. This happens
-    // asynchronously. ROBUST_JPEG_CODEC or ROBUST_PNG_CODEC can be used here
-    // because LoadImage() is called only for users whose user image has
-    // previously been set by one of the Set*() methods, which transcode to
-    // JPEG or PNG format.
+    // asynchronously. ROBUST_PNG_CODEC can be used here because LoadImage() is
+    // called only for users whose user image has previously been set by one of
+    // the Set*() methods, which transcode to JPEG or PNG format.
     DCHECK(!image_path_.empty());
     user_image_loader::StartWithFilePath(
         parent_->background_task_runner_, image_path_,
-        ChooseRobustCodecFromPath(image_path_),
+        ChooseCodecFromPath(image_path_),
         0,  // Do not crop.
         base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), false));
   } else {
@@ -386,19 +381,9 @@ void UserImageManagerImpl::Job::SetToImageData(
 
   image_index_ = user_manager::User::USER_IMAGE_EXTERNAL;
 
-  // This method uses ROBUST_JPEG_CODEC, not DEFAULT_CODEC:
-  // * This is necessary because the method is used to update the user image
-  //   whenever the policy for a user is set. In the case of device-local
-  //   accounts, policy may change at any time, even if the user is not
-  //   currently logged in (and thus, DEFAULT_CODEC may not be used).
-  // * This is possible because only JPEG |data| is accepted. No support for
-  //   other image file formats is needed.
-  // * This is safe because ROBUST_JPEG_CODEC employs a hardened JPEG decoder
-  //   that protects against malicious invalid image data being used to attack
-  //   the login screen or another user session currently in progress.
   user_image_loader::StartWithData(
       parent_->background_task_runner_, std::move(data),
-      ImageDecoder::ROBUST_JPEG_CODEC, login::kMaxUserImageSize,
+      ImageDecoder::DEFAULT_CODEC, login::kMaxUserImageSize,
       base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), true));
 }
 
@@ -482,8 +467,6 @@ void UserImageManagerImpl::Job::SaveImageAndUpdateLocalState(
   //    CreateAndEncode() that generates safe bytes representation.
   // 2) Profile image from user-specified image -> The bytes representation
   //    is regenerated after the original image is decoded and cropped.
-  // 3) Profile image from policy (via OnExternalDataFetched()) -> JPEG is
-  //    only allowed and ROBUST_JPEG_CODEC is used.
   //
   // However, check the value just in case because an unsafe image should
   // never be saved.

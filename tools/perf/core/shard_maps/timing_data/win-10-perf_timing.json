@@ -1,6 +1,6 @@
 [
     {
-        "duration": "44.0",
+        "duration": "46.0",
         "name": "blink_perf.accessibility/line-breaks.html"
     },
     {
@@ -40,7 +40,7 @@
         "name": "blink_perf.bindings/gc-tree.html"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.bindings/get-attribute-rare.html"
     },
     {
@@ -84,7 +84,7 @@
         "name": "blink_perf.bindings/node-type.html"
     },
     {
-        "duration": "8.0",
+        "duration": "6.0",
         "name": "blink_perf.bindings/post-message.html"
     },
     {
@@ -116,7 +116,7 @@
         "name": "blink_perf.bindings/set-attribute-rare.html"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.bindings/set-attribute.html"
     },
     {
@@ -136,11 +136,11 @@
         "name": "blink_perf.bindings/structured-clone-long-string-serialize.html"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.bindings/typed-array-construct-from-array.html"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.bindings/typed-array-construct-from-same-type.html"
     },
     {
@@ -212,7 +212,7 @@
         "name": "blink_perf.bindings/worker-transferable-to-worker.html"
     },
     {
-        "duration": "42.0",
+        "duration": "44.0",
         "name": "blink_perf.canvas/canvas-to-canvas-draw.html"
     },
     {
@@ -220,11 +220,11 @@
         "name": "blink_perf.canvas/canvas-to-canvas-draw_RAF.html?RAF"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.canvas/createImageBitmapFromImageData.html"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.canvas/createImageBitmapFromImageData_RAF.html?RAF"
     },
     {
@@ -232,7 +232,7 @@
         "name": "blink_perf.canvas/docs-paper.html"
     },
     {
-        "duration": "12.0",
+        "duration": "10.0",
         "name": "blink_perf.canvas/docs-paper_RAF.html?RAF"
     },
     {
@@ -264,7 +264,7 @@
         "name": "blink_perf.canvas/draw-dynamic-webgl-to-hw-accelerated-canvas-2d.html"
     },
     {
-        "duration": "16.0",
+        "duration": "14.0",
         "name": "blink_perf.canvas/draw-dynamic-webgl-to-hw-accelerated-canvas-2d_RAF.html?RAF"
     },
     {
@@ -292,7 +292,7 @@
         "name": "blink_perf.canvas/draw-static-webgl-to-hw-accelerated-canvas-2d_RAF.html?RAF"
     },
     {
-        "duration": "10.0",
+        "duration": "8.0",
         "name": "blink_perf.canvas/draw-video-to-hw-accelerated-canvas-2d.html"
     },
     {
@@ -312,23 +312,23 @@
         "name": "blink_perf.canvas/drawimage.html"
     },
     {
-        "duration": "36.0",
+        "duration": "34.0",
         "name": "blink_perf.canvas/drawimage_RAF.html?RAF"
     },
     {
-        "duration": "72.0",
+        "duration": "68.0",
         "name": "blink_perf.canvas/getImageData.html"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.canvas/getImageDataColorManaged.html"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.canvas/getImageDataColorManaged_RAF.html?RAF"
     },
     {
-        "duration": "22.0",
+        "duration": "20.0",
         "name": "blink_perf.canvas/getImageData_RAF.html?RAF"
     },
     {
@@ -336,7 +336,7 @@
         "name": "blink_perf.canvas/gpu-bound-shader.html"
     },
     {
-        "duration": "12.0",
+        "duration": "10.0",
         "name": "blink_perf.canvas/gpu-bound-shader_RAF.html?RAF"
     },
     {
@@ -352,7 +352,7 @@
         "name": "blink_perf.canvas/sheets-render.html"
     },
     {
-        "duration": "12.0",
+        "duration": "10.0",
         "name": "blink_perf.canvas/sheets-render_RAF.html?RAF"
     },
     {
@@ -372,11 +372,11 @@
         "name": "blink_perf.canvas/toBlob_duration_jpeg_RAF.html?RAF"
     },
     {
-        "duration": "20.0",
+        "duration": "26.0",
         "name": "blink_perf.canvas/transferFromImageBitmap.html"
     },
     {
-        "duration": "36.0",
+        "duration": "34.0",
         "name": "blink_perf.canvas/transferFromImageBitmap_RAF.html?RAF"
     },
     {
@@ -388,7 +388,7 @@
         "name": "blink_perf.canvas/upload-canvas-2d-to-texture_RAF.html?RAF"
     },
     {
-        "duration": "20.0",
+        "duration": "18.0",
         "name": "blink_perf.canvas/upload-video-to-sub-texture.html"
     },
     {
@@ -448,7 +448,7 @@
         "name": "blink_perf.css/ChangeStyleMultipleClassSelector.html"
     },
     {
-        "duration": "20.0",
+        "duration": "18.0",
         "name": "blink_perf.css/ChangeStyleMultipleQualifiedDataAttributesWithValuesSelector.html"
     },
     {
@@ -456,7 +456,7 @@
         "name": "blink_perf.css/ChangeStyleNestedPseudoSelector.html"
     },
     {
-        "duration": "18.0",
+        "duration": "20.0",
         "name": "blink_perf.css/ChangeStylePairOfNthChildSelector.html"
     },
     {
@@ -468,7 +468,7 @@
         "name": "blink_perf.css/ChangeStyleQualifiedDataAttributeSelector.html"
     },
     {
-        "duration": "18.0",
+        "duration": "20.0",
         "name": "blink_perf.css/ChangeStyleQualifiedDataAttributeWithValueSelector.html"
     },
     {
@@ -488,7 +488,7 @@
         "name": "blink_perf.css/ChangeStyleSinglePseudoSelector.html"
     },
     {
-        "duration": "18.0",
+        "duration": "20.0",
         "name": "blink_perf.css/ChangeStyleUniversalSelector.html"
     },
     {
@@ -540,7 +540,7 @@
         "name": "blink_perf.css/LoadMaterializeStarterPage.html"
     },
     {
-        "duration": "20.0",
+        "duration": "22.0",
         "name": "blink_perf.css/LoadSemanticPageExample.html"
     },
     {
@@ -548,7 +548,7 @@
         "name": "blink_perf.css/PseudoClassSelectors.html"
     },
     {
-        "duration": "22.0",
+        "duration": "20.0",
         "name": "blink_perf.css/SelectorCountScaling.html"
     },
     {
@@ -604,11 +604,11 @@
         "name": "blink_perf.events/EventsDispatchingInV0ShadowTrees.html"
     },
     {
-        "duration": "30.0",
+        "duration": "28.0",
         "name": "blink_perf.events/EventsDispatchingInV1ShadowTrees.html"
     },
     {
-        "duration": "22.0",
+        "duration": "20.0",
         "name": "blink_perf.events/hit-test-lots-of-layers.html"
     },
     {
@@ -628,7 +628,7 @@
         "name": "blink_perf.image_decoder/decode-jpeg-h1v1.html"
     },
     {
-        "duration": "24.0",
+        "duration": "22.0",
         "name": "blink_perf.image_decoder/decode-jpeg-h1v2.html"
     },
     {
@@ -652,7 +652,7 @@
         "name": "blink_perf.image_decoder/decode-png-palette-opaque.html"
     },
     {
-        "duration": "22.0",
+        "duration": "24.0",
         "name": "blink_perf.image_decoder/decode-png-palette.html"
     },
     {
@@ -660,7 +660,7 @@
         "name": "blink_perf.image_decoder/decode-png.html"
     },
     {
-        "duration": "34.0",
+        "duration": "36.0",
         "name": "blink_perf.layout/ArabicLineLayout.html"
     },
     {
@@ -704,7 +704,7 @@
         "name": "blink_perf.layout/chapter-reflow-once-random.html"
     },
     {
-        "duration": "16.0",
+        "duration": "18.0",
         "name": "blink_perf.layout/chapter-reflow-once.html"
     },
     {
@@ -780,7 +780,7 @@
         "name": "blink_perf.layout/flexbox-lots-of-data.html"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.layout/flexbox-row-nowrap.html"
     },
     {
@@ -864,7 +864,7 @@
         "name": "blink_perf.layout/large-table-with-collapsed-borders-and-no-colspans.html"
     },
     {
-        "duration": "42.0",
+        "duration": "40.0",
         "name": "blink_perf.layout/latin-ebook-resize.html"
     },
     {
@@ -980,7 +980,7 @@
         "name": "blink_perf.layout/nested-percent-height-tables.html"
     },
     {
-        "duration": "62.0",
+        "duration": "60.0",
         "name": "blink_perf.layout/subtree-detaching.html"
     },
     {
@@ -1012,7 +1012,7 @@
         "name": "blink_perf.owp_storage/blob-perf-shm.html"
     },
     {
-        "duration": "22.0",
+        "duration": "24.0",
         "name": "blink_perf.owp_storage/blob-perf-tiny.html"
     },
     {
@@ -1028,7 +1028,7 @@
         "name": "blink_perf.paint/color-changes.html"
     },
     {
-        "duration": "24.0",
+        "duration": "22.0",
         "name": "blink_perf.paint/complex-content-slow-scroll.html"
     },
     {
@@ -1044,7 +1044,7 @@
         "name": "blink_perf.paint/containment-resize.html"
     },
     {
-        "duration": "22.0",
+        "duration": "20.0",
         "name": "blink_perf.paint/fixed-and-many-layers-scroll.html"
     },
     {
@@ -1064,11 +1064,11 @@
         "name": "blink_perf.paint/large-table-collapsed-border-change-with-backgrounds.html"
     },
     {
-        "duration": "24.0",
+        "duration": "22.0",
         "name": "blink_perf.paint/large-table-collapsed-border-change-with-text.html"
     },
     {
-        "duration": "20.0",
+        "duration": "22.0",
         "name": "blink_perf.paint/large-table-collapsed-border-change.html"
     },
     {
@@ -1084,7 +1084,7 @@
         "name": "blink_perf.paint/paint-offset-changes.html"
     },
     {
-        "duration": "22.0",
+        "duration": "20.0",
         "name": "blink_perf.paint/select-all-words.html"
     },
     {
@@ -1188,7 +1188,7 @@
         "name": "blink_perf.parser/query-selector-last.html"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.parser/simple-url.html"
     },
     {
@@ -1204,7 +1204,7 @@
         "name": "blink_perf.parser/url-parser.html"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.parser/xml-parser.html"
     },
     {
@@ -1416,7 +1416,7 @@
         "name": "blink_perf.svg/Debian.html"
     },
     {
-        "duration": "6.0",
+        "duration": "8.0",
         "name": "blink_perf.svg/DropsOnABlade.html"
     },
     {
@@ -1424,11 +1424,11 @@
         "name": "blink_perf.svg/FlowerFromMyGarden.html"
     },
     {
-        "duration": "18.0",
+        "duration": "16.0",
         "name": "blink_perf.svg/FoodLeifLodahl.html"
     },
     {
-        "duration": "10.0",
+        "duration": "8.0",
         "name": "blink_perf.svg/France.html"
     },
     {
@@ -1460,11 +1460,11 @@
         "name": "blink_perf.svg/SierpinskiCarpet.html"
     },
     {
-        "duration": "12.0",
+        "duration": "10.0",
         "name": "blink_perf.svg/SvgCubics.html"
     },
     {
-        "duration": "8.0",
+        "duration": "10.0",
         "name": "blink_perf.svg/SvgHitTesting.html"
     },
     {
@@ -1524,7 +1524,7 @@
         "name": "loading.desktop/24h_cold"
     },
     {
-        "duration": "32.0",
+        "duration": "34.0",
         "name": "loading.desktop/24h_warm"
     },
     {
@@ -1540,7 +1540,7 @@
         "name": "loading.desktop/Aljayyash_cold"
     },
     {
-        "duration": "34.0",
+        "duration": "30.0",
         "name": "loading.desktop/Aljayyash_warm"
     },
     {
@@ -1548,7 +1548,7 @@
         "name": "loading.desktop/AllRecipes_cold"
     },
     {
-        "duration": "44.0",
+        "duration": "42.0",
         "name": "loading.desktop/AllRecipes_warm"
     },
     {
@@ -1560,7 +1560,7 @@
         "name": "loading.desktop/ArsTechnica_warm"
     },
     {
-        "duration": "28.0",
+        "duration": "26.0",
         "name": "loading.desktop/Baidu_cold"
     },
     {
@@ -1568,7 +1568,7 @@
         "name": "loading.desktop/Baidu_warm"
     },
     {
-        "duration": "34.0",
+        "duration": "36.0",
         "name": "loading.desktop/Bhaskar_cold"
     },
     {
@@ -1612,7 +1612,7 @@
         "name": "loading.desktop/Donga_cold"
     },
     {
-        "duration": "34.0",
+        "duration": "32.0",
         "name": "loading.desktop/Donga_warm"
     },
     {
@@ -1644,7 +1644,7 @@
         "name": "loading.desktop/FIFA_cold"
     },
     {
-        "duration": "38.0",
+        "duration": "40.0",
         "name": "loading.desktop/FIFA_warm"
     },
     {
@@ -1656,7 +1656,7 @@
         "name": "loading.desktop/FarsNews_warm"
     },
     {
-        "duration": "30.0",
+        "duration": "28.0",
         "name": "loading.desktop/Flickr_cold"
     },
     {
@@ -1748,7 +1748,7 @@
         "name": "loading.desktop/Mercadolivre_cold"
     },
     {
-        "duration": "30.0",
+        "duration": "32.0",
         "name": "loading.desktop/Mercadolivre_warm"
     },
     {
@@ -1792,11 +1792,11 @@
         "name": "loading.desktop/QQ_warm"
     },
     {
-        "duration": "56.0",
+        "duration": "58.0",
         "name": "loading.desktop/REI_cold"
     },
     {
-        "duration": "46.0",
+        "duration": "40.0",
         "name": "loading.desktop/REI_warm"
     },
     {
@@ -1812,7 +1812,7 @@
         "name": "loading.desktop/Sina_cold"
     },
     {
-        "duration": "40.0",
+        "duration": "42.0",
         "name": "loading.desktop/Sina_warm"
     },
     {
@@ -1820,7 +1820,7 @@
         "name": "loading.desktop/Taobao_cold"
     },
     {
-        "duration": "48.0",
+        "duration": "50.0",
         "name": "loading.desktop/Taobao_warm"
     },
     {
@@ -1876,7 +1876,7 @@
         "name": "loading.desktop/Yandex_cold"
     },
     {
-        "duration": "30.0",
+        "duration": "32.0",
         "name": "loading.desktop/Yandex_warm"
     },
     {
@@ -1916,7 +1916,7 @@
         "name": "loading.desktop/uol.com.br_cold"
     },
     {
-        "duration": "52.0",
+        "duration": "54.0",
         "name": "loading.desktop/uol.com.br_warm"
     },
     {
@@ -1924,7 +1924,7 @@
         "name": "loading.desktop/yahoo.co.jp_cold"
     },
     {
-        "duration": "30.0",
+        "duration": "32.0",
         "name": "loading.desktop/yahoo.co.jp_warm"
     },
     {
@@ -1936,7 +1936,7 @@
         "name": "media.desktop/mse.html?media=aac_audio.mp4,h264_video.mp4"
     },
     {
-        "duration": "24.0",
+        "duration": "26.0",
         "name": "media.desktop/mse.html?media=h264_video.mp4"
     },
     {
@@ -1948,7 +1948,7 @@
         "name": "media.desktop/mse.html?media=tulip2.vp9.webm"
     },
     {
-        "duration": "32.0",
+        "duration": "34.0",
         "name": "media.desktop/video.html?src=crowd1080.mp4"
     },
     {
@@ -2048,11 +2048,11 @@
         "name": "memory.desktop/TrivialScrollingPageSharedPageState"
     },
     {
-        "duration": "48.0",
+        "duration": "50.0",
         "name": "memory.desktop/TrivialWebGLPageSharedPageState"
     },
     {
-        "duration": "88.0",
+        "duration": "90.0",
         "name": "memory.desktop/WebWorker"
     },
     {
@@ -2112,7 +2112,7 @@
         "name": "power.desktop/sina"
     },
     {
-        "duration": "78.0",
+        "duration": "76.0",
         "name": "power.desktop/slideshare"
     },
     {
@@ -2208,11 +2208,11 @@
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/yahoogames.html"
     },
     {
-        "duration": "190.0",
+        "duration": "186.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/yahoonews.html"
     },
     {
-        "duration": "162.0",
+        "duration": "158.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/yahoosports.html"
     },
     {
@@ -2220,7 +2220,7 @@
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/youtube.html"
     },
     {
-        "duration": "40.0",
+        "duration": "42.0",
         "name": "rendering.desktop/accu_weather_2018"
     },
     {
@@ -2312,7 +2312,7 @@
         "name": "rendering.desktop/blogspot_pinch_2018"
     },
     {
-        "duration": "44.0",
+        "duration": "46.0",
         "name": "rendering.desktop/blur_rotating_background"
     },
     {
@@ -2328,7 +2328,7 @@
         "name": "rendering.desktop/bouncing_balls_15"
     },
     {
-        "duration": "40.0",
+        "duration": "42.0",
         "name": "rendering.desktop/bouncing_balls_shadow"
     },
     {
@@ -2368,7 +2368,7 @@
         "name": "rendering.desktop/canvas_40000_pixels_per_second"
     },
     {
-        "duration": "26.0",
+        "duration": "24.0",
         "name": "rendering.desktop/canvas_60000_pixels_per_second"
     },
     {
@@ -2420,7 +2420,7 @@
         "name": "rendering.desktop/chip_tune"
     },
     {
-        "duration": "32.0",
+        "duration": "34.0",
         "name": "rendering.desktop/cnn_2018"
     },
     {
@@ -2644,7 +2644,7 @@
         "name": "rendering.desktop/gmail_pinch_2018"
     },
     {
-        "duration": "28.0",
+        "duration": "26.0",
         "name": "rendering.desktop/google_calendar_2018"
     },
     {
@@ -2664,7 +2664,7 @@
         "name": "rendering.desktop/google_image_search_2018"
     },
     {
-        "duration": "28.0",
+        "duration": "30.0",
         "name": "rendering.desktop/google_plus_2018"
     },
     {
@@ -2748,7 +2748,7 @@
         "name": "rendering.desktop/large_texture_uploads"
     },
     {
-        "duration": "30.0",
+        "duration": "28.0",
         "name": "rendering.desktop/linkedin_2018"
     },
     {
@@ -2828,7 +2828,7 @@
         "name": "rendering.desktop/maps_perf_test"
     },
     {
-        "duration": "34.0",
+        "duration": "32.0",
         "name": "rendering.desktop/medium_texture_uploads"
     },
     {
@@ -2936,7 +2936,7 @@
         "name": "rendering.desktop/raf"
     },
     {
-        "duration": "28.0",
+        "duration": "30.0",
         "name": "rendering.desktop/raf_animation"
     },
     {
@@ -2956,7 +2956,7 @@
         "name": "rendering.desktop/repaint_cnn_2018"
     },
     {
-        "duration": "28.0",
+        "duration": "26.0",
         "name": "rendering.desktop/repaint_facebook_2018"
     },
     {
@@ -2992,15 +2992,15 @@
         "name": "rendering.desktop/runway_2019"
     },
     {
-        "duration": "38.0",
+        "duration": "36.0",
         "name": "rendering.desktop/san_angeles"
     },
     {
-        "duration": "26.0",
+        "duration": "24.0",
         "name": "rendering.desktop/second_batch_js_heavy"
     },
     {
-        "duration": "26.0",
+        "duration": "24.0",
         "name": "rendering.desktop/second_batch_js_light"
     },
     {
@@ -3040,7 +3040,7 @@
         "name": "rendering.desktop/techcrunch_2018"
     },
     {
-        "duration": "30.0",
+        "duration": "28.0",
         "name": "rendering.desktop/text_05000_pixels_per_second"
     },
     {
@@ -3052,7 +3052,7 @@
         "name": "rendering.desktop/text_20000_pixels_per_second"
     },
     {
-        "duration": "26.0",
+        "duration": "24.0",
         "name": "rendering.desktop/text_40000_pixels_per_second"
     },
     {
@@ -3060,7 +3060,7 @@
         "name": "rendering.desktop/text_60000_pixels_per_second"
     },
     {
-        "duration": "24.0",
+        "duration": "26.0",
         "name": "rendering.desktop/text_75000_pixels_per_second"
     },
     {
@@ -3068,7 +3068,7 @@
         "name": "rendering.desktop/text_90000_pixels_per_second"
     },
     {
-        "duration": "28.0",
+        "duration": "30.0",
         "name": "rendering.desktop/text_constant_full_page_raster_05000_pixels_per_second"
     },
     {
@@ -3128,7 +3128,7 @@
         "name": "rendering.desktop/touch_handler_scrolling"
     },
     {
-        "duration": "32.0",
+        "duration": "34.0",
         "name": "rendering.desktop/transform_transitions"
     },
     {
@@ -3148,11 +3148,11 @@
         "name": "rendering.desktop/twitter_2018"
     },
     {
-        "duration": "32.0",
+        "duration": "34.0",
         "name": "rendering.desktop/twitter_pinch_2018"
     },
     {
-        "duration": "34.0",
+        "duration": "32.0",
         "name": "rendering.desktop/web_animation_value_type_color"
     },
     {
@@ -3164,7 +3164,7 @@
         "name": "rendering.desktop/web_animation_value_type_length_complex"
     },
     {
-        "duration": "34.0",
+        "duration": "32.0",
         "name": "rendering.desktop/web_animation_value_type_length_simple"
     },
     {
@@ -3172,7 +3172,7 @@
         "name": "rendering.desktop/web_animation_value_type_path"
     },
     {
-        "duration": "34.0",
+        "duration": "32.0",
         "name": "rendering.desktop/web_animation_value_type_shadow"
     },
     {
@@ -3180,7 +3180,7 @@
         "name": "rendering.desktop/web_animation_value_type_transform_complex"
     },
     {
-        "duration": "34.0",
+        "duration": "32.0",
         "name": "rendering.desktop/web_animation_value_type_transform_simple"
     },
     {
@@ -3216,7 +3216,7 @@
         "name": "rendering.desktop/webp_decoding_yuv_and_gpu_rasterization"
     },
     {
-        "duration": "34.0",
+        "duration": "36.0",
         "name": "rendering.desktop/wikipedia_2018"
     },
     {
@@ -3228,7 +3228,7 @@
         "name": "rendering.desktop/yahoo_answers_2018"
     },
     {
-        "duration": "40.0",
+        "duration": "42.0",
         "name": "rendering.desktop/yahoo_news_2018"
     },
     {
@@ -3260,11 +3260,11 @@
         "name": "speedometer/http://browserbench.org/Speedometer/"
     },
     {
-        "duration": "168.0",
+        "duration": "166.0",
         "name": "speedometer2-future/Speedometer2"
     },
     {
-        "duration": "134.0",
+        "duration": "136.0",
         "name": "speedometer2/Speedometer2"
     },
     {
@@ -3288,7 +3288,7 @@
         "name": "system_health.common_desktop/browse:media:youtube:2019"
     },
     {
-        "duration": "126.0",
+        "duration": "124.0",
         "name": "system_health.common_desktop/browse:media:youtubetv:2019"
     },
     {
@@ -3304,7 +3304,7 @@
         "name": "system_health.common_desktop/browse:news:hackernews:2018"
     },
     {
-        "duration": "128.0",
+        "duration": "126.0",
         "name": "system_health.common_desktop/browse:news:nytimes:2018"
     },
     {
@@ -3328,7 +3328,7 @@
         "name": "system_health.common_desktop/browse:social:tumblr_infinite_scroll:2018"
     },
     {
-        "duration": "92.0",
+        "duration": "90.0",
         "name": "system_health.common_desktop/browse:social:twitter:2018"
     },
     {
@@ -3360,7 +3360,7 @@
         "name": "system_health.common_desktop/browse_accessibility:tech:codesearch:2018"
     },
     {
-        "duration": "42.0",
+        "duration": "38.0",
         "name": "system_health.common_desktop/load:chrome:blank"
     },
     {
@@ -3404,7 +3404,7 @@
         "name": "system_health.common_desktop/load:media:google_images:2018"
     },
     {
-        "duration": "40.0",
+        "duration": "38.0",
         "name": "system_health.common_desktop/load:media:imgur:2018"
     },
     {
@@ -3412,7 +3412,7 @@
         "name": "system_health.common_desktop/load:media:soundcloud:2018"
     },
     {
-        "duration": "38.0",
+        "duration": "36.0",
         "name": "system_health.common_desktop/load:media:youtube:2018"
     },
     {
@@ -3488,7 +3488,7 @@
         "name": "system_health.common_desktop/load:social:pinterest:2019"
     },
     {
-        "duration": "38.0",
+        "duration": "36.0",
         "name": "system_health.common_desktop/load:social:vk:2018"
     },
     {
@@ -3524,7 +3524,7 @@
         "name": "system_health.common_desktop/load_accessibility:shopping:amazon:2018"
     },
     {
-        "duration": "274.0",
+        "duration": "268.0",
         "name": "system_health.common_desktop/long_running:tools:gmail-background"
     },
     {
@@ -3676,11 +3676,11 @@
         "name": "system_health.memory_desktop/load:media:facebook_photos:2018"
     },
     {
-        "duration": "34.0",
+        "duration": "32.0",
         "name": "system_health.memory_desktop/load:media:flickr:2018"
     },
     {
-        "duration": "32.0",
+        "duration": "30.0",
         "name": "system_health.memory_desktop/load:media:google_images:2018"
     },
     {
@@ -3732,7 +3732,7 @@
         "name": "system_health.memory_desktop/load:search:amazon:2018"
     },
     {
-        "duration": "32.0",
+        "duration": "30.0",
         "name": "system_health.memory_desktop/load:search:baidu:2018"
     },
     {
@@ -3740,7 +3740,7 @@
         "name": "system_health.memory_desktop/load:search:ebay:2018"
     },
     {
-        "duration": "34.0",
+        "duration": "32.0",
         "name": "system_health.memory_desktop/load:search:flipkart:2018"
     },
     {
@@ -3760,7 +3760,7 @@
         "name": "system_health.memory_desktop/load:search:yandex:2018"
     },
     {
-        "duration": "32.0",
+        "duration": "30.0",
         "name": "system_health.memory_desktop/load:social:instagram:2018"
     },
     {
@@ -3772,7 +3772,7 @@
         "name": "system_health.memory_desktop/load:social:vk:2018"
     },
     {
-        "duration": "48.0",
+        "duration": "46.0",
         "name": "system_health.memory_desktop/load:tools:chat:2020"
     },
     {
@@ -3796,7 +3796,7 @@
         "name": "system_health.memory_desktop/load:tools:weather:2019"
     },
     {
-        "duration": "32.0",
+        "duration": "30.0",
         "name": "system_health.memory_desktop/load_accessibility:media:wikipedia:2018"
     },
     {
@@ -3844,7 +3844,7 @@
         "name": "tracing.tracing_with_background_memory_infra/http://www.amazon.com"
     },
     {
-        "duration": "24.0",
+        "duration": "26.0",
         "name": "tracing.tracing_with_background_memory_infra/http://www.ask.com/"
     },
     {
@@ -3880,7 +3880,7 @@
         "name": "v8.browsing_desktop-future/browse:media:pinterest:2018"
     },
     {
-        "duration": "122.0",
+        "duration": "128.0",
         "name": "v8.browsing_desktop-future/browse:media:tumblr:2018"
     },
     {
@@ -3904,7 +3904,7 @@
         "name": "v8.browsing_desktop-future/browse:news:hackernews:2018"
     },
     {
-        "duration": "134.0",
+        "duration": "132.0",
         "name": "v8.browsing_desktop-future/browse:news:nytimes:2018"
     },
     {
@@ -4008,7 +4008,7 @@
         "name": "v8.browsing_desktop/browse:social:facebook_infinite_scroll:2018"
     },
     {
-        "duration": "140.0",
+        "duration": "138.0",
         "name": "v8.browsing_desktop/browse:social:tumblr_infinite_scroll:2018"
     },
     {
@@ -4068,12 +4068,12 @@
         "name": "webrtc/pause_play_peerconnections"
     },
     {
-        "duration": "270.0",
-        "name": "base_perftests/_gtest_"
-    },
-    {
         "duration": "16.0",
         "name": "media_perftests/_gtest_"
+    },
+    {
+        "duration": "110.0",
+        "name": "components_perftests/_gtest_"
     },
     {
         "duration": "1988.0",
@@ -4081,14 +4081,14 @@
     },
     {
         "duration": "270.0",
-        "name": "dawn_perf_tests/_gtest_"
+        "name": "base_perftests/_gtest_"
     },
     {
         "duration": "7.0",
         "name": "views_perftests/_gtest_"
     },
     {
-        "duration": "110.0",
-        "name": "components_perftests/_gtest_"
+        "duration": "270.0",
+        "name": "dawn_perf_tests/_gtest_"
     }
 ]

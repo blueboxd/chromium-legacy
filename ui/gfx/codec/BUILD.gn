@@ -34,15 +34,6 @@ jumbo_component("codec") {
     deps += [ "//third_party:jpeg" ]
   }
 
-  if (is_chromeos) {
-    # Robust JPEG decoding for the login screen.
-    sources += [
-      "chromeos/jpeg_codec_robust_slow.cc",
-      "chromeos/jpeg_codec_robust_slow.h",
-    ]
-    deps += [ "//third_party/libjpeg" ]
-  }
-
   if (is_win) {
     cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()),
                             # which is uninteresting.

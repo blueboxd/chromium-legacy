@@ -21,6 +21,7 @@ namespace network {
 // attaching cached redemption records).
 class TrustTokenRequestHelper {
  public:
+  TrustTokenRequestHelper() = default;
   virtual ~TrustTokenRequestHelper() = default;
 
   TrustTokenRequestHelper(const TrustTokenRequestHelper&) = delete;

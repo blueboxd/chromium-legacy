@@ -86,7 +86,7 @@ if (is_android) {
   }
 }
 
-jumbo_static_library("weblayer_lib") {
+static_library("weblayer_lib") {
   sources = [
     "app/content_main_delegate_impl.cc",
     "app/content_main_delegate_impl.h",

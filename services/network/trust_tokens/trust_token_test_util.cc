@@ -7,7 +7,9 @@
 
 namespace network {
 
-TrustTokenRequestHelperTest::TrustTokenRequestHelperTest() = default;
+TrustTokenRequestHelperTest::TrustTokenRequestHelperTest(
+    base::test::TaskEnvironment::TimeSource time_source)
+    : env_(time_source) {}
 TrustTokenRequestHelperTest::~TrustTokenRequestHelperTest() = default;
 
 std::unique_ptr<net::URLRequest> TrustTokenRequestHelperTest::MakeURLRequest(

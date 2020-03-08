@@ -279,15 +279,15 @@ CommandHandler.onCommand = function(command) {
     return true;
   }
 
-  let current = ChromeVoxState.instance.currentRange;
-
-  // If true, will check if the predicate matches the current node.
-  let matchCurrent = false;
-
   // Allow edit commands first.
   if (!CommandHandler.onEditCommand_(command)) {
     return false;
   }
+
+  let current = ChromeVoxState.instance.currentRange;
+
+  // If true, will check if the predicate matches the current node.
+  let matchCurrent = false;
 
   let dir = Dir.FORWARD;
   let pred = null;
@@ -1282,14 +1282,15 @@ CommandHandler.viewGraphicAsBraille_ = function(current) {
  * @private
  */
 CommandHandler.onEditCommand_ = function(command) {
-  const current = ChromeVoxState.instance.currentRange;
-  if (ChromeVox.isStickyModeOn() || !current || !current.start ||
-      !current.start.node || !current.start.node.state[StateType.EDITABLE]) {
+  if (ChromeVox.isStickyModeOn()) {
     return true;
   }
 
   const textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
-  if (!textEditHandler || current.start.node !== textEditHandler.node) {
+  if (!textEditHandler ||
+      !AutomationUtil.isDescendantOf(
+          ChromeVoxState.instance.currentRange.start.node,
+          textEditHandler.node)) {
     return true;
   }
 
@@ -1305,7 +1306,7 @@ CommandHandler.onEditCommand_ = function(command) {
     return true;
   }
 
-  const isMultiline = AutomationPredicate.multiline(current.start.node);
+  const isMultiline = AutomationPredicate.multiline(textEditHandler.node);
   switch (command) {
     case 'previousCharacter':
       BackgroundKeyboardHandler.sendKeyPress(36, {shift: true});
@@ -1320,7 +1321,13 @@ CommandHandler.onEditCommand_ = function(command) {
       BackgroundKeyboardHandler.sendKeyPress(35, {shift: true, ctrl: true});
       break;
     case 'previousObject':
-      if (!isMultiline || textEditHandler.isSelectionOnFirstLine()) {
+      if (!isMultiline) {
+        return true;
+      }
+
+      if (textEditHandler.isSelectionOnFirstLine()) {
+        ChromeVoxState.instance.setCurrentRange(
+            cursors.Range.fromNode(textEditHandler.node));
         return true;
       }
       BackgroundKeyboardHandler.sendKeyPress(36);
@@ -1338,7 +1345,12 @@ CommandHandler.onEditCommand_ = function(command) {
       BackgroundKeyboardHandler.sendKeyPress(35);
       break;
     case 'previousLine':
-      if (!isMultiline || textEditHandler.isSelectionOnFirstLine()) {
+      if (!isMultiline) {
+        return true;
+      }
+      if (textEditHandler.isSelectionOnFirstLine()) {
+        ChromeVoxState.instance.setCurrentRange(
+            cursors.Range.fromNode(textEditHandler.node));
         return true;
       }
       BackgroundKeyboardHandler.sendKeyPress(33);
@@ -1352,7 +1364,6 @@ CommandHandler.onEditCommand_ = function(command) {
         textEditHandler.moveToAfterEditText();
         return false;
       }
-
       BackgroundKeyboardHandler.sendKeyPress(34);
       break;
     case 'jumpToTop':

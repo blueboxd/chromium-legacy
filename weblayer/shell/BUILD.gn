@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
@@ -15,7 +14,7 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
-jumbo_static_library("weblayer_shell_lib") {
+static_library("weblayer_shell_lib") {
   testonly = true
   sources = [
     "app/shell_main_params.cc",

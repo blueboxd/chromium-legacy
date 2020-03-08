@@ -27,7 +27,9 @@ namespace network {
 // constructing net::URLRequests.
 class TrustTokenRequestHelperTest : public ::testing::Test {
  public:
-  TrustTokenRequestHelperTest();
+  explicit TrustTokenRequestHelperTest(
+      base::test::TaskEnvironment::TimeSource time_source =
+          base::test::TaskEnvironment::TimeSource::DEFAULT);
   ~TrustTokenRequestHelperTest() override;
 
   TrustTokenRequestHelperTest(const TrustTokenRequestHelperTest&) = delete;

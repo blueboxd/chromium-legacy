@@ -32,6 +32,11 @@ constexpr char kTrustTokensRequestHeaderSecSignature[] = "Sec-Signature";
 constexpr char kTrustTokensRequestHeaderSecSignedRedemptionRecord[] =
     "Sec-Signed-Redemption-Record";
 
+// As a request header during the request signing operation, provides the list
+// of headers included in the signing data's canonical request data. An absent
+// header denotes an empty list.
+constexpr char kTrustTokensRequestHeaderSignedHeaders[] = "Signed-Headers";
+
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_HTTP_HEADERS_H_

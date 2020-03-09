@@ -661,24 +661,29 @@ if an object changes style and creates a self-painting-layer, we copy the flags
 from its containing self-painting layer to this layer, assuming that this layer
 needs all paint phases that its container self-painting layer needs.
 
-### Hit test painting
+### Hit test information recording
 
 Hit testing is done in paint-order, and to preserve this information the paint
-system is re-used to paint hit test display items in the background phase of
-painting. This information is then used in the compositor to implement cc-side
-hit testing. Hit test display items are produced even if there is no painted
-content.
+system is re-used to record hit test information when painting the background.
+This information is then used in the compositor to implement cc-side hit
+testing. Hit test information is recorded even if there is no painted content.
 
-There are two types of hit test painting:
+We record different types of hit test information in the following data
+structures:
 
-1. [HitTestDisplayItem](../../platform/graphics/paint/hit_test_display_item.h)
+1. Paint chunk bounds
+
+   The bounds of the current paint chunk are expanded to ensure the bounds
+   contain the hit testable area.
+
+2. [`HitTestData::touch_action_rects`](../../platform/graphics/paint/hit_test_data.h)
 
     Used for [touch action rects](http://docs.google.com/document/u/1/d/1ksiqEPkDeDuI_l5HvWlq1MfzFyDxSnsNB8YXIaXa3sE/view)
     which are areas of the page that allow certain gesture effects, as well as
     areas of the page that disallow touch events due to blocking touch event
     handlers.
 
-2. [ScrollHitTestDisplayItem](../../platform/graphics/paint/scroll_hit_test_display_item.h)
+3. [`ScrollHitTestDisplayItem`](../../platform/graphics/paint/scroll_hit_test_display_item.h)
 
     Used to create
     [non-fast scrollable regions](https://docs.google.com/document/d/1IyYJ6bVF7KZq96b_s5NrAzGtVoBXn_LQnya9y4yT3iw/view)

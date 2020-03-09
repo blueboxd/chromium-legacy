@@ -15,7 +15,7 @@
     {
       "name": "LayoutNGBlockFlow HTML",
       "position": [8, 8],
-      "bounds": [272, 16]
+      "bounds": [784, 579]
     }
   ],
   "transforms": [

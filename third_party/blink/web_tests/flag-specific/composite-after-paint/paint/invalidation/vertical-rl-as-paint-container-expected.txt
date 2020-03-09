@@ -8,28 +8,28 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='target'",
-      "position": [528, 8],
-      "bounds": [80, 340],
+      "position": [8, 8],
+      "bounds": [600, 400],
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
           "object": "NGPhysicalTextFragment 'Lorem ipsum dolor'",
-          "rect": [0, 0, 80, 340],
+          "rect": [520, 0, 80, 340],
           "reason": "style change"
         },
         {
           "object": "NGPhysicalTextFragment 'adipiscing elit.'",
-          "rect": [0, 0, 80, 340],
+          "rect": [520, 0, 80, 340],
           "reason": "style change"
         },
         {
           "object": "NGPhysicalTextFragment 'consectetur'",
-          "rect": [0, 0, 80, 340],
+          "rect": [520, 0, 80, 340],
           "reason": "style change"
         },
         {
           "object": "NGPhysicalTextFragment 'sit amet,'",
-          "rect": [0, 0, 80, 340],
+          "rect": [520, 0, 80, 340],
           "reason": "style change"
         }
       ]

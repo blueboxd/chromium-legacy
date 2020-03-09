@@ -19,15 +19,14 @@
         },
         {
           "object": "LayoutTableSection TBODY id='target'",
-          "rect": [0, 0, 134, 85],
+          "rect": [26, 22, 134, 85],
           "reason": "paint property change"
         }
       ]
     },
     {
       "name": "LayoutNGTableCell TD",
-      "position": [24, 22],
-      "bounds": [10, 19],
+      "bounds": [59, 64],
       "transform": 1
     }
   ],

@@ -14,8 +14,8 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fancy_ui/bidi_container_view.h"
-#include "ios/chrome/browser/ui/page_info/page_info_config.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
+#include "ios/chrome/browser/ui/page_info/page_info_site_security_description.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/util/animation_util.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -105,7 +105,7 @@ const CGFloat kButtonXOffset = kTextXPosition;
   CGPoint _arrowOriginPoint;
 
   // Model for the data to display.
-  PageInfoConfig* _model;
+  PageInfoSiteSecurityDescription* _model;
 
   // Width of the view. Depends on the device (iPad/iPhone).
   CGFloat _viewWidth;
@@ -129,7 +129,7 @@ const CGFloat kButtonXOffset = kTextXPosition;
 
 #pragma mark public
 
-- (id)initWithModel:(PageInfoConfig*)model
+- (id)initWithModel:(PageInfoSiteSecurityDescription*)model
              sourcePoint:(CGPoint)sourcePoint
     presentationProvider:(id<PageInfoPresentation>)provider
                  handler:(id<BrowserCommands>)handler {
@@ -242,7 +242,7 @@ const CGFloat kButtonXOffset = kTextXPosition;
     offset += imageBaselineDelta;
 
   // Add the separators.
-  if (_model.buttonAction != PageInfoButtonActionNone) {
+  if (_model.buttonAction != PageInfoSiteSecurityButtonActionNone) {
     offset += kVerticalSpacing;
   }
 
@@ -482,24 +482,24 @@ const CGFloat kButtonXOffset = kTextXPosition;
 
 // Returns a button with title and action configured for |buttonAction|.
 - (UIButton*)buttonForAction:(PageInfoButtonAction)buttonAction {
-  if (buttonAction == PageInfoButtonActionNone) {
+  if (buttonAction == PageInfoSiteSecurityButtonActionNone) {
     return nil;
   }
   UIButton* button = [[UIButton alloc] initWithFrame:CGRectZero];
   int messageId;
   NSString* accessibilityID = @"Reload button";
   switch (buttonAction) {
-    case PageInfoButtonActionNone:
+    case PageInfoSiteSecurityButtonActionNone:
       NOTREACHED();
       return nil;
-    case PageInfoButtonActionShowHelp:
+    case PageInfoSiteSecurityButtonActionShowHelp:
       messageId = IDS_LEARN_MORE;
       accessibilityID = @"Learn more";
       [button addTarget:self.handler
                     action:@selector(showSecurityHelpPage)
           forControlEvents:UIControlEventTouchUpInside];
       break;
-    case PageInfoButtonActionReload:
+    case PageInfoSiteSecurityButtonActionReload:
       messageId = IDS_IOS_PAGE_INFO_RELOAD;
       accessibilityID = @"Reload button";
       [button addTarget:self.handler

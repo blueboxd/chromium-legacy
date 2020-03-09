@@ -130,9 +130,9 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   bool DrawsContent() const { return draws_content_; }
   void SetDrawsContent(bool);
 
-  // False if no hit test display items will be painted onto this GraphicsLayer.
-  // This is different from |DrawsContent| because hit test display items are
-  // internal to blink and are not copied to the cc::Layer's display list.
+  // False if no hit test data will be recorded onto this GraphicsLayer.
+  // This is different from |DrawsContent| because hit test data are internal
+  // to blink and are not copied to the cc::Layer's display list.
   bool PaintsHitTest() const { return paints_hit_test_; }
   void SetPaintsHitTest(bool paints) { paints_hit_test_ = paints; }
 

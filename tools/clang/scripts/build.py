@@ -343,8 +343,6 @@ def main():
   parser.add_argument('--gcc-toolchain', help='what gcc toolchain to use for '
                       'building; --gcc-toolchain=/opt/foo picks '
                       '/opt/foo/bin/gcc')
-  parser.add_argument('--lto-lld', action='store_true',
-                      help='build lld with LTO (only applies on Linux)')
   parser.add_argument('--pgo', action='store_true', help='build with PGO')
   parser.add_argument('--llvm-force-head-revision', action='store_true',
                       help='build the latest revision')
@@ -371,13 +369,6 @@ def main():
                       default=sys.platform in ('linux2', 'darwin'))
   args = parser.parse_args()
 
-  if args.lto_lld and not args.bootstrap:
-    print('--lto-lld requires --bootstrap')
-    return 1
-  if args.lto_lld and not sys.platform.startswith('linux'):
-    # TODO(hans): Use it on Windows too.
-    print('--lto-lld is only effective on Linux. Ignoring the option.')
-    args.lto_lld = False
   if args.pgo and not args.bootstrap:
     print('--pgo requires --bootstrap')
     return 1
@@ -525,7 +516,7 @@ def main():
     if args.pgo:
       # Need libclang_rt.profile
       projects += ';compiler-rt'
-    if sys.platform != 'darwin' or args.lto_lld:
+    if sys.platform != 'darwin':
       projects += ';lld'
     if sys.platform == 'darwin':
       # Need libc++ and compiler-rt for the bootstrap compiler on mac.
@@ -761,22 +752,6 @@ def main():
     threads_enabled_cmake_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
   if lld is not None:
     threads_enabled_cmake_args.append('-DCMAKE_LINKER=' + lld)
-
-  if args.lto_lld:
-    # Build lld with LTO. That speeds up the linker by ~10%.
-    # We only use LTO for Linux now.
-    #
-    # The linker expects all archive members to have symbol tables, so the
-    # archiver needs to be able to create symbol tables for bitcode files.
-    # GNU ar and ranlib don't understand bitcode files, but llvm-ar and
-    # llvm-ranlib do, so use them.
-    ar = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'llvm-ar')
-    ranlib = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'llvm-ranlib')
-    threads_enabled_cmake_args += [
-        '-DCMAKE_AR=' + ar,
-        '-DCMAKE_RANLIB=' + ranlib,
-        '-DLLVM_ENABLE_LTO=thin',
-        ]
 
   RunCommand(['cmake'] + threads_enabled_cmake_args +
              [os.path.join(LLVM_DIR, 'llvm')],

@@ -62,8 +62,6 @@ namespace service_worker_storage_unittest {
 using RegistrationData = storage::mojom::ServiceWorkerRegistrationData;
 using ResourceRecord = storage::mojom::ServiceWorkerResourceRecordPtr;
 
-// TODO(crbug.com/946719): Change the type of |size_bytes| to uint64_t when
-// the bug is fixed.
 ResourceRecord CreateResourceRecord(int64_t resource_id,
                                     const GURL& url,
                                     int64_t size_bytes) {

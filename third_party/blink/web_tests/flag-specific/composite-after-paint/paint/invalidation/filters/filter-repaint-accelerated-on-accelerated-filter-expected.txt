@@ -7,6 +7,12 @@
       "backgroundColor": "#FFFFFF"
     },
     {
+      "name": "LayoutNGBlockFlow DIV class='blur accelerated'",
+      "bounds": [200, 200],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
       "name": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow accelerated'",
       "position": [-14, -14],
       "bounds": [160, 260],

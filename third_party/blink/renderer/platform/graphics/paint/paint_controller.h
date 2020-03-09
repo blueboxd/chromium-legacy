@@ -92,6 +92,15 @@ class PLATFORM_EXPORT PaintController {
     return new_paint_chunks_.LastChunk().bounds;
   }
 
+  void RecordHitTestData(const DisplayItemClient& client,
+                         const IntRect& rect,
+                         TouchAction touch_action) {
+    if (rect.IsEmpty())
+      return;
+    PaintChunk::Id id(client, DisplayItem::kHitTest, current_fragment_);
+    new_paint_chunks_.AddHitTestDataToCurrentChunk(id, rect, touch_action);
+  }
+
   template <typename DisplayItemClass, typename... Args>
   void CreateAndAppend(Args&&... args) {
     static_assert(WTF::IsSubclass<DisplayItemClass, DisplayItem>::value,

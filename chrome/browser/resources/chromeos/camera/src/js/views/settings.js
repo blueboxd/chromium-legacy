@@ -335,6 +335,16 @@ export class ResolutionSettings extends BaseSettings {
         this.updateSelectedPhotoResolution_.bind(this));
     this.videoPreferrer_.setPreferredResolutionChangeListener(
         this.updateSelectedVideoResolution_.bind(this));
+
+    // Flips 'disabled' of resolution options.
+    [state.State.CAMERA_CONFIGURING, state.State.TAKING].forEach((s) => {
+      state.addObserver(s, () => {
+        document.querySelectorAll('.resolution-option>input').forEach((e) => {
+          e.disabled = state.get(state.State.CAMERA_CONFIGURING) ||
+              state.get(state.State.TAKING);
+        });
+      });
+    });
   }
 
   /**
@@ -639,12 +649,8 @@ export class ResolutionSettings extends BaseSettings {
         captionText.textContent = optTextTempl(r, resolutions);
         inputElement.checked = true;
       }
-      inputElement.addEventListener('click', (event) => {
-        if (!state.get(state.State.STREAMING) ||
-            state.get(state.State.TAKING)) {
-          event.preventDefault();
-        }
-      });
+      inputElement.disabled = state.get(state.State.CAMERA_CONFIGURING) ||
+          state.get(state.State.TAKING);
       inputElement.addEventListener('change', (event) => {
         if (inputElement.checked) {
           captionText.textContent = optTextTempl(r, resolutions);

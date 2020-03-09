@@ -29,6 +29,7 @@
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
@@ -75,6 +76,7 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FormActivityObserverBridge;
 using autofill::FormData;
 using autofill::PasswordFormGenerationData;
 using autofill::PasswordForm;
@@ -136,7 +138,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 @end
 
-@interface PasswordController ()<FormSuggestionProvider, PasswordFormFiller>
+@interface PasswordController () <FormSuggestionProvider,
+                                  PasswordFormFiller,
+                                  FormActivityObserver>
 
 // Informs the |_passwordManager| of the password forms (if any were present)
 // that have been found on the page.
@@ -179,6 +183,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // Bridge to observe WebState from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
+  // Bridge to observe form activity in |_webState|.
+  std::unique_ptr<FormActivityObserverBridge> _formActivityObserverBridge;
+
   // Timer for hiding "Signing in as ..." notification.
   base::OneShotTimer _notifyAutoSigninTimer;
 
@@ -208,6 +215,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());
+    _formActivityObserverBridge =
+        std::make_unique<FormActivityObserverBridge>(_webState, self);
     _formHelper =
         [[PasswordFormHelper alloc] initWithWebState:webState delegate:self];
     _suggestionHelper =
@@ -330,6 +339,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   if (_webState) {
     _webState->RemoveObserver(_webStateObserverBridge.get());
     _webStateObserverBridge.reset();
+    _formActivityObserverBridge.reset();
     _webState = nullptr;
   }
   _passwordManagerDriver.reset();
@@ -967,6 +977,28 @@ NSString* const kSuggestionSuffix = @" ••••••••";
           confirmPasswordIdentifier:confirmPasswordIdentifier
                   generatedPassword:generatedPassword
                   completionHandler:generatedPasswordInjected];
+}
+
+#pragma mark - FormActivityObserver
+
+- (void)webState:(web::WebState*)webState
+    didRegisterFormActivity:(const autofill::FormActivityParams&)params
+                    inFrame:(web::WebFrame*)frame {
+  DCHECK_EQ(_webState, webState);
+
+  if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
+    return;
+
+  if (!frame || !frame->CanCallJavaScriptFunction())
+    return;
+
+  // Return early if |params| is not complete or if forms are not changed.
+  if (params.input_missing || params.type != "form_changed")
+    return;
+
+  // If there's a change in password forms on a page, they should be parsed
+  // again.
+  [self findPasswordFormsAndSendThemToPasswordStore];
 }
 
 @end

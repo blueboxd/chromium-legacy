@@ -15,19 +15,13 @@
         {
           "object": "LayoutTableRow TR id='target'",
           "rect": [0, 0, 186, 64],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutTableRow TR id='target'",
-          "rect": [0, 0, 132, 19],
-          "reason": "paint property change"
+          "reason": "appeared"
         }
       ]
     },
     {
       "name": "LayoutNGTableCell TD",
-      "position": [24, 22],
-      "bounds": [10, 19],
+      "bounds": [59, 64],
       "transform": 1
     }
   ],

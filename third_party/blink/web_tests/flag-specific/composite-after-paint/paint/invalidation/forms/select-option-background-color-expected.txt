@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow SELECT",
+          "object": "LayoutBlockFlow OPTION id='option'",
           "rect": [1, 37, 13, 17],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         }
       ]
     }

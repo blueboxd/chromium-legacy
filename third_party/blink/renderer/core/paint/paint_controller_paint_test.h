@@ -137,10 +137,7 @@ const DisplayItem::Type kNonScrollingBackgroundChunkType =
     DisplayItem::PaintPhaseToDrawingType(PaintPhase::kSelfBlockBackgroundOnly);
 const DisplayItem::Type kScrollingBackgroundChunkType =
     DisplayItem::PaintPhaseToClipType(PaintPhase::kSelfBlockBackgroundOnly);
-const DisplayItem::Type kNonScrollingContentsBackgroundChunkType =
-    DisplayItem::PaintPhaseToDrawingType(
-        PaintPhase::kDescendantBlockBackgroundsOnly);
-const DisplayItem::Type kScrollingContentsBackgroundChunkType =
+const DisplayItem::Type kClippedContentsBackgroundChunkType =
     DisplayItem::PaintPhaseToClipType(
         PaintPhase::kDescendantBlockBackgroundsOnly);
 

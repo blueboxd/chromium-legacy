@@ -7,16 +7,20 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='moveMe'",
-      "position": [150, 150],
-      "bounds": [100, 100],
-      "contentsOpaque": true,
+      "name": "LayoutNGBlockFlow (positioned) DIV id='fixedOverlapping'",
+      "position": [8, 88],
+      "bounds": [792, 512],
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='moveMe'",
+          "rect": [142, 62, 100, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='moveMe'",
           "rect": [0, 0, 100, 100],
-          "reason": "paint property change"
+          "reason": "geometry"
         }
       ]
     }

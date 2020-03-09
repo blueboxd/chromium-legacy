@@ -25,7 +25,7 @@ namespace blink {
 // PaintRecord, and is in the space of the DisplayItemList. This allows the
 // visual_rect to be compared between DrawingDisplayItems, and to give bounds
 // around what the user can actually see from the PaintRecord.
-class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
+class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
  public:
   DISABLE_CFI_PERF
   DrawingDisplayItem(const DisplayItemClient& client,

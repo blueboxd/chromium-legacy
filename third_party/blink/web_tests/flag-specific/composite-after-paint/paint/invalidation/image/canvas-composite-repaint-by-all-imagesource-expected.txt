@@ -457,6 +457,12 @@
       "name": "LayoutVideo VIDEO id='video'",
       "bounds": [150, 60],
       "transform": 1
+    },
+    {
+      "name": "LayoutFlexibleBox (relative positioned) DIV class='sizing-small phase-ready state-stopped'",
+      "bounds": [150, 60],
+      "drawsContent": false,
+      "transform": 1
     }
   ],
   "transforms": [

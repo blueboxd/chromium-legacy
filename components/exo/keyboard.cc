@@ -243,15 +243,21 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   if (!focus_)
     return;
 
-  // Ignore synthetic key repeat events.
-  if (event->is_repeat())
-    return;
-
   // If the event target is not an exo::Surface, let another handler process the
   // event. This check may not be necessary once https://crbug.com/624168 is
   // resolved.
   if (!GetShellMainSurface(static_cast<aura::Window*>(event->target())) &&
       !Surface::AsSurface(static_cast<aura::Window*>(event->target()))) {
+    return;
+  }
+
+  // Ignore synthetic key repeat events.
+  if (event->is_repeat()) {
+    // Clients should not see key repeat events and instead handle them on the
+    // client side.
+    // Mark the key repeat events as handled to avoid them from invoking
+    // accelerators.
+    event->SetHandled();
     return;
   }
 

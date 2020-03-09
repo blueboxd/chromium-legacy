@@ -9,6 +9,7 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -70,6 +71,13 @@ void CreateOpenNewSubmenu(apps::mojom::MenuType menu_type,
                           ? ash::USE_LAUNCH_TYPE_WINDOW
                           : ash::LAUNCH_TYPE_WINDOW,
                       IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW, kGroupId));
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip)) {
+    menu_item->submenu.push_back(
+        CreateRadioItem((menu_type == apps::mojom::MenuType::kAppList)
+                            ? ash::USE_LAUNCH_TYPE_TABBED_WINDOW
+                            : ash::LAUNCH_TYPE_TABBED_WINDOW,
+                        IDS_APP_LIST_CONTEXT_MENU_NEW_TABBED_WINDOW, kGroupId));
+  }
 
   menu_item->radio_group_id = kInvalidRadioGroupId;
 

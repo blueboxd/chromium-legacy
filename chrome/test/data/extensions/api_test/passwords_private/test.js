@@ -6,6 +6,9 @@
 // that callbacks are correctly invoked, expected parameters are correct,
 // and failures are detected.
 
+
+const COMPROMISE_TIME = 158322960000;
+
 var availableTests = [
   function changeSavedPassword() {
     var numCalls = 0;
@@ -221,6 +224,9 @@ var availableTests = [
           'https://example.com/change-password',
           compromisedCredential.changePasswordUrl);
       chrome.test.assertEq('alice', compromisedCredential.username);
+      const compromiseTime = new Date(compromisedCredential.compromiseTime);
+      chrome.test.assertEq(
+          'Tue, 03 Mar 2020 12:00:00 GMT', compromiseTime.toUTCString());
       chrome.test.assertEq(
           '3 days ago', compromisedCredential.elapsedTimeSinceCompromise);
       chrome.test.assertEq('LEAKED', compromisedCredential.compromiseType);
@@ -236,6 +242,7 @@ var availableTests = [
       formattedOrigin: 'example.com',
       signonRealm: 'https://example.com',
       username: 'alice',
+      compromiseTime: COMPROMISE_TIME,
       elapsedTimeSinceCompromise: '3 days ago',
       compromiseType: 'LEAKED',
     };
@@ -254,6 +261,7 @@ var availableTests = [
       formattedOrigin: 'example.com',
       signonRealm: 'https://example.com',
       username: 'alice',
+      compromiseTime: COMPROMISE_TIME,
       elapsedTimeSinceCompromise: '3 days ago',
       compromiseType: 'LEAKED',
     };
@@ -276,6 +284,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           signonRealm: 'https://example.com',
           username: 'alice',
+          compromiseTime: COMPROMISE_TIME,
           elapsedTimeSinceCompromise: '3 days ago',
           compromiseType: 'LEAKED',
         },
@@ -294,6 +303,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           signonRealm: 'https://example.com',
           username: 'alice',
+          compromiseTime: COMPROMISE_TIME,
           elapsedTimeSinceCompromise: '3 days ago',
           compromiseType: 'LEAKED',
         },
@@ -310,6 +320,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           signonRealm: 'https://example.com',
           username: 'alice',
+          compromiseTime: COMPROMISE_TIME,
           elapsedTimeSinceCompromise: '3 days ago',
           compromiseType: 'LEAKED',
         },
@@ -329,6 +340,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           signonRealm: 'https://example.com',
           username: 'alice',
+          compromiseTime: COMPROMISE_TIME,
           elapsedTimeSinceCompromise: '3 days ago',
           compromiseType: 'LEAKED',
         },

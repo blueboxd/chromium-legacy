@@ -8,6 +8,12 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='scroller'",
+      "bounds": [200, 200],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='scroller'",
       "bounds": [185, 185],
       "drawsContent": false,
       "transform": 1
@@ -15,7 +21,7 @@
     {
       "name": "HorizontalScrollbar",
       "position": [0, 185],
-      "bounds": [185, 15],
+      "bounds": [200, 15],
       "transform": 1
     },
     {
@@ -25,7 +31,13 @@
       "transform": 1
     },
     {
-      "name": "Scroll corner of LayoutNGBlockFlow DIV id='scroller'",
+      "name": "LayoutNGBlockFlow DIV id='scroller'",
+      "bounds": [185, 300],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='scroller'",
       "bounds": [200, 200],
       "paintInvalidations": [
         {

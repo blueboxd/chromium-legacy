@@ -349,8 +349,6 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   cc_layer = content_layer_client->UpdateCcPictureLayer(
       paint_artifact, paint_chunks, cc_combined_bounds,
       pending_layer.property_tree_state);
-  if (cc_combined_bounds.IsEmpty())
-    cc_layer->SetIsDrawable(false);
 
   new_content_layer_clients.push_back(std::move(content_layer_client));
 
@@ -376,8 +374,7 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
 
     const auto& chunk_state = chunk.properties.GetPropertyTreeState();
     for (const auto& touch_action_rect : hit_test_data->touch_action_rects) {
-      auto rect =
-          FloatClipRect(FloatRect(PixelSnappedIntRect(touch_action_rect.rect)));
+      auto rect = FloatClipRect(FloatRect(touch_action_rect.rect));
       if (!GeometryMapper::LocalToAncestorVisualRect(chunk_state, layer_state,
                                                      rect)) {
         continue;

@@ -160,7 +160,8 @@ bool PaintController::UseCachedSubsequenceIfPossible(
   wtf_size_t end_item_index =
       current_paint_artifact_->PaintChunks()[markers->end_chunk_index - 1]
           .end_index;
-  if (current_paint_artifact_->GetDisplayItemList()[start_item_index]
+  if (end_item_index > start_item_index &&
+      current_paint_artifact_->GetDisplayItemList()[start_item_index]
           .IsTombstone()) {
     // The subsequence has already been copied, indicating that the same client
     // created multiple subsequences. If DCHECK_IS_ON(), then we should have

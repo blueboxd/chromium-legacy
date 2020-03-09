@@ -34,6 +34,14 @@ Polymer({
      * @private {?settings.Account}
      */
     actionMenuAccount_: Object,
+
+    /** @private {boolean} */
+    isChildUser_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isChild');
+      },
+    },
   },
 
   /** @private {?settings.AccountManagerBrowserProxy} */

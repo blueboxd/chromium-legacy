@@ -7,13 +7,9 @@
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
-#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/skia/include/core/SkRegion.h"
 
 namespace blink {
 
@@ -42,53 +38,6 @@ static SkColor DisplayItemBackgroundColor(const DisplayItem& item) {
   return SK_ColorTRANSPARENT;
 }
 
-void ComputeChunkDerivedData(const DisplayItemList& display_items,
-                             PaintChunk& chunk) {
-  if (!chunk.size())
-    return;
-
-  SkRegion known_to_be_opaque_region;
-  auto items = display_items.ItemsInPaintChunk(chunk);
-  for (const DisplayItem& item : items) {
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-        item.IsDrawing()) {
-      const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
-      if (drawing.GetPaintRecord() && drawing.KnownToBeOpaque()) {
-        known_to_be_opaque_region.op(SkIRect(drawing.VisualRect()),
-                                     SkRegion::kUnion_Op);
-      }
-    }
-
-    if (item.IsHitTest()) {
-      const auto& hit_test = static_cast<const HitTestDisplayItem&>(item);
-      if (!chunk.hit_test_data)
-        chunk.hit_test_data = std::make_unique<HitTestData>();
-      chunk.hit_test_data->AppendTouchActionRect(hit_test.GetHitTestRect());
-    }
-
-    // Because ScrollHitTestDisplayItems force new paint chunks (see:
-    // PaintChunker::IncrementDisplayItemIndex), they should only be the first
-    // item in a paint chunk.
-    DCHECK(!item.IsScrollHitTest() || item.Equals(*items.begin()));
-  }
-
-  // Because ScrollHitTestDisplayItems force new paint chunks (see:
-  // PaintChunker::IncrementDisplayItemIndex), they should only be the first
-  // item in a paint chunk.
-  if (items.begin()->IsScrollHitTest()) {
-    const auto& scroll_hit_test_item =
-        static_cast<const ScrollHitTestDisplayItem&>(*items.begin());
-    if (!chunk.hit_test_data)
-      chunk.hit_test_data = std::make_unique<HitTestData>();
-    chunk.hit_test_data->SetScrollHitTest(
-        scroll_hit_test_item.scroll_offset_node(),
-        scroll_hit_test_item.scroll_container_bounds());
-  }
-
-  if (known_to_be_opaque_region.contains(chunk.bounds))
-    chunk.known_to_be_opaque = true;
-}
-
 // For PaintArtifact::AppendDebugDrawing().
 class DebugDrawingClient final : public DisplayItemClient {
  public:
@@ -104,21 +53,6 @@ PaintArtifact::PaintArtifact() : display_item_list_(0) {}
 PaintArtifact::PaintArtifact(DisplayItemList display_items,
                              Vector<PaintChunk> chunks)
     : display_item_list_(std::move(display_items)), chunks_(std::move(chunks)) {
-  for (auto& chunk : chunks_) {
-    if (chunk.is_moved_from_cached_subsequence) {
-#if DCHECK_IS_ON()
-      auto old_hit_test_data = std::move(chunk.hit_test_data);
-      auto old_known_to_be_opaque = chunk.known_to_be_opaque;
-      ComputeChunkDerivedData(display_item_list_, chunk);
-      DCHECK((!old_hit_test_data && !chunk.hit_test_data) ||
-             (old_hit_test_data && chunk.hit_test_data &&
-              *old_hit_test_data == *chunk.hit_test_data));
-      DCHECK_EQ(old_known_to_be_opaque, chunk.known_to_be_opaque);
-#endif
-      continue;
-    }
-    ComputeChunkDerivedData(display_item_list_, chunk);
-  }
 }
 
 PaintArtifact::~PaintArtifact() = default;
@@ -156,7 +90,8 @@ void PaintArtifact::AppendDebugDrawing(
   // Create a PaintChunk for the debug drawing.
   chunks_.emplace_back(display_item_list_.size() - 1, display_item_list_.size(),
                        display_item.GetId(), property_tree_state);
-  ComputeChunkDerivedData(display_item_list_, chunks_.back());
+  chunks_.back().bounds = chunks_.back().drawable_bounds =
+      display_item_list_.Last().VisualRect();
 }
 
 void PaintArtifact::Replay(GraphicsContext& graphics_context,

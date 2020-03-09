@@ -107,8 +107,12 @@ AppBrowserController::AppBrowserController(
       // TODO(crbug.com/846546): Generalise has_tab_strip_ as a SystemWebApp
       // capability.
       has_tab_strip_(
-          base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) ||
-          system_app_type_ == SystemAppType::TERMINAL) {
+          system_app_type_ == SystemAppType::TERMINAL ||
+          (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
+           HasAppId() &&
+           WebAppProvider::Get(browser->profile())
+               ->registrar()
+               .IsInExperimentalTabbedWindowMode(GetAppId()))) {
   browser->tab_strip_model()->AddObserver(this);
   UpdateThemePack();
 }

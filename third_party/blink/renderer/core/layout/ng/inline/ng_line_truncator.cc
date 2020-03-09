@@ -42,7 +42,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
   // Loop children from the logical last to the logical first to determine where
   // to place the ellipsis. Children maybe truncated or moved as part of the
   // process.
-  NGLineBoxFragmentBuilder::Child* ellpisized_child = nullptr;
+  NGLineBoxFragmentBuilder::Child* ellipsized_child = nullptr;
   scoped_refptr<const NGPhysicalTextFragment> truncated_fragment;
   if (IsLtr(line_direction_)) {
     NGLineBoxFragmentBuilder::Child* first_child = line_box->FirstInFlowChild();
@@ -50,7 +50,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
       auto& child = *it;
       if (EllipsizeChild(line_width, ellipsis_width, &child == first_child,
                          &child, &truncated_fragment)) {
-        ellpisized_child = &child;
+        ellipsized_child = &child;
         break;
       }
     }
@@ -59,44 +59,44 @@ LayoutUnit NGLineTruncator::TruncateLine(
     for (auto& child : *line_box) {
       if (EllipsizeChild(line_width, ellipsis_width, &child == first_child,
                          &child, &truncated_fragment)) {
-        ellpisized_child = &child;
+        ellipsized_child = &child;
         break;
       }
     }
   }
 
   // Abort if ellipsis could not be placed.
-  if (!ellpisized_child)
+  if (!ellipsized_child)
     return line_width;
 
   // Truncate the text fragment if needed.
   if (truncated_fragment) {
-    DCHECK(ellpisized_child->fragment);
+    DCHECK(ellipsized_child->fragment);
     // In order to preserve layout information before truncated, hide the
     // original fragment and insert a truncated one.
-    size_t child_index_to_truncate = ellpisized_child - line_box->begin();
+    size_t child_index_to_truncate = ellipsized_child - line_box->begin();
     line_box->InsertChild(child_index_to_truncate + 1);
     box_states->ChildInserted(child_index_to_truncate + 1);
     NGLineBoxFragmentBuilder::Child* child_to_truncate =
         &(*line_box)[child_index_to_truncate];
-    ellpisized_child = std::next(child_to_truncate);
-    *ellpisized_child = *child_to_truncate;
+    ellipsized_child = std::next(child_to_truncate);
+    *ellipsized_child = *child_to_truncate;
     HideChild(child_to_truncate);
     LayoutUnit new_inline_size = line_style_->IsHorizontalWritingMode()
                                      ? truncated_fragment->Size().width
                                      : truncated_fragment->Size().height;
-    DCHECK_LE(new_inline_size, ellpisized_child->inline_size);
+    DCHECK_LE(new_inline_size, ellipsized_child->inline_size);
     if (UNLIKELY(IsRtl(line_direction_))) {
-      ellpisized_child->rect.offset.inline_offset +=
-          ellpisized_child->inline_size - new_inline_size;
+      ellipsized_child->rect.offset.inline_offset +=
+          ellipsized_child->inline_size - new_inline_size;
     }
-    ellpisized_child->inline_size = new_inline_size;
-    ellpisized_child->fragment = std::move(truncated_fragment);
+    ellipsized_child->inline_size = new_inline_size;
+    ellipsized_child->fragment = std::move(truncated_fragment);
   }
 
   // Create the ellipsis, associating it with the ellipsized child.
   LayoutObject* ellipsized_layout_object =
-      ellpisized_child->PhysicalFragment()->GetMutableLayoutObject();
+      ellipsized_child->PhysicalFragment()->GetMutableLayoutObject();
   DCHECK(ellipsized_layout_object && ellipsized_layout_object->IsInline() &&
          (ellipsized_layout_object->IsText() ||
           ellipsized_layout_object->IsAtomicInlineLevel()));
@@ -109,8 +109,8 @@ LayoutUnit NGLineTruncator::TruncateLine(
   // line box.
   LayoutUnit ellipsis_inline_offset =
       IsLtr(line_direction_)
-          ? ellpisized_child->InlineOffset() + ellpisized_child->inline_size
-          : ellpisized_child->InlineOffset() - ellipsis_width;
+          ? ellipsized_child->InlineOffset() + ellipsized_child->inline_size
+          : ellipsized_child->InlineOffset() - ellipsis_width;
   FontBaseline baseline_type = line_style_->GetFontBaseline();
   NGLineHeightMetrics ellipsis_metrics(font_data->GetFontMetrics(),
                                        baseline_type);

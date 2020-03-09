@@ -8,6 +8,7 @@
 #include <string.h>
 #include <atomic>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -183,7 +184,7 @@ bool DoFindAndCompareScheme(const CHAR* str,
                             Component* found_scheme) {
   // Before extracting scheme, canonicalize the URL to remove any whitespace.
   // This matches the canonicalization done in DoCanonicalize function.
-  RawCanonOutputT<CHAR> whitespace_buffer;
+  STACK_UNINITIALIZED RawCanonOutputT<CHAR> whitespace_buffer;
   int spec_len;
   const CHAR* spec =
       RemoveURLWhitespace(str, str_len, &whitespace_buffer, &spec_len, nullptr);
@@ -212,7 +213,7 @@ bool DoCanonicalize(const CHAR* spec,
 
   // Remove any whitespace from the middle of the relative URL if necessary.
   // Possibly this will result in copying to the new buffer.
-  RawCanonOutputT<CHAR> whitespace_buffer;
+  STACK_UNINITIALIZED RawCanonOutputT<CHAR> whitespace_buffer;
   if (whitespace_policy == REMOVE_WHITESPACE) {
     spec = RemoveURLWhitespace(spec, spec_len, &whitespace_buffer, &spec_len,
                                &output_parsed->potentially_dangling_markup);
@@ -291,7 +292,7 @@ bool DoResolveRelative(const char* base_spec,
                        Parsed* output_parsed) {
   // Remove any whitespace from the middle of the relative URL, possibly
   // copying to the new buffer.
-  RawCanonOutputT<CHAR> whitespace_buffer;
+  STACK_UNINITIALIZED RawCanonOutputT<CHAR> whitespace_buffer;
   int relative_length;
   const CHAR* relative = RemoveURLWhitespace(
       in_relative, in_relative_length, &whitespace_buffer, &relative_length,
@@ -332,7 +333,7 @@ bool DoResolveRelative(const char* base_spec,
     Parsed base_parsed_authority;
     ParseStandardURL(base_spec, base_spec_len, &base_parsed_authority);
     if (base_parsed_authority.host.is_nonempty()) {
-      RawCanonOutputT<char> temporary_output;
+      STACK_UNINITIALIZED RawCanonOutputT<char> temporary_output;
       bool did_resolve_succeed =
           ResolveRelativeURL(base_spec, base_parsed_authority, false, relative,
                              relative_component, charset_converter,
@@ -384,7 +385,7 @@ bool DoReplaceComponents(const char* spec,
   if (replacements.IsSchemeOverridden()) {
     // Canonicalize the new scheme so it is 8-bit and can be concatenated with
     // the existing spec.
-    RawCanonOutput<128> scheme_replaced;
+    STACK_UNINITIALIZED RawCanonOutput<128> scheme_replaced;
     Component scheme_replaced_parsed;
     CanonicalizeScheme(replacements.sources().scheme,
                        replacements.components().scheme,
@@ -401,7 +402,7 @@ bool DoReplaceComponents(const char* spec,
 
     // We now need to completely re-parse the resulting string since its meaning
     // may have changed with the different scheme.
-    RawCanonOutput<128> recanonicalized;
+    STACK_UNINITIALIZED RawCanonOutput<128> recanonicalized;
     Parsed recanonicalized_parsed;
     DoCanonicalize(scheme_replaced.data(), scheme_replaced.length(), true,
                    REMOVE_WHITESPACE, charset_converter, &recanonicalized,
@@ -699,7 +700,7 @@ bool DomainIs(base::StringPiece canonical_host,
 }
 
 bool HostIsIPAddress(base::StringPiece host) {
-  url::RawCanonOutputT<char, 128> ignored_output;
+  STACK_UNINITIALIZED url::RawCanonOutputT<char, 128> ignored_output;
   url::CanonHostInfo host_info;
   url::CanonicalizeIPAddress(host.data(), Component(0, host.length()),
                              &ignored_output, &host_info);
@@ -778,7 +779,7 @@ void DecodeURLEscapeSequences(const char* input,
                               int length,
                               DecodeURLMode mode,
                               CanonOutputW* output) {
-  RawCanonOutputT<char> unescaped_chars;
+  STACK_UNINITIALIZED RawCanonOutputT<char> unescaped_chars;
   for (int i = 0; i < length; i++) {
     if (input[i] == '%') {
       unsigned char ch;

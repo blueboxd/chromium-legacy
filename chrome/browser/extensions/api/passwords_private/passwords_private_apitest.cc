@@ -181,6 +181,7 @@ class TestDelegate : public PasswordsPrivateDelegate {
     credential.change_password_url =
         std::make_unique<std::string>("https://example.com/change-password");
     credential.compromise_type = api::passwords_private::COMPROMISE_TYPE_LEAKED;
+    credential.compromise_time = 1583236800000;  // Mar 03 2020 12:00:00 UTC
     credential.elapsed_time_since_compromise = base::UTF16ToUTF8(
         TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_LONG,
                            base::TimeDelta::FromDays(3)));

@@ -1909,7 +1909,7 @@ class MockClientCertProvisioningStartCsrCallbackObserver {
   MOCK_METHOD(void,
               Callback,
               (DeviceManagementStatus,
-               CertProvisioningResponseErrorType,
+               base::Optional<CertProvisioningResponseErrorType>,
                base::Optional<int64_t> try_later,
                const std::string& invalidation_topic,
                const std::string& va_challenge,
@@ -1992,11 +1992,11 @@ TEST_F(CloudPolicyClientCertProvisioningStartCsrTest,
   }
 
   MockClientCertProvisioningStartCsrCallbackObserver callback_observer;
-  EXPECT_CALL(callback_observer,
-              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
-                       CertProvisioningResponseError::UNDEFINED,
-                       testing::Eq(base::nullopt), invalidation_topic,
-                       va_challenge, hash_algorithm, data_to_sign))
+  EXPECT_CALL(
+      callback_observer,
+      Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
+               testing::Eq(base::nullopt), testing::Eq(base::nullopt),
+               invalidation_topic, va_challenge, hash_algorithm, data_to_sign))
       .Times(1);
 
   RunTest(fake_response, callback_observer);
@@ -2018,8 +2018,8 @@ TEST_F(CloudPolicyClientCertProvisioningStartCsrTest,
   MockClientCertProvisioningStartCsrCallbackObserver callback_observer;
   EXPECT_CALL(callback_observer,
               Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
-                       CertProvisioningResponseError::UNDEFINED,
-                       testing::Eq(try_later), std::string(), std::string(),
+                       testing::Eq(base::nullopt), testing::Eq(try_later),
+                       std::string(), std::string(),
                        em::HashingAlgorithm::HASHING_ALGORITHM_UNSPECIFIED,
                        std::string()))
       .Times(1);
@@ -2042,11 +2042,12 @@ TEST_F(CloudPolicyClientCertProvisioningStartCsrTest,
   }
 
   MockClientCertProvisioningStartCsrCallbackObserver callback_observer;
-  EXPECT_CALL(callback_observer,
-              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS, error,
-                       testing::Eq(base::nullopt), std::string(), std::string(),
-                       em::HashingAlgorithm::HASHING_ALGORITHM_UNSPECIFIED,
-                       std::string()))
+  EXPECT_CALL(
+      callback_observer,
+      Callback(DeviceManagementStatus::DM_STATUS_SUCCESS, testing::Eq(error),
+               testing::Eq(base::nullopt), std::string(), std::string(),
+               em::HashingAlgorithm::HASHING_ALGORITHM_UNSPECIFIED,
+               std::string()))
       .Times(1);
 
   RunTest(fake_response, callback_observer);
@@ -2059,7 +2060,7 @@ class MockClientCertProvisioningFinishCsrCallbackObserver {
   MOCK_METHOD(void,
               Callback,
               (DeviceManagementStatus,
-               CertProvisioningResponseErrorType,
+               base::Optional<CertProvisioningResponseErrorType>,
                base::Optional<int64_t> try_later),
               (const));
 };
@@ -2134,8 +2135,7 @@ TEST_F(CloudPolicyClientCertProvisioningFinishCsrTest,
   MockClientCertProvisioningFinishCsrCallbackObserver callback_observer;
   EXPECT_CALL(callback_observer,
               Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
-                       CertProvisioningResponseError::UNDEFINED,
-                       testing::Eq(base::nullopt)))
+                       testing::Eq(base::nullopt), testing::Eq(base::nullopt)))
       .Times(1);
 
   RunTest(fake_response, callback_observer);
@@ -2157,8 +2157,8 @@ TEST_F(CloudPolicyClientCertProvisioningFinishCsrTest,
 
   MockClientCertProvisioningFinishCsrCallbackObserver callback_observer;
   EXPECT_CALL(callback_observer,
-              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS, error,
-                       testing::Eq(base::nullopt)))
+              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
+                       testing::Eq(error), testing::Eq(base::nullopt)))
       .Times(1);
 
   RunTest(fake_response, callback_observer);
@@ -2171,7 +2171,7 @@ class MockClientCertProvisioningDownloadCertCallbackObserver {
   MOCK_METHOD(void,
               Callback,
               (DeviceManagementStatus,
-               CertProvisioningResponseErrorType,
+               base::Optional<CertProvisioningResponseErrorType>,
                base::Optional<int64_t> try_later,
                const std::string& pem_encoded_certificate),
               (const));
@@ -2246,8 +2246,8 @@ TEST_F(CloudPolicyClientCertProvisioningDownloadCertTest,
   MockClientCertProvisioningDownloadCertCallbackObserver callback_observer;
   EXPECT_CALL(callback_observer,
               Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
-                       CertProvisioningResponseError::UNDEFINED,
-                       testing::Eq(base::nullopt), pem_encoded_cert))
+                       testing::Eq(base::nullopt), testing::Eq(base::nullopt),
+                       pem_encoded_cert))
       .Times(1);
 
   RunTest(fake_response, callback_observer);
@@ -2269,10 +2269,10 @@ TEST_F(CloudPolicyClientCertProvisioningDownloadCertTest,
   }
 
   MockClientCertProvisioningDownloadCertCallbackObserver callback_observer;
-  EXPECT_CALL(callback_observer,
-              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
-                       CertProvisioningResponseError::CA_ERROR,
-                       testing::Eq(base::nullopt), std::string()))
+  EXPECT_CALL(
+      callback_observer,
+      Callback(DeviceManagementStatus::DM_STATUS_SUCCESS, testing::Eq(error),
+               testing::Eq(base::nullopt), std::string()))
       .Times(1);
 
   RunTest(fake_response, callback_observer);

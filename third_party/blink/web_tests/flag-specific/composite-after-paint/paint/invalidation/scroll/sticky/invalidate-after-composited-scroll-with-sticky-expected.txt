@@ -20,7 +20,7 @@
     },
     {
       "name": "LayoutNGBlockFlow (sticky positioned) DIV id='sticky'",
-      "bounds": [144, 19],
+      "bounds": [345, 20],
       "transform": 4
     }
   ],

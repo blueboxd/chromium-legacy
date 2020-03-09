@@ -54,8 +54,8 @@ class VectorBackedLinkedListNode {
   VectorBackedLinkedListNode& operator=(VectorBackedLinkedListNode&& other) =
       default;
 
-  wtf_size_t prev_index_ = 0;
-  wtf_size_t next_index_ = 0;
+  wtf_size_t prev_index_ = kNotFound;
+  wtf_size_t next_index_ = kNotFound;
   ValueType value_ = HashTraits<ValueType>::EmptyValue();
 };
 
@@ -113,7 +113,7 @@ class VectorBackedLinkedList {
   const Value& back() const { return nodes_[UsedLastIndex()].value_; }
 
   template <typename IncomingValueType>
-  iterator insert(const_iterator, IncomingValueType&&);
+  iterator insert(const_iterator position, IncomingValueType&& value);
 
   template <typename IncomingValueType>
   void push_front(IncomingValueType&& value) {
@@ -124,6 +124,10 @@ class VectorBackedLinkedList {
   void push_back(IncomingValueType&& value) {
     insert(cend(), std::forward<IncomingValueType>(value));
   }
+
+  // Moves |target| right before |new_position| in a linked list. This operation
+  // is executed by just updating indices of related nodes.
+  void MoveTo(const_iterator target, const_iterator new_position);
 
  private:
   bool IsFreeListEmpty() const { return free_head_index_ == anchor_index_; }
@@ -149,6 +153,8 @@ class VectorBackedLinkedList {
   }
 
   bool IsAnchor(wtf_size_t index) const { return index == anchor_index_; }
+
+  void Unlink(const Node&);
 
   Vector<Node> nodes_;
   static constexpr wtf_size_t anchor_index_ = 0;
@@ -401,6 +407,33 @@ typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::insert(
   }
   size_++;
   return iterator(new_entry_index, this);
+}
+
+template <typename T>
+void VectorBackedLinkedList<T>::MoveTo(const_iterator target,
+                                       const_iterator new_position) {
+  wtf_size_t target_index = target.GetIndex();
+  Node& target_node = nodes_[target_index];
+  Unlink(target_node);
+
+  wtf_size_t new_position_index = new_position.GetIndex();
+  wtf_size_t prev_index = nodes_[new_position_index].prev_index_;
+  nodes_[prev_index].next_index_ = target_index;
+  nodes_[new_position_index].prev_index_ = target_index;
+  target_node.prev_index_ = prev_index;
+  target_node.next_index_ = new_position_index;
+}
+
+template <typename T>
+void VectorBackedLinkedList<T>::Unlink(const Node& node) {
+  wtf_size_t prev_index = node.prev_index_;
+  wtf_size_t next_index = node.next_index_;
+
+  Node& prev_node = nodes_[prev_index];
+  Node& next_node = nodes_[next_index];
+
+  prev_node.next_index_ = next_index;
+  next_node.prev_index_ = prev_index;
 }
 
 }  // namespace WTF

@@ -187,8 +187,6 @@ def main():
     build_cmd = [sys.executable, os.path.join(THIS_DIR, 'build.py'),
                  '--bootstrap', '--disable-asserts',
                  '--run-tests', '--pgo']
-    if sys.platform.startswith('linux'):
-      build_cmd.append('--lto-lld')
     TeeCmd(build_cmd, log)
 
   stamp = open(STAMP_FILE).read().rstrip()

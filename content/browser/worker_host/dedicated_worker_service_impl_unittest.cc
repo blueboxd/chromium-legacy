@@ -36,14 +36,14 @@ class MockDedicatedWorker
 
     if (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
       factory_->CreateWorkerHostAndStartScriptLoad(
-          GURL(), url::Origin(), network::mojom::CredentialsMode::kSameOrigin,
+          /*script_url=*/GURL(), network::mojom::CredentialsMode::kSameOrigin,
           blink::mojom::FetchClientSettingsObject::New(),
           mojo::PendingRemote<blink::mojom::BlobURLToken>(),
           receiver_.BindNewPipeAndPassRemote(),
           remote_host_.BindNewPipeAndPassReceiver());
     } else {
       factory_->CreateWorkerHost(
-          url::Origin(), browser_interface_broker_.BindNewPipeAndPassReceiver(),
+          browser_interface_broker_.BindNewPipeAndPassReceiver(),
           remote_host_.BindNewPipeAndPassReceiver());
     }
   }

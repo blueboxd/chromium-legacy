@@ -748,7 +748,7 @@ RenderFrameHost* GetContextForHost(RenderFrameHostImpl* host) {
 
 // Dedicated workers
 const url::Origin& GetContextForHost(DedicatedWorkerHost* host) {
-  return host->GetOrigin();
+  return host->GetWorkerOrigin();
 }
 
 void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,

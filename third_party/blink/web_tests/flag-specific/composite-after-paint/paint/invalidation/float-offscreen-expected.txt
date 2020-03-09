@@ -9,12 +9,12 @@
         {
           "object": "LayoutNGBlockFlow DIV id='target'",
           "rect": [11, 11, 89, 22],
-          "reason": "chunk appeared"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutNGBlockFlow DIV id='target'",
           "rect": [11, 11, 89, 22],
-          "reason": "chunk disappeared"
+          "reason": "paint property change"
         }
       ]
     }

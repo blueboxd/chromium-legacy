@@ -176,15 +176,19 @@ auto ExpectCompromisedCredential(
     const std::string& formatted_origin,
     const std::string& change_password_url,
     const std::string& username,
-    const std::string& elapsed_time_since_compromise,
+    base::TimeDelta elapsed_time_since_compromise,
+    const std::string& elapsed_time_since_compromise_str,
     api::passwords_private::CompromiseType compromise_type) {
   return AllOf(
       Field(&CompromisedCredential::formatted_origin, formatted_origin),
       Field(&CompromisedCredential::change_password_url,
             Pointee(change_password_url)),
       Field(&CompromisedCredential::username, username),
+      Field(&CompromisedCredential::compromise_time,
+            (base::Time::Now() - elapsed_time_since_compromise)
+                .ToJsTimeIgnoringNull()),
       Field(&CompromisedCredential::elapsed_time_since_compromise,
-            elapsed_time_since_compromise),
+            elapsed_time_since_compromise_str),
       Field(&CompromisedCredential::compromise_type, compromise_type));
 }
 
@@ -251,16 +255,20 @@ TEST_F(PasswordCheckDelegateTest, GetCompromisedCredentialsInfoOrders) {
   EXPECT_THAT(
       delegate().GetCompromisedCredentialsInfo().compromised_credentials,
       ElementsAre(ExpectCompromisedCredential(
-                      "example.com", kExampleCom, kUsername2, "2 minutes ago",
+                      "example.com", kExampleCom, kUsername2,
+                      base::TimeDelta::FromMinutes(2), "2 minutes ago",
                       api::passwords_private::COMPROMISE_TYPE_PHISHED),
                   ExpectCompromisedCredential(
-                      "example.org", kExampleOrg, kUsername1, "4 minutes ago",
+                      "example.org", kExampleOrg, kUsername1,
+                      base::TimeDelta::FromMinutes(4), "4 minutes ago",
                       api::passwords_private::COMPROMISE_TYPE_PHISHED),
                   ExpectCompromisedCredential(
-                      "example.com", kExampleCom, kUsername1, "1 minute ago",
+                      "example.com", kExampleCom, kUsername1,
+                      base::TimeDelta::FromMinutes(1), "1 minute ago",
                       api::passwords_private::COMPROMISE_TYPE_LEAKED),
                   ExpectCompromisedCredential(
-                      "example.org", kExampleOrg, kUsername2, "3 minutes ago",
+                      "example.org", kExampleOrg, kUsername2,
+                      base::TimeDelta::FromMinutes(3), "3 minutes ago",
                       api::passwords_private::COMPROMISE_TYPE_LEAKED)));
 }
 
@@ -286,13 +294,16 @@ TEST_F(PasswordCheckDelegateTest, GetCompromisedCredentialsInfoInjectsAndroid) {
   EXPECT_THAT(
       delegate().GetCompromisedCredentialsInfo().compromised_credentials,
       ElementsAre(ExpectCompromisedCredential(
-                      "Example App", kExampleCom, kUsername2, "3 days ago",
+                      "Example App", kExampleCom, kUsername2,
+                      base::TimeDelta::FromDays(3), "3 days ago",
                       api::passwords_private::COMPROMISE_TYPE_PHISHED),
                   ExpectCompromisedCredential(
-                      "App (com.example.app)", "", kUsername1, "4 days ago",
+                      "App (com.example.app)", "", kUsername1,
+                      base::TimeDelta::FromDays(4), "4 days ago",
                       api::passwords_private::COMPROMISE_TYPE_PHISHED),
                   ExpectCompromisedCredential(
-                      "example.com", kExampleCom, kUsername1, "5 minutes ago",
+                      "example.com", kExampleCom, kUsername1,
+                      base::TimeDelta::FromMinutes(5), "5 minutes ago",
                       api::passwords_private::COMPROMISE_TYPE_LEAKED)));
 }
 

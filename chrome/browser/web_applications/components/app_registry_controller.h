@@ -36,6 +36,10 @@ class AppRegistryController {
   virtual void SetAppUserDisplayMode(const AppId& app_id,
                                      DisplayMode display_mode) = 0;
 
+  // TODO(crbug.com/897314): Finish experiment by legitimising it as a
+  // DisplayMode or removing entirely.
+  void SetExperimentalTabbedWindowMode(const AppId& app_id, bool enabled);
+
   virtual void SetAppIsLocallyInstalledForTesting(
       const AppId& app_id,
       bool is_locally_installed) = 0;

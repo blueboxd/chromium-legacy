@@ -7,9 +7,8 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='indicator'",
-      "bounds": [300, 300],
-      "contentsOpaque": true,
+      "name": "LayoutNGBlockFlow BODY",
+      "bounds": [784, 584],
       "backgroundColor": "#FF0000",
       "transform": 1
     }

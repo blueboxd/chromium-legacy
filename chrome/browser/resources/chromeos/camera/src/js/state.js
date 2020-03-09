@@ -13,6 +13,7 @@ import {ViewName} from './views/view.js';
  * @enum {string}
  */
 export const State = {
+  CAMERA_CONFIGURING: 'camera-configuring',
   CAMERA_SWITCHING: 'camera-switching',
   EXPERT: 'expert',
   FPS_30: '_30fps',

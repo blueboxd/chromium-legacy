@@ -27,7 +27,6 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -206,7 +205,7 @@ public class ExternalNavigationHandler {
 
     private @OverrideUrlLoadingResult int handleFallbackUrl(
             ExternalNavigationParams params, Intent targetIntent, String browserFallbackUrl) {
-        if (InstantAppsHandler.isIntentToInstantApp(targetIntent)) {
+        if (mDelegate.isIntentToInstantApp(targetIntent)) {
             RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",
                     AiaIntent.FALLBACK_USED, AiaIntent.NUM_ENTRIES);
         }
@@ -675,13 +674,11 @@ public class ExternalNavigationHandler {
 
         if (params.isIncognito()) mDelegate.maybeSetPendingIncognitoUrl(targetIntent);
 
+        mDelegate.maybeAdjustInstantAppExtras(targetIntent, shouldProxyForInstantApps);
+
         if (shouldProxyForInstantApps) {
             RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",
                     AiaIntent.SERP, AiaIntent.NUM_ENTRIES);
-            targetIntent.putExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER, true);
-        } else {
-            // Make sure this extra is not sent unless we've done the verification.
-            targetIntent.removeExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER);
         }
 
         // The intent can be used to launch Chrome itself, record the user
@@ -883,7 +880,7 @@ public class ExternalNavigationHandler {
         }
 
         boolean isDirectInstantAppsIntent =
-                isExternalProtocol && InstantAppsHandler.isIntentToInstantApp(targetIntent);
+                isExternalProtocol && mDelegate.isIntentToInstantApp(targetIntent);
         boolean shouldProxyForInstantApps = isDirectInstantAppsIntent && mDelegate.isSerpReferrer();
         if (preventDirectInstantAppsIntent(isDirectInstantAppsIntent, shouldProxyForInstantApps)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;

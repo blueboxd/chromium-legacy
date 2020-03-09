@@ -48,8 +48,9 @@ class PaintLayerPainterTest : public PaintControllerPaintTest {
 
 INSTANTIATE_PAINT_TEST_SUITE_P(PaintLayerPainterTest);
 
-TEST_P(PaintLayerPainterTest, CachedSubsequence) {
+TEST_P(PaintLayerPainterTest, CachedSubsequenceAndChunksWithBackgrounds) {
   SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0 }</style>
     <div id='container1' style='position: relative; z-index: 1;
         width: 200px; height: 200px; background-color: blue'>
       <div id='content1' style='position: absolute; width: 100px;
@@ -66,63 +67,66 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
         width: 20px; height: 20px; background-color: gray'></div>
   )HTML");
 
-  auto& container1 = *GetLayoutObjectByElementId("container1");
-  auto& content1 = *GetLayoutObjectByElementId("content1");
-  auto& filler1 = *GetLayoutObjectByElementId("filler1");
-  auto& container2 = *GetLayoutObjectByElementId("container2");
-  auto& content2 = *GetLayoutObjectByElementId("content2");
-  auto& filler2 = *GetLayoutObjectByElementId("filler2");
-
+  auto* container1 = GetLayoutObjectByElementId("container1");
+  auto* content1 = GetLayoutObjectByElementId("content1");
+  auto* filler1 = GetLayoutObjectByElementId("filler1");
+  auto* container2 = GetLayoutObjectByElementId("container2");
+  auto* content2 = GetLayoutObjectByElementId("content2");
+  auto* filler2 = GetLayoutObjectByElementId("filler2");
   const auto& view_client = ViewScrollingBackgroundClient();
-  EXPECT_THAT(
-      RootPaintController().GetDisplayItemList(),
-      ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&container1),
-                           kBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&content1),
-                           kBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&filler1),
-                           kBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&container2),
-                           kBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&content2),
-                           kBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&filler2),
-                           kBackgroundType)));
 
-  auto* container1_layer = ToLayoutBoxModelObject(container1).Layer();
-  auto* filler1_layer = ToLayoutBoxModelObject(filler1).Layer();
-  auto* container2_layer = ToLayoutBoxModelObject(container2).Layer();
-  auto* filler2_layer = ToLayoutBoxModelObject(filler2).Layer();
+  auto* container1_layer = ToLayoutBoxModelObject(container1)->Layer();
+  auto* filler1_layer = ToLayoutBoxModelObject(filler1)->Layer();
+  auto* container2_layer = ToLayoutBoxModelObject(container2)->Layer();
+  auto* filler2_layer = ToLayoutBoxModelObject(filler2)->Layer();
   auto chunk_state = GetLayoutView().FirstFragment().ContentsProperties();
 
-  auto check_chunks = [&]() {
+  auto check_results = [&]() {
+    EXPECT_THAT(
+        RootPaintController().GetDisplayItemList(),
+        ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
+                    IsSameId(GetDisplayItemClientFromLayoutObject(container1),
+                             kBackgroundType),
+                    IsSameId(GetDisplayItemClientFromLayoutObject(content1),
+                             kBackgroundType),
+                    IsSameId(GetDisplayItemClientFromLayoutObject(filler1),
+                             kBackgroundType),
+                    IsSameId(GetDisplayItemClientFromLayoutObject(container2),
+                             kBackgroundType),
+                    IsSameId(GetDisplayItemClientFromLayoutObject(content2),
+                             kBackgroundType),
+                    IsSameId(GetDisplayItemClientFromLayoutObject(filler2),
+                             kBackgroundType)));
+
+    EXPECT_SUBSEQUENCE(*container1_layer, 1, 2);
+    EXPECT_SUBSEQUENCE(*filler1_layer, 2, 3);
+    EXPECT_SUBSEQUENCE(*container2_layer, 3, 4);
+    EXPECT_SUBSEQUENCE(*filler2_layer, 4, 5);
+
     // Check that new paint chunks were forced for the layers.
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(
-            IsPaintChunk(0, 1,
-                         PaintChunk::Id(view_client, kDocumentBackgroundType),
-                         chunk_state),
+            IsPaintChunk(0, 1),
             IsPaintChunk(
                 1, 3,
                 PaintChunk::Id(*container1_layer, DisplayItem::kLayerChunk),
-                chunk_state),
+                chunk_state, nullptr, IntRect(0, 0, 200, 200)),
             IsPaintChunk(
                 3, 4, PaintChunk::Id(*filler1_layer, DisplayItem::kLayerChunk),
-                chunk_state),
+                chunk_state, nullptr, IntRect(0, 200, 20, 20)),
             IsPaintChunk(
                 4, 6,
                 PaintChunk::Id(*container2_layer, DisplayItem::kLayerChunk),
-                chunk_state),
+                chunk_state, nullptr, IntRect(0, 220, 200, 200)),
             IsPaintChunk(
                 6, 7, PaintChunk::Id(*filler2_layer, DisplayItem::kLayerChunk),
-                chunk_state)));
+                chunk_state, nullptr, IntRect(0, 420, 20, 20))));
   };
 
-  check_chunks();
+  check_results();
 
-  To<HTMLElement>(content1.GetNode())
+  To<HTMLElement>(content1->GetNode())
       ->setAttribute(html_names::kStyleAttr,
                      "position: absolute; width: 100px; height: 100px; "
                      "background-color: green");
@@ -133,24 +137,111 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
 
   CommitAndFinishCycle();
 
+  // We should still have the paint chunks forced by the cached subsequences.
+  check_results();
+}
+
+TEST_P(PaintLayerPainterTest, CachedSubsequenceAndChunksWithoutBackgrounds) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      ::-webkit-scrollbar { display: none }
+    </style>
+    <div id='container' style='position: relative; z-index: 0;
+        width: 150px; height: 150px; overflow: scroll'>
+      <div id='content' style='position: relative; z-index: 1;
+          width: 200px; height: 100px'>
+        <div id='inner-content'
+             style='position: absolute; width: 100px; height: 100px'></div>
+      </div>
+      <div id='filler' style='position: relative; z-index: 2;
+          width: 300px; height: 300px'></div>
+    </div>
+  )HTML");
+
+  auto* container = GetLayoutObjectByElementId("container");
+  auto* content = GetLayoutObjectByElementId("content");
+  auto* inner_content = GetLayoutObjectByElementId("inner-content");
+  auto* filler = GetLayoutObjectByElementId("filler");
+  const auto& view_client = ViewScrollingBackgroundClient();
+
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
+                          IsSameId(container, DisplayItem::kScrollHitTest)));
+
+  auto* container_layer = ToLayoutBoxModelObject(container)->Layer();
+  auto* content_layer = ToLayoutBoxModelObject(content)->Layer();
+  auto* inner_content_layer = ToLayoutBoxModelObject(inner_content)->Layer();
+  auto* filler_layer = ToLayoutBoxModelObject(filler)->Layer();
+
+  EXPECT_SUBSEQUENCE(*container_layer, 1, 5);
+  EXPECT_SUBSEQUENCE(*content_layer, 3, 4);
+  EXPECT_SUBSEQUENCE(*filler_layer, 4, 5);
+
+  auto container_properties =
+      container->FirstFragment().LocalBorderBoxProperties();
+  auto content_properties = container->FirstFragment().ContentsProperties();
+  HitTestData hit_test_data;
+  hit_test_data.SetScrollHitTest(&content_properties.Transform(),
+                                 IntRect(0, 0, 150, 150));
+
+  EXPECT_THAT(
+      RootPaintController().PaintChunks(),
+      ElementsAre(
+          IsPaintChunk(0, 1),
+          IsPaintChunk(
+              1, 1, PaintChunk::Id(*container_layer, DisplayItem::kLayerChunk),
+              container_properties, nullptr, IntRect(0, 0, 150, 150)),
+          IsPaintChunk(
+              1, 2, PaintChunk::Id(*container, DisplayItem::kScrollHitTest),
+              container_properties, &hit_test_data, IntRect(0, 0, 150, 150)),
+          IsPaintChunk(2, 2,
+                       PaintChunk::Id(*content_layer, DisplayItem::kLayerChunk),
+                       content_properties, nullptr, IntRect(0, 0, 200, 100)),
+          IsPaintChunk(
+              2, 2, PaintChunk::Id(*filler_layer, DisplayItem::kLayerChunk),
+              content_properties, nullptr, IntRect(0, 100, 300, 300))));
+
+  To<HTMLElement>(inner_content->GetNode())
+      ->setAttribute(html_names::kStyleAttr,
+                     "position: absolute; width: 100px; height: 100px; "
+                     "top: 100px; background-color: green");
+  UpdateAllLifecyclePhasesForTest();
+
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
       ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&container1),
-                           kBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&content1),
-                           kBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&filler1),
-                           kBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&container2),
-                           kBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&content2),
-                           kBackgroundType),
-                  IsSameId(GetDisplayItemClientFromLayoutObject(&filler2),
+                  IsSameId(container, DisplayItem::kScrollHitTest),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(inner_content),
                            kBackgroundType)));
 
-  // We should still have the paint chunks forced by the cached subsequences.
-  check_chunks();
+  EXPECT_SUBSEQUENCE(*container_layer, 1, 6);
+  EXPECT_SUBSEQUENCE(*content_layer, 3, 5);
+  EXPECT_SUBSEQUENCE(*filler_layer, 5, 6);
+
+  EXPECT_THAT(
+      RootPaintController().PaintChunks(),
+      ElementsAre(
+          IsPaintChunk(0, 1),
+          IsPaintChunk(
+              1, 1, PaintChunk::Id(*container_layer, DisplayItem::kLayerChunk),
+              container_properties, nullptr, IntRect(0, 0, 150, 150)),
+          IsPaintChunk(
+              1, 2, PaintChunk::Id(*container, DisplayItem::kScrollHitTest),
+              container_properties, &hit_test_data, IntRect(0, 0, 150, 150)),
+          IsPaintChunk(2, 2,
+                       PaintChunk::Id(*content_layer, DisplayItem::kLayerChunk),
+                       content_properties, nullptr, IntRect(0, 0, 200, 100)),
+          IsPaintChunk(
+              2, 3,
+              PaintChunk::Id(*inner_content_layer, DisplayItem::kLayerChunk),
+              content_properties, nullptr, IntRect(0, 100, 100, 100)),
+          IsPaintChunk(
+              3, 3, PaintChunk::Id(*filler_layer, DisplayItem::kLayerChunk),
+              content_properties, nullptr, IntRect(0, 100, 300, 300))));
 }
 
 TEST_P(PaintLayerPainterTest, CachedSubsequenceOnCullRectChange) {
@@ -336,8 +427,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
     <div id="change" style="display: none"></div>
   )HTML");
 
-  const auto* target_layer =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
+  const auto* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  const auto* target_layer = target->Layer();
   const auto* content1 = GetLayoutObjectByElementId("content1");
   const auto* content2 = GetLayoutObjectByElementId("content2");
   const auto& view_client = ViewScrollingBackgroundClient();
@@ -355,7 +446,9 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
                     IsSameId(&view_client, kDocumentBackgroundType),
                     IsSameId(content1, kBackgroundType)));
     // |target| created subsequence.
-    EXPECT_SUBSEQUENCE(*target_layer, 2, 3);
+    EXPECT_SUBSEQUENCE(*target_layer, 2, 4);
+    EXPECT_EQ(0u, RootPaintController().PaintChunks()[2].size());
+    EXPECT_EQ(1u, RootPaintController().PaintChunks()[3].size());
   } else {
     EXPECT_EQ(CullRect(IntRect(0, 0, 800, 4600)),
               target_layer->PreviousCullRect());
@@ -365,6 +458,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
                             IsSameId(content1, kBackgroundType)));
     // |target| created subsequence.
     EXPECT_SUBSEQUENCE(*target_layer, 1, 2);
+    EXPECT_EQ(1u, RootPaintController().PaintChunks()[1].size());
   }
 
   // Change something that triggers a repaint but |target| should use cached
@@ -384,7 +478,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
   // |target| is still partially painted.
   EXPECT_EQ(kMayBeClippedByCullRect, target_layer->PreviousPaintResult());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // CAP doens't clip the cull rect by the scrolling contents rect, which
+    // CAP doesn't clip the cull rect by the scrolling contents rect, which
     // doesn't affect painted results.
     EXPECT_EQ(CullRect(IntRect(-4000, -4000, 8800, 8600)),
               target_layer->PreviousCullRect());
@@ -394,7 +488,9 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
                     IsSameId(&view_client, kDocumentBackgroundType),
                     IsSameId(content1, kBackgroundType)));
     // |target| still created subsequence (cached).
-    EXPECT_SUBSEQUENCE(*target_layer, 2, 3);
+    EXPECT_SUBSEQUENCE(*target_layer, 2, 4);
+    EXPECT_EQ(0u, RootPaintController().PaintChunks()[2].size());
+    EXPECT_EQ(1u, RootPaintController().PaintChunks()[3].size());
   } else {
     EXPECT_EQ(CullRect(IntRect(0, 0, 800, 4600)),
               target_layer->PreviousCullRect());
@@ -403,6 +499,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
                             IsSameId(content1, kBackgroundType)));
     // |target| still created subsequence (cached).
     EXPECT_SUBSEQUENCE(*target_layer, 1, 2);
+    EXPECT_EQ(1u, RootPaintController().PaintChunks()[1].size());
   }
 
   // Scroll the view so that both |content1| and |content2| are in the interest
@@ -424,7 +521,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
   // |target| is still partially painted.
   EXPECT_EQ(kMayBeClippedByCullRect, target_layer->PreviousPaintResult());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // CAP doens't clip the cull rect by the scrolling contents rect, which
+    // CAP doesn't clip the cull rect by the scrolling contents rect, which
     // doesn't affect painted results.
     EXPECT_EQ(CullRect(IntRect(-4000, -1000, 8800, 8600)),
               target_layer->PreviousCullRect());
@@ -436,8 +533,9 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
                     IsSameId(content1, kBackgroundType),
                     IsSameId(content2, kBackgroundType)));
     // |target| still created subsequence (repainted).
-    EXPECT_SUBSEQUENCE(*target_layer, 2, 3);
-    EXPECT_EQ(2u, RootPaintController().PaintChunks()[2].size());
+    EXPECT_SUBSEQUENCE(*target_layer, 2, 4);
+    EXPECT_EQ(0u, RootPaintController().PaintChunks()[2].size());
+    EXPECT_EQ(2u, RootPaintController().PaintChunks()[3].size());
   } else {
     EXPECT_EQ(CullRect(IntRect(0, 0, 800, 7600)),
               target_layer->PreviousCullRect());
@@ -452,7 +550,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
   }
 }
 
-TEST_P(PaintLayerPainterTest, HintedPaintChunks) {
+TEST_P(PaintLayerPainterTest, HintedPaintChunksWithBackgrounds) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0 }
@@ -497,24 +595,81 @@ TEST_P(PaintLayerPainterTest, HintedPaintChunks) {
           IsPaintChunk(
               1, 3,
               PaintChunk::Id(*container1->Layer(), DisplayItem::kLayerChunk),
-              chunk_state),
+              chunk_state, nullptr, IntRect(0, 0, 800, 150)),
           // Includes |content1b| which overflows |container1|.
           IsPaintChunk(
               3, 4,
               PaintChunk::Id(*content1b->Layer(), DisplayItem::kLayerChunk),
-              chunk_state),
+              chunk_state, nullptr, IntRect(0, 100, 800, 100)),
           IsPaintChunk(
               4, 5,
               PaintChunk::Id(*container2->Layer(), DisplayItem::kLayerChunk),
-              chunk_state),
+              chunk_state, nullptr, IntRect(0, 150, 800, 200)),
           IsPaintChunk(
               5, 6,
               PaintChunk::Id(*content2b->Layer(), DisplayItem::kLayerChunk),
-              chunk_state),
+              chunk_state, nullptr, IntRect(0, 250, 800, 100)),
           IsPaintChunk(
               6, 7,
               PaintChunk::Id(*content2a->Layer(), DisplayItem::kLayerChunk),
-              chunk_state)));
+              chunk_state, nullptr, IntRect(0, 150, 800, 100))));
+}
+
+TEST_P(PaintLayerPainterTest, HintedPaintChunksWithoutBackgrounds) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0 }</style>
+    <div id='container1' style='position: relative; height: 150px; z-index: 1'>
+      <div id='content1a' style='position: relative; height: 100px'></div>
+      <div id='content1b' style='position: relative; height: 100px'></div>
+    </div>
+    <div id='container2' style='position: relative; z-index: 1'>
+      <div id='content2a' style='position: relative; height: 100px'></div>
+      <div id='content2b'
+           style='position: relative; z-index: -1; height: 100px'></div>
+    </div>
+  )HTML");
+
+  auto* container1 = ToLayoutBox(GetLayoutObjectByElementId("container1"));
+  auto* content1b = ToLayoutBox(GetLayoutObjectByElementId("content1b"));
+  auto* container2 = ToLayoutBox(GetLayoutObjectByElementId("container2"));
+  auto* content2a = ToLayoutBox(GetLayoutObjectByElementId("content2a"));
+  auto* content2b = ToLayoutBox(GetLayoutObjectByElementId("content2b"));
+  auto chunk_state = GetLayoutView().FirstFragment().ContentsProperties();
+
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType)));
+
+  EXPECT_THAT(
+      RootPaintController().PaintChunks(),
+      ElementsAre(
+          IsPaintChunk(0, 1,
+                       PaintChunk::Id(ViewScrollingBackgroundClient(),
+                                      kDocumentBackgroundType),
+                       chunk_state),
+          IsPaintChunk(
+              1, 1,
+              PaintChunk::Id(*container1->Layer(), DisplayItem::kLayerChunk),
+              chunk_state, nullptr, IntRect(0, 0, 800, 150)),
+          IsPaintChunk(
+              1, 1,
+              PaintChunk::Id(*content1b->Layer(), DisplayItem::kLayerChunk),
+              chunk_state, nullptr, IntRect(0, 100, 800, 100)),
+          IsPaintChunk(
+              1, 1,
+              PaintChunk::Id(*container2->Layer(), DisplayItem::kLayerChunk),
+              chunk_state, nullptr, IntRect(0, 150, 800, 200)),
+          IsPaintChunk(
+              1, 1,
+              PaintChunk::Id(*content2b->Layer(), DisplayItem::kLayerChunk),
+              chunk_state, nullptr, IntRect(0, 250, 800, 100)),
+          IsPaintChunk(
+              1, 1,
+              PaintChunk::Id(*content2a->Layer(), DisplayItem::kLayerChunk),
+              chunk_state, nullptr, IntRect(0, 150, 800, 100))));
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {

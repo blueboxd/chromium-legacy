@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 
 namespace blink {
@@ -398,17 +397,18 @@ void NGBoxFragmentPainter::RecordScrollHitTestData(
       .RecordScrollHitTestData(paint_info, background_client);
 }
 
-void NGBoxFragmentPainter::RecordHitTestDataForLine(
-    const PaintInfo& paint_info,
-    const PhysicalOffset& paint_offset,
-    const NGPhysicalFragment& line,
-    const DisplayItemClient& display_item_client) {
-  PhysicalRect border_box = line.LocalRect();
-  border_box.offset += paint_offset;
-  HitTestDisplayItem::Record(
-      paint_info.context, display_item_client,
-      HitTestRect(border_box.ToLayoutRect(),
-                  PhysicalFragment().EffectiveAllowedTouchAction()));
+bool NGBoxFragmentPainter::ShouldRecordHitTestData(
+    const PaintInfo& paint_info) {
+  // Hit test data are only needed for compositing. This flag is used for for
+  // printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return false;
+
+  // If an object is not visible, it does not participate in hit testing.
+  if (PhysicalFragment().Style().Visibility() != EVisibility::kVisible)
+    return false;
+
+  return true;
 }
 
 void NGBoxFragmentPainter::PaintObject(
@@ -784,12 +784,10 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     }
   }
 
-  if (NGFragmentPainter::ShouldRecordHitTestData(paint_info,
-                                                 PhysicalFragment())) {
-    HitTestDisplayItem::Record(
-        paint_info.context, *background_client,
-        HitTestRect(paint_rect.ToLayoutRect(),
-                    PhysicalFragment().EffectiveAllowedTouchAction()));
+  if (ShouldRecordHitTestData(paint_info)) {
+    paint_info.context.GetPaintController().RecordHitTestData(
+        *background_client, PixelSnappedIntRect(paint_rect),
+        PhysicalFragment().EffectiveAllowedTouchAction());
   }
 
   bool needs_scroll_hit_test = true;
@@ -1171,10 +1169,12 @@ inline void NGBoxFragmentPainter::PaintLineBox(
   if (paint_info.phase != PaintPhase::kForeground)
     return;
 
-  if (NGFragmentPainter::ShouldRecordHitTestData(paint_info,
-                                                 PhysicalFragment())) {
-    RecordHitTestDataForLine(paint_info, child_offset, line_box_fragment,
-                             display_item_client);
+  if (ShouldRecordHitTestData(paint_info)) {
+    PhysicalRect border_box = line_box_fragment.LocalRect();
+    border_box.offset += child_offset;
+    paint_info.context.GetPaintController().RecordHitTestData(
+        display_item_client, PixelSnappedIntRect(border_box),
+        PhysicalFragment().EffectiveAllowedTouchAction());
   }
   if (NGLineBoxFragmentPainter::NeedsPaint(line_box_fragment)) {
     NGLineBoxFragmentPainter line_box_painter(

@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'PASS '",
+          "object": "LayoutSVGText text",
           "rect": [0, 114, 192, 46],
           "reason": "chunk appeared"
         },

@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "InlineTextBox 'some text'",
           "rect": [12, 47, 58, 16],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         }
       ]
     }

@@ -97,7 +97,6 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   cc_picture_layer_->SetOffsetToTransformParent(
       layer_bounds.OffsetFromOrigin());
   cc_picture_layer_->SetBounds(layer_bounds.size());
-  cc_picture_layer_->SetIsDrawable(true);
   cc_picture_layer_->SetHitTestable(true);
 
   base::Optional<RasterUnderInvalidationCheckingParams> params;
@@ -110,6 +109,12 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
       paint_chunks, layer_state, layer_bounds.OffsetFromOrigin(),
       display_item_list, cc::DisplayItemList::kTopLevelDisplayItemList,
       base::OptionalOrNullptr(params));
+
+  cc_picture_layer_->SetIsDrawable(
+      (!layer_bounds.IsEmpty() && cc_display_item_list_->TotalOpCount()) ||
+      // Backdrop filters require the layer to be drawable even if the layer
+      // draws nothing.
+      !layer_state.Effect().BackdropFilter().IsEmpty());
 
   auto safe_opaque_background_color =
       paint_artifact->SafeOpaqueBackgroundColor(paint_chunks);

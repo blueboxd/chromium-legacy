@@ -43,6 +43,9 @@ declare_args() {
   # Overridable list of dependencies that are forbidden for
   # //ios/chrome/app:chrome target.
   ios_chrome_extra_assert_no_deps = []
+
+  # List of plist templates to merge when generating chrome cpe entitlements.
+  ios_chrome_cpe_entitlements_additions = []
 }
 
 # Configure whether breakpad support is enabled.

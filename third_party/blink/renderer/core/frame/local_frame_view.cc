@@ -2762,8 +2762,8 @@ void LocalFrameView::PaintTree() {
             layout_view->Compositor()->PaintRootGraphicsLayer()) {
       bool painted = PaintGraphicsLayerRecursively(root_graphics_layer);
       if (painted) {
-        // If the painted result changed, the painted hit test display items may
-        // have changed which will affect the mapped hit test geometry.
+        // If the painted result changed, the recorded hit test data may have
+        // changed which will affect the mapped hit test geometry.
         if (GetScrollingCoordinator())
           GetScrollingCoordinator()->NotifyGeometryChanged(this);
       }

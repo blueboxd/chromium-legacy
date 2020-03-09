@@ -15,7 +15,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [0, 0, 200, 200],
-          "reason": "full layer"
+          "reason": "appeared"
         }
       ],
       "transform": 1

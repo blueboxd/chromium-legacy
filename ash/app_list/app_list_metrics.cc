@@ -283,6 +283,7 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     case CommandId::LAUNCH_TYPE_REGULAR_TAB:
     case CommandId::LAUNCH_TYPE_FULLSCREEN:
     case CommandId::LAUNCH_TYPE_WINDOW:
+    case CommandId::LAUNCH_TYPE_TABBED_WINDOW:
     case CommandId::SWAP_WITH_NEXT:
     case CommandId::SWAP_WITH_PREVIOUS:
     // Used by AppMenuModelAdapter
@@ -299,6 +300,7 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     case CommandId::USE_LAUNCH_TYPE_REGULAR:
     case CommandId::USE_LAUNCH_TYPE_FULLSCREEN:
     case CommandId::USE_LAUNCH_TYPE_WINDOW:
+    case CommandId::USE_LAUNCH_TYPE_TABBED_WINDOW:
     case CommandId::USE_LAUNCH_TYPE_COMMAND_END:
     case CommandId::STOP_APP:
     case CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST:

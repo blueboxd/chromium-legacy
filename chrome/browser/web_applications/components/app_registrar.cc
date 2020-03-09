@@ -11,6 +11,8 @@
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
+#include "chrome/common/chrome_features.h"
 
 namespace web_app {
 
@@ -208,6 +210,12 @@ DisplayMode AppRegistrar::GetAppEffectiveDisplayMode(
   }
 
   return ResolveEffectiveDisplayMode(app_display_mode, user_display_mode);
+}
+
+bool AppRegistrar::IsInExperimentalTabbedWindowMode(const AppId& app_id) const {
+  return base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
+         GetBoolWebAppPref(profile()->GetPrefs(), app_id,
+                           kExperimentalTabbedWindowMode);
 }
 
 }  // namespace web_app

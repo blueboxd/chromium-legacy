@@ -23,7 +23,7 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='targetDiv'",
-      "bounds": [480, 480],
+      "bounds": [2000, 2000],
       "transform": 2
     }
   ],

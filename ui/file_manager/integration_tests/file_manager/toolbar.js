@@ -124,3 +124,22 @@ testcase.toolbarRefreshButtonHiddenInRecents = async () => {
   // Check that the button should be hidden.
   await remoteCall.waitForElement(appId, '#refresh-button[hidden]');
 };
+
+/**
+ * Tests that command Alt+A focus the toolbar.
+ */
+testcase.toolbarAltACommand = async () => {
+  // Open files app.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Press Alt+A in the File List.
+  const altA = ['#file-list', 'a', false, false, true];
+  await remoteCall.fakeKeyDown(appId, ...altA);
+
+  // Check that a menu-button should be focused.
+  const focusedElement =
+      await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+  const cssClasses = focusedElement.attributes['class'] || '';
+  chrome.test.assertTrue(cssClasses.includes('menu-button'));
+};

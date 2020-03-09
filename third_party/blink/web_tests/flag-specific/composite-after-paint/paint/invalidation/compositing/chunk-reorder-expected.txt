@@ -8,8 +8,7 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV",
-      "bounds": [1, 1],
-      "contentsOpaque": true,
+      "bounds": [784, 1],
       "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {

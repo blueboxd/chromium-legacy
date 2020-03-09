@@ -19,7 +19,7 @@ DisplayMode ResolveEffectiveDisplayMode(DisplayMode app_display_mode,
                                         DisplayMode user_display_mode) {
   switch (user_display_mode) {
     case DisplayMode::kBrowser:
-      return DisplayMode::kBrowser;
+      return user_display_mode;
     case DisplayMode::kUndefined:
     case DisplayMode::kMinimalUi:
     case DisplayMode::kFullscreen:

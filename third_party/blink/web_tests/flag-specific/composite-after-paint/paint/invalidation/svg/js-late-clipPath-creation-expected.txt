@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGContainer g id='content'",
+          "object": "InlineTextBox 'Clipped. INVISIBLE.'",
           "rect": [16, 40, 784, 173],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGText text",

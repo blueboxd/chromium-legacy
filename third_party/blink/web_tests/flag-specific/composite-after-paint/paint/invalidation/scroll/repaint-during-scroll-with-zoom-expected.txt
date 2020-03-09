@@ -19,7 +19,7 @@
         {
           "object": "LayoutNGBlockFlow HTML",
           "rect": [3, 65, 55, 17],
-          "reason": "chunk appeared"
+          "reason": "paint property change"
         },
         {
           "object": "VerticalScrollbar",

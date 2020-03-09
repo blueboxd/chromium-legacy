@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 
@@ -285,8 +284,8 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
 void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
                                    const PhysicalRect& paint_rect,
                                    const DisplayItemClient& background_client) {
-  // Hit test display items are only needed for compositing. This flag is used
-  // for for printing and drag images which do not need hit testing.
+  // Hit test data are only needed for compositing. This flag is used for for
+  // printing and drag images which do not need hit testing.
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
     return;
 
@@ -294,20 +293,19 @@ void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (layout_box_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  auto touch_action = layout_box_.EffectiveAllowedTouchAction();
-  if (touch_action == TouchAction::kAuto)
+  if (!paint_info.FragmentToPaint(layout_box_))
     return;
 
-  HitTestDisplayItem::Record(
-      paint_info.context, background_client,
-      HitTestRect(paint_rect.ToLayoutRect(), touch_action));
+  paint_info.context.GetPaintController().RecordHitTestData(
+      background_client, PixelSnappedIntRect(paint_rect),
+      layout_box_.EffectiveAllowedTouchAction());
 }
 
 void BoxPainter::RecordScrollHitTestData(
     const PaintInfo& paint_info,
     const DisplayItemClient& background_client) {
-  // Hit test display items are only needed for compositing. This flag is used
-  // for for printing and drag images which do not need hit testing.
+  // Scroll hit test display items are only needed for compositing. This flag is
+  // used for for printing and drag images which do not need hit testing.
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
     return;
 

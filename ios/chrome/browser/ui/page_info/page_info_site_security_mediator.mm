@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/page_info/legacy_page_info_mediator.h"
+#import "ios/chrome/browser/ui/page_info/page_info_site_security_mediator.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,7 +12,7 @@
 #include "components/strings/grit/components_google_chrome_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/ui/page_info/page_info_config.h"
+#import "ios/chrome/browser/ui/page_info/page_info_site_security_description.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/security/ssl_status.h"
@@ -61,17 +61,18 @@ NSString* BuildMessage(NSArray<NSString*>* messageComponents) {
 
 }  // namespace
 
-@implementation LegacyPageInfoMediator
+@implementation PageInfoSiteSecurityMediator
 
-+ (PageInfoConfig*)configurationForURL:(const GURL&)URL
-                             SSLStatus:(web::SSLStatus&)status
-                           offlinePage:(BOOL)offlinePage {
-  PageInfoConfig* dataHolder = [[PageInfoConfig alloc] init];
++ (PageInfoSiteSecurityDescription*)configurationForURL:(const GURL&)URL
+                                              SSLStatus:(web::SSLStatus&)status
+                                            offlinePage:(BOOL)offlinePage {
+  PageInfoSiteSecurityDescription* dataHolder =
+      [[PageInfoSiteSecurityDescription alloc] init];
   if (offlinePage) {
     dataHolder.title = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_OFFLINE_TITLE);
     dataHolder.message = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_OFFLINE_PAGE);
     dataHolder.image = [UIImage imageNamed:@"page_info_offline"];
-    dataHolder.buttonAction = PageInfoButtonActionReload;
+    dataHolder.buttonAction = PageInfoSiteSecurityButtonActionReload;
     return dataHolder;
   }
 
@@ -79,13 +80,13 @@ NSString* BuildMessage(NSArray<NSString*>* messageComponents) {
     dataHolder.title = base::SysUTF8ToNSString(URL.spec());
     dataHolder.message = l10n_util::GetNSString(IDS_PAGE_INFO_INTERNAL_PAGE);
     dataHolder.image = nil;
-    dataHolder.buttonAction = PageInfoButtonActionNone;
+    dataHolder.buttonAction = PageInfoSiteSecurityButtonActionNone;
     return dataHolder;
   }
 
   // At this point, this is a web page.
   dataHolder.title = base::SysUTF8ToNSString(URL.host());
-  dataHolder.buttonAction = PageInfoButtonActionShowHelp;
+  dataHolder.buttonAction = PageInfoSiteSecurityButtonActionShowHelp;
 
   // Summary and details.
   if (!status.certificate) {

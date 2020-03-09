@@ -1514,16 +1514,8 @@ void HTMLSelectElement::SetIndexToSelectOnCancel(int list_index) {
   select_type_->UpdateTextStyleAndContent();
 }
 
-HTMLOptionElement* HTMLSelectElement::OptionToBeShown() const {
-  if (HTMLOptionElement* option = OptionAtListIndex(index_to_select_on_cancel_))
-    return option;
-  if (suggested_option_)
-    return suggested_option_;
-  // TODO(tkent): We should not call optionToBeShown() in isMultiple() case.
-  if (IsMultiple())
-    return SelectedOption();
-  DCHECK_EQ(SelectedOption(), last_on_change_option_);
-  return last_on_change_option_;
+HTMLOptionElement* HTMLSelectElement::OptionToBeShownForTesting() const {
+  return select_type_->OptionToBeShown();
 }
 
 void HTMLSelectElement::SelectOptionByPopup(int list_index) {

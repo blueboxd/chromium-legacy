@@ -83,6 +83,7 @@ class MenuListSelectType final : public SelectType {
 
   void UpdateTextStyle() override { UpdateTextStyleInternal(); }
   void UpdateTextStyleAndContent() override;
+  HTMLOptionElement* OptionToBeShown() const override;
   const ComputedStyle* OptionStyle() const override {
     return option_style_.get();
   }
@@ -418,7 +419,7 @@ void MenuListSelectType::DidRecalcStyle(const StyleRecalcChange change) {
 }
 
 String MenuListSelectType::UpdateTextStyleInternal() {
-  HTMLOptionElement* option = select_->OptionToBeShown();
+  HTMLOptionElement* option = OptionToBeShown();
   String text = g_empty_string;
   const ComputedStyle* option_style = nullptr;
 
@@ -500,6 +501,19 @@ void MenuListSelectType::DidUpdateActiveOption(HTMLOptionElement* option) {
 
   document.ExistingAXObjectCache()->HandleUpdateActiveMenuOption(
       select_->GetLayoutObject(), option_index);
+}
+
+HTMLOptionElement* MenuListSelectType::OptionToBeShown() const {
+  if (auto* option =
+          select_->OptionAtListIndex(select_->index_to_select_on_cancel_))
+    return option;
+  if (select_->suggested_option_)
+    return select_->suggested_option_;
+  // TODO(tkent): We should not call OptionToBeShown() in IsMultiple() case.
+  if (select_->IsMultiple())
+    return select_->SelectedOption();
+  DCHECK_EQ(select_->SelectedOption(), select_->last_on_change_option_);
+  return select_->last_on_change_option_;
 }
 
 void MenuListSelectType::MaximumOptionWidthMightBeChanged() const {
@@ -947,6 +961,11 @@ void SelectType::DidRecalcStyle(const StyleRecalcChange) {}
 void SelectType::UpdateTextStyle() {}
 
 void SelectType::UpdateTextStyleAndContent() {}
+
+HTMLOptionElement* SelectType::OptionToBeShown() const {
+  NOTREACHED();
+  return nullptr;
+}
 
 const ComputedStyle* SelectType::OptionStyle() const {
   NOTREACHED();

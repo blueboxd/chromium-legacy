@@ -21,6 +21,7 @@ BulkLeakCheckService::~BulkLeakCheckService() = default;
 
 void BulkLeakCheckService::CheckUsernamePasswordPairs(
     std::vector<password_manager::LeakCheckCredential> credentials) {
+  DVLOG(0) << "Bulk password check, start " << credentials.size();
   if (bulk_leak_check_) {
     DCHECK_EQ(State::kRunning, state_);
     // The check is already running. Append the credentials to the list.
@@ -47,6 +48,7 @@ void BulkLeakCheckService::CheckUsernamePasswordPairs(
 }
 
 void BulkLeakCheckService::Cancel() {
+  DVLOG(0) << "Bulk password check cancel";
   if (!bulk_leak_check_) {
     DCHECK_NE(State::kRunning, state_);
     return;
@@ -74,6 +76,7 @@ void BulkLeakCheckService::OnFinishedCredential(LeakCheckCredential credential,
   // (3) Notify about new state. The clients may assume that if the state is
   // idle then there won't be calls to OnLeakFound.
   if (!GetPendingChecksCount()) {
+    DVLOG(0) << "Bulk password check finished";
     state_ = State::kIdle;
     bulk_leak_check_.reset();
   }
@@ -84,6 +87,7 @@ void BulkLeakCheckService::OnFinishedCredential(LeakCheckCredential credential,
 }
 
 void BulkLeakCheckService::OnError(LeakDetectionError error) {
+  DLOG(ERROR) << "Bulk password check error=" << static_cast<int>(error);
   switch (error) {
     case LeakDetectionError::kNotSignIn:
       state_ = State::kSignedOut;

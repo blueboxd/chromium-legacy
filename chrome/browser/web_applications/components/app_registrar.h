@@ -139,6 +139,10 @@ class AppRegistrar {
 
   DisplayMode GetAppEffectiveDisplayMode(const AppId& app_id) const;
 
+  // TODO(crbug.com/897314): Finish experiment by legitimising it as a
+  // DisplayMode or removing entirely.
+  bool IsInExperimentalTabbedWindowMode(const AppId& app_id) const;
+
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(AppRegistrarObserver* observer);
 

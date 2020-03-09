@@ -49,6 +49,7 @@ web_app::DisplayMode ConvertUseLaunchTypeCommandToDisplayMode(int command_id) {
       return web_app::DisplayMode::kStandalone;
     case ash::USE_LAUNCH_TYPE_PINNED:
     case ash::USE_LAUNCH_TYPE_FULLSCREEN:
+    case ash::USE_LAUNCH_TYPE_TABBED_WINDOW:
     default:
       return web_app::DisplayMode::kUndefined;
   }
@@ -129,6 +130,15 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
     default:
       if (command_id >= ash::USE_LAUNCH_TYPE_COMMAND_START &&
           command_id < ash::USE_LAUNCH_TYPE_COMMAND_END) {
+        if (app_type_ == apps::mojom::AppType::kWeb &&
+            command_id == ash::USE_LAUNCH_TYPE_TABBED_WINDOW) {
+          auto* provider = web_app::WebAppProvider::Get(profile());
+          DCHECK(provider);
+          provider->registry_controller().SetExperimentalTabbedWindowMode(
+              app_id(), true);
+          return;
+        }
+
         SetLaunchType(command_id);
         return;
       }
@@ -158,6 +168,11 @@ bool AppServiceContextMenu::IsCommandIdChecked(int command_id) const {
           command_id < ash::USE_LAUNCH_TYPE_COMMAND_END) {
         auto* provider = web_app::WebAppProvider::Get(profile());
         DCHECK(provider);
+        if (command_id == ash::USE_LAUNCH_TYPE_TABBED_WINDOW) {
+          return provider->registrar().IsInExperimentalTabbedWindowMode(
+              app_id());
+        }
+
         web_app::DisplayMode effective_display_mode =
             provider->registrar().GetAppEffectiveDisplayMode(app_id());
         return effective_display_mode != web_app::DisplayMode::kUndefined &&
@@ -165,6 +180,7 @@ bool AppServiceContextMenu::IsCommandIdChecked(int command_id) const {
                    ConvertUseLaunchTypeCommandToDisplayMode(command_id);
       }
       return AppContextMenu::IsCommandIdChecked(command_id);
+
     case apps::mojom::AppType::kExtension:
       if (command_id >= ash::USE_LAUNCH_TYPE_COMMAND_START &&
           command_id < ash::USE_LAUNCH_TYPE_COMMAND_END) {
@@ -297,6 +313,8 @@ void AppServiceContextMenu::SetLaunchType(int command_id) {
       if (user_display_mode != web_app::DisplayMode::kUndefined) {
         auto* provider = web_app::WebAppProvider::Get(profile());
         DCHECK(provider);
+        provider->registry_controller().SetExperimentalTabbedWindowMode(
+            app_id(), false);
         provider->registry_controller().SetAppUserDisplayMode(
             app_id(), user_display_mode);
       }

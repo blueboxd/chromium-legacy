@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappScopePolicy;
@@ -131,6 +130,8 @@ public class ExternalNavigationHandlerTest {
             + "B.org.chromium.chrome.browser.autofill_assistant.ENABLED=true;"
             + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
             + Uri.encode("https://www.example.com") + ";end";
+
+    private static final String IS_INSTANT_APP_EXTRA = "IS_INSTANT_APP";
 
     private Context mContext;
     private final TestExternalNavigationDelegate mDelegate;
@@ -744,8 +745,7 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void
-    testInstantAppsIntent_serpReferrer() {
+    public void testHandlingOfInstantApps() {
         String intentUrl = "intent://buzzfeed.com/tasty#Intent;scheme=http;"
                 + "package=com.google.android.instantapps.supervisor;"
                 + "action=com.google.android.instantapps.START;"
@@ -753,43 +753,28 @@ public class ExternalNavigationHandlerTest {
                 + "com.android.chrome;S.com.google.android.instantapps.INSTANT_APP_PACKAGE="
                 + "com.yelp.android;S.android.intent.extra.REFERRER_NAME="
                 + "https%3A%2F%2Fwww.google.com;end";
+
         mDelegate.setIsSerpReferrer(true);
+        mDelegate.setIsIntentToInstantApp(true);
         checkUrl(intentUrl)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY | PROXY_FOR_INSTANT_APPS);
-        Assert.assertTrue(mDelegate.startActivityIntent.hasExtra(
-                InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
+        Assert.assertTrue(
+                mDelegate.startActivityIntent.getBooleanExtra(IS_INSTANT_APP_EXTRA, false));
 
-        // Check that we block all instant app intent:// URLs not from SERP
+        // Check that we block all instant app intent:// URLs not from SERP.
         mDelegate.setIsSerpReferrer(false);
         checkUrl(intentUrl)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
-        // Check that IS_GOOGLE_SEARCH_REFERRER param is stripped on non-supervisor intents.
+        // Check that that just having the SERP referrer alone doesn't cause intents to be treated
+        // as intents to instant apps if the delegate indicates that they shouldn't be.
         mDelegate.setIsSerpReferrer(true);
-        String nonSupervisor = "intent://buzzfeed.com/tasty#Intent;scheme=http;"
-                + "package=com.imdb;action=com.google.VIEW;"
-                + "S.com.google.android.gms.instantapps.IS_GOOGLE_SEARCH_REFERRER="
-                + "true;S.android.intent.extra.REFERRER_NAME="
-                + "https%3A%2F%2Fwww.google.com;end";
-        checkUrl(nonSupervisor)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                        START_OTHER_ACTIVITY);
-        Assert.assertFalse(mDelegate.startActivityIntent.hasExtra(
-                InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
-
-        // Check that Supervisor is detected by action even without package
-        for (String action : SUPERVISOR_START_ACTIONS) {
-            String intentWithoutPackage = "intent://buzzfeed.com/tasty#Intent;scheme=http;"
-                    + "action=" + action + ";"
-                    + "S.com.google.android.instantapps.FALLBACK_PACKAGE="
-                    + "com.android.chrome;S.com.google.android.instantapps.INSTANT_APP_PACKAGE="
-                    + "com.yelp.android;S.android.intent.extra.REFERRER_NAME="
-                    + "https%3A%2F%2Fwww.google.com;end";
-            mDelegate.setIsSerpReferrer(false);
-            checkUrl(intentWithoutPackage)
-                    .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-        }
+        mDelegate.setIsIntentToInstantApp(false);
+        checkUrl(intentUrl).expecting(
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_OTHER_ACTIVITY);
+        Assert.assertFalse(
+                mDelegate.startActivityIntent.getBooleanExtra(IS_INSTANT_APP_EXTRA, true));
     }
 
     @Test
@@ -1869,6 +1854,15 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
+        public void maybeAdjustInstantAppExtras(Intent intent, boolean isIntentToInstantApp) {
+            if (isIntentToInstantApp) {
+                intent.putExtra(IS_INSTANT_APP_EXTRA, true);
+            } else {
+                intent.putExtra(IS_INSTANT_APP_EXTRA, false);
+            }
+        }
+
+        @Override
         public void maybeSetPendingIncognitoUrl(Intent intent) {}
 
         @Override
@@ -1905,6 +1899,11 @@ public class ExternalNavigationHandlerTest {
         @Override
         public boolean isIntentForTrustedCallingApp(Intent intent) {
             return mIsCallingAppTrusted;
+        }
+
+        @Override
+        public boolean isIntentToInstantApp(Intent intent) {
+            return mIsIntentToInstantApp;
         }
 
         @Override
@@ -1982,6 +1981,10 @@ public class ExternalNavigationHandlerTest {
             mIsCallingAppTrusted = trusted;
         }
 
+        public void setIsIntentToInstantApp(boolean value) {
+            mIsIntentToInstantApp = value;
+        }
+
         public Intent startActivityIntent;
         public boolean startIncognitoIntentCalled;
         public boolean startFileIntentCalled;
@@ -2001,6 +2004,7 @@ public class ExternalNavigationHandlerTest {
         public boolean mCalledWithProxy;
         public boolean mIsChromeAppInForeground = true;
         private boolean mIsCallingAppTrusted;
+        private boolean mIsIntentToInstantApp;
 
         public boolean shouldRequestFileAccess;
     }

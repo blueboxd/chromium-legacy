@@ -46,6 +46,9 @@ import java.util.List;
             + "B.org.chromium.chrome.browser.autofill_assistant.ENABLED=true;"
             + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
             + Uri.encode("https://www.example.com") + ";end";
+    private static final String[] SUPERVISOR_START_ACTIONS = {
+            "com.google.android.instantapps.START", "com.google.android.instantapps.nmr1.INSTALL",
+            "com.google.android.instantapps.nmr1.VIEW"};
 
     class ExternalNavigationDelegateImplForTesting extends ExternalNavigationDelegateImpl {
         public ExternalNavigationDelegateImplForTesting() {
@@ -263,6 +266,71 @@ import java.util.List;
         Assert.assertTrue(
                 intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false));
         Assert.assertEquals(url, IntentHandler.getPendingIncognitoUrl());
+    }
+
+    @Test
+    @SmallTest
+    public void testIsIntentToInstantApp() {
+        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
+                mActivityTestRule.getActivity().getActivityTab());
+
+        // Check that the delegate correctly distinguishes instant app intents from others.
+        String vanillaUrl = "http://www.example.com";
+        Intent vanillaIntent = new Intent(Intent.ACTION_VIEW);
+        vanillaIntent.setData(Uri.parse(vanillaUrl));
+
+        String instantAppIntentUrl = "intent://buzzfeed.com/tasty#Intent;scheme=http;"
+                + "package=com.google.android.instantapps.supervisor;"
+                + "action=com.google.android.instantapps.START;"
+                + "S.com.google.android.instantapps.FALLBACK_PACKAGE="
+                + "com.android.chrome;S.com.google.android.instantapps.INSTANT_APP_PACKAGE="
+                + "com.yelp.android;S.android.intent.extra.REFERRER_NAME="
+                + "https%3A%2F%2Fwww.google.com;end";
+        Intent instantAppIntent;
+        try {
+            instantAppIntent = Intent.parseUri(instantAppIntentUrl, Intent.URI_INTENT_SCHEME);
+        } catch (Exception ex) {
+            Assert.assertTrue(false);
+            return;
+        }
+
+        Assert.assertFalse(delegate.isIntentToInstantApp(vanillaIntent));
+        Assert.assertTrue(delegate.isIntentToInstantApp(instantAppIntent));
+
+        // Check that Supervisor is detected by action even without package.
+        for (String action : SUPERVISOR_START_ACTIONS) {
+            String intentWithoutPackageUrl = "intent://buzzfeed.com/tasty#Intent;scheme=http;"
+                    + "action=" + action + ";"
+                    + "S.com.google.android.instantapps.FALLBACK_PACKAGE="
+                    + "com.android.chrome;S.com.google.android.instantapps.INSTANT_APP_PACKAGE="
+                    + "com.yelp.android;S.android.intent.extra.REFERRER_NAME="
+                    + "https%3A%2F%2Fwww.google.com;end";
+            try {
+                instantAppIntent =
+                        Intent.parseUri(intentWithoutPackageUrl, Intent.URI_INTENT_SCHEME);
+            } catch (Exception ex) {
+                Assert.assertTrue(false);
+                return;
+            }
+            Assert.assertTrue(delegate.isIntentToInstantApp(instantAppIntent));
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testMaybeAdjustInstantAppExtras() {
+        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
+                mActivityTestRule.getActivity().getActivityTab());
+
+        String url = "http://www.example.com";
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+
+        delegate.maybeAdjustInstantAppExtras(intent, /*isIntentToInstantApp=*/true);
+        Assert.assertTrue(intent.hasExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
+
+        delegate.maybeAdjustInstantAppExtras(intent, /*isIntentToInstantApp=*/false);
+        Assert.assertFalse(intent.hasExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
     }
 
     @Test

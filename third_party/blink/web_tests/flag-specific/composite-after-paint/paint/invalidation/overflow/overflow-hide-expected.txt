@@ -9,7 +9,7 @@
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV class='relative red'",
           "rect": [108, 108, 100, 100],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='overflowParent' class='absolute green'",

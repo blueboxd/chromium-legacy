@@ -106,6 +106,7 @@ chrome.passwordsPrivate.PasswordExportProgress;
  *   signonRealm: string,
  *   username: string,
  *   password: (string|undefined),
+ *   compromiseTime: number,
  *   elapsedTimeSinceCompromise: string,
  *   compromiseType: !chrome.passwordsPrivate.CompromiseType
  * }}

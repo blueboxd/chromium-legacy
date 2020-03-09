@@ -30,14 +30,13 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV",
-      "position": [400, 400],
-      "bounds": [200, 200],
-      "contentsOpaque": true,
+      "position": [8, 0],
+      "bounds": [592, 600],
       "backgroundColor": "#ADD8E6",
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow DIV id='imgElement'",
-          "rect": [0, 0, 200, 200],
+          "rect": [392, 400, 200, 200],
           "reason": "background"
         }
       ]

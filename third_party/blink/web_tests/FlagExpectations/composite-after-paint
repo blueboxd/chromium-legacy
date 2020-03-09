@@ -35,17 +35,6 @@ crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrol
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Pass ]
 crbug.com/1039401 virtual/scroll_customization/fast/scrolling/scrollbar-mousedown-mouseup.html [ Pass ]
 
-# Missing composited layers for elements without visible contents.
-crbug.com/937573 compositing/geometry/limit-layer-bounds-opacity-transition.html [ Failure ]
-crbug.com/937573 compositing/geometry/limit-layer-bounds-overflow-root.html [ Failure ]
-crbug.com/937573 compositing/geometry/limit-layer-bounds-positioned-transition.html [ Failure ]
-crbug.com/937573 compositing/geometry/limit-layer-bounds-positioned.html [ Failure ]
-crbug.com/937573 compositing/geometry/limit-layer-bounds-transformed.html [ Failure ]
-crbug.com/937573 compositing/layer-creation/scroll-partial-update.html [ Failure ]
-crbug.com/937573 paint/invalidation/compositing/iframe-inside-squashed-layer.html [ Failure ]
-crbug.com/937573 paint/invalidation/compositing/remove-squashed-layer-plus-move.html [ Failure ]
-crbug.com/937573 paint/invalidation/compositing/resize-squashing-layer-that-needs-full-repaint.html [ Failure ]
-
 virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
 virtual/android/rootscroller/fixed-chaining-with-implicit-pointer-events-none.html [ Failure ]
 virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Crash ]
@@ -68,9 +57,7 @@ external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
 external/wpt/portals/portals-rendering.html [ Failure ]
 fast/css/outline-offset-large.html [ Failure ]
 fast/webgl/pixelated.html [ Failure ]
-fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
 fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
-http/tests/devtools/layers/layers-3d-view-after-update.js [ Failure ]
 printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
 printing/offscreencanvas-2d-printing.html [ Failure ]
@@ -83,6 +70,9 @@ virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisibl
 virtual/threaded-prefer-compositing/fast/scrolling/keyboard-scroll-page-scale.html [ Failure Pass ]
 virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-scroll.html [ Failure Pass ]
 virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-smooth-js-scroll.html [ Crash Pass ]
+
+# Raster invalidation doesn't work for huge layers. 
+paint/invalidation/raster-under-invalidation-checking.html [ Failure ]
 
 crbug.com/907601 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
 
@@ -97,7 +87,9 @@ paint/invalidation/scroll/overflow-hidden-yet-scrolled.html [ Failure ]
 # Extra raster invalidations.
 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
 paint/invalidation/compositing/clipping-should-not-repaint-composited-descendants.html [ Failure ]
+paint/invalidation/compositing/dont-invalidate-root-layer-when-composited-layer-becomes-visible.html [ Failure ]
 paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
+paint/invalidation/compositing/tricky-element-removal-crash.html [ Failure ]
 paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
 paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
 paint/invalidation/compositing/scrolling-neg-z-index-descendants.html [ Failure ]
@@ -167,7 +159,6 @@ paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
 # Ad frame highlight size is incorrect
 crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failure ]
 
-virtual/threaded-prefer-compositing/fast/scroll-behavior/overscroll-behavior.html [ Failure ]
 virtual/threaded/fast/scroll-snap/snaps-after-touchpad-scrolling.html [ Failure ]
 http/tests/devtools/a11y-axe-core/layers/layers-a11y-test.js [ Crash ]
 
@@ -177,5 +168,3 @@ crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gestu
 crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Crash ]
 crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Crash ]
 crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Crash ]
-
-external/wpt/css/compositing/root-element-blend-mode.html [ Failure ]

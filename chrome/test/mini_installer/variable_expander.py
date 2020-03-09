@@ -256,13 +256,16 @@ class VariableExpander:
           'CHROME_ELEVATION_SERVICE_NAME_SXS': (
             'GoogleChromeCanaryElevationService'),
           'CHROME_ELEVATION_SERVICE_DISPLAY_NAME': (
-            'Google Chrome Elevation Service'),
+            'Google Chrome Elevation Service (GoogleChromeElevationService)'),
           'CHROME_ELEVATION_SERVICE_DISPLAY_NAME_BETA': (
-            'Google Chrome Beta Elevation Service'),
+            'Google Chrome Beta Elevation Service'
+            ' (GoogleChromeBetaElevationService)'),
           'CHROME_ELEVATION_SERVICE_DISPLAY_NAME_DEV': (
-            'Google Chrome Dev Elevation Service'),
+            'Google Chrome Dev Elevation Service'
+            ' (GoogleChromeDevElevationService)'),
           'CHROME_ELEVATION_SERVICE_DISPLAY_NAME_SXS': (
-            'Google Chrome Canary Elevation Service'),
+            'Google Chrome Canary Elevation Service'
+            ' (GoogleChromeCanaryElevationService)'),
       })
     elif mini_installer_product_name == 'Chromium Installer':
       self._variable_mapping.update({
@@ -280,7 +283,7 @@ class VariableExpander:
           'CHROME_ELEVATOR_IID': ('{B88C45B9-8825-4629-B83E-77CC67D9CEED}'),
           'CHROME_ELEVATION_SERVICE_NAME': 'ChromiumElevationService',
           'CHROME_ELEVATION_SERVICE_DISPLAY_NAME': (
-            'Chromium Elevation Service'),
+            'Chromium Elevation Service (ChromiumElevationService)'),
       })
     else:
       raise KeyError("Unknown mini_installer product name '%s'" %

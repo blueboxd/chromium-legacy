@@ -62,9 +62,8 @@ void BlockFlowPaintInvalidator::InvalidateDisplayItemClients(
 
   NGInlineCursor cursor(block_flow_);
   if (cursor) {
-    // Line boxes paint hit test display items (see:
-    // NGBoxFragmentPainter::PaintLineBox) and should be invalidated if they
-    // change.
+    // Line boxes record hit test data (see NGBoxFragmentPainter::PaintLineBox)
+    // and should be invalidated if they change.
     bool invalidate_all_lines = block_flow_.HasEffectiveAllowedTouchAction();
 
     for (cursor.MoveToFirstLine(); cursor; cursor.MoveToNextLine()) {

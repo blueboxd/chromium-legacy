@@ -13,7 +13,7 @@
       "bounds": [15, 600]
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='absolute green reflected'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
       "bounds": [100, 100],
       "backgroundColor": "#008000",
       "paintInvalidations": [

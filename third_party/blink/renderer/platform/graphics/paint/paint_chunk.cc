@@ -29,7 +29,13 @@ bool PaintChunk::EqualsForUnderInvalidationChecking(
   return size() == other.size() && id == other.id &&
          properties == other.properties && bounds == other.bounds &&
          drawable_bounds == other.drawable_bounds &&
-         outset_for_raster_effects == other.outset_for_raster_effects;
+         outset_for_raster_effects == other.outset_for_raster_effects &&
+         ((!hit_test_data && !other.hit_test_data) ||
+          (hit_test_data && other.hit_test_data &&
+           *hit_test_data == *other.hit_test_data));
+  // known_to_be_opaque is not checked because it's updated when we create the
+  // next chunk or release chunks. We ensure its correctness with unit tests and
+  // under-invalidation checking of display items.
 }
 
 size_t PaintChunk::MemoryUsageInBytes() const {
@@ -37,7 +43,7 @@ size_t PaintChunk::MemoryUsageInBytes() const {
   if (hit_test_data) {
     total_size += sizeof(*hit_test_data);
     total_size +=
-        hit_test_data->touch_action_rects.capacity() * sizeof(HitTestRect);
+        hit_test_data->touch_action_rects.capacity() * sizeof(TouchActionRect);
   }
   return total_size;
 }

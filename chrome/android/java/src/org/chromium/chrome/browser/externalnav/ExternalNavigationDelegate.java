@@ -115,6 +115,12 @@ interface ExternalNavigationDelegate {
     void maybeSetPendingReferrer(Intent intent, @NonNull String referrerUrl);
 
     /**
+     * Adjusts any desired extras related to intents to instant apps based on the value of
+     * |insIntentToInstantApp}.
+     */
+    void maybeAdjustInstantAppExtras(Intent intent, boolean isIntentToInstantApp);
+
+    /**
      * Records the pending incognito URL if desired. Called only if the
      * navigation is occurring in the context of incognito mode.
      */
@@ -160,6 +166,12 @@ interface ExternalNavigationDelegate {
      * @return Whether the Intent points to an app that we trust and that launched Chrome.
      */
     boolean isIntentForTrustedCallingApp(Intent intent);
+
+    /**
+     * @param intent The intent to launch.
+     * @return Whether the Intent points to an instant app.
+     */
+    boolean isIntentToInstantApp(Intent intent);
 
     /**
      * @param packageName The package to check.

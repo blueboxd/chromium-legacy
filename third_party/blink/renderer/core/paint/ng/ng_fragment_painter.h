@@ -29,9 +29,6 @@ class NGFragmentPainter : public ObjectPainterBase {
 
   void AddURLRectIfNeeded(const PaintInfo&, const PhysicalOffset& paint_offset);
 
-  static bool ShouldRecordHitTestData(const PaintInfo&,
-                                      const NGPhysicalBoxFragment&);
-
  private:
   const NGPhysicalBoxFragment& PhysicalFragment() const {
     return box_fragment_;

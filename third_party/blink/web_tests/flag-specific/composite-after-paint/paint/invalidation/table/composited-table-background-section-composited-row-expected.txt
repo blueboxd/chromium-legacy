@@ -21,13 +21,12 @@
     },
     {
       "name": "LayoutTableRow TR",
-      "position": [34, 118],
-      "bounds": [132, 19]
+      "position": [8, 96],
+      "bounds": [186, 64]
     },
     {
       "name": "LayoutNGTableCell TD",
-      "position": [24, 22],
-      "bounds": [10, 19],
+      "bounds": [59, 64],
       "transform": 1
     }
   ],

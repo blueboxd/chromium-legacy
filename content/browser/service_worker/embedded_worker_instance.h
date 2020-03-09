@@ -211,8 +211,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // changes such that the decision might change.
   void UpdateForegroundPriority();
 
-  // Pushes updated URL loader factories to the worker -- e.g. when DevTools
-  // network interception is enabled.
+  // Pushes updated URL loader factories to the worker. Called during new worker
+  // startup. Also called when DevTools network interception is enabled.
+  // |subresource_bundle| is set to nullptr when only |script_bundle| is needed
+  // to be updated.
   void UpdateLoaderFactories(
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_bundle);

@@ -75,7 +75,8 @@ class POLICY_EXPORT CloudPolicyClient {
 
   using ClientCertProvisioningStartCsrCallback = base::OnceCallback<void(
       DeviceManagementStatus,
-      enterprise_management::ClientCertificateProvisioningResponse::Error,
+      base::Optional<
+          enterprise_management::ClientCertificateProvisioningResponse::Error>,
       base::Optional<int64_t> try_later,
       const std::string& invalidation_topic,
       const std::string& va_challenge,
@@ -84,12 +85,14 @@ class POLICY_EXPORT CloudPolicyClient {
 
   using ClientCertProvisioningFinishCsrCallback = base::OnceCallback<void(
       DeviceManagementStatus,
-      enterprise_management::ClientCertificateProvisioningResponse::Error,
+      base::Optional<
+          enterprise_management::ClientCertificateProvisioningResponse::Error>,
       base::Optional<int64_t> try_later)>;
 
   using ClientCertProvisioningDownloadCertCallback = base::OnceCallback<void(
       DeviceManagementStatus,
-      enterprise_management::ClientCertificateProvisioningResponse::Error,
+      base::Optional<
+          enterprise_management::ClientCertificateProvisioningResponse::Error>,
       base::Optional<int64_t> try_later,
       const std::string& pem_encoded_certificate)>;
 

@@ -85,6 +85,12 @@ struct PLATFORM_EXPORT PaintChunk {
 
   bool EqualsForUnderInvalidationChecking(const PaintChunk& other) const;
 
+  HitTestData& EnsureHitTestData() {
+    if (!hit_test_data)
+      hit_test_data = std::make_unique<HitTestData>();
+    return *hit_test_data;
+  }
+
   size_t MemoryUsageInBytes() const;
 
   String ToString() const;
@@ -104,19 +110,16 @@ struct PLATFORM_EXPORT PaintChunk {
   // The paint properties which apply to this chunk.
   RefCountedPropertyTreeState properties;
 
-  // The following fields are not initialized when the chunk is created by
-  // PaintChunker because they depend on the display items in this chunk.
-  // They are updated when a display item is added into the chunk, or by the
-  // constructor of PaintArtifact, or when a paint chunk is moved from a cached
-  // subsequence.
-  // TODO(wangxianzhu): Reduce complexity of this.
-
   std::unique_ptr<HitTestData> hit_test_data;
 
+  // The following fields depend on the display items in this chunk.
+  // They are updated when a display item is added into the chunk.
+
   // The total bounds of visual rects of all display items in this paint chunk,
-  // in the coordinate space of the containing transform node. This can be
-  // larger than |drawble_bounds|, because of non-drawable display items e.g.
-  // for hit testing.
+  // and extra bounds that are not from display items for e.g. hit test.
+  // It's in the coordinate space of the containing transform node. This can be
+  // larger than |drawble_bounds|, because of non-drawable display items and
+  // extra bounds.
   IntRect bounds;
 
   // The total bounds of visual rects of drawable display items in this paint

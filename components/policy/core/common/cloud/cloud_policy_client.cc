@@ -1162,7 +1162,7 @@ namespace {
 bool CheckCommonClientCertProvisioningResponse(
     const em::DeviceManagementResponse& response,
     policy::DeviceManagementStatus* status,
-    CertProvisioningResponseErrorType* response_error,
+    base::Optional<CertProvisioningResponseErrorType>* response_error,
     base::Optional<int64_t>* try_later) {
   if (*status != DM_STATUS_SUCCESS) {
     return false;
@@ -1201,8 +1201,7 @@ void CloudPolicyClient::OnClientCertProvisioningStartCsrResponse(
       &CloudPolicyClient::RemoveJob, base::Unretained(this), job));
 
   status_ = status;
-  CertProvisioningResponseErrorType response_error =
-      CertProvisioningResponseError::UNDEFINED;
+  base::Optional<CertProvisioningResponseErrorType> response_error;
   base::Optional<int64_t> try_later;
 
   // Single step loop for convenience.
@@ -1274,8 +1273,7 @@ void CloudPolicyClient::OnClientCertProvisioningFinishCsrResponse(
       &CloudPolicyClient::RemoveJob, base::Unretained(this), job));
 
   status_ = status;
-  CertProvisioningResponseErrorType response_error =
-      CertProvisioningResponseError::UNDEFINED;
+  base::Optional<CertProvisioningResponseErrorType> response_error;
   base::Optional<int64_t> try_later;
 
   // Single step loop for convenience.
@@ -1308,8 +1306,7 @@ void CloudPolicyClient::OnClientCertProvisioningDownloadCertResponse(
       &CloudPolicyClient::RemoveJob, base::Unretained(this), job));
 
   status_ = status;
-  CertProvisioningResponseErrorType response_error =
-      CertProvisioningResponseError::UNDEFINED;
+  base::Optional<CertProvisioningResponseErrorType> response_error;
   base::Optional<int64_t> try_later;
 
   // Single step loop for convenience.

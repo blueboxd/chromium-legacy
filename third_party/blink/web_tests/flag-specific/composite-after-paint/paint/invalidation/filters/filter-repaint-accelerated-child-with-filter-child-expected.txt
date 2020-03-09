@@ -7,14 +7,20 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow'",
+      "name": "LayoutNGBlockFlow DIV class='blur'",
+      "position": [8, 8],
+      "bounds": [200, 200],
+      "drawsContent": false
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV class='accelerated'",
       "position": [-14, -14],
-      "bounds": [160, 260],
+      "bounds": [214, 260],
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow'",
-          "rect": [0, 0, 160, 260],
+          "rect": [0, 0, 214, 260],
           "reason": "geometry"
         }
       ],

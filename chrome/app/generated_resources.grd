@@ -2753,7 +2753,7 @@ are declared in tools/grit/grit_rule.gni.
           Serial
         </message>
       </if>
- 
+
       <message name="IDS_CERT_EXPORT_TYPE_BASE64" desc="The description of saving a single certificate in base64 encoding.">
         Base64-encoded ASCII, single certificate
       </message>
@@ -9226,6 +9226,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open windowed">
           New window
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TABBED_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tabbed window">
+          New tabbed window
         </message>
         <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
           Pin to shelf

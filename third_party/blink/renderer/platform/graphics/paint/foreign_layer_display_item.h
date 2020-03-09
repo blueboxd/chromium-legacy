@@ -21,7 +21,7 @@ class LayerAsJSONClient;
 //
 // Before CAP, this content is not painted, but is instead inserted into the
 // GraphicsLayer tree.
-class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
+class PLATFORM_EXPORT ForeignLayerDisplayItem : public DisplayItem {
  public:
   ForeignLayerDisplayItem(const DisplayItemClient& client,
                           Type,
@@ -35,9 +35,9 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
   const LayerAsJSONClient* GetLayerAsJSONClient() const;
 
   // DisplayItem
-  bool Equals(const DisplayItem&) const override;
+  bool Equals(const DisplayItem&) const final;
 #if DCHECK_IS_ON()
-  void PropertiesAsJSON(JSONObject&) const override;
+  void PropertiesAsJSON(JSONObject&) const final;
 #endif
 
   FloatPoint Offset() const { return offset_; }

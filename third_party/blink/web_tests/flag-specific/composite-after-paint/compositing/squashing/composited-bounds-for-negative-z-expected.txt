@@ -14,6 +14,12 @@
       "transform": 1
     },
     {
+      "name": "LayoutNGBlockFlow HTML",
+      "position": [8, 100],
+      "bounds": [784, 300],
+      "drawsContent": false
+    },
+    {
       "name": "LayoutNGBlockFlow DIV",
       "bounds": [285, 300],
       "drawsContent": false,

@@ -35,6 +35,9 @@ import androidx.browser.customtabs.CustomTabsSession;
  * Utility class that contains convenience calls related with custom tabs testing.
  */
 public class CustomTabsTestUtils {
+    /** Intent extra to specify an id to a custom tab.*/
+    public static final String EXTRA_CUSTOM_TAB_ID =
+            "android.support.customtabs.extra.tests.CUSTOM_TAB_ID";
 
     /** A plain old data class that holds the return value from {@link #bindWithCallback}. */
     public static class ClientAndSession {

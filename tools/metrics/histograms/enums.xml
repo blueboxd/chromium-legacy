@@ -8740,6 +8740,7 @@ histogram as enum -->
   <int value="6" label="Open in window"/>
   <int value="7" label="Open in a new window"/>
   <int value="8" label="Open in a new incognito window"/>
+  <int value="20" label="Open in a tabbed window"/>
   <int value="100" label="Launch New"/>
   <int value="101" label="Toggle Pin"/>
   <int value="102" label="Show App Info"/>
@@ -8753,6 +8754,7 @@ histogram as enum -->
   <int value="201" label="Open in a regular tab."/>
   <int value="202" label="Open in fullscreen"/>
   <int value="203" label="Open in a window"/>
+  <int value="204" label="Open in a tabbed window"/>
   <int value="500" label="Toggle Auto Hide"/>
   <int value="501" label="Shelf Alignment Menu"/>
   <int value="502" label="Shelf Alignment Left"/>

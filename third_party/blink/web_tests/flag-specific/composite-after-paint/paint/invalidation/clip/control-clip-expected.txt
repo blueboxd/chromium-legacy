@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'SUCCESS'",
+          "object": "LayoutBlockFlow (anonymous)",
           "rect": [76, 117, 64, 16],
           "reason": "chunk appeared"
         },
@@ -17,7 +17,7 @@
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'FAILURE'",
+          "object": "LayoutBlockFlow (anonymous)",
           "rect": [81, 117, 54, 16],
           "reason": "chunk disappeared"
         },

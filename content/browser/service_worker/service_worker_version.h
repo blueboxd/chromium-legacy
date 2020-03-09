@@ -874,6 +874,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void InitializeGlobalScope(
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          script_loader_factories,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories);
 
   // Update the idle delay if the worker is starting or running and we don't

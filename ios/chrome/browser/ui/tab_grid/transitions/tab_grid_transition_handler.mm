@@ -224,10 +224,10 @@ const CGFloat kReducedMotionDuration = 0.25;
         tab.layer.cornerRadius = tabFinalCornerRadius;
       }
       completion:^(BOOL finished) {
+        // When presenting the FirstRun ViewController, this can be called with
+        // |finished| to NO on official builds. For now, the animation not
+        // finishing isn't handled anywhere.
         tab.clipsToBounds = oldClipsToBounds;
-        if (!finished && beingPresented) {
-          [tab removeFromSuperview];
-        }
         if (completion)
           completion();
       }];

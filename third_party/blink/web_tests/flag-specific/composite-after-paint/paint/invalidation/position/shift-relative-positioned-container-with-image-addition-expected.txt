@@ -17,14 +17,14 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutImage IMG",
+          "object": "LayoutNGBlockFlow HTML",
           "rect": [58, 236, 489, 537],
-          "reason": "geometry"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutImage IMG",
           "rect": [58, 142, 489, 537],
-          "reason": "geometry"
+          "reason": "disappeared"
         }
       ]
     },

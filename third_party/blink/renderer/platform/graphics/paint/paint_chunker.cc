@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunker.h"
 
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
+
 namespace blink {
 
 PaintChunker::PaintChunker()
@@ -38,6 +41,7 @@ void PaintChunker::UpdateCurrentPaintChunkProperties(
 }
 
 void PaintChunker::AppendByMoving(PaintChunk&& chunk) {
+  UpdateLastChunkKnownToBeOpaque();
   wtf_size_t next_chunk_begin_index =
       chunks_.IsEmpty() ? 0 : LastChunk().end_index;
   chunks_.emplace_back(next_chunk_begin_index, std::move(chunk));
@@ -55,6 +59,7 @@ PaintChunk& PaintChunker::EnsureCurrentChunk(const PaintChunk::Id& id) {
   if (WillForceNewChunk() || current_properties_ != LastChunk().properties) {
     if (!next_chunk_id_)
       next_chunk_id_.emplace(id);
+    UpdateLastChunkKnownToBeOpaque();
     wtf_size_t begin = chunks_.IsEmpty() ? 0 : LastChunk().end_index;
     chunks_.emplace_back(begin, begin, *next_chunk_id_, current_properties_);
     next_chunk_id_ = base::nullopt;
@@ -77,8 +82,25 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   chunk.bounds.Unite(item.VisualRect());
   if (item.DrawsContent())
     chunk.drawable_bounds.Unite(item.VisualRect());
+
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      item.IsDrawing() &&
+      static_cast<const DrawingDisplayItem&>(item).KnownToBeOpaque())
+    last_chunk_known_to_be_opaque_region_.Unite(item.VisualRect());
+
   chunk.outset_for_raster_effects =
       std::max(chunk.outset_for_raster_effects, item.OutsetForRasterEffects());
+
+  if (item.IsScrollHitTest()) {
+    const auto& scroll_hit_test_item =
+        static_cast<const ScrollHitTestDisplayItem&>(item);
+    if (!chunk.hit_test_data)
+      chunk.hit_test_data = std::make_unique<HitTestData>();
+    chunk.hit_test_data->SetScrollHitTest(
+        scroll_hit_test_item.scroll_offset_node(),
+        scroll_hit_test_item.scroll_container_bounds());
+  }
+
   chunk.end_index++;
 
   // When forcing a new chunk, we still need to force new chunk for the next
@@ -92,10 +114,36 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   return created_new_chunk;
 }
 
+void PaintChunker::AddHitTestDataToCurrentChunk(const PaintChunk::Id& id,
+                                                const IntRect& rect,
+                                                TouchAction touch_action) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      touch_action == TouchAction::kAuto)
+    return;
+
+  auto& chunk = EnsureCurrentChunk(id);
+  chunk.bounds.Unite(rect);
+  if (touch_action != TouchAction::kAuto) {
+    chunk.EnsureHitTestData().AppendTouchActionRect(
+        TouchActionRect{rect, touch_action});
+  }
+}
+
+void PaintChunker::UpdateLastChunkKnownToBeOpaque() {
+  if (chunks_.IsEmpty() || LastChunk().is_moved_from_cached_subsequence)
+    return;
+
+  LastChunk().known_to_be_opaque =
+      last_chunk_known_to_be_opaque_region_.Contains(LastChunk().bounds);
+  last_chunk_known_to_be_opaque_region_ = Region();
+}
+
 Vector<PaintChunk> PaintChunker::ReleasePaintChunks() {
+  UpdateLastChunkKnownToBeOpaque();
   next_chunk_id_ = base::nullopt;
   current_properties_ = PropertyTreeState::Uninitialized();
   chunks_.ShrinkToFit();
+  force_new_chunk_ = true;
   return std::move(chunks_);
 }
 

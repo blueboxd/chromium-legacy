@@ -38,6 +38,9 @@ enum CommandId {
   SWAP_WITH_NEXT = 12,
   SWAP_WITH_PREVIOUS = 13,
 
+  // Used by ShelfContextMenu.
+  LAUNCH_TYPE_TABBED_WINDOW = 20,
+
   // Used by AppContextMenu.
   LAUNCH_NEW = 100,
   TOGGLE_PIN = 101,
@@ -53,6 +56,7 @@ enum CommandId {
   USE_LAUNCH_TYPE_REGULAR = 201,
   USE_LAUNCH_TYPE_FULLSCREEN = 202,
   USE_LAUNCH_TYPE_WINDOW = 203,
+  USE_LAUNCH_TYPE_TABBED_WINDOW = 204,
   USE_LAUNCH_TYPE_COMMAND_END,
 
   // Range of command ids reserved for launching app shortcuts from context

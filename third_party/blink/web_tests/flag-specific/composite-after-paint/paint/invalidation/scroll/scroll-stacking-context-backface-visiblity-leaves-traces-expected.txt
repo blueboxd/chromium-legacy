@@ -13,6 +13,14 @@
       "bounds": [15, 600]
     },
     {
+      "name": "LayoutNGBlockFlow (relative positioned) HEADER",
+      "position": [8, 28],
+      "bounds": [769, 20],
+      "drawsContent": false,
+      "backfaceVisibility": "hidden",
+      "transform": 1
+    },
+    {
       "name": "LayoutNGBlockFlow (positioned) DIV id='searchbar'",
       "bounds": [150, 150],
       "contentsOpaque": true,

@@ -17,22 +17,50 @@ using BoxPainterTest = PaintControllerPaintTest;
 
 INSTANTIATE_PAINT_TEST_SUITE_P(BoxPainterTest);
 
-TEST_P(BoxPainterTest, DontPaintEmptyDecorationBackground) {
+TEST_P(BoxPainterTest, EmptyDecorationBackground) {
   SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        /* to force a subsequene and paint chunk */
+        opacity: 0.5;
+        /* to verify child empty backgrounds expand chunk bounds */
+        height: 0;
+      }
+    </style>
     <div id="div1" style="width: 100px; height: 100px; background: green">
     </div>
     <div id="div2" style="width: 100px; height: 100px; outline: 2px solid blue">
     </div>
+    <div id="div3" style="width: 200px; height: 150px"></div>
   )HTML");
 
   auto* div1 = GetLayoutObjectByElementId("div1");
   auto* div2 = GetLayoutObjectByElementId("div2");
+  auto* body = GetDocument().body()->GetLayoutBox();
+  // Empty backgrounds don't generate display items.
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
                                    kDocumentBackgroundType),
                           IsSameId(div1, kBackgroundType),
                           IsSameId(div2, DisplayItem::PaintPhaseToDrawingType(
                                              PaintPhase::kSelfOutlineOnly))));
+  EXPECT_THAT(
+      RootPaintController().PaintChunks(),
+      ElementsAre(
+          IsPaintChunk(0, 1,
+                       PaintChunk::Id(ViewScrollingBackgroundClient(),
+                                      kDocumentBackgroundType),
+                       GetLayoutView().FirstFragment().ContentsProperties(),
+                       nullptr, IntRect(0, 0, 800, 600)),
+          IsPaintChunk(
+              1, 3, PaintChunk::Id(*body->Layer(), DisplayItem::kLayerChunk),
+              body->FirstFragment().LocalBorderBoxProperties(), nullptr,
+              // In CompositeAfterPaint, empty backgrounds contribute
+              // to bounds of paint chunks.
+              RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+                  ? IntRect(-2, 0, 202, 350)
+                  : IntRect(-2, 0, 104, 202))));
 }
 
 TEST_P(BoxPainterTest, ScrollHitTestOrderWithScrollBackgroundAttachment) {
@@ -207,7 +235,7 @@ TEST_P(BoxPainterTest, ScrollHitTestProperties) {
               container.FirstFragment().LocalBorderBoxProperties()),
           IsPaintChunk(2, 3, PaintChunk::Id(container, kScrollHitTestType),
                        container.FirstFragment().LocalBorderBoxProperties(),
-                       scroll_hit_test_data),
+                       &scroll_hit_test_data),
           IsPaintChunk(3, 5,
                        PaintChunk::Id(container, kScrollingBackgroundChunkType),
                        scrolling_contents_properties)));
@@ -234,7 +262,7 @@ TEST_P(BoxPainterTest, ScrollHitTestProperties) {
   EXPECT_EQ(FloatRect(0, 0, 800, 600), scroll_hit_test_clip.ClipRect().Rect());
 
   // The scrolled contents should be scrolled and clipped.
-  const auto& contents_chunk = RootPaintController().PaintChunks()[3];
+  const auto& contents_chunk = paint_chunks[3];
   const auto& contents_transform = contents_chunk.properties.Transform();
   const auto* contents_scroll = contents_transform.ScrollNode();
   EXPECT_EQ(IntSize(200, 300), contents_scroll->ContentsSize());

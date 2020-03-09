@@ -946,9 +946,7 @@ TEST_P(ScrollingTest, NonFastScrollableRegionsForPlugins) {
 
   // The fixed plugin should create a non-fast scrollable region in a fixed
   // cc::Layer.
-  auto* fixed_layer = LayerByDOMElementId(
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ? "pluginfixed"
-                                                           : "fixed");
+  auto* fixed_layer = LayerByDOMElementId("fixed");
   EXPECT_EQ(fixed_layer->non_fast_scrollable_region().bounds(),
             gfx::Rect(0, 0, 200, 200));
 }
@@ -1471,7 +1469,7 @@ TEST_P(ScrollingTest, UpdateUMAMetricUpdated) {
       "Blink.ScrollingCoordinator.UpdateTime.AggregatedPreFCP", 0);
 
   // A change to background color does not need to cause a scrolling update but,
-  // because hit test display items paint, we also cause a scrolling coordinator
+  // because we record hit test data, we also cause a scrolling coordinator
   // update when the background paints. Also render some text to get past FCP.
   // Note that this frame is still considered pre-FCP.
   auto* background = GetFrame()->GetDocument()->getElementById("bg");

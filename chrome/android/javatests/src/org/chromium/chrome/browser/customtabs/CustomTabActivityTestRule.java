@@ -29,19 +29,40 @@ import java.util.concurrent.TimeoutException;
 public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabActivity> {
     protected static final long STARTUP_TIMEOUT_MS = 5L * 1000;
     protected static final long LONG_TIMEOUT_MS = 10L * 1000;
+    private static int sCustomTabId;
 
     public CustomTabActivityTestRule() {
         super(CustomTabActivity.class);
     }
 
+    public static void putCustomTabIdInIntent(Intent intent) {
+        boolean hasCustomTabId = intent.hasExtra(CustomTabsTestUtils.EXTRA_CUSTOM_TAB_ID);
+        // Intent already has a custom tab id assigned to it and we should reuse the same activity.
+        // Test relying on sending the same intent relies on using the same activity.
+        if (hasCustomTabId) return;
+
+        intent.putExtra(CustomTabsTestUtils.EXTRA_CUSTOM_TAB_ID, sCustomTabId++);
+    }
+
+    public static int getCustomTabIdFromIntent(Intent intent) {
+        return intent.getIntExtra(CustomTabsTestUtils.EXTRA_CUSTOM_TAB_ID, -1);
+    }
+
     @Override
     public void startActivityCompletely(Intent intent) {
+        putCustomTabIdInIntent(intent);
+        int currentIntentId = getCustomTabIdFromIntent(intent);
+
         Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
         Assert.assertNotNull("Main activity did not start", activity);
         CriteriaHelper.pollUiThread(() -> {
             for (Activity runningActivity : ApplicationStatus.getRunningActivities()) {
                 if (runningActivity instanceof CustomTabActivity) {
-                    setActivity((CustomTabActivity) runningActivity);
+                    CustomTabActivity customTabActivity = (CustomTabActivity) runningActivity;
+                    final int customTabIdInActivity =
+                            getCustomTabIdFromIntent(customTabActivity.getIntent());
+                    if (currentIntentId != customTabIdInActivity) continue;
+                    setActivity(customTabActivity);
                     return true;
                 }
             }

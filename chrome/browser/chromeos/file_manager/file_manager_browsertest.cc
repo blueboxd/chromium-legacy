@@ -455,6 +455,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("toolbarDeleteEntry").InGuestMode(),
                       TestCase("toolbarDeleteEntry"),
                       TestCase("toolbarRefreshButtonWithSelection").EnableArc(),
+                      TestCase("toolbarAltACommand").FilesNg(),
                       TestCase("toolbarRefreshButtonHiddenInRecents")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

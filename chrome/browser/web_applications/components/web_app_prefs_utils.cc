@@ -74,6 +74,8 @@ const char kFileHandlersEnabled[] = "file_handlers_enabled";
 const char kFileHandlingOriginTrialExpiryTime[] =
     "file_handling_origin_trial_expiry_time";
 
+const char kExperimentalTabbedWindowMode[] = "experimental_tabbed_window_mode";
+
 void WebAppPrefsUtilsRegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(::prefs::kWebAppsPreferences);
@@ -123,6 +125,17 @@ void UpdateDoubleWebAppPref(PrefService* pref_service,
   std::unique_ptr<prefs::DictionaryValueUpdate> web_app_prefs =
       UpdateWebAppDictionary(update.Get(), app_id);
   web_app_prefs->SetDouble(path, value);
+}
+
+void RemoveWebAppPref(PrefService* pref_service,
+                      const AppId& app_id,
+                      base::StringPiece path) {
+  prefs::ScopedDictionaryPrefUpdate update(pref_service,
+                                           prefs::kWebAppsPreferences);
+
+  std::unique_ptr<prefs::DictionaryValueUpdate> web_app_prefs =
+      UpdateWebAppDictionary(update.Get(), app_id);
+  web_app_prefs->Remove(path, nullptr);
 }
 
 }  // namespace web_app

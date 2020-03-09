@@ -305,7 +305,7 @@ html[dir='rtl'] #directory-tree .tree-row > .file-row {
 
 html:not(.col-resize) #directory-tree
     .tree-row:not([active]):not([selected]):hover > .file-row {
-  background-color: var(--google-grey-200);
+  background-color: var(--google-grey-100);
 }
 
 #directory-tree:focus .tree-row[selected] > .file-row {

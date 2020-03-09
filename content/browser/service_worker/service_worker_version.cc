@@ -205,27 +205,33 @@ base::TimeDelta GetUpdateDelay() {
   return base::TimeDelta::FromMilliseconds(kUpdateDelayParam.Get());
 }
 
+using CreateFactoryBundleForSubresourceOnUICallback = base::OnceCallback<void(
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresouce_bundle)>;
 void CreateFactoryBundleForSubresourceOnUI(
     int process_id,
     int routing_id,
     const url::Origin& origin,
     network::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
-    base::OnceCallback<
-        void(std::unique_ptr<blink::PendingURLLoaderFactoryBundle>)> callback) {
+    CreateFactoryBundleForSubresourceOnUICallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* rph = RenderProcessHost::FromID(process_id);
   if (!rph) {
     // Return nullptr because we can't create a factory bundle because of
     // missing renderer.
     ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
-        FROM_HERE, base::BindOnce(std::move(callback), nullptr));
+        FROM_HERE, base::BindOnce(std::move(callback), nullptr, nullptr));
     return;
   }
-  auto bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
+  auto script_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
+      rph, routing_id, origin, cross_origin_embedder_policy,
+      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript);
+  auto subresource_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
       rph, routing_id, origin, cross_origin_embedder_policy,
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
   ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(bundle)));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(script_bundle),
+                                std::move(subresource_bundle)));
 }
 
 }  // namespace
@@ -1004,6 +1010,8 @@ void ServiceWorkerVersion::OnMainScriptLoaded() {
 
 void ServiceWorkerVersion::InitializeGlobalScope(
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+        script_loader_factories,
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories) {
   DCHECK(service_worker_host_);
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -1017,6 +1025,12 @@ void ServiceWorkerVersion::InitializeGlobalScope(
     // a new worker.
     DCHECK_EQ(nullptr, registration->GetNewestVersion());
     DCHECK_EQ(NEW, status());
+
+    // |script_loader_factories| should be updated too.
+    DCHECK(script_loader_factories);
+    embedded_worker_->UpdateLoaderFactories(
+        std::move(script_loader_factories),
+        /*subresource_loader_factories=*/nullptr);
   }
 
   DCHECK(provider_host_);
@@ -1851,7 +1865,8 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   // Initialize the global scope now if the worker won't be paused. Otherwise,
   // delay initialization until the main script is loaded.
   if (!initialize_global_scope_after_main_script_loaded_)
-    InitializeGlobalScope(/*subresource_loader_factories=*/nullptr);
+    InitializeGlobalScope(/*script_loader_factories=*/nullptr,
+                          /*subresource_loader_factories=*/nullptr);
 
   if (!controller_receiver_.is_valid()) {
     controller_receiver_ = remote_controller_.BindNewPipeAndPassReceiver();

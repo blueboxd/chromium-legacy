@@ -9,13 +9,17 @@
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
-      "position": [10, 0],
-      "bounds": [12, 12],
+      "bounds": [100, 50],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
-          "rect": [0, 0, 12, 12],
-          "reason": "paint property change"
+          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "rect": [12, 0, 12, 12],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "rect": [10, 0, 12, 12],
+          "reason": "geometry"
         }
       ],
       "transform": 1
@@ -44,13 +48,17 @@
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
-      "position": [9, 0],
-      "bounds": [13, 12],
+      "bounds": [100, 50],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
-          "rect": [0, 0, 13, 12],
-          "reason": "paint property change"
+          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "rect": [11, 0, 13, 12],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "rect": [9, 0, 13, 12],
+          "reason": "geometry"
         }
       ],
       "transform": 1
@@ -79,13 +87,17 @@
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
-      "position": [10, 0],
-      "bounds": [13, 12],
+      "bounds": [100, 50],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
-          "rect": [0, 0, 13, 12],
-          "reason": "paint property change"
+          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "rect": [12, 0, 13, 12],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "rect": [10, 0, 13, 12],
+          "reason": "geometry"
         }
       ],
       "transform": 1
@@ -114,13 +126,17 @@
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
-      "position": [10, 0],
-      "bounds": [13, 12],
+      "bounds": [100, 50],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
-          "rect": [0, 0, 13, 12],
-          "reason": "paint property change"
+          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "rect": [12, 0, 13, 12],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "rect": [10, 0, 13, 12],
+          "reason": "geometry"
         }
       ],
       "transform": 1
@@ -149,13 +165,17 @@
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
-      "position": [10, 0],
-      "bounds": [13, 12],
+      "bounds": [100, 50],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
-          "rect": [0, 0, 13, 12],
-          "reason": "paint property change"
+          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "rect": [12, 0, 13, 12],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "rect": [10, 0, 13, 12],
+          "reason": "geometry"
         }
       ],
       "transform": 1

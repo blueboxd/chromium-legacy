@@ -42,7 +42,7 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "InlineTextBox 'This is a tabgroup with triangular tab corners'",
+          "object": "LayoutSVGText text id='contentTabGroupTriangle0'",
           "rect": [15, 291, 211, 37],
           "reason": "chunk appeared"
         },

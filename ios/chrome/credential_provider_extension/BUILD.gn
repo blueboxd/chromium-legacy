@@ -33,6 +33,9 @@ compile_entitlements("entitlements") {
   entitlements_templates = [
     "entitlements/external/credential_provider_extension.appex.entitlements",
   ]
+  if (ios_chrome_cpe_entitlements_additions != []) {
+    entitlements_templates += ios_chrome_cpe_entitlements_additions
+  }
 }
 
 ios_appex_bundle("credential_provider_extension") {

@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -186,11 +185,11 @@ void InlineFlowBoxPainter::PaintBackgroundBorderShadow(
     const LayoutPoint& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground);
 
-  RecordHitTestData(paint_info, paint_offset);
-
   if (inline_flow_box_.GetLineLayoutItem().StyleRef().Visibility() !=
       EVisibility::kVisible)
     return;
+
+  RecordHitTestData(paint_info, paint_offset);
 
   // You can use p::first-line to specify a background. If so, the root line
   // boxes for a line may actually have to paint a background.
@@ -340,17 +339,11 @@ void InlineFlowBoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   LayoutObject* layout_object =
       LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.GetLineLayoutItem());
 
-  // If an object is not visible, it does not participate in hit testing.
-  if (layout_object->StyleRef().Visibility() != EVisibility::kVisible)
-    return;
+  DCHECK_EQ(layout_object->StyleRef().Visibility(), EVisibility::kVisible);
 
-  auto touch_action = layout_object->EffectiveAllowedTouchAction();
-  if (touch_action == TouchAction::kAuto)
-    return;
-
-  HitTestDisplayItem::Record(
-      paint_info.context, inline_flow_box_,
-      HitTestRect(AdjustedPaintRect(paint_offset), touch_action));
+  paint_info.context.GetPaintController().RecordHitTestData(
+      inline_flow_box_, PixelSnappedIntRect(AdjustedPaintRect(paint_offset)),
+      layout_object->EffectiveAllowedTouchAction());
 }
 
 void InlineFlowBoxPainter::PaintNormalBoxShadow(const PaintInfo& info,

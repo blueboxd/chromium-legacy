@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 
 @protocol BrowserCommands;
-@class PageInfoConfig;
+@class PageInfoSiteSecurityDescription;
 @protocol PageInfoPresentation;
 
 // The view controller for the page info view.
@@ -21,7 +21,7 @@
 // The |sourcePoint| parameter should be in the coordinate system of
 // |provider|'s view. Typically, |sourcePoint| would be the midpoint of a button
 // that resulted in this popup being displayed.
-- (id)initWithModel:(PageInfoConfig*)model
+- (id)initWithModel:(PageInfoSiteSecurityDescription*)model
              sourcePoint:(CGPoint)sourcePoint
     presentationProvider:(id<PageInfoPresentation>)provider
                  handler:(id<BrowserCommands>)handler;

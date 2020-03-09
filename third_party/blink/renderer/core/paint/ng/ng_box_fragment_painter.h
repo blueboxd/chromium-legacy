@@ -169,10 +169,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void RecordScrollHitTestData(const PaintInfo&,
                                const DisplayItemClient& background_client);
 
-  void RecordHitTestDataForLine(const PaintInfo& paint_info,
-                                const PhysicalOffset& paint_offset,
-                                const NGPhysicalFragment& line,
-                                const DisplayItemClient& display_item_client);
+  bool ShouldRecordHitTestData(const PaintInfo&);
 
   bool IsInSelfHitTestingPhase(HitTestAction) const;
   bool VisibleToHitTestRequest(const HitTestRequest&) const;

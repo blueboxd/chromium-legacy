@@ -8,6 +8,12 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='container'",
+      "bounds": [300, 300],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='container'",
       "bounds": [285, 285],
       "drawsContent": false,
       "transform": 1
@@ -26,25 +32,8 @@
     },
     {
       "name": "Scroll corner of LayoutNGBlockFlow DIV id='container'",
-      "position": [-10, -10],
-      "bounds": [320, 320],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='container'",
-          "rect": [0, 0, 320, 320],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "Scroll corner of LayoutNGBlockFlow DIV id='container'",
-          "rect": [295, 295, 15, 15],
-          "reason": "paint property change"
-        },
-        {
-          "object": "Scroll corner of LayoutNGBlockFlow DIV id='container'",
-          "rect": [0, 0, 15, 15],
-          "reason": "paint property change"
-        }
-      ],
+      "position": [285, 285],
+      "bounds": [15, 15],
       "transform": 1
     },
     {
@@ -56,8 +45,14 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='container'",
-      "bounds": [77, 19],
+      "bounds": [3000, 3000],
       "transform": 2
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='container'",
+      "position": [-10, -10],
+      "bounds": [320, 320],
+      "transform": 1
     }
   ],
   "transforms": [

@@ -13,8 +13,7 @@
     },
     {
       "name": "LayoutNGBlockFlow HTML",
-      "position": [100, 100],
-      "bounds": [640, 440],
+      "bounds": [785, 3700],
       "backgroundColor": "#00000080",
       "transform": 1
     }

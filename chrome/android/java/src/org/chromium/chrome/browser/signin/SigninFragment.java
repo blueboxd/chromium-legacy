@@ -104,9 +104,8 @@ public class SigninFragment extends SigninFragmentBase {
                 || accessPoint == SigninAccessPoint.NTP_CONTENT_SUGGESTIONS
                 || accessPoint == SigninAccessPoint.RECENT_TABS
                 || accessPoint == SigninAccessPoint.SETTINGS
-                || accessPoint == SigninAccessPoint.SIGNIN_PROMO
                 || accessPoint
-                        == SigninAccessPoint.START_PAGE : "invalid access point: " + accessPoint;
+                        == SigninAccessPoint.SIGNIN_PROMO : "invalid access point: " + accessPoint;
         mSigninAccessPoint = accessPoint;
         mPromoAction =
                 getSigninArguments().getInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.NONE);

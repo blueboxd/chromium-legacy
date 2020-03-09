@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
@@ -61,12 +62,19 @@ class PLATFORM_EXPORT PaintChunker final {
   PaintChunk& LastChunk() { return chunks_.back(); }
   const PaintChunk& LastChunk() const { return chunks_.back(); }
 
+  // The id will be used when we need to create a new current chunk.
+  // Otherwise it's ignored.
+  void AddHitTestDataToCurrentChunk(const PaintChunk::Id&,
+                                    const IntRect&,
+                                    TouchAction);
+
   // Releases the generated paint chunk list and raster invalidations and
   // resets the state of this object.
   Vector<PaintChunk> ReleasePaintChunks();
 
  private:
   PaintChunk& EnsureCurrentChunk(const PaintChunk::Id&);
+  void UpdateLastChunkKnownToBeOpaque();
 
   Vector<PaintChunk> chunks_;
 
@@ -79,6 +87,8 @@ class PLATFORM_EXPORT PaintChunker final {
   base::Optional<PaintChunk::Id> next_chunk_id_;
 
   PropertyTreeState current_properties_;
+
+  Region last_chunk_known_to_be_opaque_region_;
 
   // True when an item forces a new chunk (e.g., foreign display items), and for
   // the item following a forced chunk. PaintController also forces new chunks

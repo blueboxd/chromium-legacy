@@ -40,6 +40,7 @@ class SelectType : public GarbageCollected<SelectType> {
   // and update the text.
   virtual void UpdateTextStyleAndContent();
 
+  virtual HTMLOptionElement* OptionToBeShown() const;
   virtual const ComputedStyle* OptionStyle() const;
   virtual void MaximumOptionWidthMightBeChanged() const;
 

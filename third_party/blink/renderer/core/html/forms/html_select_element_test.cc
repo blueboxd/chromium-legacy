@@ -143,7 +143,8 @@ TEST_F(HTMLSelectElementTest, RestoreUnmatchedFormControlState) {
   // Restore
   select->RestoreFormControlState(select_state);
   EXPECT_EQ(-1, To<HTMLSelectElement>(element)->selectedIndex());
-  EXPECT_EQ(nullptr, To<HTMLSelectElement>(element)->OptionToBeShown());
+  EXPECT_EQ(nullptr,
+            To<HTMLSelectElement>(element)->OptionToBeShownForTesting());
 }
 
 TEST_F(HTMLSelectElementTest, VisibleBoundsInVisualViewport) {

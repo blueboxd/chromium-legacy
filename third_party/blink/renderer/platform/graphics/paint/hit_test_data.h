@@ -5,14 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_HIT_TEST_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_HIT_TEST_DATA_H_
 
-#include "third_party/blink/renderer/platform/graphics/hit_test_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action_rect.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
 struct PLATFORM_EXPORT HitTestData {
-  Vector<HitTestRect> touch_action_rects;
+  Vector<TouchActionRect> touch_action_rects;
   struct ScrollHitTest {
     const TransformPaintPropertyNode* scroll_offset;
     IntRect scroll_container_bounds;
@@ -23,17 +23,12 @@ struct PLATFORM_EXPORT HitTestData {
   };
   base::Optional<ScrollHitTest> scroll_hit_test;
 
-  HitTestData() = default;
-  HitTestData(const HitTestData& other)
-      : touch_action_rects(other.touch_action_rects),
-        scroll_hit_test(other.scroll_hit_test) {}
-
   bool operator==(const HitTestData& rhs) const {
     return touch_action_rects == rhs.touch_action_rects &&
            scroll_hit_test == rhs.scroll_hit_test;
   }
 
-  void AppendTouchActionRect(const HitTestRect& rect) {
+  void AppendTouchActionRect(const TouchActionRect& rect) {
     touch_action_rects.push_back(rect);
   }
 
@@ -50,6 +45,7 @@ struct PLATFORM_EXPORT HitTestData {
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const HitTestData&);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const HitTestData*);
 
 }  // namespace blink
 

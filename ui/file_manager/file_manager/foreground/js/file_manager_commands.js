@@ -2374,7 +2374,9 @@ CommandHandler.COMMANDS_['open-gear-menu'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['focus-action-bar'] = new class extends Command {
   execute(event, fileManager) {
-    fileManager.ui.actionbar.querySelector('button:not([hidden])').focus();
+    fileManager.ui.actionbar
+        .querySelector('button:not([hidden]), cr-button:not([hidden])')
+        .focus();
   }
 };
 

@@ -65,8 +65,7 @@ struct ServiceWorkerRegistrationData {
 struct ServiceWorkerResourceRecord {
   int64 resource_id = blink.mojom.kInvalidServiceWorkerResourceId;
   url.mojom.Url url;
-  // Signed so we can store ResourceRecordErrorState. When stored to the
-  // database, this value should always be >= 0.
-  // TODO(crbug.com/946719): Change to uint64 when the bug is fixed.
+  // |size_bytes| could be -1 when there was an error while loading the worker
+  // script data, but when stored to the database this value is always >= 0.
   int64 size_bytes = 0;
 };

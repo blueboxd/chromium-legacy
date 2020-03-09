@@ -8,6 +8,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/hit_test_data.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
@@ -117,21 +118,41 @@ MATCHER_P2(IsSameId, client, type, "") {
 //                         IsPaintChunk(1, 3, id2, properties2)));
 inline bool CheckChunk(const PaintChunk& chunk,
                        wtf_size_t begin,
+                       wtf_size_t end) {
+  return chunk.begin_index == begin && chunk.end_index == end;
+}
+inline bool CheckChunk(const PaintChunk& chunk,
+                       wtf_size_t begin,
                        wtf_size_t end,
                        const PaintChunk::Id& id,
                        const PropertyTreeState& properties,
-                       const HitTestData* hit_test_data = nullptr) {
+                       const HitTestData* hit_test_data = nullptr,
+                       const IntRect* bounds = nullptr) {
   return chunk.begin_index == begin && chunk.end_index == end &&
          chunk.id == id && chunk.properties == properties &&
          ((!chunk.hit_test_data && !hit_test_data) ||
           (chunk.hit_test_data && hit_test_data &&
-           *chunk.hit_test_data == *hit_test_data));
+           *chunk.hit_test_data == *hit_test_data)) &&
+         (!bounds || chunk.bounds == *bounds);
+}
+MATCHER_P2(IsPaintChunk, begin, end, "") {
+  return CheckChunk(arg, begin, end);
 }
 MATCHER_P4(IsPaintChunk, begin, end, id, properties, "") {
   return CheckChunk(arg, begin, end, id, properties);
 }
 MATCHER_P5(IsPaintChunk, begin, end, id, properties, hit_test_data, "") {
-  return CheckChunk(arg, begin, end, id, properties, &hit_test_data);
+  return CheckChunk(arg, begin, end, id, properties, hit_test_data);
+}
+MATCHER_P6(IsPaintChunk,
+           begin,
+           end,
+           id,
+           properties,
+           hit_test_data,
+           bounds,
+           "") {
+  return CheckChunk(arg, begin, end, id, properties, hit_test_data, &bounds);
 }
 
 // Shorter names for frequently used display item types in tests.

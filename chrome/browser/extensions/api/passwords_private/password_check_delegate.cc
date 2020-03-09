@@ -202,6 +202,8 @@ PasswordCheckDelegate::GetCompromisedCredentialsInfo() {
         compromised_credential_id_generator_.GenerateId(credential);
     api_credential.signon_realm = credential.signon_realm;
     api_credential.username = base::UTF16ToUTF8(credential.username);
+    api_credential.compromise_time =
+        credential.create_time.ToJsTimeIgnoringNull();
     api_credential.elapsed_time_since_compromise = base::UTF16ToUTF8(
         TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_LONG,
                            base::Time::Now() - credential.create_time));

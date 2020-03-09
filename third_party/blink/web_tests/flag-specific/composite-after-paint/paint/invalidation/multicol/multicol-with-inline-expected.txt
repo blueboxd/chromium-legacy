@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "object": "InlineTextBox 'PASS'",
           "rect": [488, 8, 80, 20],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         }
       ]
     }

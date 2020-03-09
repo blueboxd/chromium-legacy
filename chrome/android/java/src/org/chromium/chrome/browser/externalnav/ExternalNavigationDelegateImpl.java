@@ -588,6 +588,16 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
+    public void maybeAdjustInstantAppExtras(Intent intent, boolean isIntentToInstantApp) {
+        if (isIntentToInstantApp) {
+            intent.putExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER, true);
+        } else {
+            // Make sure this extra is not sent unless we've done the verification.
+            intent.removeExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER);
+        }
+    }
+
+    @Override
     public void maybeSetPendingReferrer(Intent intent, String referrerUrl) {
         IntentHandler.setPendingReferrer(intent, referrerUrl);
     }
@@ -677,6 +687,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean isIntentForTrustedCallingApp(Intent intent) {
         return false;
+    }
+
+    @Override
+    public boolean isIntentToInstantApp(Intent intent) {
+        return InstantAppsHandler.isIntentToInstantApp(intent);
     }
 
     @Override

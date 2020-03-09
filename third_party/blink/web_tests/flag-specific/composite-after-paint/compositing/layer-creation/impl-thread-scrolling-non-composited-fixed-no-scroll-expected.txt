@@ -10,7 +10,7 @@ TEST
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
       "position": [10, 10],
-      "bounds": [39, 19]
+      "bounds": [39, 20]
     }
   ]
 }

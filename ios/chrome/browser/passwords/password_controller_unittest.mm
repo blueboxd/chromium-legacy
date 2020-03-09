@@ -21,8 +21,10 @@
 #include "components/autofill/core/browser/logging/log_buffer_submitter.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -188,8 +190,9 @@ ACTION(InvokeEmptyConsumerWithForms) {
 
 }  // namespace
 
-@interface PasswordController (
-    Testing)<CRWWebStateObserver, FormSuggestionProvider>
+@interface PasswordController (Testing) <CRWWebStateObserver,
+                                         FormSuggestionProvider,
+                                         FormActivityObserver>
 
 // Provides access to common form helper logic for testing with mocks.
 @property(readonly) PasswordFormHelper* formHelper;
@@ -1779,4 +1782,30 @@ TEST_F(PasswordControllerTest, NoSavingOnNavigateMainFrameFailedSubmission) {
 
   // Simulate a failed submission by loading the same form again.
   LoadHtml(SysUTF8ToNSString(kHtml));
+}
+
+// Tests that a form that is dynamically added to the page is found and
+// that a form manager is created for it.
+TEST_F(PasswordControllerTest, FindDynamicallyAddedForm2) {
+  LoadHtml(kHtmlWithoutPasswordForm);
+  ExecuteJavaScript(kAddFormDynamicallyScript);
+
+  std::string mainFrameID = web::GetMainWebFrameId(web_state());
+  web::WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
+  autofill::FormActivityParams params;
+  params.type = "form_changed";
+  params.frame_id = mainFrameID;
+
+  [passwordController_ webState:web_state()
+        didRegisterFormActivity:params
+                        inFrame:frame];
+
+  auto& form_managers = passwordController_.passwordManager->form_managers();
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
+    return !form_managers.empty();
+  }));
+
+  ASSERT_EQ(1u, form_managers.size());
+  auto& password_form = form_managers[0]->observed_form();
+  EXPECT_EQ(ASCIIToUTF16("dynamic_form"), password_form.name);
 }

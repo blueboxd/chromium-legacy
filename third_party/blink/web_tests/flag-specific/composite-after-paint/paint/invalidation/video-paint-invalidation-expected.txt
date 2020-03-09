@@ -12,7 +12,7 @@
       "transform": 1
     },
     {
-      "name": "LayoutFlexibleBox DIV",
+      "name": "LayoutFlexibleBox (relative positioned) DIV class='sizing-small test-mode phase-ready state-scrubbing'",
       "bounds": [320, 240],
       "backgroundColor": "#000000",
       "transform": 1

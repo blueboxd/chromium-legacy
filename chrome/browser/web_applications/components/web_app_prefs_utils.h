@@ -22,6 +22,8 @@ extern const char kFileHandlingOriginTrialExpiryTime[];
 
 extern const char kFileHandlersEnabled[];
 
+extern const char kExperimentalTabbedWindowMode[];
+
 bool GetBoolWebAppPref(const PrefService* pref_service,
                        const AppId& app_id,
                        base::StringPiece path);
@@ -39,6 +41,10 @@ void UpdateDoubleWebAppPref(PrefService* pref_service,
                             const AppId& app_id,
                             base::StringPiece path,
                             double value);
+
+void RemoveWebAppPref(PrefService* pref_service,
+                      const AppId& app_id,
+                      base::StringPiece path);
 
 void WebAppPrefsUtilsRegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry);

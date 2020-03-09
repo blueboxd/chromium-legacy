@@ -16,21 +16,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
-namespace {
-
-// Represents an error state. Each enum instance should be a negative
-// value.  This is just temporary for debugging.
-// TODO(crbug.com/946719): Remove this once we fix the bug.
-enum class ResourceRecordErrorState : int64_t {
-  // We don't use -1 here to catch an untracked usage of -1 as an error
-  // code.
-  kStartedCaching = -2,
-  kFinishedCachingNoBytesWritten = -3,
-  kFinishedCachingNoContext = -4,
-};
-
-}  // namespace
-
 namespace content {
 
 ServiceWorkerScriptCacheMap::ServiceWorkerScriptCacheMap(
@@ -57,9 +42,8 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
       << owner_->status();
   if (!context_)
     return;  // Our storage has been wiped via DeleteAndStartOver.
-  resource_map_[url] = storage::mojom::ServiceWorkerResourceRecord::New(
-      resource_id, url,
-      static_cast<int64_t>(ResourceRecordErrorState::kStartedCaching));
+  resource_map_[url] =
+      storage::mojom::ServiceWorkerResourceRecord::New(resource_id, url, -1);
   context_->registry()->StoreUncommittedResourceId(resource_id,
                                                    owner_->scope().GetOrigin());
 }
@@ -75,17 +59,9 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING ||
          owner_->status() == ServiceWorkerVersion::REDUNDANT);
-  if (!context_) {
-    // For debugging. See https://crbug.com/946719.
-    DCHECK(resource_map_.find(url) != resource_map_.end());
-    storage::mojom::ServiceWorkerResourceRecordPtr& record = resource_map_[url];
-    if (record->size_bytes ==
-        static_cast<int64_t>(ResourceRecordErrorState::kStartedCaching)) {
-      record->size_bytes = static_cast<int64_t>(
-          ResourceRecordErrorState::kFinishedCachingNoContext);
-    }
+  if (!context_)
     return;  // Our storage has been wiped via DeleteAndStartOver.
-  }
+
   if (net_error != net::OK) {
     context_->registry()->DoomUncommittedResource(LookupResourceId(url));
     resource_map_.erase(url);
@@ -93,11 +69,8 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
       main_script_net_error_ = net_error;
       main_script_status_message_ = status_message;
     }
-  } else if (size_bytes >= 0) {
-    resource_map_[url]->size_bytes = size_bytes;
   } else {
-    resource_map_[url]->size_bytes = static_cast<int64_t>(
-        ResourceRecordErrorState::kFinishedCachingNoBytesWritten);
+    resource_map_[url]->size_bytes = size_bytes;
   }
 }
 

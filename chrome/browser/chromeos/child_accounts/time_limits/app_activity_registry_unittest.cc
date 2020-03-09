@@ -365,7 +365,8 @@ TEST_F(AppActivityRegistryTest, ResetTimeReached) {
   const AppLimit limit1(AppRestriction::kTimeLimit, kTenMinutes, start);
   const AppLimit limit2(AppRestriction::kTimeLimit,
                         base::TimeDelta::FromMinutes(20), start);
-  const std::map<AppId, AppLimit> limits{{kApp1, limit1}, {kApp2, limit2}};
+  const std::map<AppId, AppLimit> limits{{kApp1, limit1},
+                                         {GetChromeAppId(), limit2}};
   registry().UpdateAppLimits(limits);
 
   auto* app1_window = CreateWindowForApp(kApp1);
@@ -811,6 +812,22 @@ TEST_F(AppActivityRegistryTest, OverrideLimitReachedState) {
   ReInitializeRegistry();
   registry().AddAppStateObserver(&state_observer_mock);
   registry().UpdateAppLimits(app_limits);
+
+  // When OnAppInstalled is called for AppActivityRegistry, it will notify its
+  // app state observers that the app time limit has been reached.
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp1, base::TimeDelta::FromMinutes(30),
+                                /* was_active */ false))
+      .Times(1);
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp2, base::TimeDelta::FromMinutes(30),
+                                /* was_active */ false))
+      .Times(1);
+  EXPECT_CALL(
+      state_observer_mock,
+      OnAppLimitReached(GetChromeAppId(), base::TimeDelta::FromMinutes(30),
+                        /* was_active */ false))
+      .Times(1);
   InstallApps();
 
   EXPECT_EQ(registry().GetAppState(kApp1), AppState::kLimitReached);

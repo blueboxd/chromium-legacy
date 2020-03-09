@@ -268,7 +268,7 @@ js_library("certificate_manager.m") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":ca_trust_edit_dialog_module",
     ":certificate_delete_confirmation_dialog_module",
     ":certificate_entry_module",

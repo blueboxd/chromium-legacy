@@ -6,12 +6,17 @@ Regular web pages can use the
 <a href="https://www.w3.org/TR/XMLHttpRequest/">XMLHttpRequest</a>
 object to send and receive data from remote servers,
 but they're limited by the
-<a href="https://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>
-(and since Chrome 73 <a href="content_scripts">content scripts</a> are also
-subject to the same restrictions as the web page they are injected into).
-Extensions aren't so limited - a script executing in an
-extension's origin can talk to remote servers outside of its origin,
-as long as the extension requests cross-origin permissions.</p>
+<a href="https://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>.
+<a href="content_scripts">Content scripts</a> initiate requests on
+behalf of the web origin that the content script has been injected into
+and therefore content scripts are also subject to the
+<a href="https://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>.
+(Content scripts have been subject to
+<a href="https://www.chromium.org/Home/chromium-security/extension-content-script-fetches"
+  >CORB since Chrome 73 and CORS since Chrome 83</a>.)
+Extension origins aren't so limited - a script executing in an extension's
+background page or foreground tab can talk to remote servers outside of its
+origin, as long as the extension requests cross-origin permissions.</p>
 
 <h2 id="extension-origin">Extension origin</h2>
 <p>Each running extension exists within its own separate security origin.

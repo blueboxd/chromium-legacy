@@ -972,18 +972,15 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
           base::TimeTicks() +
               base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[1]));
 
-      fake_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
+      auto ack_timestamp =
           base::TimeTicks() +
-              base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[2]));
+          base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[2]);
 
       // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
       // overwriting components.
       tracker()->ComputeInputLatencyHistograms(event.GetType(), fake_latency,
-                                               blocking);
-
-      tracker()->OnInputEventAck(event, &latency,
-                                 blocking);
+                                               blocking, ack_timestamp);
+      tracker()->OnInputEventAck(event, &latency, blocking);
     }
 
     {
@@ -1013,15 +1010,14 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
           base::TimeTicks() +
               base::TimeDelta::FromMilliseconds(touchmove_timestamps_ms[1]));
 
-      fake_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
+      auto ack_timestamp =
           base::TimeTicks() +
-              base::TimeDelta::FromMilliseconds(touchmove_timestamps_ms[2]));
+          base::TimeDelta::FromMilliseconds(touchmove_timestamps_ms[2]);
 
       // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
       // overwriting components.
       tracker()->ComputeInputLatencyHistograms(event.GetType(), fake_latency,
-                                               blocking);
+                                               blocking, ack_timestamp);
     }
 
     {
@@ -1051,15 +1047,14 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
           base::TimeTicks() +
               base::TimeDelta::FromMilliseconds(touchend_timestamps_ms[1]));
 
-      fake_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
+      auto ack_timestamp =
           base::TimeTicks() +
-              base::TimeDelta::FromMilliseconds(touchend_timestamps_ms[2]));
+          base::TimeDelta::FromMilliseconds(touchend_timestamps_ms[2]);
 
       // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
       // overwriting components.
       tracker()->ComputeInputLatencyHistograms(event.GetType(), fake_latency,
-                                               blocking);
+                                               blocking, ack_timestamp);
     }
   }
 
@@ -1149,15 +1144,14 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyBlockingAndQueueingTime) {
           base::TimeTicks() +
               base::TimeDelta::FromMilliseconds(event_timestamps_ms[1]));
 
-      fake_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
+      auto ack_timestamp =
           base::TimeTicks() +
-              base::TimeDelta::FromMilliseconds(event_timestamps_ms[2]));
+          base::TimeDelta::FromMilliseconds(event_timestamps_ms[2]);
 
       // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
       // overwriting components.
       tracker()->ComputeInputLatencyHistograms(event.GetType(), fake_latency,
-                                               blocking);
+                                               blocking, ack_timestamp);
 
       tracker()->OnInputEventAck(event, &latency_info, blocking);
     }
@@ -1252,15 +1246,13 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
         base::TimeTicks() +
             base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[1]));
 
-    fake_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
-        base::TimeTicks() +
-            base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[2]));
+    auto ack_timestamp = base::TimeTicks() + base::TimeDelta::FromMilliseconds(
+                                                 touchstart_timestamps_ms[2]);
 
     // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
     // overwriting components.
-    tracker()->ComputeInputLatencyHistograms(event.GetType(),
-                                             fake_latency, ack_state);
+    tracker()->ComputeInputLatencyHistograms(event.GetType(), fake_latency,
+                                             ack_state, ack_timestamp);
 
     tracker()->OnInputEventAck(event, &latency, ack_state);
   }

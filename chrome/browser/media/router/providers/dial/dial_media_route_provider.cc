@@ -517,6 +517,11 @@ void DialMediaRouteProvider::CreateMediaRouteController(
   std::move(callback).Run(false);
 }
 
+void DialMediaRouteProvider::GetState(GetStateCallback callback) {
+  NOTIMPLEMENTED();
+  std::move(callback).Run(mojom::ProviderStatePtr());
+}
+
 void DialMediaRouteProvider::SetActivityManagerForTest(
     std::unique_ptr<DialActivityManager> activity_manager) {
   DCHECK(!activity_manager_);

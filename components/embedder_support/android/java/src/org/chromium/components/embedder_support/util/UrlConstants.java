@@ -29,7 +29,6 @@ public class UrlConstants {
     public static final String CHROME_NATIVE_URL_SHORT_PREFIX = "chrome-native:";
     public static final String FILE_URL_SHORT_PREFIX = "file:";
     public static final String DEVTOOLS_URL_SHORT_PREFIX = "devtools:";
-    public static final String DEVTOOLS_FALLBACK_URL_SHORT_PREFIX = "chrome-devtools:";
     public static final String INTENT_URL_SHORT_PREFIX = "intent:";
     public static final String APP_INTENT_URL_SHORT_PREFIX = "android-app:";
 

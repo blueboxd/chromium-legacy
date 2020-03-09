@@ -433,6 +433,11 @@ public final class TabImpl extends ITab.Stub {
         return false;
     }
 
+    @Override
+    public String getGuid() {
+        return TabImplJni.get().getGuid(mNativeTab);
+    }
+
     @CalledByNative
     private static RectF createRectF(float x, float y, float right, float bottom) {
         return new RectF(x, y, right, bottom);
@@ -575,5 +580,6 @@ public final class TabImpl extends ITab.Stub {
         void executeScript(long nativeTabImpl, String script, boolean useSeparateIsolate,
                 Callback<String> callback);
         void updateBrowserControlsState(long nativeTabImpl, int newConstraint);
+        String getGuid(long nativeTabImpl);
     }
 }

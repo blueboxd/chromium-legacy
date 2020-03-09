@@ -313,7 +313,6 @@ public class ExternalNavigationHandlerTest {
                 "chrome://history",
                 "chrome-native://newtab",
                 "devtools://foo",
-                "chrome-devtools://foo",
                 "intent:chrome-urls#Intent;package=com.android.chrome;scheme=about;end;",
                 "intent:chrome-urls#Intent;package=com.android.chrome;scheme=chrome;end;",
                 "intent://com.android.chrome.FileProvider/foo.html#Intent;scheme=content;end;",

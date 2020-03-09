@@ -308,6 +308,24 @@ public class Tab {
         return mImpl;
     }
 
+    /**
+     * Returns a unique id that persists across restarts.
+     *
+     * @return the unique id.
+     * @since 82
+     */
+    public String getGuid() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return mImpl.getGuid();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     private final class TabClientImpl extends ITabClient.Stub {
         @Override
         public void visibleUriChanged(String uriString) {

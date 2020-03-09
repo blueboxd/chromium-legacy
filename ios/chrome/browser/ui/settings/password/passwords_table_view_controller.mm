@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,7 +43,6 @@
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
-#import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
@@ -55,6 +56,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -405,6 +407,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 }
 
 #pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobilePasswordsSettingsClose"));
+}
 
 - (void)settingsWillBeDismissed {
   // Dismiss the search bar if presented, otherwise the VC will be retained by
@@ -1215,6 +1221,14 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (void)chromeIdentityServiceWillBeDestroyed {
   _identityServiceObserver.reset();
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  base::RecordAction(
+      base::UserMetricsAction("IOSPasswordsSettingsCloseWithSwipe"));
 }
 
 @end

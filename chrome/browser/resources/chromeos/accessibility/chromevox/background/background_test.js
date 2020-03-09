@@ -2449,3 +2449,37 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigateOutOfMultiline', function() {
             .replay();
       });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'ReadWindowTitle', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <p>start</p>
+    <button id="click"></button>
+    <script>
+      document.title = 'foo';
+      const button = document.getElementById('click');
+      button.addEventListener('click', _ => document.title = 'bar');
+    </script>
+  `,
+      function(root) {
+        const clickButtonThenReadCurrentTitle = () => {
+          const desktop = root.parent.root;
+          desktop.addEventListener(EventType.TREE_CHANGED, (evt) => {
+            if (evt.target.role == RoleType.WINDOW &&
+                /bar/.test(evt.target.name)) {
+              doCmd('readCurrentTitle')();
+            }
+          });
+          const button = root.find({role: RoleType.BUTTON});
+          button.doDefault();
+        };
+
+        mockFeedback.clearPendingOutput()
+            .call(doCmd('readCurrentTitle'))
+            .expectSpeech(/^foo/)
+            .call(clickButtonThenReadCurrentTitle)
+            .expectSpeech(/^bar/)
+            .replay();
+      });
+});

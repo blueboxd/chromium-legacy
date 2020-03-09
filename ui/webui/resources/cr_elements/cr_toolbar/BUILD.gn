@@ -27,7 +27,7 @@ js_library("cr_toolbar") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":cr_toolbar_module",
     ":cr_toolbar_search_field_module",
     ":cr_toolbar_selection_overlay_module",

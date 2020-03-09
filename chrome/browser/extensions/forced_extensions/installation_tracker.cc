@@ -10,6 +10,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_management.h"
+#include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -198,6 +200,24 @@ void InstallationTracker::OnExtensionInstallationFailed(
     ReportResults();
 }
 
+bool InstallationTracker::IsMisconfiguration(
+    const InstallationReporter::InstallationData& installation_data,
+    const ExtensionId& id) {
+  ExtensionManagement* management =
+      ExtensionManagementFactory::GetForBrowserContext(profile_);
+  CrxInstallErrorDetail detail = installation_data.install_error_detail.value();
+  if (detail == CrxInstallErrorDetail::KIOSK_MODE_ONLY)
+    return true;
+
+  if (detail == CrxInstallErrorDetail::DISALLOWED_BY_POLICY &&
+      !management->IsAllowedManifestType(
+          installation_data.extension_type.value(), id)) {
+    return true;
+  }
+
+  return false;
+}
+
 #if defined(OS_CHROMEOS)
 // Returns the type of session in case extension fails to install.
 InstallationTracker::SessionType InstallationTracker::GetSessionType() {
@@ -329,8 +349,7 @@ void InstallationTracker::ReportMetrics() {
         if (installation.install_error_detail) {
           CrxInstallErrorDetail detail =
               installation.install_error_detail.value();
-          // KIOSK_MODE_ONLY is a type of misconfiguration failure.
-          if (detail == CrxInstallErrorDetail::KIOSK_MODE_ONLY)
+          if (IsMisconfiguration(installation, extension_id))
             misconfigured_extensions++;
           UMA_HISTOGRAM_ENUMERATION(
               "Extensions.ForceInstalledFailureCrxInstallError", detail);
@@ -349,6 +368,7 @@ void InstallationTracker::ReportMetrics() {
       "ForceInstalledSessionsWithNonMisconfigurationFailureOccured",
       non_misconfigured_failure_occurred);
 }
+
 void InstallationTracker::ReportResults() {
   DCHECK(!reported_);
   // Report only if there was non-empty list of force-installed extensions.

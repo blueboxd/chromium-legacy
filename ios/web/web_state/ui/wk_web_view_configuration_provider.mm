@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/safe_browsing/core/features.h"
 #include "ios/web/common/features.h"
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
 #import "ios/web/js_messaging/page_script_util.h"
@@ -135,7 +136,8 @@ void WKWebViewConfigurationProvider::ResetWithWebViewConfiguration(
     // conceptually similar to Safe Browsing but uses a non-Google provider and
     // only works for devices in certain locales. Disable this feature when
     // Safe Browsing is available.
-    if (base::FeatureList::IsEnabled(web::features::kSafeBrowsingAvailable)) {
+    if (base::FeatureList::IsEnabled(
+            safe_browsing::kSafeBrowsingAvailableOnIOS)) {
       [[configuration_ preferences] setFraudulentWebsiteWarningEnabled:NO];
     }
   }

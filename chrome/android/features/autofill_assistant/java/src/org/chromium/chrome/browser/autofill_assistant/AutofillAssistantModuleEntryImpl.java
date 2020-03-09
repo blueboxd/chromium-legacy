@@ -39,7 +39,7 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
 
         ChromeActivity activity = ((TabImpl) tab).getActivity();
         AssistantOnboardingCoordinator onboardingCoordinator = new AssistantOnboardingCoordinator(
-                experimentIds, activity, activity.getBottomSheetController(), tab);
+                experimentIds, parameters, activity, activity.getBottomSheetController(), tab);
         onboardingCoordinator.show(accepted -> {
             if (!accepted) return;
 

@@ -1315,6 +1315,9 @@ extern const char kContextMenuCopyImageDescription[];
 extern const char kContextMenuPerformanceInfoName[];
 extern const char kContextMenuPerformanceInfoDescription[];
 
+extern const char kContextualSearchDebugName[];
+extern const char kContextualSearchDebugDescription[];
+
 extern const char kContextualSearchDefinitionsName[];
 extern const char kContextualSearchDefinitionsDescription[];
 

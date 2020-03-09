@@ -76,7 +76,7 @@ android_library("player_java_test_support") {
 
   sources = [
     "javatests/src/org/chromium/components/paintpreview/player/PaintPreviewTestRule.java",
-    "javatests/src/org/chromium/components/paintpreview/player/TestImplementerService.java",
+    "javatests/src/org/chromium/components/paintpreview/player/PaintPreviewTestService.java",
   ]
 
   deps = [
@@ -116,15 +116,15 @@ android_library("javatests") {
 generate_jni("javatests_jni_headers") {
   testonly = true
 
-  sources = [ "javatests/src/org/chromium/components/paintpreview/player/TestImplementerService.java" ]
+  sources = [ "javatests/src/org/chromium/components/paintpreview/player/PaintPreviewTestService.java" ]
 }
 
 source_set("test_support") {
   testonly = true
 
   sources = [
-    "javatests/test_implementer_service.cc",
-    "javatests/test_implementer_service.h",
+    "javatests/paint_preview_test_service.cc",
+    "javatests/paint_preview_test_service.h",
   ]
 
   deps = [

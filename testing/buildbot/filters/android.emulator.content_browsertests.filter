@@ -1,6 +1,6 @@
 # crbug.com/1054829
--All/TouchActionBrowserTest.PanXAtYAreaWithTimeout/0
--All/TouchActionBrowserTest.TouchActionNone/1
+-All/TouchActionBrowserTest.PanXAtYAreaWithTimeout/*
+-All/TouchActionBrowserTest.TouchActionNone/*
 
 # crbug.com/1056878
 -BackForwardCacheBrowserTest.VideoSuspendAndResume

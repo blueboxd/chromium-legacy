@@ -68,14 +68,14 @@ void OfflineGaiaTestMixin::GoOnline() {
   network_state_test_helper_.reset();
 }
 
-void OfflineGaiaTestMixin::SignIn(const AccountId& test_account_id,
-                                  const std::string& password) {
-  ASSERT_TRUE((test_account_id.HasAccountIdKey()));
-
-  InitOfflineLogin(test_account_id, password);
-  SubmitGaiaAuthOfflineForm(test_account_id.GetUserEmail(), password);
-  SessionStateWaiter(session_manager::SessionState::LOGGED_IN_NOT_ACTIVE)
-      .Wait();
+void OfflineGaiaTestMixin::CheckManagedStatus(bool expected_is_managed) {
+  if (expected_is_managed) {
+    test::OobeJS().ExpectVisiblePath(
+        {"gaia-signin", "offline-gaia", "managedBy"});
+  } else {
+    test::OobeJS().ExpectHiddenPath(
+        {"gaia-signin", "offline-gaia", "managedBy"});
+  }
 }
 
 void OfflineGaiaTestMixin::InitOfflineLogin(const AccountId& test_account_id,
@@ -102,7 +102,8 @@ void OfflineGaiaTestMixin::StartGaiaAuthOffline() {
 
 void OfflineGaiaTestMixin::SubmitGaiaAuthOfflineForm(
     const std::string& user_email,
-    const std::string& password) {
+    const std::string& password,
+    bool wait_for_signin) {
   test::OobeJS().ExpectVisiblePath({"gaia-signin", "offline-gaia"});
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "signin-frame-dialog"});
   test::OobeJS()
@@ -129,6 +130,10 @@ void OfflineGaiaTestMixin::SubmitGaiaAuthOfflineForm(
                               {"gaia-signin", "offline-gaia", "passwordInput"});
   test::OobeJS().ClickOnPath(
       {"gaia-signin", "offline-gaia", "next-button"});
+  if (wait_for_signin) {
+    SessionStateWaiter(session_manager::SessionState::LOGGED_IN_NOT_ACTIVE)
+        .Wait();
+  }
 }
 
 }  // namespace chromeos

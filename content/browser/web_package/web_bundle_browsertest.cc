@@ -974,6 +974,47 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, Variants) {
                                "fr");
 }
 
+IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, IframeNavigationNoCrash) {
+  // Regression test for crbug.com/1058721. There was a bug that navigation of
+  // OOPIF's remote iframe in Web Bundle file cause crash.
+  const GURL test_data_url =
+      GetTestUrlForFile(GetTestDataPath("web_bundle_browsertest.wbn"));
+  NavigateToBundleAndWaitForReady(
+      test_data_url, web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                         test_data_url, GURL(kTestPageUrl)));
+
+  const std::string empty_page_path = "/web_bundle/empty_page.html";
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL empty_page_url = embedded_test_server()->GetURL(empty_page_path);
+
+  ExecuteScriptAndWaitForTitle(
+      base::StringPrintf(R"(
+    (async function() {
+      const empty_page_url = '%s';
+      const iframe = document.createElement('iframe');
+      const onload = () => {
+        iframe.removeEventListener('load', onload);
+        document.title = 'Iframe loaded';
+      }
+      iframe.addEventListener('load', onload);
+      iframe.src = empty_page_url;
+      document.body.appendChild(iframe);
+    })();)",
+                         empty_page_url.spec().c_str()),
+      "Iframe loaded");
+
+  ExecuteScriptAndWaitForTitle(R"(
+    (async function() {
+      const iframe = document.querySelector("iframe");
+      const onload = () => {
+        document.title = 'Iframe loaded again';
+      }
+      iframe.addEventListener('load', onload);
+      iframe.src = iframe.src + '?';
+    })();)",
+                               "Iframe loaded again");
+}
+
 INSTANTIATE_TEST_SUITE_P(WebBundleFileBrowserTest,
                          WebBundleFileBrowserTest,
                          testing::Values(TestFilePathMode::kNormalFilePath

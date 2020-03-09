@@ -36,6 +36,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/double_or_scroll_timeline_auto_keyword.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_optional_effect_timing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_options.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
@@ -1377,6 +1378,21 @@ TEST_F(AnimationAnimationTestCompositing, SetKeyframesCausesCompositorPending) {
   To<KeyframeEffect>(animation->effect())->SetKeyframes(keyframes);
 
   EXPECT_TRUE(animation->CompositorPendingForTesting());
+}
+
+// crbug.com/1057076
+// Infinite duration animations should not run on the compositor.
+TEST_F(AnimationAnimationTestCompositing, InfiniteDurationAnimation) {
+  ResetWithCompositedAnimation();
+  EXPECT_EQ(CompositorAnimations::kNoFailure,
+            animation->CheckCanStartAnimationOnCompositor(nullptr));
+
+  OptionalEffectTiming* effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setDuration(UnrestrictedDoubleOrString::FromUnrestrictedDouble(
+      std::numeric_limits<double>::infinity()));
+  animation->effect()->updateTiming(effect_timing);
+  EXPECT_EQ(CompositorAnimations::kEffectHasUnsupportedTimingParameters,
+            animation->CheckCanStartAnimationOnCompositor(nullptr));
 }
 
 // Verifies correctness of scroll linked animation current and start times in

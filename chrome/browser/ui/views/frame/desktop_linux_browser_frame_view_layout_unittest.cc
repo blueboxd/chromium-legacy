@@ -8,10 +8,10 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/views/nav_button_provider.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/linux_ui/nav_button_provider.h"
 
 namespace {
 

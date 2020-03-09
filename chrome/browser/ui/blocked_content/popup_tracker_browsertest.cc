@@ -50,6 +50,7 @@ const char kUkmUserInitiatedClose[] = "UserInitiatedClose";
 const char kUkmTrusted[] = "Trusted";
 const char kUkmNumInteractions[] = "NumInteractions";
 const char kUkmSafeBrowsingStatus[] = "SafeBrowsingStatus";
+const char kUkmWindowOpenDisposition[] = "WindowOpenDisposition";
 }  // namespace
 
 using UkmEntry = ukm::builders::Popup_Closed;
@@ -475,4 +476,67 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingPopupTrackerBrowserTest,
         entry, kUkmSafeBrowsingStatus,
         static_cast<int>(PopupTracker::PopupSafeBrowsingStatus::kUnsafe));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, PopupInTab_IsWindowFalse) {
+  const GURL first_url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), first_url);
+
+  content::TestNavigationObserver navigation_observer(nullptr, 1);
+  navigation_observer.StartWatchingNewWebContents();
+
+  EXPECT_TRUE(
+      content::ExecJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                      "window.open('/title1.html')"));
+  navigation_observer.Wait();
+
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(PopupTracker::FromWebContents(popup));
+
+  // Close the popup and check metric.
+  int active_index = browser()->tab_strip_model()->active_index();
+  content::WebContentsDestroyedWatcher destroyed_watcher(popup);
+  browser()->tab_strip_model()->CloseWebContentsAt(
+      active_index, TabStripModel::CLOSE_USER_GESTURE);
+  destroyed_watcher.Wait();
+
+  auto* entry = ExpectAndGetEntry(first_url);
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, kUkmWindowOpenDisposition,
+      static_cast<int>(WindowOpenDisposition::NEW_FOREGROUND_TAB));
+}
+
+IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, PopupInWindow_IsWindowTrue) {
+  const GURL first_url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), first_url);
+
+  content::TestNavigationObserver navigation_observer(nullptr, 1);
+  navigation_observer.StartWatchingNewWebContents();
+  EXPECT_TRUE(content::ExecJs(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.open('/title1.html', 'new_window', "
+      "'location=yes,height=570,width=520,scrollbars=yes,status=yes')"));
+  navigation_observer.Wait();
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+
+  Browser* created_browser = chrome::FindLastActive();
+
+  EXPECT_EQ(1, created_browser->tab_strip_model()->count());
+  content::WebContents* popup =
+      created_browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(PopupTracker::FromWebContents(popup));
+
+  // Close the popup and check metric.
+  int active_index = created_browser->tab_strip_model()->active_index();
+  content::WebContentsDestroyedWatcher destroyed_watcher(popup);
+  created_browser->tab_strip_model()->CloseWebContentsAt(
+      active_index, TabStripModel::CLOSE_USER_GESTURE);
+  destroyed_watcher.Wait();
+
+  auto* entry = ExpectAndGetEntry(first_url);
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, kUkmWindowOpenDisposition,
+      static_cast<int>(WindowOpenDisposition::NEW_POPUP));
 }

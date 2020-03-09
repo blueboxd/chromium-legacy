@@ -64,6 +64,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chromeos/components/security_token_pin/constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/constants/devicetype.h"
@@ -676,10 +677,8 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_TRY_AGAIN);
   builder->Add("securityTokenPinDialogAttemptsLeft",
                IDS_REQUEST_PIN_DIALOG_ATTEMPTS_LEFT);
-  builder->Add("securityTokenPinDialogErrorRetry",
-               IDS_REQUEST_PIN_DIALOG_ERROR_RETRY);
-  builder->Add("securityTokenPinDialogErrorRetryAttempts",
-               IDS_REQUEST_PIN_DIALOG_ERROR_RETRY_ATTEMPTS);
+  builder->Add("securityTokenPinDialogErrorAttempts",
+               IDS_REQUEST_PIN_DIALOG_ERROR_ATTEMPTS);
   builder->Add("securityTokenPinDialogUnknownError",
                IDS_REQUEST_PIN_DIALOG_UNKNOWN_ERROR);
   builder->Add("securityTokenPinDialogUnknownInvalidPin",

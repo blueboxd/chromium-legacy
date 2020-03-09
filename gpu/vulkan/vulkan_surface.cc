@@ -178,7 +178,11 @@ void VulkanSurface::Destroy() {
 }
 
 gfx::SwapResult VulkanSurface::SwapBuffers() {
-  return swap_chain_->PresentBuffer();
+  return PostSubBuffer(gfx::Rect(image_size_));
+}
+
+gfx::SwapResult VulkanSurface::PostSubBuffer(const gfx::Rect& rect) {
+  return swap_chain_->PresentBuffer(rect);
 }
 
 void VulkanSurface::Finish() {

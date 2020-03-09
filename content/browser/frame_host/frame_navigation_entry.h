@@ -20,6 +20,8 @@
 
 namespace content {
 
+class WebBundleNavigationInfo;
+
 // Represents a session history item for a particular frame.  It is matched with
 // corresponding FrameTreeNodes using unique name (or by the root position).
 //
@@ -189,6 +191,10 @@ class CONTENT_EXPORT FrameNavigationEntry
     blob_url_loader_factory_ = std::move(factory);
   }
 
+  void set_web_bundle_navigation_info(
+      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info);
+  WebBundleNavigationInfo* web_bundle_navigation_info() const;
+
  private:
   friend class base::RefCounted<FrameNavigationEntry>;
   virtual ~FrameNavigationEntry();
@@ -225,6 +231,13 @@ class CONTENT_EXPORT FrameNavigationEntry
   std::string method_;
   int64_t post_id_;
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory_;
+
+  // Keeps the Web Bundles related information when |this| is for a navigation
+  // within a Web Bundle file. Used when WebBundles feature or
+  // WebBundlesFromNetwork feature is enabled or TrustableWebBundleFileUrl
+  // switch is set.
+  // TODO(995177): Support Session/Tab restore.
+  std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNavigationEntry);
 };

@@ -7,11 +7,14 @@
 
 #include <string>
 
+#include "base/strings/string_piece_forward.h"
+
 namespace media_router {
 
 // Each MediaRouteProvider is associated with a unique ID. This enum must be
 // kept in sync with mojom::MediaRouteProvider::Id, except for |UNKNOWN|, which
 // is not present in the Mojo enum.
+// FIXME: Can we just use the mojo enum instead?
 enum MediaRouteProviderId {
   EXTENSION,
   WIRED_DISPLAY,
@@ -21,6 +24,7 @@ enum MediaRouteProviderId {
 };
 
 const char* ProviderIdToString(MediaRouteProviderId provider_id);
+MediaRouteProviderId ProviderIdFromString(base::StringPiece provider_id);
 
 }  // namespace media_router
 

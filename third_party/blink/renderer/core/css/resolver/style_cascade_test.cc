@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
-#include "third_party/blink/renderer/core/css/style_cascade_slots.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -1898,65 +1897,6 @@ TEST_F(StyleCascadeTest, WebkitBorderImageMixedOrder) {
   EXPECT_EQ("10px", cascade.ComputedValue("border-image-width"));
   EXPECT_EQ("4px", cascade.ComputedValue("border-image-outset"));
   EXPECT_EQ("space", cascade.ComputedValue("border-image-repeat"));
-}
-
-TEST_F(StyleCascadeTest, AllLogicalPropertiesSlot) {
-  TestCascade cascade(GetDocument());
-
-  static const TextDirection directions[] = {TextDirection::kLtr,
-                                             TextDirection::kRtl};
-
-  static const WritingMode modes[] = {WritingMode::kHorizontalTb,
-                                      WritingMode::kVerticalRl,
-                                      WritingMode::kVerticalLr};
-
-  for (CSSPropertyID id : CSSPropertyIDList()) {
-    const CSSProperty& property = CSSProperty::Get(id);
-
-    if (!property.IsLonghand())
-      continue;
-
-    for (TextDirection direction : directions) {
-      for (WritingMode mode : modes) {
-        const CSSProperty& physical =
-            property.ResolveDirectionAwareProperty(direction, mode);
-        if (&property == &physical)
-          continue;
-
-        auto& state = cascade.State();
-        state.Style()->SetDirection(direction);
-        state.Style()->SetWritingMode(mode);
-
-        // Set logical first.
-        {
-          StyleCascadeSlots slots;
-          EXPECT_TRUE(slots.Set(property, Origin::kAuthor, state));
-          EXPECT_FALSE(slots.Set(physical, Origin::kUserAgent, state));
-        }
-
-        // Set physical first.
-        {
-          StyleCascadeSlots slots;
-          EXPECT_TRUE(slots.Set(physical, Origin::kAuthor, state));
-          EXPECT_FALSE(slots.Set(property, Origin::kUserAgent, state));
-        }
-
-        // Set logical twice.
-        {
-          StyleCascadeSlots slots;
-          EXPECT_TRUE(slots.Set(property, Origin::kAuthor, state));
-          EXPECT_FALSE(slots.Set(property, Origin::kUserAgent, state));
-        }
-
-        // Set physical twice.
-        {
-          StyleCascadeSlots slots;
-          EXPECT_TRUE(slots.Set(physical, Origin::kAuthor, state));
-          EXPECT_FALSE(slots.Set(physical, Origin::kUserAgent, state));
-        }
-      }
-    }
-  }
 }
 
 TEST_F(StyleCascadeTest, MarkReferenced) {

@@ -125,21 +125,6 @@ void RegisterObsoleteUserTypePrefs(user_prefs::PrefRegistrySyncable* registry) {
   }
 }
 
-#if defined(OS_CHROMEOS)
-const char* GetPrefNameForOsType(UserSelectableOsType type) {
-  switch (type) {
-    case UserSelectableOsType::kOsApps:
-      return prefs::kSyncOsApps;
-    case UserSelectableOsType::kOsPreferences:
-      return prefs::kSyncOsPreferences;
-    case UserSelectableOsType::kWifiConfigurations:
-      return prefs::kSyncWifiConfigurations;
-  }
-  NOTREACHED();
-  return nullptr;
-}
-#endif  // defined(OS_CHROMEOS)
-
 // Gets an offset to add noise to the birth year. If not present in prefs, the
 // offset will be randomly generated within the offset range and cached in
 // syncable prefs.
@@ -535,6 +520,20 @@ bool SyncPrefs::IsOsSyncFeatureEnabled() const {
 void SyncPrefs::SetOsSyncFeatureEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetBoolean(prefs::kOsSyncFeatureEnabled, enabled);
+}
+
+// static
+const char* SyncPrefs::GetPrefNameForOsType(UserSelectableOsType type) {
+  switch (type) {
+    case UserSelectableOsType::kOsApps:
+      return prefs::kSyncOsApps;
+    case UserSelectableOsType::kOsPreferences:
+      return prefs::kSyncOsPreferences;
+    case UserSelectableOsType::kWifiConfigurations:
+      return prefs::kSyncWifiConfigurations;
+  }
+  NOTREACHED();
+  return nullptr;
 }
 #endif  // defined(OS_CHROMEOS)
 

@@ -17,10 +17,19 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chromeos/constants/chromeos_switches.h"
 
 namespace chromeos {
 
-class GestureNavigationScreenTest : public OobeBaseTest {
+namespace {
+
+enum class TestMode { kTablet, kClamshellWithForcedTabletFirstRun };
+
+}  // namespace
+
+class GestureNavigationScreenTest
+    : public OobeBaseTest,
+      public ::testing::WithParamInterface<TestMode> {
  public:
   GestureNavigationScreenTest() {
     feature_list_.InitAndEnableFeature(
@@ -29,8 +38,13 @@ class GestureNavigationScreenTest : public OobeBaseTest {
   ~GestureNavigationScreenTest() override = default;
 
   // InProcessBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (GetParam() == TestMode::kClamshellWithForcedTabletFirstRun)
+      command_line->AppendSwitch(switches::kOobeForceTabletFirstRun);
+    OobeBaseTest::SetUpCommandLine(command_line);
+  }
   void SetUpOnMainThread() override {
-    ash::ShellTestApi().SetTabletModeEnabledForTest(true);
+    ash::ShellTestApi().SetTabletModeEnabledForTest(StartInTabletMode());
 
     GestureNavigationScreen* gesture_screen =
         static_cast<GestureNavigationScreen*>(
@@ -41,6 +55,12 @@ class GestureNavigationScreenTest : public OobeBaseTest {
                             base::Unretained(this)));
 
     OobeBaseTest::SetUpOnMainThread();
+  }
+
+  bool StartInTabletMode() const { return GetParam() == TestMode::kTablet; }
+
+  bool ShouldBeSkippedInClamshell() const {
+    return GetParam() != TestMode::kClamshellWithForcedTabletFirstRun;
   }
 
   // Shows the gesture navigation screen.
@@ -95,8 +115,14 @@ class GestureNavigationScreenTest : public OobeBaseTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    GestureNavigationScreenTest,
+    testing::Values(TestMode::kTablet,
+                    TestMode::kClamshellWithForcedTabletFirstRun));
+
 // Ensure a working flow for the gesture navigation screen.
-IN_PROC_BROWSER_TEST_F(GestureNavigationScreenTest, FlowTest) {
+IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest, FlowTest) {
   ShowGestureNavigationScreen();
   OobeScreenWaiter(GestureNavigationScreenView::kScreenId).Wait();
 
@@ -139,16 +165,20 @@ IN_PROC_BROWSER_TEST_F(GestureNavigationScreenTest, FlowTest) {
 }
 
 // Ensure the flow is skipped when in clamshell mode.
-IN_PROC_BROWSER_TEST_F(GestureNavigationScreenTest, ScreenSkippedInClamshell) {
+IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest, ScreenSkippedInClamshell) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
 
   ShowGestureNavigationScreen();
 
-  WaitForScreenExit();
+  if (ShouldBeSkippedInClamshell()) {
+    WaitForScreenExit();
+  } else {
+    OobeScreenWaiter(GestureNavigationScreenView::kScreenId).Wait();
+  }
 }
 
 // Ensure the flow is skipped when spoken feedback is enabled.
-IN_PROC_BROWSER_TEST_F(GestureNavigationScreenTest,
+IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest,
                        ScreenSkippedWithSpokenFeedbackEnabled) {
   AccessibilityManager::Get()->EnableSpokenFeedback(true);
 
@@ -158,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(GestureNavigationScreenTest,
 }
 
 // Ensure the flow is skipped when autoclick is enabled.
-IN_PROC_BROWSER_TEST_F(GestureNavigationScreenTest,
+IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest,
                        ScreenSkippedWithAutoclickEnabled) {
   AccessibilityManager::Get()->EnableAutoclick(true);
 
@@ -168,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(GestureNavigationScreenTest,
 }
 
 // Ensure the flow is skipped when switch access is enabled.
-IN_PROC_BROWSER_TEST_F(GestureNavigationScreenTest,
+IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest,
                        ScreenSkippedWithSwitchAccessEnabled) {
   AccessibilityManager::Get()->SetSwitchAccessEnabled(true);
 

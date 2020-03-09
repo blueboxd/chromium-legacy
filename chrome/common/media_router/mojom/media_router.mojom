@@ -255,6 +255,31 @@ struct RoutePresentationConnection {
   pending_receiver<blink.mojom.PresentationConnection> connection_receiver;
 };
 
+// State of one active Cast session.
+struct CastSessionState {
+  // The Media Sink ID for the session.
+  string sink_id;
+  // The Cast App ID that the session is currently running.
+  string app_id;
+  // The session ID assigned by the Cast Receiver.
+  string session_id;
+  // Human readable description of the app or session, e.g. "Netflix."
+  string route_description;
+};
+
+// The state of the Cast Media Route Provider.
+struct CastProviderState {
+  // Includes all sessions running on known (local network) Cast receivers.
+  array<CastSessionState> session_state;
+};
+
+// Returned to the Media Router to reflect the state of a single route
+// provider for chrome://media-router-internals.
+union ProviderState {
+  // The state of the Cast MRP.
+  CastProviderState cast_provider_state;
+};
+
 // Modeled after the MediaRouter interface defined in
 // chrome/browser/media/router/media_router.h
 //
@@ -489,6 +514,12 @@ interface MediaRouteProvider {
                              pending_receiver<MediaController> media_controller,
                              pending_remote<MediaStatusObserver> observer) =>
                                  (bool success);
+
+  // Returns the state of this Media Route Provider for debugging; returns null
+  // if this MRP does not report any state.
+  //
+  // Currently, only the Cast MRP returns a state value.
+  GetState() => (ProviderState? state);
 };
 
 // Interface for a service which observes MediaRouteProviders for state changes

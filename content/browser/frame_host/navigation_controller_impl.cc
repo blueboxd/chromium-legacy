@@ -1481,11 +1481,6 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   new_entry->SetOriginalRequestURL(params.original_request_url);
   new_entry->SetIsOverridingUserAgent(params.is_overriding_user_agent);
 
-  if (request->web_bundle_navigation_info()) {
-    new_entry->set_web_bundle_navigation_info(
-        request->web_bundle_navigation_info()->Clone());
-  }
-
   // Update the FrameNavigationEntry for new main frame commits.
   FrameNavigationEntry* frame_entry =
       new_entry->GetFrameEntry(rfh->frame_tree_node());
@@ -1498,6 +1493,10 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   frame_entry->set_post_id(params.post_id);
   if (!params.url_is_unreachable)
     frame_entry->set_committed_origin(params.origin);
+  if (request->web_bundle_navigation_info()) {
+    frame_entry->set_web_bundle_navigation_info(
+        request->web_bundle_navigation_info()->Clone());
+  }
 
   // history.pushState() is classified as a navigation to a new page, but sets
   // is_same_document to true. In this case, we already have the title and

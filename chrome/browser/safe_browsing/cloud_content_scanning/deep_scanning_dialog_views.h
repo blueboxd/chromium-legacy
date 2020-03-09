@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -38,7 +39,8 @@ class DeepScanningMessageView;
 
 // Dialog shown for Deep Scanning to offer the possibility of cancelling the
 // upload to the user.
-class DeepScanningDialogViews : public views::DialogDelegate {
+class DeepScanningDialogViews : public views::DialogDelegate,
+                                public content::WebContentsObserver {
  public:
   // Enum used to represent what the dialog is currently showing.
   enum class DeepScanningDialogStatus {
@@ -118,6 +120,9 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   const views::Widget* GetWidget() const override;
   void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
+
+  // content::WebContentsObserver:
+  void WebContentsDestroyed() override;
 
   // Updates the dialog with the result, and simply delete it from memory if
   // nothing should be shown.

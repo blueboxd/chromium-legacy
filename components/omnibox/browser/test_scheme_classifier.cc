@@ -26,7 +26,7 @@ metrics::OmniboxInputType TestSchemeClassifier::GetInputTypeForScheme(
       url::kWssScheme,  url::kFileScheme,  url::kAboutScheme,
       url::kFtpScheme,  url::kBlobScheme,  url::kFileSystemScheme,
       "view-source",    "javascript",      "chrome",
-      "chrome-ui",
+      "chrome-ui",      "devtools",
   };
   for (const char* known_scheme : kKnownURLSchemes) {
     if (scheme == known_scheme)

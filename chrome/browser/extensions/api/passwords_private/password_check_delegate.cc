@@ -69,6 +69,8 @@ api::passwords_private::PasswordCheckState ConvertPasswordCheckState(
       return api::passwords_private::PASSWORD_CHECK_STATE_IDLE;
     case BulkLeakCheckService::State::kRunning:
       return api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
+    case BulkLeakCheckService::State::kCanceled:
+      return api::passwords_private::PASSWORD_CHECK_STATE_CANCELED;
     case BulkLeakCheckService::State::kSignedOut:
       return api::passwords_private::PASSWORD_CHECK_STATE_SIGNED_OUT;
     case BulkLeakCheckService::State::kNetworkError:
@@ -204,9 +206,16 @@ PasswordCheckDelegate::GetCompromisedCredentialsInfo() {
     api_credential.username = base::UTF16ToUTF8(credential.username);
     api_credential.compromise_time =
         credential.create_time.ToJsTimeIgnoringNull();
-    api_credential.elapsed_time_since_compromise = base::UTF16ToUTF8(
-        TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_LONG,
-                           base::Time::Now() - credential.create_time));
+    base::TimeDelta elapsed_time = base::Time::Now() - credential.create_time;
+    if (elapsed_time < base::TimeDelta::FromMinutes(1)) {
+      api_credential.elapsed_time_since_compromise =
+          l10n_util::GetStringUTF8(IDS_SETTINGS_PASSWORDS_JUST_NOW);
+    } else {
+      api_credential.elapsed_time_since_compromise =
+          base::UTF16ToUTF8(TimeFormat::SimpleWithMonthAndYear(
+              TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_LONG, elapsed_time,
+              true));
+    }
     api_credential.compromise_type =
         ConvertCompromiseType(credential.compromise_type);
     credentials_info.compromised_credentials.push_back(

@@ -27,7 +27,6 @@ class SessionCommand;
 
 // The following functions create sequentialized change commands which are
 // used to reconstruct the current/previous session state.
-// It is up to the caller to delete the returned SessionCommand* object.
 SESSIONS_EXPORT std::unique_ptr<SessionCommand>
 CreateSetSelectedTabInWindowCommand(const SessionID& window_id, int index);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetTabWindowCommand(
@@ -88,6 +87,10 @@ SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateLastActiveTimeCommand(
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowWorkspaceCommand(
     const SessionID& window_id,
     const std::string& workspace);
+
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetTabGuidCommand(
+    const SessionID& tab_id,
+    const std::string& guid);
 
 // Searches for a pending command using |command_storage_manager| that can be
 // replaced with |command|. If one is found, pending command is removed, the

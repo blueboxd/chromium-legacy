@@ -103,6 +103,7 @@ class CastSessionTracker : public MediaSinkServiceBase::Observer,
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(CastSessionTracker);
   FRIEND_TEST_ALL_PREFIXES(CastActivityRecordTest, SendAppMessageToReceiver);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaRouteProviderTest, GetState);
   FRIEND_TEST_ALL_PREFIXES(CastSessionTrackerTest, RemoveSession);
   FRIEND_TEST_ALL_PREFIXES(CastSessionTrackerTest,
                            HandleMediaStatusMessageBasic);

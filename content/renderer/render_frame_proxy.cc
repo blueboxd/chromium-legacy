@@ -413,7 +413,7 @@ void RenderFrameProxy::ChildProcessGone() {
 }
 
 void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {
-  blink::WebFrame* opener = RenderFrameImpl::ResolveOpener(opener_routing_id);
+  blink::WebFrame* opener = RenderFrameImpl::ResolveWebFrame(opener_routing_id);
   web_frame_->SetOpener(opener);
 }
 

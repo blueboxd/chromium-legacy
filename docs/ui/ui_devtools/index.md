@@ -15,7 +15,7 @@ currently supported on Linux, Windows, Mac, and ChromeOS.
 
     * If you want to use different port, add port in the flag `--enable-ui-devtools=<port>`.
 2. In the Chrome Omnibox, go to chrome://inspect#other and click `inspect` under UIDevToolsClient.
-    * Direct link is chrome-devtools://devtools/bundled/inspector.html?ws=localhost:9223/0.
+    * Direct link is devtools://devtools/bundled/inspector.html?ws=localhost:9223/0.
 
 
 ## How to Use

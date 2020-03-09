@@ -404,7 +404,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
-  void OnZoomToFindInPageRect(const blink::WebRect& rect_to_zoom);
   void OnMoveOrResizeStarted();
   void OnExitFullscreen();
   void OnSetHistoryOffsetAndLength(int history_offset, int history_length);

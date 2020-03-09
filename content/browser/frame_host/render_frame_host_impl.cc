@@ -2128,7 +2128,11 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
         GetProcess()->GetID(), previous_routing_id);
     // We have also created a RenderFrameProxy in CreateFrame above, so
     // remember that.
-    proxy->SetRenderFrameProxyCreated(true);
+    //
+    // RenderDocument: |proxy| can be null, when |previous_routing_id| refers to
+    // a RenderFrameHost instead of a RenderFrameProxy.
+    if (proxy)
+      proxy->SetRenderFrameProxyCreated(true);
   }
 
   // The renderer now has a RenderFrame for this RenderFrameHost.  Note that
@@ -2841,31 +2845,30 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
         RenderViewHostImpl::kUnloadTimeoutMS));
   }
 
-  // There should always be a proxy to replace the old RenderFrameHost.  If
-  // there are no remaining active views in the process, the proxy will be
-  // short-lived and will be deleted when the unload ACK is received.
-  CHECK(proxy);
-
   // TODO(nasko): If the frame is not live, the RFH should just be deleted by
   // simulating the receipt of unload ack.
   is_waiting_for_unload_ack_ = true;
-  unload_state_ = UnloadState::InProgress;
 
-  if (IsRenderFrameLive()) {
-    FrameReplicationState replication_state =
-        proxy->frame_tree_node()->current_replication_state();
-    Send(new UnfreezableFrameMsg_Unload(routing_id_, proxy->GetRoutingID(),
-                                        is_loading, replication_state));
-    // Remember that a RenderFrameProxy was created as part of processing the
-    // Unload message above.
-    proxy->SetRenderFrameProxyCreated(true);
+  if (proxy) {
+    unload_state_ = UnloadState::InProgress;
+    if (IsRenderFrameLive()) {
+      Send(new UnfreezableFrameMsg_Unload(
+          routing_id_, proxy->GetRoutingID(), is_loading,
+          proxy->frame_tree_node()->current_replication_state()));
+      // Remember that a RenderFrameProxy was created as part of processing the
+      // Unload message above.
+      proxy->SetRenderFrameProxyCreated(true);
+    }
+  } else {
+    // RenderDocument: After a local<->local swap, this function is called with
+    // a null |proxy|.
+    CHECK(IsRenderDocumentEnabled());
 
-    StartPendingDeletionOnSubtree();
+    // The unload handlers already ran for this document during the
+    // local<->local swap. Hence, there is no need to send
+    // UnfreezableFrameMsg_Unload here. It can be marked at completed.
+    unload_state_ = UnloadState::Completed;
   }
-
-  // Some children with no unload handler may be eligible for deletion. Cut the
-  // dead branches now. This is a performance optimization.
-  PendingDeletionCheckCompletedOnSubtree();
 
   if (web_ui())
     web_ui()->RenderFrameHostUnloading();
@@ -2874,6 +2877,12 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
 #if !defined(OS_ANDROID)
   serial_service_.reset();
 #endif
+
+  StartPendingDeletionOnSubtree();
+  // Some children with no unload handler may be eligible for deletion. Cut the
+  // dead branches now. This is a performance optimization.
+  PendingDeletionCheckCompletedOnSubtree();
+  // |this| is potentially deleted. Do not add code after this.
 }
 
 void RenderFrameHostImpl::DetachFromProxy() {
@@ -3824,6 +3833,10 @@ void RenderFrameHostImpl::DidBlockNavigation(
 
 void RenderFrameHostImpl::DidChangeLoadProgress(double load_progress) {
   frame_tree_node_->DidChangeLoadProgress(load_progress);
+}
+
+void RenderFrameHostImpl::DidFinishLoad(const GURL& validated_url) {
+  delegate_->OnDidFinishLoad(this, validated_url);
 }
 
 void RenderFrameHostImpl::DispatchLoad() {

@@ -8,6 +8,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/common/page_state_serialization.h"
 
 namespace content {
@@ -144,6 +145,16 @@ scoped_refptr<network::ResourceRequestBody> FrameNavigationEntry::GetPostData(
       exploded_state.top.http_body.http_content_type.value_or(
           base::string16()));
   return exploded_state.top.http_body.request_body;
+}
+
+void FrameNavigationEntry::set_web_bundle_navigation_info(
+    std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info) {
+  web_bundle_navigation_info_ = std::move(web_bundle_navigation_info);
+}
+
+WebBundleNavigationInfo* FrameNavigationEntry::web_bundle_navigation_info()
+    const {
+  return web_bundle_navigation_info_.get();
 }
 
 }  // namespace content

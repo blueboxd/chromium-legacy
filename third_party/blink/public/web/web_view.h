@@ -286,9 +286,6 @@ class WebView {
   // Indicates that view's preferred size changes will be sent to the browser.
   virtual void EnablePreferredSizeChangedMode() = 0;
 
-  // Requests a page-scale animation based on the specified rect.
-  virtual void ZoomToFindInPageRect(const WebRect&) = 0;
-
   // Sets the display mode of the web app.
   virtual void SetDisplayMode(blink::mojom::DisplayMode) = 0;
 

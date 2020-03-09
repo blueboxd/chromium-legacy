@@ -70,6 +70,7 @@ class ApplicationContextImpl : public ApplicationContext {
   gcm::GCMDriver* GetGCMDriver() override;
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
+  SafeBrowsingService* GetSafeBrowsingService() override;
   network::NetworkConnectionTracker* GetNetworkConnectionTracker() override;
   BrowserPolicyConnectorIOS* GetBrowserPolicyConnector() override;
 
@@ -112,6 +113,8 @@ class ApplicationContextImpl : public ApplicationContext {
   std::unique_ptr<network::NetworkChangeManager> network_change_manager_;
   std::unique_ptr<network::NetworkConnectionTracker>
       network_connection_tracker_;
+
+  scoped_refptr<SafeBrowsingService> safe_browsing_service_;
 
   bool was_last_shutdown_clean_;
 

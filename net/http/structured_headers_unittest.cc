@@ -25,8 +25,13 @@ Item Integer(int64_t value) {
   return Item(value);
 }
 
-std::pair<std::string, Item> Param(std::string key) {
+// Parameter with null value, only used in Structured Headers Draft 09
+std::pair<std::string, Item> NullParam(std::string key) {
   return std::make_pair(key, Item());
+}
+
+std::pair<std::string, Item> BooleanParam(std::string key, bool value) {
+  return std::make_pair(key, Item(value));
 }
 
 std::pair<std::string, Item> DoubleParam(std::string key, double value) {
@@ -445,10 +450,10 @@ const struct ParameterizedItemTestCase {
      {{Token("text/html"), {DoubleParam("q", 1)}}}},
     {"missing parameter value item",
      "text/html;a;q=1.0",
-     {{Token("text/html"), {Param("a"), DoubleParam("q", 1)}}}},
+     {{Token("text/html"), {BooleanParam("a", true), DoubleParam("q", 1)}}}},
     {"missing terminal parameter value item",
      "text/html;q=1.0;a",
-     {{Token("text/html"), {DoubleParam("q", 1), Param("a")}}}},
+     {{Token("text/html"), {DoubleParam("q", 1), BooleanParam("a", true)}}}},
     {"whitespace before = parameterised item", "text/html, text/plain;q =0.5",
      base::nullopt},
     {"whitespace after = parameterised item", "text/html, text/plain;q= 0.5",
@@ -511,7 +516,8 @@ const struct ListTestCase {
     // Parameterized Lists
     {"basic parameterised list",
      "abc_123;a=1;b=2; cdef_456, ghi;q=\"9\";r=\"+w\"",
-     {{{Token("abc_123"), {Param("a", 1), Param("b", 2), Param("cdef_456")}},
+     {{{Token("abc_123"),
+        {Param("a", 1), Param("b", 2), BooleanParam("cdef_456", true)}},
        {Token("ghi"), {Param("q", "9"), Param("r", "+w")}}}},
      "abc_123;a=1;b=2;cdef_456, ghi;q=\"9\";r=\"+w\""},
     {"single item parameterised list",
@@ -519,10 +525,10 @@ const struct ListTestCase {
      {{{Token("text/html"), {DoubleParam("q", 1)}}}}},
     {"missing parameter value parameterised list",
      "text/html;a;q=1.0",
-     {{{Token("text/html"), {Param("a"), DoubleParam("q", 1)}}}}},
+     {{{Token("text/html"), {BooleanParam("a", true), DoubleParam("q", 1)}}}}},
     {"missing terminal parameter value parameterised list",
      "text/html;q=1.0;a",
-     {{{Token("text/html"), {DoubleParam("q", 1), Param("a")}}}}},
+     {{{Token("text/html"), {DoubleParam("q", 1), BooleanParam("a", true)}}}}},
     {"no whitespace parameterised list",
      "text/html,text/plain;q=0.5",
      {{{Token("text/html"), {}},
@@ -640,10 +646,12 @@ const struct DictionaryTestCase {
      "a=(1 2);q=1.0"},
     {"missing parameter value parameterised dict",
      "a=3;c;d=5",
-     {Dictionary{{{"a", {Integer(3), {Param("c"), Param("d", 5)}}}}}}},
+     {Dictionary{
+         {{"a", {Integer(3), {BooleanParam("c", true), Param("d", 5)}}}}}}},
     {"terminal missing parameter value parameterised dict",
      "a=3;c=5;d",
-     {Dictionary{{{"a", {Integer(3), {Param("c", 5), Param("d")}}}}}}},
+     {Dictionary{
+         {{"a", {Integer(3), {Param("c", 5), BooleanParam("d", true)}}}}}}},
     {"no whitespace parameterised dict",
      "a=b;c=1,d=e;f=2",
      {Dictionary{{{"a", {Token("b"), {Param("c", 1)}}},
@@ -774,7 +782,7 @@ TEST(StructuredHeaderTest, ParseParameterisedList) {
        "abc_123;a=1;b=2; cdef_456, ghi;q=\"9\";r=\"w\"",
        {
            {Token("abc_123"),
-            {Param("a", 1), Param("b", 2), Param("cdef_456")}},
+            {Param("a", 1), Param("b", 2), NullParam("cdef_456")}},
            {Token("ghi"), {Param("q", "9"), Param("r", "w")}},
        }},
       {"empty param-list", "", {}},

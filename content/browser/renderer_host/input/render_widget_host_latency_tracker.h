@@ -29,7 +29,8 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
 
   void ComputeInputLatencyHistograms(blink::WebInputEvent::Type type,
                                      const ui::LatencyInfo& latency,
-                                     InputEventAckState ack_result);
+                                     InputEventAckState ack_result,
+                                     base::TimeTicks ack_timestamp);
 
   // Populates the LatencyInfo with relevant entries for latency tracking.
   // Called when an event is received by the RenderWidgetHost, prior to

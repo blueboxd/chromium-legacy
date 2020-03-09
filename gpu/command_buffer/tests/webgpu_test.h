@@ -57,14 +57,19 @@ class WebGPUTest : public testing::Test {
   void RunPendingTasks();
   void WaitForCompletion(wgpu::Device device);
 
-  const uint32_t kAdapterServiceID = 0u;
-  const webgpu::DawnDeviceClientID kDeviceClientID = 1u;
-  const WGPUDeviceProperties kDeviceProperties = {};
+  struct DeviceAndClientID {
+    wgpu::Device device;
+    webgpu::DawnDeviceClientID client_id;
+  };
+  DeviceAndClientID GetNewDeviceAndClientID();
 
  private:
   std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;
   std::unique_ptr<WebGPUInProcessContext> context_;
   bool is_initialized_ = false;
+
+  webgpu::DawnDeviceClientID next_device_client_id_ = 1;
+  const uint32_t kAdapterServiceID = 0u;
 };
 
 }  // namespace gpu

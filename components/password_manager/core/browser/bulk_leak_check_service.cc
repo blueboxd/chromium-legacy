@@ -22,6 +22,8 @@ BulkLeakCheckService::~BulkLeakCheckService() = default;
 void BulkLeakCheckService::CheckUsernamePasswordPairs(
     std::vector<password_manager::LeakCheckCredential> credentials) {
   DVLOG(0) << "Bulk password check, start " << credentials.size();
+  if (credentials.empty())
+    return;
   if (bulk_leak_check_) {
     DCHECK_EQ(State::kRunning, state_);
     // The check is already running. Append the credentials to the list.
@@ -53,7 +55,7 @@ void BulkLeakCheckService::Cancel() {
     DCHECK_NE(State::kRunning, state_);
     return;
   }
-  state_ = State::kIdle;
+  state_ = State::kCanceled;
   bulk_leak_check_.reset();
   NotifyStateChanged();
 }

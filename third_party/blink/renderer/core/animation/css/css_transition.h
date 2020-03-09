@@ -26,6 +26,17 @@ class CORE_EXPORT CSSTransition : public Animation {
     return transition_property_.GetCSSProperty();
   }
 
+  // Animation overrides.
+  // Various operations may affect the computed values of properties on
+  // elements. User agents may, as an optimization, defer recomputing these
+  // values until it becomes necessary; however, all operations included in the
+  // programming interfaces defined in the web-animations and css-transitions
+  // specifications, must produce a result consistent with having fully
+  // processed any such pending changes to computed values.  Notably, setting
+  // display:none must update the play state.
+  // https://drafts.csswg.org/css-transitions-2/#requirements-on-pending-style-changes
+  String playState() const override;
+
  private:
   PropertyHandle transition_property_;
 };

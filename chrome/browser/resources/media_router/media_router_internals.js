@@ -7,8 +7,12 @@ import {$} from 'chrome://resources/js/util.m.js';
 
 // Handles user events for the Media Router Internals UI.
 document.addEventListener('DOMContentLoaded', function() {
-  sendWithPromise('getStatus').then(status => {
-    const jsonStatus = JSON.stringify(status, null, /* spacing level = */ 2);
-    $('sink-status-div').textContent = jsonStatus;
+  sendWithPromise('getState').then(status => {
+    $('sink-status-div').textContent =
+        JSON.stringify(status, null, /* spacing level = */ 2);
+  });
+  sendWithPromise('getProviderState', 'CAST').then(status => {
+    $('cast-status-div').textContent =
+        JSON.stringify(status, null, /* spacing level = */ 2);
   });
 });

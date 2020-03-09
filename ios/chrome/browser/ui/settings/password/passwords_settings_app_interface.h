@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
+
 // EarlGreyScopedBlockSwizzlerAppInterface contains the app-side
 // implementation for helpers. These helpers are compiled into
 // the app binary and can be called from either app or test code.
@@ -16,7 +18,8 @@
 // view password) and its options for next test.
 + (void)setUpMockReauthenticationModule;
 + (void)setUpMockReauthenticationModuleForExport;
-+ (void)mockReauthenticationModuleShouldSucceed:(BOOL)shouldSucceed;
++ (void)mockReauthenticationModuleExpectedResult:
+    (ReauthenticationResult)expectedResult;
 + (void)mockReauthenticationModuleCanAttempt:(BOOL)canAttempt;
 
 // Dismisses snack bar.  Used before next test.

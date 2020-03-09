@@ -47,11 +47,8 @@ class Border;
 class DeviceScaleFactorObserver;
 class LabelButton;
 class LabelButtonBorder;
-class WindowButtonOrderObserver;
-
-#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
 class NavButtonProvider;
-#endif
+class WindowButtonOrderObserver;
 
 // Adapter class with targets to render like different toolkits. Set by any
 // project that wants to do linux desktop native rendering.
@@ -173,11 +170,9 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // preferred.
   virtual bool PreferDarkTheme() const = 0;
 
-#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
   // Returns a new NavButtonProvider, or nullptr if the underlying
   // toolkit does not support drawing client-side navigation buttons.
   virtual std::unique_ptr<NavButtonProvider> CreateNavButtonProvider() = 0;
-#endif
 
   // Returns a map of KeyboardEvent code to KeyboardEvent key values.
   virtual base::flat_map<std::string, std::string> GetKeyboardLayoutMap() = 0;

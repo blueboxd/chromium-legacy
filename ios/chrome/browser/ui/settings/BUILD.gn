@@ -189,7 +189,6 @@ source_set("settings") {
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/authentication" ]
   libs = [
     "CoreLocation.framework",
-    "LocalAuthentication.framework",
     "UIKit.framework",
   ]
 }

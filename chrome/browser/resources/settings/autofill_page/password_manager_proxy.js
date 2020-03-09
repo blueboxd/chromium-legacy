@@ -161,6 +161,12 @@ class PasswordManagerProxy {
   getCompromisedCredentialsInfo() {}
 
   /**
+   * Returns the current status of the check via |callback|.
+   * @return {!Promise<(PasswordManagerProxy.PasswordCheckStatus)>}
+   */
+  getPasswordCheckStatus() {}
+
+  /**
    * Add an observer to the compromised passwords change.
    * @param {function(!PasswordManagerProxy.CompromisedCredentialsInfo):void}
    *      listener
@@ -173,6 +179,18 @@ class PasswordManagerProxy {
    *     listener
    */
   removeCompromisedCredentialsListener(listener) {}
+
+  /**
+   * Remove an observer to the compromised passwords change.
+   * @param {function(!PasswordManagerProxy.PasswordCheckStatus):void} listener
+   */
+  addPasswordCheckStatusListener(listener) {}
+
+  /**
+   * Remove an observer to the compromised passwords change.
+   * @param {function(!PasswordManagerProxy.PasswordCheckStatus):void} listener
+   */
+  removePasswordCheckStatusListener(listener) {}
 }
 
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
@@ -197,6 +215,9 @@ PasswordManagerProxy.CompromisedCredential;
 
 /** @typedef {chrome.passwordsPrivate.CompromisedCredentialsInfo} */
 PasswordManagerProxy.CompromisedCredentialsInfo;
+
+/** @typedef {chrome.passwordsPrivate.PasswordCheckStatus} */
+PasswordManagerProxy.PasswordCheckStatus;
 
 /**
  * Implementation that accesses the private API.
@@ -322,6 +343,13 @@ class PasswordManagerImpl {
   }
 
   /** @override */
+  getPasswordCheckStatus() {
+    return new Promise(resolve => {
+      chrome.passwordsPrivate.getPasswordCheckStatus(resolve);
+    });
+  }
+
+  /** @override */
   startBulkPasswordCheck() {
     chrome.passwordsPrivate.startPasswordCheck();
   }
@@ -342,6 +370,17 @@ class PasswordManagerImpl {
   /** @override */
   removeCompromisedCredentialsListener(listener) {
     chrome.passwordsPrivate.onCompromisedCredentialsInfoChanged.removeListener(
+        listener);
+  }
+
+  /** @override */
+  addPasswordCheckStatusListener(listener) {
+    chrome.passwordsPrivate.onPasswordCheckStatusChanged.addListener(listener);
+  }
+
+  /** @override */
+  removePasswordCheckStatusListener(listener) {
+    chrome.passwordsPrivate.onPasswordCheckStatusChanged.removeListener(
         listener);
   }
 }

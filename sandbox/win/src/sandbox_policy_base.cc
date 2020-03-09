@@ -507,9 +507,16 @@ PSID PolicyBase::GetLowBoxSid() const {
   return lowbox_sid_;
 }
 
+size_t PolicyBase::GetPolicyGlobalSize() const {
+  // TODO(1059129) remove when Process.Sandbox.PolicyGlobalSize expires.
+  return policy_maker_->GetPolicyGlobalSize();
+}
+
 ResultCode PolicyBase::AddTarget(TargetProcess* target) {
-  if (policy_)
-    policy_maker_->Done();
+  if (policy_) {
+    if (!policy_maker_->Done())
+      return SBOX_ERROR_NO_SPACE;
+  }
 
   if (!ApplyProcessMitigationsToSuspendedProcess(target->Process(),
                                                  mitigations_)) {

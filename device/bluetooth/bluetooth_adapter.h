@@ -87,6 +87,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     virtual void DeviceAdded(BluetoothAdapter* adapter,
                              BluetoothDevice* device) {}
 
+    // Called when the adapter |DiscoveryChangeComplete| is finished
+    virtual void DiscoveryChangeCompletedForTesting() {}
+
     // Called when the result of one of the following methods of the device
     // |device| changes:
     //  * GetAddress()
@@ -592,6 +595,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   void NotifyAdapterPresentChanged(bool present);
   void NotifyAdapterPoweredChanged(bool powered);
   void NotifyDeviceChanged(BluetoothDevice* device);
+  void NotifyAdapterDiscoveryChangeCompletedForTesting();
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   void NotifyDevicePairedChanged(BluetoothDevice* device,

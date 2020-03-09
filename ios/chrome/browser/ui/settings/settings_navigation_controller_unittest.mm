@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
@@ -152,6 +153,7 @@ TEST_F(SettingsNavigationControllerTest,
 // delegate.
 TEST_F(SettingsNavigationControllerTest,
        CloseSettingsWhenNavigationStackSizeIsOne) {
+  base::UserActionTester user_action_tester;
   @autoreleasepool {
     SettingsNavigationController* settingsController =
         [SettingsNavigationController
@@ -159,7 +161,9 @@ TEST_F(SettingsNavigationControllerTest,
                                     delegate:mockDelegate_];
     EXPECT_EQ(1U, [[settingsController viewControllers] count]);
     [[mockDelegate_ expect] closeSettings];
+    ASSERT_EQ(0, user_action_tester.GetActionCount("MobileSettingsClose"));
     [settingsController popViewControllerOrCloseSettingsAnimated:NO];
+    EXPECT_EQ(1, user_action_tester.GetActionCount("MobileSettingsClose"));
     EXPECT_OCMOCK_VERIFY(mockDelegate_);
     [settingsController cleanUpSettings];
   }

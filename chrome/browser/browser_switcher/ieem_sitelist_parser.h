@@ -21,11 +21,11 @@ class ParsedXml {
             base::Optional<std::string>&& error);
   ~ParsedXml();
 
+  ParsedXml(const ParsedXml&) = delete;
+  ParsedXml& operator=(const ParsedXml&) = delete;
+
   std::vector<std::string> rules;
   base::Optional<std::string> error;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ParsedXml);
 };
 
 // Parses the XML contained in |xml|, and calls |callback| with the parsed XML

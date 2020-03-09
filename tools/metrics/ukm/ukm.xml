@@ -8375,6 +8375,12 @@ be describing additional metrics about the same event.
       Boolean value to represent whether the popup was closed by user gesture.
     </summary>
   </metric>
+  <metric name="WindowOpenDisposition" enum="WindowOpenDisposition">
+    <summary>
+      The UI window open disposition used when creating the web contents of the
+      pop-up. Set by the browser process when the pop up tracker is created.
+    </summary>
+  </metric>
 </event>
 
 <event name="Popup.Page">

@@ -12,20 +12,20 @@ import org.chromium.components.paintpreview.browser.NativePaintPreviewServicePro
  * A simple implementation of {@link NativePaintPreviewServiceProvider} used in tests.
  */
 @JNINamespace("paint_preview")
-public class TestImplementerService implements NativePaintPreviewServiceProvider {
-    private long mNativeTestImplementerService;
+public class PaintPreviewTestService implements NativePaintPreviewServiceProvider {
+    private long mNativePaintPreviewTestService;
 
-    public TestImplementerService(String storagePath) {
-        mNativeTestImplementerService = TestImplementerServiceJni.get().getInstance(storagePath);
+    public PaintPreviewTestService(String testDataDir) {
+        mNativePaintPreviewTestService = PaintPreviewTestServiceJni.get().getInstance(testDataDir);
     }
 
     @Override
     public long getNativeService() {
-        return mNativeTestImplementerService;
+        return mNativePaintPreviewTestService;
     }
 
     @NativeMethods
     interface Natives {
-        long getInstance(String storagePath);
+        long getInstance(String testDataDir);
     }
 }

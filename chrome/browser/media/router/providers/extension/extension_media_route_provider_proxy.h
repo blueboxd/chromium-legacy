@@ -93,6 +93,7 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
       mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojo::PendingRemote<mojom::MediaStatusObserver> observer,
       CreateMediaRouteControllerCallback callback) override;
+  void GetState(GetStateCallback callback) override;
 
   // Sets the MediaRouteProvider to forward calls to. Notifies
   // |request_manager_| that Mojo connections are ready.

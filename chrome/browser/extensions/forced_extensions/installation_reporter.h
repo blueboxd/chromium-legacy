@@ -199,6 +199,9 @@ class InstallationReporter : public KeyedService {
     // CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE.
     base::Optional<extensions::SandboxedUnpackerFailureReason>
         unpacker_failure_reason;
+    // Type of extension, assigned when CRX installation error detail is
+    // DISALLOWED_BY_POLICY.
+    base::Optional<Manifest::Type> extension_type;
   };
 
   class Observer : public base::CheckedObserver {
@@ -235,6 +238,11 @@ class InstallationReporter : public KeyedService {
   void ReportDownloadingCacheStatus(
       const ExtensionId& id,
       ExtensionDownloaderDelegate::CacheStatus cache_status);
+  // Assigns the extension type. See InstallationData::extension_type for more
+  // details.
+  void ReportExtensionTypeForPolicyDisallowedExtension(
+      const ExtensionId& id,
+      Manifest::Type extension_type);
   void ReportCrxInstallError(const ExtensionId& id,
                              FailureReason reason,
                              CrxInstallErrorDetail crx_install_error);

@@ -74,7 +74,7 @@ bool ConsiderAnimationAsIncompatible(const Animation& animation,
   if (&animation == &animation_to_add)
     return false;
 
-  if (animation.pending())
+  if (animation.PendingInternal())
     return true;
 
   switch (animation.CalculateAnimationPlayState()) {
@@ -553,7 +553,8 @@ bool CompositorAnimations::ConvertTimingForCompositor(
     return false;
 
   if (!timing.iteration_duration || !timing.iteration_count ||
-      timing.iteration_duration->is_zero())
+      timing.iteration_duration->is_zero() ||
+      timing.iteration_duration->is_max())
     return false;
 
   // Compositor's time offset is positive for seeking into the animation.

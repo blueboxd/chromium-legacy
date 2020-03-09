@@ -108,21 +108,20 @@ class TestSnapshotManager : public SnapshotManager {
   ~TestSnapshotManager() = default;
 
  private:
-  std::vector<SnapshotItemDetails> GetUserSnapshotItemDetails(
-      uint16_t milestone) const override {
+  std::vector<SnapshotItemDetails> GetUserSnapshotItemDetails() const override {
     return std::vector<SnapshotItemDetails>{
         SnapshotItemDetails(base::FilePath(kUserDataFile),
-                            SnapshotItemDetails::ItemType::kFile),
+                            SnapshotItemDetails::ItemType::kFile, 0),
         SnapshotItemDetails(base::FilePath(kUserDataFolder),
-                            SnapshotItemDetails::ItemType::kDirectory)};
+                            SnapshotItemDetails::ItemType::kDirectory, 0)};
   }
-  std::vector<SnapshotItemDetails> GetProfileSnapshotItemDetails(
-      uint16_t milestone) const override {
+  std::vector<SnapshotItemDetails> GetProfileSnapshotItemDetails()
+      const override {
     return std::vector<SnapshotItemDetails>{
         SnapshotItemDetails(base::FilePath(kProfileDataFile),
-                            SnapshotItemDetails::ItemType::kFile),
+                            SnapshotItemDetails::ItemType::kFile, 0),
         SnapshotItemDetails(base::FilePath(kProfileDataFolder),
-                            SnapshotItemDetails::ItemType::kDirectory)};
+                            SnapshotItemDetails::ItemType::kDirectory, 0)};
   }
 };
 

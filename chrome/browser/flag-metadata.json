@@ -491,6 +491,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "contextual-search-debug",
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "contextual-search-definitions",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 82
@@ -2254,6 +2259,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "force-unstacked-tabstrip",
+    "owners": [ "//ios/chrome/browser/ui/tabs/OWNERS" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "force-update-menu-type",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
      // This is required by test teams to verify functionality on devices which
@@ -3385,6 +3395,11 @@
   {
     "name": "split-settings-sync",
     "owners": [ "jamescook", "cros-system-services@google.com" ],
+    "expiry_milestone": 84
+  },
+  {
+    "name": "ssl-committed-interstitials",
+    "owners": [ "livvielin" ],
     "expiry_milestone": 84
   },
   {

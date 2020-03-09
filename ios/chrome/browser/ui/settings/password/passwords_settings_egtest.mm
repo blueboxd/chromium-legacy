@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -406,7 +407,8 @@ void TapEdit() {
       performAction:grey_tap()];
 
   [PasswordSettingsAppInterface setUpMockReauthenticationModule];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // Check the snackbar in case of successful reauthentication.
   [GetInteractionForPasswordDetailItem(CopyPasswordButton())
@@ -419,7 +421,8 @@ void TapEdit() {
       performAction:grey_tap()];
 
   // Check the snackbar in case of failed reauthentication.
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:NO];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kFailure];
   [GetInteractionForPasswordDetailItem(CopyPasswordButton())
       performAction:grey_tap()];
 
@@ -449,7 +452,8 @@ void TapEdit() {
       performAction:grey_tap()];
 
   [PasswordSettingsAppInterface setUpMockReauthenticationModule];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // Check the snackbar in case of successful reauthentication.
   [GetInteractionForPasswordDetailItem(ShowPasswordButton())
@@ -480,7 +484,8 @@ void TapEdit() {
       performAction:grey_tap()];
 
   [PasswordSettingsAppInterface setUpMockReauthenticationModule];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:NO];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kFailure];
 
   // Check the snackbar in case of failed reauthentication.
   [GetInteractionForPasswordDetailItem(ShowPasswordButton())
@@ -882,7 +887,8 @@ void TapEdit() {
   // end of the test, otherwise it might get deleted too soon and break the
   // functionality of copying and viewing passwords.
   [PasswordSettingsAppInterface setUpMockReauthenticationModule];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // Tap the context menu item for copying.
   [[EarlGrey
@@ -924,7 +930,8 @@ void TapEdit() {
   // end of the test, otherwise it might get deleted too soon and break the
   // functionality of copying and viewing passwords.
   [PasswordSettingsAppInterface setUpMockReauthenticationModule];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // Tap the context menu item for showing.
   [[EarlGrey
@@ -1400,7 +1407,8 @@ void TapEdit() {
   OpenPasswordSettings();
 
   [PasswordSettingsAppInterface setUpMockReauthenticationModuleForExport];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(

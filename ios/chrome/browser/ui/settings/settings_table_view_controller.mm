@@ -8,6 +8,8 @@
 
 #include "base/feature_list.h"
 #import "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -1081,6 +1083,10 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
 #pragma mark SettingsControllerProtocol
 
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileSettingsClose"));
+}
+
 - (void)settingsWillBeDismissed {
   DCHECK(!_settingsHasBeenDismissed);
   [_googleServicesSettingsCoordinator stop];
@@ -1287,6 +1293,13 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 - (void)onPrimaryAccountCleared:
     (const CoreAccountInfo&)previousPrimaryAccountInfo {
   [self signinStateDidChange];
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  base::RecordAction(base::UserMetricsAction("IOSSettingsCloseWithSwipe"));
 }
 
 @end

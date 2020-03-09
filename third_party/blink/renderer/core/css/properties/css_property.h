@@ -56,6 +56,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool IsValidForFirstLetter() const { return flags_ & kValidForFirstLetter; }
   bool IsValidForCue() const { return flags_ & kValidForCue; }
   bool IsValidForMarker() const { return flags_ & kValidForMarker; }
+  bool IsSurrogate() const { return flags_ & kSurrogate; }
 
   bool IsRepeated() const { return repetition_separator_ != '\0'; }
   char RepetitionSeparator() const { return repetition_separator_; }
@@ -91,6 +92,9 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   virtual const CSSProperty* GetUnvisitedProperty() const { return nullptr; }
 
   virtual const CSSProperty* GetUAProperty() const { return nullptr; }
+  virtual const CSSProperty* SurrogateFor(TextDirection, WritingMode) const {
+    return nullptr;
+  }
 
   static void FilterWebExposedCSSPropertiesIntoVector(
       const ExecutionContext*,
@@ -127,6 +131,10 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     kValidForCue = 1 << 13,
     // https://drafts.csswg.org/css-pseudo-4/#marker-pseudo
     kValidForMarker = 1 << 14,
+    // A surrogate is a (non-alias) property which acts like another property,
+    // for example -webkit-writing-mode is a surrogate for writing-mode, and
+    // inline-size is a surrogate for either width or height.
+    kSurrogate = 1 << 15,
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,

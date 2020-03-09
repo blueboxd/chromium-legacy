@@ -185,6 +185,14 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenElements) {
       {"connect", "welcomeScreen", "enableDebuggingLink"});
 }
 
+// This is a minimal possible test for OOBE. It is used as reference test
+// for measurements during OOBE speedup work.
+// TODO(crbug.com/1058022): Remove after speedup work.
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, OobeStartupTime) {
+  welcome_screen_->Show();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+}
+
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenNext) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();

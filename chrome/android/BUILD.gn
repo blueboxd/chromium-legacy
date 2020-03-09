@@ -940,6 +940,7 @@ android_library("chrome_test_java") {
     "//chrome/test/data/translate/",
     "//chrome/test/media_router/resources/",
     "//components/test/data/autofill/",
+    "//components/test/data/paint_preview/",
     "//components/test/data/payments/",
     "//content/test/data/browsing_data/",
     "//content/test/data/android/authenticator.html",

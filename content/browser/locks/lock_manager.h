@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOCKS_LOCK_CONTEXT_H_
-#define CONTENT_BROWSER_LOCKS_LOCK_CONTEXT_H_
+#ifndef CONTENT_BROWSER_LOCKS_LOCK_MANAGER_H_
+#define CONTENT_BROWSER_LOCKS_LOCK_MANAGER_H_
 
+#include <cstdint>
+#include <map>
 #include <memory>
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -24,6 +27,9 @@ class LockManager : public blink::mojom::LockManager {
  public:
   LockManager();
   ~LockManager() override;
+
+  LockManager(const LockManager&) = delete;
+  LockManager& operator=(const LockManager&) = delete;
 
   // Binds |receiver| to this LockManager. |receiver| belongs to a frame or
   // worker at |origin| hosted by |render_process_id|. If it belongs to a frame,
@@ -73,10 +79,8 @@ class LockManager : public blink::mojom::LockManager {
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<LockManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LockManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LOCKS_LOCK_CONTEXT_H
+#endif  // CONTENT_BROWSER_LOCKS_LOCK_MANAGER_H

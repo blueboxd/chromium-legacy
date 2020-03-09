@@ -2104,6 +2104,11 @@ void LocalFrame::EnablePreferredSizeChangedMode() {
   GetPage()->GetChromeClient().EnablePreferredSizeChangedMode();
 }
 
+void LocalFrame::ZoomToFindInPageRect(const gfx::Rect& rect_in_root_frame) {
+  GetPage()->GetChromeClient().ZoomToFindInPageRect(
+      WebRect(rect_in_root_frame));
+}
+
 HitTestResult LocalFrame::HitTestResultForVisualViewportPos(
     const IntPoint& pos_in_viewport) {
   IntPoint root_frame_point(

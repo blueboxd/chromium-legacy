@@ -6,6 +6,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -201,6 +202,32 @@ IN_PROC_BROWSER_TEST_F(BrowserPersisterTest, SingleTab) {
   EXPECT_EQ(1, browser->GetTabs()[0]
                    ->GetNavigationController()
                    ->GetNavigationListSize());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserPersisterTest, RestoresGuid) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  std::unique_ptr<BrowserImpl> browser = CreateBrowser(GetProfile(), "x");
+  Tab* tab = browser->AddTab(Tab::Create(GetProfile()));
+  const std::string original_guid = tab->GetGuid();
+  EXPECT_FALSE(original_guid.empty());
+  EXPECT_TRUE(base::IsValidGUID(original_guid));
+  const GURL url = embedded_test_server()->GetURL("/simple_page.html");
+  NavigateAndWaitForCompletion(url, tab);
+  ShutdownBrowserPersisterAndWait(browser.get());
+  tab = nullptr;
+  browser.reset();
+
+  browser = CreateBrowser(GetProfile(), "x");
+  // Should be no tabs while waiting for restore.
+  EXPECT_TRUE(browser->GetTabs().empty());
+  // Wait for the restore and navigation to complete.
+  BrowserNavigationObserverImpl::WaitForNewTabToCompleteNavigation(
+      browser.get(), url);
+
+  ASSERT_EQ(1u, browser->GetTabs().size());
+  EXPECT_EQ(browser->GetTabs()[0], browser->GetActiveTab());
+  EXPECT_EQ(original_guid, browser->GetTabs()[0]->GetGuid());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserPersisterTest, TwoTabs) {

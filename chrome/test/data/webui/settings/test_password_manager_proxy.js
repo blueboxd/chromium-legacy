@@ -15,6 +15,7 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
       'requestPlaintextPassword',
       'startBulkPasswordCheck',
       'getCompromisedCredentialsInfo',
+      'getPasswordCheckStatus',
     ]);
 
     this.actual_ = new autofill_test_util.PasswordManagerExpectations();
@@ -25,10 +26,12 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
       exceptions: [],
       leakedCredentials:
           autofill_test_util.makeCompromisedCredentialsInfo([], ''),
+      checkStatus: autofill_test_util.makePasswordCheckStatus(),
     };
 
     // Holds the last callbacks so they can be called when needed/
     this.lastCallback = {
+      addPasswordCheckStatusListener: null,
       addSavedPasswordListChangedListener: null,
       addExceptionListChangedListener: null,
       requestPlaintextPassword: null,
@@ -157,8 +160,22 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
   }
 
   /** @override */
+  getPasswordCheckStatus() {
+    this.methodCalled('getPasswordCheckStatus');
+    return Promise.resolve(this.data.checkStatus);
+  }
+
+  /** @override */
   addCompromisedCredentialsListener(listener) {}
 
   /** @override */
   removeCompromisedCredentialsListener(listener) {}
+
+  /** @override */
+  addPasswordCheckStatusListener(listener) {
+    this.lastCallback.addPasswordCheckStatusListener = listener;
+  }
+
+  /** @override */
+  removePasswordCheckStatusListener(listener) {}
 }

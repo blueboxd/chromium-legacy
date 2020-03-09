@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/animation/css/css_transition.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
+
 namespace blink {
 
 CSSTransition::CSSTransition(ExecutionContext* execution_context,
@@ -15,6 +17,14 @@ CSSTransition::CSSTransition(ExecutionContext* execution_context,
 
 AtomicString CSSTransition::transitionProperty() const {
   return transition_property_.GetCSSPropertyName().ToAtomicString();
+}
+
+String CSSTransition::playState() const {
+  // TODO(1043778): Flush is likely not required once the CSSTransition is
+  // disassociated from its owning element.
+  if (GetDocument())
+    GetDocument()->UpdateStyleAndLayoutTree();
+  return Animation::playState();
 }
 
 }  // namespace blink

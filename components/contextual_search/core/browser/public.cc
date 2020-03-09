@@ -14,12 +14,16 @@ const char kLongpressResolvePreserveTap[] = "1";
 
 // Contextual Cards variations and integration Api settings.
 const char kContextualCardsVersionParamName[] = "contextual_cards_version";
+
 // The version of the Contextual Cards API that we want to invoke.
 const int kContextualCardsEntityIntegration = 1;
 const int kContextualCardsQuickActionsIntegration = 2;
 const int kContextualCardsUrlActionsIntegration = 3;
 const int kContextualCardsDefinitionsIntegration = 4;
 const int kContextualCardsTranslationsIntegration = 5;
+
+// For development.
+const int kContextualCardsDebugIntegration = 98;
 const int kContextualCardsDiagnosticIntegration = 99;
 
 }  // namespace contextual_search

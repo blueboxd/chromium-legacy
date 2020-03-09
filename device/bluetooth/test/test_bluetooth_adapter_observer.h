@@ -33,7 +33,9 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   void AdapterDiscoveringChanged(BluetoothAdapter* adapter,
                                  bool discovering) override;
   void RegisterDiscoveringChangedWatcher(base::RepeatingClosure callback);
+  void RegisterDiscoveryChangeCompletedWatcher(base::RepeatingClosure callback);
   void DeviceAdded(BluetoothAdapter* adapter, BluetoothDevice* device) override;
+  void DiscoveryChangeCompletedForTesting() override;
   void DeviceChanged(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
   void DeviceAddressChanged(device::BluetoothAdapter* adapter,
@@ -235,6 +237,7 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   base::Optional<uint16_t> last_appearance_;
 
   base::Closure discovering_changed_callback_;
+  base::Closure discovery_change_completed_callback_;
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   int device_paired_changed_count_;

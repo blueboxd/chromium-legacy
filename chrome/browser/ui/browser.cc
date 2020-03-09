@@ -1663,7 +1663,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
 
   if (is_popup && nav_params.navigated_or_inserted_contents) {
     auto* tracker = PopupTracker::CreateForWebContents(
-        nav_params.navigated_or_inserted_contents, source);
+        nav_params.navigated_or_inserted_contents, source, params.disposition);
     tracker->set_is_trusted(params.triggering_event_info !=
                             blink::TriggeringEventInfo::kFromUntrustedEvent);
   }
@@ -1725,7 +1725,7 @@ void Browser::AddNewContents(WebContents* source,
   // At this point the |new_contents| is beyond the popup blocker, but we use
   // the same logic for determining if the popup tracker needs to be attached.
   if (source && ConsiderForPopupBlocking(disposition))
-    PopupTracker::CreateForWebContents(new_contents.get(), source);
+    PopupTracker::CreateForWebContents(new_contents.get(), source, disposition);
 
   chrome::AddWebContents(this, source, std::move(new_contents), disposition,
                          initial_rect);

@@ -40,6 +40,7 @@ class ChromeBrowserState;
 - (void)showFirstRunUI;
 - (void)setTabSwitcher:(id<TabSwitcher>)switcher;
 - (id<TabSwitcher>)tabSwitcher;
+- (BOOL)isTabSwitcherActive;
 
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox;

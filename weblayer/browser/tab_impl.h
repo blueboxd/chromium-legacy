@@ -60,7 +60,8 @@ class TabImpl : public Tab,
           const base::android::JavaParamRef<jobject>& java_impl);
 #endif
   explicit TabImpl(ProfileImpl* profile,
-                   std::unique_ptr<content::WebContents> = nullptr);
+                   std::unique_ptr<content::WebContents> = nullptr,
+                   const std::string& guid = std::string());
   ~TabImpl() override;
 
   // Returns the TabImpl from the specified WebContents, or null if
@@ -116,6 +117,8 @@ class TabImpl : public Tab,
       const base::android::JavaParamRef<jobject>& autofill_provider);
 
   void UpdateBrowserControlsState(JNIEnv* env, jint constraint);
+
+  base::android::ScopedJavaLocalRef<jstring> GetGuid(JNIEnv* env);
 #endif
 
   DownloadDelegate* download_delegate() { return download_delegate_; }
@@ -133,6 +136,7 @@ class TabImpl : public Tab,
   void ExecuteScript(const base::string16& script,
                      bool use_separate_isolate,
                      JavaScriptResultCallback callback) override;
+  const std::string& GetGuid() override;
 #if !defined(OS_ANDROID)
   void AttachToView(views::WebView* web_view) override;
 #endif
@@ -242,6 +246,8 @@ class TabImpl : public Tab,
   bool processing_enter_fullscreen_ = false;
 
   std::unique_ptr<autofill::AutofillProvider> autofill_provider_;
+
+  const std::string guid_;
 
   base::WeakPtrFactory<TabImpl> weak_ptr_factory_{this};
 

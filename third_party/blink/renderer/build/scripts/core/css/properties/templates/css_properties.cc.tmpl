@@ -87,10 +87,21 @@ const CSSProperty* {{class_name}}::GetUAProperty() const {
 }
   {% endif %}
 
+  {% if property.surrogate_for %}
+const CSSProperty* {{class_name}}::SurrogateFor(TextDirection direction,
+    blink::WritingMode writing_mode) const {
+  return &GetCSSProperty{{property.surrogate_for.name.to_upper_camel_case()}}();
+}
+  {% endif %}
   {% if property.direction_aware_options %}
     {% set options = property.direction_aware_options %}
     {% set resolver_name = options.resolver_name.to_upper_camel_case() %}
     {% set physical_group_name = options.physical_group_name.to_upper_camel_case() %}
+const CSSProperty* {{class_name}}::SurrogateFor(TextDirection direction,
+    blink::WritingMode writing_mode) const {
+  return &ResolveDirectionAwareProperty(direction, writing_mode);
+}
+
 const CSSProperty& {{class_name}}::ResolveDirectionAwareProperty(
     TextDirection direction,
     blink::WritingMode writing_mode) const {

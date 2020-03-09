@@ -100,6 +100,15 @@ TEST_F(BulkLeakCheckServiceTest, OnCreation) {
   EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
 }
 
+TEST_F(BulkLeakCheckServiceTest, StartWithZeroPasswords) {
+  StrictMock<MockObserver> observer;
+  service().AddObserver(&observer);
+
+  service().CheckUsernamePasswordPairs({});
+  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
+  EXPECT_EQ(0u, service().GetPendingChecksCount());
+}
+
 TEST_F(BulkLeakCheckServiceTest, Running) {
   StrictMock<MockObserver> observer;
   service().AddObserver(&observer);
@@ -192,10 +201,10 @@ TEST_F(BulkLeakCheckServiceTest, CancelSomething) {
 
   StrictMock<MockObserver> observer;
   service().AddObserver(&observer);
-  EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kIdle));
+  EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kCanceled));
   service().Cancel();
 
-  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kCanceled, service().state());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
 }
 

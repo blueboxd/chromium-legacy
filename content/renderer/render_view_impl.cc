@@ -441,7 +441,7 @@ void RenderViewImpl::Initialize(
 #endif
 
   WebFrame* opener_frame =
-      RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
+      RenderFrameImpl::ResolveWebFrame(params->opener_frame_route_id);
 
   // The newly created webview_ is owned by this instance.
   webview_ = WebView::Create(this, params->hidden,
@@ -1174,7 +1174,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
-    IPC_MESSAGE_HANDLER(ViewMsg_ZoomToFindInPageRect, OnZoomToFindInPageRect)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
 
     // Page messages.
@@ -1870,11 +1869,6 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
     render_widget->OnSetFocus(false);
     SetActiveForWidget(false);
   }
-}
-
-void RenderViewImpl::OnZoomToFindInPageRect(
-    const blink::WebRect& rect_to_zoom) {
-  GetWebView()->ZoomToFindInPageRect(rect_to_zoom);
 }
 
 void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {

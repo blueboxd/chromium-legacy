@@ -105,7 +105,7 @@ void RegionToTracedValue(const LayoutShiftRegion& region, TracedValue& value) {
 #if DCHECK_IS_ON()
 bool ShouldLog(const LocalFrame& frame) {
   const String& url = frame.GetDocument()->Url().GetString();
-  return !url.StartsWith("chrome-devtools:") && !url.StartsWith("devtools:");
+  return !url.StartsWith("devtools:");
 }
 #endif
 

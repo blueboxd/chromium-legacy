@@ -164,7 +164,7 @@ class BinaryUploadService {
   // Upload the given file contents for deep scanning. The results will be
   // returned asynchronously by calling |request|'s |callback|. This must be
   // called on the UI thread.
-  void UploadForDeepScanning(std::unique_ptr<Request> request);
+  virtual void UploadForDeepScanning(std::unique_ptr<Request> request);
 
   void OnGetInstanceID(Request* request, const std::string& token);
 

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/test/guest_session_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/offline_gaia_test_mixin.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
@@ -172,10 +173,13 @@ IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
   offline_gaia_test_mixin_.PrepareOfflineGaiaLogin();
 }
 
-// Flaking: https://crbug.com/1023591
 IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
   offline_gaia_test_mixin_.GoOffline();
-  offline_gaia_test_mixin_.SignIn(test_user_.account_id, kPassword);
+  offline_gaia_test_mixin_.InitOfflineLogin(test_user_.account_id, kPassword);
+  offline_gaia_test_mixin_.CheckManagedStatus(false);
+  offline_gaia_test_mixin_.SubmitGaiaAuthOfflineForm(
+      test_user_.account_id.GetUserEmail(), kPassword,
+      true /* wait for sign-in */);
   TestSystemTrayIsVisible(false);
 }
 

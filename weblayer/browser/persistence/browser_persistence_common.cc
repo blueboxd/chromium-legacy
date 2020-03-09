@@ -76,7 +76,8 @@ void ProcessRestoreCommands(
                                           content::RestoreType::CURRENT_SESSION,
                                           &entries);
     DCHECK(entries.empty());
-    TabImpl* tab = browser->CreateTabForSessionRestore(std::move(web_contents));
+    TabImpl* tab = browser->CreateTabForSessionRestore(std::move(web_contents),
+                                                       session_tab.guid);
 
     if (!had_tabs && i == (windows[0])->selected_tab_index)
       browser->SetActiveTab(tab);
@@ -97,7 +98,8 @@ void RestoreBrowserState(
 
   if (browser->GetTabs().empty()) {
     // Nothing to restore, or restore failed. Create a default tab.
-    browser->SetActiveTab(browser->CreateTabForSessionRestore(nullptr));
+    browser->SetActiveTab(
+        browser->CreateTabForSessionRestore(nullptr, std::string()));
   }
 }
 
@@ -107,25 +109,27 @@ BuildCommandsForTabConfiguration(const SessionID& browser_session_id,
                                  int index_in_browser) {
   DCHECK(tab);
   std::vector<std::unique_ptr<sessions::SessionCommand>> result;
-  const SessionID& session_id = GetSessionIDForTab(tab);
+  const SessionID& tab_id = GetSessionIDForTab(tab);
   result.push_back(
-      sessions::CreateSetTabWindowCommand(browser_session_id, session_id));
+      sessions::CreateSetTabWindowCommand(browser_session_id, tab_id));
 
   result.push_back(sessions::CreateLastActiveTimeCommand(
-      session_id, tab->web_contents()->GetLastActiveTime()));
+      tab_id, tab->web_contents()->GetLastActiveTime()));
 
   const std::string& ua_override = tab->web_contents()->GetUserAgentOverride();
   if (!ua_override.empty()) {
-    result.push_back(sessions::CreateSetTabUserAgentOverrideCommand(
-        session_id, ua_override));
+    result.push_back(
+        sessions::CreateSetTabUserAgentOverrideCommand(tab_id, ua_override));
   }
   if (index_in_browser != -1) {
-    result.push_back(sessions::CreateSetTabIndexInWindowCommand(
-        session_id, index_in_browser));
+    result.push_back(
+        sessions::CreateSetTabIndexInWindowCommand(tab_id, index_in_browser));
   }
 
   result.push_back(sessions::CreateSetSelectedNavigationIndexCommand(
-      session_id, tab->web_contents()->GetController().GetCurrentEntryIndex()));
+      tab_id, tab->web_contents()->GetController().GetCurrentEntryIndex()));
+
+  result.push_back(sessions::CreateSetTabGuidCommand(tab_id, tab->GetGuid()));
 
   return result;
 }

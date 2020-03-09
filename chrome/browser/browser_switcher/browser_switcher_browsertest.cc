@@ -149,8 +149,6 @@ class BrowserSwitcherBrowserTest : public InProcessBrowserTest {
  private:
   base::ScopedTempDir temp_dir_;
   policy::MockConfigurationPolicyProvider provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherBrowserTest, RunsExternalCommand) {

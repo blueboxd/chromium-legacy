@@ -1492,6 +1492,11 @@ void QuotaManager::MaybeRunStoragePressureCallback(const url::Origin& origin,
                                                    int64_t total_space,
                                                    int64_t available_space) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(https://crbug.com/1059560): Figure out what 0 total_space means
+  // and how to handle the storage pressure callback in these cases.
+  if (total_space == 0)
+    return;
+
   if (!storage_pressure_callback_) {
     // Quota will hold onto a storage pressure notification if no storage
     // pressure callback is set.

@@ -67,6 +67,7 @@ class ApplicationContext;
 class BrowserPolicyConnectorIOS;
 class IOSChromeIOThread;
 class PrefService;
+class SafeBrowsingService;
 
 // Gets the global application context. Cannot return null.
 ApplicationContext* GetApplicationContext();
@@ -143,6 +144,9 @@ class ApplicationContext {
   // Gets the ComponentUpdateService.
   virtual component_updater::ComponentUpdateService*
   GetComponentUpdateService() = 0;
+
+  // Gets the SafeBrowsingService.
+  virtual SafeBrowsingService* GetSafeBrowsingService() = 0;
 
   // Returns the NetworkConnectionTracker instance for this ApplicationContext.
   virtual network::NetworkConnectionTracker* GetNetworkConnectionTracker() = 0;

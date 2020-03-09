@@ -43,7 +43,8 @@ class BrowserImpl : public Browser {
   // Creates and adds a Tab from session restore. The returned tab is owned by
   // this Browser.
   TabImpl* CreateTabForSessionRestore(
-      std::unique_ptr<content::WebContents> web_contents);
+      std::unique_ptr<content::WebContents> web_contents,
+      const std::string& guid);
 
 #if defined(OS_ANDROID)
   void AddTab(JNIEnv* env,

@@ -305,7 +305,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::WrapUnique(ResetSettingsHandler::Create(html_source, profile)));
 
   // Add a handler to provide pluralized strings.
-  web_ui->AddMessageHandler(std::make_unique<PluralStringHandler>());
+  auto plural_string_handler = std::make_unique<PluralStringHandler>();
+  plural_string_handler->AddLocalizedString(
+      "compromisedPasswords", IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT);
+  web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   // Add the metrics handler to write uma stats.
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());

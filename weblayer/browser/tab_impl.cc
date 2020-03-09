@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/feature_list.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -159,8 +160,11 @@ TabImpl::TabImpl(ProfileImpl* profile, const JavaParamRef<jobject>& java_impl)
 #endif
 
 TabImpl::TabImpl(ProfileImpl* profile,
-                 std::unique_ptr<content::WebContents> web_contents)
-    : profile_(profile), web_contents_(std::move(web_contents)) {
+                 std::unique_ptr<content::WebContents> web_contents,
+                 const std::string& guid)
+    : profile_(profile),
+      web_contents_(std::move(web_contents)),
+      guid_(guid.empty() ? base::GenerateGUID() : guid) {
 #if defined(OS_ANDROID)
   g_last_tab = this;
 #endif
@@ -291,6 +295,10 @@ void TabImpl::ExecuteScript(const base::string16& script,
   }
 }
 
+const std::string& TabImpl::GetGuid() {
+  return guid_;
+}
+
 void TabImpl::ExecuteScriptWithUserGestureForTests(
     const base::string16& script) {
   web_contents_->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
@@ -415,6 +423,11 @@ void TabImpl::UpdateBrowserControlsState(JNIEnv* env, jint constraint) {
         ->GetMainFrame()
         ->UpdateBrowserControlsState(state_constraint, current_state, animate);
   }
+}
+
+ScopedJavaLocalRef<jstring> TabImpl::GetGuid(JNIEnv* env) {
+  return base::android::ConvertUTF8ToJavaString(AttachCurrentThread(),
+                                                GetGuid());
 }
 #endif
 

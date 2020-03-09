@@ -6,6 +6,7 @@
 #define WEBLAYER_PUBLIC_TAB_H_
 
 #include <algorithm>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
@@ -74,6 +75,9 @@ class Tab {
   virtual void ExecuteScript(const base::string16& script,
                              bool use_separate_isolate,
                              JavaScriptResultCallback callback) = 0;
+
+  // Returns the tab's guid.
+  virtual const std::string& GetGuid() = 0;
 
 #if !defined(OS_ANDROID)
   // TODO: this isn't a stable API, so use it now for expediency in the C++ API,

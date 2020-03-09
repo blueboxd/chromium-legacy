@@ -4,8 +4,9 @@
 
 package org.chromium.components.paintpreview.player;
 
-import android.os.Environment;
 import android.support.test.filters.MediumTest;
+import android.view.View;
+import android.view.ViewGroup;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.ScalableTimeout;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
@@ -24,12 +26,9 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     private static final long TIMEOUT_MS = ScalableTimeout.scaleTimeout(5000);
-    private static final long POLLING_INTERVAL_MS = ScalableTimeout.scaleTimeout(50);
 
-    // TODO(crbug.com/1049303) Change to test data directory when test Proto and SKP files are
-    //  added.
-    private static final String TEST_DATA_DIR = Environment.getExternalStorageDirectory().getPath();
-    private static final String TEST_DIRECTORY_KEY = "test_key";
+    private static final String TEST_DATA_DIR = "components/test/data/";
+    private static final String TEST_DIRECTORY_KEY = "wikipedia";
 
     @Rule
     public PaintPreviewTestRule mPaintPreviewTestRule = new PaintPreviewTestRule();
@@ -37,17 +36,41 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     private PlayerManager mPlayerManager;
 
     /**
-     * Initializes {@link TestImplementerService} and {@link PlayerManager}.
+     * Tests the the player correctly initializes and displays a sample paint preview with 1 frame.
      */
     @Test
     @MediumTest
-    public void smokeTest() {
+    public void singleFrameDisplayTest() {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            TestImplementerService service = new TestImplementerService(TEST_DATA_DIR);
+            PaintPreviewTestService service =
+                    new PaintPreviewTestService(UrlUtils.getIsolatedTestFilePath(TEST_DATA_DIR));
             mPlayerManager = new PlayerManager(getActivity(), service, TEST_DIRECTORY_KEY);
+            getActivity().setContentView(mPlayerManager.getView());
         });
+
+        // Wait until PlayerManager is initialized.
         CriteriaHelper.pollUiThread(() -> mPlayerManager != null,
-                "PlayerManager took too long to initialize.", TIMEOUT_MS,
-            POLLING_INTERVAL_MS);
+                "PlayerManager was not initialized.", TIMEOUT_MS,
+                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        final View playerHostView = mPlayerManager.getView();
+        final View activityContentView = getActivity().findViewById(android.R.id.content);
+
+        // Assert that the player view is added to the player host view.
+        CriteriaHelper.pollUiThread(() -> ((ViewGroup) playerHostView).getChildCount() > 0,
+                "Player view is not added to the host view.", TIMEOUT_MS,
+                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        // Assert that the player view has the same dimensions as the content view.
+        CriteriaHelper.pollUiThread(() -> {
+                    boolean contentSizeNonZero = activityContentView.getWidth() > 0
+                            && activityContentView.getHeight() > 0;
+                    boolean viewSizeMatchContent =
+                            activityContentView.getWidth() == playerHostView.getWidth()
+                            && activityContentView.getHeight() == playerHostView.getHeight();
+                    return contentSizeNonZero && viewSizeMatchContent;
+                },
+                "Player size doesn't match R.id.content", TIMEOUT_MS,
+                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 }

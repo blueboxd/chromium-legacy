@@ -39,7 +39,6 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
-#include "components/search_provider_logos/switches.h"
 #include "components/security_state/core/features.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -105,20 +104,6 @@ const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
      base::size(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr},
     {"(mark with a grey triangle icon)", kMarkHttpAsDangerWarning,
      base::size(kMarkHttpAsDangerWarning), nullptr}};
-
-const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {"(force test doodle 0)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios0.json"},
-    {"(force test doodle 1)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios1.json"},
-    {"(force test doodle 2)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios2.json"},
-    {"(force test doodle 3)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios3.json"},
-    {"(force test doodle 4)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios4.json"},
-};
 
 const FeatureEntry::Choice kAutofillIOSDelayBetweenFieldsChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -286,9 +271,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          feature_engagement::kIPHDemoMode,
          feature_engagement::kIPHDemoModeChoiceVariations,
          "IPH_DemoMode")},
-    {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
-     flag_descriptions::kUseDdljsonApiDescription, flags_ui::kOsIos,
-     MULTI_VALUE_TYPE(kUseDdljsonApiChoices)},
     {"drag_and_drop", flag_descriptions::kDragAndDropName,
      flag_descriptions::kDragAndDropDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDragAndDrop)},

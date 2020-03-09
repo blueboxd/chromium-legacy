@@ -33,6 +33,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/sessions/core/session_id_generator.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/ukm/ukm_service.h"
@@ -57,6 +58,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
+#include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/update_client/ios_chrome_update_query_params_delegate.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -159,6 +161,9 @@ void ApplicationContextImpl::StartTearDown() {
   network_time_tracker_.reset();
 
   net_export_file_writer_.reset();
+
+  if (safe_browsing_service_)
+    safe_browsing_service_->ShutDown();
 
   // Need to clear browser states before the IO thread.
   chrome_browser_state_manager_.reset();
@@ -380,6 +385,16 @@ ApplicationContextImpl::GetComponentUpdateService() {
         std::make_unique<component_updater::TimerUpdateScheduler>());
   }
   return component_updater_.get();
+}
+
+SafeBrowsingService* ApplicationContextImpl::GetSafeBrowsingService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kSafeBrowsingAvailableOnIOS) &&
+      !safe_browsing_service_) {
+    safe_browsing_service_ = base::MakeRefCounted<SafeBrowsingService>();
+  }
+  return safe_browsing_service_.get();
 }
 
 network::NetworkConnectionTracker*

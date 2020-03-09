@@ -14,18 +14,22 @@ namespace downgrade {
 struct SnapshotItemDetails {
   enum class ItemType { kFile, kDirectory };
 
-  SnapshotItemDetails(base::FilePath path, ItemType type);
+  SnapshotItemDetails(base::FilePath path, ItemType type, int data_types);
   ~SnapshotItemDetails() = default;
   const base::FilePath path;
   const bool is_directory;
+
+  // Bitfield from ChromeBrowsingDataRemoverDelegate::DataType representing
+  // the data types affected by this item.
+  int data_types;
 };
 
 // Returns a list of items to snapshot that should be directly under the user
 // data  directory.
-std::vector<SnapshotItemDetails> CollectUserDataItems(uint16_t version);
+std::vector<SnapshotItemDetails> CollectUserDataItems();
 
 // Returns a list of items to snapshot that should be under a profile directory.
-std::vector<SnapshotItemDetails> CollectProfileItems(uint16_t version);
+std::vector<SnapshotItemDetails> CollectProfileItems();
 
 }  // namespace downgrade
 

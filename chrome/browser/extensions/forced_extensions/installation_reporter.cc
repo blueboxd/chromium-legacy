@@ -110,13 +110,18 @@ void InstallationReporter::ReportFailure(const ExtensionId& id,
   NotifyObserversOfFailure(id, reason, data);
 }
 
+void InstallationReporter::ReportExtensionTypeForPolicyDisallowedExtension(
+    const ExtensionId& id,
+    Manifest::Type extension_type) {
+  InstallationData& data = installation_data_map_[id];
+  data.extension_type = extension_type;
+}
+
 void InstallationReporter::ReportCrxInstallError(
     const ExtensionId& id,
     FailureReason reason,
     CrxInstallErrorDetail crx_install_error) {
   DCHECK(reason == FailureReason::CRX_INSTALL_ERROR_DECLINED ||
-         reason ==
-             FailureReason::CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE ||
          reason == FailureReason::CRX_INSTALL_ERROR_OTHER);
   InstallationData& data = installation_data_map_[id];
   data.failure_reason = reason;

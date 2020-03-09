@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_driver_bug_list.h"
@@ -32,6 +33,10 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/init/gl_factory.h"
+
+#if defined(OS_MACOSX)
+#include <GLES2/gl2.h>
+#endif
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -337,6 +342,19 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       watchdog_thread_->ResumeWatchdog();
   }
 #endif
+
+  // On MacOS, the default texture target for native GpuMemoryBuffers is
+  // GL_TEXTURE_RECTANGLE_ARB. This is due to CGL's requirements for creating
+  // a GL surface. However, when ANGLE is used on top of SwiftShader, it's
+  // necessary to use GL_TEXTURE_2D instead.
+  // TODO(crbug.com/1056312): The proper behavior is to check the config
+  // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
+#if defined(OS_MACOSX)
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
+      gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader) {
+    gpu::SetMacOSSpecificTextureTarget(GL_TEXTURE_2D);
+  }
+#endif  // defined(OS_MACOSX)
 
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 

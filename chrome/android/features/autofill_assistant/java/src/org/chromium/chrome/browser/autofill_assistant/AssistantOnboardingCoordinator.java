@@ -8,7 +8,6 @@ import android.content.Context;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -29,16 +28,18 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
-import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Coordinator responsible for showing the onboarding screen when the user is using the Autofill
  * Assistant for the first time.
  */
 class AssistantOnboardingCoordinator {
-    private static final String SMALL_ONBOARDING_EXPERIMENT_ID = "4257013";
+    private static final String INTENT_IDENTFIER = "INTENT";
+    private static final String RENT_CAR_INTENT = "RENT_CAR";
 
     private final String mExperimentIds;
+    private final Map<String, String> mParameters;
     private final Context mContext;
     private final BottomSheetController mController;
     @Nullable
@@ -53,9 +54,10 @@ class AssistantOnboardingCoordinator {
 
     private boolean mOnboardingShown;
 
-    AssistantOnboardingCoordinator(String experimentIds, Context context,
-            BottomSheetController controller, @Nullable Tab tab) {
+    AssistantOnboardingCoordinator(String experimentIds, Map<String, String> parameters,
+            Context context, BottomSheetController controller, @Nullable Tab tab) {
         mExperimentIds = experimentIds;
+        mParameters = parameters;
         mContext = context;
         mController = controller;
         mTab = tab;
@@ -170,17 +172,9 @@ class AssistantOnboardingCoordinator {
         initView.findViewById(R.id.button_init_not_ok)
                 .setOnClickListener(unusedView -> onClicked(false, callback));
 
-        // Hide views that should not be displayed when showing the small onboarding.
-        if (Arrays.asList(mExperimentIds.split(",")).contains(SMALL_ONBOARDING_EXPERIMENT_ID)) {
-            hide(initView, R.id.onboarding_subtitle);
-            hide(initView, R.id.onboarding_separator);
-        }
+        updateViewBasedOnIntent(initView);
 
         mContent.setContent(initView, initView);
-    }
-
-    private static void hide(View root, int resId) {
-        root.findViewById(resId).setVisibility(View.GONE);
     }
 
     private void onClicked(boolean accept, Callback<Boolean> callback) {
@@ -193,5 +187,18 @@ class AssistantOnboardingCoordinator {
 
         callback.onResult(accept);
         hide();
+    }
+
+    private void updateViewBasedOnIntent(ScrollView initView) {
+        if (!mParameters.containsKey(INTENT_IDENTFIER)) {
+            return;
+        }
+
+        TextView termsTextView = initView.findViewById(R.id.onboarding_subtitle);
+        switch (mParameters.get(INTENT_IDENTFIER)) {
+            case RENT_CAR_INTENT:
+                termsTextView.setText(R.string.autofill_assistant_init_message_rent_car);
+                break;
+        }
     }
 }

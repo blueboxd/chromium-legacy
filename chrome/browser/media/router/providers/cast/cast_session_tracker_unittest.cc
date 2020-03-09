@@ -169,9 +169,6 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageBasic) {
   AddSinkAndSendReceiverStatusResponse();
 
   // Expect that:
-  //
-  // - Any 'status' entries with 'playerState' equal to "IDLE" are filtered out.
-  //
   // - The session ID is copied into the output message and all values in in the
   //   'status' list.
   //
@@ -187,8 +184,10 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageBasic) {
         "sessionId": "theSessionId",
         "supportedMediaCommands": [],
       },
-    ],
-  })"),
+      {
+        "playerState": "IDLE",
+        "sessionId": "theSessionId"
+      }]})"),
                                               base::Optional<int>()));
 
   // This should call session_tracker_.HandleMediaStatusMessage(...).
@@ -211,6 +210,10 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageBasic) {
     "playerState": "anything but IDLE",
     "sessionId": "theSessionId",
     "supportedMediaCommands": [],
+  },
+  {
+   "playerState": "IDLE",
+   "sessionId": "theSessionId"
   }])"));
 }
 
@@ -218,8 +221,6 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageFancy) {
   AddSinkAndSendReceiverStatusResponse();
 
   // Expect that:
-  //
-  // - Any 'status' entries with 'playerState' equal to "IDLE" are filtered out.
   //
   // - The session ID is copied into the output message and all values in in the
   //   'status' list.
@@ -241,7 +242,10 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageFancy) {
         "supportedMediaCommands": ["pause"],
         "xyzzy": "xyzzyValue1",
       },
-    ],
+      {
+        "playerState": "IDLE",
+        "sessionId": "theSessionId"
+      }],
     "xyzzy": "xyzzyValue2",
   })"),
                                               base::make_optional(12345)));
@@ -270,6 +274,10 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageFancy) {
     "sessionId": "theSessionId",
     "supportedMediaCommands": ["pause"],
     "xyzzy": "xyzzyValue1",
+  },
+  {
+    "playerState": "IDLE",
+    "sessionId": "theSessionId"
   }])"));
 }
 

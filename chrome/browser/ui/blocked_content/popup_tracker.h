@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/scoped_visibility_tracker.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace content {
 class WebContents;
@@ -38,7 +39,8 @@ class PopupTracker : public content::WebContentsObserver,
   };
 
   static PopupTracker* CreateForWebContents(content::WebContents* contents,
-                                            content::WebContents* opener);
+                                            content::WebContents* opener,
+                                            WindowOpenDisposition disposition);
   ~PopupTracker() override;
 
   void set_is_trusted(bool is_trusted) { is_trusted_ = is_trusted; }
@@ -46,7 +48,9 @@ class PopupTracker : public content::WebContentsObserver,
  private:
   friend class content::WebContentsUserData<PopupTracker>;
 
-  PopupTracker(content::WebContents* contents, content::WebContents* opener);
+  PopupTracker(content::WebContents* contents,
+               content::WebContents* opener,
+               WindowOpenDisposition disposition);
 
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
@@ -88,6 +92,9 @@ class PopupTracker : public content::WebContentsObserver,
   // the safe browsing checks complete.
   PopupSafeBrowsingStatus safe_browsing_status_ =
       PopupSafeBrowsingStatus::kNoValue;
+
+  // The window open disposition used when creating the popup.
+  const WindowOpenDisposition window_open_disposition_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

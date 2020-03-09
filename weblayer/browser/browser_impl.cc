@@ -59,9 +59,10 @@ BrowserImpl::~BrowserImpl() {
 }
 
 TabImpl* BrowserImpl::CreateTabForSessionRestore(
-    std::unique_ptr<content::WebContents> web_contents) {
+    std::unique_ptr<content::WebContents> web_contents,
+    const std::string& guid) {
   std::unique_ptr<TabImpl> tab =
-      std::make_unique<TabImpl>(profile_, std::move(web_contents));
+      std::make_unique<TabImpl>(profile_, std::move(web_contents), guid);
 #if defined(OS_ANDROID)
   Java_BrowserImpl_createTabForSessionRestore(
       AttachCurrentThread(), java_impl_, reinterpret_cast<jlong>(tab.get()));

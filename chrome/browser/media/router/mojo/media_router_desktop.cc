@@ -61,6 +61,17 @@ base::Value MediaRouterDesktop::GetState() const {
   return media_sink_service_status_.GetStatusAsValue();
 }
 
+void MediaRouterDesktop::GetProviderState(
+    MediaRouteProviderId provider_id,
+    mojom::MediaRouteProvider::GetStateCallback callback) const {
+  if (provider_id == MediaRouteProviderId::CAST &&
+      CastMediaRouteProviderEnabled()) {
+    media_route_providers_.at(provider_id)->GetState(std::move(callback));
+  } else {
+    std::move(callback).Run(mojom::ProviderStatePtr());
+  }
+}
+
 base::Optional<MediaRouteProviderId>
 MediaRouterDesktop::GetProviderIdForPresentation(
     const std::string& presentation_id) {

@@ -19,6 +19,7 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/value_builder.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,8 +31,10 @@
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
-constexpr char kExtensionId1[] = "id1";
-constexpr char kExtensionId2[] = "id2";
+
+// The extension ids used here should be valid extension ids.
+constexpr char kExtensionId1[] = "abcdefghijklmnopabcdefghijklmnop";
+constexpr char kExtensionId2[] = "bcdefghijklmnopabcdefghijklmnopa";
 constexpr char kExtensionName1[] = "name1";
 constexpr char kExtensionName2[] = "name2";
 constexpr char kExtensionUpdateUrl[] =
@@ -396,11 +399,11 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionManifestFetchFailed) {
 }
 
 // Session in which either all the extensions installed successfully, or all
-// failures are admin-side misconfigurations. Misconfiguration failure includes
-// error KIOSK_MODE_ONLY, when force installed extension fails to install with
-// failure reason CRX_INSTALL_ERROR.
+// failures are admin-side misconfigurations. This test verifies that failure
+// CRX_INSTALL_ERROR with detailed error KIOSK_MODE_ONLY is considered as
+// misconfiguration.
 TEST_F(ForcedExtensionsInstallationTrackerTest,
-       NonMisconfigurationFailureNotPresent) {
+       NonMisconfigurationFailureNotPresentKioskModeOnlyError) {
   SetupForceList();
   auto extension =
       ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
@@ -414,6 +417,68 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   EXPECT_FALSE(fake_timer_->IsRunning());
   histogram_tester_.ExpectBucketCount(kPossibleNonMisconfigurationFailures, 0,
                                       1);
+}
+
+// Session in which either all the extensions installed successfully, or all
+// failures are admin-side misconfigurations. This test verifies that failure
+// CRX_INSTALL_ERROR with detailed error DISALLOWED_BY_POLICY and when extension
+// type which is not allowed to install according to policy
+// kExtensionAllowedTypes is considered as misconfiguration.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       NonMisconfigurationFailureNotPresentDisallowedByPolicyTypeError) {
+  SetupForceList();
+  // Set TYPE_EXTENSION and TYPE_THEME as the allowed extension types.
+  std::unique_ptr<base::Value> list =
+      ListBuilder().Append("extension").Append("theme").Build();
+  prefs_->SetManagedPref(pref_names::kAllowedTypes, std::move(list));
+
+  auto extension =
+      ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(&profile_, extension.get());
+  // Hosted app is not a valid extension type, so this should report an error.
+  installation_reporter_->ReportExtensionTypeForPolicyDisallowedExtension(
+      kExtensionId2, Manifest::Type::TYPE_HOSTED_APP);
+  installation_reporter_->ReportCrxInstallError(
+      kExtensionId2,
+      InstallationReporter::FailureReason::CRX_INSTALL_ERROR_DECLINED,
+      CrxInstallErrorDetail::DISALLOWED_BY_POLICY);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(
+      kPossibleNonMisconfigurationFailures,
+      0 /*Misconfiguration failure not present*/, 1 /*Count of the sample*/);
+}
+
+// Session in which at least one non misconfiguration failure occurred. One of
+// the extension fails to install with DISALLOWED_BY_POLICY error but has
+// extension type which is allowed by policy ExtensionAllowedTypes. This is not
+// a misconfiguration failure.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       NonMisconfigurationFailurePresentDisallowedByPolicyError) {
+  SetupForceList();
+
+  // Set TYPE_EXTENSION and TYPE_THEME as the allowed extension types.
+  std::unique_ptr<base::Value> list =
+      ListBuilder().Append("extension").Append("theme").Build();
+  prefs_->SetManagedPref(pref_names::kAllowedTypes, std::move(list));
+
+  auto extension =
+      ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(&profile_, extension.get());
+  installation_reporter_->ReportExtensionTypeForPolicyDisallowedExtension(
+      kExtensionId2, Manifest::Type::TYPE_EXTENSION);
+  installation_reporter_->ReportCrxInstallError(
+      kExtensionId2,
+      InstallationReporter::FailureReason::CRX_INSTALL_ERROR_DECLINED,
+      CrxInstallErrorDetail::DISALLOWED_BY_POLICY);
+
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(kPossibleNonMisconfigurationFailures,
+                                      1 /*Misconfiguration failure present*/,
+                                      1 /*Count of the sample*/);
 }
 
 // Session in which at least one non misconfiguration failure occurred.

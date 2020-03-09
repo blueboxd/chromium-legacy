@@ -26,7 +26,6 @@ namespace {
 
 // Hardcode constant to avoid any dependencies on content/.
 const char kViewSourceScheme[] = "view-source";
-const char kDevToolsScheme[] = "devtools";
 
 void AdjustCursorPositionIfNecessary(size_t num_leading_chars_removed,
                                      size_t* cursor_position) {
@@ -203,14 +202,6 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
     // A user might or might not type a scheme when entering a file URL.  In
     // either case, |parsed_scheme_utf8| will tell us that this is a file URL,
     // but |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
-    return metrics::OmniboxInputType::URL;
-  }
-
-  if (base::LowerCaseEqualsASCII(parsed_scheme_utf8, kDevToolsScheme)) {
-    // A user might type in the fallback url when using devtools.  In
-    // this case, |parsed_scheme_utf8| will tell us that this is a devtools URL,
-    // but |parts->scheme| might be empty.e.g. if the user typed
-    // "chrome-devtools://".
     return metrics::OmniboxInputType::URL;
   }
 

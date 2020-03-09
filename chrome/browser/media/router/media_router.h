@@ -18,6 +18,7 @@
 #include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/common/media_router/media_route.h"
+#include "chrome/common/media_router/media_route_provider_helper.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
@@ -216,9 +217,17 @@ class MediaRouter : public KeyedService {
       CastRemotingConnector* remoting_source) = 0;
   virtual void UnregisterRemotingSource(SessionID tab_id) = 0;
 
-  // Returns media router state as a JSON string represented by base::Vaule.
-  // Used by media-router-internals page.
+  // Returns media router state as a JSON string represented by base::Value.
+  // Includes known sinks and sink compatibility with media sources.
+  // Used by chrome://media-router-internals.
   virtual base::Value GetState() const = 0;
+
+  // Returns the media route provider state for |provider_id| via |callback|.
+  // Includes details about routes/sessions owned by the MRP.
+  // Used by chrome://media-router-internals.
+  virtual void GetProviderState(
+      MediaRouteProviderId provider_id,
+      mojom::MediaRouteProvider::GetStateCallback callback) const = 0;
 
  private:
   friend class IssuesObserver;

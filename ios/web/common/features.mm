@@ -44,8 +44,5 @@ const base::Feature kUseDefaultUserAgentInWebClient{
 const base::Feature kPreserveScrollViewProperties{
     "PreserveScrollViewProperties", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSafeBrowsingAvailable{"SafeBrowsingAvailable",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace features
 }  // namespace web

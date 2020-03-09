@@ -157,6 +157,7 @@ void SafetyCheckHandler::OnStateChanged(
   using password_manager::BulkLeakCheckService;
   switch (state) {
     case BulkLeakCheckService::State::kIdle:
+    case BulkLeakCheckService::State::kCanceled:
       // TODO(crbug.com/1015841): Implement retrieving the number
       // of leaked passwords (if any) once PasswordsPrivateDelegate provides an
       // API for that (see crrev.com/c/2072742).

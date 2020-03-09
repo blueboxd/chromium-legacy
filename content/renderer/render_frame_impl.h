@@ -267,9 +267,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // partial testing fake.
   static void InstallCreateHook(CreateRenderFrameImplFunction create_frame);
 
-  // Looks up and returns the WebFrame corresponding to a given opener frame
-  // routing ID.
-  static blink::WebFrame* ResolveOpener(int opener_frame_routing_id);
+  // Looks up and returns the WebFrame corresponding to a given frame routing
+  // ID.
+  static blink::WebFrame* ResolveWebFrame(int opener_frame_routing_id);
 
   // Possibly set the kOpenerCrossOrigin and kSandboxNoGesture policy in
   // |download_policy|.

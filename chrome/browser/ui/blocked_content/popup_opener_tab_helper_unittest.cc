@@ -35,6 +35,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -96,7 +97,8 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
     content::WebContents* raw_popup = popup.get();
     popups_.push_back(std::move(popup));
 
-    PopupTracker::CreateForWebContents(raw_popup, web_contents() /* opener */);
+    PopupTracker::CreateForWebContents(raw_popup, web_contents() /* opener */,
+                                       WindowOpenDisposition::NEW_POPUP);
     web_contents()->WasHidden();
     raw_popup->WasShown();
     return raw_popup;

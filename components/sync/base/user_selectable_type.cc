@@ -7,6 +7,7 @@
 #include <type_traits>
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 
@@ -95,23 +96,29 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
 }
 
 #if defined(OS_CHROMEOS)
+constexpr char kOsAppsTypeName[] = "osApps";
+constexpr char kOsPreferencesTypeName[] = "osPreferences";
+constexpr char kWifiConfigurationsTypeName[] = "wifiConfigurations";
+
 UserSelectableTypeInfo GetUserSelectableOsTypeInfo(UserSelectableOsType type) {
   // UserSelectableTypeInfo::type_name is used in js code and shouldn't be
   // changed without updating js part.
   switch (type) {
     case UserSelectableOsType::kOsApps:
-      return {"osApps",
+      return {kOsAppsTypeName,
               APPS,
               {APP_LIST, APPS, APP_SETTINGS, ARC_PACKAGE, WEB_APPS}};
     case UserSelectableOsType::kOsPreferences:
-      return {"osPreferences",
+      return {kOsPreferencesTypeName,
               OS_PREFERENCES,
               {OS_PREFERENCES, OS_PRIORITY_PREFERENCES, PRINTERS}};
     case UserSelectableOsType::kWifiConfigurations:
-      return {"wifiConfigurations", WIFI_CONFIGURATIONS, {WIFI_CONFIGURATIONS}};
+      return {kWifiConfigurationsTypeName,
+              WIFI_CONFIGURATIONS,
+              {WIFI_CONFIGURATIONS}};
   }
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -119,7 +126,8 @@ const char* GetUserSelectableTypeName(UserSelectableType type) {
   return GetUserSelectableTypeInfo(type).type_name;
 }
 
-UserSelectableType GetUserSelectableTypeFromString(const std::string& type) {
+base::Optional<UserSelectableType> GetUserSelectableTypeFromString(
+    const std::string& type) {
   if (type == kBookmarksTypeName) {
     return UserSelectableType::kBookmarks;
   }
@@ -150,8 +158,7 @@ UserSelectableType GetUserSelectableTypeFromString(const std::string& type) {
   if (type == kTabsTypeName) {
     return UserSelectableType::kTabs;
   }
-  NOTREACHED();
-  return UserSelectableType::kLastType;
+  return base::nullopt;
 }
 
 std::string UserSelectableTypeSetToString(UserSelectableTypeSet types) {
@@ -183,6 +190,32 @@ int UserSelectableTypeToHistogramInt(UserSelectableType type) {
 #if defined(OS_CHROMEOS)
 const char* GetUserSelectableOsTypeName(UserSelectableOsType type) {
   return GetUserSelectableOsTypeInfo(type).type_name;
+}
+
+base::Optional<UserSelectableOsType> GetUserSelectableOsTypeFromString(
+    const std::string& type) {
+  if (type == kOsAppsTypeName) {
+    return UserSelectableOsType::kOsApps;
+  }
+  if (type == kOsPreferencesTypeName) {
+    return UserSelectableOsType::kOsPreferences;
+  }
+  if (type == kWifiConfigurationsTypeName) {
+    return UserSelectableOsType::kWifiConfigurations;
+  }
+
+  // Some pref types migrated from browser prefs to OS prefs. Map the browser
+  // type name to the OS type so that enterprise policy SyncTypesListDisabled
+  // still applies to the migrated names during SplitSettingsSync roll-out.
+  // TODO(https://crbug.com/1059309): Rename "osApps" to "apps" after
+  // SplitSettingsSync is the default, and remove the mapping for "preferences".
+  if (type == kAppsTypeName) {
+    return UserSelectableOsType::kOsApps;
+  }
+  if (type == kPreferencesTypeName) {
+    return UserSelectableOsType::kOsPreferences;
+  }
+  return base::nullopt;
 }
 
 ModelTypeSet UserSelectableOsTypeToAllModelTypes(UserSelectableOsType type) {

@@ -44,9 +44,6 @@ grit("webui_resources_grd") {
     deps += [ "//ui/webui/resources/css:cros_colors_css" ]
   }
 
-  # The .grd contains references to generated files.
-  source_is_generated = true
-
   outputs = [
     "grit/webui_resources.h",
     "grit/webui_resources_map.cc",

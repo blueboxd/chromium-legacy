@@ -51,6 +51,7 @@ extern const base::Feature kContextMenuCopyImage;
 extern const base::Feature kContextMenuPerformanceInfo;
 extern const base::Feature kContextMenuSearchWithGoogleLens;
 extern const base::Feature kContentSuggestionsScrollToLoad;
+extern const base::Feature kContextualSearchDebug;
 extern const base::Feature kContextualSearchDefinitions;
 extern const base::Feature kContextualSearchLongpressResolve;
 extern const base::Feature kContextualSearchMlTapSuppression;

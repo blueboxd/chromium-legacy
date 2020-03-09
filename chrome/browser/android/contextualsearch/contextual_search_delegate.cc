@@ -285,6 +285,12 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
     contextual_cards_version =
         contextual_search::kContextualCardsTranslationsIntegration;
   }
+  // TODO(donnd): figure out if this is really needed or if the communication
+  // can be done automatically through a FieldTrial config setting.
+  if (base::FeatureList::IsEnabled(chrome::android::kContextualSearchDebug)) {
+    contextual_cards_version =
+        contextual_search::kContextualCardsDebugIntegration;
+  }
   // Let the field-trial override.
   if (field_trial_->GetContextualCardsVersion() != 0) {
     contextual_cards_version = field_trial_->GetContextualCardsVersion();

@@ -44,4 +44,8 @@ bool IsProactivelySwapBrowsingInstanceEnabled() {
       features::kProactivelySwapBrowsingInstance);
 }
 
+bool IsRenderDocumentEnabled() {
+  return base::FeatureList::IsEnabled(features::kRenderDocument);
+}
+
 }  // namespace content

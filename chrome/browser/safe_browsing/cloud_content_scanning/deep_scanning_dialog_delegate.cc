@@ -726,14 +726,17 @@ void DeepScanningDialogDelegate::FillAllResultsWith(bool status) {
   std::fill(result_.paths_results.begin(), result_.paths_results.end(), status);
 }
 
+BinaryUploadService* DeepScanningDialogDelegate::GetBinaryUploadService() {
+  return g_browser_process->safe_browsing_service()->GetBinaryUploadService(
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+}
+
 void DeepScanningDialogDelegate::UploadTextForDeepScanning(
     std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK_EQ(
       DlpDeepScanningClientRequest::WEB_CONTENT_UPLOAD,
       request->deep_scanning_request().dlp_scan_request().content_source());
-  BinaryUploadService* upload_service =
-      g_browser_process->safe_browsing_service()->GetBinaryUploadService(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+  BinaryUploadService* upload_service = GetBinaryUploadService();
   if (upload_service)
     upload_service->MaybeUploadForDeepScanning(std::move(request));
 }
@@ -745,9 +748,7 @@ void DeepScanningDialogDelegate::UploadFileForDeepScanning(
       !data_.do_dlp_scan ||
       (DlpDeepScanningClientRequest::FILE_UPLOAD ==
        request->deep_scanning_request().dlp_scan_request().content_source()));
-  BinaryUploadService* upload_service =
-      g_browser_process->safe_browsing_service()->GetBinaryUploadService(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+  BinaryUploadService* upload_service = GetBinaryUploadService();
   if (upload_service)
     upload_service->MaybeUploadForDeepScanning(std::move(request));
 }

@@ -30,6 +30,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_handle.h"
@@ -51,12 +52,12 @@ namespace content {
 
 namespace {
 
-void UnloadPrint(FrameTreeNode* node, const char* message) {
+void UnloadPrint(const ToRenderFrameHost& target, const char* message) {
   EXPECT_TRUE(
-      ExecJs(node, JsReplace("window.onunload = function() { "
-                             "  window.domAutomationController.send($1);"
-                             "}",
-                             message)));
+      ExecJs(target, JsReplace("window.onunload = function() { "
+                               "  window.domAutomationController.send($1);"
+                               "}",
+                               message)));
 }
 
 }  // namespace
@@ -1297,6 +1298,53 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderFrameDeletedObserver delete_B1(B1);
   shell()->LoadURL(A3_url);
   delete_B1.WaitUntilDeleted();
+}
+
+// After a same-origin iframe navigation, check that gradchild iframe are
+// properly deleted and their unload handler executed.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NestedSubframeWithUnloadHandler) {
+  GURL main_url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(b,c))");
+  GURL iframe_new_url = embedded_test_server()->GetURL("b.com", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // In the document tree: A1(B2(B3,C4)) navigate B2 to B5.
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* B3 = B2->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* C4 = B2->child_at(1)->current_frame_host();
+
+  RenderFrameDeletedObserver delete_B2(B2);
+  RenderFrameDeletedObserver delete_B3(B3);
+  RenderFrameDeletedObserver delete_C4(C4);
+
+  UnloadPrint(B2, "B2");
+  UnloadPrint(B3, "B3");
+  UnloadPrint(C4, "C4");
+
+  // Navigate the iframe same-process.
+  ExecuteScriptAsync(B2, JsReplace("location.href = $1", iframe_new_url));
+
+  DOMMessageQueue dom_message_queue(
+      WebContents::FromRenderFrameHost(web_contents()->GetMainFrame()));
+
+  // All the documents must be properly deleted:
+  if (IsRenderDocumentEnabled())
+    delete_B2.WaitUntilDeleted();
+  delete_B3.WaitUntilDeleted();
+  delete_C4.WaitUntilDeleted();
+
+  // The unload handlers must have run:
+  std::string message;
+  std::vector<std::string> messages;
+  for (int i = 0; i < 3; ++i) {
+    EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+    base::TrimString(message, "\"", &message);
+    messages.push_back(message);
+  }
+  EXPECT_FALSE(dom_message_queue.PopMessage(&message));
+  EXPECT_THAT(messages, WhenSorted(ElementsAre("B2", "B3", "C4")));
 }
 
 // Some tests need an https server because third-party cookies are used, and

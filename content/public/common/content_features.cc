@@ -484,18 +484,17 @@ const base::Feature kReloadHiddenTabsWithCrashedSubframes {
 // frame in a given process. A new one is created after a different-process
 // navigation. The goal of RenderDocument is to get a new one for each document
 // instead.
+//
+// Design doc: https://bit.ly/renderdocument
+// Main bug tracker: https://crbug.com/936696
 
 // Enable using the RenderDocument when recovering from crashes.
 const base::Feature kRenderDocumentForCrashedFrame{
     "RenderDocumentForCrashedFrame", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable using the RenderDocument on main frame navigations.
-const base::Feature kRenderDocumentForMainFrame{
-    "RenderDocumentForMainFrame", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable using the RenderDocument on subframe navigations.
-const base::Feature kRenderDocumentForSubframe{
-    "RenderDocumentForSubframe", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enable using the RenderDocument.
+const base::Feature kRenderDocument{"RenderDocument",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kRequestUnbufferedDispatch{
     "RequestUnbufferedDispatch", base::FEATURE_ENABLED_BY_DEFAULT};

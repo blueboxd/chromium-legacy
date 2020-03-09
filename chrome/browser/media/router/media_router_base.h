@@ -52,6 +52,9 @@ class MediaRouterBase : public MediaRouter {
                               CastRemotingConnector* remoting_source) override;
   void UnregisterRemotingSource(SessionID tab_id) override;
   base::Value GetState() const override;
+  void GetProviderState(
+      MediaRouteProviderId provider_id,
+      mojom::MediaRouteProvider::GetStateCallback callback) const override;
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,

@@ -652,8 +652,7 @@ void TestRenderFrameHost::SimulateLoadingCompleted(
 
     DocumentOnLoadCompleted();
 
-    OnMessageReceived(
-        FrameHostMsg_DidFinishLoad(GetRoutingID(), GetLastCommittedURL()));
+    DidFinishLoad(GetLastCommittedURL());
   }
 
   OnDidStopLoading();

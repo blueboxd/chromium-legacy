@@ -206,4 +206,38 @@ TEST_F(CastMediaRouteProviderTest, TerminateRoute) {
                      base::Unretained(this)));
 }
 
+TEST_F(CastMediaRouteProviderTest, GetState) {
+  MediaSinkInternal sink = CreateCastSink(1);
+  media_sink_service_.AddOrUpdateSink(sink);
+  session_tracker_->HandleReceiverStatusMessage(sink, base::test::ParseJson(R"({
+    "status": {
+      "applications": [{
+        "appId": "ABCDEFGH",
+        "displayName": "App display name",
+        "namespaces": [
+          {"name": "urn:x-cast:com.google.cast.media"},
+          {"name": "urn:x-cast:com.google.foo"}
+        ],
+        "sessionId": "theSessionId",
+        "statusText":"App status",
+        "transportId":"theTransportId"
+      }]
+    }
+  })"));
+
+  provider_->GetState(base::BindOnce([](mojom::ProviderStatePtr state) {
+    ASSERT_TRUE(state);
+    ASSERT_TRUE(state->is_cast_provider_state());
+    const mojom::CastProviderState& cast_state =
+        *(state->get_cast_provider_state());
+    ASSERT_EQ(cast_state.session_state.size(), 1UL);
+    const mojom::CastSessionState& session_state =
+        *(cast_state.session_state[0]);
+    EXPECT_EQ(session_state.sink_id, "cast:<id1>");
+    EXPECT_EQ(session_state.app_id, "ABCDEFGH");
+    EXPECT_EQ(session_state.session_id, "theSessionId");
+    EXPECT_EQ(session_state.route_description, "App status");
+  }));
+}
+
 }  // namespace media_router

@@ -153,6 +153,17 @@ base::string16 GetPolicyStatusFromStore(
   return status;
 }
 
+base::string16 GetTimeSinceLastRefreshString(base::Time last_refresh_time) {
+  if (last_refresh_time.is_null())
+    return l10n_util::GetStringUTF16(IDS_POLICY_NEVER_FETCHED);
+  base::Time now = base::Time::NowFromSystemTime();
+  base::TimeDelta elapsed_time;
+  if (now > last_refresh_time)
+    elapsed_time = now - last_refresh_time;
+  return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
+                                ui::TimeFormat::LENGTH_SHORT, elapsed_time);
+}
+
 void GetStatusFromCore(const policy::CloudPolicyCore* core,
                        base::DictionaryValue* dict) {
   const policy::CloudPolicyStore* store = core->store();
@@ -195,13 +206,8 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
       "refreshInterval",
       ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
                              ui::TimeFormat::LENGTH_SHORT, refresh_interval));
-  dict->SetString(
-      "timeSinceLastRefresh",
-      last_refresh_time.is_null()
-          ? l10n_util::GetStringUTF16(IDS_POLICY_NEVER_FETCHED)
-          : ui::TimeFormat::Simple(
-                ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
-                base::Time::NowFromSystemTime() - last_refresh_time));
+  dict->SetString("timeSinceLastRefresh",
+                  GetTimeSinceLastRefreshString(last_refresh_time));
 }
 
 #if defined(OS_CHROMEOS)
@@ -522,6 +528,8 @@ void MachineLevelUserCloudPolicyStatusProvider::GetStatus(
     base::DictionaryValue* dict) {
   policy::CloudPolicyStore* store = core_->store();
   policy::CloudPolicyClient* client = core_->client();
+  policy::CloudPolicyRefreshScheduler* refresh_scheduler =
+      core_->refresh_scheduler();
 
   policy::BrowserDMTokenStorage* dmTokenStorage =
       policy::BrowserDMTokenStorage::Get();
@@ -531,7 +539,9 @@ void MachineLevelUserCloudPolicyStatusProvider::GetStatus(
       ui::TimeFormat::Simple(
           ui::TimeFormat::FORMAT_DURATION, ui::TimeFormat::LENGTH_SHORT,
           base::TimeDelta::FromMilliseconds(
-              policy::CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs)));
+              refresh_scheduler ? refresh_scheduler->GetActualRefreshDelay()
+                                : policy::CloudPolicyRefreshScheduler::
+                                      kDefaultRefreshDelayMs)));
 
   if (dmTokenStorage) {
     dict->SetString("enrollmentToken",
@@ -545,12 +555,10 @@ void MachineLevelUserCloudPolicyStatusProvider::GetStatus(
     dict->SetString("status", status);
     const em::PolicyData* policy = store->policy();
     if (policy) {
-      dict->SetString(
-          "timeSinceLastRefresh",
-          ui::TimeFormat::Simple(
-              ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
-              base::Time::NowFromSystemTime() -
-                  base::Time::FromJavaTime(policy->timestamp())));
+      dict->SetString("timeSinceLastRefresh",
+                      GetTimeSinceLastRefreshString(
+                          refresh_scheduler ? refresh_scheduler->last_refresh()
+                                            : base::Time()));
       std::string username = policy->username();
       dict->SetString("domain", gaia::ExtractDomainName(username));
     }
@@ -668,13 +676,8 @@ void UserActiveDirectoryPolicyStatusProvider::GetStatus(
       ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
                              ui::TimeFormat::LENGTH_SHORT, refresh_interval));
 
-  dict->SetString(
-      "timeSinceLastRefresh",
-      last_refresh_time.is_null()
-          ? l10n_util::GetStringUTF16(IDS_POLICY_NEVER_FETCHED)
-          : ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
-                                   ui::TimeFormat::LENGTH_SHORT,
-                                   base::Time::Now() - last_refresh_time));
+  dict->SetString("timeSinceLastRefresh",
+                  GetTimeSinceLastRefreshString(last_refresh_time));
   GetUserAffiliationStatus(dict, profile_);
 }
 

@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '424d28b0701d50fd2a0ef0eac82f246dc4dd78f6',
+  'skia_revision': '23899c64e3db9378bcc3a960962777f1a5c49ab4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '1c5d630435cdd4ff73b44f7dd93efa8639e1d06c',
+  'v8_revision': '5bcc6fa4c98b7b11e3f05234655b75e53401d901',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,11 +187,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'f77f10f33266a3ea55b41f946f8d971c720e0374',
+  'angle_revision': '1cd52d2cfe4c4dfb4ff80ef63e6ee53f4c7b2b14',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'b44162fdbb25996e4710026007bc98b7201f2a1d',
+  'swiftshader_revision': '8be72df6046231eedbd14d155a5a9484bda217c1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '5e9dd1d5e265e3aee96d1d088f72902e448e306d',
+  'devtools_frontend_revision': '6190ec8363a0f8935888b08c7447877e15e56b3c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -899,7 +899,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ffd02955e6680f9f5a32872682bd03227487014e',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'a12175c2a7a9f79c3296068a022ac4f3051f8600',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1454,7 +1454,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '13188a24a490d51034839498451694cf0585810e',
+    Var('webrtc_git') + '/src.git' + '@' + 'f87536c9de24ce25c398c1f7a413dc8b80208362',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1529,7 +1529,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d807280d52bf6403be15b037df2b095c569449c5',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ebcfc4bfc670af33372ea17f1472ee79ef60d9e6',
     'condition': 'checkout_src_internal',
   },
 
@@ -4118,6 +4118,20 @@ hooks = [
     'condition': 'checkout_android',
     'action': [ 'python',
                 'src/third_party/arcore-android-sdk/test-apks/update.py',
+    ],
+  },
+  # Pull down Paint Preview test data.
+  {
+    'name': 'paint_preview_testdata',
+    'pattern': '\\.sha1',
+    'condition': 'checkout_android',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
+                '--no_auth',
+                '--num_threads=4',
+                '--bucket', 'chromium-android-tools/paint-preview-test-data',
+                '--recursive',
+                '-d', 'src/components/test/data/paint_preview',
     ],
   },
   # Download Oculus SDK if appropriate.

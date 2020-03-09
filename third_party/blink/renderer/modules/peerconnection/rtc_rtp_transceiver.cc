@@ -28,6 +28,9 @@ String TransceiverDirectionToString(
       return "recvonly";
     case webrtc::RtpTransceiverDirection::kInactive:
       return "inactive";
+    default:
+      NOTREACHED();
+      return String();
   }
 }
 

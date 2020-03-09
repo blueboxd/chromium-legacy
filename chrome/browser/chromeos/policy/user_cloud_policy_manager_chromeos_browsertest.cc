@@ -210,7 +210,10 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
 
 using UserCloudPolicyManagerChildTest = UserCloudPolicyManagerTest;
 
-IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
+// TODO(crbug/1052604): Fix the flaky test failures related to invalid
+// FakeGaiaMixin OAuth tokens.
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest,
+                       DISABLED_PolicyForChildUser) {
   policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(
       "example.com");
   EXPECT_TRUE(policy::BrowserPolicyConnector::IsNonEnterpriseUser(

@@ -29,7 +29,7 @@ class GURL;
 @property(nonatomic, readonly) DeviceSharingManager* deviceSharingManager;
 
 // Tab switcher state.
-@property(nonatomic, getter=isTabSwitcherActive) BOOL tabSwitcherActive;
+- (BOOL)tabSwitcherActive;
 
 @property(nonatomic, strong) id<TabSwitcher> tabSwitcher;
 

@@ -1012,6 +1012,13 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
       cmd_line->GetCommandLineString().c_str(), policy, &last_warning,
       &last_error, &temp_process_info);
 
+  // TODO(1059129) Remove logging and underlying plumbing on expiry.
+  // This must be logged after spawning the process as the policy
+  // memory is not committed until the target process is attached to
+  // the sandbox policy. Max is kPolMemSize from sandbox_policy_base.cc.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Process.Sandbox.PolicyGlobalSize",
+                              policy->GetPolicyGlobalSize(), 16, 14 * 4096, 50);
+
   base::win::ScopedProcessInformation target(temp_process_info);
 
   TRACE_EVENT_END0("startup", "StartProcessWithAccess::LAUNCHPROCESS");

@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/css/resolver/cascade_map.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_origin.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
-#include "third_party/blink/renderer/core/css/style_cascade_slots.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -121,35 +120,6 @@ class CORE_EXPORT StyleCascade {
     // https://drafts.csswg.org/css-variables/#animation-tainted
     bool AllowSubstitution(CSSVariableData*) const;
 
-    // SetSlot/StyleCascadeSlots is responsible for resolving situations where
-    // we have multiple (non-alias) properties in the cascade that mutates the
-    // same fields on ComputedStyle.
-    //
-    // An example of this is writing-mode and -webkit-writing-mode, which
-    // both result in ComputedStyle::SetWritingMode calls.
-    //
-    // When applying the cascade (applying each property/value pair to the
-    // ComputedStyle), the order of the application is in the general case
-    // not defined. (It is determined by the iteration order of the HashMap).
-    // This means that if both writing-mode and -webkit-writing-mode exist in
-    // the cascade, we would get non-deterministic behavior: the application
-    // order would not be defined. SetSlot/StyleCascadeSlots fixes this.
-    //
-    // StyleCascadeSlots stores the Priority of the value that was previously
-    // applied for a certain 'group' of properties (e.g. writing-mode and
-    // -webkit-writing-mode is one such group). When we're about to apply a
-    // value, we only actually do so if the call to SetSlot succeeds. If the
-    // call to SetSlot does not succeed, it means that we have previously added
-    // a value with higher priority, and that the current value must be ignored.
-    //
-    // A key difference between discarding Values as a result of SetSlot, vs.
-    // discarding them cascade-time (StyleCascade::Add), is that we are taking
-    // the cascade order into account. This means that, if everything else is
-    // equal (origin, tree order), the value that entered the cascade last wins.
-    // This is crucial to resolve situations like writing-mode and
-    // -webkit-writing-mode.
-    bool SetSlot(const CSSProperty&, CascadePriority, StyleResolverState&);
-
    private:
     friend class AutoLock;
     friend class StyleCascade;
@@ -182,7 +152,6 @@ class CORE_EXPORT StyleCascade {
     NameStack stack_;
     wtf_size_t cycle_depth_ = kNotFound;
     CascadeFilter filter_;
-    StyleCascadeSlots slots_;
     const MatchResult* match_result_;
     const CascadeInterpolations* interpolations_;
     const uint8_t generation_ = 0;
@@ -245,6 +214,14 @@ class CORE_EXPORT StyleCascade {
   // Applies -webkit-appearance, and excludes -internal-ua-* properties if
   // we don't have an appearance.
   void ApplyAppearance(Resolver&);
+
+  // Applies -webkit-border-image (if present), and skips any border-image
+  // longhands found with lower priority than -webkit-border-image.
+  //
+  // The -webkit-border-image property is unique (in a bad way), since it's
+  // a surrogate of a shorthand. Therefore it needs special treatment to
+  // behave correctly.
+  void ApplyWebkitBorderImage(Resolver&);
 
   void ApplyMatchResult(const MatchResult&, Resolver&);
   void ApplyInterpolations(const CascadeInterpolations&, Resolver&);
@@ -318,6 +295,51 @@ class CORE_EXPORT StyleCascade {
     String base_url_;
     WTF::TextEncoding charset_;
   };
+
+  enum class Surrogate { kSkip, kApply, kNoSurrogate };
+
+  // A property can be skipped apply-time if it's a surrogate property.
+  //
+  // A surrogate property is an alias-like property that shares a storage
+  // location on ComputedStyle with the property it's a surrogate for. Unlike
+  // aliases, they are not resolved parse-time, but exist alongside the original
+  // property in the parsed rule.
+  //
+  // For example, consider a rule:
+  //
+  // div {
+  //   inline-size: 20px;
+  //   width: 10px;
+  // }
+  //
+  // The inline-size property is a surrogate of width in this case. When we
+  // encounter inline-size during Apply, we check the CascadePriority of the
+  // the original property (width). Since width has a higher priority (it
+  // appears later), we skip applying inline-size.
+  //
+  // Had the order been reversed:
+  //
+  //  div {
+  //    width: 10px;
+  //    inline-size: 20px;
+  //  }
+  //
+  // we would first apply width (it's unaware that it has surrogates pointing to
+  // it), and then later also apply inline-size (we check the CascadePriority
+  // of width and find that it's lower than inline-size's).
+  //
+  // Surrogate properties should be skipped (i.e. not applied after all) if
+  // the corresponding original property has a higher priority.
+  //
+  Surrogate ResolveSurrogate(const CSSProperty&, CascadePriority, Resolver&);
+
+  inline Surrogate ResolveIfSurrogate(const CSSProperty& property,
+                                      CascadePriority priority,
+                                      Resolver& resolver) {
+    if (!property.IsSurrogate())
+      return Surrogate::kNoSurrogate;
+    return ResolveSurrogate(property, priority, resolver);
+  }
 
   // Resolving Values
   //

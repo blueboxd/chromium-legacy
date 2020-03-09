@@ -283,6 +283,11 @@ void BluetoothAdapter::NotifyDeviceChanged(BluetoothDevice* device) {
     observer.DeviceChanged(this, device);
 }
 
+void BluetoothAdapter::NotifyAdapterDiscoveryChangeCompletedForTesting() {
+  for (auto& observer : observers_)
+    observer.DiscoveryChangeCompletedForTesting();
+}
+
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 void BluetoothAdapter::NotifyDevicePairedChanged(BluetoothDevice* device,
                                                  bool new_paired_status) {
@@ -468,7 +473,9 @@ void BluetoothAdapter::OnDiscoveryChangeComplete(
       return;
 
     discovery_request_pending_ = false;
+    NotifyAdapterDiscoveryChangeCompletedForTesting();
     ProcessDiscoveryQueue();
+
     return;
   }
 
@@ -494,6 +501,7 @@ void BluetoothAdapter::OnDiscoveryChangeComplete(
     return;
 
   discovery_request_pending_ = false;
+  NotifyAdapterDiscoveryChangeCompletedForTesting();
   ProcessDiscoveryQueue();
 }
 

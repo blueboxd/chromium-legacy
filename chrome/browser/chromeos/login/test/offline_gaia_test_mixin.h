@@ -34,22 +34,24 @@ class OfflineGaiaTestMixin : public InProcessBrowserTestMixin {
   void GoOffline();
   void GoOnline();
 
-  // Loads offline GAIA page and signs-in.
-  // Expects user to be already registered (probably via LoginManagerMixin).
-  // Expects networking to be disabled (probably by caling GoOffline())
-  void SignIn(const AccountId& test_account_id, const std::string& password);
+  // Checks if UI displays management notification.
+  void CheckManagedStatus(bool expected_is_managed);
 
- private:
   // Initializes UserManager for offline Login.
+  // Expects networking to be disabled (probably by calling GoOffline())
   void InitOfflineLogin(const AccountId& test_account_id,
                         const std::string& password);
 
+  // Fills in and submits offline GAIA login.
+  // Expects user to be already registered (probably via LoginManagerMixin).
+  // Optionally waits for sign-in to complete.
+  void SubmitGaiaAuthOfflineForm(const std::string& user_email,
+                                 const std::string& password,
+                                 bool wait_for_signin);
+
+ private:
   // Triggers Offlige Gaia screen.
   void StartGaiaAuthOffline();
-
-  // Fills in and submits offline GAIA login.
-  void SubmitGaiaAuthOfflineForm(const std::string& user_email,
-                                 const std::string& password);
 
   // This is ised to disable networking.
   std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;

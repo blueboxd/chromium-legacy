@@ -61,6 +61,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
+#include "ui/views/linux_ui/nav_button_provider.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
 
 #if defined(USE_GIO)
@@ -81,10 +82,6 @@
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "printing/printing_context_linux.h"
-#endif
-
-#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
-#include "chrome/browser/ui/views/nav_button_provider.h"
 #endif
 
 namespace gtk {
@@ -749,13 +746,11 @@ bool GtkUi::AnimationsEnabled() const {
   return animations_enabled;
 }
 
-#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
 std::unique_ptr<views::NavButtonProvider> GtkUi::CreateNavButtonProvider() {
   if (GtkVersionCheck(3, 14))
     return std::make_unique<gtk::NavButtonProviderGtk>();
   return nullptr;
 }
-#endif
 
 // Mapping from GDK dead keys to corresponding printable character.
 static struct {

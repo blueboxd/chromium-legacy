@@ -10,6 +10,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/optional.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/downgrade/snapshot_file_collector.h"
+#include "chrome/common/chrome_constants.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace downgrade {
@@ -91,6 +95,93 @@ TEST(UserDataDowngradeTests, GetSnapshotToRestore) {
   EXPECT_EQ(
       *GetSnapshotToRestore(base::Version("31.0.0"), user_data_dir.GetPath()),
       base::Version("30.0.0"));
+}
+
+TEST(UserDataDowngradeTests, RemoveDataForProfile) {
+  base::ScopedTempDir user_data_dir;
+  ASSERT_TRUE(user_data_dir.CreateUniqueTempDir());
+  const base::FilePath snapshot_dir =
+      user_data_dir.GetPath().Append(kSnapshotsDir);
+  const auto profile_path_default =
+      user_data_dir.GetPath().AppendASCII("Default");
+  const auto profile_path_1 = user_data_dir.GetPath().AppendASCII("Profile 1");
+  const auto snapshot_profile_path_default =
+      snapshot_dir.AppendASCII("1").AppendASCII("Default");
+  const auto snapshot_profile_path_1 =
+      snapshot_dir.AppendASCII("1").AppendASCII("Profile 1");
+  ASSERT_TRUE(base::CreateDirectory(profile_path_default));
+  ASSERT_TRUE(base::CreateDirectory(profile_path_1));
+  ASSERT_TRUE(base::CreateDirectory(snapshot_profile_path_default));
+  ASSERT_TRUE(base::CreateDirectory(snapshot_profile_path_1));
+  base::File(profile_path_default.Append(kDowngradeLastVersionFile),
+             base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  base::File(profile_path_1.Append(kDowngradeLastVersionFile),
+             base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  base::File(snapshot_dir.AppendASCII("1").Append(kDowngradeLastVersionFile),
+             base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+
+  const auto profile_items = CollectProfileItems();
+  DCHECK(!profile_items.empty());
+  for (const auto& item : profile_items) {
+    if (item.is_directory) {
+      ASSERT_TRUE(base::CreateDirectory(
+          snapshot_profile_path_default.Append(item.path)));
+      ASSERT_TRUE(
+          base::CreateDirectory(snapshot_profile_path_1.Append(item.path)));
+    } else {
+      base::File(snapshot_profile_path_default.Append(item.path),
+                 base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+      base::File(snapshot_profile_path_1.Append(item.path),
+                 base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    }
+  }
+
+  base::File::Info snapshot_info;
+  ASSERT_TRUE(base::GetFileInfo(snapshot_dir, &snapshot_info));
+
+  // Test that data is deleted only if it was created after the deletion time
+  // range start.
+  RemoveDataForProfile(base::Time::Now(), profile_path_default,
+                       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS);
+  RemoveDataForProfile(snapshot_info.creation_time, profile_path_1,
+                       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS);
+  EXPECT_TRUE(base::PathExists(
+      snapshot_profile_path_default.Append(chrome::kPreferencesFilename)));
+  EXPECT_TRUE(base::PathExists(
+      snapshot_profile_path_1.Append(chrome::kPreferencesFilename)));
+  EXPECT_TRUE(base::PathExists(snapshot_profile_path_default.Append(
+      chrome::kSecurePreferencesFilename)));
+  EXPECT_TRUE(base::PathExists(
+      snapshot_profile_path_1.Append(chrome::kSecurePreferencesFilename)));
+
+  for (const auto& item : profile_items) {
+    EXPECT_TRUE(
+        base::PathExists(snapshot_profile_path_default.Append(item.path)));
+    EXPECT_EQ((item.data_types &
+               ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS) == 0,
+              base::PathExists(snapshot_profile_path_1.Append(item.path)));
+  }
+
+  const auto remove_mask =
+      content::BrowsingDataRemover::DATA_TYPE_COOKIES |
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_ISOLATED_ORIGINS |
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY |
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS |
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS |
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
+
+  // Delete some data from default profile.
+  RemoveDataForProfile(snapshot_info.creation_time, profile_path_default,
+                       remove_mask);
+  for (const auto& item : profile_items) {
+    EXPECT_EQ(
+        (item.data_types & remove_mask) == 0,
+        base::PathExists(snapshot_profile_path_default.Append(item.path)));
+  }
+  // Wipe profile 1
+  RemoveDataForProfile(base::Time(), profile_path_1,
+                       ChromeBrowsingDataRemoverDelegate::WIPE_PROFILE);
+  EXPECT_FALSE(base::PathExists(snapshot_profile_path_1));
 }
 
 }  // namespace downgrade

@@ -97,6 +97,9 @@ struct SESSIONS_EXPORT SessionTab {
   // For reassociating sessionStorage.
   std::string session_storage_persistent_id;
 
+  // guid associated with the tab, may be empty.
+  std::string guid;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionTab);
 };

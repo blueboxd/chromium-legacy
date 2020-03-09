@@ -146,6 +146,21 @@ cr.define('autofill_test_util', function() {
   }
 
   /**
+   * Creates a new password check status.
+   * @param {!chrome.passwordsPrivate.PasswordCheckState} state
+   * @param {number} checked
+   * @param {number} remaining
+   * @return {!chrome.passwordsPrivate.PasswordCheckStatus}
+   */
+  function makePasswordCheckStatus(state, checked, remaining) {
+    return {
+      state: state || chrome.passwordsPrivate.PasswordCheckState.IDLE,
+      alreadyProcessed: checked || 0,
+      remainingInQueue: remaining || 0
+    };
+  }
+
+  /**
    * Creates a new random GUID for testing.
    * @return {string}
    * @private
@@ -411,6 +426,7 @@ cr.define('autofill_test_util', function() {
     createCreditCardEntry: createCreditCardEntry,
     makeCompromisedCredentials: makeCompromisedCredentials,
     makeCompromisedCredentialsInfo: makeCompromisedCredentialsInfo,
+    makePasswordCheckStatus: makePasswordCheckStatus,
     TestPaymentsManager: TestPaymentsManager,
     PaymentsManagerExpectations: PaymentsManagerExpectations,
     TestAutofillManager: TestAutofillManager,

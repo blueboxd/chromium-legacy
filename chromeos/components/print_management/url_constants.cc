@@ -1,0 +1,11 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chromeos/components/print_management/url_constants.h"
+
+namespace chromeos {
+
+const char kChromeUIPrintManagementHost[] = "print-management";
+
+}  // namespace chromeos

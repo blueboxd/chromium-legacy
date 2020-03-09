@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
+#include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
@@ -266,6 +267,27 @@ void CastMediaRouteProvider::CreateMediaRouteController(
     CreateMediaRouteControllerCallback callback) {
   std::move(callback).Run(activity_manager_->CreateMediaController(
       route_id, std::move(media_controller), std::move(observer)));
+}
+
+void CastMediaRouteProvider::GetState(GetStateCallback callback) {
+  if (!activity_manager_) {
+    std::move(callback).Run(mojom::ProviderState::New());
+  }
+  const CastSessionTracker::SessionMap& sessions =
+      activity_manager_->GetCastSessionTracker()->GetSessions();
+  mojom::CastProviderStatePtr cast_state(mojom::CastProviderState::New());
+  for (const auto& session : sessions) {
+    if (!session.second)
+      continue;
+    mojom::CastSessionStatePtr session_state(mojom::CastSessionState::New());
+    session_state->sink_id = session.first;
+    session_state->app_id = session.second->app_id();
+    session_state->session_id = session.second->session_id();
+    session_state->route_description = session.second->GetRouteDescription();
+    cast_state->session_state.emplace_back(std::move(session_state));
+  }
+  std::move(callback).Run(
+      mojom::ProviderState::NewCastProviderState(std::move(cast_state)));
 }
 
 void CastMediaRouteProvider::OnSinkQueryUpdated(

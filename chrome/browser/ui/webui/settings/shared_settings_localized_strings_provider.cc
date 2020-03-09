@@ -139,9 +139,16 @@ void AddSyncAccountControlStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PEOPLE_SYNC_PASSWORDS_NOT_WORKING},
       {"peopleSignOut", IDS_SETTINGS_PEOPLE_SIGN_OUT},
       {"useAnotherAccount", IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT},
-      {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  if (base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings)) {
+    html_source->AddLocalizedString("syncAdvancedPageTitle",
+                                    IDS_SETTINGS_NEW_SYNC_ADVANCED_PAGE_TITLE);
+
+  } else {
+    html_source->AddLocalizedString("syncAdvancedPageTitle",
+                                    IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE);
+  }
 }
 
 #if defined(OS_CHROMEOS)

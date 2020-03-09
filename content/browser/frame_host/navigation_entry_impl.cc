@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
-#include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_params.h"
 #include "content/common/page_state_serialization.h"
@@ -724,8 +723,6 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   copy->CloneDataFrom(*this);
   copy->replaced_entry_data_ = replaced_entry_data_;
   copy->should_skip_on_back_forward_ui_ = should_skip_on_back_forward_ui_;
-  if (web_bundle_navigation_info_)
-    copy->web_bundle_navigation_info_ = web_bundle_navigation_info_->Clone();
 
   return copy;
 }
@@ -992,16 +989,6 @@ void NavigationEntryImpl::RemoveEntryForFrame(FrameTreeNode* frame_tree_node,
 
 GURL NavigationEntryImpl::GetHistoryURLForDataURL() {
   return GetBaseURLForDataURL().is_empty() ? GURL() : GetVirtualURL();
-}
-
-void NavigationEntryImpl::set_web_bundle_navigation_info(
-    std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info) {
-  web_bundle_navigation_info_ = std::move(web_bundle_navigation_info);
-}
-
-WebBundleNavigationInfo* NavigationEntryImpl::web_bundle_navigation_info()
-    const {
-  return web_bundle_navigation_info_.get();
 }
 
 }  // namespace content

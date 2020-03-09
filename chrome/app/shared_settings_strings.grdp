@@ -144,6 +144,9 @@
   <message name="IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE" desc="Name of the settings page which manages data used by sync.">
     Manage sync
   </message>
+  <message name="IDS_SETTINGS_NEW_SYNC_ADVANCED_PAGE_TITLE" desc="Name of the settings page which manages data used by sync.">
+    Manage what you sync
+  </message>
   <message name="IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT" desc="The label for the button that lets the user choose another account to sync with.">
     Use another account
   </message>

@@ -276,6 +276,9 @@ class TargetPolicy {
   // lifetime of the policy object.
   virtual void SetEffectiveToken(HANDLE token) = 0;
 
+  // Returns the size of policy memory used at process start.
+  virtual size_t GetPolicyGlobalSize() const = 0;
+
  protected:
   ~TargetPolicy() {}
 };

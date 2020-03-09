@@ -96,6 +96,8 @@ void FakeLocalFrameHost::DidBlockNavigation(
 
 void FakeLocalFrameHost::DidChangeLoadProgress(double load_progress) {}
 
+void FakeLocalFrameHost::DidFinishLoad(const KURL& validated_url) {}
+
 void FakeLocalFrameHost::DispatchLoad() {}
 
 void FakeLocalFrameHost::GoToEntryAtOffset(int32_t offset,

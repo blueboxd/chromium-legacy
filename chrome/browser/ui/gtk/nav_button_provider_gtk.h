@@ -9,9 +9,9 @@
 
 #include "base/component_export.h"
 #include "chrome/browser/ui/frame_button_display_types.h"
-#include "chrome/browser/ui/views/nav_button_provider.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/linux_ui/nav_button_provider.h"
 
 namespace gtk {
 

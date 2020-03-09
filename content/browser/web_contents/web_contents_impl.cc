@@ -903,7 +903,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_frame_host)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunInsecureContent,
@@ -4959,19 +4958,19 @@ void WebContentsImpl::DOMContentLoaded(RenderFrameHost* render_frame_host) {
     observer.DOMContentLoaded(render_frame_host);
 }
 
-void WebContentsImpl::OnDidFinishLoad(RenderFrameHostImpl* source,
+void WebContentsImpl::OnDidFinishLoad(RenderFrameHost* render_frame_host,
                                       const GURL& url) {
   GURL validated_url(url);
-  source->GetProcess()->FilterURL(false, &validated_url);
+  render_frame_host->GetProcess()->FilterURL(false, &validated_url);
 
   for (auto& observer : observers_)
-    observer.DidFinishLoad(source, validated_url);
+    observer.DidFinishLoad(render_frame_host, validated_url);
 
   size_t tree_size = frame_tree_.root()->GetFrameTreeSize();
   if (max_loaded_frame_count_ < tree_size)
     max_loaded_frame_count_ = tree_size;
 
-  if (!source->GetParent())
+  if (!render_frame_host->GetParent())
     UMA_HISTOGRAM_COUNTS_1000("Navigation.MainFrame.FrameCount", tree_size);
 }
 

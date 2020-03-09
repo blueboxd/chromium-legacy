@@ -253,13 +253,11 @@ AppTimeController::AppTimeController(Profile* profile)
   if (time_zone_settings)
     time_zone_settings->AddObserver(this);
 
-  // At this point application states should have been restored. Get the paused
-  // applications and notify app service. Don't show dialog for the paused apps.
-  app_service_wrapper_->PauseApps(
-      app_registry_->GetPausedApps(/* show_pause_dialog */ false));
-
   // Start observing |app_registry_|
   app_registry_->AddAppStateObserver(this);
+
+  // AppActivityRegistry may have missed |OnAppInstalled| calls. Notify it.
+  app_registry_->SetInstalledApps(app_service_wrapper_->GetInstalledApps());
 }
 
 AppTimeController::~AppTimeController() {

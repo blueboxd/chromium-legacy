@@ -128,6 +128,10 @@ class SyncPrefs : public CryptoSyncPrefs,
                           UserSelectableOsTypeSet selected_types);
   bool IsOsSyncFeatureEnabled() const;
   void SetOsSyncFeatureEnabled(bool enabled);
+
+  // Maps |type| to its corresponding preference name. Returns nullptr if |type|
+  // isn't an OS type.
+  static const char* GetPrefNameForOsType(UserSelectableOsType type);
 #endif
 
   // Whether Sync is forced off by enterprise policy. Note that this only covers

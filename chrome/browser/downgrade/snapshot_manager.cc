@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/downgrade/downgrade_utils.h"
 #include "chrome/browser/downgrade/snapshot_file_collector.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
@@ -154,16 +155,15 @@ void SnapshotManager::TakeSnapshot(const base::Version& version) {
         SnapshotOperationResult::kFailedToCreateSnapshotDirectory);
     return;
   }
-  const uint16_t milestone = version.components()[0];
 
   // Copy items to be preserved at the top-level of User Data.
-  for (const auto& file : GetUserSnapshotItemDetails(milestone)) {
+  for (const auto& file : GetUserSnapshotItemDetails()) {
     record_success_error(
         CopyItemToSnapshotDirectory(base::FilePath(file.path), user_data_dir_,
                                     snapshot_dir, file.is_directory));
   }
 
-  auto profile_snapshot_item_details = GetProfileSnapshotItemDetails(milestone);
+  const auto profile_snapshot_item_details = GetProfileSnapshotItemDetails();
 
   // Copy items to be preserved in each Profile directory.
   for (const auto& profile_dir : GetUserProfileDirectories(user_data_dir_)) {
@@ -324,14 +324,64 @@ void SnapshotManager::PurgeInvalidAndOldSnapshots(
   }
 }
 
-std::vector<SnapshotItemDetails> SnapshotManager::GetProfileSnapshotItemDetails(
-    uint16_t milestone) const {
-  return CollectProfileItems(milestone);
+void SnapshotManager::DeleteSnapshotDataForProfile(
+    base::Time delete_begin,
+    const base::FilePath& profile_base_name,
+    int remove_mask) {
+  using DataType = ChromeBrowsingDataRemoverDelegate;
+
+  bool delete_all =
+      (((remove_mask & DataType::WIPE_PROFILE) == DataType::WIPE_PROFILE) ||
+       ((remove_mask & DataType::ALL_DATA_TYPES) ==
+        DataType::ALL_DATA_TYPES)) &&
+      delete_begin.is_null();
+  std::vector<base::FilePath> files_to_delete;
+  if (!delete_all) {
+    for (const auto& item : CollectProfileItems()) {
+      if (item.data_types & remove_mask)
+        files_to_delete.push_back(item.path);
+    }
+  }
+
+  if (!delete_all && files_to_delete.empty())
+    return;
+
+  const auto snapshot_dir = user_data_dir_.Append(kSnapshotsDir);
+  auto available_snapshots = GetAvailableSnapshots(snapshot_dir);
+
+  base::File::Info file_info;
+  for (const auto& snapshot : available_snapshots) {
+    auto snapshot_path = snapshot_dir.AppendASCII(snapshot.GetString());
+    // If we are not able to get the file info, it probably has been deleted.
+    if (!base::GetFileInfo(snapshot_path, &file_info))
+      continue;
+    auto profile_absolute_path = snapshot_path.Append(profile_base_name);
+    // Deletes the whole profile from the snapshots if it is being wiped
+    // regardless of |delete_begin|, otherwise deletes the required files from
+    // the snapshot if it was created after |delete_begin|.
+    if (delete_all) {
+      base::DeleteFile(profile_absolute_path, /*recursive=*/true);
+    } else if (delete_begin <= file_info.creation_time &&
+               base::PathExists(profile_absolute_path)) {
+      for (const auto& filename : files_to_delete) {
+        base::DeleteFile(profile_absolute_path.Append(filename),
+                         /*recursive=*/true);
+      }
+      // Non recursive deletion will fail if the directory is not empty. In this
+      // case we only want to delete the directory if it is empty.
+      base::DeleteFile(profile_absolute_path, /*recursive=*/false);
+    }
+  }
 }
 
-std::vector<SnapshotItemDetails> SnapshotManager::GetUserSnapshotItemDetails(
-    uint16_t milestone) const {
-  return CollectUserDataItems(milestone);
+std::vector<SnapshotItemDetails>
+SnapshotManager::GetProfileSnapshotItemDetails() const {
+  return CollectProfileItems();
+}
+
+std::vector<SnapshotItemDetails> SnapshotManager::GetUserSnapshotItemDetails()
+    const {
+  return CollectUserDataItems();
 }
 
 }  // namespace downgrade

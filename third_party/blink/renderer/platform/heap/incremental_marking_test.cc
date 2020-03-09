@@ -279,6 +279,20 @@ class Object : public LinkedObject {
   void Trace(Visitor* visitor) { LinkedObject::Trace(visitor); }
 };
 
+class RawPtrObjectWithManualWriteBarrier
+    : public GarbageCollected<RawPtrObjectWithManualWriteBarrier> {
+ public:
+  void Trace(Visitor* v) { v->Trace(object_); }
+
+  void Set(Object* object) {
+    object_ = object;
+    MarkingVisitor::WriteBarrier(&object_);
+  }
+
+ private:
+  Object* object_ = nullptr;
+};
+
 // =============================================================================
 // Basic infrastructure support. ===============================================
 // =============================================================================
@@ -293,20 +307,22 @@ TEST_F(IncrementalMarkingTest, EnableDisableBarrier) {
 }
 
 TEST_F(IncrementalMarkingTest, ManualWriteBarrierTriggersWhenMarkingIsOn) {
-  auto* object = MakeGarbageCollected<Object>();
+  auto* object1 = MakeGarbageCollected<Object>();
+  auto* object2 = MakeGarbageCollected<RawPtrObjectWithManualWriteBarrier>();
   {
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {object});
-    EXPECT_FALSE(object->IsMarked());
-    MarkingVisitor::WriteBarrier(&object);
-    EXPECT_TRUE(object->IsMarked());
+    ExpectWriteBarrierFires scope(ThreadState::Current(), {object1});
+    EXPECT_FALSE(object1->IsMarked());
+    object2->Set(object1);
+    EXPECT_TRUE(object1->IsMarked());
   }
 }
 
 TEST_F(IncrementalMarkingTest, ManualWriteBarrierBailoutWhenMarkingIsOff) {
-  auto* object = MakeGarbageCollected<Object>();
-  EXPECT_FALSE(object->IsMarked());
-  MarkingVisitor::WriteBarrier(&object);
-  EXPECT_FALSE(object->IsMarked());
+  auto* object1 = MakeGarbageCollected<Object>();
+  auto* object2 = MakeGarbageCollected<RawPtrObjectWithManualWriteBarrier>();
+  EXPECT_FALSE(object1->IsMarked());
+  object2->Set(object1);
+  EXPECT_FALSE(object1->IsMarked());
 }
 
 // =============================================================================
@@ -348,10 +364,10 @@ TEST_F(IncrementalMarkingTest, MemberInitializingStoreNoBarrier) {
 }
 
 TEST_F(IncrementalMarkingTest, MemberReferenceAssignMember) {
-  auto* obj = MakeGarbageCollected<Object>();
-  Member<Object> m1;
-  Member<Object>& m2 = m1;
-  Member<Object> m3(obj);
+  auto* obj = MakeGarbageCollected<LinkedObject>();
+  auto* ref_obj = MakeGarbageCollected<LinkedObject>();
+  Member<LinkedObject>& m2 = ref_obj->next_ref();
+  Member<LinkedObject> m3(obj);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj});
     m2 = m3;
@@ -359,7 +375,8 @@ TEST_F(IncrementalMarkingTest, MemberReferenceAssignMember) {
 }
 
 TEST_F(IncrementalMarkingTest, MemberSetDeletedValueNoBarrier) {
-  Member<Object> m;
+  auto* obj = MakeGarbageCollected<LinkedObject>();
+  Member<LinkedObject>& m = obj->next_ref();
   {
     ExpectNoWriteBarrierFires scope(ThreadState::Current(), {});
     m = WTF::kHashTableDeletedValue;
@@ -367,26 +384,32 @@ TEST_F(IncrementalMarkingTest, MemberSetDeletedValueNoBarrier) {
 }
 
 TEST_F(IncrementalMarkingTest, MemberCopyDeletedValueNoBarrier) {
-  Member<Object> m1(WTF::kHashTableDeletedValue);
+  auto* obj1 = MakeGarbageCollected<LinkedObject>();
+  Member<LinkedObject>& m1 = obj1->next_ref();
+  m1 = WTF::kHashTableDeletedValue;
   {
     ExpectNoWriteBarrierFires scope(ThreadState::Current(), {});
-    Member<Object> m2(m1);
+    auto* obj2 = MakeGarbageCollected<LinkedObject>();
+    obj2->next_ref() = m1;
   }
 }
 
 TEST_F(IncrementalMarkingTest, MemberHashTraitConstructDeletedValueNoBarrier) {
-  Member<Object> m1;
+  auto* obj = MakeGarbageCollected<LinkedObject>();
+  Member<LinkedObject>& m = obj->next_ref();
   {
     ExpectNoWriteBarrierFires scope(ThreadState::Current(), {});
-    HashTraits<Member<Object>>::ConstructDeletedValue(m1, false);
+    HashTraits<Member<LinkedObject>>::ConstructDeletedValue(m, false);
   }
 }
 
 TEST_F(IncrementalMarkingTest, MemberHashTraitIsDeletedValueNoBarrier) {
-  Member<Object> m1(MakeGarbageCollected<Object>());
+  auto* obj =
+      MakeGarbageCollected<LinkedObject>(MakeGarbageCollected<LinkedObject>());
+  Member<LinkedObject>& m = obj->next_ref();
   {
     ExpectNoWriteBarrierFires scope(ThreadState::Current(), {});
-    EXPECT_FALSE(HashTraits<Member<Object>>::IsDeletedValue(m1));
+    EXPECT_FALSE(HashTraits<Member<LinkedObject>>::IsDeletedValue(m));
   }
 }
 
@@ -512,158 +535,168 @@ class NonGarbageCollectedContainerRoot {
 
 TEST_F(IncrementalMarkingTest, HeapVectorPushBackMember) {
   auto* obj = MakeGarbageCollected<Object>();
-  HeapVector<Member<Object>> vec;
+  auto* vec = MakeGarbageCollected<HeapVector<Member<Object>>>();
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj});
-    vec.push_back(obj);
+    vec->push_back(obj);
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorPushBackNonGCedContainer) {
   auto* obj = MakeGarbageCollected<Object>();
-  HeapVector<NonGarbageCollectedContainer> vec;
+  auto* vec = MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>();
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj});
-    vec.push_back(NonGarbageCollectedContainer(obj, 1));
+    vec->push_back(NonGarbageCollectedContainer(obj, 1));
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorPushBackStdPair) {
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  HeapVector<std::pair<Member<Object>, Member<Object>>> vec;
+  auto* vec = MakeGarbageCollected<
+      HeapVector<std::pair<Member<Object>, Member<Object>>>>();
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    vec.push_back(std::make_pair(Member<Object>(obj1), Member<Object>(obj2)));
+    vec->push_back(std::make_pair(Member<Object>(obj1), Member<Object>(obj2)));
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorEmplaceBackMember) {
   auto* obj = MakeGarbageCollected<Object>();
-  HeapVector<Member<Object>> vec;
+  auto* vec = MakeGarbageCollected<HeapVector<Member<Object>>>();
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj});
-    vec.emplace_back(obj);
+    vec->emplace_back(obj);
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorEmplaceBackNonGCedContainer) {
   auto* obj = MakeGarbageCollected<Object>();
-  HeapVector<NonGarbageCollectedContainer> vec;
+  auto* vec = MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>();
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj});
-    vec.emplace_back(obj, 1);
+    vec->emplace_back(obj, 1);
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorEmplaceBackStdPair) {
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  HeapVector<std::pair<Member<Object>, Member<Object>>> vec;
+  auto* vec = MakeGarbageCollected<
+      HeapVector<std::pair<Member<Object>, Member<Object>>>>();
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    vec.emplace_back(obj1, obj2);
+    vec->emplace_back(obj1, obj2);
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorCopyMember) {
   auto* object = MakeGarbageCollected<Object>();
-  HeapVector<Member<Object>> vec1;
-  vec1.push_back(object);
+  auto* vec1 = MakeGarbageCollected<HeapVector<Member<Object>>>();
+  vec1->push_back(object);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {object});
-    HeapVector<Member<Object>> vec2(vec1);
+    MakeGarbageCollected<HeapVector<Member<Object>>>(*vec1);
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorCopyNonGCedContainer) {
   auto* obj = MakeGarbageCollected<Object>();
-  HeapVector<NonGarbageCollectedContainer> vec1;
-  vec1.emplace_back(obj, 1);
+  auto* vec1 = MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>();
+  vec1->emplace_back(obj, 1);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj});
-    HeapVector<NonGarbageCollectedContainer> vec2(vec1);
+    MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>(*vec1);
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorCopyStdPair) {
+  using ValueType = std::pair<Member<Object>, Member<Object>>;
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  HeapVector<std::pair<Member<Object>, Member<Object>>> vec1;
-  vec1.emplace_back(obj1, obj2);
+  auto* vec1 = MakeGarbageCollected<HeapVector<ValueType>>();
+  vec1->emplace_back(obj1, obj2);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    HeapVector<std::pair<Member<Object>, Member<Object>>> vec2(vec1);
+    MakeGarbageCollected<HeapVector<ValueType>>(*vec1);
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorMoveMember) {
   auto* obj = MakeGarbageCollected<Object>();
-  HeapVector<Member<Object>> vec1;
-  vec1.push_back(obj);
+  auto* vec1 = MakeGarbageCollected<HeapVector<Member<Object>>>();
+  vec1->push_back(obj);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj});
-    HeapVector<Member<Object>> vec2(std::move(vec1));
+    MakeGarbageCollected<HeapVector<Member<Object>>>(std::move(*vec1));
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorMoveNonGCedContainer) {
   auto* obj = MakeGarbageCollected<Object>();
-  HeapVector<NonGarbageCollectedContainer> vec1;
-  vec1.emplace_back(obj, 1);
+  auto* vec1 = MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>();
+  vec1->emplace_back(obj, 1);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj});
-    HeapVector<NonGarbageCollectedContainer> vec2(std::move(vec1));
+    MakeGarbageCollected<HeapVector<NonGarbageCollectedContainer>>(
+        std::move(*vec1));
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorMoveStdPair) {
+  using ValueType = std::pair<Member<Object>, Member<Object>>;
+  using VectorType = HeapVector<ValueType>;
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  HeapVector<std::pair<Member<Object>, Member<Object>>> vec1;
-  vec1.emplace_back(obj1, obj2);
+  auto* vec1 = MakeGarbageCollected<VectorType>();
+  vec1->emplace_back(obj1, obj2);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    HeapVector<std::pair<Member<Object>, Member<Object>>> vec2(std::move(vec1));
+    MakeGarbageCollected<VectorType>(std::move(*vec1));
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorSwapMember) {
+  using VectorType = HeapVector<Member<Object>>;
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  HeapVector<Member<Object>> vec1;
-  vec1.push_back(obj1);
-  HeapVector<Member<Object>> vec2;
-  vec2.push_back(obj2);
+  auto* vec1 = MakeGarbageCollected<VectorType>();
+  vec1->push_back(obj1);
+  auto* vec2 = MakeGarbageCollected<VectorType>();
+  vec2->push_back(obj2);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    std::swap(vec1, vec2);
+    std::swap(*vec1, *vec2);
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorSwapNonGCedContainer) {
+  using VectorType = HeapVector<NonGarbageCollectedContainer>;
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  HeapVector<NonGarbageCollectedContainer> vec1;
-  vec1.emplace_back(obj1, 1);
-  HeapVector<NonGarbageCollectedContainer> vec2;
-  vec2.emplace_back(obj2, 2);
+  auto* vec1 = MakeGarbageCollected<VectorType>();
+  vec1->emplace_back(obj1, 1);
+  auto* vec2 = MakeGarbageCollected<VectorType>();
+  vec2->emplace_back(obj2, 2);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    std::swap(vec1, vec2);
+    std::swap(*vec1, *vec2);
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapVectorSwapStdPair) {
+  using ValueType = std::pair<Member<Object>, Member<Object>>;
+  using VectorType = HeapVector<ValueType>;
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  HeapVector<std::pair<Member<Object>, Member<Object>>> vec1;
-  vec1.emplace_back(obj1, nullptr);
-  HeapVector<std::pair<Member<Object>, Member<Object>>> vec2;
-  vec2.emplace_back(nullptr, obj2);
+  auto* vec1 = MakeGarbageCollected<VectorType>();
+  vec1->emplace_back(obj1, nullptr);
+  auto* vec2 = MakeGarbageCollected<VectorType>();
+  vec2->emplace_back(nullptr, obj2);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    std::swap(vec1, vec2);
+    std::swap(*vec1, *vec2);
   }
 }
 
@@ -825,23 +858,23 @@ void CopyNoBarrier() {
 template <typename Container>
 void Move() {
   auto* obj = MakeGarbageCollected<Object>();
-  Container container1;
-  Container container2;
-  container1.insert(obj);
+  auto* container1 = MakeGarbageCollected<Container>();
+  auto* container2 = MakeGarbageCollected<Container>();
+  container1->insert(obj);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj});
-    container2 = std::move(container1);
+    *container2 = std::move(*container1);
   }
 }
 
 template <typename Container>
 void MoveNoBarrier() {
   auto* obj = MakeGarbageCollected<Object>();
-  Container container1;
-  container1.insert(obj);
+  auto* container1 = MakeGarbageCollected<Container>();
+  container1->insert(obj);
   {
     ExpectNoWriteBarrierFires scope(ThreadState::Current(), {obj});
-    Container container2(std::move(container1));
+    auto* container2 = MakeGarbageCollected<Container>(std::move(*container1));
   }
 }
 
@@ -849,13 +882,13 @@ template <typename Container>
 void Swap() {
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  Container container1;
-  container1.insert(obj1);
-  Container container2;
-  container2.insert(obj2);
+  auto* container1 = MakeGarbageCollected<Container>();
+  container1->insert(obj1);
+  auto* container2 = MakeGarbageCollected<Container>();
+  container2->insert(obj2);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    std::swap(container1, container2);
+    std::swap(*container1, *container2);
   }
 }
 
@@ -863,13 +896,13 @@ template <typename Container>
 void SwapNoBarrier() {
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  Container container1;
-  container1.insert(obj1);
-  Container container2;
-  container2.insert(obj2);
+  auto* container1 = MakeGarbageCollected<Container>();
+  container1->insert(obj1);
+  auto* container2 = MakeGarbageCollected<Container>();
+  container2->insert(obj2);
   {
     ExpectNoWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    std::swap(container1, container2);
+    std::swap(*container1, *container2);
   }
 }
 
@@ -944,26 +977,30 @@ TEST_F(IncrementalMarkingTest, HeapHashCountedSetSwap) {
   {
     auto* obj1 = MakeGarbageCollected<Object>();
     auto* obj2 = MakeGarbageCollected<Object>();
-    HeapHashCountedSet<Member<Object>> container1;
-    container1.insert(obj1);
-    HeapHashCountedSet<Member<Object>> container2;
-    container2.insert(obj2);
+    auto* container1 =
+        MakeGarbageCollected<HeapHashCountedSet<Member<Object>>>();
+    container1->insert(obj1);
+    auto* container2 =
+        MakeGarbageCollected<HeapHashCountedSet<Member<Object>>>();
+    container2->insert(obj2);
     {
       ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-      container1.swap(container2);
+      container1->swap(*container2);
     }
   }
   {
     auto* obj1 = MakeGarbageCollected<Object>();
     auto* obj2 = MakeGarbageCollected<Object>();
-    HeapHashCountedSet<WeakMember<Object>> container1;
-    container1.insert(obj1);
-    HeapHashCountedSet<WeakMember<Object>> container2;
-    container2.insert(obj2);
+    auto* container1 =
+        MakeGarbageCollected<HeapHashCountedSet<WeakMember<Object>>>();
+    container1->insert(obj1);
+    auto* container2 =
+        MakeGarbageCollected<HeapHashCountedSet<WeakMember<Object>>>();
+    container2->insert(obj2);
     {
       // Weak references are strongified for the current cycle.
       ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-      container1.swap(container2);
+      container1->swap(*container2);
     }
   }
 }
@@ -1131,47 +1168,55 @@ TEST_F(IncrementalMarkingTest, HeapHashMapCopyWeakMemberMember) {
 TEST_F(IncrementalMarkingTest, HeapHashMapMoveMember) {
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  HeapHashMap<Member<Object>, Member<Object>> map1;
-  map1.insert(obj1, obj2);
+  auto* map1 =
+      MakeGarbageCollected<HeapHashMap<Member<Object>, Member<Object>>>();
+  map1->insert(obj1, obj2);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    HeapHashMap<Member<Object>, Member<Object>> map2(std::move(map1));
+    MakeGarbageCollected<HeapHashMap<Member<Object>, Member<Object>>>(
+        std::move(*map1));
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapHashMapMoveWeakMember) {
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  HeapHashMap<WeakMember<Object>, WeakMember<Object>> map1;
-  map1.insert(obj1, obj2);
+  auto* map1 = MakeGarbageCollected<
+      HeapHashMap<WeakMember<Object>, WeakMember<Object>>>();
+  map1->insert(obj1, obj2);
   {
     // Weak references are strongified for the current cycle.
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    HeapHashMap<WeakMember<Object>, WeakMember<Object>> map2(std::move(map1));
+    MakeGarbageCollected<HeapHashMap<WeakMember<Object>, WeakMember<Object>>>(
+        std::move(*map1));
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapHashMapMoveMemberWeakMember) {
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  HeapHashMap<Member<Object>, WeakMember<Object>> map1;
-  map1.insert(obj1, obj2);
+  auto* map1 =
+      MakeGarbageCollected<HeapHashMap<Member<Object>, WeakMember<Object>>>();
+  map1->insert(obj1, obj2);
   {
     // Weak references are strongified for the current cycle.
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    HeapHashMap<Member<Object>, WeakMember<Object>> map2(std::move(map1));
+    MakeGarbageCollected<HeapHashMap<Member<Object>, WeakMember<Object>>>(
+        std::move(*map1));
   }
 }
 
 TEST_F(IncrementalMarkingTest, HeapHashMapMoveWeakMemberMember) {
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
-  HeapHashMap<WeakMember<Object>, Member<Object>> map1;
-  map1.insert(obj1, obj2);
+  auto* map1 =
+      MakeGarbageCollected<HeapHashMap<WeakMember<Object>, Member<Object>>>();
+  map1->insert(obj1, obj2);
   {
     // Weak references are strongified for the current cycle.
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    HeapHashMap<WeakMember<Object>, Member<Object>> map2(std::move(map1));
+    MakeGarbageCollected<HeapHashMap<WeakMember<Object>, Member<Object>>>(
+        std::move(*map1));
   }
 }
 
@@ -1180,14 +1225,16 @@ TEST_F(IncrementalMarkingTest, HeapHashMapSwapMemberMember) {
   auto* obj2 = MakeGarbageCollected<Object>();
   auto* obj3 = MakeGarbageCollected<Object>();
   auto* obj4 = MakeGarbageCollected<Object>();
-  HeapHashMap<Member<Object>, Member<Object>> map1;
-  map1.insert(obj1, obj2);
-  HeapHashMap<Member<Object>, Member<Object>> map2;
-  map2.insert(obj3, obj4);
+  auto* map1 =
+      MakeGarbageCollected<HeapHashMap<Member<Object>, Member<Object>>>();
+  map1->insert(obj1, obj2);
+  auto* map2 =
+      MakeGarbageCollected<HeapHashMap<Member<Object>, Member<Object>>>();
+  map2->insert(obj3, obj4);
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(),
                                   {obj1, obj2, obj3, obj4});
-    std::swap(map1, map2);
+    std::swap(*map1, *map2);
   }
 }
 
@@ -1196,15 +1243,17 @@ TEST_F(IncrementalMarkingTest, HeapHashMapSwapWeakMemberWeakMember) {
   auto* obj2 = MakeGarbageCollected<Object>();
   auto* obj3 = MakeGarbageCollected<Object>();
   auto* obj4 = MakeGarbageCollected<Object>();
-  HeapHashMap<WeakMember<Object>, WeakMember<Object>> map1;
-  map1.insert(obj1, obj2);
-  HeapHashMap<WeakMember<Object>, WeakMember<Object>> map2;
-  map2.insert(obj3, obj4);
+  auto* map1 = MakeGarbageCollected<
+      HeapHashMap<WeakMember<Object>, WeakMember<Object>>>();
+  map1->insert(obj1, obj2);
+  auto* map2 = MakeGarbageCollected<
+      HeapHashMap<WeakMember<Object>, WeakMember<Object>>>();
+  map2->insert(obj3, obj4);
   {
     // Weak references are strongified for the current cycle.
     ExpectWriteBarrierFires scope(ThreadState::Current(),
                                   {obj1, obj2, obj3, obj4});
-    std::swap(map1, map2);
+    std::swap(*map1, *map2);
   }
 }
 
@@ -1213,15 +1262,17 @@ TEST_F(IncrementalMarkingTest, HeapHashMapSwapMemberWeakMember) {
   auto* obj2 = MakeGarbageCollected<Object>();
   auto* obj3 = MakeGarbageCollected<Object>();
   auto* obj4 = MakeGarbageCollected<Object>();
-  HeapHashMap<Member<Object>, WeakMember<Object>> map1;
-  map1.insert(obj1, obj2);
-  HeapHashMap<Member<Object>, WeakMember<Object>> map2;
-  map2.insert(obj3, obj4);
+  auto* map1 =
+      MakeGarbageCollected<HeapHashMap<Member<Object>, WeakMember<Object>>>();
+  map1->insert(obj1, obj2);
+  auto* map2 =
+      MakeGarbageCollected<HeapHashMap<Member<Object>, WeakMember<Object>>>();
+  map2->insert(obj3, obj4);
   {
     // Weak references are strongified for the current cycle.
     ExpectWriteBarrierFires scope(ThreadState::Current(),
                                   {obj1, obj2, obj3, obj4});
-    std::swap(map1, map2);
+    std::swap(*map1, *map2);
   }
 }
 
@@ -1230,15 +1281,17 @@ TEST_F(IncrementalMarkingTest, HeapHashMapSwapWeakMemberMember) {
   auto* obj2 = MakeGarbageCollected<Object>();
   auto* obj3 = MakeGarbageCollected<Object>();
   auto* obj4 = MakeGarbageCollected<Object>();
-  HeapHashMap<WeakMember<Object>, Member<Object>> map1;
-  map1.insert(obj1, obj2);
-  HeapHashMap<WeakMember<Object>, Member<Object>> map2;
-  map2.insert(obj3, obj4);
+  auto* map1 =
+      MakeGarbageCollected<HeapHashMap<WeakMember<Object>, Member<Object>>>();
+  map1->insert(obj1, obj2);
+  auto* map2 =
+      MakeGarbageCollected<HeapHashMap<WeakMember<Object>, Member<Object>>>();
+  map2->insert(obj3, obj4);
   {
     // Weak references are strongified for the current cycle.
     ExpectWriteBarrierFires scope(ThreadState::Current(),
                                   {obj1, obj2, obj3, obj4});
-    std::swap(map1, map2);
+    std::swap(*map1, *map2);
   }
 }
 

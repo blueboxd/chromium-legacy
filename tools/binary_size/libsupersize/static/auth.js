@@ -5,12 +5,12 @@
 // @ts-check
 'use strict';
 
+let _googleAuthPromiseResolve = null;
 window.googleAuth = null;
 window.googleAuthPromise = new Promise((resolve, reject) => {
-  googleAuthPromiseResolve = resolve;
+  _googleAuthPromiseResolve = resolve;
 });
 
-let _googleAuthPromiseResolve = null;
 function handleClientLoad() {
   if (requiresAuthentication()) {
     gapi.load('client:auth2', initClient);
@@ -19,7 +19,6 @@ function handleClientLoad() {
 
 function initClient() {
   return gapi.client.init({
-      'apiKey': AUTH_API_KEY,
       'clientId': AUTH_CLIENT_ID,
       'discoveryDocs': [AUTH_DISCOVERY_URL],
       'scope': AUTH_SCOPE,

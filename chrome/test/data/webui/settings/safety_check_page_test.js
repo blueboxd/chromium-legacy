@@ -80,7 +80,7 @@ suite('SafetyCheckUiTests', function() {
     fireSafetyCheckSafeBrowsingEvent(
         settings.SafetyCheckSafeBrowsingStatus.ENABLED);
     fireSafetyCheckExtensionsEvent(
-        settings.SafetyCheckExtensionsStatus.NO_BLACKLISTED_EXTENSIONS);
+        settings.SafetyCheckExtensionsStatus.NO_BLOCKLISTED_EXTENSIONS);
 
     Polymer.dom.flush();
 
@@ -228,39 +228,39 @@ suite('SafetyCheckUiTests', function() {
 
   test('extensionsSafeUiTest', function() {
     fireSafetyCheckExtensionsEvent(
-        settings.SafetyCheckExtensionsStatus.NO_BLACKLISTED_EXTENSIONS);
+        settings.SafetyCheckExtensionsStatus.NO_BLOCKLISTED_EXTENSIONS);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
-  test('extensionsBlacklistedOffUiTest', function() {
+  test('extensionsBlocklistedOffUiTest', function() {
     fireSafetyCheckExtensionsEvent(
-        settings.SafetyCheckExtensionsStatus.BLACKLISTED_ALL_DISABLED);
+        settings.SafetyCheckExtensionsStatus.BLOCKLISTED_ALL_DISABLED);
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
-  test('extensionsBlacklistedOnAllUserUiTest', function() {
+  test('extensionsBlocklistedOnAllUserUiTest', function() {
     fireSafetyCheckExtensionsEvent(
-        settings.SafetyCheckExtensionsStatus.BLACKLISTED_REENABLED_ALL_BY_USER);
+        settings.SafetyCheckExtensionsStatus.BLOCKLISTED_REENABLED_ALL_BY_USER);
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
-  test('extensionsBlacklistedOnUserAdminUiTest', function() {
+  test('extensionsBlocklistedOnUserAdminUiTest', function() {
     fireSafetyCheckExtensionsEvent(settings.SafetyCheckExtensionsStatus
-                                       .BLACKLISTED_REENABLED_SOME_BY_USER);
+                                       .BLOCKLISTED_REENABLED_SOME_BY_USER);
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 
-  test('extensionsBlacklistedOnAllAdminUiTest', function() {
+  test('extensionsBlocklistedOnAllAdminUiTest', function() {
     fireSafetyCheckExtensionsEvent(settings.SafetyCheckExtensionsStatus
-                                       .BLACKLISTED_REENABLED_ALL_BY_ADMIN);
+                                       .BLOCKLISTED_REENABLED_ALL_BY_ADMIN);
     Polymer.dom.flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertTrue(!!page.$$('#safetyCheckExtensionsManagedIcon'));

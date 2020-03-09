@@ -34,6 +34,7 @@ class CORE_EXPORT CSSAnimation : public Animation {
   // to animation-play-state and display:none must update the play state.
   // https://drafts.csswg.org/css-animations-2/#requirements-on-pending-style-changes
   String playState() const override;
+  bool pending() const override;
 
   // Explicit calls to the web-animation API that update the play state are
   // conditionally sticky and override the animation-play-state style.
@@ -48,6 +49,8 @@ class CORE_EXPORT CSSAnimation : public Animation {
   void ResetWebAnimationOverriddenPlayState() { sticky_play_state_ = kUnset; }
 
  private:
+  void FlushStyles() const;
+
   String animation_name_;
 
   // When set, the web-animation API is overruling the animation-play-state

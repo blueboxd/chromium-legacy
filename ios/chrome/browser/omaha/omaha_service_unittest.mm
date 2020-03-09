@@ -112,7 +112,7 @@ TEST_F(OmahaServiceTest, PingMessageTest) {
       " brand=\"[A-Z][A-Z][A-Z][A-Z]\" client=\"\" appid=\"{[^}]*}\""
       " installage=\"0\">"
       "<updatecheck tag=\"[^\"]*\"/>"
-      "<ping active=\"1\"/></app></request>";
+      "<ping active=\"1\" ad=\"-2\" rd=\"-2\"/></app></request>";
 
   OmahaService service(false);
   service.set_upgrade_recommended_callback(
@@ -138,7 +138,7 @@ TEST_F(OmahaServiceTest, PingMessageTestWithUnknownInstallDate) {
       "<app version=\"[^\"]*\" nextversion=\"\" lang=\"[^\"]*\""
       " brand=\"[A-Z][A-Z][A-Z][A-Z]\" client=\"\" appid=\"{[^}]*}\">"
       "<updatecheck tag=\"[^\"]*\"/>"
-      "<ping active=\"1\"/></app></request>";
+      "<ping active=\"1\" ad=\"-2\" rd=\"-2\"/></app></request>";
 
   OmahaService service(false);
   service.set_upgrade_recommended_callback(
@@ -222,7 +222,7 @@ TEST_F(OmahaServiceTest, SendPingSuccess) {
   std::string response =
       std::string(
           "<?xml version=\"1.0\"?><response protocol=\"3.0\" server=\"prod\">"
-          "<daystart elapsed_seconds=\"56754\"/><app appid=\"") +
+          "<daystart elapsed_days=\"4088\"/><app appid=\"") +
       test_application_id() +
       "\" status=\"ok\">"
       "<updatecheck status=\"noupdate\"/><ping status=\"ok\"/>"
@@ -235,7 +235,54 @@ TEST_F(OmahaServiceTest, SendPingSuccess) {
   EXPECT_FALSE(service.current_ping_time_.is_null());
   EXPECT_EQ(service.current_ping_time_, service.next_tries_time_);
   EXPECT_GT(service.last_sent_time_, now);
+  EXPECT_EQ(4088, service.last_server_date_);
   EXPECT_FALSE(NeedUpdate());
+}
+
+TEST_F(OmahaServiceTest, ParseAndEchoLastServerDate) {
+  OmahaService service(false);
+  service.set_upgrade_recommended_callback(
+      base::Bind(&OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
+  service.InitializeURLLoaderFactory(test_shared_url_loader_factory_);
+  CleanService(&service, version_info::GetVersionNumber());
+
+  service.SendPing();
+
+  std::string response =
+      std::string(
+          "<?xml version=\"1.0\"?><response protocol=\"3.0\" server=\"prod\">"
+          "<daystart elapsed_days=\"4088\"/><app appid=\"") +
+      test_application_id() +
+      "\" status=\"ok\">"
+      "<updatecheck status=\"noupdate\"/><ping status=\"ok\"/>"
+      "</app></response>";
+  auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      pending_request->request.url.spec(), response);
+
+  EXPECT_EQ(4088, service.last_server_date_);
+
+  const char* expectedResult =
+      "<request protocol=\"3.0\" version=\"iOS-1.0.0.0\" ismachine=\"1\" "
+      "requestid=\"requestId\" sessionid=\"sessionId\""
+      " hardware_class=\"[^\"]*\">"
+      "<os platform=\"ios\" version=\"[0-9][0-9]*\\(\\.[0-9][0-9]*\\)*\""
+      " arch=\"[^\"]*\"/>"
+      "<app version=\"[^\"]*\" nextversion=\"\" lang=\"[^\"]*\""
+      " brand=\"[A-Z][A-Z][A-Z][A-Z]\" client=\"\" appid=\"{[^}]*}\">"
+      "<updatecheck tag=\"[^\"]*\"/>"
+      "<ping active=\"1\" ad=\"4088\" rd=\"4088\"/></app></request>";
+
+  std::string content = service.GetPingContent(
+      "requestId", "sessionId", version_info::GetVersionNumber(),
+      GetChannelString(),
+      base::Time::FromTimeT(install_time_util::kUnknownInstallDate),
+      OmahaService::USAGE_PING);
+  regex_t regex;
+  regcomp(&regex, expectedResult, REG_NOSUB);
+  int result = regexec(&regex, content.c_str(), 0, nullptr, 0);
+  regfree(&regex);
+  EXPECT_EQ(0, result);
 }
 
 TEST_F(OmahaServiceTest, SendInstallEventSuccess) {

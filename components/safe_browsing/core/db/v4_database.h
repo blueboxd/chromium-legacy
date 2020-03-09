@@ -20,6 +20,7 @@
 #include "components/safe_browsing/core/db/v4_store.h"
 #include "components/safe_browsing/core/proto/webui.pb.h"
 
+class SafeBrowsingServiceTest;
 class TestSafeBrowsingDatabaseHelper;
 
 namespace safe_browsing {
@@ -177,6 +178,7 @@ class V4Database {
   const std::unique_ptr<StoreMap> store_map_;
 
  private:
+  friend class ::SafeBrowsingServiceTest;
   friend class ::TestSafeBrowsingDatabaseHelper;
   friend class V4DatabaseFactory;
   friend class V4EmbeddedTestServerBrowserTest;

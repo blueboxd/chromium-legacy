@@ -71,9 +71,11 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
     }
 
     @Override
-    public void performOnboarding(String experimentIds, Callback<Boolean> callback) {
+    public void performOnboarding(
+            String experimentIds, Bundle arguments, Callback<Boolean> callback) {
+        Map<String, String> parameters = toArgumentMap(arguments);
         AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator(
-                experimentIds, mContext, mBottomSheetController, mGetCurrentTab.get());
+                experimentIds, parameters, mContext, mBottomSheetController, mGetCurrentTab.get());
         coordinator.show(accepted -> {
             coordinator.hide();
             callback.onResult(accepted);
@@ -89,15 +91,16 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
             return;
         }
 
+        Map<String, String> argumentMap = toArgumentMap(arguments);
         Callback<AssistantOnboardingCoordinator> afterOnboarding = (onboardingCoordinator) -> {
-            Map<String, String> argumentMap = toArgumentMap(arguments);
             callback.onResult(client.performDirectAction(
                     name, experimentIds, argumentMap, onboardingCoordinator));
         };
 
         if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
-            AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator(
-                    experimentIds, mContext, mBottomSheetController, mGetCurrentTab.get());
+            AssistantOnboardingCoordinator coordinator =
+                    new AssistantOnboardingCoordinator(experimentIds, argumentMap, mContext,
+                            mBottomSheetController, mGetCurrentTab.get());
             coordinator.show(accepted -> {
                 if (!accepted) {
                     coordinator.hide();

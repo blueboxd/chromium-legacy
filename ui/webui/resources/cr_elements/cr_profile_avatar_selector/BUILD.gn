@@ -27,7 +27,7 @@ js_library("cr_profile_avatar_selector_grid") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":cr_profile_avatar_selector_grid_module",
     ":cr_profile_avatar_selector_module",
   ]

@@ -107,6 +107,7 @@ class CastActivityManager : public CastActivityManagerBase,
 
   const MediaRoute* GetRoute(const MediaRoute::Id& route_id) const;
   std::vector<MediaRoute> GetRoutes() const;
+  CastSessionTracker* GetCastSessionTracker() const { return session_tracker_; }
 
   // cast_channel::CastMessageHandler::Observer overrides.
   void OnAppMessage(int channel_id,

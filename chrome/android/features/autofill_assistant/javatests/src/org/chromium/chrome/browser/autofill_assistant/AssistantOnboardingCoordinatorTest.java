@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.filters.MediumTest;
+import android.widget.TextView;
 
 import androidx.annotation.IdRes;
 
@@ -51,6 +52,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -82,15 +84,15 @@ public class AssistantOnboardingCoordinatorTest {
     }
 
     private AssistantOnboardingCoordinator createCoordinator(Tab tab) {
-        AssistantOnboardingCoordinator coordinator =
-                new AssistantOnboardingCoordinator("", mActivity, mBottomSheetController, mTab);
+        AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator(
+                "", new HashMap<String, String>(), mActivity, mBottomSheetController, mTab);
         coordinator.disableAnimationForTesting();
         return coordinator;
     }
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
+    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/991938): re-enable
     public void testAcceptOnboarding() throws Exception {
         testOnboarding(R.id.button_init_ok, true);
     }
@@ -166,6 +168,42 @@ public class AssistantOnboardingCoordinatorTest {
 
         showOnboardingAndWait(coordinator, mCallback);
         assertTrue(coordinator.getOnboardingShown());
+    }
+
+    @Test
+    @MediumTest
+    public void testShowDifferentInformationalText() throws Exception {
+        AutofillAssistantPreferencesUtil.setInitialPreferences(true);
+
+        HashMap<String, String> parameters = new HashMap();
+        parameters.put("INTENT", "RENT_CAR");
+        AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator(
+                "", parameters, mActivity, mBottomSheetController, mTab);
+        coordinator.disableAnimationForTesting();
+        showOnboardingAndWait(coordinator, mCallback);
+
+        TextView view = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
+                R.id.onboarding_subtitle);
+        assertEquals(
+                mActivity.getResources().getText(R.string.autofill_assistant_init_message_rent_car),
+                view.getText());
+    }
+
+    @Test
+    @MediumTest
+    public void testShowStandardInformationalText() throws Exception {
+        AutofillAssistantPreferencesUtil.setInitialPreferences(true);
+
+        HashMap<String, String> parameters = new HashMap();
+        AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator(
+                "", parameters, mActivity, mBottomSheetController, mTab);
+        coordinator.disableAnimationForTesting();
+        showOnboardingAndWait(coordinator, mCallback);
+
+        TextView view = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
+                R.id.onboarding_subtitle);
+        assertEquals(mActivity.getResources().getText(R.string.autofill_assistant_init_message),
+                view.getText());
     }
 
     /** Trigger onboarding and wait until it is fully displayed. */

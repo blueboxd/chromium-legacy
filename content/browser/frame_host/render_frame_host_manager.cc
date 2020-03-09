@@ -642,25 +642,36 @@ void RenderFrameHostManager::UnloadOldFrame(
       old_page_back_forward_cache_metrics->MarkNotRestoredWithReason(can_store);
   }
 
-  // Create a replacement proxy for the old RenderFrameHost. (There should not
-  // be one yet.)  This is done even if there are no active frames besides this
-  // one to simplify cleanup logic on the renderer side (see
-  // https://crbug.com/568836 for motivation).
-  RenderFrameProxyHost* proxy =
-      CreateRenderFrameProxyHost(old_render_frame_host->GetSiteInstance(),
-                                 old_render_frame_host->render_view_host());
-
-  // Tell the old RenderFrameHost to unload and be replaced by the proxy.
-  old_render_frame_host->Unload(proxy, true);
+  // Create a replacement proxy for the old RenderFrameHost when we're switching
+  // SiteInstance. There should not be one yet. This is done even if there are
+  // no active frames besides this one to simplify cleanup logic on the renderer
+  // side. See https://crbug.com/568836 for motivation.
+  RenderFrameProxyHost* proxy = nullptr;
+  if (render_frame_host_->GetSiteInstance() !=
+      old_render_frame_host->GetSiteInstance()) {
+    proxy =
+        CreateRenderFrameProxyHost(old_render_frame_host->GetSiteInstance(),
+                                   old_render_frame_host->render_view_host());
+  }
 
   // |old_render_frame_host| will be deleted when its unload ACK is received,
   // or when the timer times out, or when the RFHM itself is deleted (whichever
   // comes first).
   pending_delete_hosts_.push_back(std::move(old_render_frame_host));
+
+  // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
+  pending_delete_hosts_.back()->Unload(proxy, true);
 }
 
 void RenderFrameHostManager::DiscardUnusedFrame(
     std::unique_ptr<RenderFrameHostImpl> render_frame_host) {
+  // RenderDocument: In the case of a local<->local RenderFrameHost Swap, just
+  // discard the RenderFrameHost. There are no other proxies associated.
+  if (render_frame_host->GetSiteInstance() ==
+      render_frame_host_->GetSiteInstance()) {
+    return;  // |render_frame_host| is released here.
+  }
+
   // TODO(carlosk): this code is very similar to what can be found in
   // UnloadOldFrame and we should see that these are unified at some point.
 
@@ -802,6 +813,14 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // new one immediately.
   if (render_frame_host_->must_be_replaced())
     use_current_rfh = false;
+
+  // Force using a different RenderFrameHost when RenderDocument is enabled.
+  // TODO(arthursonzogni, fergal): Add support for the main frame.
+  if (IsRenderDocumentEnabled() && !frame_tree_node_->IsMainFrame() &&
+      !request->IsSameDocument() &&
+      render_frame_host_->has_committed_any_navigation()) {
+    use_current_rfh = false;
+  }
 
   bool notify_webui_of_rf_creation = false;
   if (use_current_rfh) {
@@ -2065,12 +2084,17 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
     SiteInstance* new_instance) {
   CHECK(new_instance);
   // This DCHECK is going to be fully removed as part of RenderDocument [1].
-  // Right now, the only case where a speculative RFH is created for a same-site
-  // navigation is when the old RenderFramehost has crashed.
+  //
+  // With RenderDocument: every cross-document navigation creates a new
+  // RenderFrameHost. The navigation is potentially same-SiteInstance.
+  //
+  // With RenderDocumentForCrashedFrame: navigations from a crashed
+  // RenderFrameHost creates a new RenderFrameHost. The navigation is
+  // potentially same-SiteInstance.
   //
   // [1] http://crbug.com/936696
   DCHECK(old_instance != new_instance ||
-         render_frame_host_->must_be_replaced());
+         render_frame_host_->must_be_replaced() || IsRenderDocumentEnabled());
 
   // The process for the new SiteInstance may (if we're sharing a process with
   // another host that already initialized it) or may not (we have our own
@@ -2100,12 +2124,17 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     SiteInstance* instance) {
   CHECK(instance);
   // This DCHECK is going to be fully removed as part of RenderDocument [1].
-  // Right now, the only case where a speculative RFH is created for a same-site
-  // navigation is when the old RenderFramehost has crashed.
+  //
+  // With RenderDocument: every cross-document navigation creates a new
+  // RenderFrameHost. The navigation is potentially same-SiteInstance.
+  //
+  // With RenderDocumentForCrashedFrame: navigations from a crashed
+  // RenderFrameHost creates a new RenderFrameHost. The navigation is
+  // potentially same-SiteInstance.
   //
   // [1] http://crbug.com/936696
   DCHECK(render_frame_host_->GetSiteInstance() != instance ||
-         render_frame_host_->must_be_replaced());
+         render_frame_host_->must_be_replaced() || IsRenderDocumentEnabled());
 
   // A RenderFrame in a different process from its parent RenderFrame
   // requires a RenderWidget for input/layout/painting.
@@ -2436,9 +2465,9 @@ bool RenderFrameHostManager::InitRenderFrame(
   // SiteInstance as its RenderFrameHost. This is only the case until the
   // RenderFrameHost commits, at which point it will replace and delete the
   // RenderFrameProxyHost.
-  // TODO(arthursonzogni): Implement same-process RenderFrame swap. In this case
-  // |previous_routing_id| can represent not only a RenderFrameProxyHost, but
-  // can also represent a RenderFrameHost.
+  //
+  // RenderDocument: During a same-process RenderFrame swap, the
+  // |previous_routing_id| doesn't represent a proxy, but a frame.
   int previous_routing_id = MSG_ROUTING_NONE;
   RenderFrameProxyHost* existing_proxy = GetRenderFrameProxyHost(site_instance);
   if (existing_proxy) {
@@ -2446,6 +2475,8 @@ bool RenderFrameHostManager::InitRenderFrame(
     CHECK_NE(previous_routing_id, MSG_ROUTING_NONE);
     if (!existing_proxy->is_render_frame_proxy_live())
       existing_proxy->InitRenderFrameProxy();
+  } else if (IsRenderDocumentEnabled()) {
+    previous_routing_id = current_frame_host()->GetRoutingID();
   }
 
   return delegate_->CreateRenderFrameForRenderManager(

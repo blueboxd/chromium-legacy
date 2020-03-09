@@ -35,6 +35,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/sessions/core/session_id_generator.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -157,6 +158,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   payments::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   RegisterVoiceSearchBrowserStatePrefs(registry);
+  safe_browsing::RegisterProfilePrefs(registry);
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(registry);
   syncer::InvalidatorRegistrarWithMemory::RegisterProfilePrefs(registry);

@@ -42,6 +42,8 @@ class BulkLeakCheckService : public KeyedService,
     // Those below are error states. On any error the current job is aborted.
     // The error is sticky until next CheckUsernamePasswordPairs() call.
 
+    // Cancel() aborted the running check.
+    kCanceled,
     // The user isn't signed-in to Chrome.
     kSignedOut,
     // Error obtaining an access token.

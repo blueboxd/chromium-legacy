@@ -732,7 +732,7 @@ void Animation::setStartTime(double start_time_ms,
 
   // 7. If animation has a pending play task or a pending pause task, cancel
   //    that task and resolve animation’s current ready promise with animation.
-  if (pending()) {
+  if (PendingInternal()) {
     pending_pause_ = false;
     pending_play_ = false;
     if (ready_promise_ &&
@@ -830,7 +830,7 @@ Animation::AnimationPlayState Animation::CalculateAnimationPlayState() const {
   //    * animation does not have either a pending play task or a pending pause
   //      task,
   //    then idle.
-  if (!CurrentTimeInternal() && !pending())
+  if (!CurrentTimeInternal() && !PendingInternal())
     return kIdle;
 
   // 2. Either of the following conditions are true:
@@ -854,15 +854,19 @@ Animation::AnimationPlayState Animation::CalculateAnimationPlayState() const {
   return kRunning;
 }
 
-bool Animation::pending() const {
+bool Animation::PendingInternal() const {
   return pending_pause_ || pending_play_;
+}
+
+bool Animation::pending() const {
+  return PendingInternal();
 }
 
 // https://drafts.csswg.org/web-animations-1/#reset-an-animations-pending-tasks.
 void Animation::ResetPendingTasks() {
   // 1. If animation does not have a pending play task or a pending pause task,
   //    abort this procedure.
-  if (!pending())
+  if (!PendingInternal())
     return;
 
   // 2. If animation has a pending play task, cancel that task.
@@ -1244,7 +1248,7 @@ void Animation::AsyncFinishMicrotask() {
   // transition was only temporary.
   if (pending_finish_notification_) {
     // A pending play or pause must resolve before the finish promise.
-    if (pending() && timeline_)
+    if (PendingInternal() && timeline_)
       NotifyReady(timeline_->CurrentTimeSeconds().value_or(0));
     CommitFinishNotification();
   }
@@ -1295,7 +1299,7 @@ void Animation::updatePlaybackRate(double playback_rate,
   //
   // 3a If animation has a pending play task or a pending pause task,
   //    Abort these steps.
-  if (pending())
+  if (PendingInternal())
     return;
 
   switch (play_state) {
@@ -1377,7 +1381,7 @@ ScriptPromise Animation::ready(ScriptState* script_state) {
   if (!ready_promise_) {
     ready_promise_ = MakeGarbageCollected<AnimationPromise>(
         ExecutionContext::From(script_state));
-    if (!pending())
+    if (!PendingInternal())
       ready_promise_->Resolve(this);
   }
   return ready_promise_->Promise(script_state->World());
@@ -1569,7 +1573,7 @@ void Animation::StartAnimationOnCompositor(
   // the playback rate preserve current time even if the start time is set.
   // Asynchronous updates have an associated pending play or pending pause
   // task associated with them.
-  if (start_time_ && !pending()) {
+  if (start_time_ && !PendingInternal()) {
     start_time = To<DocumentTimeline>(*timeline_)
                      .ZeroTime()
                      .since_origin()
@@ -1624,7 +1628,8 @@ void Animation::SetCompositorPending(bool effect_changed) {
   // sync them. This can happen if the blink side animation was started, the
   // compositor side hadn't started on its side yet, and then the blink side
   // start time was cleared (e.g. by setting current time).
-  if (pending() || !compositor_state_ || compositor_state_->effect_changed ||
+  if (PendingInternal() || !compositor_state_ ||
+      compositor_state_->effect_changed ||
       compositor_state_->playback_rate != EffectivePlaybackRate() ||
       compositor_state_->start_time != start_time_ ||
       !compositor_state_->start_time || !start_time_) {
@@ -1977,10 +1982,10 @@ void Animation::RejectAndResetPromiseMaybeAsync(AnimationPromise* promise) {
 void Animation::NotifyProbe() {
   AnimationPlayState old_play_state = reported_play_state_;
   AnimationPlayState new_play_state =
-      pending() ? kPending : CalculateAnimationPlayState();
+      PendingInternal() ? kPending : CalculateAnimationPlayState();
 
   if (old_play_state != new_play_state) {
-    if (!pending()) {
+    if (!PendingInternal()) {
       probe::AnimationPlayStateChanged(document_, this, old_play_state,
                                        new_play_state);
     }

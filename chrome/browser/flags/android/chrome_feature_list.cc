@@ -132,6 +132,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextMenuCopyImage,
     &kContextMenuPerformanceInfo,
     &kContextMenuSearchWithGoogleLens,
+    &kContextualSearchDebug,
     &kContextualSearchDefinitions,
     &kContextualSearchLongpressResolve,
     &kContextualSearchMlTapSuppression,
@@ -380,6 +381,9 @@ const base::Feature kContextMenuPerformanceInfo{
 
 const base::Feature kContextMenuSearchWithGoogleLens{
     "ContextMenuSearchWithGoogleLens", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContextualSearchDebug{"ContextualSearchDebug",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchDefinitions{
     "ContextualSearchDefinitions", base::FEATURE_ENABLED_BY_DEFAULT};

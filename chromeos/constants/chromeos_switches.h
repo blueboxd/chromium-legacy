@@ -171,6 +171,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kNeedArcMigrationPolicyCheck[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kNoteTakingAppIds[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeForceShowScreen[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kOobeForceTabletFirstRun[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeGuestSession[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeSkipPostLogin[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeSkipToLogin[];
@@ -252,6 +254,11 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsArcCpuRestrictionDisabled();
 
 // Returns true if all Bluetooth devices in UI (System Tray/Settings Page.)
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsUnfilteredBluetoothDevicesEnabled();
+
+// Returns whether the first user run OOBE flow (sequence of screens shown to
+// the user on their first login) should show tablet mode screens when the
+// device is not in tablet mode.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldOobeUseTabletModeFirstRun();
 
 }  // namespace switches
 }  // namespace chromeos

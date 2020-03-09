@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/token.h"
@@ -64,6 +65,7 @@ static const SessionCommand::id_type kCommandTabNavigationPathPruned = 24;
 static const SessionCommand::id_type kCommandSetTabGroup = 25;
 static const SessionCommand::id_type kCommandSetTabGroupMetadata = 26;
 static const SessionCommand::id_type kCommandSetTabGroupMetadata2 = 27;
+static const SessionCommand::id_type kCommandSetTabGuid = 28;
 
 namespace {
 
@@ -778,9 +780,21 @@ bool CreateTabsAndWindows(
         break;
       }
 
+      case kCommandSetTabGuid: {
+        std::unique_ptr<base::Pickle> pickle(command->PayloadAsPickle());
+        base::PickleIterator it(*pickle);
+        SessionID::id_type tab_id = -1;
+        std::string guid;
+        if (!it.ReadInt(&tab_id) || !it.ReadString(&guid) ||
+            !base::IsValidGUID(guid)) {
+          DVLOG(1) << "Failed reading command " << command->id();
+          return true;
+        }
+        GetTab(SessionID::FromSerializedValue(tab_id), tabs)->guid = guid;
+        break;
+      }
+
       default:
-        // TODO(skuhne): This might call back into a callback handler to extend
-        // the command set for specific implementations.
         DVLOG(1) << "Failed reading an unknown command " << command->id();
         return true;
     }
@@ -984,6 +998,15 @@ std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
     const std::string& app_name) {
   return CreateSetWindowAppNameCommand(kCommandSetWindowAppName, window_id,
                                        app_name);
+}
+
+std::unique_ptr<SessionCommand> CreateSetTabGuidCommand(
+    const SessionID& tab_id,
+    const std::string& guid) {
+  base::Pickle pickle;
+  pickle.WriteInt(tab_id.id());
+  pickle.WriteString(guid);
+  return std::make_unique<SessionCommand>(kCommandSetTabGuid, pickle);
 }
 
 bool ReplacePendingCommand(CommandStorageManager* command_storage_manager,

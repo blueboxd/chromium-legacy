@@ -298,8 +298,9 @@ void AppLaunchController::OnNetworkConfigRequested() {
 void AppLaunchController::OnNetworkConfigFinished() {
   DCHECK(network_config_requested_);
   network_config_requested_ = false;
+  showing_network_dialog_ = false;
   app_launch_splash_screen_view_->UpdateAppLaunchState(
-      AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
+      AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_PROFILE);
   startup_app_launcher_->RestartLauncher();
 }
 
@@ -307,10 +308,12 @@ void AppLaunchController::OnNetworkStateChanged(bool online) {
   if (!waiting_for_network_)
     return;
 
-  if (online && !network_config_requested_)
+  // If the network timed out, we should exit network config dialog as soon as
+  // we are back online.
+  if (online && (network_wait_timedout_ || !showing_network_dialog_)) {
+    ClearNetworkWaitTimer();
     startup_app_launcher_->ContinueWithNetworkReady();
-  else if (network_wait_timedout_)
-    MaybeShowNetworkConfigureUI();
+  }
 }
 
 void AppLaunchController::OnDeletingSplashScreenView() {
@@ -467,10 +470,18 @@ void AppLaunchController::InitializeNetwork() {
       FROM_HERE, base::TimeDelta::FromSeconds(network_wait_time_in_seconds),
       this, &AppLaunchController::OnNetworkWaitTimedout);
 
+  // Regardless of the network state, we should notify the view that network
+  // connection is required.
   app_launch_splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
-}
 
+  // If network configure ui was scheduled to be shown, we should display it
+  // before starting to install the app.
+  if (app_launch_splash_screen_view_->IsNetworkReady() &&
+      !show_network_config_ui_after_profile_load_) {
+    OnNetworkStateChanged(/*online*/ true);
+  }
+}
 bool AppLaunchController::IsNetworkReady() {
   return app_launch_splash_screen_view_ &&
          app_launch_splash_screen_view_->IsNetworkReady();

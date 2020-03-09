@@ -14,7 +14,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
@@ -143,7 +142,6 @@ class ProfileOAuth2TokenServiceDelegateAndroid
 
   AccountTrackerService* account_tracker_service_;
   RefreshTokenLoadStatus fire_refresh_token_loaded_;
-  base::Time last_update_accounts_time_;
 
   // For testing, disables the creation of the java counterpart, see
   // set_disable_interaction_with_system_accounts().

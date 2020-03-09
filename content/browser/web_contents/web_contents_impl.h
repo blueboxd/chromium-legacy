@@ -547,6 +547,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const GURL& blocked_url,
       const GURL& initiator_url,
       blink::mojom::NavigationBlockedReason reason) override;
+  void OnDidFinishLoad(RenderFrameHost* render_frame_host,
+                       const GURL& url) override;
   const GURL& GetMainFrameLastCommittedURL() override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
@@ -1379,7 +1381,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                const GURL& target_url);
   void OnDidDisplayContentWithCertificateErrors(RenderFrameHostImpl* source);
   void OnDidRunContentWithCertificateErrors(RenderFrameHostImpl* source);
-  void OnDidFinishLoad(RenderFrameHostImpl* source, const GURL& url);
   void OnUpdateZoomLimits(RenderViewHostImpl* source,
                           int minimum_percent,
                           int maximum_percent);

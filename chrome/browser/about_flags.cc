@@ -1665,6 +1665,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHistoryManipulationInterventionDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kHistoryManipulationIntervention)},
 #if defined(OS_ANDROID)
+    {"contextual-search-debug", flag_descriptions::kContextualSearchDebugName,
+     flag_descriptions::kContextualSearchDebugDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchDebug)},
     {"contextual-search-definitions",
      flag_descriptions::kContextualSearchDefinitionsName,
      flag_descriptions::kContextualSearchDefinitionsDescription, kOsAndroid,

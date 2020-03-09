@@ -8344,11 +8344,39 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="IOSAccountsSettingsCloseWithSwipe">
+  <owner>msarda@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Reported when Accounts Settings UI was dismissed was dismissed using swipe
+    down gesture. iOS only.
+  </description>
+</action>
+
 <action name="IOSBookmarkManagerCloseWithSwipe">
   <owner>eugenebut@chromium.com</owner>
   <owner>sczs@chromium.org</owner>
   <description>
     Recorded when a user closes bookmark manager by swiping down. iOS-only.
+  </description>
+</action>
+
+<action name="IOSClearBrowsingDataCloseWithSwipe">
+  <owner>edchin@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when Clear Browsing Data Settings UI was dismissed using swipe down
+    gesture. iOS only.
+  </description>
+</action>
+
+<action name="IOSGoogleServicesSettingsCloseWithSwipe">
+  <owner>msarda@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Reported when Google Services Settings UI was dismissed using swipe down
+    gesture. iOS only.
   </description>
 </action>
 
@@ -8368,6 +8396,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOSLanguagesSettingsCloseWithSwipe">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>pkl@chromium.org</owner>
+  <description>
+    Reported when Languages Settings UI was dismissed using swipe down gesture.
+    iOS only.
+  </description>
+</action>
+
 <action name="IOSLaunchedByOpenInChromeIntent">
   <owner>justincohen@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
@@ -8378,6 +8415,15 @@ should be able to be added at any place in this file.
   <owner>justincohen@chromium.org</owner>
   <description>
     User opened Chrome with a `Search in Chrome` Siri Shortcut.
+  </description>
+</action>
+
+<action name="IOSPasswordsSettingsCloseWithSwipe">
+  <owner>djean@chromium.org</owner>
+  <owner>javierrobles@chromium.com</owner>
+  <description>
+    Reported when Passwords Settings UI was dismissed using swipe down gesture.
+    iOS only.
   </description>
 </action>
 
@@ -8394,6 +8440,24 @@ should be able to be added at any place in this file.
   <owner>sczs@chromium.org</owner>
   <description>
     Recorded when a user closes Recent Tabs using swipe down gesture. iOS-only.
+  </description>
+</action>
+
+<action name="IOSSettingsCloseWithSwipe">
+  <owner>edchin@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when Settings UI was dismissed using swipe down gesture. iOS only.
+  </description>
+</action>
+
+<action name="IOSSyncEncryptionPassphraseSettingsCloseWithSwipe">
+  <owner>msarda@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Reported when Sync Encryption Passphrase Settings UI was dismissed using
+    swipe down gesture. iOS only.
   </description>
 </action>
 
@@ -11853,6 +11917,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileAccountsSettingsClose">
+  <owner>msarda@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Reported when Accounts Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
 <action name="MobileActionBarShown">
   <owner>donnd@chromium.org</owner>
   <description>
@@ -12178,6 +12250,15 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated as of at least 2017/02/28.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MobileClearBrowsingDataClose">
+  <owner>edchin@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when Clear Browsing Data Settings UI was dismissed. iOS only.
+  </description>
 </action>
 
 <action name="MobileClearBrowsingDataTriggeredFromLegacyUI">
@@ -12546,6 +12627,14 @@ should be able to be added at any place in this file.
     User tapped on the TOS link on the first run welcome view. This metric is
     only recorded if and after the TOS are accepted. This metric is specific to
     iOS.
+  </description>
+</action>
+
+<action name="MobileGoogleServicesSettingsClose">
+  <owner>msarda@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Reported when Google Services Settings UI was dismissed. iOS only.
   </description>
 </action>
 
@@ -13333,6 +13422,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobilePasswordsSettingsClose">
+  <owner>djean@chromium.org</owner>
+  <owner>javierrobles@chromium.com</owner>
+  <description>
+    Reported when Passwords Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
 <action name="MobilePopupMenuSwipeToSelect">
   <owner>gambard@chromium.org</owner>
   <description>
@@ -13551,6 +13648,13 @@ should be able to be added at any place in this file.
     The user pressed the Send Feedback button on a tab that is displaying the
     sad view.
   </description>
+</action>
+
+<action name="MobileSettingsClose">
+  <owner>edchin@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>Reported when Settings UI was dismissed. iOS only.</description>
 </action>
 
 <action name="MobileSettingsStorageClearAll">

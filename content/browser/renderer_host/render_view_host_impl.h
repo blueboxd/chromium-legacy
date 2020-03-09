@@ -180,6 +180,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // and the user has agreed to continue with closing the page.
   void ClosePageIgnoringUnloadEvents();
 
+  // Requests a page-scale animation based on the specified rect.
+  void ZoomToFindInPageRect(const gfx::Rect& rect_to_zoom);
+
   // Tells the renderer view to focus the first (last if reverse is true) node.
   void SetInitialFocus(bool reverse);
 

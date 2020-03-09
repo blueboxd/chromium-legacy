@@ -39,9 +39,6 @@ class IeemSitelistParserTest : public InProcessBrowserTest {
  public:
   IeemSitelistParserTest() = default;
   ~IeemSitelistParserTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IeemSitelistParserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(IeemSitelistParserTest, BadXml) {

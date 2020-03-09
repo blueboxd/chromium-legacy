@@ -70,6 +70,7 @@ NSString* const kNumberTriesKey = @"ChromeOmahaServiceNumberTries";
 NSString* const kLastSentVersionKey = @"ChromeOmahaServiceLastSentVersion";
 NSString* const kLastSentTimeKey = @"ChromeOmahaServiceLastSentTime";
 NSString* const kRetryRequestIdKey = @"ChromeOmahaServiceRetryRequestId";
+NSString* const kLastServerDateKey = @"ChromeOmahaServiceLastServerDate";
 
 class XmlWrapper : public OmahaXmlWriter {
  public:
@@ -123,7 +124,9 @@ class XmlWrapper : public OmahaXmlWriter {
   BOOL _manifestIsParsed;
   BOOL _pingIsParsed;
   BOOL _eventIsParsed;
+  BOOL _dayStartIsParsed;
   NSString* _appId;
+  int _serverDate;
   std::unique_ptr<UpgradeRecommendedDetails> _updateInformation;
 }
 
@@ -137,6 +140,10 @@ class XmlWrapper : public OmahaXmlWriter {
 // If an upgrade is possible, returns the details of the notification to send.
 // Otherwise, return NULL.
 - (UpgradeRecommendedDetails*)upgradeRecommendedDetails;
+
+// If the response was successfully parsed, returns the date according to the
+// server.
+- (int)serverDate;
 
 @end
 
@@ -159,9 +166,13 @@ class XmlWrapper : public OmahaXmlWriter {
   return _updateInformation.get();
 }
 
+- (int)serverDate {
+  return _serverDate;
+}
+
 // This method is parsing a message with the following type:
 // <response...>
-//   <daystart.../>
+//   <daystart elapsed_days="???" .../>
 //   <app...>
 //     <updatecheck status="ok">
 //       <urls>
@@ -198,7 +209,7 @@ class XmlWrapper : public OmahaXmlWriter {
 
   // Array of uninteresting tags in the Omaha xml response.
   NSArray* ignoredTagNames =
-      @[ @"action", @"actions", @"daystart", @"package", @"packages", @"urls" ];
+      @[ @"action", @"actions", @"package", @"packages", @"urls" ];
   if ([ignoredTagNames containsObject:elementName])
     return;
 
@@ -207,6 +218,13 @@ class XmlWrapper : public OmahaXmlWriter {
         [[attributeDict valueForKey:@"protocol"] isEqualToString:@"3.0"] &&
         [[attributeDict valueForKey:@"server"] isEqualToString:@"prod"]) {
       _responseIsParsed = YES;
+    } else {
+      _hasError = YES;
+    }
+  } else if (!_dayStartIsParsed) {
+    if ([elementName isEqualToString:@"daystart"]) {
+      _dayStartIsParsed = YES;
+      _serverDate = [[attributeDict valueForKey:@"elapsed_days"] integerValue];
     } else {
       _hasError = YES;
     }
@@ -363,6 +381,10 @@ void OmahaService::StartInternal() {
   number_of_tries_ = [defaults integerForKey:kNumberTriesKey];
   last_sent_time_ =
       base::Time::FromCFAbsoluteTime([defaults doubleForKey:kLastSentTimeKey]);
+  last_server_date_ = [defaults integerForKey:kLastServerDateKey];
+  if (last_server_date_ == 0) {
+    last_server_date_ = -2;  // -2 indicates "unknown" to the Omaha Server.
+  }
   NSString* lastSentVersion = [defaults stringForKey:kLastSentVersionKey];
   if (lastSentVersion) {
     last_sent_version_ =
@@ -529,8 +551,11 @@ std::string OmahaService::GetPingContent(const std::string& requestId,
     xml_wrapper.EndElement();
 
     // Set up <ping active=1/>
+    std::string last_server_date = base::StringPrintf("%d", last_server_date_);
     xml_wrapper.StartElement("ping");
     xml_wrapper.WriteAttribute("active", "1");
+    xml_wrapper.WriteAttribute("ad", last_server_date.c_str());
+    xml_wrapper.WriteAttribute("rd", last_server_date.c_str());
     xml_wrapper.EndElement();
   }
 
@@ -634,6 +659,7 @@ void OmahaService::PersistStates() {
   [defaults setInteger:number_of_tries_ forKey:kNumberTriesKey];
   [defaults setObject:base::SysUTF8ToNSString(last_sent_version_.GetString())
                forKey:kLastSentVersionKey];
+  [defaults setInteger:last_server_date_ forKey:kLastServerDateKey];
 
   // Save critical state information for usage reporting.
   [defaults synchronize];
@@ -677,6 +703,7 @@ void OmahaService::OnURLLoadComplete(
   last_sent_time_ = base::Time::Now();
   last_sent_version_ = version_info::GetVersion();
   sending_install_event_ = false;
+  last_server_date_ = [delegate serverDate];
   ClearInstallRetryRequestId();
   PersistStates();
   SendOrScheduleNextPing();
@@ -765,4 +792,5 @@ void OmahaService::ClearPersistentStateForTests() {
   [defaults removeObjectForKey:kLastSentVersionKey];
   [defaults removeObjectForKey:kLastSentTimeKey];
   [defaults removeObjectForKey:kRetryRequestIdKey];
+  [defaults removeObjectForKey:kLastServerDateKey];
 }

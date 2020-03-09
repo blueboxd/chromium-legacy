@@ -82,7 +82,7 @@ bool PendingAnimations::Update(
 
       if (animation->Playing() && !animation->startTime()) {
         waiting_for_start_time.push_back(animation.Get());
-      } else if (animation->pending()) {
+      } else if (animation->PendingInternal()) {
         // A pending animation that is not waiting on a start time does not need
         // to be synchronized with animations that are starting up. Nonetheless,
         // it needs to notify the animation to resolve the ready promise and
@@ -153,7 +153,7 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
   animations.swap(waiting_for_compositor_animation_start_);
 
   for (auto animation : animations) {
-    if (animation->startTime() || !animation->pending() ||
+    if (animation->startTime() || !animation->PendingInternal() ||
         !animation->timeline() || !animation->timeline()->IsActive()) {
       // Already started or no longer relevant.
       continue;

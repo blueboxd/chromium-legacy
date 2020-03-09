@@ -437,7 +437,7 @@ public class ExternalNavigationHandler {
     }
 
     /**
-     * The "about:", "chrome:", "chrome-native:", "chrome-devtools:", and "devtools:" schemes
+     * The "about:", "chrome:", "chrome-native:", and "devtools:" schemes
      * are internal to the browser; don't want these to be dispatched to other apps.
      */
     private boolean hasInternalScheme(
@@ -454,8 +454,7 @@ public class ExternalNavigationHandler {
         if (url.startsWith(ContentUrlConstants.ABOUT_SCHEME)
                 || url.startsWith(UrlConstants.CHROME_URL_SHORT_PREFIX)
                 || url.startsWith(UrlConstants.CHROME_NATIVE_URL_SHORT_PREFIX)
-                || url.startsWith(UrlConstants.DEVTOOLS_URL_SHORT_PREFIX)
-                || url.startsWith(UrlConstants.DEVTOOLS_FALLBACK_URL_SHORT_PREFIX)) {
+                || url.startsWith(UrlConstants.DEVTOOLS_URL_SHORT_PREFIX)) {
             if (DEBUG) Log.i(TAG, "Navigating to a chrome-internal page");
             return true;
         }

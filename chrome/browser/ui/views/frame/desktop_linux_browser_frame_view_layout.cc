@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/desktop_linux_browser_frame_view_layout.h"
 
-#include "chrome/browser/ui/views/nav_button_provider.h"
+#include "ui/views/linux_ui/nav_button_provider.h"
 
 DesktopLinuxBrowserFrameViewLayout::DesktopLinuxBrowserFrameViewLayout(
     views::NavButtonProvider* nav_button_provider)

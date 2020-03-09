@@ -2257,6 +2257,11 @@ const char kContextMenuPerformanceInfoName[] = "Context menu performance hints";
 const char kContextMenuPerformanceInfoDescription[] =
     "Show link performance information in the context menu.";
 
+const char kContextualSearchDebugName[] = "Contextual Search debug";
+const char kContextualSearchDebugDescription[] =
+    "Enables internal debugging of Contextual Search behavior on the client "
+    "and server.";
+
 const char kContextualSearchDefinitionsName[] = "Contextual Search definitions";
 const char kContextualSearchDefinitionsDescription[] =
     "Enables touch-activated contextual definitions of words on a page to be "

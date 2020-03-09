@@ -61,6 +61,7 @@ class OmahaService {
   FRIEND_TEST_ALL_PREFIXES(OmahaServiceTest, InstallEventMessageTest);
   FRIEND_TEST_ALL_PREFIXES(OmahaServiceTest, SendPingFailure);
   FRIEND_TEST_ALL_PREFIXES(OmahaServiceTest, SendPingSuccess);
+  FRIEND_TEST_ALL_PREFIXES(OmahaServiceTest, ParseAndEchoLastServerDate);
   FRIEND_TEST_ALL_PREFIXES(OmahaServiceTest, SendInstallEventSuccess);
   FRIEND_TEST_ALL_PREFIXES(OmahaServiceTest, SendPingReceiveUpdate);
   FRIEND_TEST_ALL_PREFIXES(OmahaServiceTest, PersistStatesTest);
@@ -192,6 +193,9 @@ class OmahaService {
 
   // Last version for which an installation ping has been sent.
   base::Version last_sent_version_;
+
+  // Last received server date.
+  int last_server_date_;
 
   // The language in use at start up.
   std::string locale_lang_;

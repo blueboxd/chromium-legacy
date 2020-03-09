@@ -116,8 +116,9 @@ class OCSPRequestSessionDelegateURLRequest : public OCSPRequestSessionDelegate,
   std::unique_ptr<OCSPRequestSessionResult> StartAndWait(
       const OCSPRequestSessionParams* params) override {
     GetOCSPIOLoop()->PostTaskToIOLoop(
-        FROM_HERE, base::Bind(&OCSPRequestSessionDelegateURLRequest::StartLoad,
-                              this, params));
+        FROM_HERE,
+        base::BindOnce(&OCSPRequestSessionDelegateURLRequest::StartLoad, this,
+                       params));
 
     // Wait with a timeout.
     base::TimeDelta timeout = params->timeout;

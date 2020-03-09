@@ -228,7 +228,8 @@ class ChromeBrowsingDataRemoverDelegate
     kLeakedCredentials = 32,  // deprecated
     kFieldInfo = 33,
     kCompromisedCredentials = 34,
-    kMaxValue = kCompromisedCredentials,
+    kUserDataSnapshot = 35,
+    kMaxValue = kUserDataSnapshot,
   };
 
   // Called by CreateTaskCompletionClosure().

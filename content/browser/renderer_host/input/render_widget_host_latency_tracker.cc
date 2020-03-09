@@ -91,7 +91,9 @@ RenderWidgetHostLatencyTracker::~RenderWidgetHostLatencyTracker() {}
 void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
     WebInputEvent::Type type,
     const LatencyInfo& latency,
-    InputEventAckState ack_result) {
+    InputEventAckState ack_result,
+    base::TimeTicks ack_timestamp) {
+  DCHECK(!ack_timestamp.is_null());
   // If this event was coalesced into another event, ignore it, as the event it
   // was coalesced into will reflect the full latency.
   if (latency.coalesced())
@@ -144,14 +146,10 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
     }
   }
 
-  base::TimeTicks rwh_ack_timestamp;
-  if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
-                          &rwh_ack_timestamp)) {
-    if (!multi_finger_touch_gesture && !main_thread_timestamp.is_null()) {
-      UMA_HISTOGRAM_INPUT_LATENCY_MILLISECONDS(
-          "Event.Latency.BlockingTime." + event_name + default_action_status,
-          main_thread_timestamp, rwh_ack_timestamp);
-    }
+  if (!multi_finger_touch_gesture && !main_thread_timestamp.is_null()) {
+    UMA_HISTOGRAM_INPUT_LATENCY_MILLISECONDS(
+        "Event.Latency.BlockingTime." + event_name + default_action_status,
+        main_thread_timestamp, ack_timestamp);
   }
 }
 
@@ -252,7 +250,6 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
     }
   }
 
-  latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT);
   // If this event couldn't have caused a gesture event, and it didn't trigger
   // rendering, we're done processing it. If the event got coalesced then
   // terminate it as well. We also exclude cases where we're against the scroll
@@ -263,7 +260,8 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
     latency->Terminate();
   }
 
-  ComputeInputLatencyHistograms(event.GetType(), *latency, ack_result);
+  ComputeInputLatencyHistograms(event.GetType(), *latency, ack_result,
+                                base::TimeTicks::Now());
 }
 
 void RenderWidgetHostLatencyTracker::OnEventStart(ui::LatencyInfo* latency) {

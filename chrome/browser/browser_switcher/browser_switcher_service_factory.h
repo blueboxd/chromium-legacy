@@ -24,6 +24,10 @@ class BrowserSwitcherServiceFactory : public BrowserContextKeyedServiceFactory {
   static BrowserSwitcherService* GetForBrowserContext(
       content::BrowserContext* browser_context);
 
+  BrowserSwitcherServiceFactory(const BrowserSwitcherServiceFactory&) = delete;
+  BrowserSwitcherServiceFactory& operator=(
+      const BrowserSwitcherServiceFactory&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<BrowserSwitcherServiceFactory>;
 
@@ -35,8 +39,6 @@ class BrowserSwitcherServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherServiceFactory);
 };
 
 }  // namespace browser_switcher

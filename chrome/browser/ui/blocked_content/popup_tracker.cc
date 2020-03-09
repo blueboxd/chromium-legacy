@@ -16,13 +16,15 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
-PopupTracker* PopupTracker::CreateForWebContents(content::WebContents* contents,
-                                                 content::WebContents* opener) {
+PopupTracker* PopupTracker::CreateForWebContents(
+    content::WebContents* contents,
+    content::WebContents* opener,
+    WindowOpenDisposition disposition) {
   DCHECK(contents);
   DCHECK(opener);
   auto* tracker = FromWebContents(contents);
   if (!tracker) {
-    tracker = new PopupTracker(contents, opener);
+    tracker = new PopupTracker(contents, opener, disposition);
     contents->SetUserData(UserDataKey(), base::WrapUnique(tracker));
   }
   return tracker;
@@ -31,13 +33,15 @@ PopupTracker* PopupTracker::CreateForWebContents(content::WebContents* contents,
 PopupTracker::~PopupTracker() = default;
 
 PopupTracker::PopupTracker(content::WebContents* contents,
-                           content::WebContents* opener)
+                           content::WebContents* opener,
+                           WindowOpenDisposition disposition)
     : content::WebContentsObserver(contents),
       scoped_observer_(this),
       visibility_tracker_(
           base::DefaultTickClock::GetInstance(),
           contents->GetVisibility() != content::Visibility::HIDDEN),
-      opener_source_id_(ukm::GetSourceIdForWebContentsDocument(opener)) {
+      opener_source_id_(ukm::GetSourceIdForWebContentsDocument(opener)),
+      window_open_disposition_(disposition) {
   if (auto* popup_opener = PopupOpenerTabHelper::FromWebContents(opener))
     popup_opener->OnOpenedPopup(this);
 
@@ -83,6 +87,7 @@ void PopupTracker::WebContentsDestroyed() {
         .SetTrusted(is_trusted_)
         .SetNumInteractions(capped_interactions)
         .SetSafeBrowsingStatus(static_cast<int>(safe_browsing_status_))
+        .SetWindowOpenDisposition(static_cast<int>(window_open_disposition_))
         .Record(ukm::UkmRecorder::Get());
   }
 }

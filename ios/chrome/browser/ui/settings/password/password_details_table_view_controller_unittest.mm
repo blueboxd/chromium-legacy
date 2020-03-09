@@ -7,10 +7,10 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
-#import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/app/password_test_util.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -61,7 +61,7 @@ class PasswordDetailsTableViewControllerTest
   void SetUp() override {
     ChromeTableViewControllerTest::SetUp();
     reauthentication_module_ = [[MockReauthenticationModule alloc] init];
-    reauthentication_module_.shouldSucceed = YES;
+    reauthentication_module_.expectedResult = ReauthenticationResult::kSuccess;
   }
 
   ChromeTableViewController* InstantiateController() override {

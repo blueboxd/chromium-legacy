@@ -155,6 +155,10 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
            mojo::PendingReceiver<mojom::MediaController>& media_controller,
            mojo::PendingRemote<mojom::MediaStatusObserver>& observer,
            CreateMediaRouteControllerCallback& callback));
+  void GetState(GetStateCallback callback) override {
+    GetStateInternal(callback);
+  }
+  MOCK_METHOD1(GetStateInternal, void(const GetStateCallback& callback));
 
   // These methods execute the callbacks with the success or timeout result
   // code. If the callback takes a route, the route set in SetRouteToReturn() is

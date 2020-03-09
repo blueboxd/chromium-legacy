@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -36,19 +37,24 @@ GestureNavigationScreen::~GestureNavigationScreen() {
 }
 
 void GestureNavigationScreen::ShowImpl() {
-  // TODO(mmourgos): If clamshell mode is enabled and device is detachable, then
-  // show the gesture navigation flow.
-
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
       !ash::features::IsHideShelfControlsInTabletModeEnabled() ||
-      !ash::TabletMode::Get()->InTabletMode() ||
       accessibility_manager->IsSpokenFeedbackEnabled() ||
       accessibility_manager->IsAutoclickEnabled() ||
       accessibility_manager->IsSwitchAccessEnabled()) {
     exit_callback_.Run();
     return;
   }
+
+  // Skip the screen if the device is not in tablet mode, unless tablet mode
+  // first user run is forced on the device.
+  if (!ash::TabletMode::Get()->InTabletMode() &&
+      !chromeos::switches::ShouldOobeUseTabletModeFirstRun()) {
+    exit_callback_.Run();
+    return;
+  }
+
   view_->Show();
 }
 

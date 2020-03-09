@@ -360,31 +360,24 @@
       }
     },
 
-    // - is_slot: true
+    // - surrogate_for: "other-property"
     //
-    // "Slots" are used to resolve properties which cascade separately, but
-    // use the same storage on ComputedStyle. In other words, properties that
-    // are slots, have some other property (or properties) that map to them.
-    // For example, -webkit-writing-mode maps to writing-mode, and inline-size
-    // maps to either width or height.
+    // A surrogate is a property which acts like another property. Unlike an
+    // alias (which is resolved as parse-time), a surrogate exists alongside
+    // the original in the parsed rule, and in the cascade.
     //
-    // See StyleCascade::Resolver::SetSlot
-    is_slot: {
-      default: false,
-      valid_type: "bool",
-    },
-
-    // - slots: ["other-property1", "other-property2", ...]
+    // However, surrogates modify the same fields on ComputedStyle. Examples of
+    // surrogates are:
     //
-    // Lists the properties mapped to during StyleCascade::Apply. Note that
-    // for properties that use direction_aware_options, 'slots' should not be
-    // listed, as the mapping is determined at run-time (depending og e.g.
-    // 'direction').
+    //  * -webkit-writing-mode (surrogate of writing-mode)
+    //  * inline-size (surrogate for width, or height)
+    //  * All css-logical propeties in general
     //
-    // See also 'is_slot' flag, and StyleCascade::Resolver::SetSlot
-    slots: {
-      default: [],
-      valid_type: "list",
+    // Note that for properties that use direction_aware_options,
+    // 'surrogate_for' should not be set, as the mapping is determined at
+    // run-time (depending og e.g. 'direction').
+    surrogate_for: {
+      valid_type: "str",
     },
 
     // - priority: "High"
@@ -949,7 +942,6 @@
       name: "writing-mode",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
-      is_slot: true,
       field_template: "keyword",
       include_paths: ["third_party/blink/renderer/platform/text/writing_mode.h"],
       keywords: ["horizontal-tb", "vertical-rl", "vertical-lr"],
@@ -966,7 +958,7 @@
       type_name: "WritingMode",
       style_builder_custom_functions: ["value"],
       priority: "High",
-      slots: ["writing-mode"],
+      surrogate_for: "writing-mode",
     },
     {
       name: "text-rendering",
@@ -982,7 +974,6 @@
       name: "zoom",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       is_descriptor: true,
-      is_slot: true,
       field_group: "visual",
       field_template: "primitive",
       default_value: "1.0",
@@ -1210,7 +1201,6 @@
     {
       name: "border-bottom-color",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
-      is_slot: true,
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -1254,7 +1244,6 @@
     {
       name: "border-bottom-style",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "surround",
       field_template: "keyword",
       keywords: [
@@ -1269,7 +1258,6 @@
     {
       name: "border-bottom-width",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -1295,7 +1283,6 @@
     {
       name: "border-image-outset",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      is_slot: true,
       interpolable: true,
       typedom_types: ["Length", "Number"],
       style_builder_template: "border_image",
@@ -1307,7 +1294,6 @@
     {
       name: "border-image-repeat",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      is_slot: true,
       keywords: ["stretch", "repeat", "round", "space"],
       typedom_types: ["Keyword"],
       style_builder_template: "border_image",
@@ -1319,7 +1305,6 @@
     {
       name: "border-image-slice",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      is_slot: true,
       interpolable: true,
       typedom_types: ["Number", "Percentage"],
       style_builder_template: "border_image",
@@ -1331,7 +1316,6 @@
     {
       name: "border-image-source",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      is_slot: true,
       interpolable: true,
       keywords: ["none"],
       typedom_types: ["Keyword", "Image"],
@@ -1341,7 +1325,6 @@
     {
       name: "border-image-width",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      is_slot: true,
       interpolable: true,
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage", "Number"],
@@ -1354,7 +1337,6 @@
     {
       name: "border-left-color",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
-      is_slot: true,
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -1372,7 +1354,6 @@
     {
       name: "border-left-style",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "surround",
       field_template: "keyword",
       keywords: [
@@ -1387,7 +1368,6 @@
     {
       name: "border-left-width",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -1403,7 +1383,6 @@
     {
       name: "border-right-color",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
-      is_slot: true,
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -1421,7 +1400,6 @@
     {
       name: "border-right-style",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "surround",
       field_template: "keyword",
       keywords: [
@@ -1436,7 +1414,6 @@
     {
       name: "border-right-width",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -1452,7 +1429,6 @@
     {
       name: "border-top-color",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
-      is_slot: true,
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -1496,7 +1472,6 @@
     {
       name: "border-top-style",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "surround",
       field_template: "keyword",
       keywords: [
@@ -1511,7 +1486,6 @@
     {
       name: "border-top-width",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -1527,7 +1501,6 @@
     {
       name: "bottom",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -1739,7 +1712,6 @@
     {
       name: "contain-intrinsic-size",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       field_group: "box",
       field_template: "external",
@@ -2116,7 +2088,6 @@
       name: "height",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       is_descriptor: true,
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "box",
@@ -2204,7 +2175,6 @@
     {
       name: "left",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -2311,7 +2281,6 @@
     {
       name: "margin-bottom",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -2326,7 +2295,6 @@
     {
       name: "margin-left",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -2341,7 +2309,6 @@
     {
       name: "margin-right",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -2356,7 +2323,6 @@
     {
       name: "margin-top",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -2424,7 +2390,6 @@
     {
       name: "max-height",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       is_descriptor: true,
       interpolable: true,
       field_group: "box",
@@ -2437,7 +2402,6 @@
     {
       name: "max-width",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       is_descriptor: true,
       interpolable: true,
       field_group: "box",
@@ -2450,7 +2414,6 @@
     {
       name: "min-height",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       is_descriptor: true,
       interpolable: true,
       field_group: "box",
@@ -2462,7 +2425,6 @@
     {
       name: "min-width",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       is_descriptor: true,
       interpolable: true,
       field_group: "box",
@@ -2722,7 +2684,6 @@
     {
       name: "overflow-x",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_template: "keyword",
       keywords: [
         "visible", "hidden", "scroll", "auto", "overlay"
@@ -2734,7 +2695,6 @@
     {
       name: "overflow-y",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_template: "keyword",
       keywords: [
         "visible", "hidden", "scroll", "auto", "overlay",
@@ -2760,7 +2720,6 @@
     {
       name: "overscroll-behavior-x",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
       default_value: "auto",
@@ -2770,7 +2729,6 @@
     {
       name: "overscroll-behavior-y",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
       default_value: "auto",
@@ -2780,7 +2738,6 @@
     {
       name: "padding-bottom",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -2794,7 +2751,6 @@
     {
       name: "padding-left",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -2808,7 +2764,6 @@
     {
       name: "padding-right",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -2822,7 +2777,6 @@
     {
       name: "padding-top",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -2929,7 +2883,6 @@
     {
       name: "right",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -3009,7 +2962,6 @@
     {
       name: "scroll-margin-bottom",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "*",
       field_template: "primitive",
       default_value: "0.0f",
@@ -3038,7 +2990,6 @@
     {
       name: "scroll-margin-left",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "*",
       field_template: "primitive",
       default_value: "0.0f",
@@ -3049,7 +3000,6 @@
     {
       name: "scroll-margin-right",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "*",
       field_template: "primitive",
       default_value: "0.0f",
@@ -3060,7 +3010,6 @@
     {
       name: "scroll-margin-top",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "*",
       field_template: "primitive",
       default_value: "0.0f",
@@ -3097,7 +3046,6 @@
     {
       name: "scroll-padding-bottom",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
@@ -3134,7 +3082,6 @@
     {
       name: "scroll-padding-left",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
@@ -3145,7 +3092,6 @@
     {
       name: "scroll-padding-right",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
@@ -3156,7 +3102,6 @@
     {
       name: "scroll-padding-top",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
@@ -3578,7 +3523,6 @@
     {
       name: "top",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "surround",
@@ -3787,8 +3731,6 @@
       name: "-webkit-border-image",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       style_builder_custom_functions: ["value"],
-      slots: ["border-image-outset", "border-image-repeat", "border-image-slice",
-              "border-image-source", "border-image-width"],
       valid_for_first_letter: true,
     },
     {
@@ -4359,7 +4301,6 @@
       name: "width",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       is_descriptor: true,
-      is_slot: true,
       interpolable: true,
       layout_dependent: true,
       field_group: "box",
@@ -5521,7 +5462,6 @@
       name: "-internal-visited-border-left-color",
       visited_property_for: "border-left-color",
       property_methods: ["ParseSingleValue", "ColorIncludingFallback"],
-      is_slot: true,
       field_group: "*",
       field_template: "external",
       include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
@@ -5537,7 +5477,6 @@
       name: "-internal-visited-border-right-color",
       visited_property_for: "border-right-color",
       property_methods: ["ParseSingleValue", "ColorIncludingFallback"],
-      is_slot: true,
       field_group: "*",
       field_template: "external",
       include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
@@ -5553,7 +5492,6 @@
       name: "-internal-visited-border-top-color",
       visited_property_for: "border-top-color",
       property_methods: ["ParseSingleValue", "ColorIncludingFallback"],
-      is_slot: true,
       field_group: "*",
       field_template: "external",
       include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
@@ -5569,7 +5507,6 @@
       name: "-internal-visited-border-bottom-color",
       visited_property_for: "border-bottom-color",
       property_methods: ["ParseSingleValue", "ColorIncludingFallback"],
-      is_slot: true,
       field_group: "*",
       field_template: "external",
       include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
@@ -5738,7 +5675,7 @@
       field_group: "*",
       priority: "High",
       style_builder_custom_functions: ["initial", "inherit", "value"],
-      slots: ["zoom"],
+      surrogate_for: "zoom",
     },
 
     // Name: -internal-empty-line-height:

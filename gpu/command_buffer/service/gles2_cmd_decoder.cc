@@ -9280,7 +9280,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       !feature_info_->feature_flags().desktop_srgb_support ||
       gl_version_info().IsAtLeastGL(4, 4) ||
       (gl_version_info().IsAtLeastGL(4, 2) && encode_srgb_only)) {
-    if (enable_srgb && gl_version_info().IsAtLeastGL(4, 2)) {
+    if (enable_srgb && feature_info_->feature_flags().ext_srgb_write_control) {
       state_.EnableDisableFramebufferSRGB(enable_srgb);
     }
 

@@ -5,6 +5,8 @@
 /** @fileoverview Runs the Polymer Check Password tests. */
 
 cr.define('settings_passwords_check', function() {
+  const PasswordCheckState = chrome.passwordsPrivate.PasswordCheckState;
+
   function createCheckPasswordSection() {
     // Create a passwords-section to use for testing.
     const passwordsSection =
@@ -14,6 +16,19 @@ cr.define('settings_passwords_check', function() {
     return passwordsSection;
   }
 
+  /**
+   * Helper method used to create a compromised list item.
+   * @param {!chrome.passwordsPrivate.CompromisedCredential} entry
+   * @return {!PasswordCheckListItemElement}
+   */
+  function createLeakedPasswordItem(entry) {
+    const leakedPasswordItem =
+        this.document.createElement('password-check-list-item');
+    leakedPasswordItem.item = entry;
+    document.body.appendChild(leakedPasswordItem);
+    Polymer.dom.flush();
+    return leakedPasswordItem;
+  }
 
   /**
    * Helper method that validates a that elements in the compromised credentials
@@ -98,6 +113,17 @@ cr.define('settings_passwords_check', function() {
           });
     });
 
+    // Test verifies that credentials from mobile app shown correctly
+    test('testSomeCompromisedCredentials', function() {
+      const password = autofill_test_util.makeCompromisedCredentials(
+          'one.com', 'test4', 'LEAKED');
+      password.changePasswordUrl = null;
+
+      const checkPasswordSection = createLeakedPasswordItem(password);
+      assertEquals(checkPasswordSection.$$('changePasswordUrl'), null);
+      assert(checkPasswordSection.$$('#changePasswordInApp'));
+    });
+
     // Verify that the More Actions menu opens when the button is clicked.
     test('testMoreActionsMenu', function() {
       const leakedPasswords = [
@@ -122,6 +148,48 @@ cr.define('settings_passwords_check', function() {
             node.$.more.click();
             assertTrue(menu.open);
           });
+    });
+
+    // A changing status is immediately reflected in title, icon and banner.
+    test('testUpdatesNumberOfCheckedPasswordsWhileRunning', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.RUNNING,
+              /*checked=*/ 1,
+              /*remaining=*/ 1);
+      passwordManager.data.leakedCredentials =
+          autofill_test_util.makeCompromisedCredentialsInfo([], 'just now');
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        expectEquals(section.status_.state, PasswordCheckState.RUNNING);
+
+        // Change status from running to IDLE.
+        assert(!!passwordManager.lastCallback.addPasswordCheckStatusListener);
+        passwordManager.lastCallback.addPasswordCheckStatusListener(
+            autofill_test_util.makePasswordCheckStatus(
+                /*state=*/ PasswordCheckState.IDLE,
+                /*checked=*/ 2,
+                /*remaining=*/ 0));
+
+        Polymer.dom.flush();
+        expectEquals(section.status_.state, PasswordCheckState.IDLE);
+      });
+    });
+
+    // Tests that the status is queried right when the page loads.
+    test('testQueriesCheckedStatusImmediately', function() {
+      const data = passwordManager.data;
+      assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
+      assertEquals(0, data.leakedCredentials.compromisedCredentials.length);
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        expectEquals(
+            checkPasswordSection.status_.state, PasswordCheckState.IDLE);
+      }, () => assert(false));
     });
   });
 });

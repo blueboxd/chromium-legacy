@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/observer_list_types.h"
 #include "base/optional.h"
@@ -109,6 +110,10 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   void AddAppStateObserver(AppStateObserver* observer);
   void RemoveAppStateObserver(AppStateObserver* observer);
 
+  // Called from AppTimeController to notify AppActivityRegistry about installed
+  // apps which AppActivityRegistry may have missed.
+  void SetInstalledApps(const std::vector<AppId>& installed_apps);
+
   // Returns the total active time for the application since the last time limit
   // reset.
   base::TimeDelta GetActiveTime(const AppId& app_id) const;
@@ -122,9 +127,6 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Returns current time limit for the app identified by |app_id|.
   // Will return nullopt if there is no limit set.
   base::Optional<base::TimeDelta> GetTimeLimit(const AppId& app_id) const;
-
-  // Returns the vector of paused applications.
-  std::vector<PauseAppInfo> GetPausedApps(bool show_pause_dialog) const;
 
   // Populates |report| with collected app activity. Returns whether any data
   // were reported.
@@ -203,6 +205,10 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Convenience methods to access state of the app identified by |app_id|.
   // Should only be called if app exists in the registry.
   void SetAppState(const AppId& app_id, AppState app_state);
+
+  // Notifies state observers the application identified by |app_id| has reached
+  // its set time limit.
+  void NotifyLimitReached(const AppId& app_id, bool was_active);
 
   // Methods to set the application as active and inactive respectively.
   void SetAppActive(const AppId& app_id, base::Time timestamp);

@@ -398,12 +398,6 @@ void ProfileOAuth2TokenServiceDelegateAndroid::UpdateAccountList(
       !signed_in_account_id.has_value()) {
     account_tracker_service_->SetMigrationDone();
   }
-
-  if (!last_update_accounts_time_.is_null()) {
-    base::TimeDelta sample = base::Time::Now() - last_update_accounts_time_;
-    UmaHistogramLongTimes("Signin.AndroidTimeBetweenUpdateAccountList", sample);
-  }
-  last_update_accounts_time_ = base::Time::Now();
 }
 
 bool ProfileOAuth2TokenServiceDelegateAndroid::UpdateAccountList(

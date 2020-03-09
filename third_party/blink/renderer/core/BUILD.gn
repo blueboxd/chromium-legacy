@@ -526,19 +526,6 @@ css_properties("make_core_generated_css_property_names") {
   ]
 }
 
-css_properties("make_core_generated_style_cascade_slots") {
-  script = "../build/scripts/core/css/make_style_cascade_slots.py"
-  in_files = []
-  other_inputs = [
-    "../build/scripts/core/css/templates/style_cascade_slots.h.tmpl",
-    "../build/scripts/core/css/templates/style_cascade_slots.cc.tmpl",
-  ]
-  outputs = [
-    "$blink_core_output_dir/css/style_cascade_slots.h",
-    "$blink_core_output_dir/css/style_cascade_slots.cc",
-  ]
-}
-
 code_generator("make_core_generated_atrule_names") {
   script = "../build/scripts/core/css/parser/make_atrule_names.py"
   json_inputs = [ "css/parser/at_rule_names.json5" ]
@@ -949,7 +936,6 @@ targets_generating_sources = [
   ":make_core_generated_media_type_names",
   ":make_core_generated_origin_trials",
   ":make_core_generated_performance_entry_names",
-  ":make_core_generated_style_cascade_slots",
   ":make_core_generated_style_property_shorthand",
   ":make_core_generated_svg_element_type_helpers",
   ":make_core_generated_svg_names",

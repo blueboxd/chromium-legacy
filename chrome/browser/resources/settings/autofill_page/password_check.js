@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+(function() {
+'use strict';
+
+const CheckState = chrome.passwordsPrivate.PasswordCheckState;
+
 Polymer({
   is: 'settings-password-check',
 
@@ -9,13 +14,13 @@ Polymer({
 
   properties: {
     /** @private */
-    passwordLeakCount_: {
-      type: Number,
-      value: 0,
-    },
-
-    /** @private */
     lastCompletedCheck_: String,
+
+    /**
+     * The number of compromised passwords as a formatted string.
+     * @private
+     */
+    compromisedPasswordsCount_: String,
 
     /**
      * An array of leaked passwords to display.
@@ -28,7 +33,25 @@ Polymer({
       // load.
       value: () => [],
     },
+
+    /**
+     * The status indicates progress and affects banner, title and icon.
+     * @type {!PasswordManagerProxy.PasswordCheckStatus}
+     * @private
+     */
+    status_: {
+      type: PasswordManagerProxy.PasswordCheckStatus,
+      value: () => {
+        return {state: CheckState.IDLE};
+      },
+    }
   },
+
+  /**
+   * @type {?function(!PasswordManagerProxy.PasswordCheckStatus):void}
+   * @private
+   */
+  statusChangedListener_: null,
 
   /**
    * @type {?function(!PasswordManagerProxy.CompromisedCredentialsInfo):void}
@@ -53,25 +76,39 @@ Polymer({
     // Set the manager. These can be overridden by tests.
     this.passwordManager_ = PasswordManagerImpl.getInstance();
 
+    const statusChangeListener = status => this.status_ = status;
     const setLeakedCredentialsListener = info => {
       this.leakedPasswords = info.compromisedCredentials;
-      this.passwordLeakCount_ = info.compromisedCredentials.length;
       this.lastCompletedCheck_ = info.elapsedTimeSinceLastCheck;
+
+      settings.PluralStringProxyImpl.getInstance()
+          .getPluralString('compromisedPasswords', this.leakedPasswords.length)
+          .then(count => {
+            this.compromisedPasswordsCount_ = count;
+          });
     };
 
+    this.statusChangedListener_ = statusChangeListener;
     this.leakedCredentialsListener_ = setLeakedCredentialsListener;
 
     // Request initial data.
+    this.passwordManager_.getPasswordCheckStatus().then(
+        this.statusChangedListener_);
     this.passwordManager_.getCompromisedCredentialsInfo().then(
         this.leakedCredentialsListener_);
 
     // Listen for changes.
+    this.passwordManager_.addPasswordCheckStatusListener(
+        this.statusChangedListener_);
     this.passwordManager_.addCompromisedCredentialsListener(
         this.leakedCredentialsListener_);
   },
 
   /** @override */
   detached() {
+    this.passwordManager_.removePasswordCheckStatusListener(
+        assert(this.statusChangedListener_));
+    this.statusChangedListener_ = null;
     this.passwordManager_.removeCompromisedCredentialsListener(
         assert(this.leakedCredentialsListener_));
     this.leakedCredentialsListener_ = null;
@@ -85,14 +122,6 @@ Polymer({
     // TODO(https://crbug.com/1047726): By click on this button user should be
     // able to 'Cancel' current check.
     this.passwordManager_.startBulkPasswordCheck();
-  },
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getLeakedPasswordsCount_() {
-    return this.i18n('checkPasswordLeakCount', this.passwordLeakCount_);
   },
 
   /**
@@ -136,3 +165,4 @@ Polymer({
     // TODO(crbug.com/1047726) Implement dialog.
   },
 });
+})();

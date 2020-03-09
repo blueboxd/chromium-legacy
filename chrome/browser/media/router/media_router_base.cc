@@ -189,4 +189,11 @@ base::Value MediaRouterBase::GetState() const {
   return base::Value(base::Value::Type::DICTIONARY);
 }
 
+void MediaRouterBase::GetProviderState(
+    MediaRouteProviderId provider_id,
+    mojom::MediaRouteProvider::GetStateCallback callback) const {
+  NOTREACHED() << "Should not invoke MediaRouterBase::GetProviderState()";
+  std::move(callback).Run(mojom::ProviderStatePtr());
+}
+
 }  // namespace media_router

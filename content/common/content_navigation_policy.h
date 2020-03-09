@@ -12,6 +12,7 @@ namespace content {
 CONTENT_EXPORT bool IsBackForwardCacheEnabled();
 CONTENT_EXPORT bool DeviceHasEnoughMemoryForBackForwardCache();
 CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceEnabled();
+CONTENT_EXPORT bool IsRenderDocumentEnabled();
 
 }  // namespace content
 

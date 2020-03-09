@@ -221,6 +221,11 @@ void ExtensionMediaRouteProviderProxy::CreateMediaRouteController(
       MediaRouteProviderWakeReason::CREATE_MEDIA_ROUTE_CONTROLLER);
 }
 
+void ExtensionMediaRouteProviderProxy::GetState(GetStateCallback callback) {
+  NOTIMPLEMENTED();
+  std::move(callback).Run(mojom::ProviderStatePtr());
+}
+
 void ExtensionMediaRouteProviderProxy::RegisterMediaRouteProvider(
     mojo::PendingRemote<mojom::MediaRouteProvider> media_route_provider) {
   media_route_provider_.reset();

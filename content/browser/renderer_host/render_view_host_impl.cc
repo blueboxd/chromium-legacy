@@ -735,6 +735,12 @@ void RenderViewHostImpl::ClosePageIgnoringUnloadEvents() {
   delegate_->Close(this);
 }
 
+void RenderViewHostImpl::ZoomToFindInPageRect(const gfx::Rect& rect_to_zoom) {
+  static_cast<RenderFrameHostImpl*>(GetMainFrame())
+      ->GetAssociatedLocalMainFrame()
+      ->ZoomToFindInPageRect(rect_to_zoom);
+}
+
 void RenderViewHostImpl::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {

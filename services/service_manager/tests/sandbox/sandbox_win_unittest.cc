@@ -159,6 +159,7 @@ class TestTargetPolicy : public sandbox::TargetPolicy {
   }
 
   void SetEffectiveToken(HANDLE token) override {}
+  size_t GetPolicyGlobalSize() const override { return 0; }
 
   const std::vector<std::wstring>& blocklisted_dlls() const {
     return blocklisted_dlls_;

@@ -45,6 +45,7 @@ class AppLaunchSplashScreenView {
   };
 
   enum AppLaunchState {
+    APP_LAUNCH_STATE_PREPARING_PROFILE,
     APP_LAUNCH_STATE_PREPARING_NETWORK,
     APP_LAUNCH_STATE_INSTALLING_APPLICATION,
     APP_LAUNCH_STATE_WAITING_APP_WINDOW,
@@ -125,19 +126,15 @@ class AppLaunchSplashScreenHandler
 
   Delegate* delegate_ = nullptr;
   bool show_on_init_ = false;
-  AppLaunchState state_ = APP_LAUNCH_STATE_PREPARING_NETWORK;
+  AppLaunchState state_ = APP_LAUNCH_STATE_PREPARING_PROFILE;
 
   scoped_refptr<NetworkStateInformer> network_state_informer_;
   ErrorScreen* error_screen_;
 
-  // True if we are online.
-  bool online_state_ = false;
-
-  // True if we have network config screen was already shown before.
-  bool network_config_done_ = false;
-
-  // True if we have manually requested network config screen.
-  bool network_config_requested_ = false;
+  // Whether network configure UI is being shown.
+  bool network_config_shown_ = false;
+  // Whether the network is required in order to proceed with app launch.
+  bool network_required_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchSplashScreenHandler);
 };

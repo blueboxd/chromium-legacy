@@ -39,6 +39,7 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
+#include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_blocklist.h"
@@ -1183,6 +1184,21 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // Remove external protocol data.
   if (remove_mask & DATA_TYPE_EXTERNAL_PROTOCOL_DATA)
     ExternalProtocolHandler::ClearData(profile_);
+
+#if BUILDFLAG(ENABLE_DOWNGRADE_PROCESSING)
+  //////////////////////////////////////////////////////////////////////////////
+  // Remove data for this profile contained in any snapshots.
+  if (remove_mask &&
+      filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+    base::PostTaskAndReply(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+         base::MayBlock()},
+        base::BindOnce(&downgrade::RemoveDataForProfile, delete_begin_,
+                       profile_->GetPath(), remove_mask),
+        CreateTaskCompletionClosure(TracingDataType::kUserDataSnapshot));
+  }
+#endif  // BUILDFLAG(ENABLE_DOWNGRADE_PROCESSING)
 }
 
 void ChromeBrowsingDataRemoverDelegate::OnTaskStarted(

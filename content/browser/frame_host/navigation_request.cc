@@ -948,6 +948,10 @@ NavigationRequest::NavigationRequest(
     frame_entry_item_sequence_number_ = frame_entry->item_sequence_number();
     frame_entry_document_sequence_number_ =
         frame_entry->document_sequence_number();
+    if (frame_entry->web_bundle_navigation_info()) {
+      web_bundle_navigation_info_ =
+          frame_entry->web_bundle_navigation_info()->Clone();
+    }
   }
 
   // Sanitize the referrer.
@@ -1030,10 +1034,6 @@ NavigationRequest::NavigationRequest(
     if (frame_tree_node->IsMainFrame() && entry->back_forward_cache_metrics()) {
       entry->back_forward_cache_metrics()
           ->MainFrameDidStartNavigationToDocument();
-    }
-    if (entry->web_bundle_navigation_info()) {
-      web_bundle_navigation_info_ =
-          entry->web_bundle_navigation_info()->Clone();
     }
 
     // If this NavigationRequest is for the current pending entry, make sure

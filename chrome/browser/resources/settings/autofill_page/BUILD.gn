@@ -92,6 +92,7 @@ js_library("credit_card_list_entry") {
 js_library("password_check") {
   deps = [
     ":password_manager_proxy",
+    "..:plural_string_proxy",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }

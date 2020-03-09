@@ -37,7 +37,6 @@ public class BrowserFragmentLifecycleTest {
     public void successfullyLoadsUrlAfterRecreation() {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
         Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.getTab());
-
         String url = "data:text,foo";
         mActivityTestRule.navigateAndWait(tab, url, false);
 
@@ -51,37 +50,19 @@ public class BrowserFragmentLifecycleTest {
 
     @Test
     @SmallTest
-    public void restoreAfterRecreate() {
+    public void restoreAfterRecreate() throws Throwable {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
         Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.getTab());
-
         String url = "data:text,foo";
         mActivityTestRule.navigateAndWait(tab, url, false);
 
         mActivityTestRule.recreateActivity();
 
         InstrumentationActivity newActivity = mActivityTestRule.getActivity();
-        BoundedCountDownLatch latch = new BoundedCountDownLatch(1);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Tab restoredTab = newActivity.getTab();
-            // It's possible the NavigationController hasn't loaded yet, handle either scenario.
-            NavigationController navigationController = restoredTab.getNavigationController();
-            if (navigationController.getNavigationListSize() == 1
-                    && navigationController.getNavigationEntryDisplayUri(0).equals(
-                            Uri.parse(url))) {
-                latch.countDown();
-                return;
-            }
-            navigationController.registerNavigationCallback(new NavigationCallback() {
-                @Override
-                public void onNavigationCompleted(@NonNull Navigation navigation) {
-                    if (navigation.getUri().equals(Uri.parse(url))) {
-                        latch.countDown();
-                    }
-                }
-            });
-        });
-        latch.timedAwait();
+        waitForTabToFinishRestore(TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return mActivityTestRule.getActivity().getTab();
+        }),
+                url);
     }
 
     // https://crbug.com/1021041
@@ -107,16 +88,8 @@ public class BrowserFragmentLifecycleTest {
         latch.timedAwait();
     }
 
-    private void restoresPreviousSession(Bundle extras) {
-        extras.putString(InstrumentationActivity.EXTRA_PERSISTENCE_ID, "x");
-        final String url = mActivityTestRule.getTestDataURL("simple_page.html");
-        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url, extras);
-
-        mActivityTestRule.recreateActivity();
-
-        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
-        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
-        Assert.assertNotNull(tab);
+    // Waits for |tab| to finish loadding |url. This is intended to be called after restore.
+    private void waitForTabToFinishRestore(Tab tab, String url) {
         BoundedCountDownLatch latch = new BoundedCountDownLatch(1);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // It's possible the NavigationController hasn't loaded yet, handle either scenario.
@@ -139,18 +112,77 @@ public class BrowserFragmentLifecycleTest {
         latch.timedAwait();
     }
 
+    // Recreates the activity and waits for the first tab to be restored. |extras| is the Bundle
+    // used to launch the shell.
+    private void restoresPreviousSession(Bundle extras) {
+        extras.putString(InstrumentationActivity.EXTRA_PERSISTENCE_ID, "x");
+        final String url = mActivityTestRule.getTestDataURL("simple_page.html");
+        mActivityTestRule.launchShellWithUrl(url, extras);
+        mActivityTestRule.recreateActivity();
+
+        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
+        Assert.assertNotNull(newActivity);
+        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
+        Assert.assertNotNull(tab);
+        waitForTabToFinishRestore(tab, url);
+    }
+
     @Test
     @SmallTest
-    public void restoresPreviousSession() throws InterruptedException {
+    public void restoresPreviousSession() throws Throwable {
         restoresPreviousSession(new Bundle());
     }
 
     @Test
     @SmallTest
-    public void restoresPreviousSessionIncognito() throws InterruptedException {
+    public void restoresPreviousSessionIncognito() throws Throwable {
         Bundle extras = new Bundle();
         // This forces incognito.
         extras.putString(InstrumentationActivity.EXTRA_PROFILE_NAME, null);
         restoresPreviousSession(extras);
+    }
+
+    @Test
+    @SmallTest
+    public void restoresTabGuid() throws Throwable {
+        Bundle extras = new Bundle();
+        extras.putString(InstrumentationActivity.EXTRA_PERSISTENCE_ID, "x");
+        final String url = mActivityTestRule.getTestDataURL("simple_page.html");
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url, extras);
+        final String initialTabId = TestThreadUtils.runOnUiThreadBlocking(
+                () -> { return mActivityTestRule.getActivity().getTab().getGuid(); });
+        Assert.assertNotNull(initialTabId);
+        Assert.assertFalse(initialTabId.isEmpty());
+
+        mActivityTestRule.recreateActivity();
+
+        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
+        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
+        Assert.assertNotNull(tab);
+        waitForTabToFinishRestore(tab, url);
+        final String restoredTabId =
+                TestThreadUtils.runOnUiThreadBlockingNoException(() -> { return tab.getGuid(); });
+        Assert.assertEquals(initialTabId, restoredTabId);
+    }
+
+    @Test
+    @SmallTest
+    public void restoreTabGuidAfterRecreate() throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+        final Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.getTab());
+        final String initialTabId = TestThreadUtils.runOnUiThreadBlocking(
+                () -> { return mActivityTestRule.getActivity().getTab().getGuid(); });
+        String url = "data:text,foo";
+        mActivityTestRule.navigateAndWait(tab, url, false);
+
+        mActivityTestRule.recreateActivity();
+
+        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
+        final Tab restoredTab =
+                TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
+        waitForTabToFinishRestore(restoredTab, url);
+        final String restoredTabId = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> { return restoredTab.getGuid(); });
+        Assert.assertEquals(initialTabId, restoredTabId);
     }
 }

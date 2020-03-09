@@ -12,9 +12,6 @@ source_set("password") {
     "password_exporter.mm",
     "passwords_table_view_controller.h",
     "passwords_table_view_controller.mm",
-    "reauthentication_module.h",
-    "reauthentication_module.mm",
-    "reauthentication_protocol.h",
   ]
   deps = [
     ":password_constants",
@@ -44,6 +41,7 @@ source_set("password") {
     "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/common/ui/util",
     "//ios/third_party/material_components_ios",
     "//ui/base",
@@ -66,7 +64,6 @@ source_set("test_support") {
   sources = [
     "password_details_table_view_controller+testing.h",
     "password_exporter_for_testing.h",
-    "reauthentication_module_for_testing.h",
   ]
   deps = [ ":password" ]
 }
@@ -78,7 +75,6 @@ source_set("unit_tests") {
     "password_details_table_view_controller_unittest.mm",
     "password_exporter_unittest.mm",
     "passwords_table_view_controller_unittest.mm",
-    "reauthentication_module_unittest.mm",
   ]
   deps = [
     ":password",
@@ -100,6 +96,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/test/app:test_support",
     "//ios/web/public/test",
     "//ios/web/public/test",
@@ -131,6 +128,7 @@ source_set("eg_test_support") {
     "//components/prefs",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/test/app:test_support",
     "//ios/third_party/material_components_ios",
     "//url",
@@ -156,6 +154,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/material_components_ios",
@@ -192,6 +191,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/test/app:test_support",
     "//ios/testing/earl_grey:eg_app_support+eg2",
     "//ios/third_party/material_components_ios",
@@ -208,6 +208,8 @@ source_set("eg_test_support+eg2") {
   testonly = true
 
   sources = [ "passwords_settings_app_interface.h" ]
+
+  deps = [ "//ios/chrome/common/ui/reauthentication" ]
 }
 
 source_set("eg2_tests") {
@@ -228,6 +230,7 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/ui/settings:settings_root_constants",
     "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",

@@ -3994,6 +3994,7 @@ bool Document::CheckCompletedInternal() {
       GetViewportData().GetViewportDescription().ReportMobilePageStats(frame_);
     Loader()->SetSentDidFinishLoad();
     frame_->Client()->DispatchDidFinishLoad();
+    frame_->GetLocalFrameHostRemote().DidFinishLoad(Loader()->Url());
     if (!frame_)
       return false;
 

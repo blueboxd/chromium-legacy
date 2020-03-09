@@ -28,7 +28,7 @@ js_library("cr_search_field") {
 # Targets for auto-generating and typechecking Polymer 3 JS modules
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":cr_search_field_module",
     ":modulize",
   ]

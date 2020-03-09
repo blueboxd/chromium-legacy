@@ -168,11 +168,11 @@ DROP TABLE IF EXISTS ScrollJanksMaybeNull;
 
 CREATE TABLE ScrollJanksMaybeNull AS
   SELECT
-    ROW_NUMBER() OVER (ORDER BY currScrollTs ASC) AS rowNumber,
     currBeginId,
     currUpdateDur,
     currScrollDur,
     currScrollId,
+    currScrollTs,
     CASE WHEN currBeginId != prevBeginId
     THEN
       0 ELSE
@@ -204,6 +204,22 @@ CREATE TABLE ScrollJanksMaybeNull AS
    GestureScrollUpdatesRowNumbers next ON currprev.currRowNumber + 1 = next.rowNumber
 ORDER BY currprev.currScrollTs ASC;
 
+-- TODO(nuskos): Once chromium TBMv3 supports windowing functions use
+-- ROW_NUMBER(ORDER BY ts ASC) OVER() instead.
+
+DROP TABLE IF EXISTS ScrollJanksMaybeNullRowNumbers;
+
+CREATE TABLE ScrollJanksMaybeNullRowNumbers AS
+SELECT
+  (SELECT COUNT(*)
+    FROM ScrollJanksMaybeNull prev
+    WHERE prev.currScrollTs < next.currScrollTs) + 1 as rowNumber,
+  *
+FROM
+  ScrollJanksMaybeNull next;
+
+
+
 -- This just lists outs the rowNumber (which is ordered by timestamp), its jank
 -- status and information about the update and scroll overall. Basically
 -- getting it into a next queriable format.
@@ -219,7 +235,7 @@ CREATE TABLE ScrollJanks AS
     (nextJank IS NOT NULL AND nextJank) OR
     (prevJank IS NOT NULL AND prevJank)
     AS jank
-  FROM ScrollJanksMaybeNull;
+  FROM ScrollJanksMaybeNullRowNumbers;
 
 -- Compute the total amount of nanoseconds from Janky GestureScrollUpdates and
 -- the total amount of nanoseconds we spent scrolling in the trace. Also need

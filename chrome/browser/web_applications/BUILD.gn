@@ -42,6 +42,7 @@ source_set("common") {
       "//ash/public/cpp",
       "//chromeos/components/help_app_ui",
       "//chromeos/components/media_app_ui",
+      "//chromeos/components/print_management",
       "//chromeos/constants",
       "//chromeos/strings",
     ]

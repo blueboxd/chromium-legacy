@@ -7,6 +7,7 @@
 #include <dawn/dawn_proc.h>
 #include <dawn/webgpu.h>
 
+#include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
 #include "components/viz/test/test_gpu_service_holder.h"
@@ -25,9 +26,6 @@ void OnRequestAdapterCallback(uint32_t adapter_service_id,
                               const WGPUDeviceProperties& properties) {}
 
 }  // anonymous namespace
-
-void OnRequestDeviceCallback(bool is_request_device_success,
-                             webgpu::DawnDeviceClientID device_client_id) {}
 
 WebGPUTest::Options::Options() = default;
 
@@ -133,6 +131,26 @@ void WebGPUTest::WaitForCompletion(wgpu::Device device) {
     webgpu()->FlushCommands();
     RunPendingTasks();
   }
+}
+
+WebGPUTest::DeviceAndClientID WebGPUTest::GetNewDeviceAndClientID() {
+  DeviceAndClientID result;
+  result.client_id = next_device_client_id_;
+
+  webgpu()->RequestDeviceAsync(
+      kAdapterServiceID, {},
+      base::BindOnce(
+          [](webgpu::DawnDeviceClientID expected_client_id, bool success,
+             webgpu::DawnDeviceClientID assigned_client_id) {
+            ASSERT_TRUE(success);
+            ASSERT_EQ(expected_client_id, assigned_client_id);
+          },
+          result.client_id));
+
+  result.device = wgpu::Device::Acquire(webgpu()->GetDevice(result.client_id));
+
+  next_device_client_id_++;
+  return result;
 }
 
 TEST_F(WebGPUTest, FlushNoCommands) {

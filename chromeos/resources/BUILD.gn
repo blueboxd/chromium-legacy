@@ -143,3 +143,26 @@ grit("media_app_bundle_resources") {
   ]
   output_dir = "$root_gen_dir/chromeos"
 }
+
+grit("print_management_resources") {
+  source =
+      "../components/print_management/resources/print_management_resources.grd"
+
+  source_is_generated = true
+
+  deps = [ "../components/print_management/resources:polymer3_elements" ]
+
+  outputs = [
+    "grit/chromeos_print_management_resources.h",
+    "grit/chromeos_print_management_resources_map.cc",
+    "grit/chromeos_print_management_resources_map.h",
+    "chromeos_print_management_resources.pak",
+  ]
+
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+
+  output_dir = "$root_gen_dir/chromeos"
+}

@@ -51,7 +51,8 @@
         }
       }
     </style>
-    <div class="settings-box first two-line">
+    <div id="safetyCheckParent" class="settings-box first two-line" tabindex="0"
+        aria-label="[[getParentAriaLabel_(parentStatus_)]]">
       <iron-icon icon="[[getParentIcon_(parentStatus_)]]"
           src="[[getParentIconSrc_(parentStatus_)]]"
           class$="[[getParentIconClass_(parentStatus_)]]">
@@ -63,7 +64,8 @@
           restamp>
         <div class="separator"></div>
         <cr-button id="safetyCheckParentButton" class="action-button"
-            on-click="onRunSafetyCheckClick_" no-search>
+            on-click="onRunSafetyCheckClick_" no-search
+            aria-label="$i18n{safetyCheckParentButtonAriaLabel}">
           $i18n{safetyCheckParentButton}
         </cr-button>
       </template>
@@ -72,13 +74,15 @@
         <div class="separator"></div>
         <cr-icon-button id="safetyCheckParentIconButton"
             iron-icon="settings:refresh"
-            on-click="onRunSafetyCheckClick_">
+            on-click="onRunSafetyCheckClick_"
+            aria-label="$i18n{safetyCheckParentButtonAriaLabel}">
         </cr-icon-button>
       </template>
     </div>
     <iron-collapse id="safetyCheckCollapse"
         opened="[[shouldShowChildren_(parentStatus_)]]">
-      <div class="settings-box two-line">
+      <div class="settings-box two-line" tabindex="0"
+          aria-label="[[getUpdatesAriaLabel_(updatesStatus_)]]">
         <iron-icon icon="[[getUpdatesIcon_(updatesStatus_)]]"
             src="[[getUpdatesIconSrc_(updatesStatus_)]]"
             class$="[[getUpdatesIconClass_(updatesStatus_)]]">
@@ -93,7 +97,8 @@
             if="[[shouldShowUpdatesButton_(updatesStatus_)]]" restamp>
           <div class="separator"></div>
           <cr-button id="safetyCheckUpdatesButton" class="action-button"
-              on-click="onSafetyCheckUpdatesButtonClicked_" no-search>
+              on-click="onSafetyCheckUpdatesButtonClicked_" no-search
+            aria-label="$i18n{safetyCheckUpdatesButtonAriaLabel}">
             $i18n{aboutRelaunch}
           </cr-button>
         </template>
@@ -104,7 +109,8 @@
           </iron-icon>
         </template>
       </div>
-      <div class="settings-box two-line">
+      <div class="settings-box two-line" tabindex="0"
+          aria-label="[[getPasswordsAriaLabel_(passwordsStatus_)]]">
         <iron-icon icon="[[getPasswordsIcon_(passwordsStatus_)]]"
             src="[[getPasswordsIconSrc_(passwordsStatus_)]]"
             class$="[[getPasswordsIconClass_(passwordsStatus_)]]">
@@ -119,12 +125,14 @@
             if="[[shouldShowPasswordsButton_(passwordsStatus_)]]" restamp>
           <div class="separator"></div>
           <cr-button id="safetyCheckPasswordsButton" class="action-button"
-              on-click="onPasswordsButtonClick_" no-search>
+              on-click="onPasswordsButtonClick_" no-search
+              aria-label="$i18n{safetyCheckPasswordsButton}">
             $i18n{safetyCheckPasswordsButton}
           </cr-button>
         </template>
       </div>
-      <div class="settings-box two-line">
+      <div class="settings-box two-line" tabindex="0"
+          aria-label="[[getSafeBrowsingAriaLabel_(safeBrowsingStatus_)]]">
         <iron-icon icon="[[getSafeBrowsingIcon_(safeBrowsingStatus_)]]"
             src="[[getSafeBrowsingIconSrc_(safeBrowsingStatus_)]]"
             class$="[[getSafeBrowsingIconClass_(safeBrowsingStatus_)]]">
@@ -139,7 +147,8 @@
             if="[[shouldShowSafeBrowsingButton_(safeBrowsingStatus_)]]" restamp>
           <div class="separator"></div>
           <cr-button id="safetyCheckSafeBrowsingButton" class="action-button"
-              on-click="onSafeBrowsingButtonClick_" no-search>
+              on-click="onSafeBrowsingButtonClick_" no-search
+              aria-label="$i18n{safetyCheckSafeBrowsingButtonAriaLabel}">
             $i18n{safetyCheckSafeBrowsingButton}
           </cr-button>
         </template>
@@ -150,7 +159,8 @@
           </iron-icon>
         </template>
       </div>
-      <div class="settings-box two-line">
+      <div class="settings-box two-line" tabindex="0"
+          aria-label="[[getExtensionsAriaLabel_(extensionsStatus_)]]">
         <iron-icon icon="[[getExtensionsIcon_(extensionsStatus_)]]"
             src="[[getExtensionsIconSrc_(extensionsStatus_)]]"
             class$="[[getExtensionsIconClass_(extensionsStatus_)]]">
@@ -166,7 +176,8 @@
           <div class="separator"></div>
           <cr-button id="safetyCheckExtensionsButton"
               class$="[[getExtensionsButtonClass_(extensionsStatus_)]]"
-              on-click="onSafetyCheckExtensionsButtonClicked_" no-search>
+              on-click="onSafetyCheckExtensionsButtonClicked_" no-search
+              aria-label="$i18n{safetyCheckExtensionsButtonAriaLabel}">
             $i18n{safetyCheckExtensionsButton}
           </cr-button>
         </template>

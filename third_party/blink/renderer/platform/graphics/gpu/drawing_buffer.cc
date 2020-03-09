@@ -778,7 +778,7 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   if (ShouldUseChromiumImage()) {
     // A CHROMIUM_image backed texture requires a specialized set of parameters
     // on OSX.
-    texture_target_ = GC3D_TEXTURE_RECTANGLE_ARB;
+    texture_target_ = gpu::GetPlatformSpecificTextureTarget();
   }
 #endif
 

@@ -817,7 +817,7 @@ void FeatureInfo::InitializeFeatures() {
   if (gl_version_info_->is_es3)
     has_srgb_framebuffer_support = true;
 
-  if (has_srgb_framebuffer_support && !IsWebGLContext()) {
+  if (has_srgb_framebuffer_support) {
     // GL_FRAMEBUFFER_SRGB_EXT is exposed by the GLES extension
     // GL_EXT_sRGB_write_control (which is not part of the core, even in GLES3),
     // and the desktop extension GL_ARB_framebuffer_sRGB (part of the core in
@@ -825,8 +825,12 @@ void FeatureInfo::InitializeFeatures() {
     if (feature_flags_.desktop_srgb_support ||
         gfx::HasExtension(extensions, "GL_EXT_sRGB_write_control")) {
       feature_flags_.ext_srgb_write_control = true;
-      AddExtensionString("GL_EXT_sRGB_write_control");
-      validators_.capability.AddValue(GL_FRAMEBUFFER_SRGB_EXT);
+
+      // Do not expose this extension to WebGL.
+      if (!IsWebGLContext()) {
+        AddExtensionString("GL_EXT_sRGB_write_control");
+        validators_.capability.AddValue(GL_FRAMEBUFFER_SRGB_EXT);
+      }
     }
   }
 

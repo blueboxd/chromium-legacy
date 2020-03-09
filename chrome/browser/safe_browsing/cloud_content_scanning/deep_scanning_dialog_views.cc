@@ -176,7 +176,8 @@ DeepScanningDialogViews::DeepScanningDialogViews(
     content::WebContents* web_contents,
     DeepScanAccessPoint access_point,
     bool is_file_scan)
-    : delegate_(std::move(delegate)),
+    : content::WebContentsObserver(web_contents),
+      delegate_(std::move(delegate)),
       web_contents_(web_contents),
       access_point_(std::move(access_point)),
       is_file_scan_(is_file_scan) {
@@ -201,8 +202,8 @@ void DeepScanningDialogViews::AcceptButtonCallback() {
 }
 
 void DeepScanningDialogViews::CancelButtonCallback() {
-  DCHECK(delegate_);
-  delegate_->Cancel(is_warning());
+  if (delegate_)
+    delegate_->Cancel(is_warning());
 }
 
 bool DeepScanningDialogViews::ShouldShowCloseButton() const {
@@ -227,6 +228,13 @@ void DeepScanningDialogViews::DeleteDelegate() {
 
 ui::ModalType DeepScanningDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
+}
+
+void DeepScanningDialogViews::WebContentsDestroyed() {
+  // If |web_contents_| is destroyed, then the scan results don't matter so the
+  // delegate can be destroyed as well.
+  delegate_.reset(nullptr);
+  CancelDialog();
 }
 
 void DeepScanningDialogViews::ShowResult(

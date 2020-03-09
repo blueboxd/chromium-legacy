@@ -10,6 +10,12 @@
 // Protocol for settings view controllers.
 @protocol SettingsControllerProtocol <NSObject>
 
+@required
+
+// Called when user dismissed settings. View controllers must implement this
+// method and report dismissal User Action.
+- (void)reportDismissalUserAction;
+
 @optional
 
 // Notifies the controller that the settings screen is being dismissed.

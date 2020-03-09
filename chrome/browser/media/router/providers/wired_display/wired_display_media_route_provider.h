@@ -100,6 +100,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
       mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojo::PendingRemote<mojom::MediaStatusObserver> observer,
       CreateMediaRouteControllerCallback callback) override;
+  void GetState(GetStateCallback callback) override;
 
   // display::DisplayObserver:
   void OnDidProcessDisplayChanges() override;

@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/frame/desktop_linux_browser_frame_view.h"
 
 #include "chrome/browser/ui/views/frame/desktop_linux_browser_frame_view_layout.h"
-#include "chrome/browser/ui/views/nav_button_provider.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/linux_ui/nav_button_provider.h"
 
 bool DesktopLinuxBrowserFrameView::DrawFrameButtonParams::operator==(
     const DrawFrameButtonParams& other) const {

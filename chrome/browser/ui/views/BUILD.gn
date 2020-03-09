@@ -43,12 +43,4 @@ component("views") {
   if (is_chromeos) {
     deps += [ "//ash" ]
   }
-
-  if (enable_native_window_nav_buttons) {
-    sources += [ "nav_button_provider.h" ]
-    deps += [
-      "//ui/views",
-      "//ui/views:buildflags",
-    ]
-  }
 }

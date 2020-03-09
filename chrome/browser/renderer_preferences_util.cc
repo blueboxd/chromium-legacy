@@ -182,7 +182,7 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
 
   if (::features::IsFormControlsRefreshEnabled()) {
 #if defined(OS_MACOSX)
-    prefs->focus_ring_color = SkColorSetRGB(0xCC, 0x5F, 0x00);
+    prefs->focus_ring_color = SkColorSetRGB(0x00, 0x5F, 0xCC);
 #else
     prefs->focus_ring_color = SkColorSetRGB(0x10, 0x10, 0x10);
 #endif

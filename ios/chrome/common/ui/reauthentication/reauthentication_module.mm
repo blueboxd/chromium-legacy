@@ -1,22 +1,17 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 
 #import <LocalAuthentication/LocalAuthentication.h>
 
-#include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#import "base/logging.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
-
-using password_manager::metrics_util::LogPasswordSettingsReauthResult;
-using password_manager::metrics_util::ReauthResult;
 
 @implementation ReauthenticationModule {
   // Block that creates a new |LAContext| object everytime one is required,
@@ -51,10 +46,11 @@ using password_manager::metrics_util::ReauthResult;
 
 - (void)attemptReauthWithLocalizedReason:(NSString*)localizedReason
                     canReusePreviousAuth:(BOOL)canReusePreviousAuth
-                                 handler:(void (^)(BOOL success))handler {
+                                 handler:
+                                     (void (^)(ReauthenticationResult success))
+                                         handler {
   if (canReusePreviousAuth && [self isPreviousAuthValid]) {
-    handler(YES);
-    LogPasswordSettingsReauthResult(ReauthResult::kSkipped);
+    handler(ReauthenticationResult::kSkipped);
     return;
   }
 
@@ -69,10 +65,8 @@ using password_manager::metrics_util::ReauthResult;
       if (success) {
         [strongSelf->_successfulReauthTimeAccessor updateSuccessfulReauthTime];
       }
-      handler(success);
-
-      LogPasswordSettingsReauthResult(success ? ReauthResult::kSuccess
-                                              : ReauthResult::kFailure);
+      handler(success ? ReauthenticationResult::kSuccess
+                      : ReauthenticationResult::kFailure);
     });
   };
 

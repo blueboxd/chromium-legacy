@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 #include "base/version.h"
 
 namespace downgrade {
@@ -44,11 +45,17 @@ class SnapshotManager {
   // by moving invalid and older snapshots for later deletion.
   void PurgeInvalidAndOldSnapshots(int max_number_of_snapshots) const;
 
+  // Deletes snapshot data created after |delete_begin| for |profile_base_name|.
+  // |remove_mask| (of bits from ChromeBrowsingDataRemoverDelegate::DataType)
+  // indicates the types of data to be cleared from the profile's snapshots.
+  void DeleteSnapshotDataForProfile(base::Time delete_begin,
+                                    const base::FilePath& profile_base_name,
+                                    int remove_mask);
+
  private:
-  virtual std::vector<SnapshotItemDetails> GetUserSnapshotItemDetails(
-      uint16_t milestone) const;
-  virtual std::vector<SnapshotItemDetails> GetProfileSnapshotItemDetails(
-      uint16_t milestone) const;
+  virtual std::vector<SnapshotItemDetails> GetUserSnapshotItemDetails() const;
+  virtual std::vector<SnapshotItemDetails> GetProfileSnapshotItemDetails()
+      const;
 
   const base::FilePath user_data_dir_;
 };

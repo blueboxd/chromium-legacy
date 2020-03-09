@@ -18,9 +18,13 @@ CSSAnimation::CSSAnimation(ExecutionContext* execution_context,
       sticky_play_state_(Animation::kUnset) {}
 
 String CSSAnimation::playState() const {
-  if (GetDocument())
-    GetDocument()->UpdateStyleAndLayoutTree();
+  FlushStyles();
   return Animation::playState();
+}
+
+bool CSSAnimation::pending() const {
+  FlushStyles();
+  return Animation::pending();
 }
 
 void CSSAnimation::pause(ExceptionState& exception_state) {
@@ -31,6 +35,13 @@ void CSSAnimation::pause(ExceptionState& exception_state) {
 void CSSAnimation::play(ExceptionState& exception_state) {
   sticky_play_state_ = kRunning;
   Animation::play(exception_state);
+}
+
+void CSSAnimation::FlushStyles() const {
+  // TODO(1043778): Flush is likely not required once the CSSAnimation is
+  // disassociated from its owning element.
+  if (GetDocument())
+    GetDocument()->UpdateStyleAndLayoutTree();
 }
 
 }  // namespace blink

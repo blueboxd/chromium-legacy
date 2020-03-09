@@ -114,6 +114,13 @@ class InstallationTracker : public ExtensionRegistryObserver,
   // Loads list of force-installed extensions if available.
   void OnForcedExtensionsPrefChanged();
 
+  // Returns true only in case of some well-known misconfigurations which are
+  // easy to detect. Can return false for misconfigurations which are hard to
+  // distinguish with other errors.
+  bool IsMisconfiguration(
+      const InstallationReporter::InstallationData& installation_data,
+      const ExtensionId& id);
+
 #if defined(OS_CHROMEOS)
   // Returns Session Type in case extension fails to install.
   SessionType GetSessionType();

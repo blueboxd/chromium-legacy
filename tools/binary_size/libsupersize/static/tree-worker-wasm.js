@@ -4,9 +4,9 @@
 
 'use strict';
 
+importScripts('./auth-consts.js');
 importScripts('./shared.js');
 importScripts('./caspian_web.js');
-importScripts('./auth-consts.js');
 
 const LoadWasm = new Promise(function(resolve, reject) {
   Module['onRuntimeInitialized'] = function() {
@@ -73,7 +73,7 @@ class DataFetcher {
 
   async _fetchFromGoogleCloudStorage(url) {
     const {bucket, file} = parseGoogleCloudStorageUrl(url);
-    const params = `alt=media&key=${AUTH_API_KEY}`;
+    const params = `alt=media`;
     const api_url = `${STORAGE_API_ENDPOINT}/b/${bucket}/o/${file}?${params}`;
     const headers = new Headers();
     headers.append('Authorization', `Bearer ${this._accessToken}`);

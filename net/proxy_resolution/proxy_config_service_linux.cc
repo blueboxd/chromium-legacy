@@ -651,8 +651,9 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
     }
     notify_delegate_ = delegate;
     inotify_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-        inotify_fd_, base::Bind(&SettingGetterImplKDE::OnChangeNotification,
-                                base::Unretained(this)));
+        inotify_fd_,
+        base::BindRepeating(&SettingGetterImplKDE::OnChangeNotification,
+                            base::Unretained(this)));
     // Simulate a change to avoid possibly losing updates before this point.
     OnChangeNotification();
     return true;

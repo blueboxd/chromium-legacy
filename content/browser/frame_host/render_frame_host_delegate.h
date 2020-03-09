@@ -135,6 +135,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const GURL& initiator_url,
       blink::mojom::NavigationBlockedReason reason) {}
 
+  // Notifies the browser that a frame finished loading.
+  virtual void OnDidFinishLoad(RenderFrameHost* render_frame_host,
+                               const GURL& url) {}
+
   // Gets the last committed URL. See WebContents::GetLastCommittedURL for a
   // description of the semantics.
   virtual const GURL& GetMainFrameLastCommittedURL();

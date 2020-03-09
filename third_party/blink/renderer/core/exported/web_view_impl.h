@@ -180,7 +180,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void UpdatePreferredSize() override;
   void EnablePreferredSizeChangedMode() override;
   void SetDisplayMode(blink::mojom::DisplayMode) override;
-  void ZoomToFindInPageRect(const WebRect&) override;
   void SetDeviceScaleFactor(float) override;
   void SetZoomFactorForDeviceScaleFactor(float) override;
   float ZoomFactorForDeviceScaleFactor() override {
@@ -329,6 +328,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // if the zoom change was triggered by the browser, it's only needed in case
   // a plugin can update its own zoom, say because of its own UI.
   void FullFramePluginZoomLevelChanged(double zoom_level);
+
+  // Requests a page-scale animation based on the specified rect.
+  void ZoomToFindInPageRect(const WebRect&);
 
   void ComputeScaleAndScrollForBlockRect(
       const gfx::Point& hit_point,

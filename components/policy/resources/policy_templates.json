@@ -770,6 +770,7 @@
         'ReportUserIDData',
         'ReportExtensionsAndPluginsData',
         'ReportSafeBrowsingData',
+        'CloudExtensionRequestEnabled',
         'CloudReportingEnabled',
       ],
     },

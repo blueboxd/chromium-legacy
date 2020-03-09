@@ -98,6 +98,7 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
       mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojo::PendingRemote<mojom::MediaStatusObserver> observer,
       CreateMediaRouteControllerCallback callback) override;
+  void GetState(GetStateCallback callback) override;
 
  private:
   void Init(mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,

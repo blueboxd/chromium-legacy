@@ -538,6 +538,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
                       mojom::blink::PluginActionType action) override;
   void SetInitialFocus(bool reverse) override;
   void EnablePreferredSizeChangedMode() override;
+  void ZoomToFindInPageRect(const gfx::Rect& rect_in_root_frame) override;
 
   SystemClipboard* GetSystemClipboard();
   RawSystemClipboard* GetRawSystemClipboard();

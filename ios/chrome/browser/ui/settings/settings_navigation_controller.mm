@@ -322,6 +322,12 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 }
 
 - (void)closeSettings {
+  for (UIViewController* controller in [self viewControllers]) {
+    if ([controller conformsToProtocol:@protocol(SettingsControllerProtocol)]) {
+      [controller performSelector:@selector(reportDismissalUserAction)];
+    }
+  }
+
   [self.settingsNavigationDelegate closeSettings];
 }
 

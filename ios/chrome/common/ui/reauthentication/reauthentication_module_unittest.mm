@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/password/reauthentication_module_for_testing.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module_for_testing.h"
 
 #import <LocalAuthentication/LocalAuthentication.h>
 
@@ -79,10 +79,11 @@ TEST_F(ReauthenticationModuleTest, ReauthReuseNotPermitted) {
   OCMExpect([auth_context_ evaluatePolicy:LAPolicyDeviceOwnerAuthentication
                           localizedReason:[OCMArg any]
                                     reply:[OCMArg any]]);
-  [reauthentication_module_ attemptReauthWithLocalizedReason:@"Test"
-                                        canReusePreviousAuth:NO
-                                                     handler:^(BOOL success){
-                                                     }];
+  [reauthentication_module_
+      attemptReauthWithLocalizedReason:@"Test"
+                  canReusePreviousAuth:NO
+                               handler:^(ReauthenticationResult success){
+                               }];
 
   EXPECT_OCMOCK_VERIFY(auth_context_);
 }
@@ -106,10 +107,11 @@ TEST_F(ReauthenticationModuleTest, ReauthReusePermittedLessThanSixtySeconds) {
 
   // Use @try/@catch as -reject raises an exception.
   @try {
-    [reauthentication_module_ attemptReauthWithLocalizedReason:@"Test"
-                                          canReusePreviousAuth:YES
-                                                       handler:^(BOOL success){
-                                                       }];
+    [reauthentication_module_
+        attemptReauthWithLocalizedReason:@"Test"
+                    canReusePreviousAuth:YES
+                                 handler:^(ReauthenticationResult success){
+                                 }];
     EXPECT_OCMOCK_VERIFY(auth_context_);
   } @catch (NSException* exception) {
     // The exception is raised when
@@ -136,10 +138,11 @@ TEST_F(ReauthenticationModuleTest, ReauthReusePermittedMoreThanSixtySeconds) {
   OCMExpect([auth_context_ evaluatePolicy:LAPolicyDeviceOwnerAuthentication
                           localizedReason:[OCMArg any]
                                     reply:[OCMArg any]]);
-  [reauthentication_module_ attemptReauthWithLocalizedReason:@"Test"
-                                        canReusePreviousAuth:YES
-                                                     handler:^(BOOL success){
-                                                     }];
+  [reauthentication_module_
+      attemptReauthWithLocalizedReason:@"Test"
+                  canReusePreviousAuth:YES
+                               handler:^(ReauthenticationResult success){
+                               }];
 
   EXPECT_OCMOCK_VERIFY(auth_context_);
 }

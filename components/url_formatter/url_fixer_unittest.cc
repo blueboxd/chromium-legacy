@@ -260,18 +260,6 @@ static const SegmentCase segment_cases[] = {
         url::Component(43, 17),            // query
         url::Component(),                  // ref
     },
-    {
-        "chrome-devtools://bundled/devtools/inspector.html?ws=localhost:9221",
-        "devtools",
-        url::Component(),        // scheme
-        url::Component(),        // username
-        url::Component(),        // password
-        url::Component(18, 7),   // host
-        url::Component(),        // port
-        url::Component(25, 24),  // path
-        url::Component(50, 17),  // query
-        url::Component(),        // ref
-    },
 };
 
 typedef testing::Test URLFixerTest;
@@ -282,6 +270,8 @@ TEST(URLFixerTest, SegmentURL) {
 
   for (size_t i = 0; i < base::size(segment_cases); ++i) {
     SegmentCase value = segment_cases[i];
+    SCOPED_TRACE(testing::Message() << "test #" << i << ": " << value.input);
+
     result = url_formatter::SegmentURL(value.input, &parts);
     EXPECT_EQ(value.result, result);
     EXPECT_EQ(value.scheme, parts.scheme);
@@ -395,15 +385,8 @@ struct FixupCase {
     // Devtools scheme.
     {"devtools://bundled/devtools/node.html",
      "devtools://bundled/devtools/node.html"},
-    // Devtools fallback scheme.
-    {"chrome-devtools://bundled/devtools/toolbox.html",
-     "devtools://bundled/devtools/toolbox.html"},
     // Devtools scheme with websocket query.
     {"devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/guid",
-     "devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/guid"},
-    // Devtools fallback scheme with websocket query.
-    {"chrome-devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/"
-     "guid",
      "devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/guid"},
     // host:123 should be rewritten to http://host:123/, but only if the port
     // number is valid - in particular telephone numbers are not port numbers

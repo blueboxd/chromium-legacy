@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PAYMENTS_PERSONAL_DATA_MANAGER_TEST_UTIL_H_
-#define CHROME_BROWSER_PAYMENTS_PERSONAL_DATA_MANAGER_TEST_UTIL_H_
+#ifndef CHROME_TEST_PAYMENTS_PERSONAL_DATA_MANAGER_TEST_UTIL_H_
+#define CHROME_TEST_PAYMENTS_PERSONAL_DATA_MANAGER_TEST_UTIL_H_
 
 namespace autofill {
 class AutofillProfile;
@@ -30,4 +30,4 @@ void AddCreditCard(content::BrowserContext* browser_context,
 }  // namespace test
 }  // namespace payments
 
-#endif  // CHROME_BROWSER_PAYMENTS_PERSONAL_DATA_MANAGER_TEST_UTIL_H_
+#endif  // CHROME_TEST_PAYMENTS_PERSONAL_DATA_MANAGER_TEST_UTIL_H_

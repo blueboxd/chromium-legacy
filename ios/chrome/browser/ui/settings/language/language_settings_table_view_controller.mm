@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
@@ -156,6 +158,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 #pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  // Language Settings screen does not have Done button.
+  NOTREACHED();
+}
 
 - (void)settingsWillBeDismissed {
   [self.dataSource stopObservingModel];
@@ -512,6 +519,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Update the model and the table view.
   [self translateEnabled:switchView.isOn];
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  base::RecordAction(
+      base::UserMetricsAction("IOSLanguagesSettingsCloseWithSwipe"));
 }
 
 @end

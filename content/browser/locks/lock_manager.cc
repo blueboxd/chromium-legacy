@@ -141,7 +141,7 @@ class LockManager::Lock {
   mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::LockHandle> handle_;
 };
 
-LockManager::LockManager() {}
+LockManager::LockManager() = default;
 
 LockManager::~LockManager() = default;
 
@@ -149,7 +149,8 @@ LockManager::~LockManager() = default;
 // for a given origin.
 class LockManager::OriginState {
  public:
-  OriginState(LockManager* lock_manager) : lock_manager_(lock_manager) {}
+  explicit OriginState(LockManager* lock_manager)
+      : lock_manager_(lock_manager) {}
   ~OriginState() = default;
 
   // Helper function for breaking the lock at the front of a given request
@@ -263,7 +264,7 @@ class LockManager::OriginState {
     }
   }
 
-  bool IsEmpty() { return lock_id_to_iterator_.empty(); }
+  bool IsEmpty() const { return lock_id_to_iterator_.empty(); }
 
   std::pair<std::vector<blink::mojom::LockInfoPtr>,
             std::vector<blink::mojom::LockInfoPtr>>
@@ -300,7 +301,7 @@ class LockManager::OriginState {
 
   // Any OriginState is owned by a LockManager so a raw pointer back to an
   // OriginState's owning LockManager is safe.
-  LockManager* lock_manager_;
+  LockManager* const lock_manager_;
 };
 
 void LockManager::BindReceiver(

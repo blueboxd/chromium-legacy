@@ -18,12 +18,12 @@
 
 @synthesize localizedReasonForAuthentication =
     _localizedReasonForAuthentication;
-@synthesize shouldSucceed = _shouldSucceed;
+@synthesize expectedResult = _expectedResult;
 @synthesize canAttempt = _canAttempt;
 
-- (void)setShouldSucceed:(BOOL)shouldSucceed {
+- (void)setExpectedResult:(ReauthenticationResult)expectedResult {
   _canAttempt = YES;
-  _shouldSucceed = shouldSucceed;
+  _expectedResult = expectedResult;
 }
 
 - (BOOL)canAttemptReauth {
@@ -32,10 +32,11 @@
 
 - (void)attemptReauthWithLocalizedReason:(NSString*)localizedReason
                     canReusePreviousAuth:(BOOL)canReusePreviousAuth
-                                 handler:(void (^)(BOOL success))
-                                             showCopyPasswordsHandler {
+                                 handler:
+                                     (void (^)(ReauthenticationResult success))
+                                         showCopyPasswordsHandler {
   self.localizedReasonForAuthentication = localizedReason;
-  showCopyPasswordsHandler(_shouldSucceed);
+  showCopyPasswordsHandler(_expectedResult);
 }
 
 @end

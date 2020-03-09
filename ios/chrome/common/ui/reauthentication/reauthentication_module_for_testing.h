@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_REAUTHENTICATION_MODULE_FOR_TESTING_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_REAUTHENTICATION_MODULE_FOR_TESTING_H_
+#ifndef IOS_CHROME_COMMON_UI_REAUTHENTICATION_REAUTHENTICATION_MODULE_FOR_TESTING_H_
+#define IOS_CHROME_COMMON_UI_REAUTHENTICATION_REAUTHENTICATION_MODULE_FOR_TESTING_H_
 
-#import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 
 #import <LocalAuthentication/LocalAuthentication.h>
 
@@ -17,4 +17,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_REAUTHENTICATION_MODULE_FOR_TESTING_H
+#endif  // IOS_CHROME_COMMON_UI_REAUTHENTICATION_REAUTHENTICATION_MODULE_FOR_TESTING_H_

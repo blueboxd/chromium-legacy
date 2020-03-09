@@ -23,13 +23,6 @@ class ChromeBrowserState;
 // ownership of Scene-related objects to SceneController.
 @protocol MainControllerGuts <StartupInformation, BrowsingDataCommands>
 
-// If YES, the tab switcher is currently active.
-@property(nonatomic, assign, getter=isTabSwitcherActive)
-    BOOL tabSwitcherIsActive;
-
-// YES while animating the dismissal of tab switcher.
-@property(nonatomic, assign) BOOL dismissingTabSwitcher;
-
 // Parameters received at startup time when the app is launched from another
 // app.
 @property(nonatomic, strong) AppStartupParameters* startupParameters;

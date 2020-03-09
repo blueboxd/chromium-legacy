@@ -18,13 +18,16 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/passwords_directory_util_ios.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using password_manager::metrics_util::LogPasswordSettingsReauthResult;
+using password_manager::metrics_util::ReauthResult;
 
 namespace {
 
@@ -206,18 +209,23 @@ enum class ReauthenticationStatus {
 - (void)startReauthentication {
   __weak PasswordExporter* weakSelf = self;
 
-  void (^onReauthenticationFinished)(BOOL) = ^(BOOL success) {
-    PasswordExporter* strongSelf = weakSelf;
-    if (!strongSelf)
-      return;
-    if (success) {
-      strongSelf.reauthenticationStatus = ReauthenticationStatus::SUCCESSFUL;
-      [strongSelf showPreparingPasswordsAlert];
-    } else {
-      strongSelf.reauthenticationStatus = ReauthenticationStatus::FAILED;
-    }
-    [strongSelf tryExporting];
-  };
+  void (^onReauthenticationFinished)(ReauthenticationResult) =
+      ^(ReauthenticationResult result) {
+        DCHECK(result != ReauthenticationResult::kSkipped);
+        PasswordExporter* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+        if (result == ReauthenticationResult::kSuccess) {
+          LogPasswordSettingsReauthResult(ReauthResult::kSuccess);
+          strongSelf.reauthenticationStatus =
+              ReauthenticationStatus::SUCCESSFUL;
+          [strongSelf showPreparingPasswordsAlert];
+        } else {
+          LogPasswordSettingsReauthResult(ReauthResult::kFailure);
+          strongSelf.reauthenticationStatus = ReauthenticationStatus::FAILED;
+        }
+        [strongSelf tryExporting];
+      };
 
   [_weakReauthenticationModule
       attemptReauthWithLocalizedReason:l10n_util::GetNSString(

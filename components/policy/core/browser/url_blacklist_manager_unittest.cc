@@ -288,16 +288,7 @@ TEST_F(URLBlacklistManagerTest, Filtering) {
   blacklist.Allow(allowed.get());
   EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://example.com")));
 
-  // Treats chrome-devtools and devtools schemes the same way.
-  blocked.reset(new base::ListValue);
-  blocked->AppendString("*");
-  blacklist.Block(blocked.get());
-  allowed.reset(new base::ListValue);
-  allowed->AppendString("chrome-devtools://*");
-  blacklist.Allow(allowed.get());
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("devtools://something.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("https://something.com")));
-
+  // Devtools should not be blocked.
   blocked.reset(new base::ListValue);
   blocked->AppendString("*");
   blacklist.Block(blocked.get());

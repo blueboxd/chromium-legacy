@@ -149,7 +149,7 @@ js_modulizer("modulize") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":action_link_css_module",
     ":cr_icons_css_module",
     ":cr_page_host_style_css_module",
@@ -185,7 +185,7 @@ group("polymer3_elements") {
   ]
 
   if (is_chromeos) {
-    deps += [
+    public_deps += [
       # cr-searchable-drop-down is only used in smb and cups dialogs, both of
       # which are chromeos only.
       "chromeos:cros_color_overrides_module",

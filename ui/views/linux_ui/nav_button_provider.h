@@ -2,16 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_NAV_BUTTON_PROVIDER_H_
-#define CHROME_BROWSER_UI_VIEWS_NAV_BUTTON_PROVIDER_H_
+#ifndef UI_VIEWS_LINUX_UI_NAV_BUTTON_PROVIDER_H_
+#define UI_VIEWS_LINUX_UI_NAV_BUTTON_PROVIDER_H_
 
 #include "build/buildflag.h"
 #include "ui/views/buildflags.h"
 #include "ui/views/controls/button/button.h"
-
-#if !BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
-#error "Include not allowed."
-#endif
 
 namespace chrome {
 enum class FrameButtonDisplayType;
@@ -57,4 +53,4 @@ class NavButtonProvider {
 
 }  // namespace views
 
-#endif  // CHROME_BROWSER_UI_VIEWS_NAV_BUTTON_PROVIDER_H_
+#endif  // UI_VIEWS_LINUX_UI_NAV_BUTTON_PROVIDER_H_

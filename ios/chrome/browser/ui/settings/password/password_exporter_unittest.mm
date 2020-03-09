@@ -127,7 +127,8 @@ class PasswordExporterTest : public PlatformTest {
 // Tests that when reauthentication is successful, writing the passwords file
 // is attempted and a call to show the activity view is made.
 TEST_F(PasswordExporterTest, PasswordFileWriteReauthSucceeded) {
-  mock_reauthentication_module_.shouldSucceed = YES;
+  mock_reauthentication_module_.expectedResult =
+      ReauthenticationResult::kSuccess;
   FakePasswordFileWriter* fake_password_file_writer =
       [[FakePasswordFileWriter alloc] init];
   fake_password_file_writer.writingStatus = WriteToURLStatus::SUCCESS;
@@ -154,7 +155,8 @@ TEST_F(PasswordExporterTest, PasswordFileWriteReauthSucceeded) {
 // the appropriate error is displayed and the export operation
 // is interrupted.
 TEST_F(PasswordExporterTest, WritingFailedOutOfDiskSpace) {
-  mock_reauthentication_module_.shouldSucceed = YES;
+  mock_reauthentication_module_.expectedResult =
+      ReauthenticationResult::kSuccess;
   FakePasswordFileWriter* fake_password_file_writer =
       [[FakePasswordFileWriter alloc] init];
   fake_password_file_writer.writingStatus =
@@ -192,7 +194,8 @@ TEST_F(PasswordExporterTest, WritingFailedOutOfDiskSpace) {
 // enough disk space, the appropriate error is displayed and the export
 // operation is interrupted.
 TEST_F(PasswordExporterTest, WritingFailedUnknownError) {
-  mock_reauthentication_module_.shouldSucceed = YES;
+  mock_reauthentication_module_.expectedResult =
+      ReauthenticationResult::kSuccess;
   FakePasswordFileWriter* fake_password_file_writer =
       [[FakePasswordFileWriter alloc] init];
   fake_password_file_writer.writingStatus = WriteToURLStatus::UNKNOWN_ERROR;
@@ -227,7 +230,8 @@ TEST_F(PasswordExporterTest, WritingFailedUnknownError) {
 
 // Tests that when reauthentication fails the export flow is interrupted.
 TEST_F(PasswordExporterTest, ExportInterruptedWhenReauthFails) {
-  mock_reauthentication_module_.shouldSucceed = NO;
+  mock_reauthentication_module_.expectedResult =
+      ReauthenticationResult::kFailure;
   FakePasswordSerialzerBridge* fake_password_serializer_bridge =
       [[FakePasswordSerialzerBridge alloc] init];
   [password_exporter_
@@ -272,7 +276,8 @@ TEST_F(PasswordExporterTest, ExportInterruptedWhenReauthFails) {
 // Tests that cancelling the export while serialization is still ongoing
 // waits for it to finish before cleaning up.
 TEST_F(PasswordExporterTest, CancelWaitsForSerializationFinished) {
-  mock_reauthentication_module_.shouldSucceed = YES;
+  mock_reauthentication_module_.expectedResult =
+      ReauthenticationResult::kSuccess;
   FakePasswordSerialzerBridge* fake_password_serializer_bridge =
       [[FakePasswordSerialzerBridge alloc] init];
   [password_exporter_
@@ -309,7 +314,8 @@ TEST_F(PasswordExporterTest, CancelWaitsForSerializationFinished) {
 // Tests that if the export is cancelled before writing to file finishes
 // successfully the request to show the activity controller isn't made.
 TEST_F(PasswordExporterTest, CancelledBeforeWriteToFileFinishesSuccessfully) {
-  mock_reauthentication_module_.shouldSucceed = YES;
+  mock_reauthentication_module_.expectedResult =
+      ReauthenticationResult::kSuccess;
   FakePasswordFileWriter* fake_password_file_writer =
       [[FakePasswordFileWriter alloc] init];
   fake_password_file_writer.writingStatus = WriteToURLStatus::SUCCESS;
@@ -341,7 +347,8 @@ TEST_F(PasswordExporterTest, CancelledBeforeWriteToFileFinishesSuccessfully) {
 // Tests that if the export is cancelled before writing to file fails
 // with an error, the request to show the error alert isn't made.
 TEST_F(PasswordExporterTest, CancelledBeforeWriteToFileFails) {
-  mock_reauthentication_module_.shouldSucceed = YES;
+  mock_reauthentication_module_.expectedResult =
+      ReauthenticationResult::kSuccess;
   FakePasswordFileWriter* fake_password_file_writer =
       [[FakePasswordFileWriter alloc] init];
   fake_password_file_writer.writingStatus = WriteToURLStatus::UNKNOWN_ERROR;

@@ -44,7 +44,7 @@ js_library("bluetooth_dialog") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     "smb_shares:add_smb_share_dialog_module",
     "smb_shares:smb_browser_proxy_module",
   ]

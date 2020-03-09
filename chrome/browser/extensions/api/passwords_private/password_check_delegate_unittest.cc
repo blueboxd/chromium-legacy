@@ -272,6 +272,49 @@ TEST_F(PasswordCheckDelegateTest, GetCompromisedCredentialsInfoOrders) {
                       api::passwords_private::COMPROMISE_TYPE_LEAKED)));
 }
 
+// Verifies that the formatted timestamp associated with a compromised
+// credential covers the "Just now" cases (less than a minute ago), as well as
+// months and years.
+TEST_F(PasswordCheckDelegateTest, GetCompromisedCredentialsHandlesTimes) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername2));
+  store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername1));
+  store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername2));
+
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername1, base::TimeDelta::FromSeconds(59),
+                      CompromiseType::kLeaked));
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername2, base::TimeDelta::FromSeconds(60),
+                      CompromiseType::kLeaked));
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleOrg, kUsername1, base::TimeDelta::FromDays(100),
+                      CompromiseType::kLeaked));
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleOrg, kUsername2, base::TimeDelta::FromDays(800),
+                      CompromiseType::kLeaked));
+  RunUntilIdle();
+
+  EXPECT_THAT(
+      delegate().GetCompromisedCredentialsInfo().compromised_credentials,
+      ElementsAre(ExpectCompromisedCredential(
+                      "example.com", kExampleCom, kUsername1,
+                      base::TimeDelta::FromSeconds(59), "Just now",
+                      api::passwords_private::COMPROMISE_TYPE_LEAKED),
+                  ExpectCompromisedCredential(
+                      "example.com", kExampleCom, kUsername2,
+                      base::TimeDelta::FromSeconds(60), "1 minute ago",
+                      api::passwords_private::COMPROMISE_TYPE_LEAKED),
+                  ExpectCompromisedCredential(
+                      "example.org", kExampleOrg, kUsername1,
+                      base::TimeDelta::FromDays(100), "3 months ago",
+                      api::passwords_private::COMPROMISE_TYPE_LEAKED),
+                  ExpectCompromisedCredential(
+                      "example.org", kExampleOrg, kUsername2,
+                      base::TimeDelta::FromDays(800), "2 years ago",
+                      api::passwords_private::COMPROMISE_TYPE_LEAKED)));
+}
+
 TEST_F(PasswordCheckDelegateTest, GetCompromisedCredentialsInfoInjectsAndroid) {
   store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
   store().AddLogin(MakeSavedAndroidPassword(kExampleApp, kUsername2,
@@ -773,6 +816,7 @@ TEST_F(PasswordCheckDelegateTest,
 
   // Verify that the event gets fired once the saved passwords provider is
   // initialized.
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
   RunUntilIdle();
   EXPECT_EQ(events::PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED,
             event_router_observer().events().at(kEventName)->histogram_value);

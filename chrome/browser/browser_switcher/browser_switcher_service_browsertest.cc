@@ -176,8 +176,6 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
 #if defined(OS_WIN)
   base::ScopedTempDir fake_appdata_dir_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherServiceTest);
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, ExternalSitelistInvalidUrl) {

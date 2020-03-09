@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/payments/personal_data_manager_test_util.h"
+#include "chrome/test/payments/personal_data_manager_test_util.h"
 
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,7 +13,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "content/public/test/browser_test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
 namespace test {

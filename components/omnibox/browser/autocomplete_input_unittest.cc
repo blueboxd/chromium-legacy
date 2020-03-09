@@ -178,8 +178,12 @@ TEST(AutocompleteInputTest, InputType) {
     {ASCIIToUTF16("filesystem:http"), metrics::OmniboxInputType::QUERY},
     {ASCIIToUTF16("filesystem:"), metrics::OmniboxInputType::QUERY},
     {ASCIIToUTF16("chrome-search://"), metrics::OmniboxInputType::QUERY},
-    {ASCIIToUTF16("chrome-devtools:"), metrics::OmniboxInputType::QUERY},
+    {ASCIIToUTF16("chrome-devtools:"), metrics::OmniboxInputType::UNKNOWN},
+    {ASCIIToUTF16("chrome-devtools://"), metrics::OmniboxInputType::UNKNOWN},
+    {ASCIIToUTF16("chrome-devtools://x"), metrics::OmniboxInputType::UNKNOWN},
     {ASCIIToUTF16("devtools:"), metrics::OmniboxInputType::QUERY},
+    {ASCIIToUTF16("devtools://"), metrics::OmniboxInputType::QUERY},
+    {ASCIIToUTF16("devtools://x"), metrics::OmniboxInputType::URL},
     {ASCIIToUTF16("about://f;"), metrics::OmniboxInputType::QUERY},
     {ASCIIToUTF16("://w"), metrics::OmniboxInputType::UNKNOWN},
     {ASCIIToUTF16(":w"), metrics::OmniboxInputType::UNKNOWN},
@@ -199,6 +203,7 @@ TEST(AutocompleteInputTest, InputType) {
     {ASCIIToUTF16("example."), metrics::OmniboxInputType::UNKNOWN},
     {ASCIIToUTF16(".example"), metrics::OmniboxInputType::UNKNOWN},
     {ASCIIToUTF16(".example."), metrics::OmniboxInputType::UNKNOWN},
+    {ASCIIToUTF16("example:"), metrics::OmniboxInputType::UNKNOWN},
     {ASCIIToUTF16("example:80/ "), metrics::OmniboxInputType::URL},
     {ASCIIToUTF16("http://foo.invalid"), metrics::OmniboxInputType::UNKNOWN},
     {ASCIIToUTF16("foo.invalid/"), metrics::OmniboxInputType::QUERY},
@@ -367,26 +372,5 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
     EXPECT_EQ(input_cases[i].normalized_input, input.text());
     EXPECT_EQ(input_cases[i].normalized_cursor_position,
               input.cursor_position());
-  }
-}
-
-TEST(AutocompleteInputTest, InputParsedToFallback) {
-  struct test_data {
-    const base::string16 input;
-    const std::string parsed_input;
-  } input_cases[] = {
-      {ASCIIToUTF16("devtools://bundled/devtools/inspector.html"),
-       std::string("devtools://bundled/devtools/inspector.html")},
-      {ASCIIToUTF16("chrome-devtools://bundled/devtools/inspector.html"),
-       std::string("devtools://bundled/devtools/inspector.html")},
-  };
-
-  for (size_t i = 0; i < base::size(input_cases); ++i) {
-    SCOPED_TRACE(input_cases[i].input);
-    AutocompleteInput input(input_cases[i].input,
-                            metrics::OmniboxEventProto::OTHER,
-                            TestSchemeClassifier());
-    input.set_prevent_inline_autocomplete(true);
-    EXPECT_EQ(input_cases[i].parsed_input, input.canonicalized_url().spec());
   }
 }

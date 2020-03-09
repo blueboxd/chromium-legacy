@@ -27,7 +27,13 @@ extern const int kContextualCardsUrlActionsIntegration;
 extern const int kContextualCardsDefinitionsIntegration;
 // Support of translations in the bar as part of the resolve request.
 extern const int kContextualCardsTranslationsIntegration;
-// Support of unlimited cards with diagnostics enabled, for development.
+
+// Development-level CoCa integration codes.
+
+// For both client and server-side debugging.
+extern const int kContextualCardsDebugIntegration;
+// Generates diagnostics on the client and uses the ENTRYPOINT_UNSPECIFIED for
+// CoCa to return unlimited cards with diagnostics enabled.
 extern const int kContextualCardsDiagnosticIntegration;
 
 // Longpress resolve variations:

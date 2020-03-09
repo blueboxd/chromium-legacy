@@ -125,6 +125,8 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kRequestedFileSystemTemporary,
           WebFeature::kRequestedFileSystemPersistent,
           WebFeature::kSMSReceiverStart,
+          WebFeature::kSrcsetWDescriptor,
+          WebFeature::kSrcsetXDescriptor,
           WebFeature::kRequestFileSystem,
           WebFeature::kBaseElement,
           WebFeature::kBaseWithCrossOriginHref,

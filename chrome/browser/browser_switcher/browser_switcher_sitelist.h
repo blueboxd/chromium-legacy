@@ -94,6 +94,10 @@ class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
   explicit BrowserSwitcherSitelistImpl(const BrowserSwitcherPrefs* prefs);
   ~BrowserSwitcherSitelistImpl() override;
 
+  BrowserSwitcherSitelistImpl(const BrowserSwitcherSitelistImpl&) = delete;
+  BrowserSwitcherSitelistImpl& operator=(const BrowserSwitcherSitelistImpl&) =
+      delete;
+
   // BrowserSwitcherSitelist
   Decision GetDecision(const GURL& url) const override;
   void SetIeemSitelist(ParsedXml&& sitelist) override;
@@ -112,8 +116,6 @@ class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
   RuleSet external_sitelist_;
 
   const BrowserSwitcherPrefs* const prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherSitelistImpl);
 };
 
 }  // namespace browser_switcher

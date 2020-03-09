@@ -27,6 +27,7 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/ukm/ios/features.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
@@ -45,6 +46,7 @@
 #include "ios/chrome/browser/metrics/ios_expired_histograms_array.h"
 #include "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -198,6 +200,17 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
     variations_service->set_policy_pref_service(
         last_used_browser_state->GetPrefs());
     variations_service->PerformPreMainMessageLoopStartup();
+  }
+
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kSafeBrowsingAvailableOnIOS)) {
+    // Ensure that Safe Browsing is initialized.
+    SafeBrowsingService* safe_browsing_service =
+        application_context_->GetSafeBrowsingService();
+    base::FilePath user_data_path;
+    CHECK(base::PathService::Get(ios::DIR_USER_DATA, &user_data_path));
+    safe_browsing_service->Initialize(last_used_browser_state->GetPrefs(),
+                                      user_data_path);
   }
 }
 

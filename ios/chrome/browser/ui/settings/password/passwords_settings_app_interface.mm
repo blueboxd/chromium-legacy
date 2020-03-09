@@ -151,8 +151,9 @@ static MockReauthenticationModule* _mockReauthenticationModule;
       SetUpAndReturnMockReauthenticationModuleForExport();
 }
 
-+ (void)mockReauthenticationModuleShouldSucceed:(BOOL)shouldSucceed {
-  _mockReauthenticationModule.shouldSucceed = shouldSucceed;
++ (void)mockReauthenticationModuleExpectedResult:
+    (ReauthenticationResult)expectedResult {
+  _mockReauthenticationModule.expectedResult = expectedResult;
 }
 
 + (void)mockReauthenticationModuleCanAttempt:(BOOL)canAttempt {

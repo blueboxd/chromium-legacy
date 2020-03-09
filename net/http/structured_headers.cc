@@ -278,7 +278,7 @@ class StructuredHeaderParser {
         return base::nullopt;
       }
 
-      Item value;
+      Item value{true};
       if (ConsumeChar('=')) {
         auto item = ReadBareItem();
         if (!item)
@@ -710,6 +710,8 @@ class StructuredHeaderSerializer {
       if (!WriteKey(param_name))
         return false;
       if (!param_value.is_null()) {
+        if (param_value.is_boolean() && param_value.GetBoolean())
+          continue;
         output_ << "=";
         if (!WriteBareItem(param_value))
           return false;

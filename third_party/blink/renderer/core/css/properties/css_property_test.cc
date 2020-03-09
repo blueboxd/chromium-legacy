@@ -88,4 +88,18 @@ TEST_F(CSSPropertyTest, VisitedPropertiesCanParseValues) {
   EXPECT_GT(num_visited, 0u);
 }
 
+TEST_F(CSSPropertyTest, Surrogates) {
+  EXPECT_EQ(&GetCSSPropertyWidth(),
+            GetCSSPropertyInlineSize().SurrogateFor(
+                TextDirection::kLtr, WritingMode::kHorizontalTb));
+  EXPECT_EQ(&GetCSSPropertyHeight(),
+            GetCSSPropertyInlineSize().SurrogateFor(TextDirection::kLtr,
+                                                    WritingMode::kVerticalRl));
+  EXPECT_EQ(&GetCSSPropertyWritingMode(),
+            GetCSSPropertyWebkitWritingMode().SurrogateFor(
+                TextDirection::kLtr, WritingMode::kHorizontalTb));
+  EXPECT_FALSE(GetCSSPropertyWidth().SurrogateFor(TextDirection::kLtr,
+                                                  WritingMode::kHorizontalTb));
+}
+
 }  // namespace blink

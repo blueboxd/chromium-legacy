@@ -151,13 +151,17 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   static const char* PlayStateString(AnimationPlayState);
   AnimationPlayState CalculateAnimationPlayState() const;
 
-  // Do not call this method directly except via the v8 bindings. Depending on
-  // the type of animation a style flush is required to ensure that pending
-  // style changes that affect play state are resolved. Instead call
-  // PlayStateString directly.
+  // As a web exposed API, playState must update style and layout if the play
+  // state may be affected by it (see CSSAnimation::playState), whereas
+  // PlayStateString can be used to query the current play state.
   virtual String playState() const;
 
-  bool pending() const;
+  bool PendingInternal() const;
+
+  // As a web exposed API, pending must update style and layout if the pending
+  // status may be affected by it (see CSSAnimation::pending), whereas
+  // PendingInternal can be used to query the current pending status.
+  virtual bool pending() const;
 
   virtual void pause(ExceptionState& = ASSERT_NO_EXCEPTION);
   virtual void play(ExceptionState& = ASSERT_NO_EXCEPTION);

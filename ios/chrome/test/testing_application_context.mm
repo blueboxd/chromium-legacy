@@ -184,6 +184,11 @@ TestingApplicationContext::GetComponentUpdateService() {
   return nullptr;
 }
 
+SafeBrowsingService* TestingApplicationContext::GetSafeBrowsingService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}
+
 network::NetworkConnectionTracker*
 TestingApplicationContext::GetNetworkConnectionTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());

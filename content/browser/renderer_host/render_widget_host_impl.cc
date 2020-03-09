@@ -3142,8 +3142,7 @@ void RenderWidgetHostImpl::OnZoomToFindInPageRectInMainFrame(
   }
 
   auto* root_rvhi = RenderViewHostImpl::From(root_view->GetRenderWidgetHost());
-  root_rvhi->Send(new ViewMsg_ZoomToFindInPageRect(root_rvhi->GetRoutingID(),
-                                                   transformed_rect_to_zoom));
+  root_rvhi->ZoomToFindInPageRect(transformed_rect_to_zoom);
 }
 
 gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {

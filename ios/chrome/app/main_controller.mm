@@ -385,7 +385,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 @implementation MainController
 // Defined by MainControllerGuts.
-@synthesize dismissingTabSwitcher = _dismissingTabSwitcher;
 @synthesize restoreHelper = _restoreHelper;
 
 // Defined by public protocols.
@@ -396,7 +395,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @synthesize isColdStart = _isColdStart;
 @synthesize startupParameters = _startupParameters;
 @synthesize appLaunchTime = _appLaunchTime;
-@synthesize tabSwitcherIsActive;
 
 #pragma mark - Application lifecycle
 
@@ -1277,6 +1275,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 @implementation MainController (TestingOnly)
 
+- (BOOL)tabSwitcherActive {
+  return self.sceneController.isTabSwitcherActive;
+}
+
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox {
   [self.sceneController dismissModalDialogsWithCompletion:completion
@@ -1293,10 +1295,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (id<TabSwitcher>)tabSwitcher {
   return self.sceneController.tabSwitcher;
-}
-
-- (void)setTabSwitcherActive:(BOOL)active {
-  self.tabSwitcherIsActive = active;
 }
 
 - (void)setStartupParametersWithURL:(const GURL&)launchURL {

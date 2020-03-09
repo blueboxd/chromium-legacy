@@ -249,8 +249,7 @@ void TestWebContents::TestDidReceiveInputEvent(
 }
 
 void TestWebContents::TestDidFinishLoad(const GURL& url) {
-  FrameHostMsg_DidFinishLoad msg(0, url);
-  frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
+  OnDidFinishLoad(frame_tree_.root()->current_frame_host(), url);
 }
 
 void TestWebContents::TestDidFailLoadWithError(const GURL& url,

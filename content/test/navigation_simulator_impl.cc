@@ -591,6 +591,12 @@ void NavigationSimulatorImpl::Commit() {
   RenderFrameHostImpl* previous_rfh =
       render_frame_host_->frame_tree_node()->current_frame_host();
 
+  // RenderDocument: Do not dispatch UnloadACK if the navigation was committed
+  // in the same SiteInstance. This has already been dispatched during the
+  // navigation in the renderer process.
+  if (previous_rfh->GetSiteInstance() == render_frame_host_->GetSiteInstance())
+    drop_unload_ack_ = true;
+
   if (same_document_) {
     interface_provider_receiver_.reset();
     browser_interface_broker_receiver_.reset();
@@ -739,8 +745,16 @@ void NavigationSimulatorImpl::CommitErrorPage() {
 
   // Keep a pointer to the current RenderFrameHost that may be pending deletion
   // after commit.
+  // RenderDocument: The |previous_rfh| might also be immediately deleted after
+  // commit, because it has already run its unload handler.
   RenderFrameHostImpl* previous_rfh =
       render_frame_host_->frame_tree_node()->current_frame_host();
+
+  // RenderDocument: Do not dispatch UnloadACK if the navigation was committed
+  // in the same SiteInstance. This has already been dispatched during the
+  // navigation in the renderer process.
+  if (previous_rfh->GetSiteInstance() == render_frame_host_->GetSiteInstance())
+    drop_unload_ack_ = true;
 
   auto params = BuildDidCommitProvisionalLoadParams(
       false /* same_document */, true /* failed_navigation */);

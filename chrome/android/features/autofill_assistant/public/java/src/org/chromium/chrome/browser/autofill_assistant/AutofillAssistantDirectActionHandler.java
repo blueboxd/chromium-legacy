@@ -171,7 +171,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
                 return;
             }
             if (ONBOARDING_ACTION.equals(actionId)) {
-                delegate.performOnboarding(experimentIds, booleanCallback);
+                delegate.performOnboarding(experimentIds, arguments, booleanCallback);
                 return;
             }
 

@@ -1005,6 +1005,11 @@ void CrxInstaller::NotifyCrxInstallComplete(
   if (!success && (!expected_id_.empty() || extension())) {
     switch (error->type()) {
       case CrxInstallErrorType::DECLINED:
+        if (error->detail() == CrxInstallErrorDetail::DISALLOWED_BY_POLICY) {
+          installation_reporter
+              ->ReportExtensionTypeForPolicyDisallowedExtension(
+                  extension_id, extension()->GetType());
+        }
         installation_reporter->ReportCrxInstallError(
             extension_id,
             InstallationReporter::FailureReason::CRX_INSTALL_ERROR_DECLINED,

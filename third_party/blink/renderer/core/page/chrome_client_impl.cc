@@ -528,6 +528,10 @@ void ChromeClientImpl::EnablePreferredSizeChangedMode() {
   web_view_->EnablePreferredSizeChangedMode();
 }
 
+void ChromeClientImpl::ZoomToFindInPageRect(const WebRect& rect_in_root_frame) {
+  web_view_->ZoomToFindInPageRect(rect_in_root_frame);
+}
+
 void ChromeClientImpl::PageScaleFactorChanged() const {
   web_view_->PageScaleFactorChanged();
 }

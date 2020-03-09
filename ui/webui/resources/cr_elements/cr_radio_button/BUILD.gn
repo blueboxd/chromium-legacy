@@ -21,7 +21,7 @@ js_library("cr_radio_button_behavior") {
 # Targets for auto-generating and typechecking Polymer 3 JS modules
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":cr_radio_button_module",
     ":cr_radio_button_style_css_module",
     ":modulize",

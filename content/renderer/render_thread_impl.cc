@@ -1906,7 +1906,7 @@ void RenderThreadImpl::CreateFrameProxy(
     const base::UnguessableToken& devtools_frame_token) {
   RenderFrameProxy::CreateFrameProxy(
       routing_id, render_view_routing_id,
-      RenderFrameImpl::ResolveOpener(opener_routing_id), parent_routing_id,
+      RenderFrameImpl::ResolveWebFrame(opener_routing_id), parent_routing_id,
       replicated_state, devtools_frame_token);
 }
 

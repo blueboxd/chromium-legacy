@@ -400,10 +400,6 @@ const char kTranslateInfobarMessagesUIName[] =
 const char kTranslateInfobarMessagesUIDescription[] =
     "When enabled, the Translate Infobar uses the new Messages UI.";
 
-const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
-const char kUseDdljsonApiDescription[] =
-    "Enables the new ddljson API to fetch Doodles for the NTP.";
-
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =
     "Uses the sandbox service for Google Payments API calls.";

@@ -326,11 +326,17 @@
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_DESCRIPTION" desc="Explanation of the passwords bulk check feature found within the password settings.">
     Keep your passwords safe from data breaches and other security issues
   </message>
-  <message name="IDS_SETTINGS_LEAKED_PASSWORDS_COUNT" desc="Number of compromised passwords found during bulk check.">
-    <ph name="COUNT">$1<ex>5</ex></ph> compromised passwords
+  <message name="IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT" desc="Number of compromised passwords present in the database">
+    {COUNT, plural,
+      =0 {No compromised passwords found}
+      =1 {{COUNT} compromised password}
+      other {{COUNT} compromised passwords}}
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_AGAIN" desc="Button to start bulk password check manually in passwords check section.">
     Check again
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_JUST_NOW" desc="Label shown when a compromised credential was found less than a minute ago">
+    Just now
   </message>
   <message name="IDS_SETTINGS_COMPROMISED_PASSWORDS" desc="Title for list of compromised credentials after passwords bulk check.">
     Compromised passwords
@@ -340,6 +346,9 @@
   </message>
   <message name="IDS_SETTINGS_CHANGE_PASSWORD_BUTTON" desc="Button inside password check section which opens url for changing leaked password.">
     Change password
+  </message>
+  <message name="IDS_SETTINGS_CHANGE_PASSWORD_IN_APP_LABEL" desc="Label which is shown only if compromised credentials can't be fixed by visiting website (e.g. password from mobile app).">
+    Open the app to change your password
   </message>
   <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_REASON_LEAKED" desc="Password compromise reason shown when a password was found in a data breach.">
     Found in data breach
@@ -1543,6 +1552,9 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_BUTTON" desc="'Check' is a verb. By clicking this button, the user can quickly check whether their safety-related settings are fully protecting them.">
     Check now
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_BUTTON_ARIA_LABEL" desc="Accessibility text for the button with which the user can quickly check whether their safety-related settings are fully protecting them.">
+    Run safety check now
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL" desc="'Updates' is an element in safety check that shows the update status of Chrome.">
     Updates
   </message>
@@ -1581,6 +1593,9 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_BUTTON" desc="This is the text for the button that allows users to manage their Safe Browsing settings.">
     Manage
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_BUTTON_ARIA_LABEL" desc="Accessibility text for the button that allows users to manage their Safe Browsing settings.">
+    Manage Safe Browsing
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_PRIMARY_LABEL" desc="'Extensions' is an element in safety check that shows the safety check status of installed extensions.">
     Extensions
   </message>
@@ -1604,6 +1619,9 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON" desc="This button allows users to review their extensions settings.">
     Review
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON_ARIA_LABEL" desc="Accessibility text for the button that allows users to review their extensions settings.">
+    Review extensions
   </message>
   <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include browser-initiated DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
     Preload pages for faster browsing and searching

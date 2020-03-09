@@ -21,6 +21,7 @@
 
       domain: {
         type: String,
+        value: null,
       },
 
       emailDomain: String,

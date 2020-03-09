@@ -430,6 +430,11 @@ const char kNoteTakingAppIds[] = "note-taking-app-ids";
 //   user-image
 const char kOobeForceShowScreen[] = "oobe-force-show-screen";
 
+// Indicates that the first user run flow (sequence of OOBE screens after the
+// first user login) should show tablet mode centric screens, even if the device
+// is not in tablet mode.
+const char kOobeForceTabletFirstRun[] = "oobe-force-tablet-first-run";
+
 // Indicates that a guest session has been started before OOBE completion.
 const char kOobeGuestSession[] = "oobe-guest-session";
 
@@ -594,6 +599,11 @@ bool IsArcCpuRestrictionDisabled() {
 bool IsUnfilteredBluetoothDevicesEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kUnfilteredBluetoothDevices);
+}
+
+bool ShouldOobeUseTabletModeFirstRun() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kOobeForceTabletFirstRun);
 }
 
 }  // namespace switches

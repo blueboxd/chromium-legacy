@@ -183,6 +183,9 @@ TEST_F(BulkLeakCheckServiceAdapterTest, StartBulkLeakCheckDedupes) {
 // Checks that trying to start a leak check when another check is already
 // running does nothing and returns false to the caller.
 TEST_F(BulkLeakCheckServiceAdapterTest, MultipleStarts) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, "alice", kPassword1));
+  RunUntilIdle();
+
   auto leak_check = std::make_unique<NiceMockBulkLeakCheck>();
   auto& leak_check_ref = *leak_check;
   EXPECT_CALL(leak_check_ref, CheckCredentials);
@@ -197,6 +200,9 @@ TEST_F(BulkLeakCheckServiceAdapterTest, MultipleStarts) {
 // Checks that stopping the leak check correctly resets the state of the bulk
 // leak check.
 TEST_F(BulkLeakCheckServiceAdapterTest, StopBulkLeakCheck) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, "alice", kPassword1));
+  RunUntilIdle();
+
   auto leak_check = std::make_unique<NiceMockBulkLeakCheck>();
   EXPECT_CALL(*leak_check, CheckCredentials);
   EXPECT_CALL(factory(), TryCreateBulkLeakCheck)
@@ -206,7 +212,7 @@ TEST_F(BulkLeakCheckServiceAdapterTest, StopBulkLeakCheck) {
             adapter().GetBulkLeakCheckState());
 
   adapter().StopBulkLeakCheck();
-  EXPECT_EQ(BulkLeakCheckService::State::kIdle,
+  EXPECT_EQ(BulkLeakCheckService::State::kCanceled,
             adapter().GetBulkLeakCheckState());
 }
 

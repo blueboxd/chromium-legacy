@@ -143,6 +143,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - SettingsControllerProtocol
 
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileAccountsSettingsClose"));
+}
+
 - (void)settingsWillBeDismissed {
   [self.signinInteractionCoordinator cancel];
   [_alertCoordinator stop];
@@ -492,6 +496,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)chromeIdentityServiceWillBeDestroyed {
   _identityServiceObserver.reset();
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  base::RecordAction(
+      base::UserMetricsAction("IOSAccountsSettingsCloseWithSwipe"));
 }
 
 @end

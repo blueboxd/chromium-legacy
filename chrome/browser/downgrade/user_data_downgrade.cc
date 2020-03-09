@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/downgrade/snapshot_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
@@ -32,6 +33,12 @@ base::Version GetVersionFromFileName(const base::FilePath& path) {
   // in UTF-8.
   return base::Version(path.BaseName().value());
 #endif  // OS_WIN
+}
+
+bool IsValidSnapshotDirectory(const base::FilePath& path) {
+  base::Version snapshot_version = GetVersionFromFileName(path);
+  return snapshot_version.IsValid() &&
+         base::PathExists(path.Append(kDowngradeLastVersionFile));
 }
 
 }  // namespace
@@ -95,11 +102,8 @@ std::vector<base::FilePath> GetInvalidSnapshots(
                                   base::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
-    base::Version snapshot_version = GetVersionFromFileName(path);
-    if (!snapshot_version.IsValid() ||
-        !base::PathExists(path.Append(kDowngradeLastVersionFile))) {
+    if (!IsValidSnapshotDirectory(path))
       result.push_back(std::move(path));
-    }
   }
   return result;
 }
@@ -114,6 +118,14 @@ base::Optional<base::Version> GetSnapshotToRestore(
   if (upper_bound != available_snapshots.begin())
     return *--upper_bound;
   return base::nullopt;
+}
+
+void RemoveDataForProfile(base::Time delete_begin,
+                          const base::FilePath& profile_path,
+                          int remove_mask) {
+  SnapshotManager snapshot_manager(profile_path.DirName());
+  snapshot_manager.DeleteSnapshotDataForProfile(
+      delete_begin, profile_path.BaseName(), remove_mask);
 }
 
 }  // namespace downgrade

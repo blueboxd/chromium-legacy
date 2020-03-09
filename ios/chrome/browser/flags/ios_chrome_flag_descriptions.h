@@ -349,10 +349,6 @@ extern const char kToolbarNewTabButtonDescription[];
 extern const char kTranslateInfobarMessagesUIName[];
 extern const char kTranslateInfobarMessagesUIDescription[];
 
-// Title and description for the flag to enable the ddljson Doodle API.
-extern const char kUseDdljsonApiName[];
-extern const char kUseDdljsonApiDescription[];
-
 // Title and description for the flag to control if Google Payments API calls
 // should use the sandbox servers.
 extern const char kWalletServiceUseSandboxName[];

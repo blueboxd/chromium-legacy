@@ -49,6 +49,9 @@ bool VulkanSwapChain::Initialize(
   DCHECK(!use_protected_memory || device_queue->allow_protected_memory());
   use_protected_memory_ = use_protected_memory;
   device_queue_ = device_queue;
+  is_incremental_present_supported_ =
+      gfx::HasExtension(device_queue_->enabled_extensions(),
+                        VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME);
   device_queue_->GetFenceHelper()->ProcessCleanupTasks();
   return InitializeSwapChain(surface, surface_format, image_size,
                              min_image_count, pre_transform,
@@ -62,7 +65,7 @@ void VulkanSwapChain::Destroy() {
   DestroySwapChain();
 }
 
-gfx::SwapResult VulkanSwapChain::PresentBuffer() {
+gfx::SwapResult VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
   DCHECK(acquired_image_);
   DCHECK(end_write_semaphore_ != VK_NULL_HANDLE);
 
@@ -96,14 +99,30 @@ gfx::SwapResult VulkanSwapChain::PresentBuffer() {
     end_write_semaphore_ = vk_semaphore;
   }
 
-  // Queue the present.
-  VkPresentInfoKHR present_info = {};
-  present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+  VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
   present_info.waitSemaphoreCount = 1;
   present_info.pWaitSemaphores = &end_write_semaphore_;
   present_info.swapchainCount = 1;
   present_info.pSwapchains = &swap_chain_;
   present_info.pImageIndices = &acquired_image_.value();
+
+  VkRectLayerKHR rect_layer;
+  VkPresentRegionKHR present_region;
+  VkPresentRegionsKHR present_regions;
+  if (is_incremental_present_supported_) {
+    rect_layer.offset = {rect.x(), rect.y()};
+    rect_layer.extent = {rect.width(), rect.height()};
+    rect_layer.layer = 0;
+
+    present_region.rectangleCount = 1;
+    present_region.pRectangles = &rect_layer;
+
+    present_regions.sType = VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR;
+    present_regions.swapchainCount = 1;
+    present_regions.pRegions = &present_region;
+
+    present_info.pNext = &present_regions;
+  }
 
   result = vkQueuePresentKHR(queue, &present_info);
   if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {

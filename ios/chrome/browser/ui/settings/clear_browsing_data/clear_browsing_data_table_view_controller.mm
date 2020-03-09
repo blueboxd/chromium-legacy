@@ -180,6 +180,7 @@
 }
 
 - (void)dismiss {
+  base::RecordAction(base::UserMetricsAction("MobileClearBrowsingDataClose"));
   [self prepareForDismissal];
   [self.delegate dismissClearBrowsingData];
 }
@@ -376,6 +377,8 @@
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
+  base::RecordAction(
+      base::UserMetricsAction("IOSClearBrowsingDataCloseWithSwipe"));
   // Call prepareForDismissal to clean up state and  stop the Coordinator.
   [self prepareForDismissal];
 }

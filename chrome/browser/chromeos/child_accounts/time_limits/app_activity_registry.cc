@@ -179,8 +179,11 @@ AppActivityRegistry::~AppActivityRegistry() {
 void AppActivityRegistry::OnAppInstalled(const AppId& app_id) {
   // App might be already present in registry, because we preserve info between
   // sessions and app service does not. Make sure not to override cached state.
-  if (!base::Contains(activity_registry_, app_id))
+  if (!base::Contains(activity_registry_, app_id)) {
     Add(app_id);
+  } else if (GetAppState(app_id) == AppState::kLimitReached) {
+    NotifyLimitReached(app_id, /* was_active */ false);
+  }
 }
 
 void AppActivityRegistry::OnAppUninstalled(const AppId& app_id) {
@@ -213,13 +216,7 @@ void AppActivityRegistry::OnAppActive(const AppId& app_id,
 
   // We are notified that a paused app is active. Notify observers to pause it.
   if (GetAppState(app_id) == AppState::kLimitReached) {
-    for (auto& observer : app_state_observers_) {
-      const base::Optional<AppLimit>& limit =
-          activity_registry_.at(app_id).limit;
-      DCHECK(limit->daily_limit());
-      observer.OnAppLimitReached(app_id, limit->daily_limit().value(),
-                                 /* was_active */ true);
-    }
+    NotifyLimitReached(app_id, /* was_active */ true);
     return;
   }
 
@@ -309,6 +306,12 @@ void AppActivityRegistry::RemoveAppStateObserver(
   app_state_observers_.RemoveObserver(observer);
 }
 
+void AppActivityRegistry::SetInstalledApps(
+    const std::vector<AppId>& installed_apps) {
+  for (const auto& app : installed_apps)
+    OnAppInstalled(app);
+}
+
 base::TimeDelta AppActivityRegistry::GetActiveTime(const AppId& app_id) const {
   DCHECK(base::Contains(activity_registry_, app_id));
   return activity_registry_.at(app_id).activity.RunningActiveTime();
@@ -335,23 +338,6 @@ base::Optional<base::TimeDelta> AppActivityRegistry::GetTimeLimit(
 
   DCHECK(limit->daily_limit());
   return limit->daily_limit();
-}
-
-std::vector<PauseAppInfo> AppActivityRegistry::GetPausedApps(
-    bool show_pause_dialog) const {
-  std::vector<PauseAppInfo> paused_apps;
-  for (const auto& info : activity_registry_) {
-    const AppId& app_id = info.first;
-    const AppDetails& details = info.second;
-    if (GetAppState(app_id) == AppState::kLimitReached) {
-      DCHECK(details.limit.has_value());
-      DCHECK(details.limit->daily_limit().has_value());
-      paused_apps.push_back(PauseAppInfo(
-          app_id, details.limit->daily_limit().value(), show_pause_dialog));
-    }
-  }
-
-  return paused_apps;
 }
 
 AppActivityReportInterface::ReportParams
@@ -672,13 +658,7 @@ void AppActivityRegistry::SetAppState(const AppId& app_id, AppState app_state) {
       SetAppInactive(app_id, base::Time::Now());
     }
 
-    for (auto& observer : app_state_observers_) {
-      const base::Optional<AppLimit>& limit =
-          activity_registry_.at(app_id).limit;
-      DCHECK(limit->daily_limit());
-      observer.OnAppLimitReached(app_id, limit->daily_limit().value(),
-                                 was_active);
-    }
+    NotifyLimitReached(app_id, was_active);
     return;
   }
 
@@ -687,6 +667,19 @@ void AppActivityRegistry::SetAppState(const AppId& app_id, AppState app_state) {
     for (auto& observer : app_state_observers_)
       observer.OnAppLimitRemoved(app_id);
     return;
+  }
+}
+
+void AppActivityRegistry::NotifyLimitReached(const AppId& app_id,
+                                             bool was_active) {
+  DCHECK(base::Contains(activity_registry_, app_id));
+  DCHECK_EQ(GetAppState(app_id), AppState::kLimitReached);
+
+  const base::Optional<AppLimit>& limit = activity_registry_.at(app_id).limit;
+  DCHECK(limit->daily_limit());
+  for (auto& observer : app_state_observers_) {
+    observer.OnAppLimitReached(app_id, limit->daily_limit().value(),
+                               was_active);
   }
 }
 

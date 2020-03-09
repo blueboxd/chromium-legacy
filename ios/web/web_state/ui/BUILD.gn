@@ -115,6 +115,7 @@ source_set("crw_context_menu_controller") {
 source_set("wk_web_view_configuration_provider") {
   deps = [
     "//base",
+    "//components/safe_browsing/core:features",
     "//ios/third_party/webkit",
     "//ios/web/common",
     "//ios/web/js_messaging",

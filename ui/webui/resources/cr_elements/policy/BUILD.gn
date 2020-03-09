@@ -120,7 +120,7 @@ js_library("cr_tooltip_icon.m") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":cr_policy_indicator_module",
     ":cr_policy_pref_indicator_module",
     ":cr_tooltip_icon_module",

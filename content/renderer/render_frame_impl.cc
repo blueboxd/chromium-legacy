@@ -52,6 +52,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/edit_command.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
@@ -1488,46 +1489,52 @@ void RenderFrameImpl::CreateFrame(
         previous_sibling_web_frame,
         frame_owner_properties->To<blink::WebFrameOwnerProperties>(),
         replicated_state.frame_owner_element_type,
-        ResolveOpener(opener_routing_id));
+        ResolveWebFrame(opener_routing_id));
 
     // The RenderFrame is created and inserted into the frame tree in the above
     // call to createLocalChild.
     render_frame->in_frame_tree_ = true;
   } else {
-    RenderFrameProxy* proxy =
+    RenderFrameProxy* previous_proxy =
         RenderFrameProxy::FromRoutingID(previous_routing_id);
-    // The remote frame could've been detached while the remote-to-local
-    // navigation was being initiated in the browser process. Drop the
-    // navigation and don't create the frame in that case.  See
-    // https://crbug.com/526304.
-    if (!proxy)
+    RenderFrameImpl* previous_frame =
+        RenderFrameImpl::FromRoutingID(previous_routing_id);
+    WebFrame* previous_web_frame = ResolveWebFrame(previous_routing_id);
+    // Only one can be found. Either the |previous_proxy| for a remote-to-local
+    // navigation, or the |previous_frame| for a local-to-local navigation.
+    DCHECK(!(previous_proxy && previous_frame));
+    // The previous frame could've been detached while the navigation was being
+    // initiated in the browser process. Drop the navigation and don't create
+    // the frame in that case.
+    // See https://crbug.com/526304.
+    if (!previous_proxy && !previous_frame)
       return;
 
+    render_view = previous_frame ? previous_frame->render_view()
+                                 : previous_proxy->render_view();
     // This path is creating a local frame. It may or may not be a local root,
     // depending if the frame's parent is local or remote. It may also be the
     // main frame, as in the case where a navigation to the current process'
-    // origin replaces a remote main frame (the proxy's web_frame()) with a
-    // local one.
-    render_view = proxy->render_view();
     render_frame = RenderFrameImpl::Create(
         render_view, routing_id, std::move(interface_provider),
         std::move(browser_interface_broker), devtools_frame_token);
     render_frame->InitializeBlameContext(nullptr);
     render_frame->previous_routing_id_ = previous_routing_id;
-    proxy->set_provisional_frame_routing_id(routing_id);
+    if (previous_proxy)
+      previous_proxy->set_provisional_frame_routing_id(routing_id);
     web_frame = blink::WebLocalFrame::CreateProvisional(
         render_frame, render_frame->blink_interface_registry_.get(),
-        proxy->web_frame(), replicated_state.frame_policy,
+        previous_web_frame, replicated_state.frame_policy,
         WebString::FromUTF8(replicated_state.name));
     // The new |web_frame| is a main frame iff the proxy's frame was.
-    DCHECK_EQ(!proxy->web_frame()->Parent(), !web_frame->Parent());
+    DCHECK_EQ(!previous_web_frame->Parent(), !web_frame->Parent());
   }
 
   CHECK(render_view);
   CHECK(render_frame);
   CHECK(web_frame);
 
-  const bool is_main_frame = !web_frame->Parent();
+  bool is_main_frame = !web_frame->Parent();
 
   // Child frames require there to be a |parent_routing_id| present, for the
   // remote parent frame. Though it is only used if the |previous_routing_id|
@@ -1670,19 +1677,19 @@ void RenderFrameImpl::InstallCreateHook(
 }
 
 // static
-blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id) {
-  if (opener_frame_routing_id == MSG_ROUTING_NONE)
+blink::WebFrame* RenderFrameImpl::ResolveWebFrame(int frame_routing_id) {
+  if (frame_routing_id == MSG_ROUTING_NONE)
     return nullptr;
 
   // Opener routing ID could refer to either a RenderFrameProxy or a
   // RenderFrame, so need to check both.
   RenderFrameProxy* opener_proxy =
-      RenderFrameProxy::FromRoutingID(opener_frame_routing_id);
+      RenderFrameProxy::FromRoutingID(frame_routing_id);
   if (opener_proxy)
     return opener_proxy->web_frame();
 
   RenderFrameImpl* opener_frame =
-      RenderFrameImpl::FromRoutingID(opener_frame_routing_id);
+      RenderFrameImpl::FromRoutingID(frame_routing_id);
   if (opener_frame)
     return opener_frame->GetWebFrame();
 
@@ -2670,7 +2677,7 @@ void RenderFrameImpl::ExtractSmartClipData(
 #endif  // defined(OS_ANDROID)
 
 void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
-  WebFrame* opener = ResolveOpener(opener_routing_id);
+  WebFrame* opener = ResolveWebFrame(opener_routing_id);
   frame_->SetOpener(opener);
 }
 
@@ -4090,19 +4097,24 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
   frame_->Close();
   frame_ = nullptr;
 
-  // If this was a provisional frame with an associated proxy, tell the proxy
-  // that it's no longer associated with this frame.
+  // If this was a provisional frame with an associated frame to replace, tell
+  // the previous_proxy it is no longer associated with this frame.
   if (previous_routing_id_ != MSG_ROUTING_NONE) {
     RenderFrameProxy* proxy =
         RenderFrameProxy::FromRoutingID(previous_routing_id_);
 
-    // |proxy| should always exist.  Detaching the proxy would've also detached
-    // this provisional frame.  The proxy should also not be associated with
-    // another provisional frame at this point.
-    CHECK(proxy);
-    CHECK_EQ(routing_id_, proxy->provisional_frame_routing_id());
-
-    proxy->set_provisional_frame_routing_id(MSG_ROUTING_NONE);
+    // |proxy| should always exist. Detaching the proxy would've also
+    // detached this provisional frame. The proxy should also not be
+    // associated with another provisional frame at this point.
+    //
+    // RenderDocument: The |previous_routing_id_| represents a RenderFrame
+    // instead of a RenderFrameProxy when a local<->local RenderFrame
+    // navigation happens. In this case |proxy| is null.
+    if (proxy) {
+      CHECK_EQ(routing_id_, proxy->provisional_frame_routing_id());
+      proxy->set_provisional_frame_routing_id(MSG_ROUTING_NONE);
+    } else
+      CHECK(IsRenderDocumentEnabled());
   }
 
   delete this;
@@ -4525,9 +4537,6 @@ void RenderFrameImpl::DidFinishLoad() {
 
   for (auto& observer : observers_)
     observer.DidFinishLoad();
-
-  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
-  Send(new FrameHostMsg_DidFinishLoad(routing_id_, document_loader->GetUrl()));
 
   if (!RenderThreadImpl::current())
     return;
@@ -5477,19 +5486,27 @@ bool RenderFrameImpl::SwapIn() {
   CHECK_NE(previous_routing_id_, MSG_ROUTING_NONE);
   CHECK(!in_frame_tree_);
 
-  // The proxy should always exist.  If it was detached while the provisional
-  // LocalFrame was being navigated, the provisional frame would've been
-  // cleaned up by RenderFrameProxy::FrameDetached.  See
-  // https://crbug.com/526304 and https://crbug.com/568676 for context.
-  RenderFrameProxy* proxy =
+  RenderFrameProxy* previous_proxy =
       RenderFrameProxy::FromRoutingID(previous_routing_id_);
-  CHECK(proxy);
+  RenderFrameImpl* previous_frame =
+      RenderFrameImpl::FromRoutingID(previous_routing_id_);
 
-  unique_name_helper_.set_propagated_name(proxy->unique_name());
+  // The |previous_proxy| or the |previous_frame| should always exist.
+  // If it was detached while the provisional LocalFrame was being navigated,
+  // the provisional frame would've been cleaned up by
+  // RenderFrameProxy::FrameDetached.
+  // See https://crbug.com/526304 and https://crbug.com/568676 for context.
+  CHECK(previous_proxy || previous_frame);
+  CHECK(!(previous_proxy && previous_frame));
 
-  // Note: Calling swap() will detach and delete |proxy|, so do not reference it
-  // after this.
-  if (!proxy->web_frame()->Swap(frame_)) {
+  unique_name_helper_.set_propagated_name(previous_proxy
+                                              ? previous_proxy->unique_name()
+                                              : previous_frame->unique_name());
+
+  // Note: Calling swap() will detach and delete |previous_frame|, so do not
+  // reference it after this.
+  WebFrame* previous_web_frame = ResolveWebFrame(previous_routing_id_);
+  if (!previous_web_frame->Swap(frame_)) {
     // Main frames should always swap successfully because there is no parent
     // frame to cause them to become detached.
     DCHECK(!is_main_frame_);
@@ -5502,6 +5519,7 @@ bool RenderFrameImpl::SwapIn() {
   // If this is the main frame going from a remote frame to a local frame,
   // it needs to set RenderViewImpl's pointer for the main frame to itself.
   if (is_main_frame_) {
+    // TODO(https://crubg.com/936696): Implement RenderDocument on main frames.
     CHECK(!render_view_->main_render_frame_);
     render_view_->main_render_frame_ = this;
 

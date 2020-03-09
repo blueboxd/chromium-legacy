@@ -268,6 +268,7 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXT_MENU_PERFORMANCE_INFO = "ContextMenuPerformanceInfo";
     public static final String CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS =
             "ContextMenuSearchWithGoogleLens";
+    public static final String CONTEXTUAL_SEARCH_DEBUG = "ContextualSearchDebug";
     public static final String CONTEXTUAL_SEARCH_DEFINITIONS = "ContextualSearchDefinitions";
     public static final String CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION =
             "ContextualSearchMlTapSuppression";

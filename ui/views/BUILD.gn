@@ -57,10 +57,7 @@ aggregate_vector_icons("views_vector_icons") {
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [
-    "ENABLE_NATIVE_WINDOW_NAV_BUTTONS=$enable_native_window_nav_buttons",
-    "ENABLE_DESKTOP_AURA=$enable_desktop_aura",
-  ]
+  flags = [ "ENABLE_DESKTOP_AURA=$enable_desktop_aura" ]
 }
 
 jumbo_component("views") {
@@ -533,6 +530,7 @@ jumbo_component("views") {
     public += [
       "linux_ui/device_scale_factor_observer.h",
       "linux_ui/linux_ui.h",
+      "linux_ui/nav_button_provider.h",
       "linux_ui/status_icon_linux.h",
       "linux_ui/window_button_order_observer.h",
     ]

@@ -304,12 +304,15 @@
   "chromeos/components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd": {
     "includes": [2580],
   },
-  "chromeos/components/sample_system_web_app_ui/resources/sample_system_web_app_resources.grd": {
+  "chromeos/components/print_management/resources/print_management_resources.grd": {
     "META": {"join": 2},
     "includes": [2600],
   },
-  "chromeos/resources/chromeos_resources.grd": {
+  "chromeos/components/sample_system_web_app_ui/resources/sample_system_web_app_resources.grd": {
     "includes": [2620],
+  },
+  "chromeos/resources/chromeos_resources.grd": {
+    "includes": [2640],
   },
   # END chromeos/ section.
 

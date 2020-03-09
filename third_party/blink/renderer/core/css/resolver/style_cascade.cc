@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -129,11 +130,7 @@ void StyleCascade::Apply(const MatchResult* match_result,
   // high-priority properties.
   LookupAndApply(GetCSSPropertyColorScheme(), resolver);
 
-  // -webkit-border-image is a longhand that maps to the same slots used by
-  // border-image (shorthand). By applying -webkit-border-image first, we
-  // avoid having to "partially" apply -webkit-border-image depending on the
-  // border-image-* longhands that have already been applied.
-  LookupAndApply(GetCSSPropertyWebkitBorderImage(), resolver);
+  ApplyWebkitBorderImage(resolver);
 
   // -webkit-mask-image needs to be applied before -webkit-mask-composite,
   // otherwise -webkit-mask-composite has no effect.
@@ -146,6 +143,20 @@ void StyleCascade::Apply(const MatchResult* match_result,
 
   if (interpolations)
     ApplyInterpolations(*interpolations, resolver);
+}
+
+StyleCascade::Surrogate StyleCascade::ResolveSurrogate(
+    const CSSProperty& surrogate,
+    CascadePriority priority,
+    Resolver& resolver) {
+  DCHECK(surrogate.IsSurrogate());
+  const CSSProperty* original = surrogate.SurrogateFor(
+      state_.Style()->Direction(), state_.Style()->GetWritingMode());
+  DCHECK(original && original->IsLonghand());
+  LookupAndApply(*original, resolver);
+  if (map_.At(original->GetCSSPropertyName()) < priority)
+    return Surrogate::kApply;
+  return Surrogate::kSkip;
 }
 
 const CSSValue* StyleCascade::Resolve(const CSSPropertyName& name,
@@ -201,6 +212,32 @@ void StyleCascade::ApplyAppearance(Resolver& resolver) {
     resolver.filter_ = resolver.filter_.Set(CSSProperty::kUA, true);
 }
 
+void StyleCascade::ApplyWebkitBorderImage(Resolver& resolver) {
+  const CascadePriority* priority =
+      map_.Find(CSSPropertyName(CSSPropertyID::kWebkitBorderImage));
+  if (!priority)
+    return;
+
+  // -webkit-border-image is a surrogate for the border-image (shorthand).
+  // By applying -webkit-border-image first, we avoid having to "partially"
+  // apply -webkit-border-image depending on the border-image-* longhands that
+  // have already been applied.
+  // See also crbug.com/1056600
+  LookupAndApply(GetCSSPropertyWebkitBorderImage(), resolver);
+
+  const auto& shorthand = borderImageShorthand();
+  const CSSProperty** longhands = shorthand.properties();
+  for (unsigned i = 0; i < shorthand.length(); ++i) {
+    const CSSProperty& longhand = *longhands[i];
+    if (CascadePriority* p = map_.Find(longhand.GetCSSPropertyName())) {
+      // If -webkit-border-image has higher priority than a border-image
+      // longhand, we skip applying that longhand.
+      if (*p < *priority)
+        *p = CascadePriority(*p, resolver.generation_);
+    }
+  }
+}
+
 void StyleCascade::ApplyMatchResult(const MatchResult& match_result,
                                     Resolver& resolver) {
   for (auto e : match_result.Expansions(GetDocument(), resolver.filter_)) {
@@ -211,7 +248,7 @@ void StyleCascade::ApplyMatchResult(const MatchResult& match_result,
         continue;
       *p = priority;
       const CSSProperty& property = e.Property();
-      if (!resolver.SetSlot(property, priority, state_))
+      if (ResolveIfSurrogate(property, priority, resolver) == Surrogate::kSkip)
         continue;
       const CSSValue* value = Resolve(property, e.Value(), resolver);
       StyleBuilder::ApplyProperty(property, state_, *value);
@@ -250,7 +287,7 @@ void StyleCascade::ApplyInterpolationMap(const ActiveInterpolationsMap& map,
       continue;
     *p = priority;
 
-    if (!resolver.SetSlot(property, priority, state_))
+    if (ResolveIfSurrogate(property, priority, resolver) == Surrogate::kSkip)
       continue;
 
     ApplyInterpolation(property, entry.value, resolver);
@@ -294,7 +331,7 @@ void StyleCascade::LookupAndApply(const CSSProperty& property,
 
   if (resolver.filter_.Rejects(property))
     return;
-  if (!resolver.SetSlot(property, priority, state_))
+  if (ResolveIfSurrogate(property, priority, resolver) == Surrogate::kSkip)
     return;
 
   const MatchResult* match_result = resolver.match_result_;
@@ -707,12 +744,6 @@ bool StyleCascade::Resolver::AllowSubstitution(CSSVariableData* data) const {
     return !CSSAnimations::IsAnimationAffectingProperty(property);
   }
   return true;
-}
-
-bool StyleCascade::Resolver::SetSlot(const CSSProperty& property,
-                                     CascadePriority priority,
-                                     StyleResolverState& state) {
-  return slots_.Set(property, priority, state);
 }
 
 bool StyleCascade::Resolver::DetectCycle(const CSSProperty& property) {

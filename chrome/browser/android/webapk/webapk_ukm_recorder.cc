@@ -101,6 +101,17 @@ void WebApkUkmRecorder::RecordUninstall(const GURL& manifest_url,
       .Record(ukm::UkmRecorder::Get());
 }
 
+// static
+void WebApkUkmRecorder::RecordWebApkableVisit(const GURL& manifest_url) {
+  if (!manifest_url.is_valid())
+    return;
+
+  ukm::SourceId source_id =
+      ukm::UkmRecorder::GetSourceIdForWebApkManifestUrl(manifest_url);
+  ukm::builders::PWA_Visit(source_id).SetWebAPKableSiteVisit(1).Record(
+      ukm::UkmRecorder::Get());
+}
+
 // Called by the Java counterpart to record the Session Duration UKM metric.
 void JNI_WebApkUkmRecorder_RecordSessionDuration(
     JNIEnv* env,

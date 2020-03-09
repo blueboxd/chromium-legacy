@@ -27,39 +27,39 @@
           "reason": "disappeared"
         },
         {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 300, 280, 140],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 300, 280, 140],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 180, 280, 140],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 180, 280, 140],
+          "reason": "disappeared"
+        },
+        {
           "object": "InlineTextBox 'PA'",
-          "rect": [10, 60, 310, 380],
+          "rect": [10, 60, 280, 140],
           "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'PA'",
-          "rect": [10, 60, 310, 380],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "rect": [10, 60, 310, 380],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "rect": [10, 60, 310, 380],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "rect": [10, 60, 310, 380],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "rect": [10, 60, 310, 380],
-          "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'SS'",
-          "rect": [10, 60, 310, 380],
+          "rect": [10, 60, 280, 140],
           "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'PA'",
+          "rect": [10, 60, 150, 140],
+          "reason": "disappeared"
         }
       ]
     }

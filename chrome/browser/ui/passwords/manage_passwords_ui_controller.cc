@@ -42,6 +42,7 @@
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -493,8 +494,14 @@ void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard(
 }
 
 void ManagePasswordsUIController::NavigateToPasswordCheckup() {
-  NavigateToPasswordCheckupPage(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordCheck)) {
+    chrome::ShowPasswordCheck(
+        chrome::FindBrowserWithWebContents(web_contents()));
+  } else {
+    NavigateToPasswordCheckupPage(
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  }
 }
 
 void ManagePasswordsUIController::EnableSync(const AccountInfo& account,

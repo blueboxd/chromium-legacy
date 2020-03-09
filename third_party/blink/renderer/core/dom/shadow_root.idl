@@ -30,7 +30,9 @@
 interface ShadowRoot : DocumentFragment {
     readonly attribute ShadowRootMode mode;
     readonly attribute Element host;
-    [CEReactions, CustomElementCallbacks, Custom=Setter] attribute HTMLString innerHTML;
+    // TODO(lyf): Change the type to `[TreatNullAs=xxx] HTMLString` after
+    // https://crbug.com/1058762 has been fixed.
+    [CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute [TreatNullAs=EmptyString, StringContext=TrustedHTML] DOMString innerHTML;
     readonly attribute boolean delegatesFocus;
 };
 

@@ -94,6 +94,7 @@ ScenicSurfaceFactory::GetAllowedGLImplementations() {
   return std::vector<gl::GLImplementation>{
       gl::kGLImplementationSwiftShaderGL,
       gl::kGLImplementationEGLGLES2,
+      gl::kGLImplementationEGLANGLE,
       gl::kGLImplementationStubGL,
   };
 }
@@ -102,6 +103,7 @@ GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
   switch (implementation) {
     case gl::kGLImplementationSwiftShaderGL:
     case gl::kGLImplementationEGLGLES2:
+    case gl::kGLImplementationEGLANGLE:
       return egl_implementation_.get();
     default:
       return nullptr;

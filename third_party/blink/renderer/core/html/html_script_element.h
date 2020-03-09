@@ -49,9 +49,11 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   void text(StringOrTrustedScript& result);
-  void setText(const StringOrTrustedScript&, ExceptionState&);
+  String text() { return TextFromChildren(); }
+  void setText(const String&);
   void setInnerText(const StringOrTrustedScript&, ExceptionState&) override;
   void setTextContent(const StringOrTrustedScript&, ExceptionState&) override;
+  void setTextContent(const String&) override;
 
   void setAsync(bool);
   bool async() const;

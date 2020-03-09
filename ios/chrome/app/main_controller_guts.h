@@ -16,10 +16,7 @@
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 
 @class AppState;
-@class BrowserViewController;
 class ChromeBrowserState;
-@class TabGridCoordinator;
-@protocol BrowserInterfaceProvider;
 
 // TODO(crbug.com/1012697): Remove this protocol when SceneController is
 // operational. Move the private internals back into MainController, and pass
@@ -40,13 +37,7 @@ class ChromeBrowserState;
 // Keeps track of the restore state during startup.
 @property(nonatomic, strong) CrashRestoreHelper* restoreHelper;
 
-- (TabModel*)currentTabModel;
 - (ChromeBrowserState*)mainBrowserState;
-- (ChromeBrowserState*)currentBrowserState;
-- (BrowserViewController*)currentBVC;
-- (BrowserViewController*)mainBVC;
-- (BrowserViewController*)otrBVC;
-- (id<BrowserInterfaceProvider>)interfaceProvider;
 - (UIWindow*)window;
 - (NSDictionary*)launchOptions;
 - (AppState*)appState;

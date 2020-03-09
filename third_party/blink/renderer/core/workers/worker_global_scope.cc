@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/css/font_face_set_worker.h"
@@ -169,18 +168,9 @@ String WorkerGlobalScope::origin() const {
   return GetSecurityOrigin()->ToString();
 }
 
-void WorkerGlobalScope::importScripts(
-    const HeapVector<StringOrTrustedScriptURL>& urls,
-    ExceptionState& exception_state) {
-  Vector<String> string_urls;
-  for (const StringOrTrustedScriptURL& stringOrUrl : urls) {
-    String string_url = TrustedTypesCheckForScriptURL(
-        stringOrUrl, GetExecutionContext(), exception_state);
-    if (exception_state.HadException())
-      return;
-    string_urls.push_back(string_url);
-  }
-  ImportScriptsInternal(string_urls, exception_state);
+void WorkerGlobalScope::importScripts(const Vector<String>& urls,
+                                      ExceptionState& exception_state) {
+  ImportScriptsInternal(urls, exception_state);
 }
 
 // Implementation of the "import scripts into worker global scope" algorithm:

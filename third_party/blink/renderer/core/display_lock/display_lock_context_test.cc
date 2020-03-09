@@ -117,8 +117,7 @@ class DisplayLockContextTest : public testing::Test,
   }
 
   void SetHtmlInnerHTML(const char* content) {
-    GetDocument().documentElement()->SetInnerHTMLFromString(
-        String::FromUTF8(content));
+    GetDocument().documentElement()->setInnerHTML(String::FromUTF8(content));
     UpdateAllLifecyclePhasesForTest();
   }
 
@@ -443,7 +442,7 @@ TEST_F(DisplayLockContextTest,
   EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
 
   // Change the inner text, this should not DCHECK.
-  container->SetInnerHTMLFromString("please don't DCHECK");
+  container->setInnerHTML("please don't DCHECK");
   UpdateAllLifecyclePhasesForTest();
 }
 
@@ -466,7 +465,7 @@ TEST_F(DisplayLockContextTest, FindInPageWithChangedContent) {
   auto* container = GetDocument().getElementById("container");
   LockElement(*container, true /* activatable */);
   EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
-  container->SetInnerHTMLFromString(
+  container->setInnerHTML(
       "testing"
       "<div>testing</div>"
       "tes<div style='display:none;'>x</div>ting");
@@ -702,7 +701,7 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
   EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
 
   // Testing whitespace reattachment + dirty style.
-  element->SetInnerHTMLFromString("<div>something</div>");
+  element->setInnerHTML("<div>something</div>");
 
   EXPECT_FALSE(element->NeedsStyleRecalc());
   EXPECT_TRUE(element->ChildNeedsStyleRecalc());
@@ -884,7 +883,7 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
 
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadow_root.SetInnerHTMLFromString(
+  shadow_root.setInnerHTML(
       "<div id='container' style='contain:style layout "
       "paint;'><slot></slot></div>");
   UpdateAllLifecyclePhasesForTest();
@@ -968,7 +967,7 @@ TEST_F(DisplayLockContextTest,
   auto* text_field = GetDocument().getElementById("textfield");
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadow_root.SetInnerHTMLFromString(
+  shadow_root.setInnerHTML(
       "<div id='container' style='contain:style layout "
       "paint;'><slot></slot></div>");
 

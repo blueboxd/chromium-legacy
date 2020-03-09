@@ -24,7 +24,7 @@ class WhitespaceAttacherTest : public PageTestBase {
 };
 
 TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedBlock) {
-  GetDocument().body()->SetInnerHTMLFromString("<div id=block></div> ");
+  GetDocument().body()->setInnerHTML("<div id=block></div> ");
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = GetDocument().getElementById("block");
@@ -44,7 +44,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedBlock) {
 }
 
 TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedInline) {
-  GetDocument().body()->SetInnerHTMLFromString("<span id=inline></span> ");
+  GetDocument().body()->setInnerHTML("<span id=inline></span> ");
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
@@ -63,8 +63,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedInline) {
 }
 
 TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedWhitespace) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<span id=inline></span> <!-- --> ");
+  GetDocument().body()->setInnerHTML("<span id=inline></span> <!-- --> ");
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
@@ -90,7 +89,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedWhitespace) {
 }
 
 TEST_F(WhitespaceAttacherTest, VisitBlockAfterReattachedWhitespace) {
-  GetDocument().body()->SetInnerHTMLFromString("<div id=block></div> ");
+  GetDocument().body()->setInnerHTML("<div id=block></div> ");
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = GetDocument().getElementById("block");
@@ -108,7 +107,7 @@ TEST_F(WhitespaceAttacherTest, VisitBlockAfterReattachedWhitespace) {
 }
 
 TEST_F(WhitespaceAttacherTest, VisitInlineAfterReattachedWhitespace) {
-  GetDocument().body()->SetInnerHTMLFromString("<span id=inline></span> ");
+  GetDocument().body()->setInnerHTML("<span id=inline></span> ");
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
@@ -129,7 +128,7 @@ TEST_F(WhitespaceAttacherTest, VisitInlineAfterReattachedWhitespace) {
 }
 
 TEST_F(WhitespaceAttacherTest, VisitTextAfterReattachedWhitespace) {
-  GetDocument().body()->SetInnerHTMLFromString("Text<!-- --> ");
+  GetDocument().body()->setInnerHTML("Text<!-- --> ");
   UpdateAllLifecyclePhasesForTest();
 
   auto* text = To<Text>(GetDocument().body()->firstChild());
@@ -152,7 +151,7 @@ TEST_F(WhitespaceAttacherTest, VisitTextAfterReattachedWhitespace) {
 }
 
 TEST_F(WhitespaceAttacherTest, ReattachWhitespaceInsideBlockExitingScope) {
-  GetDocument().body()->SetInnerHTMLFromString("<div id=block> </div>");
+  GetDocument().body()->setInnerHTML("<div id=block> </div>");
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = GetDocument().getElementById("block");
@@ -174,7 +173,7 @@ TEST_F(WhitespaceAttacherTest, ReattachWhitespaceInsideBlockExitingScope) {
 }
 
 TEST_F(WhitespaceAttacherTest, ReattachWhitespaceInsideInlineExitingScope) {
-  GetDocument().body()->SetInnerHTMLFromString("<span id=inline> </span>");
+  GetDocument().body()->setInnerHTML("<span id=inline> </span>");
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
@@ -195,13 +194,13 @@ TEST_F(WhitespaceAttacherTest, ReattachWhitespaceInsideInlineExitingScope) {
 }
 
 TEST_F(WhitespaceAttacherTest, SlottedWhitespaceAfterReattachedBlock) {
-  GetDocument().body()->SetInnerHTMLFromString("<div id=host> </div>");
+  GetDocument().body()->setInnerHTML("<div id=host> </div>");
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadow_root.SetInnerHTMLFromString("<div id=block></div><slot></slot>");
+  shadow_root.setInnerHTML("<div id=block></div><slot></slot>");
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = shadow_root.getElementById("block");
@@ -223,13 +222,13 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceAfterReattachedBlock) {
 }
 
 TEST_F(WhitespaceAttacherTest, SlottedWhitespaceAfterReattachedInline) {
-  GetDocument().body()->SetInnerHTMLFromString("<div id=host> </div>");
+  GetDocument().body()->setInnerHTML("<div id=host> </div>");
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadow_root.SetInnerHTMLFromString("<span id=inline></span><slot></slot>");
+  shadow_root.setInnerHTML("<span id=inline></span><slot></slot>");
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = shadow_root.getElementById("inline");
@@ -251,7 +250,7 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceAfterReattachedInline) {
 
 TEST_F(WhitespaceAttacherTest,
        WhitespaceInDisplayContentsAfterReattachedBlock) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<div id=block></div><span style='display:contents'> </span>");
   UpdateAllLifecyclePhasesForTest();
 
@@ -277,7 +276,7 @@ TEST_F(WhitespaceAttacherTest,
 
 TEST_F(WhitespaceAttacherTest,
        WhitespaceInDisplayContentsAfterReattachedInline) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<span id=inline></span><span style='display:contents'> </span>");
   UpdateAllLifecyclePhasesForTest();
 
@@ -302,7 +301,7 @@ TEST_F(WhitespaceAttacherTest,
 
 TEST_F(WhitespaceAttacherTest,
        WhitespaceAfterEmptyDisplayContentsAfterReattachedBlock) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<div id=block></div><span style='display:contents'></span> ");
   UpdateAllLifecyclePhasesForTest();
 
@@ -329,7 +328,7 @@ TEST_F(WhitespaceAttacherTest,
 
 TEST_F(WhitespaceAttacherTest,
        WhitespaceAfterDisplayContentsWithDisplayNoneChildAfterReattachedBlock) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<div id=block></div><span style='display:contents'>"
       "<span style='display:none'></span></span> ");
   UpdateAllLifecyclePhasesForTest();
@@ -356,7 +355,7 @@ TEST_F(WhitespaceAttacherTest,
 }
 
 TEST_F(WhitespaceAttacherTest, WhitespaceDeepInsideDisplayContents) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<span id=inline></span><span style='display:contents'>"
       "<span style='display:none'></span>"
       "<span id=inner style='display:contents'> </span></span>");
@@ -381,7 +380,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceDeepInsideDisplayContents) {
 }
 
 TEST_F(WhitespaceAttacherTest, MultipleDisplayContents) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<span id=inline></span>"
       "<span style='display:contents'></span>"
       "<span style='display:contents'></span>"
@@ -411,13 +410,13 @@ TEST_F(WhitespaceAttacherTest, MultipleDisplayContents) {
 }
 
 TEST_F(WhitespaceAttacherTest, SlottedWhitespaceInsideDisplayContents) {
-  GetDocument().body()->SetInnerHTMLFromString("<div id=host> </div>");
+  GetDocument().body()->setInnerHTML("<div id=host> </div>");
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadow_root.SetInnerHTMLFromString(
+  shadow_root.setInnerHTML(
       "<span id=inline></span>"
       "<div style='display:contents'><slot></slot></div>");
   UpdateAllLifecyclePhasesForTest();
@@ -441,7 +440,7 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceInsideDisplayContents) {
 }
 
 TEST_F(WhitespaceAttacherTest, RemoveInlineBeforeSpace) {
-  GetDocument().body()->SetInnerHTMLFromString("<span id=inline></span> ");
+  GetDocument().body()->setInnerHTML("<span id=inline></span> ");
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
@@ -463,7 +462,7 @@ TEST_F(WhitespaceAttacherTest, RemoveInlineBeforeSpace) {
 }
 
 TEST_F(WhitespaceAttacherTest, RemoveInlineBeforeOutOfFlowBeforeSpace) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<span id=inline></span><div id=float style='float:right'></div> ");
   UpdateAllLifecyclePhasesForTest();
 
@@ -489,7 +488,7 @@ TEST_F(WhitespaceAttacherTest, RemoveInlineBeforeOutOfFlowBeforeSpace) {
 }
 
 TEST_F(WhitespaceAttacherTest, RemoveSpaceBeforeSpace) {
-  GetDocument().body()->SetInnerHTMLFromString("<span> <!-- --> </span>");
+  GetDocument().body()->setInnerHTML("<span> <!-- --> </span>");
   UpdateAllLifecyclePhasesForTest();
 
   Node* span = GetDocument().body()->firstChild();
@@ -512,7 +511,7 @@ TEST_F(WhitespaceAttacherTest, RemoveSpaceBeforeSpace) {
 }
 
 TEST_F(WhitespaceAttacherTest, RemoveInlineBeforeDisplayContentsWithSpace) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<style>div { display: contents }</style>"
       "<div><span id=inline></span></div>"
       "<div><div><div id=innerdiv> </div></div></div>text");
@@ -533,8 +532,7 @@ TEST_F(WhitespaceAttacherTest, RemoveInlineBeforeDisplayContentsWithSpace) {
 }
 
 TEST_F(WhitespaceAttacherTest, RemoveBlockBeforeSpace) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "A<div id=block></div> <span>B</span>");
+  GetDocument().body()->setInnerHTML("A<div id=block></div> <span>B</span>");
   UpdateAllLifecyclePhasesForTest();
 
   Node* div = GetDocument().getElementById("block");

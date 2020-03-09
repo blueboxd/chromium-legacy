@@ -29,7 +29,7 @@ class SystemHealthInfiniteScroll(system_health.MobileCommonSystemHealth):
     options.SetTimelineBasedMetrics([
         'tbmv3:scroll_jank_metric',
         'tbmv3:janky_scroll_periods',
-        'tmbv3:janky_time_per_scroll_processing_time',
+        'tbmv3:janky_time_per_scroll_processing_time',
     ])
     return options
 

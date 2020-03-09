@@ -232,6 +232,7 @@ class AutofillAssistantPrivateAPI : public BrowserContextKeyedAPI,
     std::unique_ptr<AutofillAssistantPrivateEventRouter> event_router;
   };
   std::unique_ptr<ActiveAutofillAssistant> active_autofill_assistant_;
+  std::unique_ptr<autofill_assistant::AccessTokenFetcher> access_token_fetcher_;
 };
 
 }  // namespace extensions

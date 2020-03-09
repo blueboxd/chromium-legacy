@@ -24,7 +24,7 @@ class WebElementTest : public PageTestBase {
 };
 
 void WebElementTest::InsertHTML(String html) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(html);
+  GetDocument().documentElement()->setInnerHTML(html);
 }
 
 WebElement WebElementTest::TestElement() {

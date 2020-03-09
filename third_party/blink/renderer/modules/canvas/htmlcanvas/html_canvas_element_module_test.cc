@@ -60,7 +60,7 @@ class HTMLCanvasElementModuleTest : public ::testing::Test,
  protected:
   void SetUp() override {
     web_view_helper_.Initialize();
-    GetDocument().documentElement()->SetInnerHTMLFromString(
+    GetDocument().documentElement()->setInnerHTML(
         String::FromUTF8("<body><canvas id='c'></canvas></body>"));
     canvas_element_ = To<HTMLCanvasElement>(GetDocument().getElementById("c"));
   }

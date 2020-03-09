@@ -90,8 +90,10 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     // https://w3c.github.io/DOM-Parsing/#extensions-to-the-element-interface
     //
     // TODO(mkwst): Write a spec for the `TrustedHTML` variants.
-    [Affects=Nothing, CEReactions, CustomElementCallbacks, Custom=Setter, RuntimeCallStatsCounter=ElementInnerHTML] attribute HTMLString innerHTML;
-    [Affects=Nothing, CEReactions, CustomElementCallbacks, Custom=Setter] attribute HTMLString outerHTML;
+    // TODO(lyf): Change the type to `[TreatNullAs=xxx] HTMLString` after
+    // https://crbug.com/1058762 has been fixed.
+    [Affects=Nothing, CEReactions, CustomElementCallbacks, RuntimeCallStatsCounter=ElementInnerHTML, RaisesException=Setter] attribute [TreatNullAs=EmptyString, StringContext=TrustedHTML] DOMString innerHTML;
+    [Affects=Nothing, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute [TreatNullAs=EmptyString, StringContext=TrustedHTML] DOMString outerHTML;
     [CEReactions, CustomElementCallbacks, RaisesException] void insertAdjacentHTML(DOMString position, HTMLString text);
 
     // Declarative Shadow DOM getInnerHTML() function.

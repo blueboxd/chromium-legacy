@@ -1474,7 +1474,7 @@ TEST_P(ScrollingTest, UpdateUMAMetricUpdated) {
   // Note that this frame is still considered pre-FCP.
   auto* background = GetFrame()->GetDocument()->getElementById("bg");
   background->removeAttribute(html_names::kStyleAttr);
-  background->SetInnerHTMLFromString("Some Text");
+  background->setInnerHTML("Some Text");
   GetWebView()->MainFrameWidget()->RecordStartOfFrameMetrics();
   ForceFullCompositingUpdate();
   GetWebView()->MainFrameWidget()->RecordEndOfFrameMetrics(base::TimeTicks(),

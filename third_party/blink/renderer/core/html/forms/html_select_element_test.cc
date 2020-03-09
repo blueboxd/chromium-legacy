@@ -426,7 +426,7 @@ TEST_F(HTMLSelectElementTest, SetRecalcListItemsByOptgroupRemoval) {
       "<select><optgroup><option>sub1</option><option>sub2</option></"
       "optgroup></select>");
   auto* select = To<HTMLSelectElement>(GetDocument().body()->firstChild());
-  select->SetInnerHTMLFromString("");
+  select->setInnerHTML("");
   // PASS if setInnerHTML didn't have a check failure.
 }
 

@@ -4861,6 +4861,10 @@ test("unit_tests") {
       "../utility/image_writer/image_writer_unittest.cc",
     ]
 
+    if (enable_autofill_assistant_api) {
+      sources += [ "../browser/extensions/api/autofill_assistant_private/extension_access_token_fetcher_unittest.cc" ]
+    }
+
     allow_circular_includes_from = [
       "//chrome/browser/web_applications:web_applications_unit_tests",
       "//chrome/browser/web_applications/extensions:unit_tests",

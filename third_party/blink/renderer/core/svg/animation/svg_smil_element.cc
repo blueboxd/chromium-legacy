@@ -244,10 +244,12 @@ void SVGSMILElement::BuildPendingResource() {
 static inline void RemoveInstanceTimesWithOrigin(
     Vector<SMILTimeWithOrigin>& time_list,
     SMILTimeOrigin origin) {
-  for (int i = time_list.size() - 1; i >= 0; --i) {
-    if (time_list[i].Origin() == origin)
-      time_list.EraseAt(i);
-  }
+  auto* tail =
+      std::remove_if(time_list.begin(), time_list.end(),
+                     [origin](const SMILTimeWithOrigin& instance_time) {
+                       return instance_time.Origin() == origin;
+                     });
+  time_list.Shrink(tail - time_list.begin());
 }
 
 void SVGSMILElement::Reset() {

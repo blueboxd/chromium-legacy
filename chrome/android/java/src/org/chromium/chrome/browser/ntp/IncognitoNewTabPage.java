@@ -93,6 +93,8 @@ public class IncognitoNewTabPage
                 mCookieControlsManager.addObserver(mCookieControlsObserver);
                 mIncognitoNewTabPageView.setIncognitoCookieControlsToggleCheckedListener(
                         mCookieControlsManager);
+                mIncognitoNewTabPageView.setIncognitoCookieControlsIconOnclickListener(
+                        mCookieControlsManager);
                 mCookieControlsManager.updateIfNecessary();
             }
 

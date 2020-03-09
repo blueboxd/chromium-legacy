@@ -85,9 +85,10 @@ class ProfileMetrics {
     NUM_PROFILE_NET_METRICS
   };
 
-  // Sign in is logged once the user has entered their GAIA information.
-  // The options for sync are logged after the user has submitted the options
-  // form. See sync_setup_handler.h.
+  // The options for sync are logged after the user has changed their sync
+  // setting. See people_handler.h.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum ProfileSync {
     SYNC_CUSTOMIZE = 0,       // User decided to customize sync
     SYNC_CHOOSE,              // User chose what to sync

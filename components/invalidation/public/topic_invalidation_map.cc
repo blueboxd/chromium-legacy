@@ -29,7 +29,7 @@ bool TopicInvalidationMap::Empty() const {
 }
 
 void TopicInvalidationMap::Insert(const Invalidation& invalidation) {
-  map_[invalidation.object_id().name()].Insert(invalidation);
+  map_[invalidation.topic()].Insert(invalidation);
 }
 
 TopicInvalidationMap TopicInvalidationMap::GetSubsetWithTopics(

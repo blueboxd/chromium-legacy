@@ -110,6 +110,89 @@ TEST(VectorBackedLinkedList, MoveTo) {
   EXPECT_EQ(*it, 2);
 }
 
+TEST(VectorBackedLinkedList, Erase) {
+  using List = VectorBackedLinkedList<int>;
+  List list;
+
+  List::iterator it = list.insert(list.end(), 1);
+  EXPECT_EQ(*it, 1);
+  list.push_back(2);
+  list.push_back(3);
+  list.push_back(4);
+  list.push_back(5);
+  EXPECT_EQ(list.size(), 5u);
+
+  List::iterator target = list.begin();
+  ++target;
+  it = list.erase(target);  // list = {1, 3, 4, 5}
+  EXPECT_EQ(*it, 3);
+  EXPECT_EQ(list.size(), 4u);
+  it = list.erase(++it);  // list = {1, 3, 5}
+  EXPECT_EQ(*it, 5);
+  EXPECT_EQ(list.size(), 3u);
+
+  it = list.erase(list.begin());  // list = {3, 5}
+  EXPECT_EQ(*it, 3);
+  EXPECT_EQ(list.size(), 2u);
+
+  it = list.begin();
+  EXPECT_EQ(*it, 3);
+  ++it;
+  EXPECT_EQ(*it, 5);
+  ++it;
+  EXPECT_TRUE(it == list.end());
+}
+
+TEST(VectorBackedLinkedList, PopFront) {
+  using List = VectorBackedLinkedList<int>;
+  List list;
+
+  list.push_back(1);
+  list.push_back(2);
+  list.push_back(3);
+
+  int i = 1;
+  for (auto element : list) {
+    EXPECT_EQ(element, i);
+    i++;
+  }
+
+  list.pop_front();
+  EXPECT_EQ(list.front(), 2);
+  EXPECT_EQ(list.back(), 3);
+  EXPECT_EQ(list.size(), 2u);
+
+  list.pop_front();
+  EXPECT_EQ(list.front(), 3);
+  EXPECT_EQ(list.back(), 3);
+  EXPECT_EQ(list.size(), 1u);
+
+  list.pop_front();
+  EXPECT_TRUE(list.empty());
+}
+
+TEST(VectorBackedLinkedList, PopBack) {
+  using List = VectorBackedLinkedList<int>;
+  List list;
+
+  list.push_back(1);
+  list.push_back(2);
+  list.push_back(3);
+
+  list.pop_back();
+  EXPECT_EQ(list.front(), 1);
+  EXPECT_EQ(list.back(), 2);
+  EXPECT_EQ(list.size(), 2u);
+
+  list.pop_back();
+  EXPECT_EQ(list.front(), 1);
+  EXPECT_EQ(list.back(), 1);
+  EXPECT_EQ(list.size(), 1u);
+
+  list.pop_back();
+  EXPECT_TRUE(list.empty());
+}
+
 TEST(VectorBackedLinkedList, Iterator) {
   using List = VectorBackedLinkedList<int>;
   List list;

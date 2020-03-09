@@ -68,7 +68,7 @@ class SnapCoordinatorTest : public testing::Test,
   Document& GetDocument() { return page_holder_->GetDocument(); }
 
   void SetHTML(const char* html_content) {
-    GetDocument().documentElement()->SetInnerHTMLFromString(html_content);
+    GetDocument().documentElement()->setInnerHTML(html_content);
   }
 
   Element& SnapContainer() {
@@ -208,7 +208,7 @@ TEST_F(SnapCoordinatorTest, UpdateStyleForSnapElement) {
 
   // Add a new snap element
   Element& container = *GetDocument().getElementById("snap-container");
-  container.SetInnerHTMLFromString(R"HTML(
+  container.setInnerHTML(R"HTML(
     <div style='scroll-snap-align: start;'>
         <div style='width:2000px; height:2000px;'></div>
     </div>

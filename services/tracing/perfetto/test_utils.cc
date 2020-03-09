@@ -220,7 +220,7 @@ void MockConsumer::FreeBuffers() {
 
 void MockConsumer::OnConnect() {
   consumer_endpoint_->ObserveEvents(
-      perfetto::ConsumerEndpoint::kDataSourceInstances);
+      perfetto::ObservableEvents::TYPE_DATA_SOURCES_INSTANCES);
   StartTracing();
 }
 void MockConsumer::OnDisconnect() {}

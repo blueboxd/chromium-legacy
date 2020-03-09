@@ -367,27 +367,17 @@ FloatRect LayoutSVGText::ObjectBoundingBox() const {
 }
 
 FloatRect LayoutSVGText::StrokeBoundingBox() const {
-  FloatRect stroke_boundaries = ObjectBoundingBox();
-  const SVGComputedStyle& svg_style = StyleRef().SvgStyle();
-  if (!svg_style.HasStroke())
-    return stroke_boundaries;
-
-  DCHECK(GetElement());
-  SVGLengthContext length_context(GetElement());
-  stroke_boundaries.Inflate(
-      length_context.ValueForLength(svg_style.StrokeWidth()));
-  return stroke_boundaries;
+  if (!FirstRootBox())
+    return FloatRect();
+  return SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, ObjectBoundingBox());
 }
 
 FloatRect LayoutSVGText::VisualRectInLocalSVGCoordinates() const {
-  FloatRect visual_rect = StrokeBoundingBox();
-  SVGLayoutSupport::AdjustVisualRectWithResources(*this, ObjectBoundingBox(),
-                                                  visual_rect);
-
-  if (const ShadowList* text_shadow = StyleRef().TextShadow())
-    text_shadow->AdjustRectForShadow(visual_rect);
-
-  return visual_rect;
+  if (!FirstRootBox())
+    return FloatRect();
+  const FloatRect object_bounds = ObjectBoundingBox();
+  return SVGLayoutSupport::ComputeVisualRectForText(*this, object_bounds,
+                                                    object_bounds);
 }
 
 void LayoutSVGText::AddOutlineRects(Vector<PhysicalRect>& rects,

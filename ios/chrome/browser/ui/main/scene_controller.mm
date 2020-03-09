@@ -118,6 +118,10 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                                SettingsNavigationControllerDelegate,
                                WebStateListObserving>
 
+// The scene level component for url loading. Is passed down to
+// browser state level UrlLoadingService instances.
+@property(nonatomic, assign) AppUrlLoadingService* appURLLoadingService;
+
 // A flag that keeps track of the UI initialization for the controlled scene.
 @property(nonatomic, assign) BOOL hasInitializedUI;
 
@@ -216,19 +220,19 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 }
 
 - (id<BrowserInterface>)mainInterface {
-  return self.mainController.interfaceProvider.mainInterface;
+  return self.browserViewWrangler.mainInterface;
 }
 
 - (id<BrowserInterface>)currentInterface {
-  return self.mainController.interfaceProvider.currentInterface;
+  return self.browserViewWrangler.currentInterface;
 }
 
 - (id<BrowserInterface>)incognitoInterface {
-  return self.mainController.interfaceProvider.incognitoInterface;
+  return self.browserViewWrangler.incognitoInterface;
 }
 
 - (id<BrowserInterfaceProvider>)interfaceProvider {
-  return self.mainController.interfaceProvider;
+  return self.browserViewWrangler;
 }
 
 - (BOOL)isSettingsViewPresented {
@@ -507,11 +511,11 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 - (void)showHistory {
   self.historyCoordinator = [[HistoryCoordinator alloc]
-      initWithBaseViewController:self.mainController.currentBVC
+      initWithBaseViewController:self.currentInterface.bvc
                          browser:self.mainInterface.browser];
   self.historyCoordinator.loadStrategy =
-      [self currentPageIsIncognito] ? UrlLoadStrategy::ALWAYS_IN_INCOGNITO
-                                    : UrlLoadStrategy::NORMAL;
+      self.currentInterface.incognito ? UrlLoadStrategy::ALWAYS_IN_INCOGNITO
+                                      : UrlLoadStrategy::NORMAL;
   [self.historyCoordinator start];
 }
 
@@ -526,7 +530,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 - (void)prepareTabSwitcher {
   web::WebState* currentWebState =
-      self.mainController.currentBVC.tabModel.webStateList->GetActiveWebState();
+      self.currentInterface.browser->GetWebStateList()->GetActiveWebState();
   if (currentWebState) {
     BOOL loading = currentWebState->IsLoading();
     SnapshotTabHelper::FromWebState(currentWebState)
@@ -556,7 +560,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 - (void)displayTabSwitcher {
   DCHECK(!self.mainController.isTabSwitcherActive);
   if (!self.isProcessingVoiceSearchCommand) {
-    [self.mainController.currentBVC userEnteredTabSwitcher];
+    [self.currentInterface.bvc userEnteredTabSwitcher];
     [self showTabSwitcher];
     self.isProcessingTabSwitcherCommand = YES;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
@@ -712,12 +716,12 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     (UIViewController*)baseViewController {
   DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (!baseViewController) {
-    DCHECK_EQ(self.mainController.currentBVC,
+    DCHECK_EQ(self.currentInterface.bvc,
               self.mainCoordinator.activeViewController);
-    baseViewController = self.mainController.currentBVC;
+    baseViewController = self.currentInterface.bvc;
   }
 
-  if ([self.mainController currentBrowserState] -> IsOffTheRecord()) {
+  if (self.currentInterface.incognito) {
     NOTREACHED();
     return;
   }
@@ -741,9 +745,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     (UIViewController*)baseViewController {
   DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (!baseViewController) {
-    DCHECK_EQ(self.mainController.currentBVC,
+    DCHECK_EQ(self.currentInterface.bvc,
               self.mainCoordinator.activeViewController);
-    baseViewController = self.mainController.currentBVC;
+    baseViewController = self.currentInterface.bvc;
   }
 
   if (self.settingsNavigationController) {
@@ -789,7 +793,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   if (!baseViewController) {
     // TODO(crbug.com/779791): Don't pass base view controller through
     // dispatched command.
-    baseViewController = [self.mainController currentBVC];
+    baseViewController = self.currentInterface.bvc;
   }
   DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (self.settingsNavigationController) {
@@ -862,11 +866,15 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 #pragma mark - UserFeedbackDataSource
 
+- (BOOL)currentPageIsIncognito {
+  return self.currentInterface.incognito;
+}
+
 - (NSString*)currentPageDisplayURL {
   if (self.mainController.tabSwitcherIsActive)
     return nil;
   web::WebState* webState =
-      self.mainController.currentTabModel.webStateList->GetActiveWebState();
+      self.currentInterface.browser->GetWebStateList()->GetActiveWebState();
   if (!webState)
     return nil;
   // Returns URL of browser tab that is currently showing.
@@ -887,17 +895,13 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 }
 
 - (NSString*)currentPageSyncedUserName {
-  ChromeBrowserState* browserState = self.mainController.currentBrowserState;
+  ChromeBrowserState* browserState = self.currentBrowserState;
   if (browserState->IsOffTheRecord())
     return nil;
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browserState);
   std::string username = identity_manager->GetPrimaryAccountInfo().email;
   return username.empty() ? nil : base::SysUTF8ToNSString(username);
-}
-
-- (BOOL)currentPageIsIncognito {
-  return self.mainController.currentBrowserState->IsOffTheRecord();
 }
 
 #pragma mark - SettingsNavigationControllerDelegate
@@ -913,7 +917,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {
   // Assume that settings always wants the dispatcher from the main BVC.
-  return self.mainController.mainBVC.dispatcher;
+  return self.mainInterface.bvc.dispatcher;
 }
 
 #pragma mark - TabSwitcherDelegate
@@ -929,6 +933,10 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   [self finishDismissingTabSwitcher];
 }
 
+// Begins the process of dismissing the tab switcher with the given current
+// model, switching which BVC is suspended if necessary, but not updating the
+// UI.  The omnibox will be focused after the tab switcher dismissal is
+// completed if |focusOmnibox| is YES.
 - (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel
                                       focusOmnibox:(BOOL)focusOmnibox {
   DCHECK(tabModel == self.mainInterface.tabModel ||
@@ -945,6 +953,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   [self displayCurrentBVCAndFocusOmnibox:focusOmnibox];
 }
 
+// Completes the process of dismissing the tab switcher, removing it from the
+// screen and showing the appropriate BVC.
 - (void)finishDismissingTabSwitcher {
   // In real world devices, it is possible to have an empty tab model at the
   // finishing block of a BVC presentation animation. This can happen when the
@@ -969,7 +979,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // as part of the BVC presentation process.  The BVC is presented before the
   // animations begin, so it should be the current active VC at this point.
   DCHECK_EQ(self.mainCoordinator.activeViewController,
-            self.mainController.currentBVC);
+            self.currentInterface.bvc);
 
   if (self.modeToDisplayOnTabSwitcherDismissal ==
       TabSwitcherDismissalMode::NORMAL) {
@@ -1003,11 +1013,17 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
       };
     case START_QR_CODE_SCANNER:
       return ^{
-        [self.mainController.currentBVC.dispatcher showQRScanner];
+        id<QRScannerCommands> QRHandler = HandlerForProtocol(
+            self.currentInterface.browser->GetCommandDispatcher(),
+            QRScannerCommands);
+        [QRHandler showQRScanner];
       };
     case FOCUS_OMNIBOX:
       return ^{
-        [self.mainController.currentBVC.dispatcher focusOmnibox];
+        id<OmniboxFocuser> focusHandler = HandlerForProtocol(
+            self.currentInterface.browser->GetCommandDispatcher(),
+            OmniboxFocuser);
+        [focusHandler focusOmnibox];
       };
     default:
       return nil;
@@ -1024,7 +1040,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   if (backgroundBVC.playingTTS)
     [backgroundBVC startVoiceSearch];
   else
-    [self.mainController.currentBVC startVoiceSearch];
+    [self.currentInterface.bvc startVoiceSearch];
 }
 
 #pragma mark - TabSwitching
@@ -1080,18 +1096,16 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 }
 
 - (BOOL)URLIsOpenedInRegularMode:(const GURL&)URL {
-  WebStateList* webStateList =
-      self.mainController.interfaceProvider.mainInterface.tabModel.webStateList;
+  WebStateList* webStateList = self.mainInterface.browser->GetWebStateList();
   return webStateList && webStateList->GetIndexOfWebStateWithURL(URL) !=
                              WebStateList::kInvalidIndex;
 }
 
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {
   if (self.mainController.tabSwitcherIsActive) {
-    TabModel* mainTabModel =
-        self.mainController.interfaceProvider.mainInterface.tabModel;
+    TabModel* mainTabModel = self.browserViewWrangler.mainInterface.tabModel;
     TabModel* otrTabModel =
-        self.mainController.interfaceProvider.incognitoInterface.tabModel;
+        self.browserViewWrangler.incognitoInterface.tabModel;
     // Only attempt to dismiss the tab switcher and open a new tab if:
     // - there are no tabs open in either tab model, and
     // - the tab switcher controller is not directly or indirectly presenting
@@ -1168,7 +1182,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // Then, depending on what the SSO view controller is presented on, dismiss
   // it.
   ProceduralBlock completionWithBVC = ^{
-    DCHECK(self.mainController.currentBVC);
+    DCHECK(self.currentInterface.bvc);
     DCHECK(!self.mainController.tabSwitcherIsActive);
     DCHECK(!self.signinInteractionCoordinator.isActive);
     // This will dismiss the SSO view controller.
@@ -1177,7 +1191,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                            dismissOmnibox:dismissOmnibox];
   };
   ProceduralBlock completionWithoutBVC = ^{
-    // |self.mainController.currentBVC| may exist but tab switcher should be
+    // |self.currentInterface.bvc| may exist but tab switcher should be
     // active.
     DCHECK(self.mainController.tabSwitcherIsActive);
     // This will dismiss the SSO view controller.
@@ -1297,7 +1311,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                                       atIndex:tabIndex];
     }
   } else {
-    if (!self.mainController.currentBVC.presentedViewController) {
+    if (!self.currentInterface.bvc.presentedViewController) {
       [targetInterface.bvc expectNewForegroundTab];
     }
     [self setCurrentInterfaceForMode:targetMode];
@@ -1331,23 +1345,22 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox {
-  [self.mainController.currentBVC openNewTabFromOriginPoint:originPoint
-                                               focusOmnibox:focusOmnibox];
+  [self.currentInterface.bvc openNewTabFromOriginPoint:originPoint
+                                          focusOmnibox:focusOmnibox];
 }
 
 - (ChromeBrowserState*)currentBrowserState {
-  return self.mainController.interfaceProvider.currentInterface.browserState;
+  return self.browserViewWrangler.currentInterface.browserState;
 }
 
 - (TabModel*)currentTabModel {
-  return self.mainController.interfaceProvider.currentInterface.bvc.tabModel;
+  return self.browserViewWrangler.currentInterface.bvc.tabModel;
 }
 
 // Asks the respective Snapshot helper to update the snapshot for the active
 // WebState.
 - (void)updateActiveWebStateSnapshot {
-  WebStateList* webStateList =
-      self.mainController.currentBVC.tabModel.webStateList;
+  WebStateList* webStateList = self.currentInterface.bvc.tabModel.webStateList;
   if (webStateList) {
     web::WebState* webState = webStateList->GetActiveWebState();
     if (webState) {
@@ -1367,8 +1380,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
          tabOpenedCompletion:(ProceduralBlock)tabOpenedCompletion {
   BrowserViewController* targetBVC =
       targetMode == ApplicationMode::NORMAL
-          ? self.mainController.interfaceProvider.mainInterface.bvc
-          : self.mainController.interfaceProvider.incognitoInterface.bvc;
+          ? self.browserViewWrangler.mainInterface.bvc
+          : self.browserViewWrangler.incognitoInterface.bvc;
   web::WebState* currentWebState =
       targetBVC.tabModel.webStateList->GetActiveWebState();
 
@@ -1416,8 +1429,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 - (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox {
   ProceduralBlock completion = nil;
   if (focusOmnibox) {
-    __weak BrowserViewController* weakCurrentBVC =
-        self.mainController.currentBVC;
+    __weak BrowserViewController* weakCurrentBVC = self.currentInterface.bvc;
     completion = ^{
       [weakCurrentBVC.dispatcher focusOmnibox];
     };
@@ -1436,7 +1448,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   UIViewController* accountsViewController =
       [[SignedInAccountsViewController alloc]
           initWithBrowserState:browserState
-                    dispatcher:self.mainController.mainBVC.dispatcher];
+                    dispatcher:self.mainInterface.bvc.dispatcher];
   [[self topPresentedViewController]
       presentViewController:accountsViewController
                    animated:YES
@@ -1525,11 +1537,11 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // regular tab or creating a new incognito tab from the settings menu) will
   // take care of the logic to mode switch.
   if (self.mainController.tabSwitcherIsActive ||
-      ![self.mainController.currentTabModel isOffTheRecord]) {
+      ![self.currentTabModel isOffTheRecord]) {
     return;
   }
 
-  if ([self.mainController.currentTabModel count] == 0U) {
+  if ([self.currentTabModel count] == 0U) {
     [self showTabSwitcher];
   } else {
     [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
@@ -1545,13 +1557,15 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // current.
   // Nothing to do here.
   if (self.mainController.tabSwitcherIsActive ||
-      [self.mainController.currentTabModel isOffTheRecord]) {
+      [self.currentTabModel isOffTheRecord]) {
     return;
   }
 
   [self showTabSwitcher];
 }
 
+// Clears incognito data that is specific to iOS and won't be cleared by
+// deleting the browser state.
 - (void)clearIOSSpecificIncognitoData {
   DCHECK(self.mainController.mainBrowserState
              ->HasOffTheRecordChromeBrowserState());
@@ -1577,7 +1591,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
   self.interfaceProvider.mainInterface.userInteractionEnabled = YES;
   self.interfaceProvider.incognitoInterface.userInteractionEnabled = YES;
-  [self.mainController.currentBVC setPrimary:YES];
+  [self.currentInterface.bvc setPrimary:YES];
 }
 
 - (void)showTabSwitcher {

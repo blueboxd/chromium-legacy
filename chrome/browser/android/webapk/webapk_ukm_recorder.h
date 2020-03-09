@@ -37,6 +37,15 @@ class WebApkUkmRecorder {
                               int64_t launch_count,
                               int64_t install_duration);
 
+  // RecordWebApkableVisit records a visit to an installable PWA from a
+  // non-installed surface on Android (ie, if an installable site is visited
+  // from within a regular browser tab).
+  //
+  // Note that the metric will be recorded whether or not the PWA is actually
+  // installed - all that matters is that it is being visited from a
+  // "non-installed experience" (ie, as a normal browser tab).
+  static void RecordWebApkableVisit(const GURL& manifest_url);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebApkUkmRecorder);
 };

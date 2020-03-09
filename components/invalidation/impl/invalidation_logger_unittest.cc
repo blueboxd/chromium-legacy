@@ -154,10 +154,10 @@ TEST(InvalidationLoggerTest, TestEmitContent) {
   log.UnregisterObserver(&observer_test);
 }
 
-// Test that the updateId notification actually sends the same ObjectId that
-// was sent to the Observer.
+// Test that the OnUpdatedTopics() notification actually sends the same Topic
+// that was sent to the Observer.
 // The ObserverTest rebuilds the map that was sent in pieces by the logger.
-TEST(InvalidationLoggerTest, TestUpdateIdsMap) {
+TEST(InvalidationLoggerTest, TestUpdatedTopicsMap) {
   InvalidationLogger log;
   InvalidationLoggerObserverTest observer_test;
   std::map<std::string, syncer::Topics> send_test_map;

@@ -74,7 +74,7 @@ InvalidationEqMatcher::InvalidationEqMatcher(const Invalidation& expected)
 bool InvalidationEqMatcher::MatchAndExplain(
     const Invalidation& actual,
     MatchResultListener* listener) const {
-  if (!(expected_.object_id() == actual.object_id()))
+  if (expected_.topic() != actual.topic())
     return false;
   if (expected_.is_unknown_version() && actual.is_unknown_version())
     return true;

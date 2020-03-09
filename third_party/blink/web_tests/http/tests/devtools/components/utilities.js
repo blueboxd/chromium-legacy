@@ -8,24 +8,6 @@
 
 
   TestRunner.runTestSuite([
-    function remove(next) {
-      var testArrays = [
-        [], [], [], [1], [1], [1], [1, 2, 3, 4, 5, 4, 3, 2, 1], [1, 3, 4, 5, 4, 3, 2, 1], [1, 3, 4, 5, 4, 3, 1],
-        [2, 2, 2, 2, 2], [2, 2, 2, 2], [], [2, 2, 2, 1, 2, 2, 3, 2], [2, 2, 1, 2, 2, 3, 2], [1, 3]
-      ];
-      for (var i = 0; i < testArrays.length; i += 3) {
-        var actual = testArrays[i].slice(0);
-        var expected = testArrays[i + 1];
-        actual.remove(2, true);
-        TestRunner.assertEquals(JSON.stringify(expected), JSON.stringify(actual), 'remove(2, true) passed');
-        actual = testArrays[i].slice(0);
-        expected = testArrays[i + 2];
-        actual.remove(2, false);
-        TestRunner.assertEquals(JSON.stringify(expected), JSON.stringify(actual), 'remove(2, false) passed');
-      }
-      next();
-    },
-
     function orderedMergeIntersect(next) {
       function comparator(a, b) {
         return a - b;

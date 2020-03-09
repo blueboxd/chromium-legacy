@@ -57,7 +57,7 @@ TEST_F(LayoutViewTest, DisplayNoneFrame) {
   EXPECT_FALSE(view->CanHaveChildren());
   EXPECT_FALSE(frame_doc->documentElement()->GetComputedStyle());
 
-  frame_doc->body()->SetInnerHTMLFromString(R"HTML(
+  frame_doc->body()->setInnerHTML(R"HTML(
     <div id="div"></div>
   )HTML");
 

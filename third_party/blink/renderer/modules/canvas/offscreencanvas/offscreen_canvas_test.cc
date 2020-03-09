@@ -84,7 +84,7 @@ void OffscreenCanvasTest::SetUp() {
 
   web_view_helper_.Initialize();
 
-  GetDocument().documentElement()->SetInnerHTMLFromString(
+  GetDocument().documentElement()->setInnerHTML(
       String::FromUTF8("<body><canvas id='c'></canvas></body>"));
 
   auto* canvas_element =

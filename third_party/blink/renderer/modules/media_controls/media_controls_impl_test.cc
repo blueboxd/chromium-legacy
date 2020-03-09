@@ -1088,7 +1088,7 @@ TEST_F(MediaControlsImplTest,
   WeakPersistent<HTMLMediaElement> weak_persistent_video = element;
   {
     Persistent<HTMLMediaElement> persistent_video = element;
-    page_holder->GetDocument().body()->SetInnerHTMLFromString("");
+    page_holder->GetDocument().body()->setInnerHTML("");
 
     // When removed from the document, the event listeners should have been
     // dropped.

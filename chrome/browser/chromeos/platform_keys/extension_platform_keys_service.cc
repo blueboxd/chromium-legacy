@@ -16,7 +16,8 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/state_store.h"
 #include "net/cert/x509_certificate.h"
@@ -74,14 +75,12 @@ class ExtensionPlatformKeysService::GenerateKeyTask : public Task {
                   const std::string& extension_id,
                   const GenerateKeyCallback& callback,
                   KeyPermissions* key_permissions,
-                  ExtensionPlatformKeysService* service,
-                  content::BrowserContext* browser_context)
+                  ExtensionPlatformKeysService* service)
       : token_id_(token_id),
         extension_id_(extension_id),
         callback_(callback),
         key_permissions_(key_permissions),
-        service_(service),
-        browser_context_(browser_context) {}
+        service_(service) {}
 
   ~GenerateKeyTask() override = default;
 
@@ -103,7 +102,6 @@ class ExtensionPlatformKeysService::GenerateKeyTask : public Task {
       extension_permissions_;
   KeyPermissions* const key_permissions_;
   ExtensionPlatformKeysService* const service_;
-  content::BrowserContext* const browser_context_;
 
  private:
   void DoStep() {
@@ -183,14 +181,12 @@ class ExtensionPlatformKeysService::GenerateRSAKeyTask
                      const std::string& extension_id,
                      const GenerateKeyCallback& callback,
                      KeyPermissions* key_permissions,
-                     ExtensionPlatformKeysService* service,
-                     content::BrowserContext* browser_context)
+                     ExtensionPlatformKeysService* service)
       : GenerateKeyTask(token_id,
                         extension_id,
                         callback,
                         key_permissions,
-                        service,
-                        browser_context),
+                        service),
         modulus_length_(modulus_length) {}
 
   ~GenerateRSAKeyTask() override {}
@@ -198,8 +194,8 @@ class ExtensionPlatformKeysService::GenerateRSAKeyTask
  private:
   // Generates the RSA key.
   void GenerateKey(GenerateKeyCallback callback) override {
-    platform_keys::subtle::GenerateRSAKey(token_id_, modulus_length_, callback,
-                                          browser_context_);
+    service_->platform_keys_service_->GenerateRSAKey(token_id_, modulus_length_,
+                                                     callback);
   }
 
   const unsigned int modulus_length_;
@@ -215,14 +211,12 @@ class ExtensionPlatformKeysService::GenerateECKeyTask : public GenerateKeyTask {
                     const std::string& extension_id,
                     const GenerateKeyCallback& callback,
                     KeyPermissions* key_permissions,
-                    ExtensionPlatformKeysService* service,
-                    content::BrowserContext* browser_context)
+                    ExtensionPlatformKeysService* service)
       : GenerateKeyTask(token_id,
                         extension_id,
                         callback,
                         key_permissions,
-                        service,
-                        browser_context),
+                        service),
         named_curve_(named_curve) {}
 
   ~GenerateECKeyTask() override {}
@@ -230,8 +224,8 @@ class ExtensionPlatformKeysService::GenerateECKeyTask : public GenerateKeyTask {
  private:
   // Generates the EC key.
   void GenerateKey(GenerateKeyCallback callback) override {
-    platform_keys::subtle::GenerateECKey(token_id_, named_curve_, callback,
-                                         browser_context_);
+    service_->platform_keys_service_->GenerateECKey(token_id_, named_curve_,
+                                                    callback);
   }
 
   const std::string named_curve_;
@@ -327,10 +321,9 @@ class ExtensionPlatformKeysService::SignTask : public Task {
   }
 
   void GetKeyLocations() {
-    platform_keys::GetKeyLocations(
+    service_->platform_keys_service_->GetKeyLocations(
         public_key_spki_der_,
-        base::BindRepeating(&SignTask::GotKeyLocation, base::Unretained(this)),
-        service_->browser_context_);
+        base::BindRepeating(&SignTask::GotKeyLocation, base::Unretained(this)));
   }
 
   void GotKeyLocation(const std::vector<std::string>& token_ids,
@@ -356,24 +349,21 @@ class ExtensionPlatformKeysService::SignTask : public Task {
     switch (key_type_) {
       case platform_keys::KeyType::kRsassaPkcs1V15: {
         if (raw_pkcs1_) {
-          platform_keys::subtle::SignRSAPKCS1Raw(
+          service_->platform_keys_service_->SignRSAPKCS1Raw(
               token_id_, data_, public_key_spki_der_,
-              base::Bind(&SignTask::DidSign, weak_factory_.GetWeakPtr()),
-              service_->browser_context_);
+              base::Bind(&SignTask::DidSign, weak_factory_.GetWeakPtr()));
         } else {
-          platform_keys::subtle::SignRSAPKCS1Digest(
+          service_->platform_keys_service_->SignRSAPKCS1Digest(
               token_id_, data_, public_key_spki_der_, hash_algorithm_,
 
-              base::Bind(&SignTask::DidSign, weak_factory_.GetWeakPtr()),
-              service_->browser_context_);
+              base::Bind(&SignTask::DidSign, weak_factory_.GetWeakPtr()));
         }
         break;
       }
       case platform_keys::KeyType::kEcdsa: {
-        platform_keys::subtle::SignECDSADigest(
+        service_->platform_keys_service_->SignECDSADigest(
             token_id_, data_, public_key_spki_der_, hash_algorithm_,
-            base::Bind(&SignTask::DidSign, weak_factory_.GetWeakPtr()),
-            service_->browser_context_);
+            base::Bind(&SignTask::DidSign, weak_factory_.GetWeakPtr()));
         break;
       }
     }
@@ -511,10 +501,9 @@ class ExtensionPlatformKeysService::SelectTask : public Task {
   // Retrieves all certificates matching |request_|. Will call back to
   // |GotMatchingCerts()|.
   void GetMatchingCerts() {
-    platform_keys::subtle::SelectClientCertificates(
+    service_->platform_keys_service_->SelectClientCertificates(
         request_.certificate_authorities,
-        base::Bind(&SelectTask::GotMatchingCerts, weak_factory_.GetWeakPtr()),
-        service_->browser_context_);
+        base::Bind(&SelectTask::GotMatchingCerts, weak_factory_.GetWeakPtr()));
   }
 
   // If the certificate request could be processed successfully, |matches| will
@@ -574,11 +563,10 @@ class ExtensionPlatformKeysService::SelectTask : public Task {
     const std::string public_key_spki_der(
         platform_keys::GetSubjectPublicKeyInfo(certificate));
 
-    platform_keys::GetKeyLocations(
+    service_->platform_keys_service_->GetKeyLocations(
         public_key_spki_der,
         base::BindRepeating(&SelectTask::GotKeyLocations,
-                            base::Unretained(this), certificate),
-        service_->browser_context_);
+                            base::Unretained(this), certificate));
   }
 
   void GotKeyLocations(const scoped_refptr<net::X509Certificate>& certificate,
@@ -739,10 +727,14 @@ ExtensionPlatformKeysService::ExtensionPlatformKeysService(
     content::BrowserContext* browser_context,
     extensions::StateStore* state_store)
     : browser_context_(browser_context),
+      platform_keys_service_(
+          platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(
+              browser_context)),
       key_permissions_(profile_is_managed,
                        profile_prefs,
                        profile_policies,
                        state_store) {
+  DCHECK(platform_keys_service_);
   DCHECK(browser_context);
   DCHECK(state_store);
 }
@@ -761,8 +753,8 @@ void ExtensionPlatformKeysService::GenerateRSAKey(
     const GenerateKeyCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StartOrQueueTask(std::make_unique<GenerateRSAKeyTask>(
-      token_id, modulus_length, extension_id, callback, &key_permissions_, this,
-      browser_context_));
+      token_id, modulus_length, extension_id, callback, &key_permissions_,
+      this));
 }
 
 void ExtensionPlatformKeysService::GenerateECKey(
@@ -772,8 +764,7 @@ void ExtensionPlatformKeysService::GenerateECKey(
     const GenerateKeyCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StartOrQueueTask(std::make_unique<GenerateECKeyTask>(
-      token_id, named_curve, extension_id, callback, &key_permissions_, this,
-      browser_context_));
+      token_id, named_curve, extension_id, callback, &key_permissions_, this));
 }
 
 void ExtensionPlatformKeysService::SignDigest(

@@ -25,10 +25,7 @@ static_library("public") {
     "topic_invalidation_map.cc",
     "topic_invalidation_map.h",
   ]
-  public_deps = [
-    "//google_apis",
-    "//third_party/cacheinvalidation",
-  ]
+  public_deps = [ "//google_apis" ]
   deps = [
     "//base",
     "//base:i18n",

@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class PrefService;
@@ -215,7 +215,8 @@ class ExtensionPlatformKeysService : public KeyedService {
                     const std::string& public_key_spki_der,
                     const std::string& error_message);
 
-  content::BrowserContext* browser_context_;
+  content::BrowserContext* const browser_context_ = nullptr;
+  platform_keys::PlatformKeysService* const platform_keys_service_ = nullptr;
   KeyPermissions key_permissions_;
   std::unique_ptr<SelectDelegate> select_delegate_;
   base::queue<std::unique_ptr<Task>> tasks_;

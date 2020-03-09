@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '0154105fc14ca16bfd3c920140348d501a450fef',
+  'skia_revision': '424d28b0701d50fd2a0ef0eac82f246dc4dd78f6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'd4ed59c4ed609eacc9062bd22ebca409ef7c6d1c',
+  'v8_revision': '1c5d630435cdd4ff73b44f7dd93efa8639e1d06c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '717fa7a90e5241112ad995810bb72717d6f758f0',
+  'angle_revision': 'f77f10f33266a3ea55b41f946f8d971c720e0374',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1250,7 +1250,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'b0a8b6693f9bb964258415e6d401f02b135903cc',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1234c8aa625fe7fbe838bcc14f5700aaa81e53a1',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1454,7 +1454,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '39be828c846a6a6c01164158243207ad6efbf955',
+    Var('webrtc_git') + '/src.git' + '@' + '13188a24a490d51034839498451694cf0585810e',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

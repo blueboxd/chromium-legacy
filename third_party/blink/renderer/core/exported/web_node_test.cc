@@ -21,7 +21,7 @@ namespace blink {
 class WebNodeTest : public PageTestBase {
  protected:
   void SetInnerHTML(const String& html) {
-    GetDocument().documentElement()->SetInnerHTMLFromString(html);
+    GetDocument().documentElement()->setInnerHTML(html);
   }
 
   WebNode Root() { return WebNode(GetDocument().documentElement()); }

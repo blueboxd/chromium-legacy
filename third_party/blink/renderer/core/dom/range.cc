@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/dom/range.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/core/dom/character_data.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
@@ -963,28 +962,12 @@ String Range::GetText() const {
 }
 
 DocumentFragment* Range::createContextualFragment(
-    const StringOrTrustedHTML& string_or_html,
-    ExceptionState& exception_state) {
-  // Algorithm:
-  // http://domparsing.spec.whatwg.org/#extensions-to-the-range-interface
-
-  DCHECK(!string_or_html.IsNull());
-
-  Document& document = start_.Container().GetDocument();
-
-  String markup =
-      TrustedTypesCheckForHTML(string_or_html, &document, exception_state);
-  if (!exception_state.HadException()) {
-    return createContextualFragmentFromString(markup, exception_state);
-  }
-  return nullptr;
-}
-
-DocumentFragment* Range::createContextualFragmentFromString(
     const String& markup,
     ExceptionState& exception_state) {
   // Algorithm:
   // http://domparsing.spec.whatwg.org/#extensions-to-the-range-interface
+
+  DCHECK(!markup.IsNull());
 
   Node* node = &start_.Container();
 

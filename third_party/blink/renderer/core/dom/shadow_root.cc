@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -113,29 +112,16 @@ void ShadowRoot::SetSlotting(ShadowRootSlotting slotting) {
   slotting_ = static_cast<unsigned>(slotting);
 }
 
-String ShadowRoot::InnerHTMLAsString() const {
+String ShadowRoot::innerHTML() const {
   return CreateMarkup(this, kChildrenOnly);
 }
 
-void ShadowRoot::innerHTML(StringOrTrustedHTML& result) const {
-  result.SetString(InnerHTMLAsString());
-}
-
-void ShadowRoot::SetInnerHTMLFromString(const String& markup,
-                                        ExceptionState& exception_state) {
+void ShadowRoot::setInnerHTML(const String& markup,
+                              ExceptionState& exception_state) {
   if (DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
           markup, &host(), kAllowScriptingContent, "innerHTML",
           exception_state))
     ReplaceChildrenWithFragment(this, fragment, exception_state);
-}
-
-void ShadowRoot::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
-                              ExceptionState& exception_state) {
-  String html =
-      TrustedTypesCheckForHTML(stringOrHtml, &GetDocument(), exception_state);
-  if (!exception_state.HadException()) {
-    SetInnerHTMLFromString(html, exception_state);
-  }
 }
 
 void ShadowRoot::RecalcStyle(const StyleRecalcChange change) {

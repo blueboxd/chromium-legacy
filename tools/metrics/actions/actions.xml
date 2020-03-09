@@ -16827,14 +16827,16 @@ should be able to be added at any place in this file.
   <description>Settings: Keyboard settings</description>
 </action>
 
-<action name="Options_ShowPasswordManager">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+<action name="Options_ShowPasswordCheck">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <description>Settings: passwords check</description>
 </action>
 
-<action name="Options_ShowPasswordsExceptions">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+<action name="Options_ShowPasswordManager">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <description>Settings: saved passwords</description>
 </action>
 
 <action name="Options_ShowPowerSettings">

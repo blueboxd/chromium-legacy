@@ -449,6 +449,11 @@ void ShowPasswordManager(Browser* browser) {
   ShowSettingsSubPage(browser, kPasswordManagerSubPage);
 }
 
+void ShowPasswordCheck(Browser* browser) {
+  base::RecordAction(UserMetricsAction("Options_ShowPasswordCheck"));
+  ShowSettingsSubPage(browser, kPasswordCheckSubPage);
+}
+
 void ShowImportDialog(Browser* browser) {
   base::RecordAction(UserMetricsAction("Import_ShowDlg"));
   ShowSettingsSubPage(browser, kImportDataSubPage);

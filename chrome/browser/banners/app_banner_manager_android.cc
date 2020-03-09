@@ -15,6 +15,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
+#include "chrome/browser/android/webapk/webapk_ukm_recorder.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_coordinator.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_params.h"
@@ -184,6 +185,14 @@ void AppBannerManagerAndroid::PerformInstallableWebAppCheck() {
     return;
   }
   AppBannerManager::PerformInstallableWebAppCheck();
+}
+
+void AppBannerManagerAndroid::OnDidPerformInstallableWebAppCheck(
+    const InstallableData& data) {
+  if (data.errors.empty())
+    WebApkUkmRecorder::RecordWebApkableVisit(data.manifest_url);
+
+  AppBannerManager::OnDidPerformInstallableWebAppCheck(data);
 }
 
 void AppBannerManagerAndroid::ResetCurrentPageData() {

@@ -65,7 +65,7 @@ LayoutSVGResourceClipper* ResolveElementReference(
 
 FloatRect ClipPathClipper::LocalReferenceBox(const LayoutObject& object) {
   if (object.IsSVGChild())
-    return object.ObjectBoundingBox();
+    return SVGResources::ReferenceBoxForEffects(object);
 
   if (object.IsBox())
     return FloatRect(ToLayoutBox(object).BorderBoxRect());

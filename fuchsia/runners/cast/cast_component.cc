@@ -97,15 +97,6 @@ void CastComponent::StartComponent() {
       frame()->SetPermissionState(std::move(permission_clone), origin,
                                   fuchsia::web::PermissionState::GRANTED);
     }
-  } else {
-    // Grant PROTECTED_MEDIA_IDENTIFIER permission if permissions are not
-    // specified in the config. This is necessary for compatibility with older
-    // ApplicationConfigManager implementations that do not set permissions.
-    fuchsia::web::PermissionDescriptor eme_id_permission;
-    eme_id_permission.set_type(
-        fuchsia::web::PermissionType::PROTECTED_MEDIA_IDENTIFIER);
-    frame()->SetPermissionState(std::move(eme_id_permission), origin,
-                                fuchsia::web::PermissionState::GRANTED);
   }
 }
 

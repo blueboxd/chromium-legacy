@@ -589,8 +589,7 @@ ConsumerHost::ConsumerHost(PerfettoService* service) : service_(service) {
   consumer_endpoint_ =
       service_->GetService()->ConnectConsumer(this, 0 /*uid_t*/);
   consumer_endpoint_->ObserveEvents(
-      perfetto::TracingService::ConsumerEndpoint::ObservableEventType::
-          kDataSourceInstances);
+      perfetto::ObservableEvents::TYPE_DATA_SOURCES_INSTANCES);
 }
 
 ConsumerHost::~ConsumerHost() {

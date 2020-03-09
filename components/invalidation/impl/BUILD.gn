@@ -137,10 +137,7 @@ static_library("test_support") {
     "topic_invalidation_map_test_util.h",
   ]
 
-  public_deps = [
-    ":impl",
-    "//third_party/cacheinvalidation",
-  ]
+  public_deps = [ ":impl" ]
   deps = [
     "//base",
     "//components/gcm_driver:test_support",

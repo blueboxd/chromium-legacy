@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/import/csv_field_parser.h"
 #include "url/gurl.h"
@@ -106,6 +107,7 @@ CSVPassword::Status CSVPassword::ParseImpl(PasswordForm* form) const {
   form->origin = std::move(origin);
   form->username_value = Convert(username);
   form->password_value = Convert(password);
+  form->date_created = base::Time::Now();
   return Status::kOK;
 }
 

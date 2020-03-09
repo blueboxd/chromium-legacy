@@ -52,7 +52,7 @@ TEST_F(ApplyBlockElementCommandTest, selectionCrossingOverBody) {
   EXPECT_EQ(
       "<body contenteditable=\"false\">\n"
       "<pre><var id=\"va\" class=\"CLASS13\">\nC\n</var></pre><input></body>",
-      GetDocument().documentElement()->InnerHTMLAsString());
+      GetDocument().documentElement()->innerHTML());
 }
 
 // This is a regression test for https://crbug.com/660801
@@ -77,7 +77,7 @@ TEST_F(ApplyBlockElementCommandTest, visibilityChangeDuringCommand) {
   EXPECT_EQ(
       "<head><style>li:first-child { visibility:visible; }</style></head>"
       "<body><ul style=\"visibility:hidden\"><ul></ul><li>xyz</li></ul></body>",
-      GetDocument().documentElement()->InnerHTMLAsString());
+      GetDocument().documentElement()->innerHTML());
 }
 
 // This is a regression test for https://crbug.com/712510
@@ -109,7 +109,7 @@ TEST_F(ApplyBlockElementCommandTest, IndentHeadingIntoBlockquote) {
       "<h6><button></button></h6><br>"
       "<object></object>"
       "</div>",
-      GetDocument().body()->InnerHTMLAsString());
+      GetDocument().body()->innerHTML());
 }
 
 // This is a regression test for https://crbug.com/806525

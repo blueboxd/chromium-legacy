@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 
 #include <map>
 
@@ -15,8 +15,10 @@
 #include "net/cert/x509_certificate.h"
 
 namespace chromeos {
-
 namespace platform_keys {
+
+const char kTokenIdUser[] = "user";
+const char kTokenIdSystem[] = "system";
 
 namespace {
 
@@ -47,18 +49,6 @@ void IntersectOnWorkerThread(const net::CertificateList& certs1,
 
 }  // namespace
 
-const char kTokenIdUser[] = "user";
-const char kTokenIdSystem[] = "system";
-
-ClientCertificateRequest::ClientCertificateRequest() {
-}
-
-ClientCertificateRequest::ClientCertificateRequest(
-    const ClientCertificateRequest& other) = default;
-
-ClientCertificateRequest::~ClientCertificateRequest() {
-}
-
 void IntersectCertificates(
     const net::CertificateList& certs1,
     const net::CertificateList& certs2,
@@ -78,6 +68,25 @@ void IntersectCertificates(
       base::Bind(callback, base::Passed(&intersection)));
 }
 
-}  // namespace platform_keys
+// =================== ClientCertificateRequest ================================
 
+ClientCertificateRequest::ClientCertificateRequest() = default;
+
+ClientCertificateRequest::ClientCertificateRequest(
+    const ClientCertificateRequest& other) = default;
+
+ClientCertificateRequest::~ClientCertificateRequest() = default;
+
+// =================== PlatformKeysServiceImpl =================================
+
+PlatformKeysServiceImpl::PlatformKeysServiceImpl(
+    content::BrowserContext* context)
+    : browser_context_(context) {}
+
+PlatformKeysServiceImpl::~PlatformKeysServiceImpl() = default;
+
+// The rest of the methods - the NSS-specific part of the implementation -
+// resides in the platform_keys_service_nss.cc file.
+
+}  // namespace platform_keys
 }  // namespace chromeos

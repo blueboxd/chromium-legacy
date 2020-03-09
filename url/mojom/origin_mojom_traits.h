@@ -5,18 +5,16 @@
 #ifndef URL_MOJO_ORIGIN_MOJOM_TRAITS_H_
 #define URL_MOJO_ORIGIN_MOJOM_TRAITS_H_
 
-#include "base/component_export.h"
-#include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
-#include "url/mojom/origin.mojom-shared.h"
+#include "url/mojom/origin.mojom.h"
 #include "url/origin.h"
 
 namespace mojo {
 
 template <>
-struct COMPONENT_EXPORT(URL_MOJOM_TRAITS)
-    StructTraits<url::mojom::OriginDataView, url::Origin> {
+struct StructTraits<url::mojom::OriginDataView, url::Origin> {
   static const std::string& scheme(const url::Origin& r) {
     return r.GetTupleOrPrecursorTupleIfOpaque().scheme();
   }
@@ -31,7 +29,26 @@ struct COMPONENT_EXPORT(URL_MOJOM_TRAITS)
     // TODO(nasko): Consider returning a const reference here.
     return r.GetNonceForSerialization();
   }
-  static bool Read(url::mojom::OriginDataView data, url::Origin* out);
+  static bool Read(url::mojom::OriginDataView data, url::Origin* out) {
+    base::StringPiece scheme, host;
+    base::Optional<base::UnguessableToken> nonce_if_opaque;
+    if (!data.ReadScheme(&scheme) || !data.ReadHost(&host) ||
+        !data.ReadNonceIfOpaque(&nonce_if_opaque))
+      return false;
+
+    base::Optional<url::Origin> creation_result =
+        nonce_if_opaque
+            ? url::Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(
+                  scheme, host, data.port(),
+                  url::Origin::Nonce(*nonce_if_opaque))
+            : url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(
+                  scheme, host, data.port());
+    if (!creation_result)
+      return false;
+
+    *out = std::move(creation_result.value());
+    return true;
+  }
 };
 
 }  // namespace mojo

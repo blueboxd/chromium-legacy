@@ -89,11 +89,29 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_BEFORE" desc="This text describes what the safety check is. (It's an area of the Settings page where users can quickly check whether their safety-related settings are fully protecting them.)">
     Chromium can help keep you safe from data breaches, bad extensions, and more
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_FAILED_OFFLINE" desc="This text describles that Chrome cannot check for updates because there currently is no internet connection.">
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_FAILED_OFFLINE" desc="This text describes that Chromium cannot check for updates because there currently is no internet connection.">
     Chromium can't check for updates. Try checking your internet connection.
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_FAILED" desc="This text describles that Chrome cannot update due to an unknown error.">
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_FAILED" desc="This text describes that Chromium cannot update due to an unknown error.">
     Chromium didn't update, something went wrong. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Fix Chromium update problems and failed updates.<ph name="END_LINK">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_OFFLINE" desc="This text points out that the password check cannot run due to not having internet connection.">
+    Chromium can't check your passwords. Try checking your internet connection.
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_SIGNED_OUT" desc="This text points out that the password check can only run when the user is signed in.">
+    Chromium can't check your passwords because you're not signed in
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_QUOTA_LIMIT" desc="This text points out that the password check cannot run and that the user should try again tomorrow.">
+    Chromium can't check all your passwords. Try again after 24 hours.
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_TOO_MANY_PASSWORDS" desc="This text points out that the password check cannot run due to the user having too many saved passwords.">
+    Chromium can't check your passwords because there are too many
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_ERROR" desc="This text points out that the password check encountered an unknown error.">
+    Chromium can't check your passwords. Try again later.
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_ERROR" desc="This text describes that safety check could not check extensions for an unkown reason.">
+    Chromium can't check your extensions. Try again later.
   </message>
 
   <!-- People Page -->

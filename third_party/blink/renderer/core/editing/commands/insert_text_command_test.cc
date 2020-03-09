@@ -29,7 +29,7 @@ TEST_F(InsertTextCommandTest, WithTypingStyle) {
 
   EXPECT_EQ(
       "<div contenteditable=\"true\"><option id=\"sample\">x</option></div>",
-      GetDocument().body()->InnerHTMLAsString())
+      GetDocument().body()->innerHTML())
       << "Content of OPTION is distributed into shadow node as text"
          "without applying typing style.";
 }
@@ -282,7 +282,7 @@ TEST_F(InsertTextCommandTest, AnchorElementWithBlockCrash) {
   Element* iElement = GetDocument().CreateRawElement(html_names::kITag);
 
   nested_anchor->setAttribute("href", "www");
-  iElement->SetInnerHTMLFromString("home");
+  iElement->setInnerHTML("home");
 
   anchor->AppendChild(nested_anchor);
   nested_anchor->AppendChild(iElement);

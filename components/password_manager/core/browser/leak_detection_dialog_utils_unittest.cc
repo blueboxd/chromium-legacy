@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,6 +55,17 @@ const struct {
      IDS_LEAK_CHECK_CREDENTIALS, IDS_CLOSE,
      IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE,
      IDS_CREDENTIAL_LEAK_TITLE_CHECK, true, true}};
+
+struct BulkCheckParams {
+  // Specifies the test case.
+  CredentialLeakType leak_type;
+  bool should_check_passwords;
+} kBulkCheckTestCases[] = {
+    {CreateLeakType(IsSaved(false), IsReused(false), IsSyncing(false)), false},
+    {CreateLeakType(IsSaved(true), IsReused(false), IsSyncing(false)), false},
+    {CreateLeakType(IsSaved(false), IsReused(true), IsSyncing(false)), true},
+    {CreateLeakType(IsSaved(true), IsReused(true), IsSyncing(false)), true},
+    {CreateLeakType(IsSaved(true), IsReused(true), IsSyncing(true)), true}};
 }  // namespace
 
 TEST(CredentialLeakDialogUtilsTest, GetAcceptButtonLabel) {
@@ -143,5 +157,45 @@ TEST(CredentialLeakDialogUtilsTest, ShouldShowCancelButton) {
               ShouldShowCancelButton(kLeakTypesTestCases[i].leak_type));
   }
 }
+
+class BulkCheckCredentialLeakDialogUtilsTest
+    : public testing::TestWithParam<BulkCheckParams> {
+ public:
+  BulkCheckCredentialLeakDialogUtilsTest() {
+    feature_list_.InitAndEnableFeature(features::kPasswordCheck);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_P(BulkCheckCredentialLeakDialogUtilsTest, ShouldCheckPasswords) {
+  SCOPED_TRACE(testing::Message() << GetParam().leak_type);
+  EXPECT_EQ(GetParam().should_check_passwords,
+            ShouldCheckPasswords(GetParam().leak_type));
+}
+
+TEST_P(BulkCheckCredentialLeakDialogUtilsTest, Buttons) {
+  SCOPED_TRACE(testing::Message() << GetParam().leak_type);
+  EXPECT_EQ(GetParam().should_check_passwords,
+            ShouldShowCancelButton(GetParam().leak_type));
+  EXPECT_EQ(l10n_util::GetStringUTF16(GetParam().should_check_passwords
+                                          ? IDS_LEAK_CHECK_CREDENTIALS
+                                          : IDS_OK),
+            GetAcceptButtonLabel(GetParam().leak_type));
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_CLOSE), GetCancelButtonLabel());
+}
+
+TEST_P(BulkCheckCredentialLeakDialogUtilsTest, Title) {
+  SCOPED_TRACE(testing::Message() << GetParam().leak_type);
+  EXPECT_EQ(l10n_util::GetStringUTF16(GetParam().should_check_passwords
+                                          ? IDS_CREDENTIAL_LEAK_TITLE_CHECK
+                                          : IDS_CREDENTIAL_LEAK_TITLE_CHANGE),
+            GetTitle(GetParam().leak_type));
+}
+
+INSTANTIATE_TEST_SUITE_P(InstantiationName,
+                         BulkCheckCredentialLeakDialogUtilsTest,
+                         testing::ValuesIn(kBulkCheckTestCases));
 
 }  // namespace password_manager

@@ -35,7 +35,6 @@ class UnackedInvalidationSetTest : public testing::Test {
   }
 
   const Topic kTopic = "ASDF";
-  const invalidation::ObjectId kObjectId = ConvertTopicToId(kTopic);
   UnackedInvalidationSet unacked_invalidations_;
 };
 
@@ -48,7 +47,7 @@ TEST_F(UnackedInvalidationSetTest, Empty) {
 
 // Test storage and retrieval of a single invalidation.
 TEST_F(UnackedInvalidationSetTest, OneInvalidation) {
-  Invalidation inv1 = Invalidation::Init(kObjectId, 10, "payload");
+  Invalidation inv1 = Invalidation::Init(kTopic, 10, "payload");
   unacked_invalidations_.Add(inv1);
 
   SingleObjectInvalidationSet set = GetStoredInvalidations();
@@ -58,7 +57,7 @@ TEST_F(UnackedInvalidationSetTest, OneInvalidation) {
 
 // Test that calling Clear() returns us to the empty state.
 TEST_F(UnackedInvalidationSetTest, Clear) {
-  Invalidation inv1 = Invalidation::Init(kObjectId, 10, "payload");
+  Invalidation inv1 = Invalidation::Init(kTopic, 10, "payload");
   unacked_invalidations_.Add(inv1);
   unacked_invalidations_.Clear();
 
@@ -67,9 +66,9 @@ TEST_F(UnackedInvalidationSetTest, Clear) {
 
 // Test that repeated unknown version invalidations are squashed together.
 TEST_F(UnackedInvalidationSetTest, UnknownVersions) {
-  Invalidation inv1 = Invalidation::Init(kObjectId, 10, "payload");
-  Invalidation inv2 = Invalidation::InitUnknownVersion(kObjectId);
-  Invalidation inv3 = Invalidation::InitUnknownVersion(kObjectId);
+  Invalidation inv1 = Invalidation::Init(kTopic, 10, "payload");
+  Invalidation inv2 = Invalidation::InitUnknownVersion(kTopic);
+  Invalidation inv3 = Invalidation::InitUnknownVersion(kTopic);
   unacked_invalidations_.Add(inv1);
   unacked_invalidations_.Add(inv2);
   unacked_invalidations_.Add(inv3);
@@ -84,7 +83,7 @@ TEST_F(UnackedInvalidationSetTest, NoTruncation) {
   size_t kMax = UnackedInvalidationSet::kMaxBufferedInvalidations;
 
   for (size_t i = 0; i < kMax; ++i) {
-    Invalidation inv = Invalidation::Init(kObjectId, i, "payload");
+    Invalidation inv = Invalidation::Init(kTopic, i, "payload");
     unacked_invalidations_.Add(inv);
   }
 
@@ -100,7 +99,7 @@ TEST_F(UnackedInvalidationSetTest, Truncation) {
   size_t kMax = UnackedInvalidationSet::kMaxBufferedInvalidations;
 
   for (size_t i = 0; i < kMax + 1; ++i) {
-    Invalidation inv = Invalidation::Init(kObjectId, i, "payload");
+    Invalidation inv = Invalidation::Init(kTopic, i, "payload");
     unacked_invalidations_.Add(inv);
   }
 
@@ -118,7 +117,7 @@ TEST_F(UnackedInvalidationSetTest, RegistrationAndTruncation) {
   size_t kMax = UnackedInvalidationSet::kMaxBufferedInvalidations;
 
   for (size_t i = 0; i < kMax + 1; ++i) {
-    Invalidation inv = Invalidation::Init(kObjectId, i, "payload");
+    Invalidation inv = Invalidation::Init(kTopic, i, "payload");
     unacked_invalidations_.Add(inv);
   }
 
@@ -146,8 +145,8 @@ TEST_F(UnackedInvalidationSetTest, Acknowledge) {
   // Not that it makes much of a difference in behavior.
   unacked_invalidations_.SetHandlerIsRegistered();
 
-  Invalidation inv1 = Invalidation::Init(kObjectId, 10, "payload");
-  Invalidation inv2 = Invalidation::InitUnknownVersion(kObjectId);
+  Invalidation inv1 = Invalidation::Init(kTopic, 10, "payload");
+  Invalidation inv2 = Invalidation::InitUnknownVersion(kTopic);
   AckHandle inv1_handle = inv1.ack_handle();
 
   unacked_invalidations_.Add(inv1);
@@ -169,8 +168,8 @@ TEST_F(UnackedInvalidationSetTest, Drop) {
   // Not that it makes much of a difference in behavior.
   unacked_invalidations_.SetHandlerIsRegistered();
 
-  Invalidation inv1 = Invalidation::Init(kObjectId, 10, "payload");
-  Invalidation inv2 = Invalidation::Init(kObjectId, 15, "payload");
+  Invalidation inv1 = Invalidation::Init(kTopic, 10, "payload");
+  Invalidation inv2 = Invalidation::Init(kTopic, 15, "payload");
   AckHandle inv1_handle = inv1.ack_handle();
 
   unacked_invalidations_.Add(inv1);

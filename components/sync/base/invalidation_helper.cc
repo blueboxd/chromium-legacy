@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "google/cacheinvalidation/types.pb.h"
-
 namespace syncer {
 
 TopicSet ModelTypeSetToTopicSet(ModelTypeSet model_types) {

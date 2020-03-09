@@ -160,4 +160,12 @@ public class IncognitoNewTabPageView extends FrameLayout {
     void setIncognitoCookieControlsToggleEnforcement(@CookieControlsEnforcement int enforcement) {
         mDescriptionView.setCookieControlsEnforcement(enforcement);
     }
+
+    /**
+     * Set the incognito cookie controls icon click listener.
+     * @param listener The given onclick listener.
+     */
+    void setIncognitoCookieControlsIconOnclickListener(OnClickListener listener) {
+        mDescriptionView.setCookieControlsIconOnclickListener(listener);
+    }
 }

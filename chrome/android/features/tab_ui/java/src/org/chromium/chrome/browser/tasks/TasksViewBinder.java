@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_CARD_VISIBILITY;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_ICON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_MANAGER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED_LISTENER;
@@ -37,6 +38,9 @@ class TasksViewBinder {
         } else if (propertyKey == INCOGNITO_COOKIE_CONTROLS_CARD_VISIBILITY) {
             view.setIncognitoCookieControlsCardVisibility(
                     model.get(INCOGNITO_COOKIE_CONTROLS_CARD_VISIBILITY));
+        } else if (propertyKey == INCOGNITO_COOKIE_CONTROLS_ICON_CLICK_LISTENER) {
+            view.setIncognitoCookieControlsIconClickListener(
+                    model.get(INCOGNITO_COOKIE_CONTROLS_ICON_CLICK_LISTENER));
         } else if (propertyKey == INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED) {
             view.setIncognitoCookieControlsToggleChecked(
                     model.get(INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED));

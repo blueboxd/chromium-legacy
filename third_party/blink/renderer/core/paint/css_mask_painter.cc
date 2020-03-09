@@ -23,8 +23,9 @@ base::Optional<IntRect> CSSMaskPainter::MaskBoundingBox(
         SVGResourcesCache::CachedResourcesForLayoutObject(object);
     LayoutSVGResourceMasker* masker = resources ? resources->Masker() : nullptr;
     if (masker) {
-      return EnclosingIntRect(
-          masker->ResourceBoundingBox(object.ObjectBoundingBox()));
+      const FloatRect reference_box =
+          SVGResources::ReferenceBoxForEffects(object);
+      return EnclosingIntRect(masker->ResourceBoundingBox(reference_box));
     }
   }
 

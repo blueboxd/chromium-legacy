@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_marker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
@@ -49,6 +50,20 @@ SVGResources::SVGResources() : linked_resource_(nullptr) {}
 
 SVGElementResourceClient* SVGResources::GetClient(const LayoutObject& object) {
   return To<SVGElement>(object.GetNode())->GetSVGResourceClient();
+}
+
+FloatRect SVGResources::ReferenceBoxForEffects(
+    const LayoutObject& layout_object) {
+  // Text "sub-elements" (<tspan>, <textpath>, <a>) should use the entire
+  // <text>s object bounding box rather then their own.
+  // https://svgwg.org/svg2-draft/text.html#ObjectBoundingBoxUnitsTextObjects
+  const LayoutObject* obb_layout_object = &layout_object;
+  if (layout_object.IsSVGInline()) {
+    obb_layout_object =
+        LayoutSVGText::LocateLayoutSVGTextAncestor(&layout_object);
+  }
+  DCHECK(obb_layout_object);
+  return obb_layout_object->ObjectBoundingBox();
 }
 
 static HashSet<AtomicString>& ClipperFilterMaskerTags() {

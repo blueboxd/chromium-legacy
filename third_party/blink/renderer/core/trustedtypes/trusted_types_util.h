@@ -13,10 +13,8 @@ namespace blink {
 class Document;
 class ExecutionContext;
 class ExceptionState;
-class StringOrTrustedHTML;
 class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL;
 class StringOrTrustedScript;
-class StringOrTrustedScriptURL;
 
 enum class SpecificTrustedType {
   kNone,
@@ -27,12 +25,9 @@ enum class SpecificTrustedType {
 
 // TODO(crbug.com/1029822): Temporary helpers to ease migrating ExecutionContext
 // to LocalDOMWindow.
-CORE_EXPORT String TrustedTypesCheckForHTML(StringOrTrustedHTML,
+CORE_EXPORT String TrustedTypesCheckForHTML(const String&,
                                             const Document*,
                                             ExceptionState&);
-String TrustedTypesCheckForHTML(const String&,
-                                const Document*,
-                                ExceptionState&);
 
 // Perform Trusted Type checks, with the IDL union types as input. All of these
 // will call String& versions below to do the heavy lifting.
@@ -41,16 +36,9 @@ CORE_EXPORT String TrustedTypesCheckFor(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
     const ExecutionContext*,
     ExceptionState&) WARN_UNUSED_RESULT;
-String TrustedTypesCheckForHTML(StringOrTrustedHTML,
-                                const ExecutionContext*,
-                                ExceptionState&) WARN_UNUSED_RESULT;
 CORE_EXPORT String TrustedTypesCheckForScript(StringOrTrustedScript,
                                               const ExecutionContext*,
                                               ExceptionState&)
-    WARN_UNUSED_RESULT;
-CORE_EXPORT String TrustedTypesCheckForScriptURL(StringOrTrustedScriptURL,
-                                                 const ExecutionContext*,
-                                                 ExceptionState&)
     WARN_UNUSED_RESULT;
 
 // Perform Trusted Type checks, for a dynamically or statically determined
@@ -61,15 +49,17 @@ String TrustedTypesCheckFor(SpecificTrustedType,
                             const String&,
                             const ExecutionContext*,
                             ExceptionState&) WARN_UNUSED_RESULT;
-String TrustedTypesCheckForHTML(const String&,
-                                const ExecutionContext*,
-                                ExceptionState&) WARN_UNUSED_RESULT;
-String TrustedTypesCheckForScript(const String&,
-                                  const ExecutionContext*,
-                                  ExceptionState&) WARN_UNUSED_RESULT;
-String TrustedTypesCheckForScriptURL(const String&,
-                                     const ExecutionContext*,
-                                     ExceptionState&) WARN_UNUSED_RESULT;
+CORE_EXPORT String TrustedTypesCheckForHTML(const String&,
+                                            const ExecutionContext*,
+                                            ExceptionState&) WARN_UNUSED_RESULT;
+CORE_EXPORT String TrustedTypesCheckForScript(const String&,
+                                              const ExecutionContext*,
+                                              ExceptionState&)
+    WARN_UNUSED_RESULT;
+CORE_EXPORT String TrustedTypesCheckForScriptURL(const String&,
+                                                 const ExecutionContext*,
+                                                 ExceptionState&)
+    WARN_UNUSED_RESULT;
 
 // Functionally equivalent to TrustedTypesCheckForScript(const String&, ...),
 // but with setup & error handling suitable for the asynchronous execution

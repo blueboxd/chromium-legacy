@@ -43,6 +43,7 @@ class TasksView extends CoordinatorLayoutForPointer {
     private OnCheckedChangeListener mIncognitoCookieControlsToggleCheckedListener;
     private @CookieControlsEnforcement int mIncognitoCookieControlsToggleEnforcement =
             CookieControlsEnforcement.NO_ENFORCEMENT;
+    private View.OnClickListener mIncognitoCookieControlsIconClickListener;
 
     /** Default constructor needed to inflate via XML. */
     public TasksView(Context context, AttributeSet attrs) {
@@ -169,16 +170,17 @@ class TasksView extends CoordinatorLayoutForPointer {
         mIncognitoDescriptionView = (IncognitoDescriptionView) stub.inflate();
         if (mIncognitoDescriptionLearnMoreListener != null) {
             setIncognitoDescriptionLearnMoreClickListener(mIncognitoDescriptionLearnMoreListener);
-            mIncognitoDescriptionLearnMoreListener = null;
         }
         setIncognitoCookieControlsCardVisibility(mIncognitoCookieControlsCardIsVisible);
         setIncognitoCookieControlsToggleChecked(mIncognitoCookieControlsToggleIsChecked);
         if (mIncognitoCookieControlsToggleCheckedListener != null) {
             setIncognitoCookieControlsToggleCheckedListener(
                     mIncognitoCookieControlsToggleCheckedListener);
-            mIncognitoCookieControlsToggleCheckedListener = null;
         }
         setIncognitoCookieControlsToggleEnforcement(mIncognitoCookieControlsToggleEnforcement);
+        if (mIncognitoCookieControlsIconClickListener != null) {
+            setIncognitoCookieControlsIconClickListener(mIncognitoCookieControlsIconClickListener);
+        }
     }
 
     /**
@@ -194,11 +196,11 @@ class TasksView extends CoordinatorLayoutForPointer {
      * @param listener The given click listener.
      */
     void setIncognitoDescriptionLearnMoreClickListener(View.OnClickListener listener) {
-        if (mIncognitoDescriptionView == null) {
-            mIncognitoDescriptionLearnMoreListener = listener;
-            return;
+        mIncognitoDescriptionLearnMoreListener = listener;
+        if (mIncognitoDescriptionView != null) {
+            mIncognitoDescriptionView.findViewById(R.id.learn_more).setOnClickListener(listener);
+            mIncognitoDescriptionLearnMoreListener = null;
         }
-        mIncognitoDescriptionView.findViewById(R.id.learn_more).setOnClickListener(listener);
     }
 
     /**
@@ -231,6 +233,7 @@ class TasksView extends CoordinatorLayoutForPointer {
         mIncognitoCookieControlsToggleCheckedListener = listener;
         if (mIncognitoDescriptionView != null) {
             mIncognitoDescriptionView.setCookieControlsToggleOnCheckedChangeListener(listener);
+            mIncognitoCookieControlsToggleCheckedListener = null;
         }
     }
 
@@ -242,6 +245,18 @@ class TasksView extends CoordinatorLayoutForPointer {
         mIncognitoCookieControlsToggleEnforcement = enforcement;
         if (mIncognitoDescriptionView != null) {
             mIncognitoDescriptionView.setCookieControlsEnforcement(enforcement);
+        }
+    }
+
+    /**
+     * Set the incognito cookie controls icon click listener.
+     * @param listener The given onclick listener.
+     */
+    void setIncognitoCookieControlsIconClickListener(OnClickListener listener) {
+        mIncognitoCookieControlsIconClickListener = listener;
+        if (mIncognitoDescriptionView != null) {
+            mIncognitoDescriptionView.setCookieControlsIconOnclickListener(listener);
+            mIncognitoCookieControlsIconClickListener = null;
         }
     }
 }

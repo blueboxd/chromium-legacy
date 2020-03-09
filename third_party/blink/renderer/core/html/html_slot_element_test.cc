@@ -147,7 +147,7 @@ class HTMLSlotElementInDocumentTest : public testing::Test {
 };
 
 TEST_F(HTMLSlotElementInDocumentTest, RecalcAssignedNodeStyleForReattach) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <div id='host'><span id='span'></span></div>
   )HTML");
 
@@ -157,8 +157,7 @@ TEST_F(HTMLSlotElementInDocumentTest, RecalcAssignedNodeStyleForReattach) {
   ShadowRoot& shadow_root =
       host.AttachShadowRootInternal(ShadowRootType::kOpen);
 
-  shadow_root.SetInnerHTMLFromString(
-      R"HTML(<span><slot /></span>)HTML");
+  shadow_root.setInnerHTML(R"HTML(<span><slot /></span>)HTML");
 
   auto* shadow_span = To<Element>(shadow_root.firstChild());
   GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
@@ -173,7 +172,7 @@ TEST_F(HTMLSlotElementInDocumentTest, RecalcAssignedNodeStyleForReattach) {
 }
 
 TEST_F(HTMLSlotElementInDocumentTest, SlotableFallback) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <div id='host'></div>
   )HTML");
 
@@ -181,8 +180,7 @@ TEST_F(HTMLSlotElementInDocumentTest, SlotableFallback) {
   ShadowRoot& shadow_root =
       host.AttachShadowRootInternal(ShadowRootType::kOpen);
 
-  shadow_root.SetInnerHTMLFromString(
-      R"HTML(<slot><span></span><!-- -->text</slot>)HTML");
+  shadow_root.setInnerHTML(R"HTML(<slot><span></span><!-- -->text</slot>)HTML");
 
   auto* slot = To<HTMLSlotElement>(shadow_root.firstChild());
 

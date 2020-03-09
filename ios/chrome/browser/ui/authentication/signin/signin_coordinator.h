@@ -15,8 +15,6 @@
 class Browser;
 @class ChromeIdentity;
 
-@protocol SyncPresenter;
-
 // Called when the sign-in dialog is closed.
 // |result| is the sign-in result state.
 // |identity| is the identity chosen by the user during the sign-in.

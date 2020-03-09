@@ -11,7 +11,10 @@
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/extensions/api/autofill_assistant_private/extension_access_token_fetcher.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "extensions/browser/event_router_factory.h"
@@ -233,9 +236,15 @@ void BrowserContextKeyedAPIFactory<
 
 AutofillAssistantPrivateAPI::AutofillAssistantPrivateAPI(
     content::BrowserContext* context)
-    : browser_context_(context) {}
+    : browser_context_(context) {
+  access_token_fetcher_ = std::make_unique<ExtensionAccessTokenFetcher>(
+      IdentityManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context_)));
+}
 
-AutofillAssistantPrivateAPI::~AutofillAssistantPrivateAPI() = default;
+AutofillAssistantPrivateAPI::~AutofillAssistantPrivateAPI() {
+  access_token_fetcher_.reset();
+}
 
 void AutofillAssistantPrivateAPI::CreateAutofillAssistantController(
     content::WebContents* web_contents) {
@@ -312,7 +321,7 @@ std::string AutofillAssistantPrivateAPI::GetAccountEmailAddress() {
 
 autofill_assistant::AccessTokenFetcher*
 AutofillAssistantPrivateAPI::GetAccessTokenFetcher() {
-  return nullptr;
+  return access_token_fetcher_.get();
 }
 
 autofill::PersonalDataManager*
@@ -327,7 +336,7 @@ AutofillAssistantPrivateAPI::GetWebsiteLoginFetcher() {
 }
 
 std::string AutofillAssistantPrivateAPI::GetServerUrl() {
-  // TODO(crbug.com/1015753): Consider the autofill-assistant-url for endpoing
+  // TODO(crbug.com/1015753): Consider the autofill-assistant-url for endpoint
   // overrides and share the kDefaultAutofillAssistantServerUrl to expose it
   // here.
   return "https://automate-pa.googleapis.com";

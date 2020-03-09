@@ -58,7 +58,7 @@
 
     [Affects=Nothing, CEReactions, CustomElementCallbacks] attribute DOMString? nodeValue;
 
-    [Affects=Nothing, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute ScriptString? textContent;
+    [Affects=Nothing, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute (DOMString or TrustedScript)? textContent;
     [CEReactions, CustomElementCallbacks] void normalize();
 
     [NewObject, DoNotTestNewObject, CEReactions, CustomElementCallbacks, RaisesException] Node cloneNode(optional boolean deep = false);

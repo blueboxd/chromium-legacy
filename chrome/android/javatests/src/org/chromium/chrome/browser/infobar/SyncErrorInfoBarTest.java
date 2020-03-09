@@ -14,20 +14,24 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.sync.FakeProfileSyncService;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+
+import java.io.IOException;
 
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags
@@ -37,12 +41,15 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
     private FakeProfileSyncService mFakeProfileSyncService;
 
     @Rule
-    public SyncTestRule mSyncTestRule = new SyncTestRule() {
+    public final SyncTestRule mSyncTestRule = new SyncTestRule() {
         @Override
         protected FakeProfileSyncService createProfileSyncService() {
             return new FakeProfileSyncService();
         }
     };
+
+    @Rule
+    public final ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
     @Before
     public void setUp() {
@@ -56,12 +63,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
     public void testSyncErrorInfoBarShownForAuthError() throws Exception {
         Assert.assertEquals("InfoBar should not be shown before signing in", 0,
                 mSyncTestRule.getInfoBars().size());
-        mSyncTestRule.setUpTestAccountAndSignIn();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mFakeProfileSyncService.setAuthError(
-                    GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS);
-        });
-        mSyncTestRule.loadUrlInNewTab(UrlConstants.CHROME_BLANK_URL);
+        showSyncErrorInfoBarForAuthError();
         Assert.assertEquals("InfoBar should be shown", 1, mSyncTestRule.getInfoBars().size());
 
         // Resolving the error should not show the infobar again.
@@ -76,8 +78,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
     public void testSyncErrorInfoBarShownForSyncSetupIncomplete() {
         Assert.assertEquals("InfoBar should not be shown before signing in", 0,
                 mSyncTestRule.getInfoBars().size());
-        mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
-        mSyncTestRule.loadUrlInNewTab(UrlConstants.CHROME_BLANK_URL);
+        showSyncErrorInfoBarForSyncSetupIncomplete();
         Assert.assertEquals("InfoBar should be shown", 1, mSyncTestRule.getInfoBars().size());
 
         // Resolving the error should not show the infobar again.
@@ -94,15 +95,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
     public void testSyncErrorInfoBarShownForPassphraseRequired() {
         Assert.assertEquals("InfoBar should not be shown before signing in", 0,
                 mSyncTestRule.getInfoBars().size());
-        mSyncTestRule.setUpTestAccountAndSignIn();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // TODO(https://crbug.com/1056677): call syncStateChanged inside
-            // setPassphraseRequiredForPreferredDataTypes
-            mFakeProfileSyncService.setEngineInitialized(true);
-            mFakeProfileSyncService.setPassphraseRequiredForPreferredDataTypes(true);
-            mFakeProfileSyncService.syncStateChanged();
-        });
-        mSyncTestRule.loadUrlInNewTab(UrlConstants.CHROME_BLANK_URL);
+        showSyncErrorInfoBarForPassphraseRequired();
         Assert.assertEquals("InfoBar should be shown", 1, mSyncTestRule.getInfoBars().size());
 
         // Resolving the error should not show the infobar again.
@@ -146,12 +139,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
         // Initiate auth error to show the infobar.
         Assert.assertEquals("InfoBar should not be shown before signing in", 0,
                 mSyncTestRule.getInfoBars().size());
-        mSyncTestRule.setUpTestAccountAndSignIn();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mFakeProfileSyncService.setAuthError(
-                    GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS);
-        });
-        mSyncTestRule.loadUrlInNewTab(UrlConstants.CHROME_BLANK_URL);
+        showSyncErrorInfoBarForAuthError();
         Assert.assertEquals("InfoBar should be shown", 1, mSyncTestRule.getInfoBars().size());
 
         // Create another new tab.
@@ -169,6 +157,59 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
         mSyncTestRule.loadUrlInNewTab(UrlConstants.CHROME_BLANK_URL);
         Assert.assertEquals("InfoBar should be shown again after minimum interval passed", 1,
                 mSyncTestRule.getInfoBars().size());
+    }
+
+    @Test
+    @LargeTest
+    @Feature("RenderTest")
+    public void testSyncErrorInfoBarForAuthErrorView() throws IOException {
+        showSyncErrorInfoBarForAuthError();
+        mRenderTestRule.render(mSyncTestRule.getInfoBarContainer().getContainerViewForTesting(),
+                "sync_error_infobar_auth_error");
+    }
+
+    @Test
+    @LargeTest
+    @Feature("RenderTest")
+    public void testSyncErrorInfoBarForSyncSetupIncompleteView() throws IOException {
+        showSyncErrorInfoBarForSyncSetupIncomplete();
+        mRenderTestRule.render(mSyncTestRule.getInfoBarContainer().getContainerViewForTesting(),
+                "sync_error_infobar_sync_setup_incomplete");
+    }
+
+    @Test
+    @LargeTest
+    @Feature("RenderTest")
+    public void testSyncErrorInfoBarForPassphraseRequiredView() throws IOException {
+        showSyncErrorInfoBarForPassphraseRequired();
+        mRenderTestRule.render(mSyncTestRule.getInfoBarContainer().getContainerViewForTesting(),
+                "sync_error_infobar_passphrase_required");
+    }
+
+    private void showSyncErrorInfoBarForAuthError() {
+        mSyncTestRule.setUpTestAccountAndSignIn();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mFakeProfileSyncService.setAuthError(
+                    GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS);
+        });
+        mSyncTestRule.loadUrlInNewTab(UrlConstants.CHROME_BLANK_URL);
+    }
+
+    private void showSyncErrorInfoBarForPassphraseRequired() {
+        mSyncTestRule.setUpTestAccountAndSignIn();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // TODO(https://crbug.com/1056677): call syncStateChanged inside
+            // setPassphraseRequiredForPreferredDataTypes
+            mFakeProfileSyncService.setEngineInitialized(true);
+            mFakeProfileSyncService.setPassphraseRequiredForPreferredDataTypes(true);
+            mFakeProfileSyncService.syncStateChanged();
+        });
+        mSyncTestRule.loadUrlInNewTab(UrlConstants.CHROME_BLANK_URL);
+    }
+
+    private void showSyncErrorInfoBarForSyncSetupIncomplete() {
+        mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
+        mSyncTestRule.loadUrlInNewTab(UrlConstants.CHROME_BLANK_URL);
     }
 
     private void deleteSyncErrorInfoBarShowTimePref() {

@@ -59,7 +59,7 @@ void V0CustomElementMicrotaskResolutionStep::Trace(Visitor* visitor) {
 #if !defined(NDEBUG)
 void V0CustomElementMicrotaskResolutionStep::Show(unsigned indent) {
   fprintf(stderr, "%*sResolution: ", indent, "");
-  element_->OuterHTMLAsString().Show();
+  element_->outerHTML().Show();
 }
 #endif
 

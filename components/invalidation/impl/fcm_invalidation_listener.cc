@@ -10,7 +10,6 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/prefs/pref_service.h"
-#include "google/cacheinvalidation/include/types.h"
 
 namespace syncer {
 
@@ -79,8 +78,8 @@ void FCMInvalidationListener::InvalidationReceived(
     return;
   }
   TopicInvalidationMap invalidations;
-  Invalidation inv = Invalidation::Init(
-      ConvertTopicToId(*expected_public_topic), version, payload);
+  Invalidation inv =
+      Invalidation::Init(*expected_public_topic, version, payload);
   inv.SetAckHandler(weak_factory_.GetWeakPtr(),
                     base::ThreadTaskRunnerHandle::Get());
   DVLOG(1) << "Received invalidation with version " << inv.version() << " for "

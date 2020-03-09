@@ -108,7 +108,7 @@ TEST_P(HTMLPlugInElementTest, RemovePlugin) {
   )HTML";
 
   const char* container_type = GetParam();
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       String::Format(kDivWithPlugin, container_type, container_type));
 
   auto* plugin =

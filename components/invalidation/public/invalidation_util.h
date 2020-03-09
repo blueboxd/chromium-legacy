@@ -17,23 +17,7 @@
 #include "base/values.h"
 #include "components/invalidation/public/invalidation_export.h"
 
-namespace base {
-class DictionaryValue;
-}  // namespace base
-
-namespace invalidation {
-class ObjectId;
-}  // namespace invalidation
-
 namespace syncer {
-
-// FCMInvalidationService and deprecated TiclInvalidationService uses ObjectId
-// to keep track of objects to invalidate. There are 2 fields in ObjectId:
-// source and name. TiclInvalidationService expects both of them, while
-// FCMInvalidationService only works with the name. So InvalidationService
-// assigns the value of source to kDeprecatedSourceForFCM when FCM (Firebase
-// Cloud Messaging) is enabled.
-extern const int kDeprecatedSourceForFCM;
 
 // Used by UMA histogram, so entries shouldn't be reordered or removed.
 enum class HandlerOwnerType {
@@ -52,18 +36,10 @@ enum class HandlerOwnerType {
 };
 
 class Invalidation;
-class InvalidationHandler;
-
-struct INVALIDATION_EXPORT ObjectIdLessThan {
-  bool operator()(const invalidation::ObjectId& lhs,
-                  const invalidation::ObjectId& rhs) const;
-};
 
 struct INVALIDATION_EXPORT InvalidationVersionLessThan {
   bool operator()(const Invalidation& a, const Invalidation& b) const;
 };
-
-typedef std::set<invalidation::ObjectId, ObjectIdLessThan> ObjectIdSet;
 
 using Topic = std::string;
 // It should be std::set, since std::set_difference is used for it.
@@ -79,21 +55,6 @@ INVALIDATION_EXPORT struct TopicMetadata {
 INVALIDATION_EXPORT bool operator==(const TopicMetadata&, const TopicMetadata&);
 
 using Topics = std::map<std::string, TopicMetadata>;
-
-// Caller owns the returned DictionaryValue.
-std::unique_ptr<base::DictionaryValue> ObjectIdToValue(
-    const invalidation::ObjectId& object_id);
-
-bool ObjectIdFromValue(const base::DictionaryValue& value,
-                       invalidation::ObjectId* out);
-
-INVALIDATION_EXPORT std::string ObjectIdToString(
-    const invalidation::ObjectId& object_id);
-
-ObjectIdSet ConvertTopicsToIds(TopicSet topics);
-ObjectIdSet ConvertTopicsToIds(Topics topics);
-invalidation::ObjectId ConvertTopicToId(const Topic& topic);
-Topics ConvertIdsToTopics(ObjectIdSet ids, InvalidationHandler* handler);
 
 HandlerOwnerType OwnerNameToHandlerType(const std::string& owner_name);
 

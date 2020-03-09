@@ -13,23 +13,13 @@
 #include "base/values.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/invalidation_handler.h"
-#include "google/cacheinvalidation/include/types.h"
 
 namespace syncer {
 
-const int kDeprecatedSourceForFCM = 2000;
-
-bool ObjectIdLessThan::operator()(const invalidation::ObjectId& lhs,
-                                  const invalidation::ObjectId& rhs) const {
-  return (lhs.source() < rhs.source()) ||
-         (lhs.source() == rhs.source() && lhs.name() < rhs.name());
-}
-
 bool InvalidationVersionLessThan::operator()(const Invalidation& a,
                                              const Invalidation& b) const {
-  DCHECK(a.object_id() == b.object_id())
-      << "a: " << ObjectIdToString(a.object_id()) << ", "
-      << "b: " << ObjectIdToString(a.object_id());
+  DCHECK(a.topic() == b.topic()) << "a: " << a.topic() << ", "
+                                 << "b: " << b.topic();
 
   if (a.is_unknown_version() && !b.is_unknown_version())
     return true;
@@ -45,57 +35,6 @@ bool InvalidationVersionLessThan::operator()(const Invalidation& a,
 
 bool operator==(const TopicMetadata& lhs, const TopicMetadata& rhs) {
   return lhs.is_public == rhs.is_public;
-}
-
-std::unique_ptr<base::DictionaryValue> ObjectIdToValue(
-    const invalidation::ObjectId& object_id) {
-  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  value->SetInteger("source", object_id.source());
-  value->SetString("name", object_id.name());
-  return value;
-}
-
-bool ObjectIdFromValue(const base::DictionaryValue& value,
-                       invalidation::ObjectId* out) {
-  *out = invalidation::ObjectId();
-  std::string name;
-  int source = 0;
-  if (!value.GetInteger("source", &source) || !value.GetString("name", &name)) {
-    return false;
-  }
-  *out = invalidation::ObjectId(source, name);
-  return true;
-}
-
-std::string ObjectIdToString(const invalidation::ObjectId& object_id) {
-  std::string str;
-  base::JSONWriter::Write(*ObjectIdToValue(object_id), &str);
-  return str;
-}
-
-Topics ConvertIdsToTopics(ObjectIdSet ids, InvalidationHandler* handler) {
-  Topics topics;
-  for (const auto& id : ids)
-    topics.emplace(id.name(), TopicMetadata{handler->IsPublicTopic(id.name())});
-  return topics;
-}
-
-ObjectIdSet ConvertTopicsToIds(TopicSet topics) {
-  ObjectIdSet ids;
-  for (const auto& topic : topics)
-    ids.insert(invalidation::ObjectId(kDeprecatedSourceForFCM, topic));
-  return ids;
-}
-
-ObjectIdSet ConvertTopicsToIds(Topics topics) {
-  ObjectIdSet ids;
-  for (const auto& topic : topics)
-    ids.insert(invalidation::ObjectId(kDeprecatedSourceForFCM, topic.first));
-  return ids;
-}
-
-invalidation::ObjectId ConvertTopicToId(const Topic& topic) {
-  return invalidation::ObjectId(kDeprecatedSourceForFCM, topic);
 }
 
 HandlerOwnerType OwnerNameToHandlerType(const std::string& owner_name) {

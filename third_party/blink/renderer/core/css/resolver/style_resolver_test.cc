@@ -20,7 +20,7 @@ class StyleResolverTest : public PageTestBase {
 };
 
 TEST_F(StyleResolverTest, StyleForTextInDisplayNone) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
     <body style="display:none">Text</body>
   )HTML");
 
@@ -36,7 +36,7 @@ TEST_F(StyleResolverTest, StyleForTextInDisplayNone) {
 }
 
 TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       html { font-size: 10px; }
       body { font-size: 20px; }
@@ -69,7 +69,7 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
 }
 
 TEST_F(StyleResolverTest, ShadowDOMV0Crash) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       span { display: contents; }
     </style>
@@ -80,8 +80,8 @@ TEST_F(StyleResolverTest, ShadowDOMV0Crash) {
   Element* inner = GetDocument().getElementById("inner");
   ShadowRoot& outer_root = outer->CreateV0ShadowRootForTesting();
   ShadowRoot& inner_root = inner->CreateV0ShadowRootForTesting();
-  outer_root.SetInnerHTMLFromString("<content>");
-  inner_root.SetInnerHTMLFromString("<span>");
+  outer_root.setInnerHTML("<content>");
+  inner_root.setInnerHTML("<span>");
 
   // Test passes if it doesn't crash.
   UpdateAllLifecyclePhasesForTest();

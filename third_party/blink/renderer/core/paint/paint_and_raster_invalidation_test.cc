@@ -300,7 +300,7 @@ TEST_P(PaintAndRasterInvalidationTest, ResizeRotatedChild) {
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(html_names::kStyleAttr,
                        "transform: rotate(45deg); width: 200px");
-  target->SetInnerHTMLFromString(
+  target->setInnerHTML(
       "<div id=child style='width: 50px; height: 50px; background: "
       "red'></div>");
   UpdateAllLifecyclePhasesForTest();
@@ -538,7 +538,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(html_names::kClassAttr,
                        "solid composited scroll local-attachment border");
-  target->SetInnerHTMLFromString(
+  target->setInnerHTML(
       "<div id=child style='width: 500px; height: 500px'></div>",
       ASSERT_NO_EXCEPTION);
   Element* child = GetDocument().getElementById("child");
@@ -605,7 +605,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(html_names::kClassAttr,
                        "gradient composited scroll local-attachment border");
-  target->SetInnerHTMLFromString(
+  target->setInnerHTML(
       "<div id='child' style='width: 500px; height: 500px'></div>",
       ASSERT_NO_EXCEPTION);
   Element* child = GetDocument().getElementById("child");
@@ -674,7 +674,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   Element* target = GetDocument().getElementById("target");
   auto* object = target->GetLayoutObject();
   target->setAttribute(html_names::kClassAttr, "solid local-attachment scroll");
-  target->SetInnerHTMLFromString(
+  target->setInnerHTML(
       "<div id=child style='width: 500px; height: 500px'></div>",
       ASSERT_NO_EXCEPTION);
   Element* child = GetDocument().getElementById("child");
@@ -710,8 +710,8 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(html_names::kClassAttr, "solid composited scroll");
-  target->SetInnerHTMLFromString("<div style='height: 500px'></div>",
-                                 ASSERT_NO_EXCEPTION);
+  target->setInnerHTML("<div style='height: 500px'></div>",
+                       ASSERT_NO_EXCEPTION);
   UpdateAllLifecyclePhasesForTest();
 
   // Resize the scroller.

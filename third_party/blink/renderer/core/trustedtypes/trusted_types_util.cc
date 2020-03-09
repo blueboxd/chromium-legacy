@@ -6,10 +6,8 @@
 
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -271,14 +269,6 @@ String TrustedTypesCheckForHTML(const String& html,
   return result->toString();
 }
 
-String TrustedTypesCheckForHTML(StringOrTrustedHTML string_or_trusted_html,
-                                const Document* document,
-                                ExceptionState& exception_state) {
-  return TrustedTypesCheckForHTML(
-      string_or_trusted_html,
-      document ? document->ToExecutionContext() : nullptr, exception_state);
-}
-
 String TrustedTypesCheckForHTML(const String& html,
                                 const Document* document,
                                 ExceptionState& exception_state) {
@@ -409,17 +399,6 @@ String TrustedTypesCheckFor(
   return TrustedTypesCheckFor(type, value, execution_context, exception_state);
 }
 
-String TrustedTypesCheckForHTML(StringOrTrustedHTML trusted,
-                                const ExecutionContext* execution_context,
-                                ExceptionState& exception_state) {
-  DCHECK(!trusted.IsNull());
-  if (trusted.IsTrustedHTML()) {
-    return trusted.GetAsTrustedHTML()->toString();
-  }
-  return TrustedTypesCheckForHTML(trusted.GetAsString(), execution_context,
-                                  exception_state);
-}
-
 String TrustedTypesCheckForScript(StringOrTrustedScript trusted,
                                   const ExecutionContext* execution_context,
                                   ExceptionState& exception_state) {
@@ -436,16 +415,6 @@ String TrustedTypesCheckForScript(StringOrTrustedScript trusted,
   }
   return TrustedTypesCheckForScript(trusted.GetAsString(), execution_context,
                                     exception_state);
-}
-String TrustedTypesCheckForScriptURL(StringOrTrustedScriptURL trusted,
-                                     const ExecutionContext* execution_context,
-                                     ExceptionState& exception_state) {
-  DCHECK(!trusted.IsNull());
-  if (trusted.IsTrustedScriptURL()) {
-    return trusted.GetAsTrustedScriptURL()->toString();
-  }
-  return TrustedTypesCheckForScriptURL(trusted.GetAsString(), execution_context,
-                                       exception_state);
 }
 
 String TrustedTypesCheckFor(SpecificTrustedType type,

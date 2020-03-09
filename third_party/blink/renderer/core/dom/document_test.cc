@@ -92,8 +92,7 @@ class DocumentTest : public PageTestBase {
 };
 
 void DocumentTest::SetHtmlInnerHTML(const char* html_content) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(
-      String::FromUTF8(html_content));
+  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
   UpdateAllLifecyclePhasesForTest();
 }
 
@@ -333,8 +332,7 @@ class PrefersColorSchemeTestListener final : public MediaQueryListListener {
 }  // anonymous namespace
 
 TEST_F(DocumentTest, CreateRangeAdjustedToTreeScopeWithPositionInShadowTree) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<div><select><option>012</option></div>");
+  GetDocument().body()->setInnerHTML("<div><select><option>012</option></div>");
   Element* const select_element = GetDocument().QuerySelector("select");
   const Position& position =
       Position(*select_element->UserAgentShadowRoot(),
@@ -845,7 +843,7 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
       "document.querySelector('input').reportValidity(); };");
   GetDocument().body()->AppendChild(script);
   auto* input = To<HTMLInputElement>(GetDocument().body()->firstChild());
-  DVLOG(0) << GetDocument().body()->OuterHTMLAsString();
+  DVLOG(0) << GetDocument().body()->outerHTML();
 
   // Sanity check.
   input->reportValidity();
@@ -880,7 +878,7 @@ TEST_F(DocumentTest, SandboxDisablesAppCache) {
 // as it is more expensive than just doing layout.
 TEST_F(DocumentTest,
        EnsurePaintLocationDataValidForNodeCompositingInputsOnlyWhenNecessary) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <div id='ancestor'>
       <div id='sticky' style='position:sticky;'>
         <div id='stickyChild'></div>
@@ -1287,7 +1285,7 @@ class ParameterizedViewportFitDocumentTest
       html.Append("'>");
     }
 
-    GetDocument().documentElement()->SetInnerHTMLFromString(html.ToString());
+    GetDocument().documentElement()->setInnerHTML(html.ToString());
     UpdateAllLifecyclePhasesForTest();
   }
 };

@@ -17,7 +17,6 @@
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/invalidation_export.h"
 #include "components/invalidation/public/invalidation_util.h"
-#include "google/cacheinvalidation/include/types.h"
 
 namespace syncer {
 
@@ -29,17 +28,9 @@ class AckHandler;
 class INVALIDATION_EXPORT Invalidation {
  public:
   // Factory functions.
-  // TODO(crbug.com/1029698): all ObjectID-based factory functions should be
-  // eventually replaced with Topic-based alternative. The end goal is to avoid
-  // any mentions of ObjectID here and in the whole components/invalidation
-  // directory.
-  static Invalidation Init(const invalidation::ObjectId& id,
-                           int64_t version,
-                           const std::string& payload);
   static Invalidation Init(const Topic& topic,
                            int64_t version,
                            const std::string& payload);
-  static Invalidation InitUnknownVersion(const invalidation::ObjectId& id);
   static Invalidation InitUnknownVersion(const Topic& topic);
   static Invalidation InitFromDroppedInvalidation(const Invalidation& dropped);
 
@@ -50,7 +41,6 @@ class INVALIDATION_EXPORT Invalidation {
   bool Equals(const Invalidation& other) const;
 
   Topic topic() const;
-  invalidation::ObjectId object_id() const;
   bool is_unknown_version() const;
 
   // Safe to call only if is_unknown_version() returns false.
@@ -104,14 +94,14 @@ class INVALIDATION_EXPORT Invalidation {
   std::string ToString() const;
 
  private:
-  Invalidation(const invalidation::ObjectId& id,
+  Invalidation(const Topic& topic,
                bool is_unknown_version,
                int64_t version,
                const std::string& payload,
                AckHandle ack_handle);
 
-  // The ObjectId to which this invalidation belongs.
-  invalidation::ObjectId id_;
+  // The Topic to which this invalidation belongs.
+  Topic topic_;
 
   // This flag is set to true if this is an unknown version invalidation.
   bool is_unknown_version_;

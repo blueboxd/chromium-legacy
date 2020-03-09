@@ -115,7 +115,7 @@ enum AuthenticationButtonType {
 #pragma mark - MDCActivityIndicator
 
 - (void)startAnimatingActivityIndicator {
-  [self addActivityIndicatorToView];
+  [self addActivityIndicator];
   [self.activityIndicator startAnimating];
 }
 
@@ -131,9 +131,9 @@ enum AuthenticationButtonType {
   [super viewDidLoad];
   self.view.backgroundColor = self.systemBackgroundColor;
 
-  [self addConfirmationButtonToView];
+  [self addConfirmationButton];
   [self embedUserConsentView];
-  [self addSkipSigninButtonToView];
+  [self addSkipSigninButton];
 
   [self.view addSubview:self.gradientView];
 
@@ -229,8 +229,8 @@ enum AuthenticationButtonType {
 
 #pragma mark - Subviews
 
-// Sets up activity indicator properties and adds it to the view.
-- (void)addActivityIndicatorToView {
+// Sets up activity indicator properties and adds it to the user sign-in view.
+- (void)addActivityIndicator {
   DCHECK(!self.activityIndicator);
   self.activityIndicator =
       [[MDCActivityIndicator alloc] initWithFrame:CGRectZero];
@@ -256,8 +256,8 @@ enum AuthenticationButtonType {
   [self.unifiedConsentViewController didMoveToParentViewController:self];
 }
 
-// Sets up confirmation button properties and adds it to the view.
-- (void)addConfirmationButtonToView {
+// Sets up confirmation button properties and adds it to the user sign-in view.
+- (void)addConfirmationButton {
   DCHECK(self.unifiedConsentViewController);
   self.confirmationButton = [[UIButton alloc] init];
   self.confirmationButton.accessibilityIdentifier = @"ic_close";
@@ -270,8 +270,8 @@ enum AuthenticationButtonType {
                        kButtonTitleContentInset, kButtonTitleContentInset);
 }
 
-// Sets up skip sign-in button properties and adds it to the view.
-- (void)addSkipSigninButtonToView {
+// Sets up skip sign-in button properties and adds it to the user sign-in view.
+- (void)addSkipSigninButton {
   DCHECK(!self.skipSigninButton);
   DCHECK(self.unifiedConsentViewController);
   self.skipSigninButton = [[UIButton alloc] init];

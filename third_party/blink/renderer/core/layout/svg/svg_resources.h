@@ -50,6 +50,7 @@ class SVGResources {
   SVGResources();
 
   static SVGElementResourceClient* GetClient(const LayoutObject&);
+  static FloatRect ReferenceBoxForEffects(const LayoutObject&);
 
   static std::unique_ptr<SVGResources> BuildResources(const LayoutObject&,
                                                       const ComputedStyle&);

@@ -72,9 +72,29 @@ class PLATFORM_EXPORT ParkableStringImpl final
   const String& ToString();
 
   // See the matching String methods.
-  bool is_8bit() const { return is_8bit_; }
-  unsigned length() const { return length_; }
+  bool is_8bit() const {
+    if (!may_be_parked())
+      return string_.Is8Bit();
+
+    return metadata_->is_8bit_;
+  }
+  unsigned length() const {
+    if (!may_be_parked())
+      return string_.length();
+
+    return metadata_->length_;
+  }
   unsigned CharactersSizeInBytes() const;
+  size_t MemoryFootprintForDump() const;
+
+  // Returns true iff the string can be parked. This does not mean that the
+  // string can be parked now, merely that it is eligible to be parked at some
+  // point.
+  bool may_be_parked() const { return !!metadata_; }
+
+  // Note: Public member functions below must only be called on strings for
+  // which |may_be_parked()| returns true. Otherwise, these will either trigger
+  // a DCHECK() or crash.
 
   // Tries to either age or park a string:
   //
@@ -98,35 +118,31 @@ class PLATFORM_EXPORT ParkableStringImpl final
   //
   // Returns true if the string is being parked or has been parked.
   bool Park(ParkingMode mode);
-  // Returns true iff the string can be parked. This does not mean that the
-  // string can be parked now, merely that it is eligible to be parked at some
-  // point.
-  bool may_be_parked() const { return !!digest_; }
+
   // Returns true if the string is parked.
   bool is_parked() const;
+
   // Returns whether synchronous parking is possible, that is the string was
   // parked in the past.
-  bool has_compressed_data() const { return !!compressed_; }
+  bool has_compressed_data() const { return !!metadata_->compressed_; }
+
   // Returns the compressed size, must not be called unless the string has a
   // compressed representation.
   size_t compressed_size() const {
     DCHECK(has_compressed_data());
-    return compressed_->size();
+    return metadata_->compressed_->size();
   }
 
   bool is_young_for_testing() {
-    MutexLocker locker(mutex_);
-    return is_young_;
+    MutexLocker locker(metadata_->mutex_);
+    return metadata_->is_young_;
   }
 
-  // Must only be called on parkable ParkableStringImpls.
-  SecureDigest* digest() const {
+  const SecureDigest* digest() const {
     AssertOnValidThread();
-    DCHECK(digest_);
-    return digest_.get();
+    DCHECK(metadata_);
+    return &metadata_->digest_;
   }
-
-  size_t MemoryFootprintForDump() const;
 
  private:
   enum class State : uint8_t;
@@ -138,20 +154,25 @@ class PLATFORM_EXPORT ParkableStringImpl final
   ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
                      std::unique_ptr<SecureDigest> digest);
 
+  // Note: Private member  functions below must only be called on strings for
+  // which |may_be_parked()| returns true. Otherwise, these will either trigger
+  // a DCHECK() or crash.
+
 #if defined(ADDRESS_SANITIZER)
   // See |CompressInBackground()|. Doesn't make the string young.
   // May be called from any thread.
   void LockWithoutMakingYoung();
 #endif  // defined(ADDRESS_SANITIZER)
   // May be called from any thread.
-  void MakeYoung() EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  void MakeYoung() EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
   // Whether the string is referenced or locked. The return value is valid as
   // long as |mutex_| is held.
-  Status CurrentStatus() const EXCLUSIVE_LOCKS_REQUIRED(mutex_);
-  bool CanParkNow() const EXCLUSIVE_LOCKS_REQUIRED(mutex_);
-  void ParkInternal(ParkingMode mode);
-  void Unpark();
-  String UnparkInternal() const;
+  Status CurrentStatus() const EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
+  bool CanParkNow() const EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
+  void ParkInternal(ParkingMode mode)
+      EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
+  void Unpark() EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
+  String UnparkInternal() const EXCLUSIVE_LOCKS_REQUIRED(metadata_->mutex_);
   // Called on the main thread after compression is done.
   // |params| is the same as the one passed to |CompressInBackground()|,
   // |compressed| is the compressed data, nullptr if compression failed.
@@ -166,31 +187,40 @@ class PLATFORM_EXPORT ParkableStringImpl final
   static void CompressInBackground(std::unique_ptr<CompressionTaskParams>);
 
   int lock_depth_for_testing() {
-    MutexLocker locker_(mutex_);
-    return lock_depth_;
+    MutexLocker locker_(metadata_->mutex_);
+    return metadata_->lock_depth_;
   }
 
-  Mutex mutex_;
-  int lock_depth_ GUARDED_BY(mutex_);
+  // Metadata only used for parkable ParkableStrings.
+  struct ParkableMetadata {
+    ParkableMetadata(String string, std::unique_ptr<SecureDigest> digest);
 
-  // Main thread only.
-  State state_;
+    Mutex mutex_;
+    int lock_depth_ GUARDED_BY(mutex_);
+
+    // Main thread only.
+    State state_;
+    std::unique_ptr<Vector<uint8_t>> compressed_;
+    const SecureDigest digest_;
+
+    // A string can either be "young" or "old". It starts young, and transitions
+    // are:
+    // Young -> Old: By calling |MaybeAgeOrParkString()|.
+    // Old -> Young: When the string is accessed, either by |Lock()|-ing it or
+    //               calling |ToString()|.
+    //
+    // Thread safety: it is typically not safe to guard only one part of a
+    // bitfield with a mutex, but this is correct here, as the other members are
+    // const (and never change).
+    bool is_young_ : 1 GUARDED_BY(mutex_);
+    const bool is_8bit_ : 1;
+    const unsigned length_;
+
+    DISALLOW_COPY_AND_ASSIGN(ParkableMetadata);
+  };
+
   String string_;
-  std::unique_ptr<Vector<uint8_t>> compressed_;
-  const std::unique_ptr<SecureDigest> digest_;
-
-  // A string can either be "young" or "old". It starts young, and transitions
-  // are:
-  // Young -> Old: By calling |MaybeAgeOrParkString()|.
-  // Old -> Young: When the string is accessed, either by |Lock()|-ing it or
-  //               calling |ToString()|.
-  //
-  // Thread safety: it is typically not safe to guard only one part of a
-  // bitfield with a mutex, but this is correct here, as the other members are
-  // const (and never change).
-  bool is_young_ : 1 GUARDED_BY(mutex_);
-  const bool is_8bit_ : 1;
-  const unsigned length_;
+  const std::unique_ptr<ParkableMetadata> metadata_;
 
 #if DCHECK_IS_ON()
   const base::PlatformThreadId owning_thread_;
@@ -202,12 +232,25 @@ class PLATFORM_EXPORT ParkableStringImpl final
 #endif
   }
 
-  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, LockUnlock);
-  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, LockParkedString);
+ public:
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, Equality);
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, EqualityNoUnparking);
+  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, LockUnlock);
+  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, LockParkedString);
+  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, ReportMemoryDump);
+  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, MemoryFootprintForDump);
+
   DISALLOW_COPY_AND_ASSIGN(ParkableStringImpl);
 };
+
+#if !DCHECK_IS_ON()
+// 3 pointers:
+// - vtable (from RefCounted)
+// - string_.Impl()
+// - metadata_
+static_assert(sizeof(ParkableStringImpl) == 3 * sizeof(void*),
+              "ParkableStringImpl should not be too large");
+#endif
 
 class PLATFORM_EXPORT ParkableString final {
   DISALLOW_NEW();
@@ -250,6 +293,9 @@ class PLATFORM_EXPORT ParkableString final {
  private:
   scoped_refptr<ParkableStringImpl> impl_;
 };
+
+static_assert(sizeof(ParkableString) == sizeof(void*),
+              "ParkableString should be small");
 
 }  // namespace blink
 

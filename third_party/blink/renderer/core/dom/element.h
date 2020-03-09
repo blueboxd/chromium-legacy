@@ -83,10 +83,7 @@ class ScrollToOptions;
 class ShadowRoot;
 class ShadowRootInit;
 class SpaceSplitString;
-class StringOrTrustedHTML;
 class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL;
-class StringOrTrustedScript;
-class StringOrTrustedScriptURL;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class V0CustomElementDefinition;
@@ -251,8 +248,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void setAttribute(const AtomicString& name,
                     const AtomicString& value,
-                    ExceptionState&);
-  void setAttribute(const AtomicString& name, const AtomicString& value);
+                    ExceptionState& = ASSERT_NO_EXCEPTION);
 
   // Trusted Types variant for explicit setAttribute() use.
   void setAttribute(const AtomicString&,
@@ -262,20 +258,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // Returns attributes that should be checked against Trusted Types
   virtual const AttrNameToTrustedType& GetCheckedAttributeTypes() const;
 
-  // Trusted Type HTML variant
-  void setAttribute(const QualifiedName&,
-                    const StringOrTrustedHTML&,
-                    ExceptionState&);
-
-  // Trusted Type Script variant
-  void setAttribute(const QualifiedName&,
-                    const StringOrTrustedScript&,
-                    ExceptionState&);
-
-  // Trusted Type ScriptURL variant
-  void setAttribute(const QualifiedName&,
-                    const StringOrTrustedScriptURL&,
-                    ExceptionState&);
+  void setAttribute(const QualifiedName&, const String&, ExceptionState&);
 
   static bool ParseAttributeName(QualifiedName&,
                                  const AtomicString& namespace_uri,
@@ -657,8 +640,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   KURL HrefURL() const;
 
   KURL GetURLAttribute(const QualifiedName&) const;
-  void GetURLAttribute(const QualifiedName&, StringOrTrustedScriptURL&) const;
-  void FastGetAttribute(const QualifiedName&, StringOrTrustedHTML&) const;
 
   KURL GetNonEmptyURLAttribute(const QualifiedName&) const;
 
@@ -714,11 +695,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // The implementation of |innerText()| is found in "element_inner_text.cc".
   String innerText();
   String outerText();
-  String InnerHTMLAsString() const;
-  String OuterHTMLAsString() const;
-  void SetInnerHTMLFromString(const String& html, ExceptionState&);
-  void SetInnerHTMLFromString(const String& html);
-  void SetOuterHTMLFromString(const String& html, ExceptionState&);
 
   Element* insertAdjacentElement(const String& where,
                                  Element* new_child,
@@ -730,17 +706,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                           const String& html,
                           ExceptionState&);
 
-  // TrustedTypes variants of the above.
-  // TODO(mkwst): Write a spec for these bits. https://crbug.com/739170
-  void innerHTML(StringOrTrustedHTML&) const;
-  void outerHTML(StringOrTrustedHTML&) const;
-  void setInnerHTML(const StringOrTrustedHTML&, ExceptionState&);
-  void setInnerHTML(const StringOrTrustedHTML&);
-  void getInnerHTML(bool include_shadow_roots, StringOrTrustedHTML& result);
-  void setOuterHTML(const StringOrTrustedHTML&, ExceptionState&);
-  void insertAdjacentHTML(const String& where,
-                          const StringOrTrustedHTML&,
-                          ExceptionState&);
+  String innerHTML() const;
+  String outerHTML() const;
+  void setInnerHTML(const String&, ExceptionState& = ASSERT_NO_EXCEPTION);
+  String getInnerHTML(bool include_shadow_roots) const;
+  void setOuterHTML(const String&, ExceptionState& = ASSERT_NO_EXCEPTION);
 
   void setPointerCapture(PointerId poinetr_id, ExceptionState&);
   void releasePointerCapture(PointerId pointer_id, ExceptionState&);

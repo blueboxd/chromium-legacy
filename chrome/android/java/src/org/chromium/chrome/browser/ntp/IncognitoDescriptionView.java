@@ -85,6 +85,14 @@ public class IncognitoDescriptionView extends LinearLayout {
         mCookieControlsToggle.setChecked(enabled);
     }
 
+    /**
+     * Set cookie controls icon on click listener.
+     * @param listener The given listener.
+     */
+    public void setCookieControlsIconOnclickListener(OnClickListener listener) {
+        mCookieControlsManagedIcon.setOnClickListener(listener);
+    }
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();

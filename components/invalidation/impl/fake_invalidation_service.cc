@@ -78,8 +78,7 @@ void FakeInvalidationService::EmitInvalidationForTest(
   // If no one is listening to this invalidation, do not send it out.
   syncer::Topics subscribed_topics =
       invalidator_registrar_->GetAllSubscribedTopics();
-  if (subscribed_topics.find(invalidation.object_id().name()) ==
-      subscribed_topics.end()) {
+  if (subscribed_topics.find(invalidation.topic()) == subscribed_topics.end()) {
     mock_ack_handler_.RegisterUnsentInvalidation(&invalidation_copy);
     return;
   }

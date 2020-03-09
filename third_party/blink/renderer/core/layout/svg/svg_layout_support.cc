@@ -409,6 +409,34 @@ void SVGLayoutSupport::AdjustVisualRectWithResources(
     visual_rect.Intersect(masker->ResourceBoundingBox(object_bounding_box));
 }
 
+FloatRect SVGLayoutSupport::ExtendTextBBoxWithStroke(
+    const LayoutObject& layout_object,
+    const FloatRect& text_bounds) {
+  DCHECK(layout_object.IsSVGText() || layout_object.IsSVGInline());
+  FloatRect bounds = text_bounds;
+  const SVGComputedStyle& svg_style = layout_object.StyleRef().SvgStyle();
+  if (svg_style.HasStroke()) {
+    SVGLengthContext length_context(To<SVGElement>(layout_object.GetNode()));
+    // TODO(fs): This approximation doesn't appear to be conservative enough
+    // since while text (usually?) won't have caps it could have joins and thus
+    // miters.
+    bounds.Inflate(length_context.ValueForLength(svg_style.StrokeWidth()));
+  }
+  return bounds;
+}
+
+FloatRect SVGLayoutSupport::ComputeVisualRectForText(
+    const LayoutObject& layout_object,
+    const FloatRect& text_bounds,
+    const FloatRect& reference_box) {
+  DCHECK(layout_object.IsSVGText() || layout_object.IsSVGInline());
+  FloatRect visual_rect = ExtendTextBBoxWithStroke(layout_object, text_bounds);
+  if (const ShadowList* text_shadow = layout_object.StyleRef().TextShadow())
+    text_shadow->AdjustRectForShadow(visual_rect);
+  AdjustVisualRectWithResources(layout_object, reference_box, visual_rect);
+  return visual_rect;
+}
+
 bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
   SVGResources* resources =
       SVGResourcesCache::CachedResourcesForLayoutObject(object);

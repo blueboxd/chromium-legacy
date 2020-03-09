@@ -81,8 +81,8 @@ class InvalidationLogger {
   syncer::InvalidatorState last_invalidator_state_;
   base::Time last_invalidator_state_timestamp_;
 
-  // The map that contains every object id that is currently registered
-  // and its owner.
+  // The map that contains every topic that is currently registered and its
+  // owner.
   std::map<std::string, syncer::Topics> handler_latest_topics_map_;
 
   // The map that counts how many invalidations per Topic there has been.

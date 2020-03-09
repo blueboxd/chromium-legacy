@@ -109,8 +109,8 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
           &host_element->AttachShadowRootInternal(shadow_type, delegates_focus);
     }
     shadow_root->SetDelegatesFocus(delegates_focus);
-    shadow_root->SetInnerHTMLFromString(String::FromUTF8(shadow_content),
-                                        ASSERT_NO_EXCEPTION);
+    shadow_root->setInnerHTML(String::FromUTF8(shadow_content),
+                              ASSERT_NO_EXCEPTION);
     scope.GetDocument().View()->UpdateAllLifecyclePhases(
         DocumentUpdateReason::kTest);
     return shadow_root;

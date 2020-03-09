@@ -20,7 +20,7 @@ class ListValue;
 
 namespace syncer {
 
-// A set of notifications with some helper methods to organize them by object ID
+// A set of notifications with some helper methods to organize them by Topic
 // and version number.
 class INVALIDATION_EXPORT TopicInvalidationMap {
  public:

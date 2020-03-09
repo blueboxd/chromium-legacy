@@ -11,7 +11,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service_factory.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys_internal.h"
@@ -111,12 +112,14 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
   if (!platform_keys::ValidateToken(params->token_id, &platform_keys_token_id))
     return RespondNow(Error(platform_keys::kErrorInvalidToken));
 
-  chromeos::platform_keys::GetCertificates(
+  chromeos::platform_keys::PlatformKeysService* platform_keys_service =
+      chromeos::platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(
+          browser_context());
+  platform_keys_service->GetCertificates(
       platform_keys_token_id,
       base::Bind(
           &EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates,
-          this),
-      browser_context());
+          this));
   return RespondLater();
 }
 
@@ -167,12 +170,16 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
   if (!cert_x509.get())
     return RespondNow(Error(kEnterprisePlatformErrorInvalidX509Cert));
 
-  chromeos::platform_keys::ImportCertificate(
+  chromeos::platform_keys::PlatformKeysService* platform_keys_service =
+      chromeos::platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(
+          browser_context());
+  CHECK(platform_keys_service);
+
+  platform_keys_service->ImportCertificate(
       platform_keys_token_id, cert_x509,
       base::Bind(&EnterprisePlatformKeysImportCertificateFunction::
                      OnImportedCertificate,
-                 this),
-      browser_context());
+                 this));
   return RespondLater();
 }
 
@@ -209,12 +216,16 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
   if (!cert_x509.get())
     return RespondNow(Error(kEnterprisePlatformErrorInvalidX509Cert));
 
-  chromeos::platform_keys::RemoveCertificate(
+  chromeos::platform_keys::PlatformKeysService* platform_keys_service =
+      chromeos::platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(
+          browser_context());
+  CHECK(platform_keys_service);
+
+  platform_keys_service->RemoveCertificate(
       platform_keys_token_id, cert_x509,
       base::Bind(&EnterprisePlatformKeysRemoveCertificateFunction::
                      OnRemovedCertificate,
-                 this),
-      browser_context());
+                 this));
   return RespondLater();
 }
 
@@ -234,10 +245,13 @@ ExtensionFunction::ResponseAction
 EnterprisePlatformKeysInternalGetTokensFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(args_->empty());
 
-  chromeos::platform_keys::GetTokens(
-      base::Bind(&EnterprisePlatformKeysInternalGetTokensFunction::OnGotTokens,
-                 this),
-      browser_context());
+  chromeos::platform_keys::PlatformKeysService* platform_keys_service =
+      chromeos::platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(
+          browser_context());
+  CHECK(platform_keys_service);
+
+  platform_keys_service->GetTokens(base::Bind(
+      &EnterprisePlatformKeysInternalGetTokensFunction::OnGotTokens, this));
   return RespondLater();
 }
 

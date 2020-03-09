@@ -244,7 +244,6 @@ void DriveNotificationManager::UpdateRegisteredDriveNotifications() {
     return;
 
   syncer::TopicSet topics;
-  syncer::ObjectIdSet ids;
   topics.insert(GetDriveInvalidationTopic());
 
   for (const auto& team_drive_id : team_drive_ids_) {

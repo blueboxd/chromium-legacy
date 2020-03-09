@@ -17,34 +17,34 @@
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'FAIL'",
-          "rect": [10, 60, 310, 380],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "rect": [10, 60, 310, 380],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'PASS'",
-          "rect": [10, 60, 310, 380],
-          "reason": "disappeared"
-        },
-        {
           "object": "InlineTextBox ' '",
           "rect": [10, 180, 310, 260],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'PASS'",
-          "rect": [10, 180, 310, 260],
+          "rect": [10, 300, 280, 140],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'PASS'",
-          "rect": [10, 180, 310, 260],
+          "rect": [10, 300, 280, 140],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 180, 280, 140],
           "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [10, 180, 280, 140],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'FAIL'",
+          "rect": [10, 60, 260, 140],
+          "reason": "disappeared"
         }
       ]
     }

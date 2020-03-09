@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "components/invalidation/impl/invalidation_test_util.h"
-#include "google/cacheinvalidation/types.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -16,20 +15,19 @@ namespace {
 
 class SingleObjectInvalidationSetTest : public testing::Test {
  public:
-  SingleObjectInvalidationSetTest()
-      : kId(ipc::invalidation::ObjectSource::TEST, "one") {
-  }
+  SingleObjectInvalidationSetTest() = default;
+
  protected:
-  const invalidation::ObjectId kId;
+  const Topic kTopic = "one";
 };
 
 TEST_F(SingleObjectInvalidationSetTest, InsertionAndOrdering) {
   SingleObjectInvalidationSet l1;
   SingleObjectInvalidationSet l2;
 
-  Invalidation inv0 = Invalidation::InitUnknownVersion(kId);
-  Invalidation inv1 = Invalidation::Init(kId, 1, "one");
-  Invalidation inv2 = Invalidation::Init(kId, 5, "five");
+  Invalidation inv0 = Invalidation::InitUnknownVersion(kTopic);
+  Invalidation inv1 = Invalidation::Init(kTopic, 1, "one");
+  Invalidation inv2 = Invalidation::Init(kTopic, 5, "five");
 
   l1.Insert(inv0);
   l1.Insert(inv1);
@@ -64,10 +62,10 @@ TEST_F(SingleObjectInvalidationSetTest, StartWithUnknownVersion) {
   SingleObjectInvalidationSet list;
   EXPECT_FALSE(list.StartsWithUnknownVersion());
 
-  list.Insert(Invalidation::Init(kId, 1, "one"));
+  list.Insert(Invalidation::Init(kTopic, 1, "one"));
   EXPECT_FALSE(list.StartsWithUnknownVersion());
 
-  list.Insert(Invalidation::InitUnknownVersion(kId));
+  list.Insert(Invalidation::InitUnknownVersion(kTopic));
   EXPECT_TRUE(list.StartsWithUnknownVersion());
 
   list.Clear();

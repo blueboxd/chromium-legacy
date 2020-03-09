@@ -7,8 +7,19 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/page_info/page_info_site_security_description.h"
+
 // View Controller for displaying the site security.
 @interface PageInfoSiteSecurityViewController : UIViewController
+
+- (instancetype)initWitDescription:(PageInfoSiteSecurityDescription*)description
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_SITE_SECURITY_VIEW_CONTROLLER_H_

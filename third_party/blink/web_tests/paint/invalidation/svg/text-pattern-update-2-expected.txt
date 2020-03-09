@@ -12,13 +12,13 @@
           "reason": "subtree"
         },
         {
-          "object": "InlineTextBox 'Y'",
+          "object": "InlineTextBox 'Z'",
           "rect": [8, 8, 300, 100],
           "reason": "subtree"
         },
         {
-          "object": "InlineTextBox 'Z'",
-          "rect": [8, 8, 300, 100],
+          "object": "InlineTextBox 'Y'",
+          "rect": [108, 8, 100, 100],
           "reason": "subtree"
         }
       ]

@@ -111,7 +111,7 @@ TEST_F(ShadowDOMV0Test, FeatureSetMultipleSelectors) {
 TEST_F(ShadowDOMV0Test, FeatureSetSubtree) {
   LoadURL("about:blank");
   auto* host = GetDocument().CreateRawElement(html_names::kDivTag);
-  host->CreateV0ShadowRootForTesting().SetInnerHTMLFromString(R"HTML(
+  host->CreateV0ShadowRootForTesting().setInnerHTML(R"HTML(
     <div>
       <div></div>
       <content select='*'></content>
@@ -130,7 +130,7 @@ TEST_F(ShadowDOMV0Test, FeatureSetMultipleShadowRoots) {
   LoadURL("about:blank");
   auto* host = GetDocument().CreateRawElement(html_names::kDivTag);
   auto& host_shadow = host->CreateV0ShadowRootForTesting();
-  host_shadow.SetInnerHTMLFromString("<content select='#foo'></content>");
+  host_shadow.setInnerHTML("<content select='#foo'></content>");
   auto* child = GetDocument().CreateRawElement(html_names::kDivTag);
   auto& child_root = child->CreateV0ShadowRootForTesting();
   auto* child_content = GetDocument().CreateRawElement(html_names::kContentTag);

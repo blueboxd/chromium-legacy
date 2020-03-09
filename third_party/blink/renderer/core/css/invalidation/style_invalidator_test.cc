@@ -25,7 +25,7 @@ class StyleInvalidatorTest : public testing::Test {
 };
 
 TEST_F(StyleInvalidatorTest, SkipDisplayNone) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <div id="root">
       <div style="display:none">
         <div class="a"></div>
@@ -53,7 +53,7 @@ TEST_F(StyleInvalidatorTest, SkipDisplayNone) {
 }
 
 TEST_F(StyleInvalidatorTest, SkipDisplayNoneClearPendingNth) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <div id="none" style="display:none">
       <div class="a"></div>
       <div class="a"></div>

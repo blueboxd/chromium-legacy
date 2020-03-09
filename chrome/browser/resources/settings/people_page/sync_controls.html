@@ -24,15 +24,6 @@
       .list-item > div {
         flex: 1;
       }
-
-      cr-radio-button[name='sync-everything'] > .secondary {
-        border-bottom: var(--cr-separator-line);
-        padding-bottom: var(--cr-section-vertical-padding);
-      }
-
-      cr-radio-button[name='customize-sync'] {
-        padding-top: var(--cr-section-vertical-padding);
-      }
     </style>
 
     <template is="dom-if" if="[[!syncSetupFriendlySettings_]]">
@@ -55,11 +46,9 @@
             on-selected-changed="onSyncDataRadioSelectionChanged_">
           <cr-radio-button name="sync-everything">
             $i18n{syncEverythingCheckboxLabel}
-            <div class="secondary">$i18n{syncEverythingHint}</div>
           </cr-radio-button>
           <cr-radio-button name="customize-sync">
             $i18n{customizeSyncLabel}
-            <div class="secondary">$i18n{customizeSyncHint}</div>
           </cr-radio-button>
         </cr-radio-group>
       </div>

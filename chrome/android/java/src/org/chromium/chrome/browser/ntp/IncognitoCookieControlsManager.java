@@ -4,14 +4,19 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.os.Bundle;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.website.CookieControlsServiceBridge;
 import org.chromium.chrome.browser.settings.website.CookieControlsServiceBridge.CookieControlsServiceObserver;
+import org.chromium.chrome.browser.settings.website.SingleCategorySettings;
+import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 
 /**
@@ -22,7 +27,7 @@ import org.chromium.components.content_settings.CookieControlsEnforcement;
  * cookie controls view.
  */
 public class IncognitoCookieControlsManager
-        implements CookieControlsServiceObserver, OnCheckedChangeListener {
+        implements CookieControlsServiceObserver, OnCheckedChangeListener, View.OnClickListener {
     /**
      * Interface for a class that wants to receive updates from this manager.
      */
@@ -96,9 +101,20 @@ public class IncognitoCookieControlsManager
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (mShowCard && mEnforcement == CookieControlsEnforcement.NO_ENFORCEMENT
+        if (mEnforcement == CookieControlsEnforcement.NO_ENFORCEMENT
                 && (buttonView.getId() == R.id.cookie_controls_card_toggle)) {
             mServiceBridge.handleCookieControlsToggleChanged(isChecked);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.cookie_controls_card_managed_icon) {
+            Bundle fragmentArguments = new Bundle();
+            fragmentArguments.putString(SingleCategorySettings.EXTRA_CATEGORY,
+                    SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.COOKIES));
+            SettingsLauncher.getInstance().launchSettingsPage(
+                    v.getContext(), SingleCategorySettings.class, fragmentArguments);
         }
     }
 }

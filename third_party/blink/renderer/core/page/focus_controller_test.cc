@@ -20,7 +20,7 @@ class FocusControllerTest : public PageTestBase {
 };
 
 TEST_F(FocusControllerTest, SetInitialFocus) {
-  GetDocument().body()->SetInnerHTMLFromString("<input><textarea>");
+  GetDocument().body()->setInnerHTML("<input><textarea>");
   auto* input = To<Element>(GetDocument().body()->firstChild());
   // Set sequential focus navigation point before the initial focus.
   input->focus();
@@ -32,7 +32,7 @@ TEST_F(FocusControllerTest, SetInitialFocus) {
 }
 
 TEST_F(FocusControllerTest, DoNotCrash1) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<div id='host'></div>This test is for crbug.com/609012<p id='target' "
       "tabindex='0'></p>");
   // <div> with shadow root
@@ -52,7 +52,7 @@ TEST_F(FocusControllerTest, DoNotCrash1) {
 }
 
 TEST_F(FocusControllerTest, DoNotCrash2) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<p id='target' tabindex='0'></p>This test is for crbug.com/609012<div "
       "id='host'></div>");
   // <p>
@@ -82,7 +82,7 @@ TEST_F(FocusControllerTest, SetActiveOnInactiveDocument) {
 
 // This test is for crbug.com/733218
 TEST_F(FocusControllerTest, SVGFocusableElementInForm) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<form>"
       "<input id='first'>"
       "<svg width='100px' height='100px' tabindex='0'>"
@@ -107,7 +107,7 @@ TEST_F(FocusControllerTest, SVGFocusableElementInForm) {
 }
 
 TEST_F(FocusControllerTest, FindFocusableAfterElement) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<input id='first'><div id='second'></div><input id='third'><div "
       "id='fourth' tabindex='0'></div>");
   Element* first = GetElementById("first");

@@ -114,7 +114,8 @@ id<GREYMatcher> NavigationBarEditButton() {
       ButtonWithAccessibilityLabelId(IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE);
   [[[EarlGrey selectElementWithMatcher:addressesButton]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
-      onElementWithMatcher:grey_kindOfClassName(@"UITableView")]
+      onElementWithMatcher:grey_allOf(grey_kindOfClassName(@"UITableView"),
+                                      grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
 }
 

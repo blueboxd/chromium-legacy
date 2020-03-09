@@ -123,7 +123,7 @@ TEST_F(MediaCustomControlsFullscreenDetectorTest,
 
 TEST_F(MediaCustomControlsFullscreenDetectorTest,
        hasListenersAfterAddToDocumentByParser) {
-  GetDocument().body()->SetInnerHTMLFromString("<body><video></video></body>");
+  GetDocument().body()->setInnerHTML("<body><video></video></body>");
 
   EXPECT_TRUE(CheckEventListenerRegistered(GetDocument(),
                                            event_type_names::kFullscreenchange,

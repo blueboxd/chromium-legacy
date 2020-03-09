@@ -59,7 +59,7 @@ TEST_F(HTMLPortalElementTest, PortalsDisabledInDocument) {
                   .Contains("was moved to a document"));
 
   next_console_message = console_messages.size();
-  portal->setAttribute(html_names::kSrcAttr, "http://example.com/",
+  portal->setAttribute(html_names::kSrcAttr, String("http://example.com/"),
                        ASSERT_NO_EXCEPTION);
   EXPECT_EQ(next_console_message + 1, console_messages.size());
   EXPECT_TRUE(console_messages.at(next_console_message)

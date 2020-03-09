@@ -293,7 +293,7 @@ std::unique_ptr<std::string> BuildProtoInBackground(
     if (icon_url == shortcut_info.splash_image_url.spec()) {
       if (shortcut_info.splash_image_url !=
           shortcut_info.best_primary_icon_url) {
-        image->set_image_data(it->second.data);
+        image->set_image_data(it->second.unsafe_data);
       }
       image->add_usages(webapk::Image::SPLASH_ICON);
       image->add_purposes(webapk::Image::ANY);
@@ -316,10 +316,11 @@ std::unique_ptr<std::string> BuildProtoInBackground(
         // Don't move the hash to avoid clearing it in case of duplicates.
         shortcut_icon->set_hash(shortcut_hash_it->second.hash);
 
-        if (shortcut_hash_it->second.data.size() <= kMaxIconSizeInBytes) {
+        if (shortcut_hash_it->second.unsafe_data.size() <=
+            kMaxIconSizeInBytes) {
           // Duplicate icons will have an empty |image_data|.
           shortcut_icon->set_image_data(
-              std::move(shortcut_hash_it->second.data));
+              std::move(shortcut_hash_it->second.unsafe_data));
         }
       }
     }

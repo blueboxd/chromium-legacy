@@ -33,7 +33,7 @@ void CSSSelectorWatchTest::ClearAddedRemoved(CSSSelectorWatch& watch) {
 }
 
 TEST_F(CSSSelectorWatchTest, RecalcOnDocumentChange) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <div>
       <span id='x' class='a'></span>
       <span id='y' class='b'><span></span></span>

@@ -68,13 +68,14 @@ const char* ParkableStringManager::kAllocatorDumpName = "parkable_strings";
 struct ParkableStringManager::SecureDigestHash {
   STATIC_ONLY(SecureDigestHash);
 
-  static unsigned GetHash(ParkableStringImpl::SecureDigest* const digest) {
+  static unsigned GetHash(
+      const ParkableStringImpl::SecureDigest* const digest) {
     // The first bytes of the hash are as good as anything else.
     return *reinterpret_cast<const unsigned*>(digest->data());
   }
 
-  static inline bool Equal(ParkableStringImpl::SecureDigest* const a,
-                           ParkableStringImpl::SecureDigest* const b) {
+  static inline bool Equal(const ParkableStringImpl::SecureDigest* const a,
+                           const ParkableStringImpl::SecureDigest* const b) {
     return a == b ||
            std::equal(a->data(), a->data() + ParkableStringImpl::kDigestSize,
                       b->data());
@@ -377,7 +378,7 @@ ParkableStringManager::Statistics ParkableStringManager::ComputeStatistics()
   // The digest has an inline capacity set to the digest size, hence sizeof() is
   // accurate.
   constexpr size_t kParkableStringImplActualSize =
-      sizeof(ParkableStringImpl) + sizeof(ParkableStringImpl::SecureDigest);
+      sizeof(ParkableStringImpl) + sizeof(ParkableStringImpl::ParkableMetadata);
 
   for (const auto& kv : unparked_strings_) {
     ParkableStringImpl* str = kv.value;

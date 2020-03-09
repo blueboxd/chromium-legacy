@@ -14,7 +14,7 @@ namespace blink {
 class SVGForeignObjectElementTest : public PageTestBase {};
 
 TEST_F(SVGForeignObjectElementTest, NoLayoutObjectInNonRendered) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <svg>
       <pattern>
         <foreignObject id="fo"></foreignObject>
@@ -34,7 +34,7 @@ TEST_F(SVGForeignObjectElementTest, NoLayoutObjectInNonRendered) {
 }
 
 TEST_F(SVGForeignObjectElementTest, ReferenceForeignObjectInNonRenderedCrash) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       div { writing-mode: vertical-rl; }
       div > svg { float: right; }

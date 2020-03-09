@@ -17,7 +17,6 @@
 
 class ChromeBrowserState;
 @class BrowserViewWrangler;
-@class TabModel;
 
 @protocol SceneControllerGuts <WebStateListObserving>
 
@@ -26,23 +25,8 @@ class ChromeBrowserState;
 // BrowserViewInformation protocol.
 @property(nonatomic, strong) BrowserViewWrangler* browserViewWrangler;
 
-// The scene level component for url loading. Is passed down to
-// browser state level UrlLoadingService instances.
-@property(nonatomic, assign) AppUrlLoadingService* appURLLoadingService;
-
 - (void)startUpChromeUIPostCrash:(BOOL)isPostCrashLaunch
                  needRestoration:(BOOL)needsRestoration;
-
-- (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
-                           dismissOmnibox:(BOOL)dismissOmnibox;
-
-- (void)openSelectedTabInMode:(ApplicationModeForTabOpening)tabOpeningTargetMode
-            withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
-                   completion:(ProceduralBlock)completion;
-
-- (void)openTabFromLaunchOptions:(NSDictionary*)launchOptions
-              startupInformation:(id<StartupInformation>)startupInformation
-                        appState:(AppState*)appState;
 
 - (void)dismissModalsAndOpenSelectedTabInMode:
             (ApplicationModeForTabOpening)targetMode
@@ -51,26 +35,14 @@ class ChromeBrowserState;
                                dismissOmnibox:(BOOL)dismissOmnibox
                                    completion:(ProceduralBlock)completion;
 
-- (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel;
-
-// TabSwitcherDelegate helpers
-
-// Begins the process of dismissing the tab switcher with the given current
-// model, switching which BVC is suspended if necessary, but not updating the
-// UI.  The omnibox will be focused after the tab switcher dismissal is
-// completed if |focusOmnibox| is YES.
-- (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel
-                                      focusOmnibox:(BOOL)focusOmnibox;
-// Completes the process of dismissing the tab switcher, removing it from the
-// screen and showing the appropriate BVC.
-- (void)finishDismissingTabSwitcher;
-
-- (BOOL)presentingFirstRunUI;
-
 // Testing only.
+- (BOOL)presentingFirstRunUI;
 - (void)showFirstRunUI;
 - (void)setTabSwitcher:(id<TabSwitcher>)switcher;
 - (id<TabSwitcher>)tabSwitcher;
+
+- (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
+                           dismissOmnibox:(BOOL)dismissOmnibox;
 
 #pragma mark - AppNavigation helpers
 
@@ -78,12 +50,6 @@ class ChromeBrowserState;
 // controller.
 - (void)presentSignedInAccountsViewControllerForBrowserState:
     (ChromeBrowserState*)browserState;
-
-// Clears incognito data that is specific to iOS and won't be cleared by
-// deleting the browser state.
-- (void)clearIOSSpecificIncognitoData;
-
-- (void)activateBVCAndMakeCurrentBVCPrimary;
 
 #pragma mark - iOS 12 compat
 

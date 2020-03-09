@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/common/net/x509_certificate_model_nss.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/policy/core/common/policy_map.h"

@@ -246,7 +246,7 @@ TEST_F(SelectionAdjusterTest, ShadowDistributedNodesWithoutEditingBoundary) {
   Element* host = GetDocument().getElementById("host");
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadow_root.SetInnerHTMLFromString(shadow_content);
+  shadow_root.setInnerHTML(shadow_content);
 
   Element* foo = GetDocument().getElementById("foo");
   Element* s1 = shadow_root.QuerySelector("#s1");
@@ -312,7 +312,7 @@ TEST_F(SelectionAdjusterTest, ShadowDistributedNodesWithEditingBoundary) {
   Element* host = GetDocument().getElementById("host");
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadow_root.SetInnerHTMLFromString(shadow_content);
+  shadow_root.setInnerHTML(shadow_content);
 
   Element* foo = GetDocument().getElementById("foo");
   Element* bar = GetDocument().getElementById("bar");

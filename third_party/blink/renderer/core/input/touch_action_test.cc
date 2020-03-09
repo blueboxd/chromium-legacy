@@ -325,7 +325,7 @@ void TouchActionTest::RunTestOnTree(
           << "Unexpected hit test result " << failure_context_pos
           << "  Got element: \""
           << result.InnerElement()
-                 ->OuterHTMLAsString()
+                 ->outerHTML()
                  .StripWhiteSpace()
                  .Left(80)
                  .Ascii()

@@ -485,7 +485,7 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
   EXPECT_TRUE(budget->NeedsLifecycleUpdates());
 
   // Dirtying the element will cause us to do updates.
-  GetDocument().getElementById("child")->SetInnerHTMLFromString("a");
+  GetDocument().getElementById("child")->setInnerHTML("a");
 
   auto* parent = GetDocument().getElementById("parent");
   EXPECT_TRUE(budget->NeedsLifecycleUpdates());

@@ -75,7 +75,7 @@ gfx::RectF TextFinderTest::FindInPageRect(Node* start_container,
 }
 
 TEST_F(TextFinderTest, FindTextSimple) {
-  GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Node* text_node = GetDocument().body()->firstChild();
 
@@ -150,7 +150,7 @@ TEST_F(TextFinderTest, FindTextSimple) {
 }
 
 TEST_F(TextFinderTest, FindTextAutosizing) {
-  GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
@@ -191,7 +191,7 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
 }
 
 TEST_F(TextFinderTest, FindTextNotFound) {
-  GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
@@ -206,10 +206,10 @@ TEST_F(TextFinderTest, FindTextNotFound) {
 }
 
 TEST_F(TextFinderTest, FindTextInShadowDOM) {
-  GetDocument().body()->SetInnerHTMLFromString("<b>FOO</b><i>foo</i>");
+  GetDocument().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
   ShadowRoot& shadow_root =
       GetDocument().body()->CreateV0ShadowRootForTesting();
-  shadow_root.SetInnerHTMLFromString(
+  shadow_root.setInnerHTML(
       "<content select=\"i\"></content><u>Foo</u><content></content>");
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
@@ -308,7 +308,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
-  GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
@@ -341,7 +341,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesRepeated) {
-  GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
@@ -368,10 +368,10 @@ TEST_F(TextFinderTest, ScopeTextMatchesRepeated) {
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
-  GetDocument().body()->SetInnerHTMLFromString("<b>FOO</b><i>foo</i>");
+  GetDocument().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
   ShadowRoot& shadow_root =
       GetDocument().body()->CreateV0ShadowRootForTesting();
-  shadow_root.SetInnerHTMLFromString(
+  shadow_root.setInnerHTML(
       "<content select=\"i\"></content><u>Foo</u><content></content>");
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
@@ -403,7 +403,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
 }
 
 TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
-  GetDocument().body()->SetInnerHTMLFromString("ab ab ab ab ab");
+  GetDocument().body()->setInnerHTML("ab ab ab ab ab");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
@@ -426,7 +426,7 @@ TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
 }
 
 TEST_F(TextFinderTest, OverlappingMatches) {
-  GetDocument().body()->SetInnerHTMLFromString("aababaa");
+  GetDocument().body()->setInnerHTML("aababaa");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
@@ -449,7 +449,7 @@ TEST_F(TextFinderTest, OverlappingMatches) {
 }
 
 TEST_F(TextFinderTest, SequentialMatches) {
-  GetDocument().body()->SetInnerHTMLFromString("ababab");
+  GetDocument().body()->setInnerHTML("ababab");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
@@ -473,7 +473,7 @@ TEST_F(TextFinderTest, SequentialMatches) {
 }
 
 TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
-  GetDocument().body()->SetInnerHTMLFromString("<b>XXXXFindMeYYYY</b><i></i>");
+  GetDocument().body()->setInnerHTML("<b>XXXXFindMeYYYY</b><i></i>");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
@@ -499,7 +499,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   // Add new text to DOM and try FindNext.
   auto* i_element = To<Element>(GetDocument().body()->lastChild());
   ASSERT_TRUE(i_element);
-  i_element->SetInnerHTMLFromString("ZZFindMe");
+  i_element->setInnerHTML("ZZFindMe");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
@@ -530,7 +530,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
 }
 
 TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
-  GetDocument().body()->SetInnerHTMLFromString("<b>XXXXYYYY</b><i></i>");
+  GetDocument().body()->setInnerHTML("<b>XXXXYYYY</b><i></i>");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
@@ -553,7 +553,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
   // Add new text to DOM and try FindNext.
   auto* i_element = To<Element>(GetDocument().body()->lastChild());
   ASSERT_TRUE(i_element);
-  i_element->SetInnerHTMLFromString("ZZFindMe");
+  i_element->setInnerHTML("ZZFindMe");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
@@ -593,7 +593,7 @@ TEST_F(TextFinderTest, ScopeWithTimeouts) {
     }
   }
 
-  GetDocument().body()->SetInnerHTMLFromString(text.ToString());
+  GetDocument().body()->setInnerHTML(text.ToString());
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;

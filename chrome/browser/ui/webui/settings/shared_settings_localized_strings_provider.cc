@@ -120,9 +120,7 @@ void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
        IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL},
       {"nonPersonalizedServicesSectionLabel",
        IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL},
-      {"syncEverythingHint", IDS_SETTINGS_SYNC_EVERYTHING_HINT},
       {"customizeSyncLabel", IDS_SETTINGS_CUSTOMIZE_SYNC},
-      {"customizeSyncHint", IDS_SETTINGS_CUSTOMIZE_SYNC_HINT},
       {"syncData", IDS_SETTINGS_SYNC_DATA},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);

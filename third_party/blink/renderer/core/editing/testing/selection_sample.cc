@@ -60,7 +60,7 @@ class Parser final {
   // |SelectionInDOMTree| marked up within |selection_text|.
   SelectionInDOMTree SetSelectionText(HTMLElement* element,
                                       const std::string& selection_text) {
-    element->SetInnerHTMLFromString(String::FromUTF8(selection_text.c_str()));
+    element->setInnerHTML(String::FromUTF8(selection_text.c_str()));
     ConvertTemplatesToShadowRoots(*element);
     Traverse(element);
     if (anchor_node_ && focus_node_) {

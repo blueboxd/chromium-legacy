@@ -1743,7 +1743,7 @@ TEST_F(StyleCascadeTest, AnimatePendingSubstitutionValue) {
 }
 
 TEST_F(StyleCascadeTest, ForeignObjectZoomVsEffectiveZoom) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <svg>
       <foreignObject id='foreign'></foreignObject>
     </svg>

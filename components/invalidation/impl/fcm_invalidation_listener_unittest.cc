@@ -337,9 +337,8 @@ TEST_F(FCMInvalidationListenerTest, ManyInvalidations_NoDrop) {
   EXPECT_EQ(initial_version + kRepeatCount - 1, GetVersion(topic));
 }
 
-// Fire an invalidation for an unregistered object topic with a payload.  It
-// should still be processed, and both the payload and the version should be
-// updated.
+// Fire an invalidation for an unregistered topic with a payload. It should
+// still be processed, and both the payload and the version should be updated.
 TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
   const Topic kUnregisteredId = "unregistered";
   const Topic& topic = kUnregisteredId;
@@ -361,7 +360,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
   EXPECT_EQ(kPayload1, GetPayload(topic));
 }
 
-// Fire ten invalidations before an object registers.  Some invalidations will
+// Fire ten invalidations before an topics registers.  Some invalidations will
 // be dropped an replaced with an unknown version invalidation.
 TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
   const int kRepeatCount =

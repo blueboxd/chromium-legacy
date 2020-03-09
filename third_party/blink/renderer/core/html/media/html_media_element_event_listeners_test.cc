@@ -160,8 +160,7 @@ class HTMLMediaElementEventListenersTest : public PageTestBase {
 
 TEST_F(HTMLMediaElementEventListenersTest, RemovingFromDocumentCollectsAll) {
   EXPECT_EQ(Video(), nullptr);
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<body><video controls></video></body>");
+  GetDocument().body()->setInnerHTML("<body><video controls></video></body>");
   EXPECT_NE(Video(), nullptr);
   EXPECT_TRUE(Video()->HasEventListeners());
   EXPECT_NE(Controls(), nullptr);
@@ -171,7 +170,7 @@ TEST_F(HTMLMediaElementEventListenersTest, RemovingFromDocumentCollectsAll) {
   WeakPersistent<MediaControls> weak_persistent_controls = Controls();
   {
     Persistent<HTMLVideoElement> persistent_video = Video();
-    GetDocument().body()->SetInnerHTMLFromString("");
+    GetDocument().body()->setInnerHTML("");
 
     // When removed from the document, the event listeners should have been
     // dropped.
@@ -192,8 +191,7 @@ TEST_F(HTMLMediaElementEventListenersTest, RemovingFromDocumentCollectsAll) {
 TEST_F(HTMLMediaElementEventListenersTest,
        ReInsertingInDocumentCollectsControls) {
   EXPECT_EQ(Video(), nullptr);
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<body><video controls></video></body>");
+  GetDocument().body()->setInnerHTML("<body><video controls></video></body>");
   EXPECT_NE(Video(), nullptr);
   EXPECT_TRUE(Video()->HasEventListeners());
   EXPECT_NE(Controls(), nullptr);
@@ -222,7 +220,7 @@ TEST_F(HTMLMediaElementEventListenersTest,
 TEST_F(HTMLMediaElementEventListenersTest,
        FullscreenDetectorTimerCancelledOnContextDestroy) {
   EXPECT_EQ(Video(), nullptr);
-  GetDocument().body()->SetInnerHTMLFromString("<body><video></video></body>");
+  GetDocument().body()->setInnerHTML("<body><video></video></body>");
   Video()->SetSrc("http://example.com");
 
   test::RunPendingTasks();
@@ -288,7 +286,7 @@ class HTMLMediaElementWithMockSchedulerTest
 
 TEST_F(HTMLMediaElementWithMockSchedulerTest, OneTimeupdatePerSeek) {
   testing::InSequence dummy;
-  GetDocument().body()->SetInnerHTMLFromString("<body><video></video></body>");
+  GetDocument().body()->setInnerHTML("<body><video></video></body>");
 
   // Set a src to trigger WebMediaPlayer creation.
   Video()->SetSrc("http://example.com");
@@ -341,7 +339,7 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, OneTimeupdatePerSeek) {
 
 TEST_F(HTMLMediaElementWithMockSchedulerTest, PeriodicTimeupdateAfterSeek) {
   testing::InSequence dummy;
-  GetDocument().body()->SetInnerHTMLFromString("<body><video></video></body>");
+  GetDocument().body()->setInnerHTML("<body><video></video></body>");
 
   // Set a src to trigger WebMediaPlayer creation.
   Video()->SetSrc("http://example.com");

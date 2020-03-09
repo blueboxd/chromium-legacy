@@ -36,7 +36,7 @@ void MediaControlAnimatedArrowContainerElement::AnimatedArrow::ShowInternal() {
     return;
   }
 
-  SetInnerHTMLFromString(MediaControlsResourceLoader::GetJumpSVGImage());
+  setInnerHTML(MediaControlsResourceLoader::GetJumpSVGImage());
 
   last_arrow_ = getElementById("arrow-3");
   svg_container_ = getElementById("jump");

@@ -104,11 +104,11 @@ class PLATFORM_EXPORT ParkableStringManager {
 
   // Relies on secure hash equality for deduplication. If one day SHA256 becomes
   // insecure, then this would need to be updated to a more robust hash.
-  WTF::HashMap<ParkableStringImpl::SecureDigest*,
+  WTF::HashMap<const ParkableStringImpl::SecureDigest*,
                ParkableStringImpl*,
                SecureDigestHash>
       unparked_strings_;
-  WTF::HashMap<ParkableStringImpl::SecureDigest*,
+  WTF::HashMap<const ParkableStringImpl::SecureDigest*,
                ParkableStringImpl*,
                SecureDigestHash>
       parked_strings_;

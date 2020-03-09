@@ -283,7 +283,6 @@ jumbo_static_library("browser") {
     "//components/sync",
     "//components/sync_preferences",
     "//components/url_formatter",
-    "//components/version_info:version_info",
     "//components/webdata/common",
     "//google_apis",
     "//net",
@@ -358,6 +357,7 @@ source_set("csv_unittests") {
   deps = [
     ":csv",
     "//base",
+    "//base/test:test_support",
     "//components/autofill/core/common",
     "//testing/gmock",
     "//testing/gtest",

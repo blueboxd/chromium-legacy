@@ -60,27 +60,27 @@ InlineFlowBox* LayoutSVGInline::CreateInlineFlowBox() {
 }
 
 FloatRect LayoutSVGInline::ObjectBoundingBox() const {
-  if (const LayoutSVGText* text_root =
-          LayoutSVGText::LocateLayoutSVGTextAncestor(this))
-    return text_root->ObjectBoundingBox();
-
-  return FloatRect();
+  FloatRect bounds;
+  for (InlineFlowBox* box : *LineBoxes())
+    bounds.Unite(FloatRect(box->FrameRect()));
+  return bounds;
 }
 
 FloatRect LayoutSVGInline::StrokeBoundingBox() const {
-  if (const LayoutSVGText* text_root =
-          LayoutSVGText::LocateLayoutSVGTextAncestor(this))
-    return text_root->StrokeBoundingBox();
-
-  return FloatRect();
+  if (!FirstLineBox())
+    return FloatRect();
+  return SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, ObjectBoundingBox());
 }
 
 FloatRect LayoutSVGInline::VisualRectInLocalSVGCoordinates() const {
-  if (const LayoutSVGText* text_root =
-          LayoutSVGText::LocateLayoutSVGTextAncestor(this))
-    return text_root->VisualRectInLocalSVGCoordinates();
-
-  return FloatRect();
+  if (!FirstLineBox())
+    return FloatRect();
+  const LayoutSVGText* text_root =
+      LayoutSVGText::LocateLayoutSVGTextAncestor(this);
+  if (!text_root)
+    return FloatRect();
+  return SVGLayoutSupport::ComputeVisualRectForText(
+      *this, ObjectBoundingBox(), text_root->ObjectBoundingBox());
 }
 
 PhysicalRect LayoutSVGInline::VisualRectInDocument(
@@ -103,18 +103,10 @@ const LayoutObject* LayoutSVGInline::PushMappingToContainer(
 
 void LayoutSVGInline::AbsoluteQuads(Vector<FloatQuad>& quads,
                                     MapCoordinatesFlags mode) const {
-  const LayoutSVGText* text_root =
-      LayoutSVGText::LocateLayoutSVGTextAncestor(this);
-  if (!text_root)
-    return;
-
-  FloatRect text_bounding_box = text_root->StrokeBoundingBox();
   for (InlineFlowBox* box : *LineBoxes()) {
+    FloatRect box_rect(box->FrameRect());
     quads.push_back(LocalToAbsoluteQuad(
-        FloatRect(text_bounding_box.X() + box->X().ToFloat(),
-                  text_bounding_box.Y() + box->Y().ToFloat(),
-                  box->Width().ToFloat(), box->Height().ToFloat()),
-        mode));
+        SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, box_rect), mode));
   }
 }
 

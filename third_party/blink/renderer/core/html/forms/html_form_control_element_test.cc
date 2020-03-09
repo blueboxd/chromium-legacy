@@ -133,7 +133,7 @@ TEST_F(HTMLFormControlElementTest, DoNotUpdateLayoutDuringDOMMutation) {
   // ShowValidationMessage(). So calling it during DOM mutation is
   // dangerous. This test ensures ShowValidationMessage() is NOT called in
   // appendChild(). crbug.com/756408
-  GetDocument().documentElement()->SetInnerHTMLFromString("<select></select>");
+  GetDocument().documentElement()->setInnerHTML("<select></select>");
   auto* const select =
       To<HTMLFormControlElement>(GetDocument().QuerySelector("select"));
   auto* const optgroup =

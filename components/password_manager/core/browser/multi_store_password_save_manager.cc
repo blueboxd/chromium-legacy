@@ -146,12 +146,9 @@ bool MultiStorePasswordSaveManager::IsAccountStoreEnabled() {
 }
 
 void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore() {
-  // TODO(crbug.com/1032992): There are other rare corner cases that should
-  // still be handled:
-  // 1. Credential exists only in the profile store but a PSL matched one exists
-  // in both profile and account store.
-  // 2. Moving credentials upon an update. FormFetch will have an outdated
-  // credentials. Fix it if this turns out to be a product requirement.
+  // TODO(crbug.com/1032992): Moving credentials upon an update. FormFetch will
+  // have an outdated credentials. Fix it if this turns out to be a product
+  // requirement.
 
   std::vector<const PasswordForm*> account_store_matches =
       AccountStoreMatches(form_fetcher_->GetNonFederatedMatches());

@@ -56,7 +56,7 @@ TEST_F(SelectorFilterParentScopeTest, ParentScope) {
 }
 
 TEST_F(SelectorFilterParentScopeTest, RootScope) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <div class=x>
       <span id=y></span>
     </div>
@@ -84,7 +84,7 @@ TEST_F(SelectorFilterParentScopeTest, RootScope) {
 }
 
 TEST_F(SelectorFilterParentScopeTest, ReentrantSVGImageLoading) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       div::before {
         content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>');

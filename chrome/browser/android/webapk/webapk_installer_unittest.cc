@@ -605,7 +605,7 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsAvailable) {
             manifest.icons(1).hash());
   EXPECT_THAT(manifest.icons(1).usages(),
               testing::ElementsAre(webapk::Image::SPLASH_ICON));
-  EXPECT_EQ(icon_url_to_murmur2_hash[best_splash_icon_url].data,
+  EXPECT_EQ(icon_url_to_murmur2_hash[best_splash_icon_url].unsafe_data,
             manifest.icons(1).image_data());
 
   // Check protobuf fields for unused icon.
@@ -620,7 +620,7 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsAvailable) {
   EXPECT_EQ(manifest.shortcuts(0).icons(0).hash(),
             icon_url_to_murmur2_hash[best_shortcut_icon_url].hash);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).image_data(),
-            icon_url_to_murmur2_hash[best_shortcut_icon_url].data);
+            icon_url_to_murmur2_hash[best_shortcut_icon_url].unsafe_data);
 }
 
 // Tests a WebApk install or update request is built properly when the Chrome
@@ -672,7 +672,7 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoPrimaryIconAndSplashIconSameUrl) {
   EXPECT_EQ(manifest.shortcuts(0).icons(0).hash(),
             icon_url_to_murmur2_hash[best_icon_url].hash);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).image_data(),
-            icon_url_to_murmur2_hash[best_icon_url].data);
+            icon_url_to_murmur2_hash[best_icon_url].unsafe_data);
 }
 
 TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenWithMultipleShortcuts) {
@@ -700,14 +700,14 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenWithMultipleShortcuts) {
   EXPECT_EQ(manifest.shortcuts(0).icons(0).hash(),
             icon_url_to_murmur2_hash[best_shortcut_icon_url1].hash);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).image_data(),
-            icon_url_to_murmur2_hash[best_shortcut_icon_url1].data);
+            icon_url_to_murmur2_hash[best_shortcut_icon_url1].unsafe_data);
 
   ASSERT_EQ(manifest.shortcuts(1).icons_size(), 1);
   EXPECT_EQ(manifest.shortcuts(1).icons(0).src(), best_shortcut_icon_url2);
   EXPECT_EQ(manifest.shortcuts(1).icons(0).hash(),
             icon_url_to_murmur2_hash[best_shortcut_icon_url2].hash);
   EXPECT_EQ(manifest.shortcuts(1).icons(0).image_data(),
-            icon_url_to_murmur2_hash[best_shortcut_icon_url2].data);
+            icon_url_to_murmur2_hash[best_shortcut_icon_url2].unsafe_data);
 }
 
 TEST_F(WebApkInstallerTest,
@@ -733,7 +733,7 @@ TEST_F(WebApkInstallerTest,
   EXPECT_EQ(manifest.shortcuts(0).icons(0).hash(),
             icon_url_to_murmur2_hash[best_shortcut_icon_url].hash);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).image_data(),
-            icon_url_to_murmur2_hash[best_shortcut_icon_url].data);
+            icon_url_to_murmur2_hash[best_shortcut_icon_url].unsafe_data);
 
   ASSERT_EQ(manifest.shortcuts(1).icons_size(), 1);
   EXPECT_EQ(manifest.shortcuts(1).icons(0).src(), best_shortcut_icon_url);
@@ -777,7 +777,7 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoSplashIconAndShortcutIconSameUrl) {
               testing::ElementsAre(webapk::Image::SPLASH_ICON));
   EXPECT_TRUE(manifest.icons(1).has_image_data());
   EXPECT_EQ(manifest.icons(1).image_data(),
-            icon_url_to_murmur2_hash[best_icon_url].data);
+            icon_url_to_murmur2_hash[best_icon_url].unsafe_data);
 
   // Check protobuf fields for unused icon.
   EXPECT_EQ(kUnusedIconPath, manifest.icons(2).src());
@@ -792,5 +792,5 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoSplashIconAndShortcutIconSameUrl) {
             icon_url_to_murmur2_hash[best_icon_url].hash);
   EXPECT_TRUE(manifest.shortcuts(0).icons(0).has_image_data());
   EXPECT_EQ(manifest.shortcuts(0).icons(0).image_data(),
-            icon_url_to_murmur2_hash[best_icon_url].data);
+            icon_url_to_murmur2_hash[best_icon_url].unsafe_data);
 }

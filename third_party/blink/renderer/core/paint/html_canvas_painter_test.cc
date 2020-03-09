@@ -71,7 +71,7 @@ TEST_P(HTMLCanvasPainterTestForCAP, Canvas2DLayerAppearsInLayerTree) {
   // Insert a <canvas> and force it into accelerated mode.
   // Not using SetBodyInnerHTML() because we need to test before document
   // lifecyle update.
-  GetDocument().body()->SetInnerHTMLFromString("<canvas width=300 height=200>");
+  GetDocument().body()->setInnerHTML("<canvas width=300 height=200>");
   auto* element = To<HTMLCanvasElement>(GetDocument().body()->firstChild());
   CanvasContextCreationAttributesCore attributes;
   attributes.alpha = true;

@@ -1084,7 +1084,7 @@ TEST_F(LayoutObjectTest, NeedsLayoutOverflowRecalc) {
   EXPECT_FALSE(other->NeedsLayoutOverflowRecalc());
 
   auto* target_element = GetDocument().getElementById("target");
-  target_element->SetInnerHTMLFromString("baz");
+  target_element->setInnerHTML("baz");
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(wrapper->NeedsLayoutOverflowRecalc());

@@ -25,6 +25,7 @@ class UserEventModelTypeController : public syncer::ModelTypeController,
   ~UserEventModelTypeController() override;
 
   // syncer::DataTypeController implementation.
+  void Stop(ShutdownReason shutdown_reason, StopCallback callback) override;
   PreconditionState GetPreconditionState() const override;
 
   // syncer::SyncServiceObserver implementation.

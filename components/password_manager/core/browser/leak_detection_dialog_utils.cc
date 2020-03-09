@@ -100,6 +100,10 @@ base::string16 GetLeakDetectionTooltip() {
 }
 
 bool ShouldCheckPasswords(CredentialLeakType leak_type) {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordCheck)) {
+    return password_manager::IsPasswordUsedOnOtherSites(leak_type);
+  }
   return password_manager::IsPasswordUsedOnOtherSites(leak_type) &&
          password_manager::IsSyncingPasswordsNormally(leak_type);
 }

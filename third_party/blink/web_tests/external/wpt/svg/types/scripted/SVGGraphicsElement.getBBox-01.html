@@ -1,7 +1,7 @@
-<!DOCTYPE html>
-<title>getBBox tests</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<!doctype html>
+<title>SVGGraphicsElement.prototype.getBBox</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <div id="testcontainer">
 <svg width="1" height="1" visibility="hidden">
 <g id="g1">
@@ -126,5 +126,4 @@ test(function() {
   let r13 = document.getElementById("r13");
   assert_rect_approx_equals(g11.getBBox(), r13.getBBox(), EPSILON);
 }, "empty image does not contribute to parent bbox");
-
 </script>

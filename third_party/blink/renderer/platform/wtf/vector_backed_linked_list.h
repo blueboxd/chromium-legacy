@@ -129,6 +129,17 @@ class VectorBackedLinkedList {
   // is executed by just updating indices of related nodes.
   void MoveTo(const_iterator target, const_iterator new_position);
 
+  iterator erase(const_iterator);
+
+  void pop_front() {
+    DCHECK(!empty());
+    erase(cbegin());
+  }
+  void pop_back() {
+    DCHECK(!empty());
+    erase(--cend());
+  }
+
  private:
   bool IsFreeListEmpty() const { return free_head_index_ == anchor_index_; }
 
@@ -422,6 +433,24 @@ void VectorBackedLinkedList<T>::MoveTo(const_iterator target,
   nodes_[new_position_index].prev_index_ = target_index;
   target_node.prev_index_ = prev_index;
   target_node.next_index_ = new_position_index;
+}
+
+template <typename T>
+typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::erase(
+    const_iterator position) {
+  DCHECK(position != end());
+  wtf_size_t position_index = position.GetIndex();
+  Node& node = nodes_[position_index];
+  wtf_size_t next_index = node.next_index_;
+
+  Unlink(node);
+  node.value_ = HashTraits<T>::EmptyValue();
+
+  node.next_index_ = free_head_index_;
+  free_head_index_ = position_index;
+
+  size_--;
+  return iterator(next_index, this);
 }
 
 template <typename T>

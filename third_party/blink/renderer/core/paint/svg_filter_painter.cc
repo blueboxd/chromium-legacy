@@ -101,7 +101,7 @@ GraphicsContext* SVGFilterPainter::PrepareEffect(
   }
 
   auto* node_map = MakeGarbageCollected<SVGFilterGraphNodeMap>();
-  FilterEffectBuilder builder(object.ObjectBoundingBox(), 1);
+  FilterEffectBuilder builder(SVGResources::ReferenceBoxForEffects(object), 1);
   Filter* filter = builder.BuildReferenceFilter(
       To<SVGFilterElement>(*filter_.GetElement()), nullptr, node_map);
   if (!filter || !filter->LastEffect())

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/svg_mask_painter.h"
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
@@ -41,7 +42,8 @@ void SVGMaskPainter::FinishEffect(const LayoutObject& object,
 
   AffineTransform content_transformation;
   sk_sp<const PaintRecord> record = mask_.CreatePaintRecord(
-      content_transformation, object.ObjectBoundingBox(), context);
+      content_transformation, SVGResources::ReferenceBoxForEffects(object),
+      context);
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, display_item_client,
                                                   DisplayItem::kSVGMask))

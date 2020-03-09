@@ -70,7 +70,6 @@ class ServiceWorkerClients;
 class ServiceWorkerInstalledScriptsManager;
 class ServiceWorkerRegistration;
 class ServiceWorkerThread;
-class StringOrTrustedScriptURL;
 class WaitUntilObserver;
 class WebURLResponse;
 class WorkerClassicScriptLoader;
@@ -315,8 +314,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data) override;
 
  private:
-  void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,
-                     ExceptionState&) override;
+  void importScripts(const Vector<String>& urls, ExceptionState&) override;
   SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
       std::unique_ptr<Vector<uint8_t>> meta_data) override;

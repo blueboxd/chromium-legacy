@@ -37,10 +37,10 @@ public class SyncErrorInfoBar
         extends ConfirmInfoBar implements ProfileSyncService.SyncStateChangedListener {
     // Preference key to save the latest time this infobar is viewed.
     @VisibleForTesting
-    public static final String PREF_SYNC_ERROR_INFOBAR_SHOWN_AT_TIME =
+    static final String PREF_SYNC_ERROR_INFOBAR_SHOWN_AT_TIME =
             "sync_error_infobar_shown_shown_at_time";
     @VisibleForTesting
-    public static final long MINIMAL_DURATION_BETWEEN_INFOBARS_MS =
+    static final long MINIMAL_DURATION_BETWEEN_INFOBARS_MS =
             TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
 
     @IntDef({SyncErrorInfoBarType.NOT_SHOWN, SyncErrorInfoBarType.AUTH_ERROR,

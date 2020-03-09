@@ -125,7 +125,7 @@ TEST_F(WebApkIconHasherTest, Success) {
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), GURL(icon_url));
   EXPECT_EQ(kIconMurmur2Hash, runner.icon().hash);
-  EXPECT_FALSE(runner.icon().data.empty());
+  EXPECT_FALSE(runner.icon().unsafe_data.empty());
 }
 
 TEST_F(WebApkIconHasherTest, DataUri) {
@@ -135,7 +135,7 @@ TEST_F(WebApkIconHasherTest, DataUri) {
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), icon_url);
   EXPECT_EQ("536500236142107998", runner.icon().hash);
-  EXPECT_FALSE(runner.icon().data.empty());
+  EXPECT_FALSE(runner.icon().unsafe_data.empty());
 }
 
 TEST_F(WebApkIconHasherTest, MultipleIconUrls) {
@@ -164,7 +164,7 @@ TEST_F(WebApkIconHasherTest, MultipleIconUrls) {
     auto result = runner.RunMultiple(test_url_loader_factory(), {icon_url1});
     ASSERT_EQ(result.size(), 1u);
     EXPECT_EQ(result[icon_url1.spec()].hash, kIconMurmur2Hash);
-    EXPECT_FALSE(result[icon_url1.spec()].data.empty());
+    EXPECT_FALSE(result[icon_url1.spec()].unsafe_data.empty());
   }
 
   {
@@ -172,10 +172,10 @@ TEST_F(WebApkIconHasherTest, MultipleIconUrls) {
         runner.RunMultiple(test_url_loader_factory(), {icon_url1, icon_url2});
     ASSERT_EQ(result.size(), 2u);
     EXPECT_EQ(result[icon_url1.spec()].hash, kIconMurmur2Hash);
-    EXPECT_FALSE(result[icon_url1.spec()].data.empty());
+    EXPECT_FALSE(result[icon_url1.spec()].unsafe_data.empty());
 
     EXPECT_EQ(result[icon_url2.spec()].hash, "536500236142107998");
-    EXPECT_FALSE(result[icon_url2.spec()].data.empty());
+    EXPECT_FALSE(result[icon_url2.spec()].unsafe_data.empty());
   }
 }
 
@@ -184,7 +184,7 @@ TEST_F(WebApkIconHasherTest, DataUriInvalid) {
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), icon_url);
   EXPECT_TRUE(runner.icon().hash.empty());
-  EXPECT_TRUE(runner.icon().data.empty());
+  EXPECT_TRUE(runner.icon().unsafe_data.empty());
 }
 
 TEST_F(WebApkIconHasherTest, InvalidUrl) {
@@ -192,7 +192,7 @@ TEST_F(WebApkIconHasherTest, InvalidUrl) {
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), icon_url);
   EXPECT_TRUE(runner.icon().hash.empty());
-  EXPECT_TRUE(runner.icon().data.empty());
+  EXPECT_TRUE(runner.icon().unsafe_data.empty());
 }
 
 TEST_F(WebApkIconHasherTest, DownloadTimedOut) {
@@ -200,7 +200,7 @@ TEST_F(WebApkIconHasherTest, DownloadTimedOut) {
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), GURL(icon_url));
   EXPECT_TRUE(runner.icon().hash.empty());
-  EXPECT_TRUE(runner.icon().data.empty());
+  EXPECT_TRUE(runner.icon().unsafe_data.empty());
 }
 
 // Test that the hash callback is called with an empty string if an HTTP error
@@ -220,5 +220,5 @@ TEST_F(WebApkIconHasherTest, HTTPError) {
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), GURL(icon_url));
   EXPECT_TRUE(runner.icon().hash.empty());
-  EXPECT_TRUE(runner.icon().data.empty());
+  EXPECT_TRUE(runner.icon().unsafe_data.empty());
 }

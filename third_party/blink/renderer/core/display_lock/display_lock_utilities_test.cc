@@ -56,7 +56,7 @@ TEST_F(DisplayLockUtilitiesTest, DISABLED_ActivatableLockedInclusiveAncestors) {
   Element& innermost = *GetDocument().getElementById("innermost");
   ShadowRoot& shadow_root =
       inner_b.AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadow_root.SetInnerHTMLFromString("<div id='shadowDiv'>shadow!</div>");
+  shadow_root.setInnerHTML("<div id='shadowDiv'>shadow!</div>");
   Element& shadow_div = *shadow_root.getElementById("shadowDiv");
 
   LockElement(outer, true);

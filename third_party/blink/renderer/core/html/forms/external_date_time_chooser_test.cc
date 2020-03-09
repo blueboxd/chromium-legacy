@@ -79,7 +79,7 @@ TEST_F(ExternalDateTimeChooserTest, EndChooserShouldNotCrash) {
 TEST_F(ExternalDateTimeChooserTest,
        OpenDateTimeChooserShouldNotCrashWhenLabelAndValueIsTheSame) {
   ScopedInputMultipleFieldsUIForTest input_multiple_fields_ui(false);
-  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
       <input id=test type="date" list="src" />
         <datalist id="src">
           <option value='2019-12-31'>Hint</option>

@@ -55,7 +55,6 @@ class FontFaceSet;
 class InstalledScriptsManager;
 class OffscreenFontSelector;
 class WorkerResourceTimingNotifier;
-class StringOrTrustedScriptURL;
 class TrustedTypePolicyFactory;
 class V8VoidFunction;
 class WorkerLocation;
@@ -104,8 +103,7 @@ class CORE_EXPORT WorkerGlobalScope
   DEFINE_ATTRIBUTE_EVENT_LISTENER(unhandledrejection, kUnhandledrejection)
 
   // WorkerUtils
-  virtual void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,
-                             ExceptionState&);
+  virtual void importScripts(const Vector<String>& urls, ExceptionState&);
 
   // ExecutionContext
   const KURL& Url() const final;

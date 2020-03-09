@@ -35,16 +35,16 @@ class HTMLInputElementTest : public PageTestBase {
 };
 
 TEST_F(HTMLInputElementTest, FilteredDataListOptionsNoList) {
-  GetDocument().documentElement()->SetInnerHTMLFromString("<input id=test>");
+  GetDocument().documentElement()->setInnerHTML("<input id=test>");
   EXPECT_TRUE(TestElement().FilteredDataListOptions().IsEmpty());
 
-  GetDocument().documentElement()->SetInnerHTMLFromString(
+  GetDocument().documentElement()->setInnerHTML(
       "<input id=test list=dl1><datalist id=dl1></datalist>");
   EXPECT_TRUE(TestElement().FilteredDataListOptions().IsEmpty());
 }
 
 TEST_F(HTMLInputElementTest, FilteredDataListOptionsContain) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(
+  GetDocument().documentElement()->setInnerHTML(
       "<input id=test value=BC list=dl2>"
       "<datalist id=dl2>"
       "<option>AbC DEF</option>"
@@ -56,7 +56,7 @@ TEST_F(HTMLInputElementTest, FilteredDataListOptionsContain) {
   EXPECT_EQ("AbC DEF", options[0]->value().Utf8());
   EXPECT_EQ("ghi", options[1]->value().Utf8());
 
-  GetDocument().documentElement()->SetInnerHTMLFromString(
+  GetDocument().documentElement()->setInnerHTML(
       "<input id=test value=i list=dl2>"
       "<datalist id=dl2>"
       "<option>I</option>"
@@ -70,7 +70,7 @@ TEST_F(HTMLInputElementTest, FilteredDataListOptionsContain) {
 }
 
 TEST_F(HTMLInputElementTest, FilteredDataListOptionsForMultipleEmail) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
     <input id=test value='foo@example.com, tkent' list=dl3 type=email
     multiple>
     <datalist id=dl3>
@@ -104,7 +104,7 @@ TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
 
   // Create an input element with type "range" inside a document without frame.
   To<HTMLBodyElement>(html->firstChild())
-      ->SetInnerHTMLFromString("<input type='range' />");
+      ->setInnerHTML("<input type='range' />");
   document_without_frame->AppendChild(html);
 
   auto page_holder = std::make_unique<DummyPageHolder>();
@@ -154,7 +154,7 @@ TEST_F(HTMLInputElementTest, ImageTypeCrash) {
 
 TEST_F(HTMLInputElementTest, RadioKeyDownDCHECKFailure) {
   // crbug.com/697286
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<input type=radio name=g><input type=radio name=g>");
   auto& radio1 = To<HTMLInputElement>(*GetDocument().body()->firstChild());
   auto& radio2 = To<HTMLInputElement>(*radio1.nextSibling());
@@ -171,7 +171,7 @@ TEST_F(HTMLInputElementTest, RadioKeyDownDCHECKFailure) {
 TEST_F(HTMLInputElementTest, DateTimeChooserSizeParamRespectsScale) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   GetDocument().View()->GetFrame().GetPage()->GetVisualViewport().SetScale(2.f);
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<input type='date' style='width:200px;height:50px' />");
   UpdateAllLifecyclePhasesForTest();
   auto* input = To<HTMLInputElement>(GetDocument().body()->firstChild());
@@ -195,13 +195,13 @@ TEST_F(HTMLInputElementTest, StepDownOverflow) {
 }
 
 TEST_F(HTMLInputElementTest, CheckboxHasNoShadowRoot) {
-  GetDocument().body()->SetInnerHTMLFromString("<input type='checkbox' />");
+  GetDocument().body()->setInnerHTML("<input type='checkbox' />");
   auto* input = To<HTMLInputElement>(GetDocument().body()->firstChild());
   EXPECT_EQ(nullptr, input->UserAgentShadowRoot());
 }
 
 TEST_F(HTMLInputElementTest, ChangingInputTypeCausesShadowRootToBeCreated) {
-  GetDocument().body()->SetInnerHTMLFromString("<input type='checkbox' />");
+  GetDocument().body()->setInnerHTML("<input type='checkbox' />");
   auto* input = To<HTMLInputElement>(GetDocument().body()->firstChild());
   EXPECT_EQ(nullptr, input->UserAgentShadowRoot());
   input->setAttribute(html_names::kTypeAttr, "text");
@@ -209,7 +209,7 @@ TEST_F(HTMLInputElementTest, ChangingInputTypeCausesShadowRootToBeCreated) {
 }
 
 TEST_F(HTMLInputElementTest, RepaintAfterClearingFile) {
-  GetDocument().body()->SetInnerHTMLFromString("<input type='file' />");
+  GetDocument().body()->setInnerHTML("<input type='file' />");
   auto* input = To<HTMLInputElement>(GetDocument().body()->firstChild());
 
   FileChooserFileInfoList files;

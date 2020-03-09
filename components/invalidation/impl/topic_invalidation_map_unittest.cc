@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "google/cacheinvalidation/types.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

@@ -1546,11 +1546,22 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL" desc="'Updates' is an element in safety check that shows the update status of Chrome.">
     Updates
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_DISABLED_BY_ADMIN" desc="This text describles that updates are managed by the administrator.">
-    Updates are managed by your <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>administrator<ph name="END_LINK">&lt;/a&gt;</ph>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_DISABLED_BY_ADMIN" desc="This text describes that updates are managed by the administrator.">
+    Updates are managed by <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>your administrator<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PRIMARY_LABEL" desc="'Passwords' is an element in safety check that allows users to check for their passwords being compromised.">
     Passwords
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_SAFE" desc="This text points out that the safety check password check has not found any compromised passwords.">
+    No compromised passwords found
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_COMPROMISED" desc="This text points out that the safety check password check has found compromised passwords. The placeholder will be a numeral.">
+    {NUM_PASSWORDS, plural,
+     =1 {1 compromised password}
+     other {# compromised passwords}}
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_NO_PASSWORDS" desc="This text points out that password check cannot run due to the user not having saved passwords.">
+    No saved passwords
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_BUTTON" desc="This button allows users to change their compromised passwords.">
     Change passwords
@@ -1562,7 +1573,7 @@
     Safe Browsing is off. To stay safe on the web, turn it on.
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_BY_ADMIN" desc="This text points out that Safe Browsing is disabled by an administrator.">
-    Your <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>administrator<ph name="END_LINK">&lt;/a&gt;</ph> has turned off Safe Browsing
+    <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Your administrator<ph name="END_LINK">&lt;/a&gt;</ph> has turned off Safe Browsing
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_BY_EXTENSION" desc="This text points out that Safe Browsing is disabled by an extension.">
     An extension has turned off Safe Browsing
@@ -1572,6 +1583,24 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_PRIMARY_LABEL" desc="'Extensions' is an element in safety check that shows the safety check status of installed extensions.">
     Extensions
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SAFE" desc="This text describes that the user is protected from potentially harmful extensions.">
+    You're protected from potentially harmful extensions
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_OFF" desc="This text describes that potentially harmful extensions have been disabled. The placeholder will be a numeral.">
+    {NUM_EXTENSIONS, plural,
+     =1 {1 potentially harmful extension is off. You can also remove it.}
+     other {# potentially harmful extensions are off. You can also remove them.}}
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_USER" desc="This text describes that the user has turned potentially harmful extensions back on. The placeholder will be a numeral.">
+    {NUM_EXTENSIONS, plural,
+     =1 {You turned 1 potentially harmful extension back on}
+     other {You turned # potentially harmful extensions back on}}
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_ADMIN" desc="This text describes that an administrator has turned potentially harmful extensions back on.">
+    {NUM_EXTENSIONS, plural,
+     =1 {Your administrator turned 1 potentially harmful extension back on}
+     other {Your administrator turned # potentially harmful extensions back on}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON" desc="This button allows users to review their extensions settings.">
     Review

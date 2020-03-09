@@ -611,6 +611,9 @@ TEST_F(ParkableStringTest, ReportMemoryDump) {
   using testing::Contains;
   using testing::Eq;
 
+  constexpr size_t kActualSize =
+      sizeof(ParkableStringImpl) + sizeof(ParkableStringImpl::ParkableMetadata);
+
   auto& manager = ParkableStringManager::Instance();
   ParkableString parkable1(MakeLargeString('a').ReleaseImpl());
   ParkableString parkable2(MakeLargeString('b').ReleaseImpl());
@@ -647,20 +650,20 @@ TEST_F(ParkableStringTest, ReportMemoryDump) {
                                       kCompressedSize);
   EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(overhead))));
 
-  constexpr size_t kParkableStringImplActualSize =
-      sizeof(ParkableStringImpl) + sizeof(ParkableStringImpl::SecureDigest);
   MemoryAllocatorDump::Entry metadata("metadata_size", "bytes",
-                                      2 * kParkableStringImplActualSize);
+                                      2 * kActualSize);
   EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(metadata))));
 
   MemoryAllocatorDump::Entry savings(
       "savings_size", "bytes",
-      2 * kStringSize - (kStringSize + 2 * kCompressedSize +
-                         2 * kParkableStringImplActualSize));
+      2 * kStringSize - (kStringSize + 2 * kCompressedSize + 2 * kActualSize));
   EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(savings))));
 }
 
 TEST_F(ParkableStringTest, MemoryFootprintForDump) {
+  constexpr size_t kActualSize =
+      sizeof(ParkableStringImpl) + sizeof(ParkableStringImpl::ParkableMetadata);
+
   size_t memory_footprint;
   ParkableString parkable1(MakeLargeString('a').ReleaseImpl());
   ParkableString parkable2(MakeLargeString('b').ReleaseImpl());
@@ -670,19 +673,15 @@ TEST_F(ParkableStringTest, MemoryFootprintForDump) {
   parkable1.ToString();
 
   // Compressed and uncompressed data.
-  memory_footprint = sizeof(ParkableStringImpl) +
-                     sizeof(ParkableStringImpl::SecureDigest) +
-                     parkable1.Impl()->compressed_size() +
+  memory_footprint = kActualSize + parkable1.Impl()->compressed_size() +
                      parkable1.Impl()->CharactersSizeInBytes();
   EXPECT_EQ(memory_footprint, parkable1.Impl()->MemoryFootprintForDump());
 
   // Compressed uncompressed data only.
-  memory_footprint = sizeof(ParkableStringImpl) +
-                     sizeof(ParkableStringImpl::SecureDigest) +
-                     parkable2.Impl()->compressed_size();
+  memory_footprint = kActualSize + parkable2.Impl()->compressed_size();
   EXPECT_EQ(memory_footprint, parkable2.Impl()->MemoryFootprintForDump());
 
-  // Short string, no digest.
+  // Short string, no metadata.
   memory_footprint =
       sizeof(ParkableStringImpl) + parkable3.Impl()->CharactersSizeInBytes();
   EXPECT_EQ(memory_footprint, parkable3.Impl()->MemoryFootprintForDump());
@@ -694,10 +693,10 @@ TEST_F(ParkableStringTest, CompressionDisabled) {
 
   ParkableString parkable(MakeLargeString().ReleaseImpl());
   WaitForDelayedParking();
-  EXPECT_FALSE(parkable.Impl()->is_parked());
+  EXPECT_FALSE(parkable.Impl()->may_be_parked());
 
   MemoryPressureListenerRegistry::Instance().OnPurgeMemory();
-  EXPECT_FALSE(parkable.Impl()->is_parked());
+  EXPECT_FALSE(parkable.Impl()->may_be_parked());
 }
 
 TEST_F(ParkableStringTest, Aging) {

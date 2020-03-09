@@ -120,10 +120,10 @@ void UnackedInvalidationSet::Truncate(size_t max_size) {
   // amount of information has been lost by ensuring this list begins with
   // an UnknownVersion invalidation.  We remove the oldest remaining
   // invalidation to make room for it.
-  invalidation::ObjectId id = invalidations_.begin()->object_id();
+  Topic topic = invalidations_.begin()->topic();
   invalidations_.erase(*invalidations_.begin());
 
-  Invalidation unknown_version = Invalidation::InitUnknownVersion(id);
+  Invalidation unknown_version = Invalidation::InitUnknownVersion(topic);
   invalidations_.insert(unknown_version);
 }
 

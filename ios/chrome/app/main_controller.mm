@@ -1164,7 +1164,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (ChromeBrowserState*)currentBrowserState {
-  return self.currentBVC.browserState;
+  if (!self.interfaceProvider.currentInterface.browser) {
+    return nullptr;
+  }
+  return self.interfaceProvider.currentInterface.browser->GetBrowserState();
 }
 
 - (bool)mustShowRestoreInfobar {
@@ -1205,12 +1208,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 
-
-#pragma mark - SceneController plumbing
-
-- (BOOL)currentPageIsIncognito {
-  return [self currentBrowserState] -> IsOffTheRecord();
-}
 
 #pragma mark - BrowsingDataCommands
 

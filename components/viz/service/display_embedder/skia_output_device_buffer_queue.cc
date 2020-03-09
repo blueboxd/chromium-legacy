@@ -374,8 +374,11 @@ void SkiaOutputDeviceBufferQueue::PageFlipComplete(Image* image) {
       available_images_.push_back(displayed_image_);
       // Call BeginWriteSkia() for the next frame here to avoid some expensive
       // operations on the critical code path.
+      auto shared_context_state = dependency_->GetSharedContextState();
       if (!available_images_.front()->sk_surface() &&
-          dependency_->GetSharedContextState()->MakeCurrent(nullptr)) {
+          shared_context_state->MakeCurrent(nullptr)) {
+        // BeginWriteSkia() may alter GL's state.
+        shared_context_state->set_need_context_state_reset(true);
         available_images_.front()->BeginWriteSkia();
       }
     }

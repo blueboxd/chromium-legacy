@@ -18,7 +18,7 @@ TEST(DragUpdateTest, AffectedByDragUpdate) {
 
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.documentElement()->SetInnerHTMLFromString(R"HTML(
+  document.documentElement()->setInnerHTML(R"HTML(
     <style>div {width:100px;height:100px} div:-webkit-drag {
     background-color: green }</style>
     <div id='div'>
@@ -47,7 +47,7 @@ TEST(DragUpdateTest, ChildAffectedByDragUpdate) {
 
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.documentElement()->SetInnerHTMLFromString(R"HTML(
+  document.documentElement()->setInnerHTML(R"HTML(
     <style>div {width:100px;height:100px} div:-webkit-drag .drag {
     background-color: green }</style>
     <div id='div'>
@@ -76,7 +76,7 @@ TEST(DragUpdateTest, SiblingAffectedByDragUpdate) {
 
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.documentElement()->SetInnerHTMLFromString(R"HTML(
+  document.documentElement()->setInnerHTML(R"HTML(
     <style>div {width:100px;height:100px} div:-webkit-drag + .drag {
     background-color: green }</style>
     <div id='div'>

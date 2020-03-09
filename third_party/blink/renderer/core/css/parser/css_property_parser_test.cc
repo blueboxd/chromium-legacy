@@ -378,7 +378,7 @@ TEST(CSSPropertyParserTest, GradientUseCount) {
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSGradient;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<style>* { background-image: linear-gradient(red, blue); }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
 }
@@ -390,7 +390,7 @@ TEST(CSSPropertyParserTest, PaintUseCount) {
   document.SetSecureContextModeForTesting(SecureContextMode::kSecureContext);
   WebFeature feature = WebFeature::kCSSPaintFunction;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<style>span { background-image: paint(geometry); }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
 }
@@ -401,7 +401,7 @@ TEST(CSSPropertyParserTest, CrossFadeUseCount) {
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kWebkitCrossFade;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<style>div { background-image: -webkit-cross-fade(url('from.png'), "
       "url('to.png'), 0.2); }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -415,7 +415,7 @@ TEST(CSSPropertyParserTest, TwoValueOverflowOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow: overlay overlay;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -430,7 +430,7 @@ TEST(CSSPropertyParserTest, OneValueOverflowOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow: overlay;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -445,7 +445,7 @@ TEST(CSSPropertyParserTest, OverflowXOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow-x: overlay;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -460,7 +460,7 @@ TEST(CSSPropertyParserTest, OverflowYOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow-y: overlay;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -475,7 +475,7 @@ TEST(CSSPropertyParserTest, OverflowFirstValueOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow: overlay scroll;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -490,7 +490,7 @@ TEST(CSSPropertyParserTest, OverflowSecondValueOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow: scroll overlay;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -615,7 +615,7 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyCyUnitlessUseCount) {
 TEST_F(CSSPropertyUseCounterTest, UnitlessPresentationAttributesNotCounted) {
   WebFeature feature = WebFeature::kSVGGeometryPropertyHasNonZeroUnitlessValue;
   EXPECT_FALSE(IsCounted(feature));
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <svg>
       <rect x="42" y="42" rx="42" ry="42"/>
       <circle cx="42" cy="42" r="42"/>

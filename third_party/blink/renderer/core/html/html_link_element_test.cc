@@ -23,7 +23,7 @@ class HTMLLinkElementSimTest : public SimTest {};
 // This tests that we should ignore empty string value
 // in href attribute value of the link element.
 TEST_F(HTMLLinkElementTest, EmptyHrefAttribute) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(
+  GetDocument().documentElement()->setInnerHTML(
       "<head>"
       "<link rel=\"icon\" type=\"image/ico\" href=\"\" />"
       "</head>");
@@ -34,14 +34,14 @@ TEST_F(HTMLLinkElementTest, EmptyHrefAttribute) {
 // This tests whether Web Monetization counter is properly triggered.
 TEST_F(HTMLLinkElementTest, WebMonetizationCounter) {
   // A <link rel="icon"> is not counted.
-  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().head()->setInnerHTML(R"HTML(
     <link rel="icon" type="image/ico" href="">
   )HTML");
   EXPECT_FALSE(
       GetDocument().IsUseCounted(WebFeature::kHTMLLinkElementMonetization));
 
   // A <link rel="monetization"> is counted.
-  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().head()->setInnerHTML(R"HTML(
     <link rel="monetization">
   )HTML");
   EXPECT_TRUE(

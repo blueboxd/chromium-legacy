@@ -25,7 +25,7 @@ class HTMLContentElementTest : public testing::Test {
 };
 
 TEST_F(HTMLContentElementTest, FallbackRecalcForReattach) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <div id='host'></div>
   )HTML");
 

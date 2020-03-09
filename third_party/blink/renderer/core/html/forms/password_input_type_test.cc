@@ -51,8 +51,7 @@ class MockInsecureInputService : public mojom::blink::InsecureInputService {
 TEST(PasswordInputTypeTest, DidEditFieldEvent) {
   auto page_holder = std::make_unique<DummyPageHolder>(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
-  page_holder->GetDocument().body()->SetInnerHTMLFromString(
-      "<input type='password'>");
+  page_holder->GetDocument().body()->setInnerHTML("<input type='password'>");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
   blink::test::RunPendingTasks();
@@ -79,8 +78,7 @@ TEST(PasswordInputTypeTest, DidEditFieldEventNotSentFromSecureContext) {
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().SetSecureContextModeForTesting(
       SecureContextMode::kSecureContext);
-  page_holder->GetDocument().body()->SetInnerHTMLFromString(
-      "<input type='password'>");
+  page_holder->GetDocument().body()->setInnerHTML("<input type='password'>");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
   // Simulate a text field edit.

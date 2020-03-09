@@ -553,7 +553,7 @@ TEST_F(ContextMenuControllerTest, EditingActionsEnabledInXMLDocument) {
 }
 
 TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
-  GetDocument()->documentElement()->SetInnerHTMLFromString(
+  GetDocument()->documentElement()->setInnerHTML(
       "<input id='sample' type='text' size='5' value='Sample Input Text'>");
 
   Document* document = GetDocument();
@@ -597,7 +597,7 @@ TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
 }
 
 TEST_F(ContextMenuControllerTest, SelectionRectClipped) {
-  GetDocument()->documentElement()->SetInnerHTMLFromString(
+  GetDocument()->documentElement()->setInnerHTML(
       "<textarea id='text-area' cols=6 rows=2>Sample editable text</textarea>");
 
   Document* document = GetDocument();

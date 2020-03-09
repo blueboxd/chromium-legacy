@@ -31,7 +31,7 @@ class RuleFeatureSetTest : public testing::Test {
     html->AppendChild(MakeGarbageCollected<HTMLBodyElement>(*document_));
     document_->AppendChild(html);
 
-    document_->body()->SetInnerHTMLFromString("<b><i></i></b>");
+    document_->body()->setInnerHTML("<b><i></i></b>");
   }
 
   RuleFeatureSet::SelectorPreMatch CollectFeatures(

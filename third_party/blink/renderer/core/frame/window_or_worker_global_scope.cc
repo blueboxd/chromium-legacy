@@ -34,7 +34,6 @@
 
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -148,28 +147,11 @@ int WindowOrWorkerGlobalScope::setTimeout(
                            base::TimeDelta::FromMilliseconds(timeout), true);
 }
 
-int WindowOrWorkerGlobalScope::setTimeout(
-    ScriptState* script_state,
-    EventTarget& event_target,
-    const StringOrTrustedScript& string_or_trusted_script,
-    int timeout,
-    const HeapVector<ScriptValue>& arguments,
-    ExceptionState& exception_state) {
-  ExecutionContext* execution_context = event_target.GetExecutionContext();
-  String handler = TrustedTypesCheckForScript(
-      string_or_trusted_script, execution_context, exception_state);
-  if (exception_state.HadException())
-    return 0;
-  return setTimeoutFromString(script_state, event_target, handler, timeout,
-                              arguments);
-}
-
-int WindowOrWorkerGlobalScope::setTimeoutFromString(
-    ScriptState* script_state,
-    EventTarget& event_target,
-    const String& handler,
-    int timeout,
-    const HeapVector<ScriptValue>&) {
+int WindowOrWorkerGlobalScope::setTimeout(ScriptState* script_state,
+                                          EventTarget& event_target,
+                                          const String& handler,
+                                          int timeout,
+                                          const HeapVector<ScriptValue>&) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(execution_context, true, handler))
     return 0;
@@ -203,28 +185,11 @@ int WindowOrWorkerGlobalScope::setInterval(
                            base::TimeDelta::FromMilliseconds(timeout), false);
 }
 
-int WindowOrWorkerGlobalScope::setInterval(
-    ScriptState* script_state,
-    EventTarget& event_target,
-    const StringOrTrustedScript& string_or_trusted_script,
-    int timeout,
-    const HeapVector<ScriptValue>& arguments,
-    ExceptionState& exception_state) {
-  ExecutionContext* execution_context = event_target.GetExecutionContext();
-  String handler = TrustedTypesCheckForScript(
-      string_or_trusted_script, execution_context, exception_state);
-  if (exception_state.HadException())
-    return 0;
-  return setIntervalFromString(script_state, event_target, handler, timeout,
-                               arguments);
-}
-
-int WindowOrWorkerGlobalScope::setIntervalFromString(
-    ScriptState* script_state,
-    EventTarget& event_target,
-    const String& handler,
-    int timeout,
-    const HeapVector<ScriptValue>&) {
+int WindowOrWorkerGlobalScope::setInterval(ScriptState* script_state,
+                                           EventTarget& event_target,
+                                           const String& handler,
+                                           int timeout,
+                                           const HeapVector<ScriptValue>&) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(execution_context, true, handler))
     return 0;

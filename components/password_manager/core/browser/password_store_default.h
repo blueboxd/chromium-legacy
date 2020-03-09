@@ -34,8 +34,7 @@ class PasswordStoreDefault : public PasswordStore {
 
   // Opens |login_db_| on the background sequence.
   bool InitOnBackgroundSequence(
-      const syncer::SyncableService::StartSyncFlare& flare,
-      version_info::Channel channel) override;
+      const syncer::SyncableService::StartSyncFlare& flare) override;
 
   // Implements PasswordStore interface.
   void ReportMetricsImpl(const std::string& sync_username,

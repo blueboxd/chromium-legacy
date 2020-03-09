@@ -52,7 +52,7 @@ class CSSVariableResolverTest : public PageTestBase {
   }
 
   void SetTestHTML(const String& value) {
-    GetDocument().body()->SetInnerHTMLFromString(
+    GetDocument().body()->setInnerHTML(
         "<style>"
         "  #target {"
         "    --main-bg-color: black;"
@@ -129,7 +129,7 @@ class CSSVariableResolverTest : public PageTestBase {
     builder.Append("</style>\n");
     builder.Append("<div id=target></div>\n");
 
-    GetDocument().body()->SetInnerHTMLFromString(builder.ToString());
+    GetDocument().body()->setInnerHTML(builder.ToString());
     UpdateAllLifecyclePhasesForTest();
   }
 };
@@ -426,7 +426,7 @@ TEST_F(CSSVariableResolverTest, BillionLaughs) {
   builder.Append("</style>\n");
   builder.Append("<div id=target></div>\n");
 
-  GetDocument().body()->SetInnerHTMLFromString(builder.ToString());
+  GetDocument().body()->setInnerHTML(builder.ToString());
   UpdateAllLifecyclePhasesForTest();
 
   Element* target = GetDocument().getElementById("target");

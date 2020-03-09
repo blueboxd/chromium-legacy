@@ -102,7 +102,7 @@ void WebApkIconHasher::DownloadAndComputeMurmur2HashWithTimeout(
     if (net::DataURL::Parse(icon_url, &mime_type, &char_set, &data) &&
         !data.empty()) {
       icon.hash = ComputeMurmur2Hash(data);
-      icon.data = std::move(data);
+      icon.unsafe_data = std::move(data);
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(icon)));
@@ -160,8 +160,8 @@ void WebApkIconHasher::OnSimpleLoaderComplete(
   // malicious data. Decoding unsanitized bitmap data to an SkBitmap in the
   // browser process is a security bug.
   Icon icon;
-  icon.data = std::move(*response_body);
-  icon.hash = ComputeMurmur2Hash(icon.data);
+  icon.unsafe_data = std::move(*response_body);
+  icon.hash = ComputeMurmur2Hash(icon.unsafe_data);
   RunCallback(std::move(icon));
 }
 

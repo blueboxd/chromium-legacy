@@ -127,7 +127,7 @@ TEST_F(EditingUtilitiesTest, isEditablePositionWithTable) {
   // element. So, we build DOM tree manually.
   // Note: This is unusual HTML taken from http://crbug.com/574230
   Element* table = GetDocument().CreateRawElement(html_names::kTableTag);
-  table->SetInnerHTMLFromString("<caption>foo</caption>");
+  table->setInnerHTML("<caption>foo</caption>");
   while (GetDocument().firstChild())
     GetDocument().firstChild()->remove();
   GetDocument().AppendChild(table);

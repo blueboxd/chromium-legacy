@@ -31,7 +31,7 @@ void PendingInvalidationsTest::SetUp() {
 }
 
 TEST_F(PendingInvalidationsTest, ScheduleOnDocumentNode) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<div id='d'></div><i id='i'></i><span></span>");
   GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
@@ -63,7 +63,7 @@ TEST_F(PendingInvalidationsTest, ScheduleOnDocumentNode) {
 }
 
 TEST_F(PendingInvalidationsTest, DescendantInvalidationOnDisplayNone) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       #a { display: none }
       .a .b { color: green }

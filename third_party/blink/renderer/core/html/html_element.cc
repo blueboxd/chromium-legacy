@@ -1661,6 +1661,6 @@ void HTMLElement::FinishParsingChildren() {
 void dumpInnerHTML(blink::HTMLElement*);
 
 void dumpInnerHTML(blink::HTMLElement* element) {
-  printf("%s\n", element->InnerHTMLAsString().Ascii().c_str());
+  printf("%s\n", element->innerHTML().Ascii().c_str());
 }
 #endif

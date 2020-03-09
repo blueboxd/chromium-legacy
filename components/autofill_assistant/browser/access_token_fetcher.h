@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/callback.h"
+
 namespace autofill_assistant {
 
 // An interface that abstracts the steps needed to choose a user to sign in,

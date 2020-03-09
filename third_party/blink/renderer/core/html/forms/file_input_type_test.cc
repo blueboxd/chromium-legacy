@@ -138,7 +138,7 @@ TEST(FileInputTypeTest, DropTouchesNoPopupOpeningObserver) {
       std::make_unique<DummyPageHolder>(IntSize(), &page_clients);
   Document& doc = page_holder->GetDocument();
 
-  doc.body()->SetInnerHTMLFromString("<input type=file webkitdirectory>");
+  doc.body()->setInnerHTML("<input type=file webkitdirectory>");
   auto& input = *To<HTMLInputElement>(doc.body()->firstChild());
 
   base::RunLoop run_loop;

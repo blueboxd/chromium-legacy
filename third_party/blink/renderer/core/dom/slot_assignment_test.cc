@@ -103,7 +103,7 @@ void SlotAssignmentTest::SetUp() {
 
 void SlotAssignmentTest::SetBody(const char* html) {
   Element* body = GetDocument().body();
-  body->SetInnerHTMLFromString(String::FromUTF8(html));
+  body->setInnerHTML(String::FromUTF8(html));
   ConvertDeclarativeShadowDOMToShadowRoot(*body);
   RemoveWhiteSpaceOnlyTextNode(*body);
 }

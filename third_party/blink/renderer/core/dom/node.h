@@ -260,7 +260,7 @@ class CORE_EXPORT Node : public EventTarget {
   const AtomicString& lookupNamespaceURI(const String& prefix) const;
 
   String textContent(bool convert_brs_to_newlines = false) const;
-  void setTextContent(const String&);
+  virtual void setTextContent(const String&);
   void textContent(StringOrTrustedScript& result);
   virtual void setTextContent(const StringOrTrustedScript&, ExceptionState&);
 

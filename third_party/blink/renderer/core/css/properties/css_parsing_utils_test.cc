@@ -16,7 +16,7 @@ TEST(CSSParsingUtilsTest, BasicShapeUseCount) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSBasicShape;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<style>span { shape-outside: circle(); }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
 }

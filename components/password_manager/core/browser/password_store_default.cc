@@ -22,7 +22,8 @@ PasswordStoreDefault::PasswordStoreDefault(
     std::unique_ptr<LoginDatabase> login_db)
     : login_db_(std::move(login_db)) {}
 
-PasswordStoreDefault::~PasswordStoreDefault() = default;
+PasswordStoreDefault::~PasswordStoreDefault() {
+}
 
 void PasswordStoreDefault::ShutdownOnUIThread() {
   PasswordStore::ShutdownOnUIThread();
@@ -30,8 +31,7 @@ void PasswordStoreDefault::ShutdownOnUIThread() {
 }
 
 bool PasswordStoreDefault::InitOnBackgroundSequence(
-    const syncer::SyncableService::StartSyncFlare& flare,
-    version_info::Channel channel) {
+    const syncer::SyncableService::StartSyncFlare& flare) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(login_db_);
   bool success = true;
@@ -42,7 +42,7 @@ bool PasswordStoreDefault::InitOnBackgroundSequence(
     success = false;
     LOG(ERROR) << "Could not create/open login database.";
   }
-  return PasswordStore::InitOnBackgroundSequence(flare, channel) && success;
+  return PasswordStore::InitOnBackgroundSequence(flare) && success;
 }
 
 void PasswordStoreDefault::ReportMetricsImpl(
@@ -155,8 +155,9 @@ bool PasswordStoreDefault::RemoveStatisticsByOriginAndTimeImpl(
     const base::Callback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end) {
-  return login_db_ && login_db_->stats_table().RemoveStatsByOriginAndTime(
-                          origin_filter, delete_begin, delete_end);
+  return login_db_ &&
+         login_db_->stats_table().RemoveStatsByOriginAndTime(
+             origin_filter, delete_begin, delete_end);
 }
 
 std::vector<std::unique_ptr<PasswordForm>>

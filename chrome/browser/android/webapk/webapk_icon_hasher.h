@@ -29,7 +29,11 @@ class WebApkIconHasher {
  public:
   // Result struct for holding the downloaded icon data and its hash.
   struct Icon {
-    std::string data;
+    // The result of fetching the |icon|. This is untrusted data from the web
+    // and should not be processed or decoded by the browser process.
+    std::string unsafe_data;
+
+    // The murmur2 hash of |unsafe_data|.
     std::string hash;
   };
 

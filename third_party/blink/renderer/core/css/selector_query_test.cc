@@ -67,7 +67,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   auto* document = MakeGarbageCollected<Document>();
   auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document);
   document->AppendChild(html);
-  document->documentElement()->SetInnerHTMLFromString(
+  document->documentElement()->setInnerHTML(
       "<body><style>span::before { content: 'X' }</style><span></span></body>");
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
@@ -96,7 +96,7 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
   auto* document = MakeGarbageCollected<HTMLDocument>();
   auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document);
   document->AppendChild(html);
-  document->documentElement()->SetInnerHTMLFromString(
+  document->documentElement()->setInnerHTML(
       "<body><p></p><p id=last></p></body>", ASSERT_NO_EXCEPTION);
 
   document->body()->BeginParsingChildren();
@@ -331,7 +331,7 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
 TEST(SelectorQueryTest, DisconnectedSubtree) {
   auto* document = MakeGarbageCollected<HTMLDocument>();
   Element* scope = document->CreateRawElement(html_names::kDivTag);
-  scope->SetInnerHTMLFromString(R"HTML(
+  scope->setInnerHTML(R"HTML(
     <section>
       <span id=first>
         <span id=A class=A></span>
@@ -360,7 +360,7 @@ TEST(SelectorQueryTest, DisconnectedTreeScope) {
   Element* host = document->CreateRawElement(html_names::kDivTag);
   ShadowRoot& shadowRoot =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadowRoot.SetInnerHTMLFromString(R"HTML(
+  shadowRoot.setInnerHTML(R"HTML(
     <section>
       <span id=first>
         <span id=A class=A></span>

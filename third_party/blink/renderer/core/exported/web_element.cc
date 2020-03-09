@@ -125,7 +125,7 @@ WebString WebElement::TextContent() const {
 }
 
 WebString WebElement::InnerHTML() const {
-  return ConstUnwrap<Element>()->InnerHTMLAsString();
+  return ConstUnwrap<Element>()->innerHTML();
 }
 
 bool WebElement::IsAutonomousCustomElement() const {

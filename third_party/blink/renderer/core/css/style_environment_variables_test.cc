@@ -48,7 +48,7 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
 
   void InitializeWithHTML(LocalFrame& frame, const String& html_content) {
     // Sets the inner html and runs the document lifecycle.
-    frame.GetDocument()->body()->SetInnerHTMLFromString(html_content);
+    frame.GetDocument()->body()->setInnerHTML(html_content);
     frame.GetDocument()->View()->UpdateAllLifecyclePhases(
         DocumentUpdateReason::kTest);
   }

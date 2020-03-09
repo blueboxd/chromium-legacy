@@ -105,7 +105,7 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
 
   void SetBodyInnerHTML(String body_content) {
     GetDocument().body()->setAttribute(html_names::kStyleAttr, "margin: 0");
-    GetDocument().body()->SetInnerHTMLFromString(body_content);
+    GetDocument().body()->setInnerHTML(body_content);
   }
 
   void PrintSinglePage(SkCanvas& canvas) {

@@ -46,7 +46,6 @@ class ExceptionState;
 class FloatQuad;
 class Node;
 class NodeWithIndex;
-class StringOrTrustedHTML;
 class Text;
 
 class CORE_EXPORT Range final : public ScriptWrappable {
@@ -117,7 +116,7 @@ class CORE_EXPORT Range final : public ScriptWrappable {
 
   String GetText() const;
 
-  DocumentFragment* createContextualFragment(const StringOrTrustedHTML& html,
+  DocumentFragment* createContextualFragment(const String& html,
                                              ExceptionState&);
 
   void detach();
@@ -205,9 +204,6 @@ class CORE_EXPORT Range final : public ScriptWrappable {
                                                 ExceptionState&);
   void UpdateSelectionIfAddedToSelection();
   void RemoveFromSelectionIfInDifferentRoot(Document& old_document);
-
-  DocumentFragment* createContextualFragmentFromString(const String& html,
-                                                       ExceptionState&);
 
   Member<Document> owner_document_;  // Cannot be null.
   RangeBoundaryPoint start_;

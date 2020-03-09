@@ -153,7 +153,7 @@ TYPED_TEST_P(InvalidationServiceTest, Basic) {
   expected_invalidations.Insert(
       syncer::Invalidation::Init(this->topic3, 3, "3"));
 
-  // Removed object IDs should not be notified, newly-added ones should.
+  // Removed Topics should not be notified, newly-added ones should.
   this->delegate_.TriggerOnIncomingInvalidation(invalidation_map);
   EXPECT_EQ(2, handler.GetInvalidationCount());
   EXPECT_THAT(expected_invalidations, Eq(handler.GetLastInvalidationMap()));
@@ -269,8 +269,8 @@ TYPED_TEST_P(InvalidationServiceTest, MultipleHandlers) {
   invalidator->UnregisterInvalidationHandler(&handler1);
 }
 
-// Multiple registrations by different handlers on the same object ID should
-// return false.
+// Multiple registrations by different handlers on the same Topic should return
+// false.
 TYPED_TEST_P(InvalidationServiceTest, MultipleRegistrations) {
   invalidation::InvalidationService* const invalidator =
       this->CreateAndInitializeInvalidationService();

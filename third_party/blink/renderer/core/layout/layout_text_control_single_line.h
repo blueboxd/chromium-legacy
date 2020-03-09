@@ -89,7 +89,12 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
   bool should_draw_caps_lock_indicator_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControlSingleLine, IsTextField());
+template <>
+struct DowncastTraits<LayoutTextControlSingleLine> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsTextField();
+  }
+};
 
 // ----------------------------
 

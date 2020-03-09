@@ -57,7 +57,9 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
           service_worker_host,
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info,
       blink::mojom::ServiceWorkerObjectInfoPtr service_worker_info,
-      FetchHandlerExistence fetch_handler_existence) override;
+      FetchHandlerExistence fetch_handler_existence,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          subresource_loader_factories) override;
   void DispatchInstallEvent(DispatchInstallEventCallback callback) override;
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override;
   void DispatchBackgroundFetchAbortEvent(

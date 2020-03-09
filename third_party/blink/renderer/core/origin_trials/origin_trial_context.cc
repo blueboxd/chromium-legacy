@@ -308,6 +308,49 @@ bool OriginTrialContext::IsNavigationFeatureActivated(
   return navigation_activated_features_.Contains(feature);
 }
 
+void OriginTrialContext::AddForceEnabledTrials(
+    const Vector<String>& trial_names) {
+  bool is_valid = false;
+  for (const auto& trial_name : trial_names) {
+    DCHECK(origin_trials::IsTrialValid(trial_name));
+    is_valid |=
+        EnableTrialFromName(trial_name, /*expiry_time=*/base::Time::Max());
+  }
+
+  if (is_valid) {
+    // Only install pending features if at least one trial is valid. Otherwise
+    // there was no change to the list of enabled features.
+    InitializePendingFeatures();
+  }
+}
+
+bool OriginTrialContext::EnableTrialFromName(const String& trial_name,
+                                             base::Time expiry_time) {
+  bool did_enable_feature = false;
+  for (OriginTrialFeature feature :
+       origin_trials::FeaturesForTrial(trial_name)) {
+    if (origin_trials::FeatureEnabledForOS(feature)) {
+      did_enable_feature = true;
+      enabled_features_.insert(feature);
+
+      // Use the latest expiry time for the feature.
+      if (GetFeatureExpiry(feature) < expiry_time)
+        feature_expiry_times_.Set(feature, expiry_time);
+
+      // Also enable any features implied by this feature.
+      for (OriginTrialFeature implied_feature :
+           origin_trials::GetImpliedFeatures(feature)) {
+        enabled_features_.insert(implied_feature);
+
+        // Use the latest expiry time for the implied feature.
+        if (GetFeatureExpiry(implied_feature) < expiry_time)
+          feature_expiry_times_.Set(implied_feature, expiry_time);
+      }
+    }
+  }
+  return did_enable_feature;
+}
+
 bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
                                               bool is_secure,
                                               const String& token) {
@@ -333,27 +376,7 @@ bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
       // is for deprecation trials.
       if (is_secure ||
           origin_trials::IsTrialEnabledForInsecureContext(trial_name)) {
-        for (OriginTrialFeature feature :
-             origin_trials::FeaturesForTrial(trial_name)) {
-          if (origin_trials::FeatureEnabledForOS(feature)) {
-            valid = true;
-            enabled_features_.insert(feature);
-
-            // Use the latest expiry time for the feature.
-            if (GetFeatureExpiry(feature) < expiry_time)
-              feature_expiry_times_.Set(feature, expiry_time);
-
-            // Also enable any features implied by this feature.
-            for (OriginTrialFeature implied_feature :
-                 origin_trials::GetImpliedFeatures(feature)) {
-              enabled_features_.insert(implied_feature);
-
-              // Use the latest expiry time for the implied feature.
-              if (GetFeatureExpiry(implied_feature) < expiry_time)
-                feature_expiry_times_.Set(implied_feature, expiry_time);
-            }
-          }
-        }
+        valid = EnableTrialFromName(trial_name, expiry_time);
       } else {
         // Insecure origin and trial is restricted to secure origins.
         token_result = OriginTrialTokenStatus::kInsecure;

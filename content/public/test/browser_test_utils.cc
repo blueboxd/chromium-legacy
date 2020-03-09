@@ -676,15 +676,6 @@ void ResetTouchAction(RenderWidgetHost* host) {
       ->ForceResetTouchActionForTest();
 }
 
-void RequestMouseLock(RenderWidgetHost* host,
-                      bool user_gesture,
-                      bool privileged,
-                      bool request_unadjusted_movement) {
-  static_cast<RenderWidgetHostImpl*>(host)->RequestMouseLock(
-      user_gesture, privileged, request_unadjusted_movement,
-      /*response=*/base::DoNothing());
-}
-
 void RunUntilInputProcessed(RenderWidgetHost* host) {
   base::RunLoop run_loop;
   RenderWidgetHostImpl::From(host)->WaitForInputProcessed(
@@ -3166,6 +3157,17 @@ void PwnMessageHelper::FileSystemWrite(RenderProcessHost* process,
                              op.BindNewPipeAndPassReceiver(),
                              std::move(listener));
   waiter.WaitForOperationToFinish();
+}
+
+void PwnMessageHelper::LockMouse(RenderProcessHost* process,
+                                 int routing_id,
+                                 bool user_gesture,
+                                 bool privileged,
+                                 bool request_unadjusted_movement) {
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      process->GetChannel(),
+      WidgetHostMsg_LockMouse(routing_id, user_gesture, privileged,
+                              request_unadjusted_movement));
 }
 
 void PwnMessageHelper::OpenURL(RenderProcessHost* process,

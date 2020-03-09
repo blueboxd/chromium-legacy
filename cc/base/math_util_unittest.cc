@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <limits>
 
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -373,6 +374,26 @@ TEST(MathUtilTest, MapEnclosingRectWithLargeTransforms) {
   output =
       MathUtil::MapEnclosingClippedRect(infinite_y_scale * rotation, input);
   EXPECT_EQ(gfx::Rect(), output);
+}
+
+TEST(MathUtilTest, MapEnclosingRectIgnoringError) {
+  float scale = 2.00001;
+  gfx::Rect input(0, 0, 1000, 500);
+  gfx::Rect output;
+
+  gfx::Transform transform;
+  transform.Scale(SkDoubleToScalar(scale), SkDoubleToScalar(scale));
+  output =
+      MathUtil::MapEnclosingClippedRectIgnoringError(transform, input, 0.f);
+  EXPECT_EQ(gfx::Rect(0, 0, 2001, 1001), output);
+
+  output =
+      MathUtil::MapEnclosingClippedRectIgnoringError(transform, input, 0.002f);
+  EXPECT_EQ(gfx::Rect(0, 0, 2001, 1001), output);
+
+  output =
+      MathUtil::MapEnclosingClippedRectIgnoringError(transform, input, 0.02f);
+  EXPECT_EQ(gfx::Rect(0, 0, 2000, 1000), output);
 }
 
 TEST(MathUtilTest, ProjectEnclosingRectWithLargeTransforms) {

@@ -800,7 +800,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           network::mojom::IPAddressSpace::kUnknown,
           GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */,
-          frame_tree_node->pending_frame_policy());
+          frame_tree_node->pending_frame_policy(),
+          std::vector<std::string>() /* force_enabled_origin_trials */);
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(begin_params),
       std::move(commit_params),
@@ -876,7 +877,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           network::mojom::IPAddressSpace::kUnknown,
           GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */,
-          base::nullopt /* frame policy */
+          base::nullopt /* frame policy */,
+          std::vector<std::string>() /* force_enabled_origin_trials */
       );
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New();
@@ -4023,6 +4025,12 @@ void NavigationRequest::RestartBackForwardCachedNavigationImpl() {
     return;
 
   controller->GoToIndex(nav_index);
+}
+
+void NavigationRequest::ForceEnableOriginTrials(
+    const std::vector<std::string>& trials) {
+  DCHECK(!HasCommitted());
+  commit_params_->force_enabled_origin_trials = trials;
 }
 
 std::unique_ptr<PeakGpuMemoryTracker>

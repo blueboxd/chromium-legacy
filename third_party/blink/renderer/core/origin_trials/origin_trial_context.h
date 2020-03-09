@@ -85,6 +85,10 @@ class CORE_EXPORT OriginTrialContext final
   // and immediately adds required bindings to already initialized JS contexts.
   void AddFeature(OriginTrialFeature feature);
 
+  // Forces given trials to be enabled in this context and immediately adds
+  // required bindings to already initialized JS contexts.
+  void AddForceEnabledTrials(const Vector<String>& trial_names);
+
   // Returns true if the feature should be considered enabled for the current
   // execution context.
   bool IsFeatureEnabled(OriginTrialFeature feature) const;
@@ -119,6 +123,10 @@ class CORE_EXPORT OriginTrialContext final
   void Trace(Visitor*);
 
  private:
+  // Enable features by trial name. Returns true or false to indicate whether
+  // some features are enabled as the result.
+  bool EnableTrialFromName(const String& trial_name, base::Time expiry_time);
+
   // Validate the trial token. If valid, the trial named in the token is
   // added to the list of enabled trials. Returns true or false to indicate if
   // the token is valid.

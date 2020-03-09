@@ -395,4 +395,7 @@ struct CommitNavigationParams {
   // - For remote frame navigation, the value is set at
   // NavigationControllerImpl::CreateNavigationRequestFromLoadParams.
   blink.mojom.FramePolicy? frame_policy;
+
+  // The names of origin trials to be force enabled for this navigation.
+  array<string> force_enabled_origin_trials;
 };

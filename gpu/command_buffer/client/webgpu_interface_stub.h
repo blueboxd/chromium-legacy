@@ -36,6 +36,7 @@ class WebGPUInterfaceStub : public WebGPUInterface {
       const WGPUDeviceProperties& requested_device_properties,
       base::OnceCallback<void(bool, DawnDeviceClientID)>
           request_device_callback) override;
+  void RemoveDevice(DawnDeviceClientID device_client_id) override;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

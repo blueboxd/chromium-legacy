@@ -39,6 +39,8 @@
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/browser/service_worker/service_worker_update_checker.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -55,6 +57,10 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+namespace blink {
+class PendingURLLoaderFactoryBundle;
+}
 
 namespace net {
 class HttpResponseInfo;
@@ -440,7 +446,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
     force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
   }
 
-  bool pause_after_download() const { return pause_after_download_; }
+  void set_initialize_global_scope_after_main_script_loaded() {
+    DCHECK(!initialize_global_scope_after_main_script_loaded_);
+    initialize_global_scope_after_main_script_loaded_ = true;
+  }
 
   void set_outside_fetch_client_settings_object(
       blink::mojom::FetchClientSettingsObjectPtr
@@ -863,7 +872,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                  GetClientCallback callback,
                                  bool success);
 
-  void InitializeGlobalScope();
+  void InitializeGlobalScope(
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          subresource_loader_factories);
 
   // Update the idle delay if the worker is starting or running and we don't
   // have to terminate the worker ASAP (e.g. for activation).
@@ -998,11 +1009,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // When true, script evaluation doesn't start until InitializeGlobalScope() is
   // called. This allows the browser process to prevent the renderer from
   // evaluating the script immediately after the script has been loaded, until
-  // certain checks are satisfied.
-  // TODO(https://crbug.com/1039613): Use this to get proper COEP value and
-  // re-create URLLoaderFactories for the service workers before evaluating the
-  // script.
-  bool pause_after_download_ = false;
+  // the subresource loader factories are updated.
+  bool initialize_global_scope_after_main_script_loaded_ = false;
 
   std::unique_ptr<net::HttpResponseInfo> main_script_http_info_;
 

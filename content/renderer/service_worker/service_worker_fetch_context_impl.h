@@ -13,7 +13,7 @@
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
-#include "third_party/blink/public/platform/web_worker_fetch_context.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_fetch_context.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -23,9 +23,9 @@ class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
 
 class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
-    : public blink::WebWorkerFetchContext,
-      public blink::mojom::SubresourceLoaderUpdater,
-      public blink::mojom::RendererPreferenceWatcher {
+    : public blink::WebServiceWorkerFetchContext,
+      public blink::mojom::RendererPreferenceWatcher,
+      public blink::mojom::SubresourceLoaderUpdater {
  public:
   // |pending_url_loader_factory| is used for regular loads from the service
   // worker (i.e., Fetch API). It typically goes to network, but it might
@@ -54,7 +54,7 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
           pending_subresource_loader_updater,
       int32_t service_worker_route_id);
 
-  // blink::WebWorkerFetchContext implementation:
+  // blink::WebServiceWorkerFetchContext implementation:
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
   void InitializeOnWorkerThread(blink::AcceptLanguagesWatcher*) override;
   blink::WebURLLoaderFactory* GetURLLoaderFactory() override;
@@ -66,7 +66,6 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
       const override;
   net::SiteForCookies SiteForCookies() const override;
   base::Optional<blink::WebSecurityOrigin> TopFrameOrigin() const override;
-
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
@@ -74,14 +73,16 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
   mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
       int request_id) override;
   void SetIsOfflineMode(bool) override;
+  blink::mojom::SubresourceLoaderUpdater* GetSubresourceLoaderUpdater()
+      override;
 
- private:
-  ~ServiceWorkerFetchContextImpl() override;
-
-  // Implements blink::mojom::ServiceWorkerFetchContext
+  // blink::mojom::SubresourceLoaderUpdater implementation:
   void UpdateSubresourceLoaderFactories(
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories) override;
+
+ private:
+  ~ServiceWorkerFetchContextImpl() override;
 
   // Implements blink::mojom::RendererPreferenceWatcher.
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;

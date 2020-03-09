@@ -4,6 +4,10 @@
 
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
@@ -12,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/site_instance.h"
@@ -59,12 +64,19 @@ void WebAppTabHelper::SetAppId(const AppId& app_id) {
 
 void WebAppTabHelper::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
-    return;
+  if (navigation_handle->IsInMainFrame()) {
+    const GURL& url = navigation_handle->GetURL();
+    const AppId app_id = FindAppIdWithUrlInScope(url);
+    SetAppId(app_id);
+  }
 
-  const GURL& url = navigation_handle->GetURL();
-  const AppId app_id = FindAppIdWithUrlInScope(url);
-  SetAppId(app_id);
+  // If navigating to a System Web App (including navigation in sub frames), let
+  // SystemWebAppManager perform tab-secific setup for navigations in System Web
+  // Apps.
+  if (provider_->system_web_app_manager().IsSystemWebApp(GetAppId())) {
+    provider_->system_web_app_manager().OnReadyToCommitNavigation(
+        GetAppId(), navigation_handle);
+  }
 }
 
 void WebAppTabHelper::DidFinishNavigation(

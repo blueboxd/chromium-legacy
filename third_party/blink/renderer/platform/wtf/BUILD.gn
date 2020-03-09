@@ -175,6 +175,7 @@ jumbo_component("wtf") {
     "uuid.cc",
     "uuid.h",
     "vector.h",
+    "vector_backed_linked_list.h",
     "vector_traits.h",
     "wtf.cc",
     "wtf.h",
@@ -296,6 +297,7 @@ jumbo_source_set("wtf_unittests_sources") {
     "tree_node_test.cc",
     "type_traits_test.cc",
     "uuid_test.cc",
+    "vector_backed_linked_list_test.cc",
     "vector_test.cc",
   ]
 

@@ -35,8 +35,6 @@ class RenderWidgetMouseLockDispatcher : public MouseLockDispatcher {
 
   RenderWidget* render_widget_;
 
-  base::WeakPtrFactory<RenderWidgetMouseLockDispatcher> weak_ptr_factory_{this};
-
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetMouseLockDispatcher);
 };
 

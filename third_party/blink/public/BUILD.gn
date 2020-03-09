@@ -132,6 +132,7 @@ source_set("blink_headers") {
     "platform/modules/mediastream/web_platform_media_stream_track.h",
     "platform/modules/remoteplayback/web_remote_playback_client.h",
     "platform/modules/service_worker/web_service_worker_error.h",
+    "platform/modules/service_worker/web_service_worker_fetch_context.h",
     "platform/modules/service_worker/web_service_worker_network_provider.h",
     "platform/modules/service_worker/web_service_worker_object_info.h",
     "platform/modules/service_worker/web_service_worker_provider.h",

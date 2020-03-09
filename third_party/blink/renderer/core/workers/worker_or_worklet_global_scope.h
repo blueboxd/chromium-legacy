@@ -180,6 +180,10 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
     web_worker_fetch_context_->SetIsOfflineMode(is_offline_mode);
   }
 
+  WebWorkerFetchContext* web_worker_fetch_context() const {
+    return web_worker_fetch_context_.get();
+  }
+
  private:
   void InitializeWebFetchContextIfNeeded();
   ResourceFetcher* CreateFetcherInternal(const FetchClientSettingsObject&,

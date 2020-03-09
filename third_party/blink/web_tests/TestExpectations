@@ -6584,6 +6584,10 @@ crbug.com/944449 external/wpt/scroll-animations/scroll-animation.html [ Pass Cra
 # Sheriff 2020-02-10
 crbug.com/1050306 [ Fuchsia ] virtual/gpu/fast/canvas/canvas-filter-frameless-document.html [ Crash Pass Timeout ]
 
+# Imperative Shadow DOM Slot API - WIP
+crbug.com/869308 external/wpt/shadow-dom/slots-imperative-slot-api.tentative.html [ Failure ]
+crbug.com/869308 virtual/web-components-v0-disabled/external/wpt/shadow-dom/slots-imperative-slot-api.tentative.html [ Failure ]
+
 # Swiftshader issue.
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-innerwidth.html [ Crash Timeout ]
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-screeny.html [ Crash Timeout ]
@@ -6767,3 +6771,6 @@ crbug.com/1059322 [ Mac ] fast/forms/file/file-input-click.html [ Pass Failure ]
 crbug.com/1059322 [ Mac ] fast/forms/autofocus-focus-only-once.html [ Pass Failure ]
 crbug.com/1059322 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/autofocus-focus-only-once.html [ Pass Failure ]
 crbug.com/1058244 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Pass Failure ]
+
+# Sheriff 2020-03-08
+crbug.com/1059645 [ Mac10.14 ] external/wpt/pointerevents/pointerevent_coalesced_events_attributes.html [ Pass Failure ]

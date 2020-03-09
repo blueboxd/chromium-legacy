@@ -312,7 +312,7 @@ ci.android_builder(
 
 
 ci.android_fyi_builder(
-    name = 'android-bfcache-debug',
+    name = 'android-bfcache-rel',
 )
 
 ci.android_fyi_builder(

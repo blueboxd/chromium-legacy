@@ -348,8 +348,8 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
 void KeyboardEventManager::CapsLockStateMayHaveChanged() {
   if (Element* element = frame_->GetDocument()->FocusedElement()) {
     if (LayoutObject* r = element->GetLayoutObject()) {
-      if (r->IsTextField())
-        ToLayoutTextControlSingleLine(r)->CapsLockStateMayHaveChanged();
+      if (auto* text_control = DynamicTo<LayoutTextControlSingleLine>(r))
+        text_control->CapsLockStateMayHaveChanged();
     }
   }
 }

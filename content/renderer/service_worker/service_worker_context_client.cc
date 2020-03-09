@@ -366,7 +366,7 @@ void ServiceWorkerContextClient::ReportConsoleMessage(
                                          blink::WebStringToGURL(source_url));
 }
 
-scoped_refptr<blink::WebWorkerFetchContext>
+scoped_refptr<blink::WebServiceWorkerFetchContext>
 ServiceWorkerContextClient::CreateWorkerFetchContextOnInitiatorThread() {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(preference_watcher_receiver_.is_valid());

@@ -746,7 +746,7 @@
         'use_swarming': True,
         'os_type': 'android',
       },
-      'android-bfcache-debug': {
+      'android-bfcache-rel': {
         'mixins': [
           'kitkat',
           'hammerhead',

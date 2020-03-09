@@ -196,7 +196,8 @@ std::vector<std::string> GenerateKernelCmdline(
     }
   }
 
-  // TODO(yusukes): Handle |is_managed_account| in |upgrade_params|.
+  // TODO(yusukes): Handle |is_account_managed| in |upgrade_params| when we
+  // implement apk sideloading for ARCVM.
   return result;
 }
 

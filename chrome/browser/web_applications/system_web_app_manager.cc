@@ -29,8 +29,10 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -47,6 +49,24 @@
 namespace web_app {
 
 namespace {
+
+// Use #if defined to avoid compiler error on unused function.
+#if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
+
+// A convenience method to create OriginTrialsMap. Note, we only support simple
+// cases for chrome:// and chrome-untrusted:// URLs. We don't support complex
+// cases such as about:blank (which inherits origins from the embedding frame).
+url::Origin GetOrigin(const char* url) {
+  GURL gurl = GURL(url);
+  DCHECK(gurl.is_valid());
+
+  url::Origin origin = url::Origin::Create(gurl);
+  DCHECK(!origin.opaque());
+
+  return origin;
+}
+
+#endif  // OS_CHROMEOS && !OFFICIAL_BUILD
 
 base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   base::flat_map<SystemAppType, SystemAppInfo> infos;
@@ -102,6 +122,12 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   infos.emplace(
       SystemAppType::SAMPLE,
       SystemAppInfo("Sample", GURL("chrome://sample-system-web-app/pwa.html")));
+  // Frobulate is the name for Sample Origin Trial API, and has no impact on the
+  // Web App's functionality. Here we use it to demonstrate how to enable origin
+  // trials for a System Web App.
+  infos.at(SystemAppType::SAMPLE).enabled_origin_trials = OriginTrialsMap(
+      {{GetOrigin("chrome://sample-system-web-app"), {"Frobulate"}},
+       {GetOrigin("chrome-untrusted://sample-system-web-app"), {"Frobulate"}}});
 #endif  // !defined(OFFICIAL_BUILD)
 
 #endif  // OS_CHROMEOS
@@ -210,6 +236,23 @@ void SystemWebAppManager::SetSubsystems(PendingAppManager* pending_app_manager,
 void SystemWebAppManager::Start() {
   const base::TimeTicks install_start_time = base::TimeTicks::Now();
 
+#if DCHECK_IS_ON()
+  // Check Origin Trials are defined correctly.
+  for (const auto& type_and_app_info : system_app_infos_) {
+    for (const auto& origin_to_trial_names :
+         type_and_app_info.second.enabled_origin_trials) {
+      // Only allow force enabled origin trials on chrome:// and
+      // chrome-untrusted:// URLs.
+      const auto& scheme = origin_to_trial_names.first.scheme();
+      DCHECK(scheme == content::kChromeUIScheme ||
+             scheme == content::kChromeUIUntrustedScheme);
+    }
+  }
+
+  // TODO(https://crbug.com/1043843): Find some ways to validate supplied origin
+  // trial names. Ideally, construct them from some static const char*.
+#endif  // DCHECK_IS_ON()
+
 #if defined(OS_CHROMEOS)
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
     // We need to set up the terminal data source before installing it.
@@ -288,6 +331,37 @@ bool SystemWebAppManager::AppShouldReceiveLaunchDirectory(
   if (it == system_app_infos_.end())
     return false;
   return it->second.include_launch_directory;
+}
+
+const std::vector<std::string>* SystemWebAppManager::GetEnabledOriginTrials(
+    const SystemAppType type,
+    const GURL& url) {
+  const auto& origin_to_origin_trials =
+      system_app_infos_.at(type).enabled_origin_trials;
+  auto iter_trials = origin_to_origin_trials.find(url::Origin::Create(url));
+  if (iter_trials == origin_to_origin_trials.end())
+    return nullptr;
+
+  return &iter_trials->second;
+}
+
+void SystemWebAppManager::OnReadyToCommitNavigation(
+    const AppId& app_id,
+    content::NavigationHandle* navigation_handle) {
+  // No need to setup origin trials for intra-document navigation.
+  if (navigation_handle->IsSameDocument())
+    return;
+
+  const base::Optional<SystemAppType> type = GetSystemAppTypeForAppId(app_id);
+  // This function should only be called when an navigation happens inside a
+  // System App. So the |app_id| should always have a valid associated System
+  // App type.
+  DCHECK(type.has_value());
+
+  const std::vector<std::string>* trials =
+      GetEnabledOriginTrials(type.value(), navigation_handle->GetURL());
+  if (trials)
+    navigation_handle->ForceEnableOriginTrials(*trials);
 }
 
 std::vector<std::string> SystemWebAppManager::GetAdditionalSearchTerms(

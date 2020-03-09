@@ -208,8 +208,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
                                   bool last_unlocked_by_target,
                                   bool privileged) {}
 
-  virtual void UnlockMouse(RenderWidgetHostImpl* render_widget_host) {}
-
   // Returns whether the associated tab is in fullscreen mode.
   virtual bool IsFullscreenForCurrentTab();
 

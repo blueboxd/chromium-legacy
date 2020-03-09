@@ -18,7 +18,10 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_size.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/snapshot/screenshot_grabber.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
@@ -439,6 +442,36 @@ TEST_F(WindowScreenshotControllerTest, MultiDisplays) {
   EXPECT_EQ(window1.get(), GetCurrentSelectedWindow());
   generator->ClickLeftButton();
   EXPECT_EQ(window1.get(), test_delegate->GetSelectedWindowAndReset());
+}
+
+TEST_F(ScreenshotControllerTest, FractionScaleWithProperRounding) {
+  UpdateDisplay(base::StringPrintf("3000x2000*%s", display::kDsfStr_2_252));
+  aura::Window* root = Shell::GetAllRootWindows()[0];
+  EXPECT_EQ(gfx::Size(1332, 888), root->bounds().size());
+  EXPECT_EQ(display::kDsf_2_252, root->layer()->device_scale_factor());
+  std::unique_ptr<ui::ScreenshotGrabber> grabber =
+      std::make_unique<ui::ScreenshotGrabber>();
+
+  auto callback = [](base::RunLoop* run_loop,
+                     ui::ScreenshotResult screenshot_result,
+                     scoped_refptr<base::RefCountedMemory> png_data) {
+    ASSERT_TRUE(screenshot_result == ui::ScreenshotResult::SUCCESS);
+
+    const unsigned char* input =
+        reinterpret_cast<const unsigned char*>(png_data->front());
+    size_t size = png_data->size();
+    SkBitmap bitmap;
+    ASSERT_TRUE(gfx::PNGCodec::Decode(input, size, &bitmap));
+    EXPECT_EQ(bitmap.width(), 3000);
+    EXPECT_EQ(bitmap.height(), 2000);
+    run_loop->Quit();
+  };
+  base::RunLoop run_loop;
+  ui::ScreenshotGrabber::ScreenshotCallback cb =
+      base::BindOnce(callback, &run_loop);
+  grabber->TakeScreenshot(root, gfx::Rect(root->bounds().size()),
+                          std::move(cb));
+  run_loop.Run();
 }
 
 TEST_F(ScreenshotControllerTest, MultipleDisplays) {

@@ -288,4 +288,36 @@ static_assert(
     offsetof(RequestDevice, request_device_properties_size) == 20,
     "offset of RequestDevice request_device_properties_size should be 20");
 
+struct RemoveDevice {
+  typedef RemoveDevice ValueType;
+  static const CommandId kCmdId = kRemoveDevice;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(uint64_t _device_client_id) {
+    SetHeader();
+    device_client_id = _device_client_id;
+  }
+
+  void* Set(void* cmd, uint64_t _device_client_id) {
+    static_cast<ValueType*>(cmd)->Init(_device_client_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t device_client_id;
+};
+
+static_assert(sizeof(RemoveDevice) == 8, "size of RemoveDevice should be 8");
+static_assert(offsetof(RemoveDevice, header) == 0,
+              "offset of RemoveDevice header should be 0");
+static_assert(offsetof(RemoveDevice, device_client_id) == 4,
+              "offset of RemoveDevice device_client_id should be 4");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_WEBGPU_CMD_FORMAT_AUTOGEN_H_

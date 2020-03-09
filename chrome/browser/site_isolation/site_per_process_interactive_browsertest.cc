@@ -1104,8 +1104,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 
 // Test that deleting a RenderWidgetHost that holds the mouse lock won't cause a
 // crash. https://crbug.com/619571.
+
+// Flaky on multiple builders. https://crbug.com/1059632
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       RenderWidgetHostDeletedWhileMouseLocked) {
+                       DISABLED_RenderWidgetHostDeletedWhileMouseLocked) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   ui_test_utils::NavigateToURL(browser(), main_url);

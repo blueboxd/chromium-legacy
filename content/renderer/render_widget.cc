@@ -586,6 +586,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   if (IPC_MESSAGE_CLASS(message) == TextInputClientMsgStart)
     return text_input_client_observer_->OnMessageReceived(message);
 #endif
+  if (mouse_lock_dispatcher_->OnMessageReceived(message))
+    return true;
 
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
     IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
@@ -3425,17 +3427,6 @@ bool RenderWidget::RequestPointerLock(WebLocalFrame* requester_frame,
                                            request_unadjusted_movement);
 }
 
-void RenderWidget::OnLockPointer(bool succeeded) {
-  if (succeeded)
-    webwidget_->DidAcquirePointerLock();
-  else
-    webwidget_->DidNotAcquirePointerLock();
-}
-
-void RenderWidget::PointerLockLost() {
-  mouse_lock_dispatcher_->OnMouseLockLost();
-}
-
 void RenderWidget::RequestPointerUnlock() {
   mouse_lock_dispatcher_->UnlockMouse(webwidget_mouse_lock_target_.get());
 }
@@ -3495,10 +3486,6 @@ void RenderWidget::SetWidgetReceiver(
   // A RenderWidgetHost should not need more than one channel.
   widget_receiver_.reset();
   widget_receiver_.Bind(std::move(recevier));
-}
-
-mojom::WidgetInputHandlerHost* RenderWidget::GetInputHandlerHost() {
-  return widget_input_handler_manager_->GetWidgetInputHandlerHost();
 }
 
 void RenderWidget::SetMouseCapture(bool capture) {

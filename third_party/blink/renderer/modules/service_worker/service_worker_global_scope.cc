@@ -43,7 +43,9 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
+#include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_fetch_context.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -1525,7 +1527,9 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
         service_worker_host,
     mojom::blink::ServiceWorkerRegistrationObjectInfoPtr registration_info,
     mojom::blink::ServiceWorkerObjectInfoPtr service_worker_info,
-    mojom::blink::FetchHandlerExistence fetch_hander_existence) {
+    mojom::blink::FetchHandlerExistence fetch_hander_existence,
+    std::unique_ptr<PendingURLLoaderFactoryBundle>
+        subresource_loader_factories) {
   DCHECK(IsContextThread());
   DCHECK(!global_scope_initialized_);
 
@@ -1533,6 +1537,13 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
   DCHECK(!service_worker_host_);
   service_worker_host_.Bind(std::move(service_worker_host),
                             GetTaskRunner(TaskType::kInternalDefault));
+
+  if (subresource_loader_factories) {
+    static_cast<WebServiceWorkerFetchContext*>(web_worker_fetch_context())
+        ->GetSubresourceLoaderUpdater()
+        ->UpdateSubresourceLoaderFactories(
+            std::move(subresource_loader_factories));
+  }
 
   // Set ServiceWorkerGlobalScope#registration.
   DCHECK_NE(registration_info->registration_id,

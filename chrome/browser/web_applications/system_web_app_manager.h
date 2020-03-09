@@ -18,9 +18,14 @@
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class Version;
+}
+
+namespace content {
+class NavigationHandle;
 }
 
 namespace user_prefs {
@@ -47,6 +52,8 @@ enum class SystemAppType {
   SAMPLE,
 #endif  // !defined(OFFICIAL_BUILD)
 };
+
+using OriginTrialsMap = std::map<url::Origin, std::vector<std::string>>;
 
 // The configuration options for a System App.
 struct SystemAppInfo {
@@ -76,6 +83,11 @@ struct SystemAppInfo {
   // If set, when the app is launched through the File Handling Web API, we will
   // include the file's directory in window.launchQueue as the first value.
   bool include_launch_directory = false;
+
+  // Map from origin to enabled origin trial names for this app. For example,
+  // "chrome://sample-web-app/" to ["Frobulate"]. If set, we will enable the
+  // given origin trials when the corresponding origin is loaded in the app.
+  OriginTrialsMap enabled_origin_trials;
 
   // Resource Ids for additional search terms.
   std::vector<int> additional_search_terms;
@@ -146,6 +158,11 @@ class SystemWebAppManager {
   // launch parameter.
   bool AppShouldReceiveLaunchDirectory(SystemAppType type) const;
 
+  // Perform tab-specific setup when a navigation in a System Web App is about
+  // to be committed.
+  void OnReadyToCommitNavigation(const AppId& app_id,
+                                 content::NavigationHandle* navigation_handle);
+
   // Returns terms to be used when searching for the app.
   std::vector<std::string> GetAdditionalSearchTerms(SystemAppType type) const;
 
@@ -174,6 +191,12 @@ class SystemWebAppManager {
   virtual const std::string& CurrentLocale() const;
 
  private:
+  // Returns the list of origin trials to enable for |url| loaded in System App
+  // |type|. Returns nullptr if the App does not specify origin trials for
+  // |url|.
+  const std::vector<std::string>* GetEnabledOriginTrials(SystemAppType type,
+                                                         const GURL& url);
+
   void OnAppsSynchronized(const base::TimeTicks& install_start_time,
                           std::map<GURL, InstallResultCode> install_results,
                           std::map<GURL, bool> uninstall_results);

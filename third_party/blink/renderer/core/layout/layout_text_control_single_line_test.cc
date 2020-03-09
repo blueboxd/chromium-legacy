@@ -24,7 +24,7 @@ TEST_F(LayoutTextControlSingleLineTest, VisualOverflowCleared) {
     <input id=input type="text"></input.
   )HTML");
   auto* input =
-      ToLayoutTextControlSingleLine(GetLayoutObjectByElementId("input"));
+      To<LayoutTextControlSingleLine>(GetLayoutObjectByElementId("input"));
   if (::features::IsFormControlsRefreshEnabled()) {
     EXPECT_EQ(LayoutRect(-3, -3, 74, 72), input->SelfVisualOverflowRect());
   } else {

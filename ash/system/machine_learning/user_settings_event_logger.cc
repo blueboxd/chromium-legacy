@@ -53,14 +53,17 @@ UserSettingsEventLogger::UserSettingsEventLogger()
       is_recently_fullscreen_(false),
       used_cellular_in_session_(false),
       is_playing_audio_(false),
+      is_playing_video_(false),
       clock_(base::DefaultClock::GetInstance()) {
   Shell::Get()->AddShellObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
+  Shell::Get()->video_detector()->AddObserver(this);
 }
 
 UserSettingsEventLogger::~UserSettingsEventLogger() {
   Shell::Get()->RemoveShellObserver(this);
   chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
+  Shell::Get()->video_detector()->RemoveObserver(this);
 }
 
 void UserSettingsEventLogger::LogNetworkUkmEvent(
@@ -274,6 +277,11 @@ void UserSettingsEventLogger::OnOutputStopped() {
   is_playing_audio_ = false;
 }
 
+void UserSettingsEventLogger::OnVideoStateChanged(
+    const VideoDetector::State state) {
+  is_playing_video_ = (state != VideoDetector::State::NOT_PLAYING);
+}
+
 void UserSettingsEventLogger::SetClockForTesting(const base::Clock* clock) {
   clock_ = clock;
 }
@@ -300,7 +308,7 @@ void UserSettingsEventLogger::PopulateSharedFeatures(
 
   // Set activity features.
   features->set_is_playing_audio(is_playing_audio_);
-  // TODO(crbug/1014839): Set the |is_playing_video| field.
+  features->set_is_playing_video(is_playing_video_);
 
   // Set orientation features.
   features->set_device_mode(
@@ -347,6 +355,8 @@ void UserSettingsEventLogger::SendToUkmAndAppList(
     ukm_event.SetIsCharging(features.is_charging());
   if (features.has_is_playing_audio())
     ukm_event.SetIsPlayingAudio(features.is_playing_audio());
+  if (features.has_is_playing_video())
+    ukm_event.SetIsPlayingVideo(features.is_playing_video());
   if (features.has_device_mode())
     ukm_event.SetDeviceMode(features.device_mode());
   if (features.has_device_orientation())

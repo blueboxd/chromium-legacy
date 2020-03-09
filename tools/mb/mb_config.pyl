@@ -82,7 +82,7 @@
       'Android WebView P FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-marshmallow-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting',
       'android-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
-      'android-bfcache-debug': 'android_debug_static_bot',
+      'android-bfcache-rel': 'android_release_bot_minimal_symbols_arm64',
     },
 
     'chromium.chromedriver': {

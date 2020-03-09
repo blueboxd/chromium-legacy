@@ -187,6 +187,13 @@ static inline void AddVertexToClippedQuad3d(const gfx::Point3F& new_vertex,
 
 gfx::Rect MathUtil::MapEnclosingClippedRect(const gfx::Transform& transform,
                                             const gfx::Rect& src_rect) {
+  return MapEnclosingClippedRectIgnoringError(transform, src_rect, 0.f);
+}
+
+gfx::Rect MathUtil::MapEnclosingClippedRectIgnoringError(
+    const gfx::Transform& transform,
+    const gfx::Rect& src_rect,
+    float ignore_error) {
   if (transform.IsIdentityOrIntegerTranslation()) {
     gfx::Vector2d offset(static_cast<int>(transform.matrix().getFloat(0, 3)),
                          static_cast<int>(transform.matrix().getFloat(1, 3)));
@@ -199,7 +206,7 @@ gfx::Rect MathUtil::MapEnclosingClippedRect(const gfx::Transform& transform,
       std::isnan(mapped_rect.right()) || std::isnan(mapped_rect.bottom()))
     return gfx::Rect();
 
-  return gfx::ToEnclosingRect(mapped_rect);
+  return gfx::ToEnclosingRectIgnoringError(mapped_rect, ignore_error);
 }
 
 gfx::RectF MathUtil::MapClippedRect(const gfx::Transform& transform,

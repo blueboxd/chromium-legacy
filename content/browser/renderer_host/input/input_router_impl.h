@@ -110,11 +110,6 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       const gfx::Range& range,
       const std::vector<gfx::Rect>& bounds) override;
   void SetMouseCapture(bool capture) override;
-  void RequestMouseLock(bool from_user_gesture,
-                        bool privileged,
-                        bool unadjusted_movement,
-                        RequestMouseLockCallback response) override;
-  void UnlockMouse() override;
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void WaitForInputProcessed(base::OnceClosure callback) override;
   void FlushTouchEventQueue() override;

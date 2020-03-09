@@ -99,7 +99,7 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
-    name = 'android-bfcache-debug',
+    name = 'android-bfcache-rel',
 )
 
 try_.chromium_android_builder(

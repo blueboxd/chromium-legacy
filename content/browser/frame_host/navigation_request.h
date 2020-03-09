@@ -874,6 +874,8 @@ class CONTENT_EXPORT NavigationRequest
   // See RestartBackForwardCachedNavigation.
   void RestartBackForwardCachedNavigationImpl();
 
+  void ForceEnableOriginTrials(const std::vector<std::string>& trials) override;
+
   FrameTreeNode* frame_tree_node_;
 
   // Invariant: At least one of |loader_| or |render_frame_host_| is null.

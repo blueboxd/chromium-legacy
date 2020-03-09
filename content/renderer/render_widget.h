@@ -397,8 +397,6 @@ class CONTENT_EXPORT RenderWidget
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
   bool RequestPointerLock(blink::WebLocalFrame* requester_frame,
                           bool request_unadjusted_movement) override;
-  void OnLockPointer(bool succeeded);
-  void PointerLockLost();
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
   void StartDragging(network::mojom::ReferrerPolicy policy,
@@ -556,8 +554,6 @@ class CONTENT_EXPORT RenderWidget
   void SetupWidgetInputHandler(
       mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
       mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) override;
-
-  mojom::WidgetInputHandlerHost* GetInputHandlerHost();
 
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
 

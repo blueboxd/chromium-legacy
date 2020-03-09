@@ -41,6 +41,7 @@ class SelectType : public GarbageCollected<SelectType> {
   virtual void UpdateTextStyleAndContent();
 
   virtual const ComputedStyle* OptionStyle() const;
+  virtual void MaximumOptionWidthMightBeChanged() const;
 
   // Update :-internal-multi-select-focus state of selected OPTIONs.
   virtual void UpdateMultiSelectFocus();

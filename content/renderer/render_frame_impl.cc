@@ -510,6 +510,12 @@ void FillNavigationParamsRequest(
       commit_params.web_bundle_physical_url;
   navigation_params->base_url_override_for_web_bundle =
       commit_params.base_url_override_for_web_bundle;
+
+  WebVector<WebString> web_origin_trials;
+  web_origin_trials.reserve(commit_params.force_enabled_origin_trials.size());
+  for (const auto& trial : commit_params.force_enabled_origin_trials)
+    web_origin_trials.emplace_back(WebString::FromASCII(trial));
+  navigation_params->force_enabled_origin_trials = web_origin_trials;
 }
 
 mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
@@ -992,11 +998,6 @@ void FillNavigationParamsOriginPolicy(
     blink::WebNavigationParams* navigation_params) {
   if (head.origin_policy.has_value() && head.origin_policy.value().contents) {
     navigation_params->origin_policy = blink::WebOriginPolicy();
-
-    for (const auto& id : head.origin_policy.value().contents->ids) {
-      navigation_params->origin_policy->ids.emplace_back(
-          WebString::FromUTF8(id));
-    }
 
     const base::Optional<std::string>& feature_policy =
         head.origin_policy.value().contents->feature_policy;

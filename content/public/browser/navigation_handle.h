@@ -357,6 +357,12 @@ class CONTENT_EXPORT NavigationHandle {
   virtual void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader) = 0;
 
+  // Force enables the given origin trials for this navigation. This needs to
+  // be called from WebContents::ReadyToCommitNavigation or earlier to have an
+  // effect.
+  virtual void ForceEnableOriginTrials(
+      const std::vector<std::string>& trials) = 0;
+
   // Testing methods ----------------------------------------------------------
   //
   // The following methods should be used exclusively for writing unit tests.

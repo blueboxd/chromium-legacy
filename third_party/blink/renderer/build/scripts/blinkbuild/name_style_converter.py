@@ -134,6 +134,10 @@ class NameStyleConverter(object):
     def __eq__(self, other):
         return self.original == other.original
 
+    # If __eq__() is defined then a custom __hash__() needs to be defined.
+    def __hash__(self):
+        return hash(self.original)
+
     def to_snake_case(self):
         """Snake case is the file and variable name style per Google C++ Style
            Guide:

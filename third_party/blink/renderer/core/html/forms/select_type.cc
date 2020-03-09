@@ -86,6 +86,7 @@ class MenuListSelectType final : public SelectType {
   const ComputedStyle* OptionStyle() const override {
     return option_style_.get();
   }
+  void MaximumOptionWidthMightBeChanged() const override;
 
   void ShowPopup() override;
   void HidePopup() override;
@@ -499,6 +500,13 @@ void MenuListSelectType::DidUpdateActiveOption(HTMLOptionElement* option) {
 
   document.ExistingAXObjectCache()->HandleUpdateActiveMenuOption(
       select_->GetLayoutObject(), option_index);
+}
+
+void MenuListSelectType::MaximumOptionWidthMightBeChanged() const {
+  if (LayoutObject* layout_object = select_->GetLayoutObject()) {
+    layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
+        layout_invalidation_reason::kMenuOptionsChanged);
+  }
 }
 
 // PopupUpdater notifies updates of the specified SELECT element subtree to
@@ -944,6 +952,8 @@ const ComputedStyle* SelectType::OptionStyle() const {
   NOTREACHED();
   return nullptr;
 }
+
+void SelectType::MaximumOptionWidthMightBeChanged() const {}
 
 void SelectType::UpdateMultiSelectFocus() {}
 

@@ -6,6 +6,9 @@ mojom =
     "//third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom"
 public_headers =
     [ "//third_party/blink/public/common/loader/url_loader_factory_bundle.h" ]
-traits_headers = [ "//third_party/blink/public/common/loader/url_loader_factory_bundle_mojom_traits.h" ]
+traits_headers = [
+  "//third_party/blink/public/common/loader/url_loader_factory_bundle_mojom_traits.h",
+  "//url/mojom/origin_mojom_traits.h",
+]
 
 type_mappings = [ "blink.mojom.URLLoaderFactoryBundle=::std::unique_ptr<::blink::PendingURLLoaderFactoryBundle>[move_only,nullable_is_same_type]" ]

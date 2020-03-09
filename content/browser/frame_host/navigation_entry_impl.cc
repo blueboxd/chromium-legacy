@@ -804,7 +804,8 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
 #endif
           false, network::mojom::IPAddressSpace::kUnknown,
           GURL() /* web_bundle_physical_url */,
-          GURL() /* base_url_override_for_web_bundle */, frame_policy);
+          GURL() /* base_url_override_for_web_bundle */, frame_policy,
+          std::vector<std::string>() /* force_enabled_origin_trials */);
 #if defined(OS_ANDROID)
   if (NavigationControllerImpl::ValidateDataURLAsString(GetDataURLAsString())) {
     commit_params->data_url_as_string = GetDataURLAsString()->data();

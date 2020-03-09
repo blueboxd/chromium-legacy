@@ -1277,7 +1277,8 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
         mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerHost>,
         blink::mojom::ServiceWorkerRegistrationObjectInfoPtr,
         blink::mojom::ServiceWorkerObjectInfoPtr,
-        blink::mojom::FetchHandlerExistence) override {
+        blink::mojom::FetchHandlerExistence,
+        std::unique_ptr<blink::PendingURLLoaderFactoryBundle>) override {
       client_->SimulateFailureOfScriptEvaluation();
     }
 

@@ -492,6 +492,24 @@ TEST_F(UserSettingsEventLoggerTest, TestLogAudio) {
   TestUkmRecorder::ExpectEntryMetric(entries[2], "IsPlayingAudio", false);
 }
 
+TEST_F(UserSettingsEventLoggerTest, TestLogVideo) {
+  LogSharedFeatures();
+  logger_->OnVideoStateChanged(VideoDetector::State::PLAYING_FULLSCREEN);
+  LogSharedFeatures();
+  logger_->OnVideoStateChanged(VideoDetector::State::NOT_PLAYING);
+  LogSharedFeatures();
+  logger_->OnVideoStateChanged(VideoDetector::State::PLAYING_WINDOWED);
+  LogSharedFeatures();
+
+  const auto& entries = GetUkmEntries();
+  ASSERT_EQ(4ul, entries.size());
+
+  TestUkmRecorder::ExpectEntryMetric(entries[0], "IsPlayingVideo", false);
+  TestUkmRecorder::ExpectEntryMetric(entries[1], "IsPlayingVideo", true);
+  TestUkmRecorder::ExpectEntryMetric(entries[2], "IsPlayingVideo", false);
+  TestUkmRecorder::ExpectEntryMetric(entries[3], "IsPlayingVideo", true);
+}
+
 TEST_F(UserSettingsEventLoggerTest, TestLogTabletMode) {
   auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
 

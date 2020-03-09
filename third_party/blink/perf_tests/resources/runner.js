@@ -264,7 +264,9 @@ if (window.testRunner) {
 
     function finish() {
         try {
-            console.timeEnd("blink_perf");
+            // The blink_perf timer is only started for non-worker test.
+            if (!currentTest.runInWorker)
+                console.timeEnd("blink_perf");
             if (currentTest.description)
                 PerfTestRunner.log("Description: " + currentTest.description);
             PerfTestRunner.logStatistics(results, PerfTestRunner.unit, "Time:");
@@ -484,6 +486,7 @@ if (window.testRunner) {
             return;
         }
 
+        PerfTestRunner.log("Running " + result.values.length + " times");
         try {
             result.values.forEach((value) => {
                 ignoreWarmUpAndLog(value);

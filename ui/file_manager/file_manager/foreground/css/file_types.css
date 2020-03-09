@@ -818,12 +818,6 @@ body.files-ng [file-type-icon='removable'] {
   filter: contrast(0) brightness(0.7143);
 }
 
-.tree-row:not([active]) > .file-row > [volume-type-icon='provided'] {
-  /* Third-party icons are not provided with both an active and a non-active
-  version. This filter defines the non-active version of a provided icon. */
-  filter: contrast(0) brightness(0.85);
-}
-
 [root-type-icon='recent'] {
   background-image: -webkit-image-set(
       url(../images/volumes/recent.png) 1x,

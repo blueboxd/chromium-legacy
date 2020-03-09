@@ -546,6 +546,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   Vector<OriginTrialFeature> initiator_origin_trial_features_;
 
+  Vector<String> force_enabled_origin_trials_;
+
   // Whether this load request is a result of a browser initiated same-document
   // navigation.
   bool last_same_document_navigation_was_browser_initiated_ = false;

@@ -500,6 +500,13 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate(
     update_checker_.reset();
   }
 
+  if (!registration()->GetNewestVersion()) {
+    // Subresource loader factories needs to be updated after the main script is
+    // loaded. This flag lets the script evaluation wait until the browser sends
+    // a message with a new subresoruce loader factories.
+    new_version()->set_initialize_global_scope_after_main_script_loaded();
+  }
+
   new_version()->set_outside_fetch_client_settings_object(
       std::move(outside_fetch_client_settings_object_));
 

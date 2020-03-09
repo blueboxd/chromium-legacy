@@ -99,6 +99,7 @@ class FlingSchedulerBase;
 class InputRouter;
 class MockRenderWidgetHost;
 class PeakGpuMemoryTracker;
+class RenderViewHost;
 class RenderWidgetHostOwnerDelegate;
 class SyntheticGestureController;
 class TimeoutMonitor;
@@ -676,12 +677,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool IsWheelScrollInProgress() override;
   bool IsAutoscrollInProgress() override;
   void SetMouseCapture(bool capture) override;
-  void RequestMouseLock(
-      bool from_user_gesture,
-      bool privileged,
-      bool unadjusted_movement,
-      InputRouterImpl::RequestMouseLockCallback response) override;
-  void UnlockMouse() override;
   void FallbackCursorModeLockCursor(bool left,
                                     bool right,
                                     bool up,
@@ -840,6 +835,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnAutoscrollFling(const gfx::Vector2dF& velocity);
   void OnAutoscrollEnd();
   void OnTextInputStateChanged(const TextInputState& params);
+
+  void OnLockMouse(bool user_gesture,
+                   bool privileged,
+                   bool request_unadjusted_movement);
+  void OnUnlockMouse();
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
   void OnStartDragging(const DropData& drop_data,
@@ -1220,8 +1220,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   base::OneShotTimer pending_user_activation_timer_;
 
   std::unique_ptr<PeakGpuMemoryTracker> scroll_peak_gpu_mem_tracker_;
-
-  InputRouterImpl::RequestMouseLockCallback request_mouse_callback_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 

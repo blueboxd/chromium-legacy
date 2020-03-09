@@ -137,7 +137,7 @@ body.files-ng .dialog-navigation-list {
   top: 0;
 }
 
-html[class*='col-resize'] #directory-tree {
+html.col-resize #directory-tree {
   overflow-y: hidden;
 }
 
@@ -303,7 +303,7 @@ html[dir='rtl'] #directory-tree .tree-row > .file-row {
   background-color: rgb(216, 223, 240);
 }
 
-html:not([class*='col-resize']) #directory-tree
+html:not(.col-resize) #directory-tree
     .tree-row:not([active]):not([selected]):hover > .file-row {
   background-color: var(--google-grey-200);
 }
@@ -364,11 +364,11 @@ html:not([class*='col-resize']) #directory-tree
   padding: 0;
 }
 
-html[class*='col-resize'] #directory-tree .tree-row > .root-eject:hover {
+html.col-resize #directory-tree .tree-row > .root-eject:hover {
   --hover-bg-color: none;
 }
 
-html[class*='col-resize'] #directory-tree .tree-row > .file-row > .root-eject:hover {
+html.col-resize #directory-tree .tree-row > .file-row > .root-eject:hover {
   --hover-bg-color: none;
 }
 
@@ -2606,6 +2606,10 @@ body.files-ng.check-select #list-container list li[selected] .detail-thumbnail
 
 body.files-ng #list-container list li .detail-thumbnail > .thumbnail {
   border-radius: 50%;
+  height: 24px;
+  margin-inline-start: 4px;
+  margin-top: 4px;
+  width: 24px;
 }
 
 body.files-ng .table-row-cell > * {

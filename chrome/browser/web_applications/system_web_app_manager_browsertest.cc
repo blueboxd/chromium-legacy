@@ -23,6 +23,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
@@ -32,6 +33,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -536,6 +538,169 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerChromeUntrustedTest, Install) {
             app_id);
 }
 
+class SystemWebAppManagerOriginTrialsBrowserTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerOriginTrialsBrowserTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppWithEnabledOriginTrials(
+            OriginTrialsMap({{GetOrigin(main_url_), main_url_trials_},
+                             {GetOrigin(trial_url_), trial_url_trials_}}));
+  }
+
+  ~SystemWebAppManagerOriginTrialsBrowserTest() override = default;
+
+ protected:
+  class MockNavigationHandle : public content::MockNavigationHandle {
+   public:
+    explicit MockNavigationHandle(const GURL& url)
+        : content::MockNavigationHandle(url, nullptr) {}
+    bool IsInMainFrame() override { return is_in_main_frame_; }
+
+    void set_is_in_main_frame(bool is_in_main_frame) {
+      is_in_main_frame_ = is_in_main_frame;
+    }
+
+   private:
+    bool is_in_main_frame_;
+  };
+
+  std::unique_ptr<content::WebContents> CreateTestWebContents() {
+    content::WebContents::CreateParams create_params(browser()->profile());
+    return content::WebContents::Create(create_params);
+  }
+
+  const std::vector<std::string> main_url_trials_ = {"Frobulate"};
+  const std::vector<std::string> trial_url_trials_ = {"FrobulateNavigation"};
+
+  const GURL main_url_ = GURL("chrome://test-system-app/pwa.html");
+  const GURL trial_url_ = GURL("chrome://test-subframe/title2.html");
+  const GURL notrial_url_ = GURL("chrome://notrial-subframe/title3.html");
+
+ private:
+  url::Origin GetOrigin(const GURL& url) { return url::Origin::Create(url); }
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
+                       ForceEnabledOriginTrials_FirstNavigationIntoPage) {
+  WaitForTestSystemAppInstall();
+
+  std::unique_ptr<content::WebContents> web_contents = CreateTestWebContents();
+  WebAppTabHelper tab_helper(web_contents.get());
+
+  // Simulate when first navigating into app's launch url.
+  {
+    MockNavigationHandle mock_nav_handle(main_url_);
+    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_same_document(false);
+    EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
+    tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
+    ASSERT_EQ(maybe_installation_->GetAppId(), tab_helper.GetAppId());
+  }
+
+  // Simulate loading app's embedded child-frame that has origin trials.
+  {
+    MockNavigationHandle mock_nav_handle(trial_url_);
+    mock_nav_handle.set_is_in_main_frame(false);
+    mock_nav_handle.set_is_same_document(false);
+    EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(trial_url_trials_));
+    tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
+  }
+
+  // Simulate loading app's embedded child-frame that has no origin trial.
+  {
+    MockNavigationHandle mock_nav_handle(notrial_url_);
+    mock_nav_handle.set_is_in_main_frame(false);
+    mock_nav_handle.set_is_same_document(false);
+    EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
+    tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
+                       ForceEnabledOriginTrials_IntraDocumentNavigation) {
+  WaitForTestSystemAppInstall();
+
+  std::unique_ptr<content::WebContents> web_contents = CreateTestWebContents();
+  WebAppTabHelper tab_helper(web_contents.get());
+
+  // Simulate when first navigating into app's launch url.
+  {
+    MockNavigationHandle mock_nav_handle(main_url_);
+    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_same_document(false);
+    EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
+    tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
+    ASSERT_EQ(maybe_installation_->GetAppId(), tab_helper.GetAppId());
+  }
+
+  // Simulate same-document navigation.
+  {
+    MockNavigationHandle mock_nav_handle(main_url_);
+    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_same_document(true);
+    EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
+    tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
+  }
+}
+
+// This test checks origin trials are correctly enabled for navigations on the
+// main frame, this test checks:
+// - The app's main page |main_url_| has OT.
+// - The iframe page |trial_url_| has OT, only if it is embedded by the app.
+// - When navigating from a cross-origin page to the app's main page, the main
+// page has OT.
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
+                       ForceEnabledOriginTrials_Navigation) {
+  WaitForTestSystemAppInstall();
+
+  std::unique_ptr<content::WebContents> web_contents = CreateTestWebContents();
+  WebAppTabHelper tab_helper(web_contents.get());
+
+  // Simulate when first navigating into app's launch url.
+  {
+    MockNavigationHandle mock_nav_handle(main_url_);
+    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_same_document(false);
+    EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
+    tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
+    ASSERT_EQ(maybe_installation_->GetAppId(), tab_helper.GetAppId());
+  }
+
+  // Simulate navigating to a different site without origin trials.
+  {
+    MockNavigationHandle mock_nav_handle(notrial_url_);
+    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_same_document(false);
+    EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
+    tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
+    ASSERT_EQ("", tab_helper.GetAppId());
+  }
+
+  // Simulatenavigating back to a SWA with origin trials.
+  {
+    MockNavigationHandle mock_nav_handle(main_url_);
+    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_same_document(false);
+    EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
+    tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
+    ASSERT_EQ(maybe_installation_->GetAppId(), tab_helper.GetAppId());
+  }
+
+  // Simulate navigating the main frame to a url embedded by SWA. This url has
+  // origin trials when embedded by SWA. However, when this url is loaded in the
+  // main frame, it should not get origin trials.
+  {
+    MockNavigationHandle mock_nav_handle(trial_url_);
+    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_same_document(false);
+    EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
+    tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
+    ASSERT_EQ("", tab_helper.GetAppId());
+  }
+}
+
 // We test with and without enabling kDesktopPWAsWithoutExtensions.
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -573,6 +738,12 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          SystemWebAppManagerChromeUntrustedTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerOriginTrialsBrowserTest,
                          ::testing::Values(ProviderType::kBookmarkApps,
                                            ProviderType::kWebApps),
                          ProviderTypeParamToString);

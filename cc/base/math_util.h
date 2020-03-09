@@ -174,6 +174,10 @@ class CC_BASE_EXPORT MathUtil {
   // clipped, transformed polygon.
   static gfx::Rect MapEnclosingClippedRect(const gfx::Transform& transform,
                                            const gfx::Rect& rect);
+  static gfx::Rect MapEnclosingClippedRectIgnoringError(
+      const gfx::Transform& transform,
+      const gfx::Rect& rect,
+      float ignore_error);
   static gfx::RectF MapClippedRect(const gfx::Transform& transform,
                                    const gfx::RectF& rect);
   static gfx::Rect ProjectEnclosingClippedRect(const gfx::Transform& transform,

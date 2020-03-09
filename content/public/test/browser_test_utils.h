@@ -329,12 +329,6 @@ void SimulateKeyPressWithoutChar(WebContents* web_contents,
 // Reset touch action for the embedder of a BrowserPluginGuest.
 void ResetTouchAction(RenderWidgetHost* host);
 
-// Requests mouse lock on the implementation of the given RenderWidgetHost
-void RequestMouseLock(RenderWidgetHost* host,
-                      bool user_gesture,
-                      bool privileged,
-                      bool request_unadjusted_movement);
-
 // Spins a run loop until effects of previously forwarded input are fully
 // realized.
 void RunUntilInputProcessed(RenderWidgetHost* host);
@@ -1654,6 +1648,13 @@ class PwnMessageHelper {
                               GURL file_path,
                               std::string blob_uuid,
                               int64_t position);
+
+  // Sends WidgetHostMsg_LockMouse
+  static void LockMouse(RenderProcessHost* process,
+                        int routing_id,
+                        bool user_gesture,
+                        bool privileged,
+                        bool request_unadjusted_movement);
 
   // Sends FrameHostMsg_OpenURL
   static void OpenURL(RenderProcessHost* process,

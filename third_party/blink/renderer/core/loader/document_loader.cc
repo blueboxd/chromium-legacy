@@ -109,7 +109,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -287,6 +286,11 @@ DocumentLoader::DocumentLoader(
 
   web_bundle_physical_url_ = params_->web_bundle_physical_url;
   base_url_override_for_web_bundle_ = params_->base_url_override_for_web_bundle;
+
+  force_enabled_origin_trials_.ReserveInitialCapacity(
+      SafeCast<wtf_size_t>(params_->force_enabled_origin_trials.size()));
+  for (const auto& trial : params_->force_enabled_origin_trials)
+    force_enabled_origin_trials_.push_back(trial);
 }
 
 FrameLoader& DocumentLoader::GetFrameLoader() const {
@@ -1552,15 +1556,6 @@ void DocumentLoader::InstallNewDocument(
     if (frame_->GetDocument())
       frame_->GetDocument()->RemoveAllEventListenersRecursively();
     frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_));
-    if (origin_policy_.has_value()) {
-      // Convert from WebVector<WebString> to WTF::Vector<WTF::String>
-      Vector<String> ids;
-      for (const auto& id : origin_policy_->ids) {
-        ids.push_back(id);
-      }
-
-      frame_->DomWindow()->SetOriginPolicyIds(ids);
-    }
   }
 
   if (!loading_url_as_javascript_)
@@ -1697,6 +1692,10 @@ void DocumentLoader::CreateParserPostCommit() {
       document->GetOriginTrialContext()->AddFeature(
           OriginTrialFeature::kTouchEventFeatureDetection);
     }
+
+    // Enable any origin trials that have been force enabled for this commit.
+    document->GetOriginTrialContext()->AddForceEnabledTrials(
+        force_enabled_origin_trials_);
 
 #if defined(OS_CHROMEOS)
     // Enable Auto Picture-in-Picture feature for the built-in Chrome OS Video

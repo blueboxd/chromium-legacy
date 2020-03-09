@@ -19,8 +19,29 @@
     //
     // Returns a promise that resolves to an object:
     // |result.error|: The error string or null if no error occurs.
-    // |result.values|: An array of test result values.
+    // |result.values|: An array of test result values. Unit is runs/s.
     async measureRunsPerSecond(test) {
+      return await this.runTestRepeatedly_(test,
+          this.measureRunsPerSecondOnce_.bind(this));
+    }
+
+    // Measure the elapsed time of test.run().
+    // This method should be used together with
+    // |PerfTestRunner.startMeasureValuesInWorker| in
+    // src/third_party/blink/perf_tests/resources/runner.js.
+    //
+    // Refer measureRunsPerSecond() for definition of the arguments.
+    //
+    // Returns a promise that resolves to an object:
+    // |result.error|: The error string or null if no error occurs.
+    // |result.values|: An array of test result values. Unit is ms.
+    async measureTime(test) {
+      return await this.runTestRepeatedly_(test,
+          this.callRunAndMeasureTime_.bind(this));
+    }
+
+    // Repeatedly run test.run() and measure it.
+    async runTestRepeatedly_(test, proc) {
       this.test = test;
       const values = [];
       const iterationCount =
@@ -30,7 +51,7 @@
         if (this.test.setup)
           await this.test.setup();
         for (let i = 0; i < iterationCount; i++) {
-          values.push(await this.measureRunsPerSecondOnce_());
+          values.push(await proc());
         }
         if (this.test.tearDown)
           await this.test.tearDown();
@@ -60,7 +81,7 @@
     };
 
     async callRunAndMeasureTime_() {
-      var startTime = performance.now();
+      const startTime = performance.now();
       for (let i = 0; i < this.callsPerIteration; i++) {
         await this.test.run();
       }

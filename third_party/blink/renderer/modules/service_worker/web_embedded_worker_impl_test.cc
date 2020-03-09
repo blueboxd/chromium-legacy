@@ -100,9 +100,10 @@ class FakeWebURLLoaderFactory final : public WebURLLoaderFactory {
   }
 };
 
-// A fake WebWorkerFetchContext which is used for off-main-thread script fetch
-// tests.
-class FakeWebWorkerFetchContext final : public WebWorkerFetchContext {
+// A fake WebServiceWorkerFetchContext which is used for off-main-thread script
+// fetch tests.
+class FakeWebServiceWorkerFetchContext final
+    : public WebServiceWorkerFetchContext {
  public:
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override {}
   void InitializeOnWorkerThread(AcceptLanguagesWatcher*) override {}
@@ -130,6 +131,9 @@ class FakeWebWorkerFetchContext final : public WebWorkerFetchContext {
     return {};
   }
   void SetIsOfflineMode(bool is_offline_mode) override {}
+  mojom::SubresourceLoaderUpdater* GetSubresourceLoaderUpdater() override {
+    return nullptr;
+  }
 
  private:
   FakeWebURLLoaderFactory fake_web_url_loader_factory_;
@@ -183,7 +187,8 @@ class MockServiceWorkerContextClient final
             mojom::blink::ServiceWorkerState::kParsed,
             KURL("https://example.com"), std::move(service_worker_object_host),
             service_worker_object.InitWithNewEndpointAndPassReceiver()),
-        mojom::blink::FetchHandlerExistence::EXISTS);
+        mojom::blink::FetchHandlerExistence::EXISTS,
+        /*subresource_loader_factories=*/nullptr);
 
     // To make the other side callable.
     mojo::AssociateWithDisconnectedPipe(host_receiver.PassHandle());
@@ -201,9 +206,9 @@ class MockServiceWorkerContextClient final
     script_evaluated_event_.Signal();
   }
 
-  scoped_refptr<WebWorkerFetchContext>
+  scoped_refptr<WebServiceWorkerFetchContext>
   CreateWorkerFetchContextOnInitiatorThread() override {
-    return base::MakeRefCounted<FakeWebWorkerFetchContext>();
+    return base::MakeRefCounted<FakeWebServiceWorkerFetchContext>();
   }
 
   void WorkerContextDestroyed() override { termination_event_.Signal(); }

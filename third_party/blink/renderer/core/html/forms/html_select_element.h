@@ -255,7 +255,6 @@ class CORE_EXPORT HTMLSelectElement final
   void ParseMultipleAttribute(const AtomicString&);
   HTMLOptionElement* LastSelectedOption() const;
   void UpdateSelectedState(HTMLOptionElement*, bool multi, bool shift);
-  void SetOptionsChangedOnLayoutObject();
   wtf_size_t SearchOptionsForValue(const String&,
                                    wtf_size_t list_index_start,
                                    wtf_size_t list_index_end) const;

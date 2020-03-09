@@ -9,6 +9,7 @@
 #include "ash/shell_observer.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/machine_learning/user_settings_event.pb.h"
+#include "ash/wm/video_detector.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
@@ -24,7 +25,8 @@ static constexpr base::TimeDelta kSliderDelay = base::TimeDelta::FromSeconds(1);
 // user from the quick settings tray. Exported for tests.
 class ASH_EXPORT UserSettingsEventLogger
     : public ShellObserver,
-      public chromeos::CrasAudioHandler::AudioObserver {
+      public chromeos::CrasAudioHandler::AudioObserver,
+      public VideoDetector::Observer {
  public:
   UserSettingsEventLogger(const UserSettingsEventLogger&) = delete;
   UserSettingsEventLogger& operator=(const UserSettingsEventLogger&) = delete;
@@ -73,6 +75,9 @@ class ASH_EXPORT UserSettingsEventLogger
   void OnOutputStarted() override;
   void OnOutputStopped() override;
 
+  // VideoDetector::Observer overrides:
+  void OnVideoStateChanged(VideoDetector::State state) override;
+
   void SetClockForTesting(const base::Clock* clock);
 
  private:
@@ -113,6 +118,7 @@ class ASH_EXPORT UserSettingsEventLogger
 
   bool used_cellular_in_session_;
   bool is_playing_audio_;
+  bool is_playing_video_;
 
   const base::Clock* clock_;
 

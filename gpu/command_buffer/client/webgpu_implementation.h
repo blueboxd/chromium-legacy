@@ -159,6 +159,7 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
       const WGPUDeviceProperties& requested_device_properties,
       base::OnceCallback<void(bool, DawnDeviceClientID)>
           request_device_callback) override;
+  void RemoveDevice(DawnDeviceClientID device_client_id) override;
 
  private:
   const char* GetLogPrefix() const { return "webgpu"; }

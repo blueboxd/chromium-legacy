@@ -92,7 +92,12 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
   bool CanBeProgramaticallyScrolled() const final { return true; }
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControl, IsTextControl());
+template <>
+struct DowncastTraits<LayoutTextControl> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsTextControl();
+  }
+};
 
 }  // namespace blink
 

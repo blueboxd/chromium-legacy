@@ -156,7 +156,6 @@ bool HasImportantProperty(AXNodeInfoData* node) {
   if (!node)
     return false;
 
-  std::string prop;
   if (HasNonEmptyStringProperty(node, AXStringProperty::CONTENT_DESCRIPTION) ||
       HasNonEmptyStringProperty(node, AXStringProperty::TEXT) ||
       HasNonEmptyStringProperty(node, AXStringProperty::PANE_TITLE) ||

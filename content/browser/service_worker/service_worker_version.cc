@@ -23,6 +23,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
@@ -202,6 +203,29 @@ void DidNavigateClient(
 
 base::TimeDelta GetUpdateDelay() {
   return base::TimeDelta::FromMilliseconds(kUpdateDelayParam.Get());
+}
+
+void CreateFactoryBundleForSubresourceOnUI(
+    int process_id,
+    int routing_id,
+    const url::Origin& origin,
+    network::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+    base::OnceCallback<
+        void(std::unique_ptr<blink::PendingURLLoaderFactoryBundle>)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* rph = RenderProcessHost::FromID(process_id);
+  if (!rph) {
+    // Return nullptr because we can't create a factory bundle because of
+    // missing renderer.
+    ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
+        FROM_HERE, base::BindOnce(std::move(callback), nullptr));
+    return;
+  }
+  auto bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
+      rph, routing_id, origin, cross_origin_embedder_policy,
+      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
+  ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(bundle)));
 }
 
 }  // namespace
@@ -953,17 +977,56 @@ void ServiceWorkerVersion::Doom() {
 }
 
 void ServiceWorkerVersion::OnMainScriptLoaded() {
-  // If this startup isn't paused the service worker after the script load,
-  // there is nothing to do. We already called InitializeGlobalScope() in
-  // StartWorkerInternal().
-  if (!pause_after_download_)
+  if (!initialize_global_scope_after_main_script_loaded_)
     return;
-  // If the script load was successful, unpause the worker by calling
-  // InitializeGlobalScope(). Otherwise, keep it paused and the original
-  // caller of StartWorker() is expected to terminate the worker.
+  initialize_global_scope_after_main_script_loaded_ = false;
+
   int net_error = script_cache_map()->main_script_net_error();
-  if (net_error == net::OK)
-    InitializeGlobalScope();
+  if (net_error != net::OK)
+    return;
+
+  // The subresource loaders need to be updated. Get the factories with the
+  // correct COEP value and pass it to the service worker.
+  //
+  // TODO(https://crbug.com/1039613): Update the loader factories passed to the
+  // script loader factory too.
+  DCHECK_EQ(NEW, status());
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(
+          &CreateFactoryBundleForSubresourceOnUI,
+          embedded_worker()->process_id(),
+          embedded_worker()->worker_devtools_agent_route_id(), script_origin(),
+          cross_origin_embedder_policy(),
+          base::BindOnce(&ServiceWorkerVersion::InitializeGlobalScope,
+                         weak_factory_.GetWeakPtr())));
+}
+
+void ServiceWorkerVersion::InitializeGlobalScope(
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+        subresource_loader_factories) {
+  DCHECK(service_worker_host_);
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      base::WrapRefCounted(context_->GetLiveRegistration(registration_id_));
+  // The registration must exist since we keep a reference to it during
+  // service worker startup.
+  DCHECK(registration);
+
+  if (subresource_loader_factories) {
+    // |subresource_loader_factories| is valid only when the service worker is
+    // a new worker.
+    DCHECK_EQ(nullptr, registration->GetNewestVersion());
+    DCHECK_EQ(NEW, status());
+  }
+
+  DCHECK(provider_host_);
+  service_worker_remote_->InitializeGlobalScope(
+      std::move(service_worker_host_),
+      provider_host_->container_host()
+          ->CreateServiceWorkerRegistrationObjectInfo(std::move(registration)),
+      provider_host_->container_host()->CreateServiceWorkerObjectInfoToSend(
+          this),
+      fetch_handler_existence_, std::move(subresource_loader_factories));
 }
 
 void ServiceWorkerVersion::SetValidOriginTrialTokens(
@@ -1787,8 +1850,8 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   receiver_.Bind(service_worker_host_.InitWithNewEndpointAndPassReceiver());
   // Initialize the global scope now if the worker won't be paused. Otherwise,
   // delay initialization until the main script is loaded.
-  if (!pause_after_download())
-    InitializeGlobalScope();
+  if (!initialize_global_scope_after_main_script_loaded_)
+    InitializeGlobalScope(/*subresource_loader_factories=*/nullptr);
 
   if (!controller_receiver_.is_valid()) {
     controller_receiver_ = remote_controller_.BindNewPipeAndPassReceiver();
@@ -2315,24 +2378,6 @@ void ServiceWorkerVersion::MaybeReportConsoleMessageToInternals(
   OnReportConsoleMessage(blink::mojom::ConsoleMessageSource::kOther,
                          message_level, base::UTF8ToUTF16(message), -1,
                          script_url_);
-}
-
-void ServiceWorkerVersion::InitializeGlobalScope() {
-  DCHECK(service_worker_host_);
-  scoped_refptr<ServiceWorkerRegistration> registration =
-      base::WrapRefCounted(context_->GetLiveRegistration(registration_id_));
-  // The registration must exist since we keep a reference to it during
-  // service worker startup.
-  DCHECK(registration);
-
-  DCHECK(provider_host_);
-  service_worker_remote_->InitializeGlobalScope(
-      std::move(service_worker_host_),
-      provider_host_->container_host()
-          ->CreateServiceWorkerRegistrationObjectInfo(std::move(registration)),
-      provider_host_->container_host()->CreateServiceWorkerObjectInfoToSend(
-          this),
-      fetch_handler_existence_);
 }
 
 void ServiceWorkerVersion::UpdateIdleDelayIfNeeded(base::TimeDelta delay) {

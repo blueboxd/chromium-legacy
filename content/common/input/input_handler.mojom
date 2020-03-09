@@ -164,7 +164,9 @@ struct TouchActionOptional {
   cc.mojom.TouchAction touch_action;
 };
 
-// Interface exposed by the browser to the renderer.
+// Interface exposed by the browser to the renderer. The messages
+// contained in here are state changes that the renderer has taken
+// that the browser must be aware of.
 interface WidgetInputHandlerHost {
   // Call platform Fallback Cursor Mode APIs.
   [EnableIf=is_android]
@@ -207,32 +209,6 @@ interface WidgetInputHandlerHost {
   // a scrollbar is being dragged, or text is being drag-highlighted, even
   // when the mouse passes across different RenderWidget areas.
   SetMouseCapture(bool capture);
-
-  // Requests locking the target of mouse events to a single element and
-  // removing the cursor from view.  Mostly used by the Pointer Lock API.
-  // See https://www.w3.org/TR/pointerlock/ for more info. This call is
-  // also used by Pepper Flash.
-  // |from_user_gesture| indicates whether this request came from a user
-  // gesture or not.
-  // |privileged| is used by Pepper Flash. Privileged mouse lock is only
-  // allowed for fullscreen render widget, which is used to implement Pepper
-  // Flash fullscreen. If privileged is allowed and set to true, we
-  // won't pop up a bubble to ask for user permission or take mouse lock
-  // content into account. The mouse lock will be directly approved.
-  // |unadjusted_movement| indicates whether the request asked for raw mouse
-  // movement data or just what the operating system returns (often accelerated
-  // mouse movement).
-  // TODO(jameshollyer-https://crbug.com/1056036): Add a context to this call
-  // so that both sides have a shared state telling them if the mouse is
-  // locked.
-  RequestMouseLock(bool from_user_gesture,
-                   bool privileged,
-                   bool unadjusted_movement) => (bool success);
-
-  // Unlocks the mouse back to its default behavior. This will also returns
-  // mouse movement back to the platform's adjusted movement if unadjusted
-  // movement was true while locking.
-  UnlockMouse();
 };
 
 // Interface exposed by the renderer to the browser. This class represents
@@ -244,9 +220,6 @@ interface WidgetInputHandler {
 
   // Tells widget mouse capture has been lost.
   MouseCaptureLost();
-
-  // Tells the render side that the mouse has been unlocked.
-  MouseLockLost();
 
   // This message notifies the renderer that the next key event is bound to one
   // or more pre-defined edit commands. If the next key event is not handled

@@ -4,7 +4,9 @@
 
 #include "content/renderer/render_widget_mouse_lock_dispatcher.h"
 
+#include "content/common/widget_messages.h"
 #include "content/renderer/render_view_impl.h"
+#include "ipc/ipc_message.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -23,19 +25,27 @@ void RenderWidgetMouseLockDispatcher::SendLockMouseRequest(
     bool request_unadjusted_movement) {
   bool has_transient_user_activation =
       requester_frame ? requester_frame->HasTransientUserActivation() : false;
-  auto* host = render_widget_->GetInputHandlerHost();
-  if (host) {
-    host->RequestMouseLock(has_transient_user_activation, /*privileged=*/false,
-                           request_unadjusted_movement,
-                           base::BindOnce(&MouseLockDispatcher::OnLockMouseACK,
-                                          weak_ptr_factory_.GetWeakPtr()));
-  }
+  render_widget_->Send(new WidgetHostMsg_LockMouse(
+      render_widget_->routing_id(), has_transient_user_activation, false,
+      request_unadjusted_movement));
 }
 
 void RenderWidgetMouseLockDispatcher::SendUnlockMouseRequest() {
-  auto* host = render_widget_->GetInputHandlerHost();
-  if (host)
-    host->UnlockMouse();
+  render_widget_->Send(
+      new WidgetHostMsg_UnlockMouse(render_widget_->routing_id()));
+}
+
+bool RenderWidgetMouseLockDispatcher::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(RenderWidgetMouseLockDispatcher, message)
+    IPC_MESSAGE_HANDLER(WidgetMsg_LockMouse_ACK, OnLockMouseACK)
+    IPC_MESSAGE_FORWARD(WidgetMsg_MouseLockLost,
+                        static_cast<MouseLockDispatcher*>(this),
+                        MouseLockDispatcher::OnMouseLockLost)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void RenderWidgetMouseLockDispatcher::OnLockMouseACK(bool succeeded) {

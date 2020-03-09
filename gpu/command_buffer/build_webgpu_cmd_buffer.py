@@ -80,6 +80,11 @@ _FUNCTION_INFO = {
         'request_device_properties_size * sizeof(char)',
     },
   },
+  'RemoveDevice': {
+    'impl_func': False,
+    'internal': True,
+    'cmd_args': 'uint64_t device_client_id'
+  },
 }
 
 def main(argv):

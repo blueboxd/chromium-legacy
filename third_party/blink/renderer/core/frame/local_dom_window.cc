@@ -1307,14 +1307,6 @@ void LocalDOMWindow::queueMicrotask(V8VoidFunction* callback) {
                 WrapPersistent(callback), nullptr));
 }
 
-const Vector<String>& LocalDOMWindow::originPolicyIds() const {
-  return origin_policy_ids_;
-}
-
-void LocalDOMWindow::SetOriginPolicyIds(const Vector<String>& ids) {
-  origin_policy_ids_ = ids;
-}
-
 int LocalDOMWindow::requestIdleCallback(V8IdleRequestCallback* callback,
                                         const IdleRequestOptions* options) {
   if (Document* document = this->document()) {

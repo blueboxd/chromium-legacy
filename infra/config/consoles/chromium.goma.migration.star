@@ -752,7 +752,7 @@ luci.console_view(
             short_name = 'asan',
         ),
         luci.console_view_entry(
-            builder = 'ci/android-bfcache-debug',
+            builder = 'ci/android-bfcache-rel',
             category = 'week15b|android',
             short_name = 'bfc',
         ),

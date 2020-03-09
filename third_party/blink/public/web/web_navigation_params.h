@@ -367,6 +367,9 @@ struct BLINK_EXPORT WebNavigationParams {
   // The frame policy specified by the frame owner element.
   // Should be base::nullopt for top level navigations
   base::Optional<FramePolicy> frame_policy;
+
+  // A list of origin trial names to enable for the document being loaded.
+  WebVector<WebString> force_enabled_origin_trials;
 };
 
 }  // namespace blink

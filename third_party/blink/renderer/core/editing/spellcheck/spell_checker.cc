@@ -547,9 +547,9 @@ static Node* FindFirstMarkable(Node* node) {
       return nullptr;
     if (node->GetLayoutObject()->IsText())
       return node;
-    if (node->GetLayoutObject()->IsTextControl())
-      node = ToLayoutTextControl(node->GetLayoutObject())
-                 ->GetTextControlElement()
+    if (auto* text_control =
+            DynamicTo<LayoutTextControl>(node->GetLayoutObject()))
+      node = text_control->GetTextControlElement()
                  ->VisiblePositionForIndex(1)
                  .DeepEquivalent()
                  .AnchorNode();

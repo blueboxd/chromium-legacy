@@ -4,7 +4,7 @@ luci.console_view(
     repo = 'https://chromium.googlesource.com/chromium/src',
     entries = [
         luci.console_view_entry(
-            builder = 'ci/android-bfcache-debug',
+            builder = 'ci/android-bfcache-rel',
             category = 'android',
         ),
         # Formerly on chromium.memory. Moved to the FYI console for persistent

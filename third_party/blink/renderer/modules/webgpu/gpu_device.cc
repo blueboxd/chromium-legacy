@@ -61,7 +61,9 @@ GPUDevice::~GPUDevice() {
   if (IsDawnControlClientDestroyed()) {
     return;
   }
+  queue_ = nullptr;
   GetProcs().deviceRelease(GetHandle());
+  GetInterface()->RemoveDevice(client_id_);
 }
 
 uint64_t GPUDevice::GetClientID() const {

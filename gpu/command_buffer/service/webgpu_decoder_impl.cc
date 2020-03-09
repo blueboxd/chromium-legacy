@@ -766,7 +766,6 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
     const volatile void* cmd_data) {
   const volatile webgpu::cmds::RequestAdapter& c =
       *static_cast<const volatile webgpu::cmds::RequestAdapter*>(cmd_data);
-
   PowerPreference power_preference =
       static_cast<PowerPreference>(c.power_preference);
   DawnRequestAdapterSerial request_adapter_serial =
@@ -794,7 +793,6 @@ error::Error WebGPUDecoderImpl::HandleRequestDevice(
     const volatile void* cmd_data) {
   const volatile webgpu::cmds::RequestDevice& c =
       *static_cast<const volatile webgpu::cmds::RequestDevice*>(cmd_data);
-
   DawnDeviceClientID device_client_id =
       static_cast<DawnDeviceClientID>(c.device_client_id);
   uint32_t adapter_service_id = static_cast<uint32_t>(c.adapter_service_id);
@@ -832,7 +830,6 @@ error::Error WebGPUDecoderImpl::HandleDawnCommands(
     const volatile void* cmd_data) {
   const volatile webgpu::cmds::DawnCommands& c =
       *static_cast<const volatile webgpu::cmds::DawnCommands*>(cmd_data);
-
   uint32_t size = static_cast<uint32_t>(c.size);
   uint32_t commands_shm_id = static_cast<uint32_t>(c.commands_shm_id);
   uint32_t commands_shm_offset = static_cast<uint32_t>(c.commands_shm_offset);
@@ -866,7 +863,6 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   const volatile webgpu::cmds::AssociateMailboxImmediate& c =
       *static_cast<const volatile webgpu::cmds::AssociateMailboxImmediate*>(
           cmd_data);
-
   DawnDeviceClientID device_client_id =
       static_cast<DawnDeviceClientID>(c.device_client_id());
   uint32_t device_generation = static_cast<uint32_t>(c.device_generation);
@@ -956,7 +952,6 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailbox(
     const volatile void* cmd_data) {
   const volatile webgpu::cmds::DissociateMailbox& c =
       *static_cast<const volatile webgpu::cmds::DissociateMailbox*>(cmd_data);
-
   uint32_t texture_id = static_cast<uint32_t>(c.texture_id);
   uint32_t texture_generation = static_cast<uint32_t>(c.texture_generation);
 
@@ -969,6 +964,23 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailbox(
   }
 
   associated_shared_image_map_.erase(it);
+  return error::kNoError;
+}
+
+error::Error WebGPUDecoderImpl::HandleRemoveDevice(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile webgpu::cmds::RemoveDevice& c =
+      *static_cast<const volatile webgpu::cmds::RemoveDevice*>(cmd_data);
+  DawnDeviceClientID device_client_id =
+      static_cast<DawnDeviceClientID>(c.device_client_id);
+
+  auto it = dawn_device_and_wire_servers_.find(device_client_id);
+  if (it == dawn_device_and_wire_servers_.end()) {
+    return error::kInvalidArguments;
+  }
+
+  dawn_device_and_wire_servers_.erase(it);
   return error::kNoError;
 }
 

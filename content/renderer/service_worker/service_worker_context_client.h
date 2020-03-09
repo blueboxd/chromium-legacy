@@ -57,7 +57,7 @@ namespace content {
 
 class ChildURLLoaderFactoryBundle;
 class EmbeddedWorkerInstanceClientImpl;
-class WebWorkerFetchContext;
+class WebServiceWorkerFetchContext;
 
 // ServiceWorkerContextClient is a "client" of a service worker execution
 // context. It enables communication between the embedder and Blink's
@@ -122,6 +122,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle cache_storage,
       mojo::ScopedMessagePipeHandle browser_interface_broker);
+
   // Called on the initiator thread.
   blink::WebEmbeddedWorker& worker();
 
@@ -155,7 +156,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                               std::unique_ptr<blink::WebFetchEventPreloadHandle>
                                   preload_handle) override;
   void RequestTermination(RequestTerminationCallback callback) override;
-  scoped_refptr<blink::WebWorkerFetchContext>
+  scoped_refptr<blink::WebServiceWorkerFetchContext>
   CreateWorkerFetchContextOnInitiatorThread() override;
 
   /////////////////////////////////////////////////////////////////////////////

@@ -616,15 +616,6 @@ void HTMLSelectElement::ScrollToSelection() {
     cache->ListboxActiveIndexChanged(this);
 }
 
-void HTMLSelectElement::SetOptionsChangedOnLayoutObject() {
-  if (LayoutObject* layout_object = GetLayoutObject()) {
-    if (!UsesMenuList())
-      return;
-    layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
-        layout_invalidation_reason::kMenuOptionsChanged);
-  }
-}
-
 const HTMLSelectElement::ListItems& HTMLSelectElement::GetListItems() const {
   if (should_recalc_list_items_) {
     RecalcListItems();
@@ -651,7 +642,7 @@ void HTMLSelectElement::SetRecalcListItems() {
 
   should_recalc_list_items_ = true;
 
-  SetOptionsChangedOnLayoutObject();
+  select_type_->MaximumOptionWidthMightBeChanged();
   if (!isConnected()) {
     if (HTMLOptionsCollection* collection =
             CachedCollection<HTMLOptionsCollection>(kSelectOptions))

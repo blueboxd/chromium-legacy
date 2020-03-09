@@ -85,11 +85,6 @@ void WidgetInputHandlerImpl::MouseCaptureLost() {
       base::BindOnce(&RenderWidget::OnMouseCaptureLost, render_widget_));
 }
 
-void WidgetInputHandlerImpl::MouseLockLost() {
-  RunOnMainThread(
-      base::BindOnce(&RenderWidget::PointerLockLost, render_widget_));
-}
-
 void WidgetInputHandlerImpl::SetEditCommandsForNextKeyEvent(
     const std::vector<EditCommand>& commands) {
   RunOnMainThread(

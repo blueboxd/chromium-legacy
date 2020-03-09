@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import collections
 import os
+import re
 
 from core import path_util
 from core import perf_benchmark
@@ -399,14 +400,21 @@ class ServiceWorkerRequestHandler(
     memory_cache_http_server.MemoryCacheDynamicHTTPRequestHandler):
   """This handler returns dynamic responses for service worker perf tests.
   """
+  _SIZE_1K = 1024
   _SIZE_10K = 10240
   _SIZE_1M = 1048576
+  _FILE_NAME_PATTERN_1K =\
+      re.compile('.*/service_worker/resources/data/1K_[0-9]+\\.txt')
 
   def ResponseFromHandler(self, path):
-    if path.endswith('/service_worker/resources/data/10K.txt'):
+    # normalize the path by replacing backslashes with slashes.
+    normpath = path.replace('\\', '/')
+    if normpath.endswith('/service_worker/resources/data/10K.txt'):
       return self.MakeResponse('c' * self._SIZE_10K, 'text/plain', False)
-    elif path.endswith('/service_worker/resources/data/1M.txt'):
+    elif normpath.endswith('/service_worker/resources/data/1M.txt'):
       return self.MakeResponse('c' * self._SIZE_1M, 'text/plain', False)
+    elif self._FILE_NAME_PATTERN_1K.match(normpath):
+      return self.MakeResponse('c' * self._SIZE_1K, 'text/plain', False)
     return None
 
 

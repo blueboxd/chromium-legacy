@@ -905,8 +905,11 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
     for (auto it = range.first; it != range.second; ++it) {
       viz::CopyOutputRequest* const request = it->second.get();
       if (request->has_area()) {
-        request->set_area(
-            MathUtil::MapEnclosingClippedRect(transform, request->area()));
+        // Avoid creating bigger copy area which may contain unnecessary
+        // area if the error margin is tiny.
+        constexpr float kEpsilon = 0.001f;
+        request->set_area(MathUtil::MapEnclosingClippedRectIgnoringError(
+            transform, request->area(), kEpsilon));
       }
 
       // Only adjust the scale ratio if the request specifies one, or if it

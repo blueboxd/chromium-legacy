@@ -66,4 +66,11 @@ void RequestDevice(uint64_t device_client_id,
   }
 }
 
+void RemoveDevice(uint64_t device_client_id) {
+  webgpu::cmds::RemoveDevice* c = GetCmdSpace<webgpu::cmds::RemoveDevice>();
+  if (c) {
+    c->Init(device_client_id);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_CMD_HELPER_AUTOGEN_H_

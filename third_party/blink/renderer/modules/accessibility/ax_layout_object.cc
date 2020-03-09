@@ -580,11 +580,11 @@ bool AXLayoutObject::IsPlaceholder() const {
     return false;
 
   LayoutObject* parent_layout_object = parent_object->GetLayoutObject();
-  if (!parent_layout_object || !parent_layout_object->IsTextControl())
+  auto* layout_text_control =
+      DynamicTo<LayoutTextControl>(parent_layout_object);
+  if (!layout_text_control)
     return false;
 
-  LayoutTextControl* layout_text_control =
-      ToLayoutTextControl(parent_layout_object);
   DCHECK(layout_text_control);
 
   TextControlElement* text_control_element =

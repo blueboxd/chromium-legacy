@@ -41,7 +41,9 @@ void FakeServiceWorker::InitializeGlobalScope(
         service_worker_host,
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info,
     blink::mojom::ServiceWorkerObjectInfoPtr service_worker_info,
-    blink::mojom::FetchHandlerExistence fetch_handler_existence) {
+    blink::mojom::FetchHandlerExistence fetch_handler_existence,
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+        subresource_loader_factories) {
   host_.Bind(std::move(service_worker_host));
 
   // Enable callers to use these endpoints without us actually binding them

@@ -46,7 +46,7 @@ TEST(CheckedContiguousRange, Constructor_StdArray) {
   static constexpr std::array<int, 5> array = {1, 2, 3, 4, 5};
   constexpr CheckedContiguousRange<const std::array<int, 5>> range(array);
   static_assert(data(array) == range.data(), "");
-  static_assert(size(array) == range.size(), "");
+  static_assert(base::size(array) == range.size(), "");
 }
 
 TEST(CheckedContiguousRange, Constructor_StringPiece) {
@@ -59,8 +59,8 @@ TEST(CheckedContiguousRange, Constructor_StringPiece) {
 TEST(CheckedContiguousRange, Constructor_InitializerList) {
   static constexpr std::initializer_list<int> il = {1, 2, 3, 4, 5};
   constexpr CheckedContiguousRange<const std::initializer_list<int>> range(il);
-  static_assert(data(il) == range.data(), "");
-  static_assert(size(il) == range.size(), "");
+  static_assert(base::data(il) == range.data(), "");
+  static_assert(base::size(il) == range.size(), "");
 }
 
 TEST(CheckedContiguousRange, Constructor_Copy) {
@@ -161,7 +161,7 @@ TEST(CheckedContiguousRange, DataSizeEmpty_Constexpr) {
   constexpr CheckedContiguousRange<const std::array<int, 0>> range(array);
   static_assert(data(array) == range.data(), "");
   static_assert(data(array) == range.cdata(), "");
-  static_assert(size(array) == range.size(), "");
+  static_assert(base::size(array) == range.size(), "");
   static_assert(range.empty(), "");
 }
 

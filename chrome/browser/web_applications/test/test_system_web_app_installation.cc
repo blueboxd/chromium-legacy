@@ -135,6 +135,17 @@ TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchDirectory() {
 
 // static
 std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpAppWithEnabledOriginTrials(
+    const OriginTrialsMap& origin_to_trials) {
+  SystemAppInfo media_system_app_info(
+      "Media", GURL("chrome://test-system-app/pwa.html"));
+  media_system_app_info.enabled_origin_trials = origin_to_trials;
+  return base::WrapUnique(new TestSystemWebAppInstallation(
+      SystemAppType::MEDIA, media_system_app_info));
+}
+
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
 TestSystemWebAppInstallation::SetUpAppNotShownInLauncher() {
   SystemAppInfo app_info("Test", GURL("chrome://test-system-app/pwa.html"));
   app_info.show_in_launcher = false;

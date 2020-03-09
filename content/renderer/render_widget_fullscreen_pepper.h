@@ -49,6 +49,9 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
   void PepperDidChangeCursor(const ui::Cursor& cursor) override;
   void SetLayer(scoped_refptr<cc::Layer> layer) override;
 
+  // RenderWidget overrides.
+  bool OnMessageReceived(const IPC::Message& msg) override;
+
   // Could be NULL when this widget is closing.
   PepperPluginInstanceImpl* plugin() const { return plugin_; }
 

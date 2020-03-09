@@ -200,5 +200,16 @@ class NameStyleConverterTest(unittest.TestCase):
         converter = NameStyleConverter('third_party/blink/renderer/bindings/modules/v8/v8_path_2d.h')
         self.assertEqual(converter.to_header_guard(), 'THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_V8_PATH_2D_H_')
 
+    def test_equality(self):
+        a_1 = NameStyleConverter('a')
+        a_2 = NameStyleConverter('a')
+        c = NameStyleConverter('c')
+
+        self.assertEqual(a_1, a_2)
+        self.assertNotEqual(a_1, c)
+        self.assertEqual(hash(a_1), hash(a_2))
+        self.assertNotEqual(hash(a_1), hash(c))
+
+
 if __name__ == '__main__':
     unittest.main()

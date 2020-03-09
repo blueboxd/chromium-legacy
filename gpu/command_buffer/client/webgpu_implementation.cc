@@ -603,5 +603,14 @@ bool WebGPUImplementation::RequestDeviceAsync(
 #endif
 }
 
+void WebGPUImplementation::RemoveDevice(DawnDeviceClientID device_client_id) {
+#if BUILDFLAG(USE_DAWN)
+  auto it = command_serializers_.find(device_client_id);
+  DCHECK(it != command_serializers_.end());
+  helper_->RemoveDevice(device_client_id);
+  command_serializers_.erase(it);
+#endif
+}
+
 }  // namespace webgpu
 }  // namespace gpu

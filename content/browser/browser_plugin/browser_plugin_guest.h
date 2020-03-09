@@ -181,6 +181,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Methods to handle events from InputEventShim.
   void DidSetHasTouchEventHandlers(bool accept);
   void DidTextInputStateChange(const TextInputState& params);
+  void DidLockMouse(bool user_gesture, bool privileged);
   void DidUnlockMouse();
 
   // WebContentsObserver implementation.
@@ -258,6 +259,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnExecuteEditCommand(int instance_id,
                             const std::string& command);
 
+  void OnLockMouseAck(int instance_id, bool succeeded);
   // Resizes the guest's web contents.
   void OnSetFocus(int instance_id,
                   bool focused,
@@ -328,6 +330,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   gfx::Rect frame_rect_;
   bool focused_;
   bool mouse_locked_;
+  bool pending_lock_request_;
   // Whether the browser plugin is inside a plugin document.
   bool is_full_page_plugin_;
 

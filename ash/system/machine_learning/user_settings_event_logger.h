@@ -10,6 +10,7 @@
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/machine_learning/user_settings_event.pb.h"
 #include "base/sequence_checker.h"
+#include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
@@ -72,43 +73,48 @@ class ASH_EXPORT UserSettingsEventLogger
   void OnOutputStarted() override;
   void OnOutputStopped() override;
 
+  void SetClockForTesting(const base::Clock* clock);
+
  private:
+  friend class UserSettingsEventLoggerTest;
+
   UserSettingsEventLogger();
   ~UserSettingsEventLogger() override;
 
   // Populates contextual information shared by all settings events.
-  void PopulateSharedFeatures(UserSettingsEvent* event);
+  void PopulateSharedFeatures(UserSettingsEvent* settings_event);
 
   // Sends the given event to UKM and AppListClient.
-  void SendToUkmAndAppList(const UserSettingsEvent& event);
+  void SendToUkmAndAppList(const UserSettingsEvent& settings_event);
 
   void OnVolumeTimerEnded();
   void OnBrightnessTimerEnded();
   void OnPresentingTimerEnded();
   void OnFullscreenTimerEnded();
 
-  // When the user drags the brightness or volume slider, the logger will be
-  // called multiple times at small time increments. These timers are used so
-  // that a UKM event is only logged after there has been a pause.
+  // Timer to ensure that volume is only recorded after a pause.
   base::OneShotTimer volume_timer_;
-  base::OneShotTimer brightness_timer_;
-  // Levels before the corresponding timer was started.
   int previous_volume_;
-  int previous_brightness_;
-  // Levels as of the most recent event.
   int current_volume_;
+
+  // Timer to ensure that brightness is only recorded after a pause.
+  base::OneShotTimer brightness_timer_;
+  int previous_brightness_;
   int current_brightness_;
 
   base::OneShotTimer presenting_timer_;
-  base::OneShotTimer fullscreen_timer_;
   int presenting_session_count_;
   // Whether the device has been presenting in the last 5 minutes.
   bool is_recently_presenting_;
+
+  base::OneShotTimer fullscreen_timer_;
   // Whether the device has been in fullscreen mode in the last 5 minutes.
   bool is_recently_fullscreen_;
 
   bool used_cellular_in_session_;
   bool is_playing_audio_;
+
+  const base::Clock* clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

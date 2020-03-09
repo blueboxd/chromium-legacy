@@ -5,11 +5,16 @@
 #include "ash/system/machine_learning/user_settings_event_logger.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/shell.h"
 #include "ash/system/night_light/night_light_controller_impl.h"
+#include "ash/system/power/power_status.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -47,7 +52,8 @@ UserSettingsEventLogger::UserSettingsEventLogger()
       is_recently_presenting_(false),
       is_recently_fullscreen_(false),
       used_cellular_in_session_(false),
-      is_playing_audio_(false) {
+      is_playing_audio_(false),
+      clock_(base::DefaultClock::GetInstance()) {
   Shell::Get()->AddShellObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
 }
@@ -190,8 +196,6 @@ void UserSettingsEventLogger::OnVolumeTimerEnded() {
   event->set_previous_value(previous_volume_);
   event->set_current_value(current_volume_);
 
-  settings_event.mutable_features()->set_is_playing_audio(is_playing_audio_);
-
   PopulateSharedFeatures(&settings_event);
   SendToUkmAndAppList(settings_event);
 }
@@ -270,8 +274,46 @@ void UserSettingsEventLogger::OnOutputStopped() {
   is_playing_audio_ = false;
 }
 
-void UserSettingsEventLogger::PopulateSharedFeatures(UserSettingsEvent* event) {
-  // TODO(crbug/1014839): Populate the shared contextual features.
+void UserSettingsEventLogger::SetClockForTesting(const base::Clock* clock) {
+  clock_ = clock;
+}
+
+void UserSettingsEventLogger::PopulateSharedFeatures(
+    UserSettingsEvent* settings_event) {
+  auto* features = settings_event->mutable_features();
+
+  // Set time features.
+  base::Time::Exploded now;
+  clock_->Now().LocalExplode(&now);
+  features->set_hour_of_day(now.hour);
+  features->set_day_of_week(
+      static_cast<UserSettingsEvent::Features::DayOfWeek>(now.day_of_week));
+
+  // Set power features.
+  if (PowerStatus::IsInitialized()) {
+    const auto* power_status = PowerStatus::Get();
+    features->set_battery_percentage(power_status->GetRoundedBatteryPercent());
+    features->set_is_charging(power_status->IsLinePowerConnected() ||
+                              power_status->IsMainsChargerConnected() ||
+                              power_status->IsUsbChargerConnected());
+  }
+
+  // Set activity features.
+  features->set_is_playing_audio(is_playing_audio_);
+  // TODO(crbug/1014839): Set the |is_playing_video| field.
+
+  // Set orientation features.
+  features->set_device_mode(
+      Shell::Get()->tablet_mode_controller()->InTabletMode()
+          ? UserSettingsEvent::Features::TABLET_MODE
+          : UserSettingsEvent::Features::CLAMSHELL_MODE);
+  const auto orientation =
+      Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
+  if (IsLandscapeOrientation(orientation)) {
+    features->set_device_orientation(UserSettingsEvent::Features::LANDSCAPE);
+  } else if (IsPortraitOrientation(orientation)) {
+    features->set_device_orientation(UserSettingsEvent::Features::PORTRAIT);
+  }
 }
 
 void UserSettingsEventLogger::SendToUkmAndAppList(
@@ -295,8 +337,21 @@ void UserSettingsEventLogger::SendToUkmAndAppList(
   if (event.has_accessibility_id())
     ukm_event.SetAccessibilityId(event.accessibility_id());
 
+  if (features.has_hour_of_day())
+    ukm_event.SetHourOfDay(features.hour_of_day());
+  if (features.has_day_of_week())
+    ukm_event.SetDayOfWeek(features.day_of_week());
+  if (features.has_battery_percentage())
+    ukm_event.SetBatteryPercentage(features.battery_percentage());
+  if (features.has_is_charging())
+    ukm_event.SetIsCharging(features.is_charging());
   if (features.has_is_playing_audio())
     ukm_event.SetIsPlayingAudio(features.is_playing_audio());
+  if (features.has_device_mode())
+    ukm_event.SetDeviceMode(features.device_mode());
+  if (features.has_device_orientation())
+    ukm_event.SetDeviceOrientation(features.device_orientation());
+
   if (features.has_is_recently_presenting())
     ukm_event.SetIsRecentlyPresenting(features.is_recently_presenting());
   if (features.has_is_recently_fullscreen())

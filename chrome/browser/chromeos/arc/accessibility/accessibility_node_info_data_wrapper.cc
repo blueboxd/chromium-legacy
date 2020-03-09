@@ -455,30 +455,21 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
         ToLiveStatusString(container_live_status_));
   }
 
-  std::vector<int32_t> standard_action_ids;
-  if (GetProperty(AXIntListProperty::STANDARD_ACTION_IDS,
-                  &standard_action_ids)) {
-    for (size_t i = 0; i < standard_action_ids.size(); ++i) {
-      switch (static_cast<AXActionType>(standard_action_ids[i])) {
-        case AXActionType::SCROLL_BACKWARD:
-          out_data->AddAction(ax::mojom::Action::kScrollBackward);
-          break;
-        case AXActionType::SCROLL_FORWARD:
-          out_data->AddAction(ax::mojom::Action::kScrollForward);
-          break;
-        case AXActionType::EXPAND:
-          out_data->AddAction(ax::mojom::Action::kExpand);
-          out_data->AddState(ax::mojom::State::kCollapsed);
-          break;
-        case AXActionType::COLLAPSE:
-          out_data->AddAction(ax::mojom::Action::kCollapse);
-          out_data->AddState(ax::mojom::State::kExpanded);
-          break;
-        default:
-          // unmapped
-          break;
-      }
-    }
+  // Standard actions.
+  if (HasStandardAction(AXActionType::SCROLL_BACKWARD))
+    out_data->AddAction(ax::mojom::Action::kScrollBackward);
+
+  if (HasStandardAction(AXActionType::SCROLL_FORWARD))
+    out_data->AddAction(ax::mojom::Action::kScrollForward);
+
+  if (HasStandardAction(AXActionType::EXPAND)) {
+    out_data->AddAction(ax::mojom::Action::kExpand);
+    out_data->AddState(ax::mojom::State::kCollapsed);
+  }
+
+  if (HasStandardAction(AXActionType::COLLAPSE)) {
+    out_data->AddAction(ax::mojom::Action::kCollapse);
+    out_data->AddState(ax::mojom::State::kExpanded);
   }
 
   // Custom actions.
@@ -543,6 +534,11 @@ bool AccessibilityNodeInfoDataWrapper::GetProperty(
     AXStringListProperty prop,
     std::vector<std::string>* out_value) const {
   return arc::GetProperty(node_ptr_->string_list_properties, prop, out_value);
+}
+
+bool AccessibilityNodeInfoDataWrapper::HasStandardAction(
+    AXActionType action) const {
+  return arc::HasStandardAction(node_ptr_, action);
 }
 
 bool AccessibilityNodeInfoDataWrapper::HasCoveringSpan(

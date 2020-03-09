@@ -8,7 +8,8 @@ typedef (DOMString or TrustedHTML or TrustedScript or TrustedScriptURL) TrustedS
 
 [
     Exposed=Window,
-    RuntimeEnabled=TrustedDOMTypes
+    RuntimeEnabled=TrustedDOMTypes,
+    SecureContext
 ] interface TrustedTypePolicy {
     readonly attribute DOMString name;
     [CallWith=ScriptState, RaisesException] TrustedHTML createHTML(DOMString input, any... args);

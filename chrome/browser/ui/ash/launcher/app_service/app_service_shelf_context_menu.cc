@@ -140,7 +140,7 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
             ->StopVm(crostini::kCrostiniDefaultVmName, base::DoNothing());
       } else if (item().id.app_id == plugin_vm::kPluginVmAppId) {
         plugin_vm::PluginVmManager::GetForProfile(controller()->profile())
-            ->StopPluginVm(plugin_vm::kPluginVmName);
+            ->StopPluginVm(plugin_vm::kPluginVmName, /*force=*/false);
       } else {
         LOG(ERROR) << "App " << item().id.app_id
                    << " should not have a stop app command.";

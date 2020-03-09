@@ -106,9 +106,12 @@ apps::mojom::InstallSource GetHighestPriorityInstallSource(
 namespace apps {
 
 WebApps::WebApps(const mojo::Remote<apps::mojom::AppService>& app_service,
-                 Profile* profile)
+                 Profile* profile,
+                 apps::InstanceRegistry* instance_registry)
     : profile_(profile),
+      instance_registry_(instance_registry),
       app_service_(nullptr) {
+  DCHECK(instance_registry_);
   Initialize(app_service);
 }
 
@@ -377,6 +380,11 @@ void WebApps::GetMenuModel(const std::string& app_id,
             ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
             : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB,
         &menu_items);
+  }
+
+  if (menu_type == apps::mojom::MenuType::kShelf &&
+      !instance_registry_->GetWindows(app_id).empty()) {
+    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
   }
 
   if (provider_->install_finalizer().CanUserUninstallExternalApp(app_id)) {

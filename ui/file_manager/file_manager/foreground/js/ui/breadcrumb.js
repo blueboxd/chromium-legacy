@@ -8,11 +8,11 @@
 const breadCrumbTemplate = `
   <style>
     :host([hidden]), [hidden] {
-      display: none;
+      display: none !important;
     }
 
     :host {
-      display: inline-flex;
+      display: flex;
       font-family: 'Roboto Medium';
       font-size: 14px;
       outline: none;
@@ -21,34 +21,29 @@ const breadCrumbTemplate = `
       white-space: nowrap;
     }
 
-    p {
-      margin: 0;
-    }
-
-    p + p:before {
+    span.caret {
       -webkit-mask-image: url(../../images/files/ui/arrow_right.svg);
+      -webkit-mask-position: center;
       -webkit-mask-repeat: no-repeat;
       background-color: currentColor;
-      content: '...';
-      display: inline-block;
+      display: inline-flex;
       height: 20px;
+      margin: 8px 0;
       width: 20px;
     }
 
-    :host-context(html[dir='rtl']) p + p:before {
+    :host-context(html[dir='rtl']) span.caret {
       transform: rotate(-180deg);
-    }
-
-    p[hidden] button[elider] {
-      display: none;
     }
 
     button {
       /* don't use browser's background-color. */
       background-color: unset;
       border: 1px solid transparent;
+      border-radius: 4px;
       color: var(--google-grey-700);
       cursor: pointer;
+      display: inline-flex;
 
       /* don't use browser's button font. */
       font: inherit;
@@ -60,7 +55,11 @@ const breadCrumbTemplate = `
       /* elide wide text */
       max-width: 200px;
       overflow: hidden;
+
+      /* pad to align text with other toolbar text */
       padding: calc(8px - 1px);
+      padding-top: 8px;
+
       /* text rendering debounce: center. */
       text-align: center;
       text-overflow: ellipsis;
@@ -73,34 +72,51 @@ const breadCrumbTemplate = `
       font-weight: 500;
     }
 
-    button:focus {
-      border: 1px solid blue;
+    span[elider] {
+      -webkit-mask-image: url(../../images/files/ui/menu_ng.svg);
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      background-color: currentColor;
+      height: 36px;
+      transform: rotate(90deg);
+      width: 36px;
+    }
+
+    button[elider] {
+      border-radius: 50%;
+      box-sizing: border-box;
+      height: 36px;
+      padding: 0;
+      width: 36px;
+    }
+
+    :host([checked]) button[elider] {
+      background-color: rgba(0, 0, 0, 12%);
+    }
+
+    button:not([disabled]):hover {
+      background-color: rgba(0, 0, 0, 4%);
+    }
+
+    button[id]:focus, button[elider]:focus {
+      background-color: unset;
+      border: 1px solid var(--google-blue-600);
       outline: none;
     }
 
-    button:active {
-      background-color: lightblue;
+    button[id]:active, button[elider]:active {
+      background-color: rgba(0, 0, 0, 12%);
+      border: 1px solid transparent;
+      outline: none;
     }
 
-    #elided, #elided button {  /* drop-down menu and buttons */
-      display: none;
-    }
-
-    :host([checked]) #elided {
-      background-color: white;
-      border-radius: 2px;
-      box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 50%);
-      display: block;
-      margin-block-start: 0.2em;
-      margin-inline-start: -0.2em;
-      max-height: 40vh;
-      padding: 8px 0;
-      position: absolute;
-      overflow: hidden auto;
-      z-index: 502;
-    }
-
-    :host([checked]) #elided button {
+    /**
+     * Drop-down menu button style: match non-file-ng menu item
+     * style until all app menus have been updated to files-ng.
+     */
+    #elider-menu button {
+      border: 1px solid transparent;
+      border-radius: 0;
       color: rgb(51, 51, 51);
       display: block;
       font-family: 'Roboto';
@@ -108,14 +124,28 @@ const breadCrumbTemplate = `
       min-width: 14em;  /* menu width */
       max-width: 14em;
       text-align: start;
+      outline: none;
+    }
+
+    #elider-menu button:focus {
+      background-color: rgba(0, 0, 0, 12%);
+    }
+
+    #elider-menu button:active {
+      background-color: rgba(0, 0, 0, 20%);
     }
   </style>
 
-  <p hidden><button id='first'></button></p>
-  <p hidden><button elider></button></p>
-  <p hidden><button id='second'></button></p>
-  <p hidden><button id='third'></button></p>
-  <p hidden><button id='fourth'></button></p>
+  <button id='first'></button>
+  <span class='caret' hidden aria-hidden></span>
+    <button elider><span elider aria-hidden></span></button>
+  <span class='caret' hidden aria-hidden></span>
+    <button id='second'></button>
+  <span class='caret' hidden aria-hidden></span>
+    <button id='third'></button>
+  <span class='caret' hidden aria-hidden></span>
+    <button id='fourth'></button>
+  <cr-action-menu id='elider-menu'></cr-menu-item>
 `;
 
 /**
@@ -143,6 +173,7 @@ class BreadCrumb extends HTMLElement {
 
   /**
    * Sets the user interaction signal callback.
+   *
    * @param {?function(*)} signal
    */
   setSignalCallback(signal) {
@@ -151,17 +182,19 @@ class BreadCrumb extends HTMLElement {
 
   /**
    * DOM connected.
+   *
    * @private
    */
   connectedCallback() {
     this.onkeydown = this.onKeydown_.bind(this);
     this.onclick = this.onClicked_.bind(this);
     this.onblur = this.closeMenu_.bind(this);
-    this.setAttribute('tabindex', '0');
+
+    this.addEventListener('close', this.onblur);
   }
 
   /**
-   * Get parts.
+   * Gets parts.
    * @return {!Array<string>}
    */
   get parts() {
@@ -169,7 +202,7 @@ class BreadCrumb extends HTMLElement {
   }
 
   /**
-   * Get path.
+   * Gets path.
    * @return {string} path
    */
   get path() {
@@ -198,9 +231,14 @@ class BreadCrumb extends HTMLElement {
     const enabled = [];
 
     function setButton(i, text) {
+      const previousSibling = buttons[i].previousElementSibling;
+      if (previousSibling.classList.contains('caret')) {
+        previousSibling.hidden = !text;
+      }
+
       buttons[i].removeAttribute('has-tooltip');
-      buttons[i].parentElement.hidden = !text;
       buttons[i].textContent = text;
+      buttons[i].hidden = !text;
       buttons[i].disabled = false;
       !!text && enabled.push(i);
     }
@@ -216,7 +254,7 @@ class BreadCrumb extends HTMLElement {
       buttons[enabled.pop()].disabled = true;
     }
 
-    this.removeAttribute('checked');
+    this.closeMenu_();
     this.renderElidedParts_();
 
     this.setAttribute('path', this.path);
@@ -224,8 +262,7 @@ class BreadCrumb extends HTMLElement {
   }
 
   /**
-   * Renders the elided parts of the path in a drop-down menu. Note the drop-
-   * down is hidden, via its parent, if there are no elided parts.
+   * Renders elided path parts in a drop-down menu.
    *
    * @private
    */
@@ -233,30 +270,38 @@ class BreadCrumb extends HTMLElement {
     const elider = this.shadowRoot.querySelector('button[elider]');
     const parts = this.parts_;
 
-    let content = '...';
-    elider.parentElement.hidden = parts.length <= 4;
-    if (elider.parentElement.hidden) {
-      elider.textContent = content;
+    elider.hidden = parts.length <= 4;
+    if (elider.hidden) {
+      elider.previousElementSibling.hidden = true;
       return;
     }
 
-    content += '<div id="elided">';
+    let elidedParts = '';
     for (let i = 1; i < parts.length - 2; ++i) {
-      content += `<button tabindex='-1'>${parts[i]}</button>`;
+      elidedParts += `<button class='dropdown-item'>${parts[i]}</button>`;
     }
 
-    elider.innerHTML = content + '</div>';
+    const menu = this.shadowRoot.querySelector('cr-action-menu');
+    menu.innerHTML = elidedParts;
+
+    elider.previousElementSibling.hidden = false;
+    elider.hidden = false;
   }
 
   /**
    * Returns the breadcrumb buttons: they contain the current path ordered by
    * its parts, which are stored in the <button>.textContent.
    *
-   * @return {!NodeList}
+   * @return {!Array<HTMLButtonElement>}
    */
   getBreadcrumbButtons() {
-    const parts = 'button:not([elider]):not([hidden])';
-    return this.shadowRoot.querySelectorAll(parts);
+    const parts = this.shadowRoot.querySelectorAll('button[id]:not([hidden])');
+    if (this.parts_.length <= 4) {
+      return Array.from(parts);
+    }
+
+    const elided = this.shadowRoot.querySelectorAll('cr-action-menu button');
+    return [parts[0]].concat(Array.from(elided), Array.from(parts).slice(1));
   }
 
   /**
@@ -269,7 +314,7 @@ class BreadCrumb extends HTMLElement {
    *    attribute on the returned buttons.
    */
   getEllipsisButtons() {
-    return Array.from(this.getBreadcrumbButtons()).filter(button => {
+    return this.getBreadcrumbButtons().filter(button => {
       if (!button.hasAttribute('has-tooltip') && button.offsetWidth) {
         return button.offsetWidth < button.scrollWidth;
       }
@@ -280,8 +325,7 @@ class BreadCrumb extends HTMLElement {
    * Handles 'click' events.
    *
    * Emits an index signal on breadcumb button click: the index indicates the
-   * current path part that was clicked. Drop-down menu clicks open and close
-   * (toggle) the menu element.
+   * current path part that was clicked.
    *
    * @param {Event} event
    * @private
@@ -300,10 +344,8 @@ class BreadCrumb extends HTMLElement {
       return;
     }
 
-    this.closeMenu_();
-
     if (element instanceof HTMLButtonElement) {
-      const parts = Array.from(this.getBreadcrumbButtons());
+      const parts = this.getBreadcrumbButtons();
       this.signal_(parts.indexOf(element));
     }
   }
@@ -315,10 +357,6 @@ class BreadCrumb extends HTMLElement {
    * @private
    */
   onKeydown_(event) {
-    if (event.key === 'Tab') {
-      this.closeMenu_();
-    }
-
     if (event.key === ' ' || event.key === 'Enter') {
       this.onClicked_(event);
     }
@@ -331,12 +369,35 @@ class BreadCrumb extends HTMLElement {
    * @private
    */
   toggleMenu_() {
-    if (!this.hasAttribute('checked')) {
-      this.setAttribute('checked', '');
-      this.signal_('path-rendered');
-    } else {
+    if (this.hasAttribute('checked')) {
       this.closeMenu_();
+      return;
     }
+
+    // Compute drop-down horizontal RTL/LTR position.
+    let position;
+    const elider = this.shadowRoot.querySelector('button[elider]');
+    if (document.documentElement.getAttribute('dir') === 'rtl') {
+      position = elider.offsetLeft + elider.offsetWidth;
+      position = document.documentElement.offsetWidth - position;
+    } else {
+      position = elider.offsetLeft;
+    }
+
+    // Show drop-down below the elider button.
+    const menu = this.shadowRoot.querySelector('cr-action-menu');
+    menu.showAt(elider, {top: elider.offsetTop + elider.offsetHeight});
+
+    // Style drop-down and horizontal position.
+    const dialog = menu.getDialog();
+    dialog.style['left'] = position + 'px';
+    dialog.style['right'] = position + 'px';
+    dialog.style['overflow'] = 'hidden auto';
+    dialog.style['max-height'] = '40vh';
+
+    // Update state and emit rendered signal.
+    this.setAttribute('checked', '');
+    this.signal_('path-rendered');
   }
 
   /**
@@ -345,8 +406,10 @@ class BreadCrumb extends HTMLElement {
    * @private
    */
   closeMenu_() {
-    if (this.hasAttribute('checked')) {
-      this.removeAttribute('checked');
+    this.removeAttribute('checked');
+    const menu = this.shadowRoot.querySelector('cr-action-menu');
+    if (menu.getDialog().hasAttribute('open')) {
+      menu.close();
     }
   }
 }

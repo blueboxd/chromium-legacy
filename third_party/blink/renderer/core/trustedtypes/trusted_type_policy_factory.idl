@@ -6,7 +6,8 @@
 
 [
     Exposed=(Window, Worker),
-    RuntimeEnabled=TrustedDOMTypes
+    RuntimeEnabled=TrustedDOMTypes,
+    SecureContext
 ] interface TrustedTypePolicyFactory {
     [RaisesException] TrustedTypePolicy createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions);
     readonly attribute TrustedTypePolicy defaultPolicy;

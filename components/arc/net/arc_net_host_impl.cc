@@ -355,8 +355,6 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
 
   mojo->guid = GetStringFromONCDictionary(dict, onc::network_config::kGUID,
                                           true /* required */);
-  mojo->mac_address = GetStringFromONCDictionary(
-      dict, onc::network_config::kMacAddress, false /* required */);
   TranslateONCNetworkTypeDetails(dict, mojo.get());
 
   if (network_state) {
@@ -454,36 +452,6 @@ void StartDisconnectFailureCallback(
     std::unique_ptr<base::DictionaryValue> error_data) {
   VLOG(1) << "StartDisconnectFailureCallback: " << error_name;
   std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
-}
-
-void GetDefaultNetworkSuccessCallback(
-    base::OnceCallback<void(arc::mojom::NetworkConfigurationPtr,
-                            arc::mojom::NetworkConfigurationPtr)> callback,
-    const std::string& service_path,
-    const base::DictionaryValue& dictionary) {
-  // TODO(cernekee): Figure out how to query Chrome for the default physical
-  // service if a VPN is connected, rather than just reporting the
-  // default logical service in both fields.
-  const chromeos::NetworkState* network_state =
-      GetStateHandler()->GetNetworkState(service_path);
-  std::move(callback).Run(
-      TranslateONCConfiguration(network_state, &dictionary),
-      TranslateONCConfiguration(network_state, &dictionary));
-}
-
-void GetDefaultNetworkFailureCallback(
-    base::OnceCallback<void(arc::mojom::NetworkConfigurationPtr,
-                            arc::mojom::NetworkConfigurationPtr)> callback,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  LOG(ERROR) << "Failed to query default logical network: " << error_name;
-  std::move(callback).Run(nullptr, nullptr);
-}
-
-void DefaultNetworkFailureCallback(
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  LOG(ERROR) << "Failed to query default logical network: " << error_name;
 }
 
 void ArcVpnSuccessCallback() {
@@ -799,80 +767,8 @@ void ArcNetHostImpl::ScanCompleted(const chromeos::DeviceState* /*unused*/) {
   net_instance->ScanCompleted();
 }
 
-const chromeos::NetworkState* ArcNetHostImpl::GetDefaultNetworkFromChrome() {
-  // If an Android VPN is connected, report the underlying physical
-  // connection only.  Never tell Android about its own VPN.
-  // If a Chrome OS VPN is connected, report the Chrome OS VPN as the
-  // default connection.
-  if (arc_vpn_service_path_.empty()) {
-    return GetShillBackedNetwork(GetStateHandler()->DefaultNetwork());
-  }
-
-  return GetShillBackedNetwork(GetStateHandler()->ConnectedNetworkByType(
-      chromeos::NetworkTypePattern::NonVirtual()));
-}
-
-void ArcNetHostImpl::GetDefaultNetwork(GetDefaultNetworkCallback callback) {
-  const chromeos::NetworkState* default_network = GetDefaultNetworkFromChrome();
-
-  if (!default_network) {
-    VLOG(1) << "GetDefaultNetwork: no default network";
-    std::move(callback).Run(nullptr, nullptr);
-    return;
-  }
-  VLOG(1) << "GetDefaultNetwork: default network is "
-          << default_network->path();
-  std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
-  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
-  // the callee interface.
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
-  GetManagedConfigurationHandler()->GetProperties(
-      user_id_hash, default_network->path(),
-      base::Bind(&GetDefaultNetworkSuccessCallback, repeating_callback),
-      base::Bind(&GetDefaultNetworkFailureCallback, repeating_callback));
-}
-
-void ArcNetHostImpl::DefaultNetworkSuccessCallback(
-    const std::string& service_path,
-    const base::DictionaryValue& dictionary) {
-  auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
-                                                   DefaultNetworkChanged);
-  if (!net_instance)
-    return;
-
-  const chromeos::NetworkState* network_state =
-      GetStateHandler()->GetNetworkState(service_path);
-  net_instance->DefaultNetworkChanged(
-      TranslateONCConfiguration(network_state, &dictionary),
-      TranslateONCConfiguration(network_state, &dictionary));
-}
-
-void ArcNetHostImpl::UpdateDefaultNetwork() {
-  const chromeos::NetworkState* default_network = GetDefaultNetworkFromChrome();
-
-  if (!default_network) {
-    VLOG(1) << "No default network";
-    auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
-                                                     DefaultNetworkChanged);
-    if (net_instance)
-      net_instance->DefaultNetworkChanged(nullptr, nullptr);
-    return;
-  }
-
-  VLOG(1) << "New default network: " << default_network->path() << " ("
-          << default_network->type() << ")";
-  std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
-  GetManagedConfigurationHandler()->GetProperties(
-      user_id_hash, default_network->path(),
-      base::Bind(&ArcNetHostImpl::DefaultNetworkSuccessCallback,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&DefaultNetworkFailureCallback));
-}
-
 void ArcNetHostImpl::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
-  UpdateDefaultNetwork();
   UpdateActiveNetworks();
 }
 
@@ -1070,12 +966,6 @@ void ArcNetHostImpl::DisconnectRequested(const std::string& service_path) {
 
 void ArcNetHostImpl::NetworkConnectionStateChanged(
     const chromeos::NetworkState* network) {
-  // DefaultNetworkChanged() won't be invoked if an ARC VPN is the default
-  // network and the underlying physical connection changed, so check for
-  // that condition here.  This is invoked any time any service state
-  // changes.
-  UpdateDefaultNetwork();
-
   const chromeos::NetworkState* shill_backed_network =
       GetShillBackedNetwork(network);
   if (!shill_backed_network)
@@ -1144,7 +1034,6 @@ void ArcNetHostImpl::NetworkListChanged() {
   // During the transition when a new service comes online, it will
   // temporarily be ranked below "inferior" services.  This callback
   // informs us that shill's ordering has been updated.
-  UpdateDefaultNetwork();
   UpdateActiveNetworks();
 }
 

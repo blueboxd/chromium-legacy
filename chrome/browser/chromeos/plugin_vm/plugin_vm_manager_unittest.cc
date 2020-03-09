@@ -153,7 +153,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmShowAndStop) {
   EXPECT_FALSE(SeneschalClient().share_path_called());
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
 
-  plugin_vm_manager_->StopPluginVm(kPluginVmName);
+  plugin_vm_manager_->StopPluginVm(kPluginVmName, /*force=*/true);
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(VmPluginDispatcherClient().stop_vm_called());
 

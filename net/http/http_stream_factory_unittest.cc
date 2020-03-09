@@ -2227,6 +2227,7 @@ class HttpStreamFactoryBidirectionalQuicTest
         proxy_resolution_service_(
             ConfiguredProxyResolutionService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults) {
+    FLAGS_quic_enable_http3_grease_randomness = false;
     quic_context_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(20));
     if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
       quic::QuicEnableVersion(version_);
@@ -2328,28 +2329,25 @@ class HttpStreamFactoryBidirectionalQuicTest
   HttpNetworkSession::Params params_;
 };
 
-quic::ParsedQuicVersionVector TestVersions() {
-  quic::ParsedQuicVersionVector versions;
-  for (const quic::ParsedQuicVersion& version : quic::AllSupportedVersions()) {
-    if (version.HasIetfQuicFrames()) {
-      // TODO(crbug.com/1059073) test all versions.
-      continue;
-    }
-    versions.push_back(version);
-  }
-  return versions;
-}
-
-INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
-                         HttpStreamFactoryBidirectionalQuicTest,
-                         ::testing::Combine(::testing::ValuesIn(TestVersions()),
-                                            ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(
+    VersionIncludeStreamDependencySequence,
+    HttpStreamFactoryBidirectionalQuicTest,
+    ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
+                       ::testing::Bool()));
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {
   MockQuicData mock_quic_data(version());
+  // When using IETF QUIC, set priority to default value so that
+  // QuicTestPacketMaker::MakeRequestHeadersPacket() does not add mock
+  // PRIORITY_UPDATE frame, which BidirectionalStreamQuicImpl currently does not
+  // send.
+  // TODO(https://crbug.com/1059250): Implement PRIORITY_UPDATE in
+  // BidirectionalStreamQuicImpl.
   spdy::SpdyPriority priority =
-      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+      version().UsesHttp3()
+          ? 1
+          : ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
   int packet_num = 1;
   if (VersionUsesHttp3(version().transport_version)) {
@@ -2477,8 +2475,16 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplHttpJobFailsQuicJobSucceeds) {
   // Set up Quic data.
   MockQuicData mock_quic_data(version());
+  // When using IETF QUIC, set priority to default value so that
+  // QuicTestPacketMaker::MakeRequestHeadersPacket() does not add mock
+  // PRIORITY_UPDATE frame, which BidirectionalStreamQuicImpl currently does not
+  // send.
+  // TODO(https://crbug.com/1059250): Implement PRIORITY_UPDATE in
+  // BidirectionalStreamQuicImpl.
   spdy::SpdyPriority priority =
-      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+      version().UsesHttp3()
+          ? 1
+          : ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
   int packet_num = 1;
   if (VersionUsesHttp3(version().transport_version)) {

@@ -57,6 +57,8 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
   bool GetProperty(mojom::AccessibilityStringListProperty prop,
                    std::vector<std::string>* out_value) const;
 
+  bool HasStandardAction(mojom::AccessibilityActionType action) const;
+
   bool HasCoveringSpan(mojom::AccessibilityStringProperty prop,
                        mojom::SpanType span_type) const;
 

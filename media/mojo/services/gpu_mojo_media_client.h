@@ -18,7 +18,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/cdm/cdm_proxy.h"
-#include "media/gpu/buildflags.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "media/video/supported_video_decoder_config.h"
 

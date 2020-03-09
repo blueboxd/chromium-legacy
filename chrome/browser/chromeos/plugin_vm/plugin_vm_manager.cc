@@ -139,14 +139,14 @@ void PluginVmManager::LaunchPluginVm() {
 
   // Launching Plugin Vm goes through the following steps:
   // 1) Start the Plugin Vm Dispatcher (no-op if already running)
+  //   -- If starting the dispatcher fails, try installing the PluginVM DLC.
   // 2) Call ListVms to get the state of the VM
   // 3) Start the VM if necessary
   // 4) Show the UI.
   UpdateVmState(base::BindOnce(&PluginVmManager::OnListVmsForLaunch,
                                weak_ptr_factory_.GetWeakPtr()),
-                base::BindOnce(&PluginVmManager::LaunchFailed,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               PluginVmLaunchResult::kError));
+                base::BindOnce(&PluginVmManager::InstallPluginVmDlc,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginVmManager::AddVmStartingObserver(
@@ -158,10 +158,18 @@ void PluginVmManager::RemoveVmStartingObserver(
   vm_starting_observers_.RemoveObserver(observer);
 }
 
-void PluginVmManager::StopPluginVm(const std::string& name) {
+void PluginVmManager::StopPluginVm(const std::string& name, bool force) {
   vm_tools::plugin_dispatcher::StopVmRequest request;
   request.set_owner_id(owner_id_);
   request.set_vm_name_uuid(name);
+
+  if (force) {
+    request.set_stop_mode(
+        vm_tools::plugin_dispatcher::VmStopMode::VM_STOP_MODE_KILL);
+  } else {
+    request.set_stop_mode(
+        vm_tools::plugin_dispatcher::VmStopMode::VM_STOP_MODE_SHUTDOWN);
+  }
 
   // TODO(juwa): This may not work if the vm is STARTING|CONTINUING|RESUMING.
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->StopVm(
@@ -287,6 +295,31 @@ void PluginVmManager::OnListVms(
   } else {
     vm_state_ = reply->vm_info(0).state();
     std::move(success_callback).Run(true);
+  }
+}
+
+void PluginVmManager::InstallPluginVmDlc() {
+  chromeos::DlcserviceClient::Get()->Install(
+      GetPluginVmDlcModuleList(),
+      base::BindOnce(&PluginVmManager::OnInstallPluginVmDlc,
+                     weak_ptr_factory_.GetWeakPtr()),
+      chromeos::DlcserviceClient::IgnoreProgress);
+}
+
+void PluginVmManager::OnInstallPluginVmDlc(
+    const std::string& err,
+    const dlcservice::DlcModuleList& dlc_module_list) {
+  if (err == dlcservice::kErrorNone) {
+    UpdateVmState(base::BindOnce(&PluginVmManager::OnListVmsForLaunch,
+                                 weak_ptr_factory_.GetWeakPtr()),
+                  base::BindOnce(&PluginVmManager::LaunchFailed,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 PluginVmLaunchResult::kError));
+  } else {
+    // TODO(kimjae): Unify the dlcservice error handler with
+    // PluginVmInstaller.
+    LOG(ERROR) << "Couldn't intall PluginVM DLC after import: " << err;
+    LaunchFailed();
   }
 }
 
@@ -469,6 +502,8 @@ void PluginVmManager::StopVmForUninstall() {
   vm_tools::plugin_dispatcher::StopVmRequest request;
   request.set_owner_id(owner_id_);
   request.set_vm_name_uuid(kPluginVmName);
+  request.set_stop_mode(
+      vm_tools::plugin_dispatcher::VmStopMode::VM_STOP_MODE_SHUTDOWN);
 
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->StopVm(
       std::move(request), base::BindOnce(&PluginVmManager::OnStopVmForUninstall,

@@ -27,7 +27,7 @@ void PluginVmProcessTask::Kill() {
       plugin_vm::PluginVmManager::GetForProfile(
           ProfileManager::GetActiveUserProfile());
   if (plugin_vm_manager)
-    plugin_vm_manager->StopPluginVm(vm_name_);
+    plugin_vm_manager->StopPluginVm(vm_name_, /*force=*/true);
 }
 
 Task::Type PluginVmProcessTask::GetType() const {

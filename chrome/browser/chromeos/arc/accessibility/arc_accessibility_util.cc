@@ -145,21 +145,9 @@ bool IsImportantInAndroid(AXNodeInfoData* node) {
   // WebView and its child nodes do not have accessibility importance set.
   // This logic can be removed once the change in crrev/c/1890402 landed
   // in all ARC containers.
-  std::vector<int32_t> standard_action_ids;
-  if (GetProperty(node->int_list_properties,
-                  AXIntListProperty::STANDARD_ACTION_IDS,
-                  &standard_action_ids)) {
-    for (const int32_t id : standard_action_ids) {
-      switch (static_cast<AXActionType>(id)) {
-        case AXActionType::NEXT_HTML_ELEMENT:
-        case AXActionType::PREVIOUS_HTML_ELEMENT:
-          return true;
-        default:
-          // unused.
-          break;
-      }
-    }
-  }
+  if (HasStandardAction(node, AXActionType::NEXT_HTML_ELEMENT) ||
+      HasStandardAction(node, AXActionType::PREVIOUS_HTML_ELEMENT))
+    return true;
 
   return false;
 }
@@ -180,23 +168,27 @@ bool HasImportantProperty(AXNodeInfoData* node) {
       GetBooleanProperty(node, AXBooleanProperty::SELECTED))
     return true;
 
-  std::vector<int32_t> standard_action_ids;
-  if (GetProperty(node->int_list_properties,
-                  AXIntListProperty::STANDARD_ACTION_IDS,
-                  &standard_action_ids)) {
-    for (const int32_t id : standard_action_ids) {
-      switch (static_cast<AXActionType>(id)) {
-        case AXActionType::CLICK:
-        case AXActionType::FOCUS:
-          return true;
-        default:
-          // unused.
-          break;
-      }
-    }
-  }
+  if (HasStandardAction(node, AXActionType::CLICK) ||
+      HasStandardAction(node, AXActionType::FOCUS))
+    return true;
 
   // TODO(hirokisato) Also check LABELED_BY and ui::IsControl(role)
+  return false;
+}
+
+bool HasStandardAction(AXNodeInfoData* node, AXActionType action) {
+  if (!node || !node->int_list_properties)
+    return false;
+
+  auto itr =
+      node->int_list_properties->find(AXIntListProperty::STANDARD_ACTION_IDS);
+  if (itr == node->int_list_properties->end())
+    return false;
+
+  for (const auto supported_action : itr->second) {
+    if (static_cast<AXActionType>(supported_action) == action)
+      return true;
+  }
   return false;
 }
 

@@ -12,16 +12,13 @@
       <include name="IDR_MEDIA_APP_INDEX_HTML" file="index.html" type="BINDATA" />
       <include name="IDR_MEDIA_APP_PWA_HTML" file="pwa.html" type="BINDATA" />
       <include name="IDR_MEDIA_APP_MANIFEST" file="manifest.json" type="BINDATA" />
-      <include name="IDR_MEDIA_APP_LAUNCH_JS" file="js/launch.js" type="BINDATA" />
       <include name="IDR_MEDIA_APP_MOJO_API_BOOTSTRAP_JS" file="js/mojo_api_bootstrap.js" type="BINDATA" />
       <include name="IDR_MEDIA_APP_MEDIA_APP_MOJOM_JS" file="${root_gen_dir}/chromeos/components/media_app_ui/media_app_ui.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-
+      <include name="IDR_MEDIA_APP_INDEX_SCRIPTS_JS" file="js/media_app_index_scripts.js" flattenhtml="true" type="BINDATA" />
+      
       <!-- Unprivileged guest contents. -->
       <include name="IDR_MEDIA_APP_APP_HTML" file="app.html" type="BINDATA" />
-      <include name="IDR_MEDIA_APP_RECEIVER_JS" file="js/receiver.js" type="BINDATA" />
-
-      <!-- Common contents. -->
-      <include name="IDR_MEDIA_APP_MESSAGE_PIPE_JS" file="js/message_pipe.js" type="BINDATA" />
+      <include name="IDR_MEDIA_APP_APP_SCRIPTS_JS" file="js/media_app_app_scripts.js" flattenhtml="true" type="BINDATA" />
     </includes>
   </release>
 </grit>

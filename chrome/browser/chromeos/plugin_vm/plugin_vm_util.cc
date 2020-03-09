@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_features.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
@@ -175,6 +176,13 @@ std::string GetIdFromDriveUrl(const GURL& url) {
     return spec.substr(id_start);
   else
     return spec.substr(id_start, first_ampersand - id_start);
+}
+
+dlcservice::DlcModuleList GetPluginVmDlcModuleList() {
+  dlcservice::DlcModuleList dlc_module_list;
+  auto* dlc_module_info = dlc_module_list.add_dlc_module_infos();
+  dlc_module_info->set_dlc_id("pita");
+  return dlc_module_list;
 }
 
 }  // namespace plugin_vm

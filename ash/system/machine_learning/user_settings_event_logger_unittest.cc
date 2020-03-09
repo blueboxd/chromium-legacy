@@ -4,14 +4,22 @@
 
 #include "ash/system/machine_learning/user_settings_event_logger.h"
 
+#include "ash/display/screen_orientation_controller.h"
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/shell.h"
 #include "ash/system/machine_learning/user_settings_event.pb.h"
 #include "ash/system/night_light/night_light_controller_impl.h"
+#include "ash/system/power/power_status.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 
 namespace ash {
 namespace ml {
@@ -26,6 +34,8 @@ using chromeos::network_config::mojom::NetworkTypeStateProperties;
 using chromeos::network_config::mojom::SecurityType;
 using chromeos::network_config::mojom::WiFiStateProperties;
 using chromeos::network_config::mojom::WiFiStatePropertiesPtr;
+using display::Display;
+using power_manager::PowerSupplyProperties;
 using ukm::TestUkmRecorder;
 
 NetworkStatePropertiesPtr CreateWifiNetwork(int signal_strength,
@@ -119,6 +129,12 @@ class UserSettingsEventLoggerTest : public AshTestBase {
   void LogBrightnessAndWait(const int previous_level, const int current_level) {
     logger_->LogBrightnessUkmEvent(previous_level, current_level);
     task_environment_->FastForwardBy(kSliderDelay);
+  }
+
+  void LogSharedFeatures() {
+    UserSettingsEvent event;
+    logger_->PopulateSharedFeatures(&event);
+    logger_->SendToUkmAndAppList(event);
   }
 
   UserSettingsEventLogger* logger_;
@@ -313,15 +329,10 @@ TEST_F(UserSettingsEventLoggerTest, TestLogAccessibilityEvent) {
 
 TEST_F(UserSettingsEventLoggerTest, TestLogVolumeFeatures) {
   LogVolumeAndWait(23, 98);
-  logger_->OnOutputStarted();
-  LogVolumeAndWait(0, 0);
-  logger_->OnOutputStopped();
-  LogVolumeAndWait(0, 0);
 
   const auto& entries = GetUkmEntries();
-  ASSERT_EQ(3ul, entries.size());
+  ASSERT_EQ(1ul, entries.size());
 
-  // Check that the first entry has all details recorded correctly.
   const auto* entry = entries[0];
   TestUkmRecorder::ExpectEntryMetric(entry, "SettingId",
                                      UserSettingsEvent::Event::VOLUME);
@@ -330,10 +341,6 @@ TEST_F(UserSettingsEventLoggerTest, TestLogVolumeFeatures) {
   TestUkmRecorder::ExpectEntryMetric(entry, "PreviousValue", 23);
   TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 98);
   TestUkmRecorder::ExpectEntryMetric(entry, "IsPlayingAudio", false);
-
-  // Check that subsequent entries correctly record |is_playing_audio|.
-  TestUkmRecorder::ExpectEntryMetric(entries[1], "IsPlayingAudio", true);
-  TestUkmRecorder::ExpectEntryMetric(entries[2], "IsPlayingAudio", false);
 }
 
 TEST_F(UserSettingsEventLoggerTest, TestVolumeDelay) {
@@ -359,7 +366,7 @@ TEST_F(UserSettingsEventLoggerTest, TestVolumeDelay) {
   TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 15);
 }
 
-TEST_F(UserSettingsEventLoggerTest, TestBrightnessFeatures) {
+TEST_F(UserSettingsEventLoggerTest, TestLogBrightnessFeatures) {
   LogBrightnessAndWait(12, 29);
 
   // Enter fullscreen.
@@ -414,6 +421,129 @@ TEST_F(UserSettingsEventLoggerTest, TestBrightnessDelay) {
                                      UserSettingsEvent::Event::QUICK_SETTINGS);
   TestUkmRecorder::ExpectEntryMetric(entry, "PreviousValue", 10);
   TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 15);
+}
+
+TEST_F(UserSettingsEventLoggerTest, TestLogDatetimeFeatures) {
+  base::SimpleTestClock test_clock;
+  logger_->SetClockForTesting(&test_clock);
+  base::Time fake_time;
+
+  ASSERT_TRUE(base::Time::FromString("Thu, 7 Nov 2019 14:58:00", &fake_time));
+  test_clock.SetNow(fake_time);
+  LogSharedFeatures();
+
+  ASSERT_TRUE(base::Time::FromString("Fri, 8 Nov 2019 04:24:00", &fake_time));
+  test_clock.SetNow(fake_time);
+  LogSharedFeatures();
+
+  const auto& entries = GetUkmEntries();
+  ASSERT_EQ(2ul, entries.size());
+
+  const auto* entry = entries[0];
+  TestUkmRecorder::ExpectEntryMetric(entry, "HourOfDay", 14);
+  TestUkmRecorder::ExpectEntryMetric(entry, "DayOfWeek",
+                                     UserSettingsEvent::Features::THU);
+
+  entry = entries[1];
+  TestUkmRecorder::ExpectEntryMetric(entry, "HourOfDay", 4);
+  TestUkmRecorder::ExpectEntryMetric(entry, "DayOfWeek",
+                                     UserSettingsEvent::Features::FRI);
+}
+
+TEST_F(UserSettingsEventLoggerTest, TestLogPowerFeatures) {
+  PowerSupplyProperties fake_power;
+
+  fake_power.set_battery_percent(56.0);
+  fake_power.set_external_power(PowerSupplyProperties::DISCONNECTED);
+  PowerStatus::Get()->SetProtoForTesting(fake_power);
+  LogSharedFeatures();
+
+  fake_power.set_external_power(PowerSupplyProperties::AC);
+  PowerStatus::Get()->SetProtoForTesting(fake_power);
+  LogSharedFeatures();
+
+  fake_power.set_external_power(PowerSupplyProperties::USB);
+  PowerStatus::Get()->SetProtoForTesting(fake_power);
+  LogSharedFeatures();
+
+  const auto& entries = GetUkmEntries();
+  ASSERT_EQ(3ul, entries.size());
+
+  auto* entry = entries[0];
+  TestUkmRecorder::ExpectEntryMetric(entry, "BatteryPercentage", 56);
+  TestUkmRecorder::ExpectEntryMetric(entry, "IsCharging", false);
+
+  TestUkmRecorder::ExpectEntryMetric(entries[1], "IsCharging", true);
+  TestUkmRecorder::ExpectEntryMetric(entries[2], "IsCharging", true);
+}
+
+TEST_F(UserSettingsEventLoggerTest, TestLogAudio) {
+  LogSharedFeatures();
+  logger_->OnOutputStarted();
+  LogSharedFeatures();
+  logger_->OnOutputStopped();
+  LogSharedFeatures();
+
+  const auto& entries = GetUkmEntries();
+  ASSERT_EQ(3ul, entries.size());
+
+  TestUkmRecorder::ExpectEntryMetric(entries[0], "IsPlayingAudio", false);
+  TestUkmRecorder::ExpectEntryMetric(entries[1], "IsPlayingAudio", true);
+  TestUkmRecorder::ExpectEntryMetric(entries[2], "IsPlayingAudio", false);
+}
+
+TEST_F(UserSettingsEventLoggerTest, TestLogTabletMode) {
+  auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
+
+  tablet_mode_controller->SetEnabledForTest(true);
+  LogSharedFeatures();
+
+  tablet_mode_controller->SetEnabledForTest(false);
+  LogSharedFeatures();
+
+  const auto& entries = GetUkmEntries();
+  ASSERT_EQ(2ul, entries.size());
+
+  TestUkmRecorder::ExpectEntryMetric(entries[0], "DeviceMode",
+                                     UserSettingsEvent::Features::TABLET_MODE);
+  TestUkmRecorder::ExpectEntryMetric(
+      entries[1], "DeviceMode", UserSettingsEvent::Features::CLAMSHELL_MODE);
+}
+
+TEST_F(UserSettingsEventLoggerTest, TestLogOrientation) {
+  display::test::ScopedSetInternalDisplayId set_internal_display(
+      Shell::Get()->display_manager(),
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  ScreenOrientationControllerTestApi orientation_test_api(
+      Shell::Get()->screen_orientation_controller());
+
+  orientation_test_api.SetDisplayRotation(Display::ROTATE_0,
+                                          Display::RotationSource::ACTIVE);
+  LogSharedFeatures();
+
+  orientation_test_api.SetDisplayRotation(Display::ROTATE_90,
+                                          Display::RotationSource::ACTIVE);
+  LogSharedFeatures();
+
+  orientation_test_api.SetDisplayRotation(Display::ROTATE_180,
+                                          Display::RotationSource::ACTIVE);
+  LogSharedFeatures();
+
+  orientation_test_api.SetDisplayRotation(Display::ROTATE_270,
+                                          Display::RotationSource::ACTIVE);
+  LogSharedFeatures();
+
+  const auto& entries = GetUkmEntries();
+  ASSERT_EQ(4ul, entries.size());
+
+  TestUkmRecorder::ExpectEntryMetric(entries[0], "DeviceOrientation",
+                                     UserSettingsEvent::Features::LANDSCAPE);
+  TestUkmRecorder::ExpectEntryMetric(entries[1], "DeviceOrientation",
+                                     UserSettingsEvent::Features::PORTRAIT);
+  TestUkmRecorder::ExpectEntryMetric(entries[2], "DeviceOrientation",
+                                     UserSettingsEvent::Features::LANDSCAPE);
+  TestUkmRecorder::ExpectEntryMetric(entries[3], "DeviceOrientation",
+                                     UserSettingsEvent::Features::PORTRAIT);
 }
 
 }  // namespace ml

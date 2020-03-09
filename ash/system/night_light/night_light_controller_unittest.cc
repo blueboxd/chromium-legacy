@@ -721,7 +721,9 @@ TEST_F(NightLightTest, TestSunsetSunriseGeoposition) {
 // schedule setting. Current time is simulated to be updated accordingly. The
 // current time change should bring the controller into or take it out of the
 // night light mode accordingly if necessary, based on the settings.
-TEST_F(NightLightTest, TestCustomScheduleGeopositionChanges) {
+
+// Failed on 5 linux chromeos builds. http://crbug.com/1059626
+TEST_F(NightLightTest, DISABLED_TestCustomScheduleGeopositionChanges) {
   constexpr int kCustom_Start = 19 * 60;
   constexpr int kCustom_End = 2 * 60;
 

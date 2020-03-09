@@ -234,7 +234,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
       input_context.type = input_method_private::ParseInputContextType(
           ConvertInputContextType(context));
       input_context.mode = input_method_private::ParseInputModeType(
-          ConvertInputContextType(context));
+          ConvertInputContextMode(context));
       input_context.auto_correct = ConvertInputContextAutoCorrect(context);
       input_context.auto_complete = ConvertInputContextAutoComplete(context);
       input_context.auto_capitalize =
@@ -382,7 +382,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
   std::string ConvertInputContextMode(
       ui::IMEEngineHandlerInterface::InputContext input_context) {
-    std::string input_mode_type = "text";
+    std::string input_mode_type = "none";  // default to nothing
     switch (input_context.mode) {
       case ui::TEXT_INPUT_MODE_SEARCH:
         input_mode_type = "search";
@@ -405,8 +405,11 @@ class ImeObserverChromeOS : public ui::ImeObserver {
       case ui::TEXT_INPUT_MODE_NONE:
         input_mode_type = "noKeyboard";
         break;
-      default:
+      case ui::TEXT_INPUT_MODE_TEXT:
         input_mode_type = "text";
+        break;
+      default:
+        input_mode_type = "";
         break;
     }
     return input_mode_type;

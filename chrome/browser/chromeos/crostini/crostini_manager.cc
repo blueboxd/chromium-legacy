@@ -932,6 +932,9 @@ void CrostiniManager::MaybeUpdateCrostini() {
             VLOG(1) << "Exit type: " << static_cast<int>(Profile::EXIT_CRASHED);
             VLOG(1) << "ListVmDisks result: " << static_cast<int>(result);
             weak_this->is_unclean_startup_ = result == CrostiniResult::SUCCESS;
+            if (weak_this->is_unclean_startup_) {
+              weak_this->RemoveUncleanSshfsMounts();
+            }
           }
         },
         weak_ptr_factory_.GetWeakPtr()));
@@ -3422,6 +3425,12 @@ void CrostiniManager::OnRemoveSshfsCrostiniVolume(
   // Need to let the device suspend after cleaning up.
   chromeos::PowerManagerClient::Get()->UnblockSuspend(
       power_manager_suspend_token);
+}
+
+void CrostiniManager::RemoveUncleanSshfsMounts() {
+  file_manager::VolumeManager::Get(profile_)->RemoveSshfsCrostiniVolume(
+      file_manager::util::GetCrostiniMountDirectory(profile_),
+      base::DoNothing());
 }
 
 }  // namespace crostini

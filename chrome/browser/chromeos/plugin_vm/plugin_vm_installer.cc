@@ -36,8 +36,6 @@
 
 namespace {
 
-constexpr char kPitaDlc[] = "pita";
-
 chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
@@ -120,7 +118,7 @@ void PluginVmInstaller::StartDlcDownload() {
   dlc_download_start_tick_ = base::TimeTicks::Now();
 
   chromeos::DlcserviceClient::Get()->Install(
-      dlc_module_list_,
+      GetPluginVmDlcModuleList(),
       base::BindOnce(&PluginVmInstaller::OnDlcDownloadCompleted,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&PluginVmInstaller::OnDlcDownloadProgressUpdated,
@@ -566,10 +564,7 @@ void PluginVmInstaller::SetDriveDownloadServiceForTesting(
 PluginVmInstaller::PluginVmInstaller(Profile* profile)
     : profile_(profile),
       download_service_(
-          DownloadServiceFactory::GetForKey(profile->GetProfileKey())) {
-  auto* dlc_module_info = dlc_module_list_.add_dlc_module_infos();
-  dlc_module_info->set_dlc_id(kPitaDlc);
-}
+          DownloadServiceFactory::GetForKey(profile->GetProfileKey())) {}
 
 GURL PluginVmInstaller::GetPluginVmImageDownloadUrl() {
   const base::Value* url_ptr =

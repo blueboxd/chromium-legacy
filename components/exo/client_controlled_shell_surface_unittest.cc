@@ -704,6 +704,7 @@ TEST_F(ClientControlledShellSurfaceTest, CompositorLockInRotation) {
 
   shell_surface->SetOrientation(Orientation::PORTRAIT);
   surface->Commit();
+  shell_surface->DidReceiveCompositorFrameAck();
 
   EXPECT_FALSE(compositor->IsLocked());
 }

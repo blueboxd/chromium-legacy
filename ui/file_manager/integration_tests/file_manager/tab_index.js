@@ -289,3 +289,20 @@ testcase.tabindexSaveFileDialogDrive = async () => {
         'new-folder-button', 'filename-input-textbox'
       ]);
 };
+
+/**
+ * Tests that focus doesn't stay on <body>, it's moved to the file list.
+ */
+testcase.tabindexFocusBody = async () => {
+  // Open Files app on Downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Check that the file list.
+  await remoteCall.waitForElement(appId, ['#file-list:focus']);
+
+  // Force focus on <body>.
+  await remoteCall.focus(appId, ['body']);
+
+  // Check that the file list.
+  await remoteCall.waitForElement(appId, ['#file-list:focus']);
+};

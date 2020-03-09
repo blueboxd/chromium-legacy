@@ -340,12 +340,21 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowBrowserTest,
   EXPECT_EQ(0u, windows.size());
 }
 
-// TODO(crbug.com/2078377): Parameterize this test, retire
-// AppServiceWebAndBookmarkAppBrowserTest.
-
 class AppServiceAppWindowWebAppBrowserTest
-    : public AppServiceAppWindowBrowserTest {
+    : public AppServiceAppWindowBrowserTest,
+      public ::testing::WithParamInterface<web_app::ProviderType> {
  protected:
+  AppServiceAppWindowWebAppBrowserTest() {
+    if (GetParam() == web_app::ProviderType::kWebApps) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    }
+  }
+  ~AppServiceAppWindowWebAppBrowserTest() override = default;
+
   // AppServiceAppWindowBrowserTest:
   void SetUpOnMainThread() override {
     AppServiceAppWindowBrowserTest::SetUpOnMainThread();
@@ -376,12 +385,15 @@ class AppServiceAppWindowWebAppBrowserTest
     return https_server_.GetURL("app.com", "/ssl/google.html");
   }
 
+ private:
   // For mocking a secure site.
   net::EmbeddedTestServer https_server_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Test that we have the correct instance for Web apps.
-IN_PROC_BROWSER_TEST_F(AppServiceAppWindowWebAppBrowserTest, WebAppsWindow) {
+IN_PROC_BROWSER_TEST_P(AppServiceAppWindowWebAppBrowserTest, WebAppsWindow) {
   std::string app_id = CreateWebApp();
 
   auto windows = app_service_proxy_->InstanceRegistry().GetWindows(app_id);
@@ -430,32 +442,6 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowWebAppBrowserTest, WebAppsWindow) {
   base::RunLoop().RunUntilIdle();
   windows = app_service_proxy_->InstanceRegistry().GetWindows(app_id);
   EXPECT_EQ(0u, windows.size());
-}
-
-class AppServiceWebAndBookmarkAppBrowserTest
-    : public AppServiceAppWindowWebAppBrowserTest,
-      public ::testing::WithParamInterface<web_app::ProviderType> {
- protected:
-  AppServiceWebAndBookmarkAppBrowserTest() {
-    if (GetParam() == web_app::ProviderType::kWebApps) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kDesktopPWAsWithoutExtensions);
-    } else if (GetParam() == web_app::ProviderType::kBookmarkApps) {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kDesktopPWAsWithoutExtensions);
-    }
-  }
-  ~AppServiceWebAndBookmarkAppBrowserTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_P(AppServiceWebAndBookmarkAppBrowserTest, GetWindows) {
-  const std::string app_id = CreateWebApp();
-
-  auto windows = app_service_proxy_->InstanceRegistry().GetWindows(app_id);
-  EXPECT_EQ(1u, windows.size());
 }
 
 class AppServiceAppWindowArcAppBrowserTest
@@ -643,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowArcAppBrowserTest, ArcAppsWindow) {
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
-                         AppServiceWebAndBookmarkAppBrowserTest,
+                         AppServiceAppWindowWebAppBrowserTest,
                          ::testing::Values(web_app::ProviderType::kBookmarkApps,
                                            web_app::ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);

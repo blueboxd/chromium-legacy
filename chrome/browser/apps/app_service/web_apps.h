@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/services/app_service/public/cpp/instance_registry.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -42,7 +43,8 @@ class WebApps : public apps::mojom::Publisher,
                 public ArcAppListPrefs::Observer {
  public:
   WebApps(const mojo::Remote<apps::mojom::AppService>& app_service,
-          Profile* profile);
+          Profile* profile,
+          apps::InstanceRegistry* instance_registry);
   WebApps(const WebApps&) = delete;
   WebApps& operator=(const WebApps&) = delete;
   ~WebApps() override;
@@ -153,6 +155,8 @@ class WebApps : public apps::mojom::Publisher,
       content_settings_observer_{this};
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
+
+  apps::InstanceRegistry* instance_registry_;
 
   PausedApps paused_apps_;
 

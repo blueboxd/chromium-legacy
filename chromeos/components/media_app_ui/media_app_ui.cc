@@ -26,12 +26,13 @@ content::WebUIDataSource* CreateHostDataSource() {
   source->SetDefaultResource(IDR_MEDIA_APP_INDEX_HTML);
   source->AddResourcePath("pwa.html", IDR_MEDIA_APP_PWA_HTML);
   source->AddResourcePath("manifest.json", IDR_MEDIA_APP_MANIFEST);
-  source->AddResourcePath("launch.js", IDR_MEDIA_APP_LAUNCH_JS);
   source->AddResourcePath("mojo_api_bootstrap.js",
                           IDR_MEDIA_APP_MOJO_API_BOOTSTRAP_JS);
   source->AddResourcePath("media_app.mojom-lite.js",
                           IDR_MEDIA_APP_MEDIA_APP_MOJOM_JS);
-  source->AddResourcePath("message_pipe.js", IDR_MEDIA_APP_MESSAGE_PIPE_JS);
+
+  source->AddResourcePath("media_app_index_scripts.js",
+                          IDR_MEDIA_APP_INDEX_SCRIPTS_JS);
 
   // Add resources from chromeos_media_app_bundle_resources.pak.
   source->AddResourcePath("system_assets/app_icon_256.png",

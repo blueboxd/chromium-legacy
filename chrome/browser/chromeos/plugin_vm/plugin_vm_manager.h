@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_uninstaller_notification.h"
 #include "chrome/browser/chromeos/vm_starting_observer.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher.pb.h"
 #include "chromeos/dbus/vm_plugin_dispatcher_client.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -37,7 +38,7 @@ class PluginVmManager : public KeyedService,
 
   // TODO(juwa): Don't allow launch/stop/uninstall to run simultaneously.
   void LaunchPluginVm();
-  void StopPluginVm(const std::string& name);
+  void StopPluginVm(const std::string& name, bool force);
   void UninstallPluginVm();
 
   // Seneschal server handle to use for path sharing.
@@ -84,6 +85,9 @@ class PluginVmManager : public KeyedService,
   // The flow to launch a Plugin Vm. We'll probably want to add additional
   // abstraction around starting the services in the future but this is
   // sufficient for now.
+  void InstallPluginVmDlc();
+  void OnInstallPluginVmDlc(const std::string& err,
+                            const dlcservice::DlcModuleList& dlc_module_list);
   void OnListVmsForLaunch(bool default_vm_exists);
   void StartVm();
   void OnStartVm(

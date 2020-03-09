@@ -48,7 +48,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   // Call this to indicate that the previous CompositorFrame is processed and
   // the surface is being scheduled for a draw.
-  void DidReceiveCompositorFrameAck();
+  virtual void DidReceiveCompositorFrameAck();
 
   // Call this to indicate that the CompositorFrame with given
   // |presentation_token| has been first time presented to user.

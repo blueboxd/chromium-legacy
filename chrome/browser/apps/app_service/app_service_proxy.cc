@@ -138,7 +138,8 @@ void AppServiceProxy::Initialize() {
         app_service_, profile_, apps::mojom::AppType::kExtension,
         &instance_registry_);
     if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-      web_apps_ = std::make_unique<WebApps>(app_service_, profile_);
+      web_apps_ = std::make_unique<WebApps>(app_service_, profile_,
+                                            &instance_registry_);
     } else {
       extension_web_apps_ = std::make_unique<ExtensionApps>(
           app_service_, profile_, apps::mojom::AppType::kWeb,

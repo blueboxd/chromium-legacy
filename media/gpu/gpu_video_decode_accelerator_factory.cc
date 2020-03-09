@@ -15,6 +15,7 @@
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/media_buildflags.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

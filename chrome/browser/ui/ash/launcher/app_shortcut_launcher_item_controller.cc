@@ -26,7 +26,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -44,46 +47,134 @@ namespace {
 // The time delta between clicks in which clicks to launch V2 apps are ignored.
 const int kClickSuppressionInMS = 1000;
 
-// Returns true if this app matches the given |web_contents|. To accelerate
-// the matching, the app managing |extension| as well as the parsed
-// |refocus_pattern| get passed. If |deprecated_is_app| is true, the application
-// gets first checked against its original URL since a windowed app might have
-// navigated away from its app domain.
-bool WebContentMatchesApp(const std::string& app_id,
-                          const extensions::Extension* extension,
-                          const URLPattern& refocus_pattern,
-                          content::WebContents* web_contents,
-                          Browser* browser) {
-  // If the browser is an app window, and the app name matches the extension,
-  // then the contents match the app.
-  if (browser->deprecated_is_app()) {
-    const extensions::Extension* browser_extension =
-        ExtensionRegistry::Get(browser->profile())
-            ->GetExtensionById(
-                web_app::GetAppIdFromApplicationName(browser->app_name()),
-                ExtensionRegistry::EVERYTHING);
-    return browser_extension == extension;
+// AppMatcher is used to determine if various WebContents instances are
+// associated with a specific app. Clients should call CanMatchWebContents()
+// before iterating through WebContents instances and calling
+// WebContentMatchesApp().
+class AppMatcher {
+ public:
+  AppMatcher(Profile* profile,
+             const std::string& app_id,
+             const URLPattern& refocus_pattern)
+      : app_id_(app_id), refocus_pattern_(refocus_pattern) {
+    DCHECK(profile);
+    if (web_app::WebAppProviderBase* provider =
+            web_app::WebAppProviderBase::GetProviderBase(profile)) {
+      if (provider->registrar().IsLocallyInstalled(app_id)) {
+        registrar_ = &provider->registrar();
+      }
+    }
+    if (!registrar_)
+      extension_ = GetExtensionForAppID(app_id, profile);
   }
 
-  // Apps set to launch in app windows should not match contents running in
-  // tabs.
-  if (extensions::LaunchesInWindow(browser->profile(), extension))
-    return false;
+  AppMatcher(const AppMatcher&) = delete;
+  AppMatcher& operator=(const AppMatcher&) = delete;
 
-  // There are three ways to identify the association of a URL with this
-  // extension:
-  // - The refocus pattern is matched (needed for apps like drive).
-  // - The extension's origin + extent gets matched.
-  // - The launcher controller knows that the tab got created for this app.
-  const GURL tab_url = web_contents->GetURL();
-  return (
-      (!refocus_pattern.match_all_urls() &&
-       refocus_pattern.MatchesURL(tab_url)) ||
-      (extension->OverlapsWithOrigin(tab_url) &&
-       extension->web_extent().MatchesURL(tab_url)) ||
-      ChromeLauncherController::instance()->IsWebContentHandledByApplication(
-          web_contents, app_id));
-}
+  bool CanMatchWebContents() const { return registrar_ || extension_; }
+
+  // Returns true if this app matches the given |web_contents|. If
+  // |deprecated_is_app| is true, the application gets first checked against its
+  // original URL since a windowed app might have navigated away from its app
+  // domain.
+  // May only be called if CanMatchWebContents() return true.
+  bool WebContentMatchesApp(content::WebContents* web_contents,
+                            Browser* browser) const {
+    DCHECK(CanMatchWebContents());
+    return extension_ ? WebContentMatchesHostedApp(web_contents, browser)
+                      : WebContentMatchesWebApp(web_contents, browser);
+  }
+
+ private:
+  bool WebContentMatchesHostedApp(content::WebContents* web_contents,
+                                  Browser* browser) const {
+    DCHECK(extension_);
+    DCHECK(!registrar_);
+
+    // If the browser is an app window, and the app name matches the extension,
+    // then the contents match the app.
+    if (browser->deprecated_is_app()) {
+      const Extension* browser_extension =
+          ExtensionRegistry::Get(browser->profile())
+              ->GetExtensionById(
+                  web_app::GetAppIdFromApplicationName(browser->app_name()),
+                  ExtensionRegistry::EVERYTHING);
+      return browser_extension == extension_;
+    }
+
+    // Apps set to launch in app windows should not match contents running in
+    // tabs.
+    if (extensions::LaunchesInWindow(browser->profile(), extension_))
+      return false;
+
+    // There are three ways to identify the association of a URL with this
+    // extension:
+    // - The refocus pattern is matched (needed for apps like drive).
+    // - The extension's origin + extent gets matched.
+    // - The launcher controller knows that the tab got created for this app.
+    const GURL tab_url = web_contents->GetURL();
+    return (
+        (!refocus_pattern_.match_all_urls() &&
+         refocus_pattern_.MatchesURL(tab_url)) ||
+        (extension_->OverlapsWithOrigin(tab_url) &&
+         extension_->web_extent().MatchesURL(tab_url)) ||
+        ChromeLauncherController::instance()->IsWebContentHandledByApplication(
+            web_contents, app_id_));
+  }
+
+  // Returns true if this web app matches the given |web_contents|. If
+  // |deprecated_is_app| is true, the application gets first checked against its
+  // original URL since a windowed app might have navigated away from its app
+  // domain.
+  bool WebContentMatchesWebApp(content::WebContents* web_contents,
+                               Browser* browser) const {
+    DCHECK(registrar_);
+    DCHECK(!extension_);
+
+    // If the browser is a web app window, and the window app id matches,
+    // then the contents match the app.
+    if (browser->app_controller() && browser->app_controller()->HasAppId())
+      return browser->app_controller()->GetAppId() == app_id_;
+
+    // Bookmark apps set to launch in app windows should not match contents
+    // running in tabs.
+    if (registrar_->GetAppUserDisplayMode(app_id_) ==
+            web_app::DisplayMode::kStandalone &&
+        !base::FeatureList::IsEnabled(
+            features::kDesktopPWAsWithoutExtensions)) {
+      return false;
+    }
+
+    // There are three ways to identify the association of a URL with this
+    // web app:
+    // - The refocus pattern is matched (needed for apps like drive).
+    // - The web app's scope gets matched.
+    // - The launcher controller knows that the tab got created for this web
+    // app.
+    const GURL tab_url = web_contents->GetURL();
+    base::Optional<GURL> app_scope = registrar_->GetAppScope(app_id_);
+    DCHECK(app_scope.has_value());
+
+    return (
+        (!refocus_pattern_.match_all_urls() &&
+         refocus_pattern_.MatchesURL(tab_url)) ||
+        (base::StartsWith(tab_url.spec(), app_scope->spec(),
+                          base::CompareCase::SENSITIVE)) ||
+        ChromeLauncherController::instance()->IsWebContentHandledByApplication(
+            web_contents, app_id_));
+  }
+
+  const std::string app_id_;
+  const URLPattern refocus_pattern_;
+
+  // AppMatcher is stack allocated. Pointer members below are not owned.
+
+  // registrar_ is set when app_id_ is a web app.
+  const web_app::AppRegistrar* registrar_ = nullptr;
+
+  // extension_ is set when app_id_ is a hosted app.
+  const Extension* extension_ = nullptr;
+};
 
 }  // namespace
 
@@ -101,8 +192,6 @@ std::vector<content::WebContents*>
 AppShortcutLauncherItemController::GetRunningApplications(
     const std::string& app_id,
     const GURL& refocus_url) {
-  std::vector<content::WebContents*> items;
-
   URLPattern refocus_pattern(URLPattern::SCHEME_ALL);
   refocus_pattern.SetMatchAllURLs(true);
 
@@ -111,11 +200,12 @@ AppShortcutLauncherItemController::GetRunningApplications(
     refocus_pattern.Parse(refocus_url.spec());
   }
 
-  const Extension* extension = GetExtensionForAppID(
-      app_id, ChromeLauncherController::instance()->profile());
+  Profile* const profile = ChromeLauncherController::instance()->profile();
+  AppMatcher matcher(profile, app_id, refocus_pattern);
 
-  // It is possible to come here While an extension gets loaded.
-  if (!extension)
+  std::vector<content::WebContents*> items;
+  // It is possible to come here while an app gets loaded.
+  if (!matcher.CanMatchWebContents())
     return items;
 
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -124,8 +214,7 @@ AppShortcutLauncherItemController::GetRunningApplications(
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);
-      if (WebContentMatchesApp(app_id, extension, refocus_pattern, web_contents,
-                               browser))
+      if (matcher.WebContentMatchesApp(web_contents, browser))
         items.push_back(web_contents);
     }
   }
@@ -279,13 +368,12 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
     refocus_pattern.Parse(refocus_url_.spec());
   }
 
-  ChromeLauncherController* controller = ChromeLauncherController::instance();
-  const Extension* extension =
-      GetExtensionForAppID(app_id(), controller->profile());
+  Profile* const profile = ChromeLauncherController::instance()->profile();
+  AppMatcher matcher(profile, app_id(), refocus_pattern);
 
-  // We may get here while the extension is loading (and NULL).
-  if (!extension)
-    return NULL;
+  // It is possible to come here while an app gets loaded.
+  if (!matcher.CanMatchWebContents())
+    return nullptr;
 
   const BrowserList* browser_list = BrowserList::GetInstance();
   for (BrowserList::const_reverse_iterator it =
@@ -300,8 +388,7 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(
           (index + active_index) % tab_strip->count());
-      if (WebContentMatchesApp(app_id(), extension, refocus_pattern,
-                               web_contents, browser))
+      if (matcher.WebContentMatchesApp(web_contents, browser))
         return web_contents;
     }
   }
@@ -316,12 +403,11 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);
-      if (WebContentMatchesApp(app_id(), extension, refocus_pattern,
-                               web_contents, browser))
+      if (matcher.WebContentMatchesApp(web_contents, browser))
         return web_contents;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 ash::ShelfAction AppShortcutLauncherItemController::ActivateContent(

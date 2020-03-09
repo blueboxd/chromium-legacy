@@ -175,7 +175,6 @@ class PluginVmInstaller : public KeyedService,
   State state_ = State::NOT_STARTED;
   std::string current_download_guid_;
   base::FilePath downloaded_plugin_vm_image_archive_;
-  dlcservice::DlcModuleList dlc_module_list_;
   // Used to identify our running import with concierge:
   std::string current_import_command_uuid_;
   // -1 when is not yet determined.

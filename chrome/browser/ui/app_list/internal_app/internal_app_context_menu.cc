@@ -34,7 +34,7 @@ void InternalAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
       DCHECK_EQ(app_list::FindInternalApp(app_id())->internal_app_name,
                 apps::BuiltInAppName::kPluginVm);
       plugin_vm::PluginVmManager::GetForProfile(profile())->StopPluginVm(
-          plugin_vm::kPluginVmName);
+          plugin_vm::kPluginVmName, /*force=*/false);
       return;
   }
   app_list::AppContextMenu::ExecuteCommand(command_id, event_flags);

@@ -213,6 +213,9 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // |accessibility_id| is negative value, it will unset the ID.
   void SetClientAccessibilityId(int32_t accessibility_id);
 
+  // Overridden from SurfaceTreeHost:
+  void DidReceiveCompositorFrameAck() override;
+
   // Overridden from SurfaceDelegate:
   bool IsInputEnabled(Surface* surface) const override;
   void OnSetFrame(SurfaceFrameType type) override;

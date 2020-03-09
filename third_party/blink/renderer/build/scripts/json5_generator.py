@@ -103,7 +103,7 @@ def _is_valid(valid_values, value, valid_keys=None):
         assert valid_keys, "'valid_keys' must be declared when using a dict value"
         return all([(key in valid_keys or key == "default")
                     and (val in valid_values or val == "")
-                    for key, val in value.iteritems()])
+                    for key, val in value.items()])
     else:
         return value in valid_values
 

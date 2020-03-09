@@ -11,6 +11,7 @@
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/string_matching/tokenized_string_char_iterator.h"
 
 namespace {
@@ -194,6 +195,19 @@ bool TokenizedStringMatch::Calculate(const TokenizedString& query,
                                      const TokenizedString& text) {
   relevance_ = kNoMatchScore;
   hits_.clear();
+
+  // If there is an exact match, relevance will be 1.0 and there is only 1 hit
+  // that is the entire text/query.
+  const auto& query_text = query.text();
+  const auto& text_text = text.text();
+  const auto query_size = query_text.size();
+  const auto text_size = text_text.size();
+  if (query_size > 0 && query_size == text_size &&
+      base::EqualsCaseInsensitiveASCII(query_text, text_text)) {
+    hits_.push_back(gfx::Range(0, query_size));
+    relevance_ = 1.0;
+    return true;
+  }
 
   PrefixMatcher matcher(query, text);
   if (matcher.Match()) {

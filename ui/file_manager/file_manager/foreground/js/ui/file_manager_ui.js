@@ -401,6 +401,9 @@ class FileManagerUI {
         e.stopPropagation();
       });
     }
+
+    /** @private {?number} */
+    this.focusBodyCallbackId_ = null;
   }
 
   /**
@@ -452,6 +455,31 @@ class FileManagerUI {
     if (targetElement) {
       targetElement.focus();
     }
+
+    /** If focus lands in the <body> we move to the file list. */
+    const focusList = () => {
+      if (this.focusBodyCallbackId_) {
+        return;
+      }
+      this.focusBodyCallbackId_ = window.requestIdleCallback(() => {
+        if (document.activeElement &&
+            document.activeElement.tagName === 'BODY') {
+          this.focusDefaultElement_();
+        }
+        this.focusBodyCallbackId_ = null;
+      });
+    };
+
+    document.body.addEventListener('focusin', focusList);
+    document.body.addEventListener('focusout', focusList);
+  }
+
+  /**
+   * Sets the focus in the default UI element.
+   * @private
+   */
+  focusDefaultElement_() {
+    this.listContainer.currentList && this.listContainer.currentList.focus();
   }
 
   /**

@@ -551,7 +551,6 @@ void AppSearchProvider::UpdateQueriedResults() {
         // Exact matches should be shown even if the threshold isn't reached,
         // e.g. due to a localized name being particularly short.
         if (match.relevance() <= app->relevance_threshold() &&
-            !base::EqualsCaseInsensitiveASCII(query_, app->name()) &&
             !app->MatchSearchableText(query_terms, use_exact_match)) {
           continue;
         }

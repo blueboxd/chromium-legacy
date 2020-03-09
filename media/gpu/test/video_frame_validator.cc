@@ -12,11 +12,11 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
-#include "media/gpu/buildflags.h"
 #include "media/gpu/test/image_quality_metrics.h"
 #include "media/gpu/test/video_test_helpers.h"
 #include "media/gpu/video_frame_mapper.h"
 #include "media/gpu/video_frame_mapper_factory.h"
+#include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

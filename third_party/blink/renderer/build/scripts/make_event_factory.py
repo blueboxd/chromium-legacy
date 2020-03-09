@@ -90,8 +90,6 @@ class EventFactoryWriter(json5_generator.Writer):
         lambda entry: entry['name'].original,
         'create_event_ignore_case_list':
         create_event_ignore_case_list,
-        'create_event_ignore_case_and_measure_list':
-        create_event_ignore_case_and_measure_list,
         'measure_name':
         measure_name,
     }
@@ -114,33 +112,35 @@ class EventFactoryWriter(json5_generator.Writer):
 
     def _headers_header_include_path(self, entry):
         path = entry['interfaceHeaderDir']
-        if len(path):
-            path += '/'
-        return path + self.get_file_basename(
+        if not path:
+            return None
+        return path + '/' + self.get_file_basename(
             name_utilities.cpp_name(entry)) + '.h'
 
     def _headers_header_includes(self, entries):
-        includes = dict()
-        for entry in entries:
-            cpp_name = name_utilities.cpp_name(entry)
-            # Avoid duplicate includes.
-            if cpp_name in includes:
-                continue
-            includes[cpp_name] = self._headers_header_include_path(entry)
-        return sorted(includes.values())
+        includes = {
+            'third_party/blink/renderer/core/execution_context/execution_context.h',
+            'third_party/blink/renderer/core/frame/deprecation.h',
+            'third_party/blink/renderer/platform/instrumentation/use_counter.h',
+            'third_party/blink/renderer/platform/runtime_enabled_features.h',
+        }
+        includes.update(map(self._headers_header_include_path, entries))
+        return sorted([x for x in includes if x])
 
     @template_expander.use_jinja(
         'templates/event_factory.cc.tmpl', filters=filters)
     def generate_implementation(self):
+        target_events = [
+            event for event in self.json5_file.name_dictionaries if
+            (create_event_ignore_case_list(event['name'].original) or
+             create_event_ignore_case_and_measure_list(event['name'].original))
+        ]
         return {
             'include_header_paths':
-            self._headers_header_includes(self.json5_file.name_dictionaries),
-            'input_files':
-            self._input_files,
-            'suffix':
-            self.suffix,
-            'events':
-            self.json5_file.name_dictionaries,
+            self._headers_header_includes(target_events),
+            'input_files': self._input_files,
+            'suffix': self.suffix,
+            'events': target_events,
         }
 
 

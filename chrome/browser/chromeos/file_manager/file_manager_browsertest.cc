@@ -723,6 +723,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("tabindexSearchBoxFocus").DisableFilesNg(),
+        TestCase("tabindexFocusBody").DisableFilesNg(),
+        TestCase("tabindexFocusBody").FilesNg(),
         TestCase("tabindexFocus").DisableFilesNg(),
         TestCase("tabindexFocusDownloads").DisableFilesNg(),
         TestCase("tabindexFocusDownloads").InGuestMode().DisableFilesNg(),

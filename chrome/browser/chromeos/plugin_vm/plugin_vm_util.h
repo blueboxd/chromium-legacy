@@ -14,6 +14,10 @@ namespace aura {
 class Window;
 }  // namespace aura
 
+namespace dlcservice {
+class DlcModuleList;
+}  // namespace dlcservice
+
 class Profile;
 class GURL;
 
@@ -86,6 +90,9 @@ bool FakeLicenseKeyIsSet();
 void RemoveDriveDownloadDirectoryIfExists();
 bool IsDriveUrl(const GURL& url);
 std::string GetIdFromDriveUrl(const GURL& url);
+
+// Used during communication with |DlcserviceClient|.
+dlcservice::DlcModuleList GetPluginVmDlcModuleList();
 
 }  // namespace plugin_vm
 

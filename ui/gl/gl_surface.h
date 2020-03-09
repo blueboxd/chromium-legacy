@@ -305,10 +305,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual void SetCurrent();
   virtual bool IsCurrent();
 
-  static bool ExtensionsContain(const char* extensions, const char* name);
-
  protected:
   virtual ~GLSurface();
+
+  static bool ExtensionsContain(const char* extensions, const char* name);
 
  private:
   static void ClearCurrent();

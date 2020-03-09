@@ -35,8 +35,6 @@ if (optimize_webui) {
   grit("flattened_resources") {
     source = "extensions_resources.grd"
 
-    # The .grd contains references to generated files.
-    source_is_generated = true
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -62,7 +60,7 @@ group("closure_compile") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":checkup_module",
     ":code_section_module",
     ":detail_view_module",
@@ -90,7 +88,7 @@ group("polymer3_elements") {
     "activity_log:polymer3_elements",
   ]
   if (is_chromeos) {
-    deps += [ ":kiosk_dialog_module" ]
+    public_deps += [ ":kiosk_dialog_module" ]
   }
 }
 

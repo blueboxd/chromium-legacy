@@ -416,18 +416,16 @@ if (is_mac && use_egl) {
     sources = [
       "$root_out_dir/libEGL.dylib",
       "$root_out_dir/libGLESv2.dylib",
-      "$root_out_dir/libvulkan.dylib",
     ]
     outputs = [ "$root_out_dir/egl_intermediates/{{source_file_part}}" ]
     deps = [
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
-      "//third_party/angle/third_party/vulkan-loader/src:libvulkan",
     ]
   }
 
   if (enable_swiftshader) {
-    copy("swiftshader_egl_library_copy") {
+    copy("swiftshader_library_copy") {
       sources = [
         "$root_out_dir/libswiftshader_libEGL.dylib",
         "$root_out_dir/libswiftshader_libGLESv2.dylib",
@@ -436,17 +434,6 @@ if (is_mac && use_egl) {
       deps = [
         "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
-      ]
-    }
-    copy("swiftshader_vk_library_copy") {
-      sources = [
-        "$root_out_dir/libvk_swiftshader.dylib",
-        "$root_out_dir/vk_swiftshader_icd.json",
-      ]
-      outputs = [ "$root_out_dir/vk_intermediates/{{source_file_part}}" ]
-      deps = [
-        "//third_party/swiftshader/src/Vulkan:icd_file",
-        "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
       ]
     }
   }

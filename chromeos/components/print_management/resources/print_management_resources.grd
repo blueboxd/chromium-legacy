@@ -15,6 +15,9 @@
       <!-- Privileged app host contents. -->
       <include name="IDR_PRINT_MANAGEMENT_INDEX_HTML" file="index.html" type="BINDATA" compress="gzip" />
       <include name="IDR_PRINT_MANAGEMENT_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_management.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
+      <include name="IDR_PRINT_MANAGEMENT_MANIFEST" file="manifest.json" type="BINDATA" compress="gzip" />
+      <include name="IDR_PRINT_MANAGEMENT_ICON" file="app_icon_192.png" type="BINDATA" compress="gzip" />
+      <include name="IDR_PRINT_MANAGEMENT_PWA_HTML" file="pwa.html" type="BINDATA" compress="gzip" />
     </includes>
   </release>
 </grit>

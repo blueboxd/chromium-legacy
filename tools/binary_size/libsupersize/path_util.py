@@ -4,6 +4,8 @@
 
 """Functions for dealing with determining --tool-prefix."""
 
+from __future__ import division
+
 import abc
 import distutils.spawn
 import logging

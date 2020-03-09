@@ -9,12 +9,12 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Build;
 import android.provider.Settings;
-import android.support.v4.widget.TextViewCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.widget.TextViewCompat;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;

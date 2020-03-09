@@ -2370,19 +2370,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       // TODO(crbug.com/873729): For a newly created WebState, the session will
       // not be restored until LoadIfNecessary call. Remove when fixed.
       webState->GetNavigationManager()->LoadIfNecessary();
-
-      // Always show the webState view under the NTP, to work around
-      // crbug.com/848789
-      if (base::FeatureList::IsEnabled(kBrowserContainerKeepsContentView)) {
-        if (self.browserContainerViewController.contentView !=
-            webState->GetView()) {
-          self.browserContainerViewController.contentView = webState->GetView();
-        }
-        self.browserContainerViewController.contentView.frame =
-            self.contentArea.bounds;
-      } else {
-        self.browserContainerViewController.contentView = nil;
-      }
+      self.browserContainerViewController.contentView = nil;
       self.browserContainerViewController.contentViewController =
           viewController;
     } else {

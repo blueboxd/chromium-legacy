@@ -46,7 +46,8 @@ per-file chrome_webusb_browser_client*=file://chrome/browser/usb/OWNERS
 
 per-file chrome_worker_browsertest.cc=file://content/browser/worker_host/OWNERS
 
-per-file exo_parts.*=reveman@chromium.org
+per-file exo_parts.*=dcastagna@chromium.org
+per-file exo_parts.*=oshima@chromium.org
 
 per-file flag-never-expire-list.json=avi@chromium.org
 per-file flag-never-expire-list.json=ellyjones@chromium.org

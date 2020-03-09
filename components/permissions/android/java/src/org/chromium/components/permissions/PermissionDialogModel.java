@@ -5,11 +5,12 @@
 package org.chromium.components.permissions;
 
 import android.content.Context;
-import android.support.v4.widget.TextViewCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.core.widget.TextViewCompat;
 
 import org.chromium.components.browser_ui.modaldialog.R;
 import org.chromium.ui.modaldialog.ModalDialogProperties;

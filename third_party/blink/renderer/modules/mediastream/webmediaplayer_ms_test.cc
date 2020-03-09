@@ -192,7 +192,7 @@ class ReusableMessageLoopEvent {
 
   base::RepeatingClosure GetClosure() const { return event_->GetClosure(); }
 
-  media::PipelineStatusCB GetPipelineStatusCB() const {
+  media::PipelineStatusCallback GetPipelineStatusCB() const {
     return event_->GetPipelineStatusCB();
   }
 

@@ -152,6 +152,14 @@ class DeviceStatusCollector : public StatusCollector,
   using GraphicsStatusFetcher =
       base::RepeatingCallback<void(GraphicsStatusReceiver)>;
 
+  // Format of the function that asynchronously receives CrashReportInfo.
+  using CrashReportInfoReceiver = base::OnceCallback<void(
+      const std::vector<enterprise_management::CrashReportInfo>&)>;
+
+  // Gets the crash report information stored on the local device.
+  using CrashReportInfoFetcher =
+      base::RepeatingCallback<void(CrashReportInfoReceiver)>;
+
   // Reads EMMC usage lifetime from /var/log/storage_info.txt
   using EMMCLifetimeFetcher =
       base::RepeatingCallback<enterprise_management::DiskLifetimeEstimation(
@@ -175,7 +183,8 @@ class DeviceStatusCollector : public StatusCollector,
       const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
       const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
       const CrosHealthdDataFetcher& cros_healthd_data_fetcher,
-      const GraphicsStatusFetcher& graphics_status_fetcher);
+      const GraphicsStatusFetcher& graphics_status_fetcher,
+      const CrashReportInfoFetcher& crash_report_info_fetcher);
 
   // Constructor with default callbacks. These callbacks are always executed on
   // Blocking Pool. Caller is responsible for passing already initialized
@@ -263,6 +272,8 @@ class DeviceStatusCollector : public StatusCollector,
       enterprise_management::DeviceStatusReportRequest* status);
   bool GetGraphicsStatus(scoped_refptr<DeviceStatusCollectorState>
                              state);  // Queues async queries!
+  bool GetCrashReportInfo(scoped_refptr<DeviceStatusCollectorState>
+                              state);  // Queues async queries!
 
   // Helpers for the various portions of SESSION STATUS. Return true if they
   // actually report any status. Functions that queue async queries take
@@ -391,6 +402,8 @@ class DeviceStatusCollector : public StatusCollector,
 
   GraphicsStatusFetcher graphics_status_fetcher_;
 
+  CrashReportInfoFetcher crash_report_info_fetcher_;
+
   PowerStatusCallback power_status_callback_;
 
   // Power manager client. Used to listen to power changed events.
@@ -416,6 +429,8 @@ class DeviceStatusCollector : public StatusCollector,
   bool report_timezone_info_ = false;
   bool report_memory_info_ = false;
   bool report_backlight_info_ = false;
+  bool report_crash_report_info_ = false;
+  bool stat_reporting_pref_ = false;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       activity_times_subscription_;
@@ -447,6 +462,10 @@ class DeviceStatusCollector : public StatusCollector,
       memory_info_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       backlight_info_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      crash_report_info_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      stats_reporting_pref_subscription_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 

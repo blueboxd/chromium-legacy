@@ -58,9 +58,16 @@ const base::Feature kPasswordProtectionForSavedPasswords{
     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enable saved password protection with domains by default only on desktop.
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+const base::Feature kPasswordProtectionShowDomainsForSavedPasswords{
+    "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kPasswordProtectionShowDomainsForSavedPasswords{
     "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords",
     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 const base::Feature kPasswordProtectionForSignedInUsers{

@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import division
+
 import ast
 import os
 import unittest
@@ -31,7 +33,7 @@ def _MakeString(bits, toks):
     the result of concatanating tokens.
   """
   s = ''.join(tok if isinstance(tok, basestring) else chr(tok) for tok in toks)
-  padding = '\x00' * ((bits - 8) / 8)
+  padding = '\x00' * ((bits - 8) // 8)
   return ''.join(ch + padding for ch in s)
 
 

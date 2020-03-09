@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 public class AwVariationsSeedFetcher extends JobService {
     private static final String TAG = "AwVariationsSeedFet-";
     private static final int JOB_ID = TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID;
-    private static final long MIN_JOB_PERIOD_MILLIS = TimeUnit.DAYS.toMillis(1);
+    private static final long MIN_JOB_PERIOD_MILLIS = TimeUnit.HOURS.toMillis(12);
 
     /** Clock used to fake time in tests. */
     public interface Clock { long currentTimeMillis(); }

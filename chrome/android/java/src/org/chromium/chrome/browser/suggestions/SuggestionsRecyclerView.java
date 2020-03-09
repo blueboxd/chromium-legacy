@@ -14,7 +14,6 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.os.Build;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.view.ContextThemeWrapper;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -26,6 +25,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;

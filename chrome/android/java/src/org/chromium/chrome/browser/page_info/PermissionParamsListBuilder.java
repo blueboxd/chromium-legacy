@@ -7,11 +7,12 @@ package org.chromium.chrome.browser.page_info;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.support.v4.app.NotificationManagerCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
+
+import androidx.core.app.NotificationManagerCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;

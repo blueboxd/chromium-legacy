@@ -52,7 +52,7 @@ class WaitableMessageLoopEvent {
 
   // Returns a thread-safe closure that will signal |this| when executed.
   base::Closure GetClosure();
-  PipelineStatusCB GetPipelineStatusCB();
+  PipelineStatusCallback GetPipelineStatusCB();
 
   // Runs the current message loop until |this| has been signaled.
   //

@@ -9,11 +9,11 @@
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
+struct BlinkTransferableMessage;
 class Document;
 class ExecutionContext;
 class LocalDOMWindow;

@@ -15,10 +15,13 @@
 
 #include "base/bind.h"
 #include "base/environment.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -80,6 +83,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/upload_list/upload_list.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
@@ -205,6 +209,13 @@ const char kLastLaunchTimeWindowStartFormatted[] =
 const int64_t kLastLaunchTimeWindowStartInJavaTime = 1535760000000;
 const char kDefaultPlatformVersion[] = "1234.0.0";
 
+// Constants for crash reporting test cases:
+const char kTestUploadId[] = "0123456789abcdef";
+const char kTestLocalID[] = "fedcba9876543210";
+const char kTestCauseKernel[] = "kernel";
+const char kTestCauseEC[] = "embedded-controller";
+const char kTestCauseOther[] = "other";
+
 class TestingDeviceStatusCollectorOptions {
  public:
   TestingDeviceStatusCollectorOptions() = default;
@@ -225,6 +236,8 @@ class TestingDeviceStatusCollectorOptions {
   policy::DeviceStatusCollector::CrosHealthdDataFetcher
       cros_healthd_data_fetcher;
   policy::DeviceStatusCollector::GraphicsStatusFetcher graphics_status_fetcher;
+  policy::DeviceStatusCollector::CrashReportInfoFetcher
+      crash_report_info_fetcher;
 };
 
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
@@ -243,7 +256,8 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
                                       options->emmc_lifetime_fetcher,
                                       options->stateful_partition_info_fetcher,
                                       options->cros_healthd_data_fetcher,
-                                      options->graphics_status_fetcher) {
+                                      options->graphics_status_fetcher,
+                                      options->crash_report_info_fetcher) {
     // Set the baseline time to a fixed value (1 hour after day start) to
     // prevent test flakiness due to a single activity period spanning two days.
     SetBaselineTime(Time::Now().LocalMidnight() + kHour);
@@ -506,6 +520,18 @@ void GetFakeGraphicsStatus(
   std::move(receiver).Run(value);
 }
 
+void GetEmptyCrashReportInfo(
+    policy::DeviceStatusCollector::CrashReportInfoReceiver receiver) {
+  std::vector<em::CrashReportInfo> crash_report_infos;
+  std::move(receiver).Run(crash_report_infos);
+}
+
+void GetFakeCrashReportInfo(
+    const std::vector<em::CrashReportInfo>& crash_report_infos,
+    policy::DeviceStatusCollector::CrashReportInfoReceiver receiver) {
+  std::move(receiver).Run(crash_report_infos);
+}
+
 }  // namespace
 
 namespace policy {
@@ -534,6 +560,7 @@ class DeviceStatusCollectorTest : public testing::Test {
         fake_web_kiosk_device_local_account_(fake_web_kiosk_app_basic_info_,
                                              kWebKioskAccountId),
         user_data_dir_override_(chrome::DIR_USER_DATA),
+        crash_dumps_dir_override_(chrome::DIR_CRASH_DUMPS),
         update_engine_client_(new chromeos::FakeUpdateEngineClient) {
     scoped_stub_install_attributes_.Get()->SetCloudManaged("managed.com",
                                                            "device_id");
@@ -643,6 +670,18 @@ class DeviceStatusCollectorTest : public testing::Test {
     RestartStatusCollector(CreateEmptyDeviceStatusCollectorOptions());
   }
 
+  void WriteUploadLog(const std::string& log_data) {
+    ASSERT_GT(base::WriteFile(log_path(), log_data.c_str(),
+                              static_cast<int>(log_data.size())),
+              0);
+  }
+
+  base::FilePath log_path() {
+    base::FilePath crash_dir_path;
+    base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
+    return crash_dir_path.AppendASCII("uploads.log");
+  }
+
   std::unique_ptr<TestingDeviceStatusCollectorOptions>
   CreateEmptyDeviceStatusCollectorOptions() {
     auto options = std::make_unique<TestingDeviceStatusCollectorOptions>();
@@ -660,6 +699,8 @@ class DeviceStatusCollectorTest : public testing::Test {
         base::BindRepeating(&GetEmptyCrosHealthdData);
     options->graphics_status_fetcher =
         base::BindRepeating(&GetEmptyGraphicsStatus);
+    options->crash_report_info_fetcher =
+        base::BindRepeating(&GetEmptyCrashReportInfo);
     return options;
   }
 
@@ -844,6 +885,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   const policy::WebKioskAppBasicInfo fake_web_kiosk_app_basic_info_;
   const policy::DeviceLocalAccount fake_web_kiosk_device_local_account_;
   base::ScopedPathOverride user_data_dir_override_;
+  base::ScopedPathOverride crash_dumps_dir_override_;
   chromeos::FakeUpdateEngineClient* const update_engine_client_;
   std::unique_ptr<base::RunLoop> run_loop_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -2511,6 +2553,289 @@ TEST_F(DeviceStatusCollectorTest, TestGraphicsStatus) {
   GetStatus();
 
   EXPECT_FALSE(device_status_.has_graphics_status());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestCrashReportInfo) {
+  // Create sample crash reports.
+  std::vector<em::CrashReportInfo> expected_crash_report_infos;
+  const base::Time now = base::Time::Now();
+  const int report_cnt = 5;
+
+  for (int i = 0; i < report_cnt; ++i) {
+    base::Time timestamp = now - base::TimeDelta::FromHours(30) * i;
+
+    em::CrashReportInfo info;
+    info.set_capture_timestamp(timestamp.ToJavaTime());
+    info.set_remote_id(base::StringPrintf("remote_id %d", i));
+    info.set_cause(base::StringPrintf("cause %d", i));
+    info.set_upload_status(em::CrashReportInfo::UPLOAD_STATUS_UPLOADED);
+    expected_crash_report_infos.push_back(info);
+  }
+
+  auto options = CreateEmptyDeviceStatusCollectorOptions();
+  options->crash_report_info_fetcher =
+      base::BindRepeating(&GetFakeCrashReportInfo, expected_crash_report_infos);
+  RestartStatusCollector(std::move(options));
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceCrashReportInfo, true);
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kStatsReportingPref, true);
+
+  GetStatus();
+  EXPECT_EQ(report_cnt, device_status_.crash_report_infos_size());
+
+  // Walk the returned CrashReportInfo to make sure it matches.
+  for (const em::CrashReportInfo& expected_info : expected_crash_report_infos) {
+    bool found = false;
+    for (const em::CrashReportInfo& info :
+         device_status_.crash_report_infos()) {
+      if (info.remote_id() == expected_info.remote_id()) {
+        EXPECT_EQ(expected_info.capture_timestamp(), info.capture_timestamp());
+        EXPECT_EQ(expected_info.remote_id(), info.remote_id());
+        EXPECT_EQ(expected_info.cause(), info.cause());
+        EXPECT_EQ(expected_info.upload_status(), info.upload_status());
+        found = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found) << "No matching CrashReportInfo for "
+                       << expected_info.remote_id();
+  }
+
+  // Get the status again to make sure that the data keeps consistent.
+  GetStatus();
+  EXPECT_EQ(report_cnt, device_status_.crash_report_infos_size());
+}
+
+TEST_F(DeviceStatusCollectorTest,
+       TestCrashReportInfo_TurnOffReportDeviceCrashReportInfo) {
+  // Create sample crash reports.
+  std::vector<em::CrashReportInfo> expected_crash_report_infos;
+  const base::Time now = base::Time::Now();
+  const int report_cnt = 5;
+
+  for (int i = 0; i < report_cnt; ++i) {
+    base::Time timestamp = now - base::TimeDelta::FromHours(30) * i;
+
+    em::CrashReportInfo info;
+    info.set_capture_timestamp(timestamp.ToJavaTime());
+    info.set_remote_id(base::StringPrintf("remote_id %d", i));
+    info.set_cause(base::StringPrintf("cause %d", i));
+    info.set_upload_status(em::CrashReportInfo::UPLOAD_STATUS_UPLOADED);
+    expected_crash_report_infos.push_back(info);
+  }
+
+  auto options = CreateEmptyDeviceStatusCollectorOptions();
+  options->crash_report_info_fetcher =
+      base::BindRepeating(&GetFakeCrashReportInfo, expected_crash_report_infos);
+  RestartStatusCollector(std::move(options));
+
+  // Turn off kReportDeviceCrashReportInfo, but turn on kStatsReportingPref.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceCrashReportInfo, false);
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kStatsReportingPref, true);
+
+  GetStatus();
+  EXPECT_EQ(0, device_status_.crash_report_infos_size());
+}
+
+TEST_F(DeviceStatusCollectorTest,
+       TestCrashReportInfo_TurnOffStatsReportingPref) {
+  // Create sample crash reports.
+  std::vector<em::CrashReportInfo> expected_crash_report_infos;
+  const base::Time now = base::Time::Now();
+  const int report_cnt = 5;
+
+  for (int i = 0; i < report_cnt; ++i) {
+    base::Time timestamp = now - base::TimeDelta::FromHours(30) * i;
+
+    em::CrashReportInfo info;
+    info.set_capture_timestamp(timestamp.ToJavaTime());
+    info.set_remote_id(base::StringPrintf("remote_id %d", i));
+    info.set_cause(base::StringPrintf("cause %d", i));
+    info.set_upload_status(em::CrashReportInfo::UPLOAD_STATUS_UPLOADED);
+    expected_crash_report_infos.push_back(info);
+  }
+
+  auto options = CreateEmptyDeviceStatusCollectorOptions();
+  options->crash_report_info_fetcher =
+      base::BindRepeating(&GetFakeCrashReportInfo, expected_crash_report_infos);
+  RestartStatusCollector(std::move(options));
+
+  // Turn on kReportDeviceCrashReportInfo, but turn off kStatsReportingPref.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceCrashReportInfo, true);
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kStatsReportingPref, false);
+
+  GetStatus();
+  EXPECT_EQ(0, device_status_.crash_report_infos_size());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestCrashReportInfo_DeviceRestartOnly) {
+  // Create a test uploads.log file with three kinds of source. The first two
+  // lead to device restart, the third doesn't.
+  std::vector<std::string> causes = {kTestCauseKernel, kTestCauseEC,
+                                     kTestCauseOther};
+  base::Time timestamp = base::Time::Now() - base::TimeDelta::FromHours(1);
+  std::stringstream stream;
+  for (int i = 0; i <= 2; ++i) {
+    stream << "{";
+    stream << "\"upload_time\":\"" << timestamp.ToTimeT() << "\",";
+    stream << "\"upload_id\":\"" << kTestUploadId << "\",";
+    stream << "\"local_id\":\"" << kTestLocalID << "\",";
+    stream << "\"capture_time\":\"" << timestamp.ToTimeT() << "\",";
+    stream << "\"state\":"
+           << static_cast<int>(UploadList::UploadInfo::State::Uploaded) << ",";
+    stream << "\"source\":\"" << causes[i] << "\"";
+    stream << "}" << std::endl;
+  }
+  WriteUploadLog(stream.str());
+
+  auto options = CreateEmptyDeviceStatusCollectorOptions();
+  options->crash_report_info_fetcher =
+      DeviceStatusCollector::CrashReportInfoFetcher();
+  RestartStatusCollector(std::move(options));
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceCrashReportInfo, true);
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kStatsReportingPref, true);
+
+  GetStatus();
+  EXPECT_EQ(2, device_status_.crash_report_infos_size());
+
+  // Walk the returned CrashReportInfo to make sure it matches.
+  const em::CrashReportInfo& info0 = device_status_.crash_report_infos(0);
+  EXPECT_EQ(timestamp.ToTimeT() * 1000, info0.capture_timestamp());
+  EXPECT_EQ(kTestUploadId, info0.remote_id());
+  EXPECT_EQ(kTestCauseEC, info0.cause());
+  EXPECT_EQ(em::CrashReportInfo::UPLOAD_STATUS_UPLOADED, info0.upload_status());
+
+  const em::CrashReportInfo& info1 = device_status_.crash_report_infos(1);
+  EXPECT_EQ(timestamp.ToTimeT() * 1000, info1.capture_timestamp());
+  EXPECT_EQ(kTestUploadId, info1.remote_id());
+  EXPECT_EQ(kTestCauseKernel, info1.cause());
+  EXPECT_EQ(em::CrashReportInfo::UPLOAD_STATUS_UPLOADED, info1.upload_status());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestCrashReportInfo_LastDayUploadedOnly) {
+  // Create a test uploads.log file. One |upload_time| is within last 24 hours,
+  // the other is not.
+  base::Time now = base::Time::Now();
+  base::Time timestamps[] = {now - base::TimeDelta::FromHours(22),
+                             now - base::TimeDelta::FromHours(24)};
+
+  std::stringstream stream;
+  for (int i = 0; i <= 1; ++i) {
+    stream << "{";
+    stream << "\"upload_time\":\"" << timestamps[i].ToTimeT() << "\",";
+    stream << "\"upload_id\":\"" << kTestUploadId << "\",";
+    stream << "\"local_id\":\"" << kTestLocalID << "\",";
+    stream << "\"capture_time\":\"" << timestamps[i].ToTimeT() << "\",";
+    stream << "\"state\":"
+           << static_cast<int>(UploadList::UploadInfo::State::Uploaded) << ",";
+    stream << "\"source\":\"" << kTestCauseKernel << "\"";
+    stream << "}" << std::endl;
+  }
+  WriteUploadLog(stream.str());
+
+  auto options = CreateEmptyDeviceStatusCollectorOptions();
+  options->crash_report_info_fetcher =
+      DeviceStatusCollector::CrashReportInfoFetcher();
+  RestartStatusCollector(std::move(options));
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceCrashReportInfo, true);
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kStatsReportingPref, true);
+
+  GetStatus();
+  EXPECT_EQ(1, device_status_.crash_report_infos_size());
+
+  // Walk the returned CrashReportInfo to make sure it matches.
+  const em::CrashReportInfo& info = device_status_.crash_report_infos(0);
+  EXPECT_EQ(timestamps[0].ToTimeT() * 1000, info.capture_timestamp());
+  EXPECT_EQ(kTestUploadId, info.remote_id());
+  EXPECT_EQ(kTestCauseKernel, info.cause());
+  EXPECT_EQ(em::CrashReportInfo::UPLOAD_STATUS_UPLOADED, info.upload_status());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestCrashReportInfo_CrashReportEntryMaxSize) {
+  // Create a test uploads.log file with 200 entries. Only the last 100 is
+  // included.
+  base::Time timestamp = base::Time::Now() - base::TimeDelta::FromHours(1);
+  const int report_cnt = 200;
+  std::stringstream stream;
+  for (int i = 1; i <= report_cnt; ++i) {
+    stream << "{";
+    stream << "\"upload_time\":\"" << timestamp.ToTimeT() << "\",";
+    stream << "\"upload_id\":\"" << i << "\",";
+    stream << "\"local_id\":\"" << kTestLocalID << "\",";
+    stream << "\"capture_time\":\"" << timestamp.ToTimeT() << "\",";
+    stream << "\"state\":"
+           << static_cast<int>(UploadList::UploadInfo::State::Uploaded) << ",";
+    stream << "\"source\":\"" << kTestCauseKernel << "\"";
+    stream << "}" << std::endl;
+  }
+  WriteUploadLog(stream.str());
+
+  auto options = CreateEmptyDeviceStatusCollectorOptions();
+  options->crash_report_info_fetcher =
+      DeviceStatusCollector::CrashReportInfoFetcher();
+  RestartStatusCollector(std::move(options));
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceCrashReportInfo, true);
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kStatsReportingPref, true);
+
+  GetStatus();
+  EXPECT_EQ(100, device_status_.crash_report_infos_size());
+
+  // Walk the returned CrashReportInfo to make sure it matches.
+  for (int i = 0; i < 100; i++) {
+    const em::CrashReportInfo& info = device_status_.crash_report_infos(i);
+    EXPECT_EQ(timestamp.ToTimeT() * 1000, info.capture_timestamp());
+    EXPECT_EQ(base::NumberToString(report_cnt - i), info.remote_id());
+    EXPECT_EQ(kTestCauseKernel, info.cause());
+    EXPECT_EQ(em::CrashReportInfo::UPLOAD_STATUS_UPLOADED,
+              info.upload_status());
+  }
+}
+
+TEST_F(DeviceStatusCollectorTest, TestCrashReportInfo_LegacyCSV) {
+  // Create a test uploads.log file in the legacy CSV format. All such kind of
+  // record will be ignored because the required source filed is not existing.
+  base::Time timestamp = base::Time::Now() - base::TimeDelta::FromHours(1);
+  std::string test_entry = base::StringPrintf("%" PRId64, timestamp.ToTimeT());
+  test_entry += ",";
+  test_entry.append(kTestUploadId);
+  test_entry += ",";
+  test_entry.append(kTestLocalID);
+  WriteUploadLog(test_entry);
+
+  auto options = CreateEmptyDeviceStatusCollectorOptions();
+  options->crash_report_info_fetcher =
+      DeviceStatusCollector::CrashReportInfoFetcher();
+  RestartStatusCollector(std::move(options));
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceCrashReportInfo, true);
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kStatsReportingPref, true);
+
+  GetStatus();
+  EXPECT_EQ(0, device_status_.crash_report_infos_size());
 }
 
 TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {

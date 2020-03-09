@@ -466,16 +466,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
       const std::string& error_name,
       const std::string& error_message);
 
-#if defined(OS_CHROMEOS)
-  // Inform DBus of the current list of long term keys.
-  void SetLongTermKeys();
-
-  // Called by dbus:: on an error while trying to set long term keys, see
-  // SetLongTermKeys().
-  void SetLongTermKeysError(const std::string& error_name,
-                            const std::string& error_message);
-#endif
-
   InitCallback init_callback_;
 
   bool initialized_;

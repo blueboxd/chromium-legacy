@@ -12,7 +12,6 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.support.v4.view.ViewCompat;
 import android.text.method.PasswordTransformationMethod;
 import android.view.Gravity;
 import android.view.View;
@@ -21,6 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Callback;

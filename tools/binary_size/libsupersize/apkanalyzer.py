@@ -7,6 +7,8 @@
 Assumes that apk_path.mapping and apk_path.jar.info is available.
 """
 
+from __future__ import division
+
 import logging
 import os
 import subprocess

@@ -23,8 +23,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.graphics.drawable.DrawableWrapper;
 import android.util.AttributeSet;
 import android.util.Property;
@@ -45,6 +43,8 @@ import android.widget.TextView;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.MathUtils;
@@ -739,7 +739,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 // toolbar color so that the NTP content is not visible beneath the toolbar. In
                 // between the transition, we set a translucent default toolbar color based on
                 // the expansion percentage of the toolbar.
-                return android.support.v4.graphics.ColorUtils.setAlphaComponent(
+                return androidx.core.graphics.ColorUtils.setAlphaComponent(
                         ChromeColors.getDefaultThemeColor(getResources(), false),
                         Math.round(mUrlExpansionPercent * 255));
             case VisualState.NORMAL:

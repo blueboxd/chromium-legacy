@@ -9,14 +9,15 @@ import android.graphics.Matrix;
 import android.graphics.Matrix.ScaleToFit;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.ImageView;
+
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.view.ViewCompat;
 
 /**
  * A helper class to simulate {@link View#getForeground()} on older versions of Android.  This class

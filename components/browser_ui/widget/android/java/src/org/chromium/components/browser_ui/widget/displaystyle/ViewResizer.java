@@ -5,8 +5,9 @@
 package org.chromium.components.browser_ui.widget.displaystyle;
 
 import android.content.res.Resources;
-import android.support.v4.view.ViewCompat;
 import android.view.View;
+
+import androidx.core.view.ViewCompat;
 
 /**
  * Changes a view's padding when switching between {@link UiConfig} display styles. If the display

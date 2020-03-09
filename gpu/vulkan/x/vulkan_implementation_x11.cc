@@ -131,7 +131,7 @@ VulkanImplementationX11::GetRequiredDeviceExtensions() {
 
 std::vector<const char*>
 VulkanImplementationX11::GetOptionalDeviceExtensions() {
-  return {VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME};
+  return {};
 }
 
 VkFence VulkanImplementationX11::CreateVkFenceForGpuFence(VkDevice vk_device) {

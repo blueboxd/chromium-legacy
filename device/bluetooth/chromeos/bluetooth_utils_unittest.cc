@@ -76,12 +76,6 @@ class BluetoothUtilsTest : public testing::Test {
         chromeos::features::kBluetoothAggressiveAppearanceFilter);
   }
 
-  void SetLongTermKeys(const std::string& keys) {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        chromeos::features::kBlueZLongTermKeyBlocklist,
-        {{chromeos::features::kBlueZLongTermKeyBlocklistParamName, keys}});
-  }
-
  private:
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<MockBluetoothAdapter> adapter_ =
@@ -254,84 +248,6 @@ TEST_F(BluetoothUtilsTest,
 
   VerifyFilterBluetoothDeviceList(BluetoothFilterType::KNOWN,
                                   0u /* num_expected_remaining_devices */);
-}
-
-TEST_F(BluetoothUtilsTest, TestGetBlockedLongTermKeys_ListIncludesBadLtks) {
-  // One nibble too long, one nibble too short, and one nibble just right.
-  std::string hex_key_1 = "000000000000000000000000000012345";
-  std::string hex_key_2 = "0000000000000000000000000000123";
-  std::string hex_key_3 = "00000000000000000000000000001234";
-  SetLongTermKeys(hex_key_1 + ',' + hex_key_2 + ',' + hex_key_3);
-
-  std::vector<std::vector<uint8_t>> expected_array;
-  std::vector<uint8_t> expected_key = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                       0x00, 0x00, 0x12, 0x34};
-  expected_array.push_back(expected_key);
-
-  EXPECT_EQ(expected_array, device::GetBlockedLongTermKeys());
-}
-
-TEST_F(BluetoothUtilsTest, TestGetBlockedLongTermKeys_ListIncludesNonHexInput) {
-  std::string hex_key_1 = "bad00input00but00correct00length";
-  std::string hex_key_2 = "00000000000000000000000000001234";
-  SetLongTermKeys(hex_key_1 + ',' + hex_key_2);
-
-  std::vector<std::vector<uint8_t>> expected_array;
-  std::vector<uint8_t> expected_key = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                       0x00, 0x00, 0x12, 0x34};
-  expected_array.push_back(expected_key);
-
-  EXPECT_EQ(expected_array, device::GetBlockedLongTermKeys());
-}
-
-TEST_F(BluetoothUtilsTest, TestEmptyList) {
-  SetLongTermKeys("");
-
-  std::vector<std::vector<uint8_t>> expected_array;
-
-  EXPECT_EQ(expected_array, device::GetBlockedLongTermKeys());
-}
-
-TEST_F(BluetoothUtilsTest, TestGetBlockedLongTermKeys_OneElementList) {
-  std::string hex_key_1 = "012300004567000089ab0000cdef0000";
-  std::vector<uint8_t> expected_key_1 = {0x01, 0x23, 0x00, 0x00, 0x45, 0x67,
-                                         0x00, 0x00, 0x89, 0xab, 0x00, 0x00,
-                                         0xcd, 0xef, 0x00, 0x00};
-
-  SetLongTermKeys(hex_key_1);
-
-  std::vector<std::vector<uint8_t>> expected_array;
-  expected_array.push_back(expected_key_1);
-
-  EXPECT_EQ(expected_array, device::GetBlockedLongTermKeys());
-}
-
-TEST_F(BluetoothUtilsTest, TestGetBlockedLongTermKeys_MultipleElementList) {
-  std::string hex_key_1 = "012300004567000089ab0000cdef0000";
-  std::vector<uint8_t> expected_key_1 = {0x01, 0x23, 0x00, 0x00, 0x45, 0x67,
-                                         0x00, 0x00, 0x89, 0xab, 0x00, 0x00,
-                                         0xcd, 0xef, 0x00, 0x00};
-
-  std::string hex_key_2 = "00001111222233334444555566667777";
-  std::vector<uint8_t> expected_key_2 = {0x00, 0x00, 0x11, 0x11, 0x22, 0x22,
-                                         0x33, 0x33, 0x44, 0x44, 0x55, 0x55,
-                                         0x66, 0x66, 0x77, 0x77};
-
-  std::string hex_key_3 = "88889999aaaabbbbccccddddeeeeffff";
-  std::vector<uint8_t> expected_key_3 = {0x88, 0x88, 0x99, 0x99, 0xaa, 0xaa,
-                                         0xbb, 0xbb, 0xcc, 0xcc, 0xdd, 0xdd,
-                                         0xee, 0xee, 0xff, 0xff};
-
-  SetLongTermKeys(hex_key_1 + ',' + hex_key_2 + ',' + hex_key_3);
-
-  std::vector<std::vector<uint8_t>> expected_array;
-  expected_array.push_back(expected_key_1);
-  expected_array.push_back(expected_key_2);
-  expected_array.push_back(expected_key_3);
-
-  EXPECT_EQ(expected_array, device::GetBlockedLongTermKeys());
 }
 
 }  // namespace device

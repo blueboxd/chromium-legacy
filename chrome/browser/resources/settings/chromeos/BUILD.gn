@@ -55,9 +55,6 @@ if (optimize_webui) {
   grit("flattened_resources") {
     source = "../os_settings_resources.grd"
 
-    # The .grd contains references to generated files.
-    source_is_generated = true
-
     defines = chrome_grit_defines
     outputs = [
       "grit/os_settings_resources.h",

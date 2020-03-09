@@ -283,6 +283,7 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "v8/main/code_stats",
     "v8/main/contexts/detached_context",
     "v8/main/contexts/native_context",
+    "v8/main/global_handles",
     "v8/main/heap/code_space",
     "v8/main/heap/code_stats",
     "v8/main/heap/code_large_object_space",

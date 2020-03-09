@@ -20,6 +20,8 @@ proto_library("proto") {
 
 static_library("util") {
   sources = [
+    "cryptauth_logging.cc",
+    "cryptauth_logging.h",
     "cryptauth_proto_to_query_parameters_util.cc",
     "cryptauth_proto_to_query_parameters_util.h",
     "device_classifier_util.cc",
@@ -32,6 +34,7 @@ static_library("util") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//components/version_info",
   ]
 }

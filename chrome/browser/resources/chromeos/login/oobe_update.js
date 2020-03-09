@@ -38,10 +38,11 @@ Polymer({
     },
 
     /**
-     * Message "3 minutes left".
+     * Estimated time left in seconds.
      */
     estimatedTimeLeft: {
-      type: String,
+      type: Number,
+      value: 0,
     },
 
     /**
@@ -56,13 +57,6 @@ Polymer({
      */
     progressMessage: {
       type: String,
-    },
-
-    /**
-     * Shows progressMessage.
-     */
-    progressMessageShown: {
-      type: Boolean,
     },
 
     /**

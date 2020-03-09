@@ -561,6 +561,24 @@ void IndexedDBContextImpl::GetPathForBlobForTesting(
   std::move(callback).Run(path);
 }
 
+void IndexedDBContextImpl::CompactBackingStoreForTesting(
+    const url::Origin& origin,
+    base::OnceClosure callback) {
+  IndexedDBFactoryImpl* factory = GetIDBFactory();
+
+  std::vector<IndexedDBDatabase*> databases =
+      factory->GetOpenDatabasesForOrigin(origin);
+
+  if (!databases.empty()) {
+    // Compact the first db's backing store since all the db's are in the same
+    // backing store.
+    IndexedDBDatabase* db = databases[0];
+    IndexedDBBackingStore* backing_store = db->backing_store();
+    backing_store->Compact();
+  }
+  std::move(callback).Run();
+}
+
 void IndexedDBContextImpl::ForceCloseSync(
     const Origin& origin,
     storage::mojom::ForceCloseReason reason) {

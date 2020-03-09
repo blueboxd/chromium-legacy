@@ -16,7 +16,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.support.v4.view.ViewCompat;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -32,6 +31,7 @@ import android.widget.TextView;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;

@@ -78,7 +78,7 @@ Spinner::Spinner(int texture_width)
       std::move(curve), Animation::GetNextKeyframeModelId(),
       Animation::GetNextGroupId(), SPINNER_ROTATION));
 
-  keyframe_model->set_iterations(-1);
+  keyframe_model->set_iterations(std::numeric_limits<double>::infinity());
   AddKeyframeModel(std::move(keyframe_model));
 
   curve = cc::KeyframedFloatAnimationCurve::Create();
@@ -93,7 +93,7 @@ Spinner::Spinner(int texture_width)
       std::move(curve), Animation::GetNextKeyframeModelId(),
       Animation::GetNextGroupId(), SPINNER_ANGLE_SWEEP);
 
-  keyframe_model->set_iterations(-1);
+  keyframe_model->set_iterations(std::numeric_limits<double>::infinity());
   AddKeyframeModel(std::move(keyframe_model));
 
   curve = cc::KeyframedFloatAnimationCurve::Create();
@@ -107,7 +107,7 @@ Spinner::Spinner(int texture_width)
       std::move(curve), Animation::GetNextKeyframeModelId(),
       Animation::GetNextGroupId(), SPINNER_ANGLE_START);
 
-  keyframe_model->set_iterations(-1);
+  keyframe_model->set_iterations(std::numeric_limits<double>::infinity());
   AddKeyframeModel(std::move(keyframe_model));
 }
 

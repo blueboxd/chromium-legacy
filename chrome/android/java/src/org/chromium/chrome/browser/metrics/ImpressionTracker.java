@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.metrics;
 
 import android.graphics.Rect;
-import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 
 /**
  * A class that helps with tracking impressions.

@@ -92,6 +92,13 @@ class GoogleRegistrationDataForTesting {
   ~GoogleRegistrationDataForTesting();
 };
 
+// Class used in tests to set gem device details for testing.
+class GemDeviceDetailsForTesting {
+ public:
+  explicit GemDeviceDetailsForTesting(std::vector<std::string>& mac_addresses);
+  ~GemDeviceDetailsForTesting();
+};
+
 // Class used in tests to set chrome path for testing.
 class GoogleChromePathForTesting {
  public:
@@ -332,6 +339,9 @@ bool ExtractKeysFromDict(
 
 // Gets the bios serial number of the windows device.
 base::string16 GetSerialNumber();
+
+// Gets the mac addresses of the windows device.
+std::vector<std::string> GetMacAddresses();
 
 // Gets the obfuscated device_id that is a combination of multiple device
 // identifiers.

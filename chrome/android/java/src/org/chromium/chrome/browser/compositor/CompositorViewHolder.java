@@ -15,10 +15,6 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.view.ViewCompat;
-import android.support.v4.view.accessibility.AccessibilityEventCompat;
-import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
-import android.support.v4.widget.ExploreByTouchHelper;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.DragEvent;
@@ -30,6 +26,10 @@ import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityEventCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
+import androidx.customview.widget.ExploreByTouchHelper;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;

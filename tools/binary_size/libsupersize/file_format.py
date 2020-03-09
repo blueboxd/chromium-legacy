@@ -101,6 +101,8 @@ All remaining bytes are a valid gzipped sparse .size file containing the
 "after" snapshot.
 """
 
+from __future__ import division
+
 import cStringIO
 import contextlib
 import gzip

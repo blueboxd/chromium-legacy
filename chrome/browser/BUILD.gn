@@ -2867,8 +2867,6 @@ jumbo_static_library("browser") {
       "notifications/scheduler/display_agent_android.h",
       "notifications/scheduler/notification_background_task_scheduler_android.cc",
       "notifications/scheduler/notification_background_task_scheduler_android.h",
-      "offline_pages/prefetch/notifications/prefetch_notification_service_bridge.cc",
-      "offline_pages/prefetch/notifications/prefetch_notification_service_bridge.h",
       "offline_pages/prefetch/notifications/prefetch_notification_service_factory.cc",
       "offline_pages/prefetch/notifications/prefetch_notification_service_factory.h",
       "page_load_metrics/observers/android_page_load_metrics_observer.cc",
@@ -2974,6 +2972,7 @@ jumbo_static_library("browser") {
       ":explore_sites_proto",
       ":usage_stats_proto",
       "//chrome/android:jni_headers",
+      "//chrome/android/features/cablev2_authenticator/internal:native",
       "//chrome/android/modules/extra_icu/provider:native",
       "//chrome/browser/android/thin_webview/internal",
       "//chrome/browser/android/webapk:proto",
@@ -2986,6 +2985,7 @@ jumbo_static_library("browser") {
       "//chrome/browser/updates",
       "//chrome/services/media_gallery_util/public/cpp",
       "//components/autofill_assistant/browser",
+      "//components/cbor",
       "//components/cdm/browser",
       "//components/content_capture/android",
       "//components/crash/android:crash_android",
@@ -5526,7 +5526,7 @@ proto_library("permissions_proto") {
 grit("resources") {
   source = "browser_resources.grd"
 
-  # The .grd contains references to generated files.
+  # Required due to flattenhtml="true" on a generated file.
   source_is_generated = true
 
   use_brotli = true
@@ -5640,9 +5640,6 @@ if (is_chrome_branded) {
 
 grit("dev_ui_browser_resources") {
   source = "dev_ui_browser_resources.grd"
-
-  # The .grd contains references to generated files.
-  source_is_generated = true
 
   defines = chrome_grit_defines
 

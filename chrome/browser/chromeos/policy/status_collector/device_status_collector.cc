@@ -56,6 +56,7 @@
 #include "chrome/browser/chromeos/policy/status_collector/status_collector_state.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/crash_upload_list/crash_upload_list.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/channel_info.h"
@@ -149,6 +150,19 @@ const char kPathFirmware[] = "/var/log/bios_info.txt";
 
 // O°C in deciKelvin.
 const unsigned int kZeroCInDeciKelvin = 2731;
+
+// The duration for crash report collection.
+constexpr TimeDelta kCrashReportInfoDuration = TimeDelta::FromDays(1);
+
+// The sources of crash report leads to device restart.
+const char kCrashReportSourceKernel[] = "kernel";
+const char kCrashReportSourceEC[] = "embedded-controller";
+
+// The maximum number of crash report entries to be read.
+// According to the official document, the crash reporter uploads no more than
+// 24 MB (compressed) or 32 reports (whichever comes last) in any 24 hour
+// window. Therefore, it looks safe to set max size as 100 here.
+const int kCrashReportEntryMaxSize = 100;
 
 // Helper function (invoked via blocking pool) to fetch information about
 // mounted disks.
@@ -579,6 +593,62 @@ std::pair<std::string, std::string> ReadFirmwareVersion() {
   return {firmware, std::string()};
 }
 
+em::CrashReportInfo::CrashReportUploadStatus GetCrashReportUploadStatus(
+    UploadList::UploadInfo::State state) {
+  switch (state) {
+    case UploadList::UploadInfo::State::NotUploaded:
+      return em::CrashReportInfo::UPLOAD_STATUS_NOT_UPLOADED;
+    case UploadList::UploadInfo::State::Pending:
+      return em::CrashReportInfo::UPLOAD_STATUS_PENDING;
+    case UploadList::UploadInfo::State::Pending_UserRequested:
+      return em::CrashReportInfo::UPLOAD_STATUS_PENDING_USER_REQUESTED;
+    case UploadList::UploadInfo::State::Uploaded:
+      return em::CrashReportInfo::UPLOAD_STATUS_UPLOADED;
+    default:
+      return em::CrashReportInfo::UPLOAD_STATUS_UNKNOWN;
+  }
+
+  NOTREACHED();
+}
+
+// Filter the loaded crash reports.
+// - the |upload_time| should be with last 24 hours.
+// - the |source| should be 'kernel' or 'embedded-controller'.
+void CrashReportsLoaded(
+    scoped_refptr<UploadList> upload_list,
+    policy::DeviceStatusCollector::CrashReportInfoReceiver callback) {
+  std::vector<UploadList::UploadInfo> uploads;
+  upload_list->GetUploads(kCrashReportEntryMaxSize, &uploads);
+
+  const Time end_time = Time::Now();
+  const Time start_time = end_time - kCrashReportInfoDuration;
+
+  std::vector<em::CrashReportInfo> contents;
+  for (const UploadList::UploadInfo& crash_report : uploads) {
+    if (crash_report.upload_time >= start_time &&
+        crash_report.upload_time < end_time &&
+        (crash_report.source == kCrashReportSourceKernel ||
+         crash_report.source == kCrashReportSourceEC)) {
+      em::CrashReportInfo info;
+      info.set_remote_id(crash_report.upload_id);
+      info.set_capture_timestamp(crash_report.capture_time.ToJavaTime());
+      info.set_cause(crash_report.source);
+      info.set_upload_status(GetCrashReportUploadStatus(crash_report.state));
+      contents.push_back(info);
+    }
+  }
+
+  std::move(callback).Run(contents);
+}
+
+// Read the crash reports stored in the uploads.log file.
+void ReadCrashReportInfo(
+    policy::DeviceStatusCollector::CrashReportInfoReceiver callback) {
+  scoped_refptr<UploadList> upload_list = CreateCrashUploadList();
+  upload_list->Load(
+      base::BindOnce(CrashReportsLoaded, upload_list, std::move(callback)));
+}
+
 }  // namespace
 
 namespace policy {
@@ -674,6 +744,13 @@ class DeviceStatusCollectorState : public StatusCollectorState {
           graphics_status_fetcher) {
     graphics_status_fetcher.Run(base::BindOnce(
         &DeviceStatusCollectorState::OnGraphicsStatusReceived, this));
+  }
+
+  void FetchCrashReportInfo(
+      const policy::DeviceStatusCollector::CrashReportInfoFetcher&
+          crash_report_fetcher) {
+    crash_report_fetcher.Run(base::BindOnce(
+        &DeviceStatusCollectorState::OnCrashReportInfoReceived, this));
   }
 
  private:
@@ -867,6 +944,14 @@ class DeviceStatusCollectorState : public StatusCollectorState {
   void OnGraphicsStatusReceived(const em::GraphicsStatus& gs) {
     *response_params_.device_status->mutable_graphics_status() = gs;
   }
+
+  void OnCrashReportInfoReceived(
+      const std::vector<em::CrashReportInfo>& crash_report_infos) {
+    DCHECK(response_params_.device_status->crash_report_infos_size() == 0);
+    for (const em::CrashReportInfo& info : crash_report_infos) {
+      *response_params_.device_status->add_crash_report_infos() = info;
+    }
+  }
 };
 
 TpmStatusInfo::TpmStatusInfo() = default;
@@ -909,7 +994,8 @@ DeviceStatusCollector::DeviceStatusCollector(
     const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
     const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
     const CrosHealthdDataFetcher& cros_healthd_data_fetcher,
-    const GraphicsStatusFetcher& graphics_status_fetcher)
+    const GraphicsStatusFetcher& graphics_status_fetcher,
+    const CrashReportInfoFetcher& crash_report_info_fetcher)
     : StatusCollector(provider, chromeos::CrosSettings::Get()),
       pref_service_(pref_service),
       firmware_fetch_error_(kFirmwareNotInitialized),
@@ -922,6 +1008,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       stateful_partition_info_fetcher_(stateful_partition_info_fetcher),
       cros_healthd_data_fetcher_(cros_healthd_data_fetcher),
       graphics_status_fetcher_(graphics_status_fetcher),
+      crash_report_info_fetcher_(crash_report_info_fetcher),
       power_manager_(chromeos::PowerManagerClient::Get()) {
   // protected fields of `StatusCollector`.
   max_stored_past_activity_interval_ = kMaxStoredPastActivityInterval;
@@ -961,6 +1048,9 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   if (graphics_status_fetcher_.is_null())
     graphics_status_fetcher_ = base::BindRepeating(&FetchGraphicsStatus);
+
+  if (crash_report_info_fetcher_.is_null())
+    crash_report_info_fetcher_ = base::BindRepeating(&ReadCrashReportInfo);
 
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds), this,
@@ -1007,6 +1097,10 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceMemoryInfo, callback);
   backlight_info_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceBacklightInfo, callback);
+  crash_report_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceCrashReportInfo, callback);
+  stats_reporting_pref_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kStatsReportingPref, callback);
 
   power_manager_->AddObserver(this);
 
@@ -1055,7 +1149,8 @@ DeviceStatusCollector::DeviceStatusCollector(
           DeviceStatusCollector::EMMCLifetimeFetcher(),
           DeviceStatusCollector::StatefulPartitionInfoFetcher(),
           DeviceStatusCollector::CrosHealthdDataFetcher(),
-          DeviceStatusCollector::GraphicsStatusFetcher()) {}
+          DeviceStatusCollector::GraphicsStatusFetcher(),
+          DeviceStatusCollector::CrashReportInfoFetcher()) {}
 
 DeviceStatusCollector::~DeviceStatusCollector() {
   power_manager_->RemoveObserver(this);
@@ -1141,6 +1236,14 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceBacklightInfo,
                                   &report_backlight_info_)) {
     report_backlight_info_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceCrashReportInfo,
+                                  &report_crash_report_info_)) {
+    report_crash_report_info_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kStatsReportingPref,
+                                  &stat_reporting_pref_)) {
+    stat_reporting_pref_ = false;
   }
 
   if (!report_hardware_status_) {
@@ -1912,6 +2015,13 @@ bool DeviceStatusCollector::GetGraphicsStatus(
   return true;
 }
 
+bool DeviceStatusCollector::GetCrashReportInfo(
+    scoped_refptr<DeviceStatusCollectorState> state) {
+  state->FetchCrashReportInfo(crash_report_info_fetcher_);
+
+  return true;
+}
+
 void DeviceStatusCollector::GetStatusAsync(
     const StatusCollectorCallback& response) {
   // Must be on creation thread since some stats are written to in that thread
@@ -1973,6 +2083,9 @@ void DeviceStatusCollector::GetDeviceStatus(
 
   if (report_graphics_status_)
     anything_reported |= GetGraphicsStatus(state);
+
+  if (report_crash_report_info_ && stat_reporting_pref_)
+    anything_reported |= GetCrashReportInfo(state);
 
   // Wipe pointer if we didn't actually add any data.
   if (!anything_reported)

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.device_dialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.support.v4.util.ObjectsCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +19,7 @@ import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
+import androidx.core.util.ObjectsCompat;
 
 import org.chromium.chrome.R;
 

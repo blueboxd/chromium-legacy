@@ -12,8 +12,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.text.TextUtilsCompat;
-import android.support.v4.view.ViewCompat;
 // TODO(bjoyce): Need to convert viewpager after fragmentpageradatper.
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
@@ -23,6 +21,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.core.text.TextUtilsCompat;
+import androidx.core.view.ViewCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.metrics.RecordUserAction;

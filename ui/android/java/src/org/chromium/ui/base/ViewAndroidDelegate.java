@@ -9,7 +9,6 @@ import android.content.ClipData;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.view.MarginLayoutParamsCompat;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.View;
@@ -19,6 +18,7 @@ import android.view.inputmethod.InputConnection;
 import android.widget.ImageView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.MarginLayoutParamsCompat;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;

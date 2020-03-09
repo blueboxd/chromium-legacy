@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill_assistant.carousel;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
-import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 import android.view.ViewGroup;
@@ -20,6 +19,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.IdRes;
 import androidx.annotation.Px;
 import androidx.annotation.StyleRes;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;

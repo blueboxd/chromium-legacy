@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.settings.website;
 
 import android.content.Context;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
+import androidx.core.view.ViewCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.ChromeBasePreference;

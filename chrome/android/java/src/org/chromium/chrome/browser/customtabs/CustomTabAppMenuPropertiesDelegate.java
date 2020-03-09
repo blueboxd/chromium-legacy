@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.customtabs;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -16,6 +15,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.supplier.ObservableSupplier;

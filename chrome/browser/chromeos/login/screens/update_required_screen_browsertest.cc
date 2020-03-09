@@ -36,7 +36,7 @@ namespace {
 constexpr char kUpdateRequiredScreen[] = "update-required-card";
 constexpr char kUpdateRequiredDialog[] = "update-required-dialog";
 constexpr char kUpdateRequiredUpdateButton[] = "update-button";
-constexpr char kUpdateRequiredUpdatingDialog[] = "update-process-dialog";
+constexpr char kUpdateProcess[] = "checking-downloading-update";
 constexpr char kUpdateRequiredEolDialog[] = "eol-dialog";
 
 chromeos::OobeUI* GetOobeUI() {
@@ -168,8 +168,7 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestCaptivePortal) {
   SetUpdateEngineStatus(update_engine::Operation::UPDATE_AVAILABLE);
 
   test::OobeJS().ExpectVisible(kUpdateRequiredScreen);
-  test::OobeJS().ExpectVisiblePath(
-      {kUpdateRequiredScreen, kUpdateRequiredUpdatingDialog});
+  test::OobeJS().ExpectVisiblePath({kUpdateRequiredScreen, kUpdateProcess});
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestEolReached) {

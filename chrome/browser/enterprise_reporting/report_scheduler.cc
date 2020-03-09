@@ -20,6 +20,7 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -123,13 +124,25 @@ void ReportScheduler::OnReportEnabledPrefChanged() {
 #endif
 
   // Start the periodic report timer.
-  Start(g_browser_process->local_state()->GetTime(kLastUploadTimestamp));
+  const base::Time last_upload_timestamp =
+      g_browser_process->local_state()->GetTime(kLastUploadTimestamp);
+  Start(last_upload_timestamp);
 
   if (ShouldReportUpdates()) {
     // Watch for browser updates if not already doing so.
     auto* build_state = g_browser_process->GetBuildState();
-    if (!build_state->HasObserver(this))
+    if (!build_state->HasObserver(this)) {
       build_state->AddObserver(this);
+
+      // Generate and upload a basic report immediately if the version has
+      // changed since the last upload and the last upload was less than 24h
+      // ago.
+      if (g_browser_process->local_state()->GetString(kLastUploadVersion) !=
+              chrome::kChromeVersion &&
+          last_upload_timestamp + kDefaultUploadInterval > base::Time::Now()) {
+        GenerateAndUploadReport(kTriggerNewVersion);
+      }
+    }
   }
 }
 
@@ -194,6 +207,10 @@ void ReportScheduler::GenerateAndUploadReport(ReportTrigger trigger) {
       VLOG(1) << "Generating basic enterprise report upon update.";
       with_profiles = false;
       break;
+    case kTriggerNewVersion:
+      VLOG(1) << "Generating basic enterprise report upon new version.";
+      with_profiles = false;
+      break;
   }
 
   report_generator_->Generate(
@@ -218,6 +235,7 @@ void ReportScheduler::OnReportGenerated(
     report_uploader_ =
         std::make_unique<ReportUploader>(cloud_policy_client_, kMaximumRetry);
   }
+  RecordUploadTrigger(active_trigger_);
   report_uploader_->SetRequestAndUpload(
       std::move(requests), base::BindOnce(&ReportScheduler::OnReportUploaded,
                                           base::Unretained(this)));
@@ -233,6 +251,11 @@ void ReportScheduler::OnReportUploaded(ReportUploader::ReportStatus status) {
       report_uploader_.reset();
       if (IsReportingEnabled())
         TrackStaleProfiles();
+      if (ShouldReportUpdates()) {
+        // Remember what browser version made this upload.
+        g_browser_process->local_state()->SetString(kLastUploadVersion,
+                                                    chrome::kChromeVersion);
+      }
       FALLTHROUGH;
     case ReportUploader::kTransientError:
       // Stop retrying and schedule the next report to avoid stale report.
@@ -258,11 +281,15 @@ void ReportScheduler::RunPendingTriggers() {
   if (!pending_triggers_)
     return;
 
-  // Timer-triggered reports are a superset of those triggered by an update, so
-  // favor them and consider that they serve both purposes.
+  // Timer-triggered reports are a superset of those triggered by an update or a
+  // new version, so favor them and consider that they serve all purposes.
   uint32_t pending_triggers = std::exchange(pending_triggers_, 0);
-  GenerateAndUploadReport(
-      (pending_triggers & kTriggerTimer) != 0 ? kTriggerTimer : kTriggerUpdate);
+  ReportTrigger trigger = kTriggerTimer;
+  if ((pending_triggers & kTriggerTimer) == 0) {
+    trigger = (pending_triggers & kTriggerUpdate) != 0 ? kTriggerUpdate
+                                                       : kTriggerNewVersion;
+  }
+  GenerateAndUploadReport(trigger);
 }
 
 void ReportScheduler::TrackStaleProfiles() {
@@ -273,6 +300,34 @@ void ReportScheduler::TrackStaleProfiles() {
   } else {
     stale_profiles_->clear();
   }
+}
+
+// static
+void ReportScheduler::RecordUploadTrigger(ReportTrigger trigger) {
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class Sample {
+    kNone = 0,
+    kTimer = 1,
+    kUpdate = 2,
+    kNewVersion = 3,
+    kMaxValue = kNewVersion
+  } sample = Sample::kNone;
+  switch (trigger) {
+    case kTriggerNone:
+      break;
+    case kTriggerTimer:
+      sample = Sample::kTimer;
+      break;
+    case kTriggerUpdate:
+      sample = Sample::kUpdate;
+      break;
+    case kTriggerNewVersion:
+      sample = Sample::kNewVersion;
+      break;
+  }
+  base::UmaHistogramEnumeration("Enterprise.CloudReportingUploadTrigger",
+                                sample);
 }
 
 void ReportScheduler::OnProfileAdded(Profile* profile) {

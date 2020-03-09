@@ -33,7 +33,7 @@ class Origin;
 // and is unique for a given Bluetooth device address and origin pair, so this
 // class stores this mapping and provides utility methods to convert between
 // the WebBluetoothDeviceId and Bluetooth device address.
-class BluetoothChooserContext : public ChooserContextBase {
+class BluetoothChooserContext : public permissions::ChooserContextBase {
  public:
   explicit BluetoothChooserContext(Profile* profile);
   ~BluetoothChooserContext() override;

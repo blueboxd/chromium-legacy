@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.settings.website;
 
 import android.content.Context;
-import android.support.v4.app.NotificationManagerCompat;
+
+import androidx.core.app.NotificationManagerCompat;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 

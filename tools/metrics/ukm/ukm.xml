@@ -6079,6 +6079,11 @@ be describing additional metrics about the same event.
       Measure of memory consumed by live objects in the main isolate of V8.
     </summary>
   </metric>
+  <metric name="V8.Main.GlobalHandles">
+    <summary>
+      Measure of memory consumed by global handles in V8.
+    </summary>
+  </metric>
   <metric name="V8.Main.Heap">
     <summary>
       Measure of memory consumed by the main heap of V8.

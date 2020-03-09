@@ -1199,8 +1199,10 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
 // Test that by moving the mouse cursor off the button onto the bubble it closes
 // the bubble.
 TEST_P(HotseatShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
-  if (chromeos::switches::ShouldShowShelfHotseat())
+  if (chromeos::switches::ShouldShowShelfHotseat() ||
+      chromeos::switches::ShouldShowScrollableShelf()) {
     return;
+  }
   ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
   tooltip_manager->set_timer_delay_for_test(0);
   ui::test::EventGenerator* generator = GetEventGenerator();

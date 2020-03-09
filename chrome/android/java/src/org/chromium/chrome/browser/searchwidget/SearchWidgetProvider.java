@@ -15,13 +15,13 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.RemoteViews;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.app.ActivityOptionsCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;

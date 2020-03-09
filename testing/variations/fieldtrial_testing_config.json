@@ -5113,6 +5113,29 @@
             ]
         }
     ],
+    "SharingFilterDevices": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_strict",
+                    "params": {
+                        "SharingPulseDeltaAndroidHours": "0",
+                        "SharingPulseDeltaDesktopHours": "0"
+                    },
+                    "enable_features": [
+                        "SharingMatchPulseInterval"
+                    ]
+                }
+            ]
+        }
+    ],
     "SharingWebRTC": [
         {
             "platforms": [
@@ -5283,6 +5306,28 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MergeBookmarksUsingGUIDs"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SyncRefreshDeviceInfo": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_1_hour",
+                    "params": {
+                        "PulseIntervalMinutes": "60"
+                    },
+                    "enable_features": [
+                        "PulseInterval"
                     ]
                 }
             ]

@@ -4,15 +4,16 @@
 
 #include "components/permissions/chooser_context_base.h"
 
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/test/chooser_context_base_mock_permission_observer.h"
+#include "components/permissions/test/test_permissions_client.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
 
+namespace permissions {
 namespace {
 
 const char* kRequiredKey1 = "key-1";
@@ -21,11 +22,11 @@ const char* kRequiredKey2 = "key-2";
 class TestChooserContext : public ChooserContextBase {
  public:
   // This class uses the USB content settings type for testing purposes only.
-  explicit TestChooserContext(Profile* profile)
+  explicit TestChooserContext(content::BrowserContext* browser_context)
       : ChooserContextBase(
             ContentSettingsType::USB_GUARD,
             ContentSettingsType::USB_CHOOSER_DATA,
-            HostContentSettingsMapFactory::GetForProfile(profile)) {}
+            PermissionsClient::Get()->GetSettingsMap(browser_context)) {}
   ~TestChooserContext() override {}
 
   bool IsValidObject(const base::Value& object) override {
@@ -53,11 +54,12 @@ class ChooserContextBaseTest : public testing::Test {
 
   ~ChooserContextBaseTest() override {}
 
-  Profile* profile() { return &profile_; }
+  content::BrowserContext* browser_context() { return &browser_context_; }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  TestingProfile profile_;
+  content::TestBrowserContext browser_context_;
+  TestPermissionsClient client_;
 
  protected:
   const GURL url1_;
@@ -69,7 +71,7 @@ class ChooserContextBaseTest : public testing::Test {
 };
 
 TEST_F(ChooserContextBaseTest, GrantAndRevokeObjectPermissions) {
-  TestChooserContext context(profile());
+  TestChooserContext context(browser_context());
   MockPermissionObserver mock_observer;
   context.AddObserver(&mock_observer);
 
@@ -100,7 +102,7 @@ TEST_F(ChooserContextBaseTest, GrantAndRevokeObjectPermissions) {
 }
 
 TEST_F(ChooserContextBaseTest, GrantObjectPermissionTwice) {
-  TestChooserContext context(profile());
+  TestChooserContext context(browser_context());
   MockPermissionObserver mock_observer;
   context.AddObserver(&mock_observer);
 
@@ -121,7 +123,7 @@ TEST_F(ChooserContextBaseTest, GrantObjectPermissionTwice) {
 }
 
 TEST_F(ChooserContextBaseTest, GrantObjectPermissionEmbedded) {
-  TestChooserContext context(profile());
+  TestChooserContext context(browser_context());
   MockPermissionObserver mock_observer;
   context.AddObserver(&mock_observer);
 
@@ -143,7 +145,7 @@ TEST_F(ChooserContextBaseTest, GrantObjectPermissionEmbedded) {
 }
 
 TEST_F(ChooserContextBaseTest, GrantAndUpdateObjectPermission) {
-  TestChooserContext context(profile());
+  TestChooserContext context(browser_context());
   MockPermissionObserver mock_observer;
   context.AddObserver(&mock_observer);
 
@@ -168,7 +170,7 @@ TEST_F(ChooserContextBaseTest, GrantAndUpdateObjectPermission) {
 // UpdateObjectPermission() should not grant new permissions.
 TEST_F(ChooserContextBaseTest,
        UpdateObjectPermissionWithNonExistentPermission) {
-  TestChooserContext context(profile());
+  TestChooserContext context(browser_context());
   MockPermissionObserver mock_observer;
   context.AddObserver(&mock_observer);
 
@@ -195,7 +197,7 @@ TEST_F(ChooserContextBaseTest,
 }
 
 TEST_F(ChooserContextBaseTest, GetAllGrantedObjects) {
-  TestChooserContext context(profile());
+  TestChooserContext context(browser_context());
   MockPermissionObserver mock_observer;
   context.AddObserver(&mock_observer);
 
@@ -228,12 +230,12 @@ TEST_F(ChooserContextBaseTest, GetAllGrantedObjects) {
 }
 
 TEST_F(ChooserContextBaseTest, GetGrantedObjectsWithGuardBlocked) {
-  auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+  auto* map = PermissionsClient::Get()->GetSettingsMap(browser_context());
   map->SetContentSettingDefaultScope(url1_, url1_,
                                      ContentSettingsType::USB_GUARD,
                                      std::string(), CONTENT_SETTING_BLOCK);
 
-  TestChooserContext context(profile());
+  TestChooserContext context(browser_context());
   MockPermissionObserver mock_observer;
   context.AddObserver(&mock_observer);
 
@@ -252,12 +254,12 @@ TEST_F(ChooserContextBaseTest, GetGrantedObjectsWithGuardBlocked) {
 }
 
 TEST_F(ChooserContextBaseTest, GetAllGrantedObjectsWithGuardBlocked) {
-  auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+  auto* map = PermissionsClient::Get()->GetSettingsMap(browser_context());
   map->SetContentSettingDefaultScope(url1_, url1_,
                                      ContentSettingsType::USB_GUARD,
                                      std::string(), CONTENT_SETTING_BLOCK);
 
-  TestChooserContext context(profile());
+  TestChooserContext context(browser_context());
   MockPermissionObserver mock_observer;
   context.AddObserver(&mock_observer);
 
@@ -272,3 +274,5 @@ TEST_F(ChooserContextBaseTest, GetAllGrantedObjectsWithGuardBlocked) {
   EXPECT_EQ(url2_, objects[0]->embedding_origin);
   EXPECT_EQ(object2_, objects[0]->value);
 }
+
+}  // namespace permissions

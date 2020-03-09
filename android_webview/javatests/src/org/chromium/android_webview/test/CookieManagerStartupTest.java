@@ -83,10 +83,6 @@ public class CookieManagerStartupTest {
     public void testStartup() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         try {
-            // This must come before usages of the AwCookieManager as this call initializes the
-            // scheme registry that the AwCookieManager uses (indirectly).
-            startChromium();
-
             String path = "/cookie_test.html";
             String url = webServer.setResponse(path, CommonResources.ABOUT_HTML, null);
 
@@ -101,6 +97,7 @@ public class CookieManagerStartupTest {
 
             cookieManager.setCookie(url, "count=41");
 
+            startChromium();
             mActivityTestRule.loadUrlSync(
                     mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
             mActivityTestRule.executeJavaScriptAndWaitForResult(mAwContents, mContentsClient,

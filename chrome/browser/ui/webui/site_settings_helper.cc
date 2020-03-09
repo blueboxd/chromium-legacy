@@ -283,15 +283,15 @@ std::string GetSourceStringForChooserException(
   return SiteSettingSourceToString(calculated_source);
 }
 
-ChooserContextBase* GetUsbChooserContext(Profile* profile) {
+permissions::ChooserContextBase* GetUsbChooserContext(Profile* profile) {
   return UsbChooserContextFactory::GetForProfile(profile);
 }
 
-ChooserContextBase* GetSerialChooserContext(Profile* profile) {
+permissions::ChooserContextBase* GetSerialChooserContext(Profile* profile) {
   return SerialChooserContextFactory::GetForProfile(profile);
 }
 
-ChooserContextBase* GetHidChooserContext(Profile* profile) {
+permissions::ChooserContextBase* GetHidChooserContext(Profile* profile) {
   return HidChooserContextFactory::GetForProfile(profile);
 }
 
@@ -299,7 +299,7 @@ ChooserContextBase* GetHidChooserContext(Profile* profile) {
 // WebBluetoothNewPermissionsBackend flag is enabled.
 // TODO(https://crbug.com/589228): Remove the feature check when it is enabled
 // by default.
-ChooserContextBase* GetBluetoothChooserContext(Profile* profile) {
+permissions::ChooserContextBase* GetBluetoothChooserContext(Profile* profile) {
   if (base::FeatureList::IsEnabled(
           features::kWebBluetoothNewPermissionsBackend)) {
     return BluetoothChooserContextFactory::GetForProfile(profile);
@@ -755,19 +755,20 @@ base::Value GetChooserExceptionListFromProfile(
   // WebBluetoothNewPermissionsBackend flag is enabled.
   // TODO(https://crbug.com/589228): Remove the nullptr check when it is enabled
   // by default.
-  ChooserContextBase* chooser_context = chooser_type.get_context(profile);
+  permissions::ChooserContextBase* chooser_context =
+      chooser_type.get_context(profile);
   if (!chooser_context)
     return exceptions;
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      chooser_context->GetAllGrantedObjects();
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = chooser_context->GetAllGrantedObjects();
 
   if (profile->HasOffTheRecordProfile()) {
     Profile* incognito_profile = profile->GetOffTheRecordProfile();
-    ChooserContextBase* incognito_chooser_context =
+    permissions::ChooserContextBase* incognito_chooser_context =
         chooser_type.get_context(incognito_profile);
-    std::vector<std::unique_ptr<ChooserContextBase::Object>> incognito_objects =
-        incognito_chooser_context->GetAllGrantedObjects();
+    std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+        incognito_objects = incognito_chooser_context->GetAllGrantedObjects();
     objects.insert(objects.end(),
                    std::make_move_iterator(incognito_objects.begin()),
                    std::make_move_iterator(incognito_objects.end()));

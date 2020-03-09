@@ -24,6 +24,7 @@ import os
 import subprocess
 
 import helper.translation_helper as translation_helper
+import helper.git_helper as git_helper
 
 here = os.path.dirname(os.path.realpath(__file__))
 src_path = os.path.normpath(os.path.join(here, '..', '..'))
@@ -83,31 +84,11 @@ def query_yes_no(question, default='no'):
       print("Please respond with 'yes' or 'no' (or 'y' or 'n').")
 
 
-def list_grds_in_repository(repo_path):
-  """Returns a list of all the grd files in the current git repository."""
-  # This works because git does its own glob expansion even though there is no
-  # shell to do it.
-  output = subprocess.check_output(
-      [GIT, 'ls-files', '--', '*.grd'], cwd=repo_path)
-  return output.strip().splitlines()
-
-
-def git_add(files, repo_root):
-  """Adds relative paths given in files to the current CL."""
-  # Upload in batches in order to not exceed command line length limit.
-  BATCH_SIZE = 50
-  added_count = 0
-  while added_count < len(files):
-    batch = files[added_count:added_count+BATCH_SIZE]
-    command = [GIT, 'add'] + batch
-    subprocess.check_call(command, cwd=repo_root)
-    added_count += len(batch)
-
-
 def find_screenshots(repo_root, translation_expectations):
   """Returns a list of translation related .png files in the repository."""
   translatable_grds = translation_helper.get_translatable_grds(
-      repo_root, list_grds_in_repository(repo_root), translation_expectations)
+      repo_root, git_helper.list_grds_in_repository(repo_root),
+      translation_expectations)
 
   # Add the paths of grds and any files they include. This includes grdp files
   # and files included via <structure> elements.
@@ -208,7 +189,7 @@ def main():
     exit(0)
 
   if not args.dry_run:
-    git_add(signatures, src_path)
+    git_helper.git_add(signatures, src_path)
 
   print('DONE.')
 

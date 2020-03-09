@@ -10,7 +10,6 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Debug;
-import android.support.v4.view.ViewCompat;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -21,6 +20,7 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.ListView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.TraceEvent;
 import org.chromium.base.task.PostTask;

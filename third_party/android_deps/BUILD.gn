@@ -166,17 +166,6 @@ java_group("com_android_support_drawerlayout_java") {
   ]
 }
 
-# TODO(bjoyce): Remove after recyclerviewer is migrated.
-java_group("com_android_support_gridlayout_v7_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_gridlayout_gridlayout_java",
-  ]
-  input_jars_paths = [
-    "${target_out_dir}/com_android_support_gridlayout_v7_java_orig/classes.jar",
-  ]
-}
-
 java_group("com_android_support_interpolator_java") {
   deps = [
     ":${target_name}_orig__unpack_aar",
@@ -328,16 +317,6 @@ java_group("com_android_support_support_vector_drawable_java") {
     ":androidx_vectordrawable_vectordrawable_java",
   ]
   input_jars_paths = [ "${target_out_dir}/com_android_support_support_vector_drawable_java_orig/classes.jar" ]
-}
-
-java_group("com_android_support_transition_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_transition_transition_java",
-  ]
-  input_jars_paths = [
-    "${target_out_dir}/com_android_support_transition_java_orig/classes.jar",
-  ]
 }
 
 java_group("com_android_support_versionedparcelable_java") {

@@ -573,6 +573,9 @@ function addWebViewDescription(row, webview) {
   } else {
     viewStatus.visibility = 'empty';
   }
+  if (webview.never_attached) {
+    viewStatus.visibility += ' never-attached';
+  }
   if (webview.attached) {
     viewStatus.position =
         'at (' + webview.screenX + ', ' + webview.screenY + ')';

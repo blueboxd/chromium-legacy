@@ -14,7 +14,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
@@ -28,6 +27,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.widget.ImageViewCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;

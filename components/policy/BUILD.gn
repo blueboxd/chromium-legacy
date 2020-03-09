@@ -354,6 +354,7 @@ static_library("generated") {
   defines = [ "POLICY_COMPONENT_IMPLEMENTATION" ]
   public_deps = [
     ":cloud_policy_proto_generated_compile",
+    ":full_runtime_code_generate",
     ":policy_code_generate",
     "//base",
     "//components/policy/core/common:common_constants",

@@ -4,9 +4,8 @@
 
 package org.chromium.components.signin;
 
-import android.support.v4.util.ObjectsCompat;
-
 import androidx.annotation.MainThread;
+import androidx.core.util.ObjectsCompat;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;

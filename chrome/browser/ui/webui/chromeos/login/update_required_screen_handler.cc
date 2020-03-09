@@ -43,10 +43,9 @@ void UpdateRequiredScreenHandler::DeclareLocalizedValues(
                IDS_UPDATE_REQUIRED_SCREEN_OPEN_NETWORK_SETTINGS);
   builder->Add("updateButtonCaption", IDS_UPDATE_REQUIRED_SCREEN_START_UPDATE);
   builder->Add("rebootNeededMessage", IDS_UPDATE_COMPLETED);
-
   builder->Add("checkingForUpdatesTitle", IDS_CHECKING_FOR_UPDATES);
   builder->Add("updatingTitle", IDS_UPDATING_SCREEN_TITLE);
-
+  builder->Add("updatingMessage", IDS_UPDATE_REQUIRED_UPDATING_MESSAGE);
   builder->Add("downloading", IDS_DOWNLOADING);
   builder->Add("downloadingTimeLeftLong", IDS_DOWNLOADING_TIME_LEFT_LONG);
   builder->Add("downloadingTimeLeftStatusOneHour",

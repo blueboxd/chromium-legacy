@@ -220,8 +220,22 @@ ExtensionInstallStatus AddExtensionToPendingList(const ExtensionId& id,
                                                  Profile* profile) {
   ExtensionInstallStatus status =
       GetWebstoreExtensionInstallStatus(id, profile);
-  if (status != kCanRequest)
+  // We put the |id| into the pending request list if it can be requested.
+  // Ideally we should not get here if the status is not |kCanRequest|. However
+  // policy might be updated between the client calling |requestExtension| or
+  // |beginInstallWithManifest3| and us checking the status here. Handle
+  // approvals and rejections for this case by adding the |id| into the pending
+  // list. ExtensionRequestObserver will observe this update and show the
+  // notificaion immediately.
+  // Please note that only the |id| that can be requested will be uploaded to
+  // the server and ExtensionRequestObserver will also show notifications once
+  // it's approved or rejected.
+  // |id| will be removed from the pending list once the notification is
+  // confirmed or closed by the user.
+  if (status != kCanRequest && status != kInstallable &&
+      status != kBlockedByPolicy) {
     return status;
+  }
 
   DictionaryPrefUpdate pending_requests_update(
       profile->GetPrefs(), prefs::kCloudExtensionRequestIds);
@@ -231,11 +245,17 @@ ExtensionInstallStatus AddExtensionToPendingList(const ExtensionId& id,
                       ::util::TimeToValue(base::Time::Now()));
   pending_requests_update->SetKey(id, std::move(request_data));
   // Query the new extension install status again. It should be changed from
-  // kCanRequest to kRequestPending if the id has been added into pending list
-  // successfully.
-  status = GetWebstoreExtensionInstallStatus(id, profile);
-  DCHECK_EQ(kRequestPending, status);
-  return status;
+  // |kCanRequest| to |kRequestPending| if the id has been added into pending
+  // list successfully. Otherwise, it shouldn't be changed.
+  ExtensionInstallStatus new_status =
+      GetWebstoreExtensionInstallStatus(id, profile);
+#if DCHECK_IS_ON()
+  if (status == kCanRequest)
+    DCHECK_EQ(kRequestPending, new_status);
+  else
+    DCHECK_EQ(status, new_status);
+#endif  // DCHECK_IS_ON()
+  return new_status;
 }
 
 }  // namespace

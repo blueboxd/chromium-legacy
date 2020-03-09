@@ -38062,8 +38062,6 @@ from previous Chrome versions.
   <int value="-1095947169" label="ModalPermissionDialogView:disabled"/>
   <int value="-1088804127" label="DuetTabStripIntegrationAndroid:disabled"/>
   <int value="-1086728979" label="kids-management-url-classification:enabled"/>
-  <int value="-1086656172"
-      label="PrefetchNotificationSchedulingIntegration:disabled"/>
   <int value="-1085492638" label="FetchKeepaliveTimeoutSetting:enabled"/>
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
   <int value="-1083736482" label="OmniboxCompactSuggestions:enabled"/>
@@ -38360,8 +38358,6 @@ from previous Chrome versions.
   <int value="-743103250" label="enable-linkable-ephemeral-apps"/>
   <int value="-742469530" label="DriveFS:disabled"/>
   <int value="-741806604" label="DownloadsUi:disabled"/>
-  <int value="-740850824"
-      label="PrefetchNotificationSchedulingIntegration:enabled"/>
   <int value="-738957187" label="OmniboxUIExperimentSwapTitleAndUrl:disabled"/>
   <int value="-735084806" label="NewTabLoadingAnimation:enabled"/>
   <int value="-734301625"
@@ -56388,6 +56384,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="NoDownload">
     A report was not uploaded because no binary download was found to report
   </int>
+</enum>
+
+<enum name="ReportSchedulerReportTrigger">
+  <int value="0" label="kTriggerNone"/>
+  <int value="1" label="kTriggerTimer">
+    The scheduler's periodic timer expired
+  </int>
+  <int value="2" label="kTriggerUpdate">An update was detected</int>
+  <int value="3" label="kTriggerNewVersion">A new version is running</int>
 </enum>
 
 <enum name="RequestAction">

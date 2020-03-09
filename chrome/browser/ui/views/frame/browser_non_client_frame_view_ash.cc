@@ -716,6 +716,14 @@ bool BrowserNonClientFrameViewAsh::ShouldShowProfileIndicatorIcon() const {
   if (browser->is_type_popup())
     return false;
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  // TODO(http://crbug.com/1059514): This check shouldn't be necessary.  Provide
+  // an appropriate affordance for the profile icon with the webUI tabstrip and
+  // remove this block.
+  if (!browser_view()->IsTabStripVisible())
+    return false;
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
   return MultiUserWindowManagerHelper::ShouldShowAvatar(
       browser_view()->GetNativeWindow());
 }

@@ -39,6 +39,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyFetcher {
  private:
   using FetchCallback = base::OnceCallback<void(std::unique_ptr<std::string>)>;
 
+  void OnResponseStarted(const GURL& final_url,
+                         const mojom::URLResponseHead& response_head);
   void OnPolicyHasArrived(std::unique_ptr<std::string> policy_content);
   void FetchPolicy(mojom::URLLoaderFactory* factory);
 

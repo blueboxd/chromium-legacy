@@ -4,6 +4,7 @@
 
 """Creates an html report that allows you to view binary size by component."""
 
+from __future__ import division
 from __future__ import print_function
 
 import codecs

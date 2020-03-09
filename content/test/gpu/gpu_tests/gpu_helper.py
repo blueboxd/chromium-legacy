@@ -109,9 +109,6 @@ def GetANGLERenderer(gpu_info):
         return 'opengles'
       elif 'OpenGL' in gl_renderer:
         return 'opengl'
-      # SwiftShader first because it also contains Vulkan
-      elif 'SwiftShader' in gl_renderer:
-        return 'swiftshader'
       elif 'Vulkan' in gl_renderer:
         return 'vulkan'
   return 'no_angle'

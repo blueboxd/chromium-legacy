@@ -66,7 +66,9 @@ void HardwareRenderer::Draw(HardwareRendererDrawParams* params) {
     child_frame_ = std::move(child_frame_queue_.front());
     child_frame_queue_.clear();
   }
-  if (child_frame_) {
+  // 0u is not a valid frame_sink_id, but can happen when renderer did not
+  // produce a frame. Keep the existing id in that case.
+  if (child_frame_ && child_frame_->layer_tree_frame_sink_id > 0u) {
     last_committed_layer_tree_frame_sink_id_ =
         child_frame_->layer_tree_frame_sink_id;
   }

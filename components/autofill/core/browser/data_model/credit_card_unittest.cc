@@ -576,6 +576,15 @@ TEST(CreditCardTest, Compare) {
   b.set_record_type(FULL_SERVER_CARD);
   EXPECT_EQ(0, a.Compare(b));
 
+  // Difference in nickname counts.
+  a.set_nickname(ASCIIToUTF16("My Visa Card"));
+  b.set_nickname(ASCIIToUTF16("Grocery Cashback Card"));
+  EXPECT_LT(0, a.Compare(b));
+  // Reset the nickname to empty, empty nickname cards are the same.
+  a.set_nickname(ASCIIToUTF16(""));
+  b.set_nickname(ASCIIToUTF16(""));
+  EXPECT_EQ(0, a.Compare(b));
+
   // Local is different from server.
   a.set_record_type(LOCAL_CARD);
   b.set_record_type(FULL_SERVER_CARD);

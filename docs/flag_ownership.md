@@ -15,14 +15,11 @@ you find, either:
   the top of the file) and set an appropriate expiration milestone;
 
 - **If it is not in use:** delete it from `kFeatureEntries` in
-  [`chrome/browser/about_flags.cc`](https://cs.chromium.org/chromium/src/chrome/browser/about_flags.cc?sq=package:chromium&g=0&l=1319).
+  [`chrome/browser/about_flags.cc`](https://cs.chromium.org/chromium/src/chrome/browser/about_flags.cc?sq=package:chromium&g=0&l=1319) or 
+  [`ios/chrome/browser/about_flags.mm`](https://cs.chromium.org/chromium/src/ios/chrome/browser/about_flags.mm) for iOS.
   Remember to file a cleanup bug to remove code paths that become dead. It is
   not necessary to delete the corresponding entry in `flag-metadata.json` as it
   will be cleaned up for you in the future.
-
-All existing flags have been set to expire in M76 (~6 months from now). At that
-time, every flag with no owners will be hardcoded to behave as though it was
-always its default value and will be removed from the `chrome://flags` UI.
 
 ## Wait, What Are You Doing?
 

@@ -107,6 +107,7 @@
     "tools/grit/grit/testdata/whitelist_strings.grd": "Test data",
     "tools/translation/testdata/not_translated.grd": "Test data",
     "tools/translation/testdata/test.grd": "Test data",
+    "tools/translation/testdata/unlisted.grd": "Test data",
     "ui/base/test/ui_base_test_resources.grd": "Test data",
     "ui/strings/app_locale_settings.grd": "Not UI strings; localized separately",
   },

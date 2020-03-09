@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.support.v4.view.MarginLayoutParamsCompat;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
@@ -32,6 +31,7 @@ import android.widget.TextView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.MarginLayoutParamsCompat;
 import androidx.gridlayout.widget.GridLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;

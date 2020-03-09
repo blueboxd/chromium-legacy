@@ -8,10 +8,10 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
-import android.support.v4.graphics.ColorUtils;
-import android.support.v4.view.ViewCompat;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.graphics.ColorUtils;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;

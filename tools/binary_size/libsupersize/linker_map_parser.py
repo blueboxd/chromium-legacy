@@ -18,6 +18,7 @@ The |linker_name| parameter in various functions must take one of the above
 coded linker name values.
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import argparse

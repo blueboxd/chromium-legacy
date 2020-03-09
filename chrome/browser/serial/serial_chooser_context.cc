@@ -72,7 +72,7 @@ std::string SerialChooserContext::GetObjectName(const base::Value& object) {
   return *name;
 }
 
-std::vector<std::unique_ptr<ChooserContextBase::Object>>
+std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
 SerialChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
                                         const url::Origin& embedding_origin) {
   if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
@@ -98,7 +98,7 @@ SerialChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
   return objects;
 }
 
-std::vector<std::unique_ptr<ChooserContextBase::Object>>
+std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
 SerialChooserContext::GetAllGrantedObjects() {
   std::vector<std::unique_ptr<Object>> objects;
   for (const auto& map_entry : ephemeral_ports_) {

@@ -4,6 +4,8 @@
 
 """Runs a server to let the user interact with supersize using a web UI."""
 
+from __future__ import division
+
 import BaseHTTPServer
 import logging
 import os

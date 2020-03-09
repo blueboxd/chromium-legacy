@@ -1590,7 +1590,7 @@ TEST_F(ElementAnimationsTest, InfiniteLooping) {
   std::unique_ptr<KeyframeModel> to_add(CreateKeyframeModel(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
       1, TargetProperty::OPACITY));
-  to_add->set_iterations(-1);
+  to_add->set_iterations(std::numeric_limits<double>::infinity());
   animation_->AddKeyframeModel(std::move(to_add));
 
   animation_->Tick(kInitialTickTime);

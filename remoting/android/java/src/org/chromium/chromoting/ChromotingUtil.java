@@ -11,11 +11,12 @@ import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import androidx.core.content.ContextCompat;
 
 import org.chromium.base.Log;
 

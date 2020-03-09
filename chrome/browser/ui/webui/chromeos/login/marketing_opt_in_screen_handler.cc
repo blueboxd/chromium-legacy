@@ -12,6 +12,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace chromeos {
 
@@ -30,6 +31,9 @@ void MarketingOptInScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_TITLE);
   builder->Add("marketingOptInScreenSubtitle",
                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE);
+  builder->AddF("marketingOptInScreenSubtitleWithDeviceName",
+                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE_WITH_DEVICE_NAME,
+                ui::GetChromeOSDeviceName());
   builder->Add("marketingOptInGetPlayUpdates",
                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_PLAY_UPDATES);
   builder->Add("marketingOptInGetChromebookUpdates",

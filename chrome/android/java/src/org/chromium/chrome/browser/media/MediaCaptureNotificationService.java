@@ -12,8 +12,9 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.util.SparseIntArray;
+
+import androidx.core.app.NotificationCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;

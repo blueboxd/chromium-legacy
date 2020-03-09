@@ -117,12 +117,15 @@ class BrowserNonClientFrameViewAsh
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
+  // TODO(pkasting): Test the public API or create a test helper class, don't
+  // add this many friends
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTestNoWebUiTabStrip,
                            NonImmersiveFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeBrowserViewTest, ImmersiveFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeBrowserViewTestNoWebUiTabStrip,
+                           ImmersiveFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            ToggleTabletModeRelayout);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTestNoWebUiTabStrip,
                            AvatarDisplayOnTeleportedWindow);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            BrowserHeaderVisibilityInTabletModeTest);

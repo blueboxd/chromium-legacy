@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -16,6 +15,7 @@ import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.content.ContextCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

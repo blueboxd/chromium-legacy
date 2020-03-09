@@ -9,13 +9,13 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.app.ActivityOptionsCompat;
 
 import org.chromium.base.Callback;
 import org.chromium.base.IntentUtils;

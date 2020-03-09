@@ -65,6 +65,8 @@ source_set("permissions") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "test/chooser_context_base_mock_permission_observer.cc",
+    "test/chooser_context_base_mock_permission_observer.h",
     "test/mock_permission_prompt.cc",
     "test/mock_permission_prompt.h",
     "test/mock_permission_prompt_factory.cc",
@@ -83,6 +85,7 @@ source_set("test_support") {
     "//components/ukm/content",
     "//components/vector_icons",
     "//content/public/browser",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx",
     "//url",
@@ -92,6 +95,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "chooser_context_base_unittest.cc",
     "permission_context_base_unittest.cc",
     "permission_decision_auto_blocker_unittest.cc",
     "permission_request_manager_unittest.cc",

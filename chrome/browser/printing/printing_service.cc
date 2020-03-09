@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/printing_service.h"
 
 #include "base/no_destructor.h"
+#include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/service_process_host.h"
 
@@ -16,7 +17,9 @@ const mojo::Remote<printing::mojom::PrintingService>& GetPrintingService() {
         remote->BindNewPipeAndPassReceiver(),
         content::ServiceProcessHost::Options()
             .WithDisplayName(IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME)
-            .WithSandboxType(service_manager::SandboxType::kUtility)
+#if defined(OS_WIN)
+            .WithSandboxType(service_manager::SandboxType::kPdfConversion)
+#endif
             .Pass());
 
     // Ensure that if the interface is ever disconnected (e.g. the service

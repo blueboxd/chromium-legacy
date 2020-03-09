@@ -26,6 +26,13 @@ class ExtensionRequestObserver
   // extensions::ExtensionManagement::Observer
   void OnExtensionManagementSettingsChanged() override;
 
+  // Notifies when request pending list is updated.
+  void OnPendingListChanged();
+
+  // Shows notifications when requests are approved, rejected or
+  // force-installed. It also closes the notification that is no longer needed.
+  void ShowAllNotifications();
+
   void ShowNotification(ExtensionRequestNotification::NotifyType type);
   void CloseAllNotifications();
 
@@ -39,6 +46,9 @@ class ExtensionRequestObserver
       notifications_[ExtensionRequestNotification::kNumberOfTypes];
 
   Profile* profile_;
+
+  PrefChangeRegistrar pref_change_registrar_;
+  bool closing_notification_and_deleting_requests_ = false;
 
   base::WeakPtrFactory<ExtensionRequestObserver> weak_factory_{this};
 };

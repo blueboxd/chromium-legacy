@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.support.v4.util.Pair;
+
+import androidx.core.util.Pair;
 
 import org.junit.Assert;
 import org.junit.Test;

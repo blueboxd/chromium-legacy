@@ -30,6 +30,10 @@ cr.define('settings_passwords_check', function() {
     return leakedPasswordItem;
   }
 
+  function isElementVisible(element) {
+    return !!element && !element.hidden && element.style.display != 'none';
+  }
+
   /**
    * Helper method that validates a that elements in the compromised credentials
    * list match the expected data.
@@ -163,7 +167,7 @@ cr.define('settings_passwords_check', function() {
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
-        expectEquals(section.status_.state, PasswordCheckState.RUNNING);
+        expectEquals(PasswordCheckState.RUNNING, section.status_.state);
 
         // Change status from running to IDLE.
         assert(!!passwordManager.lastCallback.addPasswordCheckStatusListener);
@@ -174,7 +178,7 @@ cr.define('settings_passwords_check', function() {
                 /*remaining=*/ 0));
 
         Polymer.dom.flush();
-        expectEquals(section.status_.state, PasswordCheckState.IDLE);
+        expectEquals(PasswordCheckState.IDLE, section.status_.state);
       });
     });
 
@@ -188,8 +192,88 @@ cr.define('settings_passwords_check', function() {
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         expectEquals(
-            checkPasswordSection.status_.state, PasswordCheckState.IDLE);
+            PasswordCheckState.IDLE, checkPasswordSection.status_.state);
       }, () => assert(false));
+    });
+
+    // Tests that the spinner is replaced with a checkmark on successful runs.
+    test('testShowsCheckmarkIconWhenFinishedWithoutLeaks', function() {
+      const data = passwordManager.data;
+      assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
+      assertEquals(0, data.leakedCredentials.compromisedCredentials.length);
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const icon = checkPasswordSection.$$('iron-icon');
+        const spinner = checkPasswordSection.$$('paper-spinner-lite');
+        expectFalse(isElementVisible(spinner));
+        assert(isElementVisible(icon));
+        expectFalse(icon.classList.contains('has-leaks'));
+        expectTrue(icon.classList.contains('no-leaks'));
+      });
+    });
+
+    // Tests that the spinner is replaced with a triangle if leaks were found.
+    test('testShowsTriangleIconWhenFinishedWithLeaks', function() {
+      const data = passwordManager.data;
+      assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
+      data.leakedCredentials =
+          autofill_test_util.makeCompromisedCredentialsInfo(
+              [
+                autofill_test_util.makeCompromisedCredentials(
+                    'one.com', 'test4', 'LEAKED'),
+              ],
+              'just now');
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const icon = checkPasswordSection.$$('iron-icon');
+        const spinner = checkPasswordSection.$$('paper-spinner-lite');
+        expectFalse(isElementVisible(spinner));
+        assert(isElementVisible(icon));
+        expectTrue(icon.classList.contains('has-leaks'));
+        expectFalse(icon.classList.contains('no-leaks'));
+      });
+    });
+
+    // Tests that the spinner is replaced with a warning on errors.
+    test('testShowsInfoIconWhenFinishedWithErrors', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.OFFLINE,
+              /*checked=*/ undefined,
+              /*remaining=*/ undefined);
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const icon = checkPasswordSection.$$('iron-icon');
+        const spinner = checkPasswordSection.$$('paper-spinner-lite');
+        expectFalse(isElementVisible(spinner));
+        assert(isElementVisible(icon));
+        expectFalse(icon.classList.contains('has-leaks'));
+        expectFalse(icon.classList.contains('no-leaks'));
+      });
+    });
+
+    // Tests that the spinner replaces any icon while the check is running.
+    test('testShowsSpinnerWhileRunning', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.RUNNING,
+              /*checked=*/ 1,
+              /*remaining=*/ 3);
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const icon = checkPasswordSection.$$('iron-icon');
+        const spinner = checkPasswordSection.$$('paper-spinner-lite');
+        expectTrue(isElementVisible(spinner));
+        expectFalse(isElementVisible(icon));
+      });
     });
   });
 });

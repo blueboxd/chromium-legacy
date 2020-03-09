@@ -14,6 +14,7 @@
 #include "base/win/windows_version.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 #endif
 
@@ -48,35 +49,23 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
 
 }  // namespace
 
-void InitializePDF() {
+void MaybeInitializeGDI() {
 #if defined(OS_WIN)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   const std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
-  // Patch utility processes, which includes ones that do PDF to EMF conversion.
-  // They are hard to differentiate because they can also be launched from
-  // chrome/service/ in a different manner vs. from chrome/browser/.
-  bool needs_gdi32_patching = process_type == switches::kUtilityProcess;
-
-  if (!needs_gdi32_patching) {
-    // Windows prior to Win10 use GDI fonts in the PDF PPAPI process.
-    needs_gdi32_patching = process_type == switches::kPpapiPluginProcess &&
-                           base::win::GetVersion() < base::win::Version::WIN10;
-  }
-
-  if (!needs_gdi32_patching) {
-    // Printing uses GDI for fonts on all versions of Windows.
-    // TODO(thestig): Check and see if this is actually necessary.
-    std::string service_sandbox_type = command_line.GetSwitchValueASCII(
-        service_manager::switches::kServiceSandboxType);
-    needs_gdi32_patching = service_sandbox_type ==
-                           service_manager::switches::kPrintCompositorSandbox;
-  }
-
-  if (!needs_gdi32_patching)
+  // Patch utility processes which explicitly need GDI. Anything else, just
+  // return.
+  service_manager::SandboxType service_sandbox_type =
+      service_manager::SandboxTypeFromCommandLine(command_line);
+  if (!(service_sandbox_type == service_manager::SandboxType::kPpapi ||
+        service_sandbox_type ==
+            service_manager::SandboxType::kPrintCompositor ||
+        service_sandbox_type == service_manager::SandboxType::kPdfConversion)) {
     return;
+  }
 
 #if defined(COMPONENT_BUILD)
   HMODULE module = ::GetModuleHandleA("pdfium.dll");

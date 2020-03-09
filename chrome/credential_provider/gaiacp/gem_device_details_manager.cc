@@ -43,7 +43,8 @@ const char kUploadDeviceDetailsRequestUserSidParameterName[] = "user_sid";
 const char kUploadDeviceDetailsRequestUsernameParameterName[] =
     "account_username";
 const char kUploadDeviceDetailsRequestDomainParameterName[] = "device_domain";
-const char kIsAdJoinedUser[] = "is_ad_joined_user";
+const char kIsAdJoinedUserParameterName[] = "is_ad_joined_user";
+const char kMacAddressParameterName[] = "wlan_mac_addr";
 
 }  // namespace
 
@@ -86,6 +87,14 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
   base::string16 serial_number = GetSerialNumber();
   base::string16 machine_guid;
   HRESULT hr = GetMachineGuid(&machine_guid);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "Failed fetching machine guid. hr=" << putHR(hr);
+    return hr;
+  }
+  std::vector<std::string> mac_addresses = GetMacAddresses();
+  base::Value mac_address_value_list(base::Value::Type::LIST);
+  for (const std::string& mac_address : mac_addresses)
+    mac_address_value_list.Append(base::Value(mac_address));
 
   request_dict_.reset(new base::Value(base::Value::Type::DICTIONARY));
   request_dict_->SetStringKey(
@@ -100,8 +109,10 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
                               base::UTF16ToUTF8(username));
   request_dict_->SetStringKey(kUploadDeviceDetailsRequestDomainParameterName,
                               base::UTF16ToUTF8(domain));
-  request_dict_->SetBoolKey(kIsAdJoinedUser,
+  request_dict_->SetBoolKey(kIsAdJoinedUserParameterName,
                             OSUserManager::Get()->IsUserDomainJoined(sid));
+  request_dict_->SetKey(kMacAddressParameterName,
+                        std::move(mac_address_value_list));
 
   base::Optional<base::Value> request_result;
 

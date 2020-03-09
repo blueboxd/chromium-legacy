@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERMISSIONS_CHOOSER_CONTEXT_BASE_MOCK_PERMISSION_OBSERVER_H_
-#define CHROME_BROWSER_PERMISSIONS_CHOOSER_CONTEXT_BASE_MOCK_PERMISSION_OBSERVER_H_
+#ifndef COMPONENTS_PERMISSIONS_TEST_CHOOSER_CONTEXT_BASE_MOCK_PERMISSION_OBSERVER_H_
+#define COMPONENTS_PERMISSIONS_TEST_CHOOSER_CONTEXT_BASE_MOCK_PERMISSION_OBSERVER_H_
 
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/chooser_context_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
+
+namespace permissions {
 
 class MockPermissionObserver : public ChooserContextBase::PermissionObserver {
  public:
@@ -23,4 +25,6 @@ class MockPermissionObserver : public ChooserContextBase::PermissionObserver {
                     const url::Origin& embedding_origin));
 };
 
-#endif  // CHROME_BROWSER_PERMISSIONS_CHOOSER_CONTEXT_BASE_MOCK_PERMISSION_OBSERVER_H_
+}  // namespace permissions
+
+#endif  // COMPONENTS_PERMISSIONS_TEST_CHOOSER_CONTEXT_BASE_MOCK_PERMISSION_OBSERVER_H_

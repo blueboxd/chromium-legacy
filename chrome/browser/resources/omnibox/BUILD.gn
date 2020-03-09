@@ -53,8 +53,6 @@ js_library("omnibox_popup") {
 grit("resources") {
   source = "resources.grd"
 
-  # The .grd contains references to generated files.
-  source_is_generated = true
   outputs = [
     "grit/omnibox_resources.h",
     "omnibox_resources.pak",

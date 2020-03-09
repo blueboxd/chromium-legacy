@@ -307,17 +307,17 @@ base::string16 GetSimpleSiteName(const GURL& url) {
       url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
 }
 
-ChooserContextBase* GetUsbChooserContext(Profile* profile) {
+permissions::ChooserContextBase* GetUsbChooserContext(Profile* profile) {
   return UsbChooserContextFactory::GetForProfile(profile);
 }
 
 #if !defined(OS_ANDROID)
-ChooserContextBase* GetSerialChooserContext(Profile* profile) {
+permissions::ChooserContextBase* GetSerialChooserContext(Profile* profile) {
   return SerialChooserContextFactory::GetForProfile(profile);
 }
 #endif
 
-ChooserContextBase* GetBluetoothChooserContext(Profile* profile) {
+permissions::ChooserContextBase* GetBluetoothChooserContext(Profile* profile) {
   if (base::FeatureList::IsEnabled(
           features::kWebBluetoothNewPermissionsBackend)) {
     return BluetoothChooserContextFactory::GetForProfile(profile);
@@ -599,7 +599,7 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
 void PageInfo::OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
                                          const base::Value& object) {
   // TODO(reillyg): Create metrics for revocations. crbug.com/556845
-  ChooserContextBase* context = ui_info.get_context(profile_);
+  permissions::ChooserContextBase* context = ui_info.get_context(profile_);
   const auto origin = url::Origin::Create(site_url_);
   context->RevokeObjectPermission(origin, origin, object);
   show_info_bar_ = true;
@@ -1028,11 +1028,12 @@ void PageInfo::PresentSitePermissions() {
 
   const auto origin = url::Origin::Create(site_url_);
   for (const ChooserUIInfo& ui_info : kChooserUIInfo) {
-    ChooserContextBase* context = ui_info.get_context(profile_);
+    permissions::ChooserContextBase* context = ui_info.get_context(profile_);
     if (!context)
       continue;
     auto chosen_objects = context->GetGrantedObjects(origin, origin);
-    for (std::unique_ptr<ChooserContextBase::Object>& object : chosen_objects) {
+    for (std::unique_ptr<permissions::ChooserContextBase::Object>& object :
+         chosen_objects) {
       chosen_object_info_list.push_back(
           std::make_unique<PageInfoUI::ChosenObjectInfo>(ui_info,
                                                          std::move(object)));

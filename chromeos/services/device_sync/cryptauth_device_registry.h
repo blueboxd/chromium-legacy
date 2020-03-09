@@ -5,10 +5,12 @@
 #ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_DEVICE_REGISTRY_H_
 #define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_DEVICE_REGISTRY_H_
 
+#include <ostream>
 #include <string>
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "chromeos/services/device_sync/cryptauth_device.h"
 
 namespace chromeos {
@@ -42,6 +44,9 @@ class CryptAuthDeviceRegistry {
   // if the registry changes.
   bool SetRegistry(const InstanceIdToDeviceMap& instance_id_to_device_map);
 
+  // Converts the registry to a human-readable dictionary.
+  base::Value AsReadableDictionary() const;
+
  protected:
   CryptAuthDeviceRegistry();
 
@@ -53,6 +58,9 @@ class CryptAuthDeviceRegistry {
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthDeviceRegistry);
 };
+
+std::ostream& operator<<(std::ostream& stream,
+                         const CryptAuthDeviceRegistry& registry);
 
 }  // namespace device_sync
 

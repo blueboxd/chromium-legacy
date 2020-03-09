@@ -77,6 +77,7 @@ class CryptAuthMetadataSyncerImpl : public CryptAuthMetadataSyncer {
     kWaitingForSecondSyncMetadataResponse,
     kFinished
   };
+  friend std::ostream& operator<<(std::ostream& stream, const State& state);
 
   // kKeyExistsButNotConfirmedWithCryptAuth: A local group public key exists but
   //     CryptAuth has yet to confirm or deny that it is the correct group key.
@@ -98,8 +99,8 @@ class CryptAuthMetadataSyncerImpl : public CryptAuthMetadataSyncer {
     kNewKeyReceivedFromCryptAuth,
     kEstablished
   };
-
-  friend std::ostream& operator<<(std::ostream& stream, const State& state);
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  const GroupPublicKeyState& state);
 
   static base::Optional<base::TimeDelta> GetTimeoutForState(State state);
   static base::Optional<CryptAuthDeviceSyncResult::ResultCode>

@@ -6,6 +6,10 @@
 
 namespace features {
 
+// Whether local predictions should be used to make preconnect predictions.
+const base::Feature kLoadingPredictorUseLocalPredictions{
+    "LoadingPredictorUseLocalPredictions", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Modifies loading predictor so that it only learns about subresources and
 // origins that are high priority.
 const base::Feature kLoadingOnlyLearnHighPriorityResources{
@@ -30,5 +34,9 @@ const base::Feature kLoadingPredictorDisregardAlwaysAccessesNetwork{
 // the optimization guide.
 const base::Feature kLoadingPredictorUseOptimizationGuide{
     "LoadingPredictorUseOptimizationGuide", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool ShouldUseLocalPredictions() {
+  return base::FeatureList::IsEnabled(kLoadingPredictorUseLocalPredictions);
+}
 
 }  // namespace features

@@ -118,6 +118,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
       int64_t database_id,
       int64_t blob_number,
       GetPathForBlobForTestingCallback callback) override;
+  void CompactBackingStoreForTesting(const url::Origin& origin,
+                                     base::OnceClosure callback) override;
 
   // TODO(enne): fix internal indexeddb callers to use ForceClose async instead.
   void ForceCloseSync(const url::Origin& origin,

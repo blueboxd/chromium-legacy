@@ -58,6 +58,9 @@ void OriginPolicyFetcher::FetchPolicy(mojom::URLLoaderFactory* factory) {
 
   FetchCallback done = base::BindOnce(&OriginPolicyFetcher::OnPolicyHasArrived,
                                       base::Unretained(this));
+  SimpleURLLoader::OnResponseStartedCallback check_content_type =
+      base::BindOnce(&OriginPolicyFetcher::OnResponseStarted,
+                     base::Unretained(this));
 
   // Create and configure the SimpleURLLoader for the policy.
   std::unique_ptr<ResourceRequest> policy_request =
@@ -70,9 +73,32 @@ void OriginPolicyFetcher::FetchPolicy(mojom::URLLoaderFactory* factory) {
   url_loader_ =
       SimpleURLLoader::Create(std::move(policy_request), traffic_annotation);
 
+  url_loader_->SetOnResponseStartedCallback(std::move(check_content_type));
   // Start the download, and pass the callback for when we're finished.
   url_loader_->DownloadToString(factory, std::move(done),
                                 kOriginPolicyMaxPolicySize);
+}
+
+void OriginPolicyFetcher::OnResponseStarted(
+    const GURL& final_url,
+    const mojom::URLResponseHead& response_head) {
+  std::string mime_type;
+  // If the manifest's return code isn't success (2xx) or if the manifest's
+  // mimetype is incorrect, reject it and return with kNoPolicyApplies.
+  if (!response_head.headers ||
+      response_head.headers->response_code() / 100 != 2 ||
+      (response_head.headers->GetMimeType(&mime_type) &&
+       mime_type != "application/originpolicy+json")) {
+    // The manifest file returned with incorrect content-type, or unsuccessful
+    // return code, so bail out.
+    OriginPolicy result;
+    result.state = OriginPolicyState::kNoPolicyApplies;
+    // Do not add code after this call as it will destroy this object.
+    // When |this| is destroyed, |url_loader_| will be release, so when this
+    // callback returns the SimpleURLLoader will bail out gracefully.
+    // This also means that OnPolicyHasArrived() below will not be called.
+    owner_policy_manager_->FetcherDone(this, result, std::move(callback_));
+  }
 }
 
 void OriginPolicyFetcher::OnPolicyHasArrived(

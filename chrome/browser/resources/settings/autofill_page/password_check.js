@@ -164,5 +164,80 @@ Polymer({
 
     // TODO(crbug.com/1047726) Implement dialog.
   },
+
+  /**
+   * Returns the icon (warning, info or error) indicating the check status.
+   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
+   * @param {!Array<!PasswordManagerProxy.CompromisedCredential>}
+   *     leakedPasswords
+   * @return {!string}
+   * @private
+   */
+  getStatusIcon_(status, leakedPasswords) {
+    if (!this.hasLeaksOrErrors_(status, leakedPasswords)) {
+      return 'cr:check';
+    }
+    if (this.hasLeakedCredentials_(leakedPasswords)) {
+      return 'cr:warning';
+    }
+    return 'cr:info';
+  },
+
+  /**
+   * Returns the CSS class used to style the icon (warning, info or error).
+   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
+   * @param {!Array<!PasswordManagerProxy.CompromisedCredential>}
+   *     leakedPasswords
+   * @return {!string}
+   * @private
+   */
+  getStatusIconClass_(status, leakedPasswords) {
+    if (!this.hasLeaksOrErrors_(status, leakedPasswords)) {
+      return 'no-leaks';
+    }
+    if (this.hasLeakedCredentials_(leakedPasswords)) {
+      return 'has-leaks';
+    }
+    return '';
+  },
+
+  /**
+   * Returns true iff a check is running right according to the given |status|.
+   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
+   * @return {boolean}
+   * @private
+   */
+  isCheckInProgress_(status) {
+    return status.state == CheckState.RUNNING;
+  },
+
+  /**
+   * Returns true if there are leaked credentials or the status is unexpected
+   * for a regular password check.
+   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
+   * @param {!Array<PasswordManagerProxy.CompromisedCredential>}
+   *     leakedPasswords
+   * @return {boolean}
+   * @private
+   */
+  hasLeaksOrErrors_(status, leakedPasswords) {
+    if (this.hasLeakedCredentials_(leakedPasswords)) {
+      return true;
+    }
+    switch (status.state) {
+      case CheckState.IDLE:
+      case CheckState.RUNNING:
+        return false;
+      case CheckState.CANCELED:
+      case CheckState.OFFLINE:
+      case CheckState.SIGNED_OUT:
+      case CheckState.NO_PASSWORDS:
+      case CheckState.TOO_MANY_PASSWORDS:
+      case CheckState.QUOTA_LIMIT:
+      case CheckState.OTHER_ERROR:
+        return true;
+    }
+    throw 'Not specified whether to state is an error: ' + status.state;
+  },
 });
 })();

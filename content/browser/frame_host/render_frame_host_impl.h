@@ -642,6 +642,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return is_waiting_for_beforeunload_completion_;
   }
 
+  // True if more than |beforeunload_timeout_delay_| has elapsed since starting
+  // beforeunload. This may be true before |beforeunload_timeout_| actually
+  // fires, as the task can be delayed by task scheduling. See crbug.com/1056257
+  bool BeforeUnloadTimedOut() const;
+
   // Whether the RFH is waiting for an unload ACK from the renderer.
   bool IsWaitingForUnloadACK() const;
 

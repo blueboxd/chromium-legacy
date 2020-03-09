@@ -81,8 +81,7 @@ FakeBluetoothAdapterClient::FakeBluetoothAdapterClient()
       unpause_count_(0),
       set_discovery_filter_should_fail_(false),
       simulation_interval_ms_(kSimulationIntervalMs),
-      last_handle_(0),
-      set_long_term_keys_call_count_(0) {
+      last_handle_(0) {
   properties_.reset(new Properties(base::Bind(
       &FakeBluetoothAdapterClient::OnPropertyChanged, base::Unretained(this))));
 
@@ -301,13 +300,6 @@ void FakeBluetoothAdapterClient::RemoveServiceRecord(
   }
   records_.erase(it);
   std::move(callback).Run();
-}
-
-void FakeBluetoothAdapterClient::SetLongTermKeys(
-    const dbus::ObjectPath& object_path,
-    const std::vector<std::vector<uint8_t>>& long_term_keys,
-    ErrorCallback error_callback) {
-  set_long_term_keys_call_count_++;
 }
 
 void FakeBluetoothAdapterClient::SetSimulationIntervalMs(int interval_ms) {

@@ -443,33 +443,6 @@ EGLDisplay GetDisplayFromType(
   }
 }
 
-ANGLEImplementation GetANGLEImplementationFromDisplayType(
-    DisplayType display_type) {
-  switch (display_type) {
-    case ANGLE_D3D9:
-      return ANGLEImplementation::kD3D9;
-    case ANGLE_D3D11:
-    case ANGLE_D3D11_NULL:
-    case ANGLE_D3D11on12:
-      return ANGLEImplementation::kD3D11;
-    case ANGLE_OPENGL:
-    case ANGLE_OPENGL_NULL:
-      return ANGLEImplementation::kOpenGL;
-    case ANGLE_OPENGLES:
-    case ANGLE_OPENGLES_NULL:
-      return ANGLEImplementation::kOpenGLES;
-    case ANGLE_NULL:
-      return ANGLEImplementation::kNull;
-    case ANGLE_VULKAN:
-    case ANGLE_VULKAN_NULL:
-      return ANGLEImplementation::kVulkan;
-    case ANGLE_SWIFTSHADER:
-      return ANGLEImplementation::kSwiftShader;
-    default:
-      return ANGLEImplementation::kNone;
-  }
-}
-
 const char* DisplayTypeString(DisplayType display_type) {
   switch (display_type) {
     case DEFAULT:
@@ -1134,10 +1107,6 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
         client_extensions, "EGL_ANGLE_platform_angle_device_type_swiftshader");
   }
 
-  bool supports_angle = supports_angle_d3d || supports_angle_opengl ||
-                        supports_angle_null || supports_angle_vulkan ||
-                        supports_angle_swiftshader;
-
   if (client_extensions) {
     g_egl_angle_feature_control_supported =
         ExtensionsContain(client_extensions, "EGL_ANGLE_feature_control");
@@ -1170,13 +1139,10 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
     }
 
     // Init ANGLE platform now that we have the global display.
-    if (supports_angle) {
+    if (supports_angle_d3d || supports_angle_opengl || supports_angle_null) {
       if (!angle::InitializePlatform(display)) {
         LOG(ERROR) << "ANGLE Platform initialization failed.";
       }
-
-      SetANGLEImplementation(
-          GetANGLEImplementationFromDisplayType(display_type));
     }
 
     if (!eglInitialize(display, nullptr, nullptr)) {

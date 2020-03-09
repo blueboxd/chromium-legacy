@@ -38,6 +38,9 @@
         <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_JS" file="resources\chromeos\login\custom_elements_login.js" compress="gzip" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_ASSISTANT_OPTIN_HTML" file="resources\chromeos\assistant_optin\assistant_optin.html" compress="gzip" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <structure name="IDR_ASSISTANT_OPTIN_JS" file="resources\chromeos\assistant_optin\assistant_optin.js" compress="gzip" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+
+        <!-- Marketing Opt In animation. -->
+        <structure name="IDR_MARKETING_OPT_IN_ALL_SET_ANIMATION" file="resources\chromeos\login\images\all_set.json" compress="gzip" type="chrome_html" />
       </if>
     </structures>
     <includes>

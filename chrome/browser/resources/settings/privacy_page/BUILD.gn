@@ -182,6 +182,7 @@ js_library("security_page") {
     "../people_page:sync_browser_proxy",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 

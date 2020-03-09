@@ -45,12 +45,10 @@ const std::initializer_list<base::StringPiece> kUpdatingDialogPath = {
     "oobe-update-md", "checking-downloading-update", "updating-dialog"};
 const std::initializer_list<base::StringPiece> kUpdatingProgressPath = {
     "oobe-update-md", "checking-downloading-update", "updating-progress"};
-const std::initializer_list<base::StringPiece> kEstimatedTimeLeftPath = {
-    "oobe-update-md", "checking-downloading-update", "estimated-time-left"};
 const std::initializer_list<base::StringPiece> kProgressMessagePath = {
     "oobe-update-md", "checking-downloading-update", "progress-message"};
-const std::initializer_list<base::StringPiece> kUpdateCompletedMessagePath = {
-    "oobe-update-md", "checking-downloading-update", "update-complete-msg"};
+const std::initializer_list<base::StringPiece> kUpdateCompletedDialog = {
+    "oobe-update-md", "checking-downloading-update", "update-complete-dialog"};
 const std::initializer_list<base::StringPiece> kCellularPermissionDialog = {
     "oobe-update-md", "cellular-permission-dialog"};
 
@@ -93,14 +91,8 @@ class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
 
   void CheckPathVisiblity(std::initializer_list<base::StringPiece> element_ids,
                           bool visibility);
-  void CheckUpdatingDialogComponents(
-      const bool updating_progress_visibility,
-      const int updating_progress_value,
-      const bool estimated_time_left_visiblity,
-      const std::string& estimated_time_left_value,
-      const bool progress_message_visiblity,
-      const std::string& progress_message_value,
-      const bool update_completed_visibility);
+  void CheckUpdatingDialogComponents(const int updating_progress_value,
+                                     const std::string& progress_message_value);
 
   // InProcessBrowserTest:
   void SetUpInProcessBrowserTestFixture() override {
@@ -185,30 +177,14 @@ void UpdateScreenTest::CheckPathVisiblity(
 }
 
 void UpdateScreenTest::CheckUpdatingDialogComponents(
-    const bool updating_progress_visibility,
     const int updating_progress_value,
-    const bool estimated_time_left_visiblity,
-    const std::string& estimated_time_left_value,
-    const bool progress_message_visiblity,
-    const std::string& progress_message_value,
-    const bool update_completed_visibility) {
-  CheckPathVisiblity(kUpdatingProgressPath, updating_progress_visibility);
-  CheckPathVisiblity(kEstimatedTimeLeftPath, estimated_time_left_visiblity);
-  CheckPathVisiblity(kProgressMessagePath, progress_message_visiblity);
-  CheckPathVisiblity(kUpdateCompletedMessagePath, update_completed_visibility);
-  if (updating_progress_visibility) {
-    test::OobeJS().ExpectEQ(
-        test::GetOobeElementPath(kUpdatingProgressPath) + ".value",
-        updating_progress_value);
-  }
-  if (estimated_time_left_visiblity) {
-    test::OobeJS().ExpectElementText(estimated_time_left_value,
-                                     kEstimatedTimeLeftPath);
-  }
-  if (progress_message_visiblity) {
-    test::OobeJS().ExpectElementText(progress_message_value,
-                                     kProgressMessagePath);
-  }
+    const std::string& progress_message_value) {
+  CheckPathVisiblity(kUpdatingDialogPath, true);
+  test::OobeJS().ExpectEQ(
+      test::GetOobeElementPath(kUpdatingProgressPath) + ".value",
+      updating_progress_value);
+  test::OobeJS().ExpectElementText(progress_message_value,
+                                   kProgressMessagePath);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateCheckDoneBeforeShow) {
@@ -280,10 +256,6 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateNotFoundAfterScreenShow) {
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
-  bool progress_visible = false;
-  bool estimated_time_visible = false;
-  bool progress_message_visible = false;
-  bool update_completed = false;
 
   update_screen_->set_ignore_update_deadlines_for_testing(true);
   update_screen_->Show();
@@ -291,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
   status.set_new_version("latest and greatest");
-  status.set_new_size(1000000000);
+  status.set_new_size(1'000'000'000);
   fake_update_engine_client_->set_default_status(status);
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
 
@@ -305,6 +277,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   test::OobeJS().ExpectVisiblePath(kCheckingForUpdatesDialogPath);
   test::OobeJS().ExpectHiddenPath(kUpdatingDialogPath);
   test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
+  test::OobeJS().ExpectHiddenPath(kUpdateCompletedDialog);
 
   status.set_current_operation(update_engine::Operation::UPDATE_AVAILABLE);
   status.set_progress(0.0);
@@ -319,25 +292,19 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   test::OobeJS().CreateVisibilityWaiter(true, kUpdatingDialogPath)->Wait();
   test::OobeJS().ExpectHiddenPath(kCheckingForUpdatesDialogPath);
   test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
+  test::OobeJS().ExpectHiddenPath(kUpdateCompletedDialog);
 
-  progress_visible = true;
-  progress_message_visible = true;
   CheckUpdatingDialogComponents(
-      progress_visible, kUpdateCheckProgress, estimated_time_visible, "",
-      progress_message_visible, l10n_util::GetStringUTF8(IDS_INSTALLING_UPDATE),
-      update_completed);
+      kUpdateCheckProgress, l10n_util::GetStringUTF8(IDS_INSTALLING_UPDATE));
 
   tick_clock_.Advance(kTimeAdvanceSeconds60);
   status.set_progress(0.01);
   fake_update_engine_client_->set_default_status(status);
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
 
-  estimated_time_visible = true;
-  progress_message_visible = false;
   CheckUpdatingDialogComponents(
-      progress_visible, kUpdateCheckProgress, estimated_time_visible,
-      GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_LONG),
-      progress_message_visible, "", update_completed);
+      kUpdateCheckProgress,
+      GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_LONG));
 
   tick_clock_.Advance(kTimeAdvanceSeconds60);
   status.set_progress(0.08);
@@ -345,9 +312,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(
-      progress_visible, GetDownloadingProgress(0.08), estimated_time_visible,
-      GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_STATUS_ONE_HOUR),
-      progress_message_visible, "", update_completed);
+      GetDownloadingProgress(0.08),
+      GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_STATUS_ONE_HOUR));
 
   tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_progress(0.7);
@@ -355,9 +321,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(
-      progress_visible, GetDownloadingProgress(0.7), estimated_time_visible,
-      GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_SMALL),
-      progress_message_visible, "", update_completed);
+      GetDownloadingProgress(0.7),
+      GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_SMALL));
 
   tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_progress(0.9);
@@ -365,9 +330,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(
-      progress_visible, GetDownloadingProgress(0.9), estimated_time_visible,
-      GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_SMALL),
-      progress_message_visible, "", update_completed);
+      GetDownloadingProgress(0.9),
+      GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_SMALL));
 
   tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_current_operation(update_engine::Operation::VERIFYING);
@@ -375,12 +339,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   fake_update_engine_client_->set_default_status(status);
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
 
-  estimated_time_visible = false;
-  progress_message_visible = true;
-  CheckUpdatingDialogComponents(
-      progress_visible, kVerifyingProgress, estimated_time_visible, "",
-      progress_message_visible, l10n_util::GetStringUTF8(IDS_UPDATE_VERIFYING),
-      update_completed);
+  CheckUpdatingDialogComponents(kVerifyingProgress,
+                                l10n_util::GetStringUTF8(IDS_UPDATE_VERIFYING));
 
   tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_current_operation(update_engine::Operation::FINALIZING);
@@ -388,9 +348,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(
-      progress_visible, kFinalizingProgress, estimated_time_visible, "",
-      progress_message_visible, l10n_util::GetStringUTF8(IDS_UPDATE_FINALIZING),
-      update_completed);
+      kFinalizingProgress, l10n_util::GetStringUTF8(IDS_UPDATE_FINALIZING));
 
   tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
@@ -398,9 +356,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
 
   CheckUpdatingDialogComponents(
-      progress_visible, kUpdateCompleteProgress, estimated_time_visible, "",
-      progress_message_visible, l10n_util::GetStringUTF8(IDS_UPDATE_FINALIZING),
-      update_completed);
+      kUpdateCompleteProgress, l10n_util::GetStringUTF8(IDS_UPDATE_FINALIZING));
 
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
   EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
@@ -409,11 +365,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   ASSERT_TRUE(version_updater_->GetRebootTimerForTesting()->IsRunning());
   version_updater_->GetRebootTimerForTesting()->FireNow();
 
-  progress_visible = false;
-  progress_message_visible = false;
-  update_completed = true;
-  CheckUpdatingDialogComponents(progress_visible, 0, estimated_time_visible, "",
-                                progress_message_visible, "", update_completed);
+  test::OobeJS().ExpectHiddenPath(kUpdatingDialogPath);
+  test::OobeJS().ExpectVisiblePath(kUpdateCompletedDialog);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {

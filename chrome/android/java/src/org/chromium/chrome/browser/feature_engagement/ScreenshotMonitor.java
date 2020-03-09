@@ -12,9 +12,9 @@ import android.net.Uri;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.Media;
-import android.support.v4.content.ContextCompat;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.content.ContextCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;

@@ -24,6 +24,7 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
       return !base::FeatureList::IsEnabled(
           service_manager::features::kXRSandbox);
     case SandboxType::kProxyResolver:
+    case SandboxType::kPdfConversion:
       return false;
 #endif
     case SandboxType::kAudio:
@@ -93,6 +94,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
 #if defined(OS_WIN)
     case SandboxType::kXrCompositing:
     case SandboxType::kProxyResolver:
+    case SandboxType::kPdfConversion:
 #endif  // defined(OS_WIN)
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
@@ -180,6 +182,8 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
       return switches::kXrCompositingSandbox;
     case SandboxType::kProxyResolver:
       return switches::kProxyResolverSandbox;
+    case SandboxType::kPdfConversion:
+      return switches::kPdfConversionSandbox;
 #endif  // defined(OS_WIN)
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
@@ -226,6 +230,8 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
     return SandboxType::kXrCompositing;
   if (sandbox_string == switches::kProxyResolverSandbox)
     return SandboxType::kProxyResolver;
+  if (sandbox_string == switches::kPdfConversionSandbox)
+    return SandboxType::kPdfConversion;
 #endif
   if (sandbox_string == switches::kAudioSandbox)
     return SandboxType::kAudio;

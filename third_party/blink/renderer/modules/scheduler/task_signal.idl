@@ -10,4 +10,5 @@
     RuntimeEnabled=WebScheduler
 ] interface TaskSignal : AbortSignal {
   [MeasureAs=TaskSignalPriority] readonly attribute TaskPriority priority;
+    attribute EventHandler onprioritychange;
 };

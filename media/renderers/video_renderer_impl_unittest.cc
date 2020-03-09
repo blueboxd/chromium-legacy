@@ -222,10 +222,11 @@ class VideoRendererImplTest : public testing::Test {
     SCOPED_TRACE(base::StringPrintf("WaitForError(%d)", expected));
 
     WaitableMessageLoopEvent event;
-    PipelineStatusCB error_cb = event.GetPipelineStatusCB();
+    PipelineStatusCallback error_cb = event.GetPipelineStatusCB();
     EXPECT_CALL(mock_cb_, OnError(_))
-        .WillOnce(Invoke(
-            [error_cb](PipelineStatus status) { error_cb.Run(status); }));
+        .WillOnce(Invoke([cb = &error_cb](PipelineStatus status) {
+          std::move(*cb).Run(status);
+        }));
     event.RunAndWaitForStatus(expected);
   }
 

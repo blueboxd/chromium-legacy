@@ -268,7 +268,14 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryWebUILoginTest,
 }
 
 // Tests that autocomplete works. Submits username without domain.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginAutocompleteTest, LoginSuccess) {
+// TODO(1031545): Flaky under MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_LoginSuccess DISABLED_LoginSuccess
+#else
+#define MAYBE_LoginSuccess LoginSuccess
+#endif
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginAutocompleteTest,
+                       MAYBE_LoginSuccess) {
   OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
   ad_login_.TestNoError();

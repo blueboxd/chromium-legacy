@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.device_dialog;
 import android.app.Dialog;
 import android.graphics.drawable.Drawable;
 import android.support.test.filters.LargeTest;
-import android.support.v4.util.ObjectsCompat;
 import android.text.SpannableString;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.core.util.ObjectsCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.junit.Assert;

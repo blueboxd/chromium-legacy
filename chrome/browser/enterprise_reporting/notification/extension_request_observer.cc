@@ -18,6 +18,11 @@ ExtensionRequestObserver::ExtensionRequestObserver(Profile* profile)
   extensions::ExtensionManagementFactory::GetForBrowserContext(profile_)
       ->AddObserver(this);
   OnExtensionManagementSettingsChanged();
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kCloudExtensionRequestIds,
+      base::BindRepeating(&ExtensionRequestObserver::OnPendingListChanged,
+                          weak_factory_.GetWeakPtr()));
 }
 
 ExtensionRequestObserver::~ExtensionRequestObserver() {
@@ -30,6 +35,21 @@ ExtensionRequestObserver::~ExtensionRequestObserver() {
 }
 
 void ExtensionRequestObserver::OnExtensionManagementSettingsChanged() {
+  ShowAllNotifications();
+}
+
+void ExtensionRequestObserver::OnPendingListChanged() {
+  // The pending list is updated when user confirm the notification and requests
+  // are removed from the list. There is no need to show new notification at
+  // this point.
+  if (closing_notification_and_deleting_requests_) {
+    closing_notification_and_deleting_requests_ = false;
+    return;
+  }
+  ShowAllNotifications();
+}
+
+void ExtensionRequestObserver::ShowAllNotifications() {
   if (!profile_->GetPrefs()->GetBoolean(prefs::kCloudExtensionRequestEnabled)) {
     CloseAllNotifications();
     return;
@@ -112,6 +132,8 @@ void ExtensionRequestObserver::RemoveExtensionsFromPendingList(
       prefs::kCloudExtensionRequestIds);
   for (auto& id : extension_ids)
     pending_requests_update->RemoveKey(id);
+
+  closing_notification_and_deleting_requests_ = true;
 }
 
 }  // namespace enterprise_reporting

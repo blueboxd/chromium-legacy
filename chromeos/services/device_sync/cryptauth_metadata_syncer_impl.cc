@@ -17,6 +17,7 @@
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
 #include "chromeos/services/device_sync/cryptauth_task_metrics_logger.h"
 #include "chromeos/services/device_sync/pref_names.h"
+#include "chromeos/services/device_sync/proto/cryptauth_logging.h"
 #include "chromeos/services/device_sync/value_string_encoding.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -296,8 +297,11 @@ CryptAuthMetadataSyncerImpl::GetGroupPublicKeyState() {
 
 void CryptAuthMetadataSyncerImpl::AttemptNextStep() {
   switch (state_) {
-    case State::kNotStarted:
-      switch (GetGroupPublicKeyState()) {
+    // Start the flow.
+    case State::kNotStarted: {
+      GroupPublicKeyState group_public_key_state = GetGroupPublicKeyState();
+      PA_LOG(VERBOSE) << "Group public key state: " << group_public_key_state;
+      switch (group_public_key_state) {
         case GroupPublicKeyState::kNewKeyNeedsToBeCreated:
           CreateGroupKey();
           return;
@@ -308,17 +312,25 @@ void CryptAuthMetadataSyncerImpl::AttemptNextStep() {
           NOTREACHED();
           return;
       }
+    }
 
+    // After group key creation, encrypt the local device metadata.
     case State::kWaitingForGroupKeyCreation:
       EncryptLocalDeviceMetadata();
       return;
 
+    // After local device metadata is encrypted, start constructing the
+    // SyncMetadata call.
     case State::kWaitingForLocalDeviceMetadataEncryption:
       MakeSyncMetadataCall();
       return;
 
-    case State::kWaitingForFirstSyncMetadataResponse:
-      switch (GetGroupPublicKeyState()) {
+    // After receiving the first SyncMetadata response, take further action
+    // based on the state of the group public key.
+    case State::kWaitingForFirstSyncMetadataResponse: {
+      GroupPublicKeyState group_public_key_state = GetGroupPublicKeyState();
+      PA_LOG(VERBOSE) << "Group public key state: " << group_public_key_state;
+      switch (group_public_key_state) {
         case GroupPublicKeyState::kNewKeyNeedsToBeCreated:
           CreateGroupKey();
           return;
@@ -336,11 +348,16 @@ void CryptAuthMetadataSyncerImpl::AttemptNextStep() {
           NOTREACHED();
           return;
       }
+    }
 
-    case State::kWaitingForSecondSyncMetadataResponse:
-      // No more than two SyncMetadata requests should be necessary in the v2
-      // DeviceSync protocol to establish the group public key.
-      switch (GetGroupPublicKeyState()) {
+    // After receiving the second SyncMetadata response, process the metadata
+    // and finish. Note: In the v2 DeviceSync protocol, no more than two
+    // SyncMetadata requests should be necessary to establish the group public
+    // key.
+    case State::kWaitingForSecondSyncMetadataResponse: {
+      GroupPublicKeyState group_public_key_state = GetGroupPublicKeyState();
+      PA_LOG(VERBOSE) << "Group public key state: " << group_public_key_state;
+      switch (group_public_key_state) {
         case GroupPublicKeyState::kEstablished:
           FilterMetadataAndFinishAttempt();
           return;
@@ -349,7 +366,9 @@ void CryptAuthMetadataSyncerImpl::AttemptNextStep() {
                             kErrorEstablishingGroupPublicKey);
           return;
       }
+    }
 
+    // Each CryptAuthMetadataSyncer object can only be used once.
     case State::kFinished:
       NOTREACHED();
       return;
@@ -504,6 +523,8 @@ void CryptAuthMetadataSyncerImpl::OnSyncMetadataSuccess(
                                     CryptAuthApiCallResult::kSuccess);
   else
     NOTREACHED();
+
+  PA_LOG(VERBOSE) << "SyncMetadata response:\n" << response;
 
   // Cache encrypted and unencrypted local device metadata, along with the group
   // public key used to encrypt the data, that was successfully sent in the
@@ -662,6 +683,33 @@ std::ostream& operator<<(std::ostream& stream,
       break;
     case CryptAuthMetadataSyncerImpl::State::kFinished:
       stream << "[MetadataSyncer state: Finished]";
+      break;
+  }
+
+  return stream;
+}
+
+std::ostream& operator<<(
+    std::ostream& stream,
+    const CryptAuthMetadataSyncerImpl::GroupPublicKeyState& key_state) {
+  switch (key_state) {
+    case CryptAuthMetadataSyncerImpl::GroupPublicKeyState::kUndetermined:
+      stream << "[Undetermined]";
+      break;
+    case CryptAuthMetadataSyncerImpl::GroupPublicKeyState::
+        kKeyExistsButNotConfirmedWithCryptAuth:
+      stream << "[Key exists but not confirmed with CryptAuth]";
+      break;
+    case CryptAuthMetadataSyncerImpl::GroupPublicKeyState::
+        kNewKeyNeedsToBeCreated:
+      stream << "[New key needs to be created]";
+      break;
+    case CryptAuthMetadataSyncerImpl::GroupPublicKeyState::
+        kNewKeyReceivedFromCryptAuth:
+      stream << "[New key received from CryptAuth]";
+      break;
+    case CryptAuthMetadataSyncerImpl::GroupPublicKeyState::kEstablished:
+      stream << "[Established]";
       break;
   }
 

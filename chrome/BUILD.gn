@@ -889,7 +889,6 @@ if (is_win) {
       sources = [
         "$root_out_dir/egl_intermediates/libEGL.dylib",
         "$root_out_dir/egl_intermediates/libGLESv2.dylib",
-        "$root_out_dir/egl_intermediates/libvulkan.dylib",
       ]
       outputs = [ "{{bundle_contents_dir}}/Libraries/{{source_file_part}}" ]
       public_deps = [ "//ui/gl:angle_library_copy" ]
@@ -900,14 +899,9 @@ if (is_win) {
       sources = [
         "$root_out_dir/egl_intermediates/libswiftshader_libEGL.dylib",
         "$root_out_dir/egl_intermediates/libswiftshader_libGLESv2.dylib",
-        "$root_out_dir/vk_intermediates/libvk_swiftshader.dylib",
-        "$root_out_dir/vk_intermediates/vk_swiftshader_icd.json",
       ]
       outputs = [ "{{bundle_contents_dir}}/Libraries/{{source_file_part}}" ]
-      public_deps = [
-        "//ui/gl:swiftshader_egl_library_copy",
-        "//ui/gl:swiftshader_vk_library_copy",
-      ]
+      public_deps = [ "//ui/gl:swiftshader_library_copy" ]
     }
   }
 
@@ -1165,7 +1159,6 @@ if (is_win) {
       "$root_out_dir/chrome_crashpad_handler",
       "$root_out_dir/libswiftshader_libEGL.dylib",
       "$root_out_dir/libswiftshader_libGLESv2.dylib",
-      "$root_out_dir/libvk_swiftshader.dylib",
       _framework_binary_path,
     ]
 
@@ -1220,7 +1213,6 @@ if (is_win) {
         "$root_out_dir/chrome_crashpad_handler.dSYM",
         "$root_out_dir/libswiftshader_libEGL.dylib.dSYM",
         "$root_out_dir/libswiftshader_libGLESv2.dylib.dSYM",
-        "$root_out_dir/libvk_swiftshader.dylib.dSYM",
       ]
 
       deps = [
@@ -1647,12 +1639,10 @@ if (is_linux) {
       deps = [
         ":angle_egl_symbols",
         ":angle_gles_symbols",
-        ":angle_vulkan_symbols",
         ":chrome_symbols",
         ":crashpad_symbols",
         ":swiftshader_egl_symbols",
         ":swiftshader_gles_symbols",
-        ":swiftshader_vulkan_symbols",
       ]
     }
     extract_symbols("chrome_symbols") {
@@ -1706,19 +1696,6 @@ if (is_linux) {
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]
     }
-    extract_symbols("swiftshader_vulkan_symbols") {
-      binary = "$root_out_dir/libvk_swiftshader.so"
-
-      if (current_cpu == "x86") {
-        # GYP used "ia32" so keep that naming for back-compat.
-        symbol_file = "$root_out_dir/swiftshader_libvulkan.breakpad.ia32"
-      } else {
-        symbol_file =
-            "$root_out_dir/swiftshader_libvulkan.breakpad.$current_cpu"
-      }
-
-      deps = [ "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan" ]
-    }
     extract_symbols("angle_egl_symbols") {
       binary = "$root_out_dir/libEGL.so"
 
@@ -1742,18 +1719,6 @@ if (is_linux) {
       }
 
       deps = [ "//third_party/angle:libGLESv2" ]
-    }
-    extract_symbols("angle_vulkan_symbols") {
-      binary = "$root_out_dir/libvulkan.so"
-
-      if (current_cpu == "x86") {
-        # GYP used "ia32" so keep that naming for back-compat.
-        symbol_file = "$root_out_dir/angle_libvulkan.breakpad.ia32"
-      } else {
-        symbol_file = "$root_out_dir/angle_libvulkan.breakpad.$current_cpu"
-      }
-
-      deps = [ "//third_party/angle/third_party/vulkan-headers/src:libvulkan" ]
     }
   }
 

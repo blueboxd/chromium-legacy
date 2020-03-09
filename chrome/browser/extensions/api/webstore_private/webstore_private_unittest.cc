@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/util/values/values_util.h"
@@ -19,6 +20,7 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/extension_builder.h"
 
 namespace extensions {
@@ -30,6 +32,18 @@ constexpr char kExtensionManifest[] = R"({
   \"name\" : \"Extension\",
   \"manifest_version\": 3,
   \"version\": \"0.1\"})";
+
+constexpr char kAllowedExtensionSettings[] = R"({
+  "abcdefghijklmnopabcdefghijklmnop" : {
+    "installation_mode": "allowed"
+  }
+})";
+
+constexpr char kBlockedExtensionSettings[] = R"({
+  "abcdefghijklmnopabcdefghijklmnop" : {
+    "installation_mode": "blocked"
+  }
+})";
 
 constexpr char kWebstoreUserCancelledError[] = "User cancelled install";
 
@@ -50,6 +64,16 @@ void VerifyPendingList(
               *actual_pending_requests->FindKey(expected_request.first)
                    ->FindKey(extension_misc::kExtensionRequestTimestamp));
   }
+}
+
+void SetExtensionSettings(const std::string& settings_string,
+                          TestingProfile* profile) {
+  base::Optional<base::Value> settings =
+      base::JSONReader::Read(settings_string);
+  ASSERT_TRUE(settings.has_value());
+  profile->GetTestingPrefService()->SetManagedPref(
+      pref_names::kExtensionManagement,
+      base::Value::ToUniquePtrValue(std::move(*settings)));
 }
 
 }  // namespace
@@ -149,6 +173,29 @@ TEST_F(WebstorePrivateRequestExtensionTest, UnrequestableExtension) {
   VerifyResponse(ExtensionInstallStatus::EXTENSION_INSTALL_STATUS_ENABLED,
                  response.get());
   VerifyPendingList({}, profile());
+}
+
+TEST_F(WebstorePrivateRequestExtensionTest, AlreadyApprovedExtension) {
+  SetExtensionSettings(kAllowedExtensionSettings, profile());
+  auto function =
+      base::MakeRefCounted<WebstorePrivateRequestExtensionFunction>();
+  std::unique_ptr<base::Value> response =
+      RunFunctionAndReturnValue(function.get(), GenerateArgs(kExtensionId));
+  VerifyResponse(ExtensionInstallStatus::EXTENSION_INSTALL_STATUS_INSTALLABLE,
+                 response.get());
+  VerifyPendingList({{kExtensionId, base::Time::Now()}}, profile());
+}
+
+TEST_F(WebstorePrivateRequestExtensionTest, AlreadyRejectedExtension) {
+  SetExtensionSettings(kBlockedExtensionSettings, profile());
+  auto function =
+      base::MakeRefCounted<WebstorePrivateRequestExtensionFunction>();
+  std::unique_ptr<base::Value> response =
+      RunFunctionAndReturnValue(function.get(), GenerateArgs(kExtensionId));
+  VerifyResponse(
+      ExtensionInstallStatus::EXTENSION_INSTALL_STATUS_BLOCKED_BY_POLICY,
+      response.get());
+  VerifyPendingList({{kExtensionId, base::Time::Now()}}, profile());
 }
 
 TEST_F(WebstorePrivateRequestExtensionTest, AlreadyPendingExtension) {

@@ -31,6 +31,7 @@ std::string AwDevToolsManagerDelegate::GetTargetDescription(
     return "";
   base::DictionaryValue description;
   description.SetBoolean("attached", bvr->attached_to_window());
+  description.SetBoolean("never_attached", !bvr->was_attached());
   description.SetBoolean("visible", bvr->IsVisible());
   gfx::Rect screen_rect = bvr->GetScreenRect();
   description.SetInteger("screenX", screen_rect.x());

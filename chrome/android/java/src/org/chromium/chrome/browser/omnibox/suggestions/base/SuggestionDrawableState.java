@@ -12,8 +12,9 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
-import android.support.v4.util.ObjectsCompat;
 import android.support.v7.content.res.AppCompatResources;
+
+import androidx.core.util.ObjectsCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 

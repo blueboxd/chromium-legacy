@@ -250,6 +250,7 @@ android_library("chrome_java") {
     "$google_play_services_package:google_play_services_vision_java",
     "//base:base_java",
     "//base:jni_java",
+    "//chrome/android/features/cablev2_authenticator:public_java",
     "//chrome/android/features/keyboard_accessory:public_java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library:piet_resources",
     "//chrome/android/modules/image_editor/provider:java",
@@ -520,6 +521,7 @@ generate_product_config_srcjar("chrome_product_config") {
 java_group("chrome_all_java") {
   deps = [
     ":chrome_java",
+    "//chrome/android/features/cablev2_authenticator:internal_java",
     "//chrome/android/features/keyboard_accessory:internal_java",
     "//chrome/android/features/media_router:java",
     "//chrome/android/features/test_dummy/internal:base_module_java",
@@ -555,6 +557,7 @@ group("jni_headers") {
   public_deps = [
     ":chrome_jni_headers",
     "//chrome/android/features/autofill_assistant:jni_headers",
+    "//chrome/android/features/cablev2_authenticator/internal:jni_headers",
     "//chrome/android/features/keyboard_accessory:jni_headers",
     "//chrome/android/features/media_router:jni_headers",
     "//chrome/android/public/profiles:jni_headers",
@@ -2773,7 +2776,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchBackgroundTask.java",
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchBackgroundTaskScheduler.java",
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchConfiguration.java",
-    "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchNotificationServiceBridge.java",
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchedPagesNotifier.java",
     "java/src/org/chromium/chrome/browser/omaha/notification/UpdateNotificationServiceBridge.java",
     "java/src/org/chromium/chrome/browser/omnibox/ChromeAutocompleteSchemeClassifier.java",

@@ -12,9 +12,10 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.provider.Browser;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.TextUtils;
 import android.widget.ImageView;
+
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.IntentUtils;

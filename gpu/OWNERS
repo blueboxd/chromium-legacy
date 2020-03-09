@@ -8,7 +8,6 @@ sunnyps@chromium.org
 penghuang@chromium.org
 
 # GPU memory buffer implementations.
-per-file *gpu_memory_buffer*=reveman@chromium.org
 per-file *gpu_memory_buffer*=dcastagna@chromium.org
 
 # Passthrough command decoder

@@ -381,18 +381,20 @@ TEST_P(WebmMuxerTest, VideoIsStoredWhileWaitingForAudio) {
 
   // Timestamp: 0 (video origin)
   webm_muxer_->OnEncodedVideo(GetVideoParameters(video_frame), encoded_video,
-                              std::string(), base::TimeTicks::Now(),
+                              std::string(), base::TimeTicks(),
                               true /* keyframe */);
 
   // Timestamp: video origin + X
-  webm_muxer_->OnEncodedVideo(GetVideoParameters(video_frame), encoded_video,
-                              std::string(), base::TimeTicks::Now(),
-                              false /* keyframe */);
+  webm_muxer_->OnEncodedVideo(
+      GetVideoParameters(video_frame), encoded_video, std::string(),
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1),
+      false /* keyframe */);
 
   // Timestamp: video origin + X + Y
-  webm_muxer_->OnEncodedVideo(GetVideoParameters(video_frame), encoded_video,
-                              std::string(), base::TimeTicks::Now(),
-                              false /* keyframe */);
+  webm_muxer_->OnEncodedVideo(
+      GetVideoParameters(video_frame), encoded_video, std::string(),
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(2),
+      false /* keyframe */);
 
   const int sample_rate = 48000;
   const int frames_per_buffer = 480;
@@ -415,8 +417,9 @@ TEST_P(WebmMuxerTest, VideoIsStoredWhileWaitingForAudio) {
       .Times(AnyNumber());
 
   // Timestamp: 0 (audio origin)
-  webm_muxer_->OnEncodedAudio(audio_params, encoded_audio,
-                              base::TimeTicks::Now());
+  webm_muxer_->OnEncodedAudio(
+      audio_params, encoded_audio,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(3));
   webm_muxer_.reset();
 }
 
@@ -606,6 +609,52 @@ TEST_F(WebmMuxerTestUnparametrized,
                                               base::TimeDelta::FromMilliseconds(
                                                   14))))  // 315 - 300 - 1
               ))))
+      .WillRepeatedly(Return(true));
+  EXPECT_TRUE(Parse());
+}
+
+TEST_F(WebmMuxerTestUnparametrized,
+       MuxerCompensatesForPausedTimeBeforeAudioVideo) {
+  const int sample_rate = 48000;
+  const int frames_per_buffer = 480;
+  media::AudioParameters audio_params(
+      media::AudioParameters::Format::AUDIO_PCM_LOW_LATENCY,
+      media::CHANNEL_LAYOUT_MONO, sample_rate, frames_per_buffer);
+  const std::string encoded("audio");
+  WebmMuxer::VideoParameters params(gfx::Size(1, 1), 0, media::kCodecVP8,
+                                    gfx::ColorSpace());
+  const std::string encoded_video("video");
+  webm_muxer_->Pause();
+  environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  webm_muxer_->Resume();
+  webm_muxer_->OnEncodedAudio(
+      audio_params, encoded,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(50));
+  webm_muxer_->OnEncodedVideo(
+      params, encoded_video, "",
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(65), true);
+  webm_muxer_->OnEncodedAudio(
+      audio_params, encoded,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(60));
+  // Add one more buffer to force WebMStreamParser to not hold back the above
+  // important one due to missing duration.
+  webm_muxer_->OnEncodedVideo(
+      params, encoded_video, "",
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(70), false);
+
+  EXPECT_CALL(
+      *this,
+      OnNewBuffers(UnorderedElementsAre(
+          Pair(1, ElementsAre(Pointee(Property(&DecoderBuffer::timestamp,
+                                               base::TimeDelta())),
+                              Pointee(Property(
+                                  &DecoderBuffer::timestamp,
+                                  base::TimeDelta::FromMilliseconds(15))))),
+          Pair(2, ElementsAre(Pointee(Property(&DecoderBuffer::timestamp,
+                                               base::TimeDelta())),
+                              Pointee(Property(
+                                  &DecoderBuffer::timestamp,
+                                  base::TimeDelta::FromMilliseconds(5))))))))
       .WillRepeatedly(Return(true));
   EXPECT_TRUE(Parse());
 }

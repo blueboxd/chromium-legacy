@@ -18,15 +18,16 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
-import android.support.v4.content.res.ResourcesCompat;
 import android.text.TextUtils;
 import android.view.View;
 
-import org.chromium.base.MathUtils;
+import androidx.core.content.res.ResourcesCompat;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.MathUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;

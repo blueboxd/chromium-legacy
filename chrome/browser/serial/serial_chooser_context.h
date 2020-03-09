@@ -28,7 +28,7 @@ namespace base {
 class Value;
 }
 
-class SerialChooserContext : public ChooserContextBase {
+class SerialChooserContext : public permissions::ChooserContextBase {
  public:
   explicit SerialChooserContext(Profile* profile);
   ~SerialChooserContext() override;

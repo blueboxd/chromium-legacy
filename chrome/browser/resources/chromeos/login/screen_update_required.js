@@ -87,23 +87,7 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
      * @param {number} seconds Time left in seconds.
      */
     setEstimatedTimeLeft(seconds) {
-      var minutes = Math.ceil(seconds / 60);
-      var message = '';
-      if (minutes > 60) {
-        message = loadTimeData.getString('downloadingTimeLeftLong');
-      } else if (minutes > 55) {
-        message = loadTimeData.getString('downloadingTimeLeftStatusOneHour');
-      } else if (minutes > 20) {
-        message = loadTimeData.getStringF(
-            'downloadingTimeLeftStatusMinutes', Math.ceil(minutes / 5) * 5);
-      } else if (minutes > 1) {
-        message = loadTimeData.getStringF(
-            'downloadingTimeLeftStatusMinutes', minutes);
-      } else {
-        message = loadTimeData.getString('downloadingTimeLeftSmall');
-      }
-      $('update-required-card').estimatedTimeLeft =
-          loadTimeData.getStringF('downloading', message);
+      $('update-required-card').estimatedTimeLeft = seconds;
     },
 
     /**

@@ -126,7 +126,6 @@ extern const base::Feature kUserMediaScreenCapturing;
 extern const base::Feature kVideoPersistence;
 extern const base::Feature kVrBrowsingFeedback;
 extern const base::Feature kWebApkAdaptiveIcon;
-extern const base::Feature kPrefetchNotificationSchedulingIntegration;
 
 }  // namespace android
 }  // namespace chrome

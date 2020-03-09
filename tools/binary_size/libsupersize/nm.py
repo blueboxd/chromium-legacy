@@ -17,6 +17,8 @@ RunNmOnIntermediates():
   offset information.
 """
 
+from __future__ import division
+
 import collections
 import subprocess
 

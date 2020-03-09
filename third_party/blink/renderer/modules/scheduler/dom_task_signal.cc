@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/modules/scheduler/dom_scheduler.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -43,6 +44,7 @@ void DOMTaskSignal::SignalPriorityChange(WebSchedulingPriority priority) {
   priority_ = priority;
   if (web_scheduling_task_queue_)
     web_scheduling_task_queue_->SetPriority(priority);
+  DispatchEvent(*Event::Create(event_type_names::kPrioritychange));
 }
 
 base::SingleThreadTaskRunner* DOMTaskSignal::GetTaskRunner() {

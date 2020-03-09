@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.infobar.translate;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
-import android.support.v4.content.ContextCompat;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +18,8 @@ import android.widget.ImageView;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.TranslateOptions;

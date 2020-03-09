@@ -39,9 +39,6 @@ if (optimize_webui) {
   grit("flattened_resources") {
     source = "downloads_resources.grd"
 
-    # The .grd contains references to generated files.
-    source_is_generated = true
-
     defines = chrome_grit_defines
     outputs = [
       "grit/downloads_resources.h",
@@ -147,7 +144,7 @@ js_library("toolbar") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":icons_module",
     ":item_module",
     ":manager_module",

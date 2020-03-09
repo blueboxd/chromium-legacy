@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.omnibox.suggestions.base;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.support.annotation.ColorRes;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.widget.ImageView;
+
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

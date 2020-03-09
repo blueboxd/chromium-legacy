@@ -53,6 +53,9 @@ Polymer({
   /** @override */
   ready() {
     this.initializeLoginScreen('MarketingOptInScreen', {resetAllowed: true});
+    this.$['marketingOptInOverviewDialog']
+        .querySelector('.marketing-animation')
+        .setPlay(true);
   },
 
   /**
@@ -60,6 +63,9 @@ Polymer({
    * @private
    */
   onAllSet_() {
+    this.$['marketingOptInOverviewDialog']
+        .querySelector('.marketing-animation')
+        .setPlay(false);
     chrome.send('login.MarketingOptInScreen.allSet', [
       this.$.playUpdatesOption.checked, this.$.chromebookUpdatesOption.checked
     ]);
@@ -99,6 +105,9 @@ Polymer({
    */
   onToggleAccessibilityPage_() {
     this.isAccessibilitySettingsShown_ = !this.isAccessibilitySettingsShown_;
+    this.$['marketingOptInOverviewDialog']
+        .querySelector('.marketing-animation')
+        .setPlay(!this.isAccessibilitySettingsShown_);
   },
 
   /**

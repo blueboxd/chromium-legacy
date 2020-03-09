@@ -6774,3 +6774,16 @@ crbug.com/1058244 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scr
 
 # Sheriff 2020-03-08
 crbug.com/1059645 [ Mac10.14 ] external/wpt/pointerevents/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
+
+# Sheriff 2020-03-09
+crbug.com/1059123 http/tests/origin_trials/webexposed/animationworklet-origin-trial-interfaces-worklet-scope.html [ Pass Failure ]
+crbug.com/1059123 virtual/omt-worker-fetch/http/tests/origin_trials/webexposed/animationworklet-origin-trial-interfaces-worklet-scope.html [ Pass Failure ]
+crbug.com/1059123 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/animationworklet-origin-trial-interfaces-worklet-scope.html [ Pass Failure ]
+
+# Temporarily disable to land https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/1981175
+crbug.com/1056384 third_party/blink/web_tests/http/tests/devtools/coverage/decorations-after-script-formatter.js [ Pass Failure ]
+crbug.com/1056384 third_party/blink/web_tests/http/tests/devtools/sources/debugger-ui/async-call-stack-url.js [ Pass Failure ]
+crbug.com/1056384 third_party/blink/web_tests/http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Pass Failure ]
+crbug.com/1056384 third_party/blink/web_tests/http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-2.js [ Pass Failure ]
+crbug.com/1056384 third_party/blink/web_tests/http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-3.js [ Pass Failure ]
+crbug.com/1056384 third_party/blink/web_tests/http/tests/devtools/sources/debugger-ui/script-formatter-search.js [ Pass Failure ]

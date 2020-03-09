@@ -132,6 +132,9 @@ class CreditCard : public AutofillDataModel {
   const std::string& server_id() const { return server_id_; }
   void set_server_id(const std::string& server_id) { server_id_ = server_id; }
 
+  const base::string16& nickname() const { return nickname_; }
+  void set_nickname(const base::string16& nickname) { nickname_ = nickname; }
+
   // For use in STL containers.
   void operator=(const CreditCard& credit_card);
 
@@ -325,6 +328,9 @@ class CreditCard : public AutofillDataModel {
 
   // Info of tokenizized credit card if available.
   sync_pb::CloudTokenData cloud_token_data_;
+
+  // The nickname of the card. May be empty when nickname is not set.
+  base::string16 nickname_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().

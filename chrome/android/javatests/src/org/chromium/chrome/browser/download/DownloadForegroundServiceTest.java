@@ -13,9 +13,9 @@ import static org.chromium.chrome.browser.download.DownloadSnackbarController.IN
 
 import android.app.Notification;
 import android.support.test.filters.SmallTest;
-import android.support.v4.app.ServiceCompat;
 
 import androidx.annotation.IntDef;
+import androidx.core.app.ServiceCompat;
 
 import org.junit.Before;
 import org.junit.Test;

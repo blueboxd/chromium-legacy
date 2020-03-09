@@ -1519,13 +1519,21 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
 }
 
 class LoadingPredictorBrowserTestWithOptimizationGuide
-    : public LoadingPredictorBrowserTest {
+    : public ::testing::WithParamInterface<bool>,
+      public LoadingPredictorBrowserTest {
  public:
   LoadingPredictorBrowserTestWithOptimizationGuide() {
     feature_list_.InitWithFeatures(
         {features::kLoadingPredictorUseOptimizationGuide,
          optimization_guide::features::kOptimizationHints},
         {});
+    if (GetParam()) {
+      local_predictions_feature_list_.InitAndEnableFeature(
+          features::kLoadingPredictorUseLocalPredictions);
+    } else {
+      local_predictions_feature_list_.InitAndDisableFeature(
+          features::kLoadingPredictorUseLocalPredictions);
+    }
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1565,12 +1573,19 @@ class LoadingPredictorBrowserTestWithOptimizationGuide
         optimization_guide::switches::kHintsProtoOverride, config_string);
   }
 
+  bool IsLocalPredictionEnabled() const { return GetParam(); }
+
  private:
   base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList local_predictions_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithOptimizationGuide,
-                       LocalPredictionTakesPrecedence) {
+INSTANTIATE_TEST_SUITE_P(UseLocalPrediction,
+                         LoadingPredictorBrowserTestWithOptimizationGuide,
+                         ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
+                       NavigationHasLocalPredictionNoOptimizationHint) {
   // Navigate the first time to fill the predictor's database and the HTTP
   // cache.
   GURL url = embedded_test_server()->GetURL(
@@ -1584,13 +1599,24 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithOptimizationGuide,
   auto observer = NavigateToURLAsync(url);
   EXPECT_TRUE(observer->WaitForRequestStart());
   for (auto* const host : kHtmlSubresourcesHosts) {
+    if (!IsLocalPredictionEnabled() && host != url.host()) {
+      // We don't expect local predictions to be preconnected to.
+      continue;
+    }
+
     preconnect_manager_observer()->WaitUntilHostLookedUp(host,
                                                          network_isolation_key);
     EXPECT_TRUE(
         preconnect_manager_observer()->HostFound(host, network_isolation_key));
   }
-  // 2 connections to the main frame host + 1 connection per host for others.
-  const size_t expected_connections = base::size(kHtmlSubresourcesHosts) + 1;
+  size_t expected_connections;
+  if (IsLocalPredictionEnabled()) {
+    // 2 connections to the main frame host  + 1 connection per host for others.
+    expected_connections = base::size(kHtmlSubresourcesHosts) + 1;
+  } else {
+    // There should always be 2 connections to the main frame host.
+    expected_connections = 2;
+  }
   connection_tracker()->WaitForAcceptedConnections(expected_connections);
   EXPECT_EQ(expected_connections,
             connection_tracker()->GetAcceptedSocketCount());
@@ -1600,14 +1626,70 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithOptimizationGuide,
 
 // https://crbug.com/1056693
 #if (defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS))
-#define MAYBE_UsesPredictionsFromOptimizationGuideIfAvailable \
-    DISABLED_UsesPredictionsFromOptimizationGuideIfAvailable
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
-#define MAYBE_UsesPredictionsFromOptimizationGuideIfAvailable \
-    UsesPredictionsFromOptimizationGuideIfAvailable
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
 #endif
-IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithOptimizationGuide,
-                       MAYBE_UsesPredictionsFromOptimizationGuideIfAvailable) {
+IN_PROC_BROWSER_TEST_P(
+    LoadingPredictorBrowserTestWithOptimizationGuide,
+    DISABLE_ON_WIN_MAC_CHROMEOS(
+        NavigationWithBothLocalPredictionAndOptimizationHint)) {
+  base::HistogramTester histogram_tester;
+
+  GURL url = embedded_test_server()->GetURL(
+      "m.hints.com",
+      GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                 embedded_test_server()->port()));
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
+  ui_test_utils::NavigateToURL(browser(), url);
+  RetryForHistogramUntilCountReached(
+      histogram_tester, optimization_guide::kLoadedHintLocalHistogramString, 1);
+  ResetNetworkState();
+
+  auto observer = NavigateToURLAsync(url);
+  EXPECT_TRUE(observer->WaitForRequestStart());
+
+  // The initial URL should be preconnected to.
+  preconnect_manager_observer()->WaitUntilHostLookedUp(url.host(),
+                                                       network_isolation_key);
+  EXPECT_TRUE(preconnect_manager_observer()->HostFound(url.host(),
+                                                       network_isolation_key));
+  EXPECT_TRUE(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
+      origin.GetURL()));
+
+  // Both subresource hosts should be preconnected to.
+  std::vector<std::string> expected_subresource_hosts;
+  if (IsLocalPredictionEnabled()) {
+    // Should use subresources that were learned.
+    expected_subresource_hosts = {"baz.com", "foo.com"};
+  } else {
+    // Should use subresources from optimization hint.
+    expected_subresource_hosts = {"subresource.com", "otherresource.com"};
+  }
+  for (const auto& host : expected_subresource_hosts) {
+    preconnect_manager_observer()->WaitUntilHostLookedUp(host,
+                                                         network_isolation_key);
+    EXPECT_TRUE(
+        preconnect_manager_observer()->HostFound(host, network_isolation_key));
+
+    GURL expected_origin;
+    if (IsLocalPredictionEnabled()) {
+      // The locally learned origins are expected to have a port.
+      expected_origin = embedded_test_server()->GetURL(host, "/");
+    } else {
+      // The optimization hints learned origins do not have a port.
+      expected_origin = GURL(base::StringPrintf("http://%s", host.c_str()));
+    }
+    EXPECT_TRUE(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
+        expected_origin));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(
+    LoadingPredictorBrowserTestWithOptimizationGuide,
+    DISABLE_ON_WIN_MAC_CHROMEOS(
+        NavigationWithNoLocalPredictionsButHasOptimizationHint)) {
   base::HistogramTester histogram_tester;
 
   GURL url = embedded_test_server()->GetURL("m.hints.com", "/simple.html");
@@ -1664,7 +1746,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithOptimizationGuide,
       "LoadingPredictor.PreconnectLearningCount.OptimizationGuide", 2, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     LoadingPredictorBrowserTestWithOptimizationGuide,
     OptimizationGuidePredictionsNotAppliedForAlreadyCommittedNavigation) {
   GURL url = embedded_test_server()->GetURL("hints.com", "/");
@@ -1680,7 +1762,7 @@ IN_PROC_BROWSER_TEST_F(
       "otheresource.com", network_isolation_key));
 }
 
-IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithOptimizationGuide,
+IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
                        OptimizationGuidePredictionsNotAppliedForRedirect) {
   GURL destination_url =
       embedded_test_server()->GetURL("hints.com", "/cachetime");
@@ -1696,6 +1778,48 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithOptimizationGuide,
       "subresource.com", network_isolation_key));
   EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(
       "otheresource.com", network_isolation_key));
+}
+
+class LoadingPredictorBrowserTestWithNoLocalPredictions
+    : public LoadingPredictorBrowserTest {
+ public:
+  LoadingPredictorBrowserTestWithNoLocalPredictions() {
+    feature_list_.InitAndDisableFeature(
+        features::kLoadingPredictorUseLocalPredictions);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithNoLocalPredictions,
+                       ShouldNotActOnLocalPrediction) {
+  // Navigate the first time to fill the predictor's database and the HTTP
+  // cache.
+  GURL url = embedded_test_server()->GetURL(
+      "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                             embedded_test_server()->port()));
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
+  ui_test_utils::NavigateToURL(browser(), url);
+  ResetNetworkState();
+
+  auto observer = NavigateToURLAsync(url);
+  EXPECT_TRUE(observer->WaitForRequestStart());
+  // The initial URL should be preconnected to.
+  preconnect_manager_observer()->WaitUntilHostLookedUp(url.host(),
+                                                       network_isolation_key);
+  EXPECT_TRUE(preconnect_manager_observer()->HostFound(url.host(),
+                                                       network_isolation_key));
+  EXPECT_TRUE(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
+      origin.GetURL()));
+  // 2 connections to the main frame host.
+  const size_t expected_connections = 2;
+  connection_tracker()->WaitForAcceptedConnections(expected_connections);
+  EXPECT_EQ(expected_connections,
+            connection_tracker()->GetAcceptedSocketCount());
+  // No reads since all resources should be cached.
+  EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
 }
 
 }  // namespace predictors

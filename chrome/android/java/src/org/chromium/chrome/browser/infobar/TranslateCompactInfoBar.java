@@ -4,13 +4,14 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLayoutChangeListener;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.tabs.TabLayout;
 

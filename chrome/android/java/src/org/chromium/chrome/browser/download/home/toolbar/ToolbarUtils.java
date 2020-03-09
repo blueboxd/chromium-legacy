@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.download.home.toolbar;
 
-import android.support.v4.view.ViewCompat;
 import android.view.View;
+
+import androidx.core.view.ViewCompat;
 
 import org.chromium.chrome.browser.download.DirectoryOption;
 import org.chromium.chrome.browser.download.DownloadDirectoryProvider;

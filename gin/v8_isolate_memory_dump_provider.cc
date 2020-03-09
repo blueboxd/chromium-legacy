@@ -253,6 +253,14 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
   // Dump statistics related to code and bytecode if requested.
   DumpCodeStatistics(code_stats_dump, isolate_holder_);
 
+  // Dump statistics for global handles.
+  auto* global_handles_dump = process_memory_dump->CreateAllocatorDump(
+      dump_base_name + "/global_handles" + dump_name_suffix);
+  global_handles_dump->AddScalar(
+      base::trace_event::MemoryAllocatorDump::kNameSize,
+      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+      heap_statistics.total_global_handles_size());
+
   // Dump object statistics only for detailed dumps.
   if (args.level_of_detail !=
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {

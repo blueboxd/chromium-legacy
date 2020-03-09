@@ -36,7 +36,7 @@ polymer_modulizer("activity_log_stream_item") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":activity_log_history_item_module",
     ":activity_log_history_module",
     ":activity_log_module",

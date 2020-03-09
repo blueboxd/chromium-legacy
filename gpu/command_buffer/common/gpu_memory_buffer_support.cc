@@ -14,10 +14,6 @@
 
 namespace gpu {
 
-#if defined(OS_MACOSX)
-static uint32_t macos_specific_texture_target = GL_TEXTURE_RECTANGLE_ARB;
-#endif  // defined(OS_MACOSX)
-
 bool IsImageFromGpuMemoryBufferFormatSupported(
     gfx::BufferFormat format,
     const gpu::Capabilities& capabilities) {
@@ -53,7 +49,7 @@ bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
 
 uint32_t GetPlatformSpecificTextureTarget() {
 #if defined(OS_MACOSX)
-  return macos_specific_texture_target;
+  return GL_TEXTURE_RECTANGLE_ARB;
 #elif defined(OS_ANDROID) || defined(OS_LINUX)
   return GL_TEXTURE_EXTERNAL_OES;
 #elif defined(OS_WIN) || defined(OS_FUCHSIA)
@@ -65,14 +61,6 @@ uint32_t GetPlatformSpecificTextureTarget() {
 #error Unsupported OS
 #endif
 }
-
-#if defined(OS_MACOSX)
-GPU_EXPORT void SetMacOSSpecificTextureTarget(uint32_t texture_target) {
-  DCHECK(texture_target == GL_TEXTURE_2D ||
-         texture_target == GL_TEXTURE_RECTANGLE_ARB);
-  macos_specific_texture_target = texture_target;
-}
-#endif  // defined(OS_MACOSX)
 
 GPU_EXPORT uint32_t GetBufferTextureTarget(gfx::BufferUsage usage,
                                            gfx::BufferFormat format,

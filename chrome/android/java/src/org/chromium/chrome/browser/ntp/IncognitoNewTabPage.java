@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.ntp;
 import android.app.Activity;
 import android.graphics.Canvas;
 import android.os.Build;
-import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

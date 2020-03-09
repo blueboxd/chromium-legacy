@@ -10,6 +10,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "url/origin.h"
 
+namespace permissions {
+
 const char kObjectListKey[] = "chosen-objects";
 
 ChooserContextBase::ChooserContextBase(
@@ -235,3 +237,5 @@ void ChooserContextBase::SetWebsiteSetting(const url::Origin& requesting_origin,
       data_content_settings_type_, std::string(),
       base::Value::ToUniquePtrValue(std::move(value)));
 }
+
+}  // namespace permissions

@@ -417,12 +417,6 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
     NOTIMPLEMENTED();
   }
 
-  void SetLongTermKeys(const dbus::ObjectPath& object_path,
-                       const std::vector<std::vector<uint8_t>>& long_term_keys,
-                       ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
  private:
   // Keeps track of how many times methods have been called.
   struct CallCounts {

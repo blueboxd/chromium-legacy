@@ -24,6 +24,8 @@ namespace url {
 class Origin;
 }
 
+namespace permissions {
+
 // This is the base class for services that manage any type of permission that
 // is granted through a chooser-style UI instead of a simple allow/deny prompt.
 // Subclasses must define the structure of the objects that are stored.
@@ -141,5 +143,7 @@ class ChooserContextBase : public KeyedService {
 
   HostContentSettingsMap* const host_content_settings_map_;
 };
+
+}  // namespace permissions
 
 #endif  // COMPONENTS_PERMISSIONS_CHOOSER_CONTEXT_BASE_H_

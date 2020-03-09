@@ -69,8 +69,6 @@ js_library("page_manager") {
 grit("resources") {
   source = "resources.grd"
 
-  # The .grd contains references to generated files.
-  source_is_generated = true
   outputs = [
     "grit/bluetooth_internals_resources.h",
     "grit/bluetooth_internals_resources_map.h",

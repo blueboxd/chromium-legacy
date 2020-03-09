@@ -5,6 +5,8 @@
 
 """Update the Google Cloud Storage bucket hosting the Super Size UI."""
 
+from __future__ import division
+
 import argparse
 import os
 import subprocess

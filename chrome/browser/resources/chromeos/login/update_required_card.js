@@ -26,10 +26,11 @@ Polymer({
     deviceName: {type: String, value: ''},
 
     /**
-     * Message "3 minutes left".
+     * Estimated time left in seconds.
      */
     estimatedTimeLeft: {
-      type: String,
+      type: Number,
+      value: 0,
     },
 
     ui_state: {type: String},

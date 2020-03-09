@@ -253,7 +253,7 @@ PageInfoUI::PermissionInfo::PermissionInfo()
 
 PageInfoUI::ChosenObjectInfo::ChosenObjectInfo(
     const PageInfo::ChooserUIInfo& ui_info,
-    std::unique_ptr<ChooserContextBase::Object> chooser_object)
+    std::unique_ptr<permissions::ChooserContextBase::Object> chooser_object)
     : ui_info(ui_info), chooser_object(std::move(chooser_object)) {}
 
 PageInfoUI::ChosenObjectInfo::~ChosenObjectInfo() {}

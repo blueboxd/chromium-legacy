@@ -7,13 +7,13 @@ package org.chromium.chrome.browser.thumbnail.generator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v4.util.AtomicFile;
-import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.util.AtomicFile;
+import androidx.core.util.Pair;
 
 import com.google.protobuf.ByteString;
 

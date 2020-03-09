@@ -9,12 +9,12 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.support.v4.view.ViewCompat;
 import android.view.Gravity;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 

@@ -30,13 +30,6 @@
 #include "components/services/storage/public/mojom/indexed_db_control.mojom-test-utils.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/indexed_db/indexed_db_class_factory.h"
-#include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/indexed_db/indexed_db_factory_impl.h"
-#include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
-#include "content/browser/indexed_db/indexed_db_leveldb_env.h"
-#include "content/browser/indexed_db/indexed_db_origin_state.h"
-#include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -165,13 +158,18 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   }
 
   mojo::Remote<storage::mojom::IndexedDBControlTest> GetControlTest() {
+    mojo::Remote<storage::mojom::IndexedDBControlTest> idb_control_test;
+    BindControlTest(idb_control_test.BindNewPipeAndPassReceiver());
+    return idb_control_test;
+  }
+
+  void BindControlTest(
+      mojo::PendingReceiver<storage::mojom::IndexedDBControlTest> receiver) {
     auto* browser = shell();
     StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
         browser->web_contents()->GetBrowserContext());
     auto& control = partition->GetIndexedDBControl();
-    mojo::Remote<storage::mojom::IndexedDBControlTest> idb_control_test;
-    control.BindTestInterface(idb_control_test.BindNewPipeAndPassReceiver());
-    return idb_control_test;
+    control.BindTestInterface(std::move(receiver));
   }
 
   void SetQuota(int per_host_quota_kilobytes) {
@@ -782,63 +780,41 @@ std::unique_ptr<net::test_server::HttpResponse> ServePath(
   return std::move(http_response);
 }
 
-void CompactIndexedDBBackingStore(scoped_refptr<IndexedDBContextImpl> context,
-                                  const url::Origin& origin) {
-  IndexedDBFactoryImpl* factory = context->GetIDBFactory();
-
-  std::vector<IndexedDBDatabase*> databases =
-      factory->GetOpenDatabasesForOrigin(origin);
-
-  if (databases.empty())
-    return;
-
-  // Compact the first db's backing store since all the db's are in the same
-  // backing store.
-  IndexedDBDatabase* db = databases[0];
-  IndexedDBBackingStore* backing_store = db->backing_store();
-  backing_store->Compact();
-}
-
-void CorruptIndexedDBDatabase(IndexedDBContextImpl* context,
-                              const url::Origin& origin,
-                              base::WaitableEvent* signal_when_finished) {
-  CompactIndexedDBBackingStore(context, origin);
-
+#if !defined(OS_WIN)
+void CorruptIndexedDBDatabase(const url::Origin& origin,
+                              const base::FilePath& idb_data_path) {
   int num_files = 0;
   int num_errors = 0;
   const bool recursive = false;
-  for (const base::FilePath& idb_data_path : context->GetStoragePaths(origin)) {
-    base::FileEnumerator enumerator(
-        idb_data_path, recursive, base::FileEnumerator::FILES);
-    for (base::FilePath idb_file = enumerator.Next(); !idb_file.empty();
-         idb_file = enumerator.Next()) {
-      int64_t size(0);
-      GetFileSize(idb_file, &size);
 
-      if (idb_file.Extension() == FILE_PATH_LITERAL(".ldb")) {
-        num_files++;
-        base::File file(
-            idb_file, base::File::FLAG_WRITE | base::File::FLAG_OPEN_TRUNCATED);
-        if (file.IsValid()) {
-          // Was opened truncated, expand back to the original
-          // file size and fill with zeros (corrupting the file).
-          file.SetLength(size);
-        } else {
-          num_errors++;
-        }
+  base::FileEnumerator enumerator(idb_data_path, recursive,
+                                  base::FileEnumerator::FILES);
+  for (base::FilePath idb_file = enumerator.Next(); !idb_file.empty();
+       idb_file = enumerator.Next()) {
+    int64_t size(0);
+    GetFileSize(idb_file, &size);
+
+    if (idb_file.Extension() == FILE_PATH_LITERAL(".ldb")) {
+      num_files++;
+      base::File file(idb_file,
+                      base::File::FLAG_WRITE | base::File::FLAG_OPEN_TRUNCATED);
+      if (file.IsValid()) {
+        // Was opened truncated, expand back to the original
+        // file size and fill with zeros (corrupting the file).
+        file.SetLength(size);
+      } else {
+        num_errors++;
       }
     }
-    VLOG(0) << "There were " << num_files << " in " << idb_data_path.value()
-            << " with " << num_errors << " errors";
   }
-
-  signal_when_finished->Signal();
+  VLOG(0) << "There were " << num_files << " in " << idb_data_path.value()
+          << " with " << num_errors << " errors";
 }
 
 const char s_corrupt_db_test_prefix[] = "/corrupt/test/";
 
 std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
-    IndexedDBContextImpl* context,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     const url::Origin& origin,
     const std::string& path,
     IndexedDBBrowserTest* test,
@@ -860,13 +836,34 @@ std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
 
   if (request_path == "corruptdb" && !request_query.empty()) {
     VLOG(0) << "Requested to corrupt IndexedDB: " << request_query;
-    base::WaitableEvent signal_when_finished(
-        base::WaitableEvent::ResetPolicy::AUTOMATIC,
-        base::WaitableEvent::InitialState::NOT_SIGNALED);
-    context->IDBTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&CorruptIndexedDBDatabase, std::cref(context),
-                                  origin, &signal_when_finished));
-    signal_when_finished.Wait();
+
+    // BindControlTest must be called on the same sequence that
+    // IndexedDBBrowserTest lives on.
+    mojo::Remote<storage::mojom::IndexedDBControlTest> control_test;
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&IndexedDBBrowserTest::BindControlTest,
+                                  base::Unretained(test),
+                                  control_test.BindNewPipeAndPassReceiver()));
+
+    // TODO(enne): this is a nested message loop on the embedded test server's
+    // IO thread.  Windows does not support such nested message loops.
+    // However, alternatives like WaitableEvent can't be used here because
+    // these potentially cross-process mojo calls have callbacks that will
+    // bounce through the IO thread, causing a deadlock if we wait here.
+    // The ideal solution here is to refactor the embedded test server
+    // to support asynchronous request handlers (if possible??).
+    // The less ideal temporary solution is to only run these tests on Windows.
+    base::RunLoop loop;
+    control_test->CompactBackingStoreForTesting(
+        origin, base::BindLambdaForTesting([&]() {
+          control_test->GetFilePathForTesting(
+              origin,
+              base::BindLambdaForTesting([&](const base::FilePath& path) {
+                CorruptIndexedDBDatabase(origin, path);
+                loop.Quit();
+              }));
+        }));
+    loop.Run();
 
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
@@ -946,6 +943,7 @@ std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
 
   return ServePath(request_path);
 }
+#endif
 
 const char s_indexeddb_test_prefix[] = "/indexeddb/test/";
 
@@ -962,13 +960,16 @@ std::unique_ptr<net::test_server::HttpResponse> StaticFileRequestHandler(
 
 }  // namespace
 
+// See TODO in CorruptDBRequestHandler.  Windows does not support nested
+// message loops on the IO thread, so run this test on other platforms.
+#if !defined(OS_WIN)
 IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTest, OperationOnCorruptedOpenDatabase) {
   ASSERT_TRUE(embedded_test_server()->Started() ||
               embedded_test_server()->InitializeAndListen());
   const url::Origin origin =
       url::Origin::Create(embedded_test_server()->base_url());
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
-      &CorruptDBRequestHandler, base::Unretained(GetContext()), origin,
+      &CorruptDBRequestHandler, base::SequencedTaskRunnerHandle::Get(), origin,
       s_corrupt_db_test_prefix, this));
   embedded_test_server()->StartAcceptingConnections();
 
@@ -980,6 +981,7 @@ IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTest, OperationOnCorruptedOpenDatabase) {
       std::string(s_corrupt_db_test_prefix) + "corrupted_open_db_recovery.html";
   SimpleTest(embedded_test_server()->GetURL(test_file));
 }
+#endif
 
 INSTANTIATE_TEST_SUITE_P(IndexedDBBrowserTestInstantiation,
                          IndexedDBBrowserTest,

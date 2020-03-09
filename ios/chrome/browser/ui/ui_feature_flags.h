@@ -7,9 +7,6 @@
 
 #include "base/feature_list.h"
 
-// Feature to retain the contentView in the browser container.
-extern const base::Feature kBrowserContainerKeepsContentView;
-
 // Feature to take snapshots using |-drawViewHierarchy:|.
 extern const base::Feature kSnapshotDrawView;
 

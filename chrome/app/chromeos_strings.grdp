@@ -870,10 +870,13 @@
     Continue setup
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_TITLE" desc="The title of the last dialog in the set of screens that are always displayed to the user on the first login to the Chrome OS device.">
-    You are all set!
+    All set!
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE" desc="The sub-title of the dialog that allows user to opt-in into several Google marketing options.">
     Get <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> tips, offers and updates, and share feedback. Unsubscribe anytime.
+  </message>
+  <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE_WITH_DEVICE_NAME" desc="The sub-title of the marketing opt in screen which will also include the name of the user's device.">
+    You are ready to start using your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_PLAY_UPDATES" desc="A label next to the checkbox that controls user subscription to marketing updates from Google about Google Play Store.">
     Get the latest updates and recommendations on Play Store apps
@@ -2329,6 +2332,9 @@
   </message>
   <message name="IDS_UPDATE_REQUIRED_SCREEN_OPEN_NETWORK_SETTINGS" desc="Label for network configuration button on the update required dialog on the login screen to open network settings so that the user can connect to a network.">
     Open network settings
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_UPDATING_MESSAGE" desc="The message of the update required dialog on the login screen to inform the user that the device is updating and will restart after the update is complete.">
+    Device will restart when updates are complete.
   </message>
 
   <!-- Genius App -->

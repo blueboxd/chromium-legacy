@@ -11,8 +11,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.support.v4.app.NotificationManagerCompat;
 import android.text.TextUtils;
+
+import androidx.core.app.NotificationManagerCompat;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;

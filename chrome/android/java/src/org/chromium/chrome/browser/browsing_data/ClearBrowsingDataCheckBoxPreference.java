@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.browsing_data;
 
 import android.content.Context;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.preference.PreferenceViewHolder;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -15,6 +14,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.core.view.ViewCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;

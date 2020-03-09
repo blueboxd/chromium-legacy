@@ -502,6 +502,7 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   bank_name_ = credit_card.bank_name_;
   temp_card_first_name_ = credit_card.temp_card_first_name_;
   temp_card_last_name_ = credit_card.temp_card_last_name_;
+  nickname_ = credit_card.nickname_;
 
   set_guid(credit_card.guid());
   set_origin(credit_card.origin());
@@ -571,6 +572,10 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
     return comparison;
 
   comparison = billing_address_id_.compare(credit_card.billing_address_id_);
+  if (comparison != 0)
+    return comparison;
+
+  comparison = nickname_.compare(credit_card.nickname_);
   if (comparison != 0)
     return comparison;
 
@@ -923,7 +928,8 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
             << " " << credit_card.bank_name() << " "
             << " " << credit_card.record_type() << " "
             << credit_card.use_count() << " " << credit_card.use_date() << " "
-            << credit_card.billing_address_id();
+            << credit_card.billing_address_id() << " "
+            << credit_card.nickname();
 }
 
 void CreditCard::SetNameOnCardFromSeparateParts() {

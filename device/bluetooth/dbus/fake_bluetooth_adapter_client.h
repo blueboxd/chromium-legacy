@@ -42,9 +42,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   ~FakeBluetoothAdapterClient() override;
   int GetPauseCount() { return pause_count_; }
   int GetUnpauseCount() { return unpause_count_; }
-  uint32_t set_long_term_keys_call_count() {
-    return set_long_term_keys_call_count_;
-  }
 
   // BluetoothAdapterClient overrides
   void Init(dbus::Bus* bus, const std::string& bluetooth_service_name) override;
@@ -78,9 +75,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
                            uint32_t handle,
                            base::OnceClosure callback,
                            ErrorCallback error_callback) override;
-  void SetLongTermKeys(const dbus::ObjectPath& object_path,
-                       const std::vector<std::vector<uint8_t>>& long_term_keys,
-                       ErrorCallback error_callback) override;
 
   // Sets the current simulation timeout interval.
   void SetSimulationIntervalMs(int interval_ms);
@@ -161,8 +155,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
 
   // Service records manually registered with this adapter by handle.
   std::map<uint32_t, BluetoothServiceRecordBlueZ> records_;
-
-  uint32_t set_long_term_keys_call_count_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -36,8 +36,11 @@ cr.define('settings_privacy_page', function() {
             allowed_on_next_startup:
                 {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
           },
-          safebrowsing:
-              {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+          safebrowsing: {
+            enabled: {value: true},
+            scout_reporting_enabled: {value: true},
+            enhanced: {value: false}
+          },
         };
         document.body.appendChild(page);
         Polymer.dom.flush();
@@ -154,8 +157,11 @@ cr.define('settings_privacy_page', function() {
             allowed_on_next_startup:
                 {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
           },
-          safebrowsing:
-              {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+          safebrowsing: {
+            enabled: {value: true},
+            scout_reporting_enabled: {value: true},
+            enhanced: {value: false}
+          },
         };
         document.body.appendChild(page);
         return testSyncBrowserProxy.whenCalled('getSyncStatus');

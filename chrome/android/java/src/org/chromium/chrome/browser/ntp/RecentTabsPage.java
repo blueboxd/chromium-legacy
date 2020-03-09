@@ -9,13 +9,14 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.SystemClock;
-import android.support.v4.view.ViewCompat;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;

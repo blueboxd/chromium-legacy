@@ -70,10 +70,6 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
   const char* GetName() const override { return "LayoutSVGResourceFilter"; }
-  bool IsOfType(LayoutObjectType type) const override {
-    return type == kLayoutObjectSVGResourceFilter ||
-           LayoutSVGResourceContainer::IsOfType(type);
-  }
 
   void RemoveAllClientsFromCache() override;
 
@@ -90,7 +86,8 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
 // is a single url(...) reference.
 LayoutSVGResourceFilter* GetFilterResourceForSVG(const ComputedStyle&);
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceFilter, IsSVGResourceFilter());
+DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceFilter,
+                                      kFilterResourceType);
 
 }  // namespace blink
 

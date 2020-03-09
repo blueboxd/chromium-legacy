@@ -4,9 +4,13 @@
 
 #include "chromeos/services/device_sync/cryptauth_device.h"
 
+#include <sstream>
+
+#include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/util/values/values_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/services/device_sync/proto/cryptauth_logging.h"
 #include "chromeos/services/device_sync/value_string_encoding.h"
 
 namespace chromeos {
@@ -15,7 +19,7 @@ namespace device_sync {
 
 namespace {
 
-// Strings used as the DictionaryValue keys in {From,As}DictionaryValue().
+// Strings used as DictionaryValue keys.
 const char kInstanceIdDictKey[] = "instance_id";
 const char kDeviceNameDictKey[] = "device_name";
 const char kLastUpdateTimeDictKey[] = "last_update_time";
@@ -56,6 +60,21 @@ base::Value FeatureStatesToDictionary(
     dict.SetIntKey(
         base::NumberToString(static_cast<int>(feature_state_pair.first)),
         static_cast<int>(feature_state_pair.second));
+  }
+
+  return dict;
+}
+
+base::Value FeatureStatesToReadableDictionary(
+    const std::map<multidevice::SoftwareFeature,
+                   multidevice::SoftwareFeatureState>& feature_states) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  for (const auto& feature_state_pair : feature_states) {
+    std::stringstream feature_ss;
+    feature_ss << feature_state_pair.first;
+    std::stringstream feature_state_ss;
+    feature_state_ss << feature_state_pair.second;
+    dict.SetStringKey(feature_ss.str(), feature_state_ss.str());
   }
 
   return dict;
@@ -159,6 +178,27 @@ base::Value CryptAuthDevice::AsDictionary() const {
   return dict;
 }
 
+base::Value CryptAuthDevice::AsReadableDictionary() const {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("Instance ID", instance_id_);
+  dict.SetStringKey("Device name", device_name);
+  dict.SetStringKey("DeviceSync:BetterTogether device public key",
+                    cryptauthv2::TruncateStringForLogs(util::EncodeAsString(
+                        device_better_together_public_key)));
+  dict.SetStringKey(
+      "Last update time",
+      base::TimeFormatShortDateAndTimeWithTimeZone(last_update_time));
+  dict.SetKey("Feature states",
+              FeatureStatesToReadableDictionary(feature_states));
+  dict.SetKey(
+      "BetterTogether device metadata",
+      (better_together_device_metadata
+           ? cryptauthv2::BetterTogetherDeviceMetadataToReadableDictionary(
+                 *better_together_device_metadata)
+           : base::Value("[No decrypted metadata]")));
+  return dict;
+}
+
 bool CryptAuthDevice::operator==(const CryptAuthDevice& other) const {
   bool does_metadata_match =
       (!better_together_device_metadata &&
@@ -178,6 +218,11 @@ bool CryptAuthDevice::operator==(const CryptAuthDevice& other) const {
 
 bool CryptAuthDevice::operator!=(const CryptAuthDevice& other) const {
   return !(*this == other);
+}
+
+std::ostream& operator<<(std::ostream& stream, const CryptAuthDevice& device) {
+  stream << device.AsReadableDictionary();
+  return stream;
 }
 
 }  // namespace device_sync

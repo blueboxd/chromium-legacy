@@ -13,6 +13,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/services/device_sync/pref_names.h"
+#include "chromeos/services/device_sync/proto/cryptauth_logging.h"
 #include "chromeos/services/device_sync/value_string_encoding.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -331,7 +332,7 @@ void CryptAuthSchedulerImpl::HandleResult(
 
   if (new_client_directive && IsClientDirectiveValid(*new_client_directive)) {
     client_directive_ = *new_client_directive;
-
+    PA_LOG(VERBOSE) << "New client directive:\n" << client_directive_;
     pref_service_->Set(
         prefs::kCryptAuthSchedulerClientDirective,
         util::EncodeProtoMessageAsValueString(&client_directive_));

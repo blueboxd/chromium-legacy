@@ -11,7 +11,6 @@ import static android.view.View.SYSTEM_UI_FLAG_LOW_PROFILE;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.util.ObjectsCompat;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -19,6 +18,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.annotation.Nullable;
+import androidx.core.util.ObjectsCompat;
 
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;

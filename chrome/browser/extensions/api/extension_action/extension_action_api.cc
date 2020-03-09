@@ -426,9 +426,13 @@ ExtensionActionSetPopupFunction::RunExtensionAction() {
 ExtensionFunction::ResponseAction
 ExtensionActionSetBadgeTextFunction::RunExtensionAction() {
   EXTENSION_FUNCTION_VALIDATE(details_);
+
   std::string badge_text;
-  EXTENSION_FUNCTION_VALIDATE(details_->GetString("text", &badge_text));
-  extension_action_->SetBadgeText(tab_id_, badge_text);
+  if (details_->GetString("text", &badge_text))
+    extension_action_->SetBadgeText(tab_id_, badge_text);
+  else
+    extension_action_->ClearBadgeText(tab_id_);
+
   NotifyChange();
   return RespondNow(NoArguments());
 }

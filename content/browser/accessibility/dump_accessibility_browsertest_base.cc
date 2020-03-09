@@ -117,11 +117,6 @@ void DumpAccessibilityTestBase::SetUp() {
   enabled_features.emplace_back(
       features::kEnableAccessibilityExposeDisplayNone);
 
-  // Enable the FormControlsRefresh feature to make sure the
-  // accessibility tree is the same across platforms.
-  // TODO(1012108): remove this once Mac is also enabled by default.
-  enabled_features.emplace_back(features::kFormControlsRefresh);
-
   enabled_features.emplace_back(blink::features::kPortals);
 
   // TODO(dmazzoni): DumpAccessibilityTree expectations are based on the

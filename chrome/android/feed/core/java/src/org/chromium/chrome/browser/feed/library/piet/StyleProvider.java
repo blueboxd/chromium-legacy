@@ -9,7 +9,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.support.v4.view.ViewCompat;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -20,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.browser.feed.library.piet.host.AssetProvider;

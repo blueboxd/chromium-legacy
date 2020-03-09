@@ -30,6 +30,9 @@ enum class SandboxType {
 
   // The proxy resolver process.
   kProxyResolver,
+
+  // The PDF conversion service process used in printing.
+  kPdfConversion,
 #endif
 
 #if defined(OS_FUCHSIA)

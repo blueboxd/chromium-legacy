@@ -184,13 +184,6 @@ bool ContentBrowserClient::CanCommitURL(RenderProcessHost* process_host,
   return true;
 }
 
-bool ContentBrowserClient::IsURLAcceptableForWebUI(
-    BrowserContext* browser_context,
-    const GURL& url) {
-  DCHECK(browser_context);
-  return false;
-}
-
 bool ContentBrowserClient::ShouldStayInParentProcessForNTP(
     const GURL& url,
     SiteInstance* parent_site_instance) {

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/html/portal/dom_window_portal_host.h"
 #include "third_party/blink/renderer/core/html/portal/portal_post_message_helper.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 

@@ -21,6 +21,7 @@
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
 #include "chromeos/services/device_sync/cryptauth_task_metrics_logger.h"
 #include "chromeos/services/device_sync/device_sync_type_converters.h"
+#include "chromeos/services/device_sync/proto/cryptauth_logging.h"
 
 namespace chromeos {
 
@@ -199,6 +200,8 @@ void CryptAuthDeviceActivityGetterImpl::OnGetDevicesActivityStatusSuccess(
   RecordGetDevicesActivityStatusMetrics(
       base::TimeTicks::Now() - last_state_change_timestamp_,
       CryptAuthApiCallResult::kSuccess);
+
+  PA_LOG(VERBOSE) << "GetDevicesActivityStatus response:\n" << response;
 
   DeviceActivityStatusResult device_activity_statuses;
 

@@ -8,10 +8,10 @@ import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v4.app.ServiceCompat;
-import android.support.v4.content.ContextCompat;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.app.ServiceCompat;
+import androidx.core.content.ContextCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;

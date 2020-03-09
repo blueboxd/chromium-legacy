@@ -835,9 +835,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsSVGResourceContainer() const {
     return IsOfType(kLayoutObjectSVGResourceContainer);
   }
-  bool IsSVGResourceFilter() const {
-    return IsOfType(kLayoutObjectSVGResourceFilter);
-  }
   bool IsSVGResourceFilterPrimitive() const {
     return IsOfType(kLayoutObjectSVGResourceFilterPrimitive);
   }
@@ -2602,7 +2599,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectSVGImage,
     kLayoutObjectSVGForeignObject,
     kLayoutObjectSVGResourceContainer,
-    kLayoutObjectSVGResourceFilter,
     kLayoutObjectSVGResourceFilterPrimitive,
   };
   virtual bool IsOfType(LayoutObjectType type) const { return false; }

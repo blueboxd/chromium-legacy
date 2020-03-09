@@ -35,8 +35,6 @@ if (optimize_webui) {
   grit("flattened_resources") {
     source = "bookmarks_resources.grd"
 
-    # The .grd contains references to generated files.
-    source_is_generated = true
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -55,7 +53,7 @@ if (optimize_webui) {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":app_module",
     ":command_manager_module",
     ":edit_dialog_module",

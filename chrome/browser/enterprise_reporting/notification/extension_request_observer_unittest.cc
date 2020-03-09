@@ -256,4 +256,16 @@ TEST_F(ExtensionRequestObserverTest, ExtensionRequestPolicyToggle) {
                 ->DictSize());
 }
 
+TEST_F(ExtensionRequestObserverTest, PendingRequestAddedAfterPolicyUpdated) {
+  ExtensionRequestObserver observer(profile());
+  VerifyNotification(false);
+
+  SetExtensionSettings(kExtensionSettings);
+  VerifyNotification(false);
+
+  SetPendingList({kExtensionId1, kExtensionId2, kExtensionId3, kExtensionId4,
+                  kExtensionId5, kExtensionId6});
+  VerifyNotification(true);
+}
+
 }  // namespace enterprise_reporting

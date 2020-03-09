@@ -25,6 +25,9 @@ PrintManagementUI::PrintManagementUI(content::WebUI* web_ui)
   html_source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
   html_source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
   html_source->SetDefaultResource(IDR_PRINT_MANAGEMENT_INDEX_HTML);
+  html_source->AddResourcePath("pwa.html", IDR_PRINT_MANAGEMENT_PWA_HTML);
+  html_source->AddResourcePath("manifest.json", IDR_PRINT_MANAGEMENT_MANIFEST);
+  html_source->AddResourcePath("app_icon_192.png", IDR_PRINT_MANAGEMENT_ICON);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source.release());

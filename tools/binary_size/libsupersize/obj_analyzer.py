@@ -35,6 +35,7 @@ This file can also be run stand-alone in order to test out the logic on smaller
 sample sizes.
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import argparse
@@ -389,7 +390,7 @@ class _BulkObjectFileAnalyzerSlave(object):
         self._HandleMessage(self._pipe.recv())
     except EOFError:
       pass
-    except EnvironmentError, e:
+    except EnvironmentError as e:
       # Parent process exited so don't log.
       if e.errno in (errno.EPIPE, errno.ECONNRESET):
         sys.exit(1)

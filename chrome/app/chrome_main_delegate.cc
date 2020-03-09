@@ -1037,10 +1037,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
         locale;
   }
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER) && BUILDFLAG(ENABLE_PDF)
-  InitializePDF();
-#endif
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Zygote needs to call InitCrashReporter() in RunZygote().
   if (process_type != service_manager::switches::kZygoteProcess) {
@@ -1067,6 +1063,10 @@ void ChromeMainDelegate::PreSandboxStartup() {
   // After all the platform Breakpads have been initialized, store the command
   // line for crash reporting.
   crash_keys::SetCrashKeysFromCommandLine(command_line);
+
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER) && BUILDFLAG(ENABLE_PDF)
+  MaybeInitializeGDI();
+#endif
 }
 
 void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {

@@ -267,7 +267,7 @@ void JNI_WebsitePreferenceBridge_SetSettingForOrigin(
   WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
 }
 
-ChooserContextBase* GetChooserContext(ContentSettingsType type) {
+permissions::ChooserContextBase* GetChooserContext(ContentSettingsType type) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
   switch (type) {
@@ -636,7 +636,7 @@ static void JNI_WebsitePreferenceBridge_GetChosenObjects(
     const JavaParamRef<jobject>& list) {
   ContentSettingsType type =
       static_cast<ContentSettingsType>(content_settings_type);
-  ChooserContextBase* context = GetChooserContext(type);
+  permissions::ChooserContextBase* context = GetChooserContext(type);
   for (const auto& object : context->GetAllGrantedObjects()) {
     // Remove the trailing slash so that origins are matched correctly in
     // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
@@ -686,7 +686,7 @@ static void JNI_WebsitePreferenceBridge_RevokeObjectPermission(
   std::unique_ptr<base::DictionaryValue> object = base::DictionaryValue::From(
       base::JSONReader::ReadDeprecated(ConvertJavaStringToUTF8(env, jobject)));
   DCHECK(object);
-  ChooserContextBase* context = GetChooserContext(
+  permissions::ChooserContextBase* context = GetChooserContext(
       static_cast<ContentSettingsType>(content_settings_type));
   context->RevokeObjectPermission(url::Origin::Create(origin),
                                   url::Origin::Create(embedder), *object);

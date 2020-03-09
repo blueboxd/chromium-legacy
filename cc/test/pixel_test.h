@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/client/client_resource_provider.h"
@@ -27,12 +28,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace base {
-namespace test {
-class ScopedFeatureList;
-}
-}
-
 namespace viz {
 class CopyOutputResult;
 class DirectRenderer;
@@ -43,13 +38,27 @@ class TestSharedBitmapManager;
 }
 
 namespace cc {
+class DawnSkiaRenderer;
 class FakeOutputSurfaceClient;
 class OutputSurface;
 class VulkanSkiaRenderer;
 
 class PixelTest : public testing::Test {
  protected:
-  explicit PixelTest(bool use_vulkan = false);
+  // Some graphics backends require command line or base::Feature initialization
+  // which must occur in the constructor to avoid potential races.
+  enum GraphicsBackend {
+    // The pixel test will be initialized for software or GL renderers. No work
+    // needs to be done in the constructor.
+    kDefault,
+    // SkiaRenderer with the Vulkan backend will be used.
+    kSkiaVulkan,
+    // SkiaRenderer with the Dawn backend will be used; on Linux this will
+    // initialize Vulkan, and on Windows this will initialize D3D12.
+    kSkiaDawn,
+  };
+
+  explicit PixelTest(GraphicsBackend backend = kDefault);
   ~PixelTest() override;
 
   bool RunPixelTest(viz::RenderPassList* pass_list,
@@ -96,7 +105,7 @@ class PixelTest : public testing::Test {
 
   // |scoped_feature_list_| must be the first member to ensure that it is
   // destroyed after any member that might be using it.
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   viz::TestGpuServiceHolder::ScopedResetter gpu_service_resetter_;
 
   // For SkiaRenderer.
@@ -138,7 +147,7 @@ class PixelTest : public testing::Test {
 template<typename RendererType>
 class RendererPixelTest : public PixelTest {
  public:
-  RendererPixelTest() : PixelTest(use_vulkan()) {}
+  RendererPixelTest() : PixelTest(backend()) {}
 
   RendererType* renderer() {
     return static_cast<RendererType*>(renderer_.get());
@@ -149,6 +158,8 @@ class RendererPixelTest : public PixelTest {
   const char* renderer_type() {
     if (std::is_base_of<viz::GLRenderer, RendererType>::value)
       return "gl";
+    if (std::is_base_of<DawnSkiaRenderer, RendererType>::value)
+      return "dawn";
     if (std::is_base_of<viz::SkiaRenderer, RendererType>::value)
       return "skia";
     if (std::is_base_of<viz::SoftwareRenderer, RendererType>::value)
@@ -157,8 +168,12 @@ class RendererPixelTest : public PixelTest {
   }
 
   bool use_gpu() const { return !!child_context_provider_; }
-  bool use_vulkan() const {
-    return std::is_base_of<VulkanSkiaRenderer, RendererType>::value;
+  GraphicsBackend backend() const {
+    if (std::is_base_of<VulkanSkiaRenderer, RendererType>::value)
+      return kSkiaVulkan;
+    if (std::is_base_of<DawnSkiaRenderer, RendererType>::value)
+      return kSkiaDawn;
+    return kDefault;
   }
 
  protected:
@@ -170,7 +185,9 @@ class RendererPixelTest : public PixelTest {
 class GLRendererWithFlippedSurface : public viz::GLRenderer {};
 class SkiaRendererWithFlippedSurface : public viz::SkiaRenderer {};
 class VulkanSkiaRenderer : public viz::SkiaRenderer {};
-class VulkanSkiaRendererWithFlippedSurface : public viz::SkiaRenderer {};
+class VulkanSkiaRendererWithFlippedSurface : public VulkanSkiaRenderer {};
+class DawnSkiaRenderer : public viz::SkiaRenderer {};
+class DawnSkiaRendererWithFlippedSurface : public DawnSkiaRenderer {};
 
 template <>
 inline void RendererPixelTest<viz::GLRenderer>::SetUp() {
@@ -204,6 +221,16 @@ inline void RendererPixelTest<VulkanSkiaRenderer>::SetUp() {
 
 template <>
 inline void RendererPixelTest<VulkanSkiaRendererWithFlippedSurface>::SetUp() {
+  SetUpSkiaRenderer(gfx::SurfaceOrigin::kTopLeft);
+}
+
+template <>
+inline void RendererPixelTest<DawnSkiaRenderer>::SetUp() {
+  SetUpSkiaRenderer(gfx::SurfaceOrigin::kBottomLeft);
+}
+
+template <>
+inline void RendererPixelTest<DawnSkiaRendererWithFlippedSurface>::SetUp() {
   SetUpSkiaRenderer(gfx::SurfaceOrigin::kTopLeft);
 }
 

@@ -59,6 +59,14 @@ class MapsIntegrationTest(
   @classmethod
   def GenerateGpuTests(cls, options):
     cls.SetParsedCommandLineOptions(options)
+    # The maps_pixel_expectations.json contain the actual image expectations. If
+    # the test fails, with errors greater than the tolerance for the run, then
+    # the logs will report the actual failure.
+    #
+    # There will also be a Skia Gold Triage link, this will be used to store the
+    # artifact of the failure to help with debugging. There are no accepted
+    # positive baselines recorded in Skia Gold, so its diff will not be
+    # sufficient to debugging the failure.
     yield('Maps_maps',
           'file://performance.html',
           ('maps_pixel_expectations.json'))

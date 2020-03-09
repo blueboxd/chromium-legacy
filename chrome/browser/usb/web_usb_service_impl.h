@@ -35,10 +35,11 @@ class UsbChooserContext;
 // another UsbDeviceManager instance and enforces the rules of the WebUSB
 // permission model as well as permission granted by the user through a device
 // chooser UI.
-class WebUsbServiceImpl : public blink::mojom::WebUsbService,
-                          public ChooserContextBase::PermissionObserver,
-                          public UsbChooserContext::DeviceObserver,
-                          public device::mojom::UsbDeviceClient {
+class WebUsbServiceImpl
+    : public blink::mojom::WebUsbService,
+      public permissions::ChooserContextBase::PermissionObserver,
+      public UsbChooserContext::DeviceObserver,
+      public device::mojom::UsbDeviceClient {
  public:
   WebUsbServiceImpl(content::RenderFrameHost* render_frame_host,
                     base::WeakPtr<WebUsbChooser> usb_chooser);
@@ -100,7 +101,8 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
 
   ScopedObserver<UsbChooserContext, UsbChooserContext::DeviceObserver>
       device_observer_;
-  ScopedObserver<ChooserContextBase, ChooserContextBase::PermissionObserver>
+  ScopedObserver<permissions::ChooserContextBase,
+                 permissions::ChooserContextBase::PermissionObserver>
       permission_observer_;
 
   base::WeakPtrFactory<WebUsbServiceImpl> weak_factory_{this};

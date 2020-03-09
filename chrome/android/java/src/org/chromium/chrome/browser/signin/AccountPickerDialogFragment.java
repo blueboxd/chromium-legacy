@@ -8,7 +8,6 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.util.ObjectsCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
@@ -20,6 +19,7 @@ import android.widget.TextView;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.core.util.ObjectsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 

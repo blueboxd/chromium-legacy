@@ -21,16 +21,20 @@
                           Shows the checking for updates dialog and hides the
                           downloading dialog.
     'progressValue' - Progress bar percent value.
-    'estimatedTimeLeft' - Time left for the update to complete download.
-    'estimatedTimeLeftShown' - True if estimatedTimeLeft is to be shown.
-    'progressMessage' - Message informing update status.
-    'progressMessageShown' - True if progressMessage is to be shown.
+    'estimatedTimeLeft' - Time left in seconds for the update to complete
+                          download.
+    'hasEstimate' - True if estimated time left is to be shown.
+    'defaultProgressMessage' - Message showing either estimated time left or
+                               default update status.
     'updateCompleted' - True if update is completed and probably manual action
                         is required.
     'cancelAllowed' - True if update cancellation is allowed.
-    'checkingForUpdatesMsg' - ID of localized string shown while checking for
+    'checkingForUpdatesKey' - ID of localized string shown while checking for
                               updates.
-    'cancelHint' - ID of the localized string for update cancellation message.
+    'downloadingUpdatesKey' - ID of localized string shown while update is being
+                             downloaded.
+    'cancelHintKey' - ID of the localized string for update cancellation
+                      message.
 -->
 
 <dom-module id="checking-downloading-update">
@@ -46,11 +50,11 @@
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>
       <div slot="subtitle" class="update-subtitle" id="checkingForUpdatesMsg">
-        [[i18nDynamic(locale, checkingForUpdatesMsg)]]
+        [[i18nDynamic(locale, checkingForUpdatesKey)]]
       </div>
       <div slot="subtitle" class="update-subtitle" hidden="[[!cancelAllowed]]"
           id="checkingForUpdateCancelHint">
-        [[i18nDynamic(locale, cancelHint)]]
+        [[i18nDynamic(locale, cancelHintKey)]]
       </div>
       <paper-progress slot="progress" id="checking-progress"
           indeterminate="[[checkingForUpdate]]">
@@ -64,37 +68,24 @@
 
     <oobe-dialog footer-shrinkable id="updating-dialog"
         title-key="updatingScreenTitle"
-        hidden="[[checkingForUpdate]]"
+        hidden="[[isCheckingOrUpdateCompleted_(checkingForUpdate,
+                                               updateCompleted)]]"
         aria-live="polite" full-screen-dialog>
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>
-      <div slot="subtitle" class="update-subtitle"
-          hidden="[[updateCompleted]]">
-        [[i18nDynamic(locale, 'installingUpdateDesc')]]
-      </div>
-      <div slot="subtitle" class="update-subtitle" id="updatingCancelHint"
-          hidden="[[isNotAllowedOrUpdateCompleted_(cancelAllowed,
-                                                   updateCompleted)]]">
-        [[i18nDynamic(locale, cancelHint)]]
-      </div>
-      <div id="update-complete-msg" slot="subtitle" class="update-subtitle"
-          hidden="[[!updateCompleted]]">
-        [[i18nDynamic(locale, 'updateCompeletedMsg')]]
+      <div slot="subtitle">
+        <div>[[i18nDynamic(locale, downloadingUpdatesKey)]]</div>
+        <div hidden="[[!cancelAllowed]]">
+          [[i18nDynamic(locale, cancelHintKey)]]
+        </div>
       </div>
       <paper-progress id="updating-progress" slot="progress" min="0" max="100"
-          value="[[progressValue]]" hidden="[[updateCompleted]]">
+          value="[[progressValue]]">
       </paper-progress>
       <div slot="footer" class="flex layout vertical">
-        <div id="estimated-time-left" class="progress-message"
-            hidden="[[isNotAllowedOrUpdateCompleted_(estimatedTimeLeftShown,
-                                                     updateCompleted)]]">
-          [[estimatedTimeLeft]]
-        </div>
-        <div id="progress-message" class="progress-message"
-            hidden="[[isNotAllowedOrUpdateCompleted_(progressMessageShown,
-                                                     updateCompleted)]]">
-          [[progressMessage]]
+        <div id="progress-message" class="progress-message">
+          [[progressMessage_]]
         </div>
         <div class="flex layout vertical center-justified center">
           <img class="update-illustration oobe-illustration"
@@ -103,5 +94,14 @@
         </div>
       </div>
     </oobe-dialog>
+
+    <oobe-dialog footer-shrinkable id="update-complete-dialog"
+        hidden="[[!updateCompleted]]" subtitle-key="updateCompeletedMsg"
+        aria-live="polite" full-screen-dialog>
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
+      </hd-iron-icon>
+    </oobe-dialog>
+
   </template>
 </dom-module>

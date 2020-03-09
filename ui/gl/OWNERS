@@ -3,7 +3,6 @@ ericrk@chromium.org
 kbr@chromium.org
 sunnyps@chromium.org
 zmo@chromium.org
-per-file *gl_image*=reveman@chromium.org
 per-file *gl_image*=dcastagna@chromium.org
 per-file *_ozone*=alexst@chromium.org
 per-file *_ozone*=dnicoara@chromium.org

@@ -38,9 +38,7 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/gl_image_shared_memory.h"
-#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
-#include "ui/gl/scoped_binders.h"
 #include "ui/gl/shared_gl_fence_egl.h"
 #include "ui/gl/trace_util.h"
 
@@ -241,19 +239,6 @@ class SharedImageRepresentationGLTexturePassthroughImpl
   const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
       override {
     return texture_passthrough_;
-  }
-
-  void EndAccess() override {
-    GLenum target = texture_passthrough_->target();
-    gl::GLImage* image = texture_passthrough_->GetLevelImage(target, 0);
-    if (!image)
-      return;
-    if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
-      gl::ScopedTextureBinder binder(target,
-                                     texture_passthrough_->service_id());
-      image->ReleaseTexImage(target);
-      image->BindTexImage(target);
-    }
   }
 
  private:
@@ -799,9 +784,8 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
               gl::BufferFormatToGLInternalFormat(buffer_format));
     if (base::Contains(gpu_preferences.texture_target_exception_list,
                        gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
-                                                 buffer_format))) {
+                                                 buffer_format)))
       info.target_for_scanout = gpu::GetPlatformSpecificTextureTarget();
-    }
   }
 }
 
@@ -878,17 +862,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   // bindable. Currently NativeBufferNeedsPlatformSpecificTextureTarget can
   // only return false on Chrome OS where GLImageNativePixmap is used which is
   // always bindable.
-#if DCHECK_IS_ON()
-  bool texture_2d_support = false;
-#if defined(OS_MACOSX)
-  // If the PlatformSpecificTextureTarget on Mac is GL_TEXTURE_2D, this is
-  // supported.
-  texture_2d_support =
-      (gpu::GetPlatformSpecificTextureTarget() == GL_TEXTURE_2D);
-#endif  // defined(OS_MACOSX)
   DCHECK(handle.type == gfx::SHARED_MEMORY_BUFFER || target != GL_TEXTURE_2D ||
-         texture_2d_support || image->ShouldBindOrCopy() == gl::GLImage::BIND);
-#endif  // DCHECK_IS_ON()
+         image->ShouldBindOrCopy() == gl::GLImage::BIND);
   if (color_space.IsValid())
     image->SetColorSpace(color_space);
 

@@ -537,6 +537,8 @@ viz_source_set("unit_tests") {
     ]
   }
 
+  defines = []
+
   if (enable_vulkan) {
     deps += [
       "//gpu/vulkan:test_support",
@@ -547,8 +549,12 @@ viz_source_set("unit_tests") {
     # CFI issue: https://crbug.com/967819
     # LSAN issue: https://crbug.com/971357
     if (use_x11 && !is_cfi && !is_lsan) {
-      defines = [ "ENABLE_VIZ_VULKAN_TESTS" ]
+      defines += [ "ENABLE_VIZ_VULKAN_TESTS" ]
     }
+  }
+
+  if (skia_use_dawn) {
+    defines += [ "ENABLE_VIZ_DAWN_TESTS" ]
   }
 }
 

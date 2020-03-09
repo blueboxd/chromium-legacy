@@ -10,13 +10,13 @@ import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.support.annotation.VisibleForTesting;
-import android.support.v4.widget.TextViewCompat;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.core.widget.TextViewCompat;
 
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;

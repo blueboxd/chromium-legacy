@@ -66,6 +66,10 @@ using RendererTypes = ::testing::Types<GLRenderer,
                                        ,
                                        cc::VulkanSkiaRenderer
 #endif
+#ifdef ENABLE_VIZ_DAWN_TESTS
+                                       ,
+                                       cc::DawnSkiaRenderer
+#endif
                                        >;
 TYPED_TEST_SUITE(SurfaceAggregatorPixelTest, RendererTypes);
 

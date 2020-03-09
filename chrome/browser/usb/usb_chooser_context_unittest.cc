@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_context_mock_device_observer.h"
@@ -22,6 +21,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/permissions/test/chooser_context_base_mock_permission_observer.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
@@ -76,7 +76,7 @@ class UsbChooserContextTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     // Add observers
-    chooser_context->ChooserContextBase::AddObserver(
+    chooser_context->permissions::ChooserContextBase::AddObserver(
         &mock_permission_observer_);
     chooser_context->AddObserver(&mock_device_observer_);
     return chooser_context;
@@ -85,7 +85,7 @@ class UsbChooserContextTest : public testing::Test {
   device::FakeUsbDeviceManager device_manager_;
 
   // Mock observers
-  MockPermissionObserver mock_permission_observer_;
+  permissions::MockPermissionObserver mock_permission_observer_;
   MockDeviceObserver mock_device_observer_;
 
  private:
@@ -116,13 +116,13 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
 
   store->GrantDevicePermission(origin, origin, *device_info);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      store->GetGrantedObjects(origin, origin);
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = store->GetGrantedObjects(origin, origin);
   ASSERT_EQ(1u, objects.size());
   EXPECT_EQ(object, objects[0]->value);
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
-      store->GetAllGrantedObjects();
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      all_origin_objects = store->GetAllGrantedObjects();
   ASSERT_EQ(1u, all_origin_objects.size());
   EXPECT_EQ(url, all_origin_objects[0]->requesting_origin);
   EXPECT_EQ(url, all_origin_objects[0]->embedding_origin);
@@ -171,13 +171,13 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *other_device_info));
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      store->GetGrantedObjects(origin, origin);
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
   EXPECT_EQ(object, objects[0]->value);
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
-      store->GetAllGrantedObjects();
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      all_origin_objects = store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
   EXPECT_EQ(url, all_origin_objects[0]->requesting_origin);
   EXPECT_EQ(url, all_origin_objects[0]->embedding_origin);
@@ -216,12 +216,12 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
   store->GrantDevicePermission(origin, origin, *device_info);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      store->GetGrantedObjects(origin, origin);
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
-      store->GetAllGrantedObjects();
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      all_origin_objects = store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
 
   EXPECT_CALL(mock_device_observer_, OnDeviceRemoved(_));
@@ -262,12 +262,12 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
   store->GrantDevicePermission(origin, origin, *device_info);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      store->GetGrantedObjects(origin, origin);
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
-      store->GetAllGrantedObjects();
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      all_origin_objects = store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
 
   EXPECT_CALL(
@@ -330,19 +330,19 @@ TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
       incognito_store->HasDevicePermission(origin, origin, *device_info_2));
 
   {
-    std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-        store->GetGrantedObjects(origin, origin);
+    std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+        objects = store->GetGrantedObjects(origin, origin);
     EXPECT_EQ(1u, objects.size());
-    std::vector<std::unique_ptr<ChooserContextBase::Object>>
+    std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
         all_origin_objects = store->GetAllGrantedObjects();
     ASSERT_EQ(1u, all_origin_objects.size());
     EXPECT_FALSE(all_origin_objects[0]->incognito);
   }
   {
-    std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-        incognito_store->GetGrantedObjects(origin, origin);
+    std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+        objects = incognito_store->GetGrantedObjects(origin, origin);
     EXPECT_EQ(1u, objects.size());
-    std::vector<std::unique_ptr<ChooserContextBase::Object>>
+    std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
         all_origin_objects = incognito_store->GetAllGrantedObjects();
     ASSERT_EQ(1u, all_origin_objects.size());
     EXPECT_TRUE(all_origin_objects[0]->incognito);
@@ -375,15 +375,15 @@ TEST_F(UsbChooserContextTest, UsbGuardPermission) {
   store->GrantDevicePermission(kBarOrigin, kBarOrigin, *device_info);
   store->GrantDevicePermission(kBarOrigin, kBarOrigin, *ephemeral_device_info);
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      store->GetGrantedObjects(kFooOrigin, kFooOrigin);
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = store->GetGrantedObjects(kFooOrigin, kFooOrigin);
   EXPECT_EQ(0u, objects.size());
 
   objects = store->GetGrantedObjects(kBarOrigin, kBarOrigin);
   EXPECT_EQ(2u, objects.size());
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
-      store->GetAllGrantedObjects();
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      all_origin_objects = store->GetAllGrantedObjects();
   for (const auto& object : all_origin_objects) {
     EXPECT_EQ(object->requesting_origin, kBarUrl);
     EXPECT_EQ(object->embedding_origin, kBarUrl);
@@ -711,14 +711,15 @@ void ExpectDeviceObjectInfo(const base::Value& actual,
   EXPECT_EQ(*actual_device_name, name);
 }
 
-void ExpectChooserObjectInfo(const ChooserContextBase::Object* actual,
-                             const GURL& requesting_origin,
-                             const GURL& embedding_origin,
-                             content_settings::SettingSource source,
-                             bool incognito,
-                             int vendor_id,
-                             int product_id,
-                             const std::string& name) {
+void ExpectChooserObjectInfo(
+    const permissions::ChooserContextBase::Object* actual,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    content_settings::SettingSource source,
+    bool incognito,
+    int vendor_id,
+    int product_id,
+    const std::string& name) {
   ASSERT_TRUE(actual);
   EXPECT_EQ(actual->requesting_origin, requesting_origin);
   EXPECT_EQ(actual->embedding_origin, embedding_origin);
@@ -727,13 +728,14 @@ void ExpectChooserObjectInfo(const ChooserContextBase::Object* actual,
   ExpectDeviceObjectInfo(actual->value, vendor_id, product_id, name);
 }
 
-void ExpectChooserObjectInfo(const ChooserContextBase::Object* actual,
-                             const GURL& requesting_origin,
-                             content_settings::SettingSource source,
-                             bool incognito,
-                             int vendor_id,
-                             int product_id,
-                             const std::string& name) {
+void ExpectChooserObjectInfo(
+    const permissions::ChooserContextBase::Object* actual,
+    const GURL& requesting_origin,
+    content_settings::SettingSource source,
+    bool incognito,
+    int vendor_id,
+    int product_id,
+    const std::string& name) {
   ExpectChooserObjectInfo(actual, requesting_origin, GURL::EmptyGURL(), source,
                           incognito, vendor_id, product_id, name);
 }

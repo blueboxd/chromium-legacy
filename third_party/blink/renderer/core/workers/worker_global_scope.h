@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
@@ -48,6 +47,7 @@
 
 namespace blink {
 
+struct BlinkTransferableMessage;
 class ConsoleMessage;
 class ExceptionState;
 class FetchClientSettingsObjectSnapshot;

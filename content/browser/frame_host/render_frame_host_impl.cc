@@ -3040,6 +3040,13 @@ bool RenderFrameHostImpl::IsWaitingForUnloadACK() const {
          is_waiting_for_unload_ack_;
 }
 
+bool RenderFrameHostImpl::BeforeUnloadTimedOut() const {
+  return beforeunload_timeout_ &&
+         (send_before_unload_start_time_ != base::TimeTicks()) &&
+         (base::TimeTicks::Now() - send_before_unload_start_time_) >
+             beforeunload_timeout_delay_;
+}
+
 void RenderFrameHostImpl::OnUnloadACK() {
   if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
     // This RFH was unloaded while attaching an inner delegate. The RFH

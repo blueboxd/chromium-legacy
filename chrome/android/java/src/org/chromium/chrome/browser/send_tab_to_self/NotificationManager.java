@@ -13,10 +13,10 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.provider.Browser;
-import android.support.v4.app.NotificationCompat;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;

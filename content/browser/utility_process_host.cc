@@ -81,6 +81,7 @@ class UtilitySandboxedProcessLauncherDelegate
             service_manager::SandboxType::kNoSandboxAndElevatedPrivileges ||
         sandbox_type_ == service_manager::SandboxType::kXrCompositing ||
         sandbox_type_ == service_manager::SandboxType::kProxyResolver ||
+        sandbox_type_ == service_manager::SandboxType::kPdfConversion ||
 #endif
         sandbox_type_ == service_manager::SandboxType::kUtility ||
         sandbox_type_ == service_manager::SandboxType::kNetwork ||

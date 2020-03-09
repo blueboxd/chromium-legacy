@@ -28,6 +28,8 @@ Description of common properties:
         Never None, but will be '' when no component exists.
 """
 
+from __future__ import division
+
 import collections
 import logging
 import os

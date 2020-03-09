@@ -50,35 +50,19 @@
       </div>
     </oobe-dialog>
 
-    <oobe-dialog hidden="[[showOn_(ui_state, 'update-process')]]" has-buttons
-        id="update-process-dialog">
-      <h1 slot="title" hidden="[[!updateProgressUnavailable]]">
-        [[i18nDynamic(locale,'checkingForUpdatesTitle')]]
-      </h1>
-      <paper-progress slot="progress" indeterminate
-          hidden="[[!updateProgressUnavailable]]">
-      </paper-progress>
-
-      <h1 slot="title" hidden="[[updateProgressUnavailable]]">
-        [[i18nDynamic(locale,'updatingTitle')]]
-      </h1>
-      <paper-progress slot="progress" min="0" max="100"
-          value="[[updateProgressValue]]"
-          hidden="[[updateProgressUnavailable]]">
-      </paper-progress>
-
-      <div slot="footer" hidden="[[updateProgressUnavailable]]"
-          class="flex layout vertical">
-        <div id="estimated-time-left" class="progress-message"
-            hidden="[[!estimatedTimeLeftVisible]]">
-          [[estimatedTimeLeft]]
-        </div>
-        <div id="progress-message" class="progress-message"
-            hidden="[[!updateProgressMessage]]">
-          [[updateProgressMessage]]
-        </div>
-      </div>
-    </oobe-dialog>
+    <checking-downloading-update id="checking-downloading-update"
+        hidden="[[showOn_(ui_state, 'update-process',
+                'update-completed-need-reboot')]]"
+        checking-for-update="[[updateProgressUnavailable]]"
+        update-completed="[[!showOn_(ui_state,
+                          'update-completed-need-reboot')]]"
+        progress-value="[[updateProgressValue]]"
+        has-estimate="[[estimatedTimeLeftVisible]]"
+        estimated-time-left="[[estimatedTimeLeft]]"
+        default-progress-message="[[updateProgressMessage]]"
+        checking-for-updates-key="updatingMessage"
+        downloading-updates-key="updatingMessage">
+    </checking-downloading-update>
 
     <oobe-dialog hidden="[[showOn_(ui_state, 'update-need-permission')]]"
         has-buttons title-key="updateRequiredTitle"
@@ -116,11 +100,6 @@
             class="focus-on-show">
         </oobe-text-button>
       </div>
-    </oobe-dialog>
-
-    <oobe-dialog
-        hidden="[[showOn_(ui_state, 'update-completed-need-reboot')]]"
-        id="update-completed-dialog" subtitle-key="rebootNeededMessage">
     </oobe-dialog>
 
     <oobe-dialog

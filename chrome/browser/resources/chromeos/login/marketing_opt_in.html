@@ -4,6 +4,7 @@
 
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_lottie/cr_lottie.html">
 
 <iron-iconset-svg name="marketing-opt-in-32" size="32">
     <svg>
@@ -41,6 +42,10 @@
           hidden="[[!marketingOptInEnabled_]]">
         [[i18nRecursive(locale, 'marketingOptInScreenSubtitle', 'productName')]]
       </div>
+      <div slot="subtitle" id="marketing-opt-in-subtitle"
+          hidden="[[marketingOptInEnabled_]]">
+        [[i18nDynamic(locale, 'marketingOptInScreenSubtitleWithDeviceName')]]
+      </div>
       <div slot="footer" class="layout vertical flex">
         <div class="marketing-option layout horizontal center"
             hidden="[[!marketingOptInEnabled_]]"
@@ -66,6 +71,10 @@
           <cr-toggle id="chromebookUpdatesOption" checked
               aria-labelledby="chromebookUpdatesOption">
           </cr-toggle>
+        </div>
+        <div class="marketing-animation-container">
+          <cr-lottie class="marketing-animation" animation-url="all_set.json">
+          </cr-lottie>
         </div>
         <div hidden="[[!isA11ySettingsButtonVisible_]]"
             id="finalAccessibilityLinkContainer">

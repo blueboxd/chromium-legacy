@@ -31,6 +31,7 @@ class MODULES_EXPORT DOMTaskSignal final
 
   // task_signal.idl
   AtomicString priority();
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(prioritychange, kPrioritychange)
 
   void ContextDestroyed() override;
 

@@ -9,11 +9,11 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
-import android.support.v4.app.NotificationManagerCompat;
 import android.text.format.DateUtils;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.MathUtils;

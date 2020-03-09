@@ -10,11 +10,12 @@ import android.graphics.drawable.Drawable;
 import android.hardware.biometrics.BiometricManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.hardware.fingerprint.FingerprintManagerCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceScreen;
+
+import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

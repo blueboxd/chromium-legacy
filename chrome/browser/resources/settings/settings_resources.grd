@@ -875,19 +875,19 @@
       <structure name="IDR_SETTINGS_SECURE_DNS_INPUT_JS"
                  file="privacy_page/secure_dns_input.js"
                  type="chrome_html" />
+      <!-- TODO(harrisonsean): remove flatten -->
       <structure name="IDR_SETTINGS_SECURITY_PAGE_HTML"
                  file="privacy_page/security_page.html"
                  type="chrome_html"
-                 preprocess="true" />
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_SECURITY_PAGE_JS"
                  file="privacy_page/security_page.js"
                  type="chrome_html"
                  preprocess="true" />
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_HTML"
                  file="privacy_page/privacy_page.html"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_JS"
                  file="privacy_page/privacy_page.js"
                  preprocess="true"

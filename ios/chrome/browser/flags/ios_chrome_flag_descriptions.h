@@ -88,11 +88,6 @@ extern const char kLogBreadcrumbsDescription[];
 extern const char kBreakpadNoDelayInitialUploadName[];
 extern const char kBreakpadNoDelayInitialUploadDescription[];
 
-// Title and description for the flag to make browser container keep the
-// content view hierarchy directly.
-extern const char kBrowserContainerKeepsContentViewName[];
-extern const char kBrowserContainerKeepsContentViewDescription[];
-
 // Title and description for the flag to control if Chrome should wipe synced
 // data from a local device on sign-out from a non-managed account.
 extern const char kClearSyncedDataName[];

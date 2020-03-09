@@ -99,17 +99,11 @@ bool WebUIControllerFactoryRegistry::IsURLAcceptableForWebUI(
          // See http://crbug.com/42547
          url.spec() == url::kAboutBlankURL ||
          // javascript: and debug URLs like chrome://kill are allowed.
-         IsRendererDebugURL(url) ||
-         // Temporarily allow the embedder to whitelist URLs allowed in WebUI
-         // until crbug.com/768526 is resolved.
-         GetContentClient()->browser()->IsURLAcceptableForWebUI(browser_context,
-                                                                url);
+         IsRendererDebugURL(url);
 }
 
-WebUIControllerFactoryRegistry::WebUIControllerFactoryRegistry() {
-}
+WebUIControllerFactoryRegistry::WebUIControllerFactoryRegistry() = default;
 
-WebUIControllerFactoryRegistry::~WebUIControllerFactoryRegistry() {
-}
+WebUIControllerFactoryRegistry::~WebUIControllerFactoryRegistry() = default;
 
 }  // namespace content

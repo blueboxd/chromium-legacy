@@ -122,7 +122,6 @@
       <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GSHEET" file="launcher_chip_icons/filetype_gsheet.png" />
       <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GSLIDES" file="launcher_chip_icons/filetype_gslides.png" />
       <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_IMAGE" file="launcher_chip_icons/filetype_image.png" />
-
     </structures>
   </release>
 </grit>

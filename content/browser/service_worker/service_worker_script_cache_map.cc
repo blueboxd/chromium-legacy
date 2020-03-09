@@ -70,6 +70,8 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
       main_script_status_message_ = status_message;
     }
   } else {
+    // |size_bytes| should not be negative when caching finished successfully.
+    CHECK_GE(size_bytes, 0);
     resource_map_[url]->size_bytes = size_bytes;
   }
 }

@@ -8212,8 +8212,10 @@ interface TaskController : AbortController
     method setPriority
 interface TaskSignal : AbortSignal
     attribute @@toStringTag
+    getter onprioritychange
     getter priority
     method constructor
+    setter onprioritychange
 interface Text : CharacterData
     attribute @@toStringTag
     getter assignedSlot

@@ -20,6 +20,7 @@ This file can also be run stand-alone in order to test out the logic on smaller
 sample sizes.
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import argparse
@@ -225,7 +226,8 @@ class _BcTypeInfo:
       [size, item_type_id] = list(_ParseOpItems(line, attrib_pos))  # op0, op1.
       bits = self.int_types.get(item_type_id)
       if bits is not None:  # |bits| can be None for non-int arrays.
-        self.int_array_types[self.cur_type_id] = _BcIntArrayType(size, bits / 8)
+        self.int_array_types[self.cur_type_id] = _BcIntArrayType(
+            size, bits // 8)
     self.cur_type_id += 1
 
   def GetArrayType(self, idx):

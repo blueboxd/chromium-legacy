@@ -12,7 +12,8 @@ import static android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS;
 import android.content.Context;
 import android.hardware.biometrics.BiometricManager;
 import android.os.Build;
-import android.support.v4.hardware.fingerprint.FingerprintManagerCompat;
+
+import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.ui.base.WindowAndroid;

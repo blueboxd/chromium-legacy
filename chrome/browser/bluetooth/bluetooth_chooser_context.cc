@@ -102,8 +102,8 @@ WebBluetoothDeviceId BluetoothChooserContext::GetWebBluetoothDeviceId(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,
     const std::string& device_address) {
-  const std::vector<std::unique_ptr<ChooserContextBase::Object>> object_list =
-      GetGrantedObjects(requesting_origin, embedding_origin);
+  const std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      object_list = GetGrantedObjects(requesting_origin, embedding_origin);
   for (const auto& object : object_list) {
     const base::Value& device = object->value;
     DCHECK(IsValidObject(device));
@@ -130,8 +130,8 @@ std::string BluetoothChooserContext::GetDeviceAddress(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,
     const WebBluetoothDeviceId& device_id) {
-  const std::vector<std::unique_ptr<ChooserContextBase::Object>> object_list =
-      GetGrantedObjects(requesting_origin, embedding_origin);
+  const std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      object_list = GetGrantedObjects(requesting_origin, embedding_origin);
   for (const auto& object : object_list) {
     const base::Value& device = object->value;
     DCHECK(IsValidObject(device));
@@ -181,8 +181,8 @@ WebBluetoothDeviceId BluetoothChooserContext::GrantServiceAccessPermission(
   // If |requesting_origin| and |embedding_origin| already have permission to
   // access the device with |device_address|, update the allowed GATT services
   // by performing a union of |services|.
-  const std::vector<std::unique_ptr<ChooserContextBase::Object>> object_list =
-      GetGrantedObjects(requesting_origin, embedding_origin);
+  const std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      object_list = GetGrantedObjects(requesting_origin, embedding_origin);
   const std::string& device_address = device->GetAddress();
   for (const auto& object : object_list) {
     base::Value& device_object = object->value;
@@ -233,8 +233,8 @@ bool BluetoothChooserContext::HasDevicePermission(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,
     const WebBluetoothDeviceId& device_id) {
-  const std::vector<std::unique_ptr<ChooserContextBase::Object>> object_list =
-      GetGrantedObjects(requesting_origin, embedding_origin);
+  const std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      object_list = GetGrantedObjects(requesting_origin, embedding_origin);
   for (const auto& object : object_list) {
     const base::Value& device = object->value;
     DCHECK(IsValidObject(device));
@@ -251,8 +251,8 @@ bool BluetoothChooserContext::IsAllowedToAccessAtLeastOneService(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,
     const WebBluetoothDeviceId& device_id) {
-  const std::vector<std::unique_ptr<ChooserContextBase::Object>> object_list =
-      GetGrantedObjects(requesting_origin, embedding_origin);
+  const std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      object_list = GetGrantedObjects(requesting_origin, embedding_origin);
   for (const auto& object : object_list) {
     const base::Value& device = object->value;
     DCHECK(IsValidObject(device));
@@ -270,8 +270,8 @@ bool BluetoothChooserContext::IsAllowedToAccessService(
     const url::Origin& embedding_origin,
     const WebBluetoothDeviceId& device_id,
     BluetoothUUID service) {
-  const std::vector<std::unique_ptr<ChooserContextBase::Object>> object_list =
-      GetGrantedObjects(requesting_origin, embedding_origin);
+  const std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      object_list = GetGrantedObjects(requesting_origin, embedding_origin);
   for (const auto& object : object_list) {
     const base::Value& device = object->value;
     DCHECK(IsValidObject(device));

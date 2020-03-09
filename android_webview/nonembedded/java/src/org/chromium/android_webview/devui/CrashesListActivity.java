@@ -416,7 +416,7 @@ public class CrashesListActivity extends Activity {
                                 Build.VERSION.SDK_INT, webViewPackage.packageName,
                                 webViewPackage.versionName, webViewPackage.versionCode, appPackage,
                                 appVersion, crashInfo.uploadId))
-                .appendQueryParameter("labels", "User-Submitted")
+                .appendQueryParameter("labels", "User-Submitted,Via-WebView-DevTools")
                 .build();
     }
 

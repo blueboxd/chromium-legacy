@@ -7,8 +7,6 @@ import("//tools/grit/grit_rule.gni")
 grit("webrtc_logs_resources") {
   source = "webrtc_logs_resources.grd"
 
-  # The .grd contains references to generated files.
-  source_is_generated = true
   use_brotli = true
   outputs = [
     "grit/webrtc_logs_resources.h",

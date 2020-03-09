@@ -4,6 +4,8 @@
 
 """Contains a set of Chrome-specific size queries."""
 
+from __future__ import division
+
 import logging
 
 import models

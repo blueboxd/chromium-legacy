@@ -54,6 +54,7 @@ config("common_config") {
   libs = [
     "secur32.lib",  # For LsaXXX functions
     "wbemuuid.lib",  # For CLSID_WbemLocator
+    "iphlpapi.lib",  # For GetAdaptersInfo
   ]
 }
 

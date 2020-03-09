@@ -33,11 +33,12 @@ class ListValue;
 namespace settings {
 
 // Chrome "ContentSettings" settings page UI handler.
-class SiteSettingsHandler : public SettingsPageUIHandler,
-                            public content_settings::Observer,
-                            public ProfileObserver,
-                            public ChooserContextBase::PermissionObserver,
-                            public CookiesTreeModel::Observer {
+class SiteSettingsHandler
+    : public SettingsPageUIHandler,
+      public content_settings::Observer,
+      public ProfileObserver,
+      public permissions::ChooserContextBase::PermissionObserver,
+      public CookiesTreeModel::Observer {
  public:
   explicit SiteSettingsHandler(Profile* profile,
                                web_app::AppRegistrar& web_app_registrar);
@@ -268,7 +269,8 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
       this};
 
   // Change observer for chooser permissions.
-  ScopedObserver<ChooserContextBase, ChooserContextBase::PermissionObserver>
+  ScopedObserver<permissions::ChooserContextBase,
+                 permissions::ChooserContextBase::PermissionObserver>
       chooser_observer_{this};
 
   // Change observer for prefs.

@@ -373,6 +373,7 @@ GLRenderer::GLRenderer(
 
   const auto& context_caps =
       output_surface_->context_provider()->ContextCapabilities();
+  DCHECK(!context_caps.iosurface || context_caps.texture_rectangle);
 
   use_discard_framebuffer_ = context_caps.discard_framebuffer;
   use_sync_query_ = context_caps.sync_query;

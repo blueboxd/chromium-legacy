@@ -18,7 +18,8 @@ class TcHelperTest(unittest.TestCase):
   def test_get_translatable_grds(self):
     grds = translation_helper.get_translatable_grds(
         testdata_path, ['test.grd', 'not_translated.grd', 'internal.grd'],
-        os.path.join(testdata_path, 'translation_expectations.pyl'))
+        os.path.join(testdata_path,
+                     'translation_expectations_without_unlisted_file.pyl'))
     self.assertEqual(1, len(grds))
 
     # There should be no references to not_translated.grd (mentioning the
@@ -39,8 +40,8 @@ class TcHelperTest(unittest.TestCase):
   # The expectations list an untranslatable file (not_translated.grd), but the
   # grd list doesn't contain it.
   def test_missing_untranslatable(self):
-    TRANSLATION_EXPECTATIONS = os.path.join(testdata_path,
-                                            'translation_expectations.pyl')
+    TRANSLATION_EXPECTATIONS = os.path.join(
+        testdata_path, 'translation_expectations_without_unlisted_file.pyl')
     with self.assertRaises(Exception) as context:
       translation_helper.get_translatable_grds(
           testdata_path, ['test.grd', 'internal.grd'], TRANSLATION_EXPECTATIONS)
@@ -53,8 +54,8 @@ class TcHelperTest(unittest.TestCase):
   # The expectations list an internal file (internal.grd), but the grd list
   # doesn't contain it.
   def test_missing_internal(self):
-    TRANSLATION_EXPECTATIONS = os.path.join(testdata_path,
-                                            'translation_expectations.pyl')
+    TRANSLATION_EXPECTATIONS = os.path.join(
+        testdata_path, 'translation_expectations_without_unlisted_file.pyl')
     with self.assertRaises(Exception) as context:
       translation_helper.get_translatable_grds(
           testdata_path, ['test.grd', 'not_translated.grd'],
@@ -68,8 +69,8 @@ class TcHelperTest(unittest.TestCase):
   # The expectations list a translatable file (test.grd), but the grd list
   # doesn't contain it.
   def test_missing_translatable(self):
-    TRANSLATION_EXPECTATIONS = os.path.join(testdata_path,
-                                            'translation_expectations.pyl')
+    TRANSLATION_EXPECTATIONS = os.path.join(
+        testdata_path, 'translation_expectations_without_unlisted_file.pyl')
     with self.assertRaises(Exception) as context:
       translation_helper.get_translatable_grds(
           testdata_path, ['not_translated.grd', 'internal.grd'],
@@ -83,8 +84,8 @@ class TcHelperTest(unittest.TestCase):
   # The grd list contains a file (part.grdp) that's not listed in translation
   # expectations.
   def test_expectations_not_updated(self):
-    TRANSLATION_EXPECTATIONS = os.path.join(testdata_path,
-                                            'translation_expectations.pyl')
+    TRANSLATION_EXPECTATIONS = os.path.join(
+        testdata_path, 'translation_expectations_without_unlisted_file.pyl')
     with self.assertRaises(Exception) as context:
       translation_helper.get_translatable_grds(
           testdata_path,

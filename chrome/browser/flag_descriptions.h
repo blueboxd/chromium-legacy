@@ -1498,9 +1498,6 @@ extern const char kUpdateNotificationSchedulingIntegrationDescription[];
 extern const char kUpdateNotificationServiceImmediateShowOptionName[];
 extern const char kUpdateNotificationServiceImmediateShowOptionDescription[];
 
-extern const char kPrefetchNotificationSchedulingIntegrationName[];
-extern const char kPrefetchNotificationSchedulingIntegrationDescription[];
-
 extern const char kUsageStatsDescription[];
 extern const char kUsageStatsName[];
 

@@ -1585,12 +1585,7 @@ void SplitViewController::OnWindowSnapped(aura::Window* window) {
 
 void SplitViewController::OnSnappedWindowDetached(aura::Window* window,
                                                   bool window_drag) {
-  DCHECK(IsWindowInSplitView(window));
-  if (left_window_ == window) {
-    StopObserving(LEFT);
-  } else {
-    StopObserving(RIGHT);
-  }
+  StopObserving(GetPositionOfSnappedWindow(window));
 
   // Resizing (or the divider snap animation) may continue, but |window| will no
   // longer have anything to do with it.

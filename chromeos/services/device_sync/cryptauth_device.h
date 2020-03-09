@@ -6,6 +6,7 @@
 #define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_DEVICE_H_
 
 #include <map>
+#include <ostream>
 #include <string>
 
 #include "base/optional.h"
@@ -58,6 +59,9 @@ class CryptAuthDevice {
   //   }
   base::Value AsDictionary() const;
 
+  // Converts the device to a human-readable dictionary.
+  base::Value AsReadableDictionary() const;
+
   bool operator==(const CryptAuthDevice& other) const;
   bool operator!=(const CryptAuthDevice& other) const;
 
@@ -87,6 +91,8 @@ class CryptAuthDevice {
  private:
   std::string instance_id_;
 };
+
+std::ostream& operator<<(std::ostream& stream, const CryptAuthDevice& device);
 
 }  // namespace device_sync
 

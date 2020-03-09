@@ -12,6 +12,6 @@
 #endif
 
 // Initializes child-process specific code for the PDF module.
-void InitializePDF();
+void MaybeInitializeGDI();
 
 #endif  // CHROME_CHILD_PDF_CHILD_INIT_H_

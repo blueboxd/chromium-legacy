@@ -208,12 +208,13 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
 
   void InitializeRenderer(DemuxerStream* demuxer_stream,
-                          const PipelineStatusCB& pipeline_status_cb) {
+                          PipelineStatusCallback pipeline_status_cb) {
     EXPECT_CALL(*this, OnWaiting(_)).Times(0);
     EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(0);
     EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(0);
     EXPECT_CALL(*this, OnVideoConfigChange(_)).Times(0);
-    renderer_->Initialize(demuxer_stream, nullptr, this, pipeline_status_cb);
+    renderer_->Initialize(demuxer_stream, nullptr, this,
+                          std::move(pipeline_status_cb));
   }
 
   void Initialize() {

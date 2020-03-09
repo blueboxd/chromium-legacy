@@ -56,7 +56,7 @@ bool HidChooserContext::IsValidObject(const base::Value& object) {
   return guid && !guid->empty();
 }
 
-std::vector<std::unique_ptr<ChooserContextBase::Object>>
+std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
 HidChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
                                      const url::Origin& embedding_origin) {
   // TODO(crbug.com/958918): Include devices with persistent permissions in the
@@ -85,7 +85,7 @@ HidChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
   return objects;
 }
 
-std::vector<std::unique_ptr<ChooserContextBase::Object>>
+std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
 HidChooserContext::GetAllGrantedObjects() {
   // TODO(crbug.com/958918): Include devices with persistent permissions in the
   // returned list.

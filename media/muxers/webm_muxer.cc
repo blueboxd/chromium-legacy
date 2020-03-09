@@ -221,8 +221,10 @@ bool WebmMuxer::OnEncodedVideo(const VideoParameters& params,
     video_codec_ = params.codec;
     AddVideoTrack(params.visible_rect_size, GetFrameRate(params),
                   params.color_space);
-    if (first_frame_timestamp_video_.is_null())
-      first_frame_timestamp_video_ = timestamp;
+    if (first_frame_timestamp_video_.is_null()) {
+      // Compensate for time in pause spent before the first frame.
+      first_frame_timestamp_video_ = timestamp - total_time_in_pause_;
+    }
   }
 
   // TODO(ajose): Support multiple tracks: http://crbug.com/528523
@@ -231,7 +233,6 @@ bool WebmMuxer::OnEncodedVideo(const VideoParameters& params,
     if (is_key_frame)  // Upon Key frame reception, empty the encoded queue.
       video_frames_.clear();
   }
-
   const base::TimeTicks recorded_timestamp =
       UpdateLastTimestampMonotonically(timestamp, &last_frame_timestamp_video_);
   video_frames_.push_back(EncodedFrame{
@@ -248,9 +249,10 @@ bool WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
 
   if (!audio_track_index_) {
     AddAudioTrack(params);
-    if (first_frame_timestamp_audio_.is_null())
-      first_frame_timestamp_audio_ = timestamp;
-    last_frame_timestamp_video_ = timestamp;
+    if (first_frame_timestamp_audio_.is_null()) {
+      // Compensate for time in pause spent before the first frame.
+      first_frame_timestamp_audio_ = timestamp - total_time_in_pause_;
+    }
   }
 
   const base::TimeTicks recorded_timestamp =

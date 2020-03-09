@@ -114,12 +114,6 @@ const char kBreakpadNoDelayInitialUploadDescription[] =
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";
 
-const char kBrowserContainerKeepsContentViewName[] =
-    "Browser Container retains the content view";
-const char kBrowserContainerKeepsContentViewDescription[] =
-    "When enable, the browser container keeps the content view in the view "
-    "hierarchy, to avoid WKWebView from being unloaded from the process.";
-
 const char kClearSyncedDataName[] = "Clear Synced Data on Sign Out";
 const char kClearSyncedDataDescription[] =
     "When enabled users signed in with a non-managed account will be "

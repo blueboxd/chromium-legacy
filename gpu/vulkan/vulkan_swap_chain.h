@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "gpu/vulkan/vulkan_export.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/swap_result.h"
 
@@ -74,7 +73,7 @@ class VULKAN_EXPORT VulkanSwapChain {
   void Destroy();
 
   // Present the current buffer.
-  gfx::SwapResult PresentBuffer(const gfx::Rect& rect);
+  gfx::SwapResult PresentBuffer();
 
   uint32_t num_images() const { return static_cast<uint32_t>(images_.size()); }
   const gfx::Size& size() const { return size_; }
@@ -101,8 +100,7 @@ class VULKAN_EXPORT VulkanSwapChain {
   bool AcquireNextImage();
 
   bool use_protected_memory_ = false;
-  VulkanDeviceQueue* device_queue_ = nullptr;
-  bool is_incremental_present_supported_ = false;
+  VulkanDeviceQueue* device_queue_;
   VkSwapchainKHR swap_chain_ = VK_NULL_HANDLE;
 
   std::unique_ptr<VulkanCommandPool> command_pool_;

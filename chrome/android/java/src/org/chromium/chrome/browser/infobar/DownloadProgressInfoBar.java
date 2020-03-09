@@ -5,11 +5,11 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.graphics.drawable.Drawable;
-import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;

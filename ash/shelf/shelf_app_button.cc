@@ -609,21 +609,20 @@ bool ShelfAppButton::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 gfx::Rect ShelfAppButton::GetIconViewBounds(float icon_scale) {
-  int icon_size = ShelfConfig::Get()->button_icon_size() * icon_scale;
-  // TODO: Find out why there is an extra pixel of padding between each item
-  // and the inner side of the shelf.
-  // clang-format off
-  int icon_padding = (ShelfConfig::Get()->hotseat_size() - icon_size) / 2;
-  // clang-format on
+  const float icon_size = ShelfConfig::Get()->button_icon_size() * icon_scale;
+  const float icon_padding =
+      (ShelfConfig::Get()->hotseat_size() - icon_size) / 2;
 
   const gfx::Rect button_bounds(GetContentsBounds());
-  Shelf* shelf = shelf_view_->shelf();
+  const Shelf* shelf = shelf_view_->shelf();
   const bool is_horizontal_shelf = shelf->IsHorizontalAlignment();
-  int x_offset = is_horizontal_shelf ? 0 : icon_padding;
-  int y_offset = is_horizontal_shelf ? icon_padding : 0;
+  float x_offset = is_horizontal_shelf ? 0 : icon_padding;
+  float y_offset = is_horizontal_shelf ? icon_padding : 0;
 
-  int icon_width = std::min(icon_size, button_bounds.width() - x_offset);
-  int icon_height = std::min(icon_size, button_bounds.height() - y_offset);
+  const float icon_width =
+      std::min(icon_size, button_bounds.width() - x_offset);
+  const float icon_height =
+      std::min(icon_size, button_bounds.height() - y_offset);
 
   // If on the left or top 'invert' the inset so the constant gap is on
   // the interior (towards the center of display) edge of the shelf.
@@ -632,21 +631,15 @@ gfx::Rect ShelfAppButton::GetIconViewBounds(float icon_scale) {
 
   // Expand bounds to include shadows.
   gfx::Insets insets_shadows = gfx::ShadowValue::GetMargin(icon_shadows_);
+  // insets_shadows = insets_shadows.Scale(icon_scale);
   // Center icon with respect to the secondary axis.
-  if (is_horizontal_shelf) {
-    x_offset =
-        std::max(0, button_bounds.width() - icon_width + insets_shadows.left() -
-                        insets_shadows.right() + 1) /
-        2;
-  } else {
-    y_offset =
-        std::max(0, button_bounds.height() - icon_height +
-                        insets_shadows.top() - insets_shadows.bottom() + 1) /
-        2;
-  }
-  gfx::Rect icon_view_bounds =
-      gfx::Rect(button_bounds.x() + x_offset, button_bounds.y() + y_offset,
-                icon_width, icon_height);
+  if (is_horizontal_shelf)
+    x_offset = std::max(0.0f, button_bounds.width() - icon_width + 1) / 2;
+  else
+    y_offset = std::max(0.0f, button_bounds.height() - icon_height) / 2;
+  gfx::RectF icon_view_bounds =
+      gfx::RectF(button_bounds.x() + x_offset, button_bounds.y() + y_offset,
+                 icon_width, icon_height);
 
   icon_view_bounds.Inset(insets_shadows);
   // Icon size has been incorrect when running
@@ -654,7 +647,7 @@ gfx::Rect ShelfAppButton::GetIconViewBounds(float icon_scale) {
   // http://crbug.com/234854.
   DCHECK_LE(icon_width, icon_size);
   DCHECK_LE(icon_height, icon_size);
-  return icon_view_bounds;
+  return gfx::ToRoundedRect(icon_view_bounds);
 }
 
 void ShelfAppButton::Layout() {

@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -47,6 +46,7 @@
 #include "components/permissions/chooser_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_uma_util.h"
+#include "components/permissions/test/chooser_context_base_mock_permission_observer.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_controller.h"
@@ -1738,7 +1738,8 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
 
   void TearDown() override {
     auto* chooser_context = UsbChooserContextFactory::GetForProfile(profile());
-    chooser_context->ChooserContextBase::RemoveObserver(&observer_);
+    chooser_context->permissions::ChooserContextBase::RemoveObserver(
+        &observer_);
   }
 
   // Sets up the UsbChooserContext with two devices and permissions for these
@@ -1789,7 +1790,7 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
                                *policy_value);
 
     // Add the observer for permission changes.
-    chooser_context->ChooserContextBase::AddObserver(&observer_);
+    chooser_context->permissions::ChooserContextBase::AddObserver(&observer_);
   }
 
   void SetUpOffTheRecordUsbChooserContext() {
@@ -1813,13 +1814,14 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
                                            *off_the_record_device_);
 
     // Add the observer for permission changes.
-    chooser_context->ChooserContextBase::AddObserver(&observer_);
+    chooser_context->permissions::ChooserContextBase::AddObserver(&observer_);
   }
 
   void DestroyIncognitoProfile() override {
     auto* chooser_context =
         UsbChooserContextFactory::GetForProfile(incognito_profile());
-    chooser_context->ChooserContextBase::RemoveObserver(&observer_);
+    chooser_context->permissions::ChooserContextBase::RemoveObserver(
+        &observer_);
 
     SiteSettingsHandlerTest::DestroyIncognitoProfile();
   }
@@ -1915,7 +1917,7 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
   device::mojom::UsbDeviceInfoPtr persistent_device_info_;
   device::mojom::UsbDeviceInfoPtr user_granted_device_info_;
 
-  MockPermissionObserver observer_;
+  permissions::MockPermissionObserver observer_;
 
  private:
   device::FakeUsbDeviceManager device_manager_;

@@ -8,7 +8,6 @@ import static org.chromium.ui.base.LocalizationUtils.isLayoutRtl;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewPropertyAnimator;
@@ -16,6 +15,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.LinearLayout;
 
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 

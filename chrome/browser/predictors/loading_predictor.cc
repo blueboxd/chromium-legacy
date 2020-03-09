@@ -11,6 +11,7 @@
 #include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/loading_stats_collector.h"
 #include "chrome/browser/predictors/navigation_id.h"
+#include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/network_isolation_key.h"
@@ -85,8 +86,12 @@ bool LoadingPredictor::PrepareForPageLoad(
   }
 
   PreconnectPrediction prediction;
-  bool has_local_preconnect_prediction =
-      resource_prefetch_predictor_->PredictPreconnectOrigins(url, &prediction);
+  bool has_local_preconnect_prediction = false;
+  if (features::ShouldUseLocalPredictions()) {
+    has_local_preconnect_prediction =
+        resource_prefetch_predictor_->PredictPreconnectOrigins(url,
+                                                               &prediction);
+  }
   if (active_hints_.find(url) != active_hints_.end() &&
       has_local_preconnect_prediction) {
     // We are currently preconnecting using the local preconnect prediction. Do

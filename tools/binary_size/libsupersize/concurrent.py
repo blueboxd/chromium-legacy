@@ -4,6 +4,8 @@
 
 """Helpers related to multiprocessing."""
 
+from __future__ import division
+
 import __builtin__  # __builtins__ does not have exception types.
 import atexit
 import itertools
@@ -68,7 +70,7 @@ class _FuncWrapper(object):
   def __call__(self, index, _=None):
     try:
       return self._func(*_fork_params[index], **_fork_kwargs)
-    except Exception, e:
+    except Exception as e:
       # Only keep the exception type for builtin exception types or else risk
       # further marshalling exceptions.
       exception_type = None

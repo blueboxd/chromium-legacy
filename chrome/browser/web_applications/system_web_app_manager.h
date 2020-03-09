@@ -48,6 +48,7 @@ enum class SystemAppType {
   TERMINAL,
   MEDIA,
   HELP,
+  PRINT_MANAGEMENT,
 #if !defined(OFFICIAL_BUILD)
   SAMPLE,
 #endif  // !defined(OFFICIAL_BUILD)

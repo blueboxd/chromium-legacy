@@ -325,13 +325,6 @@ class BluetoothBlueZTest : public testing::Test {
     DiscoverDevice("does not exist");
   }
 
-  void ExpectSetLongTermKeysCallCount(uint32_t count) {
-#if defined(OS_CHROMEOS)
-    EXPECT_EQ(count,
-              fake_bluetooth_adapter_client_->set_long_term_keys_call_count());
-#endif
-  }
-
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   bluez::FakeBluetoothAdapterClient* fake_bluetooth_adapter_client_;
@@ -363,13 +356,10 @@ const char BluetoothBlueZTest::kHeadsetUuid[] =
     "00001112-0000-1000-8000-00805f9b34fb";
 
 TEST_F(BluetoothBlueZTest, AlreadyPresent) {
-  ExpectSetLongTermKeysCallCount(0u);
-
   GetAdapter();
 
   // This verifies that the class gets the list of adapters when created;
   // and initializes with an existing adapter if there is one.
-  ExpectSetLongTermKeysCallCount(1u);
   EXPECT_TRUE(adapter_->IsPresent());
   EXPECT_FALSE(adapter_->IsPowered());
   EXPECT_EQ(bluez::FakeBluetoothAdapterClient::kAdapterAddress,
@@ -395,7 +385,6 @@ TEST_F(BluetoothBlueZTest, BecomePresent) {
   fake_bluetooth_adapter_client_->SetVisible(false);
   GetAdapter();
   ASSERT_FALSE(adapter_->IsPresent());
-  ExpectSetLongTermKeysCallCount(0u);
 
   // Install an observer; expect the AdapterPresentChanged to be called
   // with true, and IsPresent() to return true.
@@ -407,7 +396,6 @@ TEST_F(BluetoothBlueZTest, BecomePresent) {
   EXPECT_TRUE(observer.last_present());
 
   EXPECT_TRUE(adapter_->IsPresent());
-  ExpectSetLongTermKeysCallCount(1u);
 
   // We should have had a device announced.
   EXPECT_EQ(2, observer.device_added_count());
@@ -418,14 +406,12 @@ TEST_F(BluetoothBlueZTest, BecomePresent) {
   EXPECT_EQ(0, observer.powered_changed_count());
   EXPECT_EQ(0, observer.discovering_changed_count());
   EXPECT_FALSE(adapter_->IsPowered());
-  EXPECT_FALSE(IsAdapterDiscovering());
-  ExpectSetLongTermKeysCallCount(1u);
+  EXPECT_FALSE(adapter_->IsDiscovering());
 }
 
 TEST_F(BluetoothBlueZTest, BecomeNotPresent) {
   GetAdapter();
   ASSERT_TRUE(adapter_->IsPresent());
-  ExpectSetLongTermKeysCallCount(1u);
 
   // Install an observer; expect the AdapterPresentChanged to be called
   // with false, and IsPresent() to return false.
@@ -454,8 +440,7 @@ TEST_F(BluetoothBlueZTest, BecomeNotPresent) {
   // Other callbacks shouldn't be called since the values are false.
   EXPECT_EQ(0, observer.powered_changed_count());
   EXPECT_FALSE(adapter_->IsPowered());
-  EXPECT_FALSE(IsAdapterDiscovering());
-  ExpectSetLongTermKeysCallCount(1u);
+  EXPECT_FALSE(adapter_->IsDiscovering());
 }
 
 TEST_F(BluetoothBlueZTest, SecondAdapter) {
@@ -510,7 +495,6 @@ TEST_F(BluetoothBlueZTest, SecondAdapter) {
   EXPECT_EQ(0, observer.device_removed_count());
   EXPECT_EQ(0, observer.powered_changed_count());
   EXPECT_EQ(0, observer.discovering_changed_count());
-  ExpectSetLongTermKeysCallCount(1u);
 }
 
 TEST_F(BluetoothBlueZTest, BecomePowered) {

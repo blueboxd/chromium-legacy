@@ -135,9 +135,9 @@ struct TestDatabaseConnection {
   DISALLOW_COPY_AND_ASSIGN(TestDatabaseConnection);
 };
 
-void StatusCallback(base::OnceClosure callback,
-                    blink::mojom::IDBStatus* status_out,
-                    blink::mojom::IDBStatus status) {
+void TestStatusCallback(base::OnceClosure callback,
+                        blink::mojom::IDBStatus* status_out,
+                        blink::mojom::IDBStatus status) {
   *status_out = status;
   std::move(callback).Run();
 }
@@ -610,7 +610,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_CompactDatabaseWithConnection) {
 
         connection->version_change_transaction->Commit(0);
         idb_mojo_factory_->AbortTransactionsAndCompactDatabase(base::BindOnce(
-            &StatusCallback, std::move(quit_closure2), &callback_result));
+            &TestStatusCallback, std::move(quit_closure2), &callback_result));
       }));
   loop2.Run();
   EXPECT_EQ(blink::mojom::IDBStatus::OK, callback_result);
@@ -687,7 +687,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
             kObjectStoreId, base::UTF8ToUTF16(kObjectStoreName),
             blink::IndexedDBKeyPath(), false);
         idb_mojo_factory_->AbortTransactionsAndCompactDatabase(base::BindOnce(
-            &StatusCallback, std::move(quit_closure2), &callback_result));
+            &TestStatusCallback, std::move(quit_closure2), &callback_result));
       }));
   loop2.Run();
 
@@ -760,7 +760,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
         ASSERT_TRUE(connection->database.is_bound());
         ASSERT_TRUE(connection->version_change_transaction.is_bound());
         idb_mojo_factory_->AbortTransactionsAndCompactDatabase(base::BindOnce(
-            &StatusCallback, std::move(quit_closure2), &callback_result));
+            &TestStatusCallback, std::move(quit_closure2), &callback_result));
       }));
   loop2.Run();
 
@@ -835,7 +835,7 @@ TEST_F(IndexedDBDispatcherHostTest,
         ASSERT_TRUE(connection->version_change_transaction.is_bound());
         connection->version_change_transaction->Commit(0);
         idb_mojo_factory_->AbortTransactionsForDatabase(base::BindOnce(
-            &StatusCallback, std::move(quit_closure2), &callback_result));
+            &TestStatusCallback, std::move(quit_closure2), &callback_result));
       }));
   loop2.Run();
 
@@ -914,7 +914,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
             kObjectStoreId, base::UTF8ToUTF16(kObjectStoreName),
             blink::IndexedDBKeyPath(), false);
         idb_mojo_factory_->AbortTransactionsForDatabase(base::BindOnce(
-            &StatusCallback, std::move(quit_closure2), &callback_result));
+            &TestStatusCallback, std::move(quit_closure2), &callback_result));
       }));
   loop2.Run();
 
@@ -988,7 +988,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
         ASSERT_TRUE(connection->database.is_bound());
         ASSERT_TRUE(connection->version_change_transaction.is_bound());
         idb_mojo_factory_->AbortTransactionsForDatabase(base::BindOnce(
-            &StatusCallback, std::move(quit_closure2), &callback_result));
+            &TestStatusCallback, std::move(quit_closure2), &callback_result));
       }));
   loop2.Run();
 

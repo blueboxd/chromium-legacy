@@ -14,6 +14,7 @@
 #include "chromeos/services/device_sync/cryptauth_device_syncer_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry.h"
 #include "chromeos/services/device_sync/cryptauth_task_metrics_logger.h"
+#include "chromeos/services/device_sync/proto/cryptauth_logging.h"
 #include "chromeos/services/device_sync/public/cpp/client_app_metadata_provider.h"
 
 namespace chromeos {
@@ -113,6 +114,10 @@ CryptAuthV2DeviceManagerImpl::~CryptAuthV2DeviceManagerImpl() {
 }
 
 void CryptAuthV2DeviceManagerImpl::Start() {
+  PA_LOG(VERBOSE)
+      << "Starting CryptAuth v2 device manager with device registry:\n"
+      << *device_registry_;
+
   scheduler_->StartDeviceSyncScheduling(
       scheduler_weak_ptr_factory_.GetWeakPtr());
 }
@@ -283,6 +288,7 @@ void CryptAuthV2DeviceManagerImpl::OnDeviceSyncFinished(
                << (device_sync_result.did_device_registry_change()
                        ? "changed."
                        : "did not change.");
+  PA_LOG(VERBOSE) << "Device registry:\n" << *device_registry_;
 
   current_client_metadata_.reset();
 

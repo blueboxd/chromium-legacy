@@ -2407,6 +2407,7 @@ class CheckNoDirectIncludesHeadersWhichRedefineStrCat(unittest.TestCase):
     results = PRESUBMIT._CheckNoStrCatRedefines(mock_input_api, MockOutputApi())
     self.assertEquals(0, len(results))
 
+
 class TranslationScreenshotsTest(unittest.TestCase):
   # An empty grd file.
   OLD_GRD_CONTENTS = """<?xml version="1.0" encoding="UTF-8"?>
@@ -2740,6 +2741,136 @@ class TranslationScreenshotsTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckTranslationScreenshots(input_api,
                                                       MockOutputApi())
     self.assertEqual([], warnings)
+
+
+class TranslationExpectationsTest(unittest.TestCase):
+  ERROR_MESSAGE_FORMAT = (
+    "Failed to get a list of translatable grd files. "
+    "This happens when:\n"
+    " - One of the modified grd or grdp files cannot be parsed or\n"
+    " - %s is not updated.\n"
+    "Stack:\n"
+  )
+  REPO_ROOT = os.path.join('tools', 'translation', 'testdata')
+  # This lists all .grd files under REPO_ROOT.
+  EXPECTATIONS = os.path.join(REPO_ROOT,
+                              "translation_expectations.pyl")
+  # This lists all .grd files under REPO_ROOT except unlisted.grd.
+  EXPECTATIONS_WITHOUT_UNLISTED_FILE = os.path.join(
+      REPO_ROOT, "translation_expectations_without_unlisted_file.pyl")
+
+  # Tests that the presubmit doesn't return when no grd or grdp files are
+  # modified.
+  def testExpectationsNoModifiedGrd(self):
+    input_api = MockInputApi()
+    input_api.files = [
+        MockAffectedFile('not_used.txt', 'not used', 'not used', action='M')
+    ]
+    # Fake list of all grd files in the repo. This list is missing all grd/grdps
+    # under tools/translation/testdata. This is OK because the presubmit won't
+    # run in the first place since there are no modified grd/grps in input_api.
+    grd_files = ['doesnt_exist_doesnt_matter.grd']
+    warnings = PRESUBMIT._CheckTranslationExpectations(
+        input_api, MockOutputApi(), self.REPO_ROOT, self.EXPECTATIONS,
+        grd_files)
+    self.assertEqual(0, len(warnings))
+
+
+  # Tests that the list of files passed to the presubmit matches the list of
+  # files in the expectations.
+  def testExpectationsSuccess(self):
+    # Mock input file list needs a grd or grdp file in order to run the
+    # presubmit. The file itself doesn't matter.
+    input_api = MockInputApi()
+    input_api.files = [
+        MockAffectedFile('dummy.grd', 'not used', 'not used', action='M')
+    ]
+    # List of all grd files in the repo.
+    grd_files = ['test.grd', 'unlisted.grd', 'not_translated.grd',
+                 'internal.grd']
+    warnings = PRESUBMIT._CheckTranslationExpectations(
+        input_api, MockOutputApi(), self.REPO_ROOT, self.EXPECTATIONS,
+        grd_files)
+    self.assertEqual(0, len(warnings))
+
+  # Tests that the presubmit warns when a file is listed in expectations, but
+  # does not actually exist.
+  def testExpectationsMissingFile(self):
+    # Mock input file list needs a grd or grdp file in order to run the
+    # presubmit.
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('dummy.grd', 'not used', 'not used', action='M')
+    ]
+    # unlisted.grd is listed under tools/translation/testdata but is not
+    # included in translation expectations.
+    grd_files = ['unlisted.grd', 'not_translated.grd', 'internal.grd']
+    warnings = PRESUBMIT._CheckTranslationExpectations(
+        input_api, MockOutputApi(), self.REPO_ROOT, self.EXPECTATIONS,
+        grd_files)
+    self.assertEqual(1, len(warnings))
+    self.assertTrue(warnings[0].message.startswith(
+        self.ERROR_MESSAGE_FORMAT % self.EXPECTATIONS))
+    self.assertTrue(
+        ("test.grd is listed in the translation expectations, "
+         "but this grd file does not exist")
+        in warnings[0].message)
+
+  # Tests that the presubmit warns when a file is not listed in expectations but
+  # does actually exist.
+  def testExpectationsUnlistedFile(self):
+    # Mock input file list needs a grd or grdp file in order to run the
+    # presubmit.
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('dummy.grd', 'not used', 'not used', action='M')
+    ]
+    # unlisted.grd is listed under tools/translation/testdata but is not
+    # included in translation expectations.
+    grd_files = ['test.grd', 'unlisted.grd', 'not_translated.grd',
+                 'internal.grd']
+    warnings = PRESUBMIT._CheckTranslationExpectations(
+        input_api, MockOutputApi(), self.REPO_ROOT,
+        self.EXPECTATIONS_WITHOUT_UNLISTED_FILE, grd_files)
+    self.assertEqual(1, len(warnings))
+    self.assertTrue(warnings[0].message.startswith(
+        self.ERROR_MESSAGE_FORMAT % self.EXPECTATIONS_WITHOUT_UNLISTED_FILE))
+    self.assertTrue(
+        ("unlisted.grd appears to be translatable "
+         "(because it contains <file> or <message> elements), "
+         "but is not listed in the translation expectations.")
+        in warnings[0].message)
+
+  # Tests that the presubmit warns twice:
+  # - for a non-existing file listed in expectations
+  # - for an existing file not listed in expectations
+  def testMultipleWarnings(self):
+    # Mock input file list needs a grd or grdp file in order to run the
+    # presubmit.
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('dummy.grd', 'not used', 'not used', action='M')
+    ]
+    # unlisted.grd is listed under tools/translation/testdata but is not
+    # included in translation expectations.
+    # test.grd is not listed under tools/translation/testdata but is included
+    # in translation expectations.
+    grd_files = ['unlisted.grd', 'not_translated.grd', 'internal.grd']
+    warnings = PRESUBMIT._CheckTranslationExpectations(
+        input_api, MockOutputApi(), self.REPO_ROOT,
+        self.EXPECTATIONS_WITHOUT_UNLISTED_FILE, grd_files)
+    self.assertEqual(1, len(warnings))
+    self.assertTrue(warnings[0].message.startswith(
+        self.ERROR_MESSAGE_FORMAT % self.EXPECTATIONS_WITHOUT_UNLISTED_FILE))
+    self.assertTrue(
+        ("unlisted.grd appears to be translatable "
+         "(because it contains <file> or <message> elements), "
+         "but is not listed in the translation expectations.")
+        in warnings[0].message)
+    self.assertTrue(
+        ("test.grd is listed in the translation expectations, "
+         "but this grd file does not exist")
+        in warnings[0].message)
 
 
 class DISABLETypoInTest(unittest.TestCase):

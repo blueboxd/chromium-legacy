@@ -80,6 +80,34 @@ TEST(SandboxTypeTest, Utility) {
   EXPECT_EQ(SandboxType::kPrintCompositor,
             SandboxTypeFromCommandLine(command_line7));
 
+  base::CommandLine command_line8(command_line);
+  SetCommandLineFlagsForSandboxType(&command_line8, SandboxType::kAudio);
+  EXPECT_EQ(SandboxType::kAudio, SandboxTypeFromCommandLine(command_line8));
+
+  base::CommandLine command_line9(command_line);
+  SetCommandLineFlagsForSandboxType(&command_line9, SandboxType::kSoda);
+  EXPECT_EQ(SandboxType::kSoda, SandboxTypeFromCommandLine(command_line9));
+
+#if defined(OS_WIN)
+  base::CommandLine command_line10(command_line);
+  SetCommandLineFlagsForSandboxType(&command_line10,
+                                    SandboxType::kXrCompositing);
+  EXPECT_EQ(SandboxType::kXrCompositing,
+            SandboxTypeFromCommandLine(command_line10));
+
+  base::CommandLine command_line11(command_line);
+  SetCommandLineFlagsForSandboxType(&command_line11,
+                                    SandboxType::kProxyResolver);
+  EXPECT_EQ(SandboxType::kProxyResolver,
+            SandboxTypeFromCommandLine(command_line11));
+
+  base::CommandLine command_line12(command_line);
+  SetCommandLineFlagsForSandboxType(&command_line12,
+                                    SandboxType::kPdfConversion);
+  EXPECT_EQ(SandboxType::kPdfConversion,
+            SandboxTypeFromCommandLine(command_line12));
+#endif
+
   command_line.AppendSwitch(switches::kNoSandbox);
   EXPECT_EQ(SandboxType::kNoSandbox, SandboxTypeFromCommandLine(command_line));
 }

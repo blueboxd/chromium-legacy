@@ -400,10 +400,6 @@ void WebContentsViewMac::SetPageTitle(const base::string16& title) {
 
 
 void WebContentsViewMac::RenderViewCreated(RenderViewHost* host) {
-  // We want updates whenever the intrinsic width of the webpage changes.
-  // Put the RenderView into that mode. The preferred width is used for example
-  // when the "zoom" button in the browser window is clicked.
-  host->EnablePreferredSizeMode();
 }
 
 void WebContentsViewMac::RenderViewReady() {}

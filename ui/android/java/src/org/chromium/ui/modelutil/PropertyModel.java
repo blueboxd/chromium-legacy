@@ -7,12 +7,12 @@ package org.chromium.ui.modelutil;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.support.v4.util.ObjectsCompat;
 import android.support.v7.content.res.AppCompatResources;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.core.util.ObjectsCompat;
 
 import org.chromium.base.annotations.RemovableInRelease;
 
@@ -62,7 +62,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
     }
 
     /** The key type for mutable boolean model properties. */
-    public final static class WritableBooleanPropertyKey extends ReadableBooleanPropertyKey {
+    public static final class WritableBooleanPropertyKey extends ReadableBooleanPropertyKey {
         /**
          * Constructs a new unnamed writable boolean property key.
          */
@@ -98,7 +98,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
     }
 
     /** The key type for mutable float model properties. */
-    public final static class WritableFloatPropertyKey extends ReadableFloatPropertyKey {
+    public static final class WritableFloatPropertyKey extends ReadableFloatPropertyKey {
         /**
          * Constructs a new unnamed writable float property key.
          */
@@ -134,7 +134,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
     }
 
     /** The key type for mutable int model properties. */
-    public final static class WritableIntPropertyKey extends ReadableIntPropertyKey {
+    public static final class WritableIntPropertyKey extends ReadableIntPropertyKey {
         /**
          * Constructs a new unnamed writable integer property key.
          */
@@ -178,7 +178,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
      *
      * @param <T> The type of the Object being tracked by the key.
      */
-    public final static class WritableObjectPropertyKey<T> extends ReadableObjectPropertyKey<T> {
+    public static final class WritableObjectPropertyKey<T> extends ReadableObjectPropertyKey<T> {
         private final boolean mSkipEquality;
 
         /** Default constructor for an unnamed writable object property. */

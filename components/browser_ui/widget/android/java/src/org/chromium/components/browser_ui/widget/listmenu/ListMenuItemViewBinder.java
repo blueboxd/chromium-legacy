@@ -5,9 +5,10 @@
 package org.chromium.components.browser_ui.widget.listmenu;
 
 import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
+
+import androidx.core.content.ContextCompat;
 
 import org.chromium.components.browser_ui.widget.R;
 import org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables;

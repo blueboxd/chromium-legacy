@@ -28,7 +28,7 @@ class Value;
 
 // Manages the internal state and connection to the device service for the
 // Human Interface Device (HID) chooser UI.
-class HidChooserContext : public ChooserContextBase {
+class HidChooserContext : public permissions::ChooserContextBase {
  public:
   explicit HidChooserContext(Profile* profile);
   ~HidChooserContext() override;

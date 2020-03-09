@@ -51,11 +51,6 @@ const base::Feature kBluetoothPhoneFilter{"BluetoothPhoneFilter",
 const base::Feature kBluetoothKernelSuspendNotifier{
     "BluetoothKernelSuspendNotifier", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature containing param to block provided long term keys.
-const base::Feature kBlueZLongTermKeyBlocklist{
-    "BlueZLongTermKeyBlocklist", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kBlueZLongTermKeyBlocklistParamName[] = "ltk_blocklist";
-
 // Enable or disables running the Camera App as a System Web App.
 const base::Feature kCameraSystemWebApp{"CameraSystemWebApp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -257,7 +252,7 @@ const base::Feature kSessionManagerLongKillTimeout{
 
 // Enables or disables the scrollable shelf.
 const base::Feature kShelfScrollable{"ShelfScrollable",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the shelf hotseat.
 const base::Feature kShelfHotseat{"ShelfHotseat",

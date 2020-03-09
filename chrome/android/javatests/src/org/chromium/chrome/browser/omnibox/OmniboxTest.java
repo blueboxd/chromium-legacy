@@ -13,7 +13,6 @@ import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.support.v4.view.ViewCompat;
 import android.text.Selection;
 import android.view.KeyEvent;
 import android.view.View;
@@ -21,6 +20,8 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.core.view.ViewCompat;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -7,9 +7,9 @@
 #include "base/run_loop.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
-#include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/test/chooser_context_base_mock_permission_observer.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +22,7 @@ class HidChooserContextTest : public testing::Test {
   ~HidChooserContextTest() override = default;
 
   Profile* profile() { return &profile_; }
-  MockPermissionObserver& observer() { return mock_observer_; }
+  permissions::MockPermissionObserver& observer() { return mock_observer_; }
 
   HidChooserContext* GetContext(Profile* profile) {
     auto* context = HidChooserContextFactory::GetForProfile(profile);
@@ -33,7 +33,7 @@ class HidChooserContextTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
-  MockPermissionObserver mock_observer_;
+  permissions::MockPermissionObserver mock_observer_;
 };
 
 }  // namespace
@@ -54,12 +54,12 @@ TEST_F(HidChooserContextTest, GrantAndRevokeEphemeralPermission) {
   context->GrantDevicePermission(origin, origin, *device);
   EXPECT_TRUE(context->HasDevicePermission(origin, origin, *device));
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> origin_objects =
-      context->GetGrantedObjects(origin, origin);
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      origin_objects = context->GetGrantedObjects(origin, origin);
   ASSERT_EQ(1u, origin_objects.size());
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      context->GetAllGrantedObjects();
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = context->GetAllGrantedObjects();
   ASSERT_EQ(1u, objects.size());
   EXPECT_EQ(origin.GetURL(), objects[0]->requesting_origin);
   EXPECT_EQ(origin.GetURL(), objects[0]->embedding_origin);

@@ -80,10 +80,10 @@ base::Closure WaitableMessageLoopEvent::GetClosure() {
       PIPELINE_OK));
 }
 
-PipelineStatusCB WaitableMessageLoopEvent::GetPipelineStatusCB() {
+PipelineStatusCallback WaitableMessageLoopEvent::GetPipelineStatusCB() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return BindToCurrentLoop(base::Bind(
-      &WaitableMessageLoopEvent::OnCallback, base::Unretained(this)));
+  return BindToCurrentLoop(base::BindOnce(&WaitableMessageLoopEvent::OnCallback,
+                                          base::Unretained(this)));
 }
 
 void WaitableMessageLoopEvent::RunAndWait() {

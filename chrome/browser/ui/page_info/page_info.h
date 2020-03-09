@@ -28,12 +28,15 @@ namespace net {
 class X509Certificate;
 }
 
+namespace permissions {
+class ChooserContextBase;
+}
+
 namespace safe_browsing {
 class ChromePasswordProtectionService;
 }
 
 class StatefulSSLHostStateDelegate;
-class ChooserContextBase;
 class HostContentSettingsMap;
 class Profile;
 class PageInfoUI;
@@ -137,7 +140,7 @@ class PageInfo : public content::WebContentsObserver {
 
   struct ChooserUIInfo {
     ContentSettingsType content_settings_type;
-    ChooserContextBase* (*get_context)(Profile*);
+    permissions::ChooserContextBase* (*get_context)(Profile*);
     int description_string_id;
     int allowed_by_policy_description_string_id;
     int delete_tooltip_string_id;

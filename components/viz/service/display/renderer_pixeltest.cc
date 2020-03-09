@@ -888,8 +888,21 @@ using RendererTypes = ::testing::Types<GLRenderer,
                                        ,
                                        cc::VulkanSkiaRenderer
 #endif
+#if defined(ENABLE_VIZ_DAWN_TESTS)
+                                       ,
+                                       cc::DawnSkiaRenderer
+#endif
                                        >;
 TYPED_TEST_SUITE(RendererPixelTest, RendererTypes);
+
+using RendererTypesNonDawn = ::testing::Types<GLRenderer,
+                                              SoftwareRenderer,
+                                              SkiaRenderer
+#if defined(ENABLE_VIZ_VULKAN_TESTS)
+                                              ,
+                                              cc::VulkanSkiaRenderer
+#endif
+                                              >;
 
 class SoftwareRendererPixelTest
     : public cc::RendererPixelTest<SoftwareRenderer> {};
@@ -898,6 +911,8 @@ class SoftwareRendererPixelTest
 template <typename RendererType>
 class GPURendererPixelTest : public cc::RendererPixelTest<RendererType> {};
 
+// TODO(crbug.com/1021566): Enable these tests for SkiaRenderer Dawn once video
+// is supported.
 using GPURendererTypes = ::testing::Types<GLRenderer,
                                           SkiaRenderer
 #if defined(ENABLE_VIZ_VULKAN_TESTS)
@@ -1378,7 +1393,12 @@ TYPED_TEST_SUITE(IntersectingQuadPixelTest, RendererTypes);
 TYPED_TEST_SUITE(IntersectingVideoQuadPixelTest, GPURendererTypes);
 TYPED_TEST_SUITE(IntersectingQuadSoftwareTest, SoftwareRendererTypes);
 
-TYPED_TEST(IntersectingQuadPixelTest, SolidColorQuads) {
+// TODO(crbug.com/1021566): Enable this test for SkiaRenderer Dawn.
+template <typename TypeParam>
+class IntersectingQuadPixelTestNonDawn
+    : public IntersectingQuadPixelTest<TypeParam> {};
+TYPED_TEST_SUITE(IntersectingQuadPixelTestNonDawn, RendererTypesNonDawn);
+TYPED_TEST(IntersectingQuadPixelTestNonDawn, SolidColorQuads) {
   this->SetupQuadStateAndRenderPass();
 
   auto* quad = this->template CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -3003,6 +3023,10 @@ using BackdropFilterRendererTypes = ::testing::Types<GLRenderer,
                                                      ,
                                                      cc::VulkanSkiaRenderer
 #endif
+#if defined(ENABLE_VIZ_DAWN_TESTS)
+                                                     ,
+                                                     cc::DawnSkiaRenderer
+#endif
                                                      >;
 
 TYPED_TEST_SUITE(RendererPixelTestWithBackdropFilter,
@@ -3376,7 +3400,7 @@ TYPED_TEST(GPURendererPixelTest, AxisAligned) {
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("axis_aligned.png")),
-      cc::ExactPixelComparator(true)));
+      cc::FuzzyPixelOffByOneComparator(true)));
 }
 
 // This test tests that forcing anti-aliasing off works as expected for
@@ -4255,6 +4279,10 @@ using FlippedOutputSurfaceRendererTypes =
                      ,
                      cc::VulkanSkiaRendererWithFlippedSurface
 #endif
+#if defined(ENABLE_VIZ_DAWN_TESTS)
+                     ,
+                     cc::DawnSkiaRendererWithFlippedSurface
+#endif
                      >;
 
 TYPED_TEST_SUITE(RendererPixelTestWithFlippedOutputSurface,
@@ -4926,6 +4954,10 @@ using SkiaRendererTypes = ::testing::Types<SkiaRenderer
 #if defined(ENABLE_VIZ_VULKAN_TESTS)
                                            ,
                                            cc::VulkanSkiaRenderer
+#endif
+#if defined(ENABLE_VIZ_DAWN_TESTS)
+                                           ,
+                                           cc::DawnSkiaRenderer
 #endif
                                            >;
 TYPED_TEST_SUITE(SkiaRendererPixelTestWithOverdrawFeedback, SkiaRendererTypes);

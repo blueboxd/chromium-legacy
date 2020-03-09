@@ -5,6 +5,8 @@
 
 """Collect, archive, and analyze Chrome's binary size."""
 
+from __future__ import division
+
 import argparse
 import atexit
 import collections
@@ -26,7 +28,7 @@ import start_server
 def _LogPeakRamUsage():
   peak_ram_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
   peak_ram_usage += resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
-  logging.info('Peak RAM usage was %d MB.', peak_ram_usage / 1024)
+  logging.info('Peak RAM usage was %d MB.', peak_ram_usage // 1024)
 
 
 def _AddCommonArguments(parser):

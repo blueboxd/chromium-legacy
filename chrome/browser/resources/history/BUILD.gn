@@ -42,8 +42,6 @@ if (optimize_webui) {
   grit("flattened_resources") {
     source = "history_resources.grd"
 
-    # The .grd contains references to generated files.
-    source_is_generated = true
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -216,7 +214,7 @@ js_library("synced_device_manager") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":app_module",
     ":history_item_module",
     ":history_list_module",

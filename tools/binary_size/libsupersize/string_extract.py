@@ -31,6 +31,8 @@ ResolveStringPieces():
   - Returns [{path: [string_ranges]} for each string_section].
 """
 
+from __future__ import division
+
 import ast
 import collections
 import itertools

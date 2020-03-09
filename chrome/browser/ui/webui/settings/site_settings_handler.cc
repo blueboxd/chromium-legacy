@@ -1172,7 +1172,8 @@ void SiteSettingsHandler::HandleResetChooserExceptionForSite(
   GURL embedding_origin(embedding_origin_str);
   CHECK(embedding_origin.is_valid());
 
-  ChooserContextBase* chooser_context = chooser_type->get_context(profile_);
+  permissions::ChooserContextBase* chooser_context =
+      chooser_type->get_context(profile_);
   chooser_context->RevokeObjectPermission(
       url::Origin::Create(requesting_origin),
       url::Origin::Create(embedding_origin), args->GetList()[3]);

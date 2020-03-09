@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.provider.Settings;
-import android.support.v4.view.ViewCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -21,6 +20,7 @@ import android.view.Window;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;

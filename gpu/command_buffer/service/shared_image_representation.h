@@ -158,7 +158,6 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTextureBase
 
  protected:
   friend class SharedImageRepresentationSkiaGL;
-  friend class SharedImageRepresentationGLTextureImpl;
 
   // Can be overridden to handle clear state tracking when GL access begins or
   // ends.

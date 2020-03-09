@@ -9,8 +9,6 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Parcelable;
-import android.support.v4.view.MarginLayoutParamsCompat;
-import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -27,6 +25,8 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.MarginLayoutParamsCompat;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;

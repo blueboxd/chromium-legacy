@@ -4,6 +4,8 @@
 
 """Utilities for demangling C++ symbols."""
 
+from __future__ import division
+
 import collections
 import itertools
 import logging

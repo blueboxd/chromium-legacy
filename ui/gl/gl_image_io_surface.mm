@@ -263,9 +263,16 @@ bool GLImageIOSurface::BindTexImageWithInternalformat(unsigned target,
   TRACE_EVENT0("gpu", "GLImageIOSurface::BindTexImage");
   base::TimeTicks start_time = base::TimeTicks::Now();
 
+  if (target != GL_TEXTURE_RECTANGLE_ARB) {
+    // This might be supported in the future. For now, perform strict
+    // validation so we know what's going on.
+    LOG(ERROR) << "IOSurface requires TEXTURE_RECTANGLE_ARB target";
+    return false;
+  }
+
   DCHECK(io_surface_);
 
-  if (!BindTexImageImpl(target, internalformat)) {
+  if (!BindTexImageImpl(internalformat)) {
     return false;
   }
 
@@ -274,15 +281,7 @@ bool GLImageIOSurface::BindTexImageWithInternalformat(unsigned target,
   return true;
 }
 
-bool GLImageIOSurface::BindTexImageImpl(unsigned target,
-                                        unsigned internalformat) {
-  if (target != GL_TEXTURE_RECTANGLE_ARB) {
-    // This might be supported in the future. For now, perform strict
-    // validation so we know what's going on.
-    LOG(ERROR) << "IOSurface requires TEXTURE_RECTANGLE_ARB target";
-    return false;
-  }
-
+bool GLImageIOSurface::BindTexImageImpl(unsigned internalformat) {
   CGLContextObj cgl_context =
       static_cast<CGLContextObj>(GLContext::GetCurrent()->GetHandle());
 

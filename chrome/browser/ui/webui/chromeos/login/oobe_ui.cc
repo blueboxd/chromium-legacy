@@ -199,6 +199,12 @@ void AddGestureNavigationResources(content::WebUIDataSource* source) {
   source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
 }
 
+void AddMarketingOptInResources(content::WebUIDataSource* source) {
+  source->AddResourcePath("all_set.json",
+                          IDR_MARKETING_OPT_IN_ALL_SET_ANIMATION);
+  source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
+}
+
 void AddFingerprintResources(content::WebUIDataSource* source) {
   int animation_id;
   bool is_lottie_animation = false;
@@ -294,6 +300,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddArcScreensResources(source);
   AddAssistantScreensResources(source);
   AddGestureNavigationResources(source);
+  AddMarketingOptInResources(source);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyObjectSrc(

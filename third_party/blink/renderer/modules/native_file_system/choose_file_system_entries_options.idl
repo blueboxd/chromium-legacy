@@ -5,11 +5,8 @@
 // https://wicg.github.io/native-file-system/#enumdef-choosefilesystementriestype
 enum ChooseFileSystemEntriesType {
     "open-file",
-    "openFile",
     "save-file",
-    "saveFile",
     "open-directory",
-    "openDirectory"
 };
 
 // https://wicg.github.io/native-file-system/#dictdef-choosefilesystementriesoptions

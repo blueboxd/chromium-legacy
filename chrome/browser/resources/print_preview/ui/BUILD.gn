@@ -483,7 +483,7 @@ js_library("highlight_utils") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":advanced_options_settings_module",
     ":advanced_settings_dialog_module",
     ":advanced_settings_item_module",

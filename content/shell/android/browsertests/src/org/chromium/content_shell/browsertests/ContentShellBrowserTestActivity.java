@@ -6,9 +6,10 @@ package org.chromium.content_shell.browsertests;
 
 import android.content.Context;
 import android.net.Uri;
-import android.support.v4.content.FileProvider;
 import android.view.Window;
 import android.view.WindowManager;
+
+import androidx.core.content.FileProvider;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;

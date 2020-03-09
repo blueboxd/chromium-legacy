@@ -20,12 +20,12 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.graphics.drawable.shapes.Shape;
 import android.support.annotation.ColorInt;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 
 /**
  * A custom {@link ImageView} that is able to render bitmaps and colors with rounded off corners.

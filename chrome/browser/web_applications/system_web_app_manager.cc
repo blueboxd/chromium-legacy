@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -118,6 +119,15 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos.at(SystemAppType::MEDIA).include_launch_directory = true;
   }
 
+  if (SystemWebAppManager::IsAppEnabled(SystemAppType::PRINT_MANAGEMENT)) {
+    infos.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(SystemAppType::PRINT_MANAGEMENT),
+        std::forward_as_tuple("PrintManagement",
+                              GURL("chrome://print-management/pwa.html")));
+    infos.at(SystemAppType::PRINT_MANAGEMENT).show_in_launcher = false;
+  }
+
 #if !defined(OFFICIAL_BUILD)
   infos.emplace(
       SystemAppType::SAMPLE,
@@ -184,6 +194,9 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
       return base::FeatureList::IsEnabled(chromeos::features::kMediaApp);
     case SystemAppType::HELP:
       return base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2);
+    case SystemAppType::PRINT_MANAGEMENT:
+      return base::FeatureList::IsEnabled(
+          chromeos::features::kPrintJobManagementApp);
 #if !defined(OFFICIAL_BUILD)
     case SystemAppType::SAMPLE:
       NOTREACHED();

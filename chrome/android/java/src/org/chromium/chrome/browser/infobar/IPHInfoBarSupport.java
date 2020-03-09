@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.PopupWindow.OnDismissListener;
 
 import androidx.annotation.StringRes;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;

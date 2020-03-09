@@ -235,7 +235,6 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'opengl': 'gl',
         'opengles': 'gles',
         'vulkan': 'vulkan',
-        'swiftshader': 'swiftshader',
       }
       current_angle_backend = gpu_helper.GetANGLERenderer(gpu_info)
       if (current_angle_backend not in known_backend_flag_map or

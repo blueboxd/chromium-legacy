@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.support.v4.util.ObjectsCompat;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.util.ObjectsCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;

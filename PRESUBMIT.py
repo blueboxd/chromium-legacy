@@ -4245,6 +4245,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(input_api.RunTests(
     input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))
   results.extend(_CheckTranslationScreenshots(input_api, output_api))
+  results.extend(_CheckTranslationExpectations(input_api, output_api))
   results.extend(_CheckCorrectProductNameInMessages(input_api, output_api))
   results.extend(_CheckBuildtoolsRevisionsAreInSync(input_api, output_api))
   results.extend(_CheckForTooLargeFiles(input_api, output_api))
@@ -4829,3 +4830,48 @@ def _CheckTranslationScreenshots(input_api, output_api):
       sorted(unnecessary_sha1_files)))
 
   return results
+
+
+def _CheckTranslationExpectations(input_api, output_api,
+                                  repo_root=None,
+                                  translation_expectations_path=None,
+                                  grd_files=None):
+  import sys
+  affected_grds = [f for f in input_api.AffectedFiles()
+      if (f.LocalPath().endswith('.grd') or
+          f.LocalPath().endswith('.grdp'))]
+  if not affected_grds:
+    return []
+
+  try:
+    old_sys_path = sys.path
+    sys.path = sys.path + [
+        input_api.os_path.join(
+            input_api.PresubmitLocalPath(), 'tools', 'translation')]
+    from helper import git_helper
+    from helper import translation_helper
+  finally:
+    sys.path = old_sys_path
+
+  # Check that translation expectations can be parsed and we can get a list of
+  # translatable grd files. |repo_root| and |translation_expectations_path| are
+  # only passed by tests.
+  if not repo_root:
+    repo_root = input_api.PresubmitLocalPath()
+  if not translation_expectations_path:
+    translation_expectations_path =  input_api.os_path.join(
+        repo_root, 'tools', 'gritsettings',
+        'translation_expectations.pyl')
+  if not grd_files:
+    grd_files = git_helper.list_grds_in_repository(repo_root)
+
+  try:
+    translation_helper.get_translatable_grds(repo_root, grd_files,
+                                             translation_expectations_path)
+  except Exception as e:
+    return [output_api.PresubmitNotifyResult(
+      'Failed to get a list of translatable grd files. This happens when:\n'
+      ' - One of the modified grd or grdp files cannot be parsed or\n'
+      ' - %s is not updated.\n'
+      'Stack:\n%s' % (translation_expectations_path, str(e)))]
+  return []

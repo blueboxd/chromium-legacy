@@ -18,7 +18,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "extensions/common/extension.h"
 
-class ChooserContextBase;
 class HostContentSettingsMap;
 class Profile;
 
@@ -28,6 +27,10 @@ class WebUI;
 
 namespace extensions {
 class ExtensionRegistry;
+}
+
+namespace permissions {
+class ChooserContextBase;
 }
 
 namespace site_settings {
@@ -158,7 +161,7 @@ std::vector<ContentSettingPatternSource> GetSiteExceptionsForContentType(
 // for a given content settings type and is declared early so that it can used
 // by functions below.
 struct ChooserTypeNameEntry {
-  ChooserContextBase* (*get_context)(Profile*);
+  permissions::ChooserContextBase* (*get_context)(Profile*);
   std::string (*get_object_name)(const base::Value&);
   const char* name;
 };

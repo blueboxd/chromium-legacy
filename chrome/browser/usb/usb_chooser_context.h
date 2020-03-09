@@ -29,7 +29,7 @@
 
 class Profile;
 
-class UsbChooserContext : public ChooserContextBase,
+class UsbChooserContext : public permissions::ChooserContextBase,
                           public device::mojom::UsbDeviceManagerClient {
  public:
   explicit UsbChooserContext(Profile* profile);
@@ -49,10 +49,10 @@ class UsbChooserContext : public ChooserContextBase,
 
   // These methods from ChooserContextBase are overridden in order to expose
   // ephemeral devices through the public interface.
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> GetGrantedObjects(
-      const url::Origin& requesting_origin,
-      const url::Origin& embedding_origin) override;
-  std::vector<std::unique_ptr<ChooserContextBase::Object>>
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+  GetGrantedObjects(const url::Origin& requesting_origin,
+                    const url::Origin& embedding_origin) override;
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
   GetAllGrantedObjects() override;
   void RevokeObjectPermission(const url::Origin& requesting_origin,
                               const url::Origin& embedding_origin,

@@ -119,12 +119,6 @@ IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ApplyPolicy) {
             NavigateToAndReturnTitle("/page-with-policy.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy404) {
-  SetStatus(net::HTTP_NOT_FOUND);
-  EXPECT_EQ(base::ASCIIToUTF16(kErrorInterstitialTitle),
-            NavigateToAndReturnTitle("/page-with-policy.html"));
-}
-
 IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy301Redirect) {
   SetStatus(net::HTTP_MOVED_PERMANENTLY);
   SetLocationHeader("/.well-known/origin-policy/example-policy");

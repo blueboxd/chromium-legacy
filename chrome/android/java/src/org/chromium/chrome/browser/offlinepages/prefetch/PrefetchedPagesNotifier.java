@@ -8,7 +8,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v4.app.NotificationCompat;
+
+import androidx.core.app.NotificationCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;

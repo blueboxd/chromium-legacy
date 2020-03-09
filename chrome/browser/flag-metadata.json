@@ -334,6 +334,16 @@
     "expiry_milestone": 76
   },
   {
+    "name": "autofill-save-card-dismiss-on-navigation",
+    "owners": [ "sczs" ],
+    "expiry_milestone": 82
+  },
+  {
+    "name": "autofill-save-card-infobar-edit-support",
+    "owners": [ "sczs" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "autofill-use-improved-label-disambiguation",
     "owners": [ "fhorschig" ],
     "expiry_milestone": 83
@@ -399,6 +409,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "change-tab-switcher-position",
+    "owners": [ "ewannpv", "gambard" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "chrome-share-screenshot",
     "owners": ["jeffreycohen","kristipark"],
     "expiry_milestone": 83
@@ -459,6 +474,11 @@
     "name": "compositor-threaded-scrollbar-scrolling",
     "owners": [ "arakeri@microsoft.com" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "contained-browser-bvc",
+    "owners": [ "gambard" ],
+    "expiry_milestone": 84
   },
   {
     "name": "content-indexing-download-home",
@@ -539,6 +559,11 @@
     "name": "corner-shortcuts",
     "owners": [ "baileyberro", "cros-peripherals" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "credit-card-scanner",
+    "owners": [ "gambard", "javierrobles" ],
+    "expiry_milestone": 86
   },
   {
     "name": "cros-regions-mode",
@@ -652,6 +677,16 @@
     "name": "delegate-overscroll-swipes",
     "owners": [ "chrome-android-app@chromium.org" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "desktop-version-default",
+    "owners": [ "gambard" ],
+    "expiry_milestone": 85
+  },
+  {
+    "name": "detect-main-thread-freeze",
+    "owners": [ "olivierrobin" ],
+    "expiry_milestone": 82
   },
   {
     "name": "device-discovery-notifications",
@@ -832,6 +867,11 @@
   {
     "name": "download-auto-resumption-native",
     "owners": [ "shaktisahu", "qinmin" ],
+    "expiry_milestone": 86
+  },
+  {
+    "name": "drag_and_drop",
+    "owners": [ "//ios/chrome/browser/drag_and_drop/OWNERS" ],
     "expiry_milestone": 86
   },
   {
@@ -1051,6 +1091,11 @@
   {
     "name": "enable-bookmark-reorder",
     "owners": ["jhimawan@google.com", "twellington" ],
+    "expiry_milestone": 82
+  },
+  {
+    "name": "enable-breakpad-upload-no-delay",
+    "owners": [ "olivierrobin" ],
     "expiry_milestone": 82
   },
   {
@@ -1602,6 +1647,11 @@
     // This flag is used to enable parental controls options in ChromeOS
     // settings.
     "expiry_milestone" : 79
+  },
+  {
+    "name": "enable-persistent-downloads",
+    "owners": [ "ewannpv", "gambard" ],
+    "expiry_milestone": 84
   },
   {
     "name": "enable-pixel-canvas-recording",
@@ -2426,6 +2476,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "infobar-ui-reboot",
+    "owners": [ "sczs", "thegreenfrog" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "installable-ink-drop",
     "owners": [ "collinbaker", "pbos" ],
     "expiry_milestone": 82
@@ -2551,6 +2606,26 @@
     "expiry_milestone": 81
   },
   {
+    "name": "messages-confirm-infobars",
+    "owners": [ "sczs", "thegreenfrog" ],
+    "expiry_milestone": 83
+  },
+  {
+    "name": "messages-crash-restore-infobars",
+    "owners": [ "sczs", "thegreenfrog" ],
+    "expiry_milestone": 83
+  },
+  {
+    "name": "messages-save-card-infobar",
+    "owners": [ "sczs", "thegreenfrog" ],
+    "expiry_milestone": 83
+  },
+  {
+    "name": "messages-translate-infobar",
+    "owners": [ "thegreenfrog", "sczs" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "metal",
     "owners": ["ccameron", "jvanverth"],
     "expiry_milestone": 83
@@ -2559,6 +2634,11 @@
     "name": "mix-browser-type-tabs",
     "owners": [ "joelhockey", "tbuckley" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "mobile-google-srp",
+    "owners": [ "gambard" ],
+    "expiry_milestone": 86
   },
   {
     "name": "mobile-identity-consistency",
@@ -2963,6 +3043,11 @@
      "expiry_milestone": 85
   },
   {
+    "name": "page-info-refactoring",
+    "owners": [ "ewannpv", "gambard" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "paint-preview-test",
     "owners": [ "ckitagawa", "mahmoudi", "vollick" ],
     "expiry_milestone": 83
@@ -3063,11 +3148,6 @@
     "expiry_milestone": 85
   },
   {
-    "name": "prefetch-notification-scheduling-integration",
-    "owners": [ "hesen" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "prefetch-privacy-changes",
     "owners": [ "dom", "yhirano" ],
     "expiry_milestone": 85
@@ -3153,6 +3233,11 @@
     "name": "release-notes-notification",
     "owners": [ "yulunwu" ],
     "expiry_milestone": 79
+  },
+  {
+    "name": "reload-sad-tab",
+    "owners": [ "gambard" ],
+    "expiry_milestone": 84
   },
   {
     "name": "remote-copy-receiver",
@@ -3510,6 +3595,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "toolbar-new-tab-button",
+    "owners": [ "gambard" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "top-chrome-touch-ui",
     "owners": [ "pbos", "chrome-desktop-ui-sea@google.com" ],
     // This flag is used to easily swap into touch-mode for UI development where
@@ -3655,6 +3745,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "use-js-error-page",
+    "owners": [ "gambard" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "use_messages_staging_url",
     "owners": [ "azeemarshad", "khorimoto", "jonmann" ],
     // This flag is required for QA and dogfood testing.
@@ -3691,6 +3786,11 @@
     "name": "use-winrt-midi-api",
     "owners": [ "toyoshim" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "use-WKWebView-loading",
+    "owners": [ "gambard" ],
+    "expiry_milestone": 82
   },
   {
     "name": "use-xps-for-printing",

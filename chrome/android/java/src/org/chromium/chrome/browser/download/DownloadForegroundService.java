@@ -14,11 +14,11 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.v4.app.ServiceCompat;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.app.ServiceCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;

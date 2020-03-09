@@ -50,4 +50,7 @@ interface IndexedDBControlTest {
   GetPathForBlobForTesting(url.mojom.Origin origin, int64 database_id,
                            int64 blob_number) =>
       (mojo_base.mojom.FilePath path);
+
+  // Compacts the backing store for a given origin.
+  CompactBackingStoreForTesting(url.mojom.Origin origin) => ();
 };

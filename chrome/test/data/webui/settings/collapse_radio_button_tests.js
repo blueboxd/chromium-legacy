@@ -14,10 +14,6 @@ suite('CrCollapseRadioButton', function() {
     Polymer.dom.flush();
   });
 
-  teardown(function() {
-    collapseRadioButton.remove();
-  });
-
   test('openOnSelection', function() {
     const collapse = collapseRadioButton.$$('iron-collapse');
     collapseRadioButton.checked = false;

@@ -12,7 +12,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.support.test.filters.SmallTest;
-import android.support.v4.content.FileProvider;
+
+import androidx.core.content.FileProvider;
 
 import org.junit.After;
 import org.junit.Assert;

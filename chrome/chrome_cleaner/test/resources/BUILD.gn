@@ -36,9 +36,6 @@ grit("test_resources") {
   source = "test_resources.grd"
   resource_ids = "resource_ids"
 
-  # The .grd contains references to generated files.
-  source_is_generated = true
-
   outputs = [
     "grit/test_resources.h",
     "test_resources.rc",

@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Methods for converting model objects to human-readable formats."""
 
+from __future__ import division
+
 import abc
 import cStringIO
 import collections
@@ -109,7 +111,7 @@ class Histogram(object):
     bucket_values = [str(self.data[k]) for k in keys]
     num_items = len(keys)
     num_cols = 6
-    num_rows = (num_items + num_cols - 1) / num_cols  # Divide and round up.
+    num_rows = (num_items + num_cols - 1) // num_cols  # Divide and round up.
     # Needed for xrange to not throw due to step by 0.
     if num_rows == 0:
       return
@@ -287,7 +289,7 @@ class DescriberText(Describer):
       #   * Accounts for < .5% of PSS
       #   * Symbols are smaller than 1.0 byte (by PSS)
       #   * Always show at least 50 symbols.
-      min_remaining_pss_to_show = max(1024, total / 1000 * 5)
+      min_remaining_pss_to_show = max(1024.0, total / 1000.0 * 5)
       min_symbol_pss_to_show = 1.0
       min_symbols_to_show = 50
 

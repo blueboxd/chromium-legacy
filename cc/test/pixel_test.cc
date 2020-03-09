@@ -14,7 +14,6 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -23,6 +22,7 @@
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/client/client_resource_provider.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -54,22 +54,37 @@
 
 namespace cc {
 
-PixelTest::PixelTest(bool enable_vulkan)
+PixelTest::PixelTest(GraphicsBackend backend)
     : device_viewport_size_(gfx::Size(200, 200)),
       disable_picture_quad_image_filtering_(false),
       output_surface_client_(std::make_unique<FakeOutputSurfaceClient>()) {
   // Keep texture sizes exactly matching the bounds of the RenderPass to avoid
   // floating point badness in texcoords.
   renderer_settings_.dont_round_texture_sizes_for_pixel_tests = true;
-  if (enable_vulkan) {
+
+  // Check if the graphics backend needs to initialize Vulkan.
+  bool init_vulkan = false;
+  if (backend == kSkiaVulkan) {
+    scoped_feature_list_.InitAndEnableFeature(features::kVulkan);
+    init_vulkan = true;
+  } else if (backend == kSkiaDawn) {
+    scoped_feature_list_.InitAndEnableFeature(features::kSkiaDawn);
+#if defined(OS_LINUX)
+    init_vulkan = true;
+#elif defined(OS_WIN)
+    // TODO(sgilhuly): Initialize D3D12 for Windows.
+#else
+    NOTREACHED();
+#endif
+  }
+
+  if (init_vulkan) {
     auto* command_line = base::CommandLine::ForCurrentProcess();
     bool use_gpu = command_line->HasSwitch(::switches::kUseGpuInTests);
     command_line->AppendSwitchASCII(
         ::switches::kUseVulkan,
         use_gpu ? ::switches::kVulkanImplementationNameNative
                 : ::switches::kVulkanImplementationNameSwiftshader);
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    scoped_feature_list_->InitAndEnableFeature(features::kVulkan);
   }
 }
 

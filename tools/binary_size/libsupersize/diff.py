@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Logic for diffing two SizeInfo objects."""
 
+from __future__ import division
+
 import collections
 import logging
 import re

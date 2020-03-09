@@ -43,7 +43,6 @@ class VULKAN_EXPORT VulkanSurface {
   void Destroy();
 
   gfx::SwapResult SwapBuffers();
-  gfx::SwapResult PostSubBuffer(const gfx::Rect& rect);
 
   void Finish();
 

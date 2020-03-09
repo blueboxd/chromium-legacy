@@ -12,12 +12,12 @@ import android.os.Build;
 import android.os.Process;
 import android.os.SystemClock;
 import android.provider.Settings;
-import android.support.v4.util.ObjectsCompat;
 import android.util.Base64;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.util.ObjectsCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CollectionUtil;

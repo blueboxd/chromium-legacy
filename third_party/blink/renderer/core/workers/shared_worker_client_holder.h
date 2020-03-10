@@ -36,16 +36,16 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/worker/shared_worker_client.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_client.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_unique_receiver_set.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -63,8 +63,7 @@ class SharedWorker;
 // Supplement<Document>.
 class CORE_EXPORT SharedWorkerClientHolder final
     : public GarbageCollected<SharedWorkerClientHolder>,
-      public Supplement<Document>,
-      public ExecutionContextLifecycleObserver {
+      public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerClientHolder);
 
  public:
@@ -81,14 +80,11 @@ class CORE_EXPORT SharedWorkerClientHolder final
                mojo::PendingRemote<mojom::blink::BlobURLToken>,
                mojom::blink::WorkerOptionsPtr options);
 
-  // Overrides ExecutionContextLifecycleObserver.
-  void ContextDestroyed() override;
-
   void Trace(Visitor* visitor) override;
 
  private:
-  mojo::Remote<mojom::blink::SharedWorkerConnector> connector_;
-  mojo::UniqueReceiverSet<mojom::blink::SharedWorkerClient> client_receivers_;
+  HeapMojoRemote<mojom::blink::SharedWorkerConnector> connector_;
+  HeapMojoUniqueReceiverSet<mojom::blink::SharedWorkerClient> client_receivers_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

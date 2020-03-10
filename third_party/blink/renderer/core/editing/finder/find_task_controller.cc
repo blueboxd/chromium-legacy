@@ -21,66 +21,52 @@
 namespace blink {
 
 namespace {
-const int kFindingTimeoutMS = 100;
-constexpr base::TimeDelta kFindTaskTestTimeout =
-    base::TimeDelta::FromSeconds(10);
+
+constexpr base::TimeDelta kFindTaskTimeAllotment =
+    base::TimeDelta::FromMilliseconds(10);
 }  // namespace
 
-class FindTaskController::IdleFindTask
-    : public ScriptedIdleTaskController::IdleTask {
+class FindTaskController::FindTask final : public GarbageCollected<FindTask> {
  public:
-  IdleFindTask(FindTaskController* controller,
-               Document* document,
-               int identifier,
-               const WebString& search_text,
-               const mojom::blink::FindOptions& options)
+  FindTask(FindTaskController* controller,
+           Document* document,
+           int identifier,
+           const WebString& search_text,
+           const mojom::blink::FindOptions& options)
       : document_(document),
         controller_(controller),
         identifier_(identifier),
         search_text_(search_text),
         options_(options.Clone()) {
     DCHECK(document_);
-    // We need to add deadline because some webpages might have frames
-    // that are always busy, resulting in bad experience in find-in-page
-    // because the scoping tasks are not run.
-    // See crbug.com/893465.
-    IdleRequestOptions* request_options = IdleRequestOptions::Create();
-    request_options->setTimeout(kFindingTimeoutMS);
-    callback_handle_ = document_->RequestIdleCallback(this, request_options);
+    if (options.run_synchronously_for_testing) {
+      Invoke();
+    } else {
+      controller_->GetLocalFrame()
+          ->GetTaskRunner(blink::TaskType::kInternalFindInPage)
+          ->PostTask(FROM_HERE,
+                     WTF::Bind(&FindTask::Invoke, WrapWeakPersistent(this)));
+    }
   }
 
-  void Dispose() {
-    DCHECK_GT(callback_handle_, 0);
-    document_->CancelIdleCallback(callback_handle_);
-    forced_activatable_display_locks_.reset();
-  }
-
-  void ForceInvocationForTesting() {
-    invoke(MakeGarbageCollected<IdleDeadline>(
-        base::TimeTicks::Now() + kFindTaskTestTimeout,
-        IdleDeadline::CallbackType::kCalledWhenIdle));
-  }
-
-  void Trace(Visitor* visitor) override {
+  void Trace(Visitor* visitor) {
     visitor->Trace(controller_);
     visitor->Trace(document_);
-    ScriptedIdleTaskController::IdleTask::Trace(visitor);
   }
 
- private:
-  void invoke(IdleDeadline* deadline) override {
-    if (!controller_->ShouldFindMatches(search_text_, *options_)) {
+  void Invoke() {
+    if (!controller_->ShouldFindMatches(identifier_, search_text_, *options_)) {
       controller_->DidFinishTask(identifier_, search_text_, *options_,
                                  true /* finished_whole_request */,
-                                 PositionInFlatTree(), 0 /* match_count */);
-      forced_activatable_display_locks_.reset();
-    } else if (!forced_activatable_display_locks_) {
-      forced_activatable_display_locks_.emplace(
-          controller_->GetLocalFrame()
-              ->GetDocument()
-              ->GetScopedForceActivatableLocks());
+                                 PositionInFlatTree(), 0 /* match_count */,
+                                 true /* aborted */);
     }
 
+    Document::ScopedForceActivatableDisplayLocks
+        forced_activatable_display_locks(
+            controller_->GetLocalFrame()
+                ->GetDocument()
+                ->GetScopedForceActivatableLocks());
     Document& document = *controller_->GetLocalFrame()->GetDocument();
     PositionInFlatTree search_start =
         PositionInFlatTree::FirstPositionInNode(document);
@@ -115,6 +101,7 @@ class FindTaskController::IdleFindTask
         (options_->forward ? 0 : kBackwards) |
         (options_->match_case ? 0 : kCaseInsensitive) |
         (options_->find_next ? 0 : kStartInSelection);
+    auto start_time = base::TimeTicks::Now();
 
     while (search_start != search_end) {
       // Find in the whole block.
@@ -147,23 +134,21 @@ class FindTaskController::IdleFindTask
         break;
       }
       next_task_start_position = search_start;
-      if (deadline->timeRemaining() <= 0)
+      auto time_elapsed = base::TimeTicks::Now() - start_time;
+      if (time_elapsed > kFindTaskTimeAllotment)
         break;
     }
 
     controller_->DidFinishTask(identifier_, search_text_, *options_,
                                full_range_searched, next_task_start_position,
-                               match_count);
+                               match_count, false /* aborted */);
   }
 
   Member<Document> document_;
   Member<FindTaskController> controller_;
-  int callback_handle_ = 0;
   const int identifier_;
   const WebString search_text_;
   mojom::blink::FindOptionsPtr options_;
-  base::Optional<Document::ScopedForceActivatableDisplayLocks>
-      forced_activatable_display_locks_;
 };
 
 FindTaskController::FindTaskController(WebLocalFrameImpl& owner_frame,
@@ -176,35 +161,33 @@ void FindTaskController::StartRequest(
     int identifier,
     const WebString& search_text,
     const mojom::blink::FindOptions& options) {
+  DCHECK(!finding_in_progress_);
+  DCHECK_EQ(current_find_identifier_, kInvalidFindIdentifier);
   // This is a brand new search, so we need to reset everything.
   finding_in_progress_ = true;
   current_match_count_ = 0;
-  RequestIdleFindTask(identifier, search_text, options);
+  current_find_identifier_ = identifier;
+  RequestFindTask(identifier, search_text, options);
 }
 
 void FindTaskController::CancelPendingRequest() {
-  if (idle_find_task_) {
-    idle_find_task_->Dispose();
-    idle_find_task_.Clear();
-  }
+  if (find_task_)
+    find_task_.Clear();
   if (finding_in_progress_)
     last_find_request_completed_with_no_matches_ = false;
   finding_in_progress_ = false;
   resume_finding_from_range_ = nullptr;
+  current_find_identifier_ = kInvalidFindIdentifier;
 }
 
-void FindTaskController::RequestIdleFindTask(
+void FindTaskController::RequestFindTask(
     int identifier,
     const WebString& search_text,
     const mojom::blink::FindOptions& options) {
-  DCHECK_EQ(idle_find_task_, nullptr);
-  idle_find_task_ = MakeGarbageCollected<IdleFindTask>(
+  DCHECK_EQ(find_task_, nullptr);
+  DCHECK_EQ(identifier, current_find_identifier_);
+  find_task_ = MakeGarbageCollected<FindTask>(
       this, GetLocalFrame()->GetDocument(), identifier, search_text, options);
-  // If it's for testing, run the task immediately.
-  // TODO(rakina): Change to use general solution when it's available.
-  // https://crbug.com/875203
-  if (options.run_synchronously_for_testing)
-    idle_find_task_->ForceInvocationForTesting();
 }
 
 void FindTaskController::DidFinishTask(
@@ -213,11 +196,10 @@ void FindTaskController::DidFinishTask(
     const mojom::blink::FindOptions& options,
     bool finished_whole_request,
     PositionInFlatTree next_starting_position,
-    int match_count) {
-  if (idle_find_task_) {
-    idle_find_task_->Dispose();
-    idle_find_task_.Clear();
-  }
+    int match_count,
+    bool aborted) {
+  if (find_task_)
+    find_task_.Clear();
   // Remember what we search for last time, so we can skip searching if more
   // letters are added to the search string (and last outcome was 0).
   last_search_string_ = search_text;
@@ -235,15 +217,19 @@ void FindTaskController::DidFinishTask(
   }
 
   if (!finished_whole_request) {
-    // Idle task ran out of time, request for another one.
-    RequestIdleFindTask(identifier, search_text, options);
+    // Task ran out of time, request for another one.
+    RequestFindTask(identifier, search_text, options);
     return;  // Done for now, resume work later.
   }
 
   text_finder_->FinishCurrentScopingEffort(identifier);
 
-  last_find_request_completed_with_no_matches_ = !current_match_count_;
-  finding_in_progress_ = false;
+  if (identifier == current_find_identifier_) {
+    last_find_request_completed_with_no_matches_ =
+        !aborted && !current_match_count_;
+    finding_in_progress_ = false;
+    current_find_identifier_ = kInvalidFindIdentifier;
+  }
 }
 
 LocalFrame* FindTaskController::GetLocalFrame() const {
@@ -251,8 +237,11 @@ LocalFrame* FindTaskController::GetLocalFrame() const {
 }
 
 bool FindTaskController::ShouldFindMatches(
+    int identifier,
     const String& search_text,
     const mojom::blink::FindOptions& options) {
+  if (identifier != current_find_identifier_)
+    return false;
   // Don't scope if we can't find a frame or a view.
   // The user may have closed the tab/application, so abort.
   LocalFrame* frame = GetLocalFrame();
@@ -292,7 +281,7 @@ void FindTaskController::DidFindMatch(int identifier, Range* result_range) {
 void FindTaskController::Trace(Visitor* visitor) {
   visitor->Trace(owner_frame_);
   visitor->Trace(text_finder_);
-  visitor->Trace(idle_find_task_);
+  visitor->Trace(find_task_);
   visitor->Trace(resume_finding_from_range_);
 }
 

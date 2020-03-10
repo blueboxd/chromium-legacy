@@ -105,6 +105,18 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         super.onSaveInstanceState(outState);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        mBrowser.onFragmentStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mBrowser.onFragmentStop();
+    }
+
     public IBrowserFragment asIBrowserFragment() {
         return new IBrowserFragment.Stub() {
             @Override

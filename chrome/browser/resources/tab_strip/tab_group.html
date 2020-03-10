@@ -21,6 +21,10 @@
   margin-bottom: var(--tabstrip-tab-group-title-margin);
 }
 
+#chip:focus {
+  outline: none;
+}
+
 #title {
   background: rgb(var(--tabstrip-tab-group-color-rgb));
   border-radius: 4px;
@@ -37,6 +41,11 @@
   height: 16px;
   margin-top: 4px;
   width: 16px;
+}
+
+#chip:focus #title {
+  box-shadow: 0 0 0 2px var(--tabstrip-focus-outline-color);
+  outline: none;
 }
 
 #tabs {
@@ -148,7 +157,7 @@
 
 <div id="dragImage">
   <div id="tabGroup">
-    <div id="chip" draggable="true">
+    <div id="chip" draggable="true" tabindex="0" role="button">
       <div id="title"></div>
     </div>
     <div id="tabs">

@@ -4,6 +4,10 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 proto_library("optimization_guide_proto") {
   sources = [
     "common_types.proto",
@@ -15,4 +19,19 @@ proto_library("optimization_guide_proto") {
     "previews_metadata.proto",
     "public_image_metadata.proto",
   ]
+}
+
+if (is_android) {
+  proto_java_library("optimization_guide_proto_java") {
+    proto_path = "."
+    sources = [
+      "common_types.proto",
+      "hints.proto",
+      "loading_predictor_metadata.proto",
+      "models.proto",
+      "performance_hints_metadata.proto",
+      "previews_metadata.proto",
+      "public_image_metadata.proto",
+    ]
+  }
 }

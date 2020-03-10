@@ -395,8 +395,8 @@ void GetAssertionRequestHandler::HandleResponse(
 
   // Requests that require a PIN should follow the |GetTouch| path initially.
   DCHECK(state_ == State::kWaitingForSecondTouch ||
-         authenticator->WillNeedPINToGetAssertion(request_, observer()) ==
-             PINDisposition::kNoPIN);
+         authenticator->WillNeedPINToGetAssertion(request_, observer()) !=
+             PINDisposition::kUsePIN);
 
   const base::Optional<GetAssertionStatus> maybe_result =
       ConvertDeviceResponseCode(status);

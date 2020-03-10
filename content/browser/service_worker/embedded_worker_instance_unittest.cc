@@ -90,7 +90,9 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   void OnStartWorkerMessageSent() override {
     RecordEvent(START_WORKER_MESSAGE_SENT);
   }
-  void OnStarted(blink::mojom::ServiceWorkerStartStatus status) override {
+  void OnStarted(blink::mojom::ServiceWorkerStartStatus status,
+                 bool has_fetch_handler) override {
+    has_fetch_handler_ = has_fetch_handler;
     RecordEvent(STARTED, base::nullopt, status);
   }
   void OnStopped(EmbeddedWorkerStatus old_status) override {
@@ -219,6 +221,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::vector<EventLog> events_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  bool has_fetch_handler_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceTest);
@@ -651,7 +654,7 @@ class AbruptCompletionInstanceClient : public FakeEmbeddedWorkerInstanceClient {
   void EvaluateScript() override {
     host()->OnScriptEvaluationStart();
     host()->OnStarted(blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion,
-                      helper()->GetNextThreadId(),
+                      /*has_fetch_handler=*/false, helper()->GetNextThreadId(),
                       blink::mojom::EmbeddedWorkerStartTiming::New());
   }
 };
@@ -677,6 +680,62 @@ TEST_F(EmbeddedWorkerInstanceTest, AbruptCompletion) {
   EXPECT_EQ(blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion,
             events_[2].start_status.value());
   worker->Stop();
+}
+
+// A fake instance client for toggling whether a fetch event handler exists.
+class FetchHandlerInstanceClient : public FakeEmbeddedWorkerInstanceClient {
+ public:
+  explicit FetchHandlerInstanceClient(EmbeddedWorkerTestHelper* helper)
+      : FakeEmbeddedWorkerInstanceClient(helper) {}
+  ~FetchHandlerInstanceClient() override = default;
+
+  void set_has_fetch_handler(bool has_fetch_handler) {
+    has_fetch_handler_ = has_fetch_handler;
+  }
+
+ protected:
+  void EvaluateScript() override {
+    host()->OnScriptEvaluationStart();
+    host()->OnStarted(blink::mojom::ServiceWorkerStartStatus::kNormalCompletion,
+                      has_fetch_handler_, helper()->GetNextThreadId(),
+                      blink::mojom::EmbeddedWorkerStartTiming::New());
+  }
+
+ private:
+  bool has_fetch_handler_ = false;
+};
+
+// Tests that whether a fetch event handler exists.
+TEST_F(EmbeddedWorkerInstanceTest, HasFetchHandler) {
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+  RegistrationAndVersionPair pair1 = PrepareRegistrationAndVersion(scope, url);
+  auto worker1 = std::make_unique<EmbeddedWorkerInstance>(pair1.second.get());
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker1->status());
+  worker1->AddObserver(this);
+
+  auto* fetch_handler_worker =
+      helper_->AddNewPendingInstanceClient<FetchHandlerInstanceClient>(
+          helper_.get());
+  fetch_handler_worker->set_has_fetch_handler(true);
+  StartWorker(worker1.get(), CreateStartParams(pair1.second));
+
+  EXPECT_TRUE(has_fetch_handler_);
+  worker1->Stop();
+
+  RegistrationAndVersionPair pair2 = PrepareRegistrationAndVersion(scope, url);
+  auto worker2 = std::make_unique<EmbeddedWorkerInstance>(pair2.second.get());
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker2->status());
+  worker2->AddObserver(this);
+
+  auto* no_fetch_handler_worker =
+      helper_->AddNewPendingInstanceClient<FetchHandlerInstanceClient>(
+          helper_.get());
+  no_fetch_handler_worker->set_has_fetch_handler(false);
+  StartWorker(worker2.get(), CreateStartParams(pair2.second));
+
+  EXPECT_FALSE(has_fetch_handler_);
+  worker2->Stop();
 }
 
 // Tests recording the lifetime UMA.

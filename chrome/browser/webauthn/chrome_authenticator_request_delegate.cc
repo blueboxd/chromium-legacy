@@ -41,7 +41,6 @@
 
 #if defined(OS_WIN)
 #include "device/fido/win/authenticator.h"
-#include "device/fido/win/webauthn_api.h"
 #endif
 
 namespace {
@@ -420,33 +419,11 @@ bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUIEnabled() {
   return !disable_ui_;
 }
 
-bool ChromeAuthenticatorRequestDelegate::
-    IsUserVerifyingPlatformAuthenticatorAvailable() {
-#if defined(OS_MACOSX)
-  // Touch ID is available in Incognito, but not in Guest mode.
-  if (Profile::FromBrowserContext(browser_context())->IsGuestSession())
-    return false;
-
-  return device::fido::mac::TouchIdAuthenticator::IsAvailable(
-      TouchIdAuthenticatorConfigForProfile(
-          Profile::FromBrowserContext(browser_context())));
-#elif defined(OS_WIN)
-  if (browser_context()->IsOffTheRecord())
-    return false;
-
-  return base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
-         device::WinWebAuthnApiAuthenticator::
-             IsUserVerifyingPlatformAuthenticatorAvailable(
-                 GetDiscoveryFactory()->win_webauthn_api());
-#else
-  return false;
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
-}
-
 #if defined(OS_MACOSX)
 base::Optional<ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfig>
 ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() {
-  if (!IsUserVerifyingPlatformAuthenticatorAvailable())
+  // Touch ID is available in Incognito but not Guest windows.
+  if (Profile::FromBrowserContext(browser_context())->IsGuestSession())
     return base::nullopt;
 
   return TouchIdAuthenticatorConfigForProfile(

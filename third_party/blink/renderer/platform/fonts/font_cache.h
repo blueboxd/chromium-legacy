@@ -90,6 +90,12 @@ enum class AlternateFontName {
   kLastResort
 };
 
+struct FontEnumerationEntry {
+  String postscript_name;
+  String full_name;
+  String family;
+};
+
 typedef HashMap<unsigned,
                 std::unique_ptr<FontPlatformData>,
                 WTF::IntHash<unsigned>,
@@ -247,6 +253,8 @@ class PLATFORM_EXPORT FontCache {
       const FontPlatformData*,
       ShouldRetain = kRetain,
       bool subpixel_ascent_descent = false);
+
+  std::vector<FontEnumerationEntry> EnumerateAvailableFonts();
 
   void InvalidateShapeCache();
 

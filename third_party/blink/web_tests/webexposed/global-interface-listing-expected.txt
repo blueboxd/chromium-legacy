@@ -11780,6 +11780,7 @@ interface webkitURL
     getter onwebkittransitionend
     getter onwheel
     getter origin
+    getter originPolicyIds
     getter outerHeight
     getter outerWidth
     getter pageXOffset

@@ -232,6 +232,9 @@ enum class TaskType : unsigned char {
   // is frozen.
   kInternalFrameLifecycleControl = 68,
 
+  // Tasks used for find-in-page.
+  kInternalFindInPage = 70,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -256,7 +259,7 @@ enum class TaskType : unsigned char {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 70,
+  kCount = 71,
 };
 
 }  // namespace blink

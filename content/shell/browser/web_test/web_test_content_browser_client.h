@@ -6,6 +6,8 @@
 #define CONTENT_SHELL_BROWSER_WEB_TEST_WEB_TEST_CONTENT_BROWSER_CLIENT_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "content/public/common/client_hints.mojom.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -20,6 +22,7 @@ namespace content {
 
 class FakeBluetoothChooser;
 class FakeBluetoothChooserFactory;
+class FakeBluetoothDelegate;
 class MockClipboardHost;
 class MockPlatformNotificationService;
 class WebTestBrowserContext;
@@ -39,6 +42,7 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
 
   // Retrieves the last created FakeBluetoothChooser instance.
   std::unique_ptr<FakeBluetoothChooser> GetNextFakeBluetoothChooser();
+  void ResetFakeBluetoothDelegate();
 
   // ContentBrowserClient overrides.
   void RenderProcessWillLaunch(RenderProcessHost* host) override;
@@ -75,7 +79,7 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       override;
   bool CanAcceptUntrustedExchangesIfNeeded() override;
-
+  BluetoothDelegate* GetBluetoothDelegate() override;
   content::TtsControllerDelegate* GetTtsControllerDelegate() override;
   content::TtsPlatform* GetTtsPlatform() override;
   bool CanEnterFullscreenWithoutUserActivation() override;
@@ -112,6 +116,7 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
 
   // Stores the FakeBluetoothChooserFactory that produces FakeBluetoothChoosers.
   std::unique_ptr<FakeBluetoothChooserFactory> fake_bluetooth_chooser_factory_;
+  std::unique_ptr<FakeBluetoothDelegate> fake_bluetooth_delegate_;
   std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
 };
 

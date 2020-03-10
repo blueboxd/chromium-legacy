@@ -46,6 +46,7 @@ import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.ViewEventSink.InternalAccessDelegate;
+import org.chromium.content_public.browser.Visibility;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsInternals;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -398,6 +399,12 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         WebContentsImpl[] innerWebContents = WebContentsImplJni.get().getInnerWebContents(
                 mNativeWebContentsAndroid, WebContentsImpl.this);
         return Collections.unmodifiableList(Arrays.asList(innerWebContents));
+    }
+
+    @Override
+    public @Visibility int getVisibility() {
+        checkNotDestroyed();
+        return WebContentsImplJni.get().getVisibility(mNativeWebContentsAndroid);
     }
 
     @Override
@@ -1055,6 +1062,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
                 long nativeWebContentsAndroid, WebContentsImpl caller);
         WebContentsImpl[] getInnerWebContents(
                 long nativeWebContentsAndroid, WebContentsImpl caller);
+        @Visibility
+        int getVisibility(long nativeWebContentsAndroid);
         String getTitle(long nativeWebContentsAndroid, WebContentsImpl caller);
         GURL getVisibleURL(long nativeWebContentsAndroid, WebContentsImpl caller);
         String getEncoding(long nativeWebContentsAndroid, WebContentsImpl caller);

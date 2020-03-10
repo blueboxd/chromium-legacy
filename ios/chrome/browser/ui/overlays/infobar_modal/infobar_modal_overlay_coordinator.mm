@@ -70,7 +70,7 @@
 // Called when the dismissal of the modal UI is finished.
 - (void)finishDismissal {
   [self resetModal];
-  self.navigationController = nil;
+  self.modalNavController = nil;
   // Notify the presentation context that the dismissal has finished.  This
   // is necessary to synchronize OverlayPresenter scheduling logic with the UI
   // layer.

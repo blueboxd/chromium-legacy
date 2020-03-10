@@ -14,35 +14,23 @@ p {
   padding: 0;
 }
 
-.arc-tos-disable-skip #arc-tos-skip-button,
 .arc-tos-loaded .arc-tos-loading,
 .arc-tos-loaded .arc-tos-error,
-.arc-tos-loaded #arc-tos-retry-button,
+.arc-tos-loaded #arcTosRetryButton,
 .arc-tos-loading .arc-tos-content,
 .arc-tos-loading .arc-tos-error,
-.arc-tos-loading #arc-tos-retry-button,
-.arc-tos-loading #arc-tos-accept-button,
+.arc-tos-loading #arcTosRetryButton,
+.arc-tos-loading #arcTosAcceptButton,
 .error .arc-tos-content,
 .error .arc-tos-loading,
-.error #arc-tos-accept-button,
-.error #arc-tos-next-button {
+.error #arcTosAcceptButton,
+.error #arcTosNextButton {
   display: none;
 }
 
-.arc-tos-loading #arc-tos-next-button,
-.arc-tos-loading #arc-tos-skip-button,
-.arc-tos-loading #arc-tos-retry-button {
+.arc-tos-loading #arcTosNextButton,
+.arc-tos-loading #arcTosRetryButton {
   pointer-events: none;
-}
-
-.arc-tos-for-demo-mode #arc-location-service,
-.arc-tos-for-demo-mode #arc-backup-service {
-  display: none;
-}
-
-#arc-tos-dialog:not(.arc-tos-for-demo-mode) #arc-tos-back-button,
-#arc-tos-dialog:not(.arc-tos-for-demo-mode) #arc-tos-metrics-demo-apps {
-  display: none;
 }
 
 .arc-tos-loading p,
@@ -59,25 +47,22 @@ p {
   padding: 0 20px 16px 20px;
 }
 
-#arc-policy-link {
+#arcPolicyLink {
   margin: 0;
   padding: 16px 0 16px 20px;
 }
 
-#arc-tos-skip-button {
-  color: rgba(0, 0, 0, 0.54);
-}
 
-#google-service-confirmation-text {
+#arcGoogleServiceConfirmation {
   font-weight: 600;
 }
 
 
-#arc-tos-container::-webkit-scrollbar {
+#arcTosContainer::-webkit-scrollbar {
   display: none;
 }
 
-#arc-tos-view {
+#arcTosView {
   display: block;
   height: 100%;
   margin: auto;
@@ -86,13 +71,27 @@ p {
   width: 100%;
 }
 
-#arc-tos-view-container {
+#arcTosViewContainer {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-#arc-tos-back-button,
-#arc-tos-skip-button {
+#arcTosBackButton {
   padding-inline-end: 6px;
+}
+
+#arcTosOverlayWebview {
+  border: 1px solid #d9d9d9;
+  display: block;
+  height: 300px;
+  width: 100%;
+}
+
+#arcTosOverlayWebviewContainer {
+  box-sizing: border-box;
+  height: 332px;
+  margin: auto;
+  padding: 24px 8px 8px 8px;
+  width: 100%;
 }

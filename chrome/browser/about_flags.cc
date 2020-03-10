@@ -2780,14 +2780,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillCreditCardAblationExperiment)},
-    {"enable-autofill-credit-card-upload-editable-cardholder-name",
-     flag_descriptions::
-         kEnableAutofillCreditCardUploadEditableCardholderNameName,
-     flag_descriptions::
-         kEnableAutofillCreditCardUploadEditableCardholderNameDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillUpstreamEditableCardholderName)},
     {"enable-autofill-credit-card-upload-editable-expiration-date",
      flag_descriptions::
          kEnableAutofillCreditCardUploadEditableExpirationDateName,

@@ -21,6 +21,12 @@ namespace prerender {
 class PrerenderContents;
 }
 
+namespace thin_webview {
+namespace android {
+class ThinWebView;
+}
+}  // namespace thin_webview
+
 // A "tab contents" is a WebContents that is used as a tab in a browser window
 // (or the equivalent on Android). The TabHelpers class allows specific classes
 // to attach the set of tab helpers that is used for tab contents.
@@ -51,6 +57,10 @@ class TabHelpers {
   // Prerendering loads pages that have arbitrary external content; it needs
   // the full set of tab helpers to deal with it.
   friend class prerender::PrerenderContents;
+
+  // ThinWebView is used to host WebContents on non-tab UIs in Android. Most
+  // clients of ThinWebView will need a major subset of the tab helpers.
+  friend class thin_webview::android::ThinWebView;
 
   // FYI: Do NOT add any more friends here. The functions above are the ONLY
   // ones that need to call AttachTabHelpers; if you think you do, re-read the

@@ -30,11 +30,6 @@ void AppServiceProxy::CreateBlockDialog(const std::string& app_name,
 
 }  // namespace apps
 
-// static
-AppBlockDialogView* AppBlockDialogView::GetActiveViewForTesting() {
-  return g_app_block_dialog_view;
-}
-
 AppBlockDialogView::AppBlockDialogView(const std::string& app_name,
                                        const gfx::ImageSkia& image,
                                        Profile* profile) {
@@ -50,6 +45,11 @@ AppBlockDialogView::AppBlockDialogView(const std::string& app_name,
 
 AppBlockDialogView::~AppBlockDialogView() {
   g_app_block_dialog_view = nullptr;
+}
+
+// static
+AppBlockDialogView* AppBlockDialogView::GetActiveViewForTesting() {
+  return g_app_block_dialog_view;
 }
 
 base::string16 AppBlockDialogView::GetWindowTitle() const {

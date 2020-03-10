@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_UNINSTALL_DIALOG_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_UNINSTALL_DIALOG_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -93,6 +94,8 @@ class UninstallDialog {
   // the uninstall.
   void OnDialogClosed(bool uninstall, bool clear_site_data, bool report_abuse);
 
+  void SetDialogCreatedCallbackForTesting(base::OnceClosure callback);
+
  private:
   // Callback invoked when the icon is loaded.
   void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
@@ -103,6 +106,8 @@ class UninstallDialog {
   const std::string app_name_;
   gfx::NativeWindow parent_window_;
   UninstallCallback uninstall_callback_;
+
+  base::OnceClosure dialog_created_callback_;
 
   // Tracks whether |parent_window_| got destroyed.
   std::unique_ptr<NativeWindowTracker> parent_window_tracker_;

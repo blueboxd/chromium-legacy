@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/compositor_priority_experiments.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/deadline_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/find_in_page_budget_pool_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/idle_time_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_metrics_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_helper.h"
@@ -419,6 +420,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     return main_thread_only().main_thread_compositing_is_fast;
   }
 
+  QueuePriority find_in_page_priority() const {
+    return main_thread_only().current_policy.find_in_page_priority();
+  }
+
  protected:
   scoped_refptr<MainThreadTaskQueue> ControlTaskQueue();
   scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
@@ -449,6 +454,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
 
   friend class CompositorPriorityExperiments;
+  friend class FindInPageBudgetPoolController;
 
   FRIEND_TEST_ALL_PREFIXES(
       main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest,
@@ -567,6 +573,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       return compositor_priority_;
     }
 
+    base::sequence_manager::TaskQueue::QueuePriority& find_in_page_priority() {
+      return find_in_page_priority_;
+    }
+    base::sequence_manager::TaskQueue::QueuePriority find_in_page_priority()
+        const {
+      return find_in_page_priority_;
+    }
+
     UseCase& use_case() { return use_case_; }
     UseCase use_case() const { return use_case_; }
 
@@ -577,6 +591,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
              should_prioritize_loading_with_compositing_ ==
                  other.should_prioritize_loading_with_compositing_ &&
              compositor_priority_ == other.compositor_priority_ &&
+             find_in_page_priority_ == other.find_in_page_priority_ &&
              use_case_ == other.use_case_;
     }
 
@@ -591,6 +606,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // Priority of task queues belonging to the compositor class (Check
     // MainThread::QueueClass).
     base::sequence_manager::TaskQueue::QueuePriority compositor_priority_;
+
+    base::sequence_manager::TaskQueue::QueuePriority find_in_page_priority_;
 
     UseCase use_case_;
 
@@ -793,6 +810,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   IdleHelper idle_helper_;
   std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   RenderWidgetSignals render_widget_scheduler_signals_;
+
+  std::unique_ptr<FindInPageBudgetPoolController>
+      find_in_page_budget_pool_controller_;
 
   const scoped_refptr<MainThreadTaskQueue> control_task_queue_;
   const scoped_refptr<MainThreadTaskQueue> compositor_task_queue_;

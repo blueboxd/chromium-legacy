@@ -33,8 +33,8 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
 
@@ -319,6 +319,9 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
   // Do not make this interactive, so that events are sent to ShelfView.
   icon_view_->set_can_process_events_within_subtree(false);
 
+  indicator_->SetPaintToLayer();
+  indicator_->layer()->SetFillsBoundsOpaquely(false);
+
   AddChildView(indicator_);
   AddChildView(icon_view_);
   if (is_notification_indicator_enabled_) {
@@ -329,6 +332,9 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
     AddChildView(notification_indicator_);
   }
   GetInkDrop()->AddObserver(this);
+
+  // Do not set a clip, allow the ink drop to burst out.
+  views::InstallEmptyHighlightPathGenerator(this);
 }
 
 ShelfAppButton::~ShelfAppButton() {
@@ -781,11 +787,6 @@ std::unique_ptr<views::InkDropRipple> ShelfAppButton::CreateInkDropRipple()
       small_ripple_area.size(), ink_drop_small_corner_radius(),
       small_ripple_area.CenterPoint(), GetInkDropBaseColor(),
       ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropMask> ShelfAppButton::CreateInkDropMask() const {
-  // Do not set a mask, allow the ink drop to burst out.
-  return nullptr;
 }
 
 bool ShelfAppButton::HandleAccessibleAction(

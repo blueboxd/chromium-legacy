@@ -93,6 +93,7 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
   bool IsWindowInteractionAllowed() override;
   void PauseEvaluation() override;
   void ResumeEvaluation() override;
+  bool HasFetchHandler() override;
 
   // WorkerReportingProxy overrides:
   void CountFeature(WebFeature) override;

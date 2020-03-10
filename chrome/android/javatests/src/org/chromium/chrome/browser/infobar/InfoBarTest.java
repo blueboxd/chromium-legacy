@@ -246,7 +246,6 @@ public class InfoBarTest {
         InfoBarUtil.clickPrimaryButton(infoBars.get(0));
         mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
         Assert.assertEquals("Wrong infobar count", 0, infoBars.size());
-        Assert.assertNotNull(infoBars.get(0).getSnackbarManager());
 
         // A second load should not show the infobar.
         mActivityTestRule.loadUrl(mTestServer.getURL(POPUP_PAGE));

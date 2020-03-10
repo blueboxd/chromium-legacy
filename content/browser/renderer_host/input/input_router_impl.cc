@@ -336,6 +336,18 @@ void InputRouterImpl::SetMouseCapture(bool capture) {
   client_->SetMouseCapture(capture);
 }
 
+void InputRouterImpl::RequestMouseLock(bool from_user_gesture,
+                                       bool privileged,
+                                       bool unadjusted_movement,
+                                       RequestMouseLockCallback response) {
+  client_->RequestMouseLock(from_user_gesture, privileged, unadjusted_movement,
+                            std::move(response));
+}
+
+void InputRouterImpl::UnlockMouse() {
+  client_->UnlockMouse();
+}
+
 void InputRouterImpl::SetMovementXYForTouchPoints(blink::WebTouchEvent* event) {
   for (size_t i = 0; i < event->touches_length; ++i) {
     blink::WebTouchPoint* touch_point = &event->touches[i];

@@ -97,6 +97,7 @@ class WebPerformance {
   BLINK_EXPORT uint64_t LargestImagePaintSize() const;
   BLINK_EXPORT double LargestTextPaint() const;
   BLINK_EXPORT uint64_t LargestTextPaintSize() const;
+  BLINK_EXPORT double FirstInputOrScrollNotifiedTimestamp() const;
   BLINK_EXPORT double FirstInputDelay() const;
   BLINK_EXPORT double FirstInputTimestamp() const;
   BLINK_EXPORT double LongestInputDelay() const;

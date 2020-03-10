@@ -41,6 +41,7 @@ class BLINK_COMMON_EXPORT WebBluetoothDeviceId {
 
   bool operator==(const WebBluetoothDeviceId& device_id) const;
   bool operator!=(const WebBluetoothDeviceId& device_id) const;
+  bool operator<(const WebBluetoothDeviceId& device_id) const;
 
  private:
   std::string device_id_;

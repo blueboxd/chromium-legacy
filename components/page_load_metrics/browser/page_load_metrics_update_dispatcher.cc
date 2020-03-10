@@ -335,6 +335,8 @@ class PageLoadTimingMerger {
           new_paint_timing.largest_text_paint;
       target_paint_timing->largest_text_paint_size =
           new_paint_timing.largest_text_paint_size;
+      target_paint_timing->first_input_or_scroll_notified_timestamp =
+          new_paint_timing.first_input_or_scroll_notified_timestamp;
     }
   }
 

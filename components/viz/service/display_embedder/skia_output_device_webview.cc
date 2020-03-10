@@ -27,6 +27,10 @@ SkiaOutputDeviceWebView::SkiaOutputDeviceWebView(
                        std::move(did_swap_buffer_complete_callback)),
       context_state_(context_state),
       gl_surface_(std::move(gl_surface)) {
+  // Always set uses_default_gl_framebuffer to true, since
+  // SkSurfaceCharacterization created for  GL fbo0 is compatible with
+  // SkSurface wrappers non GL fbo0.
+  capabilities_.uses_default_gl_framebuffer = true;
   capabilities_.output_surface_origin = gl_surface_->GetOrigin();
   capabilities_.max_frames_pending = gl_surface_->GetBufferCount() - 1;
 
@@ -40,6 +44,12 @@ SkiaOutputDeviceWebView::SkiaOutputDeviceWebView(
   glGetIntegerv(GL_ALPHA_BITS, &alpha_bits);
   CHECK_GL_ERROR();
   supports_alpha_ = alpha_bits > 0;
+
+  capabilities_.sk_color_type =
+      supports_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType;
+  capabilities_.gr_backend_format =
+      context_state_->gr_context()->defaultBackendFormat(
+          capabilities_.sk_color_type, GrRenderable::kYes);
 }
 
 SkiaOutputDeviceWebView::~SkiaOutputDeviceWebView() = default;
@@ -59,7 +69,6 @@ bool SkiaOutputDeviceWebView::Reshape(const gfx::Size& size,
 
   size_ = size;
   color_space_ = color_space;
-
   InitSkiaSurface(gl_surface_->GetBackingFramebufferObject());
   return !!sk_surface_;
 }
@@ -98,15 +107,10 @@ void SkiaOutputDeviceWebView::InitSkiaSurface(unsigned int fbo) {
 
   GrGLFramebufferInfo framebuffer_info;
   framebuffer_info.fFBOID = fbo;
-
-  SkColorType color_type;
-  if (supports_alpha_) {
-    framebuffer_info.fFormat = GL_RGBA8;
-    color_type = kRGBA_8888_SkColorType;
-  } else {
-    framebuffer_info.fFormat = GL_RGB8_OES;
-    color_type = kRGB_888x_SkColorType;
-  }
+  framebuffer_info.fFormat = supports_alpha_ ? GL_RGBA8 : GL_RGB8_OES;
+  DCHECK_EQ(capabilities_.gr_backend_format.asGLFormat(),
+            supports_alpha_ ? GrGLFormat::kRGBA8 : GrGLFormat::kRGB8);
+  SkColorType color_type = capabilities_.sk_color_type;
 
   GrBackendRenderTarget render_target(size_.width(), size_.height(), 0, 8,
                                       framebuffer_info);

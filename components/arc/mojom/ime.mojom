@@ -90,10 +90,8 @@ interface ImeHost {
       );
 
   // Requests Chrome to hide the virtual keyboard.
-  // Howver, hiding can be canceled if a text field gets focus.
-  // TODO(yhanada): We might be able to remove this method by adding an argument
-  //                to OnTextInputTypeChanged().
-  [MinVersion=9] RequestHideIme@5();
+  // However, hiding can be canceled if a text field gets focus.
+  [MinVersion=9] RequestHideImeDeprecated@5();
 };
 
 // Next method ID: 8

@@ -187,8 +187,10 @@ interface ServiceWorker {
       FetchHandlerExistence fetch_handler_existence,
       URLLoaderFactoryBundle? subresource_loader_factories);
 
+  // These methods dispatch InstallEvent and ActivateEvent to the
+  // ServiceWorkerGlobalScope.
   DispatchInstallEvent()
-      => (ServiceWorkerEventStatus status, bool has_fetch_handler);
+      => (ServiceWorkerEventStatus status);
   DispatchActivateEvent()
       => (ServiceWorkerEventStatus status);
 

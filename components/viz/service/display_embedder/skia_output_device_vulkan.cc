@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
 
 namespace viz {
@@ -35,6 +36,7 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
   if (!CreateVulkanSurface()) {
     LOG(ERROR) << "Failed to create vulkan surface.";
   }
+  capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.max_frames_pending = vulkan_surface_->image_count() - 1;
   // Vulkan FIFO swap chain should return vk images in presenting order, so set
   // preserve_buffer_content & supports_post_sub_buffer to true to let
@@ -43,6 +45,14 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
   capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
   capabilities_.supports_post_sub_buffer = true;
   capabilities_.supports_pre_transform = true;
+
+  const auto surface_format = vulkan_surface_->surface_format().format;
+  DCHECK(surface_format == VK_FORMAT_B8G8R8A8_UNORM ||
+         surface_format == VK_FORMAT_R8G8B8A8_UNORM);
+  capabilities_.sk_color_type = surface_format == VK_FORMAT_R8G8B8A8_UNORM
+                                    ? kRGBA_8888_SkColorType
+                                    : kBGRA_8888_SkColorType;
+  capabilities_.gr_backend_format = GrBackendFormat::MakeVk(surface_format);
 }
 
 SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {

@@ -109,7 +109,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     }
   }
   std::vector<bool> is_important(event_data->node_data.size());
-  BuildImportaceTable(event_data->node_data, node_data_index_map, is_important);
+  BuildImportanceTable(event_data->node_data, node_data_index_map,
+                       is_important);
   for (int i = event_data->node_data.size() - 1; i >= 0; --i) {
     int32_t id = event_data->node_data[i]->id;
     AXNodeInfoData* node = event_data->node_data[i].get();
@@ -391,7 +392,7 @@ bool AXTreeSourceArc::ComputeIsClickableLeaf(
   return true;
 }
 
-void AXTreeSourceArc::BuildImportaceTable(
+void AXTreeSourceArc::BuildImportanceTable(
     const std::vector<AXNodeInfoDataPtr>& nodes,
     const std::map<int32_t, int32_t>& node_id_to_nodes_index,
     std::vector<bool>& out_values) const {

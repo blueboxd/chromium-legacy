@@ -18,6 +18,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 
@@ -38,7 +39,7 @@ constexpr int kThumbInset = 2;
 // Class representing the thumb (the circle that slides horizontally).
 class ToggleButton::ThumbView : public InkDropHostView {
  public:
-  ThumbView() = default;
+  ThumbView() { views::InstallEmptyHighlightPathGenerator(this); }
   ~ThumbView() override = default;
 
   void Update(const gfx::Rect& bounds, float color_ratio) {
@@ -104,10 +105,6 @@ class ToggleButton::ThumbView : public InkDropHostView {
     thumb_bounds = gfx::RectF(gfx::ToEnclosingRect(thumb_bounds));
     canvas->DrawCircle(thumb_bounds.CenterPoint(), thumb_bounds.height() / 2.f,
                        thumb_flags);
-  }
-
-  std::unique_ptr<InkDropMask> CreateInkDropMask() const override {
-    return nullptr;
   }
 
   // Colors used for the thumb, defaults to NativeTheme if not set explicitly.

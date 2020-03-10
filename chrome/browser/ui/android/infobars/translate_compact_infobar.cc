@@ -13,6 +13,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "chrome/android/chrome_jni_headers/TranslateCompactInfoBar_jni.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/translate/android/translate_utils.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
@@ -67,11 +68,17 @@ ScopedJavaLocalRef<jobject> TranslateCompactInfoBar::CreateRenderInfoBar(
   ScopedJavaLocalRef<jstring> target_language_code =
       base::android::ConvertUTF8ToJavaString(env,
                                              delegate->target_language_code());
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(this);
+
+  TabAndroid* tab =
+      web_contents ? TabAndroid::FromWebContents(web_contents) : nullptr;
+
   return Java_TranslateCompactInfoBar_create(
-      env, delegate->translate_step(), source_language_code,
-      target_language_code, delegate->ShouldAlwaysTranslate(),
-      delegate->triggered_from_menu(), java_languages, java_codes,
-      java_hash_codes, TabDefaultTextColor());
+      env, tab ? tab->GetJavaObject() : nullptr, delegate->translate_step(),
+      source_language_code, target_language_code,
+      delegate->ShouldAlwaysTranslate(), delegate->triggered_from_menu(),
+      java_languages, java_codes, java_hash_codes, TabDefaultTextColor());
 }
 
 void TranslateCompactInfoBar::ProcessButton(int action) {

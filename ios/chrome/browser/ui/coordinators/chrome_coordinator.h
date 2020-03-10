@@ -44,8 +44,10 @@ typedef NSMutableArray<ChromeCoordinator*> MutableCoordinatorArray;
 // The view controller this coordinator was initialized with.
 @property(weak, nonatomic, readonly) UIViewController* baseViewController;
 
-// The navigation controller this coordinator was initialized with.
-@property(weak, nonatomic) UINavigationController* navigationController;
+// Parent coordinator can set this to allow the child coordinator to push their
+// view controller to the navigationController instead of presenting it if
+// needed. This is usually the same object as |baseViewController|.
+@property(weak, nonatomic) UINavigationController* baseNavigationController;
 
 // The coordinator's BrowserState.
 @property(assign, nonatomic, readonly) ChromeBrowserState* browserState;

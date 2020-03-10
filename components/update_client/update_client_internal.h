@@ -39,9 +39,11 @@ class UpdateClientImpl : public UpdateClient {
   void RemoveObserver(Observer* observer) override;
   void Install(const std::string& id,
                CrxDataCallback crx_data_callback,
+               CrxStateChangeCallback crx_state_change_callback,
                Callback callback) override;
   void Update(const std::vector<std::string>& ids,
               CrxDataCallback crx_data_callback,
+              CrxStateChangeCallback crx_state_change_callback,
               bool is_foreground,
               Callback callback) override;
   bool GetCrxUpdateState(const std::string& id,

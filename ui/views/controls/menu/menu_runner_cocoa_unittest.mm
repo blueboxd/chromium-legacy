@@ -356,7 +356,8 @@ TEST_P(MenuRunnerCocoaTest, DestroyAfterCanceling) {
   }
 }
 
-TEST_P(MenuRunnerCocoaTest, RunMenuTwice) {
+// Marking as disabled as test is flaky. crbug.com/1060063
+TEST_P(MenuRunnerCocoaTest, DISABLED_RunMenuTwice) {
   for (int i = 0; i < 2; ++i) {
     RunMenu(base::BindOnce(&MenuRunnerCocoaTest::MenuCancelCallback,
                            base::Unretained(this)));

@@ -99,7 +99,9 @@ class SkiaOutputDeviceBufferQueue::Image {
     DCHECK(end_semaphores_.empty());
 
     std::vector<GrBackendSemaphore> begin_semaphores;
-    SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
+    // LegacyFontHost will get LCD text and skia figures out what type to use.
+    SkSurfaceProps surface_props(0 /* flags */,
+                                 SkSurfaceProps::kLegacyFontHost_InitType);
 
     // Buffer queue is internal to GPU proc and handles texture initialization,
     // so allow uncleared access.
@@ -265,7 +267,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
       shared_image_usage_(shared_image_usage) {
   shared_image_representation_factory_ =
       std::make_unique<gpu::SharedImageRepresentationFactory>(
-          deps->GetSharedImageManager(), memory_tracker);
+          dependency_->GetSharedImageManager(), memory_tracker);
 
 #if defined(USE_OZONE)
   image_format_ = GetResourceFormat(display::DisplaySnapshot::PrimaryFormat());
@@ -276,6 +278,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   // are flipped.
   DCHECK_EQ(gl_surface_->GetOrigin(), gfx::SurfaceOrigin::kTopLeft);
 
+  capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.android_surface_control_feature_enabled = true;
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
   capabilities_.supports_commit_overlay_planes =
@@ -296,6 +299,14 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   capabilities_.preserve_buffer_content = true;
   // We expect origin of buffers is at top left.
   capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
+
+  // TODO(penghuang): Use defaultBackendFormat() in shared image implementation
+  // to make sure backend formant is consistent.
+  capabilities_.sk_color_type = ResourceFormatToClosestSkColorType(
+      true /* gpu_compositing */, image_format_);
+  capabilities_.gr_backend_format =
+      dependency_->GetSharedContextState()->gr_context()->defaultBackendFormat(
+          capabilities_.sk_color_type, GrRenderable::kYes);
 }
 
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(

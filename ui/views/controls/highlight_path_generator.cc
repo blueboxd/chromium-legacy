@@ -58,8 +58,19 @@ HighlightPathGenerator::GetRoundRect(const View* view) {
   return GetRoundRect(gfx::RectF(bounds));
 }
 
-SkPath RectHighlightPathGenerator::GetHighlightPath(const View* view) {
-  return SkPath().addRect(gfx::RectToSkRect(view->GetLocalBounds()));
+base::Optional<HighlightPathGenerator::RoundRect>
+EmptyHighlightPathGenerator::GetRoundRect(const gfx::RectF& rect) {
+  return HighlightPathGenerator::RoundRect();
+}
+
+void InstallEmptyHighlightPathGenerator(View* view) {
+  HighlightPathGenerator::Install(
+      view, std::make_unique<EmptyHighlightPathGenerator>());
+}
+
+base::Optional<HighlightPathGenerator::RoundRect>
+RectHighlightPathGenerator::GetRoundRect(const gfx::RectF& rect) {
+  return HighlightPathGenerator::RoundRect{rect, /*corner_radius=*/0};
 }
 
 void InstallRectHighlightPathGenerator(View* view) {
@@ -77,8 +88,7 @@ CircleHighlightPathGenerator::GetRoundRect(const gfx::RectF& rect) {
   const float corner_radius = std::min(bounds.width(), bounds.height()) / 2.f;
   bounds.ClampToCenteredSize(
       gfx::SizeF(corner_radius * 2.f, corner_radius * 2.f));
-  return base::make_optional(
-      HighlightPathGenerator::RoundRect{bounds, corner_radius});
+  return HighlightPathGenerator::RoundRect{bounds, corner_radius};
 }
 
 void InstallCircleHighlightPathGenerator(View* view) {
@@ -113,8 +123,7 @@ base::Optional<HighlightPathGenerator::RoundRect>
 FixedSizeCircleHighlightPathGenerator::GetRoundRect(const gfx::RectF& rect) {
   gfx::RectF bounds = rect;
   bounds.ClampToCenteredSize(gfx::SizeF(radius_ * 2, radius_ * 2));
-  return base::make_optional(
-      HighlightPathGenerator::RoundRect{bounds, radius_});
+  return HighlightPathGenerator::RoundRect{bounds, radius_};
 }
 
 void InstallFixedSizeCircleHighlightPathGenerator(View* view, int radius) {
@@ -129,8 +138,7 @@ RoundRectHighlightPathGenerator::RoundRectHighlightPathGenerator(
 
 base::Optional<HighlightPathGenerator::RoundRect>
 RoundRectHighlightPathGenerator::GetRoundRect(const gfx::RectF& rect) {
-  return base::make_optional(
-      HighlightPathGenerator::RoundRect{rect, corner_radius_});
+  return HighlightPathGenerator::RoundRect{rect, corner_radius_};
 }
 
 void InstallRoundRectHighlightPathGenerator(View* view,

@@ -129,8 +129,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       kRegular = 3,
       kLoading = 4,
       kLoadingControl = 5,
+      kFindInPage = 6,
 
-      kCount = 6
+      kCount = 7
     };
 
     // kPrioritisationTypeWidthBits is the number of bits required

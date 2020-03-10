@@ -34,14 +34,6 @@ SkiaOutputSurfaceDependencyWebView::CreateSequence() {
       this->task_queue_, this->gpu_service_->sync_point_manager());
 }
 
-bool SkiaOutputSurfaceDependencyWebView::IsUsingVulkan() {
-  return shared_context_state_ && shared_context_state_->GrContextIsVulkan();
-}
-
-bool SkiaOutputSurfaceDependencyWebView::IsUsingDawn() {
-  return false;
-}
-
 gpu::SharedImageManager*
 SkiaOutputSurfaceDependencyWebView::GetSharedImageManager() {
   return gpu_service_->shared_image_manager();
@@ -78,7 +70,7 @@ SkiaOutputSurfaceDependencyWebView::GetDawnContextProvider() {
 }
 
 const gpu::GpuPreferences&
-SkiaOutputSurfaceDependencyWebView::GetGpuPreferences() {
+SkiaOutputSurfaceDependencyWebView::GetGpuPreferences() const {
   return gpu_service_->gpu_preferences();
 }
 

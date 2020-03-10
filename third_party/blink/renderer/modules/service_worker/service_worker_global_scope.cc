@@ -858,8 +858,7 @@ void ServiceWorkerGlobalScope::DidHandleInstallEvent(
                           TRACE_ID_LOCAL(install_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN, "status", MojoEnumToString(status));
   RunEventCallback(&install_event_callbacks_, event_queue_.get(),
-                   install_event_id, status,
-                   HasEventListeners(event_type_names::kFetch));
+                   install_event_id, status);
 }
 
 void ServiceWorkerGlobalScope::DidHandleActivateEvent(
@@ -1583,9 +1582,7 @@ void ServiceWorkerGlobalScope::DispatchInstallEvent(
   event_queue_->EnqueueNormal(
       WTF::Bind(&ServiceWorkerGlobalScope::StartInstallEvent,
                 WrapWeakPersistent(this), std::move(callback)),
-      CreateAbortCallback(&install_event_callbacks_,
-                          false /* has_fetch_handler */),
-      base::nullopt);
+      CreateAbortCallback(&install_event_callbacks_), base::nullopt);
 }
 
 void ServiceWorkerGlobalScope::StartInstallEvent(

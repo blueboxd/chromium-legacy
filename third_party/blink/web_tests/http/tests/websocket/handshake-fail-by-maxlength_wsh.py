@@ -20,7 +20,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from mod_pywebsocket import handshake
-from mod_pywebsocket.handshake.hybi import compute_accept
+from mod_pywebsocket.handshake.hybi import compute_accept_from_unicode
 
 
 def web_socket_do_extra_handshake(request):
@@ -31,7 +31,7 @@ def web_socket_do_extra_handshake(request):
            b'Upgrade: websocket\r\n'
            b'Connection: Upgrade\r\n'
            b'Sec-WebSocket-Accept: %s\r\n'
-           b'\r\n') % (b'.' * 1024, compute_accept(request.headers_in['Sec-WebSocket-Key'].encode('UTF-8'))[0])
+           b'\r\n') % (b'.' * 1024, compute_accept_from_unicode(request.headers_in['Sec-WebSocket-Key']))
 
     request.connection.write(msg)
     # Prevents pywebsocket from sending its own handshake message.

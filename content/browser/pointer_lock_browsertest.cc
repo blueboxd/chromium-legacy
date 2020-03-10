@@ -166,8 +166,22 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockBasic) {
   // Release pointer lock on root frame.
   EXPECT_TRUE(ExecJs(root, "document.exitPointerLock()"));
 
+  // setup promise structure to ensure request finishes.
+  EXPECT_TRUE(ExecJs(child, R"(
+        var advertisementreceivedPromise = new Promise(resolve => {
+          document.addEventListener('pointerlockchange',
+              event => {
+                resolve(true);
+              });
+        });
+      )"));
+
   // Request a pointer lock on the child frame's body.
   EXPECT_TRUE(ExecJs(child, "document.body.requestPointerLock()"));
+
+  // ensure request finishes before moving on.
+  auto advertisementreceived_promise_result =
+      EvalJs(child, "advertisementreceivedPromise");
 
   // Child frame should have been granted pointer lock.
   EXPECT_EQ(true,
@@ -609,6 +623,9 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWidgetHidden) {
 
   // Request a pointer lock on the child frame's body.
   EXPECT_TRUE(ExecJs(child, "document.body.requestPointerLock()"));
+
+  // execute dummy js to run a js loop and finish the request
+  EXPECT_TRUE(ExecJs(child, ""));
 
   // Child frame should have been granted pointer lock.
   EXPECT_EQ(true,

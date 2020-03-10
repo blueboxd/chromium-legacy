@@ -211,22 +211,8 @@ class ArcTermsOfServiceScreenTest : public MixinBasedInProcessBrowserTest {
   void WaitForTermsOfServiceWebViewToLoad() {
     test::OobeJS()
         .CreateHasClassWaiter(true, "arc-tos-loaded",
-                              {"arc-tos-root", "arc-tos-dialog"})
+                              {"arc-tos-root", "arcTosDialog"})
         ->Wait();
-  }
-
-  // Message strings contain both HTML tags like '<p>' and unescaped special
-  // characters like '>' or '&'. The JS textContent function automatically
-  // escapes all special characters to their ampersant encoded version &gt;
-  // and &amp;.
-  std::string GetEscapedMessageString(std::string raw_html) {
-    return test::OobeJS().GetString(
-        base::StringPrintf("(function() {"
-                           " var test_div = document.createElement('div');"
-                           " test_div.innerHTML = `%s`;"
-                           " return test_div.textContent;"
-                           "})()",
-                           raw_html.c_str()));
   }
 
   void WaitForScreenExitResult() {
@@ -331,7 +317,7 @@ class ArcTermsOfServiceScreenTest : public MixinBasedInProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, TermsOfServiceContent) {
   WaitForTermsOfServiceWebViewToLoad();
   EXPECT_EQ(kTosContent,
-            test::GetWebViewContents({"arc-tos-root", "arc-tos-view"}));
+            test::GetWebViewContents({"arc-tos-root", "arcTosView"}));
 
   EXPECT_FALSE(screen_exit_result().has_value());
 }
@@ -341,58 +327,45 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, TermsOfServiceContent) {
 IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, ClickOnMore) {
   WaitForTermsOfServiceWebViewToLoad();
   // By default, these paragraphs should be hidden.
-  test::OobeJS().ExpectHiddenPath({"arc-tos-root", "arc-location-service"});
-  test::OobeJS().ExpectHiddenPath({"arc-tos-root", "arc-pai-service"});
-  test::OobeJS().ExpectHiddenPath(
-      {"arc-tos-root", "arc-google-service-confirmation"});
-  test::OobeJS().ExpectHiddenPath({"arc-tos-root", "arc-review-settings"});
-  test::OobeJS().ExpectHiddenPath({"arc-tos-root", "arc-tos-accept-button"});
+  test::OobeJS().ExpectHiddenPath({"arc-tos-root", "arcExtraContent"});
+  test::OobeJS().ExpectHiddenPath({"arc-tos-root", "arcTosAcceptButton"});
 
   // Click on 'More' button.
-  test::OobeJS().ClickOnPath({"arc-tos-root", "arc-tos-next-button"});
+  test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosNextButton"});
 
   // Paragraphs should now be visible.
-  test::OobeJS().ExpectHiddenPath({"arc-tos-root", "arc-tos-next-button"});
-  test::OobeJS().ExpectVisiblePath({"arc-tos-root", "arc-location-service"});
-  test::OobeJS().ExpectVisiblePath({"arc-tos-root", "arc-pai-service"});
-  test::OobeJS().ExpectVisiblePath(
-      {"arc-tos-root", "arc-google-service-confirmation"});
-  test::OobeJS().ExpectVisiblePath({"arc-tos-root", "arc-review-settings"});
+  test::OobeJS().ExpectHiddenPath({"arc-tos-root", "arcTosNextButton"});
+  test::OobeJS().ExpectVisiblePath({"arc-tos-root", "arcExtraContent"});
 
   EXPECT_FALSE(screen_exit_result().has_value());
 }
 
-// Tests that all "learn more" links open a new dialog showing the correct
-// text.
+// Tests that all "learn more" links opens correct popup dialog.
 IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, LearnMoreDialogs) {
   WaitForTermsOfServiceWebViewToLoad();
-  test::OobeJS().ClickOnPath({"arc-tos-root", "arc-tos-next-button"});
+  test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosNextButton"});
 
-  // List of pairs of {html element ids, expected content string resource id}.
-  std::vector<std::pair<std::string, int>> learn_more_links{
-      {"learn-more-link-metrics", IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS},
-      {"learn-more-link-backup-restore",
-       IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE},
-      {"learn-more-link-location-service",
-       IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES},
-      {"learn-more-link-pai", IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE}};
+  // List of pairs of {html element ids, html pop up dialog id}.
+  std::vector<std::pair<std::string, std::string>> learn_more_links{
+      {"learnMoreLinkMetrics", "arcMetricsPopup"},
+      {"learnMoreLinkBackupRestore", "arcBackupRestorePopup"},
+      {"learnMoreLinkLocationService", "arcLocationServicePopup"},
+      {"learnMoreLinkPai", "arcPaiPopup"}};
 
   for (const auto& pair : learn_more_links) {
     std::string html_element_id;
-    int content_resource_id;
-    std::tie(html_element_id, content_resource_id) = pair;
+    std::string popup_html_element_id;
+    std::tie(html_element_id, popup_html_element_id) = pair;
+    test::OobeJS().ExpectHasNoAttribute(
+        "open", {"arc-tos-root", popup_html_element_id, "helpDialog"});
     test::OobeJS().ClickOnPath({"arc-tos-root", html_element_id});
-    // Here it's important to escape special characters of
-    // |content_resource_id|. Calling 'textContent' automatically escapes all
-    // special characters like '>' to ampersand encoding (&gt;). If we try to
-    // compare with the raw string we'll get mismatch errors caused by this
-    // automatic escaping.
-    EXPECT_EQ(
-        GetEscapedMessageString(l10n_util::GetStringUTF8(content_resource_id)),
-        test::OobeJS().GetString("$('arc-learn-more-content').textContent"));
-    test::OobeJS().ClickOnPath({"arc-tos-overlay-learn-more", "closeButton"});
+    test::OobeJS().ExpectHasAttribute(
+        "open", {"arc-tos-root", popup_html_element_id, "helpDialog"});
+    test::OobeJS().ClickOnPath(
+        {"arc-tos-root", popup_html_element_id, "closeButton"});
+    test::OobeJS().ExpectHasNoAttribute(
+        "open", {"arc-tos-root", popup_html_element_id, "helpDialog"});
   }
-
   EXPECT_FALSE(screen_exit_result().has_value());
 }
 
@@ -405,9 +378,9 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, ReviewPlayOptions) {
   EXPECT_FALSE(
       profile->GetPrefs()->GetBoolean(prefs::kShowArcSettingsOnSessionStart));
 
-  test::OobeJS().ClickOnPath({"arc-tos-root", "arc-tos-next-button"});
-  test::OobeJS().ClickOnPath({"arc-tos-root", "arc-review-settings-checkbox"});
-  test::OobeJS().ClickOnPath({"arc-tos-root", "arc-tos-accept-button"});
+  test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosNextButton"});
+  test::OobeJS().ClickOnPath({"arc-tos-root", "arcReviewSettingsCheckbox"});
+  test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosAcceptButton"});
 
   EXPECT_TRUE(
       profile->GetPrefs()->GetBoolean(prefs::kShowArcSettingsOnSessionStart));
@@ -422,11 +395,11 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, PrivacyPolicy) {
   set_serve_tos_with_privacy_policy_footer(true);
   WaitForTermsOfServiceWebViewToLoad();
 
-  WebViewLoadWaiter waiter({"arc-tos-overlay-webview"});
-  test::OobeJS().ClickOnPath({"arc-tos-root", "arc-tos-next-button"});
-  test::OobeJS().ClickOnPath({"arc-tos-root", "arc-policy-link"});
+  WebViewLoadWaiter waiter({"arc-tos-root", "arcTosOverlayWebview"});
+  test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosNextButton"});
+  test::OobeJS().ClickOnPath({"arc-tos-root", "arcPolicyLink"});
   waiter.Wait();
-  EXPECT_EQ(test::GetWebViewContents({"arc-tos-overlay-webview"}),
+  EXPECT_EQ(test::GetWebViewContents({"arc-tos-root", "arcTosOverlayWebview"}),
             kPrivacyPolicyContent);
 
   EXPECT_FALSE(screen_exit_result().has_value());
@@ -435,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, PrivacyPolicy) {
 // There are two checkboxes for enabling/disabling arc backup restore and
 // arc location service. This parameterized test executes all 4 combinations
 // of enabled/disabled states and checks that advancing to the next screen by
-// accepting or skipping succeeds.
+// accepting.
 class ParameterizedArcTermsOfServiceScreenTest
     : public ArcTermsOfServiceScreenTest,
       public testing::WithParamInterface<std::tuple<bool, bool>> {
@@ -450,7 +423,7 @@ class ParameterizedArcTermsOfServiceScreenTest
 
   // Common routine that enables/disables checkboxes based on test parameters.
   // When |accept| is true, advances to next screen by clicking on the "Accept"
-  // button. Else, it clicks on the "Skip" button.
+  // button.
   // |play_consent|, |backup_and_restore_consent| and |location_service_consent|
   // are the expected consents recordings.
   void AdvanceNextScreenWithExpectations(
@@ -459,11 +432,11 @@ class ParameterizedArcTermsOfServiceScreenTest
       ArcBackupAndRestoreConsent backup_and_restore_consent,
       ArcGoogleLocationServiceConsent location_service_consent) {
     WaitForTermsOfServiceWebViewToLoad();
-    test::OobeJS().ClickOnPath({"arc-tos-root", "arc-tos-next-button"});
+    test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosNextButton"});
 
     // Wait for checkboxes to become visible.
     test::OobeJS()
-        .CreateVisibilityWaiter(true, {"arc-tos-root", "arc-location-service"})
+        .CreateVisibilityWaiter(true, {"arc-tos-root", "arcLocationService"})
         ->Wait();
 
     Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -472,11 +445,10 @@ class ParameterizedArcTermsOfServiceScreenTest
             profile, base::BindRepeating(&BuildFakeConsentAuditor)));
 
     if (!accept_backup_restore_)
-      test::OobeJS().ClickOnPath({"arc-tos-root", "arc-enable-backup-restore"});
+      test::OobeJS().ClickOnPath({"arc-tos-root", "arcEnableBackupRestore"});
 
     if (!accept_location_service_) {
-      test::OobeJS().ClickOnPath(
-          {"arc-tos-root", "arc-enable-location-service"});
+      test::OobeJS().ClickOnPath({"arc-tos-root", "arcEnableLocationService"});
     }
 
     EXPECT_CALL(*auditor, RecordArcPlayConsent(
@@ -492,11 +464,8 @@ class ParameterizedArcTermsOfServiceScreenTest
             testing::_, consent_auditor::ArcGoogleLocationServiceConsentEq(
                             location_service_consent)));
 
-    if (accept) {
-      test::OobeJS().ClickOnPath({"arc-tos-root", "arc-tos-accept-button"});
-    } else {
-      test::OobeJS().ClickOnPath({"arc-tos-root", "arc-tos-skip-button"});
-    }
+    if (accept)
+      test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosAcceptButton"});
   }
 
  protected:
@@ -522,25 +491,6 @@ IN_PROC_BROWSER_TEST_P(ParameterizedArcTermsOfServiceScreenTest, ClickAccept) {
 
   WaitForScreenExitResult();
   EXPECT_EQ(screen_exit_result(), ArcTermsOfServiceScreen::Result::ACCEPTED);
-}
-
-// Tests that clicking on "Skip" button records the expected consents.
-// When TOS are skipped we should always mark backup restores and location
-// services as disabled, independent of the state of the checkboxes.
-IN_PROC_BROWSER_TEST_P(ParameterizedArcTermsOfServiceScreenTest, ClickSkip) {
-  ArcPlayTermsOfServiceConsent play_consent =
-      BuildArcPlayTermsOfServiceConsent(false);
-  ArcBackupAndRestoreConsent backup_and_restore_consent =
-      BuildArcBackupAndRestoreConsent(false);
-  ArcGoogleLocationServiceConsent location_service_consent =
-      BuildArcGoogleLocationServiceConsent(false);
-
-  AdvanceNextScreenWithExpectations(false, play_consent,
-                                    backup_and_restore_consent,
-                                    location_service_consent);
-
-  WaitForScreenExitResult();
-  EXPECT_EQ(screen_exit_result(), ArcTermsOfServiceScreen::Result::SKIPPED);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

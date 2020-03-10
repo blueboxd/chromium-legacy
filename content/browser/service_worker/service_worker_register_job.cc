@@ -612,8 +612,7 @@ void ServiceWorkerRegisterJob::DispatchInstallEvent(
 
 void ServiceWorkerRegisterJob::OnInstallFinished(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus event_status,
-    bool has_fetch_handler) {
+    blink::mojom::ServiceWorkerEventStatus event_status) {
   bool succeeded =
       event_status == blink::mojom::ServiceWorkerEventStatus::COMPLETED;
   new_version()->FinishRequest(request_id, succeeded);
@@ -629,10 +628,6 @@ void ServiceWorkerRegisterJob::OnInstallFinished(
 
   SetPhase(STORE);
   DCHECK(!registration()->last_update_check().is_null());
-  new_version()->set_fetch_handler_existence(
-      has_fetch_handler
-          ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
-          : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
   context_->registry()->StoreRegistration(
       registration(), new_version(),
       base::BindOnce(&ServiceWorkerRegisterJob::OnStoreRegistrationComplete,

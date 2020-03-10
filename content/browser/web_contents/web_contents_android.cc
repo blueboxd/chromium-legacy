@@ -377,6 +377,10 @@ ScopedJavaLocalRef<jobjectArray> WebContentsAndroid::GetInnerWebContents(
   return ScopedJavaLocalRef<jobjectArray>(env, array);
 }
 
+jint WebContentsAndroid::GetVisibility(JNIEnv* env) {
+  return static_cast<jint>(web_contents_->GetVisibility());
+}
+
 RenderWidgetHostViewAndroid*
     WebContentsAndroid::GetRenderWidgetHostViewAndroid() {
   RenderWidgetHostView* rwhv = NULL;

@@ -27,7 +27,8 @@ class VirtualAuthenticatorRequestDelegate
       std::vector<device::AuthenticatorGetAssertionResponse> responses,
       base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
           callback) override;
-  bool IsUserVerifyingPlatformAuthenticatorAvailable() override;
+  base::Optional<bool> IsUserVerifyingPlatformAuthenticatorAvailableOverride()
+      override;
 
  private:
   FrameTreeNode* const frame_tree_node_;

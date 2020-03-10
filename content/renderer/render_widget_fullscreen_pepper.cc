@@ -22,6 +22,7 @@
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -57,6 +58,8 @@ class FullscreenMouseLockDispatcher : public MouseLockDispatcher {
   void SendUnlockMouseRequest() override;
 
   RenderWidgetFullscreenPepper* widget_;
+
+  base::WeakPtrFactory<FullscreenMouseLockDispatcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenMouseLockDispatcher);
 };
@@ -113,15 +116,21 @@ FullscreenMouseLockDispatcher::~FullscreenMouseLockDispatcher() {
 void FullscreenMouseLockDispatcher::SendLockMouseRequest(
     blink::WebLocalFrame* requester_frame,
     bool request_unadjusted_movement) {
-  // TODO(mustaq): Why is it not checking user activation state at all?  In
-  // particular, the last Boolean param ("privileged") in the IPC below looks
-  // scary without this check.
-  widget_->Send(new WidgetHostMsg_LockMouse(widget_->routing_id(), false, true,
-                                            request_unadjusted_movement));
+  bool has_transient_user_activation =
+      requester_frame ? requester_frame->HasTransientUserActivation() : false;
+  auto* host = widget_->GetInputHandlerHost();
+  if (host) {
+    host->RequestMouseLock(has_transient_user_activation, /*privileged=*/true,
+                           request_unadjusted_movement,
+                           base::BindOnce(&MouseLockDispatcher::OnLockMouseACK,
+                                          weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void FullscreenMouseLockDispatcher::SendUnlockMouseRequest() {
-  widget_->Send(new WidgetHostMsg_UnlockMouse(widget_->routing_id()));
+  auto* host = widget_->GetInputHandlerHost();
+  if (host)
+    host->UnlockMouse();
 }
 
 }  // anonymous namespace
@@ -230,21 +239,6 @@ void RenderWidgetFullscreenPepper::SetLayer(scoped_refptr<cc::Layer> layer) {
   layer_->SetIsDrawable(true);
   layer_->SetHitTestable(true);
   blink_widget_->SetRootLayer(std::move(layer));
-}
-
-bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderWidgetFullscreenPepper, msg)
-    IPC_MESSAGE_FORWARD(WidgetMsg_LockMouse_ACK, mouse_lock_dispatcher_.get(),
-                        MouseLockDispatcher::OnLockMouseACK)
-    IPC_MESSAGE_FORWARD(WidgetMsg_MouseLockLost, mouse_lock_dispatcher_.get(),
-                        MouseLockDispatcher::OnMouseLockLost)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  if (handled)
-    return true;
-
-  return RenderWidget::OnMessageReceived(msg);
 }
 
 void RenderWidgetFullscreenPepper::DidInitiatePaint() {

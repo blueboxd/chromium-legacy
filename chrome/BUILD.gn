@@ -64,10 +64,10 @@ if (is_win) {
     # See comment in chrome_dll.gypi in the hardlink_to_output
     # target for why this cannot be 'initial' like the DLL.
     inputs = [ "$root_out_dir/initialexe/chrome.exe" ]
-    outputs = [ "$root_out_dir/chrome.exe" ]
-    if (symbol_level != 0) {
-      outputs += [ "$root_out_dir/chrome.exe.pdb" ]
-    }
+    outputs = [
+      "$root_out_dir/chrome.exe",
+      "$root_out_dir/chrome.exe.pdb",
+    ]
     args = [
       "-i",
       rebase_path("$root_out_dir/initialexe", root_build_dir),

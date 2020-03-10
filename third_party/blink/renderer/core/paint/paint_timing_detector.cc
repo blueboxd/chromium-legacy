@@ -168,8 +168,11 @@ void PaintTimingDetector::NotifyImageRemoved(
   }
 }
 
-void PaintTimingDetector::StopRecordingLargestContentfulPaint() {
-  DCHECK(frame_view_);
+void PaintTimingDetector::OnInputOrScroll() {
+  // If we have already stopped, then abort.
+  if (!is_recording_largest_contentful_paint_)
+    return;
+
   // TextPaintTimingDetector is used for both Largest Contentful Paint and for
   // Element Timing. Therefore, here we only want to stop recording Largest
   // Contentful Paint.
@@ -179,6 +182,11 @@ void PaintTimingDetector::StopRecordingLargestContentfulPaint() {
   if (image_paint_timing_detector_)
     image_paint_timing_detector_->StopRecordEntries();
   largest_contentful_paint_calculator_ = nullptr;
+
+  DCHECK_EQ(first_input_or_scroll_notified_timestamp_, base::TimeTicks());
+  first_input_or_scroll_notified_timestamp_ = base::TimeTicks::Now();
+  DidChangePerformanceTiming();
+  is_recording_largest_contentful_paint_ = false;
 }
 
 void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
@@ -189,14 +197,14 @@ void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
       WebInputEvent::IsPinchGestureEventType(type)) {
     return;
   }
-  StopRecordingLargestContentfulPaint();
+  OnInputOrScroll();
 }
 
 void PaintTimingDetector::NotifyScroll(mojom::blink::ScrollType scroll_type) {
   if (scroll_type != mojom::blink::ScrollType::kUser &&
       scroll_type != mojom::blink::ScrollType::kCompositor)
     return;
-  StopRecordingLargestContentfulPaint();
+  OnInputOrScroll();
 }
 
 bool PaintTimingDetector::NeedToNotifyInputOrScroll() const {

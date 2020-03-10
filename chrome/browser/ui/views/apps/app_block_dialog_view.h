@@ -20,12 +20,12 @@ class ImageSkia;
 // launched.
 class AppBlockDialogView : public AppDialogView {
  public:
-  static AppBlockDialogView* GetActiveViewForTesting();
-
   AppBlockDialogView(const std::string& app_name,
                      const gfx::ImageSkia& image,
                      Profile* profile);
   ~AppBlockDialogView() override;
+
+  static AppBlockDialogView* GetActiveViewForTesting();
 
   // AppDialogView:
   base::string16 GetWindowTitle() const override;

@@ -102,9 +102,6 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
     const std::string& hosted_domain) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RequestOutcome reason;
-  if (!base::FeatureList::IsEnabled(safe_browsing::kSendOnFocusPing)) {
-    return;
-  }
   if (CanSendPing(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
                   main_frame_url,
                   GetPasswordProtectionReusedPasswordAccountType(
@@ -129,9 +126,6 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!base::FeatureList::IsEnabled(safe_browsing::kSendPasswordReusePing)) {
-    return;
-  }
   ReusedPasswordAccountType reused_password_account_type =
       GetPasswordProtectionReusedPasswordAccountType(password_type, username);
   RequestOutcome reason;

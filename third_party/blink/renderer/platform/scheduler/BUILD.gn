@@ -68,6 +68,8 @@ blink_platform_sources("scheduler") {
     "main_thread/compositor_priority_experiments.h",
     "main_thread/deadline_task_runner.cc",
     "main_thread/deadline_task_runner.h",
+    "main_thread/find_in_page_budget_pool_controller.cc",
+    "main_thread/find_in_page_budget_pool_controller.h",
     "main_thread/frame_origin_type.cc",
     "main_thread/frame_origin_type.h",
     "main_thread/frame_scheduler_impl.cc",

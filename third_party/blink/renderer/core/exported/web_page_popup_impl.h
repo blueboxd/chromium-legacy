@@ -52,7 +52,6 @@ class PagePopupChromeClient;
 class PagePopupClient;
 class WebViewImpl;
 class LocalDOMWindow;
-class DOMRect;
 
 class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
                                            public PageWidgetEventHandler,
@@ -105,7 +104,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   // PagePopup implementation.
   void PostMessageToPopup(const String& message) override;
-  void Update() override;
 
   // PageWidgetEventHandler implementation.
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
@@ -169,7 +167,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   base::TimeTicks raf_aligned_input_start_time_;
 
   bool suppress_next_keypress_event_ = false;
-  Persistent<DOMRect> popup_owner_client_rect_;
 
   // Base functionality all widgets have. This is a member as to avoid
   // complicated inheritance structures.

@@ -140,6 +140,15 @@ class VectorBackedLinkedList {
     erase(--cend());
   }
 
+  // Removes all elements in a linked list.
+  void clear() {
+    nodes_.clear();
+    // Reinserts anchor so that we can insert elements after this operation.
+    nodes_.push_back(Node(anchor_index_, anchor_index_));
+    free_head_index_ = anchor_index_;
+    size_ = 0;
+  }
+
  private:
   bool IsFreeListEmpty() const { return free_head_index_ == anchor_index_; }
 

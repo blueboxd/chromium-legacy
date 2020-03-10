@@ -566,9 +566,8 @@ bool CompositorAnimations::ConvertTimingForCompositor(
   if (out.scaled_time_offset.is_max() || out.scaled_time_offset.is_min())
     return false;
 
-  out.adjusted_iteration_count = std::isfinite(timing.iteration_count)
-                                     ? timing.iteration_count
-                                     : std::numeric_limits<double>::infinity();
+  out.adjusted_iteration_count =
+      std::isfinite(timing.iteration_count) ? timing.iteration_count : -1;
   out.scaled_duration = timing.iteration_duration.value();
   out.direction = timing.direction;
 
@@ -580,8 +579,7 @@ bool CompositorAnimations::ConvertTimingForCompositor(
 
   DCHECK_GT(out.scaled_duration, AnimationTimeDelta());
   DCHECK(out.adjusted_iteration_count > 0 ||
-         out.adjusted_iteration_count ==
-             std::numeric_limits<double>::infinity());
+         out.adjusted_iteration_count == -1);
   DCHECK(std::isfinite(out.playback_rate) && out.playback_rate);
   DCHECK_GE(out.iteration_start, 0);
 

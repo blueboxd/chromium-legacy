@@ -311,6 +311,16 @@ void ArcImeService::OnTextInputTypeChanged(
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
     input_method->OnTextInputTypeChanged(this);
+
+  // Call HideKeyboard() here. On a text field on an ARC++ app, just having
+  // non-null text input type doesn't mean the virtual keyboard is necessary. If
+  // the virtual keyboard is really needed, ShowVirtualKeyboardIfEnabled will be
+  // called later.
+  if (keyboard::KeyboardUIController::HasInstance()) {
+    auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+    if (keyboard_controller->IsEnabled())
+      keyboard_controller->HideKeyboardImplicitlyBySystem();
+  }
 }
 
 void ArcImeService::OnCursorRectChanged(const gfx::Rect& rect,
@@ -354,18 +364,6 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
     input_method->OnCaretBoundsChanged(this);
-}
-
-void ArcImeService::RequestHideIme() {
-  // Ignore the request when the ARC app is not focused.
-  if (!focused_arc_window_)
-    return;
-
-  if (keyboard::KeyboardUIController::HasInstance()) {
-    auto* keyboard_controller = keyboard::KeyboardUIController::Get();
-    if (keyboard_controller->IsEnabled())
-      keyboard_controller->HideKeyboardImplicitlyBySystem();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

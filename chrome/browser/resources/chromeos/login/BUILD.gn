@@ -130,10 +130,6 @@ js_library("arc_terms_of_service") {
     ":html-echo",
     ":oobe_dialog_host_behavior",
     ":oobe_i18n_behavior",
-
-    # This is a temporary change to proceed with Polymer v2 migration.
-    # TODO (https://crbug.com/1047807) : remove this dependecy.
-    "//ui/webui/resources/js:i18n_template",
   ]
 }
 

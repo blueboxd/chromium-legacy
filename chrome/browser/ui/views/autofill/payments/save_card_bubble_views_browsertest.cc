@@ -1200,46 +1200,11 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP));
 }
 
-// Sets up Chrome with Sync-the-transport mode enabled, with the Wallet datatype
-// as enabled type as well as editable cardholder name enabled.
-class
-    SaveCardBubbleViewsSyncTransportWithEditableCardholderNameFullFormBrowserTest
-    : public SaveCardBubbleViewsFullFormBrowserTest {
- protected:
-  SaveCardBubbleViewsSyncTransportWithEditableCardholderNameFullFormBrowserTest() {
-    // Set up Sync the transport mode, so that sync starts on content-area
-    // signins. Also add wallet data type to the list of enabled types and
-    // enable EditableCardholderName experiment.
-    feature_list_.InitWithFeatures(
-        // Enabled
-        {features::kAutofillUpstream,
-         features::kAutofillUpstreamEditableCardholderName,
-         features::kAutofillEnableAccountWalletStorage},
-        // Disabled
-        {});
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    test_signin_client_factory_ =
-        secondary_account_helper::SetUpSigninClient(test_url_loader_factory());
-
-    SaveCardBubbleViewsFullFormBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-  secondary_account_helper::ScopedSigninClientFactory
-      test_signin_client_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      SaveCardBubbleViewsSyncTransportWithEditableCardholderNameFullFormBrowserTest);
-};
-
 // Tests the upload save bubble when sync transport for Wallet data is active.
 // Ensures that if cardholder name is explicitly requested, it is prefilled with
 // the name from the user's Google Account.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsSyncTransportWithEditableCardholderNameFullFormBrowserTest,
+    SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
     Upload_TransportMode_RequestedCardholderNameTextfieldIsPrefilledWithFocusName) {
   // Signing in (without making the account Chrome's primary one or explicitly
   // setting up Sync) causes the Sync machinery to start up in standalone
@@ -1322,27 +1287,10 @@ IN_PROC_BROWSER_TEST_F(
   ClickOnCloseButton();
 }
 
-class SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName
-    : public SaveCardBubbleViewsFullFormBrowserTest {
- public:
-  SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName() {
-    // Enable the EditableCardholderName experiment.
-    feature_list_.InitWithFeatures(
-        // Enabled
-        {features::kAutofillUpstream,
-         features::kAutofillUpstreamEditableCardholderName},
-        // Disabled
-        {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Tests the upload save bubble. Ensures that the bubble does not surface the
 // cardholder name textfield if it is not needed.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_ShouldNotRequestCardholderNameInHappyPath) {
   // Start sync.
   harness_->SetupSync();
@@ -1357,7 +1305,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that the bubble surfaces a textfield
 // requesting cardholder name if cardholder name is missing.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SubmittingFormWithMissingNamesRequestsCardholderNameIfExpOn) {
   // Start sync.
   harness_->SetupSync();
@@ -1371,7 +1319,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that the bubble surfaces a textfield
 // requesting cardholder name if cardholder name is conflicting.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SubmittingFormWithConflictingNamesRequestsCardholderNameIfExpOn) {
   // Start sync.
   harness_->SetupSync();
@@ -1390,7 +1338,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that if the cardholder name textfield
 // is empty, the user is not allowed to click [Save] and close the dialog.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SaveButtonIsDisabledIfNoCardholderNameAndCardholderNameRequested) {
   // Start sync.
   harness_->SetupSync();
@@ -1421,7 +1369,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that if cardholder name is explicitly
 // requested, filling it and clicking [Save] closes the dialog.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_EnteringCardholderNameAndClickingSaveClosesBubbleIfCardholderNameRequested) {
   // Start sync.
   harness_->SetupSync();
@@ -1454,7 +1402,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that if cardholder name is explicitly
 // requested, it is prefilled with the name from the user's Google Account.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_RequestedCardholderNameTextfieldIsPrefilledWithFocusName) {
   base::HistogramTester histogram_tester;
 
@@ -1486,7 +1434,7 @@ IN_PROC_BROWSER_TEST_F(
 // requested but the name on the user's Google Account is unable to be fetched
 // for any reason, the textfield is left blank.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_RequestedCardholderNameTextfieldIsNotPrefilledWithFocusNameIfMissing) {
   // Enable the EditableCardholderName experiment.
   base::HistogramTester histogram_tester;
@@ -1515,7 +1463,7 @@ IN_PROC_BROWSER_TEST_F(
 // requested and the user accepts the dialog without changing it, the correct
 // metric is logged.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_CardholderNameRequested_SubmittingPrefilledValueLogsUneditedMetric) {
   // Start sync.
   harness_->SetupSync();
@@ -1541,7 +1489,7 @@ IN_PROC_BROWSER_TEST_F(
 // requested and the user accepts the dialog after changing it, the correct
 // metric is logged.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_CardholderNameRequested_SubmittingChangedValueLogsEditedMetric) {
   // Start sync.
   harness_->SetupSync();

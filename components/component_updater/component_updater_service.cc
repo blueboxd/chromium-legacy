@@ -307,10 +307,10 @@ void CrxUpdateService::OnDemandUpdateInternal(const std::string& id,
       std::move(callback), base::TimeTicks::Now());
 
   if (priority == Priority::FOREGROUND)
-    update_client_->Install(id, std::move(crx_data_callback),
+    update_client_->Install(id, std::move(crx_data_callback), {},
                             std::move(update_complete_callback));
   else if (priority == Priority::BACKGROUND)
-    update_client_->Update({id}, std::move(crx_data_callback), false,
+    update_client_->Update({id}, std::move(crx_data_callback), {}, false,
                            std::move(update_complete_callback));
   else
     NOTREACHED();
@@ -354,7 +354,7 @@ bool CrxUpdateService::CheckForUpdates(
         unsecure_ids,
         base::BindOnce(&CrxUpdateService::GetCrxComponents,
                        base::Unretained(this)),
-        false,
+        {}, false,
         base::BindOnce(
             &CrxUpdateService::OnUpdateComplete, base::Unretained(this),
             secure_ids.empty() ? std::move(on_finished_callback) : Callback(),
@@ -366,7 +366,7 @@ bool CrxUpdateService::CheckForUpdates(
         secure_ids,
         base::BindOnce(&CrxUpdateService::GetCrxComponents,
                        base::Unretained(this)),
-        false,
+        {}, false,
         base::BindOnce(&CrxUpdateService::OnUpdateComplete,
                        base::Unretained(this), std::move(on_finished_callback),
                        base::TimeTicks::Now()));

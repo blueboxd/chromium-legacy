@@ -365,10 +365,14 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     client->OnUserAction(client_action_data);
   }
 
-  std::unique_ptr<ThrottleConfig> GetThrottleConfig(
-      SchedulerClientType type) override {
+  void GetThrottleConfig(SchedulerClientType type,
+                         ThrottleConfigCallback callback) override {
     auto* client = context_->client_registrar()->GetClient(type);
-    return client ? client->GetThrottleConfig() : nullptr;
+    if (client) {
+      client->GetThrottleConfig(std::move(callback));
+    } else {
+      std::move(callback).Run(nullptr);
+    }
   }
 
   std::unique_ptr<NotificationSchedulerContext> context_;

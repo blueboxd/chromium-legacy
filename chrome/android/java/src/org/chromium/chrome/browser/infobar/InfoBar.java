@@ -16,7 +16,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
-import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -71,10 +70,6 @@ public abstract class InfoBar implements InfoBarInteractionHandler, InfoBarUiIte
     @CalledByNative
     protected void onNativeDestroyed() {
         mNativeInfoBarPtr = 0;
-    }
-
-    public SnackbarManager getSnackbarManager() {
-        return mContainer != null ? mContainer.getSnackbarManager() : null;
     }
 
     /**

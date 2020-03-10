@@ -724,9 +724,11 @@ class FileGrid extends cr.ui.Grid {
       li.classList.toggle('thumbnail-loaded', false);
     }
 
-    li.classList.toggle(
-        'can-hide-filename',
-        FileType.isImage(entry, mimeType) || FileType.isRaw(entry, mimeType));
+    if (!util.isFilesNg()) {
+      li.classList.toggle(
+          'can-hide-filename',
+          FileType.isImage(entry, mimeType) || FileType.isRaw(entry, mimeType));
+    }
   }
 
   /**

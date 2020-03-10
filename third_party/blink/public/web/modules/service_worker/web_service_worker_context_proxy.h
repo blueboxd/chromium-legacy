@@ -71,6 +71,7 @@ class WebServiceWorkerContextProxy {
   virtual bool IsWindowInteractionAllowed() = 0;
   virtual void PauseEvaluation() = 0;
   virtual void ResumeEvaluation() = 0;
+  virtual bool HasFetchHandler() = 0;
 };
 
 }  // namespace blink

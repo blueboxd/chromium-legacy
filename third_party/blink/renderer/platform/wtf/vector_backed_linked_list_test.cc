@@ -193,6 +193,27 @@ TEST(VectorBackedLinkedList, PopBack) {
   EXPECT_TRUE(list.empty());
 }
 
+TEST(VectorBackedLinkedList, Clear) {
+  using List = VectorBackedLinkedList<int>;
+  List list;
+
+  list.push_back(1);
+  list.push_back(2);
+  list.push_back(3);
+
+  EXPECT_EQ(list.size(), 3u);
+
+  list.clear();
+  EXPECT_EQ(list.size(), 0u);
+  EXPECT_TRUE(list.empty());
+
+  EXPECT_TRUE(list.begin() == list.end());
+  list.push_back(1);
+  EXPECT_EQ(list.front(), 1);
+  EXPECT_EQ(list.back(), 1);
+  EXPECT_EQ(list.size(), 1u);
+}
+
 TEST(VectorBackedLinkedList, Iterator) {
   using List = VectorBackedLinkedList<int>;
   List list;

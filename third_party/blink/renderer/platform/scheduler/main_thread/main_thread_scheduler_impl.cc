@@ -202,6 +202,8 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
                            .SetFixedPriority(
                                TaskQueue::QueuePriority::kBestEffortPriority))),
       render_widget_scheduler_signals_(this),
+      find_in_page_budget_pool_controller_(
+          new FindInPageBudgetPoolController(this)),
       control_task_queue_(helper_.ControlMainThreadTaskQueue()),
       compositor_task_queue_(
           helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
@@ -1534,6 +1536,9 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   new_policy.should_disable_throttling() = main_thread_only().use_virtual_time;
 
+  new_policy.find_in_page_priority() =
+      find_in_page_budget_pool_controller_->CurrentTaskPriority();
+
   // Tracing is done before the early out check, because it's quite possible we
   // will otherwise miss this information in traces.
   CreateTraceEventObjectSnapshotLocked();
@@ -2089,6 +2094,8 @@ MainThreadSchedulerImpl::Policy::Policy()
       should_prioritize_loading_with_compositing_(false),
       compositor_priority_(
           base::sequence_manager::TaskQueue::QueuePriority::kNormalPriority),
+      find_in_page_priority_(FindInPageBudgetPoolController::
+                                 kFindInPageBudgetNotExhaustedPriority),
       use_case_(UseCase::kNone) {}
 
 void MainThreadSchedulerImpl::Policy::AsValueInto(
@@ -2486,6 +2493,9 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   main_thread_only().compositor_priority_experiments.OnTaskCompleted(
       queue.get(), main_thread_only().current_policy.compositor_priority(),
       task_timing);
+
+  find_in_page_budget_pool_controller_->OnTaskCompleted(queue.get(),
+                                                        task_timing);
 }
 
 void MainThreadSchedulerImpl::RecordTaskUkm(
@@ -2739,7 +2749,9 @@ bool MainThreadSchedulerImpl::ShouldUpdateTaskQueuePriorities(
   return old_policy.use_case() !=
              main_thread_only().current_policy.use_case() ||
          old_policy.compositor_priority() !=
-             main_thread_only().current_policy.compositor_priority();
+             main_thread_only().current_policy.compositor_priority() ||
+         old_policy.find_in_page_priority() !=
+             main_thread_only().current_policy.find_in_page_priority();
 }
 
 UseCase MainThreadSchedulerImpl::current_use_case() const {

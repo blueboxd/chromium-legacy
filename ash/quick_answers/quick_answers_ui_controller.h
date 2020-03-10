@@ -20,6 +20,10 @@ namespace ash {
 class QuickAnswersView;
 class QuickAnswersControllerImpl;
 
+namespace quick_answers {
+class UserConsentView;
+}  // namespace quick_answers
+
 // A controller to show/hide and handle interactions for quick
 // answers view.
 class ASH_EXPORT QuickAnswersUiController {
@@ -51,11 +55,24 @@ class ASH_EXPORT QuickAnswersUiController {
 
   void UpdateQuickAnswersBounds(const gfx::Rect& anchor_bounds);
 
+  // Creates a view for user-consent for Quick Answers vertically aligned to the
+  // anchor.
+  void CreateUserConsentView(const gfx::Rect& anchor_bounds);
+
+  // Invoked when user clicks the consent button to grant consent for using
+  // Quick Answers.
+  void OnConsentGrantedButtonPressed();
+
+  // Invoked when user clicks the settings button related to consent for Quick
+  // Answers.
+  void OnManageSettingsButtonPressed();
+
  private:
   QuickAnswersControllerImpl* controller_ = nullptr;
 
   // Owned by view hierarchy.
   QuickAnswersView* quick_answers_view_ = nullptr;
+  quick_answers::UserConsentView* user_consent_view_ = nullptr;
   std::string query_;
 };
 

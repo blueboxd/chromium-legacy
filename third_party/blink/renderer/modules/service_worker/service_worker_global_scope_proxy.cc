@@ -324,6 +324,10 @@ void ServiceWorkerGlobalScopeProxy::ResumeEvaluation() {
   WorkerGlobalScope()->ResumeEvaluation();
 }
 
+bool ServiceWorkerGlobalScopeProxy::HasFetchHandler() {
+  return WorkerGlobalScope()->HasEventListeners(event_type_names::kFetch);
+}
+
 WebServiceWorkerContextClient& ServiceWorkerGlobalScopeProxy::Client() const {
   DCHECK(client_);
   return *client_;

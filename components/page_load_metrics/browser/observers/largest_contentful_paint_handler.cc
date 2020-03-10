@@ -53,25 +53,12 @@ void MergeForSubframesWithAdjustedTime(
   inout_timing->Reset(merged_candidate.Time(), merged_candidate.Size());
 }
 
-void MergeForSubframes(
-    ContentfulPaintTimingInfo* inout_timing,
-    const base::Optional<base::TimeDelta>& candidate_new_time,
-    const uint64_t& candidate_new_size,
-    base::TimeDelta navigation_start_offset) {
-  base::Optional<base::TimeDelta> new_time = base::nullopt;
-  if (candidate_new_time) {
-    // If |candidate_new_time| is TimeDelta(), this means that the candidate is
-    // an image that has not finished loading. Preserve its meaning by not
-    // adding the |navigation_start_offset|.
-    new_time = *candidate_new_time > base::TimeDelta()
-                   ? navigation_start_offset + candidate_new_time.value()
-                   : base::TimeDelta();
-  }
-  MergeForSubframesWithAdjustedTime(inout_timing, new_time, candidate_new_size);
-}
-
 bool IsSubframe(content::RenderFrameHost* subframe_rfh) {
   return subframe_rfh != nullptr && subframe_rfh->GetParent() != nullptr;
+}
+
+void Reset(ContentfulPaintTimingInfo& timing) {
+  timing.Reset(base::nullopt, 0u);
 }
 
 }  // namespace
@@ -180,6 +167,9 @@ LargestContentfulPaintHandler::MergeMainFrameAndSubframes() {
 void LargestContentfulPaintHandler::RecordSubframeTiming(
     const mojom::PaintTimingPtr& timing,
     const base::TimeDelta& navigation_start_offset) {
+  UpdateFirstInputOrScrollNotified(
+      timing->first_input_or_scroll_notified_timestamp,
+      navigation_start_offset);
   MergeForSubframes(&subframe_contentful_paint_.Text(),
                     timing->largest_text_paint, timing->largest_text_paint_size,
                     navigation_start_offset);
@@ -190,10 +180,42 @@ void LargestContentfulPaintHandler::RecordSubframeTiming(
 
 void LargestContentfulPaintHandler::RecordMainFrameTiming(
     const mojom::PaintTimingPtr& timing) {
-  main_frame_contentful_paint_.Text().Reset(timing->largest_text_paint,
-                                            timing->largest_text_paint_size);
-  main_frame_contentful_paint_.Image().Reset(timing->largest_image_paint,
-                                             timing->largest_image_paint_size);
+  UpdateFirstInputOrScrollNotified(
+      timing->first_input_or_scroll_notified_timestamp,
+      /* navigation_start_offset */ base::TimeDelta());
+  if (IsValid(timing->largest_text_paint)) {
+    main_frame_contentful_paint_.Text().Reset(timing->largest_text_paint,
+                                              timing->largest_text_paint_size);
+  }
+  if (IsValid(timing->largest_image_paint)) {
+    main_frame_contentful_paint_.Image().Reset(
+        timing->largest_image_paint, timing->largest_image_paint_size);
+  }
+}
+
+void LargestContentfulPaintHandler::UpdateFirstInputOrScrollNotified(
+    const base::Optional<base::TimeDelta>& candidate_new_time,
+    const base::TimeDelta& navigation_start_offset) {
+  if (!candidate_new_time.has_value())
+    return;
+
+  if (first_input_or_scroll_notified_ >
+      navigation_start_offset + *candidate_new_time) {
+    first_input_or_scroll_notified_ =
+        navigation_start_offset + *candidate_new_time;
+    // Consider candidates after input to be invalid. This is needed because
+    // IPCs from different frames can arrive out of order. For example, this is
+    // consistently the case when a click on the main frame produces a new
+    // iframe which contains the largest content so far.
+    if (!IsValid(main_frame_contentful_paint_.Text().Time()))
+      Reset(main_frame_contentful_paint_.Text());
+    if (!IsValid(main_frame_contentful_paint_.Image().Time()))
+      Reset(main_frame_contentful_paint_.Image());
+    if (!IsValid(subframe_contentful_paint_.Text().Time()))
+      Reset(subframe_contentful_paint_.Text());
+    if (!IsValid(subframe_contentful_paint_.Image().Time()))
+      Reset(subframe_contentful_paint_.Image());
+  }
 }
 
 void LargestContentfulPaintHandler::OnDidFinishSubFrameNavigation(
@@ -221,6 +243,25 @@ void LargestContentfulPaintHandler::OnDidFinishSubFrameNavigation(
   }
   subframe_navigation_start_offset_.insert(std::make_pair(
       navigation_handle->GetFrameTreeNodeId(), navigation_delta));
+}
+
+void LargestContentfulPaintHandler::MergeForSubframes(
+    ContentfulPaintTimingInfo* inout_timing,
+    const base::Optional<base::TimeDelta>& candidate_new_time,
+    const uint64_t& candidate_new_size,
+    base::TimeDelta navigation_start_offset) {
+  base::Optional<base::TimeDelta> new_time = base::nullopt;
+  if (candidate_new_time) {
+    // If |candidate_new_time| is TimeDelta(), this means that the candidate is
+    // an image that has not finished loading. Preserve its meaning by not
+    // adding the |navigation_start_offset|.
+    new_time = *candidate_new_time > base::TimeDelta()
+                   ? navigation_start_offset + candidate_new_time.value()
+                   : base::TimeDelta();
+  }
+  if (IsValid(new_time))
+    MergeForSubframesWithAdjustedTime(inout_timing, new_time,
+                                      candidate_new_size);
 }
 
 }  // namespace page_load_metrics

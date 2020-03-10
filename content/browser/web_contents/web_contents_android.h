@@ -261,6 +261,8 @@ class CONTENT_EXPORT WebContentsAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  jint GetVisibility(JNIEnv* env);
+
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
   class DestructionObserver : public base::CheckedObserver {

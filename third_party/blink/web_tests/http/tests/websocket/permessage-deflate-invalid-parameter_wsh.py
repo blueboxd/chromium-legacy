@@ -28,7 +28,7 @@
 
 from six.moves.urllib import parse
 from mod_pywebsocket import handshake
-from mod_pywebsocket.handshake.hybi import compute_accept
+from mod_pywebsocket.handshake.hybi import compute_accept_from_unicode
 
 
 def web_socket_do_extra_handshake(request):
@@ -43,7 +43,7 @@ def web_socket_do_extra_handshake(request):
                b'Connection: Upgrade\r\n'
                b'Sec-WebSocket-Accept: %s\r\n'
                b'Sec-WebSocket-Extensions: permessage-deflate'
-               b'%s\r\n') % (compute_accept(request.headers_in['Sec-WebSocket-Key'].encode('UTF-8'))[0], message_parameters)
+               b'%s\r\n') % (compute_accept_from_unicode(request.headers_in['Sec-WebSocket-Key']), message_parameters)
 
     request.connection.write(message)
     # Prevents pywebsocket from sending its own handshake message.

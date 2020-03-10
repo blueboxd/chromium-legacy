@@ -89,4 +89,57 @@ TEST(FontCache, systemFont) {
 }
 #endif
 
+class EnumerationConsumer {
+ public:
+  explicit EnumerationConsumer(
+      const std::vector<FontEnumerationEntry>& expectations) {
+    for (const auto& f : expectations) {
+      ps_name_set_.insert(f.postscript_name.Utf8());
+      full_name_set_.insert(f.full_name.Utf8());
+      family_set_.insert(f.family.Utf8());
+    }
+  }
+
+  void Consume(const std::vector<FontEnumerationEntry>& entries) {
+    for (auto f : entries) {
+      ps_name_set_.erase(f.postscript_name.Utf8());
+      full_name_set_.erase(f.full_name.Utf8());
+      family_set_.erase(f.family.Utf8());
+    }
+  }
+
+  bool AllExpectationsMet() {
+    return ps_name_set_.empty() && full_name_set_.empty() &&
+           family_set_.empty();
+  }
+
+ private:
+  std::set<std::string> ps_name_set_;
+  std::set<std::string> full_name_set_;
+  std::set<std::string> family_set_;
+};
+
+TEST(FontCache, EnumerateAvailableFonts) {
+  FontCache* font_cache = FontCache::GetFontCache();
+  ASSERT_TRUE(font_cache);
+
+  std::vector<FontEnumerationEntry> expectations;
+
+#if defined(OS_MACOSX)
+  expectations.push_back(FontEnumerationEntry{"Monaco", "Monaco", "Monaco"});
+  expectations.push_back(
+      FontEnumerationEntry{"Menlo-Regular", "Menlo Regular", "Menlo"});
+  expectations.push_back(
+      FontEnumerationEntry{"Menlo-Bold", "Menlo Bold", "Menlo"});
+  expectations.push_back(
+      FontEnumerationEntry{"Menlo-BoldItalic", "Menlo Bold Italic", "Menlo"});
+#endif
+
+  auto entries = font_cache->EnumerateAvailableFonts();
+  auto consumer = EnumerationConsumer(expectations);
+
+  consumer.Consume(entries);
+  ASSERT_TRUE(consumer.AllExpectationsMet());
+}
+
 }  // namespace blink

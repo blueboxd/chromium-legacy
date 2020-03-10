@@ -278,6 +278,8 @@ class ScrollableShelfView::ScrollableShelfArrowView
                         shelf_button_delegate) {
     SetInkDropMode(InkDropMode::OFF);
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
   }
   ~ScrollableShelfArrowView() override = default;
 
@@ -500,7 +502,7 @@ void ScrollableShelfView::Init() {
   // needed. Otherwise, the child view without its own layer will be painted on
   // RootView which is beneath |translucent_background_| in ShelfWidget.
   // As a result, the child view will not show.
-  SetPaintToLayer();
+  SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   layer()->SetFillsBoundsOpaquely(false);
 
   // Initialize the shelf container view.
@@ -1824,7 +1826,6 @@ void ScrollableShelfView::PaintGradientZone(const FadeZone& start_rect,
                                             const FadeZone& end_rect) {
   gradient_layer_delegate_->set_start_fade_zone(start_rect);
   gradient_layer_delegate_->set_end_fade_zone(end_rect);
-
   SchedulePaint();
 }
 

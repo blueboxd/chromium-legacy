@@ -1000,6 +1000,11 @@ void FillNavigationParamsOriginPolicy(
   if (head.origin_policy.has_value() && head.origin_policy.value().contents) {
     navigation_params->origin_policy = blink::WebOriginPolicy();
 
+    for (const auto& id : head.origin_policy.value().contents->ids) {
+      navigation_params->origin_policy->ids.emplace_back(
+          WebString::FromUTF8(id));
+    }
+
     const base::Optional<std::string>& feature_policy =
         head.origin_policy.value().contents->feature_policy;
     if (feature_policy) {

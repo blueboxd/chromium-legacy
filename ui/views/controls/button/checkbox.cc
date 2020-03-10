@@ -17,7 +17,6 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/focus_ring.h"
@@ -63,6 +62,10 @@ Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
   SetInstallFocusRingOnFocus(true);
   focus_ring()->SetPathGenerator(
       std::make_unique<FocusRingHighlightPathGenerator>());
+
+  // Avoid the default ink-drop mask to allow the ripple effect to extend beyond
+  // the checkbox view (otherwise it gets clipped which looks weird).
+  views::InstallEmptyHighlightPathGenerator(this);
 }
 
 Checkbox::~Checkbox() = default;
@@ -144,12 +147,6 @@ std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
   // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
   return CreateSquareInkDropRipple(image()->GetMirroredBounds().CenterPoint(),
                                    gfx::Size(21, 21));
-}
-
-std::unique_ptr<InkDropMask> Checkbox::CreateInkDropMask() const {
-  // Avoid the default ink-drop mask to allow the ripple effect to extend beyond
-  // the checkbox view (otherwise it gets clipped which looks weird).
-  return nullptr;
 }
 
 SkColor Checkbox::GetInkDropBaseColor() const {

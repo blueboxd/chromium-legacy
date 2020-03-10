@@ -103,9 +103,9 @@
       ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
   viewController.modelDelegate = self.mediator;
   viewController.serviceDelegate = self.mediator;
-  DCHECK(self.navigationController);
-  [self.navigationController pushViewController:self.viewController
-                                       animated:YES];
+  DCHECK(self.baseNavigationController);
+  [self.baseNavigationController pushViewController:self.viewController
+                                           animated:YES];
 }
 
 - (void)stop {
@@ -208,7 +208,7 @@
   controller.dispatcher = static_cast<
       id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>>(
       self.browser->GetCommandDispatcher());
-  [self.navigationController pushViewController:controller animated:YES];
+  [self.baseNavigationController pushViewController:controller animated:YES];
 }
 
 - (void)showSignIn {
@@ -225,7 +225,7 @@
                                    ACCESS_POINT_GOOGLE_SERVICES_SETTINGS
                    promoAction:signin_metrics::PromoAction::
                                    PROMO_ACTION_NO_SIGNIN_PROMO
-      presentingViewController:self.navigationController
+      presentingViewController:self.baseNavigationController
                     completion:^(BOOL success) {
                       [weakSelf signInInteractionCoordinatorDidComplete];
                     }];
@@ -235,7 +235,7 @@
   AccountsTableViewController* controller =
       [[AccountsTableViewController alloc] initWithBrowser:self.browser
                                  closeSettingsOnAddAccount:NO];
-  [self.navigationController pushViewController:controller animated:YES];
+  [self.baseNavigationController pushViewController:controller animated:YES];
 }
 
 - (void)openManageSyncSettings {
@@ -243,8 +243,8 @@
   self.manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
-  self.manageSyncSettingsCoordinator.navigationController =
-      self.navigationController;
+  self.manageSyncSettingsCoordinator.baseNavigationController =
+      self.baseNavigationController;
   self.manageSyncSettingsCoordinator.delegate = self;
   [self.manageSyncSettingsCoordinator start];
 }

@@ -55,9 +55,8 @@ class OptimizationGuideKeyedService
       leveldb_proto::ProtoDatabaseProvider* database_provider,
       const base::FilePath& profile_path);
 
-  OptimizationGuideHintsManager* GetHintsManager() {
-    return hints_manager_.get();
-  }
+  // Virtualized for testing.
+  virtual OptimizationGuideHintsManager* GetHintsManager();
 
   optimization_guide::TopHostProvider* GetTopHostProvider() {
     return top_host_provider_.get();

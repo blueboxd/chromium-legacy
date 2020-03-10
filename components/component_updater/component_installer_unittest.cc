@@ -76,6 +76,7 @@ class MockUpdateClient : public UpdateClient {
 
   void Install(const std::string& id,
                CrxDataCallback crx_data_callback,
+               CrxStateChangeCallback crx_state_change_callback,
                Callback callback) override {
     DoInstall(id, std::move(crx_data_callback));
     std::move(callback).Run(update_client::Error::NONE);
@@ -83,6 +84,7 @@ class MockUpdateClient : public UpdateClient {
 
   void Update(const std::vector<std::string>& ids,
               CrxDataCallback crx_data_callback,
+              CrxStateChangeCallback crx_state_change_callback,
               bool is_foreground,
               Callback callback) override {
     DoUpdate(ids, std::move(crx_data_callback));

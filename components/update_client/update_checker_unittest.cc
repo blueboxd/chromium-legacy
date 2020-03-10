@@ -228,8 +228,9 @@ void UpdateCheckerTest::UpdateCheckComplete(
 scoped_refptr<UpdateContext> UpdateCheckerTest::MakeMockUpdateContext() const {
   return base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>(),
-      UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
-      UpdateEngine::Callback(), nullptr, nullptr);
+      UpdateClient::CrxDataCallback(), UpdateClient::CrxStateChangeCallback(),
+      UpdateEngine::NotifyObserversCallback(), UpdateEngine::Callback(),
+      nullptr, nullptr);
 }
 
 std::unique_ptr<Component> UpdateCheckerTest::MakeComponent() const {

@@ -628,15 +628,10 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
       base::OnceClosure done,
       base::Optional<blink::ServiceWorkerStatusCode>* out_result,
       int request_id,
-      blink::mojom::ServiceWorkerEventStatus status,
-      bool has_fetch_handler) {
+      blink::mojom::ServiceWorkerEventStatus status) {
     version_->FinishRequest(
         request_id,
         status == blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-    version_->set_fetch_handler_existence(
-        has_fetch_handler
-            ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
-            : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
 
     *out_result = mojo::ConvertTo<blink::ServiceWorkerStatusCode>(status);
     if (!done.is_null())
@@ -1086,6 +1081,17 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        InstallWithoutFetchHandler) {
   StartServerAndNavigateToSetup();
   InstallTestHelper("/service_worker/worker.js",
+                    blink::ServiceWorkerStatusCode::kOk);
+  EXPECT_EQ(ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST,
+            version_->fetch_handler_existence());
+}
+
+// Check that fetch event handler added in the install event should result in a
+// service worker that doesn't count as having a fetch event handler.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       FetchHandlerSetInInstallEvent) {
+  StartServerAndNavigateToSetup();
+  InstallTestHelper("/service_worker/fetch_event_set_in_install_event.js",
                     blink::ServiceWorkerStatusCode::kOk);
   EXPECT_EQ(ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST,
             version_->fetch_handler_existence());

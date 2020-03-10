@@ -5,7 +5,6 @@
 typemaps = [
   "//media/capture/mojom/video_capture_types_for_blink.typemap",
   "//media/mojo/mojom/audio_parameters.typemap",
-  "//mojo/public/cpp/base/values.typemap",
   "//services/network/public/cpp/http_request_headers.typemap",
   "//services/network/public/cpp/ip_address.typemap",
   "//services/network/public/cpp/ip_endpoint.typemap",
@@ -22,7 +21,6 @@ typemaps = [
   "//third_party/blink/renderer/modules/indexeddb/indexed_db_blink.typemap",
   "//third_party/blink/renderer/platform/blob/serialized_blob.typemap",
   "//third_party/blink/renderer/platform/cookie/canonical_cookie.typemap",
-  "//third_party/blink/renderer/platform/mojo/big_string.typemap",
   "//third_party/blink/renderer/platform/mojo/fetch_api_request_headers.typemap",
   "//third_party/blink/renderer/platform/mojo/kurl.typemap",
   "//third_party/blink/renderer/platform/mojo/security_origin.typemap",

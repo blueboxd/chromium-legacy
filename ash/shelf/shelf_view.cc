@@ -898,7 +898,7 @@ bool ShelfView::ShouldShowTooltipForChildView(
 
 // static
 void ShelfView::ConfigureChildView(views::View* view) {
-  view->SetPaintToLayer();
+  view->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   view->layer()->SetFillsBoundsOpaquely(false);
 }
 

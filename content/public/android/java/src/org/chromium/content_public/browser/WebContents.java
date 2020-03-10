@@ -161,6 +161,12 @@ public interface WebContents extends Parcelable {
     List<? extends WebContents> getInnerWebContents();
 
     /**
+     * @return The WebContents Visibility. See native WebContents::GetVisibility.
+     */
+    @Visibility
+    int getVisibility();
+
+    /**
      * @return The title for the current visible page.
      */
     String getTitle();

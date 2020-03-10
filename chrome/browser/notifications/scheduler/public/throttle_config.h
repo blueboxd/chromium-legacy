@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_PUBLIC_THROTTLE_CONFIG_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_PUBLIC_THROTTLE_CONFIG_H_
 
+#include "base/optional.h"
 #include "base/time/time.h"
 
 namespace notifications {
@@ -19,13 +20,13 @@ struct ThrottleConfig {
   // Support a custom suppression duration(in days) for the notification.
   // If client sets this field, it will override |suppression_duration| in
   // global config.
-  base::TimeDelta suppression_duration;
+  base::Optional<base::TimeDelta> suppression_duration;
 
   // Maxmium number of consecutive negative actions to trigger negative
   // impression event.
   // If client sets this field, it will override |dismiss_count| in global
   // config.
-  int negative_action_count_threshold;
+  base::Optional<int> negative_action_count_threshold;
 };
 
 }  // namespace notifications

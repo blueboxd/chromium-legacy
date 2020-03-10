@@ -43,6 +43,7 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
       context_state_(context_state),
       gl_surface_(std::move(gl_surface)),
       supports_async_swap_(gl_surface_->SupportsAsyncSwap()) {
+  capabilities_.uses_default_gl_framebuffer = true;
   capabilities_.output_surface_origin = gl_surface_->GetOrigin();
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
   if (feature_info->workarounds()
@@ -90,6 +91,16 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   }
   CHECK_GL_ERROR();
   supports_alpha_ = alpha_bits > 0;
+
+  capabilities_.sk_color_type =
+      supports_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType;
+  capabilities_.gr_backend_format =
+      context_state_->gr_context()->defaultBackendFormat(
+          capabilities_.sk_color_type, GrRenderable::kYes);
+  capabilities_.sk_color_type_for_hdr = kRGBA_F16_SkColorType;
+  capabilities_.gr_backend_format_for_hdr =
+      context_state_->gr_context()->defaultBackendFormat(
+          capabilities_.sk_color_type_for_hdr, GrRenderable::kYes);
 }
 
 SkiaOutputDeviceGL::~SkiaOutputDeviceGL() {
@@ -113,20 +124,25 @@ bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
       SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
 
   GrGLFramebufferInfo framebuffer_info;
-  framebuffer_info.fFBOID = gl_surface_->GetBackingFramebufferObject();
+  framebuffer_info.fFBOID = 0;
+  DCHECK_EQ(gl_surface_->GetBackingFramebufferObject(), 0u);
 
   SkColorType color_type;
   // TODO(https://crbug.com/1049334): The pixel format should be determined by
   // |buffer_format|, not |color_space|, and not |supports_alpha_|.
   if (color_space.IsHDR()) {
+    color_type = capabilities_.sk_color_type_for_hdr;
     framebuffer_info.fFormat = GL_RGBA16F;
-    color_type = kRGBA_F16_SkColorType;
+    DCHECK_EQ(capabilities_.gr_backend_format_for_hdr.asGLFormat(),
+              GrGLFormat::kRGBA16F);
   } else if (supports_alpha_) {
+    color_type = capabilities_.sk_color_type;
     framebuffer_info.fFormat = GL_RGBA8;
-    color_type = kRGBA_8888_SkColorType;
+    DCHECK_EQ(capabilities_.gr_backend_format.asGLFormat(), GrGLFormat::kRGBA8);
   } else {
-    framebuffer_info.fFormat = GL_RGB8_OES;
-    color_type = kRGB_888x_SkColorType;
+    color_type = capabilities_.sk_color_type;
+    framebuffer_info.fFormat = GL_RGB8;
+    DCHECK_EQ(capabilities_.gr_backend_format.asGLFormat(), GrGLFormat::kRGB8);
   }
   // TODO(kylechar): We might need to support RGB10A2 for HDR10. HDR10 was only
   // used with Windows updated RS3 (2017) as a workaround for a DWM bug so it

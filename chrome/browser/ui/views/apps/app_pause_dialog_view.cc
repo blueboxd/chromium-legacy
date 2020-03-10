@@ -31,11 +31,6 @@ void apps::AppServiceProxy::CreatePauseDialog(
       ->Show();
 }
 
-// static
-AppPauseDialogView* AppPauseDialogView::GetActiveViewForTesting() {
-  return g_app_pause_dialog_view;
-}
-
 AppPauseDialogView::AppPauseDialogView(
     const std::string& app_name,
     const gfx::ImageSkia& image,
@@ -58,6 +53,11 @@ AppPauseDialogView::AppPauseDialogView(
 
 AppPauseDialogView::~AppPauseDialogView() {
   g_app_pause_dialog_view = nullptr;
+}
+
+// static
+AppPauseDialogView* AppPauseDialogView::GetActiveViewForTesting() {
+  return g_app_pause_dialog_view;
 }
 
 bool AppPauseDialogView::Accept() {

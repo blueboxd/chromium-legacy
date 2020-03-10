@@ -150,8 +150,8 @@ void ArcImeBridgeImpl::OnCursorRectChangedWithSurroundingText(
       is_screen_coordinates);
 }
 
-void ArcImeBridgeImpl::RequestHideIme() {
-  delegate_->RequestHideIme();
+void ArcImeBridgeImpl::RequestHideImeDeprecated() {
+  DVLOG(1) << "RequestHideIme is deprecated.";
 }
 
 }  // namespace arc

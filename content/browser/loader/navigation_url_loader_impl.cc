@@ -967,6 +967,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       error = net::ERR_UNSAFE_REDIRECT;
     } else if (--redirect_limit_ == 0) {
       error = net::ERR_TOO_MANY_REDIRECTS;
+      if (redirect_info.is_signed_exchange_fallback_redirect)
+        UMA_HISTOGRAM_BOOLEAN("SignedExchange.FallbackRedirectLoop", true);
     }
     if (error != net::OK) {
       if (url_loader_) {

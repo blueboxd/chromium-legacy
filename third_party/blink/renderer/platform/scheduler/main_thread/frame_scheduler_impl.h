@@ -284,6 +284,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   DoesNotUseVirtualTimeTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits LoadingTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits LoadingControlTaskQueueTraits();
+  static MainThreadTaskQueue::QueueTraits FindInPageTaskQueueTraits();
 
   const FrameScheduler::FrameType frame_type_;
 

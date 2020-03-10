@@ -77,8 +77,7 @@ void FakeServiceWorker::InitializeGlobalScope(
 
 void FakeServiceWorker::DispatchInstallEvent(
     DispatchInstallEventCallback callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          true /* has_fetch_handler */);
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchActivateEvent(

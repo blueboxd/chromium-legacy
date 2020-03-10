@@ -993,6 +993,8 @@ jumbo_static_library("ui") {
       "hats/hats_service.h",
       "hats/hats_service_factory.cc",
       "hats/hats_service_factory.h",
+      "hats/hats_survey_status_checker.cc",
+      "hats/hats_survey_status_checker.h",
       "hid/hid_chooser.cc",
       "hid/hid_chooser.h",
       "hid/hid_chooser_controller.cc",

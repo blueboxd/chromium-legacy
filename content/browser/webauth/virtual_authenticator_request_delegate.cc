@@ -36,13 +36,13 @@ void VirtualAuthenticatorRequestDelegate::SelectAccount(
   std::move(callback).Run(std::move(responses[0]));
 }
 
-bool VirtualAuthenticatorRequestDelegate::
-    IsUserVerifyingPlatformAuthenticatorAvailable() {
+base::Optional<bool> VirtualAuthenticatorRequestDelegate::
+    IsUserVerifyingPlatformAuthenticatorAvailableOverride() {
   auto* virtual_discovery_factory =
       AuthenticatorEnvironmentImpl::GetInstance()->GetVirtualFactoryFor(
           frame_tree_node_);
   if (!virtual_discovery_factory) {
-    return false;
+    return base::nullopt;
   }
   const auto& authenticators = virtual_discovery_factory->GetAuthenticators();
   return std::any_of(authenticators.begin(), authenticators.end(),

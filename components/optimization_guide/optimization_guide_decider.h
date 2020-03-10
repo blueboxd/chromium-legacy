@@ -19,6 +19,7 @@ class NavigationHandle;
 namespace optimization_guide {
 
 // Represents the decision made by the optimization guide.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.optimization_guide
 enum class OptimizationGuideDecision {
   // The necessary information to make the decision is not yet available.
   kUnknown,

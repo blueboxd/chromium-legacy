@@ -75,6 +75,7 @@ constexpr char kExpectedSXGEnabledAcceptHeaderForPrefetch[] =
 constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult2";
 constexpr char kPrefetchResultHistogram[] =
     "SignedExchange.Prefetch.LoadResult2";
+constexpr char kRedirectLoopHistogram[] = "SignedExchange.FallbackRedirectLoop";
 
 class RedirectObserver : public WebContentsObserver {
  public:
@@ -1251,6 +1252,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
   if (!IsSignedExchangeEnabled())
     return;
 
+  const base::HistogramTester histogram_tester;
   base::RunLoop run_loop;
   FinishNavigationObserver finish_navigation_observer(shell()->web_contents(),
                                                       run_loop.QuitClosure());
@@ -1261,6 +1263,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
       << "Unexpected navigation success: " << test_url;
   EXPECT_EQ(net::ERR_TOO_MANY_REDIRECTS,
             *finish_navigation_observer.error_code());
+  histogram_tester.ExpectUniqueSample(kRedirectLoopHistogram, true, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,

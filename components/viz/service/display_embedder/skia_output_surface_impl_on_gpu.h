@@ -37,10 +37,6 @@
 
 class SkDeferredDisplayList;
 
-namespace base {
-class WaitableEvent;
-}
-
 namespace gfx {
 class ColorSpace;
 }
@@ -126,9 +122,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
                const gfx::ColorSpace& color_space,
                gfx::BufferFormat format,
                bool use_stencil,
-               gfx::OverlayTransform transform,
-               SkSurfaceCharacterization* characterization,
-               base::WaitableEvent* event);
+               gfx::OverlayTransform transform);
   bool FinishPaintCurrentFrame(
       std::unique_ptr<SkDeferredDisplayList> ddl,
       std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,

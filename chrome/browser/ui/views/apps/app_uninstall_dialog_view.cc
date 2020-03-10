@@ -36,6 +36,12 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif
 
+namespace {
+
+AppUninstallDialogView* g_app_uninstall_dialog_view = nullptr;
+
+}  // namespace
+
 // static
 void apps::UninstallDialog::UiBase::Create(
     Profile* profile,
@@ -72,6 +78,17 @@ AppUninstallDialogView::AppUninstallDialogView(
   InitializeView(profile, app_type, app_id);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::APP_UNINSTALL);
+
+  g_app_uninstall_dialog_view = this;
+}
+
+AppUninstallDialogView::~AppUninstallDialogView() {
+  g_app_uninstall_dialog_view = nullptr;
+}
+
+// static
+AppUninstallDialogView* AppUninstallDialogView::GetActiveViewForTesting() {
+  return g_app_uninstall_dialog_view;
 }
 
 void AppUninstallDialogView::OnDialogCancelled() {

@@ -57,6 +57,9 @@ constexpr char kHatsSurveyEnSiteIDDefault[] = "bhej2dndhpc33okm6xexsbyv4y";
 constexpr base::TimeDelta kMinimumTimeBetweenSurveyStarts =
     base::TimeDelta::FromDays(60);
 
+constexpr base::TimeDelta kMinimumTimeBetweenSurveyChecks =
+    base::TimeDelta::FromDays(1);
+
 constexpr base::TimeDelta kMinimumProfileAge = base::TimeDelta::FromDays(30);
 
 // Preferences Data Model
@@ -71,6 +74,14 @@ std::string GetMajorVersionPath(const std::string& trigger) {
 
 std::string GetLastSurveyStartedTime(const std::string& trigger) {
   return trigger + ".last_survey_started_time";
+}
+
+std::string GetIsSurveyFull(const std::string& trigger) {
+  return trigger + ".is_survey_full";
+}
+
+std::string GetLastSurveyCheckTime(const std::string& trigger) {
+  return trigger + ".last_survey_check_time";
 }
 
 constexpr char kHatsShouldShowSurveyReasonHistogram[] =
@@ -91,7 +102,9 @@ enum class ShouldShowSurveyReasons {
   kNoIncognitoDisabled = 9,
   kNoCookiesBlocked = 10,
   kNoThirdPartyCookiesBlocked = 11,
-  kMaxValue = kNoThirdPartyCookiesBlocked,
+  kNoSurveyUnreachable = 12,
+  kNoSurveyOverCapacity = 13,
+  kMaxValue = kNoSurveyOverCapacity,
 };
 
 }  // namespace
@@ -172,18 +185,9 @@ void HatsService::LaunchSurvey(const std::string& trigger) {
         return;
       }
 
-      UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
-                                ShouldShowSurveyReasons::kYes);
-      browser->window()->ShowHatsBubble(
-          survey_configs_by_triggers_.at(trigger).en_site_id_);
-
-      DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                  prefs::kHatsSurveyMetadata);
-      base::DictionaryValue* pref_data = update.Get();
-      pref_data->SetIntPath(GetMajorVersionPath(trigger),
-                            version_info::GetVersion().components()[0]);
-      pref_data->SetPath(GetLastSurveyStartedTime(trigger),
-                         util::TimeToValue(base::Time::Now()));
+      // Checking survey's status could be costly due to a network request, so
+      // we check it at the last.
+      CheckSurveyStatusAndMaybeShow(browser, trigger);
     } else {
       UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
                                 ShouldShowSurveyReasons::kNoNotRegularBrowser);
@@ -197,7 +201,9 @@ void HatsService::SetSurveyMetadataForTesting(
   DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kHatsSurveyMetadata);
   base::DictionaryValue* pref_data = update.Get();
   if (!metadata.last_major_version.has_value() &&
-      !metadata.last_survey_started_time.has_value()) {
+      !metadata.last_survey_started_time.has_value() &&
+      !metadata.is_survey_full.has_value() &&
+      !metadata.last_survey_check_time.has_value()) {
     pref_data->RemovePath(trigger);
   }
 
@@ -214,6 +220,51 @@ void HatsService::SetSurveyMetadataForTesting(
   } else {
     pref_data->RemovePath(GetLastSurveyStartedTime(trigger));
   }
+
+  if (metadata.is_survey_full.has_value()) {
+    pref_data->SetBoolPath(GetIsSurveyFull(trigger), *metadata.is_survey_full);
+  } else {
+    pref_data->RemovePath(GetIsSurveyFull(trigger));
+  }
+
+  if (metadata.last_survey_check_time.has_value()) {
+    pref_data->SetPath(GetLastSurveyCheckTime(trigger),
+                       util::TimeToValue(*metadata.last_survey_check_time));
+  } else {
+    pref_data->RemovePath(GetLastSurveyCheckTime(trigger));
+  }
+}
+
+void HatsService::GetSurveyMetadataForTesting(
+    HatsService::SurveyMetadata* metadata) const {
+  const std::string& trigger = kHatsSurveyTriggerSatisfaction;
+  DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kHatsSurveyMetadata);
+  base::DictionaryValue* pref_data = update.Get();
+
+  base::Optional<int> last_major_version =
+      pref_data->FindIntPath(GetMajorVersionPath(trigger));
+  if (last_major_version.has_value())
+    metadata->last_major_version = last_major_version;
+
+  base::Optional<base::Time> last_survey_started_time =
+      util::ValueToTime(pref_data->FindPath(GetLastSurveyStartedTime(trigger)));
+  if (last_survey_started_time.has_value())
+    metadata->last_survey_started_time = last_survey_started_time;
+
+  base::Optional<bool> is_survey_full =
+      pref_data->FindBoolPath(GetIsSurveyFull(trigger));
+  if (is_survey_full.has_value())
+    metadata->is_survey_full = is_survey_full;
+
+  base::Optional<base::Time> last_survey_check_time =
+      util::ValueToTime(pref_data->FindPath(GetLastSurveyCheckTime(trigger)));
+  if (last_survey_check_time.has_value())
+    metadata->last_survey_check_time = last_survey_check_time;
+}
+
+void HatsService::SetSurveyCheckerForTesting(
+    std::unique_ptr<HatsSurveyStatusChecker> checker) {
+  checker_ = std::move(checker);
 }
 
 bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
@@ -294,4 +345,72 @@ bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
   }
 
   return should_show_survey;
+}
+
+void HatsService::CheckSurveyStatusAndMaybeShow(Browser* browser,
+                                                const std::string& trigger) {
+  // Check the survey status in profile first.
+  // We record the survey's over capacity information in user profile to avoid
+  // duplicated checks since the survey won't change once it is full.
+  const base::DictionaryValue* pref_data =
+      profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
+  base::Optional<int> is_full =
+      pref_data->FindBoolPath(GetIsSurveyFull(trigger));
+  if (is_full.has_value() && is_full)
+    return;
+
+  base::Optional<base::Time> last_survey_check_time =
+      util::ValueToTime(pref_data->FindPath(GetLastSurveyCheckTime(trigger)));
+  if (last_survey_check_time.has_value()) {
+    base::TimeDelta elapsed_time_since_last_check =
+        base::Time::Now() - *last_survey_check_time;
+    if (elapsed_time_since_last_check < kMinimumTimeBetweenSurveyChecks)
+      return;
+  }
+
+  DCHECK(survey_configs_by_triggers_.find(trigger) !=
+         survey_configs_by_triggers_.end());
+
+  if (!checker_)
+    checker_ = std::make_unique<HatsSurveyStatusChecker>(profile_);
+  checker_->CheckSurveyStatus(
+      survey_configs_by_triggers_[trigger].en_site_id_,
+      base::BindOnce(&HatsService::ShowSurvey, base::Unretained(this), browser,
+                     trigger),
+      base::BindOnce(&HatsService::OnSurveyStatusError, base::Unretained(this),
+                     trigger));
+}
+
+void HatsService::ShowSurvey(Browser* browser, const std::string& trigger) {
+  UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
+                            ShouldShowSurveyReasons::kYes);
+
+  browser->window()->ShowHatsBubble(
+      survey_configs_by_triggers_[trigger].en_site_id_);
+
+  DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kHatsSurveyMetadata);
+  base::DictionaryValue* pref_data = update.Get();
+  pref_data->SetIntPath(GetMajorVersionPath(trigger),
+                        version_info::GetVersion().components()[0]);
+  pref_data->SetPath(GetLastSurveyStartedTime(trigger),
+                     util::TimeToValue(base::Time::Now()));
+  checker_.reset();
+}
+
+void HatsService::OnSurveyStatusError(const std::string& trigger,
+                                      HatsSurveyStatusChecker::Status error) {
+  DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kHatsSurveyMetadata);
+  base::DictionaryValue* pref_update_data = update.Get();
+
+  if (error == HatsSurveyStatusChecker::Status::kUnreachable) {
+    UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
+                              ShouldShowSurveyReasons::kNoSurveyUnreachable);
+    pref_update_data->SetPath(GetLastSurveyCheckTime(trigger),
+                              util::TimeToValue(base::Time::Now()));
+  } else if (error == HatsSurveyStatusChecker::Status::kOverCapacity) {
+    UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
+                              ShouldShowSurveyReasons::kNoSurveyOverCapacity);
+    pref_update_data->SetBoolPath(GetIsSurveyFull(trigger), true);
+  }
+  checker_.reset();
 }

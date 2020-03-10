@@ -70,7 +70,7 @@ void UpdateServiceInProcess::UpdateAll(
             return components;
           },
           persisted_data_),
-      false, std::move(callback));
+      {}, false, std::move(callback));
 }
 
 void UpdateServiceInProcess::Update(

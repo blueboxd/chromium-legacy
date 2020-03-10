@@ -322,14 +322,14 @@ template("msvc_toolchain") {
       outputs = [
         dllname,
         libname,
+        pdbname,
       ]
       link_output = libname
       depend_output = libname
-      runtime_outputs = [ dllname ]
-      if (symbol_level != 0) {
-        outputs += [ pdbname ]
-        runtime_outputs += [ pdbname ]
-      }
+      runtime_outputs = [
+        dllname,
+        pdbname,
+      ]
 
       # Since the above commands only updates the .lib file when it changes, ask
       # Ninja to check if the timestamp actually changed to know if downstream
@@ -354,10 +354,10 @@ template("msvc_toolchain") {
       default_output_extension = ".dll"
       default_output_dir = "{{root_out_dir}}"
       description = "LINK_MODULE(DLL) {{output}}"
-      outputs = [ dllname ]
-      if (symbol_level != 0) {
-        outputs += [ pdbname ]
-      }
+      outputs = [
+        dllname,
+        pdbname,
+      ]
       runtime_outputs = outputs
 
       # The use of inputs_newline is to work around a fixed per-line buffer
@@ -376,10 +376,10 @@ template("msvc_toolchain") {
       default_output_extension = ".exe"
       default_output_dir = "{{root_out_dir}}"
       description = "LINK {{output}}"
-      outputs = [ exename ]
-      if (symbol_level != 0) {
-        outputs += [ pdbname ]
-      }
+      outputs = [
+        exename,
+        pdbname,
+      ]
       runtime_outputs = outputs
 
       # The use of inputs_newline is to work around a fixed per-line buffer

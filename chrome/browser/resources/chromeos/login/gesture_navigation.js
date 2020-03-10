@@ -44,6 +44,13 @@ Polymer({
     });
   },
 
+  focus() {
+    let current = this.$[this.currentPage_];
+    if (current) {
+      current.show();
+    }
+  },
+
   /**
    * This is the 'on-tap' event handler for the 'next' or 'get started' button.
    * @private
@@ -98,6 +105,10 @@ Polymer({
     this.setPlayCurrentScreenAnimation(false);
     this.currentPage_ = newPage;
     this.setPlayCurrentScreenAnimation(true);
+
+    let screen = this.$[this.currentPage_];
+    assert(screen);
+    screen.show();
   },
 
   /**

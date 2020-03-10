@@ -186,8 +186,10 @@ interface EmbeddedWorkerInstanceHost {
   // for the browser process to start enforcing timeouts on script execution.
   OnScriptEvaluationStart();
   // Indicates that the worker has started. |thread_id| is the platform
-  // thread id the worker runs on.
+  // thread id the worker runs on. |has_fetch_handler| is true when the fetch
+  // event handler exists after initial script evaluation.
   OnStarted(ServiceWorkerStartStatus status,
+            bool has_fetch_handler,
             int32 thread_id,
             EmbeddedWorkerStartTiming start_timing);
 

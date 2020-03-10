@@ -765,19 +765,12 @@ int CreditCardSaveManager::GetDetectedValues() const {
     }
   }
 
-  // If one of the following is true, signal that cardholder name will be
-  // explicitly requested in the offer-to-save bubble:
-  //  1) Name is conflicting/missing, and the user does NOT have a Google
-  //     Payments account
-  //  2) The AutofillUpstreamAlwaysRequestCardholderName experiment is enabled
-  //     (should only ever be used by testers, never launched)
-  if ((!(detected_values & DetectedValue::CARDHOLDER_NAME) &&
-       !(detected_values & DetectedValue::ADDRESS_NAME) &&
-       !(detected_values & DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT) &&
-       base::FeatureList::IsEnabled(
-           features::kAutofillUpstreamEditableCardholderName)) ||
-      base::FeatureList::IsEnabled(
-          features::kAutofillUpstreamAlwaysRequestCardholderName)) {
+  // If cardholder name is conflicting/missing and the user does NOT have a
+  // Google Payments account, signal that cardholder name will be explicitly
+  // requested in the offer-to-save bubble.
+  if (!(detected_values & DetectedValue::CARDHOLDER_NAME) &&
+      !(detected_values & DetectedValue::ADDRESS_NAME) &&
+      !(detected_values & DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT)) {
     detected_values |= DetectedValue::USER_PROVIDED_NAME;
   }
 

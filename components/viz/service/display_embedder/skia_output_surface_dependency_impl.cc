@@ -30,14 +30,6 @@ SkiaOutputSurfaceDependencyImpl::CreateSequence() {
       gpu_service_impl_->GetGpuScheduler());
 }
 
-bool SkiaOutputSurfaceDependencyImpl::IsUsingVulkan() {
-  return gpu_service_impl_->is_using_vulkan();
-}
-
-bool SkiaOutputSurfaceDependencyImpl::IsUsingDawn() {
-  return gpu_service_impl_->is_using_dawn();
-}
-
 gpu::SharedImageManager*
 SkiaOutputSurfaceDependencyImpl::GetSharedImageManager() {
   return gpu_service_impl_->shared_image_manager();
@@ -71,8 +63,8 @@ DawnContextProvider* SkiaOutputSurfaceDependencyImpl::GetDawnContextProvider() {
   return gpu_service_impl_->dawn_context_provider();
 }
 
-const gpu::GpuPreferences&
-SkiaOutputSurfaceDependencyImpl::GetGpuPreferences() {
+const gpu::GpuPreferences& SkiaOutputSurfaceDependencyImpl::GetGpuPreferences()
+    const {
   return gpu_service_impl_->gpu_preferences();
 }
 

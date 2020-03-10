@@ -242,6 +242,9 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
   void MouseCaptureLost() override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
+  void MouseLockLost() override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
   void SetEditCommandsForNextKeyEvent(
       const std::vector<content::EditCommand>& commands) override {
     DLOG(WARNING) << "Input request on unbound interface";
@@ -572,8 +575,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(WidgetHostMsg_AutoscrollEnd, OnAutoscrollEnd)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_LockMouse, OnLockMouse)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_SelectionBoundsChanged,
                         OnSelectionBoundsChanged)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
@@ -1016,7 +1017,7 @@ void RenderWidgetHostImpl::LostMouseLock() {
 }
 
 void RenderWidgetHostImpl::SendMouseLockLost() {
-  Send(new WidgetMsg_MouseLockLost(routing_id_));
+  widget_input_handler_->MouseLockLost();
 }
 
 void RenderWidgetHostImpl::ViewDestroyed() {
@@ -1935,9 +1936,11 @@ void RenderWidgetHostImpl::ImeCancelComposition() {
 void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {
   DCHECK(!pending_mouse_lock_request_ || !IsMouseLocked());
   if (pending_mouse_lock_request_) {
+    DCHECK(request_mouse_callback_);
     pending_mouse_lock_request_ = false;
     mouse_lock_raw_movement_ = false;
-    Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
+    std::move(request_mouse_callback_).Run(/*success=*/false);
+
   } else if (IsMouseLocked()) {
     view_->UnlockMouse();
   }
@@ -2407,6 +2410,43 @@ void RenderWidgetHostImpl::SetMouseCapture(bool capture) {
   delegate_->GetInputEventRouter()->SetMouseCaptureTarget(GetView(), capture);
 }
 
+void RenderWidgetHostImpl::RequestMouseLock(
+    bool from_user_gesture,
+    bool privileged,
+    bool unadjusted_movement,
+    InputRouterImpl::RequestMouseLockCallback response) {
+  if (pending_mouse_lock_request_) {
+    std::move(response).Run(/*success=*/false);
+    return;
+  }
+
+  request_mouse_callback_ = std::move(response);
+
+  pending_mouse_lock_request_ = true;
+  mouse_lock_raw_movement_ = unadjusted_movement;
+  if (delegate_) {
+    delegate_->RequestToLockMouse(this, from_user_gesture,
+                                  is_last_unlocked_by_target_,
+                                  privileged && allow_privileged_mouse_lock_);
+    // We need to reset |is_last_unlocked_by_target_| here as we don't know
+    // request source in |LostMouseLock()|.
+    is_last_unlocked_by_target_ = false;
+    return;
+  }
+
+  // Directly reject or approve the mouse lock based on privilege.
+  GotResponseToLockMouseRequest(allow_privileged_mouse_lock_ && privileged);
+}
+
+void RenderWidgetHostImpl::UnlockMouse() {
+  // Got unlock request from renderer. Will update |is_last_unlocked_by_target_|
+  // for silent re-lock.
+  const bool was_mouse_locked = !pending_mouse_lock_request_ && IsMouseLocked();
+  RejectMouseLockOrUnlockIfNecessary();
+  if (was_mouse_locked)
+    is_last_unlocked_by_target_ = true;
+}
+
 void RenderWidgetHostImpl::FallbackCursorModeLockCursor(bool left,
                                                         bool right,
                                                         bool up,
@@ -2431,44 +2471,6 @@ void RenderWidgetHostImpl::OnMessageDispatchError(const IPC::Message& message) {
 void RenderWidgetHostImpl::OnProcessSwapMessage(const IPC::Message& message) {
   RenderProcessHost* rph = GetProcess();
   rph->OnMessageReceived(message);
-}
-
-void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
-                                       bool privileged,
-                                       bool request_unadjusted_movement) {
-  if (pending_mouse_lock_request_) {
-    Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
-    return;
-  }
-
-  pending_mouse_lock_request_ = true;
-  mouse_lock_raw_movement_ = request_unadjusted_movement;
-  if (delegate_) {
-    delegate_->RequestToLockMouse(this, user_gesture,
-                                  is_last_unlocked_by_target_,
-                                  privileged && allow_privileged_mouse_lock_);
-    // We need to reset |is_last_unlocked_by_target_| here as we don't know
-    // request source in |LostMouseLock()|.
-    is_last_unlocked_by_target_ = false;
-    return;
-  }
-
-  if (privileged && allow_privileged_mouse_lock_) {
-    // Directly approve to lock the mouse.
-    GotResponseToLockMouseRequest(true);
-  } else {
-    // Otherwise, just reject it.
-    GotResponseToLockMouseRequest(false);
-  }
-}
-
-void RenderWidgetHostImpl::OnUnlockMouse() {
-  // Got unlock request from renderer. Will update |is_last_unlocked_by_target_|
-  // for silent re-lock.
-  const bool was_mouse_locked = !pending_mouse_lock_request_ && IsMouseLocked();
-  RejectMouseLockOrUnlockIfNecessary();
-  if (was_mouse_locked)
-    is_last_unlocked_by_target_ = true;
 }
 
 bool RenderWidgetHostImpl::RequestKeyboardLock(
@@ -2719,14 +2721,15 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
     return false;
   }
 
+  DCHECK(request_mouse_callback_);
   pending_mouse_lock_request_ = false;
   if (!view_ || !view_->HasFocus() ||
       !view_->LockMouse(mouse_lock_raw_movement_)) {
-    Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
+    std::move(request_mouse_callback_).Run(/*success=*/false);
     return false;
   }
 
-  Send(new WidgetMsg_LockMouse_ACK(routing_id_, true));
+  std::move(request_mouse_callback_).Run(/*success=*/true);
   return true;
 }
 

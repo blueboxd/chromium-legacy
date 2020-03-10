@@ -452,7 +452,8 @@ _CONFIG = [
              'Use WTF containers like WTF::Deque, WTF::HashMap, WTF::HashSet or WTF::Vector instead of the banned std containers. '
              'However, it is fine to use std containers at the boundary layer between Blink and Chromium. '
              'If you are in this case, you can use --bypass-hooks option to avoid the presubmit check when uploading your CL.'),
-            ('([a-zA-Z]*::)?mojom::(?!blink).+',
+            # network::mojom::Foo is allowed to use as non-blink mojom type.
+            ('(|::)(?!network::)(\w+::)?mojom::(?!blink).+',
              'Using non-blink mojom types, consider using "::mojom::blink::Foo" instead of "::mojom::Foo" unless you have clear reasons not to do so',
              'Warning'),
         ],
@@ -497,10 +498,9 @@ _CONFIG = [
         ],
     },
     {
-        'paths': [
-            'third_party/blink/renderer/core/animation_frame', 'third_party/blink/renderer/core/offscreencanvas',
-            'third_party/blink/renderer/core/html/canvas'
-        ],
+        'paths': ['third_party/blink/renderer/core/animation_frame',
+                  'third_party/blink/renderer/core/offscreencanvas',
+                  'third_party/blink/renderer/core/html/canvas'],
         'allowed': [
             'viz::BeginFrameArgs',
         ],

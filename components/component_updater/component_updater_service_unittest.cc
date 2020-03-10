@@ -78,6 +78,7 @@ class MockUpdateClient : public UpdateClient {
   // move semantics. This function is a shim to work around it.
   void Install(const std::string& id,
                CrxDataCallback crx_data_callback,
+               CrxStateChangeCallback crx_state_change_callback,
                Callback callback) override {
     DoInstall(id);
     std::move(callback).Run(update_client::Error::NONE);
@@ -85,6 +86,7 @@ class MockUpdateClient : public UpdateClient {
 
   void Update(const std::vector<std::string>& ids,
               CrxDataCallback crx_data_callback,
+              CrxStateChangeCallback crx_state_change_callback,
               bool is_foreground,
               Callback callback) override {
     // All update calls initiated by the component update service are
@@ -142,10 +144,6 @@ class ComponentUpdaterTest : public testing::Test {
   ComponentUpdaterTest();
   ~ComponentUpdaterTest() override;
 
-  void SetUp() override;
-
-  void TearDown() override;
-
   // Makes the full path to a component updater test file.
   const base::FilePath test_file(const char* file);
 
@@ -192,23 +190,12 @@ class OnDemandTester {
   update_client::Error error_ = update_client::Error::NONE;
 };
 
-MockInstaller::MockInstaller() {
-}
-
-MockInstaller::~MockInstaller() {
-}
-
-MockUpdateClient::MockUpdateClient() {
-}
-
-MockUpdateClient::~MockUpdateClient() {
-}
-
-MockServiceObserver::MockServiceObserver() {
-}
-
-MockServiceObserver::~MockServiceObserver() {
-}
+MockInstaller::MockInstaller() = default;
+MockInstaller::~MockInstaller() = default;
+MockUpdateClient::MockUpdateClient() = default;
+MockUpdateClient::~MockUpdateClient() = default;
+MockServiceObserver::MockServiceObserver() = default;
+MockServiceObserver::~MockServiceObserver() = default;
 
 void OnDemandTester::OnDemand(ComponentUpdateService* cus,
                               const std::string& id,
@@ -244,12 +231,6 @@ ComponentUpdaterTest::ComponentUpdaterTest() {
 ComponentUpdaterTest::~ComponentUpdaterTest() {
   EXPECT_CALL(update_client(), RemoveObserver(_)).Times(1);
   component_updater_.reset();
-}
-
-void ComponentUpdaterTest::SetUp() {
-}
-
-void ComponentUpdaterTest::TearDown() {
 }
 
 void ComponentUpdaterTest::RunThreads() {

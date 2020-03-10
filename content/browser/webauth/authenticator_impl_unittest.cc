@@ -406,6 +406,12 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
   }
   ~AuthenticatorImplTest() override = default;
 
+  void SetUp() override {
+    AuthenticatorTestBase::SetUp();
+    bluetooth_global_values_->SetLESupported(true);
+    device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
+  }
+
   void TearDown() override {
     // The |RenderFrameHost| must outlive |AuthenticatorImpl|.
     authenticator_impl_.reset();
@@ -512,18 +518,6 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
     return callback_receiver.status();
   }
 
-  bool SupportsTransportProtocol(::device::FidoTransportProtocol protocol) {
-    return base::Contains(
-        authenticator_impl_->get_authenticator_common_for_testing()
-            ->enabled_transports_for_testing(),
-        protocol);
-  }
-
-  void SetTransports(base::flat_set<device::FidoTransportProtocol> transports) {
-    authenticator_impl_->get_authenticator_common_for_testing()
-        ->set_transports_for_testing(transports);
-  }
-
   void EnableFeature(const base::Feature& feature) {
     scoped_feature_list_.emplace();
     scoped_feature_list_->InitAndEnableFeature(feature);
@@ -534,25 +528,16 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
     scoped_feature_list_->InitAndDisableFeature(feature);
   }
 
-  // SetUpMockBluetooth returns a |unique_ptr| that must be held by the caller
-  // as the testing overrides disappear when it's destroyed.
-  std::unique_ptr<device::BluetoothAdapterFactory::GlobalValuesForTesting>
-  SetUpMockBluetooth() WARN_UNUSED_RESULT {
-    mock_adapter_ = base::MakeRefCounted<
-        ::testing::NiceMock<device::MockBluetoothAdapter>>();
-    device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
-    auto bluetooth_adapter_factory_overrides =
-        device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
-    bluetooth_adapter_factory_overrides->SetLESupported(true);
-    return bluetooth_adapter_factory_overrides;
-  }
-
  protected:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
   std::unique_ptr<device::FakeFidoHidManager> fake_hid_manager_;
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
+  std::unique_ptr<device::BluetoothAdapterFactory::GlobalValuesForTesting>
+      bluetooth_global_values_ =
+          device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
   scoped_refptr<::testing::NiceMock<device::MockBluetoothAdapter>>
-      mock_adapter_;
+      mock_adapter_ = base::MakeRefCounted<
+          ::testing::NiceMock<device::MockBluetoothAdapter>>();
 
  private:
   url::ScopedSchemeRegistryForTests scoped_registry_;
@@ -1110,8 +1095,6 @@ TEST_F(AuthenticatorImplTest, CryptotokenUsbOnly) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  SetTransports(device::GetAllTransportProtocols());
-  auto bluetooth_values = SetUpMockBluetooth();
 
   for (const bool is_cryptotoken_request : {false, true}) {
     // caBLE and platform discoveries cannot be instantiated through
@@ -1433,44 +1416,8 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
   }
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS)
-TEST_F(AuthenticatorImplTest, TestCableDiscoveryByDefault) {
-  auto authenticator = ConnectToAuthenticator();
-
-  // caBLE should be enabled by default if BLE is supported.
-  bool should_be_enabled =
-      device::BluetoothAdapterFactory::Get().IsLowEnergySupported();
-
-  EXPECT_EQ(
-      should_be_enabled,
-      SupportsTransportProtocol(
-          device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
-}
-#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS)
-
-TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithFlag) {
-  DisableFeature(features::kWebAuthCable);
-
-  auto authenticator = ConnectToAuthenticator();
-  EXPECT_FALSE(SupportsTransportProtocol(
-      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
-}
-
-#if defined(OS_WIN)
-TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabled) {
-  auto authenticator = ConnectToAuthenticator();
-
-  // Should be enabled if the new Windows BLE stack is.
-  EXPECT_EQ(
-      device::BluetoothAdapterFactory::Get().IsLowEnergySupported(),
-      SupportsTransportProtocol(
-          device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
-}
-#endif
-
 TEST_F(AuthenticatorImplTest, NoSilentAuthenticationForCable) {
   // https://crbug.com/954355
-  auto bluetooth_values = SetUpMockBluetooth();
   EnableFeature(features::kWebAuthCable);
 
   SimulateNavigation(GURL(kTestOrigin1));
@@ -1755,6 +1702,38 @@ TEST_F(AuthenticatorImplTest, GetAssertionResponseWithAttestedCredentialData) {
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
+#if defined(OS_WIN)
+TEST_F(AuthenticatorImplTest, WinIsUVPAA) {
+  device::FakeWinWebAuthnApi win_webauthn_api;
+  auto discovery_factory =
+      std::make_unique<device::test::FakeFidoDiscoveryFactory>();
+  discovery_factory->set_win_webauthn_api(&win_webauthn_api);
+  AuthenticatorEnvironmentImpl::GetInstance()
+      ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery_factory));
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  for (const bool enable_win_webauthn_api : {false, true}) {
+    SCOPED_TRACE(enable_win_webauthn_api ? "enable_win_webauthn_api"
+                                         : "!enable_win_webauthn_api");
+    for (const bool is_uvpaa : {false, true}) {
+      SCOPED_TRACE(is_uvpaa ? "is_uvpaa" : "!is_uvpaa");
+
+      win_webauthn_api.set_available(enable_win_webauthn_api);
+      win_webauthn_api.set_is_uvpaa(is_uvpaa);
+
+      TestIsUvpaaCallback cb;
+      authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(
+          cb.callback());
+      cb.WaitForCallback();
+      EXPECT_EQ(enable_win_webauthn_api && is_uvpaa, cb.value());
+    }
+  }
+}
+#endif  // defined(OS_WIN)
+
 class OverrideRPIDAuthenticatorRequestDelegate
     : public AuthenticatorRequestClientDelegate {
  public:
@@ -1919,7 +1898,8 @@ class TestAuthenticatorRequestDelegate
                             AttestationConsent::GRANTED);
   }
 
-  bool IsUserVerifyingPlatformAuthenticatorAvailable() override {
+  base::Optional<bool> IsUserVerifyingPlatformAuthenticatorAvailableOverride()
+      override {
     return is_uvpaa_;
   }
 
@@ -2605,14 +2585,14 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   }
 }
 
-TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAA) {
+TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAOverride) {
   SimulateNavigation(GURL(kTestOrigin1));
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
   for (const bool is_uvpaa : {false, true}) {
     SCOPED_TRACE(::testing::Message() << "is_uvpaa=" << is_uvpaa);
     test_client_.is_uvpaa = is_uvpaa;
-
-    mojo::Remote<blink::mojom::Authenticator> authenticator =
-        ConnectToAuthenticator();
 
     TestIsUvpaaCallback cb;
     authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
@@ -2780,8 +2760,6 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
 
 TEST_F(AuthenticatorImplRequestDelegateTest,
        TestRequestDelegateObservesFidoRequestHandler) {
-  auto bluetooth_values = SetUpMockBluetooth();
-
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillRepeatedly(::testing::Return(true));
 
@@ -2803,7 +2781,6 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   auto* const mock_delegate_ptr = mock_delegate.get();
   auto authenticator = ConstructFakeAuthenticatorWithTimer(
       std::move(mock_delegate), task_runner);
-  SetTransports(device::GetAllTransportProtocols());
 
   auto mock_ble_device = device::MockFidoDevice::MakeCtap();
   mock_ble_device->StubGetId();
@@ -2931,8 +2908,6 @@ TEST_F(AuthenticatorImplTest, Transports) {
   NavigateAndCommit(GURL(kTestOrigin1));
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
-  auto bluetooth_values = SetUpMockBluetooth();
-  SetTransports(device::GetAllTransportProtocols());
 
   for (auto protocol :
        {device::ProtocolVersion::kU2f, device::ProtocolVersion::kCtap2}) {
@@ -3256,9 +3231,59 @@ TEST_F(AuthenticatorImplTest, ExcludeListBatching) {
   }
 }
 
+static constexpr char kTestPIN[] = "1234";
+
+class UVTestAuthenticatorClientDelegate
+    : public AuthenticatorRequestClientDelegate {
+ public:
+  explicit UVTestAuthenticatorClientDelegate(bool* collected_pin)
+      : collected_pin_(collected_pin) {
+    *collected_pin_ = false;
+  }
+
+  bool SupportsPIN() const override { return true; }
+
+  void CollectPIN(
+      base::Optional<int> attempts,
+      base::OnceCallback<void(std::string)> provide_pin_cb) override {
+    *collected_pin_ = true;
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(provide_pin_cb), kTestPIN));
+  }
+
+  void FinishCollectToken() override {}
+
+ private:
+  bool* collected_pin_;
+};
+
+class UVTestAuthenticatorContentBrowserClient : public ContentBrowserClient {
+ public:
+  std::unique_ptr<AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(
+      RenderFrameHost* render_frame_host) override {
+    return std::make_unique<UVTestAuthenticatorClientDelegate>(&collected_pin_);
+  }
+
+  bool collected_pin() { return collected_pin_; }
+
+ private:
+  bool collected_pin_;
+};
+
 class UVAuthenticatorImplTest : public AuthenticatorImplTest {
  public:
   UVAuthenticatorImplTest() = default;
+
+  void SetUp() override {
+    AuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
 
  protected:
   static PublicKeyCredentialCreationOptionsPtr make_credential_options(
@@ -3316,7 +3341,11 @@ class UVAuthenticatorImplTest : public AuthenticatorImplTest {
     return auth_data->obtained_user_verification();
   }
 
+  UVTestAuthenticatorContentBrowserClient test_client_;
+
  private:
+  ContentBrowserClient* old_client_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(UVAuthenticatorImplTest);
 };
 
@@ -3380,8 +3409,6 @@ class PINTestAuthenticatorContentBrowserClient : public ContentBrowserClient {
   PINList expected;
   base::Optional<InterestingFailureReason> failure_reason;
 };
-
-static constexpr char kTestPIN[] = "1234";
 
 class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
  public:
@@ -3735,15 +3762,52 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionHardLock) {
 
 class InternalUVAuthenticatorImplTest : public UVAuthenticatorImplTest {
  public:
+  struct TestCase {
+    const bool fingerprints_enrolled;
+    const bool supports_pin;
+    const device::UserVerificationRequirement uv;
+  };
+
   InternalUVAuthenticatorImplTest() = default;
 
   void SetUp() override {
     UVAuthenticatorImplTest::SetUp();
+    NavigateAndCommit(GURL(kTestOrigin1));
+  }
+
+  std::vector<TestCase> GetTestCases() {
+    std::vector<TestCase> test_cases;
+    for (const bool fingerprints_enrolled : {true, false}) {
+      for (const bool supports_pin : {true, false}) {
+        // Avoid just testing for PIN.
+        if (!fingerprints_enrolled && supports_pin)
+          continue;
+        for (const auto uv : {device::UserVerificationRequirement::kDiscouraged,
+                              device::UserVerificationRequirement::kPreferred,
+                              device::UserVerificationRequirement::kRequired}) {
+          test_cases.push_back({fingerprints_enrolled, supports_pin, uv});
+        }
+      }
+    }
+    return test_cases;
+  }
+
+  void ConfigureDevice(const TestCase& test_case) {
     device::VirtualCtap2Device::Config config;
     config.internal_uv_support = true;
     config.u2f_support = true;
+    config.pin_support = test_case.supports_pin;
+    virtual_device_factory_->mutable_state()->pin = kTestPIN;
+    virtual_device_factory_->mutable_state()->pin_retries =
+        device::kMaxPinRetries;
+    virtual_device_factory_->mutable_state()->fingerprints_enrolled =
+        test_case.fingerprints_enrolled;
     virtual_device_factory_->SetCtap2Config(config);
-    NavigateAndCommit(GURL(kTestOrigin1));
+    SCOPED_TRACE(::testing::Message() << "fingerprints_enrolled="
+                                      << test_case.fingerprints_enrolled);
+    SCOPED_TRACE(::testing::Message()
+                 << "supports_pin=" << test_case.supports_pin);
+    SCOPED_TRACE(UVToString(test_case.uv));
   }
 
  private:
@@ -3754,38 +3818,29 @@ TEST_F(InternalUVAuthenticatorImplTest, MakeCredential) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
 
-  for (const auto fingerprints_enrolled : {false, true}) {
-    SCOPED_TRACE(::testing::Message()
-                 << "fingerprints_enrolled=" << fingerprints_enrolled);
-    virtual_device_factory_->mutable_state()->fingerprints_enrolled =
-        fingerprints_enrolled;
+  for (const auto test_case : GetTestCases()) {
+    ConfigureDevice(test_case);
 
-    for (const auto uv : {device::UserVerificationRequirement::kDiscouraged,
-                          device::UserVerificationRequirement::kPreferred,
-                          device::UserVerificationRequirement::kRequired}) {
-      SCOPED_TRACE(UVToString(uv));
+    auto options = make_credential_options(test_case.uv);
+    // UV cannot be satisfied without fingerprints.
+    const bool should_timeout =
+        !test_case.fingerprints_enrolled &&
+        test_case.uv == device::UserVerificationRequirement::kRequired;
+    if (should_timeout) {
+      options->timeout = base::TimeDelta::FromMilliseconds(100);
+    }
 
-      auto options = make_credential_options(uv);
-      // UV cannot be satisfied without fingerprints.
-      const bool should_timeout =
-          !fingerprints_enrolled &&
-          uv == device::UserVerificationRequirement::kRequired;
-      if (should_timeout) {
-        options->timeout = base::TimeDelta::FromMilliseconds(100);
-      }
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
 
-      TestMakeCredentialCallback callback_receiver;
-      authenticator->MakeCredential(std::move(options),
-                                    callback_receiver.callback());
-      callback_receiver.WaitForCallback();
-
-      if (should_timeout) {
-        EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
-                  callback_receiver.status());
-      } else {
-        EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-        EXPECT_EQ(fingerprints_enrolled, HasUV(callback_receiver));
-      }
+    if (should_timeout) {
+      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                callback_receiver.status());
+    } else {
+      EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+      EXPECT_EQ(test_case.fingerprints_enrolled, HasUV(callback_receiver));
     }
   }
 }
@@ -3825,41 +3880,32 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {
       get_credential_options()->allow_credentials[0].id(),
       kTestRelyingPartyId));
 
-  for (const auto fingerprints_enrolled : {false, true}) {
-    SCOPED_TRACE(::testing::Message()
-                 << "fingerprints_enrolled=" << fingerprints_enrolled);
-    virtual_device_factory_->mutable_state()->fingerprints_enrolled =
-        fingerprints_enrolled;
+  for (const auto test_case : GetTestCases()) {
+    ConfigureDevice(test_case);
+    auto options = get_credential_options(test_case.uv);
+    // Without a fingerprint enrolled we assume that a UV=required request
+    // cannot be satisfied by an authenticator that cannot do UV. It is
+    // possible for a credential to be created without UV and then later
+    // asserted with UV=required, but that would be bizarre behaviour from
+    // an RP and we currently don't worry about it.
+    const bool should_be_unrecognized =
+        !test_case.fingerprints_enrolled &&
+        test_case.uv == device::UserVerificationRequirement::kRequired;
 
-    for (auto uv : {device::UserVerificationRequirement::kDiscouraged,
-                    device::UserVerificationRequirement::kPreferred,
-                    device::UserVerificationRequirement::kRequired}) {
-      SCOPED_TRACE(UVToString(uv));
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
 
-      auto options = get_credential_options(uv);
-      // Without a fingerprint enrolled we assume that a UV=required request
-      // cannot be satisfied by an authenticator that cannot do UV. It is
-      // possible for a credential to be created without UV and then later
-      // asserted with UV=required, but that would be bizarre behaviour from
-      // an RP and we currently don't worry about it.
-      const bool should_be_unrecognized =
-          !fingerprints_enrolled &&
-          uv == device::UserVerificationRequirement::kRequired;
-
-      TestGetAssertionCallback callback_receiver;
-      authenticator->GetAssertion(std::move(options),
-                                  callback_receiver.callback());
-      callback_receiver.WaitForCallback();
-
-      if (should_be_unrecognized) {
-        EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
-                  callback_receiver.status());
-      } else {
-        EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-        EXPECT_EQ(fingerprints_enrolled &&
-                      uv != device::UserVerificationRequirement::kDiscouraged,
-                  HasUV(callback_receiver));
-      }
+    if (should_be_unrecognized) {
+      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                callback_receiver.status());
+    } else {
+      EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+      EXPECT_EQ(
+          test_case.fingerprints_enrolled &&
+              test_case.uv != device::UserVerificationRequirement::kDiscouraged,
+          HasUV(callback_receiver));
     }
   }
 }
@@ -3888,46 +3934,6 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertionCryptotoken) {
   }
 }
 
-class UVTokenTestAuthenticatorClientDelegate
-    : public AuthenticatorRequestClientDelegate {
- public:
-  explicit UVTokenTestAuthenticatorClientDelegate(bool* collected_pin)
-      : collected_pin_(collected_pin) {
-    *collected_pin_ = false;
-  }
-
-  bool SupportsPIN() const override { return true; }
-
-  void CollectPIN(
-      base::Optional<int> attempts,
-      base::OnceCallback<void(std::string)> provide_pin_cb) override {
-    *collected_pin_ = true;
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(provide_pin_cb), kTestPIN));
-  }
-
-  void FinishCollectToken() override {}
-
- private:
-  bool* collected_pin_;
-};
-
-class UVTokenTestAuthenticatorContentBrowserClient
-    : public ContentBrowserClient {
- public:
-  std::unique_ptr<AuthenticatorRequestClientDelegate>
-  GetWebAuthenticationRequestDelegate(
-      RenderFrameHost* render_frame_host) override {
-    return std::make_unique<UVTokenTestAuthenticatorClientDelegate>(
-        &collected_pin_);
-  }
-
-  bool collected_pin() { return collected_pin_; }
-
- private:
-  bool collected_pin_;
-};
-
 class UVTokenAuthenticatorImplTest : public UVAuthenticatorImplTest {
  public:
   UVTokenAuthenticatorImplTest() = default;
@@ -3935,24 +3941,12 @@ class UVTokenAuthenticatorImplTest : public UVAuthenticatorImplTest {
 
   void SetUp() override {
     UVAuthenticatorImplTest::SetUp();
-    old_client_ = SetBrowserClientForTesting(&test_client_);
     device::VirtualCtap2Device::Config config;
     config.internal_uv_support = true;
     config.uv_token_support = true;
     virtual_device_factory_->SetCtap2Config(config);
     NavigateAndCommit(GURL(kTestOrigin1));
   }
-
-  void TearDown() override {
-    SetBrowserClientForTesting(old_client_);
-    AuthenticatorImplTest::TearDown();
-  }
-
- protected:
-  UVTokenTestAuthenticatorContentBrowserClient test_client_;
-
- private:
-  ContentBrowserClient* old_client_ = nullptr;
 };
 
 TEST_F(UVTokenAuthenticatorImplTest, GetAssertionUVToken) {
@@ -4999,5 +4993,66 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 }
+
+#if defined(OS_MACOSX)
+class TouchIdConfigAuthenticatorRequestClientDelegate
+    : public AuthenticatorRequestClientDelegate {
+ public:
+  TouchIdConfigAuthenticatorRequestClientDelegate() = default;
+  ~TouchIdConfigAuthenticatorRequestClientDelegate() override = default;
+
+  base::Optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig()
+      override {
+    return TouchIdAuthenticatorConfig{};
+  }
+};
+
+class TouchIdConfigAuthenticatorContentBrowserClient
+    : public ContentBrowserClient {
+ public:
+  std::unique_ptr<AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(
+      RenderFrameHost* render_frame_host) override {
+    return std::make_unique<TouchIdConfigAuthenticatorRequestClientDelegate>();
+  }
+};
+
+class TouchIdAuthenticatorImplTest : public AuthenticatorImplTest {
+ public:
+  void SetUp() override {
+    AuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
+
+ private:
+  TouchIdConfigAuthenticatorContentBrowserClient test_client_;
+  ContentBrowserClient* old_client_ = nullptr;
+};
+
+TEST_F(TouchIdAuthenticatorImplTest, IsUVPAA) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  if (__builtin_available(macOS 10.12.2, *)) {
+    for (const bool touch_id_available : {false, true}) {
+      SCOPED_TRACE(::testing::Message()
+                   << "touch_id_available=" << touch_id_available);
+      device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
+      touch_id_test_environment.SetTouchIdAvailable(touch_id_available);
+      TestIsUvpaaCallback cb;
+      authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(
+          cb.callback());
+      cb.WaitForCallback();
+      EXPECT_EQ(touch_id_available, cb.value());
+    }
+  }
+}
+#endif  // defined(OS_MACOSX)
 
 }  // namespace content

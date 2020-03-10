@@ -17,7 +17,10 @@ export class TabGroupElement extends CustomElement {
     /** @private @const {!TabStripEmbedderProxy} */
     this.embedderApi_ = TabStripEmbedderProxy.getInstance();
 
-    this.$('#chip').addEventListener('click', () => this.onClickChip_());
+    const chip = this.$('#chip');
+    chip.addEventListener('click', () => this.onClickChip_());
+    chip.addEventListener(
+        'keydown', e => this.onKeydownChip_(/** @type {!KeyboardEvent} */ (e)));
   }
 
   /** @return {!HTMLElement} */
@@ -35,6 +38,16 @@ export class TabGroupElement extends CustomElement {
     this.embedderApi_.showEditDialogForGroup(
         this.dataset.groupId, boundingBox.left, boundingBox.top,
         boundingBox.width, boundingBox.height);
+  }
+
+  /**
+   * @param {!KeyboardEvent} event
+   * @private
+   */
+  onKeydownChip_(event) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      this.onClickChip_();
+    }
   }
 
   /** @param {boolean} enabled */

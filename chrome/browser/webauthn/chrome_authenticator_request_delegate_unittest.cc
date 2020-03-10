@@ -24,17 +24,10 @@
 
 #if defined(OS_MACOSX)
 #include "device/fido/mac/authenticator_config.h"
-#include "device/fido/mac/scoped_touch_id_test_environment.h"
 #endif  // defined(OS_MACOSX)
 
 class ChromeAuthenticatorRequestDelegateTest
-    : public ChromeRenderViewHostTestHarness {
- protected:
-#if defined(OS_MACOSX)
-  API_AVAILABLE(macos(10.12.2))
-  device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment_;
-#endif  // defined(OS_MACOSX)
-};
+    : public ChromeRenderViewHostTestHarness {};
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest, TestTransportPrefType) {
   ChromeAuthenticatorRequestDelegate delegate(main_rfh());
@@ -128,48 +121,11 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
     EXPECT_EQ(32u, TouchIdMetadataSecret(&delegate2).size());
   }
 }
-
-TEST_F(ChromeAuthenticatorRequestDelegateTest, IsUVPAA) {
-  if (__builtin_available(macOS 10.12.2, *)) {
-    for (const bool touch_id_available : {false, true}) {
-      SCOPED_TRACE(::testing::Message()
-                   << "touch_id_available=" << touch_id_available);
-      touch_id_test_environment_.SetTouchIdAvailable(touch_id_available);
-
-      std::unique_ptr<content::AuthenticatorRequestClientDelegate> delegate =
-          std::make_unique<ChromeAuthenticatorRequestDelegate>(main_rfh());
-      EXPECT_EQ(touch_id_available,
-                delegate->IsUserVerifyingPlatformAuthenticatorAvailable());
-    }
-  }
-}
-
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
 
 static constexpr char kRelyingPartyID[] = "example.com";
-
-TEST_F(ChromeAuthenticatorRequestDelegateTest, WinIsUVPAA) {
-  auto delegate =
-      std::make_unique<ChromeAuthenticatorRequestDelegate>(main_rfh());
-  device::FakeWinWebAuthnApi win_webauthn_api;
-  delegate->GetDiscoveryFactory()->set_win_webauthn_api(&win_webauthn_api);
-
-  for (const bool enable_win_webauthn_api : {false, true}) {
-    SCOPED_TRACE(enable_win_webauthn_api ? "enable_win_webauthn_api"
-                                         : "!enable_win_webauthn_api");
-    for (const bool is_uvpaa : {false, true}) {
-      SCOPED_TRACE(is_uvpaa ? "is_uvpaa" : "!is_uvpaa");
-
-      win_webauthn_api.set_available(enable_win_webauthn_api);
-      win_webauthn_api.set_is_uvpaa(is_uvpaa);
-
-      EXPECT_EQ(enable_win_webauthn_api && is_uvpaa,
-                delegate->IsUserVerifyingPlatformAuthenticatorAvailable());
-    }
-  }
-}
 
 // Tests that ShouldReturnAttestation() returns with true if |authenticator|
 // is the Windows native WebAuthn API with WEBAUTHN_API_VERSION_2 or higher,

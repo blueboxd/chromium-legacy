@@ -402,6 +402,15 @@ uint64_t PerformanceTiming::LargestTextPaintSize() const {
   return paint_timing_detector->LargestTextPaintSize();
 }
 
+uint64_t PerformanceTiming::FirstInputOrScrollNotifiedTimestamp() const {
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      paint_timing_detector->FirstInputOrScrollNotifiedTimestamp());
+}
+
 uint64_t PerformanceTiming::FirstInputDelay() const {
   const InteractiveDetector* interactive_detector = GetInteractiveDetector();
   if (!interactive_detector)

@@ -1467,38 +1467,6 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 }
 #endif
 
-// WebAuthBrowserBleDisabledTest
-// ----------------------------------------------
-
-// A test fixture that does not enable BLE discovery.
-class WebAuthBrowserBleDisabledTest : public WebAuthLocalClientBrowserTest {
- public:
-  WebAuthBrowserBleDisabledTest() {}
-
- protected:
-  device::test::FakeFidoDiscoveryFactory* discovery_factory;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserBleDisabledTest);
-};
-
-// Tests that the BLE discovery does not start when the WebAuthnBle feature
-// flag is disabled.
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserBleDisabledTest, CheckBleDisabled) {
-  auto* fake_hid_discovery = discovery_factory_->ForgeNextHidDiscovery();
-  auto* fake_ble_discovery = discovery_factory_->ForgeNextBleDiscovery();
-
-  // Do something that will start discoveries.
-  TestCreateCallbackReceiver create_callback_receiver;
-  authenticator()->MakeCredential(BuildBasicCreateOptions(),
-                                  create_callback_receiver.callback());
-
-  fake_hid_discovery->WaitForCallToStart();
-  EXPECT_TRUE(fake_hid_discovery->is_start_requested());
-  EXPECT_FALSE(fake_ble_discovery->is_start_requested());
-}
-
 class WebAuthLocalClientBackForwardCacheBrowserTest
     : public WebAuthLocalClientBrowserTest {
  protected:

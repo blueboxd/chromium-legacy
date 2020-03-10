@@ -117,8 +117,7 @@ class InstallActivateWorker : public FakeServiceWorker {
     events_.emplace_back(ServiceWorkerMetrics::EventType::INSTALL);
     std::move(callback).Run(
         reject_install_ ? blink::mojom::ServiceWorkerEventStatus::REJECTED
-                        : blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-        true /* has_fetch_handler */);
+                        : blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
   void DispatchActivateEvent(

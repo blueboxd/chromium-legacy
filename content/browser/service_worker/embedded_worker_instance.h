@@ -92,7 +92,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     virtual void OnRegisteredToDevToolsManager() {}
     virtual void OnStartWorkerMessageSent() {}
     virtual void OnScriptEvaluationStart() {}
-    virtual void OnStarted(blink::mojom::ServiceWorkerStartStatus status) {}
+    virtual void OnStarted(blink::mojom::ServiceWorkerStartStatus status,
+                           bool has_fetch_handler) {}
 
     // Called when status changed to STOPPING. The renderer has been sent a Stop
     // IPC message and OnStopped() will be called upon successful completion.
@@ -269,6 +270,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Changes the internal worker status from STARTING to RUNNING.
   void OnStarted(
       blink::mojom::ServiceWorkerStartStatus status,
+      bool has_fetch_handler,
       int thread_id,
       blink::mojom::EmbeddedWorkerStartTimingPtr start_timing) override;
   // Resets the embedded worker instance to the initial state. Changes

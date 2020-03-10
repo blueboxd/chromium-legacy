@@ -36,8 +36,8 @@ class Configurator;
 struct CrxUpdateItem;
 struct UpdateContext;
 
-// Describes a CRX component managed by the UpdateEngine. Each |Component| is
-// associated with an UpdateContext.
+// Describes a CRX component managed by the UpdateEngine. Each instance of
+// this class is associated with one instance of UpdateContext.
 class Component {
  public:
   using Events = UpdateClient::Observer::Events;
@@ -61,6 +61,10 @@ class Component {
       const base::Optional<ProtocolParser::Result>& result,
       ErrorCategory error_category,
       int error);
+
+  // Called by the UpdateEngine when a component enters a wait for throttling
+  // purposes.
+  void NotifyWait();
 
   // Returns true if the component has reached a final state and no further
   // handling and state transitions are possible.
@@ -370,6 +374,9 @@ class Component {
   void ChangeState(std::unique_ptr<State> next_state);
 
   // Notifies registered observers about changes in the state of the component.
+  // If an UpdateClient::CrxStateChangeCallback is provided as an argument to
+  // UpdateClient::Install or UpdateClient::Update function calls, then the
+  // callback is invoked as well.
   void NotifyObservers(Events event) const;
 
   void SetParseResult(const ProtocolParser::Result& result);

@@ -16,6 +16,7 @@ static_library("internal") {
   deps = [
     ":jni_headers",
     "//cc",
+    "//chrome/browser/ui",
     "//skia",
   ]
 

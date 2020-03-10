@@ -111,7 +111,7 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   // Builds a mapping from index in |nodes| to whether ignored state should be
   // applied to the node in chrome accessibility.
   // Assuming that |nodes[0]| is a root of the tree.
-  void BuildImportaceTable(
+  void BuildImportanceTable(
       const std::vector<mojom::AccessibilityNodeInfoDataPtr>& nodes,
       const std::map<int32_t, int32_t>& node_id_to_nodes_index,
       std::vector<bool>& out_node) const;

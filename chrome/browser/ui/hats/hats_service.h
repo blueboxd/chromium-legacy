@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/hats/hats_survey_status_checker.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class PrefRegistrySimple;
@@ -45,6 +46,8 @@ class HatsService : public KeyedService {
 
     base::Optional<int> last_major_version;
     base::Optional<base::Time> last_survey_started_time;
+    base::Optional<bool> is_survey_full;
+    base::Optional<base::Time> last_survey_check_time;
   };
 
   ~HatsService() override;
@@ -57,13 +60,27 @@ class HatsService : public KeyedService {
   virtual void LaunchSurvey(const std::string& trigger);
 
   void SetSurveyMetadataForTesting(const SurveyMetadata& metadata);
+  void GetSurveyMetadataForTesting(HatsService::SurveyMetadata* metadata) const;
+  void SetSurveyCheckerForTesting(
+      std::unique_ptr<HatsSurveyStatusChecker> checker);
 
  private:
   // This returns true is the survey trigger specified should be shown.
   bool ShouldShowSurvey(const std::string& trigger) const;
 
+  // Check whether the survey is reachable and under capacity.
+  void CheckSurveyStatusAndMaybeShow(Browser* browser,
+                                     const std::string& trigger);
+
+  // Callbacks for survey capacity checking.
+  void ShowSurvey(Browser* browser, const std::string& trigger);
+  void OnSurveyStatusError(const std::string& trigger,
+                           HatsSurveyStatusChecker::Status error);
+
   // Profile associated with this service.
   Profile* const profile_;
+
+  std::unique_ptr<HatsSurveyStatusChecker> checker_;
 
   base::flat_map<std::string, SurveyConfig> survey_configs_by_triggers_;
 

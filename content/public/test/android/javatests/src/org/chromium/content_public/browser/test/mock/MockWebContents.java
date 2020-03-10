@@ -19,6 +19,7 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.ViewEventSink;
+import org.chromium.content_public.browser.Visibility;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.OverscrollRefreshHandler;
@@ -98,6 +99,11 @@ public class MockWebContents implements WebContents {
     @Override
     public List<? extends WebContents> getInnerWebContents() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public @Visibility int getVisibility() {
+        return Visibility.VISIBLE;
     }
 
     @Override

@@ -107,12 +107,11 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   gfx::Rect CalculateSmallRippleArea() const;
 
  protected:
-  // ui::EventHandler overrides:
+  // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // views::Button overrides:
+  // views::Button:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;

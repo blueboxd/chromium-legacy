@@ -80,9 +80,11 @@ class FakeUpdateClient : public update_client::UpdateClient {
   void RemoveObserver(Observer* observer) override {}
   void Install(const std::string& id,
                CrxDataCallback crx_data_callback,
+               CrxStateChangeCallback crx_state_change_callback,
                update_client::Callback callback) override {}
   void Update(const std::vector<std::string>& ids,
               CrxDataCallback crx_data_callback,
+              CrxStateChangeCallback crx_state_change_callback,
               bool is_foreground,
               update_client::Callback callback) override;
   bool GetCrxUpdateState(
@@ -140,6 +142,7 @@ FakeUpdateClient::FakeUpdateClient() : delay_update_(false) {}
 
 void FakeUpdateClient::Update(const std::vector<std::string>& ids,
                               CrxDataCallback crx_data_callback,
+                              CrxStateChangeCallback crx_state_change_callback,
                               bool is_foreground,
                               update_client::Callback callback) {
   data_ = std::move(crx_data_callback).Run(ids);

@@ -34,6 +34,16 @@ class CORE_EXPORT NGLineTruncator final {
                           NGInlineLayoutStateStack* box_states);
 
  private:
+  const ComputedStyle& EllipsisStyle() const;
+
+  // Initialize four ellipsis_*_ data members.
+  void SetupEllipsis();
+
+  // Add a child for ellipsis next to |ellipsized_child|.
+  LayoutUnit PlaceEllipsisNextTo(
+      NGLineBoxFragmentBuilder::ChildList* line_box,
+      NGLineBoxFragmentBuilder::Child* ellipsized_child);
+
   bool EllipsizeChild(
       LayoutUnit line_width,
       LayoutUnit ellipsis_width,
@@ -50,6 +60,15 @@ class CORE_EXPORT NGLineTruncator final {
   scoped_refptr<const ComputedStyle> line_style_;
   LayoutUnit available_width_;
   TextDirection line_direction_;
+
+  // The following 3 data members are available after SetupEllipsis().
+  const SimpleFontData* ellipsis_font_data_;
+  String ellipsis_text_;
+  LayoutUnit ellipsis_width_;
+
+  // This data member is available between SetupEllipsis() and
+  // PlaceEllipsisNextTo().
+  scoped_refptr<ShapeResultView> ellipsis_shape_result_;
 };
 
 }  // namespace blink

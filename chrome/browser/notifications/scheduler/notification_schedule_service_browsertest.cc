@@ -61,8 +61,8 @@ class TestClient : public NotificationSchedulerClient {
 
   void OnUserAction(const UserActionData& action_data) override {}
 
-  std::unique_ptr<ThrottleConfig> GetThrottleConfig() override {
-    return nullptr;
+  void GetThrottleConfig(ThrottleConfigCallback callback) override {
+    std::move(callback).Run(nullptr);
   }
 
   // Any NotificationData received before showing the notification.

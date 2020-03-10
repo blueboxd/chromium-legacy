@@ -115,7 +115,6 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
       IDS_ARC_OOBE_TERMS_DESCRIPTION);
   builder->Add("arcTermsOfServiceLoading", IDS_ARC_OOBE_TERMS_LOADING);
   builder->Add("arcTermsOfServiceError", IDS_ARC_OOBE_TERMS_LOAD_ERROR);
-  builder->Add("arcTermsOfServiceSkipButton", IDS_ARC_OOBE_TERMS_BUTTON_SKIP);
   builder->Add("arcTermsOfServiceRetryButton", IDS_ARC_OOBE_TERMS_BUTTON_RETRY);
   builder->Add("arcTermsOfServiceAcceptButton",
                IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT);
@@ -124,44 +123,84 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
   builder->Add("arcTermsOfServiceNextButton",
                IDS_ARC_OPT_IN_DIALOG_BUTTON_NEXT);
   builder->Add("arcPolicyLink", IDS_ARC_OPT_IN_PRIVACY_POLICY_LINK);
-  builder->Add("arcTextBackupRestore",
-               is_child_account_ ? IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE_CHILD
-                                 : IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE);
+  builder->Add("arcTextBackupRestore", is_child_account_
+                                           ? IDS_ARC_OOBE_BACKUP_RESTORE_CHILD
+                                           : IDS_ARC_OOBE_BACKUP_RESTORE);
   builder->Add("arcTextLocationService",
-               is_child_account_ ? IDS_ARC_OPT_IN_LOCATION_SETTING_CHILD
-                                 : IDS_ARC_OPT_IN_LOCATION_SETTING);
-  builder->Add("arcTextPaiService", IDS_ARC_OPT_IN_PAI);
+               is_child_account_ ? IDS_ARC_OOBE_LOCATION_SETTING_CHILD
+                                 : IDS_ARC_OOBE_LOCATION_SETTING);
+  builder->Add("arcTextPaiService", IDS_ARC_OOBE_PAI);
   builder->Add("arcTextGoogleServiceConfirmation",
                IDS_ARC_OPT_IN_GOOGLE_SERVICE_CONFIRMATION);
   builder->Add("arcTextReviewSettings", IDS_ARC_REVIEW_SETTINGS);
+  builder->Add("arcTextMetricsEnabled",
+               IDS_ARC_OOBE_TERMS_DIALOG_METRICS_ENABLED);
+  builder->Add("arcTextMetricsDisabled",
+               IDS_ARC_OOBE_TERMS_DIALOG_METRICS_DISABLED);
   builder->Add("arcTextMetricsManagedEnabled",
                IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED);
+  builder->Add("arcTextMetricsManagedDisabled",
+               IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_DISABLED);
+  builder->Add("arcTextMetricsEnabledChild",
+               IDS_ARC_OOBE_TERMS_DIALOG_METRICS_ENABLED_CHILD);
+  builder->Add("arcTextMetricsDisabledChild",
+               IDS_ARC_OOBE_TERMS_DIALOG_METRICS_DISABLED_CHILD);
+  builder->Add("arcTextMetricsManagedEnabledChild",
+               IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED_CHILD);
+  builder->Add("arcTextMetricsManagedDisabledChild",
+               IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_DISABLED_CHILD);
   builder->Add("arcTextMetricsDemoApps", IDS_ARC_OOBE_TERMS_DIALOG_DEMO_APPS);
   builder->Add("arcAcceptAndContinueGoogleServiceConfirmation",
                IDS_ARC_OPT_IN_ACCEPT_AND_CONTINUE_GOOGLE_SERVICE_CONFIRMATION);
   builder->Add("arcLearnMoreStatisticsTitle",
                IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_TITLE);
-  builder->Add("arcLearnMoreStatistics",
-               is_child_account_ ? IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_CHILD
-                                 : IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS);
+  builder->Add("arcLearnMoreStatisticsP1",
+               is_child_account_ ? IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_CHILD_P1
+                                 : IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_P1);
+  builder->Add("arcLearnMoreStatisticsP2",
+               is_child_account_ ? IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_CHILD_P2
+                                 : IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_P2);
+  builder->Add("arcLearnMoreStatisticsP3",
+               is_child_account_ ? IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_CHILD_P3
+                                 : IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_P3);
+  builder->Add("arcLearnMoreStatisticsP4",
+               is_child_account_ ? IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_CHILD_P4
+                                 : IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_P4);
   builder->Add("arcLearnMoreLocationServiceTitle",
                IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_TITLE);
-  builder->Add("arcLearnMoreLocationService",
+  builder->Add("arcLearnMoreLocationServiceP1",
                is_child_account_
-                   ? IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD
-                   : IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES);
+                   ? IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD_P1
+                   : IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_P1);
+  builder->Add("arcLearnMoreLocationServiceP2",
+               is_child_account_
+                   ? IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD_P2
+                   : IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_P2);
   builder->Add("arcLearnMoreBackupAndRestoreTitle",
                IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_TITLE);
-  builder->Add("arcLearnMoreBackupAndRestore",
-               is_child_account_
-                   ? IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_CHILD
-                   : IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE);
+  builder->Add("arcLearnMoreBackupAndRestoreP1",
+               IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_P1);
+  builder->Add("arcLearnMoreBackupAndRestoreP2",
+               IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_P2);
+  builder->Add("arcLearnMoreBackupAndRestoreP3",
+               IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_P3);
+  builder->Add("arcLearnMoreBackupAndRestoreP4",
+               IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_P4);
+  builder->Add("arcLearnMoreBackupAndRestoreP5",
+               IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_P5);
+  builder->Add("arcLearnMoreBackupAndRestoreChildP1",
+               IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_CHILD_P1);
+  builder->Add("arcLearnMoreBackupAndRestoreChildP2",
+               IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_CHILD_P2);
+  builder->Add("arcLearnMoreBackupAndRestoreChildP3",
+               IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_CHILD_P3);
   builder->Add("arcLearnMorePaiServiceTitle",
                IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE_TITLE);
-  builder->Add("arcLearnMorePaiService", IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE);
+  builder->Add("arcLearnMorePaiService", IDS_ARC_OOBE_LEARN_MORE_PAI_SERVICE);
   builder->Add("arcOverlayClose", IDS_ARC_OOBE_TERMS_POPUP_HELP_CLOSE_BUTTON);
   builder->Add("oobeModalDialogClose", IDS_CHROMEOS_OOBE_CLOSE_DIALOG);
   builder->Add("arcOverlayLoading", IDS_ARC_POPUP_HELP_LOADING);
+  builder->Add("arcLearnMoreText", IDS_ARC_OPT_IN_DIALOG_LEARN_MORE_LINK_TEXT);
 }
 
 void ArcTermsOfServiceScreenHandler::OnMetricsModeChanged(bool enabled,
@@ -181,27 +220,24 @@ void ArcTermsOfServiceScreenHandler::OnMetricsModeChanged(bool enabled,
   // managed flag.
   const bool owner_profile = !owner.is_valid() || user->GetAccountId() == owner;
 
-  int message_id;
+  std::string message;
   if (owner_profile && !managed) {
     if (is_child_account_) {
-      message_id = enabled ? IDS_ARC_OOBE_TERMS_DIALOG_METRICS_ENABLED_CHILD
-                           : IDS_ARC_OOBE_TERMS_DIALOG_METRICS_DISABLED_CHILD;
+      message = enabled ? "arcTextMetricsEnabledChild"
+                        : "arcTextMetricsDisabledChild";
     } else {
-      message_id = enabled ? IDS_ARC_OOBE_TERMS_DIALOG_METRICS_ENABLED
-                           : IDS_ARC_OOBE_TERMS_DIALOG_METRICS_DISABLED;
+      message = enabled ? "arcTextMetricsEnabled" : "arcTextMetricsDisabled";
     }
   } else {
     if (is_child_account_) {
-      message_id =
-          enabled ? IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED_CHILD
-                  : IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_DISABLED_CHILD;
+      message = enabled ? "arcTextMetricsManagedEnabledChild"
+                        : "arcTextMetricsManagedDisabledChild";
     } else {
-      message_id = enabled ? IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED
-                           : IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_DISABLED;
+      message = enabled ? "arcTextMetricsManagedEnabled"
+                        : "arcTextMetricsManagedDisabled";
     }
   }
-  CallJS("login.ArcTermsOfServiceScreen.setMetricsMode",
-         l10n_util::GetStringUTF16(message_id), true);
+  CallJS("login.ArcTermsOfServiceScreen.setMetricsMode", message, true);
 }
 
 void ArcTermsOfServiceScreenHandler::OnBackupAndRestoreModeChanged(
@@ -298,7 +334,8 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   ShowScreen(kScreenId);
 
   arc_managed_ = arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile);
-  CallJS("login.ArcTermsOfServiceScreen.setArcManaged", arc_managed_);
+  CallJS("login.ArcTermsOfServiceScreen.setArcManaged", arc_managed_,
+         is_child_account_);
 
   MaybeLoadPlayStoreToS(true);
   StartNetworkAndTimeZoneObserving();

@@ -172,6 +172,9 @@ class CORE_EXPORT PaintTimingDetector
   uint64_t LargestImagePaintSize() const { return largest_image_paint_size_; }
   base::TimeTicks LargestTextPaint() const { return largest_text_paint_time_; }
   uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }
+  base::TimeTicks FirstInputOrScrollNotifiedTimestamp() const {
+    return first_input_or_scroll_notified_timestamp_;
+  }
 
   void UpdateLargestContentfulPaintCandidate();
 
@@ -179,7 +182,8 @@ class CORE_EXPORT PaintTimingDetector
   void Trace(Visitor* visitor);
 
  private:
-  void StopRecordingLargestContentfulPaint();
+  // Method called to stop recording the Largest Contentful Paint.
+  void OnInputOrScroll();
   bool HasLargestImagePaintChanged(base::TimeTicks, uint64_t size) const;
   bool HasLargestTextPaintChanged(base::TimeTicks, uint64_t size) const;
   Member<LocalFrameView> frame_view_;
@@ -189,7 +193,14 @@ class CORE_EXPORT PaintTimingDetector
   // image paint is found.
   Member<ImagePaintTimingDetector> image_paint_timing_detector_;
 
+  // This member lives for as long as the largest contentful paint is being
+  // computed. However, it is initialized lazily, so it may be nullptr because
+  // it has not yet been initialized or because we have stopped computing LCP.
   Member<LargestContentfulPaintCalculator> largest_contentful_paint_calculator_;
+  // Time at which the first input or scroll is notified to PaintTimingDetector,
+  // hence causing LCP to stop being recorded. This is the same time at which
+  // |largest_contentful_paint_calculator_| is set to nullptr.
+  base::TimeTicks first_input_or_scroll_notified_timestamp_;
 
   Member<PaintTimingCallbackManagerImpl> callback_manager_;
 
@@ -201,6 +212,7 @@ class CORE_EXPORT PaintTimingDetector
   // Largest text information.
   base::TimeTicks largest_text_paint_time_;
   uint64_t largest_text_paint_size_ = 0;
+  bool is_recording_largest_contentful_paint_ = true;
 };
 
 // Largest Text Paint and Text Element Timing aggregate text nodes by these

@@ -53,9 +53,6 @@ suite('CrostiniPageTests', function() {
   suite('Main Page', function() {
     setup(function() {
       setCrostiniPrefs(false);
-      loadTimeData.overrideValues({
-        showCrostiniContainerUpgrade: true,
-      });
     });
 
     test('Enable', function() {
@@ -98,6 +95,7 @@ suite('CrostiniPageTests', function() {
       setCrostiniPrefs(true);
       loadTimeData.overrideValues({
         showCrostiniExportImport: true,
+        showCrostiniContainerUpgrade: true,
         showCrostiniPortForwarding: true,
         showCrostiniMic: true,
       });

@@ -7,6 +7,7 @@
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "ash/quick_answers/quick_answers_controller_impl.h"
 #include "ash/quick_answers/ui/quick_answers_view.h"
+#include "ash/quick_answers/ui/user_consent_view.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
@@ -34,6 +35,7 @@ void QuickAnswersUiController::CreateQuickAnswersView(
     const gfx::Rect& bounds,
     const std::string& title) {
   DCHECK(!quick_answers_view_);
+  DCHECK(!user_consent_view_);
   SetActiveQuery(title);
   quick_answers_view_ = new QuickAnswersView(bounds, title, this);
   quick_answers_view_->GetWidget()->ShowInactive();
@@ -51,11 +53,14 @@ void QuickAnswersUiController::OnQuickAnswersViewPressed() {
 }
 
 void QuickAnswersUiController::Close() {
-  if (!quick_answers_view_)
-    return;
-
-  quick_answers_view_->GetWidget()->Close();
-  quick_answers_view_ = nullptr;
+  if (quick_answers_view_) {
+    quick_answers_view_->GetWidget()->Close();
+    quick_answers_view_ = nullptr;
+  }
+  if (user_consent_view_) {
+    user_consent_view_->GetWidget()->Close();
+    user_consent_view_ = nullptr;
+  }
 }
 
 void QuickAnswersUiController::OnRetryLabelPressed() {
@@ -91,4 +96,22 @@ void QuickAnswersUiController::UpdateQuickAnswersBounds(
 
   quick_answers_view_->UpdateAnchorViewBounds(anchor_bounds);
 }
+
+void QuickAnswersUiController::CreateUserConsentView(
+    const gfx::Rect& anchor_bounds) {
+  DCHECK(!quick_answers_view_);
+  DCHECK(!user_consent_view_);
+  user_consent_view_ = new quick_answers::UserConsentView(anchor_bounds, this);
+  user_consent_view_->GetWidget()->ShowInactive();
+}
+
+void QuickAnswersUiController::OnConsentGrantedButtonPressed() {
+  // TODO(siabhijeet): Convey user-consent to QuickAnswersController.
+}
+
+void QuickAnswersUiController::OnManageSettingsButtonPressed() {
+  // TODO(siabhijeet): Convey user-intent to open consent-settings to
+  // QuickAnswersController.
+}
+
 }  // namespace ash

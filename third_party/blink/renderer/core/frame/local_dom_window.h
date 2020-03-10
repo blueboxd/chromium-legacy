@@ -224,6 +224,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // https://html.spec.whatwg.org/C/#windoworworkerglobalscope-mixin
   void queueMicrotask(V8VoidFunction*);
 
+  // https://wicg.github.io/origin-policy/#monkeypatch-html-windoworworkerglobalscope
+  const Vector<String>& originPolicyIds() const;
+  void SetOriginPolicyIds(const Vector<String>&);
+
   // Idle callback extensions
   int requestIdleCallback(V8IdleRequestCallback*, const IdleRequestOptions*);
   void cancelIdleCallback(int id);
@@ -363,6 +367,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   String status_;
   String default_status_;
+
+  Vector<String> origin_policy_ids_;
 
   mutable Member<ApplicationCache> application_cache_;
 

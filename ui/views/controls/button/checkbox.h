@@ -58,7 +58,6 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   void OnThemeChanged() override;
   std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override;
   gfx::ImageSkia GetImage(ButtonState for_state) const override;
   std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const override;

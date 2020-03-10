@@ -14,11 +14,11 @@ ShelfContainerView::ShelfContainerView(ShelfView* shelf_view)
 ShelfContainerView::~ShelfContainerView() = default;
 
 void ShelfContainerView::Initialize() {
-  SetPaintToLayer();
+  SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
 
-  shelf_view_->SetPaintToLayer();
+  shelf_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   shelf_view_->layer()->SetFillsBoundsOpaquely(false);
   AddChildView(shelf_view_);
 }

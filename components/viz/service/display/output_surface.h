@@ -16,6 +16,7 @@
 #include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/gpu_vsync_callback.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/viz_service_export.h"
@@ -23,6 +24,7 @@
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/gpu_task_scheduler_helper.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/surface_origin.h"
@@ -96,6 +98,13 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     bool android_surface_control_feature_enabled = false;
     // True if the buffer content will be preserved after presenting.
     bool preserve_buffer_content = false;
+    // The SkColorType and GrBackendFormat for non-HDR and HDR.
+    // TODO(penghuang): remove SkColorType and GrBackendFormat when
+    // OutputSurface uses the |format| passed to Reshape().
+    SkColorType sk_color_type = kUnknown_SkColorType;
+    GrBackendFormat gr_backend_format;
+    SkColorType sk_color_type_for_hdr = kUnknown_SkColorType;
+    GrBackendFormat gr_backend_format_for_hdr;
   };
 
   // Constructor for skia-based compositing.

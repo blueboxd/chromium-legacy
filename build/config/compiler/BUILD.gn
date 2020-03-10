@@ -1101,8 +1101,7 @@ config("compiler_deterministic") {
   }
 
   # Makes builds independent of absolute file path.
-  if (symbol_level != 0 && is_clang &&
-      strip_absolute_paths_from_debug_symbols) {
+  if (is_clang && strip_absolute_paths_from_debug_symbols) {
     # If debug option is given, clang includes $cwd in debug info by default.
     # For such build, this flag generates reproducible obj files even we use
     # different build directory like "out/feature_a" and "out/feature_b" if
@@ -1121,17 +1120,13 @@ config("compiler_deterministic") {
 
     if (is_win && use_lld) {
       if (symbol_level == 2 || (is_clang && using_sanitizer)) {
-        # Absolutize source file path for PDB. Pass the real build directory
-        # if the pdb contains source-level debug information.
+        # Absolutize source file paths for PDB. Pass the real build directory
+        # if the pdb contains source-level debug information and if linker
+        # reproducibility is not critical.
         ldflags += [ "/PDBSourcePath:" + rebase_path(root_build_dir) ]
       } else {
-        # On Windows, (non-sanitizier) symbol_level 1 builds don't contain
-        # debug information in obj files; the linker just creates enough
-        # debug info at link time to produce symbolized stacks (without line
-        # numbers). In that case, there's no downside in using a fake fixed
-        # base directory for paths in the pdb. This makes the pdb output
-        # fully deterministic and independent of the build directory.
-        assert(symbol_level == 1 && !(is_clang && using_sanitizer))
+        # Use a fake fixed base directory for paths in the pdb to make the pdb
+        # output fully deterministic and independent of the build directory.
         ldflags += [ "/PDBSourcePath:o:\fake\prefix" ]
       }
     }
@@ -2379,9 +2374,16 @@ config("minimal_symbols") {
   }
 }
 
-# No symbols.
+# This configuration contains function names only. That is, the compiler is
+# told to not generate debug information and the linker then just puts function
+# names in the final debug information.
 config("no_symbols") {
-  if (!is_win) {
+  if (is_win) {
+    ldflags = [ "/DEBUG" ]
+
+    # All configs using /DEBUG should include this:
+    configs = [ ":win_pdbaltpath" ]
+  } else {
     cflags = [ "-g0" ]
     asmflags = cflags
   }

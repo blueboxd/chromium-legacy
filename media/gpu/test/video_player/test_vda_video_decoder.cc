@@ -134,7 +134,17 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  std::move(init_cb).Run(true);
+  if (!vda_config.is_deferred_initialization_allowed)
+    std::move(init_cb).Run(true);
+  else
+    init_cb_ = std::move(init_cb);
+}
+
+void TestVDAVideoDecoder::NotifyInitializationComplete(bool success) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
+  DCHECK(init_cb_);
+
+  std::move(init_cb_).Run(success);
 }
 
 void TestVDAVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

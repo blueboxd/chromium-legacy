@@ -86,6 +86,11 @@ void UninstallDialog::OnDialogClosed(bool uninstall,
       .Run(uninstall, clear_site_data, report_abuse, this);
 }
 
+void UninstallDialog::SetDialogCreatedCallbackForTesting(
+    base::OnceClosure callback) {
+  dialog_created_callback_ = std::move(callback);
+}
+
 void UninstallDialog::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
   if (icon_value->icon_compression !=
       apps::mojom::IconCompression::kUncompressed) {
@@ -100,6 +105,12 @@ void UninstallDialog::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
 
   UiBase::Create(profile_, app_type_, app_id_, app_name_,
                  icon_value->uncompressed, parent_window_, this);
+
+  // For browser tests, if the callback is set, run the callback to stop the run
+  // loop.
+  if (!dialog_created_callback_.is_null()) {
+    std::move(dialog_created_callback_).Run();
+  }
 }
 
 }  // namespace apps

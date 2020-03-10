@@ -165,7 +165,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       const gfx::Size& surface_size,
       ResourceFormat format,
       bool mipmap,
-      sk_sp<SkColorSpace> color_space);
+      sk_sp<SkColorSpace> color_space,
+      bool is_root_render_pass);
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params,
                               const gfx::Size& pixel_size);
   void BufferPresented(const gfx::PresentationFeedback& feedback);
@@ -203,9 +204,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   GpuVSyncCallback gpu_vsync_callback_;
   bool is_displayed_as_overlay_ = false;
 
-  std::unique_ptr<base::WaitableEvent> reshape_waitable_event_;
   gfx::Size size_;
   gfx::ColorSpace color_space_;
+  bool is_hdr_ = false;
   SkSurfaceCharacterization characterization_;
   base::Optional<SkDeferredDisplayListRecorder> root_recorder_;
 

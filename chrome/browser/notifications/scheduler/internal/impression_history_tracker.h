@@ -32,15 +32,16 @@ class ImpressionHistoryTracker : public UserActionHandler {
   using ClientStates =
       std::map<SchedulerClientType, std::unique_ptr<ClientState>>;
   using InitCallback = base::OnceCallback<void(bool)>;
-
   class Delegate {
    public:
+    using ThrottleConfigCallback =
+        base::OnceCallback<void(std::unique_ptr<ThrottleConfig>)>;
     Delegate() = default;
     virtual ~Delegate() = default;
 
     // Get ThrottleConfig.
-    virtual std::unique_ptr<ThrottleConfig> GetThrottleConfig(
-        SchedulerClientType type) = 0;
+    virtual void GetThrottleConfig(SchedulerClientType type,
+                                   ThrottleConfigCallback callback) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -167,7 +168,13 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
                              ActionButtonType button_type,
                              bool update_db);
   void OnDismissInternal(const std::string& notification_guid, bool update_db);
-
+  void OnCustomNegativeActionCountQueried(
+      SchedulerClientType type,
+      base::circular_deque<Impression*>* impressions,
+      std::unique_ptr<ThrottleConfig> custom_throttle_config);
+  void OnCustomSuppressionDurationQueried(
+      SchedulerClientType type,
+      std::unique_ptr<ThrottleConfig> custom_throttle_config);
   // Impression history and global states for all notification scheduler
   // clients.
   ClientStates client_states_;

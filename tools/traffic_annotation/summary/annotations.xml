@@ -39,6 +39,7 @@ Refer to README.md for content description and update process.
  <item id="cast_udp_transport" hash_code="5576536" type="0" content_hash_code="107643273" os_list="linux,windows" file_path="media/cast/net/udp_transport_impl.cc"/>
  <item id="certificate_verifier_url_loader" hash_code="80134684" type="0" content_hash_code="92630208" os_list="linux,windows" file_path="services/network/public/cpp/cert_verifier/cert_net_fetcher_url_loader.cc"/>
  <item id="certificate_verifier_url_request" hash_code="85988208" type="0" content_hash_code="59262468" os_list="linux,windows" file_path="net/cert_net/cert_net_fetcher_url_request.cc"/>
+ <item id="chrome_HaTS_service" hash_code="136028241" type="0" content_hash_code="68990360" os_list="linux,windows" file_path="chrome/browser/ui/hats/hats_survey_status_checker.cc"/>
  <item id="chrome_apps_socket_api" hash_code="8591273" type="0" content_hash_code="70868355" os_list="linux,windows" file_path="extensions/browser/api/socket/socket.cc"/>
  <item id="chrome_cleaner" hash_code="27071967" type="0" content_hash_code="111240292" os_list="windows" file_path="chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.cc"/>
  <item id="chrome_cleanup_report" hash_code="71102679" type="0" content_hash_code="130565656" os_list="windows" file_path="chrome/chrome_cleaner/logging/cleaner_logging_service.cc"/>

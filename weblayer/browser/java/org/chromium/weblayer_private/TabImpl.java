@@ -29,6 +29,7 @@ import org.chromium.components.find_in_page.FindResultBar;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.ViewEventSink;
+import org.chromium.content_public.browser.Visibility;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -186,6 +187,7 @@ public final class TabImpl extends ITab.Stub {
     public void updateFromBrowser() {
         mWebContents.setTopLevelNativeWindow(mBrowser.getWindowAndroid());
         mViewAndroidDelegate.setContainerView(mBrowser.getViewAndroidDelegateContainerView());
+        updateWebContentsVisibility();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             SelectionPopupController selectionController =
@@ -238,6 +240,7 @@ public final class TabImpl extends ITab.Stub {
         assert mBrowser != null;
         TabImplJni.get().setTopControlsContainerView(
                 mNativeTab, TabImpl.this, topControlsContainerViewHandle);
+        updateWebContentsVisibility();
         mWebContents.onShow();
     }
 
@@ -247,7 +250,18 @@ public final class TabImpl extends ITab.Stub {
     public void onDidLoseActive() {
         hideFindInPageUiAndNotifyClient();
         mWebContents.onHide();
+        updateWebContentsVisibility();
         TabImplJni.get().setTopControlsContainerView(mNativeTab, TabImpl.this, 0);
+    }
+
+    private void updateWebContentsVisibility() {
+        boolean visibleNow = mBrowser.getActiveTab() == this && mBrowser.isStarted();
+        boolean webContentsVisible = mWebContents.getVisibility() == Visibility.VISIBLE;
+        if (visibleNow) {
+            if (!webContentsVisible) mWebContents.onShow();
+        } else {
+            if (webContentsVisible) mWebContents.onHide();
+        }
     }
 
     public WebContents getWebContents() {

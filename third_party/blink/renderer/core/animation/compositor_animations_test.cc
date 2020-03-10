@@ -724,16 +724,14 @@ TEST_P(AnimationCompositorAnimationsTest,
 
   timing_.iteration_count = std::numeric_limits<double>::infinity();
   EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            compositor_timing_.adjusted_iteration_count);
+  EXPECT_EQ(-1, compositor_timing_.adjusted_iteration_count);
 
   timing_.iteration_count = std::numeric_limits<double>::infinity();
   timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(5);
   timing_.start_delay = -6.0;
   EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
   EXPECT_DOUBLE_EQ(6.0, compositor_timing_.scaled_time_offset.InSecondsF());
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            compositor_timing_.adjusted_iteration_count);
+  EXPECT_EQ(-1, compositor_timing_.adjusted_iteration_count);
 }
 
 TEST_P(AnimationCompositorAnimationsTest,

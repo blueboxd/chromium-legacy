@@ -45,6 +45,10 @@ struct PaintTiming {
   // (Experimental) Size of the largest text of the largest text paint, by
   // Size = Height * Width.
   uint64 largest_text_paint_size;
+
+  // (Experimental) Time when first input or scroll is received, causing the
+  // largest contentful paint algorithm to stop.
+  mojo_base.mojom.TimeDelta? first_input_or_scroll_notified_timestamp;
 };
 
 // TimeDeltas below represent durations of time during the page load.

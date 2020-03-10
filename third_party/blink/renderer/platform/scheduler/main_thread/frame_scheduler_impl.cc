@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/find_in_page_budget_pool_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
@@ -392,6 +393,8 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalIntersectionObserver:
       return PausableTaskQueueTraits();
+    case TaskType::kInternalFindInPage:
+      return FindInPageTaskQueueTraits();
     case TaskType::kInternalContinueScriptLoading:
       return PausableTaskQueueTraits().SetPrioritisationType(
             QueueTraits::PrioritisationType::kVeryHigh);
@@ -983,6 +986,11 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
     return main_thread_scheduler_->compositor_priority();
   }
 
+  if (task_queue->GetPrioritisationType() ==
+      MainThreadTaskQueue::QueueTraits::PrioritisationType::kFindInPage) {
+    return main_thread_scheduler_->find_in_page_priority();
+  }
+
   return TaskQueue::QueuePriority::kNormalPriority;
 }
 
@@ -1179,5 +1187,10 @@ FrameSchedulerImpl::LoadingControlTaskQueueTraits() {
           QueueTraits::PrioritisationType::kLoadingControl);
 }
 
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::FindInPageTaskQueueTraits() {
+  return PausableTaskQueueTraits().SetPrioritisationType(
+      QueueTraits::PrioritisationType::kFindInPage);
+}
 }  // namespace scheduler
 }  // namespace blink

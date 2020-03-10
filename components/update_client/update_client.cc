@@ -87,6 +87,7 @@ UpdateClientImpl::~UpdateClientImpl() {
 
 void UpdateClientImpl::Install(const std::string& id,
                                CrxDataCallback crx_data_callback,
+                               CrxStateChangeCallback crx_state_change_callback,
                                Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -102,18 +103,21 @@ void UpdateClientImpl::Install(const std::string& id,
   constexpr bool kIsForeground = true;
   RunTask(base::MakeRefCounted<TaskUpdate>(
       update_engine_.get(), kIsForeground, ids, std::move(crx_data_callback),
+      crx_state_change_callback,
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback))));
 }
 
 void UpdateClientImpl::Update(const std::vector<std::string>& ids,
                               CrxDataCallback crx_data_callback,
+                              CrxStateChangeCallback crx_state_change_callback,
                               bool is_foreground,
                               Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto task = base::MakeRefCounted<TaskUpdate>(
       update_engine_.get(), is_foreground, ids, std::move(crx_data_callback),
+      crx_state_change_callback,
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback)));
 
@@ -144,6 +148,7 @@ void UpdateClientImpl::OnTaskComplete(Callback callback,
 
   // Remove the task from the set of the running tasks. Only tasks handled by
   // the update engine can be in this data structure.
+  DCHECK_EQ(1u, tasks_.count(task));
   tasks_.erase(task);
 
   if (is_stopped_)

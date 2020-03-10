@@ -89,15 +89,6 @@ class CONTENT_EXPORT AuthenticatorCommon {
 
   void DisableUI();
 
-  base::flat_set<device::FidoTransportProtocol> enabled_transports_for_testing()
-      const {
-    return transports_;
-  }
-  void set_transports_for_testing(
-      base::flat_set<device::FidoTransportProtocol> transports) {
-    transports_ = transports;
-  }
-
  protected:
   virtual std::unique_ptr<AuthenticatorRequestClientDelegate>
   CreateRequestDelegate();
@@ -190,7 +181,6 @@ class CONTENT_EXPORT AuthenticatorCommon {
   BrowserContext* browser_context() const;
 
   RenderFrameHost* const render_frame_host_;
-  base::flat_set<device::FidoTransportProtocol> transports_;
   device::FidoDiscoveryFactory* discovery_factory_ = nullptr;
   std::unique_ptr<device::FidoRequestHandlerBase> request_;
   blink::mojom::Authenticator::MakeCredentialCallback

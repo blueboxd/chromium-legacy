@@ -94,6 +94,12 @@ void FindInPage::Find(int request_id,
   bool result = false;
   bool active_now = false;
 
+  if (!options->find_next) {
+    // If this is an initial find request, cancel any pending scoping effort
+    // done by the previous find request.
+    EnsureTextFinder().CancelPendingScopingEffort();
+  }
+
   // Search for an active match only if this frame is focused or if this is a
   // find next
   if (frame_->IsFocused() || options->find_next) {

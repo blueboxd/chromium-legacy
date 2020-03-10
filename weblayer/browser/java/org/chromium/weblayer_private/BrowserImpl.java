@@ -57,6 +57,7 @@ public class BrowserImpl extends IBrowser.Stub {
     private LocaleChangedBroadcastReceiver mLocaleReceiver;
     private boolean mInDestroy;
     private final UrlBarControllerImpl mUrlBarController;
+    private boolean mFragmentStarted;
 
     // Created in the constructor from saved state and used in setClient().
     private PersistenceInfo mPersistenceInfo;
@@ -364,6 +365,20 @@ public class BrowserImpl extends IBrowser.Stub {
         // mNativeBrowser.
         mUrlBarController.destroy();
         BrowserImplJni.get().deleteBrowser(mNativeBrowser);
+    }
+
+    public void onFragmentStart() {
+        mFragmentStarted = true;
+        updateAllTabs();
+    }
+
+    public void onFragmentStop() {
+        mFragmentStarted = false;
+        updateAllTabs();
+    }
+
+    public boolean isStarted() {
+        return mFragmentStarted;
     }
 
     private void destroyAttachmentState() {

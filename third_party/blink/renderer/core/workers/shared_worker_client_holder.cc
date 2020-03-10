@@ -72,7 +72,8 @@ SharedWorkerClientHolder* SharedWorkerClientHolder::From(Document& document) {
 }
 
 SharedWorkerClientHolder::SharedWorkerClientHolder(Document& document)
-    : ExecutionContextLifecycleObserver(&document),
+    : connector_(document.ToExecutionContext()),
+      client_receivers_(document.ToExecutionContext()),
       task_runner_(document.GetTaskRunner(blink::TaskType::kDOMManipulation)) {
   DCHECK(IsMainThread());
   document.GetBrowserInterfaceBroker().GetInterface(
@@ -138,16 +139,10 @@ void SharedWorkerClientHolder::Connect(
           blob_url_token.PassPipe(), mojom::blink::BlobURLToken::Version_));
 }
 
-void SharedWorkerClientHolder::ContextDestroyed() {
-  DCHECK(IsMainThread());
-  // Close mojo connections which will signal disinterest in the associated
-  // shared worker.
-  client_receivers_.Clear();
-}
-
 void SharedWorkerClientHolder::Trace(Visitor* visitor) {
+  visitor->Trace(connector_);
+  visitor->Trace(client_receivers_);
   Supplement<Document>::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

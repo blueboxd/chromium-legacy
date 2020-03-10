@@ -114,7 +114,10 @@ bool TestBrowserDialog::VerifyUi() {
 #if !defined(OS_MACOSX)
   if (pixel_diff_) {
     dialog_widget->SetBlockCloseForTesting(true);
-    dialog_widget->Activate();
+    // Deactivate before taking screenshot. Deactivated dialog pixel outputs
+    // is more predictable than activated dialog.
+    bool is_active = dialog_widget->IsActive();
+    dialog_widget->Deactivate();
     base::ScopedClosureRunner unblock_close(
         base::BindOnce(&views::Widget::SetBlockCloseForTesting,
                        base::Unretained(dialog_widget), false));
@@ -131,6 +134,8 @@ bool TestBrowserDialog::VerifyUi() {
       DLOG(INFO) << "VerifyUi(): Pixel compare failed.";
       return false;
     }
+    if (is_active)
+      dialog_widget->Activate();
   }
 #endif  // OS_MACOSX
 

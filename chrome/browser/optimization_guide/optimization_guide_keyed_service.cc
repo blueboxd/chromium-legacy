@@ -133,6 +133,11 @@ void OptimizationGuideKeyedService::Initialize(
   }
 }
 
+OptimizationGuideHintsManager*
+OptimizationGuideKeyedService::GetHintsManager() {
+  return hints_manager_.get();
+}
+
 void OptimizationGuideKeyedService::OnNavigationStartOrRedirect(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

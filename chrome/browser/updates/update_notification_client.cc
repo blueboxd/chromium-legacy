@@ -59,9 +59,9 @@ void UpdateNotificationClient::OnUserAction(const UserActionData& action_data) {
   }
 }
 
-std::unique_ptr<notifications::ThrottleConfig>
-UpdateNotificationClient::GetThrottleConfig() {
-  return nullptr;
+void UpdateNotificationClient::GetThrottleConfig(
+    ThrottleConfigCallback callback) {
+  std::move(callback).Run(nullptr);
 }
 
 }  // namespace updates

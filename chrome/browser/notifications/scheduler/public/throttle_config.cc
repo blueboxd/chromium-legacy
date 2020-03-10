@@ -6,7 +6,7 @@
 
 namespace notifications {
 
-ThrottleConfig::ThrottleConfig() : negative_action_count_threshold(0) {}
+ThrottleConfig::ThrottleConfig() = default;
 
 ThrottleConfig::ThrottleConfig(const ThrottleConfig& other) = default;
 

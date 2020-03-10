@@ -77,7 +77,7 @@ using net::test_server::HttpResponse;
 namespace chromeos {
 namespace {
 
-enum class ArcState { kNotAvailable, kAcceptTerms, kDeclineTerms };
+enum class ArcState { kNotAvailable, kAcceptTerms };
 
 std::string ArcStateToString(ArcState arc_state) {
   switch (arc_state) {
@@ -85,8 +85,6 @@ std::string ArcStateToString(ArcState arc_state) {
       return "not-available";
     case ArcState::kAcceptTerms:
       return "accept-terms";
-    case ArcState::kDeclineTerms:
-      return "decline-terms";
   }
   NOTREACHED();
   return "unknown";
@@ -150,7 +148,7 @@ void WaitForGaiaSignInScreen(bool arc_available) {
   if (arc_available) {
     test::OobeJS()
         .CreateHasClassWaiter(true, "arc-tos-loaded",
-                              {"arc-tos-root", "arc-tos-dialog"})
+                              {"arc-tos-root", "arcTosDialog"})
         ->Wait();
   }
 
@@ -202,10 +200,9 @@ void RunDiscoverScreenChecks() {
   EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 }
 
-// Waits for the ARC terms of service screen to be shown, it accepts or
-// declines the terms based in |accept_terms| value, and waits for the flow to
-// leave the ARC terms of service screen.
-void HandleArcTermsOfServiceScreen(bool accept_terms) {
+// Waits for the ARC terms of service screen to be shown, it accepts
+// the terms, and waits for the flow to leave the ARC terms of service screen.
+void HandleArcTermsOfServiceScreen() {
   OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: Switched to 'arc-tos' screen.";
 
@@ -214,19 +211,17 @@ void HandleArcTermsOfServiceScreen(bool accept_terms) {
   EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 
   test::OobeJS()
-      .CreateEnabledWaiter(true, {"arc-tos-root", "arc-tos-next-button"})
+      .CreateEnabledWaiter(true, {"arc-tos-root", "arcTosNextButton"})
       ->Wait();
-  test::OobeJS().TapOnPath({"arc-tos-root", "arc-tos-next-button"});
+  test::OobeJS().TapOnPath({"arc-tos-root", "arcTosNextButton"});
   test::OobeJS()
-      .CreateVisibilityWaiter(true, {"arc-tos-root", "arc-location-service"})
+      .CreateVisibilityWaiter(true, {"arc-tos-root", "arcLocationService"})
       ->Wait();
   test::OobeJS()
-      .CreateVisibilityWaiter(true, {"arc-tos-root", "arc-tos-accept-button"})
+      .CreateVisibilityWaiter(true, {"arc-tos-root", "arcTosAcceptButton"})
       ->Wait();
 
-  const std::string button_to_click =
-      accept_terms ? "arc-tos-accept-button" : "arc-tos-skip-button";
-  test::OobeJS().TapOnPath({"arc-tos-root", button_to_click});
+  test::OobeJS().TapOnPath({"arc-tos-root", "arcTosAcceptButton"});
 
   OobeScreenExitWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: 'arc-tos' screen done.";
@@ -736,8 +731,7 @@ void OobeInteractiveUITest::PerformSessionSignInSteps(
   }
 
   if (test_setup()->arc_state() != ArcState::kNotAvailable) {
-    HandleArcTermsOfServiceScreen(test_setup()->arc_state() ==
-                                  ArcState::kAcceptTerms);
+    HandleArcTermsOfServiceScreen();
   }
 
   if (test_setup()->arc_state() == ArcState::kAcceptTerms) {
@@ -787,8 +781,7 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::Bool(),
                      testing::Bool(),
                      testing::Values(ArcState::kNotAvailable,
-                                     ArcState::kAcceptTerms,
-                                     ArcState::kDeclineTerms)));
+                                     ArcState::kAcceptTerms)));
 
 class OobeZeroTouchInteractiveUITest : public OobeInteractiveUITest {
  public:
@@ -861,8 +854,7 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::Bool(),
                      testing::Bool(),
                      testing::Values(ArcState::kNotAvailable,
-                                     ArcState::kAcceptTerms,
-                                     ArcState::kDeclineTerms)));
+                                     ArcState::kAcceptTerms)));
 
 class PublicSessionOobeTest : public MixinBasedInProcessBrowserTest,
                               public ::testing::WithParamInterface<
@@ -954,8 +946,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::Bool(),
                      testing::Bool(),
                      testing::Bool(),
-                     testing::Values(ArcState::kNotAvailable,
-                                     ArcState::kDeclineTerms)));
+                     testing::Values(ArcState::kNotAvailable)));
 
 class PublicSessionWithTermsOfServiceOobeTest : public PublicSessionOobeTest {
  public:
@@ -989,8 +980,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::Bool(),
                      testing::Bool(),
                      testing::Bool(),
-                     testing::Values(ArcState::kNotAvailable,
-                                     ArcState::kDeclineTerms)));
+                     testing::Values(ArcState::kNotAvailable)));
 
 class EphemeralUserOobeTest : public MixinBasedInProcessBrowserTest,
                               public ::testing::WithParamInterface<
@@ -1071,8 +1061,7 @@ IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, DISABLED_RegularEphemeralUser) {
   }
 
   if (test_setup()->arc_state() != ArcState::kNotAvailable) {
-    HandleArcTermsOfServiceScreen(test_setup()->arc_state() ==
-                                  ArcState::kAcceptTerms);
+    HandleArcTermsOfServiceScreen();
   }
 
   if (test_setup()->arc_state() == ArcState::kAcceptTerms) {
@@ -1098,6 +1087,5 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::Bool(),
                      testing::Bool(),
                      testing::Values(ArcState::kNotAvailable,
-                                     ArcState::kAcceptTerms,
-                                     ArcState::kDeclineTerms)));
+                                     ArcState::kAcceptTerms)));
 }  //  namespace chromeos

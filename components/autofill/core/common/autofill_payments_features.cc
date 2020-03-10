@@ -75,7 +75,7 @@ const base::Feature kAutofillSaveCardDismissOnNavigation{
 
 // When enabled, the Save Card infobar supports editing before submitting.
 const base::Feature kAutofillSaveCardInfobarEditSupport{
-    "AutofillSaveCardInfobarEditSupport", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillSaveCardInfobarEditSupport", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because it's a country-specific whitelist. There are
@@ -89,21 +89,6 @@ const base::Feature kAutofillUpstream{"AutofillUpstream",
 
 const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// For testing purposes; not to be launched.  When enabled, Chrome Upstream
-// always requests that the user enters/confirms cardholder name in the
-// offer-to-save dialog, regardless of if it was present or if the user is a
-// Google Payments customer.  Note that this will override the detected
-// cardholder name, if one was found.
-const base::Feature kAutofillUpstreamAlwaysRequestCardholderName{
-    "AutofillUpstreamAlwaysRequestCardholderName",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, Chrome Upstream can request the user to enter/confirm cardholder
-// name in the offer-to-save bubble if it was not detected or was conflicting
-// during the checkout flow and the user is NOT a Google Payments customer.
-const base::Feature kAutofillUpstreamEditableCardholderName{
-    "AutofillUpstreamEditableCardholderName", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutofillUpstreamEditableExpirationDate{
   "AutofillUpstreamEditableExpirationDate",

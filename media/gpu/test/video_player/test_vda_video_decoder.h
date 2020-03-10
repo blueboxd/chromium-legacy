@@ -61,6 +61,7 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   void Destroy() override;
 
   // media::VideoDecodeAccelerator::Client implementation
+  void NotifyInitializationComplete(bool success) override;
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
                              VideoPixelFormat format,
                              uint32_t textures_per_buffer,
@@ -91,6 +92,9 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   // Get the next picture buffer id to be used.
   int32_t GetNextPictureBufferId();
 
+  // Called when initialization is done. The callback is stored only when VDA
+  // allows deferred initialization.
+  InitCB init_cb_;
   // Called when a buffer is decoded.
   OutputCB output_cb_;
   // Called when the decoder finished flushing.

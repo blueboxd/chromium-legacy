@@ -531,6 +531,7 @@ void InstallAppController::DoInstallApp() {
                         ->MakeCrxComponent()};
           },
           persisted_data_),
+      {},
       base::BindOnce(
           [](InstallAppController* install_app_controller,
              update_client::Error error) {
@@ -555,6 +556,8 @@ void InstallAppController::InstallComplete() {
   update_client_ = nullptr;
 }
 
+// TODO(sorin): receive the state changes using a callback instead of events.
+// crbug/1059938.
 void InstallAppController::OnEvent(Events event, const std::string& id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(install_progress_observer_ipc_);

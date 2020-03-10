@@ -440,14 +440,16 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
             : ClampDelta(perf.LargestImagePaint(), start);
   }
   if (perf.LargestTextPaintSize() > 0) {
-    timing->paint_timing->largest_text_paint =
-        perf.LargestTextPaint() == 0.0
-            ? base::TimeDelta()
-            : ClampDelta(perf.LargestTextPaint(), start);
-    timing->paint_timing->largest_text_paint_size = perf.LargestTextPaintSize();
     // LargestTextPaint and LargestTextPaintSize should be available at the
     // same time. This is a renderer side DCHECK to ensure this.
     DCHECK(perf.LargestTextPaint());
+    timing->paint_timing->largest_text_paint =
+        ClampDelta(perf.LargestTextPaint(), start);
+    timing->paint_timing->largest_text_paint_size = perf.LargestTextPaintSize();
+  }
+  if (perf.FirstInputOrScrollNotifiedTimestamp() > 0) {
+    timing->paint_timing->first_input_or_scroll_notified_timestamp =
+        ClampDelta(perf.FirstInputOrScrollNotifiedTimestamp(), start);
   }
   if (perf.ParseStart() > 0.0)
     timing->parse_timing->parse_start = ClampDelta(perf.ParseStart(), start);

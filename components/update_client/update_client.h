@@ -323,6 +323,10 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
       base::OnceCallback<std::vector<base::Optional<CrxComponent>>(
           const std::vector<std::string>& ids)>;
 
+  // Called when state changes occur during an Install or Update call.
+  using CrxStateChangeCallback =
+      base::RepeatingCallback<void(CrxUpdateItem item)>;
+
   // Defines an interface to observe the UpdateClient. It provides
   // notifications when state changes occur for the service itself or for the
   // registered CRXs.
@@ -380,29 +384,36 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Installs the specified CRX. Calls back on |callback| after the
-  // update has been handled. The |error| parameter of the |callback|
-  // contains an error code in the case of a run-time error, or 0 if the
-  // install has been handled successfully. Overlapping calls of this function
-  // are executed concurrently, as long as the id parameter is different,
-  // meaning that installs of different components are parallelized.
+  // update has been handled. Provides state change notifications through
+  // invocations of the optional |crx_state_change_callback| callback.
+  // The |error| parameter of the |callback| contains an error code in the case
+  // of a run-time error, or 0 if the install has been handled successfully.
+  // Overlapping calls of this function are executed concurrently, as long as
+  // the id parameter is different, meaning that installs of different
+  // components are parallelized.
   // The |Install| function is intended to be used for foreground installs of
   // one CRX. These cases are usually associated with on-demand install
   // scenarios, which are triggered by user actions. Installs are never
   // queued up.
   virtual void Install(const std::string& id,
                        CrxDataCallback crx_data_callback,
+                       CrxStateChangeCallback crx_state_change_callback,
                        Callback callback) = 0;
 
   // Updates the specified CRXs. Calls back on |crx_data_callback| before the
   // update is attempted to give the caller the opportunity to provide the
-  // instances of CrxComponent to be used for this update. The |Update| function
-  // is intended to be used for background updates of several CRXs. Overlapping
-  // calls to this function result in a queuing behavior, and the execution
-  // of each call is serialized. In addition, updates are always queued up when
-  // installs are running. The |is_foreground| parameter must be set to true if
-  // the invocation of this function is a result of a user initiated update.
+  // instances of CrxComponent to be used for this update. Provides state change
+  // notifications through invocations of the optional
+  // |crx_state_change_callback| callback.
+  // The |Update| function is intended to be used for background updates of
+  // several CRXs. Overlapping calls to this function result in a queuing
+  // behavior, and the execution of each call is serialized. In addition,
+  // updates are always queued up when installs are running. The |is_foreground|
+  // parameter must be set to true if the invocation of this function is a
+  // result of a user initiated update.
   virtual void Update(const std::vector<std::string>& ids,
                       CrxDataCallback crx_data_callback,
+                      CrxStateChangeCallback crx_state_change_callback,
                       bool is_foreground,
                       Callback callback) = 0;
 

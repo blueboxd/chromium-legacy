@@ -591,7 +591,7 @@ class DirectoryItem extends TreeItem {
    * @override
    */
   handleClick(e) {
-    cr.ui.TreeItem.prototype.handleClick.call(this, e);
+    super.handleClick(e);
 
     if (!this.entry || e.button === 2) {
       return;
@@ -1263,7 +1263,7 @@ class DriveVolumeItem extends VolumeItem {
    * @override
    */
   handleClick(e) {
-    VolumeItem.prototype.handleClick.call(this, e);
+    super.handleClick(e);
 
     this.selectDisplayRoot_(e.target);
 
@@ -1629,7 +1629,7 @@ class ShortcutItem extends TreeItem {
    * @override
    */
   handleClick(e) {
-    cr.ui.TreeItem.prototype.handleClick.call(this, e);
+    super.handleClick(e);
 
     // Do not activate with right click.
     if (e.button === 2) {

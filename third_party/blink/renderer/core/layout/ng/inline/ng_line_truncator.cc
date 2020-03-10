@@ -19,25 +19,64 @@ NGLineTruncator::NGLineTruncator(const NGLineInfo& line_info)
       available_width_(line_info.AvailableWidth() - line_info.TextIndent()),
       line_direction_(line_info.BaseDirection()) {}
 
+const ComputedStyle& NGLineTruncator::EllipsisStyle() const {
+  // The ellipsis is styled according to the line style.
+  // https://drafts.csswg.org/css-ui/#ellipsing-details
+  return *line_style_;
+}
+
+void NGLineTruncator::SetupEllipsis() {
+  const Font& font = EllipsisStyle().GetFont();
+  ellipsis_font_data_ = font.PrimaryFont();
+  DCHECK(ellipsis_font_data_);
+  ellipsis_text_ =
+      ellipsis_font_data_ && ellipsis_font_data_->GlyphForCharacter(
+                                 kHorizontalEllipsisCharacter)
+          ? String(&kHorizontalEllipsisCharacter, 1)
+          : String(u"...");
+  HarfBuzzShaper shaper(ellipsis_text_);
+  ellipsis_shape_result_ =
+      ShapeResultView::Create(shaper.Shape(&font, line_direction_).get());
+  ellipsis_width_ = ellipsis_shape_result_->SnappedWidth();
+}
+
+LayoutUnit NGLineTruncator::PlaceEllipsisNextTo(
+    NGLineBoxFragmentBuilder::ChildList* line_box,
+    NGLineBoxFragmentBuilder::Child* ellipsized_child) {
+  // Create the ellipsis, associating it with the ellipsized child.
+  LayoutObject* ellipsized_layout_object =
+      ellipsized_child->PhysicalFragment()->GetMutableLayoutObject();
+  DCHECK(ellipsized_layout_object);
+  DCHECK(ellipsized_layout_object->IsInline());
+  DCHECK(ellipsized_layout_object->IsText() ||
+         ellipsized_layout_object->IsAtomicInlineLevel());
+  NGTextFragmentBuilder builder(line_style_->GetWritingMode());
+  builder.SetText(ellipsized_layout_object, ellipsis_text_, &EllipsisStyle(),
+                  true /* is_ellipsis_style */,
+                  std::move(ellipsis_shape_result_));
+
+  // Now the offset of the ellpisis is determined. Place the ellpisis into the
+  // line box.
+  LayoutUnit ellipsis_inline_offset =
+      IsLtr(line_direction_)
+          ? ellipsized_child->InlineOffset() + ellipsized_child->inline_size
+          : ellipsized_child->InlineOffset() - ellipsis_width_;
+  FontBaseline baseline_type = line_style_->GetFontBaseline();
+  NGLineHeightMetrics ellipsis_metrics(ellipsis_font_data_->GetFontMetrics(),
+                                       baseline_type);
+  line_box->AddChild(
+      builder.ToTextFragment(),
+      LogicalOffset{ellipsis_inline_offset, -ellipsis_metrics.ascent},
+      ellipsis_width_, 0);
+  return ellipsis_inline_offset;
+}
+
 LayoutUnit NGLineTruncator::TruncateLine(
     LayoutUnit line_width,
     NGLineBoxFragmentBuilder::ChildList* line_box,
     NGInlineLayoutStateStack* box_states) {
   // Shape the ellipsis and compute its inline size.
-  // The ellipsis is styled according to the line style.
-  // https://drafts.csswg.org/css-ui/#ellipsing-details
-  const ComputedStyle* ellipsis_style = line_style_.get();
-  const Font& font = ellipsis_style->GetFont();
-  const SimpleFontData* font_data = font.PrimaryFont();
-  DCHECK(font_data);
-  String ellipsis_text =
-      font_data && font_data->GlyphForCharacter(kHorizontalEllipsisCharacter)
-          ? String(&kHorizontalEllipsisCharacter, 1)
-          : String(u"...");
-  HarfBuzzShaper shaper(ellipsis_text);
-  scoped_refptr<ShapeResultView> ellipsis_shape_result =
-      ShapeResultView::Create(shaper.Shape(&font, line_direction_).get());
-  LayoutUnit ellipsis_width = ellipsis_shape_result->SnappedWidth();
+  SetupEllipsis();
 
   // Loop children from the logical last to the logical first to determine where
   // to place the ellipsis. Children maybe truncated or moved as part of the
@@ -48,7 +87,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
     NGLineBoxFragmentBuilder::Child* first_child = line_box->FirstInFlowChild();
     for (auto it = line_box->rbegin(); it != line_box->rend(); it++) {
       auto& child = *it;
-      if (EllipsizeChild(line_width, ellipsis_width, &child == first_child,
+      if (EllipsizeChild(line_width, ellipsis_width_, &child == first_child,
                          &child, &truncated_fragment)) {
         ellipsized_child = &child;
         break;
@@ -57,7 +96,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
   } else {
     NGLineBoxFragmentBuilder::Child* first_child = line_box->LastInFlowChild();
     for (auto& child : *line_box) {
-      if (EllipsizeChild(line_width, ellipsis_width, &child == first_child,
+      if (EllipsizeChild(line_width, ellipsis_width_, &child == first_child,
                          &child, &truncated_fragment)) {
         ellipsized_child = &child;
         break;
@@ -95,30 +134,9 @@ LayoutUnit NGLineTruncator::TruncateLine(
   }
 
   // Create the ellipsis, associating it with the ellipsized child.
-  LayoutObject* ellipsized_layout_object =
-      ellipsized_child->PhysicalFragment()->GetMutableLayoutObject();
-  DCHECK(ellipsized_layout_object && ellipsized_layout_object->IsInline() &&
-         (ellipsized_layout_object->IsText() ||
-          ellipsized_layout_object->IsAtomicInlineLevel()));
-  NGTextFragmentBuilder builder(line_style_->GetWritingMode());
-  builder.SetText(ellipsized_layout_object, ellipsis_text, ellipsis_style,
-                  true /* is_ellipsis_style */,
-                  std::move(ellipsis_shape_result));
-
-  // Now the offset of the ellpisis is determined. Place the ellpisis into the
-  // line box.
   LayoutUnit ellipsis_inline_offset =
-      IsLtr(line_direction_)
-          ? ellipsized_child->InlineOffset() + ellipsized_child->inline_size
-          : ellipsized_child->InlineOffset() - ellipsis_width;
-  FontBaseline baseline_type = line_style_->GetFontBaseline();
-  NGLineHeightMetrics ellipsis_metrics(font_data->GetFontMetrics(),
-                                       baseline_type);
-  line_box->AddChild(
-      builder.ToTextFragment(),
-      LogicalOffset{ellipsis_inline_offset, -ellipsis_metrics.ascent},
-      ellipsis_width, 0);
-  return std::max(ellipsis_inline_offset + ellipsis_width, line_width);
+      PlaceEllipsisNextTo(line_box, ellipsized_child);
+  return std::max(ellipsis_inline_offset + ellipsis_width_, line_width);
 }
 
 // Hide this child from being painted. Leaves a hidden fragment so that layout

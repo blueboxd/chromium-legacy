@@ -5,7 +5,32 @@ for vim.
 Below are some UltiSnips snippets that other Chromium developers will hopefully
 find useful.
 
-## C++
+## Demos
+
+### Copyright, include guard and namespace
+
+The screencast below showcases how:
+
+- `copyright` + `<tab>` will fill-in current year
+- `#ifndef` + `<tab>` will calculate the macro name based on the path
+  of the current file
+- `namespace` + `<tab>` + `namespace_name` + `tab` will copy the namespace
+  name into a comment at the end of the namespace
+
+[![screencast](https://drive.google.com/uc?id=1aDrBQ9G3NG2lO74GXq5J_x3lukzWoZZj)]()
+
+
+### Ad-hoc logging
+
+The screenscast below showcases how:
+- `<< some->expression.logme` + `<tab>` includes the expression
+  text in the output
+- `<< stack` + `<tab>` logs the callstack
+
+[![screencast](https://drive.google.com/uc?id=1skLOswLaXQ97HEEwxhvZO_wO-xQ5YoxW)]()
+
+
+## C++ Snippets
 
 ### Copyright
 
@@ -32,6 +57,17 @@ ifndef ${1:`!p snip.rv=str(path).replace('/','_').replace('\\','_').replace('.',
 $0
 
 #endif  // $1
+endsnippet
+```
+
+
+### Namespace
+
+```Ultisnips
+snippet namespace
+namespace $1 {
+$0
+}  // namespace $1
 endsnippet
 ```
 

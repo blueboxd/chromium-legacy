@@ -101,8 +101,7 @@ class TestAnimationEffect : public AnimationEffect {
     DCHECK(!local_time || !IsNull(local_time.value()));
     local_time_ = local_time;
     time_to_next_iteration_ = time_to_next_iteration;
-    return AnimationTimeDelta::FromSecondsD(
-        std::numeric_limits<double>::infinity());
+    return AnimationTimeDelta::FromSecondsD(-1);
   }
   double TakeLocalTime() {
     DCHECK(local_time_);

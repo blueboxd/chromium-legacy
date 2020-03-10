@@ -195,11 +195,8 @@ std::unique_ptr<ImageProcessorBackend> LibYUVImageProcessorBackend::Create(
 
   if (input_config.fourcc.ToVideoPixelFormat() ==
       output_config.fourcc.ToVideoPixelFormat()) {
-    if (input_config.visible_rect.origin() != gfx::Point(0, 0) ||
-        output_config.visible_rect.origin() != gfx::Point(0, 0)) {
-      VLOGF(2) << "Visible rectangle is not (0, 0), "
-               << "input_config.visible_rect="
-               << input_config.visible_rect.ToString()
+    if (output_config.visible_rect.origin() != gfx::Point(0, 0)) {
+      VLOGF(2) << "Output visible rectangle is not (0, 0), "
                << "output_config.visible_rect="
                << output_config.visible_rect.ToString();
       return nullptr;
@@ -208,8 +205,12 @@ std::unique_ptr<ImageProcessorBackend> LibYUVImageProcessorBackend::Create(
     // This restriction is to simplify |intermediate_frame_| creation. It is
     // used as |tmp_buffer| in NV12Scale().
     // TODO(hiroh): Remove this restriction once libyuv:NV12Scale() is arrived.
-    if (!input_config.visible_rect.Contains(output_config.visible_rect)) {
-      VLOGF(2) << "Down-scaling support only";
+    if (!gfx::Rect(input_config.visible_rect.size())
+             .Contains(gfx::Rect(output_config.visible_rect.size()))) {
+      VLOGF(2) << "Down-scaling support only, input_config.visible_rect="
+               << input_config.visible_rect.ToString()
+               << ", output_config.visible_rect="
+               << output_config.visible_rect.ToString();
       return nullptr;
     }
   }
@@ -218,8 +219,8 @@ std::unique_ptr<ImageProcessorBackend> LibYUVImageProcessorBackend::Create(
   if (res == SupportResult::SupportedWithPivot) {
     intermediate_frame = VideoFrame::CreateFrame(
         PIXEL_FORMAT_I420, input_config.visible_rect.size(),
-        input_config.visible_rect, input_config.visible_rect.size(),
-        base::TimeDelta());
+        gfx::Rect(input_config.visible_rect.size()),
+        input_config.visible_rect.size(), base::TimeDelta());
     if (!intermediate_frame) {
       VLOGF(1) << "Failed to create intermediate frame";
       return nullptr;
@@ -357,7 +358,11 @@ int LibYUVImageProcessorBackend::DoConversion(const VideoFrame* const input,
         // output_visible_rect().GetArea() / 2. Although |intermediate_frame_|
         // is much larger than the required size, we use the frame to simplify
         // the code.
-        NV12Scale(intermediate_frame_->data(0), Y_UV_DATA(input),
+        NV12Scale(intermediate_frame_->data(0),
+                  input->visible_data(VideoFrame::kYPlane),
+                  input->stride(VideoFrame::kYPlane),
+                  input->visible_data(VideoFrame::kUPlane),
+                  input->stride(VideoFrame::kUPlane),
                   input->visible_rect().width(), input->visible_rect().height(),
                   Y_UV_DATA(output), output->visible_rect().width(),
                   output->visible_rect().height());

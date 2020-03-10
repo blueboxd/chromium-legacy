@@ -25,7 +25,8 @@ class NotificationSchedulerClient {
  public:
   using NotificationDataCallback =
       base::OnceCallback<void(std::unique_ptr<NotificationData>)>;
-
+  using ThrottleConfigCallback =
+      base::OnceCallback<void(std::unique_ptr<ThrottleConfig>)>;
   NotificationSchedulerClient() = default;
   virtual ~NotificationSchedulerClient() = default;
 
@@ -47,8 +48,8 @@ class NotificationSchedulerClient {
   virtual void OnUserAction(const UserActionData& action_data) = 0;
 
   // Used to pull customized throttle config from client and may override global
-  // config in the framework. Return |nullptr| if no customization is needed.
-  virtual std::unique_ptr<ThrottleConfig> GetThrottleConfig() = 0;
+  // config in the framework. Return |nullptr| to callback if no customization.
+  virtual void GetThrottleConfig(ThrottleConfigCallback callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerClient);

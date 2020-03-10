@@ -2245,6 +2245,20 @@ This file contains the strings for ash.
         To see notifications on your lock screen, unlock to change the setting
       </message>
 
+      <!-- Assistant Quick Answers -->
+      <message name="IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_TITLE_TEXT" desc="Title text of the dialog that opens up to seek user-consent for the Quick Answers feature.">
+        Get info related to your selection
+      </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_DESC_TEXT" desc="Description in the dialog that opens up to seek user-consent for the Quick Answers feature.">
+        With a right click or long press, Assistant shows you info related to what you select on the screen.
+      </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_MANAGE_SETTINGS_BUTTON" desc="Display text on the Manage-Settings button in the dialog that opens up to seek user-consent for the Quick Answers feature.">
+        Manage Settings
+      </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_GRANT_CONSENT_BUTTON" desc="Display text on the Grant-Consent button in the dialog that opens up to seek user-consent for the Quick Answers feature.">
+        Got it
+      </message>
+
       <!-- Media Notification -->
       <message name="IDS_ASH_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK" desc="The button to trigger media playback to go to the previous track.">
         Previous Track

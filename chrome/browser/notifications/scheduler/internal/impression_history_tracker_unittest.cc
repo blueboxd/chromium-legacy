@@ -91,8 +91,9 @@ class MockDelegate : public ImpressionHistoryTracker::Delegate {
  public:
   MockDelegate() = default;
   ~MockDelegate() final = default;
-  MOCK_METHOD1(GetThrottleConfig,
-               std::unique_ptr<ThrottleConfig>(SchedulerClientType));
+  MOCK_METHOD2(GetThrottleConfig,
+               void(SchedulerClientType,
+                    base::OnceCallback<void(std::unique_ptr<ThrottleConfig>)>));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
@@ -305,6 +306,13 @@ TEST_F(ImpressionHistoryTrackerTest, ConsecutiveDismisses) {
   CreateTracker(test_case);
   InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _));
+  EXPECT_CALL(*delegate(), GetThrottleConfig(_, _))
+      .Times(test_case.input.front().impressions.size())
+      .WillRepeatedly(Invoke(
+          [&](SchedulerClientType type,
+              base::OnceCallback<void(std::unique_ptr<ThrottleConfig>)> cb) {
+            std::move(cb).Run(nullptr);
+          }));
   UserActionData action_data(SchedulerClientType::kTest1,
                              UserActionType::kDismiss, "guid2");
   tracker()->OnUserAction(action_data);
@@ -397,8 +405,14 @@ TEST_P(ImpressionHistoryTrackerUserActionTest, UserAction) {
   CreateTracker(test_case);
   InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _));
-  if (GetParam().impression_result == ImpressionResult::kNegative) {
-    EXPECT_CALL(*delegate(), GetThrottleConfig(_));
+  if (GetParam().impression_result == ImpressionResult::kNegative ||
+      GetParam().user_feedback == UserFeedback::kDismiss) {
+    EXPECT_CALL(*delegate(), GetThrottleConfig(_, _))
+        .WillOnce(Invoke(
+            [&](SchedulerClientType type,
+                base::OnceCallback<void(std::unique_ptr<ThrottleConfig>)> cb) {
+              std::move(cb).Run(nullptr);
+            }));
   }
   // Trigger user action.
   if (GetParam().user_feedback == UserFeedback::kClick) {
@@ -419,7 +433,6 @@ TEST_P(ImpressionHistoryTrackerUserActionTest, UserAction) {
                                UserActionType::kDismiss, kGuid1);
     tracker()->OnUserAction(action_data);
   }
-
   VerifyClientStates(test_case);
 }
 

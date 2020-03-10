@@ -294,14 +294,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                 activity, mWindowAndroid, mFullUrl, showTitle, this, mView::setPermissions);
 
         mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
-
-        // TODO(crbug.com/1053859): For non-tab related WebContents (e.g.,
-        // PaymentHandlerCoordinator), TabSpecificContentSettings should be initiated when the
-        // WebContents is created. Reasons: CookieControlsBridge assumes that the webContents
-        // already has TabSpecificContentSettings. It's true for tab related WebContents; but it's
-        // not for non-tab related WebContents, e.g., PaymentHandlerCoordinator. Before it's fixed,
-        // we work around it by placing CookieControlsBridge after PageInfoControllerJni because the
-        // jni creates TabSpecificContentSettings for webContents.
         mBridge = new CookieControlsBridge(this, webContents);
         CookieControlsView.CookieControlsParams cookieControlsParams =
                 new CookieControlsView.CookieControlsParams();

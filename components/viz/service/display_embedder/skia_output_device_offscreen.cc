@@ -30,8 +30,14 @@ SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
                        did_swap_buffer_complete_callback),
       context_state_(context_state),
       has_alpha_(has_alpha) {
+  capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.output_surface_origin = origin;
   capabilities_.supports_post_sub_buffer = true;
+
+  capabilities_.sk_color_type = kSurfaceColorType;
+  capabilities_.gr_backend_format =
+      context_state_->gr_context()->defaultBackendFormat(kSurfaceColorType,
+                                                         GrRenderable::kYes);
 }
 
 SkiaOutputDeviceOffscreen::~SkiaOutputDeviceOffscreen() {
@@ -117,13 +123,16 @@ void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
 SkSurface* SkiaOutputDeviceOffscreen::BeginPaint() {
   DCHECK(backend_texture_.isValid());
   if (!sk_surface_) {
+    // LegacyFontHost will get LCD text and skia figures out what type to use.
+    SkSurfaceProps surface_props(0 /* flags */,
+                                 SkSurfaceProps::kLegacyFontHost_InitType);
     sk_surface_ = SkSurface::MakeFromBackendTexture(
         context_state_->gr_context(), backend_texture_,
         capabilities_.output_surface_origin == gfx::SurfaceOrigin::kTopLeft
             ? kTopLeft_GrSurfaceOrigin
             : kBottomLeft_GrSurfaceOrigin,
         0 /* sampleCount */, kSurfaceColorType, sk_color_space_,
-        nullptr /* surfaceProps */);
+        &surface_props);
   }
   return sk_surface_.get();
 }

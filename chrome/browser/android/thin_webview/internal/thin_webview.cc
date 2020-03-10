@@ -7,6 +7,8 @@
 #include "base/android/jni_android.h"
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/thin_webview/internal/jni_headers/ThinWebViewImpl_jni.h"
+#include "chrome/browser/ui/android/view_android_helper.h"
+#include "chrome/browser/ui/tab_helpers.h"
 #include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
 #include "content/public/browser/web_contents.h"
 
@@ -72,6 +74,10 @@ void ThinWebView::SetWebContents(content::WebContents* web_contents,
   web_contents_delegate_.reset(delegate);
   if (delegate)
     web_contents->SetDelegate(delegate);
+
+  TabHelpers::AttachTabHelpers(web_contents);
+  ViewAndroidHelper::FromWebContents(web_contents)
+      ->SetViewAndroid(web_contents->GetNativeView());
 }
 
 void ThinWebView::SizeChanged(JNIEnv* env,

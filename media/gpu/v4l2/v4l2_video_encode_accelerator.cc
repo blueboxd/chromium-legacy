@@ -160,6 +160,8 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
       native_input_mode_(false),
       output_buffer_byte_size_(0),
       output_format_fourcc_(0),
+      current_bitrate_(0),
+      current_framerate_(0),
       encoder_state_(kUninitialized),
       device_(std::move(device)),
       input_memory_type_(V4L2_MEMORY_USERPTR),
@@ -506,7 +508,6 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
 void V4L2VideoEncodeAccelerator::RequestEncodingParametersChange(
     uint32_t bitrate,
     uint32_t framerate) {
-  VLOGF(2) << "bitrate=" << bitrate << ", framerate=" << framerate;
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
 
   encoder_task_runner_->PostTask(
@@ -691,7 +692,7 @@ void V4L2VideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
   }
 
   if (frame && !ReconfigureFormatIfNeeded(*frame)) {
-    NOTIFY_ERROR(kInvalidArgumentError);
+    NOTIFY_ERROR(kPlatformFailureError);
     encoder_state_ = kError;
     return;
   }
@@ -721,8 +722,11 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
   }
 
   if (!input_buffer_map_.empty()) {
+    // TODO(crbug.com/1060057): Handle coded_size change.
     if (frame.coded_size() != input_frame_size_) {
-      VLOGF(1) << "Input frame size is changed during encoding";
+      VLOGF(1) << "Input frame size is changed during encoding"
+               << ", frame.coded_size()=" << frame.coded_size().ToString()
+               << ", input_frame_size=" << input_frame_size_.ToString();
       return false;
     }
     return true;
@@ -1288,6 +1292,9 @@ void V4L2VideoEncodeAccelerator::SetErrorState(Error error) {
 void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     uint32_t bitrate,
     uint32_t framerate) {
+  if (current_bitrate_ == bitrate && current_framerate_ == framerate)
+    return;
+
   VLOGF(2) << "bitrate=" << bitrate << ", framerate=" << framerate;
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   TRACE_EVENT2("media,gpu", "V4L2VEA::RequestEncodingParametersChangeTask",
@@ -1296,7 +1303,8 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
   DCHECK_GT(bitrate, 0u);
   DCHECK_GT(framerate, 0u);
 
-  if (!device_->SetExtCtrls(
+  if (current_bitrate_ != bitrate &&
+      !device_->SetExtCtrls(
           V4L2_CTRL_CLASS_MPEG,
           {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_BITRATE, bitrate)})) {
     VLOGF(1) << "Failed changing bitrate";
@@ -1304,13 +1312,18 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     return;
   }
 
-  struct v4l2_streamparm parms{};
-  parms.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  // Note that we are provided "frames per second" but V4L2 expects "time per
-  // frame"; hence we provide the reciprocal of the framerate here.
-  parms.parm.output.timeperframe.numerator = 1;
-  parms.parm.output.timeperframe.denominator = framerate;
-  IOCTL_OR_ERROR_RETURN(VIDIOC_S_PARM, &parms);
+  if (current_framerate_ != framerate) {
+    struct v4l2_streamparm parms {};
+    parms.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+    // Note that we are provided "frames per second" but V4L2 expects "time per
+    // frame"; hence we provide the reciprocal of the framerate here.
+    parms.parm.output.timeperframe.numerator = 1;
+    parms.parm.output.timeperframe.denominator = framerate;
+    IOCTL_OR_ERROR_RETURN(VIDIOC_S_PARM, &parms);
+  }
+
+  current_bitrate_ = bitrate;
+  current_framerate_ = framerate;
 }
 
 bool V4L2VideoEncodeAccelerator::SetOutputFormat(
@@ -1430,11 +1443,16 @@ bool V4L2VideoEncodeAccelerator::ApplyCrop() {
     visible_rect = crop.c;
   }
 
-  encoder_input_visible_rect_ =
-      gfx::Rect(visible_rect.left, visible_rect.top, visible_rect.width,
-                visible_rect.height);
-  VLOGF(2) << "After adjusted by driver, encoder_input_visible_rect_="
-           << encoder_input_visible_rect_.ToString();
+  const gfx::Rect adjusted_visible_rect(visible_rect.left, visible_rect.top,
+                                        visible_rect.width,
+                                        visible_rect.height);
+  if (encoder_input_visible_rect_ != adjusted_visible_rect) {
+    VLOGF(1) << "Unsupported visible rectangle: "
+             << encoder_input_visible_rect_.ToString()
+             << ", the rectangle adjusted by the driver: "
+             << adjusted_visible_rect.ToString();
+    return false;
+  }
   return true;
 }
 

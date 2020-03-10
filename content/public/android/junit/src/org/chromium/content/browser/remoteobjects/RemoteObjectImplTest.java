@@ -750,6 +750,11 @@ public final class RemoteObjectImplTest {
             public Object getFoo() {
                 return foo;
             }
+
+            @TestJavascriptInterface
+            public Object getNull() {
+                return null;
+            }
         };
 
         when(mIdAllocator.getObjectId(foo)).thenReturn(42);
@@ -757,8 +762,10 @@ public final class RemoteObjectImplTest {
         RemoteObject remoteObject = newRemoteObjectImpl(target, TestJavascriptInterface.class);
         RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
         remoteObject.invokeMethod("getFoo", new RemoteInvocationArgument[] {}, response);
+        remoteObject.invokeMethod("getNull", new RemoteInvocationArgument[] {}, response);
 
         verify(response).call(resultIsObject(42));
+        verify(response).call(resultIsNull());
     }
 
     private RemoteInvocationResult resultHasError(final int error) {
@@ -774,6 +781,14 @@ public final class RemoteObjectImplTest {
             return result.value != null
                     && result.value.which() == RemoteInvocationResultValue.Tag.SingletonValue
                     && result.value.getSingletonValue() == SingletonJavaScriptValue.UNDEFINED;
+        }));
+    }
+
+    private RemoteInvocationResult resultIsNull() {
+        return and(resultIsOk(), ArgumentMatchers.argThat(result -> {
+            return result.value != null
+                    && result.value.which() == RemoteInvocationResultValue.Tag.SingletonValue
+                    && result.value.getSingletonValue() == SingletonJavaScriptValue.NULL;
         }));
     }
 

@@ -19,6 +19,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/virtual_authenticator_request_delegate.h"
@@ -57,6 +58,15 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "url/url_constants.h"
 #include "url/url_util.h"
+
+#if defined(OS_MACOSX)
+#include "device/fido/mac/authenticator.h"
+#include "device/fido/mac/credential_metadata.h"
+#endif
+
+#if defined(OS_WIN)
+#include "device/fido/win/authenticator.h"
+#endif
 
 namespace content {
 
@@ -437,22 +447,88 @@ std::string ToJSONString(const std::string& in) {
   return ret;
 }
 
-base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags(
-    FrameTreeNode* frame_tree_node) {
-  if (AuthenticatorEnvironmentImpl::GetInstance()->GetVirtualFactoryFor(
-          frame_tree_node)) {
+bool IsUserVerifyingPlatformAuthenticatorAvailableImpl(
+    AuthenticatorRequestClientDelegate* delegate,
+    device::FidoDiscoveryFactory* discovery_factory,
+    BrowserContext* browser_context) {
+  base::Optional<bool> is_uvpaa_override =
+      delegate->IsUserVerifyingPlatformAuthenticatorAvailableOverride();
+  if (is_uvpaa_override) {
+    return *is_uvpaa_override;
+  }
+
+#if defined(OS_MACOSX)
+  const base::Optional<device::fido::mac::AuthenticatorConfig> config =
+      delegate->GetTouchIdAuthenticatorConfig();
+  if (!config) {
+    return false;
+  }
+  return device::fido::mac::TouchIdAuthenticator::IsAvailable(*config);
+#elif defined(OS_WIN)
+  if (browser_context->IsOffTheRecord()) {
+    return false;
+  }
+  return base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
+         device::WinWebAuthnApiAuthenticator::
+             IsUserVerifyingPlatformAuthenticatorAvailable(
+                 discovery_factory->win_webauthn_api());
+#else
+  return false;
+#endif
+}
+
+// GetAvailableTransports returns the set of transports that should be passed to
+// a FidoRequestHandler for the current request. This determines for which
+// transports the request handler will attempt to obtain FidoDiscovery
+// instances.
+base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
+    RenderFrameHost* render_frame_host,
+    AuthenticatorRequestClientDelegate* delegate,
+    const url::Origin& caller_origin) {
+  // U2F requests proxied from the cryptotoken extension are limited to USB
+  // devices.
+  if (WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
+          caller_origin)) {
+    return base::flat_set<device::FidoTransportProtocol>(
+        {device::FidoTransportProtocol::kUsbHumanInterfaceDevice});
+  }
+
+  // Try all transports if the FidoDiscoveryFactory has been injected in tests
+  // or via the testing API.
+  if (AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
+          static_cast<RenderFrameHostImpl*>(render_frame_host)
+              ->frame_tree_node())) {
     return device::GetAllTransportProtocols();
   }
+
   base::flat_set<device::FidoTransportProtocol> transports;
   transports.insert(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
-  transports.insert(device::FidoTransportProtocol::kInternal);
 
-  // TODO(crbug.com/885165): We should not directly access the BLE stack here.
-  // It is used by //device/fido, so its availability should be checked there.
-  if (!device::BluetoothAdapterFactory::Get().IsLowEnergySupported())
+  device::FidoDiscoveryFactory* discovery_factory =
+      AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
+          static_cast<RenderFrameHostImpl*>(render_frame_host)
+              ->frame_tree_node());
+  if (!discovery_factory) {
+    discovery_factory = delegate->GetDiscoveryFactory();
+  }
+
+  // Don't instantiate a platform discovery in contexts where IsUVPAA() would
+  // return false. This avoids platform authenticators mistakenly being
+  // available when e.g. an embedder provided implementation of
+  // IsUserVerifyingPlatformAuthenticatorAvailableOverride() returned false.
+  if (IsUserVerifyingPlatformAuthenticatorAvailableImpl(
+          delegate, discovery_factory,
+          content::WebContents::FromRenderFrameHost(render_frame_host)
+              ->GetBrowserContext())) {
+    transports.insert(device::FidoTransportProtocol::kInternal);
+  }
+
+  // FIXME(martinkr): Check whether this can be moved in front of the BLE
+  // adapter enumeration logic in FidoRequestHandlerBase.
+  if (!device::BluetoothAdapterFactory::Get().IsLowEnergySupported()) {
     return transports;
+  }
 
-  // caBLE is independent of the BLE transport.
   if (base::FeatureList::IsEnabled(features::kWebAuthCable) ||
       base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
     transports.insert(
@@ -462,28 +538,12 @@ base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags(
   return transports;
 }
 
-// Returns the transports to be used for a request made by |caller_origin|.
-base::flat_set<device::FidoTransportProtocol> GetTransports(
-    url::Origin caller_origin,
-    base::flat_set<device::FidoTransportProtocol> available_transports) {
-  // U2F requests proxied from the cryptotoken extension are limited to USB
-  // devices.
-  return WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
-             caller_origin)
-             ? base::flat_set<device::FidoTransportProtocol>(
-                   {device::FidoTransportProtocol::kUsbHumanInterfaceDevice})
-             : available_transports;
-}
-
 }  // namespace
 
 AuthenticatorCommon::AuthenticatorCommon(
     RenderFrameHost* render_frame_host,
     std::unique_ptr<base::OneShotTimer> timer)
     : render_frame_host_(render_frame_host),
-      transports_(GetTransportsEnabledByFlags(
-          static_cast<RenderFrameHostImpl*>(render_frame_host)
-              ->frame_tree_node())),
       security_checker_(static_cast<RenderFrameHostImpl*>(render_frame_host)
                             ->GetWebAuthRequestSecurityChecker()),
       timer_(std::move(timer)) {
@@ -541,7 +601,9 @@ void AuthenticatorCommon::StartMakeCredentialRequest(
   }
 
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
-      discovery_factory_, GetTransports(caller_origin_, transports_),
+      discovery_factory_,
+      GetAvailableTransports(render_frame_host_, request_delegate_.get(),
+                             caller_origin_),
       *ctap_make_credential_request_, *authenticator_selection_criteria_,
       allow_skipping_pin_touch,
       base::BindOnce(&AuthenticatorCommon::OnRegisterResponse,
@@ -606,7 +668,9 @@ void AuthenticatorCommon::StartGetAssertionRequest(
   }
 
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
-      discovery_factory_, GetTransports(caller_origin_, transports_),
+      discovery_factory_,
+      GetAvailableTransports(render_frame_host_, request_delegate_.get(),
+                             caller_origin_),
       *ctap_get_assertion_request_, allow_skipping_pin_touch,
       base::BindOnce(&AuthenticatorCommon::OnSignResponse,
                      weak_factory_.GetWeakPtr()));
@@ -1025,19 +1089,23 @@ void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
     blink::mojom::Authenticator::
         IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
   // Use |request_delegate_| if a request is currently in progress; or create a
-  // temporary request delegate otherwise.
-  //
-  // Note that |CreateRequestDelegate| may return nullptr if there is an active
-  // |request_delegate_| already.
+  // temporary request delegate otherwise. Note that CreateRequestDelegate() may
+  // return nullptr if there is an active |request_delegate_| already.
   std::unique_ptr<AuthenticatorRequestClientDelegate> maybe_request_delegate =
       request_delegate_ ? nullptr : CreateRequestDelegate();
   AuthenticatorRequestClientDelegate* request_delegate_ptr =
       request_delegate_ ? request_delegate_.get()
                         : maybe_request_delegate.get();
+  device::FidoDiscoveryFactory* discovery_factory =
+      AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
+          static_cast<RenderFrameHostImpl*>(render_frame_host_)
+              ->frame_tree_node());
+  if (!discovery_factory) {
+    discovery_factory = request_delegate_ptr->GetDiscoveryFactory();
+  }
 
-  const bool result =
-      request_delegate_ptr->IsUserVerifyingPlatformAuthenticatorAvailable();
-
+  const bool result = IsUserVerifyingPlatformAuthenticatorAvailableImpl(
+      request_delegate_ptr, discovery_factory, browser_context());
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }

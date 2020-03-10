@@ -33,9 +33,9 @@ void PrefetchNotificationClient::OnUserAction(
   NOTIMPLEMENTED();
 }
 
-std::unique_ptr<notifications::ThrottleConfig>
-PrefetchNotificationClient::GetThrottleConfig() {
-  return nullptr;
+void PrefetchNotificationClient::GetThrottleConfig(
+    ThrottleConfigCallback callback) {
+  std::move(callback).Run(nullptr);
 }
 
 }  // namespace offline_pages

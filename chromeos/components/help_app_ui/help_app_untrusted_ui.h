@@ -9,9 +9,12 @@ namespace content {
 class WebUIDataSource;
 }
 
+class HelpAppUIDelegate;
+
 namespace chromeos {
 // The data source creation for chrome-untrusted://help-app.
-content::WebUIDataSource* CreateHelpAppUntrustedDataSource();
+content::WebUIDataSource* CreateHelpAppUntrustedDataSource(
+    HelpAppUIDelegate* delegate);
 }  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_HELP_APP_UI_HELP_APP_UNTRUSTED_UI_H_

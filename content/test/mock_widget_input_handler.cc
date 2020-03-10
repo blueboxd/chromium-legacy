@@ -41,6 +41,11 @@ void MockWidgetInputHandler::MouseCaptureLost() {
       std::make_unique<DispatchedMessage>("MouseCaptureLost"));
 }
 
+void MockWidgetInputHandler::MouseLockLost() {
+  dispatched_messages_.emplace_back(
+      std::make_unique<DispatchedMessage>("MouseLockLost"));
+}
+
 void MockWidgetInputHandler::SetEditCommandsForNextKeyEvent(
     const std::vector<content::EditCommand>& commands) {
   dispatched_messages_.emplace_back(

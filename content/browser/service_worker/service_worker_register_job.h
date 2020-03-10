@@ -146,8 +146,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void InstallAndContinue();
   void DispatchInstallEvent(blink::ServiceWorkerStatusCode start_worker_status);
   void OnInstallFinished(int request_id,
-                         blink::mojom::ServiceWorkerEventStatus event_status,
-                         bool has_fetch_handler);
+                         blink::mojom::ServiceWorkerEventStatus event_status);
   void OnInstallFailed(blink::ServiceWorkerStatusCode status);
   void Complete(blink::ServiceWorkerStatusCode status);
   void Complete(blink::ServiceWorkerStatusCode status,

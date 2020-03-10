@@ -731,7 +731,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // EmbeddedWorkerInstance::Listener overrides:
   void OnScriptEvaluationStart() override;
   void OnStarting() override;
-  void OnStarted(blink::mojom::ServiceWorkerStartStatus status) override;
+  void OnStarted(blink::mojom::ServiceWorkerStartStatus status,
+                 bool has_fetch_handler) override;
   void OnStopping() override;
   void OnStopped(EmbeddedWorkerStatus old_status) override;
   void OnDetached(EmbeddedWorkerStatus old_status) override;

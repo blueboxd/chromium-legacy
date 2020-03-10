@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/find_in_page_budget_pool_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/test/recording_task_time_observer.h"
@@ -378,6 +379,8 @@ class MainThreadSchedulerImplTest : public testing::Test {
              main_frame_scheduler_->LoadingControlTaskQueueTraits())
             ->task_runner();
     timer_task_runner_ = timer_task_queue()->task_runner();
+    find_in_page_task_runner_ = main_frame_scheduler_->GetTaskRunner(
+        blink::TaskType::kInternalFindInPage);
   }
 
   TaskQueue* loading_task_queue() {
@@ -392,6 +395,15 @@ class MainThreadSchedulerImplTest : public testing::Test {
     return frame_task_queue_controller
         ->GetTaskQueue(
             main_frame_scheduler_->ThrottleableTaskQueueTraits())
+        .get();
+  }
+
+  MainThreadTaskQueue* find_in_page_task_queue() {
+    auto* frame_task_queue_controller =
+        main_frame_scheduler_->FrameTaskQueueControllerForTest();
+
+    return frame_task_queue_controller
+        ->GetTaskQueue(main_frame_scheduler_->FindInPageTaskQueueTraits())
         .get();
   }
 
@@ -750,6 +762,11 @@ class MainThreadSchedulerImplTest : public testing::Test {
               FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
                                         String::FromUTF8(task)));
           break;
+        case 'F':
+          find_in_page_task_runner_->PostTask(
+              FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
+                                        String::FromUTF8(task)));
+          break;
         default:
           NOTREACHED();
       }
@@ -837,6 +854,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> find_in_page_task_runner_;
   bool simulate_timer_task_ran_;
   bool initially_ensure_usecase_none_ = true;
   uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
@@ -3583,6 +3601,52 @@ TEST_F(MainThreadSchedulerImplTest, NonWakingTaskQueue) {
           std::make_pair("non-waking", start + base::TimeDelta::FromSeconds(5)),
           std::make_pair("regular (delayed)",
                          start + base::TimeDelta::FromSeconds(5))));
+}
+
+TEST_F(MainThreadSchedulerImplTest, FindInPageTasksAreVeryHighPriority) {
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "D1 D2 D3 F1 F2 F3");
+  EnableIdleTasks();
+  EXPECT_EQ(
+      scheduler_->find_in_page_priority(),
+      FindInPageBudgetPoolController::kFindInPageBudgetNotExhaustedPriority);
+  base::RunLoop().RunUntilIdle();
+  // Find-in-page tasks have very high task priority, so we will do them before
+  // the default tasks.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("F1", "F2", "F3", "D1", "D2", "D3"));
+}
+
+TEST_F(MainThreadSchedulerImplTest, FindInPageTasksChangeToNormalPriority) {
+  EXPECT_EQ(
+      scheduler_->find_in_page_priority(),
+      FindInPageBudgetPoolController::kFindInPageBudgetNotExhaustedPriority);
+  EnableIdleTasks();
+  // Simulate a really long find-in-page task that takes 30% of CPU time
+  // (300ms out of 1000 ms).
+  base::TimeTicks task_start_time = Now();
+  base::TimeTicks task_end_time =
+      task_start_time + base::TimeDelta::FromMilliseconds(300);
+  FakeTask fake_task;
+  fake_task.set_enqueue_order(
+      base::sequence_manager::EnqueueOrder::FromIntForTesting(42));
+  FakeTaskTiming task_timing(task_start_time, task_end_time);
+  scheduler_->OnTaskStarted(find_in_page_task_queue(), fake_task, task_timing);
+  AdvanceMockTickClockTo(task_start_time +
+                         base::TimeDelta::FromMilliseconds(1000));
+  scheduler_->OnTaskCompleted(find_in_page_task_queue()->AsWeakPtr(), fake_task,
+                              &task_timing, nullptr);
+
+  // Now the find-in-page tasks have normal priority (same priority as default
+  // tasks, so we will do them in order).
+  EXPECT_EQ(scheduler_->find_in_page_priority(),
+            FindInPageBudgetPoolController::kFindInPageBudgetExhaustedPriority);
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "D1 D2 F1 F2 D3 F3");
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("D1", "D2", "F1", "F2", "D3", "F3"));
 }
 
 class VeryHighPriorityForCompositingAlwaysExperimentTest

@@ -925,7 +925,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
           initWithBaseViewController:self.navigationController
                              browser:_browser
                                 mode:GoogleServicesSettingsModeSettings];
-  _googleServicesSettingsCoordinator.navigationController =
+  _googleServicesSettingsCoordinator.baseNavigationController =
       self.navigationController;
   _googleServicesSettingsCoordinator.delegate = self;
   [_googleServicesSettingsCoordinator start];

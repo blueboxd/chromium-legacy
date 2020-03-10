@@ -192,7 +192,7 @@ Component::Component(const UpdateContext& update_context, const std::string& id)
       state_(std::make_unique<StateNew>(this)),
       update_context_(update_context) {}
 
-Component::~Component() {}
+Component::~Component() = default;
 
 scoped_refptr<Configurator> Component::config() const {
   return update_context_.config;
@@ -317,6 +317,11 @@ void Component::SetUpdateCheckResult(
       FROM_HERE, std::move(update_check_complete_));
 }
 
+void Component::NotifyWait() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  NotifyObservers(Events::COMPONENT_WAIT);
+}
+
 bool Component::CanDoBackgroundDownload() const {
   // Foreground component updates are always downloaded in foreground.
   return !is_foreground() &&
@@ -330,6 +335,15 @@ void Component::AppendEvent(base::Value event) {
 
 void Component::NotifyObservers(UpdateClient::Observer::Events event) const {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // There is no corresponding component state for the COMPONENT_WAIT event.
+  if (update_context_.crx_state_change_callback &&
+      event != UpdateClient::Observer::Events::COMPONENT_WAIT) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindRepeating(update_context_.crx_state_change_callback,
+                            GetCrxUpdateItem()));
+  }
   update_context_.notify_observers_callback.Run(event, id_);
 }
 

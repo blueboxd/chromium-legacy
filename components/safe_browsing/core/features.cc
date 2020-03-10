@@ -103,16 +103,6 @@ const base::Feature kSafeBrowsingAvailableOnIOS{
 const base::Feature kSafeBrowsingSeparateNetworkContexts{
     "SafeBrowsingSeparateNetworkContexts", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSendOnFocusPing {
-  "SafeBrowsingSendOnFocusPing",
-      base::FEATURE_ENABLED_BY_DEFAULT
-};
-
-const base::Feature kSendPasswordReusePing {
-  "SafeBrowsingSendPasswordReusePing",
-      base::FEATURE_ENABLED_BY_DEFAULT
-};
-
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
     &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
 
@@ -154,8 +144,6 @@ constexpr struct {
     {&kRealTimeUrlLookupEnabledWithToken, true},
     {&kSafeBrowsingAvailableOnIOS, true},
     {&kSafeBrowsingSeparateNetworkContexts, true},
-    {&kSendOnFocusPing, true},
-    {&kSendPasswordReusePing, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

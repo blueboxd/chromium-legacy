@@ -22,8 +22,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.translate.TranslateMenu;
 import org.chromium.chrome.browser.infobar.translate.TranslateMenuHelper;
 import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -111,6 +115,7 @@ public class TranslateCompactInfoBar extends InfoBar
     private ImageButton mMenuButton;
     private InfoBarCompactLayout mParent;
 
+    private final SnackbarManageable mSnackbarManageable;
     private TranslateSnackbarController mSnackbarController;
 
     private boolean mMenuExpanded;
@@ -161,20 +166,24 @@ public class TranslateCompactInfoBar extends InfoBar
     };
 
     @CalledByNative
-    private static InfoBar create(int initialStep, String sourceLanguageCode,
+    private static InfoBar create(Tab tab, int initialStep, String sourceLanguageCode,
             String targetLanguageCode, boolean alwaysTranslate, boolean triggeredFromMenu,
             String[] languages, String[] languageCodes, int[] hashCodes, int tabTextColor) {
         recordInfobarAction(INFOBAR_IMPRESSION);
-        return new TranslateCompactInfoBar(initialStep, sourceLanguageCode, targetLanguageCode,
-                alwaysTranslate, triggeredFromMenu, languages, languageCodes, hashCodes,
-                tabTextColor);
+        SnackbarManageable snackbarManageable = tab != null ? ((TabImpl) tab).getActivity() : null;
+
+        return new TranslateCompactInfoBar(snackbarManageable, initialStep, sourceLanguageCode,
+                targetLanguageCode, alwaysTranslate, triggeredFromMenu, languages, languageCodes,
+                hashCodes, tabTextColor);
     }
 
-    TranslateCompactInfoBar(int initialStep, String sourceLanguageCode, String targetLanguageCode,
-            boolean alwaysTranslate, boolean triggeredFromMenu, String[] languages,
-            String[] languageCodes, int[] hashCodes, int tabTextColor) {
+    TranslateCompactInfoBar(SnackbarManageable snackbarManageable, int initialStep,
+            String sourceLanguageCode, String targetLanguageCode, boolean alwaysTranslate,
+            boolean triggeredFromMenu, String[] languages, String[] languageCodes, int[] hashCodes,
+            int tabTextColor) {
         super(R.drawable.infobar_translate_compact, 0, null, null);
 
+        mSnackbarManageable = snackbarManageable;
         mInitialStep = initialStep;
         mDefaultTextColor = tabTextColor;
         mOptions = TranslateOptions.create(sourceLanguageCode, targetLanguageCode, languages,
@@ -562,6 +571,10 @@ public class TranslateCompactInfoBar extends InfoBar
                         .setSingleLine(false)
                         .setAction(
                                 getContext().getString(R.string.translate_snackbar_cancel), null));
+    }
+
+    private SnackbarManager getSnackbarManager() {
+        return mSnackbarManageable != null ? mSnackbarManageable.getSnackbarManager() : null;
     }
 
     private void handleTranslateOptionPostSnackbar(int actionId) {

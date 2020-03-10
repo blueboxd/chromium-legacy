@@ -13,7 +13,8 @@
   height: 225px;
   overflow: hidden;
   position: relative;
-  top: 10%;
+  top: 50%;
+  transform: translate(0, -50%);
   width: 300px;
 }
 

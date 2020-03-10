@@ -48,7 +48,9 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
                          const std::string& app_name,
                          gfx::ImageSkia image,
                          apps::UninstallDialog* uninstall_dialog);
-  ~AppUninstallDialogView() override = default;
+  ~AppUninstallDialogView() override;
+
+  static AppUninstallDialogView* GetActiveViewForTesting();
 
   // views::BubbleDialogDelegateView:
   ui::ModalType GetModalType() const override;

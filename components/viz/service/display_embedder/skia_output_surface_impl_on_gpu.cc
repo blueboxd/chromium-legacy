@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/optional.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
@@ -831,24 +830,15 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   sync_point_client_state_->Destroy();
 }
 
-void SkiaOutputSurfaceImplOnGpu::Reshape(
-    const gfx::Size& size,
-    float device_scale_factor,
-    const gfx::ColorSpace& color_space,
-    gfx::BufferFormat format,
-    bool use_stencil,
-    gfx::OverlayTransform transform,
-    SkSurfaceCharacterization* characterization,
-    base::WaitableEvent* event) {
+void SkiaOutputSurfaceImplOnGpu::Reshape(const gfx::Size& size,
+                                         float device_scale_factor,
+                                         const gfx::ColorSpace& color_space,
+                                         gfx::BufferFormat format,
+                                         bool use_stencil,
+                                         gfx::OverlayTransform transform) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::Reshape");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(gr_context());
-
-  base::ScopedClosureRunner scoped_runner;
-  if (event) {
-    scoped_runner.ReplaceClosure(
-        base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
-  }
 
   if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
     return;
@@ -859,14 +849,6 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
                                transform)) {
     MarkContextLost();
     return;
-  }
-
-  if (characterization) {
-    // Start a paint temporarily for getting sk surface characterization.
-    scoped_output_device_paint_.emplace(output_device_.get());
-    output_sk_surface()->characterize(characterization);
-    DCHECK(characterization->isValid());
-    scoped_output_device_paint_.reset();
   }
 }
 
@@ -1611,10 +1593,10 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
 }
 
 bool SkiaOutputSurfaceImplOnGpu::MakeCurrent(bool need_fbo0) {
-  if (!is_using_vulkan()) {
-    if (context_state_->context_lost())
-      return false;
+  if (context_state_->context_lost())
+    return false;
 
+  if (gpu_preferences_.gr_context_type == gpu::GrContextType::kGL) {
     // Only make current with |gl_surface_|, if following operations will use
     // fbo0.
     if (!context_state_->MakeCurrent(need_fbo0 ? gl_surface_.get() : nullptr)) {

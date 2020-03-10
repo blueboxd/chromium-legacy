@@ -1482,7 +1482,7 @@ body.check-select #read-only-indicator {
 }
 
 body.files-ng .list-view .loading-indicator {
-  top: 56px;
+  top: 48px;
 }
 
 .thumbnail-view .loading-indicator {
@@ -2540,10 +2540,10 @@ body.files-ng #empty-folder {
 }
 
 body.files-ng .table-header {
-  border-bottom: none;
+  border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
   color: var(--google-grey-700);
   font-family: 'Roboto Medium';
-  height: 56px;
+  height: 48px;
   line-height: 20px;
 }
 
@@ -2575,7 +2575,7 @@ body.files-ng .table-label-container {
   align-items: center;
   display: flex;
   height: 32px;
-  padding-top: 14px;
+  padding-top: 8px;
 }
 
 /* Text in the column header */
@@ -2626,7 +2626,7 @@ body.files-ng .table-row-cell > * {
 body.files-ng .table-header-splitter  {
   background: none;
   height: 32px;
-  margin-top: 14px;
+  margin-top: 8px;
   width: auto;
 }
 

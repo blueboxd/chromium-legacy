@@ -4,6 +4,9 @@
 
 #include "extensions/browser/updater/update_service.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -139,7 +142,7 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
   if (complete_event) {
     // The update check for |extension_id| has completed, thus it can be
     // removed from all in-progress update checks.
-    DCHECK(updating_extension_ids_.count(extension_id) > 0);
+    DCHECK_GT(updating_extension_ids_.count(extension_id), 0u);
     updating_extension_ids_.erase(extension_id);
 
     bool install_immediately = false;
@@ -244,7 +247,7 @@ void UpdateService::StartUpdateCheck(
         base::BindOnce(&UpdateDataProvider::GetData, update_data_provider_,
                        update_params.install_immediately,
                        std::move(batch_data)),
-        update_params.priority == ExtensionUpdateCheckParams::FOREGROUND,
+        {}, update_params.priority == ExtensionUpdateCheckParams::FOREGROUND,
         base::BindOnce(&UpdateService::UpdateCheckComplete,
                        weak_ptr_factory_.GetWeakPtr()));
   }

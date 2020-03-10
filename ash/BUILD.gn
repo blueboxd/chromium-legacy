@@ -569,6 +569,8 @@ component("ash") {
     "quick_answers/quick_answers_ui_controller.h",
     "quick_answers/ui/quick_answers_view.cc",
     "quick_answers/ui/quick_answers_view.h",
+    "quick_answers/ui/user_consent_view.cc",
+    "quick_answers/ui/user_consent_view.h",
     "root_window_controller.cc",
     "root_window_settings.cc",
     "root_window_settings.h",

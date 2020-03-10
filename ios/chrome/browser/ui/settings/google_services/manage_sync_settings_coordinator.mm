@@ -62,7 +62,7 @@
 @implementation ManageSyncSettingsCoordinator
 
 - (void)start {
-  DCHECK(self.navigationController);
+  DCHECK(self.baseNavigationController);
   self.mediator = [[ManageSyncSettingsMediator alloc]
       initWithSyncService:self.syncService
           userPrefService:self.browserState->GetPrefs()];
@@ -75,8 +75,8 @@
   self.viewController.presentationDelegate = self;
   self.viewController.modelDelegate = self.mediator;
   self.mediator.consumer = self.viewController;
-  [self.navigationController pushViewController:self.viewController
-                                       animated:YES];
+  [self.baseNavigationController pushViewController:self.viewController
+                                           animated:YES];
   _syncObserver.reset(new SyncObserverBridge(self, self.syncService));
 }
 
@@ -95,9 +95,9 @@
       self.dismissWebAndAppSettingDetailsControllerBlock(NO);
       self.dismissWebAndAppSettingDetailsControllerBlock = nil;
     }
-    [self.navigationController popToViewController:self.viewController
-                                          animated:NO];
-    [self.navigationController popViewControllerAnimated:YES];
+    [self.baseNavigationController popToViewController:self.viewController
+                                              animated:NO];
+    [self.baseNavigationController popViewControllerAnimated:YES];
   }
 }
 
@@ -140,7 +140,8 @@
   controllerToPush.dispatcher = static_cast<
       id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>>(
       self.browser->GetCommandDispatcher());
-  [self.navigationController pushViewController:controllerToPush animated:YES];
+  [self.baseNavigationController pushViewController:controllerToPush
+                                           animated:YES];
 }
 
 - (void)openWebAppActivityDialog {

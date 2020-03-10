@@ -100,9 +100,9 @@ AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() {
 }
 #endif  // defined(OS_MACOSX)
 
-bool AuthenticatorRequestClientDelegate::
-    IsUserVerifyingPlatformAuthenticatorAvailable() {
-  return false;
+base::Optional<bool> AuthenticatorRequestClientDelegate::
+    IsUserVerifyingPlatformAuthenticatorAvailableOverride() {
+  return base::nullopt;
 }
 
 device::FidoDiscoveryFactory*

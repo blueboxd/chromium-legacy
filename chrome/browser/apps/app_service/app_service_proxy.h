@@ -155,6 +155,9 @@ class AppServiceProxy : public KeyedService,
       apps::IconLoader* icon_loader);
   void ReInitializeCrostiniForTesting(Profile* profile);
   void SetDialogCreatedCallbackForTesting(base::OnceClosure callback);
+  void UninstallForTesting(const std::string& app_id,
+                           gfx::NativeWindow parent_window,
+                           base::OnceClosure callback);
 
   // Returns a list of apps (represented by their ids) which can handle |url|.
   std::vector<std::string> GetAppIdsForUrl(const GURL& url);
@@ -263,6 +266,10 @@ class AppServiceProxy : public KeyedService,
       const std::string& app_id,
       apps::mojom::IntentFilterPtr intent_filter) override;
   void InitializePreferredApps(base::Value preferred_apps) override;
+
+  void UninstallImpl(const std::string& app_id,
+                     gfx::NativeWindow parent_window,
+                     base::OnceClosure callback);
 
   // Invoked when the uninstall dialog is closed. The app for the given
   // |app_type| and |app_id| will be uninstalled directly if |uninstall| is

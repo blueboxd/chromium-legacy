@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
-import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
@@ -239,14 +238,6 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
         mNativeInfoBarContainer = InfoBarContainerJni.get().init(InfoBarContainer.this);
-    }
-
-    public SnackbarManager getSnackbarManager() {
-        if (mTab != null && ((TabImpl) mTab).getActivity() != null) {
-            return ((TabImpl) mTab).getActivity().getSnackbarManager();
-        }
-
-        return null;
     }
 
     /**

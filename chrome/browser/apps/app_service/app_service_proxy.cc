@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -255,18 +256,7 @@ void AppServiceProxy::SetPermission(const std::string& app_id,
 
 void AppServiceProxy::Uninstall(const std::string& app_id,
                                 gfx::NativeWindow parent_window) {
-  if (app_service_.is_connected()) {
-    cache_.ForOneApp(
-        app_id, [this, parent_window](const apps::AppUpdate& update) {
-          apps::mojom::IconKeyPtr icon_key = update.IconKey();
-          uninstall_dialogs_.emplace(std::make_unique<UninstallDialog>(
-              profile_, update.AppType(), update.AppId(), update.Name(),
-              std::move(icon_key), this, parent_window,
-              base::BindOnce(&AppServiceProxy::OnUninstallDialogClosed,
-                             weak_ptr_factory_.GetWeakPtr(), update.AppType(),
-                             update.AppId())));
-        });
-  }
+  UninstallImpl(app_id, parent_window, base::DoNothing());
 }
 
 #if defined(OS_CHROMEOS)
@@ -378,6 +368,12 @@ void AppServiceProxy::SetDialogCreatedCallbackForTesting(
   dialog_created_callback_ = std::move(callback);
 }
 
+void AppServiceProxy::UninstallForTesting(const std::string& app_id,
+                                          gfx::NativeWindow parent_window,
+                                          base::OnceClosure callback) {
+  UninstallImpl(app_id, parent_window, std::move(callback));
+}
+
 std::vector<std::string> AppServiceProxy::GetAppIdsForUrl(const GURL& url) {
   return GetAppIdsForIntent(apps_util::CreateIntentFromUrl(url));
 }
@@ -484,6 +480,27 @@ void AppServiceProxy::OnPreferredAppRemoved(
 void AppServiceProxy::InitializePreferredApps(base::Value preferred_apps) {
   preferred_apps_.Init(
       std::make_unique<base::Value>(std::move(preferred_apps)));
+}
+
+void AppServiceProxy::UninstallImpl(const std::string& app_id,
+                                    gfx::NativeWindow parent_window,
+                                    base::OnceClosure callback) {
+  if (!app_service_.is_connected()) {
+    return;
+  }
+
+  cache_.ForOneApp(app_id, [this, parent_window,
+                            &callback](const apps::AppUpdate& update) {
+    apps::mojom::IconKeyPtr icon_key = update.IconKey();
+    auto uninstall_dialog = std::make_unique<UninstallDialog>(
+        profile_, update.AppType(), update.AppId(), update.Name(),
+        std::move(icon_key), this, parent_window,
+        base::BindOnce(&AppServiceProxy::OnUninstallDialogClosed,
+                       weak_ptr_factory_.GetWeakPtr(), update.AppType(),
+                       update.AppId()));
+    uninstall_dialog->SetDialogCreatedCallbackForTesting(std::move(callback));
+    uninstall_dialogs_.emplace(std::move(uninstall_dialog));
+  });
 }
 
 void AppServiceProxy::OnUninstallDialogClosed(

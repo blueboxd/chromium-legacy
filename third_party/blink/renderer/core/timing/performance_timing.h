@@ -124,6 +124,9 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // are the time and size of it.
   uint64_t LargestTextPaint() const;
   uint64_t LargestTextPaintSize() const;
+  // The time at which we are notified of the first input or scroll event which
+  // causes the largest contentful paint algorithm to stop.
+  uint64_t FirstInputOrScrollNotifiedTimestamp() const;
   // The duration between the hardware timestamp and being queued on the main
   // thread for the first click, tap, key press, cancellable touchstart, or
   // pointer down followed by a pointer up.

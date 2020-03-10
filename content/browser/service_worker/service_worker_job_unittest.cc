@@ -816,8 +816,8 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,
             StartServiceWorker(version.get()));
 
-  version->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  EXPECT_EQ(version->fetch_handler_existence(),
+            ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version->SetStatus(ServiceWorkerVersion::INSTALLED);
   registration->SetWaitingVersion(version);
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
@@ -1065,22 +1065,23 @@ TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
 }
 
-// A fake service worker for toggling whether a fetch event handler exists.
-class FetchHandlerWorker : public FakeServiceWorker {
+// A fake instance client for toggling whether a fetch event handler exists.
+class FetchHandlerInstanceClient : public FakeEmbeddedWorkerInstanceClient {
  public:
-  FetchHandlerWorker(EmbeddedWorkerTestHelper* helper)
-      : FakeServiceWorker(helper) {}
-  ~FetchHandlerWorker() override = default;
+  explicit FetchHandlerInstanceClient(EmbeddedWorkerTestHelper* helper)
+      : FakeEmbeddedWorkerInstanceClient(helper) {}
+  ~FetchHandlerInstanceClient() override = default;
 
   void set_has_fetch_handler(bool has_fetch_handler) {
     has_fetch_handler_ = has_fetch_handler;
   }
 
-  void DispatchInstallEvent(
-      blink::mojom::ServiceWorker::DispatchInstallEventCallback callback)
-      override {
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            has_fetch_handler_);
+ protected:
+  void EvaluateScript() override {
+    host()->OnScriptEvaluationStart();
+    host()->OnStarted(blink::mojom::ServiceWorkerStartStatus::kNormalCompletion,
+                      has_fetch_handler_, helper()->GetNextThreadId(),
+                      blink::mojom::EmbeddedWorkerStartTiming::New());
   }
 
  private:
@@ -1094,7 +1095,8 @@ TEST_F(ServiceWorkerJobTest, HasFetchHandler) {
   scoped_refptr<ServiceWorkerRegistration> registration;
 
   auto* fetch_handler_worker =
-      helper_->AddNewPendingServiceWorker<FetchHandlerWorker>(helper_.get());
+      helper_->AddNewPendingInstanceClient<FetchHandlerInstanceClient>(
+          helper_.get());
   fetch_handler_worker->set_has_fetch_handler(true);
   RunRegisterJob(script, options);
   // Wait until the worker becomes active.
@@ -1105,7 +1107,8 @@ TEST_F(ServiceWorkerJobTest, HasFetchHandler) {
   RunUnregisterJob(options.scope);
 
   auto* no_fetch_handler_worker =
-      helper_->AddNewPendingServiceWorker<FetchHandlerWorker>(helper_.get());
+      helper_->AddNewPendingInstanceClient<FetchHandlerInstanceClient>(
+          helper_.get());
   no_fetch_handler_worker->set_has_fetch_handler(false);
   RunRegisterJob(script, options);
   // Wait until the worker becomes active.
@@ -1258,7 +1261,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
       host()->OnScriptEvaluationStart();
       host()->OnStarted(
           blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion,
-          helper()->GetNextThreadId(),
+          /*has_fetch_handler=*/false, helper()->GetNextThreadId(),
           blink::mojom::EmbeddedWorkerStartTiming::New());
     }
 

@@ -122,8 +122,8 @@ class OptimizationGuideHintsManager
 
   // Invokes |callback| with the decision for |navigation_url| and
   // |optimization_type|, when sufficient information has been collected by
-  // |this| to make the decision.
-  void CanApplyOptimizationAsync(
+  // |this| to make the decision. Virtual for testing.
+  virtual void CanApplyOptimizationAsync(
       const GURL& navigation_url,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationGuideDecisionCallback callback);

@@ -18,7 +18,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 
 namespace quota_internals {
 

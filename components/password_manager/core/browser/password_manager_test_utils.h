@@ -35,6 +35,21 @@ scoped_refptr<RefcountedKeyedService> BuildPasswordStore(Context* context) {
   return store;
 }
 
+// As above, but allows passing parameters to the to-be-created store. The
+// parameters are specified *before* context so that they can be bound (as in
+// base::BindRepeating(&BuildPasswordStoreWithArgs<...>, my_arg)), leaving
+// |context| as a free parameter for TestingFactory.
+template <class Context, class Store, typename... Args>
+scoped_refptr<RefcountedKeyedService> BuildPasswordStoreWithArgs(
+    Args... args,
+    Context* context) {
+  scoped_refptr<password_manager::PasswordStore> store(
+      new Store(std::forward<Args>(args)...));
+  if (!store->Init(syncer::SyncableService::StartSyncFlare(), nullptr))
+    return nullptr;
+  return store;
+}
+
 // Struct used for creation of PasswordForms from static arrays of data.
 // Note: This is only meant to be used in unit test.
 struct PasswordFormData {

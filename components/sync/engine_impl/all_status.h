@@ -7,10 +7,11 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/synchronization/lock.h"
+#include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/sync_status.h"
 #include "components/sync/engine_impl/nudge_source.h"
@@ -19,12 +20,12 @@
 
 namespace syncer {
 
-class ScopedStatusLock;
+class SyncStatusObserver;
 struct SyncCycleEvent;
 
 // This class watches various sync engine components, updating its internal
-// state upon change. It can return a snapshot of this state as a SyncerStatus
-// object, aggregating all this data into one place.
+// state upon change. It can send to observers a snapshot of this state as a
+// SyncStatus object, aggregating all this data into one place.
 //
 // Most of this data ends up on the about:sync page.  But the page is only
 // 'pinged' to update itself at the end of a sync cycle.  A user could refresh
@@ -37,6 +38,11 @@ class AllStatus : public SyncEngineEventListener {
   AllStatus();
   ~AllStatus() override;
 
+  // Adds an observer which will receive a call whenever this object changes.
+  // The |observer| gets notification after being added right away. |observer|
+  // must not be null and must outlive this object.
+  void AddObserver(SyncStatusObserver* observer);
+
   // SyncEngineEventListener implementation.
   void OnSyncCycleEvent(const SyncCycleEvent& event) override;
   void OnActionableError(const SyncProtocolError& error) override;
@@ -45,8 +51,6 @@ class AllStatus : public SyncEngineEventListener {
   void OnBackedOffTypesChanged(ModelTypeSet backed_off_types) override;
   void OnMigrationRequested(ModelTypeSet types) override;
   void OnProtocolEvent(const ProtocolEvent& event) override;
-
-  SyncStatus status() const;
 
   void SetNotificationsEnabled(bool notifications_enabled);
 
@@ -72,21 +76,17 @@ class AllStatus : public SyncEngineEventListener {
 
   SyncStatus status_;
 
-  mutable base::Lock mutex_;  // Protects all data members.
-
  private:
   friend class ScopedStatusLock;
 
+  // Notifies all observers about changing of status.
+  void NotifyStatusChanged();
+
+  std::vector<SyncStatusObserver*> sync_status_observers_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(AllStatus);
-};
-
-class ScopedStatusLock {
- public:
-  explicit ScopedStatusLock(AllStatus* allstatus);
-  ~ScopedStatusLock();
-
- protected:
-  AllStatus* allstatus_;
 };
 
 }  // namespace syncer

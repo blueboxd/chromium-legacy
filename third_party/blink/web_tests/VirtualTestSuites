@@ -390,11 +390,6 @@
              "--disable-blink-features=RestrictAutomaticLazyImageLoadingToDataSaver"]
   },
   {
-    "prefix": "origin-policy",
-    "bases": ["external/wpt/origin-policy"],
-    "args": ["--enable-features=OriginPolicy"]
-  },
-  {
     "prefix" : "lazyload-policy",
     "bases": ["external/wpt/feature-policy/experimental-features/lazyload"],
     "args": ["--enable-blink-features=LazyFrameLoading,AutomaticLazyFrameLoading,LazyImageLoading,AutomaticLazyImageLoading",

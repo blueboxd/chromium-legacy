@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/independent_otr_profile_manager.h"
@@ -30,6 +31,7 @@ class HatsWebDialog : public ui::WebDialogDelegate {
   static void Create(Browser* browser, const std::string& site_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(HatsWebDialogBrowserTest, Cookies);
   friend class TestHatsWebDialog;
   friend class HatsWebDialogBrowserTest;
 

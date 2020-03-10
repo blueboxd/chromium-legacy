@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
-#include "services/device/public/mojom/usb_manager_test.mojom.h"
+#include "services/device/public/mojom/usb_manager_test.mojom-forward.h"
 
 class UsbInternalsPageHandler : public mojom::UsbInternalsPageHandler {
  public:

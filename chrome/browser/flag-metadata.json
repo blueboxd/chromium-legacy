@@ -2236,7 +2236,7 @@
   },
   {
     "name": "file-handling-api",
-    "owners": ["harrisjay@chromium.org", "raymes@chromium.org"],
+    "owners": ["mgiuca@chromium.org", "oyiptong@chromium.org"],
     "expiry_milestone": 82
   },
   {

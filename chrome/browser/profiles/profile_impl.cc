@@ -1270,7 +1270,10 @@ bool ProfileImpl::ShouldEnableOutOfBlinkCors() {
   // NetworkContexts will be initialized based on this returned mode.
   if (!cors_legacy_mode_enabled_.has_value()) {
     cors_legacy_mode_enabled_ =
-        GetPrefs()->GetBoolean(prefs::kCorsLegacyModeEnabled);
+        base::FeatureList::IsEnabled(
+            features::kHideCorsLegacyModeEnabledPolicySupport)
+            ? false
+            : GetPrefs()->GetBoolean(prefs::kCorsLegacyModeEnabled);
   }
   if (cors_legacy_mode_enabled_.value())
     return false;

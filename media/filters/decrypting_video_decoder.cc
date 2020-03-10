@@ -86,7 +86,7 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   state_ = kPendingDecoderInit;
   decryptor_->InitializeVideoDecoder(
-      config_, BindToCurrentLoop(base::Bind(
+      config_, BindToCurrentLoop(base::BindOnce(
                    &DecryptingVideoDecoder::FinishInitialization, weak_this_)));
 }
 

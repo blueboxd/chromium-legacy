@@ -243,6 +243,28 @@ class TreeItem extends cr.ui.TreeItem {
    * ShortcutItem that don't have children, thus don't need expand icon.
    */
   updateExpandIcon() {}
+
+  /**
+   * Change current directory to the entry of this item.
+   */
+  activate() {}
+
+  /**
+   * Invoked when the tree item is clicked.
+   *
+   * @param {Event} e Click event.
+   * @override
+   */
+  handleClick(e) {
+    super.handleClick(e);
+    if (e.button === 2) {
+      return;
+    }
+    if (e.target.classList.contains('expand-icon')) {
+      return;
+    }
+    this.activate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -593,12 +615,8 @@ class DirectoryItem extends TreeItem {
   handleClick(e) {
     super.handleClick(e);
 
-    if (!this.entry || e.button === 2) {
+    if (!this.entry) {
       return;
-    }
-
-    if (!e.target.classList.contains('expand-icon')) {
-      this.directoryModel_.activateDirectoryEntry(this.entry);
     }
 
     // If this is DriveVolumeItem, the UMA has already been recorded.
@@ -753,6 +771,7 @@ class DirectoryItem extends TreeItem {
 
   /**
    * Change current directory to the entry of this item.
+   * @override
    */
   activate() {
     if (this.entry) {
@@ -1151,7 +1170,6 @@ class VolumeItem extends DirectoryItem {
     const onEntryResolved = (entry) => {
       // Changes directory to the model item's root directory if needed.
       if (!util.isSameEntry(directoryModel.getCurrentDirEntry(), entry)) {
-        metrics.recordUserAction('FolderShortcut.Navigate');
         directoryModel.changeDirectoryEntry(entry);
       }
       // In case of failure in resolveDisplayRoot() in the volume's constructor,
@@ -1410,9 +1428,10 @@ class DriveVolumeItem extends VolumeItem {
 
   /**
    * Change current entry to the entry corresponding to My Drive.
+   * @override
    */
   activate() {
-    VolumeItem.prototype.activate.call(this);
+    super.activate();
     this.selectDisplayRoot_(this);
   }
 
@@ -1635,7 +1654,6 @@ class ShortcutItem extends TreeItem {
     if (e.button === 2) {
       return;
     }
-    this.activate();
 
     // Resets file selection when a volume is clicked.
     this.parentTree_.directoryModel.clearSelection();
@@ -1666,6 +1684,7 @@ class ShortcutItem extends TreeItem {
 
   /**
    * Change current entry to the entry corresponding to this shortcut.
+   * @override
    */
   activate() {
     const directoryModel = this.parentTree_.directoryModel;
@@ -1841,7 +1860,7 @@ class FakeItem extends TreeItem {
    * @override
    */
   handleClick(e) {
-    this.activate();
+    super.handleClick(e);
 
     DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
         this, e, this.rootType_, true);
@@ -1858,6 +1877,7 @@ class FakeItem extends TreeItem {
 
   /**
    * Executes the command.
+   * @override
    */
   activate() {
     this.parentTree_.directoryModel.activateDirectoryEntry(this.entry);

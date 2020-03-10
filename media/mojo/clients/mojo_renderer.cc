@@ -97,10 +97,10 @@ void MojoRenderer::InitializeRendererFromStreams(
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
-  remote_renderer_->Initialize(
-      client_receiver_.BindNewEndpointAndPassRemote(),
-      std::move(stream_proxies), nullptr,
-      base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
+  remote_renderer_->Initialize(client_receiver_.BindNewEndpointAndPassRemote(),
+                               std::move(stream_proxies), nullptr,
+                               base::BindOnce(&MojoRenderer::OnInitialized,
+                                              base::Unretained(this), client));
 }
 
 void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
@@ -118,10 +118,10 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
       url_params.media_url, url_params.site_for_cookies,
       url_params.top_frame_origin, url_params.allow_credentials,
       url_params.is_hls);
-  remote_renderer_->Initialize(
-      client_receiver_.BindNewEndpointAndPassRemote(), base::nullopt,
-      std::move(media_url_params),
-      base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
+  remote_renderer_->Initialize(client_receiver_.BindNewEndpointAndPassRemote(),
+                               base::nullopt, std::move(media_url_params),
+                               base::BindOnce(&MojoRenderer::OnInitialized,
+                                              base::Unretained(this), client));
 }
 
 void MojoRenderer::SetCdm(CdmContext* cdm_context,
@@ -179,7 +179,7 @@ void MojoRenderer::Flush(base::OnceClosure flush_cb) {
 
   flush_cb_ = std::move(flush_cb);
   remote_renderer_->Flush(
-      base::Bind(&MojoRenderer::OnFlushed, base::Unretained(this)));
+      base::BindOnce(&MojoRenderer::OnFlushed, base::Unretained(this)));
 }
 
 void MojoRenderer::StartPlayingFrom(base::TimeDelta time) {
@@ -346,7 +346,7 @@ void MojoRenderer::BindRemoteRendererIfNeeded() {
   // |remote_renderer_|, and the error handler can't be invoked once
   // |remote_renderer_| is destroyed.
   remote_renderer_.set_disconnect_handler(
-      base::Bind(&MojoRenderer::OnConnectionError, base::Unretained(this)));
+      base::BindOnce(&MojoRenderer::OnConnectionError, base::Unretained(this)));
 }
 
 void MojoRenderer::OnInitialized(media::RendererClient* client, bool success) {

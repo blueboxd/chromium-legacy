@@ -1007,6 +1007,7 @@ void ForEachMatchingFormFieldCommon(
     const FormData& data,
     FieldFilterMask filters,
     bool force_override,
+    bool is_preview,
     const Callback& callback) {
   DCHECK(control_elements);
 
@@ -1027,6 +1028,16 @@ void ForEachMatchingFormFieldCommon(
     return;
   }
 
+  // The intended behaviour is:
+  // * Autofill the currently focused element.
+  // * Send the blur event.
+  // * For each other element, focus -> autofill -> blur.
+  // * Send the focus event for the initially focused element.
+  WebFormControlElement* initially_focused_element = nullptr;
+
+  // This container stores the indexes of non-focused elements to be autofilled.
+  std::vector<size_t> autofillable_elements_index;
+
   // It's possible that the site has injected fields into the form after the
   // page has loaded, so we can't assert that the size of the cached control
   // elements is equal to the size of the fields in |form|.  Fortunately, the
@@ -1045,11 +1056,27 @@ void ForEachMatchingFormFieldCommon(
     static base::NoDestructor<WebString> kValue("value");
     static base::NoDestructor<WebString> kPlaceholder("placeholder");
 
-    if (!is_initiating_element &&
-        element->GetAutofillState() == WebAutofillState::kAutofilled)
+    if (((filters & FILTER_DISABLED_ELEMENTS) && !element->IsEnabled()) ||
+        ((filters & FILTER_READONLY_ELEMENTS) && element->IsReadOnly()) ||
+        // See description for FILTER_NON_FOCUSABLE_ELEMENTS.
+        ((filters & FILTER_NON_FOCUSABLE_ELEMENTS) && !element->IsFocusable() &&
+         !IsSelectElement(*element))) {
+      continue;
+    }
+
+    // Autofill the initiating element.
+    if (is_initiating_element) {
+      if (!is_preview && element->Focused())
+        initially_focused_element = element;
+
+      callback(data.fields[i], is_initiating_element, element);
+      continue;
+    }
+
+    if (element->GetAutofillState() == WebAutofillState::kAutofilled)
       continue;
 
-    if (!force_override && !is_initiating_element &&
+    if (!force_override &&
         // A text field, with a non-empty value that is entered by the user,
         // and is NOT the value of the input field's "value" or "placeholder"
         // attribute, is skipped. Some sites fill the fields with formatting
@@ -1065,24 +1092,40 @@ void ForEachMatchingFormFieldCommon(
          element->GetAttribute(*kValue) != element->Value()) &&
         (!element->HasAttribute(*kPlaceholder) ||
          base::i18n::ToLower(element->GetAttribute(*kPlaceholder).Utf16()) !=
-             base::i18n::ToLower(element->Value().Utf16())))
+             base::i18n::ToLower(element->Value().Utf16()))) {
       continue;
+    }
 
     // Check if we should autofill/preview/clear a select element or leave it.
-    if (!force_override && !is_initiating_element &&
-        IsSelectElement(*element) && element->UserHasEditedTheField() &&
-        !SanitizedFieldIsEmpty(element->Value().Utf16()))
+    if (!force_override && IsSelectElement(*element) &&
+        element->UserHasEditedTheField() &&
+        !SanitizedFieldIsEmpty(element->Value().Utf16())) {
       continue;
+    }
 
-    if (((filters & FILTER_DISABLED_ELEMENTS) && !element->IsEnabled()) ||
-        ((filters & FILTER_READONLY_ELEMENTS) && element->IsReadOnly()) ||
-        // See description for FILTER_NON_FOCUSABLE_ELEMENTS.
-        ((filters & FILTER_NON_FOCUSABLE_ELEMENTS) && !element->IsFocusable() &&
-         !IsSelectElement(*element)))
-      continue;
-
-    callback(data.fields[i], is_initiating_element, element);
+    // Storing the indexes of non-initiating elements to be autofilled after
+    // triggering the blur event for the initiating element.
+    autofillable_elements_index.push_back(i);
   }
+
+  // If there is no other field to be autofilled, sending the blur event and
+  // then the focus event for the initiating element does not make sense.
+  if (autofillable_elements_index.empty())
+    return;
+
+  // A blur event is emitted for the focused element if it is the initiating
+  // element before all other elements are autofilled.
+  if (initially_focused_element)
+    initially_focused_element->DispatchBlurEvent();
+
+  // Autofill the non-initiating elements.
+  for (const auto& index : autofillable_elements_index)
+    callback(data.fields[index], false, &(*control_elements)[index]);
+
+  // A focus event is emitted for the initiating element after autofilling is
+  // completed. It is not intended to work for the preview filling.
+  if (initially_focused_element)
+    initially_focused_element->DispatchFocusEvent();
 }
 
 // For each autofillable field in |data| that matches a field in the |form|,
@@ -1092,11 +1135,12 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
                               const FormData& data,
                               FieldFilterMask filters,
                               bool force_override,
+                              bool is_preview,
                               const Callback& callback) {
   std::vector<WebFormControlElement> control_elements =
       ExtractAutofillableElementsInForm(form_element);
   ForEachMatchingFormFieldCommon(&control_elements, initiating_element, data,
-                                 filters, force_override, callback);
+                                 filters, force_override, is_preview, callback);
 }
 
 // For each autofillable field in |data| that matches a field in the set of
@@ -1106,6 +1150,7 @@ void ForEachMatchingUnownedFormField(const WebElement& initiating_element,
                                      const FormData& data,
                                      FieldFilterMask filters,
                                      bool force_override,
+                                     bool is_preview,
                                      const Callback& callback) {
   if (initiating_element.IsNull())
     return;
@@ -1117,7 +1162,7 @@ void ForEachMatchingUnownedFormField(const WebElement& initiating_element,
     return;
 
   ForEachMatchingFormFieldCommon(&control_elements, initiating_element, data,
-                                 filters, force_override, callback);
+                                 filters, force_override, is_preview, callback);
 }
 
 // Sets the |field|'s value to the value in |data|, and specifies the section
@@ -1969,38 +2014,36 @@ bool FindFormAndFieldForFormControlElement(
 void FillForm(const FormData& form, const WebFormControlElement& element) {
   WebFormElement form_element = element.Form();
   if (form_element.IsNull()) {
-    ForEachMatchingUnownedFormField(element,
-                                    form,
+    ForEachMatchingUnownedFormField(element, form,
                                     FILTER_ALL_NON_EDITABLE_ELEMENTS,
                                     false, /* dont force override */
+                                    false, /* not a preview filling */
                                     &FillFormField);
     return;
   }
 
-  ForEachMatchingFormField(form_element,
-                           element,
-                           form,
+  ForEachMatchingFormField(form_element, element, form,
                            FILTER_ALL_NON_EDITABLE_ELEMENTS,
                            false, /* dont force override */
+                           false, /* not a preview filling */
                            &FillFormField);
 }
 
 void PreviewForm(const FormData& form, const WebFormControlElement& element) {
   WebFormElement form_element = element.Form();
   if (form_element.IsNull()) {
-    ForEachMatchingUnownedFormField(element,
-                                    form,
+    ForEachMatchingUnownedFormField(element, form,
                                     FILTER_ALL_NON_EDITABLE_ELEMENTS,
                                     false, /* dont force override */
+                                    true,  /* preview filling */
                                     &PreviewFormField);
     return;
   }
 
-  ForEachMatchingFormField(form_element,
-                           element,
-                           form,
+  ForEachMatchingFormField(form_element, element, form,
                            FILTER_ALL_NON_EDITABLE_ELEMENTS,
                            false, /* dont force override */
+                           true,  /* preview filling */
                            &PreviewFormField);
 }
 

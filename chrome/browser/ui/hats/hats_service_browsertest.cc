@@ -411,7 +411,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
   EXPECT_TRUE(metadata.is_survey_full.has_value());
 }
 
-IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, CookiesBlockedNoShow) {
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, CookiesBlockedShow) {
   SetMetricsConsent(true);
   auto* settings_map =
       HostContentSettingsMapFactory::GetInstance()->GetForProfile(
@@ -419,23 +419,26 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, CookiesBlockedNoShow) {
   settings_map->SetDefaultContentSetting(ContentSettingsType::COOKIES,
                                          CONTENT_SETTING_BLOCK);
   GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
-  EXPECT_FALSE(HatsBubbleShown());
+  WaitForSurveyStatusCallback();
+  EXPECT_TRUE(HatsBubbleShown());
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
-                       ThirdPartyCookiesBlockedNoShow) {
+                       ThirdPartyCookiesBlockedShow) {
   SetMetricsConsent(true);
   PrefService* pref_service = browser()->profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kBlockThirdPartyCookies, true);
   GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
-  EXPECT_FALSE(HatsBubbleShown());
+  WaitForSurveyStatusCallback();
+  EXPECT_TRUE(HatsBubbleShown());
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceImprovedCookieControlsEnabled,
-                       ThirdPartyCookiesBlockedInIncognitoNoShow) {
+                       ThirdPartyCookiesBlockedInIncognitoShow) {
   SetMetricsConsent(true);
   GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
-  EXPECT_FALSE(HatsBubbleShown());
+  WaitForSurveyStatusCallback();
+  EXPECT_TRUE(HatsBubbleShown());
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceImprovedCookieControlsEnabled,

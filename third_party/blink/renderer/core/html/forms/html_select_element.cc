@@ -1255,12 +1255,6 @@ void HTMLSelectElement::HandleMouseRelease() {
   ListBoxOnChange();
 }
 
-void HTMLSelectElement::ToggleSelection(HTMLOptionElement& option) {
-  active_selection_state_ = !active_selection_state_;
-  UpdateSelectedState(&option, true /*multi*/, false /*shift*/);
-  ListBoxOnChange();
-}
-
 void HTMLSelectElement::DefaultEventHandler(Event& event) {
   if (!GetLayoutObject())
     return;

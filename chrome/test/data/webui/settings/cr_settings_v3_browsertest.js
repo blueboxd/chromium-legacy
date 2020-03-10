@@ -472,3 +472,24 @@ var CrSettingsBasicPageV3Test = class extends CrSettingsV3BrowserTest {
 TEST_F('CrSettingsBasicPageV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrSettingsMainPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/settings_main_test.m.js';
+  }
+};
+
+// Copied from Polymer 2 version of tests:
+// Times out on Windows Tests (dbg). See https://crbug.com/651296.
+// Times out / crashes on chromium.linux/Linux Tests (dbg) crbug.com/667882
+// Times out on Linux CFI. See http://crbug.com/929288.
+GEN('#if !defined(NDEBUG) || (defined(OS_LINUX) && defined(IS_CFI))');
+GEN('#define MAYBE_MainPageV3 DISABLED_MainPageV3');
+GEN('#else');
+GEN('#define MAYBE_MainPageV3 MainPageV3');
+GEN('#endif');
+TEST_F('CrSettingsMainPageV3Test', 'MAYBE_MainPageV3', function() {
+  mocha.run();
+});

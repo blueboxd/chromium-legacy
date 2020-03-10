@@ -650,6 +650,7 @@ INSTANTIATE_TEST_SUITE_P(
 enum class CorsTestMode {
   kWithCorsMitigationListPolicy,
   kWithoutCorsMitigationListPolicy,
+  kWithHiddenCorsMitigationListPolicy,
 };
 
 class CorsExtraSafelistedHeaderNamesTest
@@ -658,26 +659,29 @@ class CorsExtraSafelistedHeaderNamesTest
  public:
   CorsExtraSafelistedHeaderNamesTest() {
     switch (GetParam()) {
-      case CorsTestMode::kWithCorsMitigationListPolicy: {
-        auto list = std::make_unique<base::ListValue>();
-        list->AppendString("bar");
-        policy::PolicyMap policies;
-        policies.Set(policy::key::kCorsMitigationList,
-                     policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                     policy::POLICY_SOURCE_CLOUD, std::move(list), nullptr);
-        provider_.UpdateChromePolicy(policies);
+      case CorsTestMode::kWithCorsMitigationListPolicy:
+        SetUpPolicy();
         scoped_feature_list_.InitWithFeaturesAndParameters(
             {{network::features::kOutOfBlinkCors, {}},
              {features::kExtraSafelistedRequestHeadersForOutOfBlinkCors,
               {{"extra-safelisted-request-headers-for-enterprise", "foo"}}}},
-            {});
+            {{features::kHideCorsMitigationListPolicySupport}, {}});
         break;
-      }
       case CorsTestMode::kWithoutCorsMitigationListPolicy:
         scoped_feature_list_.InitWithFeaturesAndParameters(
             {{network::features::kOutOfBlinkCors, {}},
              {features::kExtraSafelistedRequestHeadersForOutOfBlinkCors,
               {{"extra-safelisted-request-headers", "foo,bar"}}}},
+            {});
+        break;
+      case CorsTestMode::kWithHiddenCorsMitigationListPolicy:
+        SetUpPolicy();
+        scoped_feature_list_.InitWithFeaturesAndParameters(
+            {{network::features::kOutOfBlinkCors, {}},
+             {features::kHideCorsMitigationListPolicySupport, {}},
+             {features::kExtraSafelistedRequestHeadersForOutOfBlinkCors,
+              {{"extra-safelisted-request-headers-for-enterprise",
+                "foo,bar"}}}},
             {});
         break;
     }
@@ -729,6 +733,16 @@ class CorsExtraSafelistedHeaderNamesTest
       "/cors-extra-safelisted-header-names.html";
 
  private:
+  void SetUpPolicy() {
+    auto list = std::make_unique<base::ListValue>();
+    list->AppendString("bar");
+    policy::PolicyMap policies;
+    policies.Set(policy::key::kCorsMitigationList,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD, std::move(list), nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     std::unique_ptr<net::test_server::BasicHttpResponse> response =
@@ -812,3 +826,8 @@ INSTANTIATE_TEST_SUITE_P(
     WithoutCorsMitigationListPolicy,
     CorsExtraSafelistedHeaderNamesTest,
     testing::Values(CorsTestMode::kWithoutCorsMitigationListPolicy));
+
+INSTANTIATE_TEST_SUITE_P(
+    WithHiddenCorsMitigationListPolicy,
+    CorsExtraSafelistedHeaderNamesTest,
+    testing::Values(CorsTestMode::kWithHiddenCorsMitigationListPolicy));

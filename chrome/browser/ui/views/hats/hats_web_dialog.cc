@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/browser_resources.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -81,8 +83,20 @@ HatsWebDialog::HatsWebDialog(Browser* browser, const std::string& site_id)
       browser_(browser),
       site_id_(site_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(
-      otr_profile_registration_->profile()->IsIndependentOffTheRecordProfile());
+  Profile* profile = off_the_record_profile();
+  DCHECK(profile->IsIndependentOffTheRecordProfile());
+
+  // As this is not a user-facing profile, force enable cookies for the
+  // resources loaded by HaTS.
+  auto* settings_map = HostContentSettingsMapFactory::GetForProfile(profile);
+  settings_map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromString("[*.]google.com"),
+      ContentSettingsPattern::Wildcard(), ContentSettingsType::COOKIES,
+      /* resource_identifier= */ std::string(), CONTENT_SETTING_ALLOW);
+  settings_map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromString("[*.]doubleclick.net"),
+      ContentSettingsPattern::Wildcard(), ContentSettingsType::COOKIES,
+      /* resource_identifier= */ std::string(), CONTENT_SETTING_ALLOW);
 }
 
 HatsWebDialog::~HatsWebDialog() {

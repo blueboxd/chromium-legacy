@@ -456,8 +456,8 @@ class WebmMuxerTestUnparametrized : public testing::Test {
     webm_muxer_ = nullptr;
     media::WebMStreamParser parser;
     parser.Init(
-        base::BindRepeating(&WebmMuxerTestUnparametrized::OnInit,
-                            base::Unretained(this)),
+        base::BindOnce(&WebmMuxerTestUnparametrized::OnInit,
+                       base::Unretained(this)),
         base::BindRepeating(&WebmMuxerTestUnparametrized::OnNewConfig,
                             base::Unretained(this)),
         base::BindRepeating(&WebmMuxerTestUnparametrized::OnNewBuffers,

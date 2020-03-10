@@ -482,6 +482,7 @@ extern const char kUIMaxAutocompleteMatchesByProviderParam[];
 extern const char kOnDeviceHeadSuggestIncognitoServeMode[];
 extern const char kOnDeviceHeadSuggestDelaySuggestRequestMs[];
 extern const char kOnDeviceHeadSuggestMaxScoreForNonUrlInput[];
+extern const char kOnDeviceHeadSuggestMaxScoreForNonUrlInputIncognito[];
 extern const char kOnDeviceHeadSuggestDemoteMode[];
 
 // The amount of time to wait before sending a new suggest request after the

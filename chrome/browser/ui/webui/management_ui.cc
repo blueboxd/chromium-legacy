@@ -58,6 +58,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementReportNetworkInterfaces,
      IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES},
     {kManagementReportUsers, IDS_MANAGEMENT_REPORT_DEVICE_USERS},
+    {kManagementReportCrashReports, IDS_MANAGEMENT_REPORT_DEVICE_CRASH_REPORTS},
     {kManagementPrinting, IDS_MANAGEMENT_REPORT_PRINTING},
     {kManagementCrostini, IDS_MANAGEMENT_CROSTINI},
     {kManagementCrostiniContainerConfiguration,

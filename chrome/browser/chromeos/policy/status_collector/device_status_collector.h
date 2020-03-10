@@ -201,6 +201,7 @@ class DeviceStatusCollector : public StatusCollector,
   bool ShouldReportNetworkInterfaces() const override;
   bool ShouldReportUsers() const override;
   bool ShouldReportHardwareStatus() const override;
+  bool ShouldReportCrashReportInfo() const override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

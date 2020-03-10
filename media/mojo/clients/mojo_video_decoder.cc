@@ -188,7 +188,8 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   remote_decoder_->Initialize(
       config, low_delay, cdm_id,
-      base::Bind(&MojoVideoDecoder::OnInitializeDone, base::Unretained(this)));
+      base::BindOnce(&MojoVideoDecoder::OnInitializeDone,
+                     base::Unretained(this)));
 }
 
 void MojoVideoDecoder::OnInitializeDone(bool status,
@@ -232,8 +233,8 @@ void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   uint64_t decode_id = decode_counter_++;
   pending_decodes_[decode_id] = std::move(decode_cb);
   remote_decoder_->Decode(std::move(mojo_buffer),
-                          base::Bind(&MojoVideoDecoder::OnDecodeDone,
-                                     base::Unretained(this), decode_id));
+                          base::BindOnce(&MojoVideoDecoder::OnDecodeDone,
+                                         base::Unretained(this), decode_id));
 }
 
 void MojoVideoDecoder::OnVideoFrameDecoded(
@@ -347,7 +348,7 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   remote_decoder_bound_ = true;
 
   remote_decoder_.set_disconnect_handler(
-      base::Bind(&MojoVideoDecoder::Stop, base::Unretained(this)));
+      base::BindOnce(&MojoVideoDecoder::Stop, base::Unretained(this)));
 
   // Create |video_frame_handle_releaser| interface receiver, and bind
   // |mojo_video_frame_handle_releaser_| to it.

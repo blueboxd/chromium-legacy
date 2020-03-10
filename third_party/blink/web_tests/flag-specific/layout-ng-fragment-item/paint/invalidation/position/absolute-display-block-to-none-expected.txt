@@ -1,0 +1,28 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "NGPhysicalTextFragment 'When an absolute positioned element is set display:none, we should not invalidate the whole body.'",
+          "rect": [8, 8, 621, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'When an absolute positioned element is set display:none, we should not invalidate the whole body.'",
+          "rect": [8, 8, 621, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='absolute'",
+          "rect": [100, 100, 100, 100],
+          "reason": "disappeared"
+        }
+      ]
+    }
+  ]
+}
+

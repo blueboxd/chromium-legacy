@@ -39,6 +39,7 @@ std::vector<mojom::DiagnosticRoutineEnum> MakeAvailableRoutines() {
       mojom::DiagnosticRoutineEnum::kCpuCache,
       mojom::DiagnosticRoutineEnum::kCpuStress,
       mojom::DiagnosticRoutineEnum::kFloatingPointAccuracy,
+      mojom::DiagnosticRoutineEnum::kNvmeWearLevel,
   };
 }
 
@@ -332,6 +333,20 @@ TEST_F(CrosHealthdServiceConnectionTest, RunFloatingPointAccuracyRoutine) {
   base::RunLoop run_loop;
   ServiceConnection::GetInstance()->RunFloatingPointAccuracyRoutine(
       /*exec_duration=*/base::TimeDelta::FromSeconds(10),
+      base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
+        EXPECT_EQ(response, MakeRunRoutineResponse());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(CrosHealthdServiceConnectionTest, RunNvmeWearLevelRoutine) {
+  // Test that we can run the NVMe wear-level routine.
+  auto response = MakeRunRoutineResponse();
+  FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(response);
+  base::RunLoop run_loop;
+  ServiceConnection::GetInstance()->RunNvmeWearLevelRoutine(
+      /*wear_level_threshold=*/50,
       base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
         EXPECT_EQ(response, MakeRunRoutineResponse());
         run_loop.Quit();

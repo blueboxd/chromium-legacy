@@ -61,6 +61,9 @@ class FakeCrosHealthdService final
   void RunFloatingPointAccuracyRoutine(
       uint32_t length_seconds,
       RunFloatingPointAccuracyRoutineCallback callback) override;
+  void RunNvmeWearLevelRoutine(
+      uint32_t wear_level_threshold,
+      RunNvmeWearLevelRoutineCallback callback) override;
 
   // CrosHealthdProbeService overrides:
   void ProbeTelemetryInfo(

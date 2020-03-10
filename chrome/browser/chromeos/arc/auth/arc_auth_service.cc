@@ -565,7 +565,9 @@ void ArcAuthService::IsAccountManagerAvailable(
 void ArcAuthService::HandleAddAccountRequest() {
   DCHECK(chromeos::IsAccountManagerAvailable(profile_));
 
-  chromeos::InlineLoginHandlerDialogChromeOS::Show();
+  chromeos::InlineLoginHandlerDialogChromeOS::Show(
+      std::string() /*email*/,
+      chromeos::InlineLoginHandlerDialogChromeOS::Source::kArc);
 }
 
 void ArcAuthService::HandleRemoveAccountRequest(const std::string& email) {
@@ -578,7 +580,8 @@ void ArcAuthService::HandleRemoveAccountRequest(const std::string& email) {
 void ArcAuthService::HandleUpdateCredentialsRequest(const std::string& email) {
   DCHECK(chromeos::IsAccountManagerAvailable(profile_));
 
-  chromeos::InlineLoginHandlerDialogChromeOS::Show(email);
+  chromeos::InlineLoginHandlerDialogChromeOS::Show(
+      email, chromeos::InlineLoginHandlerDialogChromeOS::Source::kArc);
 }
 
 void ArcAuthService::OnRefreshTokenUpdatedForAccount(

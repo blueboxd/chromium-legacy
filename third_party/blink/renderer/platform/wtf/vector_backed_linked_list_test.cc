@@ -77,13 +77,16 @@ TEST(VectorBackedLinkedList, MoveTo) {
   List list;
 
   list.push_back(1);
+  list.MoveTo(list.begin(), list.end());
+  List::iterator it = list.begin();
+  EXPECT_EQ(*it, 1);
   list.push_back(2);
   list.push_back(3);
 
   List::iterator target = list.begin();
   list.MoveTo(target, list.end());  // {2, 3, 1}
 
-  List::iterator it = list.begin();
+  it = list.begin();
   EXPECT_EQ(*it, 2);
   ++it;
   EXPECT_EQ(*it, 3);
@@ -102,6 +105,24 @@ TEST(VectorBackedLinkedList, MoveTo) {
 
   target = it;
   list.MoveTo(target, --it);  // {3, 1, 2}
+  it = list.begin();
+  EXPECT_EQ(*it, 3);
+  ++it;
+  EXPECT_EQ(*it, 1);
+  ++it;
+  EXPECT_EQ(*it, 2);
+
+  list.MoveTo(list.begin(), list.begin());
+  it = list.begin();
+  EXPECT_EQ(*it, 3);
+  ++it;
+  EXPECT_EQ(*it, 1);
+  ++it;
+  EXPECT_EQ(*it, 2);
+
+  target = list.begin();
+  List::iterator position = ++list.begin();
+  list.MoveTo(target, position);
   it = list.begin();
   EXPECT_EQ(*it, 3);
   ++it;

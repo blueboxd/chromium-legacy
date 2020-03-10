@@ -70,6 +70,10 @@ class ServiceConnectionImpl : public ServiceConnection {
       const base::TimeDelta& exec_duration,
       mojom::CrosHealthdDiagnosticsService::
           RunFloatingPointAccuracyRoutineCallback callback) override;
+  void RunNvmeWearLevelRoutine(
+      uint32_t wear_level_threshold,
+      mojom::CrosHealthdDiagnosticsService::RunNvmeWearLevelRoutineCallback
+          callback) override;
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
@@ -204,6 +208,16 @@ void ServiceConnectionImpl::RunFloatingPointAccuracyRoutine(
   BindCrosHealthdDiagnosticsServiceIfNeeded();
   cros_healthd_diagnostics_service_->RunFloatingPointAccuracyRoutine(
       exec_duration.InSeconds(), std::move(callback));
+}
+
+void ServiceConnectionImpl::RunNvmeWearLevelRoutine(
+    uint32_t wear_level_threshold,
+    mojom::CrosHealthdDiagnosticsService::RunNvmeWearLevelRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunNvmeWearLevelRoutine(
+      wear_level_threshold, std::move(callback));
 }
 
 void ServiceConnectionImpl::ProbeTelemetryInfo(

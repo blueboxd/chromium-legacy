@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
+#include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom-forward.h"
 #include "chrome/browser/ui/webui/feed_internals/feed_internals_page_handler.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"

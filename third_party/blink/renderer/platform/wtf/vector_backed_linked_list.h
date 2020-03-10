@@ -432,14 +432,23 @@ typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::insert(
 template <typename T>
 void VectorBackedLinkedList<T>::MoveTo(const_iterator target,
                                        const_iterator new_position) {
+  DCHECK(target != end());
+  if (target == new_position)
+    return;
+
   wtf_size_t target_index = target.GetIndex();
   Node& target_node = nodes_[target_index];
+  wtf_size_t new_position_index = new_position.GetIndex();
+  Node& new_position_node = nodes_[new_position_index];
+  wtf_size_t prev_index = new_position_node.prev_index_;
+
+  if (prev_index == target_index)
+    return;
+
   Unlink(target_node);
 
-  wtf_size_t new_position_index = new_position.GetIndex();
-  wtf_size_t prev_index = nodes_[new_position_index].prev_index_;
   nodes_[prev_index].next_index_ = target_index;
-  nodes_[new_position_index].prev_index_ = target_index;
+  new_position_node.prev_index_ = target_index;
   target_node.prev_index_ = prev_index;
   target_node.next_index_ = new_position_index;
 }
@@ -456,6 +465,7 @@ typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::erase(
   node.value_ = HashTraits<T>::EmptyValue();
 
   node.next_index_ = free_head_index_;
+  node.prev_index_ = kNotFound;
   free_head_index_ = position_index;
 
   size_--;

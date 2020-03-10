@@ -27,6 +27,7 @@
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/engine/sync_status_observer.h"
 #include "components/sync/syncable/user_share.h"
 #include "url/gurl.h"
 
@@ -44,7 +45,8 @@ class NigoriHandlerProxy;
 class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
                           public base::trace_event::MemoryDumpProvider,
                           public SyncManager::Observer,
-                          public TypeDebugInfoObserver {
+                          public TypeDebugInfoObserver,
+                          public SyncStatusObserver {
  public:
   using AllNodesCallback =
       base::OnceCallback<void(const ModelType,
@@ -78,6 +80,9 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
                                const UpdateCounters& counters) override;
   void OnStatusCountersUpdated(ModelType type,
                                const StatusCounters& counters) override;
+
+  // SyncStatusObserver implementation.
+  void OnSyncStatusChanged(const SyncStatus& status) override;
 
   // Forwards an invalidation state change to the sync manager.
   void DoOnInvalidatorStateChange(InvalidatorState state);

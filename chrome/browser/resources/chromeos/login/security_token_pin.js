@@ -181,6 +181,8 @@ Polymer({
     this.processingCompletion_ = false;
     this.hasValue_ = false;
     this.userEdited_ = false;
+
+    this.focus();
   },
 
   /**

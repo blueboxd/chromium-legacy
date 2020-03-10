@@ -230,8 +230,9 @@ UserShare* SyncEngineImpl::GetUserShare() const {
 }
 
 SyncEngineImpl::Status SyncEngineImpl::GetDetailedStatus() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsInitialized());
-  return backend_->sync_manager()->GetDetailedStatus();
+  return cached_status_;
 }
 
 void SyncEngineImpl::HasUnsyncedItemsForTest(
@@ -433,6 +434,11 @@ void SyncEngineImpl::UpdateInvalidationVersions(
     const std::map<ModelType, int64_t>& invalidation_versions) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_prefs_->UpdateInvalidationVersions(invalidation_versions);
+}
+
+void SyncEngineImpl::HandleSyncStatusChanged(const SyncStatus& status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  cached_status_ = status;
 }
 
 void SyncEngineImpl::OnCookieJarChanged(bool account_mismatch,

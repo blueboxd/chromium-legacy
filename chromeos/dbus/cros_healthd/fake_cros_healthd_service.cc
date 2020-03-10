@@ -88,6 +88,12 @@ void FakeCrosHealthdService::RunFloatingPointAccuracyRoutine(
   std::move(callback).Run(run_routine_response_.Clone());
 }
 
+void FakeCrosHealthdService::RunNvmeWearLevelRoutine(
+    uint32_t wear_level_threshold,
+    RunNvmeWearLevelRoutineCallback callback) {
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
 void FakeCrosHealthdService::ProbeTelemetryInfo(
     const std::vector<mojom::ProbeCategoryEnum>& categories,
     ProbeTelemetryInfoCallback callback) {

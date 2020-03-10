@@ -430,7 +430,7 @@ cr.define('settings', function() {
     }
   }
 
-  class SearchRequest {
+  /* #export */ class SearchRequest {
     /**
      * @param {string} rawQuery
      * @param {!Element} root
@@ -630,7 +630,7 @@ cr.define('settings', function() {
    * Sets the SearchManager singleton instance, useful for testing.
    * @param {!SearchManager} searchManager
    */
-  function setSearchManagerForTesting(searchManager) {
+  /* #export */ function setSearchManagerForTesting(searchManager) {
     instance = searchManager;
   }
 

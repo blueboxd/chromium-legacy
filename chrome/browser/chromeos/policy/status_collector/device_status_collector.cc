@@ -2246,6 +2246,9 @@ bool DeviceStatusCollector::ShouldReportUsers() const {
 bool DeviceStatusCollector::ShouldReportHardwareStatus() const {
   return report_hardware_status_;
 }
+bool DeviceStatusCollector::ShouldReportCrashReportInfo() const {
+  return report_crash_report_info_ && stat_reporting_pref_;
+}
 
 void DeviceStatusCollector::OnOSVersion(const std::string& version) {
   os_version_ = version;

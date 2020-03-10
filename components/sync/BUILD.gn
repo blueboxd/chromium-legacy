@@ -101,6 +101,8 @@ jumbo_static_library("rest_of_sync") {
     "engine/sync_manager_factory.h",
     "engine/sync_status.cc",
     "engine/sync_status.h",
+    "engine/sync_status_observer.cc",
+    "engine/sync_status_observer.h",
     "engine/sync_string_conversions.cc",
     "engine/sync_string_conversions.h",
     "engine/ui_model_worker.cc",

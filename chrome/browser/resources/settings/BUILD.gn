@@ -235,6 +235,7 @@ group("closure_compile_module") {
     "reset_page:closure_compile_module",
     "search_engines_page:closure_compile_module",
     "search_page:closure_compile_module",
+    "settings_main:closure_compile_module",
     "settings_menu:closure_compile_module",
     "settings_page:closure_compile_module",
   ]

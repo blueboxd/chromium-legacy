@@ -4460,6 +4460,12 @@
   <message name="IDS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_TEXT" desc="Text body for the Chrome OS Account Manager error screen when addition of secondary Google Accounts is disabled.">
     Your administrator has disabled the addition of more Google Accounts
   </message>
+  <message name="IDS_ACCOUNT_MANAGER_CHILD_USER_ARC_DISABLED_TITLE" desc="Title for the Chrome OS Account Manager error screen when addition of accounts in ARC++ is disabled for child users.">
+    Can't add account
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_CHILD_USER_ARC_DISABLED_TEXT" desc="Text body for the Chrome OS Account Manager error screen when addition of accounts in ARC++ is disabled for child users.">
+    Adding G Suite for Education account in Android apps is not supported.
+  </message>
 
   <!-- Strings for Account Manager welcome screen -->
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_TITLE" desc="Title for the Chrome OS Account Manager Welcome screen.">

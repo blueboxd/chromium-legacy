@@ -250,15 +250,11 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[::prefs::kDnsOverHttpsTemplates] =
       settings_api::PrefType::PREF_TYPE_STRING;
 
-  // Security page
+  // Sync and personalization page.
   (*s_whitelist)[::prefs::kSafeBrowsingEnabled] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kSafeBrowsingEnhanced] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kSafeBrowsingScoutReportingEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-
-  // Sync and personalization page.
   (*s_whitelist)[::prefs::kSearchSuggestEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)

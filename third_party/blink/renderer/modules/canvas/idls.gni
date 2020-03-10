@@ -32,3 +32,6 @@ if (support_webgl2_compute_context) {
     "offscreencanvas/offscreen_canvas_module.idl",
   ]
 }
+
+modules_testing_dependency_idl_files =
+    [ "canvas2d/testing/internals_canvas_rendering_context_2d.idl" ]

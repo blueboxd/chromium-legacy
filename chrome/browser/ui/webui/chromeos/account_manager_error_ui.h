@@ -15,11 +15,12 @@ namespace chromeos {
 class AccountManagerErrorUI : public ui::WebDialogUI {
  public:
   explicit AccountManagerErrorUI(content::WebUI* web_ui);
+  AccountManagerErrorUI(const AccountManagerErrorUI&) = delete;
+  AccountManagerErrorUI& operator=(const AccountManagerErrorUI&) = delete;
   ~AccountManagerErrorUI() override;
 
  private:
   base::WeakPtrFactory<AccountManagerErrorUI> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(AccountManagerErrorUI);
 };
 
 }  // namespace chromeos

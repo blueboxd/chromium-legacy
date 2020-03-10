@@ -51,6 +51,7 @@ class JsBackend;
 class JsEventHandler;
 class ProtocolEvent;
 class SyncCycleSnapshot;
+class SyncStatusObserver;
 class TypeDebugInfoObserver;
 class UnrecoverableErrorHandler;
 struct UserShare;
@@ -255,6 +256,9 @@ class SyncManager {
     std::string cache_guid;
     std::string birthday;
     std::string bag_of_chips;
+
+    // List of observers to be added to AllStatus.
+    std::vector<SyncStatusObserver*> sync_status_observers;
   };
 
   // The state of sync the feature. If the user turned on sync explicitly, it
@@ -331,9 +335,6 @@ class SyncManager {
   // Observer is being destroyed so the SyncManager doesn't
   // potentially dereference garbage.
   virtual void RemoveObserver(Observer* observer) = 0;
-
-  // Status-related getter.  May be called on any thread.
-  virtual SyncStatus GetDetailedStatus() const = 0;
 
   // Call periodically from a database-safe thread to persist recent changes
   // to the syncapi model.

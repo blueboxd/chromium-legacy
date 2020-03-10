@@ -104,7 +104,7 @@ class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
         PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
     mojo_vea_service()->Initialize(
         config, std::move(mojo_vea_client),
-        base::Bind([](bool success) { ASSERT_TRUE(success); }));
+        base::BindOnce([](bool success) { ASSERT_TRUE(success); }));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -233,7 +233,7 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest,
       PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
   mojo_vea_service()->Initialize(
       config, std::move(invalid_mojo_vea_client),
-      base::Bind([](bool success) { ASSERT_FALSE(success); }));
+      base::BindOnce([](bool success) { ASSERT_FALSE(success); }));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -253,7 +253,7 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, InitializeFailure) {
       PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
   mojo_vea_service()->Initialize(
       config, std::move(mojo_vea_client),
-      base::Bind([](bool success) { ASSERT_FALSE(success); }));
+      base::BindOnce([](bool success) { ASSERT_FALSE(success); }));
   base::RunLoop().RunUntilIdle();
 
   mojo_vea_receiver->Close();

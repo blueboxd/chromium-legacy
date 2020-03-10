@@ -105,6 +105,14 @@ class ServiceConnection {
       mojom::CrosHealthdDiagnosticsService::
           RunFloatingPointAccuracyRoutineCallback callback) = 0;
 
+  // Requests that cros_healthd runs the NVMe wear-level routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunNvmeWearLevelRoutine(
+      uint32_t wear_level_threshold,
+      mojom::CrosHealthdDiagnosticsService::RunNvmeWearLevelRoutineCallback
+          callback) = 0;
+
   // Gather pieces of information about the platform. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.

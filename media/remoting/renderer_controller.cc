@@ -470,9 +470,9 @@ void RendererController::WaitForStabilityBeforeStart(
 
   delayed_start_stability_timer_.Start(
       FROM_HERE, kDelayedStart,
-      base::BindRepeating(&RendererController::OnDelayedStartTimerFired,
-                          base::Unretained(this), start_trigger,
-                          client_->DecodedFrameCount(), clock_->NowTicks()));
+      base::BindOnce(&RendererController::OnDelayedStartTimerFired,
+                     base::Unretained(this), start_trigger,
+                     client_->DecodedFrameCount(), clock_->NowTicks()));
 }
 
 void RendererController::CancelDelayedStart() {

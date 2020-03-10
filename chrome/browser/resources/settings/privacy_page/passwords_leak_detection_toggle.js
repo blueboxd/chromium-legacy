@@ -80,7 +80,8 @@ Polymer({
     if (this.prefs === undefined) {
       return false;
     }
-    return !!this.getPref('profile.password_manager_leak_detection').value;
+    return !!this.getPref('profile.password_manager_leak_detection').value &&
+        !!this.getPref('safebrowsing.enabled').value;
   },
 
   /**
@@ -102,8 +103,7 @@ Polymer({
     if (this.prefs === undefined) {
       return false;
     }
-    return !this.userSignedIn_ || !this.getPref('safebrowsing.enabled').value ||
-        !!this.getPref('safebrowsing.enhanced').value;
+    return !this.userSignedIn_ || !this.getPref('safebrowsing.enabled').value;
   },
 
   /** @private */

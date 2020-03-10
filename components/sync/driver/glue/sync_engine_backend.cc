@@ -225,6 +225,11 @@ void SyncEngineBackend::OnStatusCountersUpdated(
       counters);
 }
 
+void SyncEngineBackend::OnSyncStatusChanged(const SyncStatus& status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  host_.Call(FROM_HERE, &SyncEngineImpl::HandleSyncStatusChanged, status);
+}
+
 void SyncEngineBackend::OnActionableError(const SyncProtocolError& sync_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_.Call(FROM_HERE,
@@ -385,6 +390,7 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.cache_guid = params.cache_guid;
   args.birthday = params.birthday;
   args.bag_of_chips = params.bag_of_chips;
+  args.sync_status_observers.push_back(this);
   sync_manager_->Init(&args);
   base::trace_event::MemoryDumpManager::GetInstance()
       ->RegisterDumpProviderWithSequencedTaskRunner(

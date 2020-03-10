@@ -5,6 +5,7 @@
 #include "components/autofill/content/renderer/form_cache.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/content/renderer/focus_test_utils.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/test/render_view_test.h"
@@ -34,8 +35,21 @@ const FormData* GetFormByName(const std::vector<FormData>& forms,
 
 class FormCacheBrowserTest : public content::RenderViewTest {
  public:
-  FormCacheBrowserTest() = default;
+  FormCacheBrowserTest() {
+    focus_test_utils_ = std::make_unique<test::FocusTestUtils>(
+        base::BindRepeating(&FormCacheBrowserTest::ExecuteJavaScriptForTests,
+                            base::Unretained(this)));
+  }
   ~FormCacheBrowserTest() override = default;
+  FormCacheBrowserTest(const FormCacheBrowserTest&) = delete;
+  FormCacheBrowserTest& operator=(const FormCacheBrowserTest&) = delete;
+
+ protected:
+  std::string GetFocusLog() {
+    return focus_test_utils_->GetFocusLog(GetMainFrame()->GetDocument());
+  }
+
+  std::unique_ptr<test::FocusTestUtils> focus_test_utils_;
 };
 
 TEST_F(FormCacheBrowserTest, ExtractForms) {
@@ -158,6 +172,59 @@ TEST_F(FormCacheBrowserTest, FillAndClear) {
   EXPECT_EQ("", text.Value().Ascii());
   EXPECT_TRUE(checkbox.IsChecked());
   EXPECT_EQ("second", select_element.Value().Ascii());
+}
+
+// Tests that correct focus, change and blur events are emitted during the
+// autofilling and clearing of the form with an initially focused element.
+TEST_F(FormCacheBrowserTest,
+       VerifyFocusAndBlurEventsAfterAutofillAndClearingWithFocusElement) {
+  // Load a form.
+  LoadHTML(
+      "<html><form id='myForm'>"
+      "<label>First Name:</label><input id='fname' name='0'/><br/>"
+      "<label>Last Name:</label> <input id='lname' name='1'/><br/>"
+      "</form></html>");
+
+  focus_test_utils_->SetUpFocusLogging();
+  focus_test_utils_->FocusElement("fname");
+
+  FormCache form_cache(GetMainFrame());
+  std::vector<FormData> forms = form_cache.ExtractNewForms(nullptr);
+
+  ASSERT_EQ(2u, forms.size());
+  FormData values_to_fill = forms[0];
+  values_to_fill.fields[0].value = ASCIIToUTF16("John");
+  values_to_fill.fields[0].is_autofilled = true;
+  values_to_fill.fields[1].value = ASCIIToUTF16("Smith");
+  values_to_fill.fields[1].is_autofilled = true;
+
+  auto fname = GetMainFrame()
+                   ->GetDocument()
+                   .GetElementById("fname")
+                   .To<WebInputElement>();
+
+  // Simulate filling the form using Autofill.
+  form_util::FillForm(values_to_fill, fname);
+
+  // Simulate clearing the form.
+  form_cache.ClearSectionWithElement(fname);
+
+  // Expected Result in order:
+  // - from filling
+  //  * Change fname
+  //  * Blur fname
+  //  * Focus lname
+  //  * Change lname
+  //  * Blur lname
+  //  * Focus fname
+  // - from clearing
+  //  * Change fname
+  //  * Blur fname
+  //  * Focus lname
+  //  * Change lname
+  //  * Blur lname
+  //  * Focus fname
+  EXPECT_EQ(GetFocusLog(), "c0b0f1c1b1f0c0b0f1c1b1f0");
 }
 
 TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {

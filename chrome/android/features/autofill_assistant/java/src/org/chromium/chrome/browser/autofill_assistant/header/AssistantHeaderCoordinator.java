@@ -13,8 +13,9 @@ import android.widget.ImageView;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderViewBinder.ViewHolder;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.Collections;
@@ -46,7 +47,8 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
                 R.dimen.autofill_assistant_profile_size);
         mProfileCache = new ProfileDataCache(context, imageSize);
         mProfileView = mView.findViewById(R.id.profile_image);
-        mSignedInAccountName = ChromeSigninController.get().getSignedInAccountName();
+        mSignedInAccountName = CoreAccountInfo.getEmailFrom(
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
         setupProfileImage();
 
         // Bind view and mediator through the model.

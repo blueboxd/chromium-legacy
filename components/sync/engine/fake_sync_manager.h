@@ -97,7 +97,6 @@ class FakeSyncManager : public SyncManager {
   void SetInvalidatorEnabled(bool invalidator_enabled) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  SyncStatus GetDetailedStatus() const override;
   void SaveChanges() override;
   void ShutdownOnSyncThread() override;
   UserShare* GetUserShare() override;

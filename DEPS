@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '8a44af5cbad5e92f97c1f6901d1684be63e0cb98',
+  'skia_revision': '80f8325046b957cb130c258f87e081c06651efdf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'a0a3e1a742dbe8ff6ac4bcb643ce7c2f678d6cf1',
+  'v8_revision': '40d81599a6c45b4bd2f5226c8586e761416c98cd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c2d817317046b06c86aaf9c9c133c728cc7915f4',
+  'angle_revision': 'abcc536b620799e3ec56a0877838fa224af29a5b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'abdb603cd140a77ceb8adef16d6f3cd7bb596ad1',
+  'catapult_revision': '9e5db26faa43a62a3795c66928bc6879779eb3af',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '85edfc8c8341ce26e7d339454a89ec2f4b25376a',
+  'devtools_frontend_revision': 'ed60bec01fc798222eb1367cd74a8302e353d3ae',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -899,7 +899,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'a12175c2a7a9f79c3296068a022ac4f3051f8600',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '0c4a3c2503a65c6c4ddb46b3358a1b83cf42a797',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -955,7 +955,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'fa1c3c4e673cf12ffa22b8fbe4a7c79314571f1b',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'f333272eb504735a78f91c76acd814c38ed0c142',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '343d4f6f187067933d7b3fa6532783f7f21898b6',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1250,7 +1250,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1234c8aa625fe7fbe838bcc14f5700aaa81e53a1',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'da7205379701737a529aa67b4b0d3cd3cf9ec832',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1424,7 +1424,7 @@ deps = {
   },
 
   'src/third_party/usrsctp/usrsctplib':
-    Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '7a8bc9a90ca96634aa56ee712856d97f27d903f8',
+    Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'a68325e7d9ed844cc84ec134192d788586ea6cc1',
 
   # Display server protocol for Linux.
   'src/third_party/wayland/src': {
@@ -1454,7 +1454,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a1ac244222a54e34444efd33335f4058fbd5ca46',
+    Var('webrtc_git') + '/src.git' + '@' + '137991396d037ccdea106a1ec200e492f16d8e3d',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1529,7 +1529,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3e017d50fe091b0d3c49449bc20b8242e2c9ac41',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3310ddd30e3b675aeeeb4ac1f98130f3fa9111a1',
     'condition': 'checkout_src_internal',
   },
 

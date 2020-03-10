@@ -42,7 +42,6 @@ namespace blink {
 
 class Animation;
 class CallbackFunctionTest;
-class CanvasRenderingContext;
 class DOMArrayBuffer;
 class DOMPoint;
 class DOMRect;
@@ -494,8 +493,6 @@ class Internals final : public ScriptWrappable {
   void setInitialFocus(bool);
 
   Element* interestedElement();
-
-  unsigned countHitRegions(CanvasRenderingContext*);
 
   bool isInCanvasFontCache(Document*, const String&);
   unsigned canvasFontCacheMaxFonts();

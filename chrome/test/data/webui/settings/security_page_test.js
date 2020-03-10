@@ -30,11 +30,8 @@ suite('CrSettingsSecurityPageTest', function() {
         allowed_on_next_startup:
             {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
       },
-      safebrowsing: {
-        enabled: {value: true},
-        scout_reporting_enabled: {value: true},
-        enhanced: {value: false}
-      },
+      safebrowsing:
+          {enabled: {value: true}, scout_reporting_enabled: {value: true}},
     };
     document.body.appendChild(page);
     Polymer.dom.flush();
@@ -51,101 +48,34 @@ suite('CrSettingsSecurityPageTest', function() {
     });
   }
 
+  test('LogManageCerfificatesClick', function() {
+    page.$$('#manageCertificates').click();
+    return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        .then(result => {
+          assertEquals(
+              settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES,
+              result);
+        });
+  });
+
   test('safeBrowsingReportingToggle', function() {
-    page.$$('#safeBrowsingStandard').click();
+    const safeBrowsingToggle = page.$.safeBrowsingToggle;
     const safeBrowsingReportingToggle = page.$.safeBrowsingReportingToggle;
-    assertTrue(
-        page.prefs.safebrowsing.enabled.value &&
-        !page.prefs.safebrowsing.enhanced.value);
+    assertTrue(safeBrowsingToggle.checked);
     assertFalse(safeBrowsingReportingToggle.disabled);
     assertTrue(safeBrowsingReportingToggle.checked);
-    // This could also be set to disabled, anything other than standard.
-    page.$$('#safeBrowsingEnhanced').click();
+    safeBrowsingToggle.click();
     Polymer.dom.flush();
 
-    assertFalse(
-        page.prefs.safebrowsing.enabled.value &&
-        !page.prefs.safebrowsing.enhanced.value);
+    assertFalse(safeBrowsingToggle.checked);
     assertTrue(safeBrowsingReportingToggle.disabled);
-    assertTrue(safeBrowsingReportingToggle.checked);
+    assertFalse(safeBrowsingReportingToggle.checked);
     assertTrue(page.prefs.safebrowsing.scout_reporting_enabled.value);
-    page.$$('#safeBrowsingStandard').click();
+    safeBrowsingToggle.click();
     Polymer.dom.flush();
 
-    assertTrue(
-        page.prefs.safebrowsing.enabled.value &&
-        !page.prefs.safebrowsing.enhanced.value);
+    assertTrue(safeBrowsingToggle.checked);
     assertFalse(safeBrowsingReportingToggle.disabled);
     assertTrue(safeBrowsingReportingToggle.checked);
-  });
-
-  test('noControlSafeBrowsingReportingInEnhanced', function() {
-    page.$$('#safeBrowsingStandard').click();
-    Polymer.dom.flush();
-
-    assertFalse(page.$.safeBrowsingReportingToggle.disabled);
-    page.$$('#safeBrowsingEnhanced').click();
-    Polymer.dom.flush();
-
-    assertTrue(page.$.safeBrowsingReportingToggle.disabled);
-  });
-
-  test('noValueChangeSafeBrowsingReportingInEnhanced', function() {
-    page.$$('#safeBrowsingStandard').click();
-    Polymer.dom.flush();
-    const previous = page.prefs.safebrowsing.scout_reporting_enabled.value;
-
-    page.$$('#safeBrowsingEnhanced').click();
-    Polymer.dom.flush();
-
-    assertTrue(
-        page.prefs.safebrowsing.scout_reporting_enabled.value == previous);
-  });
-
-  test('noControlSafeBrowsingReportingInDisabled', function() {
-    page.$$('#safeBrowsingStandard').click();
-    Polymer.dom.flush();
-
-    assertFalse(page.$.safeBrowsingReportingToggle.disabled);
-    page.$$('#safeBrowsingEnhanced').click();
-    Polymer.dom.flush();
-
-    assertTrue(page.$.safeBrowsingReportingToggle.disabled);
-  });
-
-  test('noValueChangeSafeBrowsingReportingInDisabled', function() {
-    page.$$('#safeBrowsingStandard').click();
-    Polymer.dom.flush();
-    const previous = page.prefs.safebrowsing.scout_reporting_enabled.value;
-
-    page.$$('#safeBrowsingDisabled').click();
-    Polymer.dom.flush();
-
-    assertTrue(
-        page.prefs.safebrowsing.scout_reporting_enabled.value == previous);
-  });
-
-  test('noValueChangePasswordLeakSwitchToEnhanced', function() {
-    page.$$('#safeBrowsingStandard').click();
-    Polymer.dom.flush();
-    const previous = page.prefs.profile.password_manager_leak_detection.value;
-
-    page.$$('#safeBrowsingEnhanced').click();
-    Polymer.dom.flush();
-
-    assertTrue(
-        page.prefs.profile.password_manager_leak_detection.value == previous);
-  });
-
-  test('noValuePasswordLeakSwitchToDisabled', function() {
-    page.$$('#safeBrowsingStandard').click();
-    Polymer.dom.flush();
-    const previous = page.prefs.profile.password_manager_leak_detection.value;
-
-    page.$$('#safeBrowsingDisabled').click();
-    Polymer.dom.flush();
-
-    assertTrue(
-        page.prefs.profile.password_manager_leak_detection.value == previous);
   });
 });

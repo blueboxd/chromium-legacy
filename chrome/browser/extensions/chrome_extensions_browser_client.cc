@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/bluetooth/chrome_extension_bluetooth_chooser.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -544,8 +545,12 @@ bool ChromeExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
     return false;
 
   // Enables the enforcement if the prefs is managed by the enterprise policy.
-  return Profile::FromBrowserContext(context)->GetPrefs()->IsManagedPreference(
-      prefs::kCorsMitigationList);
+  bool apply_cors_mitigation_list =
+      !base::FeatureList::IsEnabled(
+          features::kHideCorsMitigationListPolicySupport) &&
+      Profile::FromBrowserContext(context)->GetPrefs()->IsManagedPreference(
+          prefs::kCorsMitigationList);
+  return apply_cors_mitigation_list;
 }
 
 // static

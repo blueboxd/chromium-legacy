@@ -295,7 +295,7 @@ class AX_EXPORT AXNode final {
   // This language code will be BCP 47.
   //
   // Returns empty string if no appropriate language was found.
-  std::string GetLanguage();
+  std::string GetLanguage() const;
 
   //
   // Helper functions for tables, table rows, and table cells.
@@ -404,11 +404,11 @@ class AX_EXPORT AXNode final {
   // Finds and returns a pointer to ordered set containing node.
   AXNode* GetOrderedSet() const;
 
-  OwnerTree* tree_;  // Owns this.
+  OwnerTree* const tree_;  // Owns this.
   size_t index_in_parent_;
   size_t unignored_index_in_parent_;
-  size_t unignored_child_count_;
-  AXNode* parent_;
+  size_t unignored_child_count_ = 0;
+  AXNode* const parent_;
   std::vector<AXNode*> children_;
   AXNodeData data_;
 

@@ -28,9 +28,7 @@ AXNode::AXNode(AXNode::OwnerTree* tree,
     : tree_(tree),
       index_in_parent_(index_in_parent),
       unignored_index_in_parent_(unignored_index_in_parent),
-      unignored_child_count_(0),
-      parent_(parent),
-      language_info_(nullptr) {
+      parent_(parent) {
   data_.id = id;
 }
 
@@ -149,7 +147,7 @@ AXNode* AXNode::GetPreviousUnignoredSibling() const {
 
       // If the node is ignored, drill down to the ignored node's last child.
       parent_node = child;
-      before_first_child = parent_node->children().size() == 0;
+      before_first_child = parent_node->children().empty();
       index = parent_node->children().size() - 1;
     } else {
       // If the parent is not ignored and we are past all of its children, there
@@ -253,7 +251,7 @@ void AXNode::Destroy() {
 bool AXNode::IsDescendantOf(AXNode* ancestor) {
   if (this == ancestor)
     return true;
-  else if (parent())
+  if (parent())
     return parent()->IsDescendantOf(ancestor);
 
   return false;
@@ -262,8 +260,9 @@ bool AXNode::IsDescendantOf(AXNode* ancestor) {
 std::vector<int> AXNode::GetOrComputeLineStartOffsets() {
   std::vector<int> line_offsets;
   if (data().GetIntListAttribute(ax::mojom::IntListAttribute::kCachedLineStarts,
-                                 &line_offsets))
+                                 &line_offsets)) {
     return line_offsets;
+  }
 
   int start_offset = 0;
   ComputeLineStartOffsets(&line_offsets, &start_offset);
@@ -326,7 +325,7 @@ void AXNode::ClearLanguageInfo() {
   language_info_.reset();
 }
 
-std::string AXNode::GetLanguage() {
+std::string AXNode::GetLanguage() const {
   // Walk up tree considering both detected and author declared languages.
   for (const AXNode* cur = this; cur; cur = cur->parent()) {
     // If language detection has assigned a language then we prefer that.
@@ -342,7 +341,7 @@ std::string AXNode::GetLanguage() {
     }
   }
 
-  return base::EmptyString();
+  return std::string();
 }
 
 std::ostream& operator<<(std::ostream& stream, const AXNode& node) {
@@ -896,7 +895,7 @@ AXNode* AXNode::GetOrderedSet() const {
 
 AXNode* AXNode::ComputeLastUnignoredChildRecursive() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
-  if (children().size() == 0)
+  if (children().empty())
     return nullptr;
 
   for (int i = static_cast<int>(children().size()) - 1; i >= 0; --i) {
@@ -948,11 +947,8 @@ bool AXNode::IsInListMarker() const {
     return true;
 
   AXNode* grandparent_node = parent_node->GetUnignoredParent();
-  if (grandparent_node &&
-      grandparent_node->data().role == ax::mojom::Role::kListMarker)
-    return true;
-
-  return false;
+  return grandparent_node &&
+         grandparent_node->data().role == ax::mojom::Role::kListMarker;
 }
 
 }  // namespace ui

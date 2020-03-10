@@ -142,13 +142,15 @@ const breadCrumbTemplate = `
 
   <button id='first'></button>
   <span class='caret' hidden aria-hidden></span>
-    <button elider><span elider aria-hidden></span></button>
+  <button elider aria-haspopup='menu' aria-expanded='false'>
+    <span elider aria-hidden></span>
+  </button>
   <span class='caret' hidden aria-hidden></span>
-    <button id='second'></button>
+  <button id='second'></button>
   <span class='caret' hidden aria-hidden></span>
-    <button id='third'></button>
+  <button id='third'></button>
   <span class='caret' hidden aria-hidden></span>
-    <button id='fourth'></button>
+  <button id='fourth'></button>
   <cr-action-menu id='elider-menu'></cr-menu-item>
 `;
 
@@ -400,6 +402,7 @@ class BreadCrumb extends HTMLElement {
     dialog.style['max-height'] = '40vh';
 
     // Update state and emit rendered signal.
+    elider.setAttribute('aria-expanded', 'true');
     this.setAttribute('checked', '');
     this.signal_('path-rendered');
   }
@@ -410,6 +413,8 @@ class BreadCrumb extends HTMLElement {
    * @private
    */
   closeMenu_() {
+    const elider = this.shadowRoot.querySelector('button[elider]');
+    elider.setAttribute('aria-expanded', 'false');
     this.removeAttribute('checked');
     const menu = this.shadowRoot.querySelector('cr-action-menu');
     if (menu.getDialog().hasAttribute('open')) {

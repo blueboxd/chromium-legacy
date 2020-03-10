@@ -614,6 +614,7 @@ class ListBoxSelectType final : public SelectType {
  private:
   HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
                                                   SkipDirection) const;
+  void ToggleSelection(HTMLOptionElement& option);
 
   bool is_in_non_contiguous_selection_ = false;
 };
@@ -793,7 +794,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
     if (select_->is_multiple_ && keyboard_event->keyCode() == ' ' &&
         is_control_key && select_->active_selection_end_) {
       // Use ctrl+space to toggle selection change.
-      select_->ToggleSelection(*select_->active_selection_end_);
+      ToggleSelection(*select_->active_selection_end_);
       return true;
     }
 
@@ -858,7 +859,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
         option = NextSelectableOption(select_->LastSelectedOption());
       if (option) {
         // Use space to toggle selection change.
-        select_->ToggleSelection(*option);
+        ToggleSelection(*option);
         return true;
       }
     }
@@ -922,6 +923,12 @@ HTMLOptionElement* ListBoxSelectType::NextSelectableOptionPageAway(
       page_size +
       ((direction == kSkipForwards) ? start_index : (edge_index - start_index));
   return NextValidOption(edge_index, direction, skip_amount);
+}
+
+void ListBoxSelectType::ToggleSelection(HTMLOptionElement& option) {
+  select_->active_selection_state_ = !select_->active_selection_state_;
+  select_->UpdateSelectedState(&option, true /*multi*/, false /*shift*/);
+  select_->ListBoxOnChange();
 }
 
 // ============================================================================

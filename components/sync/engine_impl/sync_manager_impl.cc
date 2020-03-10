@@ -340,6 +340,12 @@ void SyncManagerImpl::Init(InitArgs* args) {
   DVLOG(1) << "Setting invalidator client ID: " << args->invalidator_client_id;
   allstatus_.SetInvalidatorClientId(args->invalidator_client_id);
 
+  // Add observers after all initializations. Each observer will get initialized
+  // status while being added.
+  for (SyncStatusObserver* observer : args->sync_status_observers) {
+    allstatus_.AddObserver(observer);
+  }
+
   model_type_registry_ = std::make_unique<ModelTypeRegistry>(
       args->workers, share_, this, base::BindRepeating(&MigrateDirectoryData),
       args->cancelation_signal,
@@ -916,10 +922,6 @@ void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
   } else {
     scheduler_->ScheduleLocalRefreshRequest(types, FROM_HERE);
   }
-}
-
-SyncStatus SyncManagerImpl::GetDetailedStatus() const {
-  return allstatus_.status();
 }
 
 void SyncManagerImpl::SaveChanges() {

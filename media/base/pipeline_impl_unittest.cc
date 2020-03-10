@@ -176,9 +176,9 @@ class PipelineImplTest : public ::testing::Test {
   void StartPipeline(
       Pipeline::StartType start_type = Pipeline::StartType::kNormal) {
     EXPECT_CALL(callbacks_, OnWaiting(_)).Times(0);
-    pipeline_->Start(
-        start_type, demuxer_.get(), &callbacks_,
-        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
+    pipeline_->Start(start_type, demuxer_.get(), &callbacks_,
+                     base::BindOnce(&CallbackHelper::OnStart,
+                                    base::Unretained(&callbacks_)));
   }
 
   void SetRendererPostStartExpectations() {
@@ -250,8 +250,8 @@ class PipelineImplTest : public ::testing::Test {
     EXPECT_CALL(*renderer_, OnSetCdm(_, _)).WillOnce(RunOnceCallback<1>(true));
     EXPECT_CALL(callbacks_, OnCdmAttached(expected_result));
     pipeline_->SetCdm(&cdm_context_,
-                      base::BindRepeating(&CallbackHelper::OnCdmAttached,
-                                          base::Unretained(&callbacks_)));
+                      base::BindOnce(&CallbackHelper::OnCdmAttached,
+                                     base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -275,8 +275,8 @@ class PipelineImplTest : public ::testing::Test {
   }
 
   void DoSeek(const base::TimeDelta& seek_time) {
-    pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
-                                          base::Unretained(&callbacks_)));
+    pipeline_->Seek(seek_time, base::BindOnce(&CallbackHelper::OnSeek,
+                                              base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -287,8 +287,8 @@ class PipelineImplTest : public ::testing::Test {
   }
 
   void DoSuspend() {
-    pipeline_->Suspend(
-        base::Bind(&CallbackHelper::OnSuspend, base::Unretained(&callbacks_)));
+    pipeline_->Suspend(base::BindOnce(&CallbackHelper::OnSuspend,
+                                      base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
     ResetRenderer();
   }
@@ -320,8 +320,8 @@ class PipelineImplTest : public ::testing::Test {
   }
 
   void DoResume(const base::TimeDelta& seek_time) {
-    pipeline_->Resume(seek_time, base::Bind(&CallbackHelper::OnResume,
-                                            base::Unretained(&callbacks_)));
+    pipeline_->Resume(seek_time, base::BindOnce(&CallbackHelper::OnResume,
+                                                base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -546,7 +546,7 @@ TEST_F(PipelineImplTest, EncryptedStream_SetCdmAfterStart) {
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   pipeline_->Start(
       Pipeline::StartType::kNormal, demuxer_.get(), &callbacks_,
-      base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
+      base::BindOnce(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
   run_loop.Run();
 
   ExpectRendererInitialization();
@@ -584,7 +584,7 @@ TEST_F(PipelineImplTest, SeekAfterError) {
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_INVALID_STATE));
   pipeline_->Seek(
       base::TimeDelta::FromMilliseconds(100),
-      base::Bind(&CallbackHelper::OnSeek, base::Unretained(&callbacks_)));
+      base::BindOnce(&CallbackHelper::OnSeek, base::Unretained(&callbacks_)));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -740,8 +740,8 @@ TEST_F(PipelineImplTest, ErrorDuringSeek) {
       .WillOnce(RunOnceCallback<1>(PIPELINE_ERROR_READ));
   EXPECT_CALL(*demuxer_, Stop());
 
-  pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
-                                        base::Unretained(&callbacks_)));
+  pipeline_->Seek(seek_time, base::BindOnce(&CallbackHelper::OnSeek,
+                                            base::Unretained(&callbacks_)));
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ))
       .WillOnce(Stop(pipeline_.get()));
   base::RunLoop().RunUntilIdle();
@@ -822,8 +822,8 @@ TEST_F(PipelineImplTest, GetMediaTimeAfterSeek) {
   // notified of the seek (via media thread).
   base::TimeDelta kSeekTime = kMediaTime - base::TimeDelta::FromSeconds(1);
   ExpectSeek(kSeekTime, false);
-  pipeline_->Seek(kSeekTime, base::Bind(&CallbackHelper::OnSeek,
-                                        base::Unretained(&callbacks_)));
+  pipeline_->Seek(kSeekTime, base::BindOnce(&CallbackHelper::OnSeek,
+                                            base::Unretained(&callbacks_)));
 
   // Verify pipeline returns the seek time in spite of renderer returning the
   // stale media time.
@@ -997,7 +997,7 @@ class PipelineTeardownTest : public PipelineImplTest {
 
     pipeline_->Seek(
         base::TimeDelta::FromSeconds(10),
-        base::Bind(&CallbackHelper::OnSeek, base::Unretained(&callbacks_)));
+        base::BindOnce(&CallbackHelper::OnSeek, base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
   }
 

@@ -135,6 +135,7 @@ const char kManagementReportHardwareStatus[] = "managementReportHardwareStatus";
 const char kManagementReportNetworkInterfaces[] =
     "managementReportNetworkInterfaces";
 const char kManagementReportUsers[] = "managementReportUsers";
+const char kManagementReportCrashReports[] = "managementReportCrashReports";
 const char kManagementReportExtensions[] = "managementReportExtensions";
 const char kManagementReportAndroidApplications[] =
     "managementReportAndroidApplications";
@@ -179,6 +180,7 @@ enum class DeviceReportingType {
   kDeviceActivity,
   kDeviceStatistics,
   kDevice,
+  kCrashReport,
   kLogs,
   kPrint,
   kCrostini,
@@ -198,6 +200,8 @@ std::string ToJSDeviceReportingType(const DeviceReportingType& type) {
       return "device statistics";
     case DeviceReportingType::kDevice:
       return "device";
+    case DeviceReportingType::kCrashReport:
+      return "crash report";
     case DeviceReportingType::kLogs:
       return "logs";
     case DeviceReportingType::kPrint:
@@ -260,6 +264,10 @@ void AddDeviceReportingInfo(base::Value* report_sources, Profile* profile) {
     AddDeviceReportingElement(report_sources,
                               kManagementReportNetworkInterfaces,
                               DeviceReportingType::kDevice);
+  }
+  if (collector->ShouldReportCrashReportInfo()) {
+    AddDeviceReportingElement(report_sources, kManagementReportCrashReports,
+                              DeviceReportingType::kCrashReport);
   }
   if (manager->GetSystemLogUploader()->upload_enabled()) {
     AddDeviceReportingElement(report_sources, kManagementLogUploadEnabled,

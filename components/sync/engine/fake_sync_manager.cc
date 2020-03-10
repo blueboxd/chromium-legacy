@@ -183,11 +183,6 @@ void FakeSyncManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-SyncStatus FakeSyncManager::GetDetailedStatus() const {
-  NOTIMPLEMENTED();
-  return SyncStatus();
-}
-
 void FakeSyncManager::SaveChanges() {
   // Do nothing.
 }

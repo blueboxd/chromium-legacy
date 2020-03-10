@@ -180,7 +180,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   // Return true if this inline doesn't occur on any lines, i.e. when it creates
   // no fragments.
-  bool IsEmpty() const { return !FirstLineBox() && !FirstInlineFragment(); }
+  bool IsEmpty() const;
 
   LayoutBoxModelObject* VirtualContinuation() const final {
     return Continuation();

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
+#include "chrome/browser/ui/webui/omnibox/omnibox.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 

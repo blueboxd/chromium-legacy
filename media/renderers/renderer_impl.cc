@@ -376,9 +376,6 @@ void RendererImpl::InitializeAudioRenderer() {
   DCHECK_EQ(state_, STATE_INITIALIZING);
   DCHECK(init_cb_);
 
-  PipelineStatusCB done_cb = base::BindRepeating(
-      &RendererImpl::OnAudioRendererInitializeDone, weak_this_);
-
   // TODO(servolk): Implement proper support for multiple streams. But for now
   // pick the first enabled stream to preserve the existing behavior.
   DemuxerStream* audio_stream =
@@ -386,7 +383,9 @@ void RendererImpl::InitializeAudioRenderer() {
 
   if (!audio_stream) {
     audio_renderer_.reset();
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(done_cb, PIPELINE_OK));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&RendererImpl::OnAudioRendererInitializeDone,
+                                  weak_this_, PIPELINE_OK));
     return;
   }
 
@@ -396,8 +395,9 @@ void RendererImpl::InitializeAudioRenderer() {
       new RendererClientInternal(DemuxerStream::AUDIO, this, media_resource_));
   // Note: After the initialization of a renderer, error events from it may
   // happen at any time and all future calls must guard against STATE_ERROR.
-  audio_renderer_->Initialize(audio_stream, cdm_context_,
-                              audio_renderer_client_.get(), done_cb);
+  audio_renderer_->Initialize(
+      audio_stream, cdm_context_, audio_renderer_client_.get(),
+      base::BindOnce(&RendererImpl::OnAudioRendererInitializeDone, weak_this_));
 }
 
 void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
@@ -427,9 +427,6 @@ void RendererImpl::InitializeVideoRenderer() {
   DCHECK_EQ(state_, STATE_INITIALIZING);
   DCHECK(init_cb_);
 
-  PipelineStatusCB done_cb = base::BindRepeating(
-      &RendererImpl::OnVideoRendererInitializeDone, weak_this_);
-
   // TODO(servolk): Implement proper support for multiple streams. But for now
   // pick the first enabled stream to preserve the existing behavior.
   DemuxerStream* video_stream =
@@ -437,7 +434,9 @@ void RendererImpl::InitializeVideoRenderer() {
 
   if (!video_stream) {
     video_renderer_.reset();
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(done_cb, PIPELINE_OK));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&RendererImpl::OnVideoRendererInitializeDone,
+                                  weak_this_, PIPELINE_OK));
     return;
   }
 
@@ -449,7 +448,7 @@ void RendererImpl::InitializeVideoRenderer() {
       video_stream, cdm_context_, video_renderer_client_.get(),
       base::BindRepeating(&RendererImpl::GetWallClockTimes,
                           base::Unretained(this)),
-      done_cb);
+      base::BindOnce(&RendererImpl::OnVideoRendererInitializeDone, weak_this_));
 }
 
 void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
@@ -579,9 +578,8 @@ void RendererImpl::ReinitializeAudioRenderer(
   current_audio_stream_ = stream;
   audio_renderer_->Initialize(
       stream, cdm_context_, audio_renderer_client_.get(),
-      base::BindRepeating(&RendererImpl::OnAudioRendererReinitialized,
-                          weak_this_, stream, time,
-                          base::Passed(&reinitialize_completed_cb)));
+      base::BindOnce(&RendererImpl::OnAudioRendererReinitialized, weak_this_,
+                     stream, time, base::Passed(&reinitialize_completed_cb)));
 }
 
 void RendererImpl::OnAudioRendererReinitialized(
@@ -614,9 +612,8 @@ void RendererImpl::ReinitializeVideoRenderer(
       stream, cdm_context_, video_renderer_client_.get(),
       base::BindRepeating(&RendererImpl::GetWallClockTimes,
                           base::Unretained(this)),
-      base::BindRepeating(&RendererImpl::OnVideoRendererReinitialized,
-                          weak_this_, stream, time,
-                          base::Passed(&reinitialize_completed_cb)));
+      base::BindOnce(&RendererImpl::OnVideoRendererReinitialized, weak_this_,
+                     stream, time, base::Passed(&reinitialize_completed_cb)));
 }
 
 void RendererImpl::OnVideoRendererReinitialized(

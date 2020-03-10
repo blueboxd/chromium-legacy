@@ -1,39 +1,77 @@
 <!doctype html>
 <html>
 <head>
-  <title>$i18n{errorTitle}</title>
   <meta charset="utf-8">
   <link rel="import" href="chrome://resources/html/polymer.html">
   <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
   <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+  <link rel="import" href="chrome://resources/html/assert.html">
+  <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 
   <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
-  <link rel="stylesheet" href="account_manager_shared.css">
-  <custom-style>
-    <style is="custom-style" include="cr-shared-style">
-    </style>
-  </custom-style>
 
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="strings.js"></script>
   <script src="account_manager_error.js"></script>
+  <style>
+    body {
+      height: calc(100% - 50px);
+      margin-inline-end: 32px;
+      margin-inline-start: 32px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 
 <body>
-  <div id="content">
-    <if expr="_google_chrome">
-      <img id="google-logo" src="googleg.svg" alt="">
-    </if>
-    <h1>$i18n{errorTitle}</h1>
-    <p>$i18n{errorMessage}</p>
-    <div class="button-container">
-      <cr-button id="ok-button" class="action-button">
-        $i18n{okButton}
-      </cr-button>
-    </div>
-  </div>
+  <dom-module id="account-manager-error">
+    <template>
+      <style include="cr-shared-style">
+        <include src="account_manager_shared.css">
+
+        #content {
+          display: flex;
+          flex-direction: column;
+        }
+        .image-container {
+          align-items: center;
+          display: flex;
+          flex-grow: 1;
+          justify-content: center;
+          width: 100%;
+        }
+        .main-image {
+          height: 256px;
+          width: 256px;
+        }
+        .button-container {
+          position: relative;
+        }
+      </style>
+      <div id="content">
+        <if expr="_google_chrome">
+          <img id="google-logo" src="googleg.svg" alt="">
+        </if>
+        <h1>[[errorTitle_]]</h1>
+        <p>[[errorMessage_]]</p>
+        <div class="image-container">
+          <template is="dom-if" if="[[imageUrl_]]">
+            <img class="main-image" src="[[imageUrl_]]" alt="">
+          </template>
+        </div>
+        <div class="button-container">
+          <cr-button id="ok-button" class="action-button"
+            on-click="closeDialog_">
+            $i18n{okButton}
+          </cr-button>
+        </div>
+      </div>
+    </template>
+  </dom-module>
+  <account-manager-error></account-manager-error>
 </body>
+
 </html>

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 

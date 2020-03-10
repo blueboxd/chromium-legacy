@@ -26,16 +26,30 @@ TEST_F('PolymerSecurityTokenPinTest', 'All', function() {
   };
 
   let securityTokenPin;
+  let pinKeyboardContainer;
+  let pinKeyboard;
+  let progressElement;
+  let pinInput;
   let inputField;
+  let submitElement;
 
   setup(() => {
     securityTokenPin = document.createElement('security-token-pin');
     document.body.appendChild(securityTokenPin);
     securityTokenPin.parameters = DEFAULT_PARAMETERS;
 
-    inputField =
-        securityTokenPin.$$('#pinKeyboard').$$('#pinInput').$$('input');
+    pinKeyboardContainer = securityTokenPin.$$('#pinKeyboardContainer');
+    assert(pinKeyboardContainer);
+    pinKeyboard = securityTokenPin.$$('#pinKeyboard');
+    assert(pinKeyboard);
+    progressElement = securityTokenPin.$$('#progress');
+    assert(progressElement);
+    pinInput = pinKeyboard.$$('#pinInput');
+    assert(pinInput);
+    inputField = pinInput.$$('input');
     assert(inputField);
+    submitElement = securityTokenPin.$$('#submit');
+    assert(submitElement);
   });
 
   // Test that no scrolling is necessary in order to see all dots after entering
@@ -53,6 +67,67 @@ TEST_F('PolymerSecurityTokenPinTest', 'All', function() {
     expectNotEquals(
         getComputedStyle(inputField).getPropertyValue('letter-spacing'),
         'normal');
+  });
+
+  test('focus restores after progress animation', () => {
+    // The PIN keyboard is displayed initially.
+    expectFalse(pinKeyboardContainer.hidden);
+    expectTrue(progressElement.hidden);
+
+    // The PIN keyboard gets focused.
+    securityTokenPin.focus();
+    expectEquals(securityTokenPin.shadowRoot.activeElement, pinKeyboard);
+    expectEquals(inputField.getRootNode().activeElement, inputField);
+
+    // The user submits some value while keeping the focus on the input field.
+    pinInput.value = '123';
+    const enterEvent = new Event('keydown');
+    enterEvent.keyCode = 13;
+    pinInput.dispatchEvent(enterEvent);
+    // The PIN keyboard is replaced by the animation UI.
+    expectTrue(pinKeyboardContainer.hidden);
+    expectFalse(progressElement.hidden);
+
+    // The response arrives, requesting to prompt for the PIN again.
+    securityTokenPin.parameters = {
+      codeType: OobeTypes.SecurityTokenPinDialogType.PIN,
+      enableUserInput: true,
+      errorLabel: OobeTypes.SecurityTokenPinDialogErrorType.INVALID_PIN,
+      attemptsLeft: -1
+    };
+    // The PIN keyboard is shown again, replacing the animation UI.
+    expectFalse(pinKeyboardContainer.hidden);
+    expectTrue(progressElement.hidden);
+    // The focus is on the input field.
+    expectEquals(securityTokenPin.shadowRoot.activeElement, pinKeyboard);
+    expectEquals(inputField.getRootNode().activeElement, inputField);
+  });
+
+  test('focus set after progress animation', () => {
+    // The PIN keyboard is displayed initially.
+    expectFalse(pinKeyboardContainer.hidden);
+    expectTrue(progressElement.hidden);
+
+    // The user submits some value using the "Submit" UI button.
+    pinInput.value = '123';
+    submitElement.click();
+    // The PIN keyboard is replaced by the animation UI.
+    expectTrue(pinKeyboardContainer.hidden);
+    expectFalse(progressElement.hidden);
+
+    // The response arrives, requesting to prompt for the PIN again.
+    securityTokenPin.parameters = {
+      codeType: OobeTypes.SecurityTokenPinDialogType.PIN,
+      enableUserInput: true,
+      errorLabel: OobeTypes.SecurityTokenPinDialogErrorType.INVALID_PIN,
+      attemptsLeft: -1
+    };
+    // The PIN keyboard is shown again, replacing the animation UI.
+    expectFalse(pinKeyboardContainer.hidden);
+    expectTrue(progressElement.hidden);
+    // The focus is on the input field.
+    expectEquals(securityTokenPin.shadowRoot.activeElement, pinKeyboard);
+    expectEquals(inputField.getRootNode().activeElement, inputField);
   });
 
   mocha.run();

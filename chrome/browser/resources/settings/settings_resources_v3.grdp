@@ -342,6 +342,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/search_settings.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_SETTINGS_MAIN_SETTINGS_MAIN_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/settings_main/settings_main.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_SETTINGS_PAGE_MAIN_PAGE_BEHAVIOR_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/settings_page/main_page_behavior.m.js"
            use_base_dir="false"

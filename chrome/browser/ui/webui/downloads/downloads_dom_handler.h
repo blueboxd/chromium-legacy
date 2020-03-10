@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_danger_prompt.h"
-#include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
+#include "chrome/browser/ui/webui/downloads/downloads.mojom-forward.h"
 #include "chrome/browser/ui/webui/downloads/downloads_list_tracker.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

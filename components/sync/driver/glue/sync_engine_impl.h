@@ -160,6 +160,9 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   void UpdateInvalidationVersions(
       const std::map<ModelType, int64_t>& invalidation_versions);
 
+  // Stores the new |status| in local cache.
+  void HandleSyncStatusChanged(const SyncStatus& status);
+
  private:
   friend class SyncEngineBackend;
 
@@ -215,6 +218,8 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   bool invalidation_handler_registered_ = false;
   ModelTypeSet last_enabled_types_;
   bool sessions_invalidation_enabled_ = false;
+
+  SyncStatus cached_status_;
 
   // Checks that we're on the same thread this was constructed on (UI thread).
   SEQUENCE_CHECKER(sequence_checker_);

@@ -183,7 +183,7 @@ struct BLINK_COMMON_EXPORT Manifest {
   base::Optional<ShareTarget> share_target;
 
   // Empty if parsing failed or the field was not present.
-  // TODO(harrisjay): This field is non-standard and part of a Chrome
+  // TODO(crbug.com/829689): This field is non-standard and part of a Chrome
   // experiment. See:
   // https://github.com/WICG/file-handling/blob/master/explainer.md
   std::vector<FileHandler> file_handlers;

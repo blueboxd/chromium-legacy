@@ -3185,10 +3185,6 @@ Element* Internals::interestedElement() {
       .GetInterestedElement();
 }
 
-unsigned Internals::countHitRegions(CanvasRenderingContext* context) {
-  return context->HitRegionsCount();
-}
-
 bool Internals::isInCanvasFontCache(Document* document,
                                     const String& font_string) {
   return document->GetCanvasFontCache()->IsInCache(font_string);

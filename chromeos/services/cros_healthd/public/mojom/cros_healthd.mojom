@@ -175,6 +175,21 @@ interface CrosHealthdDiagnosticsService {
   //                routine.
   RunFloatingPointAccuracyRoutine(uint32 length_seconds)
       => (RunRoutineResponse response);
+
+  // Requests that the NvmeWearLevel routine is created and started on the
+  // platform. This routine examines wear level of NVMe against input
+  // threshold. This routine is only available if GetAvailableRoutines returned
+  // kNvmeWearLevel.
+  //
+  // The request:
+  // * |wear_level_threshold| - threshold number in percentage which routine
+  //                            examines wear level status against.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunNvmeWearLevelRoutine(uint32 wear_level_threshold)
+      => (RunRoutineResponse response);
 };
 
 // Probe interface exposed by the cros_healthd daemon.

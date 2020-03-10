@@ -317,9 +317,6 @@
     // attribute returns the currently interested element on the page.
     readonly attribute Element? interestedElement;
 
-    // This function is for testing HitRegions on Canvas2D.
-    unsigned long countHitRegions(CanvasRenderingContext2D context);
-
     boolean isInCanvasFontCache(Document document, DOMString fontString);
     unsigned long canvasFontCacheMaxFonts();
 

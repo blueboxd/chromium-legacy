@@ -230,4 +230,13 @@ id<GREYMatcher> TitleOfTestPage() {
   [ChromeEarlGrey closeCurrentTab];
 }
 
+// Tests that the Recent Tabs can be opened while signed in (prevent regression
+// for https://crbug.com/1056613).
+- (void)testOpenWhileSignedIn {
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+
+  OpenRecentTabsPanel();
+}
+
 @end

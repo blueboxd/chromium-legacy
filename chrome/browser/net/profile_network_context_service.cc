@@ -170,7 +170,9 @@ void InitializeCorsExtraSafelistedRequestHeaderNamesForProfile(
 
   // We trust and append |pref|'s values only when they are set by the managed
   // policy. Chrome does not have any interface to set this preference manually.
-  if (has_managed_mitigation_list) {
+  if (!base::FeatureList::IsEnabled(
+          features::kHideCorsMitigationListPolicySupport) &&
+      has_managed_mitigation_list) {
     for (const auto& header_name_value :
          *pref->GetList(prefs::kCorsMitigationList)) {
       extra_safelisted_request_header_names->push_back(

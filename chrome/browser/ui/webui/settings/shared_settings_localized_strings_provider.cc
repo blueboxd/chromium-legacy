@@ -183,8 +183,6 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
       {"mismatchedPassphraseError", IDS_SETTINGS_MISMATCHED_PASSPHRASE_ERROR},
       {"emptyPassphraseError", IDS_SETTINGS_EMPTY_PASSPHRASE_ERROR},
       {"incorrectPassphraseError", IDS_SETTINGS_INCORRECT_PASSPHRASE_ERROR},
-      {"manageSyncedDataTitle",
-       IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT},
       {"syncPageTitle", IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
       {"passphraseConfirmationPlaceholder",
        IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER},
@@ -240,12 +238,17 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
             {"dataEncryptedHint", IDS_SETTINGS_DATA_ENCRYPTED_HINT},
             {"historySyncOffHint", IDS_SETTINGS_HISTORY_SYNC_OFF_HINT},
             {"SwaaOffHint", IDS_SETTINGS_SWAA_OFF_HINT},
+            {"manageSyncedDataTitle",
+             IDS_SETTINGS_NEW_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT},
         };
     AddLocalizedStringsBulk(html_source, kSyncSetupFriendlySettingsStrings);
   } else {
     html_source->AddLocalizedString(
         "personalizeGoogleServicesTitle",
         IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE);
+    html_source->AddLocalizedString(
+        "manageSyncedDataTitle",
+        IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT);
   }
 }
 

@@ -146,10 +146,12 @@ class MojoAudioDecoderTest : public ::testing::Test {
 
     mojo_audio_decoder_->Initialize(
         audio_config, nullptr,
-        base::Bind(&MojoAudioDecoderTest::OnInitialized,
-                   base::Unretained(this)),
-        base::Bind(&MojoAudioDecoderTest::OnOutput, base::Unretained(this)),
-        base::Bind(&MojoAudioDecoderTest::OnWaiting, base::Unretained(this)));
+        base::BindOnce(&MojoAudioDecoderTest::OnInitialized,
+                       base::Unretained(this)),
+        base::BindRepeating(&MojoAudioDecoderTest::OnOutput,
+                            base::Unretained(this)),
+        base::BindRepeating(&MojoAudioDecoderTest::OnWaiting,
+                            base::Unretained(this)));
 
     RunLoop();
   }
@@ -159,13 +161,13 @@ class MojoAudioDecoderTest : public ::testing::Test {
   void Decode() {
     scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));
     mojo_audio_decoder_->Decode(
-        buffer,
-        base::Bind(&MojoAudioDecoderTest::OnDecoded, base::Unretained(this)));
+        buffer, base::BindRepeating(&MojoAudioDecoderTest::OnDecoded,
+                                    base::Unretained(this)));
   }
 
   void Reset() {
     mojo_audio_decoder_->Reset(
-        base::Bind(&MojoAudioDecoderTest::OnReset, base::Unretained(this)));
+        base::BindOnce(&MojoAudioDecoderTest::OnReset, base::Unretained(this)));
   }
 
   void ResetAndWaitUntilFinish() {

@@ -769,6 +769,9 @@ const char OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs[] =
     "DelayOnDeviceHeadSuggestRequestMs";
 const char OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput[] =
     "OnDeviceSuggestMaxScoreForNonUrlInput";
+const char
+    OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInputIncognito[] =
+        "OnDeviceSuggestMaxScoreForNonUrlInputIncognito";
 const char OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode[] =
     "DemoteOnDeviceSearchSuggestionsMode";
 

@@ -28,6 +28,7 @@ Polymer({
 
   /** @private */
   onCheckedChanged_() {
+    // The iron-collapse should open when a user selects the radio button.
     this.expanded = this.checked;
   },
 });

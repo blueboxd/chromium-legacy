@@ -285,13 +285,35 @@ void OnDeviceHeadProvider::SearchDone(
     UMA_HISTOGRAM_CUSTOM_COUNTS("Omnibox.OnDeviceHeadSuggest.ResultCount",
                                 params->suggestions.size(), 1, 5, 6);
     matches_.clear();
-    int relevance =
-        (params->input.type() != metrics::OmniboxInputType::URL)
-            ? base::GetFieldTrialParamByFeatureAsInt(
-                  omnibox::kOnDeviceHeadProvider,
-                  OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
-                  kBaseRelevance)
-            : kBaseRelevance;
+
+    int relevance;
+    if (params->input.type() == metrics::OmniboxInputType::URL) {
+      relevance = kBaseRelevance;
+    } else {
+      if (client()->IsOffTheRecord()) {
+        relevance = base::GetFieldTrialParamByFeatureAsInt(
+            omnibox::kOnDeviceHeadProvider,
+            OmniboxFieldTrial::
+                kOnDeviceHeadSuggestMaxScoreForNonUrlInputIncognito,
+            0);
+        if (relevance <= 0) {
+          // TODO(crbug.com/925072): this is a fallback for existing Incognito
+          // experiments which are still using finch flag
+          // kOnDeviceHeadSuggestMaxScoreForNonUrlInput; we will remove this
+          // fallback logic once no Incognito experiment is using the flag.
+          relevance = base::GetFieldTrialParamByFeatureAsInt(
+              omnibox::kOnDeviceHeadProvider,
+              OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
+              kBaseRelevance);
+        }
+      } else {
+        relevance = base::GetFieldTrialParamByFeatureAsInt(
+            omnibox::kOnDeviceHeadProvider,
+            OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
+            kBaseRelevance);
+      }
+    }
+
     for (const auto& item : params->suggestions) {
       matches_.push_back(BaseSearchProvider::CreateOnDeviceSearchSuggestion(
           /*autocomplete_provider=*/this, /*input=*/params->input,

@@ -24,6 +24,7 @@ enum DiagnosticRoutineEnum {
   kCpuCache = 5,
   kCpuStress = 6,
   kFloatingPointAccuracy = 7,
+  kNvmeWearLevel = 8,
 };
 
 // Enumeration of each of the possible statuses for a diagnostics routine.

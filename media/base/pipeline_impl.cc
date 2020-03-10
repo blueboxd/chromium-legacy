@@ -298,8 +298,8 @@ void PipelineImpl::RendererWrapper::Start(
   // Run tasks.
   pending_callbacks_ = SerialRunner::Run(
       std::move(fns),
-      base::BindRepeating(&RendererWrapper::CompleteSeek,
-                          weak_factory_.GetWeakPtr(), base::TimeDelta()));
+      base::BindOnce(&RendererWrapper::CompleteSeek, weak_factory_.GetWeakPtr(),
+                     base::TimeDelta()));
 }
 
 void PipelineImpl::RendererWrapper::Stop() {
@@ -371,8 +371,8 @@ void PipelineImpl::RendererWrapper::Seek(base::TimeDelta time) {
   // Run tasks.
   pending_callbacks_ = SerialRunner::Run(
       std::move(bound_fns),
-      base::BindRepeating(&RendererWrapper::CompleteSeek,
-                          weak_factory_.GetWeakPtr(), seek_timestamp));
+      base::BindOnce(&RendererWrapper::CompleteSeek, weak_factory_.GetWeakPtr(),
+                     seek_timestamp));
 }
 
 void PipelineImpl::RendererWrapper::Suspend() {
@@ -403,8 +403,8 @@ void PipelineImpl::RendererWrapper::Suspend() {
 
   // No need to flush the renderer since it's going to be destroyed.
   pending_callbacks_ = SerialRunner::Run(
-      std::move(fns), base::BindRepeating(&RendererWrapper::CompleteSuspend,
-                                          weak_factory_.GetWeakPtr()));
+      std::move(fns), base::BindOnce(&RendererWrapper::CompleteSuspend,
+                                     weak_factory_.GetWeakPtr()));
 }
 
 void PipelineImpl::RendererWrapper::Resume(
@@ -437,8 +437,8 @@ void PipelineImpl::RendererWrapper::Resume(
   // Queue the asynchronous actions required to start playback.
   SerialRunner::Queue fns;
 
-  fns.Push(base::BindRepeating(&Demuxer::Seek, base::Unretained(demuxer_),
-                               start_timestamp));
+  fns.Push(base::BindOnce(&Demuxer::Seek, base::Unretained(demuxer_),
+                          start_timestamp));
 
   fns.Push(base::BindOnce(&RendererWrapper::CreateRenderer,
                           weak_factory_.GetWeakPtr()));
@@ -448,8 +448,8 @@ void PipelineImpl::RendererWrapper::Resume(
 
   pending_callbacks_ = SerialRunner::Run(
       std::move(fns),
-      base::BindRepeating(&RendererWrapper::CompleteSeek,
-                          weak_factory_.GetWeakPtr(), start_timestamp));
+      base::BindOnce(&RendererWrapper::CompleteSeek, weak_factory_.GetWeakPtr(),
+                     start_timestamp));
 }
 
 void PipelineImpl::RendererWrapper::SetPlaybackRate(double playback_rate) {

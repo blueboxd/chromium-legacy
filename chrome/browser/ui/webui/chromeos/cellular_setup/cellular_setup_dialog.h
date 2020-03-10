@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
-#include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
+#include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 

@@ -110,6 +110,8 @@
         setModalPresentationStyle:UIModalPresentationCustom];
   }
 
+  recentTabsTableViewController.preventUpdates = NO;
+
   [self.baseViewController
       presentViewController:self.recentTabsNavigationController
                    animated:YES

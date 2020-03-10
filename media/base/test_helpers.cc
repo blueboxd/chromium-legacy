@@ -75,9 +75,9 @@ WaitableMessageLoopEvent::~WaitableMessageLoopEvent() {
 
 base::Closure WaitableMessageLoopEvent::GetClosure() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return BindToCurrentLoop(base::Bind(
-      &WaitableMessageLoopEvent::OnCallback, base::Unretained(this),
-      PIPELINE_OK));
+  return BindToCurrentLoop(
+      base::BindRepeating(&WaitableMessageLoopEvent::OnCallback,
+                          base::Unretained(this), PIPELINE_OK));
 }
 
 PipelineStatusCallback WaitableMessageLoopEvent::GetPipelineStatusCB() {
@@ -100,9 +100,9 @@ void WaitableMessageLoopEvent::RunAndWaitForStatus(PipelineStatus expected) {
 
   run_loop_.reset(new base::RunLoop());
   base::OneShotTimer timer;
-  timer.Start(
-      FROM_HERE, timeout_,
-      base::Bind(&WaitableMessageLoopEvent::OnTimeout, base::Unretained(this)));
+  timer.Start(FROM_HERE, timeout_,
+              base::BindOnce(&WaitableMessageLoopEvent::OnTimeout,
+                             base::Unretained(this)));
 
   run_loop_->Run();
   EXPECT_TRUE(signaled_);

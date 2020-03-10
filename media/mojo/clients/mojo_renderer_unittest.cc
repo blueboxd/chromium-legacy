@@ -183,10 +183,11 @@ class MojoRendererTest : public ::testing::Test {
 
   void CreateCdm() {
     cdm_receiver_.Bind(cdm_remote_.BindNewPipeAndPassReceiver());
-    cdm_remote_->Initialize(
-        kClearKeyKeySystem, url::Origin::Create(GURL("https://www.test.com")),
-        CdmConfig(),
-        base::Bind(&MojoRendererTest::OnCdmCreated, base::Unretained(this)));
+    cdm_remote_->Initialize(kClearKeyKeySystem,
+                            url::Origin::Create(GURL("https://www.test.com")),
+                            CdmConfig(),
+                            base::BindOnce(&MojoRendererTest::OnCdmCreated,
+                                           base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 

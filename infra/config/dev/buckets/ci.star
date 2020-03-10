@@ -73,3 +73,10 @@ ci_builder(
     name = 'win-rel-swarming',
     os = os.WINDOWS_DEFAULT,
 )
+
+## builders using swarming staging instance
+
+ci_builder(
+    name = 'linux-rel-swarming-staging',
+    swarming_host = 'chromium-swarm-staging.appspot.com',
+)

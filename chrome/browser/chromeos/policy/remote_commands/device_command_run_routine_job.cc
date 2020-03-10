@@ -320,6 +320,29 @@ void DeviceCommandRunRoutineJob::RunImpl(CallbackWithResult succeeded_callback,
                   std::move(failed_callback)));
       break;
     }
+    case chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeWearLevel: {
+      constexpr char kWearLevelThresholdFieldName[] = "wearLevelThreshold";
+      base::Optional<int> wear_level_threshold =
+          params_dict_.FindIntKey(kWearLevelThresholdFieldName);
+      // The NVMe wear level routine expects one integer >= 0.
+      if (!wear_level_threshold.has_value() ||
+          wear_level_threshold.value() < 0) {
+        SYSLOG(ERROR) << "Invalid parameters for NVMe wear level routine.";
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(failed_callback),
+                                      std::make_unique<Payload>(
+                                          MakeInvalidParametersResponse())));
+        break;
+      }
+      chromeos::cros_healthd::ServiceConnection::GetInstance()
+          ->RunNvmeWearLevelRoutine(
+              wear_level_threshold.value(),
+              base::BindOnce(
+                  &DeviceCommandRunRoutineJob::OnCrosHealthdResponseReceived,
+                  weak_ptr_factory_.GetWeakPtr(), std::move(succeeded_callback),
+                  std::move(failed_callback)));
+      break;
+    }
   }
 }
 

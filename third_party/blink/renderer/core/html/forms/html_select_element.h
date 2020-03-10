@@ -261,7 +261,6 @@ class CORE_EXPORT HTMLSelectElement final
   void UpdateListBoxSelection(bool deselect_other_options, bool scroll = true);
   void SetIndexToSelectOnCancel(int list_index);
   void SetSuggestedOption(HTMLOptionElement*);
-  void ToggleSelection(HTMLOptionElement&);
 
   // Returns nullptr if listIndex is out of bounds, or it doesn't point an
   // HTMLOptionElement.

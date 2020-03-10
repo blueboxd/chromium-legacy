@@ -875,15 +875,16 @@ void CdmAdapter::SendPlatformChallenge(const char* service_id,
   if (!cdm_config_.allow_distinctive_identifier) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindRepeating(&CdmAdapter::OnChallengePlatformDone,
-                            weak_factory_.GetWeakPtr(), false, "", "", ""));
+        base::BindOnce(&CdmAdapter::OnChallengePlatformDone,
+                       weak_factory_.GetWeakPtr(), false, "", "", ""));
     return;
   }
 
-  helper_->ChallengePlatform(std::string(service_id, service_id_size),
-                             std::string(challenge, challenge_size),
-                             base::Bind(&CdmAdapter::OnChallengePlatformDone,
-                                        weak_factory_.GetWeakPtr()));
+  helper_->ChallengePlatform(
+      std::string(service_id, service_id_size),
+      std::string(challenge, challenge_size),
+      base::BindOnce(&CdmAdapter::OnChallengePlatformDone,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void CdmAdapter::OnChallengePlatformDone(
@@ -939,8 +940,8 @@ void CdmAdapter::QueryOutputProtectionStatus() {
 
   ReportOutputProtectionQuery();
   helper_->QueryStatus(
-      base::Bind(&CdmAdapter::OnQueryOutputProtectionStatusDone,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CdmAdapter::OnQueryOutputProtectionStatusDone,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void CdmAdapter::OnQueryOutputProtectionStatusDone(bool success,
@@ -1054,15 +1055,16 @@ void CdmAdapter::RequestStorageId(uint32_t version) {
     DVLOG(1) << __func__ << ": Persistent state not allowed ("
              << cdm_config_.allow_persistent_state
              << ") or invalid storage ID version (" << version << ").";
-    task_runner_->PostTask(
-        FROM_HERE, base::BindRepeating(&CdmAdapter::OnStorageIdObtained,
-                                       weak_factory_.GetWeakPtr(), version,
-                                       std::vector<uint8_t>()));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&CdmAdapter::OnStorageIdObtained,
+                                          weak_factory_.GetWeakPtr(), version,
+                                          std::vector<uint8_t>()));
     return;
   }
 
-  helper_->GetStorageId(version, base::Bind(&CdmAdapter::OnStorageIdObtained,
-                                            weak_factory_.GetWeakPtr()));
+  helper_->GetStorageId(version,
+                        base::BindOnce(&CdmAdapter::OnStorageIdObtained,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 cdm::CdmProxy* CdmAdapter::RequestCdmProxy(cdm::CdmProxyClient* client) {

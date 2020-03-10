@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
+import("../settings.gni")
 
 js_type_check("closure_compile") {
   deps = [ ":settings_main" ]
@@ -23,28 +25,43 @@ js_library("settings_main") {
   ]
 }
 
-# TODO(crbug.com/1026426): Fix and enable.
-#js_type_check("closure_compile_module") {
-#  is_polymer3 = true
-#  deps = [ ":settings_main.m" ]
-#}
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [ ":settings_main.m" ]
+}
 
 js_library("settings_main.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/settings_main/settings_main.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "..:page_visibility.m",
+    "..:route.m",
+    "..:router.m",
+    "..:search_settings.m",
+    "../about_page:about_page.m",
+    "../about_page:about_page_browser_proxy.m",
+    "../basic_page:basic_page.m",
+    "../settings_page:main_page_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   extra_deps = [ ":settings_main_module" ]
 }
 
-import("//tools/polymer/polymer.gni")
-
 group("polymer3_elements") {
-  deps = [ ":settings_main_module" ]
+  public_deps = [ ":settings_main_module" ]
 }
 
 polymer_modulizer("settings_main") {
   js_file = "settings_main.js"
   html_file = "settings_main.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/about_page/about_page_browser_proxy.html|AboutPageBrowserProxyImpl",
+                   "chrome/browser/resources/settings/page_visibility.html|PageVisibility",
+                   "chrome/browser/resources/settings/route.html|routes",
+                   "chrome/browser/resources/settings/router.html|Route,Router,RouteObserverBehavior",
+                   "ui/webui/resources/html/assert.html|assert,assertNotReached",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }

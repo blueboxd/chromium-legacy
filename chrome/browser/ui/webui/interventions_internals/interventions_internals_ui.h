@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_INTERVENTIONS_INTERNALS_INTERVENTIONS_INTERNALS_UI_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
+#include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom-forward.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_page_handler.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"

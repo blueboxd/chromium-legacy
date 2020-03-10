@@ -132,32 +132,34 @@ void WebFormControlElement::SetValue(const WebString& value, bool send_events) {
   }
 }
 
+void WebFormControlElement::DispatchFocusEvent() {
+  Unwrap<Element>()->DispatchFocusEvent(
+      nullptr, mojom::blink::FocusType::kForward, nullptr);
+}
+
+void WebFormControlElement::DispatchBlurEvent() {
+  Unwrap<Element>()->DispatchBlurEvent(
+      nullptr, mojom::blink::FocusType::kForward, nullptr);
+}
+
 void WebFormControlElement::SetAutofillValue(const WebString& value) {
   // The input and change events will be sent in setValue.
   if (IsA<HTMLInputElement>(*private_) || IsA<HTMLTextAreaElement>(*private_)) {
-    if (!Focused()) {
-      Unwrap<Element>()->DispatchFocusEvent(
-          nullptr, mojom::blink::FocusType::kForward, nullptr);
-    }
+    if (!Focused())
+      DispatchFocusEvent();
     Unwrap<Element>()->DispatchScopedEvent(
         *Event::CreateBubble(event_type_names::kKeydown));
     Unwrap<TextControlElement>()->SetAutofillValue(value);
     Unwrap<Element>()->DispatchScopedEvent(
         *Event::CreateBubble(event_type_names::kKeyup));
-    if (!Focused()) {
-      Unwrap<Element>()->DispatchBlurEvent(
-          nullptr, mojom::blink::FocusType::kForward, nullptr);
-    }
+    if (!Focused())
+      DispatchBlurEvent();
   } else if (auto* select = DynamicTo<HTMLSelectElement>(*private_)) {
-    if (!Focused()) {
-      Unwrap<Element>()->DispatchFocusEvent(
-          nullptr, mojom::blink::FocusType::kForward, nullptr);
-    }
+    if (!Focused())
+      DispatchFocusEvent();
     select->setValue(value, true);
-    if (!Focused()) {
-      Unwrap<Element>()->DispatchBlurEvent(
-          nullptr, mojom::blink::FocusType::kForward, nullptr);
-    }
+    if (!Focused())
+      DispatchBlurEvent();
   }
 }
 
@@ -176,8 +178,9 @@ void WebFormControlElement::SetSuggestedValue(const WebString& value) {
     input->SetSuggestedValue(value);
   } else if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*private_)) {
     textarea->SetSuggestedValue(value);
-  } else if (auto* select = DynamicTo<HTMLSelectElement>(*private_))
+  } else if (auto* select = DynamicTo<HTMLSelectElement>(*private_)) {
     select->SetSuggestedValue(value);
+  }
 }
 
 WebString WebFormControlElement::SuggestedValue() const {

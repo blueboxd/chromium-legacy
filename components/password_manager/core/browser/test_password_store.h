@@ -26,7 +26,7 @@ namespace password_manager {
 // for testing have been implemented.
 class TestPasswordStore : public PasswordStore {
  public:
-  TestPasswordStore();
+  explicit TestPasswordStore(bool is_account_store = false);
 
   using PasswordMap = std::map<std::string /* signon_realm */,
                                std::vector<autofill::PasswordForm>,
@@ -133,8 +133,12 @@ class TestPasswordStore : public PasswordStore {
   bool DeleteAndRecreateDatabaseFile() override;
 
  private:
+  const bool is_account_store_;
+
   PasswordMap stored_passwords_;
   CompromisedCredentialsStorage compromised_credentials_;
+
+  const std::unique_ptr<PasswordStoreSync::MetadataStore> metadata_store_;
 
   // Number of calls of FillMatchingLogins() method.
   int fill_matching_logins_calls_ = 0;

@@ -87,7 +87,6 @@ class SyncManagerImpl
       std::unique_ptr<InvalidationInterface> invalidation) override;
   void AddObserver(SyncManager::Observer* observer) override;
   void RemoveObserver(SyncManager::Observer* observer) override;
-  SyncStatus GetDetailedStatus() const override;
   void SaveChanges() override;
   void ShutdownOnSyncThread() override;
   UserShare* GetUserShare() override;

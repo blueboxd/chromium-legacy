@@ -197,6 +197,8 @@ jumbo_source_set("modules_testing") {
     "$bindings_modules_v8_output_dir/v8_internals_partial.h",
     "accessibility/testing/internals_accessibility.cc",
     "accessibility/testing/internals_accessibility.h",
+    "canvas/canvas2d/testing/internals_canvas_rendering_context_2d.cc",
+    "canvas/canvas2d/testing/internals_canvas_rendering_context_2d.h",
     "mediastream/testing/internals_media_stream.cc",
     "mediastream/testing/internals_media_stream.h",
     "netinfo/testing/internals_net_info.cc",

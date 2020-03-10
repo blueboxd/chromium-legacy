@@ -219,6 +219,8 @@ Polymer({
         return 'management:bar-chart';
       case DeviceReportingType.DEVICE:
         return 'cr:computer';
+      case DeviceReportingType.CRASH_REPORT:
+        return 'management:crash';
       case DeviceReportingType.LOGS:
         return 'management:report';
       case DeviceReportingType.PRINT:

@@ -558,6 +558,7 @@ if (!is_ios && !is_fuchsia) {
       "//base/test:test_support",
       "//components/autofill/content/browser",
       "//components/autofill/content/renderer",
+      "//components/autofill/content/renderer:test_support",
       "//components/autofill/core/browser",
       "//components/content_settings/core/common",
       "//components/dom_distiller/content/browser",

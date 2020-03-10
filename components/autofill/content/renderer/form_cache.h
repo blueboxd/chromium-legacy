@@ -9,6 +9,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -79,6 +80,10 @@ class FormCache {
   bool ShouldShowAutocompleteConsoleWarnings(
       const std::string& predicted_autocomplete,
       const std::string& actual_autocomplete);
+
+  // Clears the value of the |control_element|.
+  void ClearElement(blink::WebFormControlElement& control_element,
+                    const blink::WebFormControlElement& element);
 
   // Clears all entries from |initial_select_values_| and
   // |initial_checked_state_| whose keys not contained in |ids_to_retain|.

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/media/media_engagement_score_details.mojom.h"
+#include "chrome/browser/media/media_engagement_score_details.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 

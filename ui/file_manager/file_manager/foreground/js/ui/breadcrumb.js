@@ -141,15 +141,15 @@ const breadCrumbTemplate = `
   </style>
 
   <button id='first'></button>
-  <span class='caret' hidden aria-hidden></span>
+  <span class='caret' hidden></span>
   <button elider aria-haspopup='menu' aria-expanded='false'>
-    <span elider aria-hidden></span>
+    <span elider></span>
   </button>
-  <span class='caret' hidden aria-hidden></span>
+  <span class='caret' hidden></span>
   <button id='second'></button>
-  <span class='caret' hidden aria-hidden></span>
+  <span class='caret' hidden></span>
   <button id='third'></button>
-  <span class='caret' hidden aria-hidden></span>
+  <span class='caret' hidden></span>
   <button id='fourth'></button>
   <cr-action-menu id='elider-menu'></cr-menu-item>
 `;

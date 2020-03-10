@@ -20,13 +20,12 @@ const float kSilenceThresholdDBFS = -72.24719896f;
 // "blip" sounds won't be detected.  http://crbug.com/339133#c4
 const int kPowerMeasurementsPerSecond = 15;
 
-std::string GetCtorLogString(const base::UnguessableToken& id,
-                             media::AudioManager* audio_manager,
+std::string GetCtorLogString(media::AudioManager* audio_manager,
                              const std::string& device_id,
                              const media::AudioParameters& params) {
   return base::StringPrintf(
-      "Ctor({id=%s}, {audio_manager_name=%s}, {device_id=%s}, {params=[%s]})",
-      id.ToString().c_str(), audio_manager->GetName(), device_id.c_str(),
+      "Ctor({audio_manager_name=%s}, {device_id=%s}, {params=[%s]})",
+      audio_manager->GetName(), device_id.c_str(),
       params.AsHumanReadableString().c_str());
 }
 
@@ -72,9 +71,8 @@ OutputStream::OutputStream(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2("audio", "OutputStream", this, "device id",
                                     output_device_id, "params",
                                     params.AsHumanReadableString());
-  SendLogMessage("%s", GetCtorLogString(processing_id, audio_manager,
-                                        output_device_id, params)
-                           .c_str());
+  SendLogMessage(
+      "%s", GetCtorLogString(audio_manager, output_device_id, params).c_str());
 
   // |this| owns these objects, so unretained is safe.
   base::RepeatingClosure error_handler =
@@ -128,6 +126,7 @@ OutputStream::~OutputStream() {
 
 void OutputStream::Play() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  SendLogMessage("%s()", __func__);
 
   controller_.Play();
   if (log_)
@@ -136,6 +135,7 @@ void OutputStream::Play() {
 
 void OutputStream::Pause() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  SendLogMessage("%s()", __func__);
 
   controller_.Pause();
   if (log_)
@@ -144,6 +144,7 @@ void OutputStream::Pause() {
 
 void OutputStream::Flush() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  SendLogMessage("%s()", __func__);
 
   controller_.Flush();
 }
@@ -168,8 +169,7 @@ void OutputStream::CreateAudioPipe(CreatedCallback created_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   DCHECK(reader_.IsValid());
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "CreateAudioPipe", this);
-  SendLogMessage("CreateAudioPipe({id=%s})",
-                 processing_id().ToString().c_str());
+  SendLogMessage("%s()", __func__);
 
   base::UnsafeSharedMemoryRegion shared_memory_region =
       reader_.TakeSharedMemoryRegion();
@@ -231,8 +231,7 @@ void OutputStream::OnControllerPaused() {
 void OutputStream::OnControllerError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "OnControllerError", this);
-  SendLogMessage("OnControllerError({id=%s})",
-                 processing_id().ToString().c_str());
+  SendLogMessage("%s()", __func__);
 
   // Stop checking the audio level to avoid using this object while it's being
   // torn down.
@@ -310,7 +309,9 @@ void OutputStream::SendLogMessage(const char* format, ...) {
     return;
   va_list args;
   va_start(args, format);
-  log_->OnLogMessage("audio::OS::" + base::StringPrintV(format, args));
+  log_->OnLogMessage(
+      "audio::OS::" + base::StringPrintV(format, args) +
+      base::StringPrintf(" [id=%s]", processing_id().ToString().c_str()));
   va_end(args);
 }
 

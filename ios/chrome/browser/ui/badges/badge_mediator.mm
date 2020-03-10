@@ -322,7 +322,7 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
-                     reason:(int)reason {
+                     reason:(ActiveWebStateChangeReason)reason {
   DCHECK_EQ(self.webStateList, webStateList);
   self.webState = newWebState;
 }

@@ -15,6 +15,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -41,6 +42,8 @@ class PrivacyTableViewControllerTest : public ChromeTableViewControllerTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.SetPrefService(CreatePrefService());
     chrome_browser_state_ = test_cbs_builder.Build();
+
+    browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
 
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     initialValueForSpdyProxyEnabled_ =
@@ -71,13 +74,13 @@ class PrivacyTableViewControllerTest : public ChromeTableViewControllerTest {
   }
 
   ChromeTableViewController* InstantiateController() override {
-    return [[PrivacyTableViewController alloc]
-        initWithBrowserState:chrome_browser_state_.get()];
+    return [[PrivacyTableViewController alloc] initWithBrowser:browser_.get()];
   }
 
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<Browser> browser_;
   NSString* initialValueForSpdyProxyEnabled_;
 };
 

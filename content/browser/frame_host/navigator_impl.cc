@@ -176,7 +176,10 @@ void NavigatorImpl::DidNavigate(
   // frame's origin.  See https://crbug.com/825283.
   frame_tree_node->render_manager()->DidNavigateFrame(
       render_frame_host, params.gesture == NavigationGestureUser,
-      is_same_document_navigation, pending_frame_policy);
+      is_same_document_navigation,
+      navigation_request
+          ->require_coop_browsing_instance_swap() /* clear_proxies_on_commit */,
+      pending_frame_policy);
 
   // Save the new page's origin and other properties, and replicate them to
   // proxies, including the proxy created in DidNavigateFrame() to replace the

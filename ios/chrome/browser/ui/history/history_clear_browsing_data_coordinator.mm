@@ -48,7 +48,7 @@
 - (void)start {
   self.clearBrowsingDataTableViewController =
       [[ClearBrowsingDataTableViewController alloc]
-          initWithBrowserState:self.browser->GetBrowserState()];
+          initWithBrowser:self.browser];
   self.clearBrowsingDataTableViewController.extendedLayoutIncludesOpaqueBars =
       YES;
   self.clearBrowsingDataTableViewController.delegate = self;

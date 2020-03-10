@@ -172,7 +172,7 @@ bool KeyframeModel::IsFinishedAt(base::TimeTicks monotonic_time) const {
   if (playback_rate_ == 0)
     return false;
 
-  return run_state_ == RUNNING && iterations_ >= 0 &&
+  return run_state_ == RUNNING && std::isfinite(iterations_) &&
          (curve_->Duration() * (iterations_ / std::abs(playback_rate_))) <=
              (ConvertMonotonicTimeToLocalTime(monotonic_time) + time_offset_);
 }
@@ -205,8 +205,7 @@ KeyframeModel::Phase KeyframeModel::CalculatePhase(
   // TODO(crbug.com/909794): By spec end time = max(start delay + duration +
   // end delay, 0). The logic should be updated once "end delay" is supported.
   base::TimeDelta active_after_boundary_time =
-      // Negative iterations_ represents "infinite iterations".
-      iterations_ >= 0
+      std::isfinite(iterations_)
           ? std::max(opposite_time_offset + active_duration, base::TimeDelta())
           : base::TimeDelta::Max();
   if (local_time > active_after_boundary_time ||
@@ -230,7 +229,7 @@ base::Optional<base::TimeDelta> KeyframeModel::CalculateActiveTime(
       return local_time + time_offset_;
     case KeyframeModel::Phase::AFTER:
       if (fill_mode_ == FillMode::FORWARDS || fill_mode_ == FillMode::BOTH) {
-        DCHECK_GE(iterations_, 0);
+        DCHECK_NE(iterations_, std::numeric_limits<double>::infinity());
         base::TimeDelta active_duration =
             curve_->Duration() * iterations_ / std::abs(playback_rate_);
         return std::max(std::min(local_time + time_offset_, active_duration),
@@ -289,6 +288,7 @@ base::TimeDelta KeyframeModel::TrimTimeToCurrentIteration(
   // Calculate the scaled active time
   base::TimeDelta scaled_active_time;
   if (playback_rate_ < 0) {
+    DCHECK(std::isfinite(iterations_));
     scaled_active_time =
         ((active_time - active_duration) * playback_rate_) + start_offset;
   } else {

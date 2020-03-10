@@ -3,6 +3,7 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 
 <dom-module id="gaia-signin">
   <template>
@@ -80,16 +81,13 @@
           icon2x="oobe-64:googleg">
       </hd-iron-icon>
       <div slot="subtitle" hidden="[[isEmpty_(samlInterstitialDomain_)]]">
-        [[i18nDynamic(locale, 'enterpriseInfoMessage',
+        <iron-icon class="icon20" icon="cr20:domain"></iron-icon>
+        [[i18nDynamic(locale, 'samlInterstitialMessage',
                       samlInterstitialDomain_)]]
-      </div>
-      <div slot="footer" class="flex layout vertical">
-        <html-echo hidden="[[isEmpty_(samlInterstitialDomain_)]]"
-            content="[[samlInterstitialMessage_]]"></html-echo>
         <p>
           <a href="#" class="oobe-local-link" on-tap="onSamlPageChangeAccount_"
               id="interstitial-change-account">
-            [[i18nDynamic(locale, 'samlInterstitialChangeAccountLink')]]
+              [[i18nDynamic(locale, 'samlInterstitialChangeAccountLink')]]
           </a>
         </p>
       </div>

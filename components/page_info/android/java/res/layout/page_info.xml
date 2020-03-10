@@ -97,6 +97,19 @@
         style="@style/FilledButton" />
 
     <View
+        android:id="@+id/page_info_cookie_controls_separator"
+        android:layout_marginTop="16dp"
+        style="@style/HorizontalDivider"/>
+
+    <org.chromium.components.page_info.CookieControlsView
+        android:id="@+id/page_info_cookie_controls_view"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_marginTop="16dp"
+        android:paddingStart="@dimen/page_info_popup_padding_sides"
+        android:paddingEnd="@dimen/page_info_popup_padding_sides"/>
+
+    <View
         android:id="@+id/page_info_permissions_separator"
         android:layout_marginTop="16dp"
         style="@style/HorizontalDivider" />
@@ -119,19 +132,6 @@
         android:paddingStart="@dimen/page_info_popup_padding_sides"
         android:paddingEnd="@dimen/page_info_popup_padding_sides" >
     </LinearLayout>
-
-    <View
-        android:id="@+id/page_info_cookie_controls_separator"
-        android:layout_marginTop="16dp"
-        style="@style/HorizontalDivider"/>
-
-    <org.chromium.components.page_info.CookieControlsView
-        android:id="@+id/page_info_cookie_controls_view"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_marginTop="16dp"
-        android:paddingStart="@dimen/page_info_popup_padding_sides"
-        android:paddingEnd="@dimen/page_info_popup_padding_sides"/>
 
     <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/page_info_site_settings_button"

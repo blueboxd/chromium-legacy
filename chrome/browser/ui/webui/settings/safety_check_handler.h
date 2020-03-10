@@ -25,14 +25,6 @@ class SafetyCheckHandler
     : public settings::SettingsPageUIHandler,
       public password_manager::BulkLeakCheckService::Observer {
  public:
-  // Used in communication with the frontend to indicate which component the
-  // communicated status update applies to.
-  enum class SafetyCheckComponent {
-    kUpdates,
-    kPasswords,
-    kSafeBrowsing,
-    kExtensions,
-  };
   // The following enums represent the state of each component of the safety
   // check and should be kept in sync with the JS frontend
   // (safety_check_browser_proxy.js).
@@ -100,10 +92,15 @@ class SafetyCheckHandler
                            const std::string& version,
                            int64_t update_size,
                            const base::string16& message);
-
   void OnSafeBrowsingCheckResult(SafeBrowsingStatus status);
-
   void OnPasswordsCheckResult(PasswordsStatus status, int num_compromised);
+
+  // Methods for building user-visible strings based on the safety check
+  // state.
+  base::string16 GetStringForUpdates(UpdateStatus status);
+  base::string16 GetStringForSafeBrowsing(SafeBrowsingStatus status);
+  base::string16 GetStringForPasswords(PasswordsStatus status,
+                                       int num_compromised);
 
   // BulkLeakCheckService::Observer implementation.
   void OnStateChanged(

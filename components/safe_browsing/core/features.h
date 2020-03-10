@@ -47,10 +47,6 @@ extern const base::Feature kCommittedSBInterstitials;
 // sent for scanning.
 extern const base::Feature kContentComplianceEnabled;
 
-// Enable the addition of access tokens to download pings for enhanced
-// protection users.
-extern const base::Feature kDownloadRequestWithToken;
-
 // Enable Chrome Safe Browsing enhanced protection.
 extern const base::Feature kEnhancedProtection;
 

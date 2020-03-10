@@ -51,8 +51,8 @@ class BookmarkModelObserverImplTest : public testing::Test {
     sync_pb::EntitySpecifics specifics;
     specifics.mutable_bookmark()->set_title(kBookmarkBarTag);
     bookmark_tracker_->Add(
-        /*sync_id=*/kBookmarkBarId,
         /*bookmark_node=*/bookmark_model()->bookmark_bar_node(),
+        /*sync_id=*/kBookmarkBarId,
         /*server_version=*/0, /*creation_time=*/base::Time::Now(),
         syncer::UniquePosition::InitialPosition(
             syncer::UniquePosition::RandomSuffix())
@@ -60,8 +60,8 @@ class BookmarkModelObserverImplTest : public testing::Test {
         specifics);
     specifics.mutable_bookmark()->set_title(kOtherBookmarksTag);
     bookmark_tracker_->Add(
-        /*sync_id=*/kOtherBookmarksId,
         /*bookmark_node=*/bookmark_model()->other_node(),
+        /*sync_id=*/kOtherBookmarksId,
         /*server_version=*/0, /*creation_time=*/base::Time::Now(),
         syncer::UniquePosition::InitialPosition(
             syncer::UniquePosition::RandomSuffix())
@@ -69,8 +69,8 @@ class BookmarkModelObserverImplTest : public testing::Test {
         specifics);
     specifics.mutable_bookmark()->set_title(kMobileBookmarksTag);
     bookmark_tracker_->Add(
-        /*sync_id=*/kMobileBookmarksId,
         /*bookmark_node=*/bookmark_model()->mobile_node(),
+        /*sync_id=*/kMobileBookmarksId,
         /*server_version=*/0, /*creation_time=*/base::Time::Now(),
         syncer::UniquePosition::InitialPosition(
             syncer::UniquePosition::RandomSuffix())
@@ -87,9 +87,9 @@ class BookmarkModelObserverImplTest : public testing::Test {
          bookmark_tracker()->GetEntitiesWithLocalChanges(kMaxEntries)) {
       const std::string id = entity->metadata()->server_id();
       // Don't simulate change in id for simplicity.
-      bookmark_tracker()->UpdateUponCommitResponse(id, id,
-                                                   /*acked_sequence_number=*/1,
-                                                   /*server_version=*/1);
+      bookmark_tracker()->UpdateUponCommitResponse(entity, id,
+                                                   /*server_version=*/1,
+                                                   /*acked_sequence_number=*/1);
     }
   }
 
@@ -401,23 +401,22 @@ TEST_F(BookmarkModelObserverImplTest,
 
   // Node should be tracked now.
   ASSERT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 4U);
-  const std::string id = bookmark_tracker()
-                             ->GetEntityForBookmarkNode(folder_node)
-                             ->metadata()
-                             ->server_id();
+  const SyncedBookmarkTracker::Entity* entity =
+      bookmark_tracker()->GetEntityForBookmarkNode(folder_node);
+  const std::string id = entity->metadata()->server_id();
   ASSERT_THAT(
       bookmark_tracker()->GetEntitiesWithLocalChanges(kMaxEntries).size(), 1U);
 
-  bookmark_tracker()->MarkCommitMayHaveStarted(id);
+  bookmark_tracker()->MarkCommitMayHaveStarted(entity);
 
   // Remove the folder.
   bookmark_model()->Remove(folder_node);
 
   // Simulate a commit response for the first commit request (the creation).
   // Don't simulate change in id for simplicity.
-  bookmark_tracker()->UpdateUponCommitResponse(id, id,
-                                               /*acked_sequence_number=*/1,
-                                               /*server_version=*/1);
+  bookmark_tracker()->UpdateUponCommitResponse(entity, id,
+                                               /*server_version=*/1,
+                                               /*acked_sequence_number=*/1);
 
   // There should still be one local change (the deletion).
   EXPECT_THAT(
@@ -427,9 +426,9 @@ TEST_F(BookmarkModelObserverImplTest,
   EXPECT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 4U);
 
   // Commit the deletion.
-  bookmark_tracker()->UpdateUponCommitResponse(id, id,
-                                               /*acked_sequence_number=*/2,
-                                               /*server_version=*/2);
+  bookmark_tracker()->UpdateUponCommitResponse(entity, id,
+                                               /*server_version=*/2,
+                                               /*acked_sequence_number=*/2);
   // Entity should have been dropped.
   EXPECT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 3U);
 }
@@ -515,8 +514,8 @@ TEST_F(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
   sync_pb::EntitySpecifics specifics;
   specifics.mutable_bookmark()->set_title(kBookmarkBarTag);
   bookmark_tracker->Add(
-      /*sync_id=*/kBookmarkBarId,
       /*bookmark_node=*/model->bookmark_bar_node(),
+      /*sync_id=*/kBookmarkBarId,
       /*server_version=*/0, /*creation_time=*/base::Time::Now(),
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix())
@@ -524,8 +523,8 @@ TEST_F(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
       specifics);
   specifics.mutable_bookmark()->set_title(kOtherBookmarksTag);
   bookmark_tracker->Add(
-      /*sync_id=*/kOtherBookmarksId,
       /*bookmark_node=*/model->other_node(),
+      /*sync_id=*/kOtherBookmarksId,
       /*server_version=*/0, /*creation_time=*/base::Time::Now(),
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix())
@@ -533,8 +532,8 @@ TEST_F(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
       specifics);
   specifics.mutable_bookmark()->set_title(kMobileBookmarksTag);
   bookmark_tracker->Add(
-      /*sync_id=*/kMobileBookmarksId,
       /*bookmark_node=*/model->mobile_node(),
+      /*sync_id=*/kMobileBookmarksId,
       /*server_version=*/0, /*creation_time=*/base::Time::Now(),
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix())
@@ -586,8 +585,8 @@ TEST_F(BookmarkModelObserverImplTest, ShouldAddChildrenInArbitraryOrder) {
   sync_pb::EntitySpecifics specifics;
   specifics.mutable_bookmark()->set_title(kBookmarkBarTag);
   bookmark_tracker->Add(
-      /*sync_id=*/kBookmarkBarId,
       /*bookmark_node=*/bookmark_model()->bookmark_bar_node(),
+      /*sync_id=*/kBookmarkBarId,
       /*server_version=*/0, /*creation_time=*/base::Time::Now(),
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix())

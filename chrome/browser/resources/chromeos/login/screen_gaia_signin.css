@@ -80,6 +80,11 @@ element during loading, without affecting its loading events. */
   top: 0;
 }
 
+.icon20 {
+  height: 20px;
+  width: 20px;
+}
+
 #gaia-whitelist-error {
   bottom: 0;
   display: block;

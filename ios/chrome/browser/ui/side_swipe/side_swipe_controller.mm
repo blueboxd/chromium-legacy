@@ -683,7 +683,7 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
-                     reason:(int)reason {
+                     reason:(ActiveWebStateChangeReason)reason {
   // If there is any an ongoing swipe for the old webState, cancel it and
   // dismiss the curtain.
   [self dismissCurtain];

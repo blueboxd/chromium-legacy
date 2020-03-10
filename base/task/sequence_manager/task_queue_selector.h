@@ -89,11 +89,7 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
     return &immediate_work_queue_sets_;
   }
 
-  // Return true if |out_queue| contains the queue with the oldest pending task
-  // from the set of queues of |priority|, or false if all queues of that
-  // priority are empty. In addition |out_chose_delayed_over_immediate| is set
-  // to true iff we chose a delayed work queue in favour of an immediate work
-  // queue.  This method will force select an immediate task if those are being
+  // This method will force select an immediate task if those are being
   // starved by delayed tasks.
   void SetImmediateStarvationCountForTest(size_t immediate_starvation_count);
 
@@ -172,19 +168,16 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
 #endif  // DCHECK_IS_ON()
 
   template <typename SetOperation>
-  WorkQueue* ChooseWithPriority(TaskQueue::QueuePriority priority,
-                                bool* out_chose_delayed_over_immediate) const {
+  WorkQueue* ChooseWithPriority(TaskQueue::QueuePriority priority) const {
     // Select an immediate work queue if we are starving immediate tasks.
     if (immediate_starvation_count_ >= kMaxDelayedStarvationTasks) {
-      *out_chose_delayed_over_immediate = false;
       WorkQueue* queue =
           SetOperation::GetWithPriority(immediate_work_queue_sets_, priority);
       if (queue)
         return queue;
       return SetOperation::GetWithPriority(delayed_work_queue_sets_, priority);
     }
-    return ChooseImmediateOrDelayedTaskWithPriority<SetOperation>(
-        priority, out_chose_delayed_over_immediate);
+    return ChooseImmediateOrDelayedTaskWithPriority<SetOperation>(priority);
   }
 
  private:
@@ -200,10 +193,8 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
 
   template <typename SetOperation>
   WorkQueue* ChooseImmediateOrDelayedTaskWithPriority(
-      TaskQueue::QueuePriority priority,
-      bool* out_chose_delayed_over_immediate) const {
+      TaskQueue::QueuePriority priority) const {
     EnqueueOrder immediate_enqueue_order;
-    *out_chose_delayed_over_immediate = false;
     WorkQueue* immediate_queue = SetOperation::GetWithPriorityAndEnqueueOrder(
         immediate_work_queue_sets_, priority, &immediate_enqueue_order);
     if (immediate_queue) {
@@ -216,7 +207,6 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
       if (immediate_enqueue_order < delayed_enqueue_order) {
         return immediate_queue;
       } else {
-        *out_chose_delayed_over_immediate = true;
         return delayed_queue;
       }
     }

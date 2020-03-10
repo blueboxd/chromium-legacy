@@ -939,5 +939,36 @@ cr.define('settings_passwords_section', function() {
       Polymer.dom.flush();
       assertFalse(passwordsSection.$.manageLink.hidden);
     });
+
+    test('showPasswordCheckBannerWhenNotCheckedBefore', function() {
+      assertEquals(
+          passwordManager.data.leakedCredentials.elapsedTimeSinceLastCheck,
+          undefined);
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      return passwordManager.whenCalled('getCompromisedCredentialsInfo')
+          .then(() => {
+            Polymer.dom.flush();
+            assertFalse(
+                passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
+            assertFalse(passwordsSection.$$('#checkPasswordsButton').hidden);
+            assertTrue(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+          });
+    });
+
+    test('hidePasswordCheckBannerWhenCheckedBefore', function() {
+      passwordManager.data.leakedCredentials =
+          autofill_test_util.makeCompromisedCredentialsInfo([], '5 mins ago');
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      return passwordManager.whenCalled('getCompromisedCredentialsInfo')
+          .then(() => {
+            Polymer.dom.flush();
+            assertTrue(
+                passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
+            assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+            assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+          });
+    });
   });
 });

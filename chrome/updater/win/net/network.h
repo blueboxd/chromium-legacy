@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/updater/win/net/scoped_hinternet.h"
 #include "components/update_client/network.h"

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/memory/ref_counted.h"
 #include "components/update_client/unzipper.h"
 
 namespace updater {

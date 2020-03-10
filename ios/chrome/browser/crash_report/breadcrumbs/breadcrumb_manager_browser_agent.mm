@@ -113,8 +113,8 @@ void BreadcrumbManagerBrowserAgent::WebStateActivatedAt(
     web::WebState* old_web_state,
     web::WebState* new_web_state,
     int active_index,
-    int reason) {
-  if (!(reason & WebStateListObserver::CHANGE_REASON_ACTIVATED)) {
+    ActiveWebStateChangeReason reason) {
+  if (reason != ActiveWebStateChangeReason::Activated) {
     return;
   }
 

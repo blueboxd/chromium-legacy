@@ -31,7 +31,7 @@ void ActiveWebStateObservationForwarder::WebStateActivatedAt(
     web::WebState* old_web_state,
     web::WebState* new_web_state,
     int active_index,
-    int reason) {
+    ActiveWebStateChangeReason reason) {
   // If this class is created inside a |WebStateActivatedAt| callback, then it
   // will be initialized already observing |new_web_state|, so it doesn't need
   // to start or stop observing anything.

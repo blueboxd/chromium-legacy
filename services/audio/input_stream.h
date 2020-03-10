@@ -77,7 +77,7 @@ class InputStream final : public media::mojom::AudioInputStream,
  private:
   void OnStreamError(bool signalPlatformError);
   void CallDeleter();
-  void SendLogMessage(const std::string& message);
+  void SendLogMessage(const char* format, ...) PRINTF_FORMAT(2, 3);
 
   const base::UnguessableToken id_;
 

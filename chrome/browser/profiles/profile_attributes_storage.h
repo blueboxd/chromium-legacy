@@ -192,6 +192,12 @@ class ProfileAttributesStorage
                             base::OnceClosure callback,
                             bool success) const;
 
+  // Helper function that calls SaveAvatarImageAtPath without a callback.
+  void SaveAvatarImageAtPathNoCallback(const base::FilePath& profile_path,
+                                       gfx::Image image,
+                                       const std::string& key,
+                                       const base::FilePath& image_path);
+
   // Notifies observers.
   void NotifyOnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) const;

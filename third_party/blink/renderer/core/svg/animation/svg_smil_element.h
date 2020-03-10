@@ -58,7 +58,21 @@ class CORE_EXPORT SMILInstanceTimeList {
   const_iterator end() const { return instance_times_.end(); }
 
  private:
+  static unsigned OriginToMask(SMILTimeOrigin origin) {
+    return 1u << static_cast<unsigned>(origin);
+  }
+  void AddOrigin(SMILTimeOrigin origin) {
+    time_origin_mask_ |= OriginToMask(origin);
+  }
+  void ClearOrigin(SMILTimeOrigin origin) {
+    time_origin_mask_ &= ~OriginToMask(origin);
+  }
+  bool HasOrigin(SMILTimeOrigin origin) const {
+    return (time_origin_mask_ & OriginToMask(origin)) != 0;
+  }
+
   Vector<SMILTimeWithOrigin> instance_times_;
+  unsigned time_origin_mask_ = 0;
 };
 
 // This class implements SMIL interval timing model as needed for SVG animation.

@@ -825,8 +825,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
           initWithPrefs:_browserState->GetPrefs()];
       break;
     case ItemTypePrivacy:
-      controller = [[PrivacyTableViewController alloc]
-          initWithBrowserState:_browserState];
+      controller =
+          [[PrivacyTableViewController alloc] initWithBrowser:_browser];
       break;
     case ItemTypeLanguageSettings: {
       LanguageSettingsMediator* mediator =

@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
@@ -70,20 +71,24 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   TableViewDetailIconItem* _handoffDetailItem;
 }
 
+// Browser.
+@property(nonatomic, readonly) Browser* browser;
+
 @end
 
 @implementation PrivacyTableViewController
 
 #pragma mark - Initialization
 
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
-  DCHECK(browserState);
+- (instancetype)initWithBrowser:(Browser*)browser {
+  DCHECK(browser);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
   self = [super initWithStyle:style];
   if (self) {
-    _browserState = browserState;
+    _browser = browser;
+    _browserState = browser->GetBrowserState();
     self.title =
         l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
 
@@ -210,7 +215,7 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
     case ItemTypeClearBrowsingDataClear: {
       ClearBrowsingDataTableViewController* clearBrowsingDataViewController =
           [[ClearBrowsingDataTableViewController alloc]
-              initWithBrowserState:_browserState];
+              initWithBrowser:_browser];
       clearBrowsingDataViewController.delegate = self;
       controller = clearBrowsingDataViewController;
       break;

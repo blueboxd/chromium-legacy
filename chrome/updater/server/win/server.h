@@ -8,7 +8,7 @@
 #include <wrl/implements.h>
 #include <wrl/module.h>
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "chrome/updater/server/win/updater_idl.h"
 

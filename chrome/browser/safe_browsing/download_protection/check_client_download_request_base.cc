@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
@@ -23,18 +22,15 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/utils.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/file_type_policies.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
@@ -45,8 +41,6 @@ using content::BrowserThread;
 namespace {
 
 const char kDownloadExtensionUmaName[] = "SBClientDownload.DownloadExtensions";
-
-constexpr char kAuthHeaderBearer[] = "Bearer ";
 
 void RecordFileExtensionType(const std::string& metric_name,
                              const base::FilePath& file) {
@@ -168,12 +162,6 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
             ->IsUnderAdvancedProtection();
     is_enhanced_protection_ =
         profile && IsEnhancedProtectionEnabled(*profile->GetPrefs());
-    signin::IdentityManager* identity_manager =
-        IdentityManagerFactory::GetForProfile(profile);
-    if (!profile->IsOffTheRecord() && identity_manager) {
-      token_fetcher_ =
-          std::make_unique<SafeBrowsingTokenFetcher>(identity_manager);
-    }
   }
 }
 
@@ -422,7 +410,7 @@ void CheckClientDownloadRequestBase::OnCertificateWhitelistCheckDone(
 void CheckClientDownloadRequestBase::GetTabRedirects() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!tab_url_.is_valid()) {
-    OnGotTabRedirects({});
+    SendRequest();
     return;
   }
 
@@ -430,7 +418,7 @@ void CheckClientDownloadRequestBase::GetTabRedirects() {
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   if (!history) {
-    OnGotTabRedirects({});
+    SendRequest();
     return;
   }
 
@@ -450,22 +438,6 @@ void CheckClientDownloadRequestBase::OnGotTabRedirects(
                           redirect_list.rend());
   }
 
-  if (is_enhanced_protection_ && token_fetcher_ &&
-      base::FeatureList::IsEnabled(kDownloadRequestWithToken)) {
-    token_fetcher_->Start(
-        signin::ConsentLevel::kNotRequired,
-        base::BindOnce(&CheckClientDownloadRequestBase::OnGotAccessToken,
-                       GetWeakPtr()));
-    return;
-  }
-
-  SendRequest();
-}
-
-void CheckClientDownloadRequestBase::OnGotAccessToken(
-    base::Optional<signin::AccessTokenInfo> access_token_info) {
-  if (access_token_info.has_value())
-    access_token_ = access_token_info.value().token;
   SendRequest();
 }
 
@@ -619,13 +591,6 @@ void CheckClientDownloadRequestBase::SendRequest() {
   resource_request->url = PPAPIDownloadRequest::GetDownloadRequestUrl();
   resource_request->method = "POST";
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-
-  if (!access_token_.empty()) {
-    resource_request->headers.SetHeader(
-        net::HttpRequestHeaders::kAuthorization,
-        base::StrCat({kAuthHeaderBearer, access_token_}));
-  }
-
   loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                              traffic_annotation);
   loader_->AttachStringForUpload(client_download_request_data_,
@@ -637,9 +602,6 @@ void CheckClientDownloadRequestBase::SendRequest() {
   request_start_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_COUNTS_1M("SBClientDownload.DownloadRequestPayloadSize",
                           client_download_request_data_.size());
-
-  // Add the access token to the proto for display on chrome://safe-browsing
-  request->set_access_token(access_token_);
 
   // The following is to log this ClientDownloadRequest on any open
   // chrome://safe-browsing pages. If no such page is open, the request is

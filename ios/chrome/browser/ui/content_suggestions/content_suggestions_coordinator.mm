@@ -45,10 +45,12 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/voice/voice_search_availability.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/url_loading_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -56,7 +58,8 @@
 
 @interface ContentSuggestionsCoordinator () <
     ContentSuggestionsViewControllerAudience,
-    OverscrollActionsControllerDelegate> {
+    OverscrollActionsControllerDelegate,
+    URLLoadingBridge> {
   // Helper object managing the availability of the voice search feature.
   VoiceSearchAvailability _voiceSearchAvailability;
 }
@@ -127,7 +130,7 @@
               identityManager:IdentityManagerFactory::GetForBrowserState(
                                   self.browserState)
                    logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
-                                  self.browserState, self.webState)
+                                  self.browser, self.webState, self)
       voiceSearchAvailability:&_voiceSearchAvailability];
 
   self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
@@ -283,6 +286,16 @@
   CGFloat height = [self.headerController toolBarView].bounds.size.height;
   CGFloat topInset = self.suggestionsViewController.view.safeAreaInsets.top;
   return height + topInset;
+}
+
+#pragma mark - URLLoadingBridge
+
+- (void)loadLogoURL:(GURL)URL {
+  UrlLoadParams params = UrlLoadParams::InCurrentTab(URL);
+  params.web_params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  UrlLoadingServiceFactory::GetForBrowserState(self.browser->GetBrowserState())
+      ->Load(params);
 }
 
 #pragma mark - Public methods

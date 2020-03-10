@@ -38,6 +38,14 @@
                flattenhtml="true"
                type="BINDATA"
                compress="gzip" />
+      <include name="IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_SVG"
+               file="images/password_check_neutral.svg"
+               type="BINDATA"
+               compress="gzip" />
+      <include name="IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_DARK_SVG"
+               file="images/password_check_neutral_dark.svg"
+               type="BINDATA"
+               compress="gzip" />
       <!-- Polymer 3 related files -->
       <include name="IDR_SETTINGS_SETTINGS_V3_HTML"
                file="settings_v3.html"

@@ -655,6 +655,12 @@
       <structure name="IDR_SETTINGS_PASSWORD_MANAGER_PROXY_JS"
                  file="autofill_page/password_manager_proxy.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_SVG"
+                 file="images/password_check_neutral.svg"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_DARK_SVG"
+                 file="images/password_check_neutral_dark.svg"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PASSWORDS_SECTION_HTML"
                  file="autofill_page/passwords_section.html"
                  type="chrome_html"

@@ -78,8 +78,8 @@ public class ParameterSet {
                     throw new IllegalArgumentException("Type \"%s\" is not supported in"
                             + " parameterized testing at this time. Accepted types include"
                             + " all primitive types along with "
-                            + Arrays.toString(ACCEPTABLE_TYPES.toArray(
-                                      new String[ACCEPTABLE_TYPES.size()])));
+                            + Arrays.toString(
+                                    ACCEPTABLE_TYPES.toArray(new Class[ACCEPTABLE_TYPES.size()])));
                 }
             }
         }

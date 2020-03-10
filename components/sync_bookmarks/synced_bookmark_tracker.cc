@@ -192,10 +192,14 @@ const SyncedBookmarkTracker::Entity* SyncedBookmarkTracker::GetEntityForSyncId(
   return it != sync_id_to_entities_map_.end() ? it->second.get() : nullptr;
 }
 
-SyncedBookmarkTracker::Entity* SyncedBookmarkTracker::GetMutableEntityForSyncId(
-    const std::string& sync_id) {
-  auto it = sync_id_to_entities_map_.find(sync_id);
-  return it != sync_id_to_entities_map_.end() ? it->second.get() : nullptr;
+SyncedBookmarkTracker::Entity* SyncedBookmarkTracker::AsMutableEntity(
+    const Entity* entity) {
+  DCHECK(entity);
+  DCHECK_EQ(entity, GetEntityForSyncId(entity->metadata()->server_id()));
+
+  // As per DCHECK above, this tracker owns |*entity|, so it's legitimate to
+  // return non-const pointer.
+  return const_cast<Entity*>(entity);
 }
 
 const SyncedBookmarkTracker::Entity*
@@ -205,14 +209,16 @@ SyncedBookmarkTracker::GetEntityForBookmarkNode(
   return it != bookmark_node_to_entities_map_.end() ? it->second : nullptr;
 }
 
-void SyncedBookmarkTracker::Add(const std::string& sync_id,
-                                const bookmarks::BookmarkNode* bookmark_node,
-                                int64_t server_version,
-                                base::Time creation_time,
-                                const sync_pb::UniquePosition& unique_position,
-                                const sync_pb::EntitySpecifics& specifics) {
+const SyncedBookmarkTracker::Entity* SyncedBookmarkTracker::Add(
+    const bookmarks::BookmarkNode* bookmark_node,
+    const std::string& sync_id,
+    int64_t server_version,
+    base::Time creation_time,
+    const sync_pb::UniquePosition& unique_position,
+    const sync_pb::EntitySpecifics& specifics) {
   DCHECK_GT(specifics.ByteSize(), 0);
   DCHECK(bookmark_node);
+
   auto metadata = std::make_unique<sync_pb::EntityMetadata>();
   metadata->set_is_deleted(false);
   metadata->set_server_id(sync_id);
@@ -234,70 +240,67 @@ void SyncedBookmarkTracker::Add(const std::string& sync_id,
   // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
   // Should be removed after figuring out the reason for the crash.
   CHECK_EQ(0U, sync_id_to_entities_map_.count(sync_id));
+  const Entity* raw_entity = entity.get();
   sync_id_to_entities_map_[sync_id] = std::move(entity);
+  return raw_entity;
 }
 
 void SyncedBookmarkTracker::Update(
-    const std::string& sync_id,
+    const Entity* entity,
     int64_t server_version,
     base::Time modification_time,
     const sync_pb::UniquePosition& unique_position,
     const sync_pb::EntitySpecifics& specifics) {
   DCHECK_GT(specifics.ByteSize(), 0);
-  Entity* entity = GetMutableEntityForSyncId(sync_id);
   DCHECK(entity);
-  DCHECK_EQ(entity->metadata()->server_id(), sync_id);
 
-  entity->metadata()->set_server_version(server_version);
-  entity->metadata()->set_modification_time(
+  Entity* mutable_entity = AsMutableEntity(entity);
+  mutable_entity->metadata()->set_server_version(server_version);
+  mutable_entity->metadata()->set_modification_time(
       syncer::TimeToProtoTime(modification_time));
-  *entity->metadata()->mutable_unique_position() = unique_position;
-  HashSpecifics(specifics, entity->metadata()->mutable_specifics_hash());
+  *mutable_entity->metadata()->mutable_unique_position() = unique_position;
+  HashSpecifics(specifics,
+                mutable_entity->metadata()->mutable_specifics_hash());
   // TODO(crbug.com/516866): in case of conflict, the entity might exist in
   // |ordered_local_tombstones_| as well if it has been locally deleted.
 }
 
-void SyncedBookmarkTracker::UpdateServerVersion(const std::string& sync_id,
+void SyncedBookmarkTracker::UpdateServerVersion(const Entity* entity,
                                                 int64_t server_version) {
-  Entity* entity = GetMutableEntityForSyncId(sync_id);
   DCHECK(entity);
-  entity->metadata()->set_server_version(server_version);
+  AsMutableEntity(entity)->metadata()->set_server_version(server_version);
 }
 
-void SyncedBookmarkTracker::PopulateFinalGuid(const std::string& sync_id,
+void SyncedBookmarkTracker::PopulateFinalGuid(const Entity* entity,
                                               const std::string& guid) {
-  Entity* entity = GetMutableEntityForSyncId(sync_id);
   DCHECK(entity);
-  entity->set_final_guid(guid);
+  AsMutableEntity(entity)->set_final_guid(guid);
 }
 
-void SyncedBookmarkTracker::MarkCommitMayHaveStarted(
-    const std::string& sync_id) {
-  Entity* entity = GetMutableEntityForSyncId(sync_id);
+void SyncedBookmarkTracker::MarkCommitMayHaveStarted(const Entity* entity) {
   DCHECK(entity);
-  entity->set_commit_may_have_started(true);
+  AsMutableEntity(entity)->set_commit_may_have_started(true);
 }
 
-void SyncedBookmarkTracker::MarkDeleted(const std::string& sync_id) {
-  Entity* entity = GetMutableEntityForSyncId(sync_id);
+void SyncedBookmarkTracker::MarkDeleted(const Entity* entity) {
   DCHECK(entity);
   DCHECK(!entity->metadata()->is_deleted());
   DCHECK(entity->bookmark_node());
   DCHECK_EQ(1U, bookmark_node_to_entities_map_.count(entity->bookmark_node()));
 
-  entity->metadata()->set_is_deleted(true);
+  Entity* mutable_entity = AsMutableEntity(entity);
+  mutable_entity->metadata()->set_is_deleted(true);
   // Clear all references to the deleted bookmark node.
-  bookmark_node_to_entities_map_.erase(entity->bookmark_node());
-  entity->clear_bookmark_node();
+  bookmark_node_to_entities_map_.erase(mutable_entity->bookmark_node());
+  mutable_entity->clear_bookmark_node();
   // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
   // Should be removed after figuring out the reason for the crash.
   CHECK_EQ(0, std::count(ordered_local_tombstones_.begin(),
                          ordered_local_tombstones_.end(), entity));
-  ordered_local_tombstones_.push_back(entity);
+  ordered_local_tombstones_.push_back(mutable_entity);
 }
 
-void SyncedBookmarkTracker::Remove(const std::string& sync_id) {
-  const Entity* entity = GetEntityForSyncId(sync_id);
+void SyncedBookmarkTracker::Remove(const Entity* entity) {
   DCHECK(entity);
   // TODO(rushans): erase only if entity is not a tombstone.
   if (entity->bookmark_node()) {
@@ -310,19 +313,14 @@ void SyncedBookmarkTracker::Remove(const std::string& sync_id) {
 
   bookmark_node_to_entities_map_.erase(entity->bookmark_node());
   base::Erase(ordered_local_tombstones_, entity);
-  sync_id_to_entities_map_.erase(sync_id);
+  sync_id_to_entities_map_.erase(entity->metadata()->server_id());
 }
 
-void SyncedBookmarkTracker::IncrementSequenceNumber(
-    const std::string& sync_id) {
-  // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
-  // Should be switched to a DCHECK after figuring out the reason for the crash.
-  CHECK_NE(0U, sync_id_to_entities_map_.count(sync_id));
-  Entity* entity = GetMutableEntityForSyncId(sync_id);
+void SyncedBookmarkTracker::IncrementSequenceNumber(const Entity* entity) {
   DCHECK(entity);
   // TODO(crbug.com/516866): Update base hash specifics here if the entity is
   // not already out of sync.
-  entity->metadata()->set_sequence_number(
+  AsMutableEntity(entity)->metadata()->set_sequence_number(
       entity->metadata()->sequence_number() + 1);
 }
 
@@ -611,43 +609,45 @@ void SyncedBookmarkTracker::TraverseAndAppend(
 }
 
 void SyncedBookmarkTracker::UpdateUponCommitResponse(
-    const std::string& old_id,
-    const std::string& new_id,
-    int64_t acked_sequence_number,
-    int64_t server_version) {
+    const Entity* entity,
+    const std::string& sync_id,
+    int64_t server_version,
+    int64_t acked_sequence_number) {
   // TODO(crbug.com/516866): Update specifics if we decide to keep it.
-  Entity* entity = GetMutableEntityForSyncId(old_id);
-  if (!entity) {
-    DLOG(WARNING) << "Trying to update a non existing entity.";
-    return;
-  }
+  DCHECK(entity);
 
-  entity->metadata()->set_acked_sequence_number(acked_sequence_number);
-  entity->metadata()->set_server_version(server_version);
+  Entity* mutable_entity = AsMutableEntity(entity);
+  mutable_entity->metadata()->set_acked_sequence_number(acked_sequence_number);
+  mutable_entity->metadata()->set_server_version(server_version);
   // If there are no pending commits, remove tombstones.
-  if (!entity->IsUnsynced() && entity->metadata()->is_deleted()) {
-    Remove(old_id);
+  if (!mutable_entity->IsUnsynced() &&
+      mutable_entity->metadata()->is_deleted()) {
+    Remove(mutable_entity);
     return;
   }
 
-  UpdateSyncForLocalCreationIfNeeded(old_id, new_id);
+  UpdateSyncIdForLocalCreationIfNeeded(mutable_entity, sync_id);
 }
 
-void SyncedBookmarkTracker::UpdateSyncForLocalCreationIfNeeded(
-    const std::string& old_id,
-    const std::string& new_id) {
-  if (old_id == new_id) {
+void SyncedBookmarkTracker::UpdateSyncIdForLocalCreationIfNeeded(
+    const Entity* entity,
+    const std::string& sync_id) {
+  DCHECK(entity);
+
+  const std::string old_id = entity->metadata()->server_id();
+  if (old_id == sync_id) {
     return;
   }
   // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
   // Should be removed after figuring out the reason for the crash.
   CHECK_EQ(1U, sync_id_to_entities_map_.count(old_id));
-  CHECK_EQ(0U, sync_id_to_entities_map_.count(new_id));
+  CHECK_EQ(0U, sync_id_to_entities_map_.count(sync_id));
 
-  std::unique_ptr<Entity> entity =
+  std::unique_ptr<Entity> owned_entity =
       std::move(sync_id_to_entities_map_.at(old_id));
-  entity->metadata()->set_server_id(new_id);
-  sync_id_to_entities_map_[new_id] = std::move(entity);
+  DCHECK_EQ(entity, owned_entity.get());
+  owned_entity->metadata()->set_server_id(sync_id);
+  sync_id_to_entities_map_[sync_id] = std::move(owned_entity);
   sync_id_to_entities_map_.erase(old_id);
 }
 
@@ -667,10 +667,9 @@ void SyncedBookmarkTracker::UpdateBookmarkNodePointer(
   bookmark_node_to_entities_map_.erase(old_node);
 }
 
-void SyncedBookmarkTracker::AckSequenceNumber(const std::string& sync_id) {
-  Entity* entity = GetMutableEntityForSyncId(sync_id);
+void SyncedBookmarkTracker::AckSequenceNumber(const Entity* entity) {
   DCHECK(entity);
-  entity->metadata()->set_acked_sequence_number(
+  AsMutableEntity(entity)->metadata()->set_acked_sequence_number(
       entity->metadata()->sequence_number());
 }
 

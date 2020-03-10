@@ -131,13 +131,11 @@ void SkiaOutputDeviceVulkan::PostSubBuffer(
   image_modified_ = false;
 #endif
 
-  // TODO(penghuang): pass rect to vulkan swap chain and let swap chain use
-  // VK_KHR_incremental_present
   StartSwapBuffers(std::move(feedback));
   auto image_size = vulkan_surface_->image_size();
   gfx::SwapResult result = gfx::SwapResult::SWAP_ACK;
   if (!rect.IsEmpty())
-    result = vulkan_surface_->SwapBuffers();
+    result = vulkan_surface_->PostSubBuffer(rect);
   FinishSwapBuffers(result, image_size, std::move(latency_info));
 }
 

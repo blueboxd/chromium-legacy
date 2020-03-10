@@ -117,7 +117,7 @@ void SendTabToSelfClientServiceIOS::WebStateActivatedAt(
     web::WebState* old_web_state,
     web::WebState* new_web_state,
     int active_index,
-    int reason) {
+    ActiveWebStateChangeReason reason) {
   DCHECK(entry_);
 
   // This can happen if the user close the last tab in the tab picker.

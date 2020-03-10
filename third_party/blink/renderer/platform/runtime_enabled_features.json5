@@ -1464,6 +1464,8 @@
     // Enables the use of Insertable Streams.
     {
       name: "RTCInsertableStreams",
+      origin_trial_feature_name: "RTCInsertableStreams",
+      status: "experimental",
     },
     // Enables the use of the RTCQuicTransport object.
     {
@@ -1691,6 +1693,7 @@
     {
       name: "TransferableStreams",
       status: "experimental",
+      implied_by: ["RTCInsertableStreams"],
     },
     // This is conditionally set if the platform supports translation.
     {

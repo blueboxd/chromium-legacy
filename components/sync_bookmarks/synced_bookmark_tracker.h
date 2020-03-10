@@ -148,45 +148,48 @@ class SyncedBookmarkTracker {
   const SyncedBookmarkTracker::Entity* GetEntityForBookmarkNode(
       const bookmarks::BookmarkNode* node) const;
 
-  // Adds an entry for the |sync_id| and the corresponding local bookmark node
-  // and metadata in |sync_id_to_entities_map_|.
-  void Add(const std::string& sync_id,
-           const bookmarks::BookmarkNode* bookmark_node,
-           int64_t server_version,
-           base::Time creation_time,
-           const sync_pb::UniquePosition& unique_position,
-           const sync_pb::EntitySpecifics& specifics);
+  // Starts tracking local bookmark |bookmark_node|, which must not be tracked
+  // beforehand. The rest of the arguments represent the initial metadata.
+  // Returns the tracked entity.
+  const Entity* Add(const bookmarks::BookmarkNode* bookmark_node,
+                    const std::string& sync_id,
+                    int64_t server_version,
+                    base::Time creation_time,
+                    const sync_pb::UniquePosition& unique_position,
+                    const sync_pb::EntitySpecifics& specifics);
 
-  // Updates an existing entry for the |sync_id| and the corresponding metadata
-  // in |sync_id_to_entities_map_|.
-  void Update(const std::string& sync_id,
+  // Updates the sync metadata for a tracked entity. |entity| must be owned by
+  // this tracker.
+  void Update(const Entity* entity,
               int64_t server_version,
               base::Time modification_time,
               const sync_pb::UniquePosition& unique_position,
               const sync_pb::EntitySpecifics& specifics);
 
-  // Updates the server version of an existing entry for the |sync_id|.
-  void UpdateServerVersion(const std::string& sync_id, int64_t server_version);
+  // Updates the server version of an existing entity. |entity| must be owned by
+  // this tracker.
+  void UpdateServerVersion(const Entity* entity, int64_t server_version);
 
-  // Populates a bookmark's final GUID.
-  void PopulateFinalGuid(const std::string& sync_id, const std::string& guid);
+  // Populates a bookmark's final GUID. |entity| must be owned by this tracker.
+  void PopulateFinalGuid(const Entity* entity, const std::string& guid);
 
-  // Marks an existing entry for |sync_id| that a commit request might have been
-  // sent to the server.
-  void MarkCommitMayHaveStarted(const std::string& sync_id);
+  // Marks an existing entry that a commit request might have been sent to the
+  // server. |entity| must be owned by this tracker.
+  void MarkCommitMayHaveStarted(const Entity* entity);
 
   // This class maintains the order of calls to this method and the same order
   // is guaranteed when returning local changes in
   // GetEntitiesWithLocalChanges() as well as in BuildBookmarkModelMetadata().
-  void MarkDeleted(const std::string& sync_id);
+  // |entity| must be owned by this tracker.
+  void MarkDeleted(const Entity* entity);
 
-  // Removes the entry coressponding to the |sync_id| from
-  // |sync_id_to_entities_map_|.
-  void Remove(const std::string& sync_id);
+  // Untracks an entity, which also invalidates the pointer. |entity| must be
+  // owned by this tracker.
+  void Remove(const Entity* entity);
 
-  // Increment sequence number in the metadata for the entity with |sync_id|.
-  // Tracker must contain a non-tombstone entity with server id = |sync_id|.
-  void IncrementSequenceNumber(const std::string& sync_id);
+  // Increment sequence number in the metadata for |entity|. |entity| must be
+  // owned by this tracker.
+  void IncrementSequenceNumber(const Entity* entity);
 
   sync_pb::BookmarkModelMetadata BuildBookmarkModelMetadata() const;
 
@@ -206,30 +209,30 @@ class SyncedBookmarkTracker {
   std::vector<const Entity*> GetEntitiesWithLocalChanges(
       size_t max_entries) const;
 
-  // Updates the tracker after receiving the commit response. |old_id| should be
-  // equal to |new_id| for all updates except the initial commit, where the
-  // temporary client-generated ID will be overriden by the server-provided
-  // final ID. In which case |sync_id_to_entities_map_| will be updated
-  // accordingly.
-  void UpdateUponCommitResponse(const std::string& old_id,
-                                const std::string& new_id,
-                                int64_t acked_sequence_number,
-                                int64_t server_version);
+  // Updates the tracker after receiving the commit response. |sync_id| should
+  // match the already tracked sync ID for |entity|, with the exception of the
+  // initial commit, where the temporary client-generated ID will be overridden
+  // by the server-provided final ID. |entity| must be owned by this tracker.
+  void UpdateUponCommitResponse(const Entity* entity,
+                                const std::string& sync_id,
+                                int64_t server_version,
+                                int64_t acked_sequence_number);
 
-  // Informs the tracker that the sync id for an entity has changed. It updates
-  // the internal state of the tracker accordingly.
-  void UpdateSyncForLocalCreationIfNeeded(const std::string& old_id,
-                                          const std::string& new_id);
+  // Informs the tracker that the sync ID for |entity| has changed. It updates
+  // the internal state of the tracker accordingly. |entity| must be owned by
+  // this tracker.
+  void UpdateSyncIdForLocalCreationIfNeeded(const Entity* entity,
+                                            const std::string& sync_id);
 
   // Informs the tracker that a BookmarkNode has been replaced. It updates
   // the internal state of the tracker accordingly.
   void UpdateBookmarkNodePointer(const bookmarks::BookmarkNode* old_node,
                                  const bookmarks::BookmarkNode* new_node);
 
-  // Set the value of |EntityMetadata.acked_sequence_number| in the entity with
-  // |sync_id| to be equal to |EntityMetadata.sequence_number| such that it is
-  // not returned in GetEntitiesWithLocalChanges().
-  void AckSequenceNumber(const std::string& sync_id);
+  // Set the value of |EntityMetadata.acked_sequence_number| for |entity| to be
+  // equal to |EntityMetadata.sequence_number| such that it is not returned in
+  // GetEntitiesWithLocalChanges(). |entity| must be owned by this tracker.
+  void AckSequenceNumber(const Entity* entity);
 
   // Whether the tracker is empty or not.
   bool IsEmpty() const;
@@ -281,8 +284,10 @@ class SyncedBookmarkTracker {
       const bookmarks::BookmarkModel* model,
       sync_pb::BookmarkModelMetadata model_metadata);
 
-  // Returns null if no entity is found.
-  Entity* GetMutableEntityForSyncId(const std::string& sync_id);
+  // Conceptually, find a tracked entity that matches |entity| and returns a
+  // non-const pointer of it. The actual implementation is a const_cast.
+  // |entity| must be owned by this tracker.
+  Entity* AsMutableEntity(const Entity* entity);
 
   // Reorders |entities| that represents local non-deletions such that parent
   // creation/update is before child creation/update. Returns the ordered list.

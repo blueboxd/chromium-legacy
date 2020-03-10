@@ -62,17 +62,16 @@ void BookmarkModelObserverImpl::BookmarkNodeMoved(
 
   const std::string& sync_id = entity->metadata()->server_id();
   const base::Time modification_time = base::Time::Now();
-
   const sync_pb::UniquePosition unique_position =
       ComputePosition(*new_parent, new_index, sync_id).ToProto();
 
   sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, model, /*force_favicon_load=*/true, entity->has_final_guid());
 
-  bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
+  bookmark_tracker_->Update(entity, entity->metadata()->server_version(),
                             modification_time, unique_position, specifics);
   // Mark the entity that it needs to be committed.
-  bookmark_tracker_->IncrementSequenceNumber(sync_id);
+  bookmark_tracker_->IncrementSequenceNumber(entity);
   nudge_for_commit_closure_.Run();
 }
 
@@ -108,10 +107,10 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   sync_pb::EntitySpecifics specifics =
       CreateSpecificsFromBookmarkNode(node, model, /*force_favicon_load=*/true,
                                       /*include_guid=*/true);
-  bookmark_tracker_->Add(sync_id, node, server_version, creation_time,
-                         unique_position, specifics);
+  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker_->Add(
+      node, sync_id, server_version, creation_time, unique_position, specifics);
   // Mark the entity that it needs to be committed.
-  bookmark_tracker_->IncrementSequenceNumber(sync_id);
+  bookmark_tracker_->IncrementSequenceNumber(entity);
   nudge_for_commit_closure_.Run();
 }
 
@@ -198,12 +197,11 @@ void BookmarkModelObserverImpl::BookmarkNodeChanged(
     // (e.g.upon a favicon load).
     return;
   }
-  const std::string& sync_id = entity->metadata()->server_id();
-  bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
+  bookmark_tracker_->Update(entity, entity->metadata()->server_version(),
                             modification_time,
                             entity->metadata()->unique_position(), specifics);
   // Mark the entity that it needs to be committed.
-  bookmark_tracker_->IncrementSequenceNumber(sync_id);
+  bookmark_tracker_->IncrementSequenceNumber(entity);
   nudge_for_commit_closure_.Run();
 }
 
@@ -271,10 +269,10 @@ void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
         child.get(), model, /*force_favicon_load=*/true,
         entity->has_final_guid());
 
-    bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
+    bookmark_tracker_->Update(entity, entity->metadata()->server_version(),
                               modification_time, position.ToProto(), specifics);
     // Mark the entity that it needs to be committed.
-    bookmark_tracker_->IncrementSequenceNumber(sync_id);
+    bookmark_tracker_->IncrementSequenceNumber(entity);
   }
   nudge_for_commit_closure_.Run();
 }
@@ -352,17 +350,16 @@ void BookmarkModelObserverImpl::ProcessDelete(
       bookmark_tracker_->GetEntityForBookmarkNode(node);
   // Shouldn't try to delete untracked entities.
   DCHECK(entity);
-  const std::string& sync_id = entity->metadata()->server_id();
   // If the entity hasn't been committed and doesn't have an inflight commit
   // request, simply remove it from the tracker.
   if (entity->metadata()->server_version() == syncer::kUncommittedVersion &&
       !entity->commit_may_have_started()) {
-    bookmark_tracker_->Remove(sync_id);
+    bookmark_tracker_->Remove(entity);
     return;
   }
-  bookmark_tracker_->MarkDeleted(sync_id);
+  bookmark_tracker_->MarkDeleted(entity);
   // Mark the entity that it needs to be committed.
-  bookmark_tracker_->IncrementSequenceNumber(sync_id);
+  bookmark_tracker_->IncrementSequenceNumber(entity);
 }
 
 }  // namespace sync_bookmarks

@@ -1,5 +1,5 @@
 include_rules = [
- "+chrome/browser/android/lifecycle",
+ "+chrome/lib/lifecycle/public/android/java/src/org/chromium/chrome/browser/lifecycle",
  "+chrome/browser/ui/messages/android/java",
  "+chrome/browser/util",
  "+components/browser_ui/styles/android",

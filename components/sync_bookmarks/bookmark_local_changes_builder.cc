@@ -18,7 +18,7 @@
 namespace sync_bookmarks {
 
 BookmarkLocalChangesBuilder::BookmarkLocalChangesBuilder(
-    const SyncedBookmarkTracker* const bookmark_tracker,
+    SyncedBookmarkTracker* const bookmark_tracker,
     bookmarks::BookmarkModel* bookmark_model)
     : bookmark_tracker_(bookmark_tracker), bookmark_model_(bookmark_model) {
   DCHECK(bookmark_tracker);
@@ -71,6 +71,7 @@ syncer::CommitRequestDataList BookmarkLocalChangesBuilder::BuildCommitRequests(
           entity->final_guid_matches(node->guid()));
       data->name = data->specifics.bookmark().title();
     }
+
     auto request = std::make_unique<syncer::CommitRequestData>();
     request->entity = std::move(data);
     request->sequence_number = metadata->sequence_number();
@@ -78,6 +79,8 @@ syncer::CommitRequestDataList BookmarkLocalChangesBuilder::BuildCommitRequests(
     // Specifics hash has been computed in the tracker when this entity has been
     // added/updated.
     request->specifics_hash = metadata->specifics_hash();
+
+    bookmark_tracker_->MarkCommitMayHaveStarted(entity);
 
     commit_requests.push_back(std::move(request));
   }

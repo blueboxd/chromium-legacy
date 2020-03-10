@@ -343,6 +343,32 @@ void DeviceCommandRunRoutineJob::RunImpl(CallbackWithResult succeeded_callback,
                   std::move(failed_callback)));
       break;
     }
+    case chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeSelfTest: {
+      constexpr char kNvmeSelfTestTypeFieldName[] = "nvmeSelfTestType";
+      base::Optional<int> nvme_self_test_type =
+          params_dict_.FindIntKey(kNvmeSelfTestTypeFieldName);
+      chromeos::cros_healthd::mojom::NvmeSelfTestTypeEnum
+          nvme_self_test_type_enum;
+      // The NVMe self-test routine expects a valid NvmeSelfTestTypeEnum.
+      if (!nvme_self_test_type.has_value() ||
+          !PopulateMojoEnumValueIfValid(nvme_self_test_type.value(),
+                                        &nvme_self_test_type_enum)) {
+        SYSLOG(ERROR) << "Invalid parameters for NVMe self-test routine.";
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(failed_callback),
+                                      std::make_unique<Payload>(
+                                          MakeInvalidParametersResponse())));
+        break;
+      }
+      chromeos::cros_healthd::ServiceConnection::GetInstance()
+          ->RunNvmeSelfTestRoutine(
+              nvme_self_test_type_enum,
+              base::BindOnce(
+                  &DeviceCommandRunRoutineJob::OnCrosHealthdResponseReceived,
+                  weak_ptr_factory_.GetWeakPtr(), std::move(succeeded_callback),
+                  std::move(failed_callback)));
+      break;
+    }
   }
 }
 

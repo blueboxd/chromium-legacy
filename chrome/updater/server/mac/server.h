@@ -5,7 +5,7 @@
 #ifndef CHROME_UPDATER_SERVER_MAC_SERVER_H_
 #define CHROME_UPDATER_SERVER_MAC_SERVER_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 
 namespace updater {
 

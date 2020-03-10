@@ -66,7 +66,7 @@ void Throbber::SetCircleGrowAnimationEnabled(bool enabled) {
   std::unique_ptr<cc::KeyframeModel> keyframe_model(cc::KeyframeModel::Create(
       std::move(curve), Animation::GetNextKeyframeModelId(),
       Animation::GetNextGroupId(), CIRCLE_GROW));
-  keyframe_model->set_iterations(-1);
+  keyframe_model->set_iterations(std::numeric_limits<double>::infinity());
   AddKeyframeModel(std::move(keyframe_model));
 }
 

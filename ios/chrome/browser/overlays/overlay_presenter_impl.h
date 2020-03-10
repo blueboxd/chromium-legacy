@@ -63,7 +63,7 @@ class OverlayPresenterImpl : public BrowserObserver,
   // Setter for the active WebState.  Setting to a new value will hide any
   // presented overlays and show the next overlay for the new active WebState.
   void SetActiveWebState(web::WebState* web_state,
-                         WebStateListObserver::ChangeReason reason);
+                         ActiveWebStateChangeReason reason);
 
   // Fetches the request queue for |web_state|, creating it if necessary.
   OverlayRequestQueueImpl* GetQueueForWebState(web::WebState* web_state) const;
@@ -147,7 +147,7 @@ class OverlayPresenterImpl : public BrowserObserver,
                            web::WebState* old_web_state,
                            web::WebState* new_web_state,
                            int active_index,
-                           int reason) override;
+                           ActiveWebStateChangeReason reason) override;
 
   // Whether the UI delegate is presenting overlay UI for this presenter.  Stays
   // true from the beginning of the presentation until the end of the

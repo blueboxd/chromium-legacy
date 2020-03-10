@@ -416,9 +416,11 @@ void RenderFrameHostManager::DidNavigateFrame(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture,
     bool is_same_document_navigation,
+    bool clear_proxies_on_commit,
     const blink::FramePolicy& frame_policy) {
   CommitPendingIfNecessary(render_frame_host, was_caused_by_user_gesture,
-                           is_same_document_navigation);
+                           is_same_document_navigation,
+                           clear_proxies_on_commit);
 
   // Make sure any dynamic changes to this frame's sandbox flags and feature
   // policy that were made prior to navigation take effect.  This should only
@@ -430,7 +432,8 @@ void RenderFrameHostManager::DidNavigateFrame(
 void RenderFrameHostManager::CommitPendingIfNecessary(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture,
-    bool is_same_document_navigation) {
+    bool is_same_document_navigation,
+    bool clear_proxies_on_commit) {
   if (!speculative_render_frame_host_) {
     // There's no speculative RenderFrameHost so it must be that the current
     // renderer process completed a navigation.
@@ -447,7 +450,8 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     // speculative RenderFrameHost replaces the current one in the commit call
     // below.
     CommitPending(std::move(speculative_render_frame_host_),
-                  std::move(bfcache_entry_to_restore_));
+                  std::move(bfcache_entry_to_restore_),
+                  clear_proxies_on_commit);
     frame_tree_node_->ResetNavigationRequest(false);
     return;
   }
@@ -935,7 +939,8 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
         navigation_rfh->Send(
             new FrameMsg_SwapIn(navigation_rfh->GetRoutingID()));
       }
-      CommitPending(std::move(speculative_render_frame_host_), nullptr);
+      CommitPending(std::move(speculative_render_frame_host_), nullptr,
+                    request->require_coop_browsing_instance_swap());
     }
   }
   DCHECK(navigation_rfh &&
@@ -2547,7 +2552,8 @@ int RenderFrameHostManager::GetRoutingIdForSiteInstance(
 
 void RenderFrameHostManager::CommitPending(
     std::unique_ptr<RenderFrameHostImpl> pending_rfh,
-    std::unique_ptr<BackForwardCacheImpl::Entry> pending_bfcache_entry) {
+    std::unique_ptr<BackForwardCacheImpl::Entry> pending_bfcache_entry,
+    bool clear_proxies_on_commit) {
   TRACE_EVENT1("navigation", "RenderFrameHostManager::CommitPending",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   DCHECK(pending_rfh);
@@ -2749,6 +2755,35 @@ void RenderFrameHostManager::CommitPending(
   // Since the new RenderFrameHost is now committed, there must be no proxies
   // for its SiteInstance. Delete any existing ones.
   DeleteRenderFrameProxyHost(render_frame_host_->GetSiteInstance());
+
+  // If this is a top-level frame, and COOP triggered a BrowsingInstance swap,
+  // make sure all relationships with the previous BrowsingInstance are severed
+  // by removing the opener and proxies with unrelated SiteInstances.
+  if (clear_proxies_on_commit) {
+    DCHECK(frame_tree_node_->IsMainFrame());
+    if (frame_tree_node_->opener() &&
+        !render_frame_host_->GetSiteInstance()->IsRelatedSiteInstance(
+            frame_tree_node_->opener()
+                ->current_frame_host()
+                ->GetSiteInstance())) {
+      frame_tree_node_->SetOpener(nullptr);
+      // Note: It usually makes sense to notify the proxies of that frame that
+      // the opener was removed. However since these proxies are destroyed right
+      // after it is not necessary in this particuliar case.
+    }
+
+    std::vector<RenderFrameProxyHost*> removed_proxies;
+    for (auto& it : proxy_hosts_) {
+      const auto& proxy = it.second;
+      if (!render_frame_host_->GetSiteInstance()->IsRelatedSiteInstance(
+              proxy->GetSiteInstance())) {
+        removed_proxies.push_back(proxy.get());
+      }
+    }
+
+    for (auto* proxy : removed_proxies)
+      DeleteRenderFrameProxyHost(proxy->GetSiteInstance());
+  }
 
   // If this is a subframe, it should have a CrossProcessFrameConnector
   // created already.  Use it to link the new RFH's view to the proxy that
@@ -3048,7 +3083,8 @@ void RenderFrameHostManager::CreateNewFrameForInnerDelegateAttachIfNecessary() {
   // WebContents::AttachToOuterWebContentsFrame is called.
   speculative_render_frame_host_->Send(
       new FrameMsg_SwapIn(speculative_render_frame_host_->GetRoutingID()));
-  CommitPending(std::move(speculative_render_frame_host_), nullptr);
+  CommitPending(std::move(speculative_render_frame_host_), nullptr,
+                false /* clear_proxies_on_commit */);
   NotifyPrepareForInnerDelegateAttachComplete(true /* success */);
 }
 

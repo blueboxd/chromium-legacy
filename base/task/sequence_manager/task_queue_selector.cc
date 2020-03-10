@@ -178,17 +178,18 @@ WorkQueue* TaskQueueSelector::SelectWorkQueueToService() {
   // priority.
   TaskQueue::QueuePriority priority =
       active_priority_tracker_.HighestActivePriority();
-  bool chose_delayed_over_immediate;
 
   WorkQueue* queue =
 #if DCHECK_IS_ON()
-      random_task_selection_ ? ChooseWithPriority<SetOperationRandom>(
-                                   priority, &chose_delayed_over_immediate)
+      random_task_selection_ ? ChooseWithPriority<SetOperationRandom>(priority)
                              :
 #endif
-                             ChooseWithPriority<SetOperationOldest>(
-                                 priority, &chose_delayed_over_immediate);
-  if (chose_delayed_over_immediate) {
+                             ChooseWithPriority<SetOperationOldest>(priority);
+
+  // If we have selected a delayed task while having an immediate task of the
+  // same priority, increase the starvation count.
+  if (queue->queue_type() == WorkQueue::QueueType::kDelayed &&
+      !immediate_work_queue_sets_.IsSetEmpty(priority)) {
     immediate_starvation_count_++;
   } else {
     immediate_starvation_count_ = 0;

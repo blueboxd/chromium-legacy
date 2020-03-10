@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/version.h"
 #include "chrome/updater/persisted_data.h"

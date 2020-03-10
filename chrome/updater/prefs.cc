@@ -5,7 +5,7 @@
 #include "chrome/updater/prefs.h"
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_refptr.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/updater/util.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"

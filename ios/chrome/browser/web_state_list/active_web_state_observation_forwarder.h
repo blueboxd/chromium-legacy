@@ -29,7 +29,7 @@ class ActiveWebStateObservationForwarder : public WebStateListObserver {
                            web::WebState* old_web_state,
                            web::WebState* new_web_state,
                            int active_index,
-                           int reason) override;
+                           ActiveWebStateChangeReason reason) override;
 
  private:
   ScopedObserver<WebStateList, WebStateListObserver> web_state_list_observer_{

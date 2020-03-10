@@ -306,10 +306,11 @@ void WebFrame::TraceFrame(Visitor* visitor, WebFrame* frame) {
   if (!frame)
     return;
 
-  if (auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(frame))
-    visitor->Trace(web_local_frame);
-  else
+  if (frame->IsWebLocalFrame()) {
+    visitor->Trace(To<WebLocalFrameImpl>(frame));
+  } else {
     visitor->Trace(To<WebRemoteFrameImpl>(frame));
+  }
 }
 
 void WebFrame::TraceFrames(Visitor* visitor, WebFrame* frame) {

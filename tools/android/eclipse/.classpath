@@ -98,7 +98,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="chrome/android/webapk/shell_apk/javatests/src"/>
     <classpathentry kind="src" path="chrome/android/webapk/shell_apk/junit/src"/>
     <classpathentry kind="src" path="chrome/android/webapk/shell_apk/src"/>
-    <classpathentry kind="src" path="chrome/browser/android/lifecycle/java/src"/>
     <classpathentry kind="src" path="chrome/browser/android/metrics/javatests/src"/>
     <classpathentry kind="src" path="chrome/browser/android/thin_webview/internal/java/src"/>
     <classpathentry kind="src" path="chrome/browser/android/thin_webview/java/src"/>
@@ -130,6 +129,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="chrome/browser/ui/messages/android/java/src"/>
     <classpathentry kind="src" path="chrome/browser/util/android/java/src"/>
     <classpathentry kind="src" path="chrome/browser/xsurface/android/java/src"/>
+    <classpathentry kind="src" path="chrome/lib/lifecycle/public/android/java/src"/>
     <classpathentry kind="src" path="chrome/test/android/cast_emulator/src"/>
     <classpathentry kind="src" path="chrome/test/android/javatests/src"/>
     <classpathentry kind="src" path="chrome/test/chromedriver/test/webview_shell/java/src"/>

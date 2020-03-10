@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_layout_util.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row_cell.h"
 #include "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"
 #include "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
@@ -98,6 +99,8 @@ const CGFloat kTopAndBottomPadding = 8.0;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  self.tableView.accessibilityIdentifier =
+      kOmniboxPopupTableViewAccessibilityIdentifier;
   self.tableView.insetsContentViewsToSafeArea = YES;
 
   // Initialize the same size as the parent view, autoresize will correct this.

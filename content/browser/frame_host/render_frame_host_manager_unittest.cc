@@ -865,6 +865,7 @@ TEST_P(RenderFrameHostManagerTest, Navigate) {
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
                             false /* is_same_document_navigation */,
+                            false /*  clear_proxies_on_commit */,
                             blink::FramePolicy());
   // Commit to SiteInstance should be delayed until RenderFrame commit.
   EXPECT_TRUE(host == manager->current_frame_host());
@@ -892,6 +893,7 @@ TEST_P(RenderFrameHostManagerTest, Navigate) {
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
                             false /* is_same_document_navigation */,
+                            false /*  clear_proxies_on_commit */,
                             blink::FramePolicy());
   EXPECT_TRUE(host == manager->current_frame_host());
   ASSERT_TRUE(host);
@@ -919,7 +921,8 @@ TEST_P(RenderFrameHostManagerTest, Navigate) {
   // Commit.
   manager->DidNavigateFrame(
       GetPendingFrameHost(manager), true /* was_caused_by_user_gesture */,
-      false /* is_same_document_navigation */, blink::FramePolicy());
+      false /* is_same_document_navigation */,
+      false /*  clear_proxies_on_commit */, blink::FramePolicy());
   EXPECT_TRUE(host == manager->current_frame_host());
   ASSERT_TRUE(host);
   EXPECT_TRUE(host->GetSiteInstance()->HasSite());
@@ -978,6 +981,7 @@ TEST_P(RenderFrameHostManagerTest, WebUI) {
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
                             false /* is_same_document_navigation */,
+                            false /*  clear_proxies_on_commit */,
                             blink::FramePolicy());
   EXPECT_TRUE(host->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 }
@@ -1018,6 +1022,7 @@ TEST_P(RenderFrameHostManagerTest, WebUIInNewTab) {
   // Commit and ensure we still have bindings.
   manager1->DidNavigateFrame(host1, true /* was_caused_by_user_gesture */,
                              false /* is_same_document_navigation */,
+                             false /*  clear_proxies_on_commit */,
                              blink::FramePolicy());
   SiteInstance* webui_instance = host1->GetSiteInstance();
   EXPECT_EQ(host1, manager1->current_frame_host());
@@ -1052,6 +1057,7 @@ TEST_P(RenderFrameHostManagerTest, WebUIInNewTab) {
 
   manager2->DidNavigateFrame(host2, true /* was_caused_by_user_gesture */,
                              false /* is_same_document_navigation */,
+                             false /*  clear_proxies_on_commit */,
                              blink::FramePolicy());
 }
 
@@ -1427,6 +1433,7 @@ TEST_P(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
                             false /* is_same_document_navigation */,
+                            false /*  clear_proxies_on_commit */,
                             blink::FramePolicy());
   // Commit to SiteInstance should be delayed until RenderFrame commit.
   EXPECT_EQ(host, manager->current_frame_host());
@@ -1452,6 +1459,7 @@ TEST_P(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
                             false /* is_same_document_navigation */,
+                            false /*  clear_proxies_on_commit */,
                             blink::FramePolicy());
   EXPECT_EQ(host, manager->current_frame_host());
   ASSERT_TRUE(host);
@@ -1509,6 +1517,7 @@ TEST_P(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
                             false /* is_same_document_navigation */,
+                            false /*  clear_proxies_on_commit */,
                             blink::FramePolicy());
 
   // Commit to SiteInstance should be delayed until RenderFrame commits.
@@ -1823,6 +1832,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   // Commit.
   iframe1->DidNavigateFrame(host1, true /* was_caused_by_user_gesture */,
                             false /* is_same_document_navigation */,
+                            false /*  clear_proxies_on_commit */,
                             blink::FramePolicy());
   // Commit to SiteInstance should be delayed until RenderFrame commit.
   EXPECT_TRUE(host1 == iframe1->current_frame_host());
@@ -1957,6 +1967,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   RenderFrameHostImpl* cross_site = NavigateToEntry(iframe, &entry);
   iframe->DidNavigateFrame(cross_site, true /* was_caused_by_user_gesture */,
                            false /* is_same_document_navigation */,
+                           false /*  clear_proxies_on_commit */,
                            blink::FramePolicy());
 
   // A proxy to the iframe should now exist in the SiteInstance of the main
@@ -2325,9 +2336,11 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
 
   child1->DidNavigateFrame(host1, true /* was_caused_by_user_gesture */,
                            false /* is_same_document_navigation */,
+                           false /*  clear_proxies_on_commit */,
                            blink::FramePolicy());
   child2->DidNavigateFrame(host2, true /* was_caused_by_user_gesture */,
                            false /* is_same_document_navigation */,
+                           false /*  clear_proxies_on_commit */,
                            blink::FramePolicy());
 
   // Navigate the third subframe to C.
@@ -2349,6 +2362,7 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
 
   child3->DidNavigateFrame(host3, true /* was_caused_by_user_gesture */,
                            false /* is_same_document_navigation */,
+                           false /*  clear_proxies_on_commit */,
                            blink::FramePolicy());
 
   // Make sure the first two subframes and the third subframe are placed in
@@ -2424,6 +2438,7 @@ TEST_P(RenderFrameHostManagerTest,
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child, &entryB));
   child->DidNavigateFrame(hostB, true /* was_caused_by_user_gesture */,
                           false /* is_same_document_navigation */,
+                          false /*  clear_proxies_on_commit */,
                           blink::FramePolicy());
 
   // Ensure that the main page is focused.
@@ -2449,6 +2464,7 @@ TEST_P(RenderFrameHostManagerTest,
 
   child->DidNavigateFrame(hostC, true /* was_caused_by_user_gesture */,
                           false /* is_same_document_navigation */,
+                          false /*  clear_proxies_on_commit */,
                           blink::FramePolicy());
 
   base::RunLoop().RunUntilIdle();
@@ -2508,6 +2524,7 @@ TEST_P(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
   // The RenderFrameHost committed.
   manager->DidNavigateFrame(current_host, true /* was_caused_by_user_gesture */,
                             false /* is_same_document_navigation */,
+                            false /*  clear_proxies_on_commit */,
                             blink::FramePolicy());
   EXPECT_EQ(current_host, manager->current_frame_host());
   EXPECT_TRUE(current_host->web_ui());
@@ -2823,6 +2840,7 @@ TEST_P(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   // The RenderFrameHost committed.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
                             false /* is_same_document_navigation */,
+                            false /*  clear_proxies_on_commit */,
                             blink::FramePolicy());
   EXPECT_EQ(host, manager->current_frame_host());
   EXPECT_FALSE(GetPendingFrameHost(manager));

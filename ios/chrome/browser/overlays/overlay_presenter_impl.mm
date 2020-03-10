@@ -60,7 +60,8 @@ OverlayPresenterImpl::OverlayPresenterImpl(Browser* browser,
   for (int i = 0; i < web_state_list_->count(); ++i) {
     StartObservingWebState(web_state_list_->GetWebStateAt(i));
   }
-  SetActiveWebState(web_state_list_->GetActiveWebState(), CHANGE_REASON_NONE);
+  SetActiveWebState(web_state_list_->GetActiveWebState(),
+                    ActiveWebStateChangeReason::Activated);
 }
 
 OverlayPresenterImpl::~OverlayPresenterImpl() {
@@ -124,7 +125,7 @@ bool OverlayPresenterImpl::IsShowingOverlayUI() const {
 
 void OverlayPresenterImpl::SetActiveWebState(
     web::WebState* web_state,
-    WebStateListObserver::ChangeReason reason) {
+    ActiveWebStateChangeReason reason) {
   if (active_web_state_ == web_state)
     return;
 
@@ -135,8 +136,9 @@ void OverlayPresenterImpl::SetActiveWebState(
   // delegate's presentation context.  This occurs:
   // - when the active WebState is replaced, and
   // - when the active WebState is detached from the WebStateList.
-  bool should_cancel_ui =
-      (reason & CHANGE_REASON_REPLACED) || detaching_active_web_state_;
+  const bool should_cancel_ui =
+      (reason == ActiveWebStateChangeReason::Replaced) ||
+      detaching_active_web_state_;
 
   active_web_state_ = web_state;
   detaching_active_web_state_ = false;
@@ -316,7 +318,7 @@ void OverlayPresenterImpl::StopObservingWebState(web::WebState* web_state) {
 
 void OverlayPresenterImpl::BrowserDestroyed(Browser* browser) {
   SetPresentationContext(nullptr);
-  SetActiveWebState(nullptr, CHANGE_REASON_NONE);
+  SetActiveWebState(nullptr, ActiveWebStateChangeReason::Closed);
 
   for (int i = 0; i < web_state_list_->count(); ++i) {
     StopObservingWebState(web_state_list_->GetWebStateAt(i));
@@ -441,11 +443,11 @@ void OverlayPresenterImpl::WillDetachWebStateAt(WebStateList* web_state_list,
   }
 }
 
-void OverlayPresenterImpl::WebStateActivatedAt(WebStateList* web_state_list,
-                                               web::WebState* old_web_state,
-                                               web::WebState* new_web_state,
-                                               int active_index,
-                                               int reason) {
-  SetActiveWebState(new_web_state,
-                    static_cast<WebStateListObserver::ChangeReason>(reason));
+void OverlayPresenterImpl::WebStateActivatedAt(
+    WebStateList* web_state_list,
+    web::WebState* old_web_state,
+    web::WebState* new_web_state,
+    int active_index,
+    ActiveWebStateChangeReason reason) {
+  SetActiveWebState(new_web_state, reason);
 }

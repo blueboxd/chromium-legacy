@@ -24,6 +24,8 @@ namespace web {
 class WebState;
 }
 
+enum class ActiveWebStateChangeReason;
+
 // Manages a list of WebStates.
 //
 // This class supports mutating the list and to observe the mutations via the
@@ -231,7 +233,7 @@ class WebStateList {
   // Makes the WebState at the specified index the active WebState.
   //
   // Assumes that the WebStateList is locked.
-  void ActivateWebStateAtImpl(int index, int reason);
+  void ActivateWebStateAtImpl(int index, ActiveWebStateChangeReason reason);
 
   // Sets the opener of any WebState that reference the WebState at the
   // specified index to null.
@@ -239,7 +241,8 @@ class WebStateList {
 
   // Notify the observers if the active WebState change. |reason| is the value
   // passed to the WebStateListObservers.
-  void NotifyIfActiveWebStateChanged(web::WebState* old_web_state, int reason);
+  void NotifyIfActiveWebStateChanged(web::WebState* old_web_state,
+                                     ActiveWebStateChangeReason reason);
 
   // Returns the index of the |n|-th WebState (with n > 0) in the sequence of
   // WebStates opened from the specified WebState starting the search from

@@ -24,8 +24,7 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
     this.data = {
       passwords: [],
       exceptions: [],
-      leakedCredentials:
-          autofill_test_util.makeCompromisedCredentialsInfo([], ''),
+      leakedCredentials: autofill_test_util.makeCompromisedCredentialsInfo([]),
       checkStatus: autofill_test_util.makePasswordCheckStatus(),
     };
 

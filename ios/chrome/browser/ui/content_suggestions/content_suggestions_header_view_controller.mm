@@ -54,7 +54,7 @@ using base::UserMetricsAction;
 @property(nonatomic, assign) BOOL voiceSearchIsEnabled;
 
 // Exposes view and methods to drive the doodle.
-@property(nonatomic, weak) id<LogoVendor> logoVendor;
+@property(nonatomic, weak, readonly) id<LogoVendor> logoVendor;
 
 @property(nonatomic, strong) ContentSuggestionsHeaderView* headerView;
 @property(nonatomic, strong) UIButton* fakeOmnibox;
@@ -73,11 +73,9 @@ using base::UserMetricsAction;
 @implementation ContentSuggestionsHeaderViewController
 
 @synthesize collectionSynchronizer = _collectionSynchronizer;
-@synthesize logoVendor = _logoVendor;
 @synthesize promoCanShow = _promoCanShow;
 @synthesize showing = _showing;
 @synthesize omniboxFocused = _omniboxFocused;
-
 @synthesize headerView = _headerView;
 @synthesize fakeOmnibox = _fakeOmnibox;
 @synthesize accessibilityButton = _accessibilityButton;
@@ -536,6 +534,10 @@ using base::UserMetricsAction;
 - (void)setLogoIsShowing:(BOOL)logoIsShowing {
   _logoIsShowing = logoIsShowing;
   [self updateLogoAndFakeboxDisplay];
+}
+
+- (void)setLogoVendor:(id<LogoVendor>)logoVendor {
+  _logoVendor = logoVendor;
 }
 
 - (void)locationBarBecomesFirstResponder {

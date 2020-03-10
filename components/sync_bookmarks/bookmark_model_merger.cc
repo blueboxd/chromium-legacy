@@ -425,7 +425,7 @@ void BookmarkModelMerger::MergeSubtree(
     const RemoteTreeNode& remote_node) {
   const EntityData& remote_update_entity = remote_node.entity();
   bookmark_tracker_->Add(
-      remote_update_entity.id, local_subtree_root,
+      local_subtree_root, remote_update_entity.id,
       remote_node.response_version(), remote_update_entity.creation_time,
       remote_update_entity.unique_position, remote_update_entity.specifics);
 
@@ -570,7 +570,7 @@ void BookmarkModelMerger::ProcessRemoteCreation(
                                       remote_update_entity.is_folder,
                                       bookmark_model_, favicon_service_);
   DCHECK(bookmark_node);
-  bookmark_tracker_->Add(remote_update_entity.id, bookmark_node,
+  bookmark_tracker_->Add(bookmark_node, remote_update_entity.id,
                          remote_node.response_version(),
                          remote_update_entity.creation_time,
                          remote_update_entity.unique_position, specifics);
@@ -640,10 +640,10 @@ void BookmarkModelMerger::ProcessLocalCreation(
   const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, bookmark_model_, /*force_favicon_load=*/true,
       /*include_guid=*/true);
-  bookmark_tracker_->Add(sync_id, node, server_version, creation_time,
-                         pos.ToProto(), specifics);
+  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker_->Add(
+      node, sync_id, server_version, creation_time, pos.ToProto(), specifics);
   // Mark the entity that it needs to be committed.
-  bookmark_tracker_->IncrementSequenceNumber(sync_id);
+  bookmark_tracker_->IncrementSequenceNumber(entity);
   for (size_t i = 0; i < node->children().size(); ++i) {
     // If a local node hasn't matched with any remote entity, its descendants
     // will neither, unless they have been or will be matched by GUID, in which

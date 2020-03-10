@@ -56,6 +56,7 @@ const ParentStatus = {
 /**
  * @typedef {{
  *   newState: settings.SafetyCheckUpdatesStatus,
+ *   displayString: string,
  * }}
  */
 let UpdatesChangedEvent;
@@ -63,7 +64,7 @@ let UpdatesChangedEvent;
 /**
  * @typedef {{
  *   newState: settings.SafetyCheckPasswordsStatus,
- *   passwordsDisplayString: string,
+ *   displayString: string,
  * }}
  */
 let PasswordsChangedEvent;
@@ -71,6 +72,7 @@ let PasswordsChangedEvent;
 /**
  * @typedef {{
  *   newState: settings.SafetyCheckSafeBrowsingStatus,
+ *   displayString: string,
  * }}
  */
 let SafeBrowsingChangedEvent;
@@ -78,7 +80,7 @@ let SafeBrowsingChangedEvent;
 /**
  * @typedef {{
  *   newState: settings.SafetyCheckExtensionsStatus,
- *   extensionsDisplayString: string,
+ *   displayString: string,
  * }}
  */
 let ExtensionsChangedEvent;
@@ -141,7 +143,19 @@ Polymer({
      * UI string to display for the updates status.
      * @private
      */
+    updatesDisplayString_: String,
+
+    /**
+     * UI string to display for the passwords status.
+     * @private
+     */
     passwordsDisplayString_: String,
+
+    /**
+     * UI string to display for the Safe Browsing status.
+     * @private
+     */
+    safeBrowsingDisplayString_: String,
 
     /**
      * UI string to display for the extensions status.
@@ -190,6 +204,11 @@ Polymer({
     this.passwordsStatus_ = settings.SafetyCheckPasswordsStatus.CHECKING;
     this.safeBrowsingStatus_ = settings.SafetyCheckSafeBrowsingStatus.CHECKING;
     this.extensionsStatus_ = settings.SafetyCheckExtensionsStatus.CHECKING;
+    // Display running-status for safety check elements.
+    this.updatesDisplayString_ = this.i18n('safetyCheckRunning');
+    this.passwordsDisplayString_ = this.i18n('safetyCheckRunning');
+    this.safeBrowsingDisplayString_ = this.i18n('safetyCheckRunning');
+    this.extensionsDisplayString_ = this.i18n('safetyCheckRunning');
     // Trigger safety check.
     this.safetyCheckBrowserProxy_.runSafetyCheck();
   },
@@ -213,6 +232,7 @@ Polymer({
    */
   onSafetyCheckUpdatesChanged_: function(event) {
     this.updatesStatus_ = event.newState;
+    this.updatesDisplayString_ = event.displayString;
     this.updateParentFromChildren_();
   },
 
@@ -221,7 +241,7 @@ Polymer({
    * @private
    */
   onSafetyCheckPasswordsChanged_: function(event) {
-    this.passwordsDisplayString_ = event.passwordsDisplayString;
+    this.passwordsDisplayString_ = event.displayString;
     this.passwordsStatus_ = event.newState;
     this.updateParentFromChildren_();
   },
@@ -232,6 +252,7 @@ Polymer({
    */
   onSafetyCheckSafeBrowsingChanged_: function(event) {
     this.safeBrowsingStatus_ = event.newState;
+    this.safeBrowsingDisplayString_ = event.displayString;
     this.updateParentFromChildren_();
   },
 
@@ -240,7 +261,7 @@ Polymer({
    * @private
    */
   onSafetyCheckExtensionsChanged_: function(event) {
-    this.extensionsDisplayString_ = event.extensionsDisplayString;
+    this.extensionsDisplayString_ = event.displayString;
     this.extensionsStatus_ = event.newState;
     this.updateParentFromChildren_();
   },
@@ -432,34 +453,9 @@ Polymer({
    * @private
    * @return {string}
    */
-  getUpdatesSubLabelText_: function() {
-    switch (this.updatesStatus_) {
-      case settings.SafetyCheckUpdatesStatus.CHECKING:
-        return this.i18n('safetyCheckRunning');
-      case settings.SafetyCheckUpdatesStatus.UPDATED:
-        return this.i18n('aboutUpgradeUpToDate');
-      case settings.SafetyCheckUpdatesStatus.UPDATING:
-        return this.i18n('aboutUpgradeUpdating');
-      case settings.SafetyCheckUpdatesStatus.RELAUNCH:
-        return this.i18n('aboutUpgradeRelaunch');
-      case settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN:
-        return this.i18nAdvanced('safetyCheckUpdatesSubLabelDisabledByAdmin');
-      case settings.SafetyCheckUpdatesStatus.FAILED_OFFLINE:
-        return this.i18n('safetyCheckUpdatesSubLabelFailedOffline');
-      case settings.SafetyCheckUpdatesStatus.FAILED:
-        return this.i18nAdvanced('safetyCheckUpdatesSubLabelFailed');
-      default:
-        assertNotReached();
-    }
-  },
-
-  /**
-   * @private
-   * @return {string}
-   */
   getUpdatesAriaLabel_: function() {
     return this.i18n('safetyCheckUpdatesPrimaryLabel') + ': ' +
-        this.getUpdatesSubLabelText_();
+        this.updatesDisplayString_;
   },
 
   /**
@@ -566,28 +562,6 @@ Polymer({
 
   /**
    * @private
-   * @return {string}
-   */
-  getSafeBrowsingSubLabelText_: function() {
-    switch (this.safeBrowsingStatus_) {
-      case settings.SafetyCheckSafeBrowsingStatus.CHECKING:
-        return this.i18n('safetyCheckRunning');
-      case settings.SafetyCheckSafeBrowsingStatus.ENABLED:
-        return this.i18n('safetyCheckSafeBrowsingSubLabelEnabled');
-      case settings.SafetyCheckSafeBrowsingStatus.DISABLED:
-        return this.i18n('safetyCheckSafeBrowsingSubLabelDisabled');
-      case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN:
-        return this.i18nAdvanced(
-            'safetyCheckSafeBrowsingSubLabelDisabledByAdmin');
-      case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION:
-        return this.i18n('safetyCheckSafeBrowsingSubLabelDisabledByExtension');
-      default:
-        assertNotReached();
-    }
-  },
-
-  /**
-   * @private
    * @return {?string}
    */
   getSafeBrowsingIcon_: function() {
@@ -638,7 +612,7 @@ Polymer({
    */
   getSafeBrowsingAriaLabel_: function() {
     return this.i18n('safeBrowsingSectionLabel') + ': ' +
-        this.getSafeBrowsingSubLabelText_();
+        this.safeBrowsingDisplayString_;
   },
 
   /** @private */

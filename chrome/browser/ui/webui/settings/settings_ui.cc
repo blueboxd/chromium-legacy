@@ -321,6 +321,14 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                                IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(IDR_SETTINGS_VULCANIZED_HTML);
 
+  // Register SVG images that are purposefully not inlined in the HTML bundle
+  // above.
+  html_source->AddResourcePath("images/password_check_neutral.svg",
+                               IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_SVG);
+  html_source->AddResourcePath(
+      "images/password_check_neutral_dark.svg",
+      IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_DARK_SVG);
+
   // Only used in Polymer 3, see https://crbug.com/1026426.
   html_source->AddResourcePath("settings.js", IDR_SETTINGS_SETTINGS_ROLLUP_JS);
   html_source->AddResourcePath("settings_v3.html",

@@ -11,6 +11,15 @@
 // context.
 @interface ChromeActivityOverlayCoordinator : ChromeCoordinator
 
+// Use -initWithBaseViewController:browser:
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+
+// Use -initWithBaseViewController:browser:
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:(ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
 // Text that will be shown above the UIActivityIndicatorView.
 @property(nonatomic, copy) NSString* messageText;
 

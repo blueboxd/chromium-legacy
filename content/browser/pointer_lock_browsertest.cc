@@ -142,7 +142,8 @@ class PointerLockBrowserTestWithOptions : public PointerLockBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockBasic) {
+// crbug.com/1060129
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, DISABLED_PointerLockBasic) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -188,7 +189,9 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockBasic) {
             EvalJs(child, "document.pointerLockElement == document.body"));
 }
 
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockAndUserActivation) {
+// crbug.com/1060129
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
+                       DISABLED_PointerLockAndUserActivation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(b))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -341,7 +344,9 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, MAYBE_PointerLockEventRouting) {
 
 // Tests that the browser will not unlock the pointer if a RenderWidgetHostView
 // that doesn't hold the pointer lock is destroyed.
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockChildFrameDetached) {
+// crbug.com/1060129
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
+                       DISABLED_PointerLockChildFrameDetached) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

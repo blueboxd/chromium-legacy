@@ -243,7 +243,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     return;
   }
   [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                                    animated:animated
+                                    animated:NO
                               scrollPosition:UICollectionViewScrollPositionTop];
   // Update the delegate, in case it wasn't set when |items| was populated.
   [self.delegate gridViewController:self didChangeItemCount:self.items.count];

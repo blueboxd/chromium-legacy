@@ -133,13 +133,6 @@ void SurfacesInstance::DrawAndSwap(gfx::Size viewport,
   if (output_surface_provider_.renderer_settings().use_skia_renderer) {
     output_surface_provider_.gl_surface()->RecalculateClipAndTransform(
         &viewport, &clip, &transform);
-    bool using_fbo0 =
-        output_surface_provider_.gl_surface()->GetBackingFramebufferObject() ==
-        0;
-    bool force_reshape = was_fbo0_ != using_fbo0;
-    was_fbo0_ = using_fbo0;
-    if (force_reshape)
-      display_->ForceReshapeOnNextDraw();
   }
 
   gfx::ColorSpace display_color_space =

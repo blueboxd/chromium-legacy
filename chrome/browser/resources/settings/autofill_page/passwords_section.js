@@ -95,6 +95,9 @@ Polymer({
     },
 
     /** @private */
+    haveCheckedPasswordsBefore_: Boolean,
+
+    /** @private */
     hidePasswordsLink_: {
       type: Boolean,
       computed: 'computeHidePasswordsLink_(syncPrefs_, syncStatus_)',
@@ -240,6 +243,10 @@ Polymer({
         setIsOptedInForAccountStorageListener);
     this.passwordManager_.getSavedPasswordList(setSavedPasswordsListener);
     this.passwordManager_.getExceptionList(setPasswordExceptionsListener);
+
+    this.passwordManager_.getCompromisedCredentialsInfo().then(info => {
+      this.haveCheckedPasswordsBefore_ = !!info.elapsedTimeSinceLastCheck;
+    });
 
     // Listen for changes.
     this.passwordManager_.addAccountStorageOptInStateListener(
@@ -410,6 +417,7 @@ Polymer({
         chrome.passwordsPrivate.PlaintextReason.COPY);
     (this.$.menu).close();
   },
+
   /**
    * Handle the undo shortcut.
    * @param {!Event} event

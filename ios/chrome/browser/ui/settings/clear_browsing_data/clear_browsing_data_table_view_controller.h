@@ -9,7 +9,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowsingDataCommands;
-class ChromeBrowserState;
+class Browser;
 @protocol ClearBrowsingDataUIDelegate;
 
 // TableView for clearing browsing data (including history,
@@ -17,9 +17,8 @@ class ChromeBrowserState;
 @interface ClearBrowsingDataTableViewController
     : SettingsRootTableViewController <UIAdaptivePresentationControllerDelegate>
 
-// Initializers. |browserState| can't be nil.
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
-    NS_DESIGNATED_INITIALIZER;
+// Initializers. |browser| can't be nil.
+- (instancetype)initWithBrowser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Prepares view controller so that -dismissViewControllerAnimated dismisses it.

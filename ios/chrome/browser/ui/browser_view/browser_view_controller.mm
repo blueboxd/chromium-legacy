@@ -3529,7 +3529,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (BOOL)shouldAllowOverscrollActions {
-  return YES;
+  return !self.toolbarAccessoryPresenter.presenting;
 }
 
 - (UIView*)headerView {
@@ -4189,7 +4189,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
-                     reason:(int)reason {
+                     reason:(ActiveWebStateChangeReason)reason {
   if (oldWebState) {
     oldWebState->WasHidden();
     oldWebState->SetKeepRenderProcessAlive(false);

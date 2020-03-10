@@ -2518,6 +2518,10 @@ enum WebFeature {
   kBreakIteratorTypeLine = 3177,
   kV8FileSystemDirectoryHandle_Resolve_Method = 3178,
   kV8FileSystemHandle_IsSameEntry_Method = 3179,
+  kV8RTCRtpSender_CreateEncodedAudioStreams_Method = 3180,
+  kV8RTCRtpSender_CreateEncodedVideoStreams_Method = 3181,
+  kV8RTCRtpReceiver_CreateEncodedAudioStreams_Method = 3182,
+  kV8RTCRtpReceiver_CreateEncodedVideoStreams_Method = 3183,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

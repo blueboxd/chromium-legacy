@@ -16,7 +16,7 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/updater/win/net/scoped_hinternet.h"

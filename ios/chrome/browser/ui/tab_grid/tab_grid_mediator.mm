@@ -227,7 +227,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
-                     reason:(int)reason {
+                     reason:(ActiveWebStateChangeReason)reason {
   // If the selected index changes as a result of the last webstate being
   // detached, atIndex will be -1.
   if (atIndex == -1) {

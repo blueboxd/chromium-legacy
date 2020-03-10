@@ -59,6 +59,10 @@ constexpr char kExpectedPowerTypeFieldName[] = "expectedPowerType";
 // routine.
 constexpr char kWearLevelThresholdFieldName[] = "wearLevelThreshold";
 
+// String constants identifying the parameter fields for the NVMe self-test
+// routine.
+constexpr char kNvmeSelfTestTypeFieldName[] = "nvmeSelfTestType";
+
 // Dummy values to populate cros_healthd's RunRoutineResponse.
 constexpr uint32_t kId = 11;
 constexpr chromeos::cros_healthd::mojom::DiagnosticRoutineStatusEnum kStatus =
@@ -1063,6 +1067,93 @@ TEST_F(DeviceCommandRunRoutineJobTest,
       job.get(), kUniqueID, test_start_time_, base::TimeDelta::FromSeconds(30),
       /*terminate_upon_input=*/false,
       chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeWearLevel,
+      std::move(params_dict));
+  base::RunLoop run_loop;
+  bool success =
+      job->Run(base::Time::Now(), base::TimeTicks::Now(),
+               base::BindLambdaForTesting([&]() {
+                 EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+                 std::unique_ptr<std::string> payload = job->GetResultPayload();
+                 EXPECT_TRUE(payload);
+                 EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+                 run_loop.Quit();
+               }));
+  EXPECT_TRUE(success);
+  run_loop.Run();
+}
+
+TEST_F(DeviceCommandRunRoutineJobTest, RunNvmeSelfTestRoutineSuccess) {
+  auto run_routine_response =
+      chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
+  chromeos::cros_healthd::FakeCrosHealthdClient::Get()
+      ->SetRunRoutineResponseForTesting(run_routine_response);
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  params_dict.SetIntKey(
+      kNvmeSelfTestTypeFieldName,
+      /*nvme_self_test_type=*/static_cast<int>(
+          chromeos::cros_healthd::mojom::NvmeSelfTestTypeEnum::kShortSelfTest));
+  std::unique_ptr<RemoteCommandJob> job =
+      std::make_unique<DeviceCommandRunRoutineJob>();
+  InitializeJob(
+      job.get(), kUniqueID, test_start_time_, base::TimeDelta::FromSeconds(30),
+      /*terminate_upon_input=*/false,
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeSelfTest,
+      std::move(params_dict));
+  base::RunLoop run_loop;
+  bool success =
+      job->Run(base::Time::Now(), base::TimeTicks::Now(),
+               base::BindLambdaForTesting([&]() {
+                 EXPECT_EQ(job->status(), RemoteCommandJob::SUCCEEDED);
+                 std::unique_ptr<std::string> payload = job->GetResultPayload();
+                 EXPECT_TRUE(payload);
+                 EXPECT_EQ(CreateSuccessPayload(kId, kStatus), *payload);
+                 run_loop.Quit();
+               }));
+  EXPECT_TRUE(success);
+  run_loop.Run();
+}
+
+TEST_F(DeviceCommandRunRoutineJobTest,
+       RunNvmeSelfTestRoutineMissingSelfTestType) {
+  // Test that leaving out the nvmeSelfTestType parameter causes the routine to
+  // fail.
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  std::unique_ptr<RemoteCommandJob> job =
+      std::make_unique<DeviceCommandRunRoutineJob>();
+  InitializeJob(
+      job.get(), kUniqueID, test_start_time_, base::TimeDelta::FromSeconds(30),
+      /*terminate_upon_input=*/false,
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeSelfTest,
+      std::move(params_dict));
+  base::RunLoop run_loop;
+  bool success =
+      job->Run(base::Time::Now(), base::TimeTicks::Now(),
+               base::BindLambdaForTesting([&]() {
+                 EXPECT_EQ(job->status(), RemoteCommandJob::FAILED);
+                 std::unique_ptr<std::string> payload = job->GetResultPayload();
+                 EXPECT_TRUE(payload);
+                 EXPECT_EQ(CreateInvalidParametersFailurePayload(), *payload);
+                 run_loop.Quit();
+               }));
+  EXPECT_TRUE(success);
+  run_loop.Run();
+}
+
+TEST_F(DeviceCommandRunRoutineJobTest,
+       RunNvmeSelfTestRoutineInvalidSelfTestType) {
+  // Test that an invalid value for the nvmeSelfTestType parameter causes the
+  // routine to fail.
+  base::Value params_dict(base::Value::Type::DICTIONARY);
+  auto nvme_self_test_type = std::numeric_limits<std::underlying_type<
+      chromeos::cros_healthd::mojom::NvmeSelfTestTypeEnum>::type>::max();
+  params_dict.SetIntKey(kNvmeSelfTestTypeFieldName,
+                        static_cast<int>(nvme_self_test_type));
+  std::unique_ptr<RemoteCommandJob> job =
+      std::make_unique<DeviceCommandRunRoutineJob>();
+  InitializeJob(
+      job.get(), kUniqueID, test_start_time_, base::TimeDelta::FromSeconds(30),
+      /*terminate_upon_input=*/false,
+      chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeSelfTest,
       std::move(params_dict));
   base::RunLoop run_loop;
   bool success =

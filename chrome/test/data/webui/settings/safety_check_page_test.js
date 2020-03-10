@@ -20,6 +20,7 @@ suite('SafetyCheckUiTests', function() {
   function fireSafetyCheckUpdatesEvent(state) {
     const event = {};
     event.newState = state;
+    event.displayString = null;
     cr.webUIListenerCallback(
         settings.SafetyCheckCallbackConstants.UPDATES_CHANGED, event);
   }
@@ -27,7 +28,7 @@ suite('SafetyCheckUiTests', function() {
   function fireSafetyCheckPasswordsEvent(state) {
     const event = {};
     event.newState = state;
-    event.passwordsDisplayString = null;
+    event.displayString = null;
     cr.webUIListenerCallback(
         settings.SafetyCheckCallbackConstants.PASSWORDS_CHANGED, event);
   }
@@ -35,6 +36,7 @@ suite('SafetyCheckUiTests', function() {
   function fireSafetyCheckSafeBrowsingEvent(state) {
     const event = {};
     event.newState = state;
+    event.displayString = null;
     cr.webUIListenerCallback(
         settings.SafetyCheckCallbackConstants.SAFE_BROWSING_CHANGED, event);
   }
@@ -42,7 +44,7 @@ suite('SafetyCheckUiTests', function() {
   function fireSafetyCheckExtensionsEvent(state) {
     const event = {};
     event.newState = state;
-    event.extensionsDisplayString = null;
+    event.displayString = null;
     cr.webUIListenerCallback(
         settings.SafetyCheckCallbackConstants.EXTENSIONS_CHANGED, event);
   }

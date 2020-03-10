@@ -25,7 +25,6 @@
 #include "chrome/services/file_util/public/cpp/sandboxed_rar_analyzer.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -148,10 +147,6 @@ class CheckClientDownloadRequestBase {
   virtual bool ShouldPromptForDeepScanning(
       DownloadCheckResultReason reason) const = 0;
 
-  // Called when |token_fetcher_| has finished fetching the access token.
-  void OnGotAccessToken(
-      base::Optional<signin::AccessTokenInfo> access_token_info);
-
   // Source URL being downloaded from. This shuold always be set, but could be
   // for example an artificial blob: URL if there is no source URL.
   const GURL source_url_;
@@ -216,13 +211,6 @@ class CheckClientDownloadRequestBase {
 
   // The hash of the download, if known.
   std::string hash_;
-
-  // The token fetcher used to attach OAuth access tokens to requests for
-  // appropriately consented users.
-  std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher_;
-
-  // The OAuth access token for the user profile, if needed in the request.
-  std::string access_token_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequestBase);
 };  // namespace safe_browsing

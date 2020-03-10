@@ -10,7 +10,7 @@ import android.content.pm.PackageManager;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
-import android.text.style.StyleSpan;
+import android.text.style.TextAppearanceSpan;
 
 import androidx.core.app.NotificationManagerCompat;
 
@@ -138,8 +138,9 @@ class PermissionParamsListBuilder {
 
         SpannableStringBuilder builder = new SpannableStringBuilder();
         SpannableString nameString = new SpannableString(permission.name);
-        final StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
-        nameString.setSpan(boldSpan, 0, nameString.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+        final TextAppearanceSpan span =
+                new TextAppearanceSpan(mContext, R.style.TextAppearance_TextMediumThick_Primary);
+        nameString.setSpan(span, 0, nameString.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
 
         builder.append(nameString);
         builder.append(" – "); // en-dash.

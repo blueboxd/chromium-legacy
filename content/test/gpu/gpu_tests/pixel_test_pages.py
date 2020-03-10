@@ -30,9 +30,6 @@ _FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS = [
 ]
 
 
-CRASH_TYPE_GPU = 'gpu'
-
-
 class PixelTestPage(object):
   """A wrapper class mimicking the functionality of the PixelTestsStorySet
   from the old-style GPU tests.
@@ -40,8 +37,7 @@ class PixelTestPage(object):
   def __init__(self, url, name, test_rect, tolerance=2, browser_args=None,
                expected_colors=None, gpu_process_disabled=False,
                optional_action=None, restart_browser_after_test=False,
-               other_args=None, grace_period_end=None,
-               expected_per_process_crashes=None):
+               other_args=None, grace_period_end=None):
     super(PixelTestPage, self).__init__()
     self.url = url
     self.name = name
@@ -79,10 +75,6 @@ class PixelTestPage(object):
     # be triaged without turning the bots red.
     # This should be a datetime.date object.
     self.grace_period_end = grace_period_end
-    # This lets the test runner know that one or more crashes are expected as
-    # part of the test. Should be a map of process type (str) to expected number
-    # of crashes (int).
-    self.expected_per_process_crashes = expected_per_process_crashes or {}
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
     return PixelTestPage(
@@ -476,10 +468,7 @@ class PixelTestPages(object):
         base_name + '_Video_Context_Loss_MP4',
         test_rect=[0, 0, 240, 135],
         tolerance=tolerance,
-        expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS,
-        expected_per_process_crashes={
-          CRASH_TYPE_GPU: 1,
-        }),
+        expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
       # The VP9 test clip is primarily software decoded on bots.
       PixelTestPage(
@@ -488,10 +477,7 @@ class PixelTestPages(object):
         base_name + '_Video_Context_Loss_VP9',
         test_rect=[0, 0, 240, 135],
         tolerance=tolerance_vp9,
-        expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS,
-        expected_per_process_crashes={
-          CRASH_TYPE_GPU: 1,
-        }),
+        expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
       PixelTestPage(
         'pixel_video_backdrop_filter.html',

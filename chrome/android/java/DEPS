@@ -1,7 +1,6 @@
 include_rules = [
   "-chrome/android/features/keyboard_accessory/internal",
 
-  "+chrome/browser/android/lifecycle",
   "+chrome/browser/android/thin_webview/java",
   "+chrome/browser/flags/android",
   "+chrome/browser/share/android",
@@ -17,6 +16,7 @@ include_rules = [
   "+chrome/browser/preferences/android/java",
   "+chrome/browser/settings/android/java",
   "+chrome/browser/util/android/java",
+  "+chrome/lib/lifecycle/public",
   "+components/autofill/android/java/src/org/chromium/components/autofill",
   "+components/background_task_scheduler/android/java/src/org/chromium/components/background_task_scheduler",
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",

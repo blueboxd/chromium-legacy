@@ -185,13 +185,7 @@ void BookmarkModelTypeProcessor::GetLocalChanges(
     GetLocalChangesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BookmarkLocalChangesBuilder builder(bookmark_tracker_.get(), bookmark_model_);
-  syncer::CommitRequestDataList local_changes =
-      builder.BuildCommitRequests(max_entries);
-  for (const std::unique_ptr<syncer::CommitRequestData>& local_change :
-       local_changes) {
-    bookmark_tracker_->MarkCommitMayHaveStarted(local_change->entity->id);
-  }
-  std::move(callback).Run(std::move(local_changes));
+  std::move(callback).Run(builder.BuildCommitRequests(max_entries));
 }
 
 void BookmarkModelTypeProcessor::OnCommitCompleted(
@@ -209,10 +203,19 @@ void BookmarkModelTypeProcessor::OnCommitCompleted(
     // during the commit, and |response.id| carries both the old and new ids.
     const std::string& old_sync_id =
         response.id_in_request.empty() ? response.id : response.id_in_request;
-    bookmark_tracker_->UpdateUponCommitResponse(old_sync_id, response.id,
-                                                response.sequence_number,
-                                                response.response_version);
+    const SyncedBookmarkTracker::Entity* entity =
+        bookmark_tracker_->GetEntityForSyncId(old_sync_id);
+    if (!entity) {
+      DLOG(WARNING) << "Received a commit response for an unknown entity: "
+                    << old_sync_id;
+      continue;
+    }
+
+    bookmark_tracker_->UpdateUponCommitResponse(entity, response.id,
+                                                response.response_version,
+                                                response.sequence_number);
   }
+
   bookmark_tracker_->set_model_type_state(type_state);
   schedule_save_closure_.Run();
 }

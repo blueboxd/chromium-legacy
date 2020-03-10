@@ -285,7 +285,16 @@ void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
 
 void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   base::Erase(webui_instances_, webui);
-  MaybeClearData();
+  if (!HasListener()) {
+    ClearCSBRRsSent();
+    ClearClientDownloadRequestsSent();
+    ClearClientDownloadResponsesReceived();
+    ClearPGEvents();
+    ClearPGPings();
+    ClearRTLookupPings();
+    ClearLogMessages();
+    ClearDeepScans();
+  }
 }
 
 network::mojom::CookieManager* WebUIInfoSingleton::GetCookieManager() {
@@ -293,11 +302,6 @@ network::mojom::CookieManager* WebUIInfoSingleton::GetCookieManager() {
     InitializeCookieManager();
 
   return cookie_manager_remote_.get();
-}
-
-void WebUIInfoSingleton::ClearListenerForTesting() {
-  has_test_listener_ = false;
-  MaybeClearData();
 }
 
 void WebUIInfoSingleton::InitializeCookieManager() {
@@ -314,20 +318,6 @@ void WebUIInfoSingleton::InitializeCookieManager() {
     // base::Unretained is safe because |this| owns |cookie_manager_remote_|.
     cookie_manager_remote_.set_disconnect_handler(base::BindOnce(
         &WebUIInfoSingleton::InitializeCookieManager, base::Unretained(this)));
-  }
-}
-
-void WebUIInfoSingleton::MaybeClearData() {
-  if (!HasListener()) {
-    ClearCSBRRsSent();
-    ClearClientDownloadRequestsSent();
-    ClearClientDownloadResponsesReceived();
-    ClearPGEvents();
-    ClearPGPings();
-    ClearRTLookupPings();
-    ClearLogMessages();
-    ClearDeepScans();
-    ClearReportingEvents();
   }
 }
 
@@ -636,9 +626,6 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
   dict.SetInteger("archive_directory_count", cdr.archive_directory_count());
 
   dict.SetBoolean("request_ap_verdicts", cdr.request_ap_verdicts());
-
-  if (!cdr.access_token().empty())
-    dict.SetString("access_token", cdr.access_token());
 
   base::Value* request_tree = &dict;
   std::string request_serialized;

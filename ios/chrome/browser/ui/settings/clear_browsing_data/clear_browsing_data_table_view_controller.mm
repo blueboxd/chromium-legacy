@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -48,7 +49,10 @@
 @property(nonatomic, readonly, strong) ClearBrowsingDataManager* dataManager;
 
 // Browser state.
-@property(nonatomic, assign) ChromeBrowserState* browserState;
+@property(nonatomic, readonly) ChromeBrowserState* browserState;
+
+// Browser.
+@property(nonatomic, readonly) Browser* browser;
 
 // Coordinator that managers a UIAlertController to clear browsing data.
 @property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
@@ -75,6 +79,7 @@
 @synthesize actionSheetCoordinator = _actionSheetCoordinator;
 @synthesize alertCoordinator = _alertCoordinator;
 @synthesize browserState = _browserState;
+@synthesize browser = _browser;
 @synthesize clearBrowsingDataBarButton = _clearBrowsingDataBarButton;
 @synthesize dataManager = _dataManager;
 @synthesize dispatcher = _dispatcher;
@@ -83,12 +88,13 @@
 
 #pragma mark - ViewController Lifecycle.
 
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowser:(Browser*)browser {
   self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
-    _browserState = browserState;
-    _dataManager =
-        [[ClearBrowsingDataManager alloc] initWithBrowserState:browserState];
+    _browser = browser;
+    _browserState = browser->GetBrowserState();
+    _dataManager = [[ClearBrowsingDataManager alloc]
+        initWithBrowserState:browser->GetBrowserState()];
     _dataManager.consumer = self;
   }
   return self;
@@ -312,7 +318,8 @@
   // Show activity indicator modal while removal is happening.
   self.chromeActivityOverlayCoordinator =
       [[ChromeActivityOverlayCoordinator alloc]
-          initWithBaseViewController:self.navigationController];
+          initWithBaseViewController:self.navigationController
+                             browser:_browser];
   self.chromeActivityOverlayCoordinator.messageText =
       l10n_util::GetNSStringWithFixup(
           IDS_IOS_CLEAR_BROWSING_DATA_ACTIVITY_MODAL);

@@ -13,31 +13,27 @@ namespace web {
 class WebState;
 }
 
+// Constants used when notifying about changes to active WebState.
+enum class ActiveWebStateChangeReason {
+  // Used to indicate the active WebState changed because active WebState was
+  // replaced (e.g. a pre-rendered WebState is promoted to a real tab).
+  Replaced,
+
+  // Used to indicate the active WebState changed because it was activated.
+  Activated,
+
+  // Used to indicate the active WebState changed because active WebState was
+  // closed (or detached in case of multi-window).
+  Closed,
+
+  // Used to indicate the active WebState changed because a new active
+  // WebState was inserted (e.g. the first WebState is created).
+  Inserted,
+};
+
 // Interface for listening to events occurring to WebStateLists.
 class WebStateListObserver {
  public:
-  // Constants used when notifying about changes to active WebState.
-  enum ChangeReason {
-    // Used to indicate that none of the reasons below are responsible for
-    // the active WebState change.
-    CHANGE_REASON_NONE = 0,
-
-    // Used to indicate the active WebState changed because active WebState was
-    // replaces.
-    CHANGE_REASON_REPLACED = 1 << 0,
-
-    // Used to indicate the active WebState changed because it was activated.
-    CHANGE_REASON_ACTIVATED = 1 << 1,
-
-    // Used to indicate the active WebState changed because active WebState was
-    // closed.
-    CHANGE_REASON_CLOSED = 1 << 2,
-
-    // Used to indicate the active WebState changed because a new active
-    // WebState was inserted.
-    CHANGE_REASON_INSERTED = 1 << 3,
-  };
-
   WebStateListObserver();
   virtual ~WebStateListObserver();
 
@@ -90,7 +86,7 @@ class WebStateListObserver {
                                    web::WebState* old_web_state,
                                    web::WebState* new_web_state,
                                    int active_index,
-                                   int reason);
+                                   ActiveWebStateChangeReason reason);
 
   // Invoked before a batched operations begins. The observer can use this
   // notification if it is interested in considering all those individual

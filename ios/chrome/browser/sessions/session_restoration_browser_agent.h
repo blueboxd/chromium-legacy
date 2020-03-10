@@ -75,7 +75,7 @@ class SessionRestorationBrowserAgent
                            web::WebState* old_web_state,
                            web::WebState* new_web_state,
                            int active_index,
-                           int reason) override;
+                           ActiveWebStateChangeReason reason) override;
 
   // The service object which handles the actual saving of sessions.
   SessionServiceIOS* session_service_;

@@ -16,6 +16,7 @@
 #include <wrl/module.h>
 
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/updater/app/app.h"

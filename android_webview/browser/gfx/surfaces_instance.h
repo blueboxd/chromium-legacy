@@ -112,7 +112,6 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   viz::FrameTokenGenerator next_frame_token_;
 
   gfx::Size surface_size_;
-  bool was_fbo0_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesInstance);
 };

@@ -6346,6 +6346,10 @@ crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/iframe-popup-same
 crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/iframe-popup-same-origin-allow-popups-to-same-origin.https.html [ Pass Crash ]
 crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/iframe-popup-unsafe-none-to-same-origin.https.html [ Pass Crash ]
 crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/iframe-popup-same-origin-allow-popups-to-same-origin-allow-popups.https.html [ Pass Crash ]
+crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/popup-redirect-cache.https.html [ Pass Crash ]
+
+# COOP timeout failure.
+crbug.com/1046698 external/wpt/html/cross-origin-opener-policy/coep-blob-popup.https.html [ Timeout ]
 
 # Broken in https://chromium-review.googlesource.com/c/chromium/src/+/1636716
 crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/disable-breakpoints.js [ Pass Failure Timeout ]
@@ -6561,9 +6565,6 @@ crbug.com/1042848 virtual/feature-policy-permissions/external/wpt/mediacapture-s
 crbug.com/1046440 fast/loader/submit-form-while-parsing-2.html [ Pass Failure Timeout ]
 crbug.com/1041851 [ Mac ] external/wpt/bluetooth/idl/idlharness.tentative.https.window.html [ Pass Timeout ]
 crbug.com/1041851 [ Win10 ] external/wpt/bluetooth/idl/idlharness.tentative.https.window.html [ Pass Timeout ]
-
-# COOP timeout failure.
-crbug.com/1046698 external/wpt/html/cross-origin-opener-policy/coep-blob-popup.https.html [ Timeout ]
 
 # Sheriff 2020-01-29
 crbug.com/1041847 virtual/gpu/fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout ]

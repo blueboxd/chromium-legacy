@@ -43,15 +43,25 @@
 namespace content {
 namespace {
 
+using payments::mojom::CanMakePaymentEventDataPtr;
+using payments::mojom::CanMakePaymentEventResponseType;
+using payments::mojom::CanMakePaymentResponse;
+using payments::mojom::CanMakePaymentResponsePtr;
+using payments::mojom::PaymentDetailsModifierPtr;
 using payments::mojom::PaymentEventResponseType;
+using payments::mojom::PaymentHandlerResponse;
+using payments::mojom::PaymentHandlerResponseCallback;
+using payments::mojom::PaymentHandlerResponsePtr;
+using payments::mojom::PaymentMethodDataPtr;
+using payments::mojom::PaymentRequestEventDataPtr;
 
 using ServiceWorkerStartCallback =
     base::OnceCallback<void(scoped_refptr<ServiceWorkerVersion>,
                             blink::ServiceWorkerStatusCode)>;
 
-payments::mojom::PaymentHandlerResponsePtr CreateBlankPaymentHandlerResponse(
+PaymentHandlerResponsePtr CreateBlankPaymentHandlerResponse(
     PaymentEventResponseType response_type) {
-  return payments::mojom::PaymentHandlerResponse::New(
+  return PaymentHandlerResponse::New(
       "" /*=method_name*/, "" /*=stringified_details*/, response_type,
       base::nullopt /*=payer_name*/, base::nullopt /*=payer_email*/,
       base::nullopt /*=payer_phone*/, nullptr /*=shipping_address*/,
@@ -104,8 +114,7 @@ class InvokePaymentAppCallbackRepository {
 
 // Note that one and only one of the callbacks from this class must/should be
 // called.
-class RespondWithCallbacks
-    : public payments::mojom::PaymentHandlerResponseCallback {
+class RespondWithCallbacks : public PaymentHandlerResponseCallback {
  public:
   RespondWithCallbacks(
       BrowserContext* browser_context,
@@ -137,13 +146,13 @@ class RespondWithCallbacks
                                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  mojo::PendingRemote<payments::mojom::PaymentHandlerResponseCallback>
+  mojo::PendingRemote<PaymentHandlerResponseCallback>
   BindNewPipeAndPassRemote() {
     return receiver_.BindNewPipeAndPassRemote();
   }
 
   void OnResponseForPaymentRequest(
-      payments::mojom::PaymentHandlerResponsePtr response) override {
+      PaymentHandlerResponsePtr response) override {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     service_worker_version_->FinishRequest(request_id_, false);
     RunOrPostTaskOnThread(
@@ -156,7 +165,7 @@ class RespondWithCallbacks
   }
 
   void OnResponseForCanMakePayment(
-      payments::mojom::CanMakePaymentResponsePtr response) override {
+      CanMakePaymentResponsePtr response) override {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     service_worker_version_->FinishRequest(request_id_, false);
     RunOrPostTaskOnThread(
@@ -254,8 +263,7 @@ class RespondWithCallbacks
   scoped_refptr<ServiceWorkerVersion> service_worker_version_;
   PaymentAppProvider::InvokePaymentAppCallback invoke_payment_app_callback_;
   PaymentAppProvider::PaymentEventResultCallback payment_event_result_callback_;
-  mojo::Receiver<payments::mojom::PaymentHandlerResponseCallback> receiver_{
-      this};
+  mojo::Receiver<PaymentHandlerResponseCallback> receiver_{this};
 
   base::WeakPtrFactory<RespondWithCallbacks> weak_ptr_factory_{this};
 
@@ -308,7 +316,7 @@ void DispatchAbortPaymentEvent(
 
 void DispatchCanMakePaymentEvent(
     BrowserContext* browser_context,
-    payments::mojom::CanMakePaymentEventDataPtr event_data,
+    CanMakePaymentEventDataPtr event_data,
     PaymentAppProvider::PaymentEventResultCallback callback,
     scoped_refptr<ServiceWorkerVersion> active_version,
     blink::ServiceWorkerStatusCode service_worker_status) {
@@ -337,7 +345,7 @@ void DispatchCanMakePaymentEvent(
 
 void DispatchPaymentRequestEvent(
     BrowserContext* browser_context,
-    payments::mojom::PaymentRequestEventDataPtr event_data,
+    PaymentRequestEventDataPtr event_data,
     PaymentAppProvider::InvokePaymentAppCallback callback,
     scoped_refptr<ServiceWorkerVersion> active_version,
     blink::ServiceWorkerStatusCode service_worker_status) {
@@ -417,7 +425,7 @@ void StartServiceWorkerForDispatch(BrowserContext* browser_context,
 
 void OnInstallPaymentApp(
     const url::Origin& sw_origin,
-    payments::mojom::PaymentRequestEventDataPtr event_data,
+    PaymentRequestEventDataPtr event_data,
     PaymentAppProvider::RegistrationIdCallback registration_id_callback,
     PaymentAppProvider::InvokePaymentAppCallback callback,
     BrowserContext* browser_context,
@@ -469,9 +477,8 @@ void AbortInvokePaymentApp(BrowserContext* browser_context,
     callback->AbortPaymentSinceOpennedWindowClosing(reason);
 }
 
-void AddMethodDataToMap(
-    const std::vector<payments::mojom::PaymentMethodDataPtr>& method_data,
-    std::map<std::string, std::string>* out) {
+void AddMethodDataToMap(const std::vector<PaymentMethodDataPtr>& method_data,
+                        std::map<std::string, std::string>* out) {
   for (size_t i = 0; i < method_data.size(); ++i) {
     std::string counter =
         method_data.size() == 1 ? "" : " #" + base::NumberToString(i);
@@ -480,9 +487,8 @@ void AddMethodDataToMap(
   }
 }
 
-void AddModifiersToMap(
-    const std::vector<payments::mojom::PaymentDetailsModifierPtr>& modifiers,
-    std::map<std::string, std::string>* out) {
+void AddModifiersToMap(const std::vector<PaymentDetailsModifierPtr>& modifiers,
+                       std::map<std::string, std::string>* out) {
   for (size_t i = 0; i < modifiers.size(); ++i) {
     std::string prefix =
         "Modifier" +
@@ -567,7 +573,7 @@ void OnResponseForPaymentRequestOnUiThread(
     const url::Origin& sw_origin,
     const std::string& payment_request_id,
     PaymentAppProvider::InvokePaymentAppCallback callback,
-    payments::mojom::PaymentHandlerResponsePtr response) {
+    PaymentHandlerResponsePtr response) {
   auto* dev_tools = GetDevToolsForInstanceGroup(instance_group, sw_origin);
   if (dev_tools) {
     std::stringstream response_type;
@@ -618,7 +624,7 @@ void PaymentAppProviderImpl::InvokePaymentApp(
     BrowserContext* browser_context,
     int64_t registration_id,
     const url::Origin& sw_origin,
-    payments::mojom::PaymentRequestEventDataPtr event_data,
+    PaymentRequestEventDataPtr event_data,
     InvokePaymentAppCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -653,7 +659,7 @@ void PaymentAppProviderImpl::InvokePaymentApp(
 
 void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
     WebContents* web_contents,
-    payments::mojom::PaymentRequestEventDataPtr event_data,
+    PaymentRequestEventDataPtr event_data,
     const std::string& app_name,
     const SkBitmap& app_icon,
     const std::string& sw_js_url,
@@ -702,7 +708,7 @@ void PaymentAppProviderImpl::CanMakePayment(
     int64_t registration_id,
     const url::Origin& sw_origin,
     const std::string& payment_request_id,
-    payments::mojom::CanMakePaymentEventDataPtr event_data,
+    CanMakePaymentEventDataPtr event_data,
     PaymentEventResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

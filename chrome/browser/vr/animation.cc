@@ -183,7 +183,8 @@ void Animation::TickInternal(base::TimeTicks monotonic_time,
   StartKeyframeModels(monotonic_time, include_infinite_animations);
 
   for (auto& keyframe_model : keyframe_models_) {
-    if (!include_infinite_animations && keyframe_model->iterations() < 0)
+    if (!include_infinite_animations &&
+        keyframe_model->iterations() == std::numeric_limits<double>::infinity())
       continue;
     cc::KeyframeEffect::TickKeyframeModel(monotonic_time, keyframe_model.get(),
                                           target_);
@@ -207,7 +208,8 @@ void Animation::FinishAll() {
   TickInternal(base::TimeTicks::Max(), include_infinite_animations);
 #ifndef NDEBUG
   for (auto& keyframe_model : keyframe_models_) {
-    DCHECK_GT(0, keyframe_model->iterations());
+    DCHECK_EQ(std::numeric_limits<double>::infinity(),
+              keyframe_model->iterations());
   }
 #endif
 }
@@ -286,7 +288,8 @@ void Animation::StartKeyframeModels(base::TimeTicks monotonic_time,
                                     bool include_infinite_animations) {
   cc::TargetProperties animated_properties;
   for (auto& keyframe_model : keyframe_models_) {
-    if (!include_infinite_animations && keyframe_model->iterations() < 0)
+    if (!include_infinite_animations &&
+        keyframe_model->iterations() == std::numeric_limits<double>::infinity())
       continue;
     if (keyframe_model->run_state() == cc::KeyframeModel::RUNNING ||
         keyframe_model->run_state() == cc::KeyframeModel::PAUSED) {
@@ -294,7 +297,8 @@ void Animation::StartKeyframeModels(base::TimeTicks monotonic_time,
     }
   }
   for (auto& keyframe_model : keyframe_models_) {
-    if (!include_infinite_animations && keyframe_model->iterations() < 0)
+    if (!include_infinite_animations &&
+        keyframe_model->iterations() == std::numeric_limits<double>::infinity())
       continue;
     if (!animated_properties[keyframe_model->target_property_id()] &&
         keyframe_model->run_state() ==

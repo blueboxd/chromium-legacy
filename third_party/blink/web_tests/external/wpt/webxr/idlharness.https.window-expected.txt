@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 200 tests; 198 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 208 tests; 199 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Navigator: original interface defined
@@ -8,6 +8,7 @@ PASS Partial dictionary WebGLContextAttributes: original dictionary defined
 PASS Partial dictionary WebGLContextAttributes: member names are unique
 PASS Partial interface mixin WebGLRenderingContextBase: original interface mixin defined
 PASS Partial interface mixin WebGLRenderingContextBase: member names are unique
+PASS Partial interface Navigator[2]: member names are unique
 PASS Partial interface mixin NavigatorID: member names are unique
 FAIL WebGLRenderingContext includes WebGLRenderingContextBase: member names are unique assert_true: member canvas is unique expected true got false
 FAIL WebGLRenderingContext includes WebGLRenderingContextOverloads: member names are unique assert_true: member bufferData is unique expected true got false
@@ -198,6 +199,13 @@ PASS XRReferenceSpaceEvent interface: existence and properties of interface prot
 PASS XRReferenceSpaceEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRReferenceSpaceEvent interface: attribute referenceSpace
 PASS XRReferenceSpaceEvent interface: attribute transform
+FAIL XRPermissionStatus interface: existence and properties of interface object assert_own_property: self does not have own property "XRPermissionStatus" expected property "XRPermissionStatus" missing
+FAIL XRPermissionStatus interface object length assert_own_property: self does not have own property "XRPermissionStatus" expected property "XRPermissionStatus" missing
+FAIL XRPermissionStatus interface object name assert_own_property: self does not have own property "XRPermissionStatus" expected property "XRPermissionStatus" missing
+FAIL XRPermissionStatus interface: existence and properties of interface prototype object assert_own_property: self does not have own property "XRPermissionStatus" expected property "XRPermissionStatus" missing
+FAIL XRPermissionStatus interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "XRPermissionStatus" expected property "XRPermissionStatus" missing
+FAIL XRPermissionStatus interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "XRPermissionStatus" expected property "XRPermissionStatus" missing
+FAIL XRPermissionStatus interface: attribute granted assert_own_property: self does not have own property "XRPermissionStatus" expected property "XRPermissionStatus" missing
 PASS Navigator interface: attribute xr
 PASS Navigator interface: navigator must inherit property "xr" with the proper type
 Harness: the test ran to completion.

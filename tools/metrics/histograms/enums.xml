@@ -26757,6 +26757,10 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3177" label="BreakIteratorTypeLine"/>
   <int value="3178" label="V8FileSystemDirectoryHandle_Resolve_Method"/>
   <int value="3179" label="V8FileSystemHandle_IsSameEntry_Method"/>
+  <int value="3180" label="V8RTCRtpSender_CreateEncodedAudioStreams_Method"/>
+  <int value="3181" label="V8RTCRtpSender_CreateEncodedVideoStreams_Method"/>
+  <int value="3182" label="V8RTCRtpReceiver_CreateEncodedAudioStreams_Method"/>
+  <int value="3183" label="V8RTCRtpReceiver_CreateEncodedVideoStreams_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

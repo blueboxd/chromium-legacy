@@ -74,6 +74,10 @@ class ServiceConnectionImpl : public ServiceConnection {
       uint32_t wear_level_threshold,
       mojom::CrosHealthdDiagnosticsService::RunNvmeWearLevelRoutineCallback
           callback) override;
+  void RunNvmeSelfTestRoutine(
+      mojom::NvmeSelfTestTypeEnum nvme_self_test_type,
+      mojom::CrosHealthdDiagnosticsService::RunNvmeSelfTestRoutineCallback
+          callback) override;
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
@@ -218,6 +222,16 @@ void ServiceConnectionImpl::RunNvmeWearLevelRoutine(
   BindCrosHealthdDiagnosticsServiceIfNeeded();
   cros_healthd_diagnostics_service_->RunNvmeWearLevelRoutine(
       wear_level_threshold, std::move(callback));
+}
+
+void ServiceConnectionImpl::RunNvmeSelfTestRoutine(
+    mojom::NvmeSelfTestTypeEnum self_test_type,
+    mojom::CrosHealthdDiagnosticsService::RunNvmeSelfTestRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunNvmeSelfTestRoutine(
+      self_test_type, std::move(callback));
 }
 
 void ServiceConnectionImpl::ProbeTelemetryInfo(

@@ -82,7 +82,7 @@
     <iron-collapse id="safetyCheckCollapse"
         opened="[[shouldShowChildren_(parentStatus_)]]">
       <div class="settings-box two-line" tabindex="0"
-          aria-label="[[getUpdatesAriaLabel_(updatesStatus_)]]">
+          aria-label="[[getUpdatesAriaLabel_(updatesDisplayString_)]]">
         <iron-icon icon="[[getUpdatesIcon_(updatesStatus_)]]"
             src="[[getUpdatesIconSrc_(updatesStatus_)]]"
             class$="[[getUpdatesIconClass_(updatesStatus_)]]">
@@ -90,7 +90,7 @@
         <div class="start settings-box-text">
           <div>$i18n{safetyCheckUpdatesPrimaryLabel}</div>
           <div class="secondary" no-search
-              inner-h-t-m-l="[[getUpdatesSubLabelText_(updatesStatus_)]]">
+              inner-h-t-m-l="[[updatesDisplayString_]]">
           </div>
         </div>
         <template is="dom-if"
@@ -110,7 +110,7 @@
         </template>
       </div>
       <div class="settings-box two-line" tabindex="0"
-          aria-label="[[getPasswordsAriaLabel_(passwordsStatus_)]]">
+          aria-label="[[getPasswordsAriaLabel_(passwordsDisplayString_)]]">
         <iron-icon icon="[[getPasswordsIcon_(passwordsStatus_)]]"
             src="[[getPasswordsIconSrc_(passwordsStatus_)]]"
             class$="[[getPasswordsIconClass_(passwordsStatus_)]]">
@@ -132,7 +132,7 @@
         </template>
       </div>
       <div class="settings-box two-line" tabindex="0"
-          aria-label="[[getSafeBrowsingAriaLabel_(safeBrowsingStatus_)]]">
+          aria-label="[[getSafeBrowsingAriaLabel_(safeBrowsingDisplayString_)]]">
         <iron-icon icon="[[getSafeBrowsingIcon_(safeBrowsingStatus_)]]"
             src="[[getSafeBrowsingIconSrc_(safeBrowsingStatus_)]]"
             class$="[[getSafeBrowsingIconClass_(safeBrowsingStatus_)]]">
@@ -140,7 +140,7 @@
         <div class="start settings-box-text">
           <div>$i18n{safeBrowsingSectionLabel}</div>
           <div class="secondary" no-search
-              inner-h-t-m-l="[[getSafeBrowsingSubLabelText_(safeBrowsingStatus_)]]">
+              inner-h-t-m-l="[[safeBrowsingDisplayString_]]">
           </div>
         </div>
         <template is="dom-if"
@@ -160,7 +160,7 @@
         </template>
       </div>
       <div class="settings-box two-line" tabindex="0"
-          aria-label="[[getExtensionsAriaLabel_(extensionsStatus_)]]">
+          aria-label="[[getExtensionsAriaLabel_(extensionsDisplayString_)]]">
         <iron-icon icon="[[getExtensionsIcon_(extensionsStatus_)]]"
             src="[[getExtensionsIconSrc_(extensionsStatus_)]]"
             class$="[[getExtensionsIconClass_(extensionsStatus_)]]">

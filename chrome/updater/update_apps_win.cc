@@ -4,7 +4,6 @@
 
 #include "chrome/updater/update_apps.h"
 
-#include "base/memory/scoped_refptr.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/update_service_in_process.h"
 

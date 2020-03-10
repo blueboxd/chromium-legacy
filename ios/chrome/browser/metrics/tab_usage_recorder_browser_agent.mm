@@ -521,12 +521,11 @@ void TabUsageRecorderBrowserAgent::WebStateActivatedAt(
     web::WebState* old_web_state,
     web::WebState* new_web_state,
     int active_index,
-    int reason) {
-  if ((reason & WebStateListObserver::CHANGE_REASON_ACTIVATED) ||
-      (reason & WebStateListObserver::CHANGE_REASON_CLOSED) ||
-      (reason & WebStateListObserver::CHANGE_REASON_INSERTED)) {
-    RecordTabSwitched(old_web_state, new_web_state);
-  }
+    ActiveWebStateChangeReason reason) {
+  if (reason == ActiveWebStateChangeReason::Replaced)
+    return;
+
+  RecordTabSwitched(old_web_state, new_web_state);
 }
 
 void TabUsageRecorderBrowserAgent::SessionRestorationFinished(

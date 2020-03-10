@@ -65,7 +65,11 @@ void StreamFactory::CreateInputStream(
     // If the buffer size is incorrect, the data can't be fed into the APM.
     // This should never happen unless a renderer misbehaves.
     mojo::Remote<media::mojom::AudioLog> log(std::move(pending_log));
-    log->OnLogMessage("Invalid APM config.");
+
+    log->OnLogMessage(
+        "audio::SF::" +
+        base::StringPrintf("%s => (ERROR: Invalid APM configuration)",
+                           __func__));
     log->OnError();
     // The callback must still be invoked or mojo complains.
     std::move(created_callback).Run(nullptr, false, base::nullopt);

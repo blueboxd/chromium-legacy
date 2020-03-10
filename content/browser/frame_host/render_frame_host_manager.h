@@ -260,6 +260,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host,
                         bool was_caused_by_user_gesture,
                         bool is_same_document_navigation,
+                        bool clear_proxies_on_commit,
                         const blink::FramePolicy& frame_policy);
 
   // Called when this frame's opener is changed to the frame specified by
@@ -721,14 +722,19 @@ class CONTENT_EXPORT RenderFrameHostManager
   // In that case, |pending_rfh| is the RenderFrameHost to be restored, and
   // |pending_bfcache_entry| provides additional state to be restored, such as
   // proxies.
+  // |clear_proxies_on_commit| Indicates if the proxies and opener must be
+  // removed during the commit. This can happen following some BrowsingInstance
+  // swaps, such as those for COOP.
   void CommitPending(
       std::unique_ptr<RenderFrameHostImpl> pending_rfh,
-      std::unique_ptr<BackForwardCacheImpl::Entry> pending_bfcache_entry);
+      std::unique_ptr<BackForwardCacheImpl::Entry> pending_bfcache_entry,
+      bool clear_proxies_on_commit);
 
   // Helper to call CommitPending() in all necessary cases.
   void CommitPendingIfNecessary(RenderFrameHostImpl* render_frame_host,
                                 bool was_caused_by_user_gesture,
-                                bool is_same_document_navigation);
+                                bool is_same_document_navigation,
+                                bool clear_proxies_on_commit);
 
   // Commits given frame policy when the renderer's frame navigates.
   void CommitFramePolicy(const blink::FramePolicy& frame_policy);

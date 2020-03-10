@@ -357,8 +357,9 @@ void ProfileAttributesStorage::DownloadHighResAvatar(
   std::unique_ptr<ProfileAvatarDownloader>& current_downloader =
       avatar_images_downloads_in_progress_[file_name];
   current_downloader.reset(new ProfileAvatarDownloader(
-      icon_index, base::Bind(&ProfileAttributesStorage::SaveAvatarImageAtPath,
-                             AsWeakPtr(), profile_path)));
+      icon_index,
+      base::BindOnce(&ProfileAttributesStorage::SaveAvatarImageAtPathNoCallback,
+                     AsWeakPtr(), profile_path)));
 
   current_downloader->Start();
 }
@@ -433,4 +434,13 @@ void ProfileAttributesStorage::OnAvatarPictureSaved(
     std::move(callback).Run();
 
   NotifyOnProfileHighResAvatarLoaded(profile_path);
+}
+
+void ProfileAttributesStorage::SaveAvatarImageAtPathNoCallback(
+    const base::FilePath& profile_path,
+    gfx::Image image,
+    const std::string& key,
+    const base::FilePath& image_path) {
+  SaveAvatarImageAtPath(profile_path, image, key, image_path,
+                        base::OnceClosure());
 }

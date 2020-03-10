@@ -170,15 +170,6 @@ Polymer({
     },
 
     /**
-     * Message displayed on SAML interstitial page.
-     * @private
-     */
-    samlInterstitialMessage_: {
-      type: String,
-      computed: 'calculateSamlMessage_(locale, samlInterstitialDomain_)',
-    },
-
-    /**
      * Contains the security token PIN dialog parameters object when the dialog
      * is shown. Is null when no PIN dialog is shown.
      * @type {OobeTypes.SecurityTokenPinDialogParameter}
@@ -1602,17 +1593,6 @@ Polymer({
     this.authenticatorParams_.email = '';
     this.screenMode_ = AuthMode.DEFAULT;
     this.loadAuthenticator_(false /* doSamlRedirect */);
-  },
-
-  /**
-   * Calculates samlInterstitialMessage_, as it can not be easily evaluated via
-   * current i18n functions (HTML + substitutions).
-   * @param {string} locale
-   * @param {string} domain
-   * @private
-   */
-  calculateSamlMessage_(locale, domain) {
-    return loadTimeData.getStringF('samlInterstitialMessage', domain);
   },
 
   /**

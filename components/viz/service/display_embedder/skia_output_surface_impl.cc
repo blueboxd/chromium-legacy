@@ -198,15 +198,6 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     gfx::BufferFormat format,
                                     bool use_stencil) {
-  Reshape(size, device_scale_factor, color_space, format, use_stencil, false);
-}
-
-void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
-                                    float device_scale_factor,
-                                    const gfx::ColorSpace& color_space,
-                                    gfx::BufferFormat format,
-                                    bool use_stencil,
-                                    bool was_forced) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!size.IsEmpty());
 
@@ -229,7 +220,6 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
   color_space_ = color_space;
   is_hdr_ = color_space_.IsHDR();
   size_ = size;
-  reshape_format_ = format;
   characterization_ = CreateSkSurfaceCharacterization(
       size, GetResourceFormat(format), false /* mipmap */,
       color_space_.ToSkColorSpace(), true /* is_root_render_pass */);

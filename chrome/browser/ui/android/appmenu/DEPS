@@ -2,7 +2,7 @@ noparent = True
 include_rules = [
   "+base/android",
   "+base/test/android",
-  "+chrome/browser/android/lifecycle",
+  "+chrome/lib/lifecycle/public",
   "+chrome/test/android",
   "+components/browser_ui/styles/android",
   "+components/browser_ui/widget/android",

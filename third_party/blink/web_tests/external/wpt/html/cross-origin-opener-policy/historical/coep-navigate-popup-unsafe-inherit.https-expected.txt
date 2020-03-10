@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL Popup navigating to same-origin with coop unsafe-inherit/coep assert_equals: Openee browsing context closed expected true but got false
-FAIL Popup navigating to same-site with coop unsafe-inherit/coep assert_equals: Openee browsing context closed expected true but got false
-FAIL Popup navigating to same-origin with coop unsafe-inherit/no coep assert_equals: Openee browsing context closed expected true but got false
-FAIL Popup navigating to same-site with coop unsafe-inherit/no coep assert_equals: Openee browsing context closed expected true but got false
-Harness: the test ran to completion.
-

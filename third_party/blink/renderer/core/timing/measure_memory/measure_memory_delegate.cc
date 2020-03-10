@@ -153,11 +153,11 @@ HeapHashMap<Member<const Frame>, size_t> GroupByFrame(
 }
 
 MeasureMemoryBreakdown* CreateMeasureMemoryBreakdown(size_t bytes,
-                                                     const String& type,
+                                                     const Vector<String>& type,
                                                      const String& url) {
   MeasureMemoryBreakdown* result = MeasureMemoryBreakdown::Create();
   result->setBytes(bytes);
-  result->setType(type);
+  result->setUserAgentSpecificType(type);
   result->setAttribution(url.length() ? Vector<String>{url} : Vector<String>());
   return result;
 }
@@ -191,16 +191,20 @@ void MeasureMemoryDelegate::MeasurementComplete(
   HeapHashMap<Member<const Frame>, size_t> per_frame(
       GroupByFrame(frame, context_sizes));
   size_t attributed_size = 0;
+  const String kWindow("Window");
+  const String kJS("JS");
   for (const auto& it : per_frame) {
     attributed_size += it.value;
-    breakdown.push_back(
-        CreateMeasureMemoryBreakdown(it.value, "window/js", GetUrl(it.key)));
+    breakdown.push_back(CreateMeasureMemoryBreakdown(
+        it.value, Vector<String>{kWindow, kJS}, GetUrl(it.key)));
   }
+  const String kDetached("Detached");
+  const String kShared("Shared");
   size_t detached_size = total_size - attributed_size;
-  breakdown.push_back(
-      CreateMeasureMemoryBreakdown(detached_size, "window/js/detached", ""));
-  breakdown.push_back(
-      CreateMeasureMemoryBreakdown(unattributed_size, "window/js/shared", ""));
+  breakdown.push_back(CreateMeasureMemoryBreakdown(
+      detached_size, Vector<String>{kWindow, kJS, kDetached}, ""));
+  breakdown.push_back(CreateMeasureMemoryBreakdown(
+      unattributed_size, Vector<String>{kWindow, kJS, kShared}, ""));
   result->setBreakdown(breakdown);
   v8::Local<v8::Promise::Resolver> promise_resolver =
       promise_resolver_.NewLocal(isolate_);

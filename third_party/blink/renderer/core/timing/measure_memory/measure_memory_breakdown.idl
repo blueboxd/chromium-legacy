@@ -8,5 +8,5 @@
 dictionary MeasureMemoryBreakdown {
   unsigned long long bytes;
   sequence<DOMString> attribution;
-  DOMString type;
+  sequence<DOMString> userAgentSpecificType;
 };

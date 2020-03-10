@@ -113,6 +113,14 @@ class ServiceConnection {
       mojom::CrosHealthdDiagnosticsService::RunNvmeWearLevelRoutineCallback
           callback) = 0;
 
+  // Requests that cros_healthd runs the NVMe self-test routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunNvmeSelfTestRoutine(
+      mojom::NvmeSelfTestTypeEnum nvme_self_test_type,
+      mojom::CrosHealthdDiagnosticsService::RunNvmeSelfTestRoutineCallback
+          callback) = 0;
+
   // Gather pieces of information about the platform. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.

@@ -350,4 +350,42 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// Test that on iPhones, when the popup is scrolled, the keyboard is dismissed
+// but the omnibox is still expanded and the suggestions are visible.
+- (void)testScrollingDismissesKeyboardOnPhones {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      performAction:grey_typeText(@"hello")];
+
+  // Matcher for a URL-what-you-typed suggestion.
+  id<GREYMatcher> row = grey_allOf(
+      grey_kindOfClassName(@"OmniboxPopupRowCell"),
+      grey_descendant(
+          chrome_test_util::StaticTextWithAccessibilityLabel(@"hello")),
+      grey_sufficientlyVisible(), nil);
+
+  [[EarlGrey selectElementWithMatcher:row]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  GREYAssertTrue([ChromeEarlGrey isKeyboardShownWithError:nil],
+                 @"Keyboard Should be Shown");
+
+  // Scroll the popup.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kOmniboxPopupTableViewAccessibilityIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
+
+  [[EarlGrey selectElementWithMatcher:row]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // The keyboard should only be dismissed on phones. Ipads, even in
+  // multitasking, are considered tall enough to fit all suggestions.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    GREYAssertTrue([ChromeEarlGrey isKeyboardShownWithError:nil],
+                   @"Keyboard Should be Shown");
+  } else {
+    GREYAssertFalse([ChromeEarlGrey isKeyboardShownWithError:nil],
+                    @"Keyboard Should not be Shown");
+  }
+}
+
 @end

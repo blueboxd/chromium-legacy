@@ -244,7 +244,7 @@ const NSString* kDocumentMimeType = @"application/pdf";
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
-                     reason:(int)reason {
+                     reason:(ActiveWebStateChangeReason)reason {
   if (!newWebState)
     return;
   web::NavigationItem* pendingItem =

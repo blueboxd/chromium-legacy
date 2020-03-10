@@ -286,6 +286,7 @@ Arama yapmak için herhangi bir kelimeye dokunup basılı tutun. Aramanızı has
 <translation id="3058498974290601450">Senkronizasyonu istediğiniz zaman ayarlardan açabilirsiniz</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> yer işareti}other{<ph name="BOOKMARKS_COUNT_MANY" /> yer işareti}}</translation>
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
+<translation id="3114012059975132928">Video oynatıcı</translation>
 <translation id="3123473560110926937">Bazı sitelerde engellendi</translation>
 <translation id="3123734510202723619">Duyurular</translation>
 <translation id="3137521801621304719">Gizli moddan çık</translation>
@@ -352,6 +353,7 @@ Arama yapmak için herhangi bir kelimeye dokunup basılı tutun. Aramanızı has
 <translation id="3587482841069643663">Tümü</translation>
 <translation id="358794129225322306">Bir sitenin otomatik olarak birden fazla dosya indirmesine izin verir.</translation>
 <translation id="3590487821116122040">Chrome'un önemli olmadığını düşündüğü site depolama alanı (ör. kayıtlı ayarları bulunmayan veya sık ziyaret etmediğiniz siteler)</translation>
+<translation id="3594780231884063836">Videonun sesini kapat</translation>
 <translation id="3599863153486145794">Oturumunuzun açık olduğu tüm cihazlarda geçmişi temizler. Google Hesabınızın <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde başka biçimlerde tarama geçmişi olabilir.</translation>
 <translation id="3600792891314830896">Ses çalan sitelerin sesini kapat</translation>
 <translation id="3616113530831147358">Ses</translation>
@@ -605,6 +607,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5456381639095306749">Sayfayı indir</translation>
 <translation id="548278423535722844">Haritalar uygulamasında aç</translation>
 <translation id="5487521232677179737">Verileri temizle</translation>
+<translation id="5489227211564503167">Geçen süre: <ph name="ELAPSED_TIME" />/<ph name="TOTAL_TIME" /></translation>
 <translation id="5494752089476963479">Araya giren veya yanıltıcı reklamlar gösteren sitelerde reklamları engelle</translation>
 <translation id="5500777121964041360">Bulunduğunuz ülkede kullanılamayabilir</translation>
 <translation id="5505264765875738116">Siteler bildirim göndermek isteyemez</translation>
@@ -665,6 +668,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5864419784173784555">Başka bir indirme işlemi bekleniyor…</translation>
 <translation id="5865733239029070421">Kullanım istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak gönderir</translation>
 <translation id="5869522115854928033">Kayıtlı şifreler</translation>
+<translation id="5876056640971328065">Videoyu duraklat</translation>
 <translation id="5884076754568147479">Google, görevleri tamamlamanıza yardımcı olmak için Asistan'ı kullandığınız sitelerin URL'lerinin ve içeriklerinin yanı sıra Asistan aracılığıyla gönderdiğiniz bilgileri alır</translation>
 <translation id="5902828464777634901">Çerezler dahil bu web sitesinin depoladığı tüm yerel veriler silinecek.</translation>
 <translation id="5919204609460789179">Senkronizasyonu başlatmak için <ph name="PRODUCT_NAME" /> adlı uygulamayı güncelleyin</translation>
@@ -728,6 +732,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6381421346744604172">Web sitelerini karart</translation>
 <translation id="6388207532828177975">Temizle ve sıfırla</translation>
 <translation id="6395288395575013217">BAĞLANTI</translation>
+<translation id="6397616442223433927">İnternete yeniden bağlanıldı</translation>
 <translation id="6404511346730675251">Yer işaretini düzenle</translation>
 <translation id="6406506848690869874">Senkronizasyon</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> üzerinden artırılmış gerçekliğe (AR) girilsin mi?</translation>
@@ -796,6 +801,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6846298663435243399">Yükleniyor…</translation>
 <translation id="6850409657436465440">İndirme işleminiz hâlâ devam ediyor</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> sekme kapatıldı</translation>
+<translation id="6864395892908308021">Bu cihaz NFC'yi okuyamıyor</translation>
 <translation id="6864459304226931083">Resmi indir</translation>
 <translation id="6865313869410766144">Form otomatik doldurma verileri</translation>
 <translation id="6884306546558072722">Çevrimdışıyken de keşfetmeye devam edin</translation>
@@ -916,6 +922,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7810647596859435254">Birlikte aç…</translation>
 <translation id="7821588508402923572">Veri tasarruflarınız burada görünür</translation>
+<translation id="783819812427904514">Videonun sesini aç</translation>
 <translation id="784934925303690534">Zaman aralığı</translation>
 <translation id="7851858861565204677">Diğer cihazlar</translation>
 <translation id="7875915731392087153">E-posta oluşturun</translation>

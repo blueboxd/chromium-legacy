@@ -544,7 +544,8 @@ bool RenderWidgetHostImpl::ShouldShowStaleContentOnEviction() {
 
 void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   CancelKeyboardLock();
-  RejectMouseLockOrUnlockIfNecessary();
+  RejectMouseLockOrUnlockIfNecessary(
+      blink::mojom::PointerLockResult::kElementDestroyed);
 
   if (process_->IsInitializedAndNotDead() && !owner_delegate()) {
     // Tell the RendererWidget to close. We only want to do this if the
@@ -613,7 +614,8 @@ void RenderWidgetHostImpl::WasHidden() {
   if (is_hidden_)
     return;
 
-  RejectMouseLockOrUnlockIfNecessary();
+  RejectMouseLockOrUnlockIfNecessary(
+      blink::mojom::PointerLockResult::kWrongDocument);
 
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::WasHidden");
   is_hidden_ = true;
@@ -1022,7 +1024,8 @@ void RenderWidgetHostImpl::SendMouseLockLost() {
 
 void RenderWidgetHostImpl::ViewDestroyed() {
   CancelKeyboardLock();
-  RejectMouseLockOrUnlockIfNecessary();
+  RejectMouseLockOrUnlockIfNecessary(
+      blink::mojom::PointerLockResult::kElementDestroyed);
 
   // TODO(evanm): tracking this may no longer be necessary;
   // eliminate this function if so.
@@ -1634,8 +1637,8 @@ void RenderWidgetHostImpl::FilterDropData(DropData* drop_data) {
   }
 }
 
-void RenderWidgetHostImpl::SetCursor(const CursorInfo& cursor_info) {
-  SetCursor(WebCursor(cursor_info));
+void RenderWidgetHostImpl::SetCursor(const ui::Cursor& cursor) {
+  SetCursor(WebCursor(cursor));
 }
 
 RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {
@@ -1933,13 +1936,15 @@ void RenderWidgetHostImpl::ImeCancelComposition() {
                                              gfx::Range::InvalidRange(), 0, 0);
 }
 
-void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {
+void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary(
+    blink::mojom::PointerLockResult reason) {
   DCHECK(!pending_mouse_lock_request_ || !IsMouseLocked());
+  DCHECK(reason != blink::mojom::PointerLockResult::kSuccess);
   if (pending_mouse_lock_request_) {
     DCHECK(request_mouse_callback_);
     pending_mouse_lock_request_ = false;
     mouse_lock_raw_movement_ = false;
-    std::move(request_mouse_callback_).Run(/*success=*/false);
+    std::move(request_mouse_callback_).Run(reason);
 
   } else if (IsMouseLocked()) {
     view_->UnlockMouse();
@@ -2416,7 +2421,7 @@ void RenderWidgetHostImpl::RequestMouseLock(
     bool unadjusted_movement,
     InputRouterImpl::RequestMouseLockCallback response) {
   if (pending_mouse_lock_request_) {
-    std::move(response).Run(/*success=*/false);
+    std::move(response).Run(blink::mojom::PointerLockResult::kAlreadyLocked);
     return;
   }
 
@@ -2435,14 +2440,19 @@ void RenderWidgetHostImpl::RequestMouseLock(
   }
 
   // Directly reject or approve the mouse lock based on privilege.
-  GotResponseToLockMouseRequest(allow_privileged_mouse_lock_ && privileged);
+  if (allow_privileged_mouse_lock_ && privileged)
+    GotResponseToLockMouseRequest(blink::mojom::PointerLockResult::kSuccess);
+  else
+    GotResponseToLockMouseRequest(
+        blink::mojom::PointerLockResult::kPermissionDenied);
 }
 
 void RenderWidgetHostImpl::UnlockMouse() {
   // Got unlock request from renderer. Will update |is_last_unlocked_by_target_|
   // for silent re-lock.
   const bool was_mouse_locked = !pending_mouse_lock_request_ && IsMouseLocked();
-  RejectMouseLockOrUnlockIfNecessary();
+  RejectMouseLockOrUnlockIfNecessary(
+      blink::mojom::PointerLockResult::kUserRejected);
   if (was_mouse_locked)
     is_last_unlocked_by_target_ = true;
 }
@@ -2709,12 +2719,11 @@ bool RenderWidgetHostImpl::IsIgnoringInputEvents() const {
          delegate_->ShouldIgnoreInputEvents();
 }
 
-bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
-  if (!allowed) {
-    RejectMouseLockOrUnlockIfNecessary();
-    return false;
+bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(
+    blink::mojom::PointerLockResult response) {
+  if (response != blink::mojom::PointerLockResult::kSuccess) {
+    RejectMouseLockOrUnlockIfNecessary(response);
   }
-
   if (!pending_mouse_lock_request_) {
     // This is possible, e.g., the plugin sends us an unlock request before
     // the user allows to lock to mouse.
@@ -2723,13 +2732,15 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
 
   DCHECK(request_mouse_callback_);
   pending_mouse_lock_request_ = false;
-  if (!view_ || !view_->HasFocus() ||
-      !view_->LockMouse(mouse_lock_raw_movement_)) {
-    std::move(request_mouse_callback_).Run(/*success=*/false);
-    return false;
+  if (view_ && view_->HasFocus()) {
+    blink::mojom::PointerLockResult result =
+        view_->LockMouse(mouse_lock_raw_movement_);
+    std::move(request_mouse_callback_).Run(result);
+    return result == blink::mojom::PointerLockResult::kSuccess;
   }
 
-  std::move(request_mouse_callback_).Run(/*success=*/true);
+  std::move(request_mouse_callback_)
+      .Run(blink::mojom::PointerLockResult::kSuccess);
   return true;
 }
 

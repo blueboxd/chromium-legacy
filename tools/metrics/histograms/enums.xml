@@ -26698,8 +26698,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3118" label="LongTaskBufferFull"/>
   <int value="3119" label="HTMLMetaElementMonetization"/>
   <int value="3120" label="HTMLLinkElementMonetization"/>
-  <int value="3121" label="InputTypeCheckboxRenderedNonSquare"/>
-  <int value="3122" label="InputTypeRadioRenderedNonSquare"/>
+  <int value="3121" label="InputTypeCheckboxRenderedNonSquare_Obsolete"/>
+  <int value="3122" label="InputTypeRadioRenderedNonSquare_Obsolete"/>
   <int value="3123" label="WebkitBoxPackJustifyDoesSomething"/>
   <int value="3124" label="WebkitBoxPackCenterDoesSomething"/>
   <int value="3125" label="WebkitBoxPackEndDoesSomething"/>
@@ -32384,6 +32384,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Ext4 Dir Encryption"/>
 </enum>
 
+<enum name="HomepageLocationType">
+  <int value="0" label="POLICY_NTP"/>
+  <int value="1" label="POLICY_OTHER"/>
+  <int value="2" label="PARTNER_PROVIDED_NTP"/>
+  <int value="3" label="PARTNER_PROVIDED_OTHER"/>
+  <int value="4" label="USER_CUSTOMIZED_NTP"/>
+  <int value="5" label="USER_CUSTOMIZED_OTHER"/>
+  <int value="6" label="DEFAULT_NTP"/>
+</enum>
+
 <enum name="HotseatInAppGesture">
   <int value="0" label="Swipe up the hotseat"/>
   <int value="1" label="Swipe down the hotseat"/>
@@ -36888,6 +36898,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="First item"/>
   <int value="2" label="Any middle item"/>
   <int value="3" label="Last item"/>
+</enum>
+
+<enum name="LoadingPredictorOptimizationHintsReceiveStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Before navigation finish"/>
+  <int value="2" label="After navigation finish"/>
+  <int value="3" label="After redirect or next navigation started"/>
 </enum>
 
 <enum name="LoadLibraryResultCategory">
@@ -59231,6 +59248,20 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Error dialog"/>
 </enum>
 
+<enum name="SharingHubBottomRowIndex">
+  <summary>
+    Index of a third party app in the bottom row of the sharing hub on Android.
+  </summary>
+  <int value="0"/>
+  <int value="1"/>
+  <int value="2"/>
+  <int value="3"/>
+  <int value="4"/>
+  <int value="5"/>
+  <int value="6"/>
+  <int value="7"/>
+</enum>
+
 <enum name="SharingMajorVersionComparison">
   <int value="0" label="Unknown"/>
   <int value="1" label="Sender version is lower"/>
@@ -60820,7 +60851,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="From prompt in Settings"/>
 </enum>
 
-<enum name="SoftwareReporterExperimentError">
+<enum name="SoftwareReporterConfigurationError">
   <int value="0" label="Bad tag"/>
   <int value="1" label="Bad parameters"/>
   <int value="2" label="Missing parameters"/>

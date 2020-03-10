@@ -42,7 +42,6 @@ class WebContentsViewChildFrame : public WebContentsView,
   RenderWidgetHostViewBase* CreateViewForChildWidget(
       RenderWidgetHost* render_widget_host) override;
   void SetPageTitle(const base::string16& title) override;
-  void RenderViewCreated(RenderViewHost* host) override;
   void RenderViewReady() override;
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host) override;

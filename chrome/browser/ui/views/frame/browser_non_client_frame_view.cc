@@ -144,26 +144,10 @@ SkColor BrowserNonClientFrameView::GetCaptionColor(
 
 SkColor BrowserNonClientFrameView::GetFrameColor(
     BrowserFrameActiveState active_state) const {
-  ThemeProperties::OverwritableByUserThemeProperty color_id;
-
-  color_id = ShouldPaintAsActive(active_state)
-                 ? ThemeProperties::COLOR_FRAME
-                 : ThemeProperties::COLOR_FRAME_INACTIVE;
-
-  if (frame_->ShouldUseTheme())
-    return GetFrameThemeProvider()->GetColor(color_id);
-
-  // Use ThemeSupplier.
-  web_app::AppBrowserController* app_controller =
-      browser_view_->browser()->app_controller();
-  if (app_controller && app_controller->GetThemeSupplier()) {
-    CustomThemeSupplier* theme = app_controller->GetThemeSupplier();
-    SkColor result;
-    if (theme->GetColor(color_id, &result))
-      return result;
-  }
-
-  return GetUnthemedColor(color_id);
+  return GetFrameThemeProvider()->GetColor(
+      ShouldPaintAsActive(active_state)
+          ? ThemeProperties::COLOR_FRAME
+          : ThemeProperties::COLOR_FRAME_INACTIVE);
 }
 
 void BrowserNonClientFrameView::UpdateFrameColor() {
@@ -180,8 +164,8 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
           : ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE;
   // The vertical tab separator might show through the stroke if the stroke
   // color is translucent.  To prevent this, always use an opaque stroke color.
-  return color_utils::GetResultingPaintColor(GetThemeOrDefaultColor(color_id),
-                                             GetFrameColor());
+  return color_utils::GetResultingPaintColor(
+      GetFrameThemeProvider()->GetColor(color_id), GetFrameColor());
 }
 
 base::Optional<int> BrowserNonClientFrameView::GetCustomBackgroundId(
@@ -397,22 +381,4 @@ const ui::ThemeProvider* BrowserNonClientFrameView::GetFrameThemeProvider()
   // widget. This is done this way because it can happen prior to being inserted
   // into the view hierarchy.
   return frame_->GetThemeProvider();
-}
-
-SkColor BrowserNonClientFrameView::GetThemeOrDefaultColor(int color_id) const {
-  if (!frame_->ShouldUseTheme())
-    return GetUnthemedColor(color_id);
-
-  // During shutdown, there may no longer be a widget, and thus no theme
-  // provider.
-  const auto* theme_provider = GetThemeProvider();
-  return theme_provider ? theme_provider->GetColor(color_id)
-                        : gfx::kPlaceholderColor;
-}
-
-SkColor BrowserNonClientFrameView::GetUnthemedColor(int color_id) const {
-  DCHECK(!frame_->ShouldUseTheme());
-  return ThemeProperties::GetDefaultColor(
-      color_id, browser_view_->IsIncognito(),
-      GetNativeTheme()->ShouldUseDarkColors());
 }

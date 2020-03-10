@@ -12,7 +12,7 @@
 namespace content {
 
 gfx::NativeCursor WebCursor::GetNativeCursor() {
-  if (info_.type == ui::mojom::CursorType::kCustom) {
+  if (cursor_.type() == ui::mojom::CursorType::kCustom) {
     if (!custom_cursor_) {
       custom_cursor_.emplace(ui::mojom::CursorType::kCustom);
       SkBitmap bitmap;
@@ -26,14 +26,15 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
     }
     return *custom_cursor_;
   }
-  return info_.type;
+  return cursor_.type();
 }
 
 void WebCursor::CreateScaledBitmapAndHotspotFromCustomData(SkBitmap* bitmap,
                                                            gfx::Point* hotspot,
                                                            float* scale) {
-  *bitmap = info_.custom_image;
-  *hotspot = info_.hotspot;
+  DCHECK_EQ(ui::mojom::CursorType::kCustom, cursor_.type());
+  *bitmap = cursor_.custom_bitmap();
+  *hotspot = cursor_.custom_hotspot();
   *scale = GetCursorScaleFactor(bitmap);
   ui::ScaleAndRotateCursorBitmapAndHotpoint(*scale, rotation_, bitmap, hotspot);
 }
@@ -51,8 +52,8 @@ void WebCursor::SetDisplayInfo(const display::Display& display) {
 // ozone also has extra calculations for scale factor (taking max cursor size
 // into account).
 float WebCursor::GetCursorScaleFactor(SkBitmap* bitmap) {
-  DCHECK_NE(0, info_.image_scale_factor);
-  return device_scale_factor_ / info_.image_scale_factor;
+  DCHECK_NE(0, cursor_.image_scale_factor());
+  return device_scale_factor_ / cursor_.image_scale_factor();
 }
 #endif
 

@@ -317,11 +317,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
     NOT_REMOVABLE,  // Item is fixed and can never be removed.
   };
 
-  struct AppCenteringStrategy {
-    bool center_on_screen = false;
-    bool overflow = false;
-  };
-
   // Minimum distance before drag starts.
   static const int kMinimumDragDistance;
 
@@ -347,11 +342,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Returns the index of the item after which the separator should be shown,
   // or -1 if no separator is required.
   int GetSeparatorIndex() const;
-
-  // This method determines which centering strategy is adequate, returns that,
-  // and sets the |first_visible_index_| and |last_visible_index_| fields
-  // appropriately.
-  AppCenteringStrategy CalculateAppCenteringStrategy();
 
   // Sets the bounds of each view to its ideal bounds.
   void LayoutToIdealBounds();

@@ -26,7 +26,9 @@ class MODULES_EXPORT DOMTaskSignal final
   USING_GARBAGE_COLLECTED_MIXIN(DOMTaskSignal);
 
  public:
-  explicit DOMTaskSignal(Document*, WebSchedulingPriority);
+  enum class Type { kCreatedByController, kImplicit };
+
+  DOMTaskSignal(Document*, WebSchedulingPriority, Type);
   ~DOMTaskSignal() override;
 
   // task_signal.idl

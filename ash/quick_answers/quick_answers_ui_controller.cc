@@ -50,6 +50,7 @@ void QuickAnswersUiController::OnQuickAnswersViewPressed() {
   assistant_controller->StartTextInteraction(
       query_, /*allow_tts=*/false,
       chromeos::assistant::mojom::AssistantQuerySource::kQuickAnswers);
+  controller_->OnQuickAnswerClick();
 }
 
 void QuickAnswersUiController::Close() {

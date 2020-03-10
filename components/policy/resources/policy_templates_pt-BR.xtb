@@ -327,6 +327,11 @@
 
       Se a política não for configurada, o valor padrão "MultiProfileUserBehaviorMustBePrimary" será aplicado aos usuários gerenciados pela empresa, e "MultiProfileUserBehaviorUnrestricted" será usado para usuários não gerenciados.</translation>
 <translation id="1465619815762735808">Clique para reproduzir</translation>
+<translation id="1467633031685836974">Esse recurso permite que navegações de URL de hiperlinks e da barra de endereço busquem textos específicos em uma página da Web, rolando para o local desejado assim que o carregamento é concluído.
+
+Se você ativar ou não configurar essa política, a rolagem via URL para fragmentos de texto específicos em páginas da Web será ativada.
+
+Se você desativar essa política, a rolagem via URL para fragmentos de texto específicos será desativada.</translation>
 <translation id="1468707346106619889">Se essa política for configurada como "true", a área de trabalho unificada será
       ativada por padrão, o que permite que os aplicativos abranjam várias telas.
       O usuário pode desativar a área de trabalho unificada para telas individuais desmarcando-a
@@ -3390,6 +3395,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem menores que o tempo de espera de inatividade.</translation>
 <translation id="6097601282776163274">Ativar a coleta de dados anônimos inseridos no URL</translation>
 <translation id="6099853574908182288">Modo de cor de impressão padrão</translation>
+<translation id="6102342563050263313">Permitir rolagem para texto especificado em fragmentos de URL</translation>
 <translation id="6107642964266628393">Controla como e quando as atualizações do Chrome OS são aplicadas.</translation>
 <translation id="6111936128861357925">Permitir jogo easter egg de dinossauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
@@ -4373,6 +4379,9 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 <translation id="7713608076604149344">Restrições de downloads</translation>
 <translation id="7715711044277116530">Percentual pelo qual calcular o intervalo de escurecimento da tela no modo de apresentação</translation>
 <translation id="7717938661004793600">Configurar recursos de acessibilidade do <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="7724652568947700864">Se essa política for definida, todos os tipos de dados especificados serão excluídos da sincronização, tanto para o Google Sync quanto para a sincronização de perfil de roaming. Isso pode ser benéfico para reduzir o tamanho do perfil de roaming ou limitar o tipo de dado que será enviado aos servidores do Google Sync.
+
+      Atualmente, os tipos de dados para a política são: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" e "wifiConfiguration". Esses nomes têm diferenciação de letras maiúsculas e minúsculas.</translation>
 <translation id="7731026922044991970">Reverter para o comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> legado para os cookies em todos os sites</translation>
 <translation id="7747447585227954402">Permite que dispositivos usem um <ph name="PLUGIN_VM_NAME" /> no <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749024457938190837">Extensões com permissão para pular a caixa de diálogo de confirmação ao enviar trabalhos de impressão por meio da API chrome.printing</translation>

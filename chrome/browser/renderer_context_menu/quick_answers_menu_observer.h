@@ -16,10 +16,6 @@ namespace ash {
 class QuickAnswersController;
 }
 
-namespace base {
-class TimeTicks;
-}
-
 class RenderViewContextMenuProxy;
 
 // A class that implements the quick answers menu.
@@ -73,9 +69,6 @@ class QuickAnswersMenuObserver
   std::unique_ptr<chromeos::quick_answers::QuickAnswer> quick_answer_;
 
   ash::QuickAnswersController* quick_answers_controller_ = nullptr;
-
-  // Time when the quick answer is received.
-  base::TimeTicks quick_answer_received_time_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_QUICK_ANSWERS_MENU_OBSERVER_H_

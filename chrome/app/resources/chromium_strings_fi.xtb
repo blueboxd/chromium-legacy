@@ -92,6 +92,7 @@
 <translation id="4708774505295300557">Joku on jo kirjautunut tällä tietokoneella Chromiumiin käyttäjätilillä <ph name="ACCOUNT_EMAIL_LAST" />. Luo uusi Chromium-käyttäjä, jos haluat pitää tiedot erillään.</translation>
 <translation id="4746050847053251315">Suljetaanko Chromium silti?</translation>
 <translation id="4748217263233248895">Chromiumin tärkeä tietoturvapäivitys on asennettu. Käynnistä selain uudelleen – palautamme avoimet välilehdet.</translation>
+<translation id="4750035648288509542">Melkein ajan tasalla. Viimeistele päivitys käynnistämällä Chromium uudelleen. Incognito-ikkunoita ei avata uudelleen.</translation>
 <translation id="479167709087336770">Tämä käyttää samaa oikeinkirjoituksen tarkistusta kuin Google Haku. Selaimeen kirjoittamasi teksti lähetetään Googlelle. Voit muuttaa tätä milloin tahansa asetuksista.</translation>
 <translation id="4888717733111232871">Chromiumin saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
 <translation id="4943838377383847465">Chromium on käynnissä taustalla</translation>

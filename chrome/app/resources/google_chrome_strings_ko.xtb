@@ -52,6 +52,7 @@
 <translation id="2309047409763057870">Chrome의 보조 설치이며 기본 브라우저로 설정할 수 없습니다.</translation>
 <translation id="2341767445688917208">Chrome OS에서 비밀번호를 동기화할 수 없습니다. 지금 문제를 해결해 주세요.</translation>
 <translation id="2348335408836342058">이 사이트에서 카메라와 마이크에 액세스하려면 Chrome에 권한이 필요합니다</translation>
+<translation id="234869673307233423">Chrome에서 비밀번호를 확인할 수 없습니다. 나중에 다시 시도하세요.</translation>
 <translation id="2429317896000329049">도메인에서 동기화를 사용할 수 없어 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="2467438592969358367">Chrome에서 비밀번호를 내보내려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
 <translation id="2485422356828889247">제거</translation>
@@ -72,6 +73,8 @@
 <translation id="2857540653560290388">Chrome 실행 중...</translation>
 <translation id="2871893339301912279">Chrome에 로그인되어 있습니다.</translation>
 <translation id="2888126860611144412">Chrome 정보</translation>
+<translation id="2929907241665500097">문제가 발생하여 Chrome이 업데이트되지 않았습니다. <ph name="BEGIN_LINK" />Chrome 업데이트 문제 및 업데이트 실패 문제 해결하기<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - 네트워크 로그인 - Chrome</translation>
 <translation id="3037838751736561277">Chrome이 백그라운드 모드로 실행 중입니다.</translation>
 <translation id="3065168410429928842">Chrome 탭</translation>
 <translation id="3080151273017101988">Chrome 종료 후에도 백그라운드 앱을 계속 실행</translation>
@@ -110,7 +113,9 @@
 <translation id="4331809312908958774">크롬 OS</translation>
 <translation id="4335235004908507846">Chrome이 정보 유출, 유해한 확장 프로그램 등으로부터 사용자를 보호해 줍니다.</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" />이(가) Chrome에 추가됨</translation>
+<translation id="4384570495110188418">로그인되어 있지 않으므로 Chrome에서 비밀번호를 확인할 수 없습니다.</translation>
 <translation id="4407807842708586359">Chrome OS</translation>
+<translation id="4450664632294415862">Chrome - 네트워크 로그인 - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Chrome에서 다른 작업이 진행 중입니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="4480040274068703980">로그인 중 오류가 발생하여 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="4561051373932531560">Chrome을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
@@ -120,6 +125,7 @@
 <translation id="4600710005438004015">Chrome을 최신 버전으로 업데이트하지 못했기 때문에 새로운 기능과 보안 수정 사항이 적용되지 않았습니다.</translation>
 <translation id="4631713731678262610">Chrome 메뉴에서 숨기기</translation>
 <translation id="4633000520311261472">Google에서는 Chrome의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
+<translation id="4653397506175047429">Chrome에서 일부 비밀번호를 확인할 수 없습니다. 24시간 후 다시 시도하세요.</translation>
 <translation id="4728575227883772061">확인되지 않은 오류로 설치에 실패했습니다. Chrome이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" />을(를) 사용하려면 Chrome을 다시 시작하세요.</translation>
 <translation id="4754614261631455953">Chrome Canary(mDNS-In)</translation>
@@ -157,6 +163,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome을 실행할 수 없습니다. 다시 시도해 보세요.</translation>
 <translation id="5895138241574237353">다시 시작</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - 네트워크 로그인</translation>
 <translation id="5940385492829620908">웹, 북마크 및 기타 Chrome 콘텐츠가 여기에 저장됩니다.</translation>
 <translation id="5941830788786076944">Chrome을 기본 브라우저로</translation>
 <translation id="6070348360322141662">보안 강화를 위해 Chrome에서 사용자 데이터를 암호화합니다.</translation>
@@ -212,6 +219,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7855730255114109580">Chrome이 최신 버전입니다.</translation>
 <translation id="7890208801193284374">컴퓨터를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
 <translation id="7896673875602241923">다른 사용자가 이전에 이 컴퓨터에서 <ph name="ACCOUNT_EMAIL_LAST" />(으)로 Chrome에 로그인했습니다. 새 Chrome 사용자를 만들어 정보를 별도로 관리하세요.</translation>
+<translation id="7905891027772979035">Chrome에서 확장 프로그램을 확인할 수 없습니다. 나중에 다시 시도하세요.</translation>
 <translation id="7916016681687251387">Chrome OS에서 데이터를 동기화할 수 없습니다. 지금 문제를 해결해 주세요.</translation>
 <translation id="7930071585467473040">Chrome에서 비밀번호를 복사하려고 합니다.</translation>
 <translation id="7962410387636238736">Windows XP와 Windows Vista가 더 이상 지원되지 않으므로 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다</translation>

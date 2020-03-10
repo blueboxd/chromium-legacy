@@ -28,11 +28,12 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
-import org.chromium.chrome.browser.partnercustomizations.HomepageManager.HomeButtonPreferenceState;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.homepage.HomepageMetricsEnums.HomeButtonPreferenceState;
+import org.chromium.chrome.browser.settings.homepage.HomepageMetricsEnums.HomepageLocationType;
 import org.chromium.chrome.browser.settings.homepage.HomepageSettings;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
@@ -40,6 +41,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -68,6 +70,7 @@ public class HomepagePolicyIntegrationTest {
     private static final String METRICS_HOME_BUTTON_STATE_ENUM =
             "Settings.ShowHomeButtonPreferenceStateManaged";
     private static final String METRICS_HOMEPAGE_IS_CUSTOMIZED = "Settings.HomePageIsCustomized";
+    private static final String METRICS_HOMEPAGE_LOCATION_TYPE = "Settings.Homepage.LocationType";
 
     private EmbeddedTestServer mTestServer;
 
@@ -127,6 +130,11 @@ public class HomepagePolicyIntegrationTest {
                 RecordHistogram.getHistogramValueCountForTesting(
                         METRICS_HOME_BUTTON_STATE_ENUM, HomeButtonPreferenceState.MANAGED_ENABLED));
 
+        // METRICS_HOMEPAGE_LOCATION_TYPE is recorded once in deferred start up tasks.
+        Assert.assertEquals("Settings.Homepage.LocationType should record POLICY_OTHER once.", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_LOCATION_TYPE, HomepageLocationType.POLICY_OTHER));
+
         // Start the page again. This time, the homepage should be set to what policy is.
         destroyAndRestartActivity();
 
@@ -170,6 +178,7 @@ public class HomepagePolicyIntegrationTest {
     @Test
     @MediumTest
     @Feature({"Homepage"})
+    @DisableFeatures(ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION)
     public void testHomepagePreference() {
         // Launch homepage preference page
         SettingsActivity homepagePreferenceActivity =

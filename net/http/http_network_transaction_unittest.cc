@@ -19515,7 +19515,9 @@ TEST_F(HttpNetworkTransactionReportingTest, ProcessReportToHeaderHttps) {
   ASSERT_EQ(1u, reporting_context()->cache()->GetEndpointCount());
   const ReportingEndpoint endpoint =
       reporting_context()->cache()->GetEndpointForTesting(
-          url::Origin::Create(GURL("https://www.example.org/")), "nel",
+          ReportingEndpointGroupKey(
+              NetworkIsolationKey(),
+              url::Origin::Create(GURL("https://www.example.org/")), "nel"),
           GURL("https://www.example.org/upload/"));
   EXPECT_TRUE(endpoint);
 }

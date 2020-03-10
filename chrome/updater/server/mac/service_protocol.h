@@ -8,11 +8,33 @@
 #import <Foundation/Foundation.h>
 
 #include "chrome/updater/registration_data.h"
+#include "chrome/updater/update_service.h"
+
+@class CRUUpdateStateObserver;
+@class CRUUpdateStateWrapper;
+@class CRUPriorityWrapper;
+
+// Protocol which observes the state of the XPC update checking service.
+@protocol CRUUpdateStateObserving <NSObject>
+
+// Checks for updates and returns the result in the reply block.
+- (void)observeUpdateState:(CRUUpdateStateWrapper* _Nonnull)updateState;
+
+@end
 
 // Protocol for the XPC update checking service.
 @protocol CRUUpdateChecking <NSObject>
+
 // Checks for updates and returns the result in the reply block.
 - (void)checkForUpdatesWithReply:(void (^_Nullable)(int rc))reply;
+
+// Checks for update of a given app, with specified priority. Sends repeated
+// updates of progress and returns the result in the reply block.
+- (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
+                       priority:(CRUPriorityWrapper* _Nonnull)priority
+                    updateState:(CRUUpdateStateObserver* _Nonnull)updateState
+                          reply:(void (^_Nullable)(int rc))reply;
+
 // Registers app and returns the result in the reply block.
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
                           brandCode:(NSString* _Nullable)brandCode
@@ -20,6 +42,7 @@
                             version:(NSString* _Nullable)version
                existenceCheckerPath:(NSString* _Nullable)existenceCheckerPath
                               reply:(void (^_Nullable)(int rc))reply;
+
 @end
 
 #endif  // CHROME_UPDATER_SERVER_MAC_SERVICE_PROTOCOL_H_

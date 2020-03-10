@@ -59,7 +59,6 @@ class ManagedBookmarksTrackerTest : public testing::Test {
     BookmarkPermanentNode* managed_node = owned_managed_node.get();
     ManagedBookmarksTracker::LoadInitial(
         managed_node, prefs_.GetList(prefs::kManagedBookmarks), 101);
-    managed_node->set_visible(!managed_node->children().empty());
     managed_node->SetTitle(l10n_util::GetStringUTF16(
         IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME));
 

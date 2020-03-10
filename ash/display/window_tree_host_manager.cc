@@ -42,7 +42,6 @@
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display.h"

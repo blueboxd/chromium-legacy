@@ -16,10 +16,10 @@ import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchPrefs;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsUtils;
-import org.chromium.chrome.browser.settings.website.ContentSettingsResources;
-import org.chromium.chrome.browser.settings.website.SingleCategorySettings;
-import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
-import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
+import org.chromium.chrome.browser.site_settings.ContentSettingsResources;
+import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
+import org.chromium.chrome.browser.site_settings.SiteSettingsCategory;
+import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.content_settings.ContentSettingsType;
 
 /**

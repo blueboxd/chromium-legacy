@@ -19,6 +19,8 @@
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -541,8 +543,8 @@ TEST_F(BackGestureEventHandlerTest, ARCFullscreenedWindow) {
   EXPECT_EQ(1, target_back_release.accelerator_count());
 }
 
-// Tests the back gesture behavior when a virtual keyboard is visible.
-TEST_F(BackGestureEventHandlerTest, BackGestureWithVKTest) {
+// Tests the back gesture behavior when a Chrome OS IME is visible.
+TEST_F(BackGestureEventHandlerTest, BackGestureWithCrosKeyboardTest) {
   ui::TestAcceleratorTarget target_back_press, target_back_release;
   RegisterBackPressAndRelease(&target_back_press, &target_back_release);
 
@@ -564,6 +566,32 @@ TEST_F(BackGestureEventHandlerTest, BackGestureWithVKTest) {
   // Second back gesture should trigger go back.
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
+}
+
+// Tests the back gesture behavior when an Android IME is visible. Due to the
+// way the Android IME is implemented, a lot of this test is fake behavior, but
+// it will help catch regressions.
+TEST_F(BackGestureEventHandlerTest, BackGestureWithAndroidKeyboardTest) {
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  WindowState* window_state = WindowState::Get(top_window());
+  ASSERT_FALSE(window_state->IsMinimized());
+
+  VirtualKeyboardModel* keyboard =
+      Shell::Get()->system_tray_model()->virtual_keyboard();
+  ASSERT_TRUE(keyboard);
+  // Fakes showing the keyboard.
+  keyboard->OnArcInputMethodSurfaceBoundsChanged(gfx::Rect(400, 400));
+  EXPECT_TRUE(keyboard->visible());
+
+  // Unfortunately we cannot hook this all the wall up to see if the Android IME
+  // is hidden, but we can check that back key events are generated and the top
+  // window is not minimized.
+  GenerateBackSequence();
+  EXPECT_EQ(1, target_back_press.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+  EXPECT_FALSE(window_state->IsMinimized());
 }
 
 }  // namespace ash

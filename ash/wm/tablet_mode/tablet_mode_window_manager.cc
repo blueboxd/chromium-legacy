@@ -17,6 +17,8 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -164,6 +166,16 @@ bool TabletModeWindowManager::ShouldMinimizeTopWindowOnBack() {
 
   aura::Window* window = GetTopWindow();
   if (!window)
+    return false;
+
+  // Do not minimize the app if a Android IME is visible. The Android IME will
+  // eat the back event that follows and close itself. Note that the ChromeOS
+  // IME does not close itself when it sees a back event so it must be closed
+  // explicitly.
+  // TODO(sammiequon): For fullscreen apps, fullscreen is exited first before
+  // the keyboard is hidden. It should be the other way, but this is done to
+  // keep the logic simple for merging.
+  if (Shell::Get()->system_tray_model()->virtual_keyboard()->visible())
     return false;
 
   // Do not minimize the window if it is in overview. This can avoid unnecessary

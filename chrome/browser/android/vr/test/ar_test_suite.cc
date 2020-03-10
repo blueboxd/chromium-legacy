@@ -11,7 +11,6 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -34,7 +33,6 @@ void ArTestSuite::Initialize() {
   base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
   ui::ResourceBundle::InitSharedInstanceWithPakPath(
       pak_path.AppendASCII("vr_test.pak"));
-  ui::MaterialDesignController::Initialize();
 }
 
 void ArTestSuite::Shutdown() {

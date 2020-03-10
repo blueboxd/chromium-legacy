@@ -11,18 +11,14 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "ui/base/test/material_design_controller_test_api.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/controls/webview/webview.h"
 
 class WebUITabStripInteractiveTest : public InProcessBrowserTest {
  public:
   WebUITabStripInteractiveTest() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kTopChromeTouchUi, switches::kTopChromeTouchUiEnabled);
     feature_override_.InitAndEnableFeature(features::kWebUITabStrip);
   }
 
@@ -30,6 +26,7 @@ class WebUITabStripInteractiveTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList feature_override_;
+  ui::MaterialDesignController::TouchUiScoperForTesting touch_ui_scoper_{true};
 };
 
 // Regression test for crbug.com/1027375.

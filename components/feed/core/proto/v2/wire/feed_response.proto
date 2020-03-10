@@ -1,0 +1,47 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+import "components/feed/core/proto/v2/wire/capability.proto";
+import "components/feed/core/proto/v2/wire/data_operation.proto";
+import "components/feed/core/proto/v2/wire/feed_id.proto";
+import "components/feed/core/proto/v2/wire/response.proto";
+import "components/feed/core/proto/v2/wire/response_status_code.proto";
+
+// A feed response is  a series of directives to manipulate backend storage,
+// similar to database commands.  Individual data operations contain all the
+// necessary information to manipulate the client state.
+message FeedResponse {
+  extend Response { optional FeedResponse feed_response = 1000; }
+  // DataOperations are applied on the client in order in which they are
+  // received.
+  repeated DataOperation data_operation = 1;
+  // Metadata for the entire FeedResponse.
+  optional FeedResponseMetadata feed_response_metadata = 2;
+
+  // The list of server-response supported capabilities.
+  repeated Capability server_capabilities = 3;
+
+  // The status code for this response.
+  optional ResponseStatusCode response_status_code = 4;
+}
+
+// Data which is relevant for the whole response made by the server.
+message FeedResponseMetadata {
+  // Time at which the server fulfilled this response. This is needed as client
+  // cannot be the source of truth.
+  optional int64 response_time_ms = 1;
+
+  // Created on the server and used by the client to identify the feed when
+  // clients will store multiple infinite feeds.
+  // See [INTERNAL LINK]
+  optional FeedId feed_id = 3;
+
+  reserved 2;
+}

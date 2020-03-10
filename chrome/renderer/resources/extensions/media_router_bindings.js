@@ -827,20 +827,6 @@ MediaRouter.prototype.onSinksReceived = function(sourceUrn, sinks, origins) {
 };
 
 /**
- * Called by the provider manager when a sink is found to notify the MR of the
- * sink's ID. The actual sink will be returned through the normal sink list
- * update process, so this helps the MR identify the search result in the
- * list.
- * @param {string} pseudoSinkId  ID of the pseudo sink that started the
- *     search.
- * @param {string} sinkId ID of the newly-found sink.
- */
-MediaRouter.prototype.onSearchSinkIdReceived = function(
-    pseudoSinkId, sinkId) {
-  this.service_.onSearchSinkIdReceived(pseudoSinkId, sinkId);
-};
-
-/**
  * Called by the provider manager to keep the extension from suspending
  * if it enters a state where suspension is undesirable (e.g. there is an
  * active MediaRoute.)
@@ -1100,11 +1086,6 @@ function MediaRouterHandlers() {
   this.updateMediaSinks = null;
 
   /**
-   * @type {function(string, string, !SinkSearchCriteria): string}
-   */
-  this.searchSinks = null;
-
-  /**
    * @type {function()}
    */
   this.provideSinks = null;
@@ -1160,7 +1141,6 @@ MediaRouteProvider.prototype.setHandlers = function(handlers) {
     'connectRouteByRouteId',
     'enableMdnsDiscovery',
     'updateMediaSinks',
-    'searchSinks',
     'provideSinks',
     'createMediaRouteController',
     'onBeforeInvokeHandler'
@@ -1390,32 +1370,6 @@ MediaRouteProvider.prototype.enableMdnsDiscovery = function() {
 MediaRouteProvider.prototype.updateMediaSinks = function(sourceUrn) {
   this.handlers_.onBeforeInvokeHandler();
   this.handlers_.updateMediaSinks(sourceUrn);
-};
-
-/**
- * Requests that the provider manager search its providers for a sink matching
- * |searchCriteria| that is compatible with |sourceUrn|. If a sink is found
- * that can be used immediately for route creation, its ID is returned.
- * Otherwise the empty string is returned.
- *
- * @param {string} sinkId Sink ID of the pseudo sink generating the request.
- * @param {string} sourceUrn Media source to be used with the sink.
- * @param {!SinkSearchCriteria} searchCriteria Search criteria for the route
- *     providers.
- * @return {!Promise.<!{sink_id: !string}>} A Promise resolving to either the
- *     sink ID of the sink found by the search that can be used for route
- *     creation, or the empty string if no route can be immediately created.
- */
-MediaRouteProvider.prototype.searchSinks = function(
-    sinkId, sourceUrn, searchCriteria) {
-  this.handlers_.onBeforeInvokeHandler();
- return this.handlers_.searchSinks(sinkId, sourceUrn, searchCriteria).then(
-      sinkId => {
-        return { 'sinkId': sinkId };
-      },
-      () => {
-        return { 'sinkId': '' };
-      });
 };
 
 /**

@@ -40,6 +40,7 @@
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/web/web_swap_result.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
@@ -419,6 +420,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual bool IsSVGImageChromeClient() const { return false; }
 
   virtual bool RequestPointerLock(LocalFrame*,
+                                  WebWidgetClient::PointerLockCallback callback,
                                   bool request_unadjusted_movement) {
     return false;
   }

@@ -120,6 +120,13 @@ void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
   if (shortcut_items.size() > kMaxShortcuts)
     shortcut_items.resize(kMaxShortcuts);
 
+  for (auto& shortcut_item : shortcut_items) {
+    if (shortcut_item.short_name.string().empty()) {
+      shortcut_item.short_name =
+          base::NullableString16(shortcut_item.name, /* is_null= */ false);
+    }
+  }
+
   int ideal_shortcut_icons_size_px =
       ShortcutHelper::GetIdealShortcutIconSizeInPx();
   for (const auto& manifest_shortcut : shortcut_items) {

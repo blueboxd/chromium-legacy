@@ -811,6 +811,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="4466881336512663640">Az űrlapon végzett módosítások elvesznek. Biztosan folytatni szeretné?</translation>
 <translation id="4477350412780666475">Következő szám</translation>
 <translation id="4482953324121162758">Nem fordítjuk le ezt a webhelyet.</translation>
+<translation id="4486757593530038591">Ha be van kapcsolva, a webhelyek nem használhatják fel az Ön különböző webhelyeken végzett böngészési tevékenységeit a hirdetések személyre szabásához. Előfordulhat, hogy bizonyos webhelyek funkciói nem működnek megfelelően.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">Ezek a funkciók alapértelmezés szerint le vannak tiltva. A Chrome későbbi verzióiban nem állnak majd rendelkezésre.</translation>
 <translation id="4493480324863638523">Érvénytelen URL. Az URL-nek szabványos sémával kell rendelkeznie, például http://example.com vagy https://example.com.</translation>
@@ -1048,6 +1049,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="549333378215107354">Méret: 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Kezelt könyvjelzők</translation>
+<translation id="5510481203689988000">Ez a beállítás a cookie-beállításokban vezérelhető.</translation>
 <translation id="5510766032865166053">Előfordulhat, hogy át lett helyezve, vagy törölve lett.</translation>
 <translation id="5523118979700054094">Az irányelv neve</translation>
 <translation id="55293785478302737">Éltűzés</translation>

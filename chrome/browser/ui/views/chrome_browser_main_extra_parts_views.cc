@@ -21,7 +21,6 @@
 #include "components/ui_devtools/views/devtools_server_util.h"
 #include "content/public/browser/tracing_service.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 #if defined(USE_AURA)
 #include "base/run_loop.h"
@@ -71,11 +70,6 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
     views_delegate_ = std::make_unique<ChromeViewsDelegate>();
 
   SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
-
-  // The MaterialDesignController needs to look at command line flags, which
-  // are not available until this point. Now that they are, proceed with
-  // initializing the MaterialDesignController.
-  ui::MaterialDesignController::Initialize();
 
 #if defined(USE_AURA)
   wm_state_ = std::make_unique<wm::WMState>();

@@ -7,10 +7,12 @@
 #include <set>
 #include <string>
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
+#include "chrome/browser/predictors/predictors_enums.h"
 #include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
@@ -26,6 +28,9 @@ using content::BrowserThread;
 namespace predictors {
 
 namespace {
+
+constexpr char kLoadingPredictorOptimizationHintsReceiveStatusHistogram[] =
+    "LoadingPredictor.OptimizationHintsReceiveStatus";
 
 // Called only for subresources.
 net::RequestPriority GetRequestPriority(
@@ -65,6 +70,24 @@ bool IsHandledNavigation(content::NavigationHandle* navigation_handle) {
          !navigation_handle->IsSameDocument() &&
          navigation_handle->GetURL().SchemeIsHTTPOrHTTPS();
 }
+
+// Util class for recording the status for when we received optimization hints
+// for navigations that we requested them for.
+class ScopedOptimizationHintsReceiveStatusRecorder {
+ public:
+  ScopedOptimizationHintsReceiveStatusRecorder()
+      : status_(OptimizationHintsReceiveStatus::kUnknown) {}
+  ~ScopedOptimizationHintsReceiveStatusRecorder() {
+    DCHECK_NE(status_, OptimizationHintsReceiveStatus::kUnknown);
+    UMA_HISTOGRAM_ENUMERATION(
+        kLoadingPredictorOptimizationHintsReceiveStatusHistogram, status_);
+  }
+
+  void set_status(OptimizationHintsReceiveStatus status) { status_ = status; }
+
+ private:
+  OptimizationHintsReceiveStatus status_;
+};
 
 }  // namespace
 
@@ -230,28 +253,28 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
   if (!predictor_)
     return;
 
-  if (decision != optimization_guide::OptimizationGuideDecision::kTrue)
-    return;
-
-  if (!metadata.loading_predictor_metadata())
-    return;
+  ScopedOptimizationHintsReceiveStatusRecorder recorder;
 
   if (!current_navigation_id_.is_valid()) {
     // There is not a pending navigation, so return.
+    recorder.set_status(OptimizationHintsReceiveStatus::kAfterNavigationFinish);
     return;
   }
   if (current_navigation_id_ != navigation_id) {
     // The current navigation has either redirected or a new one has started, so
     // return.
+    recorder.set_status(
+        OptimizationHintsReceiveStatus::kAfterRedirectOrNextNavigationStart);
     return;
   }
-  auto last_committed_navigation_id = NavigationID(web_contents());
-  if (last_committed_navigation_id.is_valid() &&
-      navigation_id == last_committed_navigation_id) {
-    // The navigation has already committed, so all the connections have already
-    // started.
+
+  recorder.set_status(OptimizationHintsReceiveStatus::kBeforeNavigationFinish);
+
+  if (decision != optimization_guide::OptimizationGuideDecision::kTrue)
     return;
-  }
+
+  if (!metadata.loading_predictor_metadata())
+    return;
 
   PreconnectPrediction prediction;
   url::Origin main_frame_origin =

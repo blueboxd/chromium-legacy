@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/network/public/cpp/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 source_set("trust_tokens") {
@@ -89,6 +90,7 @@ source_set("tests") {
   ]
 
   deps = [
+    ":public_proto",
     ":storage_proto",
     ":test_support",
     ":trust_tokens",

@@ -4,10 +4,10 @@
 
 #include "components/feed/core/v2/feed_network.h"
 
-#include "components/feed/core/proto/wire/action_request.pb.h"
-#include "components/feed/core/proto/wire/feed_action_response.pb.h"
-#include "components/feed/core/proto/wire/request.pb.h"
-#include "components/feed/core/proto/wire/response.pb.h"
+#include "components/feed/core/proto/v2/wire/action_request.pb.h"
+#include "components/feed/core/proto/v2/wire/feed_action_response.pb.h"
+#include "components/feed/core/proto/v2/wire/request.pb.h"
+#include "components/feed/core/proto/v2/wire/response.pb.h"
 
 namespace feed {
 

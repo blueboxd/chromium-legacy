@@ -1,0 +1,46 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+import "components/feed/core/proto/v2/wire/content_id.proto";
+import "components/feed/core/proto/v2/wire/expiration_info.proto";
+
+// Features define both the structure and content found in the Stream.
+message Feature {
+  // The ContentId identifying the parent feature for this feature.
+  optional ContentId parent_id = 1;
+
+  // Enum denoting which extension containing the renderable data is associated
+  // with this Feature.
+  enum RenderableUnit {
+    UNKNOWN_RENDERABLE_UNIT = 0;
+    STREAM = 1;
+    CONTENT = 3;
+    CLUSTER = 4;
+    REDACTED_10 = 10;
+    REDACTED_11 = 11;
+    reserved 2, 5, 6, 7, 8, 9;
+  }
+  optional RenderableUnit renderable_unit = 2;
+
+  // Indicates whether this feature should expire, and additional metadata
+  // necessariy to handle expiration. Note that clients may not support
+  // expiration of every type of feature.
+  optional ExpirationInfo expiration_info = 3;
+
+  extensions 185431437;  // Stream
+  extensions 185431438;  // Card
+  extensions 185431439;  // Content
+  extensions 190812910;  // Cluster
+  extensions 194964015;  // Token
+  extensions 286406442;  // REDACTED
+  extensions 286406443;  // REDACTED
+
+  reserved 246375740, 274598443, 274598444, 277068786;
+}

@@ -222,17 +222,15 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
 // Node used for the permanent folders (excluding the root).
 class BookmarkPermanentNode : public BookmarkNode {
  public:
-  BookmarkPermanentNode(int64_t id, Type type);
+  // TODO(mastiz): Remove default value for |visible_when_empty|.
+  BookmarkPermanentNode(int64_t id, Type type, bool visible_when_empty = false);
   ~BookmarkPermanentNode() override;
-
-  // WARNING: this code is used for other projects. Contact noyau@ for details.
-  void set_visible(bool value) { visible_ = value; }
 
   // BookmarkNode overrides:
   bool IsVisible() const override;
 
  private:
-  bool visible_ = false;
+  const bool visible_when_empty_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkPermanentNode);
 };

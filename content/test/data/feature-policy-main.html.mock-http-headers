@@ -1,2 +1,2 @@
 HTTP/1.1 200 OK
-Feature-Policy: geolocation 'self' http://example.com; oversized-images 'self' http://example.com;
+Feature-Policy: geolocation 'self' http://example.com; payment 'self' http://example.com;

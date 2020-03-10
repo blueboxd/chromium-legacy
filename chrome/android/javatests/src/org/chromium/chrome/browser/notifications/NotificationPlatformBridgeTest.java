@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.permissions.PermissionTestRule;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.website.ContentSettingValues;
+import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;

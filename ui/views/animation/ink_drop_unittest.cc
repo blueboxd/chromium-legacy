@@ -9,7 +9,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_host_view.h"

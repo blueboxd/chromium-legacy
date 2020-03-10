@@ -28,7 +28,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationTestRule;
-import org.chromium.chrome.browser.settings.website.ContentSettingValues;
+import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarUtil;

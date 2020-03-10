@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
@@ -64,10 +65,14 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
      */
     public void createRecyclerViews(
             ArrayList<PropertyModel> topRowModels, ArrayList<PropertyModel> bottomRowModels) {
-        populateView(
-                topRowModels, this.getContentView().findViewById(R.id.share_sheet_chrome_apps));
+        RecyclerView topRow = this.getContentView().findViewById(R.id.share_sheet_chrome_apps);
+        populateView(topRowModels, topRow);
+        topRow.addOnScrollListener(new ScrollEventReporter("SharingHubAndroid.TopRowScrolled"));
+        RecyclerView bottomRow = this.getContentView().findViewById(R.id.share_sheet_other_apps);
         populateView(
                 bottomRowModels, this.getContentView().findViewById(R.id.share_sheet_other_apps));
+        bottomRow.addOnScrollListener(
+                new ScrollEventReporter("SharingHubAndroid.BottomRowScrolled"));
     }
 
     private void populateView(ArrayList<PropertyModel> models, RecyclerView view) {
@@ -100,6 +105,27 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
             ApiCompatibilityUtils.setImageTintList(view,
                     AppCompatResources.getColorStateList(ContextUtils.getApplicationContext(),
                             R.color.default_icon_color_tint_list));
+        }
+    }
+
+    /**
+     * One-shot reporter that records the first time the user scrolls a {@link RecyclerView}.
+     */
+    private static class ScrollEventReporter extends RecyclerView.OnScrollListener {
+        private boolean mFired;
+        private String mActionName;
+
+        public ScrollEventReporter(String actionName) {
+            mActionName = actionName;
+        }
+
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            if (mFired) return;
+            if (newState != RecyclerView.SCROLL_STATE_DRAGGING) return;
+
+            RecordUserAction.record(mActionName);
+            mFired = true;
         }
     }
 

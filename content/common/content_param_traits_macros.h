@@ -39,8 +39,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     network::mojom::ContentSecurityPolicySource::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::ContentSecurityPolicyType,
                           network::mojom::ContentSecurityPolicyType::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ui::mojom::CursorType,
-                          ui::mojom::CursorType::kMaxValue)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::mojom::CursorType,
+                              ui::mojom::CursorType::kNull,
+                              ui::mojom::CursorType::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
                               blink::WebInputEvent::kTypeFirst,
                               blink::WebInputEvent::kTypeLast)

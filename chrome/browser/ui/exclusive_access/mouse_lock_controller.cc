@@ -61,14 +61,16 @@ void MouseLockController::RequestToLockMouse(WebContents* web_contents,
       !exclusive_access_manager()
            ->fullscreen_controller()
            ->IsFullscreenForTabOrPending(web_contents)) {
-    web_contents->GotResponseToLockMouseRequest(false);
+    web_contents->GotResponseToLockMouseRequest(
+        blink::mojom::PointerLockResult::kRequiresUserGesture);
     return;
   }
   SetTabWithExclusiveAccess(web_contents);
 
   // Lock mouse.
   if (fake_mouse_lock_for_test_ ||
-      web_contents->GotResponseToLockMouseRequest(true)) {
+      web_contents->GotResponseToLockMouseRequest(
+          blink::mojom::PointerLockResult::kSuccess)) {
     if (last_unlocked_by_target &&
         web_contents_granted_silent_mouse_lock_permission_ == web_contents) {
       mouse_lock_state_ = MOUSELOCK_LOCKED_SILENTLY;

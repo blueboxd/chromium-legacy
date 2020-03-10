@@ -86,6 +86,20 @@ bool FakeBluetoothDelegate::IsAllowedToAccessAtLeastOneService(
   return !id_to_services_it->second.empty();
 }
 
+std::vector<blink::mojom::WebBluetoothDevicePtr>
+FakeBluetoothDelegate::GetPermittedDevices(RenderFrameHost* frame) {
+  std::vector<blink::mojom::WebBluetoothDevicePtr> permitted_devices;
+  auto& device_address_to_id_map = GetAddressToIdMapForOrigin(frame);
+  for (const auto& entry : device_address_to_id_map) {
+    auto permitted_device = blink::mojom::WebBluetoothDevice::New();
+    WebBluetoothDeviceId device_id = entry.second;
+    permitted_device->id = device_id;
+    permitted_device->name = device_id_to_name_map_[device_id];
+    permitted_devices.push_back(std::move(permitted_device));
+  }
+  return permitted_devices;
+}
+
 WebBluetoothDeviceId FakeBluetoothDelegate::GetOrCreateDeviceIdForDeviceAddress(
     RenderFrameHost* frame,
     const std::string& device_address) {

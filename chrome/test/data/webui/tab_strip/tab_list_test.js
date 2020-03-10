@@ -9,6 +9,8 @@ import {setScrollAnimationEnabledForTesting} from 'chrome://tab-strip/tab_list.j
 import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 
+import {eventToPromise} from '../test_util.m.js';
+
 import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 

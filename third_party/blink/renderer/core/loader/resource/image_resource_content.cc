@@ -509,7 +509,7 @@ ImageDecoder::CompressionFormat ImageResourceContent::GetCompressionFormat()
 }
 
 bool ImageResourceContent::IsAcceptableCompressionRatio(
-    const ExecutionContext& context) {
+    ExecutionContext& context) {
   if (!image_)
     return true;
 
@@ -538,18 +538,18 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
   if (compression_format == ImageDecoder::kLossyFormat) {
     // Enforce the lossy image policy.
     return context.IsFeatureEnabled(
-        mojom::blink::FeaturePolicyFeature::kUnoptimizedLossyImages,
+        mojom::blink::DocumentPolicyFeature::kUnoptimizedLossyImages,
         PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure,
         g_empty_string, image_url);
   }
   if (compression_format == ImageDecoder::kLosslessFormat) {
     // Enforce the lossless image policy.
     bool enabled_by_10k_policy = context.IsFeatureEnabled(
-        mojom::blink::FeaturePolicyFeature::kUnoptimizedLosslessImages,
+        mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImages,
         PolicyValue(compression_ratio_10k), ReportOptions::kReportOnFailure,
         g_empty_string, image_url);
     bool enabled_by_1k_policy = context.IsFeatureEnabled(
-        mojom::blink::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict,
+        mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImagesStrict,
         PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure,
         g_empty_string, image_url);
     return enabled_by_10k_policy && enabled_by_1k_policy;

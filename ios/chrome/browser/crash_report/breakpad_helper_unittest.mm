@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
+
+#include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #include "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
 #import "ios/chrome/test/ocmock/OCMockObject+BreakpadControllerTesting.h"
 #import "ios/testing/scoped_block_swizzler.h"
@@ -82,7 +84,12 @@ TEST_F(BreakpadHelperTest, CrashReportUserApplicationStateAllKeys) {
   while (breadcrumbs.length < 255) {
     [breadcrumbs appendString:@"12:01 Fake Breadcrumb Event/n"];
   }
-  breakpad_helper::SetBreadcrumbEvents(@[ breadcrumbs, breadcrumbs ]);
+
+  NSMutableArray* events = [[NSMutableArray alloc] init];
+  for (int i = 0; i < breakpad::kBreadcrumbsKeyCount; i++) {
+    [events addObject:breadcrumbs];
+  }
+  breakpad_helper::SetBreadcrumbEvents(events);
 }
 
 TEST_F(BreakpadHelperTest, GetCrashReportCount) {

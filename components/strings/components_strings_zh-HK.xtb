@@ -807,6 +807,7 @@
 <translation id="4466881336512663640">您對表單所作的變更將會遺失。您確定要繼續嗎？</translation>
 <translation id="4477350412780666475">下一首曲目</translation>
 <translation id="4482953324121162758">系統不會翻譯此網站。</translation>
+<translation id="4486757593530038591">開啟這項功能時，網站不會根據你在各網站的瀏覽活動放送個人化廣告。某些網站的功能可能會無法正常運作。</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">這些功能預設為停用。日後發佈的 Chrome 版本將不再提供這些功能。</translation>
 <translation id="4493480324863638523">網址無效。必須為有標準配置的網址，例如 http://example.com 或 https://example.com。</translation>
@@ -1043,6 +1044,7 @@
 <translation id="549333378215107354">粗幼：3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">受管理書籤</translation>
+<translation id="5510481203689988000">你可以在 Cookie 設定中控管這項設定。</translation>
 <translation id="5510766032865166053">此檔案可能已被移動或刪除。</translation>
 <translation id="5523118979700054094">政策名稱</translation>
 <translation id="55293785478302737">邊緣釘裝</translation>

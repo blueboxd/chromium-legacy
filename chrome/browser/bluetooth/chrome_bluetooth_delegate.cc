@@ -4,6 +4,8 @@
 
 #include "chrome/browser/bluetooth/chrome_bluetooth_delegate.h"
 
+#include <memory>
+
 #include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -105,4 +107,26 @@ bool ChromeBluetoothDelegate::IsAllowedToAccessAtLeastOneService(
       ->IsAllowedToAccessAtLeastOneService(
           frame->GetLastCommittedOrigin(),
           web_contents->GetMainFrame()->GetLastCommittedOrigin(), device_id);
+}
+
+std::vector<blink::mojom::WebBluetoothDevicePtr>
+ChromeBluetoothDelegate::GetPermittedDevices(content::RenderFrameHost* frame) {
+  auto* web_contents = WebContents::FromRenderFrameHost(frame);
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = GetBluetoothChooserContext(web_contents)
+                    ->GetGrantedObjects(
+                        frame->GetLastCommittedOrigin(),
+                        web_contents->GetMainFrame()->GetLastCommittedOrigin());
+  std::vector<blink::mojom::WebBluetoothDevicePtr> permitted_devices;
+
+  for (const auto& object : objects) {
+    auto permitted_device = blink::mojom::WebBluetoothDevice::New();
+    permitted_device->id =
+        BluetoothChooserContext::GetObjectDeviceId(object->value);
+    permitted_device->name =
+        BluetoothChooserContext::GetObjectName(object->value);
+    permitted_devices.push_back(std::move(permitted_device));
+  }
+
+  return permitted_devices;
 }

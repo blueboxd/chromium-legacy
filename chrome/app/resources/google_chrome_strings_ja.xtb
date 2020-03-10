@@ -48,6 +48,7 @@
 <translation id="2309047409763057870">この Google Chrome はセカンダリ インストールのため、既定のブラウザには設定できません。</translation>
 <translation id="2341767445688917208">Chrome OS でパスワードを同期できませんでした。今すぐ問題を修正してください。</translation>
 <translation id="2348335408836342058">このサイトを利用するには、Chrome でカメラとマイクの使用を許可する必要があります</translation>
+<translation id="234869673307233423">Chrome でパスワードを確認できません。しばらくしてからもう一度お試しください。</translation>
 <translation id="2429317896000329049">お使いのドメインでは同期を利用できないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="2467438592969358367">Google Chrome からパスワードをエクスポートするための許可を求められています。許可するには Windows のパスワードを入力してください。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
@@ -68,6 +69,8 @@
 <translation id="2857540653560290388">Chrome を起動しています...</translation>
 <translation id="2871893339301912279">Chrome にログインしました</translation>
 <translation id="2888126860611144412">Chrome について</translation>
+<translation id="2929907241665500097">エラーが発生したため、Chrome が更新されませんでした。<ph name="BEGIN_LINK" />Chrome の更新に関する問題を解決してください。<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - ネットワークにログイン - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome はバックグラウンド モードです。</translation>
 <translation id="3065168410429928842">Chrome タブ</translation>
 <translation id="3080151273017101988">Google Chrome を閉じた際にバックグラウンド アプリの処理を続行する</translation>
@@ -106,7 +109,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">Chrome でデータ侵害や不正な拡張機能などの脅威から保護できているか確認します</translation>
 <translation id="4343195214584226067">「<ph name="EXTENSION_NAME" />」が Chrome に追加されました</translation>
+<translation id="4384570495110188418">ログインしていないため、Chrome でパスワードを確認できません</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome - ネットワークにログイン - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome で別の処理が行われています。しばらくしてからもう一度お試しください。</translation>
 <translation id="4480040274068703980">ログイン時にエラーが発生したため、Chrome OS はデータを同期できませんでした。</translation>
 <translation id="4561051373932531560">Google Chrome では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
@@ -116,6 +121,7 @@
 <translation id="4600710005438004015">Chrome を最新版に更新できませんでした。新しい機能とセキュリティ修正は適用されていません。</translation>
 <translation id="4631713731678262610">Chrome メニューで非表示</translation>
 <translation id="4633000520311261472">Chrome をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
+<translation id="4653397506175047429">Chrome ですべてのパスワードを確認できません。24 時間後にもう一度お試しください。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> を有効にするには Chrome を再起動してください</translation>
 <translation id="4754614261631455953">Google Chrome Canary（mDNS インバウンド）</translation>
@@ -149,6 +155,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome を起動できませんでした。もう一度お試しください。</translation>
 <translation id="5895138241574237353">再起動</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - ネットワークにログイン</translation>
 <translation id="5940385492829620908">ウェブ、ブックマーク、その他の Chrome データを好みに設定できます。</translation>
 <translation id="5941830788786076944">Google Chrome を既定のブラウザにする</translation>
 <translation id="6070348360322141662">セキュリティ強化のため、データは Google Chrome で暗号化されます</translation>
@@ -204,6 +211,7 @@
 <translation id="7855730255114109580">Google Chrome は最新版です</translation>
 <translation id="7890208801193284374">パソコンを共有している場合、友だちや家族はそれぞれ Chrome を自分専用のブラウザとして自分用の設定をして使うことができます。</translation>
 <translation id="7896673875602241923">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chrome にログインしました。情報を個別に保持するには、新しい Chrome ユーザーを作成してください。</translation>
+<translation id="7905891027772979035">Chrome で拡張機能を確認できません。しばらくしてからもう一度お試しください。</translation>
 <translation id="7916016681687251387">Chrome OS でデータを同期できませんでした。今すぐ問題を修正してください。</translation>
 <translation id="7930071585467473040">Google Chrome がパスワードをコピーしようとしています。</translation>
 <translation id="7962410387636238736">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません</translation>

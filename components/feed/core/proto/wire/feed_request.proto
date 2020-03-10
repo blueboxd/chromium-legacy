@@ -11,7 +11,7 @@ import "components/feed/core/proto/wire/feed_action_query_data.proto";
 import "components/feed/core/proto/wire/feed_query.proto";
 import "components/feed/core/proto/wire/request.proto";
 
-package feedwire;
+package feedwire1;
 
 option optimize_for = LITE_RUNTIME;
 

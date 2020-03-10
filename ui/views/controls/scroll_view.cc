@@ -188,7 +188,7 @@ ScrollView::ScrollView()
   more_content_bottom_->SetVisible(false);
 
   if (scroll_with_layers_enabled_)
-    EnableViewPortLayer();
+    EnableViewportLayer();
 
   // If we're scrolling with layers, paint the overflow indicators to the layer.
   if (ScrollsWithLayers()) {
@@ -237,10 +237,12 @@ void ScrollView::SetContentsImpl(std::unique_ptr<View> a_view) {
       // play it safe here to avoid graphical glitches
       // (https://crbug.com/826472). If there's no solid background, mark the
       // view as not filling its bounds opaquely.
-      if (GetBackgroundColor() != SK_ColorTRANSPARENT)
-        a_view->SetBackground(CreateSolidBackground(GetBackgroundColor()));
-      else
+      if (GetBackgroundColor()) {
+        a_view->SetBackground(
+            CreateSolidBackground(GetBackgroundColor().value()));
+      } else {
         fills_opaquely = false;
+      }
     }
     a_view->SetPaintToLayer();
     a_view->layer()->SetDidScrollCallback(base::BindRepeating(
@@ -263,19 +265,23 @@ void ScrollView::SetHeader(std::nullptr_t) {
   SetHeaderImpl(nullptr);
 }
 
-void ScrollView::SetBackgroundColor(SkColor color) {
-  if (background_color_data_.color == color)
+void ScrollView::SetBackgroundColor(const base::Optional<SkColor>& color) {
+  if (background_color_ == color && !background_color_id_)
     return;
-  background_color_data_.color = color;
-  use_color_id_ = false;
+  background_color_ = color;
+  background_color_id_ = base::nullopt;
   UpdateBackground();
-  OnPropertyChanged(&background_color_data_, kPropertyEffectsPaint);
+  OnPropertyChanged(&background_color_, kPropertyEffectsPaint);
 }
 
-void ScrollView::SetBackgroundThemeColorId(ui::NativeTheme::ColorId color_id) {
-  background_color_data_.color_id = color_id;
-  use_color_id_ = true;
+void ScrollView::SetBackgroundThemeColorId(
+    const base::Optional<ui::NativeTheme::ColorId>& color_id) {
+  if (background_color_id_ == color_id && !background_color_)
+    return;
+  background_color_id_ = color_id;
+  background_color_ = base::nullopt;
   UpdateBackground();
+  OnPropertyChanged(&background_color_id_, kPropertyEffectsPaint);
 }
 
 gfx::Rect ScrollView::GetVisibleRect() const {
@@ -628,7 +634,7 @@ void ScrollView::OnGestureEvent(ui::GestureEvent* event) {
 
 void ScrollView::OnThemeChanged() {
   UpdateBorder();
-  if (use_color_id_)
+  if (background_color_id_)
     UpdateBackground();
 }
 
@@ -681,7 +687,7 @@ void ScrollView::UpdateViewportLayerForClipping() {
   if (has_layer == needs_layer)
     return;
   if (needs_layer)
-    EnableViewPortLayer();
+    EnableViewportLayer();
   else
     contents_viewport_->DestroyLayer();
 }
@@ -837,7 +843,7 @@ bool ScrollView::ScrollsWithLayers() const {
   return contents_viewport_->layer() != nullptr;
 }
 
-void ScrollView::EnableViewPortLayer() {
+void ScrollView::EnableViewportLayer() {
   if (DoesViewportOrScrollViewHaveLayer())
     return;
 
@@ -884,26 +890,35 @@ void ScrollView::UpdateBorder() {
 }
 
 void ScrollView::UpdateBackground() {
-  const SkColor background_color = GetBackgroundColor();
+  const base::Optional<SkColor> background_color = GetBackgroundColor();
 
-  SetBackground(CreateSolidBackground(background_color));
+  auto create_background = [background_color]() {
+    return background_color ? CreateSolidBackground(background_color.value())
+                            : nullptr;
+  };
+
+  SetBackground(create_background());
   // In addition to setting the background of |this|, set the background on
   // the viewport as well. This way if the viewport has a layer
   // SetFillsBoundsOpaquely() is honored.
-  contents_viewport_->SetBackground(CreateSolidBackground(background_color));
+  contents_viewport_->SetBackground(create_background());
   if (contents_ && ScrollsWithLayers())
-    contents_->SetBackground(CreateSolidBackground(background_color));
+    contents_->SetBackground(create_background());
   if (contents_viewport_->layer()) {
-    contents_viewport_->layer()->SetFillsBoundsOpaquely(background_color !=
-                                                        SK_ColorTRANSPARENT);
+    contents_viewport_->layer()->SetFillsBoundsOpaquely(!!background_color);
   }
   SchedulePaint();
 }
 
-SkColor ScrollView::GetBackgroundColor() const {
-  return use_color_id_
-             ? GetNativeTheme()->GetSystemColor(background_color_data_.color_id)
-             : background_color_data_.color;
+base::Optional<SkColor> ScrollView::GetBackgroundColor() const {
+  return background_color_id_
+             ? GetNativeTheme()->GetSystemColor(background_color_id_.value())
+             : background_color_;
+}
+
+base::Optional<ui::NativeTheme::ColorId> ScrollView::GetBackgroundThemeColorId()
+    const {
+  return background_color_id_;
 }
 
 void ScrollView::PositionOverflowIndicators() {
@@ -943,7 +958,10 @@ BEGIN_METADATA(ScrollView)
 METADATA_PARENT_CLASS(View)
 ADD_READONLY_PROPERTY_METADATA(ScrollView, int, MinHeight)
 ADD_READONLY_PROPERTY_METADATA(ScrollView, int, MaxHeight)
-ADD_PROPERTY_METADATA(ScrollView, SkColor, BackgroundColor)
+ADD_PROPERTY_METADATA(ScrollView, base::Optional<SkColor>, BackgroundColor)
+ADD_PROPERTY_METADATA(ScrollView,
+                      base::Optional<ui::NativeTheme::ColorId>,
+                      BackgroundThemeColorId)
 ADD_PROPERTY_METADATA(ScrollView, bool, DrawOverflowIndicator)
 ADD_PROPERTY_METADATA(ScrollView, bool, HasFocusIndicator)
 ADD_PROPERTY_METADATA(ScrollView, bool, HideHorizontalScrollBar)

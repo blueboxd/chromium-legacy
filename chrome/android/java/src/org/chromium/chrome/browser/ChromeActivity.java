@@ -589,15 +589,16 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mTabModelsInitialized) return;
 
         mTabModelSelector = createTabModelSelector();
-        mTabModelSelectorSupplier.set(mTabModelSelector);
-        mActivityTabProvider.setTabModelSelector(mTabModelSelector);
-        getStatusBarColorController().setTabModelSelector(mTabModelSelector);
 
         if (mTabModelSelector == null) {
             assert isFinishing();
             mTabModelsInitialized = true;
             return;
         }
+
+        mTabModelSelectorSupplier.set(mTabModelSelector);
+        mActivityTabProvider.setTabModelSelector(mTabModelSelector);
+        getStatusBarColorController().setTabModelSelector(mTabModelSelector);
 
         Pair<? extends TabCreator, ? extends TabCreator> tabCreators = createTabCreators();
         mRegularTabCreator = tabCreators.first;

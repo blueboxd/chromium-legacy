@@ -138,7 +138,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   IdleManager* GetIdleManager();
   LockManager* GetLockManager();  // override; TODO: Add to interface
   storage::mojom::IndexedDBControl& GetIndexedDBControl() override;
-  IndexedDBContextImpl* GetIndexedDBContextImplForTesting() override;
   NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() override;
   CacheStorageContextImpl* GetCacheStorageContext() override;
   ServiceWorkerContextWrapper* GetServiceWorkerContext() override;

@@ -12,11 +12,10 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/updater/server/mac/service_protocol.h"
+#import "chrome/updater/server/mac/update_service_wrappers.h"
 #include "chrome/updater/update_service.h"
 
-@interface CRUUpdateCheckXPCServiceImpl : NSObject <CRUUpdateChecking> {
-  updater::UpdateService* _service;
-}
+@interface CRUUpdateCheckXPCServiceImpl : NSObject <CRUUpdateChecking>
 
 // Designated initializer.
 - (instancetype)initWithUpdateService:(updater::UpdateService*)service
@@ -24,7 +23,9 @@
 
 @end
 
-@implementation CRUUpdateCheckXPCServiceImpl
+@implementation CRUUpdateCheckXPCServiceImpl {
+  updater::UpdateService* _service;
+}
 
 - (instancetype)initWithUpdateService:(updater::UpdateService*)service {
   if (self = [super init]) {
@@ -48,6 +49,22 @@
         xpcReplyBlock.get()(static_cast<int>(error));
       },
       base::mac::ScopedBlock<void (^)(int)>(reply)));
+}
+
+- (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
+                       priority:(CRUPriorityWrapper* _Nonnull)priority
+                    updateState:(CRUUpdateStateObserver* _Nonnull)updateState
+                          reply:(void (^_Nullable)(int rc))reply {
+  _service->Update(base::SysNSStringToUTF8(appID), [priority priority],
+                   [updateState callback],
+                   base::BindOnce(
+                       [](base::mac::ScopedBlock<void (^)(int)> xpcReplyBlock,
+                          update_client::Error error) {
+                         VLOG(1) << "Update complete: error = "
+                                 << static_cast<int>(error);
+                         xpcReplyBlock.get()(static_cast<int>(error));
+                       },
+                       base::mac::ScopedBlock<void (^)(int)>(reply)));
 }
 
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
@@ -98,8 +115,19 @@
     shouldAcceptNewConnection:(NSXPCConnection*)newConnection {
   // Check to see if the other side of the connection is "okay";
   // if not, invalidate newConnection and return NO.
-  newConnection.exportedInterface =
+  NSXPCInterface* updateCheckingInterface =
       [NSXPCInterface interfaceWithProtocol:@protocol(CRUUpdateChecking)];
+  NSXPCInterface* updateStateObservingInterface =
+      [NSXPCInterface interfaceWithProtocol:@protocol(CRUUpdateStateObserving)];
+  [updateCheckingInterface
+       setInterface:updateStateObservingInterface
+        forSelector:@selector(checkForUpdateWithAppID:
+                                             priority:updateState:reply:)
+      argumentIndex:2
+            ofReply:NO];
+
+  newConnection.exportedInterface = updateCheckingInterface;
+
   base::scoped_nsobject<CRUUpdateCheckXPCServiceImpl> object(
       [[CRUUpdateCheckXPCServiceImpl alloc]
           initWithUpdateService:_service.get()]);

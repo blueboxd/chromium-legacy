@@ -62,11 +62,6 @@ class MediaRouterAndroid : public MediaRouterBase {
       const MediaRoute::Id& route_id,
       std::unique_ptr<std::vector<uint8_t>> data) override;
   void OnUserGesture() override;
-  void SearchSinks(const MediaSink::Id& sink_id,
-                   const MediaSource::Id& source_id,
-                   const std::string& search_input,
-                   const std::string& domain,
-                   MediaSinkSearchResponseCallback sink_callback) override;
   std::unique_ptr<media::FlingingController> GetFlingingController(
       const MediaRoute::Id& route_id) override;
 

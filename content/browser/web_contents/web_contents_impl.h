@@ -472,7 +472,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   int GetMaximumZoomPercent() override;
   void SetPageScale(float page_scale_factor) override;
   gfx::Size GetPreferredSize() override;
-  bool GotResponseToLockMouseRequest(bool allowed) override;
+  bool GotResponseToLockMouseRequest(
+      blink::mojom::PointerLockResult result) override;
+  void GotLockMousePermissionResponse(bool allowed) override;
   bool GotResponseToKeyboardLockRequest(bool allowed) override;
   bool HasOpener() override;
   RenderFrameHostImpl* GetOpener() override;

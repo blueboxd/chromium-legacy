@@ -77,8 +77,9 @@ bool FrameConnectorDelegate::HasFocus() {
   return false;
 }
 
-bool FrameConnectorDelegate::LockMouse(bool request_unadjusted_movement) {
-  return false;
+blink::mojom::PointerLockResult FrameConnectorDelegate::LockMouse(
+    bool request_unadjusted_movement) {
+  return blink::mojom::PointerLockResult::kUnknownError;
 }
 
 void FrameConnectorDelegate::EnableAutoResize(const gfx::Size& min_size,

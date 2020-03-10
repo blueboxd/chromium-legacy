@@ -155,6 +155,11 @@ class PasswordManagerProxy {
   startBulkPasswordCheck() {}
 
   /**
+   * Requests to interrupt an ongoing bulk password check.
+   */
+  stopBulkPasswordCheck() {}
+
+  /**
    * Requests the latest information about compromised credentials.
    * @return {!Promise<(PasswordManagerProxy.CompromisedCredentialsInfo)>}
    */
@@ -352,6 +357,11 @@ class PasswordManagerImpl {
   /** @override */
   startBulkPasswordCheck() {
     chrome.passwordsPrivate.startPasswordCheck();
+  }
+
+  /** @override */
+  stopBulkPasswordCheck() {
+    chrome.passwordsPrivate.stopPasswordCheck();
   }
 
   /** @override */

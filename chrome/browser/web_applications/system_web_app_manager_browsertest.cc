@@ -429,10 +429,10 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
   bool writer_closed;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents,
-      "window.firstLaunchParams.files[1].createWriter().then("
+      "window.firstLaunchParams.files[1].createWritable().then("
       "  async writer => {"
       "    console.log(writer);"
-      "    await writer.write(0, 'test');"
+      "    await writer.write('test');"
       "    await writer.close();"
       "    domAutomationController.send(true);"
       "  }"

@@ -86,7 +86,7 @@ public class ToolbarButtonInProductHelpController
                 long dataSaved = DataReductionProxySettings.getInstance()
                                          .getContentLengthSavedInHistorySummary()
                         - mDataSavedOnStartPageLoad;
-                Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+                Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
                 if (dataSaved > 0L) tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
                 if (Previews.isPreview(tab)) {
                     tracker.notifyEvent(EventConstants.PREVIEWS_PAGE_LOADED);
@@ -170,7 +170,10 @@ public class ToolbarButtonInProductHelpController
 
     @Override
     public void onScreenshotTaken() {
-        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It works correctly now, but
+        // it is not safe.
+        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
         tracker.notifyEvent(EventConstants.SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND);
 
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {

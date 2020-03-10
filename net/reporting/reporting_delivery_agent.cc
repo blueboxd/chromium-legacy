@@ -89,13 +89,13 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
   }
 
  private:
-  using OriginGroup = std::pair<url::Origin, std::string>;
+  // TODO(chlily): Add NIK.
   using OriginEndpoint = std::pair<url::Origin, GURL>;
-  using OriginGroupEndpoint = std::tuple<url::Origin, std::string, GURL>;
+  using GroupEndpoint = std::pair<ReportingEndpointGroupKey, GURL>;
 
   class Delivery {
    public:
-    Delivery(const OriginEndpoint& report_origin_endpoint)
+    explicit Delivery(const OriginEndpoint& report_origin_endpoint)
         : report_origin(report_origin_endpoint.first),
           endpoint(report_origin_endpoint.second) {}
 
@@ -103,9 +103,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
     void AddReports(const ReportingEndpoint& endpoint,
                     const std::vector<const ReportingReport*>& to_add) {
-      OriginGroupEndpoint key =
-          std::make_tuple(endpoint.group_key.origin,
-                          endpoint.group_key.group_name, endpoint.info.url);
+      GroupEndpoint key = std::make_pair(endpoint.group_key, endpoint.info.url);
       reports_per_endpoint[key] += to_add.size();
       reports.insert(reports.end(), to_add.begin(), to_add.end());
     }
@@ -113,7 +111,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     const url::Origin report_origin;
     const GURL endpoint;
     std::vector<const ReportingReport*> reports;
-    std::map<OriginGroupEndpoint, int> reports_per_endpoint;
+    std::map<GroupEndpoint, int> reports_per_endpoint;
   };
 
   bool CacheHasReports() {
@@ -152,16 +150,19 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
   void OnSendPermissionsChecked(std::vector<const ReportingReport*> reports,
                                 std::set<url::Origin> allowed_report_origins) {
-    // Sort reports into (origin, group) buckets.
-    std::map<OriginGroup, std::vector<const ReportingReport*>>
+    // Sort reports into buckets by endpoint group.
+    std::map<ReportingEndpointGroupKey, std::vector<const ReportingReport*>>
         origin_group_reports;
     for (const ReportingReport* report : reports) {
       url::Origin report_origin = url::Origin::Create(report->url);
       if (allowed_report_origins.find(report_origin) ==
-          allowed_report_origins.end())
+          allowed_report_origins.end()) {
         continue;
-      OriginGroup origin_group(report_origin, report->group);
-      origin_group_reports[origin_group].push_back(report);
+      }
+      // TODO(chlily): Use proper NIK once reports are double-keyed.
+      ReportingEndpointGroupKey group_key(NetworkIsolationKey::Todo(),
+                                          report_origin, report->group);
+      origin_group_reports[group_key].push_back(report);
     }
 
     // Find an endpoint for each (origin, group) bucket and sort reports into
@@ -169,23 +170,21 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     // group) bucket.
     std::map<OriginEndpoint, std::unique_ptr<Delivery>> deliveries;
     for (auto& it : origin_group_reports) {
-      const OriginGroup& origin_group = it.first;
-      const url::Origin& report_origin = origin_group.first;
-      const std::string& group = origin_group.second;
+      const ReportingEndpointGroupKey& group_key = it.first;
 
-      if (base::Contains(pending_origin_groups_, origin_group))
+      if (base::Contains(pending_groups_, group_key))
         continue;
 
-      // TODO(mmenke): Populate NetworkIsolationKey argument.
       const ReportingEndpoint endpoint =
-          endpoint_manager_->FindEndpointForDelivery(NetworkIsolationKey(),
-                                                     report_origin, group);
+          endpoint_manager_->FindEndpointForDelivery(group_key);
+
       if (!endpoint) {
         // TODO(chlily): Remove reports for which there are no valid
         // delivery endpoints.
         continue;
       }
-      OriginEndpoint report_origin_endpoint(report_origin, endpoint.info.url);
+      OriginEndpoint report_origin_endpoint(group_key.origin,
+                                            endpoint.info.url);
 
       Delivery* delivery;
       auto delivery_it = deliveries.find(report_origin_endpoint);
@@ -198,7 +197,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       }
 
       delivery->AddReports(endpoint, it.second);
-      pending_origin_groups_.insert(origin_group);
+      pending_groups_.insert(group_key);
     }
 
     // Keep track of which of these reports we don't queue for delivery; we'll
@@ -226,7 +225,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       // TODO: Calculate actual max depth.
       // TODO(mmenke): Populate NetworkIsolationKey.
       uploader()->StartUpload(
-          report_origin, endpoint, NetworkIsolationKey(), json, max_depth,
+          report_origin, endpoint, NetworkIsolationKey::Todo(), json, max_depth,
           base::BindOnce(&ReportingDeliveryAgentImpl::OnUploadComplete,
                          weak_factory_.GetWeakPtr(), std::move(delivery)));
     }
@@ -238,12 +237,12 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
   void OnUploadComplete(std::unique_ptr<Delivery> delivery,
                         ReportingUploader::Outcome outcome) {
     for (const auto& endpoint_and_count : delivery->reports_per_endpoint) {
-      const url::Origin& origin = std::get<0>(endpoint_and_count.first);
-      const std::string& group = std::get<1>(endpoint_and_count.first);
-      const GURL& endpoint = std::get<2>(endpoint_and_count.first);
+      const ReportingEndpointGroupKey& group_key =
+          endpoint_and_count.first.first;
+      const GURL& endpoint = endpoint_and_count.first.second;
       int report_count = endpoint_and_count.second;
       cache()->IncrementEndpointDeliveries(
-          origin, group, endpoint, report_count,
+          group_key, endpoint, report_count,
           outcome == ReportingUploader::Outcome::SUCCESS);
     }
 
@@ -251,12 +250,12 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       cache()->RemoveReports(delivery->reports,
                              ReportingReport::Outcome::DELIVERED);
       // TODO(mmenke): Populate NetworkIsolationKey argument.
-      endpoint_manager_->InformOfEndpointRequest(NetworkIsolationKey(),
+      endpoint_manager_->InformOfEndpointRequest(NetworkIsolationKey::Todo(),
                                                  delivery->endpoint, true);
     } else {
       cache()->IncrementReportsAttempts(delivery->reports);
       // TODO(mmenke): Populate NetworkIsolationKey argument.
-      endpoint_manager_->InformOfEndpointRequest(NetworkIsolationKey(),
+      endpoint_manager_->InformOfEndpointRequest(NetworkIsolationKey::Todo(),
                                                  delivery->endpoint, false);
     }
 
@@ -264,8 +263,9 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       cache()->RemoveEndpointsForUrl(delivery->endpoint);
 
     for (const ReportingReport* report : delivery->reports) {
-      pending_origin_groups_.erase(
-          OriginGroup(delivery->report_origin, report->group));
+      ReportingEndpointGroupKey group_key(
+          NetworkIsolationKey::Todo(), delivery->report_origin, report->group);
+      pending_groups_.erase(group_key);
     }
 
     cache()->ClearReportsPending(delivery->reports);
@@ -281,9 +281,8 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
   std::unique_ptr<base::OneShotTimer> timer_;
 
-  // Tracks OriginGroup tuples for which there is a pending delivery running.
-  // (Would be an unordered_set, but there's no hash on pair.)
-  std::set<OriginGroup> pending_origin_groups_;
+  // Tracks endpoint groups for which there is a pending delivery running.
+  std::set<ReportingEndpointGroupKey> pending_groups_;
 
   std::unique_ptr<ReportingEndpointManager> endpoint_manager_;
 

@@ -8,7 +8,7 @@ import android.content.Intent;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,9 +31,6 @@ public class MediaNotificationUma {
     public static final String INTENT_EXTRA_NAME =
             "org.chromium.chrome.browser.metrics.MediaNotificationUma.EXTRA_CLICK_SOURCE";
 
-    private static final EnumeratedHistogramSample sClickSourceHistogram =
-            new EnumeratedHistogramSample("Media.Notification.Click", Source.NUM_ENTRIES);
-
     /**
      * Record the UMA as specified by {@link intent}. The {@link intent} should contain intent extra
      * of name {@link INTENT_EXTRA_NAME} indicating the type.
@@ -44,6 +41,7 @@ public class MediaNotificationUma {
         @Source
         int source = intent.getIntExtra(INTENT_EXTRA_NAME, Source.INVALID);
         if (source == Source.INVALID || source >= Source.NUM_ENTRIES) return;
-        sClickSourceHistogram.record(source);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Media.Notification.Click", source, Source.NUM_ENTRIES);
     }
 }

@@ -1,0 +1,26 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+import "components/feed/core/proto/v2/wire/duration.proto";
+import "components/feed/core/proto/v2/wire/token.proto";
+
+// InPlaceUpdateHandle is a handle for the client to send to the server in order
+// to update content in-place.
+message InPlaceUpdateHandle {
+  // Indicates how long after this response ws received the client should wait
+  // before sending the token back to the server. It is not an error to send the
+  // token earlier, but in that case the server may just replace the handle with
+  // and an updated use_after and the same token.
+  optional feedwire.Duration use_after = 1;
+
+  // Opaque token to use in a request for the server to send updated versions of
+  // its associated content.
+  optional Token token = 2;
+}

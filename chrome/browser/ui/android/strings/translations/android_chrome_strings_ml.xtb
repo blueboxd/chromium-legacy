@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">നിങ്ങൾക്ക് ഏത് സമയത്തും ക്രമീകരണത്തിൽ സമന്വയം ഓണാക്കാവുന്നതാണ്</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ബുക്ക്‌മാർക്ക്}other{<ph name="BOOKMARKS_COUNT_MANY" /> ബുക്ക്‌മാർക്കുകൾ}}</translation>
 <translation id="3089395242580810162">അദൃശ്യ ടാബിൽ തുറക്കുക</translation>
+<translation id="3114012059975132928">വീഡിയോ പ്ലേയർ</translation>
 <translation id="3123473560110926937">ചില സൈറ്റുകളിൽ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="3123734510202723619">അറിയിപ്പുകൾ</translation>
 <translation id="3137521801621304719">അദൃശ്യ മോഡ് വിടുക</translation>
@@ -352,6 +353,7 @@
 <translation id="3587482841069643663">എല്ലാം</translation>
 <translation id="358794129225322306">ഒന്നിലേറെ ഫയലുകള്‍ സ്വമേധയാ ഡൗണ്‍‌ലോഡ് ചെയ്യാന്‍ സൈറ്റിനെ അനുവദിക്കുക.</translation>
 <translation id="3590487821116122040">Chrome, സൈറ്റ് സ്‌റ്റോറേജിനെ പ്രധാനപ്പെട്ടതായി കണക്കാക്കുന്നില്ല (ഉദാ: ക്രമീകരണം സംരക്ഷിച്ചിട്ടില്ലാത്തതോ നിങ്ങൾ ഇടയ്‌ക്കിടെ സന്ദർശിക്കാത്തതോ ആയ സൈറ്റുകൾ)</translation>
+<translation id="3594780231884063836">വീഡിയോ മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="3599863153486145794">സൈൻ ഇൻ ചെയ്‌ത എല്ലാ ഉപകരണങ്ങളിൽ നിന്നും ചരിത്രം മായ്ക്കുന്നു. നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രങ്ങളുണ്ടായിരിക്കാം.</translation>
 <translation id="3600792891314830896">ശബ്‌ദം പ്ലേ ചെയ്യുന്ന സൈറ്റുകളെ മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="3616113530831147358">ഓഡിയോ</translation>
@@ -605,6 +607,7 @@
 <translation id="5456381639095306749">പേജ് ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="548278423535722844">മാപ്‌സ് ആപ്പിൽ തുറക്കുക</translation>
 <translation id="5487521232677179737">ഡാറ്റ മായ്‌ക്കുക</translation>
+<translation id="5489227211564503167">ആകെ <ph name="TOTAL_TIME" />-ൽ <ph name="ELAPSED_TIME" /> കഴിഞ്ഞു.</translation>
 <translation id="5494752089476963479">അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്ന സൈറ്റുകളിലെ പരസ്യങ്ങൾ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="5500777121964041360">നിങ്ങളുടെ ലൊക്കേഷനിൽ ലഭ്യമായിരിക്കില്ല</translation>
 <translation id="5505264765875738116">അറിയിപ്പുകൾ അയയ്ക്കാൻ സൈറ്റുകൾക്ക് അനുവാദം ചോദിക്കാനാവില്ല</translation>
@@ -665,6 +668,7 @@
 <translation id="5864419784173784555">മറ്റൊരു ഡൗൺലോഡിനായി കാത്തിരിക്കുന്നു…</translation>
 <translation id="5865733239029070421">Google-ലേക്ക് സ്വയമേവ ഉപയോഗ വിവരക്കണക്കുകളും ക്രാഷ് റിപ്പോര്‍ട്ടുകളും അയയ്ക്കുന്നു</translation>
 <translation id="5869522115854928033">സംരക്ഷിച്ച പാസ്‌വേഡുകള്‍</translation>
+<translation id="5876056640971328065">വീഡിയോ താൽക്കാലികമായി നിർത്തുക</translation>
 <translation id="5884076754568147479">ടാസ്‌ക്കുകൾ പൂർത്തിയാക്കാൻ നിങ്ങളെ സഹായിക്കുന്നതിനായി, നിങ്ങൾ അസിസ്‌റ്റന്റ് ഉപയോഗിക്കുന്ന സൈറ്റുകളുടെ URL-കളും അവയുടെ ഉള്ളടക്കവും അസിസ്‌റ്റന്റിലൂടെ നിങ്ങൾ സമർപ്പിക്കുന്ന വിവരങ്ങളും Google-ന് ലഭിക്കും.</translation>
 <translation id="5902828464777634901">കുക്കികൾ ഉൾപ്പെടെ ഈ വെബ്‌സൈറ്റ് സംഭരിക്കുന്ന എല്ലാ പ്രാദേശിക വിവരവും ഇല്ലാതാക്കും.</translation>
 <translation id="5919204609460789179">സമന്വയിപ്പിക്കാൻ തുടങ്ങുന്നതിന്, <ph name="PRODUCT_NAME" /> അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
@@ -728,6 +732,7 @@
 <translation id="6381421346744604172">വെബ്‌സൈറ്റുകൾ ഇരുണ്ടതാക്കുക</translation>
 <translation id="6388207532828177975">മായ്‌ച്ച് റീസെറ്റ് ചെയ്യുക</translation>
 <translation id="6395288395575013217">ലിങ്ക്</translation>
+<translation id="6397616442223433927">ഓൺലൈനിൽ തിരിച്ചെത്തി</translation>
 <translation id="6404511346730675251">ബുക്ക്‌മാർക്ക് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> എന്നതിൽ നിന്ന് AR-ൽ കടക്കണോ?</translation>
@@ -796,6 +801,7 @@
 <translation id="6846298663435243399">ലോഡുചെയ്യുന്നു...</translation>
 <translation id="6850409657436465440">നിങ്ങളുടെ ഡൗൺലോഡ് ഇപ്പോഴും പുരോഗതിയിലാണ്</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ടാബുകൾ അടച്ചു</translation>
+<translation id="6864395892908308021">ഈ ഉപകരണത്തിന് NFC റീഡ് ചെയ്യാനാവില്ല</translation>
 <translation id="6864459304226931083">ചിത്രം ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="6865313869410766144">ഓട്ടോഫിൽ ഫോം ഡാറ്റ</translation>
 <translation id="6884306546558072722">ഓഫ്‌ലൈനിൽ അടുത്തറിയുന്നത് തുടരുക</translation>
@@ -916,6 +922,7 @@
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
 <translation id="7810647596859435254">ഇത് ഉപയോഗിച്ച് തുറക്കുക...</translation>
 <translation id="7821588508402923572">നിങ്ങൾ ലാഭിച്ച ഡാറ്റ ഇവിടെ ദൃശ്യമാവും</translation>
+<translation id="783819812427904514">വീഡിയോ അൺ‌മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="784934925303690534">സമയ ശ്രേണി</translation>
 <translation id="7851858861565204677">മറ്റ് ഉപകരണങ്ങൾ</translation>
 <translation id="7875915731392087153">ഇമെയിൽ സൃഷ്‌ടിക്കുക</translation>

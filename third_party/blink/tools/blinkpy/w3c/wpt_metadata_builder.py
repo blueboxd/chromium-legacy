@@ -209,6 +209,46 @@ class WPTMetadataBuilder(object):
             # baseline is all PASS which should just be deleted.
             _log.error("Test %s has a non-FAIL baseline" % test_name)
 
+    def _metadata_filename_from_test_file(self, wpt_test_file):
+        """Returns the filename of the metadata (.ini) file for the test.
+
+        Args:
+            wpt_test_file: The file on disk that the specified test lives in.
+                For multi-global tests this is usually a ".js" file.
+
+        Returns:
+            The fully-qualified string path of the metadata file for this test.
+        """
+        assert "?" not in wpt_test_file
+        test_file_parts = wpt_test_file.split("/")
+        return os.path.join(self.metadata_output_dir, *test_file_parts) + ".ini"
+
+    def _metadata_inline_test_name_from_test_name(self, wpt_test_name):
+        """Returns the test name to use *inside* of a metadata file.
+
+        The inline name inside the metadata file is the logical name of the
+        test without any subdirectories.
+        For multi-global tests this means that it must have the specific scope
+        of the test (eg: worker, window, etc). This name must also include any
+        variants that are set.
+
+        Args:
+            wpt_test_name: The fully-qualified test name which contains all
+                subdirectories as well as scope (for multi-globals), and
+                variants.
+
+        Returns:
+            The string test name inside of the metadata file.
+        """
+        # To generate the inline test name we basically want to strip away the
+        # subdirectories from the test name, being careful not to accidentally
+        # clobber the variant.
+        variant_split = wpt_test_name.split("?")
+        test_path = variant_split[0]
+        test_name_part = test_path.split("/")[-1]
+        variant = "?" + variant_split[1] if len(variant_split) == 2 else ""
+        return test_name_part + variant
+
     def get_metadata_filename_and_contents(self, chromium_test_name, test_status_bitmap=0):
         """Determines the metadata filename and contents for the specified test.
 
@@ -255,27 +295,16 @@ class WPTMetadataBuilder(object):
             metadata_file_contents = self._get_dir_disabled_string()
         else:
             # For individual tests, we create one file per test, with the name
-            # of the test in the file as well. This name can contain variants.
+            # of the test in the file as well.
             test_file_path = self.wpt_manifest.file_path_for_test_url(wpt_test_name)
             if not test_file_path:
                 _log.info("Could not find file for test %s, skipping" % wpt_test_name)
                 return None, None
-            test_file_parts = test_file_path.split("/")
 
-            # Append `.ini` to the test filename to indicate it's the metadata
-            # file. The `test_filename` can differ from the `wpt_test_name` for
-            # multi-global tests.
-            test_file_parts[-1] += ".ini"
-            metadata_filename = os.path.join(self.metadata_output_dir,
-                                             *test_file_parts)
+            metadata_filename = self._metadata_filename_from_test_file(test_file_path)
             _log.debug("Creating a test ini file %s with status_bitmap %s", metadata_filename, test_status_bitmap)
-
-            # The contents of the metadata file is two lines:
-            # 1. the last part of the WPT test path (ie the filename) inside
-            #    square brackets - this could differ from the metadata filename.
-            # 2. an indented line with the test status and reason
-            wpt_test_file_name_part = wpt_test_name_parts[-1]
-            metadata_file_contents = self._get_test_failed_string(wpt_test_file_name_part, test_status_bitmap)
+            inline_test_name = self._metadata_inline_test_name_from_test_name(wpt_test_name)
+            metadata_file_contents = self._get_test_failed_string(inline_test_name, test_status_bitmap)
 
         return metadata_filename, metadata_file_contents
 
@@ -285,8 +314,12 @@ class WPTMetadataBuilder(object):
     def _get_test_disabled_string(self, test_name):
         return "[%s]\n  disabled: wpt_metadata_builder.py\n" % test_name
 
-    def _get_test_failed_string(self, test_name, test_status_bitmap):
-        result = "[%s]\n" % test_name
+    def _get_test_failed_string(self, inline_test_name, test_status_bitmap):
+        # The contents of the metadata file is two lines:
+        # 1. the inline name of the WPT test pathinside square brackets. This
+        #    name contains the test scope (for multi-globals) and variants.
+        # 2. an indented line with the test status and reason
+        result = "[%s]\n" % inline_test_name
 
         # A skipped test is a little special in that it doesn't happen along with
         # any other status. So we compare directly against SKIP_TEST and also

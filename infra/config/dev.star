@@ -50,8 +50,6 @@ luci.milo(
 )
 
 exec('//dev/buckets/ci.star')
-exec('//dev/buckets/cron.star')
 exec('//dev/buckets/try.star')
 
 exec('//dev/consoles/chromium.swarm.star')
-exec('//dev/consoles/snapshots.star')

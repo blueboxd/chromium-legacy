@@ -143,13 +143,27 @@ base::string16 LauncherControllerHelper::GetAppTitle(
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
-  if (!proxy)
+  if (proxy) {
+    std::string name;
+    proxy->AppRegistryCache().ForOneApp(
+        app_id,
+        [&name](const apps::AppUpdate& update) { name = update.Name(); });
+    if (!name.empty())
+      return base::UTF8ToUTF16(name);
+  }
+
+  // Get the title for the extension which is not managed by AppService.
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  if (!registry)
     return base::string16();
 
-  std::string name;
-  proxy->AppRegistryCache().ForOneApp(
-      app_id, [&name](const apps::AppUpdate& update) { name = update.Name(); });
-  return base::UTF8ToUTF16(name);
+  auto* extension = registry->GetExtensionById(
+      app_id, extensions::ExtensionRegistry::EVERYTHING);
+  if (extension)
+    return base::UTF8ToUTF16(extension->name());
+
+  return base::string16();
 }
 
 std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {

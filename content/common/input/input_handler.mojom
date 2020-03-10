@@ -9,6 +9,7 @@ import "content/common/input/synchronous_compositor.mojom";
 import "content/common/native_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "third_party/blink/public/mojom/input/pointer_lock_result.mojom";
 import "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom";
 import "ui/base/ime/mojom/ime_types.mojom";
 import "ui/events/mojom/event.mojom";
@@ -227,7 +228,8 @@ interface WidgetInputHandlerHost {
   // locked.
   RequestMouseLock(bool from_user_gesture,
                    bool privileged,
-                   bool unadjusted_movement) => (bool success);
+                   bool unadjusted_movement)
+                      => (blink.mojom.PointerLockResult result);
 
   // Unlocks the mouse back to its default behavior. This will also returns
   // mouse movement back to the platform's adjusted movement if unadjusted

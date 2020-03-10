@@ -3,6 +3,7 @@ include_rules = [
   "+cc/input/main_thread_scrolling_reason.h",
   "+cc/input/overscroll_behavior.h",
   "+cc/input/scroll_elasticity_helper.h",
+  "+cc/input/scroll_input_type.h",
   "+cc/input/snap_fling_controller.h",
   "+cc/trees/swap_promise_monitor.h",
 

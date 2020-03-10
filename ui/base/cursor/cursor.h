@@ -75,7 +75,7 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) Cursor {
   PlatformCursor platform_cursor_ = 0;
 
   // The scale factor for the cursor bitmap.
-  float image_scale_factor_ = 0.0f;
+  float image_scale_factor_ = 1.0f;
 
   // The hotspot for the cursor. This is only used for the custom cursor type.
   gfx::Point custom_hotspot_;

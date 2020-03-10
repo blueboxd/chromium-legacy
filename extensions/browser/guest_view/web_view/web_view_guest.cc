@@ -1110,7 +1110,8 @@ bool WebViewGuest::HandleKeyboardShortcuts(
   // mouse if necessary.
   if ((event.windows_key_code == ui::VKEY_ESCAPE) &&
       !(event.GetModifiers() & blink::WebInputEvent::kInputModifiers)) {
-    return web_contents()->GotResponseToLockMouseRequest(false);
+    return web_contents()->GotResponseToLockMouseRequest(
+        blink::mojom::PointerLockResult::kUserRejected);
   }
 
 #if defined(OS_MACOSX)
@@ -1440,8 +1441,8 @@ void WebViewGuest::RequestToLockMouse(WebContents* web_contents,
                                       bool last_unlocked_by_target) {
   web_view_permission_helper_->RequestPointerLockPermission(
       user_gesture, last_unlocked_by_target,
-      base::BindOnce(
-          base::IgnoreResult(&WebContents::GotResponseToLockMouseRequest),
+      base::Bind(
+          base::IgnoreResult(&WebContents::GotLockMousePermissionResponse),
           base::Unretained(web_contents)));
 }
 

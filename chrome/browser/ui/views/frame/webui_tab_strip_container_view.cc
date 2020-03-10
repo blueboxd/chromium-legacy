@@ -290,7 +290,7 @@ WebUITabStripContainerView::~WebUITabStripContainerView() {
 // static
 bool WebUITabStripContainerView::UseTouchableTabStrip() {
   return base::FeatureList::IsEnabled(features::kWebUITabStrip) &&
-         ui::MaterialDesignController::touch_ui();
+         ui::MaterialDesignController::GetInstance()->touch_ui();
 }
 
 // static

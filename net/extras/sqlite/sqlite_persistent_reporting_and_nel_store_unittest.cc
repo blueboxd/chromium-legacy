@@ -198,7 +198,10 @@ class SQLitePersistentReportingAndNelStoreTest
     info.url = url;
     info.priority = priority;
     info.weight = weight;
-    ReportingEndpoint endpoint(origin, group_name, std::move(info));
+    ReportingEndpoint endpoint(
+        ReportingEndpointGroupKey(NetworkIsolationKey::Todo(), origin,
+                                  group_name),
+        std::move(info));
     return endpoint;
   }
 
@@ -208,8 +211,10 @@ class SQLitePersistentReportingAndNelStoreTest
       base::Time last_used,
       OriginSubdomains include_subdomains = OriginSubdomains::DEFAULT,
       base::Time expires = kExpires) {
-    return CachedReportingEndpointGroup(origin, group_name, include_subdomains,
-                                        expires, last_used);
+    return CachedReportingEndpointGroup(
+        ReportingEndpointGroupKey(NetworkIsolationKey::Todo(), origin,
+                                  group_name),
+        include_subdomains, expires, last_used);
   }
 
  protected:

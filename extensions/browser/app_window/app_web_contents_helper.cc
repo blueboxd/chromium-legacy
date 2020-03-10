@@ -90,7 +90,12 @@ void AppWebContentsHelper::RequestToLockMouse() const {
   bool has_permission = IsExtensionWithPermissionOrSuggestInConsole(
       APIPermission::kPointerLock, extension, web_contents_->GetMainFrame());
 
-  web_contents_->GotResponseToLockMouseRequest(has_permission);
+  if (has_permission)
+    web_contents_->GotResponseToLockMouseRequest(
+        blink::mojom::PointerLockResult::kSuccess);
+  else
+    web_contents_->GotResponseToLockMouseRequest(
+        blink::mojom::PointerLockResult::kPermissionDenied);
 }
 
 void AppWebContentsHelper::RequestMediaAccessPermission(

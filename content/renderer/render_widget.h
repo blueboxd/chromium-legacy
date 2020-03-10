@@ -396,8 +396,8 @@ class CONTENT_EXPORT RenderWidget
   void ConvertViewportToWindow(blink::WebFloatRect* rect) override;
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
   bool RequestPointerLock(blink::WebLocalFrame* requester_frame,
+                          blink::WebWidgetClient::PointerLockCallback callback,
                           bool request_unadjusted_movement) override;
-  void OnLockPointer(bool succeeded);
   void PointerLockLost();
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;

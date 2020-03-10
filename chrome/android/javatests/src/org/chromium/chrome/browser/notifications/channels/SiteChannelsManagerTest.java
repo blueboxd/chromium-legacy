@@ -31,8 +31,8 @@ import org.chromium.chrome.browser.notifications.NotificationChannelStatus;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
-import org.chromium.chrome.browser.settings.website.ContentSettingValues;
-import org.chromium.chrome.browser.settings.website.PermissionInfo;
+import org.chromium.chrome.browser.site_settings.ContentSettingValues;
+import org.chromium.chrome.browser.site_settings.PermissionInfo;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 

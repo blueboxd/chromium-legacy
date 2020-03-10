@@ -22,6 +22,7 @@
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "skia/ext/image_operations.h"
@@ -496,7 +497,7 @@ NotifierSettingsView::NotifierSettingsView() {
   header_view_ = AddChildView(std::move(header_view));
 
   auto scroller = std::make_unique<views::ScrollView>();
-  scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
+  scroller->SetBackgroundColor(base::nullopt);
   scroll_bar_ = scroller->SetVerticalScrollBar(
       std::make_unique<views::OverlayScrollBar>(/*horizontal=*/false));
   scroller->SetDrawOverflowIndicator(false);

@@ -36,7 +36,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
-#include "ui/base/test/material_design_controller_test_api.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 class LocationBarViewBrowserTest : public InProcessBrowserTest {
  public:
@@ -128,11 +128,10 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, BubblesCloseOnHide) {
 
 class TouchLocationBarViewBrowserTest : public LocationBarViewBrowserTest {
  public:
-  TouchLocationBarViewBrowserTest() : test_api_(true) {}
+  TouchLocationBarViewBrowserTest() = default;
 
  private:
-  ui::test::MaterialDesignControllerTestAPI test_api_;
-  DISALLOW_COPY_AND_ASSIGN(TouchLocationBarViewBrowserTest);
+  ui::MaterialDesignController::TouchUiScoperForTesting touch_ui_scoper_{true};
 };
 
 // Test the corners of the OmniboxViewViews do not get drawn on top of the

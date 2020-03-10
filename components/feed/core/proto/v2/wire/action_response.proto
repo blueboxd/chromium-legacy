@@ -1,0 +1,23 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+// Top level response message.
+message ActionResponse {
+  // Supported versions of response messages are specified as extensions to
+  // the top-level response message.  An enum is used to denote the expected
+  // extensions for this response.
+  enum ResponseVersion {
+    UNKNOWN_ACTION_RESPONSE_VERSION = 0;
+    FEED_UPLOAD_ACTION_RESPONSE = 1;
+  }
+  optional ResponseVersion response_version = 1;
+
+  extensions 1000;  // FeedActionResponse
+}

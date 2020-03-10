@@ -18,11 +18,13 @@
 <translation id="1779356040007214683">У мэтах бяспекі Chromium мы выключылі некаторыя пашырэнні, якія не значацца ў спісе <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> і маглі быць дададзены без вашага ведама.</translation>
 <translation id="1808667845054772817">Пераўсталяваць Chromium</translation>
 <translation id="1881322772814446296">Вы ўваходзіце праз уліковы запіс пад кіраваннем, што дае адміністратару кантроль над вашым профілем у браўзеры Chromium. Даныя Chromium (праграмы, закладкі, гісторыя, паролі і іншыя налады) будуць назаўсёды прывязаны да ўліковага запісу <ph name="USER_NAME" />. Вы зможаце выдаліць гэтыя даныя праз панэль кіравання Уліковымі запісамі Google, але іх нельга будзе звязаць з іншым уліковым запісам. Вы можаце стварыць новы профіль, каб захаваць існуючыя даныя Chromium асобна. <ph name="LEARN_MORE" /></translation>
+<translation id="1911747963917069754">Браўзеру Chromium не ўдаецца праверыць усе паролі. Паўтарыце спробу праз 24 гадзіны</translation>
 <translation id="1911763535808217981">Выключыўшы гэта, вы зможаце ўваходзіць на сайты Google, такія як Gmail, не ўваходзячы ў Chromium</translation>
 <translation id="1929939181775079593">Chromium не адказвае. Перазапусціць яго?</translation>
 <translation id="1966382378801805537">Chromium не можа вызначыць або задаць стандартны браўзер</translation>
 <translation id="2008474315282236005">Будзе выдалены 1 элемент з гэтай прылады. Каб потым атрымаць свае даныя, увайдзіце ва ўліковы запіс Chromium як <ph name="USER_EMAIL" />.</translation>
 <translation id="2147976119693222405">Сістэме Chromium OS не ўдалося сінхранізаваць даныя. Вырашыце праблему.</translation>
+<translation id="2185166961232948079">Chromium – Уваход у сетку – <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">Калі камп'ютар выкарыстоўваюць некалькі чалавек, кожны з іх можа наладзіць Chromium для сябе і праглядаць старонкі асобна ад іншых.</translation>
 <translation id="2347108572062610441">Гэта пашырэнне змяніла старонку, якая паказваецца пры запуску Chromium.</translation>
 <translation id="2396765026452590966">Пашырэнне "<ph name="EXTENSION_NAME" />" змяніла старонку, якая паказваецца пры запуску Chromium.</translation>
@@ -43,6 +45,7 @@
 <translation id="2886012850691518054">(Неабавязкова.) Дапамажыце палепшыць Chromium, дазволіўшы аўтаматычна адпраўляць у Google статыстыку выкарыстання і справаздачы аб збоях.</translation>
 <translation id="2910007522516064972">Пра &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium абноўлены</translation>
+<translation id="3032706164202344641">Браўзеру Chromium не ўдаецца праверыць паролі. Паўтарыце спробу пазней.</translation>
 <translation id="3032787606318309379">Дадаецца ў Chromium...</translation>
 <translation id="3068515742935458733">Дапамагаць палепшыць Chromium, адпраўляючы ў Google справаздачы аб збоях і <ph name="UMA_LINK" /></translation>
 <translation id="3103660991484857065">Усталёўшчык не змог распакаваць архіў. Спампуйце Chromium зноў.</translation>
@@ -74,6 +77,7 @@
 <translation id="3945058413678539331">Chromium спрабуе скапіраваць паролі. Каб дазволіць гэта, увядзіце пароль Windows.</translation>
 <translation id="4036079820698952681">Дапамажыце палепшыць Chromium, паведаміўшы <ph name="BEGIN_LINK" />бягучыя налады<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">У апошняй версіі з'явіліся важныя паляпшэнні сістэмы бяспекі і новыя функцыі.</translation>
+<translation id="419998258129752635"><ph name="PAGE_TITLE" /> – Уваход у сетку – Chromium</translation>
 <translation id="421369550622382712">Адкрывайце для сябе выдатныя праграмы, гульні, пашырэнні і тэмы для Chromium.</translation>
 <translation id="4216212958613226427">На гэтай мове паказваецца карыстальніцкі інтэрфейс Chromium</translation>
 <translation id="4230135487732243613">Звязаць вашы даныя Chromium з гэтым уліковым запісам?</translation>
@@ -82,6 +86,7 @@
 <translation id="4407044323746248786">Усё роўна выйсці з Chromium?</translation>
 <translation id="4415566066719264597">Дазволіць браўзеру Chromium працаваць у фоне</translation>
 <translation id="4423735387467980091">Наладка і кіраванне Chromium</translation>
+<translation id="4544142686420020088">Chromium не абнавіўся. Нешта пайшло не так. <ph name="BEGIN_LINK" />Выправіце праблемы з абнаўленнем Chromium і памылкі абнаўлення.<ph name="END_LINK" /></translation>
 <translation id="4567424176335768812">Вы ўвайшлі як <ph name="USER_EMAIL_ADDRESS" /> і цяпер маеце доступ да закладак, гісторыі і іншых налад на ўсіх прыладах, дзе выкананы ўваход.</translation>
 <translation id="459535195905078186">Праграмы Chromium</translation>
 <translation id="4677944499843243528">Здаецца, профіль выкарыстоўваецца іншым працэсам Chromium (<ph name="PROCESS_ID" />) на іншым камп'ютары (<ph name="HOST_NAME" />). Chromium заблакіраваў профіль, каб яго нельга было пашкодзіць. Калі вы ўпэўненыя, што іншыя працэсы гэты профіль не выкарыстоўваюць, можна разблакіраваць профіль і перазапусціць Chromium.</translation>
@@ -114,6 +119,7 @@
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Вас вітае Chromium</translation>
 <translation id="5895138241574237353">Перазапусціць</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Уваход у сетку</translation>
 <translation id="5987687638152509985">Абнавіце Chromium, каб пачаць сінхранізацыю</translation>
 <translation id="6013050204643758987">Chromium OS працуе дзякуючы дадатковаму <ph name="BEGIN_LINK_CROS_OSS" />праграмнаму забеспячэнню з адкрытым зыходным кодам<ph name="END_LINK_CROS_OSS" />, як і <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бэта-версія)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6055895534982063517">Даступная новая версія Chromium. Яшчэ хутчэйшая.</translation>
@@ -153,6 +159,7 @@
 <translation id="6893813176749746474">Chromium быў абноўлены, але вы не выкарыстоўвалі яго на працягу як мінімум 30 дзён.</translation>
 <translation id="6964305034639999644">Адкрыць спасылку ў акне інко&amp;гніта ў Chromium</translation>
 <translation id="6990124437352146030">Chromium запытвае дазвол на доступ да мікрафона для гэтага сайта</translation>
+<translation id="701244094609242530">Браўзеру Chromium не ўдаецца праверыць пашырэнні. Паўтарыце спробу пазней.</translation>
 <translation id="705851970750939768">Абнавіць Chromium</translation>
 <translation id="7066436765290594559">Сістэме Chromium OS не ўдалося сінхранізаваць даныя. Абнавіце фразу-пароль для сінхранізацыі.</translation>
 <translation id="7067091210845072982">Калі відарыс не мае прыдатнага апісання, Chromium паспрабуе дадаць яго для вас. Каб стварыць апісанні, відарысы адпраўляюцца ў Google.</translation>
@@ -195,6 +202,7 @@
 <translation id="8013436988911883588">Як толькі Chromium атрымае дазвол, вэб-сайты змогуць запытваць у вас доступ.</translation>
 <translation id="81770708095080097">Файл небяспечны, таму Chromium заблакіраваў яго.</translation>
 <translation id="8248265253516264921">Калі відарыс не мае прыдатнага апісання, Chromium паспрабуе дадаць яго для вас. Каб стварыць апісанні, відарысы адпраўляюцца ў Google. Гэты параметр можна адключыць у наладах у любы час.</translation>
+<translation id="8266560134891435528">Chromium не можа праверыць вашы паролі, пакуль вы не ўвойдзеце ва ўліковы запіс</translation>
 <translation id="8276522524898344151">Chromium спрабуе скапіраваць паролі.</translation>
 <translation id="8290862415967981663">Файл можа быць небяспечным, таму Chromium заблакіраваў яго.</translation>
 <translation id="8330519371938183845">Увайдзіце ў Chromium, каб сінхранізаваць і персаналізаваць яго на сваіх прыладах</translation>

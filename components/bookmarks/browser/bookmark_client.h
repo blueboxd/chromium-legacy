@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_types.h"
@@ -24,8 +25,6 @@ struct UserMetricsAction;
 namespace bookmarks {
 
 class BookmarkModel;
-class BookmarkNode;
-class BookmarkPermanentNode;
 
 // This class abstracts operations that depends on the embedder's environment,
 // e.g. Chrome.
@@ -66,9 +65,9 @@ class BookmarkClient {
   // |url_typed_count_map| must not be null.
   virtual void GetTypedCountForUrls(UrlTypedCountMap* url_typed_count_map);
 
-  // Returns whether the embedder wants permanent node |node|
+  // Returns whether the embedder wants permanent node of type |type|
   // to always be visible or to only show them when not empty.
-  virtual bool IsPermanentNodeVisible(const BookmarkPermanentNode* node) = 0;
+  virtual bool IsPermanentNodeVisibleWhenEmpty(BookmarkNode::Type type) = 0;
 
   // Wrapper around RecordAction defined in base/metrics/user_metrics.h
   // that ensure that the action is posted from the correct thread.

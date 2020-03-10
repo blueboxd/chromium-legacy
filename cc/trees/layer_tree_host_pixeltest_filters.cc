@@ -452,6 +452,9 @@ TEST_P(LayerTreeHostBlurFiltersPixelTestGPULayerList,
       average_error_allowed_in_bad_pixels,
       large_error_allowed,
       small_error_allowed));
+#else
+  if (use_vulkan())
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 #endif
 
   RunPixelTestWithLayerList(
@@ -941,6 +944,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
       small_error_allowed));
+#else
+  if (use_vulkan())
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 #endif
 
   RunPixelTest(

@@ -349,6 +349,7 @@ public class ProcessInitializationHandler {
             public void run() {
                 HomepageManager.recordHomeButtonPreferenceState();
                 HomepageManager.recordHomepageIsCustomized(HomepageManager.isHomepageCustomized());
+                HomepageManager.recordHomepageLocationTypeIfEnabled();
             }
         });
 

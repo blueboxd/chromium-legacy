@@ -381,16 +381,12 @@
     'remove_from': [
       # https://crbug.com/1054545
       'Fuchsia ARM64',
-      'Fuchsia x64',
-      'fuchsia-fyi-arm64-rel',
     ],
   },
   'boringssl_ssl_tests': {
     'remove_from': [
       # https://crbug.com/1054545
       'Fuchsia ARM64',
-      'Fuchsia x64',
-      'fuchsia-fyi-arm64-rel',
     ],
   },
   'breakpad_unittests': {
@@ -2173,8 +2169,6 @@
     'remove_from': [
       # crbug.com/1054240
       'Fuchsia ARM64',
-      'Fuchsia x64',
-      'fuchsia-fyi-arm64-rel',
     ],
   },
   'video_decode_accelerator_gl_unittest': {

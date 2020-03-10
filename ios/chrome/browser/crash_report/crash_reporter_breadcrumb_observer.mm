@@ -12,15 +12,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// IMPORTANT: the value of this constant should not exceed 4.
-// Number of product data keys to use for breadcrumbs. Each product key allows
-// to upload limited amount of data (kMaxProductDataLength), so having
-// multiple keys makes breadcrumbs more useful by having access to more
-// breadcrumbs on crash reports.
-const int kBreadcrumbsKeyCount = 2;
-}
-
 const int kMaxProductDataLength = 255;
 
 @interface CrashReporterBreadcrumbObserver () {
@@ -91,7 +82,7 @@ const int kMaxProductDataLength = 255;
   [_breadcrumbs insertString:eventWithSeperator atIndex:0];
 
   NSUInteger maxBreadcrumbsLength =
-      kBreadcrumbsKeyCount * kMaxProductDataLength;
+      self.breadcrumbsKeyCount * kMaxProductDataLength;
   if (_breadcrumbs.length > maxBreadcrumbsLength) {
     NSRange trimRange = NSMakeRange(maxBreadcrumbsLength,
                                     _breadcrumbs.length - maxBreadcrumbsLength);
@@ -100,8 +91,8 @@ const int kMaxProductDataLength = 255;
 
   // Cut breadcrumbs strings into multiple pieces and upload with separate keys.
   NSMutableArray* breadcrumbs =
-      [[NSMutableArray alloc] initWithCapacity:kBreadcrumbsKeyCount];
-  for (NSUInteger i = 0; i < kBreadcrumbsKeyCount &&
+      [[NSMutableArray alloc] initWithCapacity:self.breadcrumbsKeyCount];
+  for (NSUInteger i = 0; i < self.breadcrumbsKeyCount &&
                          (i * kMaxProductDataLength) < _breadcrumbs.length;
        i++) {
     NSUInteger location = i * kMaxProductDataLength;

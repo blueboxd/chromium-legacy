@@ -58,11 +58,6 @@ using MediaRouteResponseCallback =
     base::OnceCallback<void(mojom::RoutePresentationConnectionPtr connection,
                             const RouteRequestResult& result)>;
 
-// Type of callback used for |SearchSinks()| to return the sink ID of the
-// newly-found sink. The sink ID will be the empty string if no sink was found.
-using MediaSinkSearchResponseCallback =
-    base::OnceCallback<void(const MediaSink::Id& sink_id)>;
-
 // Subscription object returned by calling
 // |AddPresentationConnectionStateChangedCallback|. See the method comments for
 // details.
@@ -164,17 +159,6 @@ class MediaRouter : public KeyedService {
   // Media Router. This can be used to perform any initialization that is not
   // approriate to be done at construction.
   virtual void OnUserGesture() = 0;
-
-  // Searches for a MediaSink using |search_input| and |domain| as criteria.
-  // |domain| is the hosted domain of the user's signed-in identity, or empty if
-  // the user has no domain or is not signed in.  |sink_callback| will be called
-  // either with the ID of the new sink when it is found or with an empty string
-  // if no sink was found.
-  virtual void SearchSinks(const MediaSink::Id& sink_id,
-                           const MediaSource::Id& source_id,
-                           const std::string& search_input,
-                           const std::string& domain,
-                           MediaSinkSearchResponseCallback sink_callback) = 0;
 
   // Adds |callback| to listen for state changes for presentation connected to
   // |route_id|. The returned Subscription object is owned by the caller.

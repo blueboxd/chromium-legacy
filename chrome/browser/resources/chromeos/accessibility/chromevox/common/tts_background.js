@@ -260,16 +260,52 @@ TtsBackground = class extends ChromeTtsBase {
    * @private
    */
   speakSplittingText_(textString, queueMode, properties) {
-    const lines = textString.split(/\r\n|\r|\n/);
-    for (const line of lines) {
-      if (line.length > constants.OBJECT_MAX_CHARCOUNT) {
-        // Skip the paragraph when it's really a large paragraph.
-        // TODO(1057904): Try splitting based on spaces.
-        continue;
-      }
-      this.speak(line, queueMode, properties);
+    const chunks = TtsBackground.splitUntilSmall(textString, '\n\r ');
+    for (const chunk of chunks) {
+      this.speak(chunk, queueMode, properties);
       queueMode = QueueMode.QUEUE;
     }
+  }
+
+  /**
+   * Splits |text| until each substring's length is smaller than or equal to
+   * constants.OBJECT_MAX_CHARCOUNT.
+   * @param {string} text
+   * @param {string} delimiters
+   * @return {!Array<string>}
+   */
+  static splitUntilSmall(text, delimiters) {
+    if (text.length == 0) {
+      return [];
+    }
+
+    if (text.length <= constants.OBJECT_MAX_CHARCOUNT) {
+      return [text];
+    }
+
+    const midIndex = text.length / 2;
+    if (!delimiters) {
+      return TtsBackground
+          .splitUntilSmall(text.substring(0, midIndex), delimiters)
+          .concat(TtsBackground.splitUntilSmall(
+              text.substring(midIndex, text.length), delimiters));
+    }
+
+    const delimiter = delimiters[0];
+    let splitIndex = text.lastIndexOf(delimiter, midIndex);
+    if (splitIndex == -1) {
+      splitIndex = text.indexOf(delimiter, midIndex);
+    }
+
+    if (splitIndex == -1) {
+      delimiters = delimiters.slice(1);
+      return TtsBackground.splitUntilSmall(text, delimiters);
+    }
+
+    return TtsBackground
+        .splitUntilSmall(text.substring(0, splitIndex), delimiters)
+        .concat(TtsBackground.splitUntilSmall(
+            text.substring(splitIndex + 1, text.length), delimiters));
   }
 
   /**

@@ -142,7 +142,8 @@ const breadCrumbTemplate = `
 
   <button id='first'></button>
   <span class='caret' hidden></span>
-  <button elider aria-haspopup='menu' aria-expanded='false'>
+  <button elider aria-haspopup='menu' aria-expanded='false'
+      aria-label='$i18n{LOCATION_BREADCRUMB_ELIDER_BUTTON_LABEL}'>
     <span elider></span>
   </button>
   <span class='caret' hidden></span>

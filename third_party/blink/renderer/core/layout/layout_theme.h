@@ -232,7 +232,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual bool ShouldHaveSpinButton(HTMLInputElement*) const;
 
   // Functions for <select> elements.
-  virtual bool DelegatesMenuListRendering() const { return false; }
+  virtual bool DelegatesMenuListRendering() const;
+  // This function has no effect for LayoutThemeAndroid, of which
+  // DelegatesMenuListRendering() always returns true.
+  void SetDelegatesMenuListRenderingForTesting(bool flag);
   virtual bool PopsMenuByArrowKeys() const { return false; }
   virtual bool PopsMenuBySpaceKey() const { return false; }
   virtual bool PopsMenuByReturnKey() const { return false; }
@@ -368,6 +371,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   bool has_custom_focus_ring_color_;
   base::TimeDelta caret_blink_interval_ =
       base::TimeDelta::FromMilliseconds(500);
+
+  bool delegates_menu_list_rendering_ = false;
 
   // This color is expected to be drawn on a semi-transparent overlay,
   // making it more transparent than its alpha value indicates.

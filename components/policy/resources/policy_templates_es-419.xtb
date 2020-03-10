@@ -62,6 +62,10 @@
       Si configuras esta política, el usuario no podrá cambiarla ni anularla.</translation>
 <translation id="1062011392452772310">Habilita la atestación remota para el dispositivo.</translation>
 <translation id="1062407476771304334">Reemplazar</translation>
+<translation id="1073983258515362346">Envía información sobre la luz de fondo del dispositivo.
+
+      Si se establece la política como falsa o no se establece, no se enviará la información.
+      Si se establece como verdadera, se enviará información sobre la luz de fondo del dispositivo.</translation>
 <translation id="1078643757670228170">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Especifica el período sin intervención del usuario después del cual se apagará la pantalla cuando el dispositivo esté funcionando con CA.
@@ -337,6 +341,7 @@
       En ese caso, el usuario no podrá habilitar la función.</translation>
 <translation id="1474273443907024088">Inhabilitar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1486021504508098388">Enviar información sobre la luz de fondo</translation>
 <translation id="1502843533062797703">Habilitar el bloqueo de inserción de software de terceros</translation>
 <translation id="1507382822467487898">
           Configura la dirección MAC (Control de acceso de medio) que se usará cuando un conector está enchufado al dispositivo.

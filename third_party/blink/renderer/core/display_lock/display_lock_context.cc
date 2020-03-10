@@ -209,7 +209,7 @@ void DisplayLockContext::StartAcquire() {
   // don't need to do anything as we should have already added containment.
   // Moreover, dirtying self style from within style recalc is not allowed,
   // since either it has no effect and is cleaned before any work is done, or it
-  // causes DHCECKs in AssertLayoutTreeUpdated().
+  // causes DCHECKs in AssertLayoutTreeUpdated().
   if (!document_->InStyleRecalc()) {
     element_->SetNeedsStyleRecalc(
         kLocalStyleChange,

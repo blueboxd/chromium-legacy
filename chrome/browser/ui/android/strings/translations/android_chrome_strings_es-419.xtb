@@ -286,6 +286,7 @@ Para buscar una palabra, mantenla presionada. Si quieres definir mejor la búsqu
 <translation id="3058498974290601450">Puedes activar la sincronización en la configuración en cualquier momento</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> favorito}other{<ph name="BOOKMARKS_COUNT_MANY" /> favoritos}}</translation>
 <translation id="3089395242580810162">Abrir en pestaña de incógnito</translation>
+<translation id="3114012059975132928">Reproductor de video</translation>
 <translation id="3123473560110926937">Bloqueados en algunos sitios</translation>
 <translation id="3123734510202723619">Anuncios</translation>
 <translation id="3137521801621304719">Salir del modo de navegación de incógnito</translation>
@@ -352,6 +353,7 @@ Para buscar una palabra, mantenla presionada. Si quieres definir mejor la búsqu
 <translation id="3587482841069643663">Todos</translation>
 <translation id="358794129225322306">Permite que un sitio descargue varios archivos automáticamente.</translation>
 <translation id="3590487821116122040">Almacenamiento de sitios que Chrome no considera importantes (por ejemplo, sitios que no visitas a menudo o sin configuración guardada)</translation>
+<translation id="3594780231884063836">Silenciar video</translation>
 <translation id="3599863153486145794">Borra el historial de todos los dispositivos en los que accediste. Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar los sitios que reproducen sonido</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -605,6 +607,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5456381639095306749">Descargar página</translation>
 <translation id="548278423535722844">Abrir en una app de mapas</translation>
 <translation id="5487521232677179737">Borrar datos</translation>
+<translation id="5489227211564503167">Tiempo transcurrido: <ph name="ELAPSED_TIME" /> de <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Bloquear anuncios de sitios que muestran anuncios intrusivos o engañosos</translation>
 <translation id="5500777121964041360">Es posible que no esté disponible en tu ubicación</translation>
 <translation id="5505264765875738116">Los sitios no podrán preguntarte si quieres recibir notificaciones</translation>
@@ -665,6 +668,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5864419784173784555">Esperando que finalice otra descarga…</translation>
 <translation id="5865733239029070421">Envía automáticamente informes de fallos y estadísticas de uso a Google</translation>
 <translation id="5869522115854928033">Contraseñas almacenadas</translation>
+<translation id="5876056640971328065">Pausar video</translation>
 <translation id="5884076754568147479">Para ayudarte a completar tareas, Google recibirá las URL y los contenidos de los sitios en los que uses el Asistente, así como la información que envías a través de este servicio</translation>
 <translation id="5902828464777634901">Se eliminarán todos los datos almacenados en este sitio web, incluidas las cookies.</translation>
 <translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar la sincronización</translation>
@@ -728,6 +732,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6381421346744604172">Oscurecer sitios web</translation>
 <translation id="6388207532828177975">Borrar y restablecer</translation>
 <translation id="6395288395575013217">VÍNCULO</translation>
+<translation id="6397616442223433927">De nuevo en línea</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="6410973561433500075">¿Quieres ingresar al modo de RA desde <ph name="DOMAIN" />?</translation>
@@ -796,6 +801,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850409657436465440">La descarga sigue en curso</translation>
 <translation id="6850830437481525139">Pestañas cerradas: <ph name="TAB_COUNT" /></translation>
+<translation id="6864395892908308021">Este dispositivo no puede leer NFC</translation>
 <translation id="6864459304226931083">Descargar imagen</translation>
 <translation id="6865313869410766144">Datos del formulario de autocompletar</translation>
 <translation id="6884306546558072722">Seguir explorando sin conexión</translation>
@@ -916,6 +922,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7810647596859435254">Abrir con…</translation>
 <translation id="7821588508402923572">Aquí aparecerá tu ahorro de datos</translation>
+<translation id="783819812427904514">Activar sonido del video</translation>
 <translation id="784934925303690534">Intervalo de tiempo</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7875915731392087153">Crear correo electrónico</translation>

@@ -132,9 +132,8 @@ void ReportUploadsWithUma(const base::string16& upload_results) {
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.LastUploadResult", last_result);
 }
 
-void ReportExperimentError(SoftwareReporterExperimentError error) {
-  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.ExperimentErrors", error,
-                            SW_REPORTER_EXPERIMENT_ERROR_MAX);
+void ReportConfigurationError(SoftwareReporterConfigurationError error) {
+  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.ConfigurationErrors", error);
 }
 
 // Ensures |str| contains only alphanumeric characters and characters from
@@ -172,7 +171,7 @@ bool GetOptionalBehaviour(
   if (invocation_params->Get(behaviour_name, &value)) {
     bool enable_behaviour = false;
     if (!value->GetAsBoolean(&enable_behaviour)) {
-      ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
+      ReportConfigurationError(kBadParams);
       return false;
     }
     if (enable_behaviour)
@@ -195,7 +194,7 @@ bool ExtractInvocationSequenceFromManifest(
   base::Value* launch_params = nullptr;
   if (manifest->Get("launch_params", &launch_params) &&
       !launch_params->GetAsList(&parameter_list)) {
-    ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
+    ReportConfigurationError(kBadParams);
     return false;
   }
 
@@ -218,7 +217,7 @@ bool ExtractInvocationSequenceFromManifest(
   for (const auto& iter : *parameter_list) {
     const base::DictionaryValue* invocation_params = nullptr;
     if (!iter.GetAsDictionary(&invocation_params)) {
-      ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
+      ReportConfigurationError(kBadParams);
       return false;
     }
 
@@ -232,7 +231,7 @@ bool ExtractInvocationSequenceFromManifest(
     std::string suffix;
     if (!invocation_params->GetString("suffix", &suffix) ||
         !ValidateString(suffix, std::string(), kMaxSuffixLength)) {
-      ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
+      ReportConfigurationError(kBadParams);
       return false;
     }
 
@@ -241,7 +240,7 @@ bool ExtractInvocationSequenceFromManifest(
     // it's ok if it's an empty list or a list of empty strings.)
     const base::ListValue* arguments = nullptr;
     if (!invocation_params->GetList("arguments", &arguments)) {
-      ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
+      ReportConfigurationError(kBadParams);
       return false;
     }
 
@@ -249,7 +248,7 @@ bool ExtractInvocationSequenceFromManifest(
     for (const auto& value : *arguments) {
       base::string16 argument;
       if (!value.GetAsString(&argument)) {
-        ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
+        ReportConfigurationError(kBadParams);
         return false;
       }
       if (!argument.empty())
@@ -365,7 +364,7 @@ SwReporterInstallerPolicy::GetInstallerAttributes() const {
     constexpr char kTagParam[] = "tag";
     if (tag.empty() ||
         !ValidateString(tag, kExtraAttributeChars, kMaxAttributeLength)) {
-      ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_TAG);
+      ReportConfigurationError(kBadTag);
       attributes[kTagParam] = "missing_tag";
     } else {
       attributes[kTagParam] = tag;

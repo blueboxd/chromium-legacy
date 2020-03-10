@@ -562,7 +562,8 @@ public final class TabImpl extends ITab.Stub {
         mClient.showContextMenu(ObjectWrapper.wrap(params.getPageUrl()),
                 ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkUrl())),
                 ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkText())),
-                ObjectWrapper.wrap(nonEmptyOrNull(params.getTitleText())));
+                ObjectWrapper.wrap(nonEmptyOrNull(params.getTitleText())),
+                ObjectWrapper.wrap(nonEmptyOrNull(params.getSrcUrl())));
     }
 
     private void onBrowserControlsStateUpdated(int state) {

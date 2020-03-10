@@ -341,12 +341,16 @@ bool InstallServiceWorkItemImpl::SetServiceName(
     const base::string16& service_name) const {
   base::win::RegKey key;
 
-  auto result = key.Create(HKEY_LOCAL_MACHINE,
-                           install_static::GetClientStateKeyPath().c_str(),
-                           KEY_SET_VALUE | KEY_WOW64_32KEY);
+  // This assumes that a WorkItem to create the key has already executed before
+  // this WorkItem. this is generally true since one is added in
+  // AddUninstallShortcutWorkItems.
+  auto result = key.Open(HKEY_LOCAL_MACHINE,
+                         install_static::GetClientStateKeyPath().c_str(),
+                         KEY_SET_VALUE | KEY_WOW64_32KEY);
+  DCHECK(result == ERROR_SUCCESS);
   if (result != ERROR_SUCCESS) {
     ::SetLastError(result);
-    PLOG(ERROR) << "key.Create failed";
+    PLOG(ERROR) << "key.Open failed";
     return false;
   }
 

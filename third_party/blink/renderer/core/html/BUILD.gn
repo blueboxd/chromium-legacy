@@ -683,6 +683,7 @@ blink_core_tests("unit_tests") {
     "parser/html_document_parser_test.cc",
     "parser/html_entity_parser_test.cc",
     "parser/html_parser_idioms_test.cc",
+    "parser/html_parser_metrics_test.cc",
     "parser/html_preload_scanner_document_test.cc",
     "parser/html_preload_scanner_test.cc",
     "parser/html_resource_preloader_test.cc",

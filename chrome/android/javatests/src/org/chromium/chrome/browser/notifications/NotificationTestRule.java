@@ -8,8 +8,8 @@ import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.chrome.browser.settings.website.ContentSettingValues;
-import org.chromium.chrome.browser.settings.website.PermissionInfo;
+import org.chromium.chrome.browser.site_settings.ContentSettingValues;
+import org.chromium.chrome.browser.site_settings.PermissionInfo;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;

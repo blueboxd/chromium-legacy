@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/parser/atomic_html_token.h"
 #include "third_party/blink/renderer/core/html/parser/background_html_parser.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_metrics.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_scheduler.h"
 #include "third_party/blink/renderer/core/html/parser/html_resource_preloader.h"
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder.h"
@@ -110,6 +111,32 @@ static HTMLTokenizer::State TokenizerStateForContextElement(
   return HTMLTokenizer::kDataState;
 }
 
+class ScopedYieldTimer {
+ public:
+  // This object is created at the start of a block of parsing, and will
+  // report the time since the last block yielded if known.
+  ScopedYieldTimer(std::unique_ptr<base::ElapsedTimer>* timer,
+                   HTMLParserMetrics* metrics_reporter)
+      : timer_(timer), reporting_metrics_(metrics_reporter) {
+    if (!reporting_metrics_ || !(*timer_))
+      return;
+
+    metrics_reporter->AddYieldInterval((*timer_)->Elapsed());
+    timer_->reset();
+  }
+
+  // The destructor creates a new timer, which will keep track of time until
+  // the next block starts.
+  ~ScopedYieldTimer() {
+    if (reporting_metrics_)
+      *timer_ = std::make_unique<base::ElapsedTimer>();
+  }
+
+ private:
+  std::unique_ptr<base::ElapsedTimer>* timer_;
+  bool reporting_metrics_;
+};
+
 HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document,
                                        ParserSynchronizationPolicy sync_policy)
     : HTMLDocumentParser(document, kAllowScriptingContent, sync_policy) {
@@ -167,6 +194,16 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
   DCHECK(ShouldUseThreading() || (token_ && tokenizer_));
   // Threading is not allowed in prefetch mode.
   DCHECK(!document.IsPrefetchOnly() || !ShouldUseThreading());
+
+  // Report metrics for async document parsing only. The document
+  // must be main frame to meet UKM requirements, and must have a high
+  // resolution clock for high quality data.
+  if (sync_policy == kAllowAsynchronousParsing && document.GetFrame() &&
+      document.GetFrame()->IsMainFrame() &&
+      base::TimeTicks::IsHighResolution()) {
+    metrics_reporter_ = std::make_unique<HTMLParserMetrics>(
+        document.UkmSourceID(), document.UkmRecorder());
+  }
 
   // Don't create preloader for parsing clipboard content.
   if (content_policy == kDisallowScriptingAndPluginContent)
@@ -289,6 +326,8 @@ bool HTMLDocumentParser::IsScheduledForUnpause() const {
 void HTMLDocumentParser::ResumeParsingAfterYield() {
   DCHECK(ShouldUseThreading());
   DCHECK(have_background_parser_);
+
+  ScopedYieldTimer(&yield_timer_, metrics_reporter_.get());
 
   CheckIfBlockingStylesheetAdded();
   if (IsStopped() || IsPaused())
@@ -489,7 +528,8 @@ void HTMLDocumentParser::DiscardSpeculationsAndResumeFrom(
 }
 
 size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
-    std::unique_ptr<TokenizedChunk> pop_chunk) {
+    std::unique_ptr<TokenizedChunk> pop_chunk,
+    bool* reached_end_of_file) {
   TRACE_EVENT_WITH_FLOW0(
       "blink,loading",
       "HTMLDocumentParser::processTokenizedChunkFromBackgroundParser",
@@ -550,6 +590,7 @@ size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
       // There should never be any chunks after the EOF.
       DCHECK(speculations_.IsEmpty());
       PrepareToStopParsing();
+      *reached_end_of_file = true;
       break;
     }
 
@@ -594,10 +635,11 @@ void HTMLDocumentParser::PumpPendingSpeculations() {
   probe::ParseHTML probe(GetDocument(), this);
 
   SpeculationsPumpSession session(pump_speculations_session_nesting_level_);
+  bool reached_end_of_file = false;
   while (!speculations_.IsEmpty()) {
     DCHECK(!IsScheduledForUnpause());
-    size_t element_token_count =
-        ProcessTokenizedChunkFromBackgroundParser(speculations_.TakeFirst());
+    size_t element_token_count = ProcessTokenizedChunkFromBackgroundParser(
+        speculations_.TakeFirst(), &reached_end_of_file);
     session.AddedElementTokens(element_token_count);
 
     // Always check IsParsing first as document_ may be null. Surprisingly,
@@ -612,6 +654,13 @@ void HTMLDocumentParser::PumpPendingSpeculations() {
         parser_scheduler_->YieldIfNeeded(
             session, speculations_.front()->starting_script))
       break;
+  }
+
+  if (metrics_reporter_) {
+    metrics_reporter_->AddChunk(session.ElapsedTime(),
+                                session.ProcessedElementTokens());
+    if (reached_end_of_file)
+      metrics_reporter_->ReportMetricsAtParseEnd();
   }
 }
 

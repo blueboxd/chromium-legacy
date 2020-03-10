@@ -44,7 +44,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
@@ -189,10 +188,6 @@ public class CustomTabsConnection {
     private static final String[] PARALLEL_REQUEST_MESSAGES = {"No request", "Success",
             "Chrome not initialized", "Not authorized", "Invalid URL", "Invalid referrer",
             "Invalid referrer for session"};
-
-    private static final EnumeratedHistogramSample sParallelRequestStatusOnStart =
-            new EnumeratedHistogramSample(
-                    "CustomTabs.ParallelRequestStatusOnStart", ParallelRequestStatus.NUM_ENTRIES);
 
     private static CustomTabsConnection sInstance;
     private @Nullable String mTrustedPublisherUrlPackage;
@@ -848,7 +843,8 @@ public class CustomTabsConnection {
     @ParallelRequestStatus
     int handleParallelRequest(CustomTabsSessionToken session, Intent intent) {
         int status = maybeStartParallelRequest(session, intent);
-        sParallelRequestStatusOnStart.record(status);
+        RecordHistogram.recordEnumeratedHistogram("CustomTabs.ParallelRequestStatusOnStart", status,
+                ParallelRequestStatus.NUM_ENTRIES);
 
         if (mLogRequests) {
             Log.w(TAG, "handleParallelRequest() = " + PARALLEL_REQUEST_MESSAGES[status]);

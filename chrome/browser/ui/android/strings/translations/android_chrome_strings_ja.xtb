@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">同期は設定でいつでもオンにできます。</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 個のブックマーク}other{<ph name="BOOKMARKS_COUNT_MANY" /> 個のブックマーク}}</translation>
 <translation id="3089395242580810162">シークレット タブで開く</translation>
+<translation id="3114012059975132928">動画プレーヤー</translation>
 <translation id="3123473560110926937">一部のサイトでブロックされています</translation>
 <translation id="3123734510202723619">お知らせ</translation>
 <translation id="3137521801621304719">シークレット モードを終了</translation>
@@ -352,6 +353,7 @@
 <translation id="3587482841069643663">すべて</translation>
 <translation id="358794129225322306">複数ファイルの自動ダウンロードをサイトに許可します。</translation>
 <translation id="3590487821116122040">Chrome で重要度が低いと判断されるサイトのストレージ（設定を保存していないサイトやアクセス頻度の少ないサイトなど）</translation>
+<translation id="3594780231884063836">動画をミュート</translation>
 <translation id="3599863153486145794">ログインしているすべてのデバイスの履歴を削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
 <translation id="3600792891314830896">音声が再生されるサイトをミュートする</translation>
 <translation id="3616113530831147358">音声</translation>
@@ -605,6 +607,7 @@
 <translation id="5456381639095306749">ページをダウンロード</translation>
 <translation id="548278423535722844">マップアプリで開く</translation>
 <translation id="5487521232677179737">データを削除</translation>
+<translation id="5489227211564503167"><ph name="TOTAL_TIME" /> のうち <ph name="ELAPSED_TIME" /> 経過しました。</translation>
 <translation id="5494752089476963479">煩わしい広告や誤解を招く広告が表示されるサイトで広告をブロックする</translation>
 <translation id="5500777121964041360">お住まいの地域ではご利用になれない可能性があります</translation>
 <translation id="5505264765875738116">通知を送信するかどうかの確認をサイトに許可しない</translation>
@@ -665,6 +668,7 @@
 <translation id="5864419784173784555">別のダウンロードの完了待ちです…</translation>
 <translation id="5865733239029070421">使用統計情報や障害レポートを Google に自動送信します</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
+<translation id="5876056640971328065">動画を一時停止</translation>
 <translation id="5884076754568147479">タスクを完了するため、アシスタントを使用したサイトの URL とコンテンツ、およびアシスタントで送信した情報が Google に送られます。</translation>
 <translation id="5902828464777634901">このウェブサイトで保存したすべてのローカルデータ（Cookie を含む）を削除します。</translation>
 <translation id="5919204609460789179">同期を開始するには <ph name="PRODUCT_NAME" /> を更新してください</translation>
@@ -728,6 +732,7 @@
 <translation id="6381421346744604172">ウェブサイトを暗くする</translation>
 <translation id="6388207532828177975">データを削除してリセット</translation>
 <translation id="6395288395575013217">リンク</translation>
+<translation id="6397616442223433927">オンラインに復帰</translation>
 <translation id="6404511346730675251">ブックマークを編集</translation>
 <translation id="6406506848690869874">同期</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> で AR を使用しますか？</translation>
@@ -796,6 +801,7 @@
 <translation id="6846298663435243399">読み込み中...</translation>
 <translation id="6850409657436465440">ダウンロードが進行中です</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> 個のタブを閉じました</translation>
+<translation id="6864395892908308021">このデバイスでは NFC を読み込めません</translation>
 <translation id="6864459304226931083">画像をダウンロード</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
 <translation id="6884306546558072722">オフラインで閲覧を続ける</translation>
@@ -916,6 +922,7 @@
 <translation id="780301667611848630">いいえ</translation>
 <translation id="7810647596859435254">アプリで開く…</translation>
 <translation id="7821588508402923572">データ節約量がここに表示されます</translation>
+<translation id="783819812427904514">動画のミュートを解除</translation>
 <translation id="784934925303690534">期間</translation>
 <translation id="7851858861565204677">他のデバイス</translation>
 <translation id="7875915731392087153">メールを作成</translation>

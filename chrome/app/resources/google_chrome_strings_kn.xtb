@@ -49,6 +49,7 @@
 <translation id="2309047409763057870">ಇದು Google Chrome ನ ದ್ವಿತೀಯ ಸ್ಥಾಪನೆಯಾಗಿದೆ ಮತ್ತು ಅದನ್ನು ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="2341767445688917208">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಈಗಲೇ ಸರಿಪಡಿಸಿ.</translation>
 <translation id="2348335408836342058">ಈ ಸೈಟ್‌ಗಾಗಿ ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್‌ಗೆ ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ</translation>
+<translation id="234869673307233423">Chrome ಗೆ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಂತರ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2429317896000329049">ನಿಮ್ಮ ಡೊಮೇನ್‌ನಲ್ಲಿ ಸಿಂಕ್‌ ಮಾಡುವ ಸೌಲಭ್ಯವಿಲ್ಲದ ಕಾರಣ Google Chrome ಗೆ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="2467438592969358367">Google Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಲು ಬಯಸುತ್ತದೆ. ಇದನ್ನು ಅನುಮತಿಸಲು ನಿಮ್ಮ Windows ಪಾಸ್‌ವರ್ಡ್‌ ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="2485422356828889247">ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್</translation>
@@ -69,6 +70,8 @@
 <translation id="2857540653560290388">Chrome ಅನ್ನು ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2871893339301912279">ನೀವೀಗ Chrome ಗೆ ಸೈನ್ ಇನ್ ಆಗಿರುವಿರಿ!</translation>
 <translation id="2888126860611144412">Chrome ಕುರಿತು</translation>
+<translation id="2929907241665500097">Chrome ಅಪ್‌ಡೇಟ್ ಆಗಲಿಲ್ಲ, ಏನೋ ಸಮಸ್ಯೆಯಾಗಿದೆ. <ph name="BEGIN_LINK" />Chrome ಅಪ್‌ಡೇಟ್ ಸಮಸ್ಯೆಗಳು ಹಾಗೂ ವಿಫಲವಾದ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಸರಿಪಡಿಸಿ.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - ನೆಟ್‌ವರ್ಕ್ ಸೈನ್ ಇನ್ - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome ಹಿನ್ನೆಲೆ ಮೋಡ್‌ನಲ್ಲಿದೆ.</translation>
 <translation id="3065168410429928842">Chrome ಟ್ಯಾಬ್</translation>
 <translation id="3080151273017101988">Google Chrome ಮುಚ್ಚಿದಾಗ ರನ್‌ ಆಗುತ್ತಿರುವ ಹಿನ್ನೆಲೆ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಮುಂದುವರಿಸು</translation>
@@ -107,7 +110,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">ಡೇಟಾ ಉಲ್ಲಂಘನೆಗಳು, ಕಳಪೆ ವಿಸ್ತರಣೆಗಳು ಮತ್ತು ಇತ್ಯಾದಿಗಳಿಂದ ನಿಮ್ಮನ್ನು ಸುರಕ್ಷಿತವಾಗಿರಿಸಲು Chrome ಸಹಾಯ ಮಾಡಬಹುದು</translation>
 <translation id="4343195214584226067">Chrome ಗೆ <ph name="EXTENSION_NAME" /> ಅನ್ನು ಸೇರಿಸಲಾಗಿದೆ</translation>
+<translation id="4384570495110188418">ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿರದ ಕಾರಣ Chrome ಗೆ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome - ನೆಟ್‌ವರ್ಕ್ ಸೈನ್ ಇನ್ - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome ನಲ್ಲಿ ಮತ್ತೊಂದು ಕಾರ್ಯಾಚರಣೆಯು ಪ್ರಗತಿಯಲ್ಲಿದೆ. ದಯವಿಟ್ಟು ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4480040274068703980">ಸೈನ್ ಇನ್ ಮಾಡುವಲ್ಲಿ ದೋಷವಿರುವ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="4561051373932531560">Google Chrome ನೀವು ವೆಬ್‌ನಲ್ಲಿ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಕ್ಲಿಕ್ ಮಾಡಲು ಅವಕಾಶ ಮಾಡುತ್ತದೆ ಮತ್ತು Skype ನೊಂದಿಗೆ ಕರೆ ಮಾಡುತ್ತದೆ!</translation>
@@ -117,6 +122,7 @@
 <translation id="4600710005438004015">Chrome ಗೆ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಗೆ ಅಪ್‌ಡೇಟ್ ಆಗಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ, ಆದ್ದರಿಂದ ನೀವು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಮತ್ತು ಭದ್ರತೆ ಸರಿಪಡಿಸುವಿಕೆಗಳನ್ನು ಕಳೆದುಕೊಳ್ಳುತ್ತೀರಿ.</translation>
 <translation id="4631713731678262610">Chrome ಮೆನುವಿನಲ್ಲಿ ಮರೆಮಾಡು</translation>
 <translation id="4633000520311261472">Chrome ಸುರಕ್ಷಿತವಾಗಿರಿಸುವಂತೆ ಮಾಡಲು, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ನಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡಲಾದ ಕೆಲವು ವಿಸ್ತರಣೆಗಳನ್ನು ನಾವು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದೇವೆ ಮತ್ತು ಅವುಗಳನ್ನು ನಿಮ್ಮ ಅರಿವಿಲ್ಲದೆ ಸೇರಿಸಿರಬಹುದು.</translation>
+<translation id="4653397506175047429">Chrome ಗೆ ನಿಮ್ಮ ಎಲ್ಲಾ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. 24 ಗಂಟೆಗಳ ಬಳಿಕ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4728575227883772061">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. Google Chrome ಪ್ರಸ್ತುತ ಚಲಿಸುತ್ತಿದ್ದರೆ, ದಯವಿಟ್ಟು ಇದನ್ನು ಮುಚ್ಚಿ ಮತ್ತು ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> ಸಕ್ರಿಯಗೊಳಿಸಲು Chrome ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="4754614261631455953">Google Chrome ಕ್ಯಾನರಿ (mDNS-In)</translation>
@@ -149,6 +155,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome ಅನ್ನು ಪ್ರಾರಂಭಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="5895138241574237353">ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - ನೆಟ್‌ವರ್ಕ್ ಸೈನ್ ಇನ್</translation>
 <translation id="5940385492829620908">ನಿಮ್ಮ ವೆಬ್, ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಮತ್ತು ಇತರ Chrome ವಿಷಯವು ಇಲ್ಲಿ ಲೈವ್ ಆಗುತ್ತವೆ.</translation>
 <translation id="5941830788786076944">Google Chrome ಅನ್ನು ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿಸು</translation>
 <translation id="6070348360322141662">ಹೆಚ್ಚುವರಿ ಭದ್ರತೆಗಾಗಿ, Google Chrome ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡುತ್ತದೆ</translation>
@@ -204,6 +211,7 @@
 <translation id="7855730255114109580">Google Chrome ಅನ್ನು ಅಪ್‌ ಟು ಡೇಟ್‌ ಆಗಿದೆ</translation>
 <translation id="7890208801193284374">ನೀವು ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ಹಂಚಿಕೊಂಡರೆ, ಸ್ನೇಹಿತರು ಮತ್ತು ಕುಟುಂಬದವರು ಪ್ರತ್ಯೇಕವಾಗಿ ಬ್ರೌಸ್ ಮಾಡಬಹುದು ಮತ್ತು Chrome ಅನ್ನು ಅವರ ಅಗತ್ಯಕ್ಕೆ ತಕ್ಕಂತೆ ಹೊಂದಿಸಿಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="7896673875602241923">ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ Chrome ಗೆ ಯಾರೋ ಈ ಹಿಂದೆಯೇ <ph name="ACCOUNT_EMAIL_LAST" /> ಹೆಸರಿನಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ. ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಲು ದಯವಿಟ್ಟು ಹೊಸ Chrome ಬಳಕೆದಾರರನ್ನು ರಚಿಸಿ.</translation>
+<translation id="7905891027772979035">Chrome ಗೆ ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಂತರ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="7916016681687251387">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಈಗಲೇ ಸರಿಪಡಿಸಿ.</translation>
 <translation id="7930071585467473040">Google Chrome, ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ನಕಲಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="7962410387636238736">Windows XP ಮತ್ತು Windows Vista ಗಳಿಗೆ ಬೆಂಬಲವಿಲ್ಲದೇ ಇರುವುದರಿಂದ ಈ ಕಂಪ್ಯೂಟರ್‌‌ ಇನ್ನು ಮುಂದೆ Google Chrome ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ</translation>

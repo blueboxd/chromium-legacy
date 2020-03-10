@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -41,8 +42,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.metrics.CachedMetrics.BooleanHistogramSample;
-import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -167,6 +166,8 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.Toast;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Locale;
 
@@ -211,17 +212,15 @@ public class ChromeTabbedActivity
     // Name of the ChromeTabbedActivity alias that handles MAIN intents.
     public static final String MAIN_LAUNCHER_ACTIVITY_NAME = "com.google.android.apps.chrome.Main";
 
-    // Boolean histograms used with maybeDispatchExplicitMainViewIntent().
-    private static final BooleanHistogramSample sExplicitMainViewIntentDispatchedOnCreate =
-            new BooleanHistogramSample(
-                    "Android.MainActivity.ExplicitMainViewIntentDispatched.OnCreate");
-    private static final BooleanHistogramSample sExplicitMainViewIntentDispatchedOnNewIntent =
-            new BooleanHistogramSample(
-                    "Android.MainActivity.ExplicitMainViewIntentDispatched.OnNewIntent");
-    private static final EnumeratedHistogramSample sUndispatchedExplicitMainViewIntentSource =
-            new EnumeratedHistogramSample(
-                    "Android.MainActivity.UndispatchedExplicitMainViewIntentSource",
-                    IntentHandler.ExternalAppId.NUM_ENTRIES);
+    /**
+     * Identifies a histogram to use in {@link #maybeDispatchExplicitMainViewIntent(Intent, int)}.
+     */
+    @IntDef({DispatchedBy.ON_CREATE, DispatchedBy.ON_NEW_INTENT})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface DispatchedBy {
+        int ON_CREATE = 1;
+        int ON_NEW_INTENT = 2;
+    }
 
     // Count histogram used to track number of tabs when we show the Overview on Return to Chrome.
     private static final String TAB_COUNT_ON_RETURN = "Tabs.TabCountOnStartScreenShown";
@@ -476,8 +475,7 @@ public class ChromeTabbedActivity
             return LaunchIntentDispatcher.dispatchToTabbedActivity(this, intent);
         }
         @LaunchIntentDispatcher.Action
-        int action = maybeDispatchExplicitMainViewIntent(
-                intent, sExplicitMainViewIntentDispatchedOnCreate);
+        int action = maybeDispatchExplicitMainViewIntent(intent, DispatchedBy.ON_CREATE);
         if (action != LaunchIntentDispatcher.Action.CONTINUE) {
             return action;
         }
@@ -492,10 +490,10 @@ public class ChromeTabbedActivity
     // intents, and dispatch them accordingly. If the intent was not dispatched, the method
     // returns Action.CONTINUE.
     //
-    // The method also updates the supplied binary histogram with the dispatching result,
+    // The method also updates the supplied boolean histogram with the dispatching result,
     // but only if the intent is a VIEW intent sent explicitly to .Main activity.
     private @LaunchIntentDispatcher.Action int maybeDispatchExplicitMainViewIntent(
-            Intent intent, BooleanHistogramSample dispatchedHistogram) {
+            Intent intent, @DispatchedBy int dispatchedBy) {
         // The first check ensures that this is .Main activity alias (we can't check exactly, but
         // this gets us sufficiently close).
         if (getClass().equals(ChromeTabbedActivity.class)
@@ -503,12 +501,28 @@ public class ChromeTabbedActivity
                 && MAIN_LAUNCHER_ACTIVITY_NAME.equals(intent.getComponent().getClassName())) {
             @LaunchIntentDispatcher.Action
             int action = LaunchIntentDispatcher.dispatchToCustomTabActivity(this, intent);
-            dispatchedHistogram.record(action != LaunchIntentDispatcher.Action.CONTINUE);
+            switch (dispatchedBy) {
+                case DispatchedBy.ON_CREATE:
+                    RecordHistogram.recordBooleanHistogram(
+                            "Android.MainActivity.ExplicitMainViewIntentDispatched.OnCreate",
+                            action != LaunchIntentDispatcher.Action.CONTINUE);
+                    break;
+                case DispatchedBy.ON_NEW_INTENT:
+
+                    RecordHistogram.recordBooleanHistogram(
+                            "Android.MainActivity.ExplicitMainViewIntentDispatched.OnNewIntent",
+                            action != LaunchIntentDispatcher.Action.CONTINUE);
+                    break;
+                default:
+                    assert false : "Unknown dispatchedBy value " + dispatchedBy;
+            }
             if (action == LaunchIntentDispatcher.Action.CONTINUE) {
                 // Intent was not dispatched, record its source.
                 @IntentHandler.ExternalAppId
                 int externalId = IntentHandler.determineExternalIntentSource(intent);
-                sUndispatchedExplicitMainViewIntentSource.record(externalId);
+                RecordHistogram.recordEnumeratedHistogram(
+                        "Android.MainActivity.UndispatchedExplicitMainViewIntentSource", externalId,
+                        IntentHandler.ExternalAppId.NUM_ENTRIES);
 
                 // Crash if intent came from us, but only in debug builds and only if we weren't
                 // explicitly told not to. Hopefully we'll get enough reports to find where
@@ -790,7 +804,7 @@ public class ChromeTabbedActivity
         intentForDispatching.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         @LaunchIntentDispatcher.Action
         int action = maybeDispatchExplicitMainViewIntent(
-                intentForDispatching, sExplicitMainViewIntentDispatchedOnNewIntent);
+                intentForDispatching, DispatchedBy.ON_NEW_INTENT);
         if (action != LaunchIntentDispatcher.Action.CONTINUE) {
             // Pressing back button in CCT should bring user to the caller activity.
             moveTaskToBack(true);

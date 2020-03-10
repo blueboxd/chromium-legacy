@@ -273,12 +273,6 @@ TEST(MediaRouterMetricsTest, RecordStopRoute) {
                           Bucket(/* Remote route */ 1, 1)));
 }
 
-TEST(MediaRouterMetricsTest, RecordSearchSinkOutcome) {
-  TestRecordBooleanMetric(
-      base::BindRepeating(&MediaRouterMetrics::RecordSearchSinkOutcome),
-      MediaRouterMetrics::kHistogramRecordSearchSinkOutcome);
-}
-
 TEST(MediaRouterMetricsTest, RecordIconStateAtDialogOpen) {
   TestRecordBooleanMetric(
       base::BindRepeating(&MediaRouterMetrics::RecordIconStateAtDialogOpen),

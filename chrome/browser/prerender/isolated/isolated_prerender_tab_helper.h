@@ -39,7 +39,7 @@ class IsolatedPrerenderTabHelper
   void SetURLLoaderFactoryForTesting(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   size_t prefetched_responses_size_for_testing() const {
-    return prefetched_responses_.size();
+    return page_ ? page_->prefetched_responses.size() : 0;
   }
 
   // content::WebContentsObserver implementation.
@@ -55,6 +55,28 @@ class IsolatedPrerenderTabHelper
  private:
   explicit IsolatedPrerenderTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<IsolatedPrerenderTabHelper>;
+
+  // Owns all per-pageload state in the tab helper so that new navigations only
+  // need to reset an instance of this class to clean up previous state.
+  class CurrentPageLoad {
+   public:
+    CurrentPageLoad();
+    ~CurrentPageLoad();
+
+    // The url loader that does all the prefetches. Set only when active.
+    std::unique_ptr<network::SimpleURLLoader> url_loader;
+
+    // An ordered list of the URLs to prefetch.
+    std::vector<GURL> urls_to_prefetch;
+
+    // The number of prefetches that have been attempted on this page.
+    size_t num_prefetches_attempted = 0;
+
+    // All prefetched responses by URL. This is cleared every time a mainframe
+    // navigation commits.
+    std::map<GURL, std::unique_ptr<PrefetchedMainframeResponseContainer>>
+        prefetched_responses;
+  };
 
   // A helper method to make it easier to tell when prefetching is already
   // active.
@@ -94,21 +116,8 @@ class IsolatedPrerenderTabHelper
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  // TODO(robertogden): Consider encapsulating the per-page-load members below
-  // into a separate object.
-
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
-
-  // An ordered list of the URLs to prefetch.
-  std::vector<GURL> urls_to_prefetch_;
-
-  // The number of prefetches that have been attempted on this page.
-  size_t num_prefetches_attempted_ = 0;
-
-  // All prefetched responses by URL. This is cleared every time a mainframe
-  // navigation commits.
-  std::map<GURL, std::unique_ptr<PrefetchedMainframeResponseContainer>>
-      prefetched_responses_;
+  // Owns all members which need to be reset on a new page load.
+  std::unique_ptr<CurrentPageLoad> page_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

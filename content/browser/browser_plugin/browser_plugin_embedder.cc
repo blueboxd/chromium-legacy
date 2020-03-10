@@ -159,7 +159,8 @@ bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
   *mouse_unlocked |= static_cast<WebContentsImpl*>(guest)
                          ->GetBrowserPluginGuest()
                          ->mouse_locked();
-  guest->GotResponseToLockMouseRequest(false);
+  guest->GotResponseToLockMouseRequest(
+      blink::mojom::PointerLockResult::kUserRejected);
 
   // Returns false to iterate over all guests.
   return false;

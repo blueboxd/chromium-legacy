@@ -37,7 +37,6 @@
 #include "content/test/test_render_widget_host_factory.h"
 #include "content/test/test_web_contents.h"
 #include "net/base/mock_network_change_notifier.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 #if defined(OS_ANDROID)
 #include "ui/android/dummy_screen_android.h"
@@ -234,8 +233,6 @@ void RenderViewHostTestHarness::NavigateAndCommit(
 }
 
 void RenderViewHostTestHarness::SetUp() {
-  ui::MaterialDesignController::Initialize();
-
   rvh_test_enabler_.reset(new RenderViewHostTestEnabler);
   if (factory_)
     rvh_test_enabler_->rvh_factory_->set_render_process_host_factory(factory_);

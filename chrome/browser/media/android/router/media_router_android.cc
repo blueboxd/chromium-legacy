@@ -183,15 +183,6 @@ void MediaRouterAndroid::SendRouteBinaryMessage(
 
 void MediaRouterAndroid::OnUserGesture() {}
 
-void MediaRouterAndroid::SearchSinks(
-    const MediaSink::Id& sink_id,
-    const MediaSource::Id& source_id,
-    const std::string& search_input,
-    const std::string& domain,
-    MediaSinkSearchResponseCallback sink_callback) {
-  NOTIMPLEMENTED();
-}
-
 void MediaRouterAndroid::DetachRoute(const MediaRoute::Id& route_id) {
   bridge_->DetachRoute(route_id);
   RemoveRoute(route_id);

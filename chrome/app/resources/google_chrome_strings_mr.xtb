@@ -51,6 +51,7 @@
 <translation id="2309047409763057870">ही Google Chrome ची दुय्यम स्थापना असून त्यास तुमचा डीफॉल्ट ब्राउझर बनवू शकत नाही.</translation>
 <translation id="2341767445688917208">Chrome OS तुमचे पासवर्ड सिंक करू शकले नाही. आता निराकरण करा.</translation>
 <translation id="2348335408836342058">या साइटसाठी Chrome ला तुमचा कॅमेरा आणि मायक्रोफोन ॲक्सेस करण्याची परवानगी हवी आहे</translation>
+<translation id="234869673307233423">Chrome तुमचे पासवर्ड तपासू शकत नाही. नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="2429317896000329049">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="2467438592969358367">Google Chrome ला तुमचे पासवर्ड निर्यात करायचे आहेत. हे करू देण्यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
 <translation id="2485422356828889247">अनइंस्टॉल करा</translation>
@@ -71,6 +72,8 @@
 <translation id="2857540653560290388">Chrome लाँच करत आहे...</translation>
 <translation id="2871893339301912279">तुम्ही Chrome मध्‍ये साइन इन केले आहे!</translation>
 <translation id="2888126860611144412">Chrome बद्दल</translation>
+<translation id="2929907241665500097">Chrome अपडेट झाले नाही, काहीतरी चूक झाली. <ph name="BEGIN_LINK" />Chrome अपडेट समस्या आणि अयशस्वी झालेल्या अपडेटचे निराकरण करा.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - नेटवर्क साइन इन - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome पार्श्वभूमी मोड मध्ये आहे.</translation>
 <translation id="3065168410429928842">Chrome टॅब</translation>
 <translation id="3080151273017101988">जेव्हा Google Chrome बंद असेल तेव्हा पार्श्वभूमीत ॲप्लिकेशन चालणे सुरू ठेवा</translation>
@@ -109,7 +112,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">Chrome तुम्हाला डेटा भंग, खराब एक्स्टेंशन आणि बर्‍याच गोष्टींपासून सुरक्षित ठेवण्यात मदत करू शकते</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> हे Chrome मध्‍ये जोडले गेले आहे</translation>
+<translation id="4384570495110188418">तुम्ही साइन इन केलेले नसल्यामुळे Chrome तुमचे पासवर्ड तपासू शकत नाही</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome - नेटवर्क साइन इन - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome वर दुसरे ऑपरेशन प्रगतीपथावर आहे. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="4480040274068703980">साइन इन करण्यात एररमुळे Chrome OS तुमचा डेटा सिंक करू शकले नाही.</translation>
 <translation id="4561051373932531560">Google Chrome तुम्हाला वेबवरील फोन नंबर क्लिक करू देते आणि त्या नंबरवर Skype द्वारा कॉल करू देते!</translation>
@@ -119,6 +124,7 @@
 <translation id="4600710005438004015">Chrome नवीनतम आवृत्तीवर अपडेट होऊ शकले नाही, त्यामुळे तुम्ही नवीन वैशिष्ट्ये आणि सुरक्षितता निराकरणे गमावत आहात.</translation>
 <translation id="4631713731678262610">Chrome मेनूमध्‍ये लपवा</translation>
 <translation id="4633000520311261472">Chrome ला अधिक सुरक्षित करण्यासाठी, आम्ही <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्ये सूचीबद्ध नसलेले काही विस्तार अक्षम केले आणि ते कदाचित आपल्या माहिती शिवाय जोडले गेले असावेत.</translation>
+<translation id="4653397506175047429">Chrome तुमचे सर्व पासवर्ड तपासू शकत नाही. २४ तासांनंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="4728575227883772061">नमूद न केलेल्या एररमुळे स्थापना अयशस्वी. जर Google Chrome सध्या चालू असेल तर, कृपया त्यास बंद करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> सुरू करण्‍यासाठी Chrome रीस्टार्ट करा</translation>
 <translation id="4754614261631455953">Google Chrome कॅनरी (mDNS-मध्ये)</translation>
@@ -155,6 +161,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome कॅनरी</translation>
 <translation id="5804318322022881572">Chrome लाँच करता आले नाही. पुन्हा प्रयत्न करा.</translation>
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - नेटवर्क साइन इन</translation>
 <translation id="5940385492829620908">तुमचे वेब, बुकमार्क आणि अन्य Chrome सामग्री येथे थेट आहे.</translation>
 <translation id="5941830788786076944">Google Chromeला डीफॉल्ट ब्राउझर बनवा</translation>
 <translation id="6070348360322141662">अतिरिक्त सुरक्षिततेसाठी, Google Chrome तुमचा डेटा एंक्रिप्ट करेल</translation>
@@ -210,6 +217,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7855730255114109580">Google Chrome अपडेट झाले आहे</translation>
 <translation id="7890208801193284374">तुम्ही कॉंप्युटर शेअर केल्यास, मित्र आणि कुटुंब स्वतंत्रपणे ब्राउझ करू शकतात आणि त्यांना पाहिजे तसे Chrome सेट अप करू शकतात.</translation>
 <translation id="7896673875602241923">कोणीतरी यापूर्वी <ph name="ACCOUNT_EMAIL_LAST" /> म्हणून या संंगणकावरील Chrome मध्ये साइन इन केले आहे. कृपया तुमची माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chrome वापरकर्ता तयार करा.</translation>
+<translation id="7905891027772979035">Chrome तुमची एक्स्टेंशन तपासू शकत नाही. नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="7916016681687251387">Chrome OS तुमचा डेटा सिंक करू शकले नाही. आता निराकरण करा.</translation>
 <translation id="7930071585467473040">Google Chrome पासवर्ड कॉपी करण्याचा प्रयत्न करत आहे.</translation>
 <translation id="7962410387636238736">Windows XP आणि Windows Vista ला आता सपोर्ट नसल्याने या कॉंप्युटरला यापुढे Google Chrome अपडेट मिळणार नाहीत</translation>

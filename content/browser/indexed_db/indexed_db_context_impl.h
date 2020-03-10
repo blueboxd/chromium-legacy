@@ -120,6 +120,11 @@ class CONTENT_EXPORT IndexedDBContextImpl
       GetPathForBlobForTestingCallback callback) override;
   void CompactBackingStoreForTesting(const url::Origin& origin,
                                      base::OnceClosure callback) override;
+  void BindMockFailureSingletonForTesting(
+      mojo::PendingReceiver<storage::mojom::MockFailureInjector> receiver)
+      override;
+  void GetDatabaseKeysForTesting(
+      GetDatabaseKeysForTestingCallback callback) override;
 
   // TODO(enne): fix internal indexeddb callers to use ForceClose async instead.
   void ForceCloseSync(const url::Origin& origin,
@@ -241,6 +246,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   mojo::ReceiverSet<storage::mojom::IndexedDBControl> receivers_;
   mojo::ReceiverSet<storage::mojom::IndexedDBControlTest> test_receivers_;
+  base::Optional<mojo::Receiver<storage::mojom::MockFailureInjector>>
+      mock_failure_injector_;
   mojo::RemoteSet<storage::mojom::IndexedDBObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);

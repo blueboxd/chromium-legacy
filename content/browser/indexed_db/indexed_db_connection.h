@@ -117,7 +117,7 @@ class CONTENT_EXPORT IndexedDBConnection {
   base::flat_map<int64_t, std::unique_ptr<IndexedDBTransaction>> transactions_;
 
   // The callbacks_ member is cleared when the connection is closed.
-  // May be NULL in unit tests.
+  // May be nullptr in unit tests.
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
   std::vector<std::unique_ptr<IndexedDBObserver>> active_observers_;
 

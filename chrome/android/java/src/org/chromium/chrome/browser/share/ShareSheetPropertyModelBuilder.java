@@ -13,6 +13,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.view.View.OnClickListener;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -30,6 +31,7 @@ import java.util.List;
 class ShareSheetPropertyModelBuilder {
     private final BottomSheetController mBottomSheetController;
     private final PackageManager mPackageManager;
+    private static final int MAX_NUM_APPS = 8;
 
     ShareSheetPropertyModelBuilder(
             BottomSheetController bottomSheetController, PackageManager packageManager) {
@@ -50,12 +52,16 @@ class ShareSheetPropertyModelBuilder {
         }
 
         ArrayList<PropertyModel> models = new ArrayList<>();
-        for (int i = 0; i < 7 && i < thirdPartyActivities.size(); ++i) {
+        for (int i = 0; i < MAX_NUM_APPS && i < thirdPartyActivities.size(); ++i) {
             ResolveInfo info = thirdPartyActivities.get(i);
+            final int logIndex = i;
             PropertyModel propertyModel =
                     createPropertyModel(ShareHelper.loadIconForResolveInfo(info, mPackageManager),
                             (String) info.loadLabel(mPackageManager), (shareParams) -> {
                                 RecordUserAction.record("SharingHubAndroid.ThirdPartyAppSelected");
+                                RecordHistogram.recordEnumeratedHistogram(
+                                        "Sharing.SharingHubAndroid.ThirdPartyAppUsage", logIndex,
+                                        MAX_NUM_APPS + 1);
                                 ActivityInfo ai = info.activityInfo;
 
                                 ComponentName component =

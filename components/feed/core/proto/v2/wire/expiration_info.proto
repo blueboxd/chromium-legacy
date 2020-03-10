@@ -1,0 +1,26 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+import "components/feed/core/proto/v2/wire/duration.proto";
+
+/* Information about whether and when a feature should expire and be removed
+ * from Discover. */
+message ExpirationInfo {
+  // Whether the feature can expire.
+  optional bool should_expire = 1;
+
+  // Indicates how long after this response was received the client should wait
+  // before expiring (and hiding) this content. This expiration time is a best
+  // effort, and should not be done while the content is visible on screen.
+  // There are no penalties with showing the content after the expiry, though
+  // some uses of this API (ads in particular) do have SLA's about how often
+  // items can be shown after expiration.
+  optional feedwire.Duration expiration_duration = 2;
+}

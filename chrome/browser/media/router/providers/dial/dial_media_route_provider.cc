@@ -494,14 +494,6 @@ void DialMediaRouteProvider::UpdateMediaSinks(const std::string& media_source) {
   media_sink_service_->OnUserGesture();
 }
 
-void DialMediaRouteProvider::SearchSinks(
-    const std::string& sink_id,
-    const std::string& media_source,
-    mojom::SinkSearchCriteriaPtr search_criteria,
-    SearchSinksCallback callback) {
-  std::move(callback).Run(std::string());
-}
-
 void DialMediaRouteProvider::ProvideSinks(
     const std::string& provider_name,
     const std::vector<media_router::MediaSinkInternal>& sinks) {

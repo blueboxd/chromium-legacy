@@ -37,7 +37,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"

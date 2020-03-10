@@ -23,6 +23,7 @@
 #include "ash/public/cpp/view_shadow.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
@@ -199,7 +200,7 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate,
   scroller->ClipHeightTo(0, 0);
   scroller->SetVerticalScrollBar(
       std::make_unique<ZeroWidthVerticalScrollBar>());
-  scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
+  scroller->SetBackgroundColor(base::nullopt);
   AddChildView(std::move(scroller));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());

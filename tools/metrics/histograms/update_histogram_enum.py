@@ -309,8 +309,12 @@ def UpdateHistogramFromDict(histogram_enum_name, source_enum_values,
   Log('Done.')
 
 
-def UpdateHistogramEnum(histogram_enum_name, source_enum_path,
-                        start_marker, end_marker, strip_k_prefix = False):
+def UpdateHistogramEnum(histogram_enum_name,
+                        source_enum_path,
+                        start_marker,
+                        end_marker,
+                        strip_k_prefix=False,
+                        calling_script=None):
   """Reads a C++ enum from a .h file and updates histograms.xml to match.
 
   Args:
@@ -328,7 +332,7 @@ def UpdateHistogramEnum(histogram_enum_name, source_enum_path,
       start_marker, end_marker, strip_k_prefix)
 
   UpdateHistogramFromDict(histogram_enum_name, source_enum_values,
-      source_enum_path, None)
+                          source_enum_path, calling_script)
 
 
 def UpdateHistogramEnumFromXML(histogram_enum_name, source_enum_path,

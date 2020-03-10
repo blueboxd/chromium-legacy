@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Zakašnjela promjena zaporke</translation>
 <translation id="2049639323467105390">Ovim uređajem upravlja <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Uključite Bluetooth da biste otkrili uređaje u blizini</translation>
+<translation id="2375079107209812402">Preostalo pokušaja: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="3008341117444806826">OSVJEŽI</translation>
@@ -42,6 +43,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="808894953321890993">Promjena zaporke</translation>
 <translation id="8208861521865154048">Pogodnosti</translation>
 <translation id="8747900814994928677">Potvrda promjena</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Preostalo pokušaja: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Osvježite tiket za <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Otključaj</translation>
 </translationbundle>

@@ -805,7 +805,7 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
   if (event.type() == event_type_names::kMousedown)
     FocusPlugin();
 
-  ui::Cursor cursor;
+  ui::Cursor cursor(ui::mojom::CursorType::kPointer);
   if (web_plugin_ && web_plugin_->HandleInputEvent(
                          WebCoalescedInputEvent(transformed_event), &cursor) !=
                          WebInputEventResult::kNotHandled)
@@ -864,9 +864,9 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent& event) {
   WebMouseWheelEvent translated_event = event.NativeEvent().FlattenTransform();
   translated_event.SetPositionInWidget(local_point.X(), local_point.Y());
 
-  ui::Cursor cursor;
+  ui::Cursor dummy_cursor;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(translated_event),
-                                    &cursor) !=
+                                    &dummy_cursor) !=
       WebInputEventResult::kNotHandled)
     event.SetDefaultHandled();
 }
@@ -887,9 +887,9 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent& event) {
   if (web_plugin_->SupportsEditCommands())
     web_frame->Client()->HandleCurrentKeyboardEvent();
 
-  ui::Cursor cursor;
+  ui::Cursor dummy_cursor;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(web_event),
-                                    &cursor) !=
+                                    &dummy_cursor) !=
       WebInputEventResult::kNotHandled) {
     event.SetDefaultHandled();
   }
@@ -992,8 +992,8 @@ void WebPluginContainerImpl::HandleTouchEvent(TouchEvent& event) {
       WebCoalescedInputEvent transformed_event =
           TransformCoalescedTouchEvent(*event.NativeEvent());
 
-      ui::Cursor cursor;
-      if (web_plugin_->HandleInputEvent(transformed_event, &cursor) !=
+      ui::Cursor dummy_cursor;
+      if (web_plugin_->HandleInputEvent(transformed_event, &dummy_cursor) !=
           WebInputEventResult::kNotHandled)
         event.SetDefaultHandled();
       // FIXME: Can a plugin change the cursor from a touch-event callback?
@@ -1022,9 +1022,9 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
   translated_event.FlattenTransform();
   translated_event.SetPositionInWidget(local_point);
 
-  ui::Cursor cursor;
+  ui::Cursor dummy_cursor;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(translated_event),
-                                    &cursor) !=
+                                    &dummy_cursor) !=
       WebInputEventResult::kNotHandled) {
     event.SetDefaultHandled();
     return;
@@ -1039,9 +1039,9 @@ void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent& event) {
   if (web_event.GetType() == WebInputEvent::kUndefined)
     return;
 
-  ui::Cursor cursor;
+  ui::Cursor dummy_cursor;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(web_event),
-                                    &cursor) !=
+                                    &dummy_cursor) !=
       WebInputEventResult::kNotHandled)
     event.SetDefaultHandled();
 }

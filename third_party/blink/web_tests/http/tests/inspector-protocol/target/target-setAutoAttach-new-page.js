@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  var {page, session, dp} = await testRunner.startBlank(
+  await testRunner.startBlank(
       `Tests that browser.Target.setAutoAttach() attaches to new page targets.`);
 
   const target = testRunner.browserP().Target;

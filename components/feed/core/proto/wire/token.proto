@@ -6,7 +6,7 @@ syntax = "proto2";
 
 import "components/feed/core/proto/wire/feature.proto";
 
-package feedwire;
+package feedwire1;
 
 option optimize_for = LITE_RUNTIME;
 
@@ -15,7 +15,7 @@ option java_outer_classname = "TokenProto";
 
 // A continuation token (paging token).
 message Token {
-  extend feedwire.Feature { optional Token token_extension = 194964015; }
+  extend feedwire1.Feature { optional Token token_extension = 194964015; }
 
   // Indicates the last position of the current content for a parent.  A request
   // can be made using the next_page_token to get additional features which will

@@ -48,6 +48,7 @@
 <translation id="2309047409763057870">‏این نصب ثانویه Google Chrome است و نمی‌تواند مرورگر پیش‌فرضتان شود.</translation>
 <translation id="2341767445688917208">‏سیستم‌عامل Chrome نتوانست گذرواژه‌هایتان را همگام‌سازی کند. اکنون مشکل رفع شود.</translation>
 <translation id="2348335408836342058">‏Chrome برای این سایت به مجوز دسترسی به دوربین و میکروفون نیاز دارد</translation>
+<translation id="234869673307233423">‏Chrome نمی‌تواند گذرواژه‌هایتان را بررسی کند. بعداً دوباره امتحان کنید.</translation>
 <translation id="2429317896000329049">‏Google Chrome قادر به همگام‌سازی داده‌های شما نبود زیرا همگام‌سازی برای دامنه شما قابل دسترسی نیست.</translation>
 <translation id="2467438592969358367">‏Google Chrome می‌خواهد گذرواژه‌های شما را صادر کند. برای اجازه به این کار، گذرواژه Windows خود را تایپ کنید.</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
@@ -68,6 +69,8 @@
 <translation id="2857540653560290388">‏درحال راه‌اندازی Chrome…</translation>
 <translation id="2871893339301912279">‏شما در حال حاضر وارد سیستم Chrome شده‌اید!</translation>
 <translation id="2888126860611144412">‏درباره Chrome</translation>
+<translation id="2929907241665500097">‏Chrome به‌روزرسانی نشد؛ مشکلی پیش آمد. <ph name="BEGIN_LINK" />مشکلات به‌روزرسانی Chrome و به‌روزرسانی‌های ناموفق را برطرف کنید.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736">‏<ph name="PAGE_TITLE" /> - ورود به سیستم شبکه - Chrome</translation>
 <translation id="3037838751736561277">‏Google Chrome در حالت پس‌زمینه است.</translation>
 <translation id="3065168410429928842">‏برگه Chrome</translation>
 <translation id="3080151273017101988">‏ادامه اجرای برنامه‌ها در پس‌زمینه هنگامیکه Google Chrome بسته می‌شود</translation>
@@ -106,7 +109,9 @@
 <translation id="4331809312908958774">‏سیستم عامل Chrome</translation>
 <translation id="4335235004908507846">‏Chrome می‌تواند به ایمن ماندن شما در برابر نقض داده، افزونه‌های مخرب، و خطرهای دیگر کمک کند</translation>
 <translation id="4343195214584226067">‏<ph name="EXTENSION_NAME" /> به Chrome اضافه شده است</translation>
+<translation id="4384570495110188418">‏چون به سیستم وارد نشده‌اید، Chrome نمی‌تواند گذرواژه‌هایتان را بررسی کند</translation>
 <translation id="4407807842708586359">‏سیستم عامل Google Chrome</translation>
+<translation id="4450664632294415862">‏Chrome - ورود به سیستم شبکه - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">‏عملکرد دیگری در Google Chrome درحال انجام است. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="4480040274068703980">‏به دلیل وجود یک خطای ورود به سیستم، سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود.</translation>
 <translation id="4561051373932531560">‏Google Chrome به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
@@ -116,6 +121,7 @@
 <translation id="4600710005438004015">‏Chrome به جدیدترین نسخه به‌روزرسانی نشد، بنابراین قابلیت‌های جدید و رفع اشکال‌های امنیتی را ندارید.</translation>
 <translation id="4631713731678262610">‏پنهان در منوی Chrome</translation>
 <translation id="4633000520311261472">‏برای ایمن‌تر کردن Chrome، برخی از افزونه‌هایی را که در<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست نشده‌اند و ممکن است بدون اطلاع شما اضافه شده باشند، غیرفعال کردیم.</translation>
+<translation id="4653397506175047429">‏Chrome نمی‌تواند همه گذرواژه‌هایتان را بررسی کند. بعد از ۲۴ ساعت دوباره امتحان کنید.</translation>
 <translation id="4728575227883772061">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Google Chrome در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="4750550185319565338">‏برای فعال کردن <ph name="PLUGIN_NAME" />، ‏Chrome را راه‌اندازی مجدد کنید</translation>
 <translation id="4754614261631455953">‏Google Chrome Canary (ورودی mDNS)</translation>
@@ -149,6 +155,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">‏Chrome راه‌اندازی نشد. دوباره امتحان کنید.</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - ورود به سیستم شبکه</translation>
 <translation id="5940385492829620908">‏وب، نشانک‌ها و موارد دیگر Chrome شما در اینجا هستند.</translation>
 <translation id="5941830788786076944">‏Google Chrome مرورگر پیش‌فرض شود</translation>
 <translation id="6070348360322141662">‏برای امنیت بیشتر، Google Chrome داده‌های شما را رمزگذاری می‌کند</translation>
@@ -204,6 +211,7 @@
 <translation id="7855730255114109580">‏Google Chrome به‌روز است</translation>
 <translation id="7890208801193284374">‏اگر رایانه‌ای را به صورت مشترک استفاده می‌کنید، دوستان و خانواده می‌توانند به صورت جداگانه مرور کنند و Chrome را به صورتی که مایلند تنظیم کنند.</translation>
 <translation id="7896673875602241923">‏شخصی قبلاً به‌عنوان <ph name="ACCOUNT_EMAIL_LAST" /> به سیستم Chrome در این رایانه وارد شده است. برای اینکه اطلاعاتتان جدا حفظ شود، لطفاً کاربر Chrome جدیدی ایجاد کنید.</translation>
+<translation id="7905891027772979035">‏Chrome نمی‌تواند افزونه‌هایتان را بررسی کند. بعداً دوباره امتحان کنید.</translation>
 <translation id="7916016681687251387">‏سیستم‌عامل Chrome نتوانست داده‌هایتان را همگام‌سازی کند. اکنون مشکل رفع شود.</translation>
 <translation id="7930071585467473040">‏Google Chrome می‌خواهد گذرواژه‌ها را کپی کند.</translation>
 <translation id="7962410387636238736">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند زیرا Windows XP و Windows Vista دیگر پشتیبانی نمی‌شوند</translation>

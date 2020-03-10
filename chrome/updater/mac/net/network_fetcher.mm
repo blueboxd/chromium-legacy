@@ -52,7 +52,7 @@ using DownloadToFileCompleteCallback =
                     (ResponseStartedCallback)responseStartedCallback
                                progressCallback:
                                    (ProgressCallback)progressCallback {
-  if (self == [super init]) {
+  if (self = [super init]) {
     _responseStartedCallback = std::move(responseStartedCallback);
     _progressCallback = progressCallback;
     _callbackRunner = base::ThreadTaskRunnerHandle::Get();
@@ -94,9 +94,9 @@ using DownloadToFileCompleteCallback =
                    progressCallback:(ProgressCallback)progressCallback
         postRequestCompleteCallback:
             (PostRequestCompleteCallback)postRequestCompleteCallback {
-  if (self ==
-      [super initWithResponseStartedCallback:std::move(responseStartedCallback)
-                            progressCallback:progressCallback]) {
+  if (self = [super
+          initWithResponseStartedCallback:std::move(responseStartedCallback)
+                         progressCallback:progressCallback]) {
     _postRequestCompleteCallback = std::move(postRequestCompleteCallback);
   }
   return self;
@@ -195,9 +195,9 @@ using DownloadToFileCompleteCallback =
                            filePath:(const base::FilePath&)filePath
      downloadToFileCompleteCallback:
          (DownloadToFileCompleteCallback)downloadToFileCompleteCallback {
-  if (self ==
-      [super initWithResponseStartedCallback:std::move(responseStartedCallback)
-                            progressCallback:progressCallback]) {
+  if (self = [super
+          initWithResponseStartedCallback:std::move(responseStartedCallback)
+                         progressCallback:progressCallback]) {
     _filePath = filePath;
     _downloadToFileCompleteCallback = std::move(downloadToFileCompleteCallback);
   }

@@ -813,6 +813,7 @@
 <translation id="4466881336512663640">השינויים בטופס יתבטלו. להמשיך?</translation>
 <translation id="4477350412780666475">הטראק הבא</translation>
 <translation id="4482953324121162758">האתר הזה לא יתורגם.</translation>
+<translation id="4486757593530038591">כשהאפשרות מופעלת, אתרים לא יכולים להשתמש בפעילות הגלישה שלך באתרים שונים כדי להציג מודעות בהתאמה אישית. ייתכנו שיבושים בפעולה של תכונות באתרים מסוימים.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">‏התכונות האלה מושבתות כברירת מחדל. הן לא יהיו זמינות בגרסאות עתידיות של Chrome.</translation>
 <translation id="4493480324863638523">‏כתובת URL לא חוקית. הסכימה של כתובת ה-URL צריכה להיות רגילה, כלומר: http://example.com או https://example.com.</translation>
@@ -1055,6 +1056,7 @@ Del</translation>
 <translation id="549333378215107354">גודל 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">סימניות מנוהלות</translation>
+<translation id="5510481203689988000">‏ההגדרה הזו מנוהלת בהגדרות הקשורות לקובצי Cookie.</translation>
 <translation id="5510766032865166053">ייתכן שהוא הועבר או נמחק.</translation>
 <translation id="5523118979700054094">שם מדיניות</translation>
 <translation id="55293785478302737">הידוק קצוות</translation>

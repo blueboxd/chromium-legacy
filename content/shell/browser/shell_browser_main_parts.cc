@@ -30,7 +30,6 @@
 #include "net/base/net_module.h"
 #include "net/grit/net_resources.h"
 #include "services/service_manager/embedder/result_codes.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
@@ -139,7 +138,6 @@ void ShellBrowserMainParts::InitializeBrowserContexts() {
 }
 
 void ShellBrowserMainParts::InitializeMessageLoopContext() {
-  ui::MaterialDesignController::Initialize();
   Shell::CreateNewWindow(browser_context_.get(), GetStartupURL(), nullptr,
                          gfx::Size());
 }

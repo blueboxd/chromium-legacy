@@ -25,7 +25,7 @@ suite('TabSwiper', () => {
     tabSwiper.startObserving();
   });
 
-  test('swiping does not progress the animation', () => {
+  test('SwipingProgressesAnimation', () => {
     // Set margin top 0 to avoid offsetting the bounding client rect.
     document.body.style.margin = 0;
 
@@ -47,27 +47,33 @@ suite('TabSwiper', () => {
     let startTop = tabElement.getBoundingClientRect().top;
     assertEquals(startTop, 0);
 
-    // Swiping did not start the animation.
+    // Swipe was enough to start animating the position.
     pointerState.clientY = startY - (TRANSLATE_ANIMATION_THRESHOLD_PX + 1);
     tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
     assertEquals(tabElStyle.maxWidth, `${tabWidth}px`);
-    assertEquals(startTop, tabElement.getBoundingClientRect().top);
+    let top = tabElement.getBoundingClientRect().top;
+    assertTrue(top < startTop && top > -1 * SWIPE_FINISH_THRESHOLD_PX);
 
-    // Swipe was enough to close but did not yet animate.
+    // Swipe was enough to start animating max width and opacity.
     pointerState.clientY = startY - (SWIPE_START_THRESHOLD_PX + 1);
     tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-    assertEquals(tabWidth, parseInt(tabElStyle.maxWidth, 10));
-    assertEquals('1', tabElStyle.opacity);
+    assertTrue(
+        parseInt(tabElStyle.maxWidth) > 0 &&
+        parseInt(tabElStyle.maxWidth) < tabWidth);
+    assertTrue(
+        parseFloat(tabElStyle.opacity) > 0 &&
+        parseFloat(tabElStyle.opacity) < 1);
 
-    // Verify animation still not progressed.
+    // Swipe was enough to finish animating.
     pointerState.clientY = startY - (SWIPE_FINISH_THRESHOLD_PX + 1);
     tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-    assertEquals(tabWidth, parseInt(tabElStyle.maxWidth, 10));
-    assertEquals('1', tabElStyle.opacity);
-    assertEquals(startTop, tabElement.getBoundingClientRect().top);
+    assertEquals(tabElStyle.maxWidth, '0px');
+    assertEquals(tabElStyle.opacity, '0');
+    assertEquals(
+        tabElement.getBoundingClientRect().top, -SWIPE_FINISH_THRESHOLD_PX);
   });
 
-  test('finishing the swipe animation fires an event', async () => {
+  test('SwipingPastFinishThresholdFiresEvent', async () => {
     const firedEventPromise = eventToPromise('swipe', tabElement);
     const startY = 50;
     const pointerState = {clientY: startY, pointerId: 1};
@@ -80,7 +86,25 @@ suite('TabSwiper', () => {
     await firedEventPromise;
   });
 
-  test('swiping and letting go before resets animation', () => {
+  test('SwipingPastStartThresholdFinishesAnimation', async () => {
+    const firedEventPromise = eventToPromise('swipe', tabElement);
+
+    const tabElStyle = window.getComputedStyle(tabElement);
+    const startY = 50;
+
+    const pointerState = {clientY: 50, pointerId: 1};
+    tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
+
+    pointerState.clientY = startY - (SWIPE_START_THRESHOLD_PX + 1);
+    pointerState.movementY = 1; /* Any non-0 value here is fine. */
+    tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
+    tabElement.dispatchEvent(new PointerEvent('pointerup', pointerState));
+    await firedEventPromise;
+    assertEquals(tabElStyle.maxWidth, '0px');
+    assertEquals(tabElStyle.opacity, '0');
+  });
+
+  test('NotCompletingSwipePastThreshold', () => {
     tabElement.style.setProperty('--tabstrip-tab-width', '100px');
     const tabElStyle = window.getComputedStyle(tabElement);
     const startY = 50;
@@ -97,7 +121,7 @@ suite('TabSwiper', () => {
     assertEquals(tabElStyle.opacity, '1');
   });
 
-  test('swiping fast enough fires an event', async () => {
+  test('SwipingAtHighVelocityFinishesAnimation', async () => {
     const tabElStyle = window.getComputedStyle(tabElement);
     const firedEventPromise = eventToPromise('swipe', tabElement);
     const startY = 50;
@@ -112,9 +136,11 @@ suite('TabSwiper', () => {
     tabElement.dispatchEvent(new PointerEvent('pointerup', pointerState));
 
     await firedEventPromise;
+    assertEquals(tabElStyle.maxWidth, '0px');
+    assertEquals(tabElStyle.opacity, '0');
   });
 
-  test('pointerdown should reset the animation time', async () => {
+  test('PointerDownResetsAnimationTime', async () => {
     tabElement.style.setProperty('--tabstrip-tab-width', '100px');
     const tabElStyle = window.getComputedStyle(tabElement);
     const pointerState = {clientY: 50, pointerId: 1};

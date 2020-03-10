@@ -200,8 +200,8 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, SaveFile) {
       content::EvalJs(
           web_contents,
           content::JsReplace("(async () => {"
-                             "  const w = await self.entry.createWriter();"
-                             "  await w.write(0, new Blob([$1]));"
+                             "  const w = await self.entry.createWritable();"
+                             "  await w.write(new Blob([$1]));"
                              "  await w.close();"
                              "  return (await self.entry.getFile()).size; })()",
                              file_contents)));
@@ -247,8 +247,8 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, OpenFile) {
       content::EvalJs(
           web_contents,
           content::JsReplace("(async () => {"
-                             "  const w = await self.entry.createWriter();"
-                             "  await w.write(0, new Blob([$1]));"
+                             "  const w = await self.entry.createWritable();"
+                             "  await w.write(new Blob([$1]));"
                              "  await w.close();"
                              "  return (await self.entry.getFile()).size; })()",
                              file_contents)));
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, FullscreenOpenFile) {
       "  let fsChangePromise = new Promise((resolve) => {"
       "    document.onfullscreenchange = resolve;"
       "  });"
-      "  const w = await self.entry.createWriter();"
+      "  const w = await self.entry.createWritable();"
       "  await fsChangePromise;"
       "  return; })()"));
 
@@ -369,8 +369,8 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, SafeBrowsing) {
                             "(async () => {"
                             "  let e = await self.chooseFileSystemEntries("
                             "      {type: 'save-file'});"
-                            "  const w = await e.createWriter();"
-                            "  await w.write(0, 'abc');"
+                            "  const w = await e.createWritable();"
+                            "  await w.write('abc');"
                             "  await w.close();"
                             "  return e.name; })()"));
 
@@ -416,8 +416,8 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest,
       content::EvalJs(
           web_contents,
           content::JsReplace("(async () => {"
-                             "  const w = await self.entry.createWriter();"
-                             "  await w.write(0, new Blob([$1]));"
+                             "  const w = await self.entry.createWritable();"
+                             "  await w.write(new Blob([$1]));"
                              "  await w.close();"
                              "  return (await self.entry.getFile()).size; })()",
                              file_contents)));
@@ -469,8 +469,8 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest,
       content::EvalJs(
           web_contents,
           content::JsReplace("(async () => {"
-                             "  const w = await self.entry.createWriter();"
-                             "  await w.write(0, new Blob([$1]));"
+                             "  const w = await self.entry.createWritable();"
+                             "  await w.write(new Blob([$1]));"
                              "  await w.close();"
                              "  return (await self.entry.getFile()).size; })()",
                              file_contents)));
@@ -576,8 +576,8 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemOriginScopedPermissionsBrowserTest,
       content::EvalJs(
           third_party_iframe,
           content::JsReplace("(async () => {"
-                             "  const w = await self.entry.createWriter();"
-                             "  await w.write(0, new Blob([$1]));"
+                             "  const w = await self.entry.createWritable();"
+                             "  await w.write(new Blob([$1]));"
                              "  await w.close();"
                              "  return (await self.entry.getFile()).size; })()",
                              initial_file_contents)));

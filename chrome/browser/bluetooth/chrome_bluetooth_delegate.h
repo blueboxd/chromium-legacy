@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BLUETOOTH_CHROME_BLUETOOTH_DELEGATE_H_
 
 #include <string>
+#include <vector>
 
 #include "content/public/browser/bluetooth_delegate.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-forward.h"
@@ -58,6 +59,8 @@ class ChromeBluetoothDelegate : public content::BluetoothDelegate {
   bool IsAllowedToAccessAtLeastOneService(
       content::RenderFrameHost* frame,
       const blink::WebBluetoothDeviceId& device_id) override;
+  std::vector<blink::mojom::WebBluetoothDevicePtr> GetPermittedDevices(
+      content::RenderFrameHost* frame) override;
 };
 
 #endif  // CHROME_BROWSER_BLUETOOTH_CHROME_BLUETOOTH_DELEGATE_H_

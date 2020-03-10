@@ -10,7 +10,6 @@ import android.text.format.DateUtils;
 import org.chromium.base.UserData;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.net.NetError;
@@ -31,12 +30,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
     static final int TAB_STATUS_RELOAD_COLD_START_BG = 7;
     static final int TAB_STATUS_LAZY_LOAD_FOR_BG_TAB = 8;
     static final int TAB_STATUS_LIM = 9;
-
-    // TabBackgroundLoadStatus defined in tools/metrics/histograms/histograms.xml.
-    static final int TAB_BACKGROUND_LOAD_SHOWN = 0;
-    static final int TAB_BACKGROUND_LOAD_LOST = 1;
-    static final int TAB_BACKGROUND_LOAD_SKIPPED = 2;
-    static final int TAB_BACKGROUND_LOAD_LIM = 3;
 
     // The enum values for the Tab.RestoreResult histogram. The unusual order is to
     // keep compatibility with the previous instance of the histogram that was using
@@ -75,21 +68,13 @@ public class TabUma extends EmptyTabObserver implements UserData {
     // "Open in a new tab" from the context menu.
     private int mNumBackgroundTabsOpened;
 
-    // Records histogram about which background tab opened from this tab the user switches to
-    // first.
-    private ChildBackgroundTabShowObserver mChildBackgroundTabShowObserver;
-
     private TabModelSelectorObserver mNewTabObserver;
 
     static TabUma create(Tab tab, @TabCreationState int creationState) {
-        TabUma tabUma = get(tab);
+        TabUma tabUma = tab.getUserDataHost().getUserData(USER_DATA_KEY);
         if (tabUma != null) tabUma.removeObservers(tab);
 
         return tab.getUserDataHost().setUserData(USER_DATA_KEY, new TabUma(tab, creationState));
-    }
-
-    private static TabUma get(Tab tab) {
-        return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 
     /**
@@ -155,14 +140,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
      * @param delta Time elapsed from the last state transition in milliseconds.
      */
     private void recordTabStateTransition(int prevState, int newState, long delta) {
-        if (prevState == TAB_STATE_ACTIVE && newState == TAB_STATE_INACTIVE) {
-            RecordHistogram.recordLongTimesHistogram100(
-                    "Tabs.StateTransfer.Time_Active_Inactive", delta);
-        } else if (prevState == TAB_STATE_ACTIVE && newState == TAB_STATE_CLOSED) {
-            RecordHistogram.recordLongTimesHistogram100(
-                    "Tabs.StateTransfer.Time_Active_Closed", delta);
-        }
-
         if (prevState == TAB_STATE_INITIAL) {
             RecordHistogram.recordEnumeratedHistogram("Tabs.StateTransfer.Target_Initial", newState,
                     TAB_STATE_MAX);
@@ -185,7 +162,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
                     "Tab.BackgroundTabsOpenedViaContextMenuCount", mNumBackgroundTabsOpened);
         }
         mNumBackgroundTabsOpened = 0;
-        mChildBackgroundTabShowObserver = null;
     }
 
     /**
@@ -202,25 +178,8 @@ public class TabUma extends EmptyTabObserver implements UserData {
         mLastTabState = newState;
     }
 
-    /**
-     * @return The most recently used rank for this tab in the given TabModel.
-     */
-    private static int computeMRURank(Tab tab, TabModel model) {
-        final long tabLastShow = get(tab).getLastShownTimestamp();
-        int mruRank = 0;
-        for (int i = 0; i < model.getCount(); i++) {
-            Tab otherTab = model.getTabAt(i);
-            if (otherTab != tab && TabUma.get(otherTab) != null
-                    && TabUma.get(otherTab).getLastShownTimestamp() > tabLastShow) {
-                mruRank++;
-            }
-        }
-        return mruRank;
-    }
-
     @Override
     public void onShown(Tab tab, @TabSelectionType int selectionType) {
-        int rank = computeMRURank(tab, TabModelSelector.from(tab).getModel(tab.isIncognito()));
         long previousTimestampMillis = tab.getTimestampMillis();
         long now = SystemClock.elapsedRealtime();
 
@@ -230,7 +189,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
         if (mLastShownTimestamp != -1 && selectionType == TabSelectionType.FROM_USER) {
             long age = now - mLastShownTimestamp;
             RecordHistogram.recordCountHistogram("Tab.SwitchedToForegroundAge", (int) age);
-            RecordHistogram.recordCountHistogram("Tab.SwitchedToForegroundMRURank", rank);
         }
 
         increaseTabShowCount();
@@ -269,27 +227,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
         }
 
         if (mLastShownTimestamp == -1) {
-            // Record Tab.BackgroundLoadStatus.
-            if (mTabCreationState == TabCreationState.LIVE_IN_BACKGROUND) {
-                if (mRestoreStartedAtMillis == -1) {
-                    RecordHistogram.recordEnumeratedHistogram("Tab.BackgroundLoadStatus",
-                            TAB_BACKGROUND_LOAD_SHOWN, TAB_BACKGROUND_LOAD_LIM);
-                } else {
-                    RecordHistogram.recordEnumeratedHistogram("Tab.BackgroundLoadStatus",
-                            TAB_BACKGROUND_LOAD_LOST, TAB_BACKGROUND_LOAD_LIM);
-
-                    if (previousTimestampMillis > 0) {
-                        RecordHistogram.recordMediumTimesHistogram(
-                                "Tab.LostTabAgeWhenSwitchedToForeground",
-                                System.currentTimeMillis() - previousTimestampMillis);
-                    }
-                }
-            } else if (mTabCreationState == TabCreationState.FROZEN_FOR_LAZY_LOAD) {
-                assert mRestoreStartedAtMillis == -1;
-                RecordHistogram.recordEnumeratedHistogram("Tab.BackgroundLoadStatus",
-                        TAB_BACKGROUND_LOAD_SKIPPED, TAB_BACKGROUND_LOAD_LIM);
-            }
-
             // Register the observer for context menu-triggering event here to avoid the case
             // where this is created too early and we start missing out on metrics suddenly.
             mNewTabObserver = new EmptyTabModelSelectorObserver() {
@@ -297,7 +234,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
                 public void onNewTabCreated(Tab newTab, @TabCreationState int creationState) {
                     if (newTab.getParentId() == tab.getId()
                             && newTab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND) {
-                        onBackgroundTabOpenedFromContextMenu(newTab);
+                        ++mNumBackgroundTabsOpened;
                     }
                 }
             };
@@ -307,14 +244,18 @@ public class TabUma extends EmptyTabObserver implements UserData {
         // Record "tab age upon first display" metrics. previousTimestampMillis is persisted through
         // cold starts.
         if (mLastShownTimestamp == -1 && previousTimestampMillis > 0) {
+            long duration = System.currentTimeMillis() - previousTimestampMillis;
+            if (mTabCreationState == TabCreationState.LIVE_IN_BACKGROUND
+                    && mRestoreStartedAtMillis != -1) {
+                RecordHistogram.recordMediumTimesHistogram(
+                        "Tab.LostTabAgeWhenSwitchedToForeground", duration);
+            }
             if (isOnBrowserStartup) {
                 RecordHistogram.recordCountHistogram("Tabs.ForegroundTabAgeAtStartup",
-                        (int) ((System.currentTimeMillis() - previousTimestampMillis)
-                                / DateUtils.MINUTE_IN_MILLIS));
+                        (int) (duration / DateUtils.MINUTE_IN_MILLIS));
             } else if (selectionType == TabSelectionType.FROM_USER) {
                 RecordHistogram.recordCountHistogram("Tab.AgeUponRestoreFromColdStart",
-                        (int) ((System.currentTimeMillis() - previousTimestampMillis)
-                                / DateUtils.MINUTE_IN_MILLIS));
+                        (int) (duration / DateUtils.MINUTE_IN_MILLIS));
             }
         }
 
@@ -397,28 +338,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
             //            renderer crashes and start to track that.
             mRestoreStartedAtMillis = -1;
         }
-    }
-
-    /**
-     * Called when a user opens a background tab by long pressing and selecting "Open in a new tab"
-     * from the context menu.
-     * @param backgroundTab The background tab.
-     */
-    private void onBackgroundTabOpenedFromContextMenu(Tab backgroundTab) {
-        ++mNumBackgroundTabsOpened;
-
-        if (mChildBackgroundTabShowObserver == null) {
-            mChildBackgroundTabShowObserver =
-                    new ChildBackgroundTabShowObserver(backgroundTab.getParentId());
-        }
-        mChildBackgroundTabShowObserver.onBackgroundTabOpened(backgroundTab);
-    }
-
-    /**
-     * @return The timestamp for when this tab was last shown.
-     */
-    private long getLastShownTimestamp() {
-        return mLastShownTimestamp;
     }
 
     private static void increaseTabShowCount() {

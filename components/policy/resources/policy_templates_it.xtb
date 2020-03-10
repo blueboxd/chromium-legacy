@@ -319,6 +319,11 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 
       Se la norma non viene impostata, per gli utenti gestiti dall'azienda viene applicato il valore predefinito "MultiProfileUserBehaviorMustBePrimary", mentre per gli utenti non gestiti viene applicato il valore "MultiProfileUserBehaviorUnrestricted".</translation>
 <translation id="1465619815762735808">Click to play</translation>
+<translation id="1467633031685836974">Questa funzionalità consente di indirizzare link ipertestuali e navigazioni degli URL nella barra degli indirizzi a testo specifico in una pagina web, a cui si passa al termine del caricamento della pagina.
+
+Se attivi o non configuri questo criterio, viene attivato lo scorrimento della pagina web ai frammenti di testo specifici tramite URL.
+
+Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di testo specifici tramite URL viene disattivato.</translation>
 <translation id="1468707346106619889">Se le norme sono impostate su "true", la modalità Desktop unificato è consentita e
       attivata per impostazione predefinita, il che significa che le applicazioni includono diverse visualizzazioni.
       L'utente può disattivare la modalità Desktop unificato per le singole visualizzazioni deselezionandola
@@ -3380,6 +3385,7 @@ La modalità di blocco dello schermo per inattività consigliata è l'attivazion
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere minori del ritardo di inattività.</translation>
 <translation id="6097601282776163274">Attiva la raccolta di dati anonimizzati con chiave URL</translation>
 <translation id="6099853574908182288">Modalità di stampa a colori predefinita</translation>
+<translation id="6102342563050263313">Attiva scorrimento al testo specificato in frammenti di URL</translation>
 <translation id="6107642964266628393">Consente di stabilire come e quando applicare gli aggiornamenti di Chrome OS.</translation>
 <translation id="6111936128861357925">Attiva il gioco del dinosauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
@@ -4364,6 +4370,9 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7713608076604149344">Limitazioni dei download</translation>
 <translation id="7715711044277116530">Percentuale di regolazione del ritardo di oscuramento dello schermo in modalità di presentazione</translation>
 <translation id="7717938661004793600">Configura le funzioni di accessibilità di <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="7724652568947700864">Se questo criterio viene impostato, tutti i tipi di dati specificati verranno esclusi dalla sincronizzazione sia per Google Sync sia per la sincronizzazione del profilo di roaming. Questa operazione può essere utile per ridurre le dimensioni del profilo di roaming o per limitare il tipo di dati caricati sui server di Google Sync.
+
+      Attualmente i tipi di dati per questo criterio sono: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfiguration". Per tali nomi viene fatta distinzione tra maiuscole e minuscole.</translation>
 <translation id="7731026922044991970">Ripristina il comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> precedente per i cookie su tutti i siti</translation>
 <translation id="7747447585227954402">Consenti ai dispositivi di usare <ph name="PLUGIN_VM_NAME" /> su <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749024457938190837">Estensioni consentite per ignorare la finestra di dialogo di conferma durante l'invio di processi di stampa tramite l'API chrome.printing</translation>

@@ -13,6 +13,7 @@
 #include "content/public/common/content_client.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -125,9 +126,10 @@ NSCursor* GetCoreCursorWithFallback(CrCoreCursorType type,
   return LoadCursor(resource_id, hotspot_x, hotspot_y);
 }
 
-NSCursor* CreateCustomCursor(const content::CursorInfo& info) {
-  float custom_scale = info.image_scale_factor;
-  gfx::Size custom_size(info.custom_image.width(), info.custom_image.height());
+NSCursor* CreateCustomCursor(const ui::Cursor& cursor) {
+  float custom_scale = cursor.image_scale_factor();
+  gfx::Size custom_size(cursor.custom_bitmap().width(),
+                        cursor.custom_bitmap().height());
 
   // Convert from pixels to view units.
   if (custom_scale == 0)
@@ -135,19 +137,20 @@ NSCursor* CreateCustomCursor(const content::CursorInfo& info) {
   NSSize dip_size = NSSizeFromCGSize(
       gfx::ScaleToFlooredSize(custom_size, 1 / custom_scale).ToCGSize());
   NSPoint dip_hotspot = NSPointFromCGPoint(
-      gfx::ScaleToFlooredPoint(info.hotspot, 1 / custom_scale).ToCGPoint());
+      gfx::ScaleToFlooredPoint(cursor.custom_hotspot(), 1 / custom_scale)
+          .ToCGPoint());
 
   // Both the image and its representation need to have the same size for
   // cursors to appear in high resolution on retina displays. Note that the
   // size of a representation is not the same as pixelsWide or pixelsHigh.
-  NSImage* cursor_image = skia::SkBitmapToNSImage(info.custom_image);
+  NSImage* cursor_image = skia::SkBitmapToNSImage(cursor.custom_bitmap());
   [cursor_image setSize:dip_size];
   [[[cursor_image representations] objectAtIndex:0] setSize:dip_size];
 
-  NSCursor* cursor = [[NSCursor alloc] initWithImage:cursor_image
-                                             hotSpot:dip_hotspot];
+  NSCursor* nscursor = [[NSCursor alloc] initWithImage:cursor_image
+                                               hotSpot:dip_hotspot];
 
-  return [cursor autorelease];
+  return [nscursor autorelease];
 }
 
 }  // namespace
@@ -156,7 +159,7 @@ namespace content {
 
 // Match Safari's cursor choices; see platform/mac/CursorMac.mm .
 gfx::NativeCursor WebCursor::GetNativeCursor() {
-  switch (info_.type) {
+  switch (cursor_.type()) {
     case ui::mojom::CursorType::kPointer:
       return [NSCursor arrowCursor];
     case ui::mojom::CursorType::kCross:
@@ -262,7 +265,7 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
     case ui::mojom::CursorType::kGrabbing:
       return [NSCursor closedHandCursor];
     case ui::mojom::CursorType::kCustom:
-      return CreateCustomCursor(info_);
+      return CreateCustomCursor(cursor_);
     case ui::mojom::CursorType::kNull:
     case ui::mojom::CursorType::kDndNone:
     case ui::mojom::CursorType::kDndMove:

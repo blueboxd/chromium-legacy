@@ -40,7 +40,7 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum { kTickMultiplier = 120 };
+  constexpr static int kTickMultiplier = 120;
 
   enum DeltaMode { kDomDeltaPixel = 0, kDomDeltaLine, kDomDeltaPage };
 

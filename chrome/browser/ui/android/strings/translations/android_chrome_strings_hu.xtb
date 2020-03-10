@@ -461,7 +461,7 @@ Csak Ön láthatja, hogy mi van a kamera látóterében. A webhely nem látja a 
 <translation id="445467742685312942">Védett tartalmak lejátszásának engedélyezése a webhelyek számára</translation>
 <translation id="4468959413250150279">Egy adott webhely hangjának némítása.</translation>
 <translation id="4472118726404937099">Az eszközök közötti szinkronizáláshoz és személyre szabáshoz jelentkezzen be, és kapcsolja be a szinkronizálást</translation>
-<translation id="447252321002412580">Segítség a Chrome funkcióinak és teljesítményének javítása érdekében</translation>
+<translation id="447252321002412580">Hozzájárulás a Chrome funkcióinak és teljesítményének javításához</translation>
 <translation id="4479647676395637221">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára a kamera használatát (ajánlott)</translation>
 <translation id="4479972344484327217">A(z) <ph name="MODULE" /> telepítése a Chrome-hoz…</translation>
 <translation id="4487967297491345095">A Chrome összes alkalmazásadata véglegesen törlődik, beleértve a fájlokat, beállításokat, fiókokat, adatbázisokat stb.</translation>
@@ -760,7 +760,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6545864417968258051">Bluetooth-alapú keresés</translation>
 <translation id="6560414384669816528">Keresés a Sogou használatával</translation>
 <translation id="656065428026159829">Továbbiak megjelenítése</translation>
-<translation id="6561560012278703671">Halkabb üzenetküldés használata (letiltja az értesítéseket, hogy ne zavarják meg Önt)</translation>
+<translation id="6561560012278703671">Csendesebb üzenetküldés használata (letiltja az értesítéseket, hogy ne zavarják meg Önt)</translation>
 <translation id="6566259936974865419">A Chrome megspórolt Önnek <ph name="GIGABYTES" /> GB-ot</translation>
 <translation id="6573096386450695060">Engedélyezés mindig</translation>
 <translation id="6573431926118603307">A más eszközökön futó Chrome böngészőben megnyitott lapok itt jelennek meg.</translation>

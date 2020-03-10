@@ -15,7 +15,7 @@ constexpr int kSeparatorThickness = 1;
 
 // Returns the height of the separator between tabs.
 int GetSeparatorHeight() {
-  return ui::MaterialDesignController::touch_ui() ? 24 : 20;
+  return ui::MaterialDesignController::GetInstance()->touch_ui() ? 24 : 20;
 }
 
 }  // namespace

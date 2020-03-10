@@ -50,6 +50,11 @@ void TabPropertiesDecorator::SetIsTab(content::WebContents* contents,
 TabPropertiesDecorator::Data::Data() = default;
 TabPropertiesDecorator::Data::~Data() = default;
 
+const TabPropertiesDecorator::Data* TabPropertiesDecorator::Data::FromPageNode(
+    const PageNode* page_node) {
+  return TabPropertiesDataImpl::Get(PageNodeImpl::FromNode(page_node));
+}
+
 TabPropertiesDecorator::Data*
 TabPropertiesDecorator::Data::GetOrCreateForTesting(PageNode* page_node) {
   return TabPropertiesDataImpl::GetOrCreate(PageNodeImpl::FromNode(page_node));

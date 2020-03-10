@@ -155,7 +155,7 @@ OmniboxMatchCellView::~OmniboxMatchCellView() = default;
 
 // static
 int OmniboxMatchCellView::GetTextIndent() {
-  return ui::MaterialDesignController::touch_ui() ? 51 : 47;
+  return ui::MaterialDesignController::GetInstance()->touch_ui() ? 51 : 47;
 }
 
 void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,

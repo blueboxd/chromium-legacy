@@ -172,8 +172,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile_NonExistingFile) {
   EXPECT_EQ(int{file_contents.size()},
             EvalJs(shell(),
                    JsReplace("(async () => {"
-                             "  const w = await self.entry.createWriter();"
-                             "  await w.write(0, new Blob([$1]));"
+                             "  const w = await self.entry.createWritable();"
+                             "  await w.write(new Blob([$1]));"
                              "  await w.close();"
                              "  return (await self.entry.getFile()).size; })()",
                              file_contents)));

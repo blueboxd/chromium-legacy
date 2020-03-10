@@ -173,22 +173,8 @@ void QuickAnswersMenuObserver::ExecuteCommand(int command_id) {
   if (command_id == IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY) {
     SendAssistantQuery(query_);
 
-    if (quick_answer_) {
-      base::TimeDelta duration =
-          base::TimeTicks::Now() - quick_answer_received_time_;
-      RecordClick(quick_answer_->result_type, duration);
-    } else {
-      // No result is available.
-
-      // Use default 0 duration for clicks before fetch finish.
-      base::TimeDelta duration;
-      if (!quick_answer_received_time_.is_null()) {
-        // Fetch finish with no result, set the duration to be between fetch
-        // finish and user clicks.
-        duration = base::TimeTicks::Now() - quick_answer_received_time_;
-      }
-      RecordClick(ResultType::kNoResult, duration);
-    }
+    quick_answers_client_->OnQuickAnswerClick(
+        quick_answer_ ? quick_answer_->result_type : ResultType::kNoResult);
   }
 }
 
@@ -216,7 +202,6 @@ void QuickAnswersMenuObserver::OnQuickAnswerReceived(
                            /*hidden=*/false,
                            /*title=*/TruncateString(kNoResult));
   }
-  quick_answer_received_time_ = base::TimeTicks::Now();
   quick_answer_ = std::move(quick_answer);
 }
 
@@ -225,7 +210,6 @@ void QuickAnswersMenuObserver::OnNetworkError() {
                          /*enabled=*/false,
                          /*hidden=*/false,
                          /*title=*/TruncateString(kNetworkError));
-  quick_answer_received_time_ = base::TimeTicks::Now();
 }
 
 void QuickAnswersMenuObserver::OnEligibilityChanged(bool eligible) {

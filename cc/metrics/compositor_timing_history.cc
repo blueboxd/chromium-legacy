@@ -30,8 +30,6 @@ class CompositorTimingHistory::UMAReporter {
 
   // Latency measurements
   virtual void AddBeginImplFrameLatency(base::TimeDelta delta) = 0;
-  virtual void AddBeginMainFrameStartToCommitDuration(
-      base::TimeDelta duration) = 0;
   virtual void AddCommitToReadyToActivateDuration(base::TimeDelta duration,
                                                   TreePriority priority) = 0;
   virtual void AddInvalidationToReadyToActivateDuration(
@@ -327,12 +325,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Renderer.BeginImplFrameLatency", delta);
   }
 
-  void AddBeginMainFrameStartToCommitDuration(
-      base::TimeDelta duration) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
-        "Scheduling.Renderer.BeginMainFrameStartToCommitDuration", duration);
-  }
-
   void AddCommitToReadyToActivateDuration(base::TimeDelta duration,
                                           TreePriority priority) override {
     UMA_HISTOGRAM_READY_TO_ACTIVATE(
@@ -409,12 +401,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Browser.BeginImplFrameLatency", delta);
   }
 
-  void AddBeginMainFrameStartToCommitDuration(
-      base::TimeDelta duration) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
-        "Scheduling.Browser.BeginMainFrameStartToCommitDuration", duration);
-  }
-
   void AddCommitToReadyToActivateDuration(base::TimeDelta duration,
                                           TreePriority priority) override {
     UMA_HISTOGRAM_READY_TO_ACTIVATE(
@@ -468,8 +454,6 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta inverval) override {}
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {}
-  void AddBeginMainFrameStartToCommitDuration(
-      base::TimeDelta duration) override {}
   void AddCommitToReadyToActivateDuration(base::TimeDelta duration,
                                           TreePriority priority) override {}
   void AddInvalidationToReadyToActivateDuration(
@@ -744,14 +728,9 @@ void CompositorTimingHistory::DidBeginMainFrame(
       begin_main_frame_end_time - begin_main_frame_sent_time_;
   base::TimeDelta begin_main_frame_queue_duration =
       begin_main_frame_start_time_ - begin_main_frame_sent_time_;
-  base::TimeDelta begin_main_frame_start_to_commit_duration =
-      begin_main_frame_end_time - begin_main_frame_start_time_;
 
   rendering_stats_instrumentation_->AddBeginMainFrameToCommitDuration(
       begin_main_frame_sent_to_commit_duration);
-
-  uma_reporter_->AddBeginMainFrameStartToCommitDuration(
-      begin_main_frame_start_to_commit_duration);
 
   if (enabled_) {
     begin_main_frame_queue_duration_history_.InsertSample(

@@ -117,8 +117,8 @@ function emitExpectedResult(path, expected)
     case "history.scrollRestoration":
         expected = "'auto'";
         break;
-    case "scheduler.currentTaskQueue.priority":
-        expected = "'default'";
+    case "scheduler.currentTaskSignal.priority":
+        expected = "'user-visible'";
         break;
     }
 

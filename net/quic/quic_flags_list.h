@@ -382,3 +382,16 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_ack_frame_to_get_min_size,
           false)
+
+// If true, skip packet threshold loss detection if largest acked is a runt.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_skip_packet_threshold_loss_detection_with_runt,
+    false)
+
+// If true, QUIC BBRv2 to take ack height into account when calculating
+// queuing_threshold in PROBE_UP.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_bbr2_add_ack_height_to_queueing_threshold,
+    false)

@@ -47,7 +47,7 @@ float WebCursor::GetCursorScaleFactor(SkBitmap* bitmap) {
   DCHECK_LT(0, maximum_cursor_size_.width());
   DCHECK_LT(0, maximum_cursor_size_.height());
   return std::min(
-      {device_scale_factor_ / info_.image_scale_factor,
+      {device_scale_factor_ / cursor_.image_scale_factor(),
        static_cast<float>(maximum_cursor_size_.width()) / bitmap->width(),
        static_cast<float>(maximum_cursor_size_.height()) / bitmap->height()});
 }

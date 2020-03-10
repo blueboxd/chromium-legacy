@@ -61,12 +61,15 @@ class ReportingHeaderParserTest : public ReportingTestBase,
   MockPersistentReportingStore* mock_store() { return store_.get(); }
 
   ReportingEndpointGroup MakeEndpointGroup(
-      std::string name,
-      std::vector<ReportingEndpoint::EndpointInfo> endpoints,
+      const std::string& name,
+      const std::vector<ReportingEndpoint::EndpointInfo>& endpoints,
       OriginSubdomains include_subdomains = OriginSubdomains::DEFAULT,
-      base::TimeDelta ttl = base::TimeDelta::FromDays(1)) {
+      base::TimeDelta ttl = base::TimeDelta::FromDays(1),
+      url::Origin origin = url::Origin()) {
+    ReportingEndpointGroupKey group_key(NetworkIsolationKey() /* unused */,
+                                        url::Origin() /* unused */, name);
     ReportingEndpointGroup group;
-    group.name = std::move(name);
+    group.group_key = group_key;
     group.include_subdomains = include_subdomains;
     group.ttl = ttl;
     group.endpoints = std::move(endpoints);
@@ -83,8 +86,8 @@ class ReportingHeaderParserTest : public ReportingTestBase,
     std::ostringstream s;
     s << "{ ";
 
-    if (!group.name.empty()) {
-      s << "\"group\": \"" << group.name << "\", ";
+    if (!group.group_key.group_name.empty()) {
+      s << "\"group\": \"" << group.group_key.group_name << "\", ";
     }
 
     s << "\"max_age\": " << group.ttl.InSeconds() << ", ";
@@ -145,6 +148,10 @@ class ReportingHeaderParserTest : public ReportingTestBase,
   const std::string kGroup_ = "group";
   const std::string kGroup2_ = "group2";
   const std::string kType_ = "type";
+  const ReportingEndpointGroupKey kGroupKey_ =
+      ReportingEndpointGroupKey(NetworkIsolationKey(), kOrigin_, kGroup_);
+  const ReportingEndpointGroupKey kGroupKey2_ =
+      ReportingEndpointGroupKey(NetworkIsolationKey(), kOrigin_, kGroup2_);
 
  private:
   std::unique_ptr<MockPersistentReportingStore> store_;
@@ -221,11 +228,10 @@ TEST_P(ReportingHeaderParserTest, Basic) {
   ParseHeader(kUrl_, header);
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  ReportingEndpoint endpoint =
-      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint = FindEndpointInCache(kGroupKey_, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kOrigin_, endpoint.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint.group_key.group_name);
@@ -240,33 +246,28 @@ TEST_P(ReportingHeaderParserTest, Basic) {
     EXPECT_EQ(1, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
 }
 
 TEST_P(ReportingHeaderParserTest, OmittedGroupName) {
+  ReportingEndpointGroupKey kGroupKey(NetworkIsolationKey(), kOrigin_,
+                                      "default");
   std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
   std::string header =
       ConstructHeaderGroupString(MakeEndpointGroup(std::string(), endpoints));
 
   ParseHeader(kUrl_, header);
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
-  EXPECT_TRUE(EndpointGroupExistsInCache(kOrigin_, "default",
-                                         OriginSubdomains::DEFAULT));
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(EndpointGroupExistsInCache(kGroupKey, OriginSubdomains::DEFAULT));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  ReportingEndpoint endpoint =
-      FindEndpointInCache(kOrigin_, "default", kEndpoint_);
+  ReportingEndpoint endpoint = FindEndpointInCache(kGroupKey, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kOrigin_, endpoint.group_key.origin);
   EXPECT_EQ("default", endpoint.group_key.group_name);
@@ -281,15 +282,10 @@ TEST_P(ReportingHeaderParserTest, OmittedGroupName) {
     EXPECT_EQ(1, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "default",
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, "default", OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -304,24 +300,19 @@ TEST_P(ReportingHeaderParserTest, IncludeSubdomainsTrue) {
 
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::INCLUDE));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::INCLUDE));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  EXPECT_TRUE(EndpointExistsInCache(kOrigin_, kGroup_, kEndpoint_));
+  EXPECT_TRUE(EndpointExistsInCache(kGroupKey_, kEndpoint_));
 
   if (mock_store()) {
     mock_store()->Flush();
     EXPECT_EQ(1, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -337,30 +328,27 @@ TEST_P(ReportingHeaderParserTest, IncludeSubdomainsFalse) {
 
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::EXCLUDE));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::EXCLUDE));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  EXPECT_TRUE(EndpointExistsInCache(kOrigin_, kGroup_, kEndpoint_));
+  EXPECT_TRUE(EndpointExistsInCache(kGroupKey_, kEndpoint_));
 
   if (mock_store()) {
     mock_store()->Flush();
     EXPECT_EQ(1, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
 }
 
 TEST_P(ReportingHeaderParserTest, IncludeSubdomainsEtldRejected) {
+  ReportingEndpointGroupKey kGroupKey(NetworkIsolationKey(), kOriginEtld_,
+                                      kGroup_);
   std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
 
   std::string header = ConstructHeaderGroupString(
@@ -368,13 +356,15 @@ TEST_P(ReportingHeaderParserTest, IncludeSubdomainsEtldRejected) {
   ParseHeader(kUrlEtld_, header);
 
   EXPECT_EQ(0u, cache()->GetEndpointGroupCountForTesting());
-  EXPECT_FALSE(EndpointGroupExistsInCache(kOriginEtld_, kGroup_,
-                                          OriginSubdomains::INCLUDE));
+  EXPECT_FALSE(
+      EndpointGroupExistsInCache(kGroupKey, OriginSubdomains::INCLUDE));
   EXPECT_EQ(0u, cache()->GetEndpointCount());
-  EXPECT_FALSE(EndpointExistsInCache(kOriginEtld_, kGroup_, kEndpoint_));
+  EXPECT_FALSE(EndpointExistsInCache(kGroupKey, kEndpoint_));
 }
 
 TEST_P(ReportingHeaderParserTest, NonIncludeSubdomainsEtldAccepted) {
+  ReportingEndpointGroupKey kGroupKey(NetworkIsolationKey(), kOriginEtld_,
+                                      kGroup_);
   std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
 
   std::string header = ConstructHeaderGroupString(
@@ -382,10 +372,9 @@ TEST_P(ReportingHeaderParserTest, NonIncludeSubdomainsEtldAccepted) {
   ParseHeader(kUrlEtld_, header);
 
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
-  EXPECT_TRUE(EndpointGroupExistsInCache(kOriginEtld_, kGroup_,
-                                         OriginSubdomains::EXCLUDE));
+  EXPECT_TRUE(EndpointGroupExistsInCache(kGroupKey, OriginSubdomains::EXCLUDE));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  EXPECT_TRUE(EndpointExistsInCache(kOriginEtld_, kGroup_, kEndpoint_));
+  EXPECT_TRUE(EndpointExistsInCache(kGroupKey, kEndpoint_));
 }
 
 TEST_P(ReportingHeaderParserTest, IncludeSubdomainsNotBoolean) {
@@ -399,24 +388,19 @@ TEST_P(ReportingHeaderParserTest, IncludeSubdomainsNotBoolean) {
 
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  EXPECT_TRUE(EndpointExistsInCache(kOrigin_, kGroup_, kEndpoint_));
+  EXPECT_TRUE(EndpointExistsInCache(kGroupKey_, kEndpoint_));
 
   if (mock_store()) {
     mock_store()->Flush();
     EXPECT_EQ(1, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -433,10 +417,9 @@ TEST_P(ReportingHeaderParserTest, NonDefaultPriority) {
 
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  ReportingEndpoint endpoint =
-      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint = FindEndpointInCache(kGroupKey_, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kNonDefaultPriority, endpoint.info.priority);
   EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
@@ -447,15 +430,10 @@ TEST_P(ReportingHeaderParserTest, NonDefaultPriority) {
     EXPECT_EQ(1, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -473,10 +451,9 @@ TEST_P(ReportingHeaderParserTest, NonDefaultWeight) {
 
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  ReportingEndpoint endpoint =
-      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint = FindEndpointInCache(kGroupKey_, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultPriority,
             endpoint.info.priority);
@@ -487,15 +464,10 @@ TEST_P(ReportingHeaderParserTest, NonDefaultWeight) {
     EXPECT_EQ(1, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -513,23 +485,18 @@ TEST_P(ReportingHeaderParserTest, MaxAge) {
 
   ParseHeader(kUrl_, header);
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
-  EXPECT_TRUE(EndpointGroupExistsInCache(kOrigin_, kGroup_,
-                                         OriginSubdomains::DEFAULT, expires));
+  EXPECT_TRUE(EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT,
+                                         expires));
 
   if (mock_store()) {
     mock_store()->Flush();
     EXPECT_EQ(1, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -544,11 +511,10 @@ TEST_P(ReportingHeaderParserTest, MultipleEndpointsSameGroup) {
   ParseHeader(kUrl_, header);
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
   EXPECT_EQ(2u, cache()->GetEndpointCount());
-  ReportingEndpoint endpoint =
-      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint = FindEndpointInCache(kGroupKey_, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kOrigin_, endpoint.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint.group_key.group_name);
@@ -558,8 +524,7 @@ TEST_P(ReportingHeaderParserTest, MultipleEndpointsSameGroup) {
   EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint.info.weight);
 
-  ReportingEndpoint endpoint2 =
-      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint2_);
+  ReportingEndpoint endpoint2 = FindEndpointInCache(kGroupKey_, kEndpoint2_);
   ASSERT_TRUE(endpoint2);
   EXPECT_EQ(kOrigin_, endpoint2.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint2.group_key.group_name);
@@ -574,25 +539,20 @@ TEST_P(ReportingHeaderParserTest, MultipleEndpointsSameGroup) {
     EXPECT_EQ(2, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint2_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
 }
 
 TEST_P(ReportingHeaderParserTest, MultipleEndpointsDifferentGroups) {
+  ReportingEndpointGroupKey kOtherGroupKey(NetworkIsolationKey(), kOrigin_,
+                                           kGroup2_);
   std::vector<ReportingEndpoint::EndpointInfo> endpoints1 = {{kEndpoint_}};
   std::vector<ReportingEndpoint::EndpointInfo> endpoints2 = {{kEndpoint_}};
   std::string header =
@@ -603,14 +563,13 @@ TEST_P(ReportingHeaderParserTest, MultipleEndpointsDifferentGroups) {
   ParseHeader(kUrl_, header);
   EXPECT_EQ(2u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
-  EXPECT_TRUE(EndpointGroupExistsInCache(kOrigin_, kGroup2_,
-                                         OriginSubdomains::DEFAULT));
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kOtherGroupKey, OriginSubdomains::DEFAULT));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
 
   EXPECT_EQ(2u, cache()->GetEndpointCount());
-  ReportingEndpoint endpoint =
-      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint = FindEndpointInCache(kGroupKey_, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kOrigin_, endpoint.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint.group_key.group_name);
@@ -619,8 +578,7 @@ TEST_P(ReportingHeaderParserTest, MultipleEndpointsDifferentGroups) {
   EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint.info.weight);
 
-  ReportingEndpoint endpoint2 =
-      FindEndpointInCache(kOrigin_, kGroup2_, kEndpoint_);
+  ReportingEndpoint endpoint2 = FindEndpointInCache(kOtherGroupKey, kEndpoint_);
   ASSERT_TRUE(endpoint2);
   EXPECT_EQ(kOrigin_, endpoint2.group_key.origin);
   EXPECT_EQ(kGroup2_, endpoint2.group_key.group_name);
@@ -634,24 +592,14 @@ TEST_P(ReportingHeaderParserTest, MultipleEndpointsDifferentGroups) {
     EXPECT_EQ(2, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(2, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup2_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup2_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kOtherGroupKey, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kOtherGroupKey);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -674,59 +622,47 @@ TEST_P(ReportingHeaderParserTest, MultipleHeadersFromDifferentOrigins) {
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup2_, endpoints3));
   ParseHeader(kUrl2_, header2);
 
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin2_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin2_));
+
+  ReportingEndpointGroupKey kGroupKey1(NetworkIsolationKey(), kOrigin2_,
+                                       kGroup_);
+  ReportingEndpointGroupKey kGroupKey2(NetworkIsolationKey(), kOrigin2_,
+                                       kGroup2_);
 
   EXPECT_EQ(3u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
-  EXPECT_TRUE(EndpointGroupExistsInCache(kOrigin2_, kGroup_,
-                                         OriginSubdomains::DEFAULT));
-  EXPECT_TRUE(EndpointGroupExistsInCache(kOrigin2_, kGroup2_,
-                                         OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kGroupKey1, OriginSubdomains::DEFAULT));
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kGroupKey2, OriginSubdomains::DEFAULT));
 
   EXPECT_EQ(4u, cache()->GetEndpointCount());
-  EXPECT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_));
-  EXPECT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint2_));
-  EXPECT_TRUE(FindEndpointInCache(kOrigin2_, kGroup_, kEndpoint_));
-  EXPECT_TRUE(FindEndpointInCache(kOrigin2_, kGroup2_, kEndpoint2_));
+  EXPECT_TRUE(FindEndpointInCache(kGroupKey_, kEndpoint_));
+  EXPECT_TRUE(FindEndpointInCache(kGroupKey_, kEndpoint2_));
+  EXPECT_TRUE(FindEndpointInCache(kGroupKey1, kEndpoint_));
+  EXPECT_TRUE(FindEndpointInCache(kGroupKey2, kEndpoint2_));
 
   if (mock_store()) {
     mock_store()->Flush();
     EXPECT_EQ(4, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(3, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin2_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin2_, kGroup2_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin2_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin2_, kGroup2_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint2_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey1, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey2, kEndpoint2_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey1);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey2);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -743,14 +679,13 @@ TEST_P(ReportingHeaderParserTest,
   ParseHeader(kUrl_, header);
   // Result is as if they set the two groups with the same name as one group.
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
 
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
 
   EXPECT_EQ(2u, cache()->GetEndpointCount());
-  ReportingEndpoint endpoint =
-      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_);
+  ReportingEndpoint endpoint = FindEndpointInCache(kGroupKey_, kEndpoint_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kOrigin_, endpoint.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint.group_key.group_name);
@@ -759,8 +694,7 @@ TEST_P(ReportingHeaderParserTest,
   EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
             endpoint.info.weight);
 
-  ReportingEndpoint endpoint2 =
-      FindEndpointInCache(kOrigin_, kGroup_, kEndpoint2_);
+  ReportingEndpoint endpoint2 = FindEndpointInCache(kGroupKey_, kEndpoint2_);
   ASSERT_TRUE(endpoint2);
   EXPECT_EQ(kOrigin_, endpoint2.group_key.origin);
   EXPECT_EQ(kGroup_, endpoint2.group_key.group_name);
@@ -774,19 +708,12 @@ TEST_P(ReportingHeaderParserTest,
     EXPECT_EQ(2, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint2_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -802,13 +729,13 @@ TEST_P(ReportingHeaderParserTest,
 
   // We should dedupe the identical endpoint URLs.
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  ASSERT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_));
+  ASSERT_TRUE(FindEndpointInCache(kGroupKey_, kEndpoint_));
 
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
 
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
 }
 
 TEST_P(ReportingHeaderParserTest,
@@ -822,13 +749,13 @@ TEST_P(ReportingHeaderParserTest,
   // We should dedupe the identical endpoint URLs, even when they're in
   // different headers.
   EXPECT_EQ(1u, cache()->GetEndpointCount());
-  ASSERT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_));
+  ASSERT_TRUE(FindEndpointInCache(kGroupKey_, kEndpoint_));
 
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
 
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
 }
 
 TEST_P(ReportingHeaderParserTest,
@@ -845,15 +772,15 @@ TEST_P(ReportingHeaderParserTest,
   // We should dedupe the identical endpoint URLs, even when they're in
   // different headers.
   EXPECT_EQ(3u, cache()->GetEndpointCount());
-  ASSERT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_));
-  ASSERT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint2_));
-  ASSERT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint3_));
+  ASSERT_TRUE(FindEndpointInCache(kGroupKey_, kEndpoint_));
+  ASSERT_TRUE(FindEndpointInCache(kGroupKey_, kEndpoint2_));
+  ASSERT_TRUE(FindEndpointInCache(kGroupKey_, kEndpoint3_));
 
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
 
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
 }
 
 TEST_P(ReportingHeaderParserTest, OverwriteOldHeader) {
@@ -864,13 +791,13 @@ TEST_P(ReportingHeaderParserTest, OverwriteOldHeader) {
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints1));
   ParseHeader(kUrl_, header1);
 
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(2u, cache()->GetEndpointCount());
-  EXPECT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_));
-  EXPECT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint2_));
+  EXPECT_TRUE(FindEndpointInCache(kGroupKey_, kEndpoint_));
+  EXPECT_TRUE(FindEndpointInCache(kGroupKey_, kEndpoint2_));
   if (mock_store()) {
     mock_store()->Flush();
     EXPECT_EQ(2,
@@ -878,19 +805,12 @@ TEST_P(ReportingHeaderParserTest, OverwriteOldHeader) {
     EXPECT_EQ(1, mock_store()->CountCommands(
                      CommandType::ADD_REPORTING_ENDPOINT_GROUP));
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint2_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -908,19 +828,18 @@ TEST_P(ReportingHeaderParserTest, OverwriteOldHeader) {
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup2_, endpoints3));
   ParseHeader(kUrl_, header2);
 
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
 
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
-  EXPECT_TRUE(EndpointGroupExistsInCache(kOrigin_, kGroup2_,
-                                         OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kGroupKey2_, OriginSubdomains::DEFAULT));
 
   EXPECT_EQ(2u, cache()->GetEndpointCount());
-  EXPECT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_));
-  EXPECT_EQ(20,
-            FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_).info.priority);
-  EXPECT_FALSE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint2_));
-  EXPECT_TRUE(FindEndpointInCache(kOrigin_, kGroup2_, kEndpoint2_));
+  EXPECT_TRUE(FindEndpointInCache(kGroupKey_, kEndpoint_));
+  EXPECT_EQ(20, FindEndpointInCache(kGroupKey_, kEndpoint_).info.priority);
+  EXPECT_FALSE(FindEndpointInCache(kGroupKey_, kEndpoint2_));
+  EXPECT_TRUE(FindEndpointInCache(kGroupKey2_, kEndpoint2_));
   if (mock_store()) {
     mock_store()->Flush();
     EXPECT_EQ(2 + 1,
@@ -930,25 +849,23 @@ TEST_P(ReportingHeaderParserTest, OverwriteOldHeader) {
     EXPECT_EQ(
         1, mock_store()->CountCommands(CommandType::DELETE_REPORTING_ENDPOINT));
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup2_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup2_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey2_, kEndpoint2_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey2_);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint2_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
 }
 
 TEST_P(ReportingHeaderParserTest, OverwriteOldHeaderWithCompletelyNew) {
+  ReportingEndpointGroupKey kGroupKey1(NetworkIsolationKey(), kOrigin_, "1");
+  ReportingEndpointGroupKey kGroupKey2(NetworkIsolationKey(), kOrigin_, "2");
+  ReportingEndpointGroupKey kGroupKey3(NetworkIsolationKey(), kOrigin_, "3");
+  ReportingEndpointGroupKey kGroupKey4(NetworkIsolationKey(), kOrigin_, "4");
+  ReportingEndpointGroupKey kGroupKey5(NetworkIsolationKey(), kOrigin_, "5");
   std::vector<ReportingEndpoint::EndpointInfo> endpoints1_1 = {{MakeURL(10)},
                                                                {MakeURL(11)}};
   std::vector<ReportingEndpoint::EndpointInfo> endpoints2_1 = {{MakeURL(20)},
@@ -960,14 +877,14 @@ TEST_P(ReportingHeaderParserTest, OverwriteOldHeaderWithCompletelyNew) {
       ConstructHeaderGroupString(MakeEndpointGroup("2", endpoints2_1)) + ", " +
       ConstructHeaderGroupString(MakeEndpointGroup("3", endpoints3_1));
   ParseHeader(kUrl_, header1);
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
   EXPECT_EQ(3u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, "1", OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey1, OriginSubdomains::DEFAULT));
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, "2", OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey2, OriginSubdomains::DEFAULT));
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, "3", OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey3, OriginSubdomains::DEFAULT));
   EXPECT_EQ(6u, cache()->GetEndpointCount());
   if (mock_store()) {
     mock_store()->Flush();
@@ -976,39 +893,24 @@ TEST_P(ReportingHeaderParserTest, OverwriteOldHeaderWithCompletelyNew) {
     EXPECT_EQ(3, mock_store()->CountCommands(
                      CommandType::ADD_REPORTING_ENDPOINT_GROUP));
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "1", endpoints1_1[0]));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "1", endpoints1_1[1]));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "2", endpoints2_1[0]));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "2", endpoints2_1[1]));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "3", endpoints3_1[0]));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "3", endpoints3_1[1]));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, "1", OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, "2", OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, "3", OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey1, endpoints1_1[0].url);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey1, endpoints1_1[1].url);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey2, endpoints2_1[0].url);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey2, endpoints2_1[1].url);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey3, endpoints3_1[0].url);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey3, endpoints3_1[1].url);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey1);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey2);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey3);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -1022,24 +924,24 @@ TEST_P(ReportingHeaderParserTest, OverwriteOldHeaderWithCompletelyNew) {
       ConstructHeaderGroupString(MakeEndpointGroup("2", endpoints2_2)) + ", " +
       ConstructHeaderGroupString(MakeEndpointGroup("3", endpoints3_2));
   ParseHeader(kUrl_, header2);
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
   EXPECT_EQ(3u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, "1", OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey1, OriginSubdomains::DEFAULT));
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, "2", OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey2, OriginSubdomains::DEFAULT));
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, "3", OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey3, OriginSubdomains::DEFAULT));
   EXPECT_EQ(3u, cache()->GetEndpointCount());
-  EXPECT_TRUE(FindEndpointInCache(kOrigin_, "1", MakeURL(12)));
-  EXPECT_FALSE(FindEndpointInCache(kOrigin_, "1", MakeURL(10)));
-  EXPECT_FALSE(FindEndpointInCache(kOrigin_, "1", MakeURL(11)));
-  EXPECT_TRUE(FindEndpointInCache(kOrigin_, "2", MakeURL(22)));
-  EXPECT_FALSE(FindEndpointInCache(kOrigin_, "2", MakeURL(20)));
-  EXPECT_FALSE(FindEndpointInCache(kOrigin_, "2", MakeURL(21)));
-  EXPECT_TRUE(FindEndpointInCache(kOrigin_, "3", MakeURL(32)));
-  EXPECT_FALSE(FindEndpointInCache(kOrigin_, "3", MakeURL(30)));
-  EXPECT_FALSE(FindEndpointInCache(kOrigin_, "3", MakeURL(31)));
+  EXPECT_TRUE(FindEndpointInCache(kGroupKey1, MakeURL(12)));
+  EXPECT_FALSE(FindEndpointInCache(kGroupKey1, MakeURL(10)));
+  EXPECT_FALSE(FindEndpointInCache(kGroupKey1, MakeURL(11)));
+  EXPECT_TRUE(FindEndpointInCache(kGroupKey2, MakeURL(22)));
+  EXPECT_FALSE(FindEndpointInCache(kGroupKey2, MakeURL(20)));
+  EXPECT_FALSE(FindEndpointInCache(kGroupKey2, MakeURL(21)));
+  EXPECT_TRUE(FindEndpointInCache(kGroupKey3, MakeURL(32)));
+  EXPECT_FALSE(FindEndpointInCache(kGroupKey3, MakeURL(30)));
+  EXPECT_FALSE(FindEndpointInCache(kGroupKey3, MakeURL(31)));
   if (mock_store()) {
     mock_store()->Flush();
     EXPECT_EQ(6 + 3,
@@ -1051,33 +953,24 @@ TEST_P(ReportingHeaderParserTest, OverwriteOldHeaderWithCompletelyNew) {
     EXPECT_EQ(0, mock_store()->CountCommands(
                      CommandType::DELETE_REPORTING_ENDPOINT_GROUP));
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "1", endpoints1_2[0]));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "2", endpoints2_2[0]));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "3", endpoints3_2[0]));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "1", endpoints1_1[0]));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "1", endpoints1_1[1]));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "2", endpoints2_1[0]));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "2", endpoints2_1[1]));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "3", endpoints3_1[0]));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "3", endpoints3_1[1]));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey1, endpoints1_2[0].url);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey2, endpoints2_2[0].url);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey3, endpoints3_2[0].url);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey1, endpoints1_1[0].url);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey1, endpoints1_1[1].url);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey2, endpoints2_1[0].url);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey2, endpoints2_1[1].url);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey3, endpoints3_1[0].url);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey3, endpoints3_1[1].url);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -1089,18 +982,18 @@ TEST_P(ReportingHeaderParserTest, OverwriteOldHeaderWithCompletelyNew) {
       ConstructHeaderGroupString(MakeEndpointGroup("4", endpoints4_3)) + ", " +
       ConstructHeaderGroupString(MakeEndpointGroup("5", endpoints5_3));
   ParseHeader(kUrl_, header3);
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
   EXPECT_EQ(2u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, "4", OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey4, OriginSubdomains::DEFAULT));
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, "5", OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey4, OriginSubdomains::DEFAULT));
   EXPECT_FALSE(
-      EndpointGroupExistsInCache(kOrigin_, "1", OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey1, OriginSubdomains::DEFAULT));
   EXPECT_FALSE(
-      EndpointGroupExistsInCache(kOrigin_, "2", OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey2, OriginSubdomains::DEFAULT));
   EXPECT_FALSE(
-      EndpointGroupExistsInCache(kOrigin_, "3", OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey3, OriginSubdomains::DEFAULT));
   EXPECT_EQ(2u, cache()->GetEndpointCount());
   if (mock_store()) {
     mock_store()->Flush();
@@ -1113,46 +1006,26 @@ TEST_P(ReportingHeaderParserTest, OverwriteOldHeaderWithCompletelyNew) {
     EXPECT_EQ(3, mock_store()->CountCommands(
                      CommandType::DELETE_REPORTING_ENDPOINT_GROUP));
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "4", endpoints4_3[0]));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "5", endpoints5_3[0]));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, "4", OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, "5", OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "1", endpoints1_2[0]));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "2", endpoints2_2[0]));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, "3", endpoints3_2[0]));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, "1", OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, "2", OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, "3", OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey4, endpoints4_3[0].url);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey5, endpoints5_3[0].url);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey4);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey5);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey1, endpoints1_2[0].url);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey2, endpoints2_2[0].url);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey3, endpoints3_2[0].url);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey1);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey2);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey3);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -1181,12 +1054,12 @@ TEST_P(ReportingHeaderParserTest, ZeroMaxAgeRemovesEndpointGroup) {
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup2_, endpoints2));
   ParseHeader(kUrl_, header1);
 
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
   EXPECT_EQ(2u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_TRUE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
-  EXPECT_TRUE(EndpointGroupExistsInCache(kOrigin_, kGroup2_,
-                                         OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kGroupKey2_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(2u, cache()->GetEndpointCount());
   if (mock_store()) {
     mock_store()->Flush();
@@ -1195,24 +1068,14 @@ TEST_P(ReportingHeaderParserTest, ZeroMaxAgeRemovesEndpointGroup) {
     EXPECT_EQ(2, mock_store()->CountCommands(
                      CommandType::ADD_REPORTING_ENDPOINT_GROUP));
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup2_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-    expected_commands.emplace_back(
-        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup2_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey2_, kEndpoint2_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey2_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -1226,15 +1089,15 @@ TEST_P(ReportingHeaderParserTest, ZeroMaxAgeRemovesEndpointGroup) {
                             kGroup2_, endpoints2));  // Other group stays.
   ParseHeader(kUrl_, header2);
 
-  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
   EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
 
   // Group was deleted.
   EXPECT_FALSE(
-      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
   // Other group remains in the cache.
-  EXPECT_TRUE(EndpointGroupExistsInCache(kOrigin_, kGroup2_,
-                                         OriginSubdomains::DEFAULT));
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kGroupKey2_, OriginSubdomains::DEFAULT));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
   if (mock_store()) {
     mock_store()->Flush();
@@ -1247,15 +1110,10 @@ TEST_P(ReportingHeaderParserTest, ZeroMaxAgeRemovesEndpointGroup) {
     EXPECT_EQ(1, mock_store()->CountCommands(
                      CommandType::DELETE_REPORTING_ENDPOINT_GROUP));
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint_}));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey_, kEndpoint_);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
@@ -1269,7 +1127,7 @@ TEST_P(ReportingHeaderParserTest, ZeroMaxAgeRemovesEndpointGroup) {
 
   // Deletion of the last remaining group also deletes the client for this
   // origin.
-  EXPECT_FALSE(OriginClientExistsInCache(kOrigin_));
+  EXPECT_FALSE(ClientExistsInCacheForOrigin(kOrigin_));
   EXPECT_EQ(0u, cache()->GetEndpointGroupCountForTesting());
   EXPECT_EQ(0u, cache()->GetEndpointCount());
   if (mock_store()) {
@@ -1283,15 +1141,10 @@ TEST_P(ReportingHeaderParserTest, ZeroMaxAgeRemovesEndpointGroup) {
     EXPECT_EQ(1 + 1, mock_store()->CountCommands(
                          CommandType::DELETE_REPORTING_ENDPOINT_GROUP));
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT,
-        ReportingEndpoint(kOrigin_, kGroup2_,
-                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
-    expected_commands.emplace_back(
-        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
-        CachedReportingEndpointGroup(
-            kOrigin_, kGroup2_, OriginSubdomains::DEFAULT /* irrelevant */,
-            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                   kGroupKey2_, kEndpoint2_);
+    expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey2_);
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }

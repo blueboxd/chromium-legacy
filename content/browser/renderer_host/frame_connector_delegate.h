@@ -12,6 +12,7 @@
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
+#include "content/common/input/input_handler.mojom.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/screen_info.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
@@ -152,7 +153,8 @@ class CONTENT_EXPORT FrameConnectorDelegate {
 
   // Locks the mouse, if |request_unadjusted_movement_| is true, try setting the
   // unadjusted movement mode. Returns true if mouse is locked.
-  virtual bool LockMouse(bool request_unadjusted_movement);
+  virtual blink::mojom::PointerLockResult LockMouse(
+      bool request_unadjusted_movement);
 
   // Unlocks the mouse if the mouse is locked.
   virtual void UnlockMouse() {}

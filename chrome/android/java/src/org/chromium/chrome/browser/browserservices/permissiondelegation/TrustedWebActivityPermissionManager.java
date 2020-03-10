@@ -11,11 +11,16 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.annotation.VisibleForTesting;
+import androidx.browser.trusted.Token;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.settings.website.ContentSettingValues;
+import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +30,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import androidx.annotation.VisibleForTesting;
-import androidx.browser.trusted.Token;
 import dagger.Lazy;
 
 /**

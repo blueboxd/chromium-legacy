@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_context.h"
@@ -64,7 +65,7 @@ const char kWeightKey[] = "weight";
 // |*endpoint_out| will contain the endpoint URL parsed out of the tuple.
 HeaderEndpointOutcome ProcessEndpoint(
     ReportingDelegate* delegate,
-    const url::Origin& origin,
+    const ReportingEndpointGroupKey& group_key,
     const base::Value& value,
     ReportingEndpoint::EndpointInfo* endpoint_info_out) {
   const base::DictionaryValue* dict = nullptr;
@@ -99,7 +100,7 @@ HeaderEndpointOutcome ProcessEndpoint(
     return HeaderEndpointOutcome::DISCARDED_WEIGHT_NEGATIVE;
   endpoint_info_out->weight = weight;
 
-  if (!delegate->CanSetClient(origin, endpoint_url))
+  if (!delegate->CanSetClient(group_key.origin, endpoint_url))
     return HeaderEndpointOutcome::SET_REJECTED_BY_DELEGATE;
 
   return HeaderEndpointOutcome::SET;
@@ -113,6 +114,7 @@ HeaderEndpointOutcome ProcessEndpoint(
 HeaderEndpointGroupOutcome ProcessEndpointGroup(
     ReportingDelegate* delegate,
     ReportingCache* cache,
+    const NetworkIsolationKey& network_isolation_key,
     const url::Origin& origin,
     const base::Value& value,
     ReportingEndpointGroup* parsed_endpoint_group_out) {
@@ -124,7 +126,9 @@ HeaderEndpointGroupOutcome ProcessEndpointGroup(
   std::string group_name = kDefaultGroupName;
   if (dict->HasKey(kGroupKey) && !dict->GetString(kGroupKey, &group_name))
     return HeaderEndpointGroupOutcome::DISCARDED_GROUP_NOT_STRING;
-  parsed_endpoint_group_out->name = std::move(group_name);
+  ReportingEndpointGroupKey group_key(network_isolation_key, origin,
+                                      group_name);
+  parsed_endpoint_group_out->group_key = group_key;
 
   int ttl_sec = -1;
   if (!dict->HasKey(kMaxAgeKey))
@@ -135,7 +139,7 @@ HeaderEndpointGroupOutcome ProcessEndpointGroup(
     return HeaderEndpointGroupOutcome::DISCARDED_TTL_NEGATIVE;
   // max_age: 0 signifies removal of the endpoint group.
   if (ttl_sec == 0) {
-    cache->RemoveEndpointGroup(origin, group_name);
+    cache->RemoveEndpointGroup(group_key);
     return HeaderEndpointGroupOutcome::REMOVED_TTL_ZERO;
   }
   parsed_endpoint_group_out->ttl = base::TimeDelta::FromSeconds(ttl_sec);
@@ -172,7 +176,7 @@ HeaderEndpointGroupOutcome ProcessEndpointGroup(
     ReportingEndpoint::EndpointInfo parsed_endpoint;
 
     HeaderEndpointOutcome outcome =
-        ProcessEndpoint(delegate, origin, *endpoint, &parsed_endpoint);
+        ProcessEndpoint(delegate, group_key, *endpoint, &parsed_endpoint);
 
     if (outcome == HeaderEndpointOutcome::SET)
       endpoints.push_back(std::move(parsed_endpoint));
@@ -182,7 +186,7 @@ HeaderEndpointGroupOutcome ProcessEndpointGroup(
 
   // Remove the group if it is empty.
   if (endpoints.empty()) {
-    cache->RemoveEndpointGroup(origin, group_name);
+    cache->RemoveEndpointGroup(group_key);
     return HeaderEndpointGroupOutcome::REMOVED_EMPTY;
   }
 
@@ -244,6 +248,7 @@ void ReportingHeaderParser::ParseHeader(ReportingContext* context,
   ReportingCache* cache = context->cache();
 
   url::Origin origin = url::Origin::Create(url);
+  NetworkIsolationKey network_isolation_key = NetworkIsolationKey::Todo();
 
   std::vector<ReportingEndpointGroup> parsed_header;
 
@@ -252,8 +257,9 @@ void ReportingHeaderParser::ParseHeader(ReportingContext* context,
     bool got_group = group_list->Get(i, &group_value);
     DCHECK(got_group);
     ReportingEndpointGroup parsed_endpoint_group;
-    HeaderEndpointGroupOutcome outcome = ProcessEndpointGroup(
-        delegate, cache, origin, *group_value, &parsed_endpoint_group);
+    HeaderEndpointGroupOutcome outcome =
+        ProcessEndpointGroup(delegate, cache, network_isolation_key, origin,
+                             *group_value, &parsed_endpoint_group);
     RecordHeaderEndpointGroupOutcome(outcome);
     if (outcome == HeaderEndpointGroupOutcome::PARSED)
       parsed_header.push_back(std::move(parsed_endpoint_group));
@@ -261,11 +267,13 @@ void ReportingHeaderParser::ParseHeader(ReportingContext* context,
 
   // Remove the client if it has no valid endpoint groups.
   if (parsed_header.empty()) {
-    cache->RemoveClient(origin);
+    // TODO(chlily): Pass NIK to cache.
+    cache->RemoveClient(NetworkIsolationKey::Todo(), origin);
     RecordHeaderOutcome(HeaderOutcome::REMOVED_EMPTY);
     return;
   }
 
+  // TODO(chlily): Pass NIK to cache.
   cache->OnParsedHeader(origin, std::move(parsed_header));
   RecordHeaderOutcome(HeaderOutcome::PARSED);
 }

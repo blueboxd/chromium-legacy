@@ -1170,7 +1170,7 @@
     Low-power charger connected
   </message>
   <message name="IDS_WILCO_LOW_POWER_CHARGER_MESSAGE" desc="The message body of a notification indicating that a low-power USB charger has been connected, short version.">
-    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> may not charge while it is turned on.
+    Your Chromebook may not charge while it is turned on.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_LEARN_MORE" desc="Label on button in various Wilco notification.">
     Learn More

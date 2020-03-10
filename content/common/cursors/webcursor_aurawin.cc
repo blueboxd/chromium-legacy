@@ -13,7 +13,7 @@
 namespace content {
 
 ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
-  if (info_.type != ui::mojom::CursorType::kCustom)
+  if (cursor_.type() != ui::mojom::CursorType::kCustom)
     return LoadCursor(nullptr, IDC_ARROW);
 
   if (platform_cursor_)

@@ -96,8 +96,6 @@ void WebContentsViewChildFrame::SetPageTitle(const base::string16& title) {
   // The title is ignored for the WebContentsViewChildFrame.
 }
 
-void WebContentsViewChildFrame::RenderViewCreated(RenderViewHost* host) {}
-
 void WebContentsViewChildFrame::RenderViewReady() {}
 
 void WebContentsViewChildFrame::RenderViewHostChanged(

@@ -198,8 +198,7 @@ void SharingMessageBridgeImpl::ApplyStopSyncChanges(
   sync_disabled_error_message.set_error_code(
       sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF);
   for (auto& cth_and_callback : commit_callbacks_) {
-    // We do not need to untrack data here because the change processor will
-    // remove all entities anyway.
+    change_processor()->UntrackEntityForClientTagHash(cth_and_callback.first);
     cth_and_callback.second->Run(sync_disabled_error_message);
   }
   commit_callbacks_.clear();

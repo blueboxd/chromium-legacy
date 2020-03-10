@@ -1,0 +1,20 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+// This proto is used to uniquely identify a Feed of cards.
+// The main use case is for the paginated feed, storing multiple
+// feeds on the server, and needing to identify them individually.
+// It is an empty extension holder because the client should not ever know
+// or care what's in the FeedId, and so we can change the definition
+// of what a FeedId for the server without worrying about users possibly
+// looking into the implementation details.
+message FeedId {
+  extensions 1 to 6;
+}

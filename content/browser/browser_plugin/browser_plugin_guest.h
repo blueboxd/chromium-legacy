@@ -133,10 +133,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                 bool focused,
                 blink::mojom::FocusType focus_type);
 
-  // Sets the lock state of the pointer. Returns true if |allowed| is true and
-  // the mouse has been successfully locked.
-  bool LockMouse(bool allowed);
-
   // Return true if the mouse is locked.
   bool mouse_locked() const { return mouse_locked_; }
 

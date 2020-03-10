@@ -64,6 +64,8 @@ class FakeBluetoothDelegate : public BluetoothDelegate {
   bool IsAllowedToAccessAtLeastOneService(
       RenderFrameHost* frame,
       const blink::WebBluetoothDeviceId& device_id) override;
+  std::vector<blink::mojom::WebBluetoothDevicePtr> GetPermittedDevices(
+      RenderFrameHost* frame) override;
 
  private:
   using AddressToIdMap = std::map<std::string, blink::WebBluetoothDeviceId>;

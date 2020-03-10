@@ -1740,6 +1740,7 @@ void OutOfProcessInstance::RotateCounterclockwise() {
 }
 
 void OutOfProcessInstance::SetTwoUpView(bool enable_two_up_view) {
+  DCHECK(base::FeatureList::IsEnabled(features::kPDFTwoUpView));
   engine_->SetTwoUpView(enable_two_up_view);
 }
 

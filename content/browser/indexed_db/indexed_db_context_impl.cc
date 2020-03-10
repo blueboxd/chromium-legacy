@@ -39,6 +39,7 @@
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
+#include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -56,6 +57,16 @@ const base::FilePath::CharType IndexedDBContextImpl::kIndexedDBDirectory[] =
     FILE_PATH_LITERAL("IndexedDB");
 
 namespace {
+
+static MockBrowserTestIndexedDBClassFactory* GetTestClassFactory() {
+  static ::base::LazyInstance<MockBrowserTestIndexedDBClassFactory>::Leaky
+      s_factory = LAZY_INSTANCE_INITIALIZER;
+  return s_factory.Pointer();
+}
+
+static IndexedDBClassFactory* GetTestIDBClassFactory() {
+  return GetTestClassFactory();
+}
 
 bool IsAllowedPath(const std::vector<base::FilePath>& allowed_paths,
                    const base::FilePath& candidate_path) {
@@ -577,6 +588,28 @@ void IndexedDBContextImpl::CompactBackingStoreForTesting(
     backing_store->Compact();
   }
   std::move(callback).Run();
+}
+
+void IndexedDBContextImpl::BindMockFailureSingletonForTesting(
+    mojo::PendingReceiver<storage::mojom::MockFailureInjector> receiver) {
+  // Lazily instantiate the GetTestClassFactory.
+  if (!mock_failure_injector_.has_value())
+    mock_failure_injector_.emplace(GetTestClassFactory());
+
+  // TODO(enne): this should really not be a static setter.
+  CHECK(!mock_failure_injector_->is_bound());
+  GetTestClassFactory()->Reset();
+  IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetTestIDBClassFactory);
+
+  mock_failure_injector_->Bind(std::move(receiver));
+  mock_failure_injector_->set_disconnect_handler(base::BindOnce([]() {
+    IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(nullptr);
+  }));
+}
+
+void IndexedDBContextImpl::GetDatabaseKeysForTesting(
+    GetDatabaseKeysForTestingCallback callback) {
+  std::move(callback).Run(SchemaVersionKey::Encode(), DataVersionKey::Encode());
 }
 
 void IndexedDBContextImpl::ForceCloseSync(

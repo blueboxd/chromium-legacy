@@ -24,7 +24,6 @@
 #import "testing/gtest_mac.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/material_design/material_design_controller.h"
 #import "ui/base/test/cocoa_helper.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -374,8 +373,6 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   // Overridden from testing::Test:
   void SetUp() override {
     ui::CocoaTest::SetUp();
-
-    ui::MaterialDesignController::Initialize();
 
     Widget::InitParams init_params;
     init_params.native_widget = native_widget_mac_;

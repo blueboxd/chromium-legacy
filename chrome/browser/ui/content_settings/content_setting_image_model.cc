@@ -461,7 +461,7 @@ bool ContentSettingBlockedImageModel::UpdateAndGetVisibility(
   const gfx::VectorIcon* icon = &image_details->icon;
   // Touch mode uses a different tab audio icon.
   if (image_details->content_type == ContentSettingsType::SOUND &&
-      ui::MaterialDesignController::touch_ui()) {
+      ui::MaterialDesignController::GetInstance()->touch_ui()) {
     icon = &kTabAudioRoundedIcon;
   }
   set_icon(*icon, *badge_id);

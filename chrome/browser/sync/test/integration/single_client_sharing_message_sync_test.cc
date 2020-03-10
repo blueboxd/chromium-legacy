@@ -224,4 +224,56 @@ IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
       std::make_unique<SharingMessageSpecifics>(specifics), callback.Get());
 }
 
+IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
+                       ShouldCleanPendingMessagesAfterSyncPaused) {
+  base::MockOnceCallback<void(const sync_pb::SharingMessageCommitError&)>
+      callback;
+  EXPECT_CALL(
+      callback,
+      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF)));
+
+  ASSERT_TRUE(SetupSync());
+
+  SharingMessageBridge* sharing_message_bridge =
+      SharingMessageBridgeFactory::GetForBrowserContext(GetProfile(0));
+  SharingMessageSpecifics specifics;
+  specifics.set_payload("payload");
+  sharing_message_bridge->SendSharingMessage(
+      std::make_unique<SharingMessageSpecifics>(specifics), callback.Get());
+
+  GetClient(0)->StopSyncServiceWithoutClearingData();
+  GetClient(0)->StartSyncService();
+  ASSERT_TRUE(NextCycleIterationChecker(GetSyncService(0)).Wait());
+
+  EXPECT_TRUE(GetFakeServer()
+                  ->GetSyncEntitiesByModelType(syncer::SHARING_MESSAGE)
+                  .empty());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
+                       ShouldCleanPendingMessagesAfterSyncTurnedOff) {
+  base::MockOnceCallback<void(const sync_pb::SharingMessageCommitError&)>
+      callback;
+  EXPECT_CALL(
+      callback,
+      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF)));
+
+  ASSERT_TRUE(SetupSync());
+
+  SharingMessageBridge* sharing_message_bridge =
+      SharingMessageBridgeFactory::GetForBrowserContext(GetProfile(0));
+  SharingMessageSpecifics specifics;
+  specifics.set_payload("payload");
+  sharing_message_bridge->SendSharingMessage(
+      std::make_unique<SharingMessageSpecifics>(specifics), callback.Get());
+
+  GetClient(0)->StopSyncServiceAndClearData();
+  GetClient(0)->StartSyncService();
+  ASSERT_TRUE(NextCycleIterationChecker(GetSyncService(0)).Wait());
+
+  EXPECT_TRUE(GetFakeServer()
+                  ->GetSyncEntitiesByModelType(syncer::SHARING_MESSAGE)
+                  .empty());
+}
+
 }  // namespace

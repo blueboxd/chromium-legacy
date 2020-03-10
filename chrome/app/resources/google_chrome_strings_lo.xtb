@@ -52,6 +52,7 @@
 <translation id="2309047409763057870">ນີ້ແມ່ນການຕິດຕັ້ງສຳຮອງຂອງ Google Chrome ແລະ ບໍ່ສາມາດຕັ້ງໃຫ້ເປັນໂປຣແກຣມທ່ອງເວັບເລີ່ມຕົ້ນຂອງທ່ານໄດ້.</translation>
 <translation id="2341767445688917208">Chrome OS ບໍ່ສາມາດຊິ້ງຂໍ້ມູນລະຫັດຜ່ານຂອງທ່ານໄດ້. ແກ້ໄຂຕອນນີ້ເລີຍ.</translation>
 <translation id="2348335408836342058">Chrome ຕ້ອງການການອະນຸຍາດເພື່ອເຂົ້າເຖິງກ້ອງຖ່າຍຮູບ ແລະ ໄມໂຄຣໂຟນຂອງທ່ານສຳລັບເວັບໄຊນີ້</translation>
+<translation id="234869673307233423">Chrome ບໍ່ສາມາດກວດລະຫັດຜ່ານຂອງທ່ານໄດ້. ລອງໃໝ່ໃນພາຍຫລັງ.</translation>
 <translation id="2429317896000329049">Google Chrome ບໍ່​ສາ​ມາດຊິງຄ໌ຂໍ້​ມູນ​ຂອງ​ທ່ານໄດ້ ເພາະວ່າບໍ່ມີການຊິງຄ໌ຢູ່ໃນໂດເມນຂອງທ່ານ.</translation>
 <translation id="2467438592969358367">Google Chrome ຕ້ອງການສົ່ງອອກລະຫັດຜ່ານຂອງທ່ານ. ກະລຸນາພິມລະຫັດຜ່ານ Windows ຂອງທ່ານ ເພື່ອອະນຸຍາດສິ່ງນີ້.</translation>
 <translation id="2485422356828889247">ຖອນ​ຕິດ​ຕັ້ງ</translation>
@@ -72,6 +73,8 @@
 <translation id="2857540653560290388">ກຳລັງເປີດໃຊ້ Chrome...</translation>
 <translation id="2871893339301912279">ທ່ານລົງຊື່ເຂົ້າໃຊ້ Chrome ແລ້ວ.</translation>
 <translation id="2888126860611144412">ກ່ຽວ​ກັບ Chrome</translation>
+<translation id="2929907241665500097">Chrome ບໍ່ອັບເດດ, ມີບາງຢ່າງຜິດພາດ. <ph name="BEGIN_LINK" />ແກ້ໄຂບັນຫາການອັບເດດ Chrome ແລະ ການອັບເດດທີ່ບໍ່ສຳເລັດ.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - ການເຂົ້າສູ່ລະບົບເຄືອຂ່າຍ - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome ຢູ່ໃນໂໝດພື້ນຫຼັງ.</translation>
 <translation id="3065168410429928842">ແຖບ Chrome</translation>
 <translation id="3080151273017101988">ສືບຕໍ່ແລ່ນແອັບພື້ນຫຼັງ ເມື່ອ Google Chrome ປິດ</translation>
@@ -110,7 +113,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">Chrome ສາມາດຊ່ວຍຮັກສາໃຫ້ທ່ານປອດໄພຈາກການລະເມີດຂໍ້ມູນ, ສ່ວນຂະຫຍາຍທີ່ບໍ່ດີ ແລະ ອື່ນໆອີກໄດ້</translation>
 <translation id="4343195214584226067">ເພີ່ມ <ph name="EXTENSION_NAME" /> ໃສ່ Chrome ແລ້ວ</translation>
+<translation id="4384570495110188418">Chrome ບໍ່ສາມາດກວດລະຫັດຜ່ານຂອງທ່ານໄດ້ ເພາະວ່າທ່ານບໍ່ໄດ້ເຂົ້າສູ່ລະບົບ</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome - ການເຂົ້າສູ່ລະບົບເຄືອຂ່າຍ - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">ກຳລັງມີການດຳເນີນການອື່ນຢູ່ໃນ Google Chrome. ກະລຸນາລອງໃໝ່ໃນພາຍຫຼັງ.</translation>
 <translation id="4480040274068703980">Chrome OS ບໍ່ສາມາດຊິງຄ໌ຂໍ້ມູນຂອງທ່ານໄດ້ ເນື່ອງຈາກການລົງຊື່ເຂົ້າ​ໃຊ້ຜິດພາດ.</translation>
 <translation id="4561051373932531560">Google Chrome ໃຫ້ທ່ານຄລິກໃສ່ເບີໂທລະສັບຢູ່ໃນເວັບ ແລະໂທມັນດ້ວຍ Skype!</translation>
@@ -120,6 +125,7 @@
 <translation id="4600710005438004015">Chrome ບໍ່ສາມາດອັບເດດເປັນເວີຊັນຫຼ້າສຸດໄດ້, ສະນັ້ນທ່ານກຳລັງພາດຄຸນສົມບັດ ແລະ ການແກ້ໄຂດ້ານຄວາມປອດໄພໃໝ່ໆຢູ່.</translation>
 <translation id="4631713731678262610">ເຊື່ອງ​ຢູ່​ໃນ​ເມ​ນູ Chrome</translation>
 <translation id="4633000520311261472">ເພື່ອເຮັດໃຫ້  Chrome ປອດໄພຂຶ້ນ, ພວກເຮົາປິດໃຊ້ງານບາງສ່ວນຂະຫຍາຍທີ່ບໍ່ໄດ້ມີລາຍຊື່ຢູ່ໃນ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ແລະອາດຈະຖືກເພີ່ມເຂົ້າໂດຍທີ່ທ່ານບໍ່ຮູ້ຈັກ.</translation>
+<translation id="4653397506175047429">Chrome ບໍ່ສາມາດກວດລະຫັດຜ່ານທັງໝົດຂອງທ່ານໄດ້. ກະລຸນາລອງໃໝ່ຫຼັງຈາກ 24 ຊົ່ວໂມງ.</translation>
 <translation id="4728575227883772061">ການ​ຕິດ​ຕັ້ງ​ບໍ່​ສໍາ​ເລັດ​ ​ເນື່ອງ​ມາ​ຈາກ​ຄວາມ​ຜິດພາດທີ່ບໍ່ລະບຸໄວ້​. ຖ້າ Google Chrome ກໍາລັງແລ່ນຢູ່ໃນປະຈຸບັນ​, ກະ​ລຸ​ນາ​ປິດ​ມັນ ​ແລະ​ລອງໃໝ່​ອີກ​.</translation>
 <translation id="4750550185319565338">ເປິດເປີດ Chrome ຄືນໃໝ່ເພື່ອເປີດນຳໃຊ້ <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -157,6 +163,7 @@ Google Chrome ບໍ່ສາມາດກູ້ຄືນການຕັ້ງຄ
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">ບໍ່ສາມາດເປີດໃຊ້ Chrome. ກະລຸນາລອງອີກຄັ້ງ.</translation>
 <translation id="5895138241574237353">ເລີ່ມຕົ້ນໃໝ່</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - ການເຂົ້າສູ່ລະບົບເຄືອຂ່າຍ</translation>
 <translation id="5940385492829620908">ເວັບຂອງທ່ານ, ບຸກມາກສ໌, ແລະ Chrome ອື່ນສົດຢູ່ທີ່ນີ້.</translation>
 <translation id="5941830788786076944">ເຮັດ Google Chrome ເປັນບຣາວເຊີມາດຕະຖານ</translation>
 <translation id="6070348360322141662">ເພື່ອຄວາມປອດໄພເພີ່ມເຕີມ, Google Chrome ຈະເຂົ້າລະຫັດລັບຂໍ້ມູນຂອງທ່ານ</translation>
@@ -212,6 +219,7 @@ Google Chrome ບໍ່ສາມາດກູ້ຄືນການຕັ້ງຄ
 <translation id="7855730255114109580">Google Chrome ແມ່ນເວີຊັນໃໝ່ຫຼ້າສຸດແລ້ວ</translation>
 <translation id="7890208801193284374">ຖ້າທ່ານແຊຣ໌ຄອມພິວເຕີ, ໝູ່​ເພື່ອນ ແລະຄອບຄົວຂອງທ່ານສາມາດທ່ອງເນັດໄດ້ແຍກຕ່າງຫາກ ແລະຕັ້ງ Chrome ​ໃນແບບ​ທີ່​ພວກ​ເຂົາຕ້ອງການ.</translation>
 <translation id="7896673875602241923">ຄົນອື່ນເຄີຍເຂົ້າສູ່ລະບົບ Chrome ໃນຄອມພິວເຕີນີ້ເປັນ <ph name="ACCOUNT_EMAIL_LAST" /> ມາກ່ອນແລ້ວ. ກະລຸນາສ້າງຜູ້ໃຊ້ Chrome ໃໝ່ເພື່ອເກັບຂໍ້ມູນຂອງທ່ານໃຫ້ແຍກກັນຕ່າງຫາກ.</translation>
+<translation id="7905891027772979035">Chrome ບໍ່ສາມາດກວດສ່ວນຂະຫຍາຍຂອງທ່ານໄດ້. ລອງໃໝ່ໃນພາຍຫລັງ.</translation>
 <translation id="7916016681687251387">Chrome OS ບໍ່ສາມາດຊິ້ງຂໍ້ມູນຂອງທ່ານໄດ້. ແກ້ໄຂຕອນນີ້ເລີຍ.</translation>
 <translation id="7930071585467473040">Google Chrome ກໍາລັງພະຍາຍາມສຳເນົາລະຫັດຜ່ານ.</translation>
 <translation id="7962410387636238736">ຄອມພິວເຕີນີ້ຈະບໍ່ໄດ້ຮັບການອັບເດດ Google Chrome ອີກຕໍ່ໄປ ເພາະວ່າບໍ່ຮອງຮັບ Windows XP ແລະ Windows Vista ອີກຕໍ່ໄປ</translation>

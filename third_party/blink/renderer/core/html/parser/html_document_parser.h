@@ -58,6 +58,7 @@ class DocumentEncodingData;
 class DocumentFragment;
 class Element;
 class HTMLDocument;
+class HTMLParserMetrics;
 class HTMLParserScheduler;
 class HTMLParserScriptRunner;
 class HTMLPreloadScanner;
@@ -180,7 +181,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
       std::unique_ptr<HTMLToken>,
       std::unique_ptr<HTMLTokenizer>);
   size_t ProcessTokenizedChunkFromBackgroundParser(
-      std::unique_ptr<TokenizedChunk>);
+      std::unique_ptr<TokenizedChunk>,
+      bool*);
   void PumpPendingSpeculations();
 
   bool CanTakeNextToken();
@@ -246,6 +248,11 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   base::WeakPtr<BackgroundHTMLParser> background_parser_;
   Member<HTMLResourcePreloader> preloader_;
   PreloadRequestStream queued_preloads_;
+
+  // Metrics gathering and reporting
+  std::unique_ptr<HTMLParserMetrics> metrics_reporter_;
+  // A timer for how long we are inactive after yielding
+  std::unique_ptr<base::ElapsedTimer> yield_timer_;
 
   // If this is non-null, then there is a meta CSP token somewhere in the
   // speculation buffer. Preloads will be deferred until a token matching this

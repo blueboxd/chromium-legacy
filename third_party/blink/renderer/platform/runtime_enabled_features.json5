@@ -1816,6 +1816,10 @@
       },
     },
     {
+      name: "WebBluetoothGetDevices",
+      status: "experimental",
+    },
+    {
       name: "WebBluetoothScanning",
       status: "experimental",
     },

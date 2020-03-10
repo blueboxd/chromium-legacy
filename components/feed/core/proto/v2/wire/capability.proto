@@ -1,0 +1,39 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+// Feature capability of either the client or the server.
+// Next ID: 20
+enum Capability {
+  UNKNOWN_CAPABILITY = 0;
+  // The client is capable of a basic UI.
+  BASE_UI = 1;
+
+  INFINITE_FEED = 5;
+  // Enable Dismiss command
+  DISMISS_COMMAND = 9;
+  // Enable Undo in Dismiss
+  UNDO_FOR_DISMISS_COMMAND = 10;
+  REDACTED_11 = 11;
+  // The client is only considered capable of supporting a minimal heirloomed
+  // feed.
+  HEIRLOOMED_FEED = 13;
+  // The client is capable of supporting sports features.
+  SPORTS_FEATURE = 14;
+  // The client is capable of supporting ads content.
+  PAID_CONTENT = 15;
+  // Enable open video command.
+  OPEN_VIDEO_COMMAND = 16;
+  REDACTED_17 = 17;
+  // Enable inline video autoplay.
+  INLINE_VIDEO_AUTOPLAY = 18;
+  // Enable the card menu.
+  CARD_MENU = 19;
+  reserved 2 to 4, 6 to 8, 12;
+}

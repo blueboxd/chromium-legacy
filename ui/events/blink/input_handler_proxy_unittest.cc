@@ -18,6 +18,7 @@
 #include "base/test/trace_event_analyzer.h"
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/input/scroll_input_type.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -111,11 +112,9 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD0(SetNeedsAnimateInput, void());
 
   MOCK_METHOD2(ScrollBegin,
-               ScrollStatus(cc::ScrollState*,
-                            cc::InputHandler::ScrollInputType type));
+               ScrollStatus(cc::ScrollState*, cc::ScrollInputType type));
   MOCK_METHOD2(RootScrollBegin,
-               ScrollStatus(cc::ScrollState*,
-                            cc::InputHandler::ScrollInputType type));
+               ScrollStatus(cc::ScrollState*, cc::ScrollInputType type));
   MOCK_METHOD2(ScrollUpdate,
                cc::InputHandlerScrollResult(cc::ScrollState*, base::TimeDelta));
   MOCK_METHOD1(ScrollEnd, void(bool));

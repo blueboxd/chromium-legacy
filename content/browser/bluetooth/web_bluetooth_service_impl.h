@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -196,6 +197,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void GetAvailability(GetAvailabilityCallback callback) override;
   void RequestDevice(blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
                      RequestDeviceCallback callback) override;
+  void GetDevices(GetDevicesCallback callback) override;
   void RemoteServerConnect(
       const blink::WebBluetoothDeviceId& device_id,
       mojo::PendingAssociatedRemote<blink::mojom::WebBluetoothServerClient>
@@ -250,6 +252,9 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
       RequestDeviceCallback callback,
       scoped_refptr<device::BluetoothAdapter> adapter);
+
+  void GetDevicesImpl(GetDevicesCallback callback,
+                      scoped_refptr<device::BluetoothAdapter> adapter);
 
   void RequestScanningStartImpl(
       mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client,

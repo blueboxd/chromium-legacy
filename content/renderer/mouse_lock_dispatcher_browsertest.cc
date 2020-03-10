@@ -63,10 +63,10 @@ TEST_F(MouseLockDispatcherTest, BasicWebWidget) {
   EXPECT_FALSE(widget()->IsPointerLocked());
 
   // Lock.
-  EXPECT_TRUE(
-      widget()->RequestPointerLock(view()->GetMainRenderFrame()->GetWebFrame(),
-                                   false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(/*succeeded=*/true);
+  EXPECT_TRUE(widget()->RequestPointerLock(
+      view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
+      false /* unadjusted_movement */));
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
   EXPECT_TRUE(widget()->IsPointerLocked());
 
   // Unlock.
@@ -75,10 +75,10 @@ TEST_F(MouseLockDispatcherTest, BasicWebWidget) {
   EXPECT_FALSE(widget()->IsPointerLocked());
 
   // Attempt a lock, and have it fail.
-  EXPECT_TRUE(
-      widget()->RequestPointerLock(view()->GetMainRenderFrame()->GetWebFrame(),
-                                   false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(/*succeeded=*/false);
+  EXPECT_TRUE(widget()->RequestPointerLock(
+      view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
+      false /* unadjusted_movement */));
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kUnknownError);
   EXPECT_FALSE(widget()->IsPointerLocked());
 }
 
@@ -96,9 +96,9 @@ TEST_F(MouseLockDispatcherTest, BasicMockLockTarget) {
 
   // Lock.
   EXPECT_TRUE(dispatcher()->LockMouse(
-      target_, view()->GetMainRenderFrame()->GetWebFrame(),
+      target_, view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(/*succeeded=*/true);
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Receive mouse event.
@@ -111,9 +111,9 @@ TEST_F(MouseLockDispatcherTest, BasicMockLockTarget) {
 
   // Attempt a lock, and have it fail.
   EXPECT_TRUE(dispatcher()->LockMouse(
-      target_, view()->GetMainRenderFrame()->GetWebFrame(),
+      target_, view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(/*succeeded=*/false);
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kUnknownError);
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 }
 
@@ -126,9 +126,9 @@ TEST_F(MouseLockDispatcherTest, DeleteAndUnlock) {
 
   // Lock.
   EXPECT_TRUE(dispatcher()->LockMouse(
-      target_, view()->GetMainRenderFrame()->GetWebFrame(),
+      target_, view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(/*succeeded=*/true);
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Unlock, with a deleted target.
@@ -149,7 +149,7 @@ TEST_F(MouseLockDispatcherTest, DeleteWithPendingLockSuccess) {
 
   // Lock request.
   EXPECT_TRUE(dispatcher()->LockMouse(
-      target_, view()->GetMainRenderFrame()->GetWebFrame(),
+      target_, view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
 
   // Before receiving response delete the target.
@@ -158,7 +158,7 @@ TEST_F(MouseLockDispatcherTest, DeleteWithPendingLockSuccess) {
   target_ = nullptr;
 
   // Lock response.
-  dispatcher()->OnLockMouseACK(/*succeeded=*/true);
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
 }
 
 // Test deleting a target that is pending a lock request failure response.
@@ -169,7 +169,7 @@ TEST_F(MouseLockDispatcherTest, DeleteWithPendingLockFail) {
 
   // Lock request.
   EXPECT_TRUE(dispatcher()->LockMouse(
-      target_, view()->GetMainRenderFrame()->GetWebFrame(),
+      target_, view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
 
   // Before receiving response delete the target.
@@ -178,7 +178,7 @@ TEST_F(MouseLockDispatcherTest, DeleteWithPendingLockFail) {
   target_ = nullptr;
 
   // Lock response.
-  dispatcher()->OnLockMouseACK(/*succeeded=*/false);
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kUnknownError);
 }
 
 // Test not receiving mouse events when a target is not locked.
@@ -195,9 +195,9 @@ TEST_F(MouseLockDispatcherTest, MouseEventsNotReceived) {
 
   // Lock.
   EXPECT_TRUE(dispatcher()->LockMouse(
-      target_, view()->GetMainRenderFrame()->GetWebFrame(),
+      target_, view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(/*succeeded=*/true);
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Receive mouse event.
@@ -224,24 +224,24 @@ TEST_F(MouseLockDispatcherTest, MultipleTargets) {
 
   // Lock request for target.
   EXPECT_TRUE(dispatcher()->LockMouse(
-      target_, view()->GetMainRenderFrame()->GetWebFrame(),
+      target_, view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
 
   // Fail attempt to lock alternate.
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(alternate_target_));
   EXPECT_FALSE(dispatcher()->LockMouse(
       alternate_target_, view()->GetMainRenderFrame()->GetWebFrame(),
-      false /* unadjusted_movement */));
+      base::DoNothing(), false /* unadjusted_movement */));
 
   // Lock completion for target.
-  dispatcher()->OnLockMouseACK(/*succeeded=*/true);
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Fail attempt to lock alternate.
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(alternate_target_));
   EXPECT_FALSE(dispatcher()->LockMouse(
       alternate_target_, view()->GetMainRenderFrame()->GetWebFrame(),
-      false /* unadjusted_movement */));
+      base::DoNothing(), false /* unadjusted_movement */));
 
   // Receive mouse event to only one target.
   dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());

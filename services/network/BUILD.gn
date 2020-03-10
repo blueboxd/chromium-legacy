@@ -240,6 +240,7 @@ jumbo_component("network_service") {
     "//services/network/public/cpp/cert_verifier",
     "//services/network/public/mojom",
     "//services/network/public/proto",
+    "//services/network/trust_tokens",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/service_manager/sandbox:sandbox",
@@ -273,10 +274,6 @@ jumbo_component("network_service") {
 
   if (is_win) {
     deps += [ "//sandbox/win:sandbox" ]
-  }
-
-  if (!is_ios) {
-    deps += [ "//services/network/trust_tokens" ]
   }
 
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
@@ -401,6 +398,7 @@ source_set("tests") {
     "//services/network/public/cpp",
     "//services/network/public/cpp:buildflags",
     "//services/network/public/mojom",
+    "//services/network/trust_tokens",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
@@ -416,11 +414,11 @@ source_set("tests") {
   }
 
   if (!is_ios) {
-    deps += [
-      "//services/network/trust_tokens",
-      "//services/network/trust_tokens:tests",
-      "//services/proxy_resolver:lib",
-    ]
+    deps += [ "//services/proxy_resolver:lib" ]
+  }
+
+  if (is_trust_tokens_supported) {
+    deps += [ "//services/network/trust_tokens:tests" ]
   }
 }
 

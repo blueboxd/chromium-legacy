@@ -66,6 +66,9 @@ const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kNotificationExpansionAnimation{
     "NotificationExpansionAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNotificationExperimentalShortTimeouts{
+    "NotificationExperimentalShortTimeouts", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNotificationScrollBar{"NotificationScrollBar",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -146,6 +149,10 @@ bool IsNotificationExpansionAnimationEnabled() {
 
 bool IsNotificationScrollBarEnabled() {
   return base::FeatureList::IsEnabled(kNotificationScrollBar);
+}
+
+bool IsNotificationExperimentalShortTimeoutsEnabled() {
+  return base::FeatureList::IsEnabled(kNotificationExperimentalShortTimeouts);
 }
 
 bool IsPipRoundedCornersEnabled() {

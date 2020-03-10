@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_BLUETOOTH_DELEGATE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/containers/flat_set.h"
 #include "content/common/content_export.h"
@@ -85,6 +86,15 @@ class CONTENT_EXPORT BluetoothDelegate {
   virtual bool IsAllowedToAccessAtLeastOneService(
       RenderFrameHost* frame,
       const blink::WebBluetoothDeviceId& device_id) = 0;
+
+  // This should return a list of devices that the origin in |frame| has been
+  // allowed to access. Access permission is granted with
+  // GrantServiceAccessPermission() and can be revoked by the user in the
+  // embedder's UI. The list of devices returned should be PermittedDevice
+  // objects, which contain the necessary fields to create the BluetoothDevice
+  // JavaScript objects.
+  virtual std::vector<blink::mojom::WebBluetoothDevicePtr> GetPermittedDevices(
+      RenderFrameHost* frame) = 0;
 };
 
 }  // namespace content

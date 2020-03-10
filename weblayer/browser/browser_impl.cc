@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/callback_forward.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
@@ -303,6 +304,9 @@ void BrowserImpl::RestoreStateIfNecessary(
 }
 
 void BrowserImpl::VisibleSecurityStateOfActiveTabChanged() {
+  if (visible_security_state_changed_callback_for_tests_)
+    std::move(visible_security_state_changed_callback_for_tests_).Run();
+
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BrowserImpl_onVisibleSecurityStateOfActiveTabChanged(env, java_impl_);

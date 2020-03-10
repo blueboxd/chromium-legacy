@@ -1071,14 +1071,15 @@ gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
   return window_frame_in_screen_dip_;
 }
 
-bool RenderWidgetHostViewMac::LockMouse(bool request_unadjusted_movement) {
+blink::mojom::PointerLockResult RenderWidgetHostViewMac::LockMouse(
+    bool request_unadjusted_movement) {
   if (mouse_locked_)
-    return true;
+    return blink::mojom::PointerLockResult::kSuccess;
 
   if (request_unadjusted_movement) {
     // TODO(crbug/998688): implement pointerlock unadjusted movement on mac.
     NOTIMPLEMENTED();
-    return false;
+    return blink::mojom::PointerLockResult::kUnsupportedOptions;
   }
 
   mouse_locked_ = true;
@@ -1089,7 +1090,7 @@ bool RenderWidgetHostViewMac::LockMouse(bool request_unadjusted_movement) {
   // Clear the tooltip window.
   ns_view_->SetTooltipText(base::string16());
 
-  return true;
+  return blink::mojom::PointerLockResult::kSuccess;
 }
 
 void RenderWidgetHostViewMac::UnlockMouse() {

@@ -19,13 +19,17 @@
 
 namespace blink {
 
-DOMTaskSignal::DOMTaskSignal(Document* document, WebSchedulingPriority priority)
+DOMTaskSignal::DOMTaskSignal(Document* document,
+                             WebSchedulingPriority priority,
+                             Type type)
     : AbortSignal(document->ToExecutionContext()),
       ExecutionContextLifecycleObserver(document),
-      priority_(priority),
-      web_scheduling_task_queue_(document->GetScheduler()
+      priority_(priority) {
+  if (type == Type::kCreatedByController) {
+    web_scheduling_task_queue_ = document->GetScheduler()
                                      ->ToFrameScheduler()
-                                     ->CreateWebSchedulingTaskQueue(priority)) {
+                                     ->CreateWebSchedulingTaskQueue(priority_);
+  }
 }
 
 DOMTaskSignal::~DOMTaskSignal() = default;
@@ -48,9 +52,13 @@ void DOMTaskSignal::SignalPriorityChange(WebSchedulingPriority priority) {
 }
 
 base::SingleThreadTaskRunner* DOMTaskSignal::GetTaskRunner() {
-  return web_scheduling_task_queue_
-             ? web_scheduling_task_queue_->GetTaskRunner().get()
-             : nullptr;
+  auto* document =
+      Document::From(ExecutionContextLifecycleObserver::GetExecutionContext());
+  if (!document)
+    return nullptr;
+  if (web_scheduling_task_queue_)
+    return web_scheduling_task_queue_->GetTaskRunner().get();
+  return DOMScheduler::From(*document)->GetTaskRunnerFor(priority_);
 }
 
 void DOMTaskSignal::Trace(Visitor* visitor) {

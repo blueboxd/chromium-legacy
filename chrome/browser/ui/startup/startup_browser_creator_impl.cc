@@ -864,14 +864,20 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   if (!browser || !profile_ || browser->tab_strip_model()->count() == 0)
     return;
 
-  if (HasPendingUncleanExit(browser->profile()))
-    SessionCrashedBubble::ShowIfNotOffTheRecordProfile(browser);
-
+  // Show the Automation info bar unless it has been disabled by policy.
   bool show_bad_flags_security_warnings = ShouldShowBadFlagsSecurityWarnings();
   if (command_line_.HasSwitch(switches::kEnableAutomation) &&
       show_bad_flags_security_warnings) {
     AutomationInfoBarDelegate::Create();
   }
+
+  // Do not show any other info bars in Kiosk mode, because it's unlikely that
+  // the viewer can act upon or dismiss them.
+  if (command_line_.HasSwitch(switches::kKioskMode))
+    return;
+
+  if (HasPendingUncleanExit(browser->profile()))
+    SessionCrashedBubble::ShowIfNotOffTheRecordProfile(browser);
 
   // The below info bars are only added to the first profile which is launched.
   // Other profiles might be restoring the browsing sessions asynchronously,

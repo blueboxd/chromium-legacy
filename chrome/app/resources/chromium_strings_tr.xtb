@@ -16,11 +16,13 @@
 <translation id="1779356040007214683">Chromium'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek bazı uzantıları devre dışı bıraktık.</translation>
 <translation id="1808667845054772817">Chromium'u yeniden yükle</translation>
 <translation id="1881322772814446296">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chromium verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz. <ph name="LEARN_MORE" /></translation>
+<translation id="1911747963917069754">Chromium, tüm şifrelerinizi kontrol edemiyor. 24 saat sonra tekrar deneyin.</translation>
 <translation id="1911763535808217981">Bu özelliği kapatarak Chromium'da oturum açmadan Gmail gibi Google sitelerinde oturum açabilirsiniz</translation>
 <translation id="1929939181775079593">Chromium yanıt vermiyor. Şimdi yeniden başlatılsın mı?</translation>
 <translation id="1966382378801805537">Chromium, varsayılan tarayıcıyı tespit edemiyor veya ayarlayamıyor</translation>
 <translation id="2008474315282236005">Bu işlem 1 öğeyi bu cihazdan silecektir. Verilerinizi daha sonra geri almak için Chromium'da <ph name="USER_EMAIL" /> hesabıyla oturum açın.</translation>
 <translation id="2147976119693222405">Chromium OS, verilerinizi senkronize edemedi. Şimdi düzelt.</translation>
+<translation id="2185166961232948079">Chromium - Ağda Oturum Açın - <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">Bir bilgisayarı paylaşıyorsanız arkadaşlarınız ve aileniz ayrı olarak göz atabilir ve Chromium'u tam olarak istedikleri şekilde ayarlayabilir.</translation>
 <translation id="2347108572062610441">Bu uzantı, Chromium'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="2396765026452590966">"<ph name="EXTENSION_NAME" />" uzantısı, Chromium'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
@@ -41,6 +43,7 @@
 <translation id="2886012850691518054">İsteğe Bağlı: Kullanıcı istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak göndererek Chromium'u iyileştirmemize yardımcı olun.</translation>
 <translation id="2910007522516064972">&amp;Chromium hakkında</translation>
 <translation id="2977470724722393594">Chromium güncel durumda</translation>
+<translation id="3032706164202344641">Chromium, şifrelerinizi kontrol edemiyor. Daha sonra tekrar deneyin.</translation>
 <translation id="3032787606318309379">Chromium'a ekleniyor ...</translation>
 <translation id="3068515742935458733">Kilitlenme raporlarını ve <ph name="UMA_LINK" /> bilgilerini Google'a göndererek, Chromium'u daha iyi hale getirmeye yardımcı olun</translation>
 <translation id="3103660991484857065">Yükleyici sıkıştırılmış arşivi açamadı. Lütfen Chromium'u yeniden indirin.</translation>
@@ -70,6 +73,7 @@
 <translation id="3945058413678539331">Chromium şifreleri kopyalamaya çalışıyor. Buna izin vermek için Windows şifrenizi yazın.</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />Mevcut ayarlarınızı<ph name="END_LINK" /> bildirerek Chromium'u daha iyi hale getirmemize yardımcı olun</translation>
 <translation id="4050175100176540509">Son sürümde güvenlikle ilgili önemli iyileştirmeler ve yeni özellikler mevcuttur.</translation>
+<translation id="419998258129752635"><ph name="PAGE_TITLE" /> - Ağda Oturum Açın - Chromium</translation>
 <translation id="421369550622382712">Chromium'a özgü harika uygulamaları, oyunları, uzantıları ve temaları keşfedin.</translation>
 <translation id="4216212958613226427">Bu dil, Chromium kullanıcı arayüzünü görüntülemek için kullanılır</translation>
 <translation id="4230135487732243613">Chromium verileriniz bu hesaba bağlansın mı?</translation>
@@ -78,6 +82,7 @@
 <translation id="4407044323746248786">Yine de Chromium'dan çıkılsın mı?</translation>
 <translation id="4415566066719264597">Chromium'un Arka Planda Çalışmasına İzin Ver</translation>
 <translation id="4423735387467980091">Chromium'u özelleştirin ve kontrol edin</translation>
+<translation id="4544142686420020088">Chromium güncellenmedi. Bir sorun oluştu. <ph name="BEGIN_LINK" />Chrome güncelleme sorunlarını ve başarısız güncellemeleri düzeltin.<ph name="END_LINK" /></translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> olarak oturum açtınız. Şimdi oturum açtığınız tüm cihazlarda yer işaretlerinize, geçmişinize ve diğer ayarlarınıza erişebilirsiniz.</translation>
 <translation id="459535195905078186">Chromium Uygulamaları</translation>
 <translation id="4677944499843243528">Profilin başka bir bilgisayarda (<ph name="HOST_NAME" />) başka bir Chromium işlemi (<ph name="PROCESS_ID" />) tarafından kullanıldığı anlaşılıyor. Chromium, profili bozulmaması için kilitledi. Bu profili başka hiçbir işlemin kullanmadığından eminseniz profilin kilidini açabilir ve Chromium'u tekrar başlatabilirsiniz.</translation>
@@ -110,6 +115,7 @@
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Chromium'a Hoş Geldiniz</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - Ağda Oturum Açın</translation>
 <translation id="5987687638152509985">Senkronizasyonu başlatmak için Chromium'u güncelleyin</translation>
 <translation id="6013050204643758987">Chromium OS, <ph name="BEGIN_LINK_LINUX_OSS" />Linux'ta (Beta)<ph name="END_LINK_LINUX_OSS" /> olduğu gibi ek <ph name="BEGIN_LINK_CROS_OSS" />açık kaynak yazılımlardan<ph name="END_LINK_CROS_OSS" /> yararlanılarak geliştirilmiştir.</translation>
 <translation id="6055895534982063517">Kullanabileceğiniz yeni bir Chromium sürümü var ve bu sürüm her zamankinden daha hızlı.</translation>
@@ -149,6 +155,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6893813176749746474">Chromium güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
 <translation id="6964305034639999644">Bağlantıyı Chromium &amp;gizli penceresinde aç</translation>
 <translation id="6990124437352146030">Chromium'un bu sitede mikrofonunuza erişmesi için izin gerekiyor</translation>
+<translation id="701244094609242530">Chromium, uzantılarınızı kontrol edemiyor. Daha sonra tekrar deneyin.</translation>
 <translation id="705851970750939768">Chromium'u güncelle</translation>
 <translation id="7066436765290594559">Chromium OS, verilerinizi senkronize edemedi. Lütfen Senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="7067091210845072982">Bir resmin işe yarar bir açıklaması yoksa, Chromium sizin için bir açıklama sağlamaya çalışır. Açıklama oluşturmak için resimler Google'a gönderilir.</translation>
@@ -191,6 +198,7 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
 <translation id="8013436988911883588">Chromium erişim izni aldıktan sonra, web siteleri de erişim için sizden izin isteyebilecek.</translation>
 <translation id="81770708095080097">Bu dosya tehlikeli olduğu için Chromium tarafından engellendi.</translation>
 <translation id="8248265253516264921">Bir resmin işe yarar bir açıklaması yoksa, Chromium sizin için bir açıklama sağlamaya çalışır. Açıklama oluşturmak için resimler Google'a gönderilir. Bu özelliği istediğiniz zaman ayarlardan kapatabilirsiniz.</translation>
+<translation id="8266560134891435528">Oturum açmadığınız için Chromium, şifrelerinizi kontrol edemiyor</translation>
 <translation id="8276522524898344151">Chromium şifreleri kopyalamaya çalışıyor.</translation>
 <translation id="8290862415967981663">Bu dosya tehlikeli olabileceği için Chromium tarafından engellendi.</translation>
 <translation id="8330519371938183845">Chromium'u cihazlarınız arasında senkronize etmek ve kişiselleştirmek için oturum açın</translation>

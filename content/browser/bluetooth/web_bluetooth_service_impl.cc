@@ -705,6 +705,25 @@ void WebBluetoothServiceImpl::RequestDevice(
   RequestDeviceImpl(std::move(options), std::move(callback), GetAdapter());
 }
 
+void WebBluetoothServiceImpl::GetDevices(GetDevicesCallback callback) {
+  if (GetBluetoothAllowed() != blink::mojom::WebBluetoothResult::SUCCESS ||
+      !BluetoothAdapterFactoryWrapper::Get().IsLowEnergySupported()) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  auto* adapter = GetAdapter();
+  if (adapter) {
+    GetDevicesImpl(std::move(callback), adapter);
+    return;
+  }
+
+  BluetoothAdapterFactoryWrapper::Get().AcquireAdapter(
+      this,
+      base::BindOnce(&WebBluetoothServiceImpl::GetDevicesImpl,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void WebBluetoothServiceImpl::RemoteServerConnect(
     const blink::WebBluetoothDeviceId& device_id,
     mojo::PendingAssociatedRemote<blink::mojom::WebBluetoothServerClient>
@@ -1419,6 +1438,38 @@ void WebBluetoothServiceImpl::RequestDeviceImpl(
                      weak_ptr_factory_.GetWeakPtr(), copyable_callback),
       base::BindOnce(&WebBluetoothServiceImpl::OnGetDeviceFailed,
                      weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+}
+
+void WebBluetoothServiceImpl::GetDevicesImpl(
+    GetDevicesCallback callback,
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  if (base::FeatureList::IsEnabled(
+          features::kWebBluetoothNewPermissionsBackend)) {
+    BluetoothDelegate* delegate =
+        GetContentClient()->browser()->GetBluetoothDelegate();
+    if (!delegate) {
+      std::move(callback).Run({});
+      return;
+    }
+
+    std::move(callback).Run(delegate->GetPermittedDevices(render_frame_host_));
+    return;
+  }
+
+  // BluetoothAllowedDevices does not provide a way to get all of the permitted
+  // devices, so instead return all of the allowed devices that are currently
+  // known to the system.
+  std::vector<blink::mojom::WebBluetoothDevicePtr> web_bluetooth_devices;
+  for (const auto* device : adapter->GetDevices()) {
+    const blink::WebBluetoothDeviceId* device_id =
+        allowed_devices().GetDeviceId(device->GetAddress());
+    if (!device_id || !allowed_devices().IsAllowedToGATTConnect(*device_id))
+      continue;
+
+    web_bluetooth_devices.push_back(
+        blink::mojom::WebBluetoothDevice::New(*device_id, device->GetName()));
+  }
+  std::move(callback).Run(std::move(web_bluetooth_devices));
 }
 
 void WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl(

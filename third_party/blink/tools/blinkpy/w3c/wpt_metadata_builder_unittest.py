@@ -64,13 +64,15 @@ class WPTMetadataBuilderTest(unittest.TestCase):
                 'items': {
                     'reftest': {
                         'reftest.html': [
-                            ['reftest.html', [['reftest-ref.html', '==']], {}]
+                            ['reftest.html', [['reftest-ref.html', '==']], {}],
                         ]
                     },
                     'testharness': {
                         'test.html': [['test.html', {}]],
-                        'variant.html': [['variant.html?foo=bar', {}],
-                                         ['variant.html?foo=baz', {}]],
+                        'variant.html': [
+                            ['variant.html?foo=bar/abc', {}],
+                            ['variant.html?foo=baz', {}],
+                        ],
                         'dir/zzzz.html': [['dir/zzzz.html', {}]],
                         'dir/multiglob.https.any.js': [
                             ['dir/multiglob.https.any.window.html', {}],
@@ -231,14 +233,14 @@ class WPTMetadataBuilderTest(unittest.TestCase):
 
     def test_metadata_for_skipped_test_with_variants(self):
         """A skipped WPT tests with variants should get a test-specific metadata file."""
-        test_name = "external/wpt/variant.html?foo=bar"
+        test_name = "external/wpt/variant.html?foo=bar/abc"
         expectations = _make_expectation(self.port, test_name, "SKIP")
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
         filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, SKIP_TEST)
         # The metadata file name should not include variants
         self.assertEqual("variant.html.ini", filename)
         # ..but the contents of the file should include variants in the test name
-        self.assertEqual("[variant.html?foo=bar]\n  disabled: wpt_metadata_builder.py\n", contents)
+        self.assertEqual("[variant.html?foo=bar/abc]\n  disabled: wpt_metadata_builder.py\n", contents)
 
     def test_metadata_for_skipped_directory(self):
         """A skipped WPT directory should get a dir-wide metadata file."""
@@ -324,3 +326,25 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         self.assertEqual(1, len(test_and_status_dict))
         self.assertTrue(test_name in test_and_status_dict)
         self.assertEqual(TEST_PASS | TEST_PRECONDITION_FAILED, test_and_status_dict[test_name])
+
+    def test_metadata_filename_from_test_file(self):
+        """Check that we get the correct metadata filename in various cases."""
+        expectations = TestExpectations(self.port)
+        mb = WPTMetadataBuilder(expectations, self.port)
+        self.assertEqual("test.html.ini", mb._metadata_filename_from_test_file("test.html"))
+        test_file = os.path.join("dir", "multiglob.https.any.js")
+        self.assertEqual(test_file + ".ini", mb._metadata_filename_from_test_file(test_file))
+        with self.assertRaises(AssertionError):
+            mb._metadata_filename_from_test_file("test.html?variant=abc")
+
+    def test_inline_test_name_from_test_name(self):
+        """Check that we get the correct inline test name in various cases."""
+        expectations = TestExpectations(self.port)
+        mb = WPTMetadataBuilder(expectations, self.port)
+        self.assertEqual("test.html", mb._metadata_inline_test_name_from_test_name("test.html"))
+        self.assertEqual("test.html", mb._metadata_inline_test_name_from_test_name("dir/test.html"))
+        self.assertEqual("test.html?variant=abc", mb._metadata_inline_test_name_from_test_name("dir/test.html?variant=abc"))
+        self.assertEqual("test.html?variant=abc/def", mb._metadata_inline_test_name_from_test_name("dir/test.html?variant=abc/def"))
+        self.assertEqual("test.worker.html", mb._metadata_inline_test_name_from_test_name("test.worker.html"))
+        self.assertEqual("test.worker.html?variant=abc",
+                         mb._metadata_inline_test_name_from_test_name("dir/test.worker.html?variant=abc"))

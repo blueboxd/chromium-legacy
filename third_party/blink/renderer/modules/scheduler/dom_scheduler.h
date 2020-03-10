@@ -18,6 +18,7 @@
 namespace blink {
 
 class DOMTask;
+class DOMTaskSignal;
 class ExceptionState;
 class SchedulerPostTaskOptions;
 class ScriptValue;
@@ -49,6 +50,21 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
                          const HeapVector<ScriptValue>& args,
                          ExceptionState&);
 
+  // Returns a TaskSignal representing the state when the current task was
+  // scheduled. If postTask is given a signal but no priority, it will return
+  // that signal. If postTask is given both a signal and a priority, it will
+  // return a signal with the given priority that follows the given signal.
+  // If a priority only was given, it will return a signal with the given
+  // priority that neither follows another signal nor is known to a controller,
+  // and is therefore unmodifiable. If called outside of a postTask task, it
+  // will return a task signal at the default priority (user-visible).
+  // NOTE: This uses V8's ContinuationPreservedEmbedderData to propagate the
+  // currentTaskSignal across microtask boundaries, so it will remain usable
+  // even in then() blocks or after an await in an async function.
+  DOMTaskSignal* currentTaskSignal(ScriptState*) const;
+
+  base::SingleThreadTaskRunner* GetTaskRunnerFor(WebSchedulingPriority);
+
   // Callbacks invoked by DOMTasks when they run.
   void OnTaskStarted(DOMTask*);
   void OnTaskCompleted(DOMTask*);
@@ -62,7 +78,6 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
       static_cast<size_t>(WebSchedulingPriority::kLastPriority) + 1;
 
   void CreateGlobalTaskQueues(Document*);
-  base::SingleThreadTaskRunner* GetTaskRunnerFor(WebSchedulingPriority);
 
   // |global_task_queues_| is initialized with one entry per priority, indexed
   // by priority. This will be empty when the document is detached.

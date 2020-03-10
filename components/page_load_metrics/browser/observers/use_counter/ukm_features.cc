@@ -147,8 +147,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kWebBluetoothRequestScan,
           WebFeature::
               kV8VideoPlaybackQuality_CorruptedVideoFrames_AttributeGetter,
-          WebFeature::kInputTypeCheckboxRenderedNonSquare,
-          WebFeature::kInputTypeRadioRenderedNonSquare,
           WebFeature::kV8MediaSession_Metadata_AttributeSetter,
           WebFeature::kV8MediaSession_SetActionHandler_Method,
           WebFeature::kLargeStickyAd,

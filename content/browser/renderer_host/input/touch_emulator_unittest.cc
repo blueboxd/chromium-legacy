@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
@@ -251,7 +252,7 @@ class TouchEmulatorTest : public testing::Test,
 
   void DisableSynchronousTouchAck() { ack_touches_synchronously_ = false; }
 
-  float GetCursorScaleFactor() { return cursor_.info().image_scale_factor; }
+  float GetCursorScaleFactor() { return cursor_.cursor().image_scale_factor(); }
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;

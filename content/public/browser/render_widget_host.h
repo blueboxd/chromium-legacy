@@ -35,6 +35,7 @@ class Point;
 }
 
 namespace ui {
+class Cursor;
 class LatencyInfo;
 }
 
@@ -43,8 +44,6 @@ class FrameSinkId;
 }
 
 namespace content {
-
-struct CursorInfo;
 class RenderProcessHost;
 class RenderWidgetHostIterator;
 class RenderWidgetHostObserver;
@@ -318,7 +317,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void FilterDropData(DropData* drop_data) {}
 
   // Sets cursor to a specified one when it is over this widget.
-  virtual void SetCursor(const CursorInfo& cursor_info) {}
+  virtual void SetCursor(const ui::Cursor& cursor) {}
 };
 
 }  // namespace content

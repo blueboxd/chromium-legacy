@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -13,22 +12,15 @@
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "content/public/common/drop_data.h"
-#include "ui/base/test/material_design_controller_test_api.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 class WebUITabStripContainerViewTest : public TestWithBrowserView {
  public:
   template <typename... Args>
   explicit WebUITabStripContainerViewTest(Args... args)
-      : TestWithBrowserView(args...), touch_mode_(true) {
-    // Both the switch and |touch_mode_| are necessary since
-    // MaterialDesignController::Initialize() gets called at different
-    // times on different platforms.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kTopChromeTouchUi, switches::kTopChromeTouchUiEnabled);
+      : TestWithBrowserView(args...) {
     feature_override_.InitAndEnableFeature(features::kWebUITabStrip);
   }
 
@@ -36,7 +28,7 @@ class WebUITabStripContainerViewTest : public TestWithBrowserView {
 
  private:
   base::test::ScopedFeatureList feature_override_;
-  ui::test::MaterialDesignControllerTestAPI touch_mode_;
+  ui::MaterialDesignController::TouchUiScoperForTesting touch_ui_scoper_{true};
 };
 
 TEST_F(WebUITabStripContainerViewTest, TabStripStartsClosed) {
@@ -50,12 +42,14 @@ TEST_F(WebUITabStripContainerViewTest, TouchModeTransition) {
   EXPECT_NE(nullptr, browser_view()->webui_tab_strip());
   EXPECT_FALSE(browser_view()->IsTabStripVisible());
 
-  ui::test::MaterialDesignControllerTestAPI disable_touch_mode(false);
+  ui::MaterialDesignController::TouchUiScoperForTesting disable_touch_mode(
+      false);
   browser_view()->Layout();
   EXPECT_FALSE(WebUITabStripContainerView::UseTouchableTabStrip());
   EXPECT_TRUE(browser_view()->IsTabStripVisible());
 
-  ui::test::MaterialDesignControllerTestAPI reenable_touch_mode(true);
+  ui::MaterialDesignController::TouchUiScoperForTesting reenable_touch_mode(
+      true);
   browser_view()->Layout();
   EXPECT_TRUE(WebUITabStripContainerView::UseTouchableTabStrip());
   EXPECT_FALSE(browser_view()->IsTabStripVisible());
@@ -147,7 +141,9 @@ class WebUITabStripDevToolsTest : public WebUITabStripContainerViewTest {
 TEST_F(WebUITabStripDevToolsTest, DevToolsWindowHasNoTabStrip) {
   EXPECT_EQ(nullptr, browser_view()->webui_tab_strip());
 
-  ui::test::MaterialDesignControllerTestAPI disable_touch_mode(false);
-  ui::test::MaterialDesignControllerTestAPI reenable_touch_mode(true);
+  ui::MaterialDesignController::TouchUiScoperForTesting disable_touch_mode(
+      false);
+  ui::MaterialDesignController::TouchUiScoperForTesting reenable_touch_mode(
+      true);
   EXPECT_EQ(nullptr, browser_view()->webui_tab_strip());
 }

@@ -37,6 +37,8 @@
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
@@ -692,10 +694,17 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
       logical_height_length.IsPercentOrCalc() && cb && IsBox()) {
     cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(ToLayoutBox(this)));
   }
-  if (this_box && this_box->IsFlexItem()) {
-    const LayoutFlexibleBox& flex_box = ToLayoutFlexibleBox(*Parent());
-    if (flex_box.UseOverrideLogicalHeightForPerentageResolution(*this_box))
-      return false;
+  if (this_box && this_box->IsFlexItemIncludingNG()) {
+    if (this_box->IsFlexItem()) {
+      const LayoutFlexibleBox& flex_box = ToLayoutFlexibleBox(*Parent());
+      if (flex_box.UseOverrideLogicalHeightForPerentageResolution(*this_box))
+        return false;
+    } else if (this_box->GetCachedLayoutResult()) {
+      const NGConstraintSpace& space =
+          this_box->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+      if (space.IsFixedBlockSize() && !space.IsFixedBlockSizeIndefinite())
+        return false;
+    }
   }
   if (this_box && this_box->IsGridItem() &&
       this_box->HasOverrideContainingBlockContentLogicalHeight())

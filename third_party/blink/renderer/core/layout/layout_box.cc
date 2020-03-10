@@ -4365,10 +4365,17 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
     return LogicalHeight() - BorderAndPaddingLogicalHeight();
   }
 
-  if (IsFlexItem()) {
-    const LayoutFlexibleBox& flex_box = ToLayoutFlexibleBox(*Parent());
-    if (flex_box.UseOverrideLogicalHeightForPerentageResolution(*this))
-      return OverrideContentLogicalHeight();
+  if (IsFlexItemIncludingNG()) {
+    if (IsFlexItem()) {
+      const LayoutFlexibleBox& flex_box = ToLayoutFlexibleBox(*Parent());
+      if (flex_box.UseOverrideLogicalHeightForPerentageResolution(*this))
+        return OverrideContentLogicalHeight();
+    } else if (GetCachedLayoutResult()) {
+      const NGConstraintSpace& space =
+          GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+      if (space.IsFixedBlockSize() && !space.IsFixedBlockSizeIndefinite())
+        return space.AvailableSize().block_size;
+    }
   }
 
   if (h.IsPercentOrCalc() && IsOutOfFlowPositioned()) {

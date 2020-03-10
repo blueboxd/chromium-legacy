@@ -112,11 +112,6 @@ const base::Feature kPrecisionTouchpadLogging{
     "PrecisionTouchpadLogging", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-const base::Feature kEnableAutomaticUiAdjustmentsForTouch{
-    "EnableAutomaticUiAdjustmentsForTouch", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 // Enables stylus appearing as touch when in contact with digitizer.
 const base::Feature kDirectManipulationStylus = {
@@ -150,15 +145,6 @@ bool IsFormControlsRefreshEnabled() {
   static const bool form_controls_refresh_enabled =
       base::FeatureList::IsEnabled(features::kFormControlsRefresh);
   return form_controls_refresh_enabled;
-}
-
-bool IsAutomaticUiAdjustmentsForTouchEnabled() {
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-  return base::FeatureList::IsEnabled(
-      features::kEnableAutomaticUiAdjustmentsForTouch);
-#else
-  return false;
-#endif
 }
 
 const base::Feature kEnableOzoneDrmMojo = {"OzoneDrmMojo",

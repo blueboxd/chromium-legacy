@@ -35,6 +35,8 @@ blink_core_sources("parser") {
     "html_meta_charset_parser.h",
     "html_parser_idioms.cc",
     "html_parser_idioms.h",
+    "html_parser_metrics.cc",
+    "html_parser_metrics.h",
     "html_parser_options.cc",
     "html_parser_options.h",
     "html_parser_reentry_permit.cc",

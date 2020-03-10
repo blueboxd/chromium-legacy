@@ -19,7 +19,6 @@
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_paths.h"
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
@@ -70,8 +69,6 @@ void ContentTestSuiteBase::Initialize() {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
 #endif
-
-  ui::MaterialDesignController::Initialize();
 }
 
 void ContentTestSuiteBase::RegisterContentSchemes(

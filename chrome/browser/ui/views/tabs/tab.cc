@@ -362,7 +362,7 @@ void Tab::Layout() {
     if (showing_close_button_) {
       right = close_x;
       if (extra_alert_indicator_padding_)
-        right -= MD::touch_ui() ? 8 : 6;
+        right -= MD::GetInstance()->touch_ui() ? 8 : 6;
     }
     const gfx::Size image_size = alert_indicator_->GetPreferredSize();
     gfx::Rect bounds(
@@ -948,7 +948,7 @@ void Tab::UpdateIconVisibility() {
 
   int available_width = GetContentsBounds().width();
 
-  const bool touch_ui = MD::touch_ui();
+  const bool touch_ui = MD::GetInstance()->touch_ui();
   const int favicon_width = gfx::kFaviconSize;
   const int alert_icon_width = alert_indicator_->GetPreferredSize().width();
   // In case of touch optimized UI, the close button has an extra padding on the

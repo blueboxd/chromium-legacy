@@ -199,11 +199,52 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'SplitLongText', function() {
     spokenTextStrings.push(utterance.textString);
   };
 
-  const baseText = 'This is a very long text.\n';
-  const numRepeats =
-      Math.floor(constants.OBJECT_MAX_CHARCOUNT / baseText.length);
-  const text = baseText + baseText.repeat(numRepeats);
-
+  // There are three new lines, but only the first chunk exceeds the max
+  // character count.
+  const text = 'a'.repeat(constants.OBJECT_MAX_CHARCOUNT) + '\n' +
+      'a'.repeat(10) + '\n' +
+      'a'.repeat(10);
   tts.speak(text);
-  assertEquals(1 + numRepeats, spokenTextStrings.length);
+  assertEquals(2, spokenTextStrings.length);
+});
+
+SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'SplitUntilSmall', function() {
+  const split = TtsBackground.splitUntilSmall;
+
+  // A single delimiter.
+  constants.OBJECT_MAX_CHARCOUNT = 3;
+  assertEqualsJSON(['12', '345', '789'], split('12345a789', 'a'));
+
+  constants.OBJECT_MAX_CHARCOUNT = 4;
+  assertEqualsJSON(['12', '345', '789'], split('12345a789', 'a'));
+
+  constants.OBJECT_MAX_CHARCOUNT = 7;
+  assertEqualsJSON(['12345', '789'], split('12345a789', 'a'));
+
+  constants.OBJECT_MAX_CHARCOUNT = 10;
+  assertEqualsJSON(['12345a789'], split('12345a789', 'a'));
+
+  // Multiple delimiters.
+  constants.OBJECT_MAX_CHARCOUNT = 3;
+  assertEqualsJSON(['12', '34', '57', '89'], split('1234b57a89', 'ab'));
+
+  constants.OBJECT_MAX_CHARCOUNT = 4;
+  assertEqualsJSON(['1234', '57', '89'], split('1234b57a89', 'ab'));
+
+  constants.OBJECT_MAX_CHARCOUNT = 5;
+  assertEqualsJSON(['12345', '789'], split('12345b789a', 'ab'));
+  assertEqualsJSON(['12345', '789a'], split('12345b789a', 'ba'));
+
+  // No delimiters.
+  constants.OBJECT_MAX_CHARCOUNT = 3;
+  assertEqualsJSON(['12', '34', '57', '89'], split('12345789', ''));
+
+  constants.OBJECT_MAX_CHARCOUNT = 4;
+  assertEqualsJSON(['1234', '5789'], split('12345789', ''));
+
+  // Some corner cases.
+  assertEqualsJSON([], split('', ''));
+  assertEqualsJSON(['a'], split('a', ''));
+  assertEqualsJSON(['a'], split('a', 'a'));
+  assertEqualsJSON(['a'], split('a', 'b'));
 });

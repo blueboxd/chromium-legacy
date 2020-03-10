@@ -58,4 +58,5 @@ other:
   declare either process depending on what it needs.
 - Activities also need an explicit `android:taskAffinity`, otherwise using the
   WebView Activity will replace the current Chrome session from the task stack
-  (or vice versa).
+  (or vice versa). The taskAffinity should include the WebView package name,
+  otherwise Activities from different WebView channels will trample each other.

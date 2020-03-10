@@ -697,7 +697,7 @@
           'weblayer_shell',
         ],
         'test_suites': {
-          'gtest_tests': 'android_pie_rel_gtests',
+          'gtest_tests': 'android_pie_rel_non_skia_renderer_gtests',
           'isolated_scripts': 'marshmallow_pie_isolated_scripts_with_proguard',
         },
         'use_swarming': True,

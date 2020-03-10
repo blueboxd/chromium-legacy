@@ -75,7 +75,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/screen.h"
@@ -1158,7 +1157,8 @@ void RenderWidgetHostViewAura::SetMainFrameAXTreeID(ui::AXTreeID id) {
   window_->SetProperty(ui::kChildAXTreeID, id.ToString());
 }
 
-bool RenderWidgetHostViewAura::LockMouse(bool request_unadjusted_movement) {
+blink::mojom::PointerLockResult RenderWidgetHostViewAura::LockMouse(
+    bool request_unadjusted_movement) {
   return event_handler_->LockMouse(request_unadjusted_movement);
 }
 

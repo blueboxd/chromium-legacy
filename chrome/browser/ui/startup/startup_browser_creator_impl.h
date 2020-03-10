@@ -170,7 +170,6 @@ class StartupBrowserCreatorImpl {
     SessionRestore::BehaviorBitmask restore_options, bool process_startup,
     bool is_post_crash_launch);
 
-
   // Adds any startup infobars to the selected tab of the given browser.
   void AddInfoBarsIfNecessary(
       Browser* browser,

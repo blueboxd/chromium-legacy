@@ -110,15 +110,13 @@ export class TabsApiProxy {
   /**
    * @param {number} tabId
    * @param {!CloseTabAction} closeTabAction
-   * @return {!Promise}
    */
   closeTab(tabId, closeTabAction) {
-    return new Promise(resolve => {
-      chrome.tabs.remove(tabId, resolve);
-      chrome.metricsPrivate.recordEnumerationValue(
-          'WebUITabStrip.CloseTabAction', closeTabAction,
-          Object.keys(CloseTabAction).length);
-    });
+    chrome.send(
+        'closeTab', [tabId, closeTabAction === CloseTabAction.SWIPED_TO_CLOSE]);
+    chrome.metricsPrivate.recordEnumerationValue(
+        'WebUITabStrip.CloseTabAction', closeTabAction,
+        Object.keys(CloseTabAction).length);
   }
 
   /**

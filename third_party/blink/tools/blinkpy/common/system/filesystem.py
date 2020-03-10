@@ -41,6 +41,7 @@ import logging
 import os
 import shutil
 import stat
+import subprocess
 import sys
 import tempfile
 import time
@@ -74,6 +75,7 @@ class FileSystem(object):
         (https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath)
         """
         if sys.platform == 'win32' and len(path) >= self.WINDOWS_MAX_PATH:
+            assert not path.startswith(r'\\'), "must not already be UNC"
             return ur'\\?\%s' % (self.abspath(path),)
         return path
 
@@ -327,8 +329,34 @@ class FileSystem(object):
 
     def rmtree(self, path, ignore_errors=True, onerror=None):
         """Deletes the directory rooted at path, whether empty or not."""
-        # shutil.rmtree() uses os.path.join() which doesn't support UNC paths.
-        shutil.rmtree(path, ignore_errors=ignore_errors, onerror=onerror)
+        if sys.platform == 'win32':
+            assert not path.startswith(r'\\'), 'root path cannot be UNC-style'
+            path_abs = self.abspath(path)
+
+            # Ensure the root of the tree being rmtree'd is not a long path.
+            # We can't convert it to a long path (using _path_for_access),
+            # because long paths are not supported in 'rmdir' on Windows 7.
+            assert len(path_abs) < self.WINDOWS_MAX_PATH, 'root path is too long'
+
+            # Ensure (hopefully) that the quoting done on the next line is safe.
+            assert '"' not in path_abs, 'path contains a quotation mark (")'
+
+            # Create a shell command to call rmdir. (Note rmdir is a shell
+            # built-in, so it cannot be called as an executable.)
+            cmd = 'rmdir /s /q "{}"'.format(path_abs)
+            try:
+                subprocess.check_call(cmd, shell=True)
+            except subprocess.CalledProcessError as e:
+                if not ignore_errors:
+                    if onerror:
+                        # Unfortunately we can't know the exact file that failed,
+                        # so we conjure up error info from the top level.
+                        onerror('FileSystem.rmtree', path, sys.exc_info())
+                    else:
+                        raise e
+        else:
+            # shutil.rmtree() uses os.path.join() which doesn't support UNC paths.
+            shutil.rmtree(path, ignore_errors=ignore_errors, onerror=onerror)
 
     def remove_contents(self, dirname):
         """Attempts to remove the contents of a directory tree.

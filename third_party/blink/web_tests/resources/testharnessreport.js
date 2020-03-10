@@ -120,7 +120,6 @@
             pathAndBase.startsWith('/css/') ||
             pathAndBase.startsWith('/pointerevents/') ||
             pathAndBase.startsWith('/uievents/') ||
-            pathAndBase.startsWith('/pointerlock/') ||
             pathAndBase.startsWith('/html/') ||
             pathAndBase.startsWith('/input-events/') ||
             pathAndBase.startsWith('/css/selectors/') ||

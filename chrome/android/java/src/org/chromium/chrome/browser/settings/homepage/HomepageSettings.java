@@ -10,6 +10,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
@@ -96,6 +97,8 @@ public class HomepageSettings extends PreferenceFragmentCompat {
                 return true;
             });
         }
+
+        RecordUserAction.record("Settings.Homepage.Opened");
 
         // Update preference views and state.
         updatePreferenceState();

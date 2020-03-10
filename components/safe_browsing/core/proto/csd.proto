@@ -715,7 +715,11 @@ message ClientDownloadRequest {
   optional int32 archive_file_count = 68;
   optional int32 archive_directory_count = 69;
 
-  // next available tag number: 70;
+  // Only for display on chrome://safe-browsing. The actual token is sent in the
+  // "Authorization: Bearer" header
+  optional string access_token = 78;
+
+  // next available tag number: 79;
 }
 
 message ReferrerChainOptions {

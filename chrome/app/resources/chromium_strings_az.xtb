@@ -18,11 +18,13 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="1779356040007214683">Chromium'u güvənli etmək üçün,  <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> siyahısında olmayan və xəbəriniz olmadan əlavə edilən bəzi artırmaları deaktiv etdik.</translation>
 <translation id="1808667845054772817">Chromium'u yenidən quraşdırın</translation>
 <translation id="1881322772814446296">Nəzarət olunan hesabla daxil olursunuz və hesabın administratoruna Chromium profiliniz üzərində nəzarət etmək imkanı verirsiniz. Tətbiqləriniz, əlfəcinləriniz, tarixçəniz, parollarınız və digər ayarlarınız <ph name="USER_NAME" /> adına həmişəlik bağlı qalacaq. Bu datanı Google Hesab İdarə Paneli vasitəsilə silə biləcəksiniz, lakin bu datanı digər hesabla əlaqələndirə bilməyəcəksiniz. Mövcud Chromium datanızı ayrı saxlamaq üçün yeni profil yarada bilərsiniz. <ph name="LEARN_MORE" /></translation>
+<translation id="1911747963917069754">Chromium bütün parollarınızı yoxlaya bilmir. 24 saat sonra yenidən cəhd edin.</translation>
 <translation id="1911763535808217981">Bunu deaktiv etməklə Chromium'a giriş etmədən Gmail kimi Google saytlarına daxil ola bilərsiniz</translation>
 <translation id="1929939181775079593">Chromium cavab vermir. İndi yenidən başladılsın?</translation>
 <translation id="1966382378801805537">Chromium defolt brauzeri müəyyən edə və ya ayarlaya bilmir</translation>
 <translation id="2008474315282236005">1 element cihazdan silinəcək. Sonradan datanızı bərpa etmək üçün <ph name="USER_EMAIL" /> kimi Chromiuma daxil olun.</translation>
 <translation id="2147976119693222405">Chromium OS datanızı sinxronizasiya edə bilmədi. İndi düzəliş edin.</translation>
+<translation id="2185166961232948079">Chromium - Şəbəkəyə Giriş - <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">Paylaşılan kompüteriniz varsa, kompüterin paylaşıldığı şəxslər ayrı-ayrılıqda istifadə edə və Chromium'u istədikləri kimi quraşdıra bilər.</translation>
 <translation id="2347108572062610441">Bu artırma Chromium'u başlatdığınız zaman hansı səhifənin göstərildiyini dəyişdi.</translation>
 <translation id="2396765026452590966">"<ph name="EXTENSION_NAME" />" artırması Chromium'u başlatdığınız zaman hansı səhifənin göstərildiyini dəyişdi.</translation>
@@ -43,6 +45,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="2886012850691518054">Seçimə görə: İstifadə statistikası və xəta hesabatlarını avtomatik Google'a göndərməklə Chromium tətbiqini təkmilləşdirin.</translation>
 <translation id="2910007522516064972">Chromium haqqında</translation>
 <translation id="2977470724722393594">Chromium güncəldir</translation>
+<translation id="3032706164202344641">Chromium parollarınızı yoxlaya bilmir. Sonra yenidən cəhd edin.</translation>
 <translation id="3032787606318309379">Xrom durub ...</translation>
 <translation id="3068515742935458733">Qəza raportlarını və <ph name="UMA_LINK" /> linkini Google'a göndərməklə Chromium'un daha keyfiyyətli olmasına yardım olun</translation>
 <translation id="3103660991484857065">Quraşdırıcı arxivi dekompres edə bilmədi. Chromium'u yenidən endirməyiniz xahiş olunur.</translation>
@@ -72,6 +75,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="3945058413678539331">Chromium parolları kopyalamağa çalışır. Buna icazə vermək üçün Windows parolunuzu yazın.</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />Cari ayarları<ph name="END_LINK" /> bildirməklə Chormium'u təkmilləşdirməyə kömək edin</translation>
 <translation id="4050175100176540509">Mühüm təhlükəsizlik təkmilləşdirilmələri və yeni funksiyalar son versiyada əlçatandır.</translation>
+<translation id="419998258129752635"><ph name="PAGE_TITLE" /> - Şəbəkəyə Giriş - Chromium</translation>
 <translation id="421369550622382712">Chromium üçün möhtəşəm tətbiqlər, oyunlar, artırmalar və temalar kəşf edin.</translation>
 <translation id="4216212958613226427">Bu dil Chromium UI-ni göstərmək üçün istifadə edilir</translation>
 <translation id="4230135487732243613">Chromium datanız bu hesab ilə birləşdirilsin?</translation>
@@ -80,6 +84,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="4407044323746248786">Chromium'dan istənilən halda çıxılsın?</translation>
 <translation id="4415566066719264597">Chromium'a Arxa Fonda İşləmək İcazəsi Verin</translation>
 <translation id="4423735387467980091">Fərdiləşdirin və Chromium'u kontrol edin</translation>
+<translation id="4544142686420020088">Chromium güncəllənmədi, xəta baş verdi. <ph name="BEGIN_LINK" />Chrome'un güncəllənmə problemlərini və alınmayan güncəllənmələri həll edin.<ph name="END_LINK" /></translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> kimi daxil olmusunuz. İndi bütün daxil olan cihazlarınızdan əlfəcin, tarixçə və digər ayarlara daxil ola bilərsiniz.</translation>
 <translation id="459535195905078186">Chromium Tətbiqləri</translation>
 <translation id="4677944499843243528">Profil başqa kompüterdə başqa Chromium prosesi tərəfindən (<ph name="PROCESS_ID" />)istifadə olunur (<ph name="HOST_NAME" />). Chromium profili xəta almaması üçün qapadıb. Əgər bu profilin başqa proseslər tərəfindən istifadə olunmadığına əminsinizsə, profili blokdan çıxarın və Chromium'u yenidən başladın.</translation>
@@ -112,6 +117,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Chromium'a xoş gəlmisiniz</translation>
 <translation id="5895138241574237353">Yenidən başladın</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - Şəbəkəyə Giriş</translation>
 <translation id="5987687638152509985">Sinxronizasiyanı başlatmaq üçün Chromium'u güncəlləyin</translation>
 <translation id="6013050204643758987">Chromium OS <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" /> kimi <ph name="BEGIN_LINK_CROS_OSS" />açıq mənbə proqramında<ph name="END_LINK_CROS_OSS" /> dəstəklənir.</translation>
 <translation id="6055895534982063517">Chromium'um yeni versiyası əlçatandır və həmişəkindən daha sürətlidir.</translation>
@@ -151,6 +157,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="6893813176749746474">Xrom yeniləndi, lakin ən azı 30 gün üçün istifadə etməmişlər.</translation>
 <translation id="6964305034639999644">Linki gizli Chromium pəncərəsində açın</translation>
 <translation id="6990124437352146030">Chromium bu sayt üçün mikrofona giriş tələb edir</translation>
+<translation id="701244094609242530">Chromium artırmalarınızı yoxlaya bilmir. Sonra yenidən cəhd edin.</translation>
 <translation id="705851970750939768">Chromium'u güncəlləşdirin</translation>
 <translation id="7066436765290594559">Chromium OS datanızı sinxronizasiya edə bilmədi. Lütfən, Sinxronizasiya parol sözünü güncəlləşdirin.</translation>
 <translation id="7067091210845072982">Şəklin təsviri faydalı deyilsə, Chromium Sizin üçün təsviri təmin etməyə çalışacaq. Təsvir yaratmaq üçün şəkillər Google'a göndərilir.</translation>
@@ -191,6 +198,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="8013436988911883588">Chromium'un giriş imkanı olduqda veb saytlar giriş üçün Sizdən icazə istəyəcək.</translation>
 <translation id="81770708095080097">Bu fayl təklükəlidir, bu səbəbdən Chromium onu blok etdi.</translation>
 <translation id="8248265253516264921">Şəklin təsviri faydalı deyilsə, Chromium Sizin üçün təsviri təmin etməyə çalışacaq. Təsvir yaratmaq üçün şəkillər Google'a göndərilir. Bunu istənilən vaxt ayarlardan deaktiv edə bilərsiniz.</translation>
+<translation id="8266560134891435528">Hesaba daxil olmadığınız üçün Chromium parollarınızı yoxlaya bilmir</translation>
 <translation id="8276522524898344151">Chromium parolları kopyalamağa çalışır.</translation>
 <translation id="8290862415967981663">Bu fayl təklükəli ola bilər, bu səbəbdən Chromium onu blok etdi.</translation>
 <translation id="8330519371938183845">Chromium'u cihazlarda sinxronizasiya etmək və fərdiləşdirmək üçün daxil olun</translation>

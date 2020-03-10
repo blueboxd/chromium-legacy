@@ -613,8 +613,9 @@ suite('NewTabPageMostVisitedTest', () => {
 
   test('setting color styles tile color', () => {
     // Act.
-    mostVisited.style.setProperty('--tile-title-color', 'blue');
-    mostVisited.style.setProperty('--icon-background-color', 'red');
+    mostVisited.style.setProperty('--ntp-theme-text-color', 'blue');
+    mostVisited.style.setProperty(
+        '--ntp-theme-shortcut-background-color', 'red');
 
     // Assert.
     queryAll('.tile-title').forEach(tile => {

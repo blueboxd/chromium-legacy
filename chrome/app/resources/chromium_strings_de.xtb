@@ -16,11 +16,13 @@
 <translation id="1779356040007214683">Um Chromium sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt sind und möglicherweise ohne Ihr Wissen hinzugefügt wurden.</translation>
 <translation id="1808667845054772817">Chromium neu installieren</translation>
 <translation id="1881322772814446296">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Chromium-Profil. Ihre Chromium-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. Wenn Sie Ihre bestehenden Chromium-Daten getrennt verwenden möchten, können Sie ein neues Profil erstellen. <ph name="LEARN_MORE" /></translation>
+<translation id="1911747963917069754">Chromium kann nicht alle Ihre Passwörter prüfen. Bitte versuchen Sie es in 24 Stunden noch einmal.</translation>
 <translation id="1911763535808217981">Wenn Sie diese Einstellung deaktivieren, können Sie sich auf Websites von Google wie beispielsweise Gmail anmelden, ohne sich auch in Chromium anmelden zu müssen</translation>
 <translation id="1929939181775079593">Chromium reagiert nicht. Jetzt neu starten?</translation>
 <translation id="1966382378801805537">Chromium kann den Standardbrowser nicht bestimmen oder festlegen</translation>
 <translation id="2008474315282236005">Dadurch wird 1 Element von diesem Gerät gelöscht. Wenn Sie Ihre Daten später abrufen möchten, melden Sie sich als <ph name="USER_EMAIL" /> in Chromium an.</translation>
 <translation id="2147976119693222405">Chromium OS konnte Ihre Daten nicht synchronisieren. Jetzt beheben.</translation>
+<translation id="2185166961232948079">Chromium – Netzwerkanmeldung – <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chromium jeweils nach ihren Wünschen einrichten.</translation>
 <translation id="2347108572062610441">Die beim Start von Chromium angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
 <translation id="2396765026452590966">Die beim Start von Chromium angezeigte Seite wurde durch die Erweiterung <ph name="EXTENSION_NAME" /> geändert.</translation>
@@ -41,6 +43,7 @@
 <translation id="2886012850691518054">Optional: Unterstützen Sie Google bei der Verbesserung von Chromium durch automatisches Senden von Nutzungsstatistiken und Absturzberichten.</translation>
 <translation id="2910007522516064972">Über &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium ist auf dem neuesten Stand</translation>
+<translation id="3032706164202344641">Chromium kann Ihre Passwörter nicht prüfen. Versuchen Sie es später noch einmal.</translation>
 <translation id="3032787606318309379">Wird zu Chromium hinzugefügt...</translation>
 <translation id="3068515742935458733">Absturzberichte und <ph name="UMA_LINK" /> zur Verbesserung von Chromium an Google senden</translation>
 <translation id="3103660991484857065">Das Installationsprogramm konnte das Archiv nicht dekomprimieren. Bitte laden Sie Chromium erneut herunter.</translation>
@@ -72,6 +75,7 @@
 <translation id="3945058413678539331">Chromium versucht, Passwörter zu kopieren. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="4036079820698952681">Helfen Sie uns mit Ihrem Feedback zu den <ph name="BEGIN_LINK" />aktuellen Einstellungen<ph name="END_LINK" /> bei der Verbesserung von Chromium</translation>
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
+<translation id="419998258129752635"><ph name="PAGE_TITLE" /> – Netzwerkanmeldung – Chromium</translation>
 <translation id="421369550622382712">Entdecken Sie tolle Apps, Spiele, Erweiterungen und Designs für Chromium.</translation>
 <translation id="4216212958613226427">Diese Sprache wird für die Chromium-UI verwendet</translation>
 <translation id="4230135487732243613">Ihre Chromium-Daten mit diesem Konto verknüpfen?</translation>
@@ -80,6 +84,7 @@
 <translation id="4407044323746248786">Chromium trotzdem beenden?</translation>
 <translation id="4415566066719264597">Chromium im Hintergrund ausführen</translation>
 <translation id="4423735387467980091">Chromium anpassen und einstellen</translation>
+<translation id="4544142686420020088">Chrome wurde aufgrund eines Fehlers nicht aktualisiert. Wie Sie Updateprobleme und Fehler bei der Aktualisierung von Chromium beheben, <ph name="BEGIN_LINK" />erfahren Sie hier<ph name="END_LINK" />.</translation>
 <translation id="4567424176335768812">Sie sind als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Auf allen Geräten, auf denen Sie angemeldet sind, sind nun Ihre Lesezeichen, Ihr Verlauf und andere Einstellungen verfügbar.</translation>
 <translation id="459535195905078186">Chromium-Apps</translation>
 <translation id="4677944499843243528">Das Profil wird offenbar gerade von einem Chromium-Prozess (<ph name="PROCESS_ID" />) auf einem anderen Computer (<ph name="HOST_NAME" />) verwendet. Das Profil wurde von Chromium gesperrt, damit es nicht beschädigt wird. Wenn Sie sicher sind, dass das Profil nicht von anderen Prozessen verwendet wird, können Sie das Profil entsperren und Chromium neu starten.</translation>
@@ -112,6 +117,7 @@
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Willkommen bei Chromium</translation>
 <translation id="5895138241574237353">Neu starten</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Netzwerkanmeldung</translation>
 <translation id="5987687638152509985">Aktualisieren Sie Chromium, um die Synchronisierung zu starten</translation>
 <translation id="6013050204643758987">Chromium OS und <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" /> werden durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> möglich gemacht.</translation>
 <translation id="6055895534982063517">Es gibt eine neue Version von Chromium, die schneller ist als je zuvor.</translation>
@@ -151,6 +157,7 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 <translation id="6893813176749746474">Chromium wurde aktualisiert, Sie haben den Browser jedoch mindestens 30 Tage nicht verwendet.</translation>
 <translation id="6964305034639999644">Link in Chromium-Inkognitofenster öffnen</translation>
 <translation id="6990124437352146030">Chromium benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen</translation>
+<translation id="701244094609242530">Chromium kann Ihre Erweiterungen nicht prüfen. Versuchen Sie es später noch einmal.</translation>
 <translation id="705851970750939768">Chromium aktualisieren</translation>
 <translation id="7066436765290594559">Chromium OS konnte Ihre Daten nicht synchronisieren. Bitte aktualisieren Sie Ihre Passphrase für die Synchronisierung.</translation>
 <translation id="7067091210845072982">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chromium, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet.</translation>
@@ -192,6 +199,7 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="8013436988911883588">Sobald Chromium Zugriff hat, können Websites Sie um Zugriff bitten.</translation>
 <translation id="81770708095080097">Diese Datei ist schädlich und wurde von Chromium blockiert.</translation>
 <translation id="8248265253516264921">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chromium, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet. Sie können dies jederzeit in den Einstellungen deaktivieren.</translation>
+<translation id="8266560134891435528">Chromium kann Ihre Passwörter nicht prüfen, da Sie nicht angemeldet sind</translation>
 <translation id="8276522524898344151">Chromium versucht, Passwörter zu kopieren.</translation>
 <translation id="8290862415967981663">Diese Datei ist eventuell schädlich und wurde von Chromium blockiert.</translation>
 <translation id="8330519371938183845">Wenn Sie sich anmelden, wird Chromium auf allen Ihren Geräten synchronisiert und personalisiert</translation>

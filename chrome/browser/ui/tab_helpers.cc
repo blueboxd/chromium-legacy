@@ -102,6 +102,7 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
+#include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -267,6 +268,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (auto* performance_manager_registry =
           performance_manager::PerformanceManagerRegistry::GetInstance()) {
     performance_manager_registry->CreatePageNodeForWebContents(web_contents);
+    performance_manager::TabPropertiesDecorator::SetIsTab(web_contents, true);
   }
   permissions::PermissionRequestManager::CreateForWebContents(web_contents);
   // The PopupBlockerTabHelper has an implicit dependency on

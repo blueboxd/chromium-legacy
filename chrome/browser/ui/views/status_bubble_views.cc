@@ -785,11 +785,6 @@ void StatusBubbleViews::SetURL(const GURL& url) {
       size_.width() - (kShadowThickness + kTextHorizPadding) * 2 - 1);
   url_text_ = url_formatter::ElideUrl(url, GetFont(), text_width);
 
-  // An URL is always treated as a left-to-right string. On right-to-left UIs
-  // we need to explicitly mark the URL as LTR to make sure it is displayed
-  // correctly.
-  url_text_ = base::i18n::GetDisplayStringInLTRDirectionality(url_text_);
-
   // Get the width of the URL if the bubble width is the maximum size.
   base::string16 full_size_elided_url =
       url_formatter::ElideUrl(url, GetFont(), GetMaxStatusBubbleWidth());
@@ -827,7 +822,11 @@ void StatusBubbleViews::SetURL(const GURL& url) {
                          expand_timer_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kExpandHoverDelayMS));
     }
-    view_->SetText(url_text_, true);
+    // An URL is always treated as a left-to-right string. On right-to-left UIs
+    // we need to explicitly mark the URL as LTR to make sure it is displayed
+    // correctly.
+    view_->SetText(base::i18n::GetDisplayStringInLTRDirectionality(url_text_),
+                   true);
   }
 }
 

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/optional.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 
 namespace ash {
@@ -96,7 +97,7 @@ void AssistantScrollView::OnViewPreferredSizeChanged(views::View* view) {
 }
 
 void AssistantScrollView::InitLayout() {
-  SetBackgroundColor(SK_ColorTRANSPARENT);
+  SetBackgroundColor(base::nullopt);
   SetDrawOverflowIndicator(false);
 
   // Content view.

@@ -16941,12 +16941,13 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'supported_on': ['chrome.*:82-', 'chrome_os:82-'],
       'future': True,
       'caption': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extension installation requests''',
       'example_value': True,
       'desc': '''This policy controls <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extension installation requests which allows users to send the requests to the Google Admin console for approval.
 
+      When policy CloudReportingEnabled is left unset or set to disabled, this policy will be ignored, extension installation requests are not created or uploaded.
       When this policy is left unset or set to disabled, extension installation requests are not created or uploaded.
       When this policy is set to enabled, extension installation requests are created and uploaded to Google Admin console.
 

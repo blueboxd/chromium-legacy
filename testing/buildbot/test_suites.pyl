@@ -3187,6 +3187,19 @@
       'views_unittests': {},
     },
 
+    'non_skia_renderer_gtests': {
+      'non_skia_renderer_content_browsertests': {
+        'args': [
+          '--disable-features=UseSkiaRenderer',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+        'test': 'content_browsertests',
+      },
+    },
+
     'opus_tests': {
       'opus_tests': {
         'args': [
@@ -3953,6 +3966,7 @@
       # O only.
     ],
 
+     # Keep in sync with android_pie_rel_non_skia_renderer_gtests below.
     'android_pie_rel_gtests': [
       'android_monochrome_smoke_tests',
       'android_pagecontroller_self_tests',
@@ -3963,6 +3977,31 @@
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
       'network_service_android_gtests',
+      'system_webview_shell_instrumentation_tests', # Not an experimental test
+      'vr_platform_specific_chromium_gtests',
+      'weblayer_android_gtests',
+      'weblayer_gtests',
+      # Experimental tests end here.
+      'webview_cts_tests_gtest',
+      'webview_ui_instrumentation_tests',
+    ],
+
+    # Temporary test suite to minimize impact of non_skia_renderer_gtests.
+    # Keep in sync with android_pie_rel_gtests above.
+    #
+    # TODO(https://crbug.com/1058067): Remove this once SkiaRenderer goes
+    # stable on Android.
+    'android_pie_rel_non_skia_renderer_gtests': [
+      'android_monochrome_smoke_tests',
+      'android_pagecontroller_self_tests',
+      'android_smoke_tests',
+      # TODO: Following tests are experimental (crbug/1010211).
+      'android_specific_chromium_gtests',  # Already includes gl_gtests.
+      'chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'linux_flavor_specific_chromium_gtests',
+      'network_service_android_gtests',
+      'non_skia_renderer_gtests',
       'system_webview_shell_instrumentation_tests', # Not an experimental test
       'vr_platform_specific_chromium_gtests',
       'weblayer_android_gtests',
@@ -4073,7 +4112,6 @@
       'linux_specific_xr_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
-      'skia_renderer_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',
     ],
@@ -4112,6 +4150,7 @@
       'chromium_gtests_for_win_and_linux_only',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
+      'non_skia_renderer_gtests',
       'pixel_browser_tests_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',

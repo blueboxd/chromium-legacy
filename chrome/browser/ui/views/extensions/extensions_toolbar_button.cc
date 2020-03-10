@@ -86,7 +86,7 @@ void ExtensionsToolbarButton::ButtonPressed(views::Button* sender,
 }
 
 int ExtensionsToolbarButton::GetIconSize() const {
-  return ui::MaterialDesignController::touch_ui() && !browser_->app_controller()
-             ? kDefaultTouchableIconSize
-             : kDefaultIconSize;
+  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
+  return (touch_ui && !browser_->app_controller()) ? kDefaultTouchableIconSize
+                                                   : kDefaultIconSize;
 }

@@ -211,11 +211,6 @@
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
-      name: "OversizedImages",
-      feature_policy_name: "oversized-images",
-      depends_on: ["UnoptimizedImagePolicies"],
-    },
-    {
       name: "Payment",
       feature_policy_name: "payment",
       depends_on: ["PaymentRequest"],
@@ -268,21 +263,6 @@
       name: "TopNavigation",
       feature_policy_name: "top-navigation",
       depends_on: ["FeaturePolicyForSandbox"],
-    },
-    {
-      name: "UnoptimizedLosslessImages",
-      feature_policy_name: "unoptimized-lossless-images",
-      depends_on: ["UnoptimizedImagePolicies"],
-    },
-    {
-      name: "UnoptimizedLosslessImagesStrict",
-      feature_policy_name: "unoptimized-lossless-images-strict",
-      depends_on: ["UnoptimizedImagePolicies"],
-    },
-    {
-      name: "UnoptimizedLossyImages",
-      feature_policy_name: "unoptimized-lossy-images",
-      depends_on: ["UnoptimizedImagePolicies"],
     },
     {
       name: "UnsizedMedia",

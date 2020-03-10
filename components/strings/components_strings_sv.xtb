@@ -815,6 +815,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="4466881336512663640">Ändringar i formuläret ändras inte. Vill du fortsätta?</translation>
 <translation id="4477350412780666475">Nästa spår</translation>
 <translation id="4482953324121162758">Den här webbplatsen översätts inte.</translation>
+<translation id="4486757593530038591">När detta är aktiverat kan en webbplats inte anpassa annonser utifrån din aktivitet på webben. Funktioner på vissa webbplatser kan sluta fungera.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">De här funktionerna är inaktiverade som standard. I kommande versioner av Chrome kommer de inte längre att vara tillgängliga.</translation>
 <translation id="4493480324863638523">Ogiltig webbadress. Måste vara en webbadress med ett standardprotokoll, t.ex. http://example.com eller https://example.com.</translation>
@@ -1052,6 +1053,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="549333378215107354">Storlek 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Hanterade bokmärken</translation>
+<translation id="5510481203689988000">Den här inställningen styrs i inställningarna för cookies.</translation>
 <translation id="5510766032865166053">Den kan ha flyttats eller tagits bort.</translation>
 <translation id="5523118979700054094">Policynamn</translation>
 <translation id="55293785478302737">Kanthäftning</translation>

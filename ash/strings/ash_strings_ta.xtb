@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">கணக்கை நிர்வகிப்பது: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
 <translation id="3576141592585647168">நேரமண்டலத்தை மாற்றுக</translation>
+<translation id="3593646411856133110">ஆப்ஸ் திறப்பதைப் பார்க்க மேலே ஸ்வைப் செய்து பிடிக்கவும்</translation>
 <translation id="3595596368722241419">பேட்டரி நிரம்பியது</translation>
 <translation id="3604801046548457007">டெஸ்க் <ph name="DESK_TITILE" /> உருவாக்கப்பட்டது</translation>
 <translation id="3606978283550408104">பிரெய்ல் திரை இணைக்கப்பட்டது.</translation>
@@ -362,6 +363,7 @@
 <translation id="5745612484876805746">சூரிய அஸ்தமனத்தின் போது நைட் லைட் விருப்பம் தானாக இயக்கப்படும்</translation>
 <translation id="5750765938512549687">புளூடூத் முடக்கப்பட்டுள்ளது</translation>
 <translation id="576453121877257266">நைட் லைட் ஆன் செய்யப்பட்டது.</translation>
+<translation id="5769373120130404283">தனிப்பட்ட திரை</translation>
 <translation id="5777841717266010279">திரைப் பகிர்வதை நிறுத்தவா?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" />க்கு <ph name="ROUTE_TITLE" />ஐ அனுப்புவதை நிறுத்து</translation>
@@ -403,6 +405,7 @@
 <translation id="6297287540776456956">பகுதியைத் தேர்ந்தெடுக்க, ஸ்டைஸைப் பயன்படுத்தவும்</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> ஆகச் சுழற்றப்பட்டது</translation>
 <translation id="6376931439017688372">புளூடூத் இயக்கப்பட்டுள்ளது</translation>
+<translation id="6381109794406942707">சாதனத்தைத் திறக்க உங்கள் பின்னை உள்ளிடவும்.</translation>
 <translation id="639644700271529076">CAPS LOCK முடக்கப்பட்டுள்ளது</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, சிக்னல் வலிமை: <ph name="SIGNAL_STRENGTH" /></translation>
@@ -613,6 +616,7 @@
 <translation id="9072519059834302790">பேட்டரி காலியாவதற்கான நேரம்: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">புளூடூத்</translation>
 <translation id="9079731690316798640">வைஃபை: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">முகப்புக்குச் செல்ல மேலே ஸ்வைப் செய்யவும்</translation>
 <translation id="9080206825613744995">மைக்ரோஃபோன் பயன்பாட்டில் உள்ளது.</translation>
 <translation id="9084606467167974638">மெனுவை நிலைமாற்றும்</translation>
 <translation id="9089416786594320554">உள்ளீட்டு முறைகள்</translation>

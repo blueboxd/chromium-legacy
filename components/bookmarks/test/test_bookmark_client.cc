@@ -58,12 +58,22 @@ bool TestBookmarkClient::IsAManagedNode(const BookmarkNode* node) {
   return node && node->HasAncestor(unowned_managed_node_);
 }
 
-bool TestBookmarkClient::IsPermanentNodeVisible(
-    const BookmarkPermanentNode* node) {
-  DCHECK(node->type() == BookmarkNode::BOOKMARK_BAR ||
-         node->type() == BookmarkNode::OTHER_NODE ||
-         node->type() == BookmarkNode::MOBILE || IsManagedNodeRoot(node));
-  return node->type() != BookmarkNode::MOBILE && !IsManagedNodeRoot(node);
+bool TestBookmarkClient::IsPermanentNodeVisibleWhenEmpty(
+    BookmarkNode::Type type) {
+  switch (type) {
+    case bookmarks::BookmarkNode::URL:
+      NOTREACHED();
+      return false;
+    case bookmarks::BookmarkNode::BOOKMARK_BAR:
+    case bookmarks::BookmarkNode::OTHER_NODE:
+      return true;
+    case bookmarks::BookmarkNode::FOLDER:
+    case bookmarks::BookmarkNode::MOBILE:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 void TestBookmarkClient::RecordAction(const base::UserMetricsAction& action) {

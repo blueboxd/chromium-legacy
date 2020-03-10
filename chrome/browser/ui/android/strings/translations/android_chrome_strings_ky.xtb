@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">Шайкештирүүнү каалаган убакта жөндөөлөргө өтүп, күйгүзүп койсоңуз болот</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> кыстарма}other{<ph name="BOOKMARKS_COUNT_MANY" /> кыстарма}}</translation>
 <translation id="3089395242580810162">Жашыруун режимде ачуу</translation>
+<translation id="3114012059975132928">Видео ойноткуч</translation>
 <translation id="3123473560110926937">Айрым сайттарда бөгөттөлдү</translation>
 <translation id="3123734510202723619">Жарыялар</translation>
 <translation id="3137521801621304719">Жашыруун режимден чыгуу</translation>
@@ -352,6 +353,7 @@
 <translation id="3587482841069643663">Баары</translation>
 <translation id="358794129225322306">Сайтка бир нече файлды автоматтык түрдө жүктөп алууга уруксат берүү.</translation>
 <translation id="3590487821116122040">Анча маанилүү болбогон сайттардын дайындары (мис., жөндөөлөрү сакталбаган же сиз көп кирбеген сайттар)</translation>
+<translation id="3594780231884063836">Видеонун үнүн басуу</translation>
 <translation id="3599863153486145794">Аккаунтка кирген бардык түзмөктөрүңүздөгү таржымал тазаланат. Google аккаунтуңуздун серептөө таржымалынын башка түрлөрү <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> дарегинде болушу мүмкүн.</translation>
 <translation id="3600792891314830896">Добуш чыгарган сайттардын үнү өчүрүлөт</translation>
 <translation id="3616113530831147358">Аудио</translation>
@@ -605,6 +607,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5456381639095306749">Баракты жүктөп алуу</translation>
 <translation id="548278423535722844">Карталар колдонмосунан ачыңыз</translation>
 <translation id="5487521232677179737">Дайын-даректерди өчүрүү</translation>
+<translation id="5489227211564503167"><ph name="TOTAL_TIME" /> ичинен <ph name="ELAPSED_TIME" /> өттү.</translation>
 <translation id="5494752089476963479">Тажатма же адаштыруучу жарнамаларды көрсөткөн сайттан келген жарнамалар бөгөттөлсүн</translation>
 <translation id="5500777121964041360">Сиз жашаган өлкөдө жеткиликсиз болушу мүмкүн</translation>
 <translation id="5505264765875738116">Сайттар билдирмелерди жөнөтүүнү сурана алышпайт</translation>
@@ -665,6 +668,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5864419784173784555">Башка жүктөп алуу күтүлүүдө…</translation>
 <translation id="5865733239029070421">Колдонуу статистикасын жана каталар жөнүндө кабарларды Google'га автоматтык түрдө жөнөтүп турат</translation>
 <translation id="5869522115854928033">Сакталган сырсөздөр</translation>
+<translation id="5876056640971328065">Видеону тындыруу</translation>
 <translation id="5884076754568147479">Тапшырмаларды аткарууга жардам берүү үчүн Google Жардамчыны колдонгон сайттардын URL даректерин жана мазмунун, ошондой эле Жардамчы аркылуу тапшырган маалыматты алат</translation>
 <translation id="5902828464777634901">Бул вебсайтта сакталган жергиликтүү дайындардын баары, ошондой эле кукилер өчүрүлөт.</translation>
 <translation id="5919204609460789179">Шайкештирүүнү баштоо үчүн <ph name="PRODUCT_NAME" /> жаңыртыңыз</translation>
@@ -728,6 +732,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6381421346744604172">Күңүрттөлгөн вебсайттар</translation>
 <translation id="6388207532828177975">Тазалоо жана баштапкы абалга келтирүү</translation>
 <translation id="6395288395575013217">ШИЛТЕМЕ</translation>
+<translation id="6397616442223433927">Кайрадан онлайнда</translation>
 <translation id="6404511346730675251">Кыстарманы түзөтүү</translation>
 <translation id="6406506848690869874">Шайкештирүү</translation>
 <translation id="6410973561433500075">AR режимине <ph name="DOMAIN" /> доменинен киресизби?</translation>
@@ -796,6 +801,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6846298663435243399">Жүктөлүүдө…</translation>
 <translation id="6850409657436465440">Файлыңыз дагы эле жүктөлүп алынууда</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> өтмөк жабылды</translation>
+<translation id="6864395892908308021">Бул түзмөк NFC'ни окуй албайт</translation>
 <translation id="6864459304226931083">Сүрөттү жүктөп алуу</translation>
 <translation id="6865313869410766144">Автотолтуруу формасынын дайындары</translation>
 <translation id="6884306546558072722">Оффлайн режиминде изилдей бериңиз</translation>
@@ -916,6 +922,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="780301667611848630">Жок, рахмат</translation>
 <translation id="7810647596859435254">Төмөнкү менен ачуу…</translation>
 <translation id="7821588508402923572">Үнөмдөлгөн трафик ушул жерде көрүнөт</translation>
+<translation id="783819812427904514">Видеонун үнүн чыгаруу</translation>
 <translation id="784934925303690534">Убакыт аралыгы</translation>
 <translation id="7851858861565204677">Башка түзмөктөр</translation>
 <translation id="7875915731392087153">Электрондук почта түзүңүз</translation>

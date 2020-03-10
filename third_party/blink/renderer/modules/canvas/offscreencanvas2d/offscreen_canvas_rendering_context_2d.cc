@@ -350,6 +350,10 @@ bool OffscreenCanvasRenderingContext2D::IsAccelerated() const {
   return IsPaintable() && GetCanvasResourceProvider()->IsAccelerated();
 }
 
+void OffscreenCanvasRenderingContext2D::WillOverwriteCanvas() {
+  GetCanvasResourceProvider()->SkipQueuedDrawCommands();
+}
+
 String OffscreenCanvasRenderingContext2D::font() const {
   if (!GetState().HasRealizedFont())
     return kDefaultFont;

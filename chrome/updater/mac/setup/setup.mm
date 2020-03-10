@@ -88,9 +88,18 @@ void TerminateUpdaterSetupMain() {
 }
 
 bool CopyBundle() {
-  // Copy bundle to "~/Library/Google/GoogleUpdate".
+  // Copy bundle to ~/Library/COMPANY_SHORTNAME_STRING/PRODUCT_FULLNAME_STRING.
+  // e.g. ~/Library/Google/GoogleUpdater
   const base::FilePath dest_path =
       base::mac::GetUserLibraryPath().Append(GetUpdateFolderName());
+
+  if (!base::PathExists(dest_path)) {
+    if (!base::CreateDirectory(dest_path)) {
+      LOG(ERROR) << "Failed to create directory at "
+                 << dest_path.value().c_str();
+      return false;
+    }
+  }
 
   base::FilePath this_executable_path;
   base::PathService::Get(base::FILE_EXE, &this_executable_path);
@@ -105,7 +114,9 @@ bool CopyBundle() {
 }
 
 bool DeleteInstallFolder() {
-  // Delete the install folder - "~/Library/Google/GoogleUpdate".
+  // Delete install folder
+  // ~/Library/COMPANY_SHORTNAME_STRING/PRODUCT_FULLNAME_STRING.
+  // e.g. ~/Library/Google/GoogleUpdater
   const base::FilePath dest_path =
       base::mac::GetUserLibraryPath().Append(GetUpdateFolderName());
 

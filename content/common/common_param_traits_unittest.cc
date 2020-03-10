@@ -27,6 +27,7 @@
 #include "printing/page_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -270,11 +271,13 @@ TEST(IPCMessageTest, SurfaceInfo) {
 }
 
 TEST(IPCMessageTest, WebCursor) {
-  content::CursorInfo info(ui::mojom::CursorType::kCustom);
-  info.custom_image.allocN32Pixels(32, 32);
-  info.hotspot = gfx::Point(10, 20);
-  info.image_scale_factor = 1.5f;
-  content::WebCursor input(info);
+  ui::Cursor cursor(ui::mojom::CursorType::kCustom);
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(32, 32);
+  cursor.set_custom_bitmap(bitmap);
+  cursor.set_custom_hotspot(gfx::Point(10, 20));
+  cursor.set_image_scale_factor(1.5f);
+  content::WebCursor input(cursor);
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::ParamTraits<content::WebCursor>::Write(&msg, input);
 

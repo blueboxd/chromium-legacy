@@ -49,4 +49,5 @@ if __name__ == '__main__':
         source_enum_path=source_path,
         start_marker=START_MARKER,
         end_marker=END_MARKER,
-        strip_k_prefix=True)
+        strip_k_prefix=True,
+        calling_script=os.path.basename(__file__))

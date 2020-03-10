@@ -28,6 +28,9 @@ void NavigateAndWaitForCompletion(const GURL& url, Tab* tab);
 // Navigates |shell| to |url| and wait for failed navigation.
 void NavigateAndWaitForFailure(const GURL& url, Shell* shell);
 
+// Initiates navigation to |url| in |tab| and waits for it to start.
+void NavigateAndWaitForStart(const GURL& url, Tab* tab);
+
 // Executes |script| in |shell| and returns the result.
 base::Value ExecuteScript(Shell* shell,
                           const std::string& script,

@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "weblayer/public/browser.h"
@@ -88,6 +89,12 @@ class BrowserImpl : public Browser {
   // Used in tests to specify a non-default max (0 means use the default).
   std::vector<uint8_t> GetMinimalPersistenceState(int max_size_in_bytes);
 
+  // Used by tests to specify a callback to listen to changes to visible
+  // security state.
+  void SetVisibleSecurityStateChangedCallback(base::OnceClosure closure) {
+    visible_security_state_changed_callback_for_tests_ = std::move(closure);
+  }
+
   // Browser:
   Tab* AddTab(std::unique_ptr<Tab> tab) override;
   std::unique_ptr<Tab> RemoveTab(Tab* tab) override;
@@ -104,6 +111,7 @@ class BrowserImpl : public Browser {
  private:
   // For creation.
   friend class Browser;
+
 #if defined(OS_ANDROID)
   friend BrowserImpl* CreateBrowserForAndroid(
       ProfileImpl*,
@@ -126,6 +134,7 @@ class BrowserImpl : public Browser {
   TabImpl* active_tab_ = nullptr;
   std::string persistence_id_;
   std::unique_ptr<BrowserPersister> browser_persister_;
+  base::OnceClosure visible_security_state_changed_callback_for_tests_;
 };
 
 }  // namespace weblayer

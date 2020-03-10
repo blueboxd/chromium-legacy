@@ -71,9 +71,9 @@ void BookmarkClientImpl::GetTypedCountForUrls(
   }
 }
 
-bool BookmarkClientImpl::IsPermanentNodeVisible(
-    const bookmarks::BookmarkPermanentNode* node) {
-  return node->type() == bookmarks::BookmarkNode::MOBILE;
+bool BookmarkClientImpl::IsPermanentNodeVisibleWhenEmpty(
+    bookmarks::BookmarkNode::Type type) {
+  return type == bookmarks::BookmarkNode::MOBILE;
 }
 
 void BookmarkClientImpl::RecordAction(const base::UserMetricsAction& action) {

@@ -6,6 +6,7 @@
 #define NET_REPORTING_REPORTING_CACHE_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -22,7 +23,6 @@
 
 namespace net {
 
-class NetworkIsolationKey;
 class ReportingContext;
 
 // The cache holds undelivered reports and clients (per-origin endpoint
@@ -96,11 +96,11 @@ class NET_EXPORT ReportingCache {
 
   // Records that we attempted (and possibly succeeded at) delivering
   // |reports_delivered| reports to the specified endpoint.
-  virtual void IncrementEndpointDeliveries(const url::Origin& origin,
-                                           const std::string& group_name,
-                                           const GURL& url,
-                                           int reports_delivered,
-                                           bool successful) = 0;
+  virtual void IncrementEndpointDeliveries(
+      const ReportingEndpointGroupKey& group_key,
+      const GURL& url,
+      int reports_delivered,
+      bool successful) = 0;
 
   // Removes a set of reports. Any reports that are pending will not be removed
   // immediately, but rather marked doomed and removed once they are no longer
@@ -128,25 +128,31 @@ class NET_EXPORT ReportingCache {
   // Adds a new client to the cache for |origin|, or updates the existing one
   // to match the new header. All values are assumed to be valid as they have
   // passed through the ReportingHeaderParser.
+  // TODO(chlily): Take NetworkIsolationKey.
   virtual void OnParsedHeader(
       const url::Origin& origin,
       std::vector<ReportingEndpointGroup> parsed_header) = 0;
 
   // Gets all the origins of clients in the cache.
-  virtual std::vector<url::Origin> GetAllOrigins() const = 0;
+  virtual std::set<url::Origin> GetAllOrigins() const = 0;
 
-  // Remove client for the given |origin|, if it exists in the cache.
+  // Remove client for the given (NIK, origin) pair, if it exists in the cache.
+  // All endpoint groups and endpoints for that client are also removed.
+  virtual void RemoveClient(const NetworkIsolationKey& network_isolation_key,
+                            const url::Origin& origin) = 0;
+
+  // Remove all clients for the given |origin|, if any exists in the cache.
   // All endpoint groups and endpoints for |origin| are also removed.
-  virtual void RemoveClient(const url::Origin& origin) = 0;
+  virtual void RemoveClientsForOrigin(const url::Origin& origin) = 0;
 
   // Remove all clients, groups, and endpoints from the cache.
   virtual void RemoveAllClients() = 0;
 
-  // Remove the endpoint group named |name| for the given |origin|, and remove
-  // all endpoints for that group. May cause the client for |origin| to be
-  // deleted if it becomes empty.
-  virtual void RemoveEndpointGroup(const url::Origin& origin,
-                                   const std::string& group_name) = 0;
+  // Remove the endpoint group matching |group_key|, and remove
+  // all endpoints for that group. May cause the client it was associated with
+  // to be deleted if it becomes empty.
+  virtual void RemoveEndpointGroup(
+      const ReportingEndpointGroupKey& group_key) = 0;
 
   // Remove all endpoints for with |url|, regardless of origin or group. Used
   // when a delivery returns 410 Gone. May cause deletion of groups/clients if
@@ -183,9 +189,7 @@ class NET_EXPORT ReportingCache {
   // name |group| with include_subdomains enabled, this method would return
   // endpoints from that group from the earliest-inserted origin.
   virtual std::vector<ReportingEndpoint> GetCandidateEndpointsForDelivery(
-      const NetworkIsolationKey& network_isolation_key,
-      const url::Origin& origin,
-      const std::string& group_name) = 0;
+      const ReportingEndpointGroupKey& group_key) = 0;
 
   // Gets the status of all clients in the cache, including expired ones, as a
   // base::Value.
@@ -197,22 +201,29 @@ class NET_EXPORT ReportingCache {
   // Flush the contents of the cache to disk, if applicable.
   virtual void Flush() = 0;
 
-  // Finds an endpoint for the given |origin|, |group_name|, and |url|,
-  // otherwise returns an invalid ReportingEndpoint.
-  virtual ReportingEndpoint GetEndpointForTesting(const url::Origin& origin,
-                                                  const std::string& group_name,
-                                                  const GURL& url) const = 0;
+  // Finds an endpoint for the given |group_key| and |url|, otherwise returns an
+  // invalid ReportingEndpoint.
+  virtual ReportingEndpoint GetEndpointForTesting(
+      const ReportingEndpointGroupKey& group_key,
+      const GURL& url) const = 0;
 
   // Returns whether an endpoint group with exactly the given properties exists
   // in the cache. If |expires| is base::Time(), it will not be checked.
   virtual bool EndpointGroupExistsForTesting(
-      const url::Origin& origin,
-      const std::string& group_name,
+      const ReportingEndpointGroupKey& group_key,
       OriginSubdomains include_subdomains,
       base::Time expires) const = 0;
 
+  // Returns whether a client for the given (NIK, Origin) exists.
+  virtual bool ClientExistsForTesting(
+      const NetworkIsolationKey& network_isolation_key,
+      const url::Origin& origin) const = 0;
+
   // Returns number of endpoint groups.
   virtual size_t GetEndpointGroupCountForTesting() const = 0;
+
+  // Returns number of endpoint groups.
+  virtual size_t GetClientCountForTesting() const = 0;
 
   // Sets an endpoint with the given properties in a group with the given
   // properties, bypassing header parsing. Note that the endpoint is not
@@ -220,8 +231,7 @@ class NET_EXPORT ReportingCache {
   // eviction is triggered. Unlike the AddOrUpdate*() methods used in header
   // parsing, this method inserts or updates a single endpoint while leaving the
   // exiting configuration for that origin intact.
-  virtual void SetEndpointForTesting(const url::Origin& origin,
-                                     const std::string& group_name,
+  virtual void SetEndpointForTesting(const ReportingEndpointGroupKey& group_key,
                                      const GURL& url,
                                      OriginSubdomains include_subdomains,
                                      base::Time expires,

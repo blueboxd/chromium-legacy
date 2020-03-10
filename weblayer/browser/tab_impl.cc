@@ -444,10 +444,13 @@ content::WebContents* TabImpl::OpenURLFromTab(
   return source;
 }
 
-void TabImpl::DidNavigateMainFramePostCommit(
-    content::WebContents* web_contents) {
-  for (auto& observer : observers_)
-    observer.DisplayedUrlChanged(web_contents->GetVisibleURL());
+void TabImpl::NavigationStateChanged(content::WebContents* source,
+                                     content::InvalidateTypes changed_flags) {
+  if (changed_flags & content::INVALIDATE_TYPE_URL) {
+    for (auto& observer : observers_)
+      observer.DisplayedUrlChanged(source->GetVisibleURL());
+    UpdateBrowserVisibleSecurityStateIfNecessary();
+  }
 }
 
 content::JavaScriptDialogManager* TabImpl::GetJavaScriptDialogManager(
@@ -640,6 +643,10 @@ void TabImpl::OnFindResultAvailable(content::WebContents* web_contents) {
 }
 
 void TabImpl::DidChangeVisibleSecurityState() {
+  UpdateBrowserVisibleSecurityStateIfNecessary();
+}
+
+void TabImpl::UpdateBrowserVisibleSecurityStateIfNecessary() {
   if (browser_) {
     if (browser_->GetActiveTab() == this)
       browser_->VisibleSecurityStateOfActiveTabChanged();

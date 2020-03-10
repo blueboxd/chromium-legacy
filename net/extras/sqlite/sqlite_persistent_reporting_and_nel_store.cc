@@ -338,8 +338,10 @@ class SQLitePersistentReportingAndNelStore::Backend::PendingOperation {
 
 // Makes a copy of the relevant information about a NelPolicy, stored in a
 // form suitable for adding to the database.
+// TODO(chlily): Add NIK.
 struct SQLitePersistentReportingAndNelStore::Backend::NelPolicyInfo {
-  NelPolicyInfo(const NetworkErrorLoggingService::NelPolicy& nel_policy)
+  explicit NelPolicyInfo(
+      const NetworkErrorLoggingService::NelPolicy& nel_policy)
       : origin_scheme(nel_policy.origin.scheme()),
         origin_host(nel_policy.origin.host()),
         origin_port(nel_policy.origin.port()),
@@ -375,8 +377,9 @@ struct SQLitePersistentReportingAndNelStore::Backend::NelPolicyInfo {
 
 // Makes a copy of the relevant information about a ReportingEndpoint, stored in
 // a form suitable for adding to the database.
+// TODO(chlily): Add NIK.
 struct SQLitePersistentReportingAndNelStore::Backend::ReportingEndpointInfo {
-  ReportingEndpointInfo(const ReportingEndpoint& endpoint)
+  explicit ReportingEndpointInfo(const ReportingEndpoint& endpoint)
       : origin_scheme(endpoint.group_key.origin.scheme()),
         origin_host(endpoint.group_key.origin.host()),
         origin_port(endpoint.group_key.origin.port()),
@@ -399,9 +402,10 @@ struct SQLitePersistentReportingAndNelStore::Backend::ReportingEndpointInfo {
   int weight = ReportingEndpoint::EndpointInfo::kDefaultWeight;
 };
 
+// TODO(chlily): Add NIK.
 struct SQLitePersistentReportingAndNelStore::Backend::
     ReportingEndpointGroupInfo {
-  ReportingEndpointGroupInfo(const CachedReportingEndpointGroup& group)
+  explicit ReportingEndpointGroupInfo(const CachedReportingEndpointGroup& group)
       : origin_scheme(group.group_key.origin.scheme()),
         origin_host(group.group_key.origin.host()),
         origin_port(group.group_key.origin.port()),
@@ -1142,28 +1146,34 @@ void SQLitePersistentReportingAndNelStore::Backend::
 
   while (endpoints_smt.Step()) {
     // Reconstitute a ReportingEndpoint from the fields stored in the database.
-    url::Origin origin = url::Origin::CreateFromNormalizedTuple(
-        /* origin_scheme = */ endpoints_smt.ColumnString(0),
-        /* origin_host = */ endpoints_smt.ColumnString(1),
-        /* origin_port = */ endpoints_smt.ColumnInt(2));
-    std::string group_name = endpoints_smt.ColumnString(3);
+    ReportingEndpointGroupKey group_key(
+        /* network_isolation_key = */ NetworkIsolationKey::Todo(),
+        /* origin = */
+        url::Origin::CreateFromNormalizedTuple(
+            /* origin_scheme = */ endpoints_smt.ColumnString(0),
+            /* origin_host = */ endpoints_smt.ColumnString(1),
+            /* origin_port = */ endpoints_smt.ColumnInt(2)),
+        /* group_name = */ endpoints_smt.ColumnString(3));
     ReportingEndpoint::EndpointInfo endpoint_info;
     endpoint_info.url = GURL(endpoints_smt.ColumnString(4));
     endpoint_info.priority = endpoints_smt.ColumnInt(5);
     endpoint_info.weight = endpoints_smt.ColumnInt(6);
 
-    loaded_endpoints.emplace_back(std::move(origin), std::move(group_name),
+    loaded_endpoints.emplace_back(std::move(group_key),
                                   std::move(endpoint_info));
   }
 
   while (endpoint_groups_smt.Step()) {
     // Reconstitute a CachedReportingEndpointGroup from the fields stored in the
     // database.
-    url::Origin origin = url::Origin::CreateFromNormalizedTuple(
-        /* origin_scheme = */ endpoint_groups_smt.ColumnString(0),
-        /* origin_host = */ endpoint_groups_smt.ColumnString(1),
-        /* origin_port = */ endpoint_groups_smt.ColumnInt(2));
-    std::string group_name = endpoint_groups_smt.ColumnString(3);
+    ReportingEndpointGroupKey group_key(
+        /* network_isolation_key = */ NetworkIsolationKey::Todo(),
+        /* origin = */
+        url::Origin::CreateFromNormalizedTuple(
+            /* origin_scheme = */ endpoint_groups_smt.ColumnString(0),
+            /* origin_host = */ endpoint_groups_smt.ColumnString(1),
+            /* origin_port = */ endpoint_groups_smt.ColumnInt(2)),
+        /* group_name = */ endpoint_groups_smt.ColumnString(3));
     OriginSubdomains include_subdomains = endpoint_groups_smt.ColumnBool(4)
                                               ? OriginSubdomains::INCLUDE
                                               : OriginSubdomains::EXCLUDE;
@@ -1172,8 +1182,7 @@ void SQLitePersistentReportingAndNelStore::Backend::
     base::Time last_used = base::Time::FromDeltaSinceWindowsEpoch(
         base::TimeDelta::FromMicroseconds(endpoint_groups_smt.ColumnInt64(6)));
 
-    loaded_endpoint_groups.emplace_back(std::move(origin),
-                                        std::move(group_name),
+    loaded_endpoint_groups.emplace_back(std::move(group_key),
                                         include_subdomains, expires, last_used);
   }
 

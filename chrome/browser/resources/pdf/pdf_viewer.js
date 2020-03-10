@@ -9,7 +9,7 @@ import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {$, hasKeyModifiers, isRTL} from 'chrome://resources/js/util.m.js';
 
 import {BrowserApi} from './browser_api.js';
-import {FittingType} from './constants.js';
+import {FittingType, TwoUpViewAction} from './constants.js';
 import {ContentController, InkController, MessageData, PluginController, PrintPreviewParams} from './controller.js';
 import {Bookmark} from './elements/viewer-bookmark.js';
 import {FitToChangedEvent} from './elements/viewer-zoom-toolbar.js';
@@ -334,6 +334,10 @@ export class PDFViewer {
         e => this.fitToChanged_(
             /** @type {!CustomEvent<FitToChangedEvent>} */ (e)));
     this.zoomToolbar_.addEventListener(
+        'two-up-view-changed',
+        e => this.twoUpViewChanged_(
+            /** @type {!CustomEvent<!TwoUpViewAction>} */ (e)));
+    this.zoomToolbar_.addEventListener(
         'zoom-in', () => this.viewport_.zoomIn());
     this.zoomToolbar_.addEventListener(
         'zoom-out', () => this.viewport_.zoomOut());
@@ -641,6 +645,7 @@ export class PDFViewer {
    */
   async annotationModeToggled_(e) {
     const annotationMode = e.detail.value;
+    this.zoomToolbar_.annotationMode = annotationMode;
     if (annotationMode) {
       // Enter annotation mode.
       assert(this.currentController_ === this.pluginController_);
@@ -657,6 +662,7 @@ export class PDFViewer {
         } catch (e) {
           // The user aborted entering annotation mode. Revert to the plugin.
           this.toolbar_.annotationMode = false;
+          this.zoomToolbar_.annotationMode = false;
           this.updateProgress_(100);
           return;
         }
@@ -702,6 +708,7 @@ export class PDFViewer {
       return;
     }
     this.toolbar_.toggleAnnotation();
+    this.zoomToolbar_.annotationMode = false;
     await this.loaded;
   }
 
@@ -724,6 +731,22 @@ export class PDFViewer {
     if (e.detail.userInitiated) {
       PDFMetrics.recordFitTo(e.detail.fittingType);
     }
+  }
+
+  /**
+   * Changes two up view mode for the controller. Controller will trigger
+   * layout update later, which will update the viewport accordingly.
+   * @param {!CustomEvent<!TwoUpViewAction>} e
+   * @private
+   */
+  twoUpViewChanged_(e) {
+    this.currentController_.setTwoUpView(
+        e.detail === TwoUpViewAction.TWO_UP_VIEW_ENABLE);
+    this.toolbarManager_.forceHideTopToolbar();
+    this.toolbar_.annotationAvailable =
+        (e.detail !== TwoUpViewAction.TWO_UP_VIEW_ENABLE);
+
+    // TODO(crbug.com/51472): Record to metrics.
   }
 
   /**
@@ -918,6 +941,8 @@ export class PDFViewer {
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
     $('toolbar').printingEnabled = loadTimeData.getBoolean('printingEnabled');
     $('zoom-toolbar').setStrings(strings);
+    $('zoom-toolbar').twoUpViewEnabled =
+        loadTimeData.getBoolean('pdfTwoUpViewEnabled') && !this.isPrintPreview_;
     // Display the zoom toolbar after the UI text direction is set, to ensure it
     // appears on the correct side of the PDF viewer.
     $('zoom-toolbar').hidden = false;

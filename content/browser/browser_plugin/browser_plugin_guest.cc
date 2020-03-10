@@ -151,13 +151,6 @@ void BrowserPluginGuest::SetFocus(RenderWidgetHost* rwh,
   SendTextInputTypeChangedToView(rwhv);
 }
 
-bool BrowserPluginGuest::LockMouse(bool allowed) {
-  if (!attached() || (mouse_locked_ == allowed))
-    return false;
-
-  return embedder_web_contents()->GotResponseToLockMouseRequest(allowed);
-}
-
 WebContentsImpl* BrowserPluginGuest::CreateNewGuestWindow(
     const WebContents::CreateParams& params) {
   WebContentsImpl* new_contents =

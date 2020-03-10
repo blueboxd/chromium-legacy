@@ -282,7 +282,8 @@ void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas) const {
   constexpr int kStrokeWidth = 2;
   flags.setStrokeWidth(kStrokeWidth);
 
-  const int radius = ui::MaterialDesignController::touch_ui() ? 7 : 6;
+  const int radius =
+      ui::MaterialDesignController::GetInstance()->touch_ui() ? 7 : 6;
   const int offset = GetCornerRadius() - radius;
   // The cap will be added outside the end of the stroke; inset to compensate.
   constexpr int kCapRadius = kStrokeWidth / 2;

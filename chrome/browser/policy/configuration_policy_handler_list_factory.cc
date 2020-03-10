@@ -90,6 +90,7 @@
 #else  // defined(OS_ANDROID)
 #include "chrome/browser/download/default_download_dir_policy_handler.h"
 #include "chrome/browser/download/download_dir_policy_handler.h"
+#include "chrome/browser/enterprise_reporting/extension_request_policy_handler.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/policy/local_sync_policy_handler.h"
 #endif  // defined(OS_ANDROID)
@@ -629,9 +630,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::LIST },
   { key::kWebRtcEventLogCollectionAllowed,
     prefs::kWebRtcEventLogCollectionAllowed,
-    base::Value::Type::BOOLEAN },
-  { key::kCloudExtensionRequestEnabled,
-    prefs::kCloudExtensionRequestEnabled,
     base::Value::Type::BOOLEAN },
   { key::kCloudReportingEnabled,
     prefs::kCloudReportingEnabled,
@@ -1411,6 +1409,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           chrome_schema.GetValidationSchema(),
           SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
           SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  handlers->AddHandler(
+      std::make_unique<enterprise_reporting::ExtensionRequestPolicyHandler>());
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

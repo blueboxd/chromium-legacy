@@ -19,13 +19,14 @@ class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewMac {
       UnlockMouse();
   }
 
-  bool LockMouse(bool request_unadjusted_movement) override {
+  blink::mojom::PointerLockResult LockMouse(
+      bool request_unadjusted_movement) override {
     if (request_unadjusted_movement)
-      return false;
+      return blink::mojom::PointerLockResult::kUnsupportedOptions;
 
     mouse_locked_ = true;
 
-    return true;
+    return blink::mojom::PointerLockResult::kSuccess;
   }
 
   void UnlockMouse() override {

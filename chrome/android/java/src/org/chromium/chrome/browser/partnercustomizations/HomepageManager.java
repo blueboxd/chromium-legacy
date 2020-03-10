@@ -6,21 +6,21 @@ package org.chromium.chrome.browser.partnercustomizations;
 
 import android.text.TextUtils;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.settings.homepage.HomepageMetricsEnums.HomeButtonPreferenceState;
+import org.chromium.chrome.browser.settings.homepage.HomepageMetricsEnums.HomepageLocationType;
 import org.chromium.components.embedder_support.util.UrlConstants;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * Provides information regarding homepage enabled states and URI.
@@ -28,24 +28,6 @@ import java.lang.annotation.RetentionPolicy;
  * This class serves as a single homepage logic gateway.
  */
 public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStateListener {
-    /**
-     * Possible states for HomeButton. Used for Histogram
-     * Settings.ShowHomeButtonPreferenceStateManaged. Currently {@link
-     * HomeButtonPreferenceState.MANAGED_DISABLED } is not used.
-     *
-     * These values are persisted to logs, and should therefore never be renumbered nor reused.
-     */
-    @IntDef({HomeButtonPreferenceState.USER_DISABLED, HomeButtonPreferenceState.USER_ENABLED,
-            HomeButtonPreferenceState.MANAGED_DISABLED, HomeButtonPreferenceState.MANAGED_ENABLED})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface HomeButtonPreferenceState {
-        int USER_DISABLED = 0;
-        int USER_ENABLED = 1;
-        int MANAGED_DISABLED = 2;
-        int MANAGED_ENABLED = 3;
-
-        int NUM_ENTRIES = 4;
-    }
 
     /**
      * An interface to use for getting homepage related updates.
@@ -240,19 +222,32 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
      */
     public void setHomepagePreferences(
             boolean useChromeNtp, boolean useDefaultUri, String customUri) {
-        // TODO(wenyufu): Add metrics for how ofter user checks this option.
-        mSharedPreferencesManager.writeBoolean(
-                ChromePreferenceKeys.HOMEPAGE_USE_CHROME_NTP, useChromeNtp);
-
+        boolean wasUseChromeNTP = getPrefHomepageUseChromeNTP();
         boolean wasUseDefaultUri = getPrefHomepageUseDefaultUri();
+        String oldCustomUri = getPrefHomepageCustomUri();
+
+        if (useChromeNtp == wasUseChromeNTP && useDefaultUri == wasUseDefaultUri
+                && oldCustomUri.equals(customUri)) {
+            return;
+        }
+
+        if (useChromeNtp != wasUseChromeNTP) {
+            mSharedPreferencesManager.writeBoolean(
+                    ChromePreferenceKeys.HOMEPAGE_USE_CHROME_NTP, useChromeNtp);
+        }
+
         if (wasUseDefaultUri != useDefaultUri) {
             recordHomepageIsCustomized(!useDefaultUri);
             mSharedPreferencesManager.writeBoolean(
                     ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, useDefaultUri);
         }
 
-        mSharedPreferencesManager.writeString(ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, customUri);
+        if (!oldCustomUri.equals(customUri)) {
+            mSharedPreferencesManager.writeString(
+                    ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, customUri);
+        }
 
+        RecordUserAction.record("Settings.Homepage.LocationChanged");
         notifyHomepageUpdated();
     }
 
@@ -279,6 +274,45 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
 
     public static void recordHomepageIsCustomized(boolean isCustomized) {
         RecordHistogram.recordBooleanHistogram("Settings.HomePageIsCustomized", isCustomized);
+    }
+
+    /**
+     * Record histogram "Settings.Homepage.LocationType" with the current homepage location type.
+     */
+    public static void recordHomepageLocationTypeIfEnabled() {
+        if (!isHomepageEnabled()) return;
+
+        int homepageLocationType = getInstance().getHomepageLocationType();
+        RecordHistogram.recordEnumeratedHistogram("Settings.Homepage.LocationType",
+                homepageLocationType, HomepageLocationType.NUM_ENTRIES);
+    }
+
+    /**
+     * @return {@link HomepageLocationType} for current homepage settings.
+     */
+    @VisibleForTesting
+    public @HomepageLocationType int getHomepageLocationType() {
+        if (HomepagePolicyManager.isHomepageManagedByPolicy()) {
+            return NewTabPage.isNTPUrl(HomepagePolicyManager.getHomepageUrl())
+                    ? HomepageLocationType.POLICY_NTP
+                    : HomepageLocationType.POLICY_OTHER;
+        }
+        if (getPrefHomepageUseChromeNTP()) {
+            return HomepageLocationType.USER_CUSTOMIZED_NTP;
+        }
+        if (getPrefHomepageUseDefaultUri()) {
+            if (!PartnerBrowserCustomizations.isHomepageProviderAvailableAndEnabled()) {
+                return HomepageLocationType.DEFAULT_NTP;
+            }
+
+            return NewTabPage.isNTPUrl(PartnerBrowserCustomizations.getHomePageUrl())
+                    ? HomepageLocationType.PARTNER_PROVIDED_NTP
+                    : HomepageLocationType.PARTNER_PROVIDED_OTHER;
+        }
+        // If user type NTP URI as their customized homepage, we'll record user is using NTP
+        return NewTabPage.isNTPUrl(getPrefHomepageCustomUri())
+                ? HomepageLocationType.USER_CUSTOMIZED_NTP
+                : HomepageLocationType.USER_CUSTOMIZED_OTHER;
     }
 
     @Override

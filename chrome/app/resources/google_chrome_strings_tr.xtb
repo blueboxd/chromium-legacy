@@ -48,6 +48,7 @@
 <translation id="2309047409763057870">Bu, Google Chrome'un ikincil bir yüklemesidir ve varsayılan tarayıcınız yapılamaz.</translation>
 <translation id="2341767445688917208">Chrome OS, şifrelerinizi senkronize edemedi. Şimdi düzelt.</translation>
 <translation id="2348335408836342058">Chrome'un bu sitede kameranıza ve mikrofonunuza erişmesi için izin gerekiyor</translation>
+<translation id="234869673307233423">Chrome, şifrelerinizi kontrol edemiyor. Daha sonra tekrar deneyin.</translation>
 <translation id="2429317896000329049">Senkronizasyon, alan adınızda kullanılamadığından Google Chrome, verilerinizi senkronize edemedi.</translation>
 <translation id="2467438592969358367">Google Chrome şifrelerinizi dışa aktarmak istiyor. Buna izin vermek için Windows şifrenizi yazın.</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
@@ -68,6 +69,8 @@
 <translation id="2857540653560290388">Chrome başlatılıyor...</translation>
 <translation id="2871893339301912279">Chrome'da oturum açtınız!</translation>
 <translation id="2888126860611144412">Chrome hakkında</translation>
+<translation id="2929907241665500097">Chrome güncellenmedi. Bir sorun oluştu. <ph name="BEGIN_LINK" />Chrome güncelleme sorunlarını ve başarısız güncellemeleri düzeltin.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Ağda Oturum Açın - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome arka plan modunda.</translation>
 <translation id="3065168410429928842">Chrome Sekmesi</translation>
 <translation id="3080151273017101988">Google Chrome kapandığında arka plan uygulamaları çalıştırmaya devam et</translation>
@@ -106,7 +109,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">Chrome veri ihlallerine, kötü uzantılara ve diğer tehditlere karşı güvende kalmanıza yardımcı olabilir</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> Chrome'a eklendi</translation>
+<translation id="4384570495110188418">Oturum açmadığınızdan Chrome, şifrelerinizi kontrol edemiyor</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome - Ağda Oturum Açın - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome'da başka bir işlem devam ediyor. Lütfen daha sonra yeniden deneyin.</translation>
 <translation id="4480040274068703980">Oturum açmadaki bir hata nedeniyle Chrome OS, verilerinizi senkronize edemedi.</translation>
 <translation id="4561051373932531560">Google Chrome web'de bir telefon numarasını tıklayarak Skype ile aramanıza olanak sağlar!</translation>
@@ -116,6 +121,7 @@
 <translation id="4600710005438004015">Chrome en son sürüme güncellenemediği için yeni özellikler ve güvenlik düzeltmeleri cihazınızda bulunmuyor.</translation>
 <translation id="4631713731678262610">Chrome menüsünde gizle</translation>
 <translation id="4633000520311261472">Chrome'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek bazı uzantıları devre dışı bıraktık.</translation>
+<translation id="4653397506175047429">Chrome, tüm şifrelerinizi kontrol edemiyor. 24 saat sonra tekrar deneyin.</translation>
 <translation id="4728575227883772061">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Google Chrome şu anda çalışır durumdaysa, kapatıp yeniden deneyin.</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> eklentisini etkinleştirmek için Chrome'u yeniden başlatın</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -151,6 +157,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome başlatılamadı. Tekrar deneyin.</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - Ağda Oturum Açın</translation>
 <translation id="5940385492829620908">Web, yer işaretleri ve diğer Chrome öğeleriniz burada bulunur.</translation>
 <translation id="5941830788786076944">Google Chrome varsayılan tarayıcı olsun</translation>
 <translation id="6070348360322141662">Google Chrome ek güvenlik sağlamak için verilerinizi şifreler</translation>
@@ -206,6 +213,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="7855730255114109580">Google Chrome güncel durumda</translation>
 <translation id="7890208801193284374">Bir bilgisayarı paylaşıyorsanız arkadaşlarınız ve aileniz web'e ayrı olarak göz atabilir ve Chrome'u tam olarak istedikleri şekilde ayarlayabilirler.</translation>
 <translation id="7896673875602241923">Birisi daha önce bu bilgisayarda <ph name="ACCOUNT_EMAIL_LAST" /> olarak Chrome oturumu açmış. Bilgilerinizi ayrı tutmak için yeni bir Chrome kullanıcısı oluşturun.</translation>
+<translation id="7905891027772979035">Chrome, uzantılarınızı kontrol edemiyor. Daha sonra tekrar deneyin.</translation>
 <translation id="7916016681687251387">Chrome OS verilerinizi senkronize edemedi. Şimdi düzelt.</translation>
 <translation id="7930071585467473040">Google Chrome şifreleri kopyalamayı deniyor.</translation>
 <translation id="7962410387636238736">Windows XP ve Windows Vista artık desteklenmediğinden, bu bilgisayar bundan böyle Google Chrome güncellemelerini almayacaktır</translation>

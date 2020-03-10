@@ -213,11 +213,3 @@ crbug.com/1028975 [ win ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
 
 # VP9 appears to not recover correctly after GPU process crashes on Windows.
 crbug.com/1033982 [ win nvidia ] Pixel_Video_Context_Loss_VP9 [ RetryOnFailure ]
-
-# Vulkan Video broken on Android
-crbug.com/1059724 [ android skia-renderer use-vulkan ] Pixel_Video_MP4 [ Skip ]
-crbug.com/1059724 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
-crbug.com/1059724 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
-crbug.com/1059724 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
-crbug.com/1059724 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
-crbug.com/1059724 [ android skia-renderer use-vulkan ] Pixel_Video_VP9 [ Skip ]

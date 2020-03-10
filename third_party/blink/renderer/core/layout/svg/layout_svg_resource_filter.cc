@@ -23,23 +23,9 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
 
-#include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"
-#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 
 namespace blink {
-
-void FilterData::Trace(Visitor* visitor) {
-  visitor->Trace(last_effect);
-  visitor->Trace(node_map);
-}
-
-void FilterData::Dispose() {
-  node_map = nullptr;
-  if (last_effect)
-    last_effect->DisposeImageFiltersRecursive();
-  last_effect = nullptr;
-}
 
 LayoutSVGResourceFilter::LayoutSVGResourceFilter(SVGFilterElement* node)
     : LayoutSVGResourceContainer(node) {}

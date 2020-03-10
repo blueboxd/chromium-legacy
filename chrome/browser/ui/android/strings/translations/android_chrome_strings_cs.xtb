@@ -286,6 +286,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="3058498974290601450">Synchronizaci můžete kdykoliv zapnout v nastavení</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> záložka}few{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}many{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}other{<ph name="BOOKMARKS_COUNT_MANY" /> záložek}}</translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
+<translation id="3114012059975132928">Přehrávač videa</translation>
 <translation id="3123473560110926937">Na některých webech blokováno</translation>
 <translation id="3123734510202723619">Oznámení</translation>
 <translation id="3137521801621304719">Ukončit anonymní režim</translation>
@@ -352,6 +353,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="3587482841069643663">Vše</translation>
 <translation id="358794129225322306">Povolit webu automaticky stáhnout několik souborů.</translation>
 <translation id="3590487821116122040">Úložiště webů, které Chrome považuje za nedůležité (např. weby bez uložených nastavení nebo weby, které nenavštěvujete často)</translation>
+<translation id="3594780231884063836">Vypnout zvuk videa</translation>
 <translation id="3599863153486145794">Vymaže historii ze všech zařízení, na kterých jste přihlášeni. Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="3600792891314830896">Ztlumit weby, které přehrávají zvuky</translation>
 <translation id="3616113530831147358">Zvuk</translation>
@@ -605,6 +607,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5456381639095306749">Stáhnout stránku</translation>
 <translation id="548278423535722844">Otevřít v mapové aplikaci</translation>
 <translation id="5487521232677179737">Vymazat data</translation>
+<translation id="5489227211564503167">Uplynulá doba: <ph name="ELAPSED_TIME" /> z <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Blokovat reklamy na webech, které zobrazují obtěžující nebo zavádějící reklamy</translation>
 <translation id="5500777121964041360">Ve vaší lokalitě nemusí být k dispozici</translation>
 <translation id="5505264765875738116">Weby nemohou žádat o oprávnění zasílat vám oznámení</translation>
@@ -665,6 +668,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5864419784173784555">Čekání na další stahování…</translation>
 <translation id="5865733239029070421">Automaticky odesílá statistiky o využívání a zprávy o selhání do Googlu</translation>
 <translation id="5869522115854928033">Uložená hesla</translation>
+<translation id="5876056640971328065">Pozastavit video</translation>
 <translation id="5884076754568147479">Abyste mohli provádět akce, Google bude dostávat adresy URL a obsah webů, ve kterých používáte Asistenta, a informace, které prostřednictvím Asistenta odesíláte</translation>
 <translation id="5902828464777634901">Všechna místní data uložená tímto webem, včetně souborů cookie, budou smazána.</translation>
 <translation id="5919204609460789179">Chcete-li zahájit synchronizaci, aktualizujte aplikaci <ph name="PRODUCT_NAME" /></translation>
@@ -728,6 +732,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6381421346744604172">Ztmavit webové stránky</translation>
 <translation id="6388207532828177975">Vymazat a resetovat</translation>
 <translation id="6395288395575013217">ODKAZ</translation>
+<translation id="6397616442223433927">Opět online</translation>
 <translation id="6404511346730675251">Upravit záložku</translation>
 <translation id="6406506848690869874">Synchronizace</translation>
 <translation id="6410973561433500075">Spustit rozšířenou realitu z webu <ph name="DOMAIN" />?</translation>
@@ -796,6 +801,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6846298663435243399">Načítání…</translation>
 <translation id="6850409657436465440">Stahování stále probíhá</translation>
 <translation id="6850830437481525139">Zavřené karty: <ph name="TAB_COUNT" /></translation>
+<translation id="6864395892908308021">Toto zařízení neumí číst NFC</translation>
 <translation id="6864459304226931083">Stáhnout obrázek</translation>
 <translation id="6865313869410766144">Automatické vyplňování formulářů</translation>
 <translation id="6884306546558072722">Pokračujte v objevování i offline</translation>
@@ -916,6 +922,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7810647596859435254">Otevřít v aplikaci…</translation>
 <translation id="7821588508402923572">Zde se budou zobrazovat vaše úspory dat</translation>
+<translation id="783819812427904514">Zapnout zvuk videa</translation>
 <translation id="784934925303690534">Časové období</translation>
 <translation id="7851858861565204677">Jiná zařízení</translation>
 <translation id="7875915731392087153">Vytvořit e-mail</translation>

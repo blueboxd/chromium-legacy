@@ -209,61 +209,52 @@ void ReportingTestBase::UseStore(
 }
 
 const ReportingEndpoint ReportingTestBase::FindEndpointInCache(
-    const url::Origin& origin,
-    const std::string& group_name,
+    const ReportingEndpointGroupKey& group_key,
     const GURL& url) {
-  return cache()->GetEndpointForTesting(origin, group_name, url);
+  return cache()->GetEndpointForTesting(group_key, url);
 }
 
-bool ReportingTestBase::SetEndpointInCache(const url::Origin& origin,
-                                           const std::string& group_name,
-                                           const GURL& url,
-                                           base::Time expires,
-                                           OriginSubdomains include_subdomains,
-                                           int priority,
-                                           int weight) {
-  cache()->SetEndpointForTesting(origin, group_name, url, include_subdomains,
-                                 expires, priority, weight);
-  const ReportingEndpoint endpoint =
-      FindEndpointInCache(origin, group_name, url);
+bool ReportingTestBase::SetEndpointInCache(
+    const ReportingEndpointGroupKey& group_key,
+    const GURL& url,
+    base::Time expires,
+    OriginSubdomains include_subdomains,
+    int priority,
+    int weight) {
+  cache()->SetEndpointForTesting(group_key, url, include_subdomains, expires,
+                                 priority, weight);
+  const ReportingEndpoint endpoint = FindEndpointInCache(group_key, url);
   return endpoint.is_valid();
 }
 
-bool ReportingTestBase::EndpointExistsInCache(const url::Origin& origin,
-                                              const std::string& group_name,
-                                              const GURL& url) {
-  ReportingEndpoint endpoint =
-      cache()->GetEndpointForTesting(origin, group_name, url);
+bool ReportingTestBase::EndpointExistsInCache(
+    const ReportingEndpointGroupKey& group_key,
+    const GURL& url) {
+  ReportingEndpoint endpoint = cache()->GetEndpointForTesting(group_key, url);
   return endpoint.is_valid();
 }
 
 ReportingEndpoint::Statistics ReportingTestBase::GetEndpointStatistics(
-    const url::Origin& origin,
-    const std::string& group_name,
+    const ReportingEndpointGroupKey& group_key,
     const GURL& url) {
-  ReportingEndpoint endpoint =
-      cache()->GetEndpointForTesting(origin, group_name, url);
+  ReportingEndpoint endpoint = cache()->GetEndpointForTesting(group_key, url);
   if (endpoint)
     return endpoint.stats;
   return ReportingEndpoint::Statistics();
 }
 
 bool ReportingTestBase::EndpointGroupExistsInCache(
-    const url::Origin& origin,
-    const std::string& group_name,
+    const ReportingEndpointGroupKey& group_key,
     OriginSubdomains include_subdomains,
     base::Time expires) {
-  return cache()->EndpointGroupExistsForTesting(origin, group_name,
-                                                include_subdomains, expires);
+  return cache()->EndpointGroupExistsForTesting(group_key, include_subdomains,
+                                                expires);
 }
 
-bool ReportingTestBase::OriginClientExistsInCache(const url::Origin& origin) {
-  std::vector<url::Origin> all_origins = cache()->GetAllOrigins();
-  for (const url::Origin& cur_origin : all_origins) {
-    if (cur_origin == origin)
-      return true;
-  }
-  return false;
+bool ReportingTestBase::ClientExistsInCacheForOrigin(
+    const url::Origin& origin) {
+  std::set<url::Origin> all_origins = cache()->GetAllOrigins();
+  return all_origins.find(origin) != all_origins.end();
 }
 
 GURL ReportingTestBase::MakeURL(size_t index) {

@@ -86,10 +86,6 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
   void DetachRoute(const std::string& route_id) override;
   void EnableMdnsDiscovery() override;
   void UpdateMediaSinks(const std::string& media_source) override;
-  void SearchSinks(const std::string& sink_id,
-                   const std::string& media_source,
-                   mojom::SinkSearchCriteriaPtr search_criteria,
-                   SearchSinksCallback callback) override;
   void ProvideSinks(
       const std::string& provider_name,
       const std::vector<media_router::MediaSinkInternal>& sinks) override;

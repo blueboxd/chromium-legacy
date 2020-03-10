@@ -45,6 +45,7 @@ public class JsJavaInteractionTest {
             RESOURCE_PATH + "/post_message_repeat.html";
     private static final String POST_MESSAGE_REPLY_HTML =
             RESOURCE_PATH + "/post_message_receives_reply.html";
+    private static final String FILE_URI = "file:///android_asset/asset_file.html";
 
     private static final String HELLO = "Hello";
     private static final String NEW_TITLE = "new_title";
@@ -854,6 +855,87 @@ public class JsJavaInteractionTest {
                         mAwContents, mContentsClient, JS_OBJECT_NAME + ".onmessage"));
 
         Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    private void verifyOnPostMessageOriginIsNull() throws Throwable {
+        mActivityTestRule.executeJavaScriptAndWaitForResult(
+                mAwContents, mContentsClient, JS_OBJECT_NAME + ".postMessage('Hello');");
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        Assert.assertEquals("null", data.mSourceOrigin.toString());
+
+        Assert.assertEquals(HELLO, data.mMessage);
+        Assert.assertTrue(data.mIsMainFrame);
+        Assert.assertEquals(0, data.mPorts.length);
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testFileSchemeUrl_setAllowFileAccessFromFile_true() throws Throwable {
+        mAwContents.getSettings().setAllowFileAccessFromFileURLs(true);
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), FILE_URI);
+        Assert.assertEquals("\"file://\"",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        mAwContents, mContentsClient, "window.origin"));
+
+        verifyOnPostMessageOriginIsNull();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testFileSchemeUrl_setAllowFileAccessFromFile_false() throws Throwable {
+        // The default value is false on JELLY_BEAN and above, but we explicitly set this to
+        // false to readability.
+        mAwContents.getSettings().setAllowFileAccessFromFileURLs(false);
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), FILE_URI);
+        Assert.assertEquals("\"null\"",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        mAwContents, mContentsClient, "window.origin"));
+
+        verifyOnPostMessageOriginIsNull();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testContentSchemeUrl_setAllowFileAccessFromFileURLs_true() throws Throwable {
+        mAwContents.getSettings().setAllowContentAccess(true);
+        mAwContents.getSettings().setAllowFileAccessFromFileURLs(true);
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                TestContentProvider.createContentUrl("content_access"));
+        Assert.assertEquals("\"content://\"",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        mAwContents, mContentsClient, "window.origin"));
+
+        verifyOnPostMessageOriginIsNull();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testContentSchemeUrl_setAllowFileAccessFromFileURLs_false() throws Throwable {
+        mAwContents.getSettings().setAllowContentAccess(true);
+        // The default value is false on JELLY_BEAN and above, but we explicitly set this to
+        // false to readability.
+        mAwContents.getSettings().setAllowFileAccessFromFileURLs(false);
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                TestContentProvider.createContentUrl("content_access"));
+        Assert.assertEquals("\"null\"",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        mAwContents, mContentsClient, "window.origin"));
+
+        verifyOnPostMessageOriginIsNull();
     }
 
     @Test

@@ -137,6 +137,36 @@ public class TabCallbackTest {
         Assert.assertEquals("anchor text", params[0].linkText);
     }
 
+    // Requires implementation M82.
+    @Test
+    @SmallTest
+    public void testShowContextMenuImg() throws TimeoutException {
+        String pageUrl = mActivityTestRule.getTestDataURL("img.html");
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(pageUrl);
+
+        ContextMenuParams params[] = new ContextMenuParams[1];
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = activity.getTab();
+            TabCallback callback = new TabCallback() {
+                @Override
+                public void showContextMenu(ContextMenuParams param) {
+                    params[0] = param;
+                    callbackHelper.notifyCalled();
+                }
+            };
+            tab.registerTabCallback(callback);
+        });
+
+        TestTouchUtils.longClickView(
+                InstrumentationRegistry.getInstrumentation(), activity.getWindow().getDecorView());
+        callbackHelper.waitForFirst();
+        Assert.assertEquals(Uri.parse(pageUrl), params[0].pageUri);
+        Assert.assertEquals(
+                Uri.parse(mActivityTestRule.getTestDataURL("notfound.png")), params[0].srcUri);
+        Assert.assertEquals("alt_text", params[0].titleOrAltText);
+    }
+
     @Test
     @SmallTest
     public void testTabModalOverlay() throws TimeoutException {

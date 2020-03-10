@@ -5305,7 +5305,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
     <ph name="BEGIN_PARAGRAPH4" />Si has activado la opción Actividad en la Web y en Aplicaciones, es posible que estos datos se guarden en la cuenta de Google de tu hijo. Consulta más información sobre estos ajustes y sobre cómo configurarlos en families.google.com.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="826905130698769948">Certificado de cliente no válido</translation>
 <translation id="8270242299912238708">Documentos PDF</translation>
-<translation id="827097179112817503">Mostrar el botón de la página de inicio</translation>
+<translation id="827097179112817503">Mostrar el botón de la página principal</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Se ha eliminado 1 marcador}other{Se han eliminado # marcadores}}</translation>
 <translation id="8272443605911821513">Para administrar tus extensiones, haz clic en la opción Extensiones del menú Más herramientas.</translation>
 <translation id="8274212285504931082">Permite que el Asistente te muestre información relacionada con lo que aparece en tu pantalla</translation>

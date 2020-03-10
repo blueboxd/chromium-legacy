@@ -18,7 +18,6 @@
 #include "chrome/browser/vr/testapp/gl_renderer.h"
 #include "chrome/browser/vr/testapp/vr_test_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/display/types/native_display_observer.h"
@@ -296,7 +295,6 @@ int main(int argc, char** argv) {
   ui::OzonePlatform::InitializeForUI(params);
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
       ->SetCurrentLayoutByName("us");
-  ui::MaterialDesignController::Initialize();
 
   base::RunLoop run_loop;
 

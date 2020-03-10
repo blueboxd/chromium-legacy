@@ -173,8 +173,8 @@ void TestRenderWidgetHostView::TakeFallbackContentFrom(
     SetBackgroundColor(*color);
 }
 
-bool TestRenderWidgetHostView::LockMouse(bool) {
-  return false;
+blink::mojom::PointerLockResult TestRenderWidgetHostView::LockMouse(bool) {
+  return blink::mojom::PointerLockResult::kUnknownError;
 }
 
 void TestRenderWidgetHostView::UnlockMouse() {

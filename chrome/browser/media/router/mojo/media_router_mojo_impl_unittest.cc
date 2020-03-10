@@ -974,10 +974,6 @@ TEST_F(MediaRouterMojoImplTest,
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(MediaRouterMojoImplTest, SearchSinks) {
-  TestSearchSinks();
-}
-
 TEST_F(MediaRouterMojoImplTest, GetMediaController) {
   MockMediaController mock_controller;
   mojo::Remote<mojom::MediaController> controller_remote;

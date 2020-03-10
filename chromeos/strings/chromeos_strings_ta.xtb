@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
 <translation id="1195447618553298278">தெரியாத பிழை.</translation>
+<translation id="1468664791493211953">ஆஃபர்கள்</translation>
 <translation id="1482734542997480527">இந்தச் சாதனத்தை <ph name="ENROLLMENT_DOMAIN" /> நிர்வகிக்கிறது. இது உங்கள் செயல்பாட்டையும் கண்காணிக்கக்கூடும்.</translation>
 <translation id="150962533380566081">தவறான PUK.</translation>
 <translation id="1510238584712386396">துவக்கி</translation>
@@ -39,6 +40,7 @@
 <translation id="7658239707568436148">ரத்து செய்</translation>
 <translation id="7690294790491645610">புதிய கடவுச்சொல்லை உறுதிப்படுத்துக</translation>
 <translation id="808894953321890993">கடவுச்சொல்லை மாற்று</translation>
+<translation id="8208861521865154048">சலுகைகள்</translation>
 <translation id="8747900814994928677">மாற்றத்தை உறுதிப்படுத்துங்கள்</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> வலைதளத்திற்கான டிக்கெட்டை ரெஃப்ரெஷ் செய்யவும்</translation>
 <translation id="9111102763498581341">பூட்டைத் திற</translation>

@@ -9,9 +9,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/select_type.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -20,6 +22,7 @@ namespace blink {
 class HTMLSelectElementTest : public PageTestBase {
  protected:
   void SetUp() override;
+  void TearDown() override;
 
   SelectType& GetSelectType(const HTMLSelectElement& select) {
     return *select.select_type_;
@@ -39,11 +42,29 @@ class HTMLSelectElementTest : public PageTestBase {
                                               HTMLOptionElement* option) {
     return GetSelectType(select).PreviousSelectableOption(option);
   }
+
+  bool FirstSelectIsConnectedAfterSelectMultiple(const Vector<int>& indices) {
+    auto* select = To<HTMLSelectElement>(GetDocument().body()->firstChild());
+    select->focus();
+    select->SelectMultipleOptionsByPopup(indices);
+    return select->isConnected();
+  }
+
+ private:
+  bool original_delegates_flag_;
 };
 
 void HTMLSelectElementTest::SetUp() {
   PageTestBase::SetUp();
   GetDocument().SetMimeType("text/html");
+  original_delegates_flag_ =
+      LayoutTheme::GetTheme().DelegatesMenuListRendering();
+}
+
+void HTMLSelectElementTest::TearDown() {
+  LayoutTheme::GetTheme().SetDelegatesMenuListRenderingForTesting(
+      original_delegates_flag_);
+  PageTestBase::TearDown();
 }
 
 TEST_F(HTMLSelectElementTest, SaveRestoreSelectSingleFormControlState) {
@@ -468,6 +489,64 @@ TEST_F(HTMLSelectElementTest, SlotAssignmentRecalcDuringOptionRemoval) {
   auto* option = select->firstChild();
   select->appendChild(option);
   option->remove();
+}
+
+// crbug.com/1060039
+TEST_F(HTMLSelectElementTest, SelectMultipleOptionsByPopup) {
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  LayoutTheme::GetTheme().SetDelegatesMenuListRenderingForTesting(true);
+
+  // Select the same set of options.
+  {
+    SetHtmlInnerHTML(
+        "<select multiple onchange='this.remove();'>"
+        "<option>o0</option><option>o1</option></select>");
+    EXPECT_TRUE(FirstSelectIsConnectedAfterSelectMultiple(Vector<int>{}))
+        << "Onchange handler should not be executed.";
+  }
+  {
+    SetHtmlInnerHTML(
+        "<select multiple onchange='this.remove();'>"
+        "<option>o0</option><option selected>o1</option></select>");
+    EXPECT_TRUE(FirstSelectIsConnectedAfterSelectMultiple(Vector<int>{1}))
+        << "Onchange handler should not be executed.";
+  }
+
+  // 0 old selected options -> 1+ selected options
+  {
+    SetHtmlInnerHTML(
+        "<select multiple onchange='this.remove();'>"
+        "<option>o0</option><option>o1</option></select>");
+    EXPECT_FALSE(FirstSelectIsConnectedAfterSelectMultiple(Vector<int>{0}))
+        << "Onchange handler should be executed.";
+  }
+
+  // 1+ old selected options -> more selected options
+  {
+    SetHtmlInnerHTML(
+        "<select multiple onchange='this.remove();'>"
+        "<option>o0</option><option selected>o1</option></select>");
+    EXPECT_FALSE(FirstSelectIsConnectedAfterSelectMultiple(Vector<int>{0, 1}))
+        << "Onchange handler should be executed.";
+  }
+
+  // 1+ old selected options -> 0 selected options
+  {
+    SetHtmlInnerHTML(
+        "<select multiple onchange='this.remove();'>"
+        "<option>o0</option><option selected>o1</option></select>");
+    EXPECT_FALSE(FirstSelectIsConnectedAfterSelectMultiple(Vector<int>{}))
+        << "Onchange handler should be executed.";
+  }
+
+  // Multiple old selected options -> less selected options
+  {
+    SetHtmlInnerHTML(
+        "<select multiple onchange='this.remove();'>"
+        "<option selected>o0</option><option selected>o1</option></select>");
+    EXPECT_FALSE(FirstSelectIsConnectedAfterSelectMultiple(Vector<int>{1}))
+        << "Onchange handler should be executed.";
+  }
 }
 
 }  // namespace blink

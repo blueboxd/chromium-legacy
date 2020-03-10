@@ -2,12 +2,10 @@
   :host {
     --icon-size: 48px;
     --tile-size: 112px;
-    --tile-margin:  16px;
-    --icon-background-color: rgb(229, 231, 232);
+    --tile-margin: 16px;
     --icon-button-color: var(--google-grey-600);
     --icon-button-color-active: var(--google-grey-refresh-700);
     --tile-hover-color: rgba(var(--google-grey-900-rgb), .1);
-    --tile-title-color: var(--google-grey-800);
   }
 
   #container {
@@ -28,7 +26,7 @@
     -webkit-mask-image: url(chrome://resources/images/add.svg);
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 100%;
-    background-color: var(--tile-title-color);
+    background-color: var(--ntp-theme-text-color);
     height: 24px;
     width: 24px;
   }
@@ -68,7 +66,7 @@
 
   .tile-icon {
     align-items: center;
-    background-color: var(--icon-background-color);
+    background-color: var(--ntp-theme-shortcut-background-color);
     border-radius: 50%;
     display: flex;
     height: var(--icon-size);
@@ -82,11 +80,12 @@
   }
 
   .tile-title {
-    color: var(--tile-title-color);
+    color: var(--ntp-theme-text-color);
     margin-top:  16px;
     overflow: hidden;
     text-align: center;
     text-overflow: ellipsis;
+    text-shadow: var(--ntp-theme-text-shadow);
     white-space: nowrap;
     width: 88px;
   }
@@ -138,11 +137,9 @@
 
   @media (prefers-color-scheme: dark) {
     :host {
-      --icon-background-color: var(--google-grey-refresh-100);
       --icon-button-color: var(--google-grey-400);
       --icon-button-color-active: var(--google-grey-200);
       --tile-hover-color: rgba(255, 255, 255, .1);
-      --tile-title-color: white;
     }
   }
 </style>

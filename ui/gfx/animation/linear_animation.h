@@ -50,11 +50,6 @@ class ANIMATION_EXPORT LinearAnimation : public Animation {
   // the currently set scale factor.
   void SetDuration(base::TimeDelta duration);
 
-  // Sets the duration scale factor. This scale factor will be applied to all
-  // animation durations globally. This value must be >= 0. The default value
-  // is 1.0.
-  static void SetDurationScale(double scale_factor);
-
  protected:
   // Called when the animation progresses. Subclasses override this to
   // efficiently update their state.

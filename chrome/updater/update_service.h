@@ -97,10 +97,12 @@ class UpdateService {
   //
   // |done| arg:
   //    Result: the final result from the update engine.
-  virtual void Update(const std::string& app_id,
-                      Priority priority,
-                      base::RepeatingCallback<void(UpdateState)> state_update,
-                      base::OnceCallback<void(Result)> done) = 0;
+  virtual void Update(
+      const std::string& app_id,
+      Priority priority,
+      base::RepeatingCallback<void(updater::UpdateService::UpdateState)>
+          state_update,
+      base::OnceCallback<void(Result)> done) = 0;
 
  protected:
   UpdateService() = default;

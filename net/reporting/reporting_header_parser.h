@@ -79,6 +79,7 @@ class NET_EXPORT ReportingHeaderParser {
   static void RecordHeaderDiscardedForJsonInvalid();
   static void RecordHeaderDiscardedForJsonTooBig();
 
+  // TODO(chlily): Pass in the NetworkIsolationKey.
   static void ParseHeader(ReportingContext* context,
                           const GURL& url,
                           std::unique_ptr<base::Value> value);

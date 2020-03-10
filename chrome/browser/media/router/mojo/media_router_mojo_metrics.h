@@ -43,7 +43,7 @@ enum class MediaRouteProviderWakeReason {
   CONNECT_ROUTE_BY_ROUTE_ID = 14,
   ENABLE_MDNS_DISCOVERY = 15,
   UPDATE_MEDIA_SINKS = 16,
-  SEARCH_SINKS = 17,
+  SEARCH_SINKS = 17,  // Obsolete
   PROVIDE_SINKS = 18,
   CREATE_MEDIA_ROUTE_CONTROLLER = 19,
   ROUTE_CONTROLLER_COMMAND = 20,
@@ -79,18 +79,6 @@ enum class MediaRouteProviderWakeup {
 
 class MediaRouterMojoMetrics {
  public:
-  // UMA histogram names.
-  static const char kHistogramProviderCreateRouteResult[];
-  static const char kHistogramProviderCreateRouteResultWiredDisplay[];
-  static const char kHistogramProviderJoinRouteResult[];
-  static const char kHistogramProviderJoinRouteResultWiredDisplay[];
-  static const char kHistogramProviderRouteControllerCreationOutcome[];
-  static const char kHistogramProviderTerminateRouteResult[];
-  static const char kHistogramProviderTerminateRouteResultWiredDisplay[];
-  static const char kHistogramProviderVersion[];
-  static const char kHistogramProviderWakeReason[];
-  static const char kHistogramProviderWakeup[];
-
   // Records the installed version of the Media Router component extension.
   static void RecordMediaRouteProviderVersion(
       const extensions::Extension& extension);

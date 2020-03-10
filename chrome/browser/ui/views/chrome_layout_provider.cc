@@ -51,7 +51,7 @@ ChromeLayoutProvider::CreateLayoutProvider() {
 
 gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
   DCHECK_LT(metric, views::VIEWS_INSETS_MAX);
-  const bool touch_ui = ui::MaterialDesignController::touch_ui();
+  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
   switch (metric) {
     case views::INSETS_DIALOG:
     case views::INSETS_DIALOG_SUBSECTION:

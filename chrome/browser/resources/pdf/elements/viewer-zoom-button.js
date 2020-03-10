@@ -25,6 +25,11 @@ Polymer({
       observer: 'delayChanged_',
     },
 
+    disabled: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Icons to be displayed on the FAB. Multiple icons should be separated with
      * spaces, and will be cycled through every time the FAB is clicked.

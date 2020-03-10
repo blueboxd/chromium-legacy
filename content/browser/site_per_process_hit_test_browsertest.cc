@@ -43,6 +43,7 @@
 #include "content/test/mock_overscroll_observer.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/base_event_utils.h"
@@ -4239,7 +4240,7 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
   EXPECT_TRUE(
       root_view->GetCursorManager()->GetCursorForTesting(child_view, cursor));
   // Since this moused over a text box, this should not be the default cursor.
-  EXPECT_EQ(cursor.info().type, ui::mojom::CursorType::kIBeam);
+  EXPECT_EQ(cursor.cursor().type(), ui::mojom::CursorType::kIBeam);
 }
 
 }  // namespace

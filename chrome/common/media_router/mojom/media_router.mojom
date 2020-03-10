@@ -196,14 +196,6 @@ struct RouteMessage {
   array<uint8>? data;
 };
 
-struct SinkSearchCriteria {
-  // Input to the search method which each Media Route Provider may interpret
-  // differently.
-  string input;
-  // The user's current hosted domain.
-  string domain;
-};
-
 // Keep in sync with:
 // - RouteRequestResult::ResultCode in route_request_result.h
 // - MediaRouteProviderResult enum in tools/metrics/histograms.xml.
@@ -481,17 +473,6 @@ interface MediaRouteProvider {
   // TODO(https://crbug.com/698940): Rename this to OnUserGesture and remove the
   // |media_source| parameter.
   UpdateMediaSinks(string media_source);
-
-  // Indicates that the Media Router is interested in finding a sink that
-  // matches |search_criteria| and is compatible with the source urn
-  // |media_source|. |search_criteria| should contain an exact copy of the user
-  // input. The user's current domain is also used to search.  The domain is the
-  // hosted domain of the user's signed-in identity, or empty if the user has no
-  // domain or is not signed in.
-  SearchSinks(string sink_id,
-              string media_source,
-              SinkSearchCriteria search_criteria) =>
-                  (string sink_id);
 
   // Called when the list of MediaSinks discovered by Media Router has been
   // updated. The sinks are supplied to the MediaRouteProvider so that they can

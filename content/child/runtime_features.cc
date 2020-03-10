@@ -525,6 +525,9 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
           blink::features::kNativeFileSystemAPI.name,
           base::FeatureList::OVERRIDE_ENABLE_FEATURE)) {
     WebRuntimeFeatures::EnableFeatureFromString("NativeFileSystem", true);
+    WebRuntimeFeatures::EnableFeatureFromString(
+        "CloneableNativeFileSystemHandles", true);
+    WebRuntimeFeatures::EnableFeatureFromString("WritableFileStream", true);
   }
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI) &&
       base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {

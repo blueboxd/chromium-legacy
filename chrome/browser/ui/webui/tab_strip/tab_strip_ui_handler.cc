@@ -164,7 +164,10 @@ TabStripUIHandler::TabStripUIHandler(Browser* browser,
     : browser_(browser),
       embedder_(embedder),
       thumbnail_tracker_(base::Bind(&TabStripUIHandler::HandleThumbnailUpdate,
-                                    base::Unretained(this))) {}
+                                    base::Unretained(this))),
+      tab_before_unload_tracker_(
+          base::Bind(&TabStripUIHandler::OnTabCloseCancelled,
+                     base::Unretained(this))) {}
 TabStripUIHandler::~TabStripUIHandler() = default;
 
 void TabStripUIHandler::NotifyLayoutChanged() {
@@ -372,6 +375,9 @@ void TabStripUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "closeContainer", base::Bind(&TabStripUIHandler::HandleCloseContainer,
                                    base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "closeTab",
+      base::Bind(&TabStripUIHandler::HandleCloseTab, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "showBackgroundContextMenu",
       base::Bind(&TabStripUIHandler::HandleShowBackgroundContextMenu,
@@ -681,6 +687,27 @@ void TabStripUIHandler::HandleCloseContainer(const base::ListValue* args) {
   embedder_->CloseContainer();
 }
 
+void TabStripUIHandler::HandleCloseTab(const base::ListValue* args) {
+  AllowJavascript();
+
+  int tab_id = args->GetList()[0].GetInt();
+  content::WebContents* tab = nullptr;
+  if (!extensions::ExtensionTabUtil::GetTabById(tab_id, browser_->profile(),
+                                                true, &tab)) {
+    // ID didn't refer to a valid tab.
+    DVLOG(1) << "Invalid tab ID";
+    return;
+  }
+
+  bool tab_was_swiped = args->GetList()[1].GetBool();
+  if (tab_was_swiped) {
+    // The unload tracker will automatically unobserve the tab when it
+    // successfully closes.
+    tab_before_unload_tracker_.Observe(tab);
+  }
+  tab->Close();
+}
+
 void TabStripUIHandler::HandleShowBackgroundContextMenu(
     const base::ListValue* args) {
   gfx::PointF point;
@@ -813,6 +840,12 @@ void TabStripUIHandler::HandleThumbnailUpdate(
   const int tab_id = extensions::ExtensionTabUtil::GetTabId(tab);
   FireWebUIListener("tab-thumbnail-updated", base::Value(tab_id),
                     base::Value(data_uri));
+}
+
+void TabStripUIHandler::OnTabCloseCancelled(content::WebContents* tab) {
+  tab_before_unload_tracker_.Unobserve(tab);
+  const int tab_id = extensions::ExtensionTabUtil::GetTabId(tab);
+  FireWebUIListener("tab-close-cancelled", base::Value(tab_id));
 }
 
 // Reports a histogram using the format

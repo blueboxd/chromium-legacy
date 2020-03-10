@@ -64,6 +64,10 @@
       Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hoặc ghi đè chính sách.</translation>
 <translation id="1062011392452772310">Cho phép chứng thực từ xa cho thiết bị</translation>
 <translation id="1062407476771304334">Thay thế</translation>
+<translation id="1073983258515362346">Báo cáo thông tin về đèn nền của thiết bị.
+
+      Nếu bạn không đặt chính sách này hoặc đặt chính sách thành false, thì thông tin sẽ không được báo cáo.
+      Nếu bạn đặt chính sách này thành true, thì thông tin về đèn nền của thiết bị sẽ được báo cáo.</translation>
 <translation id="1078643757670228170">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình bị tắt khi chạy trên nguồn AC.
@@ -341,6 +345,7 @@
       sẽ bị tắt. Trong trường hợp này, người dùng không thể bật tính năng đó.</translation>
 <translation id="1474273443907024088">Tắt Khởi động giả TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1486021504508098388">Báo cáo thông tin về đèn nền</translation>
 <translation id="1502843533062797703">Cho phép chặn phần mềm bên thứ ba thêm mã thực thi</translation>
 <translation id="1507382822467487898">
           Định cấu hình địa chỉ MAC (điều khiển truy cập phương tiện) sẽ được sử dụng khi kết nối đế sạc với thiết bị.

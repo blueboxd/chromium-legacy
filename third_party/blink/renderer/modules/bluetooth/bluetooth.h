@@ -36,6 +36,7 @@ class Bluetooth final : public EventTargetWithInlineData,
 
   // IDL exposed interface:
   ScriptPromise getAvailability(ScriptState*, ExceptionState&);
+  ScriptPromise getDevices(ScriptState*, ExceptionState&);
   ScriptPromise requestDevice(ScriptState*,
                               const RequestDeviceOptions*,
                               ExceptionState&);
@@ -71,6 +72,9 @@ class Bluetooth final : public EventTargetWithInlineData,
   BluetoothDevice* GetBluetoothDeviceRepresentingDevice(
       mojom::blink::WebBluetoothDevicePtr,
       ExecutionContext*);
+
+  void GetDevicesCallback(ScriptPromiseResolver*,
+                          Vector<mojom::blink::WebBluetoothDevicePtr>);
 
   void RequestDeviceCallback(ScriptPromiseResolver*,
                              mojom::blink::WebBluetoothResult,

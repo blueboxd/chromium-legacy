@@ -37,10 +37,20 @@ public class ContextMenuParams {
     @Nullable
     public final String titleOrAltText;
 
-    public ContextMenuParams(Uri pageUri, Uri linkUri, String linkText, String titleOrAltText) {
+    /**
+     * This is the source Uri for the element that the context menu was
+     * invoked on.  Example of elements with source URLs are img, audio, and
+     * video.
+     */
+    @Nullable
+    public final Uri srcUri;
+
+    public ContextMenuParams(
+            Uri pageUri, Uri linkUri, String linkText, String titleOrAltText, Uri srcUri) {
         this.pageUri = pageUri;
         this.linkUri = linkUri;
         this.linkText = linkText;
         this.titleOrAltText = titleOrAltText;
+        this.srcUri = srcUri;
     }
 }

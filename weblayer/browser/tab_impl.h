@@ -153,8 +153,8 @@ class TabImpl : public Tab,
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
-  void DidNavigateMainFramePostCommit(
-      content::WebContents* web_contents) override;
+  void NavigationStateChanged(content::WebContents* source,
+                              content::InvalidateTypes changed_flags) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* web_contents) override;
   content::ColorChooser* OpenColorChooser(
@@ -224,6 +224,8 @@ class TabImpl : public Tab,
   void SetBrowserControlsConstraint(ControlsVisibilityReason reason,
                                     content::BrowserControlsState constraint);
 #endif
+
+  void UpdateBrowserVisibleSecurityStateIfNecessary();
 
   BrowserImpl* browser_ = nullptr;
   DownloadDelegate* download_delegate_ = nullptr;

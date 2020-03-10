@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">ທ່ານສາມາດເປີດການຊິ້ງຂໍ້ມູນໄດ້ທຸກເວລາໃນການຕັ້ງຄ່າ</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ບຸກມາກ}other{<ph name="BOOKMARKS_COUNT_MANY" /> ບຸກມາກ}}</translation>
 <translation id="3089395242580810162">ເປີດ​ໃນ​ແຖບ​ບໍ່ເປີດເຜີຍຕົນຕົວ</translation>
+<translation id="3114012059975132928">ໂປຣແກຣມຫຼິ້ນວິດີໂອ</translation>
 <translation id="3123473560110926937">ບລັອກໃນບາງເວັບໄຊ</translation>
 <translation id="3123734510202723619">ການປະກາດ</translation>
 <translation id="3137521801621304719">ອອກຈາກໂໝດທີ່ບໍ່ເຜີຍຕົວຕົນ</translation>
@@ -352,6 +353,7 @@
 <translation id="3587482841069643663">ທັງໝົດ</translation>
 <translation id="358794129225322306">ອະນຸຍາດໃຫ້ເວັບໄຊດາວໂຫຼດຫຼາຍໄຟລ໌ໂດຍອັດຕະໂນມັດ.</translation>
 <translation id="3590487821116122040">ບ່ອນເກັບຂໍ້ມູນເວັບໄຊທີ່ Chrome ຄິດວ່າບໍ່ສຳຄັນ (ເຊັ່ນ ເວັບໄຊທີ່ບໍ່ມີການຕັ້ງຄ່າທີ່ບັນທຶກໄວ້ ຫຼື ທີ່ທ່ານບໍ່ຄ່ອຍເຂົ້າເບິ່ງ)</translation>
+<translation id="3594780231884063836">ປິດສຽງວິດີໂອ</translation>
 <translation id="3599863153486145794">ລຶບລ້າງປະຫວັດຈາກທຸກອຸປະກອນທີ່ເຂົ້າສູ່ລະບົບແລ້ວ. ບັນຊີ Google ຂອງທ່ານອາດຈະມີຮູບແບບອື່ນຂອງປະຫວັດການທ່ອງເວັບຢູ່ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">ປິດສຽງເວັບໄຊທີ່ຫຼິ້ນສຽງ</translation>
 <translation id="3616113530831147358">ສຽງ</translation>
@@ -605,6 +607,7 @@
 <translation id="5456381639095306749">ໜ້າການດາວໂຫຼດ</translation>
 <translation id="548278423535722844">ເປີດໃນແອັບແຜນທີ່</translation>
 <translation id="5487521232677179737">ລຶບລ້າງຂໍ້ມູນ</translation>
+<translation id="5489227211564503167">ເວລາຜ່ານໄປ <ph name="ELAPSED_TIME" /> ຈາກທັງໝົດ <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">ບລັອກໂຄສະນາໃນເວັບໄຊທີ່ສະແດງໂຄສະນາທີ່ລົບກວນ ຫຼື ຫຼອກລວງ</translation>
 <translation id="5500777121964041360">ອາດຈະບໍ່ມີໃຫ້ນຳໃຊ້ໃນສະຖານທີ່ຂອງທ່ານ</translation>
 <translation id="5505264765875738116">ເວັບໄຊບໍ່ສາມາດຂໍໃຫ້ສົ່ງການແຈ້ງເຕືອນໄດ້</translation>
@@ -665,6 +668,7 @@
 <translation id="5864419784173784555">ກຳລັງລໍຖ້າການດາວໂຫຼດອື່ນຢູ່...</translation>
 <translation id="5865733239029070421">ສົ່ງສະຖິຕິການໃຊ້ ແລະ ລາຍງານການຂັດຂ້ອງໃຫ້ Google ໂດຍອັດຕະໂນມັດ</translation>
 <translation id="5869522115854928033">ລະ​ຫັດ​ຜ່ານ​ທີ່ບັນທຶກໄວ້</translation>
+<translation id="5876056640971328065">ຢຸດວິດີໂອໄວ້ຊົ່ວຄາວ</translation>
 <translation id="5884076754568147479">ເພື່ອຊ່ວຍທ່ານເຮັດສຳເລັດໜ້າວຽກ, Google ຈະໄດ້ຮັບ URL ແລະ ເນື້ອຫາຂອງເວັບໄຊທີ່ທ່ານໃຊ້ຜູ້ຊ່ວຍ, ພ້ອມກັບຂໍ້ມູນທີ່ທ່ານສົ່ງຜ່ານຜູ້ຊ່ວຍ</translation>
 <translation id="5902828464777634901">ຂໍ້​ມູນ​ໃນ​ເຄື່ອງທັງ​ຫມົດ​ທີ່ເກັບໄວ້​ໂດຍ​ເວັບ​ໄຊທ໌​ນີ້, ລວມ​ທັງ​ຄຸກ​ກີ້, ​ຈະຖືກ​ລຶບອອກ.</translation>
 <translation id="5919204609460789179">ອັບເດດ <ph name="PRODUCT_NAME" /> ເພື່ອເລີ່ມການຊິ້ງຂໍ້ມູນ</translation>
@@ -728,6 +732,7 @@
 <translation id="6381421346744604172">ປັບເວັບໄຊໃຫ້ເປັນສີເຂັ້ມ</translation>
 <translation id="6388207532828177975">ລຶບ ແລະ​ຕັ້ງ​ຄ່າ​ຄືນ​ໃໝ່</translation>
 <translation id="6395288395575013217">ລິ້ງ</translation>
+<translation id="6397616442223433927">ກັບມາອອນລາຍ</translation>
 <translation id="6404511346730675251">ແກ້​ໄຂບຸກມາກສ໌</translation>
 <translation id="6406506848690869874">ຊິງຄ໌</translation>
 <translation id="6410973561433500075">ເຂົ້າສູ່ໂໝດ AR ຈາກ <ph name="DOMAIN" /> ບໍ?</translation>
@@ -796,6 +801,7 @@
 <translation id="6846298663435243399">ກໍາລັງໂຫຼດ ...</translation>
 <translation id="6850409657436465440">ການດາວໂຫຼດຂອງທ່ານພວມດຳເນີນຢູ່</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ​ແຖບປິດແລ້ວ</translation>
+<translation id="6864395892908308021">ອຸປະກອນນີ້ບໍ່ສາມາດອ່ານ NFC ໄດ້</translation>
 <translation id="6864459304226931083">ດາວໂຫຼດຮູບພາບ</translation>
 <translation id="6865313869410766144">ຕື່ມຂໍ້ມູນແບບຟອມອັດຕະໂນມັດ</translation>
 <translation id="6884306546558072722">ສືບຕໍ່ສຳຫຼວດແບບອອບລາຍ</translation>
@@ -916,6 +922,7 @@
 <translation id="780301667611848630">ບໍ່​, ​ຂອບ​ໃຈ</translation>
 <translation id="7810647596859435254">ເປີດດ້ວຍ...</translation>
 <translation id="7821588508402923572">ການປະຢັດຂໍ້ມູນຂອງທ່ານຈະປາກົດຢູ່ບ່ອນນີ້</translation>
+<translation id="783819812427904514">ເປີດສຽງວິດີໂອ</translation>
 <translation id="784934925303690534">ຂອບເຂດເວລາ</translation>
 <translation id="7851858861565204677">ອຸ​ປະ​ກອນ​ອື່ນໆ</translation>
 <translation id="7875915731392087153">ສ້າງອີເມວ</translation>

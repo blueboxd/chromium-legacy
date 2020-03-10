@@ -286,6 +286,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3058498974290601450">Bạn có thể bật tính năng đồng bộ hóa bất cứ lúc nào trong phần cài đặt</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> dấu trang}other{<ph name="BOOKMARKS_COUNT_MANY" /> dấu trang}}</translation>
 <translation id="3089395242580810162">Mở trong tab ẩn danh</translation>
+<translation id="3114012059975132928">Trình phát video</translation>
 <translation id="3123473560110926937">Đã chặn trên một số trang web</translation>
 <translation id="3123734510202723619">Thông báo</translation>
 <translation id="3137521801621304719">Thoát chế độ ẩn danh</translation>
@@ -352,6 +353,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3587482841069643663">Tất cả</translation>
 <translation id="358794129225322306">Cho phép một trang web tự động tải xuống nhiều tệp.</translation>
 <translation id="3590487821116122040">Bộ nhớ trang web mà Chrome cho rằng không quan trọng (ví dụ: những trang web không có cài đặt đã lưu nào hoặc trang web mà bạn không truy cập thường xuyên)</translation>
+<translation id="3594780231884063836">Tắt tiếng video</translation>
 <translation id="3599863153486145794">Xóa lịch sử khỏi tất cả các thiết bị đã đăng nhập. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Tắt tiếng trên các trang web phát âm thanh</translation>
 <translation id="3616113530831147358">Âm thanh</translation>
@@ -605,6 +607,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5456381639095306749">Tải trang xuống</translation>
 <translation id="548278423535722844">Mở trong ứng dụng bản đồ</translation>
 <translation id="5487521232677179737">Xóa dữ liệu</translation>
+<translation id="5489227211564503167">Thời gian đã trôi qua: <ph name="ELAPSED_TIME" />/<ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Chặn quảng cáo trên các trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
 <translation id="5500777121964041360">Có thể chưa dùng được tại vị trí của bạn</translation>
 <translation id="5505264765875738116">Các trang web không thể xin phép gửi thông báo</translation>
@@ -665,6 +668,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5864419784173784555">Đang chờ đến lần tải xuống tiếp theo…</translation>
 <translation id="5865733239029070421">Tự động gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
+<translation id="5876056640971328065">Tạm dừng video</translation>
 <translation id="5884076754568147479">Để giúp bạn hoàn thành những việc cần làm, Google sẽ nhận URL và nội dung của các trang web mà bạn sử dụng Trợ lý, cũng như thông tin bạn gửi qua Trợ lý</translation>
 <translation id="5902828464777634901">Tất cả dữ liệu cục bộ được trang web này lưu, bao gồm cookie, sẽ bị xóa.</translation>
 <translation id="5919204609460789179">Cập nhật <ph name="PRODUCT_NAME" /> để bắt đầu đồng bộ hóa</translation>
@@ -728,6 +732,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6381421346744604172">Làm tối trang web</translation>
 <translation id="6388207532828177975">Xóa và đặt lại</translation>
 <translation id="6395288395575013217">LIÊN KẾT</translation>
+<translation id="6397616442223433927">Đã có kết nối mạng trở lại</translation>
 <translation id="6404511346730675251">Chỉnh sửa dấu trang</translation>
 <translation id="6406506848690869874">Đồng bộ hóa</translation>
 <translation id="6410973561433500075">Chuyển sang chế độ thực tế tăng cường từ <ph name="DOMAIN" />?</translation>
@@ -796,6 +801,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6846298663435243399">Đang tải…</translation>
 <translation id="6850409657436465440">Vẫn đang tải xuống</translation>
 <translation id="6850830437481525139">Đã đóng <ph name="TAB_COUNT" /> tab</translation>
+<translation id="6864395892908308021">Thiết bị này không hỗ trợ công nghệ Giao tiếp phạm vi gần (NFC)</translation>
 <translation id="6864459304226931083">Tải hình ảnh xuống</translation>
 <translation id="6865313869410766144">Dữ liệu tự động điền vào biểu mẫu</translation>
 <translation id="6884306546558072722">Tiếp tục khám phá khi không có mạng</translation>
@@ -916,6 +922,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7810647596859435254">Mở bằng…</translation>
 <translation id="7821588508402923572">Mức tiết kiệm dữ liệu sẽ hiển thị tại đây</translation>
+<translation id="783819812427904514">Bật tiếng video</translation>
 <translation id="784934925303690534">Phạm vi thời gian</translation>
 <translation id="7851858861565204677">Thiết bị khác</translation>
 <translation id="7875915731392087153">Tạo email</translation>

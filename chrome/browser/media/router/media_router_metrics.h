@@ -136,7 +136,6 @@ class MediaRouterMetrics {
   static const char kHistogramMediaRouterFileSize[];
   static const char kHistogramMediaSinkType[];
   static const char kHistogramPresentationUrlType[];
-  static const char kHistogramRecordSearchSinkOutcome[];
   static const char kHistogramRouteCreationOutcome[];
   static const char kHistogramStartLocalLatency[];
   static const char kHistogramStartLocalPosition[];
@@ -216,10 +215,6 @@ class MediaRouterMetrics {
   // Records the user stopping a route in the UI.
   static void RecordStopLocalRoute();
   static void RecordStopRemoteRoute();
-
-  // Records whether or not a sink was found for the ID that the user manually
-  // entered and attempted to cast to.
-  static void RecordSearchSinkOutcome(bool success);
 
   // Records whether the toolbar icon is pinned by the user pref / admin policy.
   // Recorded whenever the Cast dialog is opened.

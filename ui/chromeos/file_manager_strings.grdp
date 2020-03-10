@@ -1405,6 +1405,9 @@
   <message name="IDS_FILE_BROWSER_GRID_VIEW_FILES_TITLE" desc="Title dislayed in Grid View above the files.">
     Files
   </message>
+  <message name="IDS_FILE_BROWSER_LOCATION_BREADCRUMB_ELIDER_BUTTON_LABEL" desc="Label for the breadcrumb sub-folder elider button in the Files app folder location line.">
+    More sub-folders...
+  </message>
 
 <!-- Common for Audio player and Media player -->
   <message name="IDS_MEDIA_PLAYER_PLAY_BUTTON_LABEL" desc="Label for the Play button of media players (audio player / video player).">

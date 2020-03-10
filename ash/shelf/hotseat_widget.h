@@ -144,7 +144,6 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
 
   // View containing the shelf items within an active user session. Owned by
   // the views hierarchy.
-  ShelfView* shelf_view_ = nullptr;
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;
 
   // The contents view of this widget. Contains |shelf_view_| and the background

@@ -182,14 +182,33 @@ void HTMLSelectElement::SelectMultipleOptionsByPopup(
     const Vector<int>& list_indices) {
   DCHECK(UsesMenuList());
   DCHECK(IsMultiple());
-  for (wtf_size_t i = 0; i < list_indices.size(); ++i) {
-    bool add_selection_if_not_first = i > 0;
-    if (HTMLOptionElement* option = OptionAtListIndex(list_indices[i]))
-      UpdateSelectedState(option, add_selection_if_not_first, false);
+
+  HeapHashSet<Member<HTMLOptionElement>> old_selection;
+  for (auto* option : GetOptionList()) {
+    if (option->Selected()) {
+      old_selection.insert(option);
+      option->SetSelectedState(false);
+    }
   }
+
+  bool has_new_selection = false;
+  for (int list_index : list_indices) {
+    if (auto* option = OptionAtListIndex(list_index)) {
+      option->SetSelectedState(true);
+      option->SetDirty(true);
+      auto iter = old_selection.find(option);
+      if (iter != old_selection.end())
+        old_selection.erase(iter);
+      else
+        has_new_selection = true;
+    }
+  }
+
   SetNeedsValidityCheck();
-  // TODO(tkent): Using listBoxOnChange() is very confusing.
-  ListBoxOnChange();
+  if (has_new_selection || !old_selection.IsEmpty()) {
+    DispatchInputEvent();
+    DispatchChangeEvent();
+  }
 }
 
 unsigned HTMLSelectElement::ListBoxSize() const {
@@ -576,7 +595,7 @@ void HTMLSelectElement::UpdateListBoxSelection(bool deselect_other_options,
 }
 
 void HTMLSelectElement::ListBoxOnChange() {
-  DCHECK(!UsesMenuList() || is_multiple_);
+  DCHECK(!UsesMenuList());
 
   const ListItems& items = GetListItems();
 
@@ -1177,6 +1196,7 @@ bool HTMLSelectElement::PopupIsVisible() const {
 void HTMLSelectElement::UpdateSelectedState(HTMLOptionElement* clicked_option,
                                             bool multi,
                                             bool shift) {
+  DCHECK(!UsesMenuList());
   DCHECK(clicked_option);
   // Save the selection so it can be compared to the new selection when
   // dispatching change events during mouseup, or after autoscroll finishes.

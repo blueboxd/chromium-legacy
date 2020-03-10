@@ -17,7 +17,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
-import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
@@ -67,8 +67,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     private static final int SIGNIN_ACCEPT_ANOTHER_ACCOUNT = 3;
     private static final int SIGNIN_NO_THANKS = 4;
     private static final int SIGNIN_MAX = 5;
-    private static final EnumeratedHistogramSample sSigninChoiceHistogram =
-            new EnumeratedHistogramSample("MobileFre.SignInChoice", SIGNIN_MAX);
 
     private static final int FRE_PROGRESS_STARTED = 0;
     private static final int FRE_PROGRESS_WELCOME_SHOWN = 1;
@@ -78,10 +76,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     private static final int FRE_PROGRESS_COMPLETED_NOT_SIGNED_IN = 5;
     private static final int FRE_PROGRESS_DEFAULT_SEARCH_ENGINE_SHOWN = 6;
     private static final int FRE_PROGRESS_MAX = 7;
-    private static final EnumeratedHistogramSample sMobileFreProgressMainIntentHistogram =
-            new EnumeratedHistogramSample("MobileFre.Progress.MainIntent", FRE_PROGRESS_MAX);
-    private static final EnumeratedHistogramSample sMobileFreProgressViewIntentHistogram =
-            new EnumeratedHistogramSample("MobileFre.Progress.ViewIntent", FRE_PROGRESS_MAX);
 
     private static FirstRunActivityObserver sObserver;
 
@@ -362,7 +356,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                 choice = mResultIsDefaultAccount ? SIGNIN_ACCEPT_DEFAULT_ACCOUNT
                                                  : SIGNIN_ACCEPT_ANOTHER_ACCOUNT;
             }
-            sSigninChoiceHistogram.record(choice);
+            recordSigninChoiceHistogram(choice);
             recordFreProgressHistogram(FRE_PROGRESS_COMPLETED_SIGNED_IN);
         } else {
             recordFreProgressHistogram(FRE_PROGRESS_COMPLETED_NOT_SIGNED_IN);
@@ -411,7 +405,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
     @Override
     public void refuseSignIn() {
-        sSigninChoiceHistogram.record(SIGNIN_NO_THANKS);
+        recordSigninChoiceHistogram(SIGNIN_NO_THANKS);
         mResultSignInAccountName = null;
         mResultShowSignInSettings = false;
     }
@@ -486,10 +480,17 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
     private void recordFreProgressHistogram(int state) {
         if (mLaunchedFromChromeIcon) {
-            sMobileFreProgressMainIntentHistogram.record(state);
+            RecordHistogram.recordEnumeratedHistogram(
+                    "MobileFre.Progress.MainIntent", state, FRE_PROGRESS_MAX);
         } else {
-            sMobileFreProgressViewIntentHistogram.record(state);
+            RecordHistogram.recordEnumeratedHistogram(
+                    "MobileFre.Progress.ViewIntent", state, FRE_PROGRESS_MAX);
         }
+    }
+
+    private static void recordSigninChoiceHistogram(int signInChoice) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "MobileFre.SignInChoice", signInChoice, SIGNIN_MAX);
     }
 
     @Override

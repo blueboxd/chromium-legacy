@@ -1846,6 +1846,28 @@
         "test_target": "//content/test:content_browsertests"
       },
       {
+        "args": [
+          "--disable-features=UseSkiaRenderer",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "non_skia_renderer_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
+      },
+      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

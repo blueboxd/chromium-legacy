@@ -811,6 +811,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="4466881336512663640">Form changes will be lost. Are you sure that you want to continue?</translation>
 <translation id="4477350412780666475">Next track</translation>
 <translation id="4482953324121162758">This site will not be translated.</translation>
+<translation id="4486757593530038591">When on, sites can’t use your browsing activity across different sites to personalise ads. Features on some sites may break.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">These features are disabled by default. They will not be available in future versions of Chrome.</translation>
 <translation id="4493480324863638523">Invalid URL. Must be a URL with a standard scheme, e.g. http://example.com or https://example.com.</translation>
@@ -1047,6 +1048,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="549333378215107354">Size 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Managed bookmarks</translation>
+<translation id="5510481203689988000">This setting is controlled in Cookie settings.</translation>
 <translation id="5510766032865166053">It may have been moved or deleted.</translation>
 <translation id="5523118979700054094">Policy name</translation>
 <translation id="55293785478302737">Edge stitch</translation>

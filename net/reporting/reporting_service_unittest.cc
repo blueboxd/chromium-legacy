@@ -11,10 +11,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
+#include "net/base/network_isolation_key.h"
 #include "net/reporting/mock_persistent_reporting_store.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_context.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
@@ -41,6 +43,12 @@ class ReportingServiceTest : public ::testing::TestWithParam<bool>,
   const std::string kUserAgent_ = "Mozilla/1.0";
   const std::string kGroup_ = "group";
   const std::string kType_ = "type";
+  const ReportingEndpointGroupKey kGroupKey_ =
+      ReportingEndpointGroupKey(NetworkIsolationKey::Todo(), kOrigin_, kGroup_);
+  const ReportingEndpointGroupKey kGroupKey2_ =
+      ReportingEndpointGroupKey(NetworkIsolationKey::Todo(),
+                                kOrigin2_,
+                                kGroup_);
 
   ReportingServiceTest() {
     if (GetParam())
@@ -184,15 +192,10 @@ TEST_P(ReportingServiceTest, WriteToStore) {
   // Unblock the load. The will let the remaining calls to the service complete
   // without blocking.
   FinishLoading(true /* load_success */);
-  expected_commands.emplace_back(
-      CommandType::ADD_REPORTING_ENDPOINT,
-      ReportingEndpoint(kOrigin_, kGroup_,
-                        ReportingEndpoint::EndpointInfo{kEndpoint_}));
-  expected_commands.emplace_back(
-      CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-      CachedReportingEndpointGroup(
-          kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-          base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+  expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                 kGroupKey_, kEndpoint_);
+  expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                 kGroupKey_);
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));
 
@@ -203,25 +206,17 @@ TEST_P(ReportingServiceTest, WriteToStore) {
                                        kGroup_ +
                                        "\","
                                        "\"max_age\":86400}");
-  expected_commands.emplace_back(
-      CommandType::ADD_REPORTING_ENDPOINT,
-      ReportingEndpoint(kOrigin2_, kGroup_,
-                        ReportingEndpoint::EndpointInfo{kEndpoint_}));
-  expected_commands.emplace_back(
-      CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-      CachedReportingEndpointGroup(
-          kOrigin2_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-          base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+  expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                 kGroupKey2_, kEndpoint_);
+  expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                 kGroupKey2_);
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));
 
   service()->QueueReport(kUrl_, kUserAgent_, kGroup_, kType_,
                          std::make_unique<base::DictionaryValue>(), 0);
   expected_commands.emplace_back(
-      CommandType::UPDATE_REPORTING_ENDPOINT_GROUP_ACCESS_TIME,
-      CachedReportingEndpointGroup(
-          kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-          base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+      CommandType::UPDATE_REPORTING_ENDPOINT_GROUP_ACCESS_TIME, kGroupKey_);
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));
 
@@ -229,30 +224,20 @@ TEST_P(ReportingServiceTest, WriteToStore) {
                                 base::BindRepeating([](const GURL& url) {
                                   return url.host() == "origin";
                                 }));
-  expected_commands.emplace_back(
-      CommandType::DELETE_REPORTING_ENDPOINT,
-      ReportingEndpoint(kOrigin_, kGroup_,
-                        ReportingEndpoint::EndpointInfo{kEndpoint_}));
-  expected_commands.emplace_back(
-      CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
-      CachedReportingEndpointGroup(
-          kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-          base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+  expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                 kGroupKey_, kEndpoint_);
+  expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+                                 kGroupKey_);
   expected_commands.emplace_back(CommandType::FLUSH);
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));
 
   service()->RemoveAllBrowsingData(
       ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS);
-  expected_commands.emplace_back(
-      CommandType::DELETE_REPORTING_ENDPOINT,
-      ReportingEndpoint(kOrigin2_, kGroup_,
-                        ReportingEndpoint::EndpointInfo{kEndpoint_}));
-  expected_commands.emplace_back(
-      CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
-      CachedReportingEndpointGroup(
-          kOrigin2_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-          base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+  expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                 kGroupKey2_, kEndpoint_);
+  expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+                                 kGroupKey2_);
   expected_commands.emplace_back(CommandType::FLUSH);
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));
@@ -307,48 +292,25 @@ TEST_P(ReportingServiceTest, WaitUntilLoadFinishesBeforeWritingToStore) {
   // Unblock the load. The will let the remaining calls to the service complete
   // without blocking.
   FinishLoading(true /* load_success */);
+  expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                 kGroupKey_, kEndpoint_);
+  expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                 kGroupKey2_, kEndpoint_);
+  expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                 kGroupKey_);
+  expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                 kGroupKey2_);
   expected_commands.emplace_back(
-      CommandType::ADD_REPORTING_ENDPOINT,
-      ReportingEndpoint(kOrigin_, kGroup_,
-                        ReportingEndpoint::EndpointInfo{kEndpoint_}));
-  expected_commands.emplace_back(
-      CommandType::ADD_REPORTING_ENDPOINT,
-      ReportingEndpoint(kOrigin2_, kGroup_,
-                        ReportingEndpoint::EndpointInfo{kEndpoint_}));
-  expected_commands.emplace_back(
-      CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-      CachedReportingEndpointGroup(
-          kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-          base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-  expected_commands.emplace_back(
-      CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-      CachedReportingEndpointGroup(
-          kOrigin2_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-          base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-  expected_commands.emplace_back(
-      CommandType::UPDATE_REPORTING_ENDPOINT_GROUP_ACCESS_TIME,
-      CachedReportingEndpointGroup(
-          kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-          base::Time() /* irrelevant */, base::Time() /* irrelevant */));
-  expected_commands.emplace_back(
-      CommandType::DELETE_REPORTING_ENDPOINT,
-      ReportingEndpoint(kOrigin_, kGroup_,
-                        ReportingEndpoint::EndpointInfo{kEndpoint_}));
-  expected_commands.emplace_back(
-      CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
-      CachedReportingEndpointGroup(
-          kOrigin_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-          base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+      CommandType::UPDATE_REPORTING_ENDPOINT_GROUP_ACCESS_TIME, kGroupKey_);
+  expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                 kGroupKey_, kEndpoint_);
+  expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+                                 kGroupKey_);
   expected_commands.emplace_back(CommandType::FLUSH);
-  expected_commands.emplace_back(
-      CommandType::DELETE_REPORTING_ENDPOINT,
-      ReportingEndpoint(kOrigin2_, kGroup_,
-                        ReportingEndpoint::EndpointInfo{kEndpoint_}));
-  expected_commands.emplace_back(
-      CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
-      CachedReportingEndpointGroup(
-          kOrigin2_, kGroup_, OriginSubdomains::DEFAULT /* irrelevant */,
-          base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+  expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
+                                 kGroupKey2_, kEndpoint_);
+  expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+                                 kGroupKey2_);
   expected_commands.emplace_back(CommandType::FLUSH);
   EXPECT_THAT(store()->GetAllCommands(),
               testing::UnorderedElementsAreArray(expected_commands));

@@ -25,10 +25,6 @@ const char kDisableRemoteCoreAnimation[] = "disable-remote-core-animation";
 const char kShowMacOverlayBorders[] = "show-mac-overlay-borders";
 #endif
 
-// Scale factor to apply to every animation duration. Must be >= 0.0. This will
-// only apply to LinearAnimation and its subclasses.
-const char kAnimationDurationScale[] = "animation-duration-scale";
-
 // Disables layer-edge anti-aliasing in the compositor.
 const char kDisableCompositedAntialiasing[] = "disable-composited-antialiasing";
 

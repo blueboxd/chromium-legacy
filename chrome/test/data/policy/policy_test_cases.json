@@ -6444,12 +6444,80 @@
 
   "CloudExtensionRequestEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
+    "note": "Policy uses default value if CloudReportingEnabled is false or unset.",
     "policy_pref_mapping_test": [
+      {
+        "policies": {
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "expect_default": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "CloudExtensionRequestEnabled": true
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "expect_default": true
+          }
+        }
+      },
       {
         "policies": {
           "CloudExtensionRequestEnabled": false
         },
-        "prefs": { "enterprise_reporting.extension_request.enabled": {} }
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "expect_default": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "CloudExtensionRequestEnabled": true,
+          "CloudReportingEnabled": false
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "expect_default": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "CloudExtensionRequestEnabled": false,
+          "CloudReportingEnabled": false
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "expect_default": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "CloudExtensionRequestEnabled": true,
+          "CloudReportingEnabled": true
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "CloudExtensionRequestEnabled": false,
+          "CloudReportingEnabled": true
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "value": false
+          }
+        }
       }
     ]
   },

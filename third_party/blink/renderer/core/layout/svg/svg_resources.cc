@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
 #include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 
 #if DCHECK_IS_ON()
 #include <stdio.h>
@@ -668,6 +669,18 @@ void SVGResources::ClearMarkers(SVGElement& element,
     marker_resource->RemoveClient(*client);
   if (StyleSVGResource* marker_resource = old_svg_style.MarkerEndResource())
     marker_resource->RemoveClient(*client);
+}
+
+void FilterData::Trace(Visitor* visitor) {
+  visitor->Trace(last_effect);
+  visitor->Trace(node_map);
+}
+
+void FilterData::Dispose() {
+  node_map = nullptr;
+  if (last_effect)
+    last_effect->DisposeImageFiltersRecursive();
+  last_effect = nullptr;
 }
 
 SVGElementResourceClient::SVGElementResourceClient(SVGElement* element)

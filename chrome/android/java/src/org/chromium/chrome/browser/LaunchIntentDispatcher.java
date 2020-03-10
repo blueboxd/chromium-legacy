@@ -27,7 +27,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
@@ -73,9 +73,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      * provider by default.
      */
     private static final int PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS = 10000;
-
-    private static final CachedMetrics.SparseHistogramSample sIntentFlagsHistogram =
-            new CachedMetrics.SparseHistogramSample("Launch.IntentFlags");
 
     private final Activity mActivity;
     private final Intent mIntent;
@@ -476,7 +473,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
                 flagsOfInterest |= Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
             }
             int maskedFlags = mIntent.getFlags() & flagsOfInterest;
-            sIntentFlagsHistogram.record(maskedFlags);
+            RecordHistogram.recordSparseHistogram("Launch.IntentFlags", maskedFlags);
         }
         MediaNotificationUma.recordClickSource(mIntent);
     }

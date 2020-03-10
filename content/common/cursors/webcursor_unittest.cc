@@ -8,6 +8,7 @@
 #include "content/common/cursors/webcursor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 
@@ -27,46 +28,46 @@ SkBitmap CreateTestBitmap(int width, int height) {
 }
 
 TEST(WebCursorTest, DefaultConstructor) {
-  WebCursor cursor;
-  EXPECT_EQ(ui::mojom::CursorType::kPointer, cursor.info().type);
-  EXPECT_TRUE(cursor.info().custom_image.isNull());
-  EXPECT_TRUE(cursor.info().hotspot.IsOrigin());
-  EXPECT_EQ(1.f, cursor.info().image_scale_factor);
+  WebCursor webcursor;
+  EXPECT_EQ(ui::mojom::CursorType::kNull, webcursor.cursor().type());
+  EXPECT_TRUE(webcursor.cursor().custom_bitmap().isNull());
+  EXPECT_TRUE(webcursor.cursor().custom_hotspot().IsOrigin());
+  EXPECT_EQ(1.f, webcursor.cursor().image_scale_factor());
 }
 
-TEST(WebCursorTest, CursorInfoConstructor) {
-  CursorInfo info(ui::mojom::CursorType::kHand);
-  WebCursor cursor(info);
-  EXPECT_EQ(info, cursor.info());
+TEST(WebCursorTest, WebCursorCursorConstructor) {
+  ui::Cursor cursor(ui::mojom::CursorType::kHand);
+  WebCursor webcursor(cursor);
+  EXPECT_EQ(cursor, webcursor.cursor());
 }
 
-TEST(WebCursorTest, CursorInfoConstructorCustom) {
-  CursorInfo info(ui::mojom::CursorType::kCustom);
-  info.custom_image = CreateTestBitmap(32, 32);
-  info.hotspot = gfx::Point(10, 20);
-  info.image_scale_factor = 2.f;
-  WebCursor cursor(info);
-  EXPECT_EQ(info, cursor.info());
+TEST(WebCursorTest, WebCursorCursorConstructorCustom) {
+  ui::Cursor cursor(ui::mojom::CursorType::kCustom);
+  cursor.set_custom_bitmap(CreateTestBitmap(32, 32));
+  cursor.set_custom_hotspot(gfx::Point(10, 20));
+  cursor.set_image_scale_factor(2.f);
+  WebCursor webcursor(cursor);
+  EXPECT_EQ(cursor, webcursor.cursor());
 
 #if defined(USE_AURA)
   // Test if the custom cursor is correctly cached and updated
   // on aura platform.
-  gfx::NativeCursor native_cursor = cursor.GetNativeCursor();
+  gfx::NativeCursor native_cursor = webcursor.GetNativeCursor();
   EXPECT_EQ(gfx::Point(5, 10), GetCursorHotspot(native_cursor));
-  EXPECT_TRUE(cursor.has_custom_cursor_for_test());
-  cursor.SetInfo(info);
-  EXPECT_FALSE(cursor.has_custom_cursor_for_test());
-  cursor.GetNativeCursor();
-  EXPECT_TRUE(cursor.has_custom_cursor_for_test());
+  EXPECT_TRUE(webcursor.has_custom_cursor_for_test());
+  webcursor.SetCursor(cursor);
+  EXPECT_FALSE(webcursor.has_custom_cursor_for_test());
+  webcursor.GetNativeCursor();
+  EXPECT_TRUE(webcursor.has_custom_cursor_for_test());
 
 #if defined(USE_OZONE)
   // Test if the rotating custom cursor works correctly.
   display::Display display;
   display.set_panel_rotation(display::Display::ROTATE_90);
-  cursor.SetDisplayInfo(display);
-  EXPECT_FALSE(cursor.has_custom_cursor_for_test());
-  native_cursor = cursor.GetNativeCursor();
-  EXPECT_TRUE(cursor.has_custom_cursor_for_test());
+  webcursor.SetDisplayInfo(display);
+  EXPECT_FALSE(webcursor.has_custom_cursor_for_test());
+  native_cursor = webcursor.GetNativeCursor();
+  EXPECT_TRUE(webcursor.has_custom_cursor_for_test());
   // Hotspot should be scaled & rotated.  We're using the icon created for 2.0,
   // on the display with dsf=1.0, so the host spot should be
   // ((32 - 20) / 2, 10 / 2) = (6, 5).
@@ -76,112 +77,110 @@ TEST(WebCursorTest, CursorInfoConstructorCustom) {
 }
 
 TEST(WebCursorTest, CopyConstructorType) {
-  CursorInfo info(ui::mojom::CursorType::kHand);
-  WebCursor cursor(info);
-  WebCursor copy(cursor);
-  EXPECT_EQ(cursor, copy);
+  ui::Cursor cursor(ui::mojom::CursorType::kHand);
+  WebCursor webcursor(cursor);
+  WebCursor copy(webcursor);
+  EXPECT_EQ(webcursor, copy);
 }
 
 TEST(WebCursorTest, CopyConstructorCustom) {
-  CursorInfo info(ui::mojom::CursorType::kCustom);
-  info.custom_image = CreateTestBitmap(32, 32);
-  info.hotspot = gfx::Point(10, 20);
-  info.image_scale_factor = 1.5f;
-  WebCursor cursor(info);
-  WebCursor copy(cursor);
-  EXPECT_EQ(cursor, copy);
+  ui::Cursor cursor(ui::mojom::CursorType::kCustom);
+  cursor.set_custom_bitmap(CreateTestBitmap(32, 32));
+  cursor.set_custom_hotspot(gfx::Point(10, 20));
+  cursor.set_image_scale_factor(1.5f);
+  WebCursor webcursor(cursor);
+  WebCursor copy(webcursor);
+  EXPECT_EQ(webcursor, copy);
 }
 
 TEST(WebCursorTest, ClampHotspot) {
   // Initialize a cursor with an invalid hotspot; it should be clamped.
-  CursorInfo info(ui::mojom::CursorType::kCustom);
-  info.hotspot = gfx::Point(100, 100);
-  info.custom_image = CreateTestBitmap(5, 7);
-  WebCursor cursor(info);
-  EXPECT_EQ(gfx::Point(4, 6), cursor.info().hotspot);
-  // SetInfo should also clamp the hotspot.
-  EXPECT_TRUE(cursor.SetInfo(info));
-  EXPECT_EQ(gfx::Point(4, 6), cursor.info().hotspot);
+  ui::Cursor cursor(ui::mojom::CursorType::kCustom);
+  cursor.set_custom_hotspot(gfx::Point(100, 100));
+  cursor.set_custom_bitmap(CreateTestBitmap(5, 7));
+  WebCursor webcursor(cursor);
+  EXPECT_EQ(gfx::Point(4, 6), webcursor.cursor().custom_hotspot());
+  // SetCursor should also clamp the hotspot.
+  EXPECT_TRUE(webcursor.SetCursor(cursor));
+  EXPECT_EQ(gfx::Point(4, 6), webcursor.cursor().custom_hotspot());
 }
 
-TEST(WebCursorTest, SetInfo) {
-  WebCursor cursor;
-  EXPECT_TRUE(cursor.SetInfo(CursorInfo()));
-  EXPECT_TRUE(cursor.SetInfo(CursorInfo(ui::mojom::CursorType::kHand)));
-  EXPECT_TRUE(cursor.SetInfo(CursorInfo(ui::mojom::CursorType::kCustom)));
+TEST(WebCursorTest, SetCursor) {
+  WebCursor webcursor;
+  EXPECT_TRUE(webcursor.SetCursor(ui::Cursor()));
+  EXPECT_TRUE(webcursor.SetCursor(ui::Cursor(ui::mojom::CursorType::kHand)));
+  EXPECT_TRUE(webcursor.SetCursor(ui::Cursor(ui::mojom::CursorType::kCustom)));
 
-  CursorInfo info(ui::mojom::CursorType::kCustom);
-  info.custom_image = CreateTestBitmap(32, 32);
-  info.hotspot = gfx::Point(10, 20);
-  info.image_scale_factor = 1.5f;
-  EXPECT_TRUE(cursor.SetInfo(info));
+  ui::Cursor cursor(ui::mojom::CursorType::kCustom);
+  cursor.set_custom_bitmap(CreateTestBitmap(32, 32));
+  cursor.set_custom_hotspot(gfx::Point(10, 20));
+  cursor.set_image_scale_factor(1.5f);
+  EXPECT_TRUE(webcursor.SetCursor(cursor));
 
-  // SetInfo should return false when the scale factor is too small.
-  info.image_scale_factor = 0.001f;
-  EXPECT_FALSE(cursor.SetInfo(info));
+  // SetCursor should return false when the scale factor is too small.
+  cursor.set_image_scale_factor(0.001f);
+  EXPECT_FALSE(webcursor.SetCursor(cursor));
 
-  // SetInfo should return false when the scale factor is too large.
-  info.image_scale_factor = 1000.f;
-  EXPECT_FALSE(cursor.SetInfo(info));
+  // SetCursor should return false when the scale factor is too large.
+  cursor.set_image_scale_factor(1000.f);
+  EXPECT_FALSE(webcursor.SetCursor(cursor));
 
-  // SetInfo should return false when the image width is too large.
-  info.image_scale_factor = 1.f;
-  info.custom_image = CreateTestBitmap(1025, 3);
-  EXPECT_FALSE(cursor.SetInfo(info));
+  // SetCursor should return false when the image width is too large.
+  cursor.set_image_scale_factor(1.f);
+  cursor.set_custom_bitmap(CreateTestBitmap(1025, 3));
+  EXPECT_FALSE(webcursor.SetCursor(cursor));
 
-  // SetInfo should return false when the image height is too large.
-  info.custom_image = CreateTestBitmap(3, 1025);
-  EXPECT_FALSE(cursor.SetInfo(info));
+  // SetCursor should return false when the image height is too large.
+  cursor.set_custom_bitmap(CreateTestBitmap(3, 1025));
+  EXPECT_FALSE(webcursor.SetCursor(cursor));
 
-  // SetInfo should return false when the scaled image width is too large.
-  info.image_scale_factor = 0.02f;
-  info.custom_image = CreateTestBitmap(50, 5);
-  EXPECT_FALSE(cursor.SetInfo(info));
+  // SetCursor should return false when the scaled image width is too large.
+  cursor.set_image_scale_factor(0.02f);
+  cursor.set_custom_bitmap(CreateTestBitmap(50, 5));
+  EXPECT_FALSE(webcursor.SetCursor(cursor));
 
-  // SetInfo should return false when the scaled image height is too large.
-  info.image_scale_factor = 0.1f;
-  info.custom_image = CreateTestBitmap(5, 200);
-  EXPECT_FALSE(cursor.SetInfo(info));
+  // SetCursor should return false when the scaled image height is too large.
+  cursor.set_image_scale_factor(0.1f);
+  cursor.set_custom_bitmap(CreateTestBitmap(5, 200));
+  EXPECT_FALSE(webcursor.SetCursor(cursor));
 }
 
 #if defined(USE_AURA)
 TEST(WebCursorTest, CursorScaleFactor) {
-  CursorInfo info;
-  info.type = ui::mojom::CursorType::kCustom;
-  info.hotspot = gfx::Point(0, 1);
-  info.image_scale_factor = 2.0f;
-  info.custom_image = CreateTestBitmap(128, 128);
-  WebCursor cursor(info);
+  ui::Cursor cursor(ui::mojom::CursorType::kCustom);
+  cursor.set_custom_hotspot(gfx::Point(0, 1));
+  cursor.set_image_scale_factor(2.0f);
+  cursor.set_custom_bitmap(CreateTestBitmap(128, 128));
+  WebCursor webcursor(cursor);
 
   display::Display display;
   display.set_device_scale_factor(4.2f);
-  cursor.SetDisplayInfo(display);
+  webcursor.SetDisplayInfo(display);
 
 #if defined(USE_OZONE)
   // For Ozone cursors, the size of the cursor is capped at 64px, and this is
   // enforce through the calculated scale factor.
-  EXPECT_EQ(0.5f, cursor.GetNativeCursor().image_scale_factor());
+  EXPECT_EQ(0.5f, webcursor.GetNativeCursor().image_scale_factor());
 #else
-  EXPECT_EQ(2.1f, cursor.GetNativeCursor().image_scale_factor());
+  EXPECT_EQ(2.1f, webcursor.GetNativeCursor().image_scale_factor());
 #endif
 
   // Test that the Display dsf is copied.
-  WebCursor copy(cursor);
-  EXPECT_EQ(cursor.GetNativeCursor().image_scale_factor(),
+  WebCursor copy(webcursor);
+  EXPECT_EQ(webcursor.GetNativeCursor().image_scale_factor(),
             copy.GetNativeCursor().image_scale_factor());
 }
 
 TEST(WebCursorTest, UnscaledImageCopy) {
-  CursorInfo info;
-  info.type = ui::mojom::CursorType::kCustom;
-  info.hotspot = gfx::Point(0, 1);
-  info.custom_image = CreateTestBitmap(2, 2);
-  WebCursor cursor(info);
+  ui::Cursor cursor(ui::mojom::CursorType::kCustom);
+  cursor.set_custom_hotspot(gfx::Point(0, 1));
+  cursor.set_custom_bitmap(CreateTestBitmap(2, 2));
+  WebCursor webcursor(cursor);
 
   SkBitmap copy;
   gfx::Point hotspot;
   float dsf = 0.f;
-  cursor.CreateScaledBitmapAndHotspotFromCustomData(&copy, &hotspot, &dsf);
+  webcursor.CreateScaledBitmapAndHotspotFromCustomData(&copy, &hotspot, &dsf);
   EXPECT_EQ(1.f, dsf);
   EXPECT_EQ(2, copy.width());
   EXPECT_EQ(2, copy.height());
@@ -192,17 +191,16 @@ TEST(WebCursorTest, UnscaledImageCopy) {
 
 #if defined(OS_WIN)
 void ScaleCursor(float scale, int hotspot_x, int hotspot_y) {
-  CursorInfo info;
-  info.type = ui::mojom::CursorType::kCustom;
-  info.hotspot = gfx::Point(hotspot_x, hotspot_y);
-  info.custom_image = CreateTestBitmap(10, 10);
-  WebCursor cursor(info);
+  ui::Cursor cursor(ui::mojom::CursorType::kCustom);
+  cursor.set_custom_hotspot(gfx::Point(hotspot_x, hotspot_y));
+  cursor.set_custom_bitmap(CreateTestBitmap(10, 10));
+  WebCursor webcursor(cursor);
 
   display::Display display;
   display.set_device_scale_factor(scale);
-  cursor.SetDisplayInfo(display);
+  webcursor.SetDisplayInfo(display);
 
-  HCURSOR windows_cursor_handle = cursor.GetNativeCursor().platform();
+  HCURSOR windows_cursor_handle = webcursor.GetNativeCursor().platform();
   EXPECT_NE(nullptr, windows_cursor_handle);
   ICONINFO windows_icon_info;
   EXPECT_TRUE(GetIconInfo(windows_cursor_handle, &windows_icon_info));

@@ -25,12 +25,6 @@ UI_BASE_EXPORT
 @interface MenuControllerCocoa
     : NSObject<NSMenuDelegate, NSUserInterfaceValidations>
 
-// Whether to activate selected menu items via a posted task. This may allow the
-// selection to be handled earlier, whilst the menu is fading out. If the posted
-// task wasn't processed by the time the action is normally sent, it will be
-// sent synchronously at that stage.
-@property(nonatomic, assign) BOOL postItemSelectedAsTask;
-
 // Note that changing this will have no effect if you use
 // |-initWithModel:useWithPopUpButtonCell:| or after the first call to |-menu|.
 @property(nonatomic, assign) BOOL useWithPopUpButtonCell;

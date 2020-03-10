@@ -73,7 +73,7 @@ namespace blink {
 
 namespace {
 
-bool CheckForUnoptimizedImagePolicy(const Document& document,
+bool CheckForUnoptimizedImagePolicy(Document& document,
                                     ImageResourceContent* new_image) {
   if (!new_image)
     return false;
@@ -81,7 +81,10 @@ bool CheckForUnoptimizedImagePolicy(const Document& document,
   // Render the image as a placeholder image if the image is not sufficiently
   // well-compressed, according to the unoptimized image feature policies on
   // |document|.
-  if (RuntimeEnabledFeatures::UnoptimizedImagePoliciesEnabled(&document) &&
+  // Note: UnoptimizedImagePolicies is currently part of DocumentPolicy.
+  // The original runtime feature UnoptimizedImagePolicies is no longer used,
+  // and are planned to be removed.
+  if (RuntimeEnabledFeatures::DocumentPolicyEnabled(&document) &&
       !new_image->IsAcceptableCompressionRatio(
           *document.ToExecutionContext())) {
     return true;

@@ -8,17 +8,15 @@ import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.TextView;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -29,6 +27,7 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.TextMessagePreference;
+import org.chromium.chrome.browser.settings.homepage.HomepageMetricsEnums.HomepageLocationType;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -82,6 +81,11 @@ public class HomepageSettingsFragmentTest {
     private static final String ASSERT_MESSAGE_DUET_SWITCH_INVISIBLE =
             "Switch should not be visible when duet is enabled.";
 
+    private static final String ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT =
+            "Count for user action <Settings.Homepage.LocationChanged> is different.";
+    private static final String ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH =
+            "HomepageLocationType is different than test settings.";
+
     private static final String TEST_URL_FOO = "http://127.0.0.1:8000/foo.html";
     private static final String TEST_URL_BAR = "http://127.0.0.1:8000/bar.html";
     private static final String CHROME_NTP = UrlConstants.NTP_NON_NATIVE_URL;
@@ -103,16 +107,6 @@ public class HomepageSettingsFragmentTest {
     private TextView mTitleTextView;
     private RadioButtonWithDescription mChromeNtpRadioButton;
     private RadioButtonWithEditText mCustomUriRadioButton;
-
-    @Before
-    public void setup() {
-        RecordHistogram.setDisabledForTests(true);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
-    }
 
     private void launchSettingsActivity() {
         SettingsActivity homepagePreferenceActivity =
@@ -160,6 +154,9 @@ public class HomepageSettingsFragmentTest {
                 ASSERT_MESSAGE_RADIO_BUTTON_CUSTOMIZED_CHECK, mCustomUriRadioButton.isChecked());
         Assert.assertEquals(ASSERT_MESSAGE_EDIT_TEXT, TEST_URL_BAR,
                 mCustomUriRadioButton.getPrimaryText().toString());
+        Assert.assertEquals(ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH,
+                HomepageLocationType.USER_CUSTOMIZED_NTP,
+                HomepageManager.getInstance().getHomepageLocationType());
     }
 
     @Test
@@ -185,6 +182,9 @@ public class HomepageSettingsFragmentTest {
                 ASSERT_MESSAGE_RADIO_BUTTON_CUSTOMIZED_CHECK, mCustomUriRadioButton.isChecked());
         Assert.assertEquals(ASSERT_MESSAGE_EDIT_TEXT, TEST_URL_BAR,
                 mCustomUriRadioButton.getPrimaryText().toString());
+        Assert.assertEquals(ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH,
+                HomepageLocationType.USER_CUSTOMIZED_NTP,
+                HomepageManager.getInstance().getHomepageLocationType());
 
         HomepageSettings.setIsHomeButtonOnBottomToolbar(false);
     }
@@ -209,6 +209,9 @@ public class HomepageSettingsFragmentTest {
                 ASSERT_MESSAGE_RADIO_BUTTON_CUSTOMIZED_CHECK, mCustomUriRadioButton.isChecked());
         Assert.assertEquals(ASSERT_MESSAGE_EDIT_TEXT, TEST_URL_BAR,
                 mCustomUriRadioButton.getPrimaryText().toString());
+        Assert.assertEquals(ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH,
+                HomepageLocationType.USER_CUSTOMIZED_OTHER,
+                HomepageManager.getInstance().getHomepageLocationType());
     }
 
     @Test
@@ -240,6 +243,9 @@ public class HomepageSettingsFragmentTest {
         Assert.assertFalse(
                 "Managed text message preference should be in visible when duet is disabled.",
                 mManagedText.isVisible());
+        Assert.assertEquals(ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH,
+                HomepageLocationType.POLICY_OTHER,
+                HomepageManager.getInstance().getHomepageLocationType());
 
         // Reset policy
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
@@ -270,6 +276,8 @@ public class HomepageSettingsFragmentTest {
         Assert.assertFalse(
                 "Managed text message preference should be invisible when duet is disabled.",
                 mManagedText.isVisible());
+        Assert.assertEquals(ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH, HomepageLocationType.POLICY_NTP,
+                HomepageManager.getInstance().getHomepageLocationType());
 
         // Reset policy and feature flags
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
@@ -305,6 +313,9 @@ public class HomepageSettingsFragmentTest {
                 mManagedText.isVisible());
         Assert.assertFalse(
                 "Managed text message preference should be disabled.", mManagedText.isEnabled());
+        Assert.assertEquals(ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH,
+                HomepageLocationType.POLICY_OTHER,
+                HomepageManager.getInstance().getHomepageLocationType());
 
         // Reset policy
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
@@ -334,6 +345,10 @@ public class HomepageSettingsFragmentTest {
         Assert.assertEquals(ASSERT_MESSAGE_EDIT_TEXT, TEST_URL_FOO,
                 mCustomUriRadioButton.getPrimaryText().toString());
 
+        Assert.assertEquals(ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH,
+                HomepageLocationType.PARTNER_PROVIDED_OTHER,
+                HomepageManager.getInstance().getHomepageLocationType());
+
         // Reset partner provided information
         PartnerBrowserCustomizations.setHomepageForTests(origPartnerHomepage);
     }
@@ -355,6 +370,10 @@ public class HomepageSettingsFragmentTest {
         Assert.assertTrue(ASSERT_MESSAGE_RADIO_BUTTON_NTP_CHECK, mChromeNtpRadioButton.isChecked());
         Assert.assertFalse(
                 ASSERT_MESSAGE_RADIO_BUTTON_CUSTOMIZED_CHECK, mCustomUriRadioButton.isChecked());
+
+        Assert.assertEquals(ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH,
+                HomepageLocationType.DEFAULT_NTP,
+                HomepageManager.getInstance().getHomepageLocationType());
 
         // When no default homepage provided, the string should just be empty.
         Assert.assertEquals(
@@ -397,6 +416,7 @@ public class HomepageSettingsFragmentTest {
         mHomepageTestRule.useChromeNTPForTest();
 
         launchSettingsActivity();
+        LocationChangedCounter actionCounter = new LocationChangedCounter();
 
         Assert.assertTrue(ASSERT_MESSAGE_SWITCH_ENABLE, mSwitch.isEnabled());
         Assert.assertTrue(ASSERT_MESSAGE_TITLE_ENABLED, mTitleTextView.isEnabled());
@@ -441,6 +461,11 @@ public class HomepageSettingsFragmentTest {
                 ASSERT_MESSAGE_RADIO_BUTTON_CUSTOMIZED_CHECK, mCustomUriRadioButton.isChecked());
         Assert.assertEquals(ASSERT_MESSAGE_EDIT_TEXT, TEST_URL_FOO,
                 mCustomUriRadioButton.getPrimaryText().toString());
+
+        Assert.assertEquals(
+                "Histogram for location change should not change when toggling switch preference.",
+                0, actionCounter.locationChangedCount);
+        actionCounter.tearDown();
     }
 
     /**
@@ -452,6 +477,7 @@ public class HomepageSettingsFragmentTest {
     public void testCheckRadioButtons() {
         mHomepageTestRule.useCustomizedHomepageForTest(TEST_URL_FOO);
         launchSettingsActivity();
+        LocationChangedCounter counter = new LocationChangedCounter();
 
         // Initial state check
         Assert.assertTrue(ASSERT_MESSAGE_SWITCH_CHECK, mSwitch.isChecked());
@@ -464,6 +490,8 @@ public class HomepageSettingsFragmentTest {
                 mCustomUriRadioButton.getPrimaryText().toString());
         Assert.assertEquals(
                 ASSERT_HOMEPAGE_MANAGER_SETTINGS, TEST_URL_FOO, HomepageManager.getHomepageUri());
+        Assert.assertEquals(
+                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 0, counter.locationChangedCount);
 
         // Check radio button to select NTP as homepage
         checkRadioButtonAndWait(mChromeNtpRadioButton);
@@ -474,6 +502,8 @@ public class HomepageSettingsFragmentTest {
                 mCustomUriRadioButton.getPrimaryText().toString());
         Assert.assertTrue(ASSERT_HOMEPAGE_MANAGER_SETTINGS,
                 NewTabPage.isNTPUrl(HomepageManager.getHomepageUri()));
+        Assert.assertEquals(
+                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 1, counter.locationChangedCount);
 
         // Check back to customized radio button
         checkRadioButtonAndWait(mCustomUriRadioButton);
@@ -484,6 +514,8 @@ public class HomepageSettingsFragmentTest {
                 mCustomUriRadioButton.getPrimaryText().toString());
         Assert.assertEquals(
                 ASSERT_HOMEPAGE_MANAGER_SETTINGS, TEST_URL_FOO, HomepageManager.getHomepageUri());
+        Assert.assertEquals(
+                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 2, counter.locationChangedCount);
     }
 
     /**
@@ -495,6 +527,7 @@ public class HomepageSettingsFragmentTest {
     public void testChangeCustomized() {
         mHomepageTestRule.useChromeNTPForTest();
         launchSettingsActivity();
+        LocationChangedCounter actionCounter = new LocationChangedCounter();
 
         // Initial state check
         Assert.assertTrue(ASSERT_MESSAGE_SWITCH_CHECK, mSwitch.isChecked());
@@ -505,6 +538,8 @@ public class HomepageSettingsFragmentTest {
                 ASSERT_MESSAGE_EDIT_TEXT, "", mCustomUriRadioButton.getPrimaryText().toString());
         Assert.assertTrue(ASSERT_HOMEPAGE_MANAGER_SETTINGS,
                 NewTabPage.isNTPUrl(HomepageManager.getHomepageUri()));
+        Assert.assertEquals(
+                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 0, actionCounter.locationChangedCount);
 
         // Update the text box. To do this, request focus for customized radio button so that the
         // checked option will be changed.
@@ -526,17 +561,35 @@ public class HomepageSettingsFragmentTest {
                 ASSERT_MESSAGE_RADIO_BUTTON_CUSTOMIZED_CHECK, mCustomUriRadioButton.isChecked());
         Assert.assertEquals(
                 ASSERT_HOMEPAGE_MANAGER_SETTINGS, TEST_URL_FOO, HomepageManager.getHomepageUri());
+        Assert.assertEquals(
+                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 1, actionCounter.locationChangedCount);
 
         // Update the text box, homepage should change accordingly.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mCustomUriRadioButton.setPrimaryText(TEST_URL_BAR));
         Assert.assertEquals(
                 ASSERT_HOMEPAGE_MANAGER_SETTINGS, TEST_URL_BAR, HomepageManager.getHomepageUri());
+        Assert.assertEquals(
+                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 2, actionCounter.locationChangedCount);
+
+        actionCounter.tearDown();
     }
 
     private void checkRadioButtonAndWait(RadioButtonWithDescription radioButton) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { TouchCommon.singleClickView(radioButton, 5, 5); });
         CriteriaHelper.pollUiThread(radioButton::isChecked, "Radio button is never checked.");
+    }
+
+    /**
+     * Record user action "Settings.Homepage.LocationChanged"
+     */
+    private static class LocationChangedCounter extends UserActionTester {
+        public int locationChangedCount;
+
+        @Override
+        public void onActionRecorded(String action) {
+            if (action.equals("Settings.Homepage.LocationChanged")) ++locationChangedCount;
+        }
     }
 }

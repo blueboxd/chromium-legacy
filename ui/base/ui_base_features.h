@@ -58,11 +58,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kTSFImeSupport;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUsingWMPointerForTouch();
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kEnableAutomaticUiAdjustmentsForTouch;
-#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kDirectManipulationStylus;
@@ -72,10 +67,6 @@ extern const base::Feature kDirectManipulationStylus;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kFormControlsRefresh;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsFormControlsRefreshEnabled();
-
-// Whether the UI may accommodate touch input in response to hardware changes.
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-bool IsAutomaticUiAdjustmentsForTouchEnabled();
 
 // Use mojo communication in the drm platform instead of paramtraits. Remove
 // this switch (and associated code) when the drm platform always uses mojo

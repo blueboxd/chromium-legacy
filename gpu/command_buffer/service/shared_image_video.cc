@@ -320,20 +320,19 @@ class SharedImageRepresentationVideoSkiaVk
   sk_sp<SkPromiseImageTexture> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores) override {
-    if (!scoped_hardware_buffer_) {
-      auto* video_backing = static_cast<SharedImageVideo*>(backing());
-      DCHECK(video_backing);
-      auto* stream_texture_sii = video_backing->stream_texture_sii_.get();
+    DCHECK(!scoped_hardware_buffer_);
+    auto* video_backing = static_cast<SharedImageVideo*>(backing());
+    DCHECK(video_backing);
+    auto* stream_texture_sii = video_backing->stream_texture_sii_.get();
 
-      // GetAHardwareBuffer() renders the latest image and gets AHardwareBuffer
-      // from it.
-      scoped_hardware_buffer_ = stream_texture_sii->GetAHardwareBuffer();
-      if (!scoped_hardware_buffer_) {
-        LOG(ERROR) << "Failed to get the hardware buffer.";
-        return nullptr;
-      }
-      DCHECK(scoped_hardware_buffer_->buffer());
+    // GetAHardwareBuffer() renders the latest image and gets AHardwareBuffer
+    // from it.
+    scoped_hardware_buffer_ = stream_texture_sii->GetAHardwareBuffer();
+    if (!scoped_hardware_buffer_) {
+      LOG(ERROR) << "Failed to get the hardware buffer.";
+      return nullptr;
     }
+    DCHECK(scoped_hardware_buffer_->buffer());
 
     // Wait on the sync fd attached to the buffer to make sure buffer is
     // ready before the read. This is done by inserting the sync fd semaphore
@@ -353,6 +352,7 @@ class SharedImageRepresentationVideoSkiaVk
   }
 
   void EndReadAccess() override {
+    DCHECK(scoped_hardware_buffer_);
     DCHECK(end_access_semaphore_ != VK_NULL_HANDLE);
 
     SemaphoreHandle semaphore_handle = vk_implementation()->GetSemaphoreHandle(
@@ -367,6 +367,7 @@ class SharedImageRepresentationVideoSkiaVk
     fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
         end_access_semaphore_);
     end_access_semaphore_ = VK_NULL_HANDLE;
+    scoped_hardware_buffer_ = nullptr;
   }
 
  private:

@@ -286,6 +286,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="3058498974290601450">Anda boleh mematikan penyegerakan pada bila-bila masa dalam tetapan</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> penanda halaman}other{<ph name="BOOKMARKS_COUNT_MANY" /> penanda halaman}}</translation>
 <translation id="3089395242580810162">Buka dalam tab inkognito</translation>
+<translation id="3114012059975132928">Pemain video</translation>
 <translation id="3123473560110926937">Disekat di sesetengah tapak</translation>
 <translation id="3123734510202723619">Pengumuman</translation>
 <translation id="3137521801621304719">Tinggalkan mod inkognito</translation>
@@ -352,6 +353,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="3587482841069643663">Semua</translation>
 <translation id="358794129225322306">Benarkan tapak memuat turun berbilang fail secara automatik.</translation>
 <translation id="3590487821116122040">Storan tapak yang Chrome anggap tidak penting (misalnya tapak yang tiada tetapan yang disimpan atau yang jarang anda lawati)</translation>
+<translation id="3594780231884063836">Redam video</translation>
 <translation id="3599863153486145794">Mengosongkan sejarah daripada semua peranti yang dilog masuk. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Redam tapak yang memainkan bunyi</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -605,6 +607,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5456381639095306749">Muat turun halaman</translation>
 <translation id="548278423535722844">Buka dalam apl peta</translation>
 <translation id="5487521232677179737">Kosongkan data</translation>
+<translation id="5489227211564503167"><ph name="ELAPSED_TIME" /> masa berlalu daripada <ph name="TOTAL_TIME" /></translation>
 <translation id="5494752089476963479">Sekat iklan di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="5500777121964041360">Mungkin tidak tersedia di lokasi anda</translation>
 <translation id="5505264765875738116">Tapak tidak boleh membuat permintaan untuk menghantar pemberitahuan</translation>
@@ -665,6 +668,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5864419784173784555">Menunggu muat turun lain…</translation>
 <translation id="5865733239029070421">Menghantar perangkaan penggunaan dan laporan ranap sistem secara automatik kepada Google</translation>
 <translation id="5869522115854928033">Kata laluan disimpan</translation>
+<translation id="5876056640971328065">Jeda video</translation>
 <translation id="5884076754568147479">Untuk membantu anda menyelesaikan tugasan, Google akan menerima URL dan kandungan tapak tempat anda menggunakan Assistant, serta maklumat yang anda serahkan melalui Assistant</translation>
 <translation id="5902828464777634901">Semua data setempat yang disimpan oleh tapak web ini, termasuk kuki, akan dipadamkan.</translation>
 <translation id="5919204609460789179">Kemas kini <ph name="PRODUCT_NAME" /> untuk memulakan penyegerakan</translation>
@@ -728,6 +732,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6381421346744604172">Tapak web digelapkan</translation>
 <translation id="6388207532828177975">Kosongkan &amp; tetapkan semula</translation>
 <translation id="6395288395575013217">PAUTAN</translation>
+<translation id="6397616442223433927">Kembali dalam talian</translation>
 <translation id="6404511346730675251">Edit penanda halaman</translation>
 <translation id="6406506848690869874">Segerak</translation>
 <translation id="6410973561433500075">Masuki AR daripada <ph name="DOMAIN" />?</translation>
@@ -796,6 +801,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6846298663435243399">Memuatkan…</translation>
 <translation id="6850409657436465440">Muat turun anda masih berlangsung</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tab telah ditutup</translation>
+<translation id="6864395892908308021">Peranti ini tidak dapat membaca NFC</translation>
 <translation id="6864459304226931083">Muat turun imej</translation>
 <translation id="6865313869410766144">Autolengkap data borang</translation>
 <translation id="6884306546558072722">Teruskan meneroka di luar talian</translation>
@@ -916,6 +922,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="780301667611848630">Tidak, terima kasih</translation>
 <translation id="7810647596859435254">Buka dengan...</translation>
 <translation id="7821588508402923572">Penjimatan data anda akan dipaparkan di sini</translation>
+<translation id="783819812427904514">Nyahredam video</translation>
 <translation id="784934925303690534">Julat masa</translation>
 <translation id="7851858861565204677">Peranti lain</translation>
 <translation id="7875915731392087153">Buat e-mel</translation>

@@ -365,8 +365,17 @@
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_AGAIN" desc="Button to start bulk password check manually in passwords check section.">
     Check again
   </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_AGAIN_AFTER_ERROR" desc="Button to start bulk password check manually in passwords check section after it already failed once.">
+    Try again
+  </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_AGAIN_IN_ACCOUNT" desc="Link suggesting to perform a bulk leak check in the Google Account page.">
+    Check in Google Account.
+  </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_PROGRESS" desc="Text for a label showing how many passwords were checked so far and how many passwords need to be checked in total.">
     Checking passwords (<ph name="CHECKED_PASSWORDS">$1<ex>6</ex></ph> of <ph name="TOTAL_PASSWORDS">$2<ex>31</ex></ph>)…
+  </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_STOP" desc="Button to manually stop an ongoing bulk password check.">
+    Cancel
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_JUST_NOW" desc="Label shown when a compromised credential was found less than a minute ago">
     Just now

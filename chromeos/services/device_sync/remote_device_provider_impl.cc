@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -18,6 +19,50 @@
 namespace chromeos {
 
 namespace device_sync {
+
+namespace {
+
+const int kMaxNumberOfDevicesToLog = 50;
+
+// Only used while v1 and v2 DeviceSync are running in parallel.
+void LogRemoteDeviceCountMetrics(
+    const multidevice::RemoteDeviceList& v1_devices,
+    const multidevice::RemoteDeviceList& v2_devices,
+    size_t num_v2_devices_with_decrypted_public_key,
+    size_t num_v1_devices_replaced_by_v2_devices) {
+  // At a minimum, the local device should always be returned from a successful
+  // v1 or v2 DeviceSync. Only log metrics if v1 and v2 devices are available,
+  // in other words, if a v1 *and* v2 DeviceSync has previously occurred.
+  if (v1_devices.empty() || v2_devices.empty())
+    return;
+
+  base::UmaHistogramExactLinear(
+      "CryptAuth.DeviceSyncV2.RemoteDeviceProvider.NumV1Devices",
+      v1_devices.size(), kMaxNumberOfDevicesToLog);
+  base::UmaHistogramExactLinear(
+      "CryptAuth.DeviceSyncV2.RemoteDeviceProvider.NumV2Devices",
+      v2_devices.size(), kMaxNumberOfDevicesToLog);
+
+  // Note: By CryptAuth server design, v2 devices should always be a subset of
+  // v1 devices. Race conditions might occur when a user adds a new device
+  // because v1 and v2 devices are retrieved in different RPC calls; however,
+  // this is only meant to be a rough estimate.
+  base::UmaHistogramPercentage(
+      "CryptAuth.DeviceSyncV2.RemoteDeviceProvider.RatioOfV2ToV1Devices",
+      (v2_devices.size() * 100) / v1_devices.size());
+
+  base::UmaHistogramPercentage(
+      "CryptAuth.DeviceSyncV2.RemoteDeviceProvider."
+      "PercentageOfV2DevicesWithDecryptedPublicKey",
+      (num_v2_devices_with_decrypted_public_key * 100) / v2_devices.size());
+
+  base::UmaHistogramPercentage(
+      "CryptAuth.DeviceSyncV2.RemoteDeviceProvider."
+      "PercentageOfV1DevicesReplacedByV2Devices",
+      (num_v1_devices_replaced_by_v2_devices * 100) / v1_devices.size());
+}
+
+}  // namespace
 
 // static
 RemoteDeviceProviderImpl::Factory*
@@ -163,10 +208,14 @@ void RemoteDeviceProviderImpl::MergeV1andV2SyncedDevices() {
       synced_remote_devices_;
 
   synced_remote_devices_ = synced_v1_remote_devices_to_be_merged_;
+  size_t num_v2_devices_with_decrypted_public_key = 0;
+  size_t num_v1_devices_replaced_by_v2_devices = 0;
   for (const auto& v2_device : synced_v2_remote_devices_to_be_merged_) {
     // Ignore v2 devices without a decrypted public key.
     if (v2_device.public_key.empty())
       continue;
+
+    ++num_v2_devices_with_decrypted_public_key;
 
     std::string v2_public_key = v2_device.public_key;
     auto it = std::find_if(
@@ -178,11 +227,18 @@ void RemoteDeviceProviderImpl::MergeV1andV2SyncedDevices() {
     // If a v1 device has the same public key as the v2 device, replace the
     // v1 device with the v2 device; otherwise, append the v2 device to the
     // synced-device list.
-    if (it != synced_remote_devices_.end())
+    if (it != synced_remote_devices_.end()) {
       *it = v2_device;
-    else
+      ++num_v1_devices_replaced_by_v2_devices;
+    } else {
       synced_remote_devices_.push_back(v2_device);
+    }
   }
+
+  LogRemoteDeviceCountMetrics(synced_v1_remote_devices_to_be_merged_,
+                              synced_v2_remote_devices_to_be_merged_,
+                              num_v2_devices_with_decrypted_public_key,
+                              num_v1_devices_replaced_by_v2_devices);
 
   // We need to explicitly check for changes to the synced-device list. It
   // is possible that the v1 and/or v2 device lists changed but the merged

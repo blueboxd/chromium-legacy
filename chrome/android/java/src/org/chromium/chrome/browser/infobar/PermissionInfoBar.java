@@ -10,8 +10,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.permissions.ChromePermissionsClient;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.settings.website.SingleCategorySettings;
-import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
+import org.chromium.chrome.browser.site_settings.SiteSettingsCategory;
 import org.chromium.components.permissions.AndroidPermissionRequester;
 import org.chromium.ui.base.WindowAndroid;
 

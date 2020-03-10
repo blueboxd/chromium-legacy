@@ -1614,6 +1614,77 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Blink.HTMLParsing">
+  <owner>schenney@chromium.org</owner>
+  <owner>dom-dev@chromium.org</owner>
+  <summary>
+    Logged once per page load, to capture information about invocation of the
+    HTMLDocumentParser for the initial document load. Does not include other
+    aspects of document parsing, such as style sheet parsing or script execution
+    during parsing. Also does not include innerText parsing.
+
+    This event is not recorded on machines with low-resolution clocks.
+  </summary>
+  <metric name="ChunkCount">
+    <summary>
+      The number of chunks parsed while loading the page. Each chunk represents
+      a piece of the HTML content that can be loaded without blocking or
+      yielding.
+    </summary>
+  </metric>
+  <metric name="ParsingTimeMax">
+    <summary>
+      The maximum time used to parse a single chunk before being blocked,
+      yielding or completing, in microseconds.
+    </summary>
+  </metric>
+  <metric name="ParsingTimeMin">
+    <summary>
+      The minimum time used to parse a single chunk before being blocked,
+      yielding or completing, in microseconds.
+    </summary>
+  </metric>
+  <metric name="ParsingTimeTotal">
+    <summary>
+      The total amount of time spent in the HTMLDocumentParser parsing the page,
+      in microseconds.
+    </summary>
+  </metric>
+  <metric name="TokensParsedAverage">
+    <summary>
+      The average number of tokens parsed across all chunks.
+    </summary>
+  </metric>
+  <metric name="TokensParsedMax">
+    <summary>
+      The maximum number of tokens parsed as a chunk.
+    </summary>
+  </metric>
+  <metric name="TokensParsedMin">
+    <summary>
+      The minimum number of tokens parsed as a chunk.
+    </summary>
+  </metric>
+  <metric name="YieldedTimeAverage">
+    <summary>
+      The average time between parsing of two chunks, in microseconds. Will be
+      zero if only one chunk was parsed.
+    </summary>
+  </metric>
+  <metric name="YieldedTimeMax">
+    <summary>
+      The minimum time between parsing of two chunks, in microseconds. Will be
+      zero if only one chunk was parsed.
+    </summary>
+  </metric>
+  <metric name="YieldedTimeMin">
+    <summary>
+      The maximum time between parsing of two chunks, in microseconds. Will be
+      zero if only one chunk was parsed.
+    </summary>
+  </metric>
+</event>
+
 <event name="Blink.PageLoad">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
@@ -1621,6 +1692,8 @@ be describing additional metrics about the same event.
     The aggregated time spent in each metric's component from creation of the
     local frame view to the First Contentful Paint signal. The event is reported
     once per page load when First Contentful Paint is signaled.
+
+    This event is not recorded on machines with low-resolution clocks.
   </summary>
   <metric name="Animate">
     <summary>
@@ -1746,6 +1819,8 @@ be describing additional metrics about the same event.
     Metrics that measure various update times in Blink. This includes paint,
     compositing, and layout update times. The metrics are recorded at first
     lifecycle update and then a random frame with mean interval of 2000 frames.
+
+    This event is not recorded on machines with low-resolution clocks.
   </summary>
   <metric name="Animate">
     <summary>
@@ -3750,6 +3825,13 @@ be describing additional metrics about the same event.
     <summary>
       Marks a resource request from a website.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

@@ -161,7 +161,8 @@ class Shell : public WebContentsDelegate,
                           bool last_unlocked_by_target) override;
   void CloseContents(WebContents* source) override;
   bool CanOverscrollContent() override;
-  void DidNavigateMainFramePostCommit(WebContents* web_contents) override;
+  void NavigationStateChanged(WebContents* source,
+                              InvalidateTypes changed_flags) override;
   JavaScriptDialogManager* GetJavaScriptDialogManager(
       WebContents* source) override;
   std::unique_ptr<BluetoothChooser> RunBluetoothChooser(

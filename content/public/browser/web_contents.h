@@ -36,6 +36,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-forward.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
@@ -868,7 +869,12 @@ class WebContents : public PageNavigator,
   // Called when the response to a pending mouse lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully
   // locked.
-  virtual bool GotResponseToLockMouseRequest(bool allowed) = 0;
+  virtual bool GotResponseToLockMouseRequest(
+      blink::mojom::PointerLockResult result) = 0;
+
+  // Wrapper around GotResponseToLockMouseRequest to fit into
+  // ChromeWebViewPermissionHelperDelegate's structure.
+  virtual void GotLockMousePermissionResponse(bool allowed) = 0;
 
   // Called when the response to a keyboard mouse lock request has arrived.
   // Returns false if the request is no longer valid, otherwise true.

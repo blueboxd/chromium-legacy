@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -12,6 +13,8 @@ import android.view.MenuItem;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CollectionUtil;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -29,6 +32,10 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A class that handles selection action mode for an associated {@link Tab}.
@@ -67,7 +74,22 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
         notifyContextualActionBarVisibilityChanged(true);
-        return mHelper.onPrepareActionMode(mode, menu);
+        boolean res = mHelper.onPrepareActionMode(mode, menu);
+        Set<String> browsers = getPackageNames(PackageManagerUtils.queryAllWebBrowsersInfo());
+        Set<String> launchers = getPackageNames(PackageManagerUtils.queryAllLaunchersInfo());
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            if (item.getGroupId() != R.id.select_action_menu_text_processing_menus
+                    || item.getIntent() == null || item.getIntent().getComponent() == null) {
+                continue;
+            }
+            String packageName = item.getIntent().getComponent().getPackageName();
+            // Exclude actions from browsers and system launchers. https://crbug.com/850195
+            if (browsers.contains(packageName) || launchers.contains(packageName)) {
+                item.setVisible(false);
+            }
+        }
+        return res;
     }
 
     @Override
@@ -98,6 +120,12 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
         if (!mHelper.supportsFloatingActionMode()) {
             ((TabImpl) mTab).notifyContextualActionBarVisibilityChanged(show);
         }
+    }
+
+    private Set<String> getPackageNames(List<ResolveInfo> list) {
+        Set<String> set = new HashSet<>();
+        CollectionUtil.forEach(list, (info) -> set.add(info.activityInfo.packageName));
+        return set;
     }
 
     /**

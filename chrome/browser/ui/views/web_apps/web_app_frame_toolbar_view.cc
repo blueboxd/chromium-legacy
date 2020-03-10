@@ -272,7 +272,8 @@ class WebAppFrameToolbarView::NavigationButtonContainer
     const SkColor disabled_color =
         SkColorSetA(icon_color_, gfx::kDisabledControlAlpha);
 
-    const bool touch_ui = ui::MaterialDesignController::touch_ui();
+    const bool touch_ui =
+        ui::MaterialDesignController::GetInstance()->touch_ui();
     const gfx::VectorIcon& back_image = GetBackImage(touch_ui);
     back_button_->SetImage(views::Button::STATE_NORMAL,
                            gfx::CreateVectorIcon(back_image, icon_color_));

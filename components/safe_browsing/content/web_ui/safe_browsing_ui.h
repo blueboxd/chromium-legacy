@@ -419,11 +419,15 @@ class WebUIInfoSingleton {
 
   void AddListenerForTesting() { has_test_listener_ = true; }
 
+  void ClearListenerForTesting();
+
  private:
   WebUIInfoSingleton();
   ~WebUIInfoSingleton();
 
   void InitializeCookieManager();
+
+  void MaybeClearData();
 
   friend struct base::DefaultSingletonTraits<WebUIInfoSingleton>;
 

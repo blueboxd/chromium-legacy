@@ -39,10 +39,6 @@
 namespace ash {
 namespace {
 
-bool IsScrollableShelfEnabled() {
-  return chromeos::switches::ShouldShowScrollableShelf();
-}
-
 // Custom window targeter for the hotseat. Used so the hotseat only processes
 // events that land on the visible portion of the hotseat, and only while the
 // hotseat is not animating.
@@ -219,9 +215,6 @@ void HotseatWidget::DelegateView::Init(
     ui::AnimationMetricsReporter* background_metrics_reporter) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  if (!chromeos::switches::ShouldShowScrollableShelf())
-    return;
-
   WallpaperControllerImpl* wallpaper_controller =
       Shell::Get()->wallpaper_controller();
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -317,9 +310,6 @@ bool HotseatWidget::DelegateView::CanActivate() const {
 }
 
 void HotseatWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
-  if (!chromeos::switches::ShouldShowScrollableShelf())
-    return;
-
   views::View::ReorderChildLayers(parent_layer);
   parent_layer->StackAtBottom(&translucent_background_);
 }
@@ -375,18 +365,9 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
   set_focus_on_creation(false);
   GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
 
-  if (IsScrollableShelfEnabled()) {
-    scrollable_shelf_view_ = GetContentsView()->AddChildView(
-        std::make_unique<ScrollableShelfView>(ShelfModel::Get(), shelf));
-    scrollable_shelf_view_->Init();
-  } else {
-    // The shelf view observes the shelf model and creates icons as items are
-    // added to the model.
-    shelf_view_ = GetContentsView()->AddChildView(std::make_unique<ShelfView>(
-        ShelfModel::Get(), shelf, /*drag_and_drop_host=*/nullptr,
-        /*shelf_button_delegate=*/nullptr));
-    shelf_view_->Init();
-  }
+  scrollable_shelf_view_ = GetContentsView()->AddChildView(
+      std::make_unique<ScrollableShelfView>(ShelfModel::Get(), shelf));
+  scrollable_shelf_view_->Init();
   traslucent_background_metrics_reporter_ =
       std::make_unique<HotseatWidgetBackgroundAnimationMetricsReporter>(
           state());
@@ -418,11 +399,7 @@ bool HotseatWidget::OnNativeWidgetActivationChanged(bool active) {
   if (!Widget::OnNativeWidgetActivationChanged(active))
     return false;
 
-  if (IsScrollableShelfEnabled())
-    scrollable_shelf_view_->OnFocusRingActivationChanged(active);
-  else if (active)
-    GetShelfView()->SetPaneFocusAndFocusDefault();
-
+  scrollable_shelf_view_->OnFocusRingActivationChanged(active);
   return true;
 }
 
@@ -597,13 +574,8 @@ void HotseatWidget::SetFocusCycler(FocusCycler* focus_cycler) {
 }
 
 ShelfView* HotseatWidget::GetShelfView() {
-  if (IsScrollableShelfEnabled()) {
-    DCHECK(scrollable_shelf_view_);
-    return scrollable_shelf_view_->shelf_view();
-  }
-
-  DCHECK(shelf_view_);
-  return shelf_view_;
+  DCHECK(scrollable_shelf_view_);
+  return scrollable_shelf_view_->shelf_view();
 }
 
 int HotseatWidget::GetHotseatBackgroundBlurForTest() const {
@@ -624,9 +596,6 @@ void HotseatWidget::SetState(HotseatState state) {
     return;
 
   state_ = state;
-
-  if (!IsScrollableShelfEnabled())
-    return;
 
   // If the hotseat is not extended we can use the normal targeting as the
   // hidden parts of the hotseat will not block non-shelf items from taking

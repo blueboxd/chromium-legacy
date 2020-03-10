@@ -753,7 +753,7 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
         views::ScrollView::CreateScrollViewWithBorder();
     scroll->SetPreferredSize(gfx::Size(600, height));
     scroll->SetContents(base::WrapUnique(content));
-    scroll->SetBackgroundColor(SK_ColorTRANSPARENT);
+    scroll->SetBackgroundColor(base::nullopt);
     scroll->SetVerticalScrollBar(
         std::make_unique<views::OverlayScrollBar>(false));
     scroll->SetHorizontalScrollBar(

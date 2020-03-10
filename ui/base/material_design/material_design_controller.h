@@ -5,67 +5,76 @@
 #ifndef UI_BASE_MATERIAL_DESIGN_MATERIAL_DESIGN_CONTROLLER_H_
 #define UI_BASE_MATERIAL_DESIGN_MATERIAL_DESIGN_CONTROLLER_H_
 
-#include "base/macros.h"
+#include <string>
+
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 
-namespace base {
-template <typename T>
-class NoDestructor;
-}
-
+#if defined(OS_WIN)
 namespace gfx {
 class SingletonHwndObserver;
 }
+#endif
 
 namespace ui {
 
 class MaterialDesignControllerObserver;
 
-namespace test {
-class MaterialDesignControllerTestAPI;
-}  // namespace test
-
 // Central controller to handle material design modes.
 class UI_BASE_EXPORT MaterialDesignController {
  public:
-  // Initializes touch UI state based on command-line flags.
-  static void Initialize();
+  enum class TouchUiState {
+    kDisabled,
+    kAuto,
+    kEnabled,
+  };
 
-  static bool touch_ui() { return touch_ui_; }
+  class UI_BASE_EXPORT TouchUiScoperForTesting {
+   public:
+    explicit TouchUiScoperForTesting(
+        bool enabled,
+        MaterialDesignController* controller = GetInstance());
+    TouchUiScoperForTesting(const TouchUiScoperForTesting&) = delete;
+    TouchUiScoperForTesting& operator=(const TouchUiScoperForTesting&) = delete;
+    ~TouchUiScoperForTesting();
 
-  // Exposed for TabletModePageBehavior on ChromeOS + ash.
-  static void OnTabletModeToggled(bool enabled);
+   private:
+    MaterialDesignController* const controller_;
+    const TouchUiState old_state_;
+  };
 
   static MaterialDesignController* GetInstance();
+
+  explicit MaterialDesignController(
+      TouchUiState touch_ui_state = TouchUiState::kAuto);
+  MaterialDesignController(const MaterialDesignController&) = delete;
+  MaterialDesignController& operator=(const MaterialDesignController&) = delete;
+  ~MaterialDesignController();
+
+  bool touch_ui() const {
+    return (touch_ui_state_ == TouchUiState::kEnabled) ||
+           ((touch_ui_state_ == TouchUiState::kAuto) && tablet_mode_);
+  }
+
+  void OnTabletModeToggled(bool enabled);
 
   void AddObserver(MaterialDesignControllerObserver* observer);
   void RemoveObserver(MaterialDesignControllerObserver* observer);
 
  private:
-  friend class base::NoDestructor<MaterialDesignController>;
-  friend class test::MaterialDesignControllerTestAPI;
+  TouchUiState SetTouchUiState(TouchUiState touch_ui_state);
+  void NotifyObservers() const;
 
-  MaterialDesignController();
-  ~MaterialDesignController() = delete;
-
-  // Sets the touch UI state and notifies observers of the state change.
-  static void SetTouchUi(bool touch_ui);
-
-  // Whether the UI layout should be touch-optimized.
-  static bool touch_ui_;
-
-  // Whether |touch_ui_| should toggle on and off depending on the tablet state.
-  static bool automatic_touch_ui_;
+  bool tablet_mode_ = false;
+  TouchUiState touch_ui_state_;
 
 #if defined(OS_WIN)
   std::unique_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
 #endif
 
   base::ObserverList<MaterialDesignControllerObserver> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(MaterialDesignController);
 };
 
 }  // namespace ui

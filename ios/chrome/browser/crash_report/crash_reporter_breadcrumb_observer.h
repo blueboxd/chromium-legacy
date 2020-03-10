@@ -24,6 +24,9 @@ extern const int kMaxProductDataLength;
 // Creates a singleton instance.
 + (CrashReporterBreadcrumbObserver*)uniqueInstance;
 
+// Number of product data keys to use for breadcrumbs.
+@property(nonatomic) NSUInteger breadcrumbsKeyCount;
+
 // Starts collecting breadcrumb events logged to |breadcrumbManager|.
 - (void)observeBreadcrumbManager:(BreadcrumbManager*)breadcrumbManager;
 

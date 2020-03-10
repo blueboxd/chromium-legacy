@@ -11,12 +11,11 @@
 namespace switches {
 
 bool IsTouchDragDropEnabled() {
+  const auto* const command_line = base::CommandLine::ForCurrentProcess();
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableTouchDragDrop);
+  return !command_line->HasSwitch(kDisableTouchDragDrop);
 #else
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableTouchDragDrop);
+  return command_line->HasSwitch(kEnableTouchDragDrop);
 #endif
 }
 

@@ -1,0 +1,24 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+import "components/feed/core/proto/v2/wire/content_id.proto";
+
+// A structure containing client-opaque data relating to a request.
+message Token {
+  // The ContentId identifying the parent for this feature. Needed for tokens
+  // used in a data operation.
+  optional ContentId parent_id = 2;
+
+  extensions 1001;  // REDACTED
+  extensions 1002;  // NextPageToken
+  extensions 1003;  // InPlaceUpdateToken
+
+  reserved 1, 194964015;
+}

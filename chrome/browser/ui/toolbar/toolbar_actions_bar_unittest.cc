@@ -33,7 +33,6 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/test_extension_dir.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 
 namespace {
 
@@ -143,7 +142,7 @@ class ToolbarActionErrorTestObserver
 }  // namespace
 
 ToolbarActionsBarUnitTest::ToolbarActionsBarUnitTest()
-    : toolbar_model_(nullptr) {
+    : touch_ui_scoper_(GetParam()) {
   // The ToolbarActionsBar is not used when kExtensionsToolbarMenu is enabled.
   feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
 }
@@ -151,10 +150,6 @@ ToolbarActionsBarUnitTest::ToolbarActionsBarUnitTest()
 ToolbarActionsBarUnitTest::~ToolbarActionsBarUnitTest() {}
 
 void ToolbarActionsBarUnitTest::SetUp() {
-  // Overriding MD state needs to be done before setting up the test window to
-  // maintain consistency throughout its lifetime.
-  material_design_state_ =
-      std::make_unique<ui::test::MaterialDesignControllerTestAPI>(GetParam());
   BrowserWithTestWindowTest::SetUp();
   extensions::LoadErrorReporter::Init(false);
 
@@ -186,7 +181,6 @@ void ToolbarActionsBarUnitTest::TearDown() {
   overflow_browser_action_test_util_.reset();
   ToolbarActionsBar::disable_animations_for_testing_ = false;
   BrowserWithTestWindowTest::TearDown();
-  material_design_state_.reset();
 }
 
 void ToolbarActionsBarUnitTest::ActivateTab(int index) {

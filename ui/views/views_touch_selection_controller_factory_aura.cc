@@ -4,7 +4,6 @@
 
 #include "ui/views/views_touch_selection_controller_factory.h"
 
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 
 namespace views {

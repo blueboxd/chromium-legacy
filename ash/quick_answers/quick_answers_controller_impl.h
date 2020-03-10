@@ -57,6 +57,9 @@ class ASH_EXPORT QuickAnswersControllerImpl
   // Retry sending quick answers request to backend.
   void OnRetryQuickAnswersRequest();
 
+  // User clicks on the quick answer result.
+  void OnQuickAnswerClick();
+
   // Update the bounds of the anchor view.
   void UpdateQuickAnswersAnchorBounds(const gfx::Rect& anchor_bounds);
 
@@ -77,6 +80,9 @@ class ASH_EXPORT QuickAnswersControllerImpl
   bool is_eligible_ = false;
 
   std::unique_ptr<QuickAnswersUiController> quick_answers_ui_controller_;
+
+  // The last received QuickAnswer from client.
+  std::unique_ptr<chromeos::quick_answers::QuickAnswer> quick_answer_;
 };
 
 }  // namespace ash

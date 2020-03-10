@@ -95,7 +95,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "xcode parallelization": true,

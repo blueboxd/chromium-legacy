@@ -17,6 +17,8 @@ namespace entity {
 extern const char k{{entity[0]|upper}}{{entity[1:]}}[];
 {% endfor %}
 
+bool IsValidEntityName(const std::string& entity_name);
+
 }  // namespace entity
 }  // namespace schema_org
 

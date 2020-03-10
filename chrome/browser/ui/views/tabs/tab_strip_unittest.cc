@@ -30,7 +30,6 @@
 #include "components/tab_groups/tab_group_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/canvas.h"
@@ -128,7 +127,7 @@ class TabStripTest : public ChromeViewsTestBase,
                      public testing::WithParamInterface<bool> {
  public:
   TabStripTest()
-      : test_api_(GetParam()),
+      : touch_ui_scoper_(GetParam()),
         animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
             gfx::Animation::RichAnimationRenderMode::FORCE_ENABLED)) {}
 
@@ -268,7 +267,7 @@ class TabStripTest : public ChromeViewsTestBase,
                                                0);
 
  private:
-  ui::test::MaterialDesignControllerTestAPI test_api_;
+  ui::MaterialDesignController::TouchUiScoperForTesting touch_ui_scoper_;
   std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
       animation_mode_reset_;
 
@@ -525,7 +524,7 @@ TEST_P(TabStripTest, TabForEventWhenStacked) {
 // the tabstrip is in stacked tab mode.
 TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   // Touch-optimized UI requires a larger width for tabs to show close buttons.
-  const bool touch_ui = ui::MaterialDesignController::touch_ui();
+  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
   tab_strip_->SetBounds(0, 0, touch_ui ? 442 : 346, 20);
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
@@ -597,7 +596,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   // Set the tab strip width to be wide enough for three tabs to show all
   // three icons, but not enough for five tabs to show all three icons.
   // Touch-optimized UI requires a larger width for tabs to show close buttons.
-  const bool touch_ui = ui::MaterialDesignController::touch_ui();
+  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
   tab_strip_->SetBounds(0, 0, touch_ui ? 442 : 346, 20);
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
@@ -1292,7 +1291,8 @@ TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {
   Tab* tab = tab_strip_->tab_at(0);
   const int initial_height = tab->height();
 
-  ui::test::MaterialDesignControllerTestAPI other_layout(!GetParam());
+  ui::MaterialDesignController::TouchUiScoperForTesting other_layout(
+      !GetParam());
 
   CompleteAnimationAndLayout();
   if (GetParam()) {

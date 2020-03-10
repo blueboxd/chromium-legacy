@@ -8,18 +8,14 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
-#include "base/strings/string_number_conversions.h"
 #include "build/buildflag.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/animation/linear_animation.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -39,72 +35,57 @@ bool IsTabletMode() {
       gfx::SingletonHwnd::GetInstance()->hwnd());
 }
 
-void TabletModeWatcherWinProc(HWND hwnd,
-                              UINT message,
-                              WPARAM wparam,
-                              LPARAM lparam) {
-  if (message == WM_SETTINGCHANGE)
-    MaterialDesignController::OnTabletModeToggled(IsTabletMode());
-}
-
 }  // namespace
 #endif  // defined(OS_WIN)
 
-bool MaterialDesignController::touch_ui_ = false;
-bool MaterialDesignController::automatic_touch_ui_ = false;
+MaterialDesignController::TouchUiScoperForTesting::TouchUiScoperForTesting(
+    bool enabled,
+    MaterialDesignController* controller)
+    : controller_(controller),
+      old_state_(controller_->SetTouchUiState(
+          enabled ? TouchUiState::kEnabled : TouchUiState::kDisabled)) {}
 
-// static
-void MaterialDesignController::Initialize() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  const std::string switch_value =
-      command_line->GetSwitchValueASCII(switches::kTopChromeTouchUi);
-  bool touch = switch_value == switches::kTopChromeTouchUiEnabled;
-  automatic_touch_ui_ = switch_value == switches::kTopChromeTouchUiAuto;
-
-  // When the mode is not explicitly forced, platforms vary as to the default
-  // behavior.
-  if (!touch && (switch_value != switches::kTopChromeTouchUiDisabled) &&
-      features::IsAutomaticUiAdjustmentsForTouchEnabled()) {
-#if defined(OS_CHROMEOS)
-    // TabletModePageBehavior's default state is in non-tablet mode.
-    automatic_touch_ui_ = true;
-#elif defined(OS_WIN)
-    if (base::win::GetVersion() >= base::win::Version::WIN10) {
-      // Win 10+ uses dynamic mode by default and checks the current tablet mode
-      // state to determine whether to start in touch mode.
-      automatic_touch_ui_ = true;
-      if (base::MessageLoopCurrentForUI::IsSet() &&
-          !GetInstance()->singleton_hwnd_observer_) {
-        GetInstance()->singleton_hwnd_observer_ =
-            std::make_unique<gfx::SingletonHwndObserver>(
-                base::BindRepeating(TabletModeWatcherWinProc));
-        touch = IsTabletMode();
-      }
-    }
-#endif
-  }
-  SetTouchUi(touch);
-
-  // TODO(crbug.com/864544): Ideally, there would be a more general, "initialize
-  // random stuff here" function into which this sort of thing can be placed.
-  double animation_duration_scale;
-  if (base::StringToDouble(
-          command_line->GetSwitchValueASCII(switches::kAnimationDurationScale),
-          &animation_duration_scale)) {
-    gfx::LinearAnimation::SetDurationScale(animation_duration_scale);
-  }
-}
-
-// static
-void MaterialDesignController::OnTabletModeToggled(bool enabled) {
-  if (automatic_touch_ui_)
-    SetTouchUi(enabled);
+MaterialDesignController::TouchUiScoperForTesting::~TouchUiScoperForTesting() {
+  controller_->SetTouchUiState(old_state_);
 }
 
 // static
 MaterialDesignController* MaterialDesignController::GetInstance() {
-  static base::NoDestructor<MaterialDesignController> instance;
+  static base::NoDestructor<MaterialDesignController> instance([] {
+    const std::string switch_value =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kTopChromeTouchUi);
+    if (switch_value == switches::kTopChromeTouchUiDisabled)
+      return TouchUiState::kDisabled;
+    const bool enabled = switch_value == switches::kTopChromeTouchUiEnabled;
+    return enabled ? TouchUiState::kEnabled : TouchUiState::kAuto;
+  }());
   return instance.get();
+}
+
+MaterialDesignController::MaterialDesignController(TouchUiState touch_ui_state)
+    : touch_ui_state_(touch_ui_state) {
+#if defined(OS_WIN)
+  if (base::MessageLoopCurrentForUI::IsSet() &&
+      (base::win::GetVersion() >= base::win::Version::WIN10)) {
+    singleton_hwnd_observer_ =
+        std::make_unique<gfx::SingletonHwndObserver>(base::BindRepeating(
+            [](HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+              if (message == WM_SETTINGCHANGE)
+                GetInstance()->OnTabletModeToggled(IsTabletMode());
+            }));
+    tablet_mode_ = IsTabletMode();
+  }
+#endif
+}
+
+MaterialDesignController::~MaterialDesignController() = default;
+
+void MaterialDesignController::OnTabletModeToggled(bool enabled) {
+  const bool was_touch_ui = touch_ui();
+  tablet_mode_ = enabled;
+  if (touch_ui() != was_touch_ui)
+    NotifyObservers();
 }
 
 void MaterialDesignController::AddObserver(
@@ -117,15 +98,18 @@ void MaterialDesignController::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-MaterialDesignController::MaterialDesignController() = default;
+MaterialDesignController::TouchUiState
+MaterialDesignController::SetTouchUiState(TouchUiState touch_ui_state) {
+  const bool was_touch_ui = touch_ui();
+  const TouchUiState old_state = std::exchange(touch_ui_state_, touch_ui_state);
+  if (touch_ui() != was_touch_ui)
+    NotifyObservers();
+  return old_state;
+}
 
-// static
-void MaterialDesignController::SetTouchUi(bool touch_ui) {
-  if (touch_ui_ != touch_ui) {
-    touch_ui_ = touch_ui;
-    for (auto& observer : GetInstance()->observers_)
-      observer.OnTouchUiChanged();
-  }
+void MaterialDesignController::NotifyObservers() const {
+  for (auto& observer : observers_)
+    observer.OnTouchUiChanged();
 }
 
 }  // namespace ui

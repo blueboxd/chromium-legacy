@@ -182,7 +182,7 @@ class CORE_EXPORT ImageResourceContent final
   // extraneous metadata). "well-compressed" is determined by comparing the
   // image's compression ratio against a specific value that is defined by an
   // unoptimized image feature policy on |context|.
-  bool IsAcceptableCompressionRatio(const ExecutionContext& context);
+  bool IsAcceptableCompressionRatio(ExecutionContext& context);
 
   void LoadDeferredImage(ResourceFetcher* fetcher);
 

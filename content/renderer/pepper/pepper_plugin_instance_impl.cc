@@ -119,9 +119,7 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_lookup.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -3249,9 +3247,10 @@ bool PepperPluginInstanceImpl::IsMouseLocked() {
 
 bool PepperPluginInstanceImpl::LockMouse(bool request_unadjusted_movement) {
   WebLocalFrame* requester_frame = container_->GetDocument().GetFrame();
-  return GetMouseLockDispatcher()->LockMouse(GetOrCreateLockTargetAdapter(),
-                                             requester_frame,
-                                             request_unadjusted_movement);
+  return GetMouseLockDispatcher()->LockMouse(
+      GetOrCreateLockTargetAdapter(), requester_frame,
+      base::OnceCallback<void(blink::mojom::PointerLockResult)>(),
+      request_unadjusted_movement);
 }
 
 MouseLockDispatcher::LockTarget*

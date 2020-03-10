@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Vėluojama pakeisti slaptažodį</translation>
 <translation id="2049639323467105390">Įrenginys valdomas „<ph name="DOMAIN" />“.</translation>
 <translation id="2338501278241028356">Įjunkite „Bluetooth“, kad aptiktumėte įrenginius netoliese</translation>
+<translation id="2375079107209812402">Liko bandymų: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="2805756323405976993">Taikomosios programos</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
 <translation id="3008341117444806826">ATNAUJINTI</translation>
@@ -42,6 +43,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="808894953321890993">Keisti slaptažodį</translation>
 <translation id="8208861521865154048">Privilegijos</translation>
 <translation id="8747900814994928677">Patvirtinti pakeitimą</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" />. Liko bandymų: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Atnaujinkite <ph name="PRINCIPAL_NAME" /> bilietą</translation>
 <translation id="9111102763498581341">Atrakinti</translation>
 </translationbundle>

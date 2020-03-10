@@ -42,6 +42,7 @@ class TabPropertiesDecorator::Data {
   // Indicates if a PageNode belongs to a tab strip.
   virtual bool IsInTabStrip() const = 0;
 
+  static const Data* FromPageNode(const PageNode* page_node);
   static Data* GetOrCreateForTesting(PageNode* page_node);
 };
 

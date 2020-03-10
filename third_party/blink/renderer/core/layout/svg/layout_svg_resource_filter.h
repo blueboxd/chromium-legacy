@@ -29,38 +29,7 @@
 
 namespace blink {
 
-class FilterEffect;
 class SVGFilterElement;
-class SVGFilterGraphNodeMap;
-
-class FilterData final : public GarbageCollected<FilterData> {
- public:
-  /*
-   * The state transitions should follow the following:
-   * Initial->RecordingContent->ReadyToPaint->PaintingFilter->ReadyToPaint
-   *              |     ^                       |     ^
-   *              v     |                       v     |
-   *     RecordingContentCycleDetected     PaintingFilterCycle
-   */
-  enum FilterDataState {
-    kInitial,
-    kRecordingContent,
-    kRecordingContentCycleDetected,
-    kReadyToPaint,
-    kPaintingFilter,
-    kPaintingFilterCycleDetected
-  };
-
-  FilterData() : state_(kInitial) {}
-
-  void Dispose();
-
-  void Trace(Visitor*);
-
-  Member<FilterEffect> last_effect;
-  Member<SVGFilterGraphNodeMap> node_map;
-  FilterDataState state_;
-};
 
 class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
  public:

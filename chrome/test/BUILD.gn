@@ -8,7 +8,6 @@ import("//build/config/chrome_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
-import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build/util/version.gni")
@@ -1059,6 +1058,7 @@ if (!is_android) {
       "../browser/pdf/pdf_extension_test_util.h",
       "../browser/performance_manager/graph/page_node_impl_browsertest.cc",
       "../browser/performance_manager/page_load_tracker_decorator_browsertest.cc",
+      "../browser/performance_manager/tab_properties_decorator_browsertest.cc",
       "../browser/permissions/permission_delegation_browsertest.cc",
       "../browser/permissions/permission_manager_browsertest.cc",
       "../browser/permissions/permission_request_manager_browsertest.cc",
@@ -4894,10 +4894,6 @@ test("unit_tests") {
       "../browser/upgrade_detector/get_installed_version_linux_unittest.cc",
     ]
   }
-  if (use_gtk) {
-    sources += [ "../browser/ui/gtk/select_file_dialog_impl_gtk_unittest.cc" ]
-    deps += [ "//build/config/linux/gtk" ]
-  }
 
   if (is_android || is_chromeos) {
     sources += [ "../browser/media/protected_media_identifier_permission_context_unittest.cc" ]
@@ -4914,9 +4910,6 @@ test("unit_tests") {
   }
   if (use_gio) {
     configs += [ "//build/linux:gio_config" ]
-  }
-  if (!is_chromeos && !use_ozone && is_linux) {
-    deps += [ "//chrome/browser/ui/gtk" ]
   }
 
   if (enable_service_discovery) {
@@ -5905,11 +5898,6 @@ if (!is_android) {
           # suites, it seems like one or another starts timing out too.
           "../browser/ui/views/keyboard_access_browsertest.cc",
         ]
-        if (!use_ozone) {
-          sources +=
-              [ "../browser/ui/gtk/select_file_dialog_interactive_uitest.cc" ]
-          deps += [ "//build/config/linux/gtk" ]
-        }
       }
       if (!is_chromeos) {
         sources += [ "../browser/ui/views/global_media_controls/media_dialog_view_interactive_browsertest.cc" ]

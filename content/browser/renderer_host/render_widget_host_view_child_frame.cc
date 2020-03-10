@@ -588,11 +588,11 @@ void RenderWidgetHostViewChildFrame::DidStopFlinging() {
     selection_controller_client_->DidStopFlinging();
 }
 
-bool RenderWidgetHostViewChildFrame::LockMouse(
+blink::mojom::PointerLockResult RenderWidgetHostViewChildFrame::LockMouse(
     bool request_unadjusted_movement) {
   if (frame_connector_)
     return frame_connector_->LockMouse(request_unadjusted_movement);
-  return false;
+  return blink::mojom::PointerLockResult::kWrongDocument;
 }
 
 void RenderWidgetHostViewChildFrame::UnlockMouse() {

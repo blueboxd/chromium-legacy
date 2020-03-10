@@ -31,7 +31,7 @@ class RenderWidgetMouseLockDispatcher : public MouseLockDispatcher {
                             bool request_unadjusted_movement) override;
   void SendUnlockMouseRequest() override;
 
-  void OnLockMouseACK(bool succeeded);
+  void OnLockMouseACK(blink::mojom::PointerLockResult result);
 
   RenderWidget* render_widget_;
 

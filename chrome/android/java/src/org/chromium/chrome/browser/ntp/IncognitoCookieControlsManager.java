@@ -13,10 +13,10 @@ import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.settings.website.CookieControlsServiceBridge;
-import org.chromium.chrome.browser.settings.website.CookieControlsServiceBridge.CookieControlsServiceObserver;
-import org.chromium.chrome.browser.settings.website.SingleCategorySettings;
-import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.site_settings.CookieControlsServiceBridge;
+import org.chromium.chrome.browser.site_settings.CookieControlsServiceBridge.CookieControlsServiceObserver;
+import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
+import org.chromium.chrome.browser.site_settings.SiteSettingsCategory;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 
 /**

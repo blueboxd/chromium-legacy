@@ -125,9 +125,6 @@
 #endif
 
 #if !defined(OS_IOS)
-#include "services/network/trust_tokens/sqlite_trust_token_persister.h"
-#include "services/network/trust_tokens/trust_token_parameterization.h"
-#include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/websocket_factory.h"
 #endif  // !defined(OS_IOS)
 
@@ -144,6 +141,12 @@
 #if BUILDFLAG(ENABLE_MDNS)
 #include "services/network/mdns_responder.h"
 #endif  // BUILDFLAG(ENABLE_MDNS)
+
+#if BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
+#include "services/network/trust_tokens/sqlite_trust_token_persister.h"
+#include "services/network/trust_tokens/trust_token_parameterization.h"
+#include "services/network/trust_tokens/trust_token_store.h"
+#endif  // BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
 
 #if defined(USE_NSS_CERTS)
 #include "net/cert_net/nss_ocsp.h"
@@ -1820,7 +1823,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     DCHECK(!params_->persist_session_cookies);
   }
 
-#if !defined(OS_IOS)
+#if BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
   if (base::FeatureList::IsEnabled(features::kTrustTokens)) {
     if (params_->trust_token_path) {
       SQLiteTrustTokenPersister::CreateForFilePath(
@@ -1834,7 +1837,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
       trust_token_store_ = TrustTokenStore::CreateInMemory();
     }
   }
-#endif  // !defined(OS_IOS)
+#endif  // BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
 
   std::unique_ptr<net::StaticHttpUserAgentSettings> user_agent_settings =
       std::make_unique<net::StaticHttpUserAgentSettings>(
@@ -2363,13 +2366,13 @@ void NetworkContext::InitializeCorsParams() {
   }
 }
 
-#if !defined(OS_IOS)
+#if BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
 void NetworkContext::FinishConstructingTrustTokenStore(
     std::unique_ptr<SQLiteTrustTokenPersister> persister) {
   DCHECK(!trust_token_store_);
   trust_token_store_ = std::make_unique<TrustTokenStore>(std::move(persister));
 }
-#endif  // !defined(OS_IOS)
+#endif  // BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
 
 void NetworkContext::GetOriginPolicyManager(
     mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) {

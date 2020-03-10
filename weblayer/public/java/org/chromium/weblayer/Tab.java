@@ -368,14 +368,16 @@ public class Tab {
 
         @Override
         public void showContextMenu(IObjectWrapper pageUrl, IObjectWrapper linkUrl,
-                IObjectWrapper linkText, IObjectWrapper titleOrAltText) {
+                IObjectWrapper linkText, IObjectWrapper titleOrAltText, IObjectWrapper srcUrl) {
             StrictModeWorkaround.apply();
             String pageUrlString = ObjectWrapper.unwrap(pageUrl, String.class);
             String linkUrlString = ObjectWrapper.unwrap(linkUrl, String.class);
+            String srcUrlString = ObjectWrapper.unwrap(srcUrl, String.class);
             ContextMenuParams params = new ContextMenuParams(Uri.parse(pageUrlString),
                     linkUrlString != null ? Uri.parse(linkUrlString) : null,
                     ObjectWrapper.unwrap(linkText, String.class),
-                    ObjectWrapper.unwrap(titleOrAltText, String.class));
+                    ObjectWrapper.unwrap(titleOrAltText, String.class),
+                    srcUrlString != null ? Uri.parse(srcUrlString) : null);
             for (TabCallback callback : mCallbacks) {
                 callback.showContextMenu(params);
             }

@@ -42,6 +42,19 @@ class AppElement extends PolymerElement {
 
       /** @private */
       showVoiceSearchOverlay_: Boolean,
+
+      /** @private */
+      showBackgroundImage_: {
+        computed: 'computeShowBackgroundImage_(theme_)',
+        reflectToAttribute: true,
+        type: Boolean,
+      },
+
+      /** @private */
+      backgroundImagePath_: {
+        computed: 'computeBackgroundImagePath_(theme_)',
+        type: String,
+      },
     };
   }
 
@@ -111,6 +124,25 @@ class AppElement extends PolymerElement {
    */
   rgbOrInherit_(skColor) {
     return skColor ? skColorToRgb(skColor) : 'inherit';
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowBackgroundImage_() {
+    return !!this.theme_ && !!this.theme_.backgroundImageUrl;
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeBackgroundImagePath_() {
+    if (!this.theme_ || !this.theme_.backgroundImageUrl) {
+      return '';
+    }
+    return `image?${this.theme_.backgroundImageUrl.url}`;
   }
 }
 

@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
 #include "ui/aura/scoped_enable_unadjusted_mouse_events.h"
 #include "ui/aura/scoped_keyboard_hook.h"
 #include "ui/aura/window_tracker.h"
@@ -143,7 +144,7 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   void set_window(aura::Window* window) { window_ = window; }
 
   // Lock/Unlock processing of future mouse events.
-  bool LockMouse(bool request_unadjusted_movement);
+  blink::mojom::PointerLockResult LockMouse(bool request_unadjusted_movement);
   void UnlockMouse();
 
   // Start/Stop processing of future system keyboard events.

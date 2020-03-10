@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">هرزمان خواستید می‌توانید همگام‌سازی را در تنظیمات روشن کنید</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> نشانک}one{<ph name="BOOKMARKS_COUNT_MANY" /> نشانک}other{<ph name="BOOKMARKS_COUNT_MANY" /> نشانک}}</translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
+<translation id="3114012059975132928">پخش‌کننده ویدیو</translation>
 <translation id="3123473560110926937">در برخی سایت‌ها مسدود می‌شود</translation>
 <translation id="3123734510202723619">اطلاعیه‌ها</translation>
 <translation id="3137521801621304719">خروج از حالت ناشناس</translation>
@@ -352,6 +353,7 @@
 <translation id="3587482841069643663">همه</translation>
 <translation id="358794129225322306">به سایت اجازه داده شود چند فایل را به‌طور خودکار بارگیری کند.</translation>
 <translation id="3590487821116122040">‏فضای ذخیره‌سازی سایت که از نظر Chrome مهم نیست (مثلاً سایت‌هایی که تنظیمات ذخیره‌شده ندارند یا شما مرتب بازدید نمی‌کنید)</translation>
+<translation id="3594780231884063836">بی‌صدا کردن ویدیو</translation>
 <translation id="3599863153486145794">‏سابقه را از همه دستگاه‌های به سیستم واردشده پاک می‌کند. ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد.</translation>
 <translation id="3600792891314830896">سایت‌هایی که صدا پخش می‌کنند بی‌صدا شوند</translation>
 <translation id="3616113530831147358">صوتی</translation>
@@ -605,6 +607,7 @@
 <translation id="5456381639095306749">بارگیری صفحه</translation>
 <translation id="548278423535722844">‏باز کردن در برنامه Maps</translation>
 <translation id="5487521232677179737">پاک کردن داده‌ها</translation>
+<translation id="5489227211564503167">زمان سپری‌شده: <ph name="ELAPSED_TIME" /> از <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">آگهی سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند، مسدود می‌شود</translation>
 <translation id="5500777121964041360">ممکن است در مکان شما دردسترس نباشد</translation>
 <translation id="5505264765875738116">سایت‌ها نمی‌توانند برای ارسال اعلان درخواست دهند</translation>
@@ -665,6 +668,7 @@
 <translation id="5864419784173784555">در انتظار بارگیری موردی دیگر…</translation>
 <translation id="5865733239029070421">‏به‌طور خودکار آمار کاربرد و گزارش‌های خرابی را به Google ارسال می‌کند</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
+<translation id="5876056640971328065">مکث ویدیو</translation>
 <translation id="5884076754568147479">‏برای کمک به انجام کارها، Google نشانی‌های وب و محتوای سایت‌هایی را که در آن‌ها از «دستیار» استفاده می‌کنید، و همچنین اطلاعاتی را که ازطریق «دستیار» ارسال می‌کنید دریافت خواهد کرد</translation>
 <translation id="5902828464777634901">تمام داده‌های محلی ذخیره شده مرتبط با این وب‌سایت، از جمله کوکی‌ها، حذف می‌شوند.</translation>
 <translation id="5919204609460789179">برای شروع همگام‌سازی، <ph name="PRODUCT_NAME" /> را به‌روزرسانی کنید</translation>
@@ -728,6 +732,7 @@
 <translation id="6381421346744604172">تاریک کردن وب‌سایت‌ها</translation>
 <translation id="6388207532828177975">پاک کردن و بازنشانی</translation>
 <translation id="6395288395575013217">پیوند</translation>
+<translation id="6397616442223433927">دوباره آنلاین شدید</translation>
 <translation id="6404511346730675251">ویرایش نشانک</translation>
 <translation id="6406506848690869874">همگام‌سازی</translation>
 <translation id="6410973561433500075">‏از <ph name="DOMAIN" /> وارد حالت AR می‌شوید؟</translation>
@@ -796,6 +801,7 @@
 <translation id="6846298663435243399">در حال بارگیری…</translation>
 <translation id="6850409657436465440">بارگیری هنوز درحال انجام است</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> برگه بسته شد</translation>
+<translation id="6864395892908308021">‏این دستگاه نمی‌تواند NFC را بخواند</translation>
 <translation id="6864459304226931083">بارگیری تصویر</translation>
 <translation id="6865313869410766144">تکمیل خودکار داده‌های فرم</translation>
 <translation id="6884306546558072722">به‌صورت آفلاین به کاوش ادامه دهید</translation>
@@ -916,6 +922,7 @@
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7810647596859435254">باز کردن با…</translation>
 <translation id="7821588508402923572">میزان داده صرفه‌جویی‌شده اینجا نشان داده می‌شود</translation>
+<translation id="783819812427904514">با صدا کردن ویدیو</translation>
 <translation id="784934925303690534">محدوده زمانی</translation>
 <translation id="7851858861565204677">دستگاه‌های دیگر</translation>
 <translation id="7875915731392087153">ایجاد ایمیل</translation>

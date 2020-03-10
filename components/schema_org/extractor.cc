@@ -15,6 +15,8 @@
 #include "base/values.h"
 #include "components/schema_org/common/improved_metadata.mojom.h"
 #include "components/schema_org/schema_org_entity_names.h"
+#include "components/schema_org/schema_org_property_configurations.h"
+#include "components/schema_org/validator.h"
 
 namespace schema_org {
 
@@ -54,7 +56,56 @@ bool IsSupportedType(const std::string& type) {
 
 void ExtractEntity(const base::DictionaryValue&, Entity*, int recursion_level);
 
+// Parses a string into a property value. The string may be parsed as a double,
+// date, or time, depending on the types that the property supports. If the
+// property supports text, uses the string itself.
+bool ParseStringValue(const std::string& property_type,
+                      base::StringPiece value,
+                      Values* values) {
+  value = value.substr(0, kMaxStringLength);
+
+  schema_org::property::PropertyConfiguration prop_config =
+      schema_org::property::GetPropertyConfiguration(property_type);
+  if (prop_config.text) {
+    values->string_values.push_back(value.as_string());
+    return true;
+  }
+  if (prop_config.number) {
+    double d;
+    bool parsed_double = base::StringToDouble(value, &d);
+    if (parsed_double) {
+      values->double_values.push_back(d);
+      return true;
+    }
+  }
+  if (prop_config.date_time || prop_config.date) {
+    base::Time time;
+    bool parsed_time = base::Time::FromString(value.data(), &time);
+    if (parsed_time) {
+      values->date_time_values.push_back(time);
+      return true;
+    }
+  }
+  if (prop_config.time) {
+    base::Time time_of_day;
+    base::Time start_of_day;
+    bool parsed_time = base::Time::FromString(
+        ("1970-01-01T" + value.as_string()).c_str(), &time_of_day);
+    bool parsed_day_start =
+        base::Time::FromString("1970-01-01T00:00:00", &start_of_day);
+    base::TimeDelta time = time_of_day - start_of_day;
+    // The string failed to parse as a DateTime, but did parse as a Time. Use
+    // this value instead.
+    if (parsed_time && parsed_day_start) {
+      values->time_values.push_back(time);
+      return true;
+    }
+  }
+  return false;
+}
+
 bool ParseRepeatedValue(const base::Value::ConstListView& arr,
+                        const std::string& property_type,
                         Values* values,
                         int recursion_level) {
   DCHECK(values);
@@ -63,34 +114,27 @@ bool ParseRepeatedValue(const base::Value::ConstListView& arr,
   }
 
   for (size_t j = 0; j < std::min(arr.size(), kMaxRepeatedSize); ++j) {
-    auto& listItem = arr[j];
+    auto& list_item = arr[j];
 
-    switch (listItem.type()) {
+    switch (list_item.type()) {
       case base::Value::Type::BOOLEAN: {
-        bool v;
-        listItem.GetAsBoolean(&v);
-        values->bool_values.push_back(v);
+        values->bool_values.push_back(list_item.GetBool());
       } break;
       case base::Value::Type::INTEGER: {
-        int v = listItem.GetInt();
-        values->long_values.push_back(v);
+        values->long_values.push_back(list_item.GetInt());
       } break;
       case base::Value::Type::DOUBLE: {
-        // App Indexing doesn't support double type, so just encode its decimal
-        // value as a string instead.
-        double v = listItem.GetDouble();
-        std::string s = base::NumberToString(v);
-        s = s.substr(0, kMaxStringLength);
-        values->string_values.push_back(s);
+        values->double_values.push_back(list_item.GetDouble());
       } break;
       case base::Value::Type::STRING: {
-        std::string v = listItem.GetString();
-        v = v.substr(0, kMaxStringLength);
-        values->string_values.push_back(v);
+        base::StringPiece v = list_item.GetString();
+        if (!ParseStringValue(property_type, v, values)) {
+          return false;
+        }
       } break;
       case base::Value::Type::DICTIONARY: {
         const base::DictionaryValue* dict_value = nullptr;
-        if (listItem.GetAsDictionary(&dict_value)) {
+        if (list_item.GetAsDictionary(&dict_value)) {
           auto entity = Entity::New();
           ExtractEntity(*dict_value, entity.get(), recursion_level + 1);
           values->entity_values.push_back(std::move(entity));
@@ -130,40 +174,48 @@ void ExtractEntity(const base::DictionaryValue& val,
     }
     property->values = Values::New();
 
-    if (entry.second.is_bool()) {
-      bool v;
-      val.GetBoolean(entry.first, &v);
-      property->values->bool_values.push_back(v);
-    } else if (entry.second.is_int()) {
-      int v;
-      val.GetInteger(entry.first, &v);
-      property->values->long_values.push_back(v);
-    } else if (entry.second.is_double()) {
-      double v;
-      val.GetDouble(entry.first, &v);
-      std::string s = base::NumberToString(v);
-      s = s.substr(0, kMaxStringLength);
-      property->values->string_values.push_back(s);
-    } else if (entry.second.is_string()) {
-      std::string v;
-      val.GetString(entry.first, &v);
-      v = v.substr(0, kMaxStringLength);
-      property->values->string_values.push_back(v);
-    } else if (entry.second.is_dict()) {
-      if (recursion_level + 1 >= kMaxDepth) {
-        continue;
+    switch (entry.second.type()) {
+      case base::Value::Type::BOOLEAN:
+        property->values->bool_values.push_back(entry.second.GetBool());
+        break;
+      case base::Value::Type::INTEGER:
+        property->values->long_values.push_back(entry.second.GetInt());
+        break;
+      case base::Value::Type::DOUBLE:
+        property->values->double_values.push_back(entry.second.GetDouble());
+        break;
+      case base::Value::Type::STRING: {
+        base::StringPiece v = entry.second.GetString();
+        if (!(ParseStringValue(property->name, v, property->values.get()))) {
+          continue;
+        }
+        break;
       }
-      const base::DictionaryValue* dict_value = nullptr;
-      if (!entry.second.GetAsDictionary(&dict_value)) {
-        continue;
+      case base::Value::Type::DICTIONARY: {
+        if (recursion_level + 1 >= kMaxDepth) {
+          continue;
+        }
+
+        const base::DictionaryValue* dict_value = nullptr;
+        if (!entry.second.GetAsDictionary(&dict_value)) {
+          continue;
+        }
+
+        auto nested_entity = Entity::New();
+        ExtractEntity(*dict_value, nested_entity.get(), recursion_level + 1);
+        property->values->entity_values.push_back(std::move(nested_entity));
+        break;
       }
-      auto nested_entity = Entity::New();
-      ExtractEntity(*dict_value, nested_entity.get(), recursion_level + 1);
-      property->values->entity_values.push_back(std::move(nested_entity));
-    } else if (entry.second.is_list()) {
-      const auto& list_view = entry.second.GetList();
-      if (!ParseRepeatedValue(list_view, property->values.get(),
-                              recursion_level)) {
+      case base::Value::Type::LIST: {
+        const base::Value::ConstListView list_view = entry.second.GetList();
+        if (!ParseRepeatedValue(list_view, property->name,
+                                property->values.get(), recursion_level)) {
+          continue;
+        }
+        break;
+      }
+      default: {
+        // Unsupported value type. Skip this property.
         continue;
       }
     }

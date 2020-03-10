@@ -74,6 +74,7 @@ android_library("java") {
     "//url:gurl_java",
     "//url:origin_java",
   ]
+  srcjar_deps = [ ":error_strings_generated_srcjar" ]
 }
 
 java_cpp_strings("error_strings_generated_srcjar") {

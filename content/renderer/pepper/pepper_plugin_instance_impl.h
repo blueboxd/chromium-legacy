@@ -62,7 +62,9 @@
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -99,10 +101,6 @@ class ScopedPPVar;
 
 namespace printing {
 class MetafileSkia;
-}
-
-namespace ui {
-class Cursor;
 }
 
 namespace content {
@@ -800,7 +798,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   const PPP_Graphics3D* plugin_graphics_3d_interface_;
 
   // Contains the cursor if it's set by the plugin.
-  std::unique_ptr<ui::Cursor> cursor_;
+  std::unique_ptr<ui::Cursor> cursor_ =
+      std::make_unique<ui::Cursor>(ui::mojom::CursorType::kPointer);
 
   // Set to true if this plugin thinks it will always be on top. This allows us
   // to use a more optimized painting path in some cases.

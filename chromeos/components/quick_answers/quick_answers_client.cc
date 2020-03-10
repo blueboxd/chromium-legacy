@@ -110,6 +110,17 @@ void QuickAnswersClient::SendRequest(
   result_loader_->Fetch(processed_request.selected_text);
 }
 
+void QuickAnswersClient::OnQuickAnswerClick(ResultType result_type) {
+  // Use default 0 duration for clicks before fetch finish.
+  base::TimeDelta duration;
+  if (!quick_answer_received_time_.is_null()) {
+    // Fetch finish with no result, set the duration to be between fetch
+    // finish and user clicks.
+    duration = base::TimeTicks::Now() - quick_answer_received_time_;
+  }
+  RecordClick(result_type, duration);
+}
+
 void QuickAnswersClient::NotifyEligibilityChanged() {
   DCHECK(delegate_);
   bool is_eligible =
@@ -138,6 +149,7 @@ void QuickAnswersClient::OnNetworkError() {
 void QuickAnswersClient::OnQuickAnswerReceived(
     std::unique_ptr<QuickAnswer> quick_answer) {
   DCHECK(delegate_);
+  quick_answer_received_time_ = base::TimeTicks::Now();
   delegate_->OnQuickAnswerReceived(std::move(quick_answer));
 }
 

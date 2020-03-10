@@ -1,6 +1,6 @@
 # tags: [ android chromeos linux mac win win10 win7 ]
 # tags: [ android-chromium android-webview-instrumentation ]
-# tags: [ debug release ]
+# tags: [ debug debug-x64 release ]
 # tags: [ amd amd-0x6613 amd-0x699f amd-0x679e intel intel-0xa011 intel-0xa2e nvidia
 #         nvidia-0x1cb3 nvidia-0x2184 nvidia-0xfe9 qualcomm
 #         qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
@@ -183,7 +183,7 @@ crbug.com/951628 [ win no-passthrough ] conformance/rendering/blending.html [ Fa
 # Win NVIDIA failures
 crbug.com/626524 [ win nvidia no-passthrough ] conformance/textures/misc/texture-npot-video.html [ RetryOnFailure ]
 crbug.com/630860 [ win nvidia ] conformance/textures/misc/texture-upload-size.html [ RetryOnFailure ]
-crbug.com/1045339 [ win10 debug nvidia ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
+crbug.com/1045339 [ win10 debug-x64 nvidia ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
 
 # crbug.com/679696 [ win nvidia no_passthrough ] conformance/extensions/ext-sRGB.html [ Failure ]
 

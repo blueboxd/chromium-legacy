@@ -157,7 +157,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const cc::RenderFrameMetadata& metadata) override;
   void DidNavigate() override;
 
-  bool LockMouse(bool) override;
+  blink::mojom::PointerLockResult LockMouse(bool) override;
   void UnlockMouse() override;
   bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void UnlockKeyboard() override;

@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">ስምረትን በማንኛውም ጊዜ በቅንብሮች ውስጥ ማብራት ይችላሉ።</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ዕልባት}one{<ph name="BOOKMARKS_COUNT_MANY" /> ዕልባቶች}other{<ph name="BOOKMARKS_COUNT_MANY" /> ዕልባቶች}}</translation>
 <translation id="3089395242580810162">ማንነትን በማያሳውቅ ትር ክፈት</translation>
+<translation id="3114012059975132928">ቪዲዮ ማጫወቻ</translation>
 <translation id="3123473560110926937">በአንዳንድ ጣቢያዎች ላይ ታግዷል</translation>
 <translation id="3123734510202723619">ማስታወቂያዎች</translation>
 <translation id="3137521801621304719">ከማንነት የማያሳውቅ ሁነታ ይውጡ</translation>
@@ -352,6 +353,7 @@
 <translation id="3587482841069643663">ሁሉም</translation>
 <translation id="358794129225322306">አንድ ጣቢያ በራስ-ሰር በርካታ ፋይሎችን እንዲያወርድ ይፍቀዱ።</translation>
 <translation id="3590487821116122040">Chrome አላስፈላጊ ነው የሚያስበው የጣቢያ ማከማቻ (ለምሳሌ፦ ምንም የተቀመጡ ቅንብሮች የሌላቸው ጣቢያዎች ወይም እርስዎ ብዙ ጊዜ የማይጎበኟቸው)</translation>
+<translation id="3594780231884063836">ቪዲዮ ላይ ድምጸ-ከል አድርግ</translation>
 <translation id="3599863153486145794">ታሪክን በመለያ ከገቡ ሁሉም መሣሪያዎች ላይ ያጸዳል። የእርስዎ Google መለያ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖረው ይችላል</translation>
 <translation id="3600792891314830896">ድምጽን በሚያጫውቱ ጣቢያዎች ላይ ድምጸ-ከል አድርግ</translation>
 <translation id="3616113530831147358">ድምጽ</translation>
@@ -605,6 +607,7 @@
 <translation id="5456381639095306749">ገጽ አውርድ</translation>
 <translation id="548278423535722844">በካርታዎች መተግበሪያ ውስጥ ይክፈቱ</translation>
 <translation id="5487521232677179737">ውሂብን አጽዳ</translation>
+<translation id="5489227211564503167">የጠፋው ጊዜ <ph name="ELAPSED_TIME" /> ከ<ph name="TOTAL_TIME" />።</translation>
 <translation id="5494752089476963479">ረባሽ ወይም አሳሳች ማስታወቂያዎችን ከሚያሳዩ ጣቢያዎች የሚመጡ ማስታወቂያዎችን አግድ</translation>
 <translation id="5500777121964041360">በአካባቢዎ ውስጥ ላይገኝ ይችላል</translation>
 <translation id="5505264765875738116">ጣቢያዎች ማሳወቂያዎችን ለመላክ መጠየቅ አይችሉም</translation>
@@ -665,6 +668,7 @@
 <translation id="5864419784173784555">ሌላ ውርድን በመጠበቅ ላይ…</translation>
 <translation id="5865733239029070421">የአጠቃቀም ስታስቲክስን እና የብልሽት ሪፖርቶችን በራስ-ሰር ወደ Google ይልካል</translation>
 <translation id="5869522115854928033">የተቀመጡ የይለፍ ቃሎች</translation>
+<translation id="5876056640971328065">ቪዲዮ ባለበት አቁም</translation>
 <translation id="5884076754568147479">ተግባራትን እንዲያጠናቅቁ ለማገዝ Google ረዳትን የሚጠቀሙባቸው የጣቢያዎች ዩአርኤሎች እና ይዘቶችና እንዲሁም በረዳት በኩል የሚያስገቡት መረጃን ይቀበላል</translation>
 <translation id="5902828464777634901">ኩኪዎችንም ጨምሮ በዚህ ድር ጣቢያ የተከማቸ ሁሉም አካባቢያዊ ውሂብ ይሰረዛል።</translation>
 <translation id="5919204609460789179">ስምረትን ለመጀመር <ph name="PRODUCT_NAME" />ን ያዘምኑ</translation>
@@ -728,6 +732,7 @@
 <translation id="6381421346744604172">የጨለሙ የድር ጣቢያዎች</translation>
 <translation id="6388207532828177975">አጽዳ እና ዳግም አስጀምር</translation>
 <translation id="6395288395575013217">አገናኝ</translation>
+<translation id="6397616442223433927">ወደ መስመር ላይ ይመለሱ</translation>
 <translation id="6404511346730675251">ዕልባት አርትዕ</translation>
 <translation id="6406506848690869874">አመሳስል</translation>
 <translation id="6410973561433500075">ኤአር ከ<ph name="DOMAIN" /> ይግባ?</translation>
@@ -796,6 +801,7 @@
 <translation id="6846298663435243399">በመጫን ላይ…</translation>
 <translation id="6850409657436465440">የእርስዎ ውርድ አሁንም በሂደት ላይ ነው</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ትሮች ተዘግተዋል</translation>
+<translation id="6864395892908308021">ይህ መሣሪያ NFCን ማንበብ አይችልም</translation>
 <translation id="6864459304226931083">ምስል አውርድ</translation>
 <translation id="6865313869410766144">የራስ-ሙላ ቅጽ ውሂብ</translation>
 <translation id="6884306546558072722">ከመስመር ውጭ ማሰስ ቀጥል</translation>
@@ -916,6 +922,7 @@
 <translation id="780301667611848630">አይ፣ አመሰግናለሁ</translation>
 <translation id="7810647596859435254">ክፈት በ…</translation>
 <translation id="7821588508402923572">የእርስዎ የውሂብ ቁጠባዎች እዚህ ይታያሉ</translation>
+<translation id="783819812427904514">የቪዲዮን ድምጸ-ከል አንሳ</translation>
 <translation id="784934925303690534">የጊዜ ወሰን</translation>
 <translation id="7851858861565204677">ሌሎች መሣሪያዎች</translation>
 <translation id="7875915731392087153">ኢሜይል ይፍጠሩ</translation>

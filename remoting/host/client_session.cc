@@ -697,6 +697,12 @@ void ClientSession::OnDesktopDisplayChanged(
   // display configuration supports capturing the entire desktop.
   LOG(INFO) << "    Webrtc desktop size " << default_webrtc_desktop_size_;
   if (show_display_id_ == webrtc::kInvalidScreenId) {
+#if defined(OS_MACOSX)
+    // On MacOS, there are situations where webrtc cannot capture the entire
+    // desktop (e.g, when there are displays with different DPIs). We detect
+    // this situation by comparing the full desktop size (calculated above
+    // from the displays) and the size of the initial webrtc capture (which
+    // defaults to the full desktop if supported).
     if (size.width() == default_webrtc_desktop_size_.WidthAsDips() &&
         size.height() == default_webrtc_desktop_size_.HeightAsDips()) {
       LOG(INFO) << "    Full desktop capture supported.";
@@ -706,6 +712,10 @@ void ClientSession::OnDesktopDisplayChanged(
           << "    This configuration does not support full desktop capture.";
       can_capture_full_desktop_ = false;
     }
+#else
+    // Windows/Linux can capture full desktop if multiple displays.
+    can_capture_full_desktop_ = true;
+#endif  // defined(OS_MACOSX)
   }
 
   // Generate and send VideoLayout message.

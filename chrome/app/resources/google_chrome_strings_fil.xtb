@@ -52,6 +52,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2309047409763057870">Pangalawang pag-install ito ng Google Chrome at hindi ito maaaring gawing iyong default na browser.</translation>
 <translation id="2341767445688917208">Hindi ma-sync ng Chrome OS ang iyong mga password. Ayusin ngayon.</translation>
 <translation id="2348335408836342058">Kailangan ng Chrome ng pahintulot na i-access ang iyong camera at mikropono para sa site na ito</translation>
+<translation id="234869673307233423">Hindi masuri ng Chrome ang iyong mga password. Subukan ulit sa ibang pagkakataon.</translation>
 <translation id="2429317896000329049">Hindi mai-sync ng Google Chrome ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
 <translation id="2467438592969358367">Gustong i-export ng Google Chrome ang iyong mga password. I-type ang password mo sa Windows para payagan ito.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
@@ -72,6 +73,8 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2857540653560290388">Inilulunsad ang Chrome...</translation>
 <translation id="2871893339301912279">Naka-sign in ka sa Chrome!</translation>
 <translation id="2888126860611144412">Tungkol sa Chrome</translation>
+<translation id="2929907241665500097">Hindi na-update ang Chrome, nagkaproblema. <ph name="BEGIN_LINK" />Ayusin ang mga problema sa pag-update ng Chrome at ang mga hindi naisagawang pag-update dito.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Pag-sign in sa Network - Chrome</translation>
 <translation id="3037838751736561277">Nasa background mode ang Google Chrome.</translation>
 <translation id="3065168410429928842">Tab ng Chrome</translation>
 <translation id="3080151273017101988">Magpatuloy sa pagpapatakbo ng mga app sa background kapag nakasara ang Google Chrome</translation>
@@ -110,7 +113,9 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">Makakatulong ang Chrome na panatilihin kang ligtas laban sa mga paglabag sa data, sirang extension, at higit pa</translation>
 <translation id="4343195214584226067">Naidagdag na ang <ph name="EXTENSION_NAME" /> sa Chrome</translation>
+<translation id="4384570495110188418">Hindi masusuri ng Chrome ang iyong mga password dahil hindi ka naka-sign in</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome - Pag-sign in sa Network - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">May kasalukuyang isinasagawang isa pang pagpapatakbo sa Google Chrome. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="4480040274068703980">Hindi ma-sync ng Chrome OS ang iyong data dahil sa isang error sa pagsa-sign in.</translation>
 <translation id="4561051373932531560">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
@@ -120,6 +125,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4600710005438004015">Hindi ma-update ang Chrome sa pinakabagong bersyon, kaya hindi mo magagamit ang mga bagong feature at pag-aayos sa seguridad.</translation>
 <translation id="4631713731678262610">Itago sa menu ng Chrome</translation>
 <translation id="4633000520311261472">Upang gawing mas ligtas ang Chrome, nag-disable kami ng ilang extension na hindi nakalista sa <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> at maaaring naidagdag nang hindi mo nalalaman.</translation>
+<translation id="4653397506175047429">Hindi masusuri ng Chrome ang lahat ng iyong password. Subukan ulit pagkalipas ng 24 na oras.</translation>
 <translation id="4728575227883772061">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Google Chrome, paki-sara ito at subukang muli.</translation>
 <translation id="4750550185319565338">I-restart ang Chrome upang ma-enable ang <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -157,6 +163,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Hindi mailunsad ang Chrome. Subukang muli.</translation>
 <translation id="5895138241574237353">I-restart</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - Pag-sign in sa Network</translation>
 <translation id="5940385492829620908">Makikita dito ang iyong web, mga bookmark at iba pang mga bagay-bagay sa Chrome.</translation>
 <translation id="5941830788786076944">Gawin ang Google Chrome na default browser</translation>
 <translation id="6070348360322141662">Para sa karagdagang seguridad, ie-encrypt ng Google Chrome ang iyong data</translation>
@@ -212,6 +219,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7855730255114109580">Napapanahon ang Google Chrome</translation>
 <translation id="7890208801193284374">Kung nagpapahiram ka ng computer, ang mga kaibigan at kapamilya ay maaaring mag-browse nang hiwalay at i-set up ang Chrome sa paraang gusto nila.</translation>
 <translation id="7896673875602241923">May nag-sign in dati sa Chrome sa computer na ito bilang <ph name="ACCOUNT_EMAIL_LAST" />. Mangyaring gumawa ng bagong user ng Chrome upang ihiwalay ang iyong impormasyon.</translation>
+<translation id="7905891027772979035">Hindi masuri ng Chrome ang iyong mga extension. Subukan ulit sa ibang pagkakataon.</translation>
 <translation id="7916016681687251387">Hindi ma-sync ng Chrome OS ang iyong data. Ayusin ngayon.</translation>
 <translation id="7930071585467473040">Sinusubukan ng Google Chrome na kopyahin ang mga password.</translation>
 <translation id="7962410387636238736">Hindi na makakatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na sinusuportahan ang Windows XP at Windows Vista</translation>

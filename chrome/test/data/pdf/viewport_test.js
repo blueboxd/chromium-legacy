@@ -240,9 +240,9 @@ const tests = [
   function testGetMostVisiblePageForTwoUpView() {
     const mockWindow = new MockWindow(400, 500);
     const viewport = getZoomableViewport(mockWindow, new MockSizer(), 0, 1, 0);
-    viewport.setTwoUpView(true);
 
-    const documentDimensions = new MockDocumentDimensions(100, 100);
+    const documentDimensions = new MockDocumentDimensions(
+        100, 100, {defaultPageOrientation: 0, twoUpViewEnabled: true});
     documentDimensions.addPageForTwoUpView(100, 0, 300, 400);
     documentDimensions.addPageForTwoUpView(400, 0, 400, 300);
     documentDimensions.addPageForTwoUpView(0, 400, 400, 250);
@@ -601,9 +601,9 @@ const tests = [
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
     viewport.setViewportChangedCallback(mockCallback.callback);
-    viewport.setTwoUpView(true);
 
-    const documentDimensions = new MockDocumentDimensions(800, 750);
+    const documentDimensions = new MockDocumentDimensions(
+        800, 750, {defaultPageOrientation: 0, twoUpViewEnabled: true});
     documentDimensions.addPageForTwoUpView(200, 0, 200, 150);
     documentDimensions.addPageForTwoUpView(400, 0, 400, 200);
     documentDimensions.addPageForTwoUpView(100, 200, 300, 250);
@@ -706,9 +706,9 @@ const tests = [
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
     viewport.setViewportChangedCallback(mockCallback.callback);
-    viewport.setTwoUpView(true);
 
-    const documentDimensions = new MockDocumentDimensions(800, 750);
+    const documentDimensions = new MockDocumentDimensions(
+        800, 750, {defaultPageOrientation: 0, twoUpViewEnabled: true});
     documentDimensions.addPageForTwoUpView(200, 0, 200, 150);
     documentDimensions.addPageForTwoUpView(400, 0, 400, 200);
     documentDimensions.addPageForTwoUpView(100, 200, 300, 250);
@@ -1053,10 +1053,11 @@ const tests = [
 
     chrome.test.assertEq(undefined, viewport.getLayoutOptions());
 
-    viewport.setDocumentDimensions(
-        new MockDocumentDimensions(50, 50, {defaultPageOrientation: 1}));
+    viewport.setDocumentDimensions(new MockDocumentDimensions(
+        50, 50, {defaultPageOrientation: 1, twoUpViewEnabled: true}));
     chrome.test.assertEq(
-        {defaultPageOrientation: 1}, viewport.getLayoutOptions());
+        {defaultPageOrientation: 1, twoUpViewEnabled: true},
+        viewport.getLayoutOptions());
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(50, 50));
     chrome.test.assertEq(undefined, viewport.getLayoutOptions());

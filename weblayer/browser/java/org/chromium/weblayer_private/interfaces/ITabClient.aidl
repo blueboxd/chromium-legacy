@@ -21,7 +21,8 @@ interface ITabClient {
 
   // Added in M82.
   void showContextMenu(in IObjectWrapper pageUrl, in IObjectWrapper linkUrl,
-      in IObjectWrapper linkText, in IObjectWrapper titleOrAltText) = 4;
+      in IObjectWrapper linkText, in IObjectWrapper titleOrAltText,
+      in IObjectWrapper srcUrl) = 4;
 
   // Added in M82.
   void onTabModalStateChanged(in boolean isTabModalShowing) = 5;

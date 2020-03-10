@@ -104,22 +104,6 @@ class MockMediaRouter : public MediaRouterBase {
                void(const MediaRoute::Id& route_id,
                     std::unique_ptr<std::vector<uint8_t>> data));
   MOCK_METHOD0(OnUserGesture, void());
-
-  void SearchSinks(const MediaSink::Id& sink_id,
-                   const MediaSource::Id& source_id,
-                   const std::string& search_input,
-                   const std::string& domain,
-                   MediaSinkSearchResponseCallback sink_callback) override {
-    SearchSinksInternal(sink_id, source_id, search_input, domain,
-                        sink_callback);
-  }
-  MOCK_METHOD5(SearchSinksInternal,
-               void(const MediaSink::Id& sink_id,
-                    const MediaSource::Id& source_id,
-                    const std::string& search_input,
-                    const std::string& domain,
-                    MediaSinkSearchResponseCallback& sink_callback));
-
   MOCK_METHOD1(OnPresentationSessionDetached,
                void(const MediaRoute::Id& route_id));
   std::unique_ptr<PresentationConnectionStateSubscription>

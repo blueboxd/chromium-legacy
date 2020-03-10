@@ -5,11 +5,9 @@
 #import "ui/base/cocoa/menu_controller.h"
 
 #include "base/bind.h"
-#include "base/cancelable_callback.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -103,17 +101,9 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 // other method below does.
 - (void)addSeparatorToMenu:(NSMenu*)menu atIndex:(int)index;
 
-// Called via a private API hook shortly after the event that selects a menu
-// item arrives.
-- (void)itemWillBeSelected:(NSMenuItem*)sender;
-
 // Called when the user chooses a particular menu item. AppKit sends this only
 // after the menu has fully faded out. |sender| is the menu item chosen.
 - (void)itemSelected:(id)sender;
-
-// Called by the posted task to selected an item during menu fade out.
-// |uiEventFlags| are the ui::EventFlags captured from the triggering NSEvent.
-- (void)itemSelected:(id)sender uiEventFlags:(int)uiEventFlags;
 @end
 
 @interface ResponsiveNSMenuItem : NSMenuItem
@@ -124,12 +114,9 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
   base::scoped_nsobject<NSMenu> _menu;
   BOOL _useWithPopUpButtonCell;  // If YES, 0th item is blank
   BOOL _isMenuOpen;
-  BOOL _postItemSelectedAsTask;
-  std::unique_ptr<base::CancelableClosure> _postedItemSelectedTask;
 }
 
 @synthesize useWithPopUpButtonCell = _useWithPopUpButtonCell;
-@synthesize postItemSelectedAsTask = _postItemSelectedAsTask;
 
 - (ui::MenuModel*)model {
   return _model.get();
@@ -198,7 +185,7 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
               atIndex:(NSInteger)index
             fromModel:(ui::MenuModel*)model {
   NSString* label = l10n_util::FixUpWindowsStyleLabel(model->GetLabelAt(index));
-  base::scoped_nsobject<NSMenuItem> item([[ResponsiveNSMenuItem alloc]
+  base::scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
       initWithTitle:label
              action:@selector(itemSelected:)
       keyEquivalent:@""]);
@@ -292,65 +279,14 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
   return model->IsEnabledAt(modelIndex);
 }
 
-- (void)itemWillBeSelected:(NSMenuItem*)sender {
-  if (_postItemSelectedAsTask && [sender action] == @selector(itemSelected:) &&
-      [[sender target]
-          respondsToSelector:@selector(itemSelected:uiEventFlags:)]) {
-    const int uiEventFlags = ui::EventFlagsFromNative([NSApp currentEvent]);
-
-    // Take care here to retain |menu_| in the block, but not |self|. Since the
-    // block may run before -menuDidClose:, a release of the MenuControllerCocoa
-    // will think the menu is open, and invoke -cancel. So if the delegate is
-    // bad (see below), and decides to release the MenuControllerCocoa in its
-    // menu action, ensure the -dealloc happens there. To do otherwise risks
-    // |model_| being deleted when it is used in -cancel, whereas that is less
-    // likely if the -cancel happens in the delegate method.
-    NSMenu* menu = _menu;
-
-    _postedItemSelectedTask = std::make_unique<base::CancelableClosure>(
-        base::BindRepeating(base::RetainBlock(^{
-          id target = [sender target];
-          if ([target respondsToSelector:@selector(itemSelected:uiEventFlags:)])
-            [target itemSelected:sender uiEventFlags:uiEventFlags];
-          else
-            NOTREACHED();
-
-          // Ensure consumers that use -postItemSelectedAsTask:YES have not
-          // destroyed the MenuControllerCocoa in the menu action. AppKit will
-          // still send messages to [item target] (the MenuControllerCocoa), and
-          // the target can not be set to nil here since that prevents re-use of
-          // the menu for well-behaved consumers.
-          CHECK([menu delegate]);  // Note: set to nil in -dealloc.
-        })));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, _postedItemSelectedTask->callback());
-  }
-}
-
 - (void)itemSelected:(id)sender {
-  // A task created in -itemWillBeSelected: may or may not have run. If not, put
-  // it on the stack before running it, in case it destroys |self|.
-  if (auto pendingTask = std::move(_postedItemSelectedTask)) {
-    if (!pendingTask->IsCancelled())
-      pendingTask->callback().Run();
-  } else {
-    [self itemSelected:sender
-          uiEventFlags:ui::EventFlagsFromNative([NSApp currentEvent])];
-  }
-}
-
-- (void)itemSelected:(id)sender uiEventFlags:(int)uiEventFlags {
-  // Cancel any posted task, but don't reset it, so that the correct path is
-  // taken in -itemSelected:.
-  if (_postedItemSelectedTask)
-    _postedItemSelectedTask->Cancel();
-
   NSInteger modelIndex = [sender tag];
   ui::MenuModel* model =
       [WeakPtrToMenuModelAsNSObject getFrom:[sender representedObject]];
   DCHECK(model);
   if (model)
-    model->ActivatedAt(modelIndex, uiEventFlags);
+    model->ActivatedAt(modelIndex,
+                       ui::EventFlagsFromNative([NSApp currentEvent]));
   // Note: |self| may be destroyed by the call to ActivatedAt().
 }
 
@@ -391,17 +327,3 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 
 @end
 
-@interface NSMenuItem (Private)
-// Private method which is invoked very soon after the event that activates a
-// menu item is received. AppKit then spends 300ms or so flashing the menu item,
-// and fading out the menu, in private run loop modes.
-- (void)_sendItemSelectedNote;
-@end
-
-@implementation ResponsiveNSMenuItem
-- (void)_sendItemSelectedNote {
-  if ([[self target] respondsToSelector:@selector(itemWillBeSelected:)])
-    [[self target] itemWillBeSelected:self];
-  [super _sendItemSelectedNote];
-}
-@end

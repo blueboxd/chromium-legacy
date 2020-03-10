@@ -44,9 +44,8 @@ void CursorManager::UpdateViewUnderCursor(RenderWidgetHostViewBase* view) {
   // ignored.
   SetTooltipTextForView(view_under_cursor_, base::string16());
   view_under_cursor_ = view;
-  WebCursor cursor;
+  WebCursor cursor(ui::mojom::CursorType::kPointer);
 
-  // If no UpdateCursor has been received for this view, use an empty cursor.
   auto it = cursor_map_.find(view);
   if (it != cursor_map_.end())
     cursor = it->second;

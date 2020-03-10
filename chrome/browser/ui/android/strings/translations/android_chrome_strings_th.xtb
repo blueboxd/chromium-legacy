@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">คุณเปิดการซิงค์ได้ทุกเมื่อในการตั้งค่า</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{บุ๊กมาร์ก <ph name="BOOKMARKS_COUNT_ONE" /> รายการ}other{บุ๊กมาร์ก <ph name="BOOKMARKS_COUNT_MANY" /> รายการ}}</translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
+<translation id="3114012059975132928">โปรแกรมเล่นวิดีโอ</translation>
 <translation id="3123473560110926937">บล็อกในบางเว็บไซต์</translation>
 <translation id="3123734510202723619">ประกาศ</translation>
 <translation id="3137521801621304719">ออกจากโหมดไม่ระบุตัวตน</translation>
@@ -352,6 +353,7 @@
 <translation id="3587482841069643663">ทั้งหมด</translation>
 <translation id="358794129225322306">อนุญาตให้เว็บไซต์ดาวน์โหลดไฟล์หลายไฟล์โดยอัตโนมัติ</translation>
 <translation id="3590487821116122040">พื้นที่เก็บข้อมูลเว็บไซต์ที่ Chrome คิดว่าไม่สำคัญ (เช่น เว็บไซต์ที่ไม่มีการตั้งค่าที่บันทึกไว้หรือที่คุณไม่ได้เข้าชมบ่อยครั้ง)</translation>
+<translation id="3594780231884063836">ปิดเสียงวิดีโอ</translation>
 <translation id="3599863153486145794">ล้างประวัติจากอุปกรณ์ที่ลงชื่อเข้าใช้ทั้งหมด บัญชี Google อาจมีประวัติการท่องเว็บรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="3600792891314830896">ปิดเสียงเว็บไซต์ที่เล่นเสียง</translation>
 <translation id="3616113530831147358">เสียง</translation>
@@ -605,6 +607,7 @@
 <translation id="5456381639095306749">ดาวน์โหลดหน้า</translation>
 <translation id="548278423535722844">เปิดในแอปแผนที่</translation>
 <translation id="5487521232677179737">ล้างข้อมูล</translation>
+<translation id="5489227211564503167">เวลาผ่านไป <ph name="ELAPSED_TIME" /> จาก <ph name="TOTAL_TIME" /></translation>
 <translation id="5494752089476963479">บล็อกโฆษณาในเว็บไซต์ที่แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
 <translation id="5500777121964041360">อาจไม่พร้อมใช้งานในประเทศของคุณ</translation>
 <translation id="5505264765875738116">เว็บไซต์ขออนุญาตเพื่อส่งการแจ้งเตือนไม่ได้</translation>
@@ -665,6 +668,7 @@
 <translation id="5864419784173784555">กำลังรอการดาวน์โหลดรายการอื่น…</translation>
 <translation id="5865733239029070421">ส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google โดยอัตโนมัติ</translation>
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
+<translation id="5876056640971328065">หยุดวิดีโอชั่วคราว</translation>
 <translation id="5884076754568147479">Google จะได้รับ URL และเนื้อหาของเว็บไซต์ต่างๆ ที่คุณใช้งาน Assistant ด้วย รวมถึงข้อมูลที่คุณส่งผ่าน Assistant เพื่อช่วยทำงานที่ต้องการให้เสร็จสิ้น</translation>
 <translation id="5902828464777634901">ระบบจะลบข้อมูลในเครื่องทั้งหมดที่เว็บไซต์นี้จัดเก็บ รวมถึงคุกกี้</translation>
 <translation id="5919204609460789179">อัปเดต <ph name="PRODUCT_NAME" /> เพื่อเริ่มซิงค์</translation>
@@ -728,6 +732,7 @@
 <translation id="6381421346744604172">ปรับเว็บไซต์ให้เป็นสีเข้ม</translation>
 <translation id="6388207532828177975">ล้างข้อมูลและรีเซ็ต</translation>
 <translation id="6395288395575013217">ลิงก์</translation>
+<translation id="6397616442223433927">กลับมาออนไลน์แล้ว</translation>
 <translation id="6404511346730675251">แก้ไขบุ๊กมาร์ก</translation>
 <translation id="6406506848690869874">การซิงค์ข้อมูล</translation>
 <translation id="6410973561433500075">เข้าสู่โหมด AR จาก <ph name="DOMAIN" /> ใช่ไหม</translation>
@@ -796,6 +801,7 @@
 <translation id="6846298663435243399">กำลังโหลด…</translation>
 <translation id="6850409657436465440">ระบบยังดาวน์โหลดอยู่</translation>
 <translation id="6850830437481525139">ปิดแล้ว <ph name="TAB_COUNT" /> แท็บ</translation>
+<translation id="6864395892908308021">อุปกรณ์นี้อ่าน NFC ไม่ได้</translation>
 <translation id="6864459304226931083">ดาวน์โหลดรูปภาพ</translation>
 <translation id="6865313869410766144">ข้อมูลฟอร์มที่ป้อนอัตโนมัติ</translation>
 <translation id="6884306546558072722">สำรวจแบบอออฟไลน์ต่อไป</translation>
@@ -916,6 +922,7 @@
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="7810647596859435254">เปิดด้วย…</translation>
 <translation id="7821588508402923572">การประหยัดอินเทอร์เน็ตของคุณจะแสดงที่นี่</translation>
+<translation id="783819812427904514">เปิดเสียงวิดีโอ</translation>
 <translation id="784934925303690534">ช่วงเวลา</translation>
 <translation id="7851858861565204677">อุปกรณ์อื่นๆ</translation>
 <translation id="7875915731392087153">สร้างอีเมล</translation>

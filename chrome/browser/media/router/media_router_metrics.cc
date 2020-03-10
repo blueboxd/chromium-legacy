@@ -147,8 +147,6 @@ const char MediaRouterMetrics::kHistogramMediaSinkType[] =
     "MediaRouter.Sink.SelectedType";
 const char MediaRouterMetrics::kHistogramPresentationUrlType[] =
     "MediaRouter.PresentationRequest.AvailabilityUrlType";
-const char MediaRouterMetrics::kHistogramRecordSearchSinkOutcome[] =
-    "MediaRouter.Sink.SearchOutcome";
 const char MediaRouterMetrics::kHistogramRouteCreationOutcome[] =
     "MediaRouter.Route.CreationOutcome";
 const char MediaRouterMetrics::kHistogramStartLocalLatency[] =
@@ -301,11 +299,6 @@ void MediaRouterMetrics::RecordStopLocalRoute() {
 void MediaRouterMetrics::RecordStopRemoteRoute() {
   // Remote routes have the enum value 1.
   UMA_HISTOGRAM_BOOLEAN(kHistogramStopRoute, 1);
-}
-
-// static
-void MediaRouterMetrics::RecordSearchSinkOutcome(bool success) {
-  UMA_HISTOGRAM_BOOLEAN(kHistogramRecordSearchSinkOutcome, success);
 }
 
 // static

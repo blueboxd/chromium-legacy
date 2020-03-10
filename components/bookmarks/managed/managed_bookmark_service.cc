@@ -49,7 +49,6 @@ class BookmarkPermanentNodeLoader {
     node_->set_id(*next_node_id);
     *next_node_id = ManagedBookmarksTracker::LoadInitial(
         node_.get(), initial_bookmarks_.get(), node_->id() + 1);
-    node_->set_visible(!node_->children().empty());
     node_->SetTitle(l10n_util::GetStringUTF16(title_id_));
     return std::move(node_);
   }
@@ -100,8 +99,8 @@ LoadManagedNodeCallback ManagedBookmarkService::GetLoadManagedNodeCallback() {
   // Create a BookmarkPermanentNode with a temporary id of 0. It will be
   // populated and assigned a proper id in the LoadManagedNode callback. Until
   // then, it is owned by the returned closure.
-  std::unique_ptr<BookmarkPermanentNode> managed(
-      new BookmarkPermanentNode(0, BookmarkNode::FOLDER));
+  auto managed = std::make_unique<BookmarkPermanentNode>(
+      0, BookmarkNode::FOLDER, /*visible_when_empty=*/false);
 
   managed_node_ = managed.get();
 

@@ -5,11 +5,9 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
@@ -38,8 +36,6 @@ import java.util.concurrent.RejectedExecutionException;
  * A utility class for querying information about the default browser setting.
  */
 public final class DefaultBrowserInfo {
-    private static final String SAMPLE_URL = "https://www.madeupdomainforcheck123.chrome/";
-
     /**
      * A list of potential default browser states.  To add a type to this list please update
      * MobileDefaultBrowserState in histograms.xml and make sure to keep this list in sync.
@@ -97,7 +93,7 @@ public final class DefaultBrowserInfo {
                                 context, BuildInfo.getInstance().hostPackageLabel));
 
                         PackageManager pm = context.getPackageManager();
-                        ResolveInfo info = getResolveInfoForViewIntent();
+                        ResolveInfo info = PackageManagerUtils.resolveDefaultWebBrowserActivity();
 
                         // Caches whether Chrome is set as a default browser on the device.
                         boolean isDefault = info != null && info.match != 0
@@ -125,19 +121,6 @@ public final class DefaultBrowserInfo {
         return packageLabel == null
                 ? context.getString(R.string.menu_open_in_product_default)
                 : context.getString(R.string.menu_open_in_product, packageLabel);
-    }
-
-    /**
-     * @return Default ResolveInfo to handle a VIEW intent for a url.
-     */
-    private static ResolveInfo getResolveInfoForViewIntent() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(SAMPLE_URL));
-        return PackageManagerUtils.resolveActivity(intent, 0);
-    }
-
-    private static List<ResolveInfo> getResolveInfoListForViewIntent() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(SAMPLE_URL));
-        return PackageManagerUtils.queryIntentActivities(intent, PackageManager.MATCH_ALL);
     }
 
     /**
@@ -174,7 +157,7 @@ public final class DefaultBrowserInfo {
                     DefaultInfo info = new DefaultInfo();
 
                     // Query the default handler first.
-                    ResolveInfo defaultRi = getResolveInfoForViewIntent();
+                    ResolveInfo defaultRi = PackageManagerUtils.resolveDefaultWebBrowserActivity();
                     if (defaultRi != null && defaultRi.match != 0) {
                         info.hasDefault = true;
                         info.isChromeDefault = isSamePackage(context, defaultRi);
@@ -183,7 +166,7 @@ public final class DefaultBrowserInfo {
 
                     // Query all other intent handlers.
                     Set<String> uniquePackages = new HashSet<>();
-                    List<ResolveInfo> ris = getResolveInfoListForViewIntent();
+                    List<ResolveInfo> ris = PackageManagerUtils.queryAllWebBrowsersInfo();
                     if (ris != null) {
                         for (ResolveInfo ri : ris) {
                             String packageName = ri.activityInfo.applicationInfo.packageName;

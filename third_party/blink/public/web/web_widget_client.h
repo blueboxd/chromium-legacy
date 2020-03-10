@@ -38,6 +38,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-forward.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
@@ -120,9 +121,12 @@ class WebWidgetClient {
   // Requests to lock the mouse cursor for the |requester_frame| in the
   // widget. If true is returned, the success result will be asynchronously
   // returned via a single call to WebWidget::didAcquirePointerLock() or
-  // WebWidget::didNotAcquirePointerLock().
+  // WebWidget::didNotAcquirePointerLock() and a single call to the callback.
   // If false, the request has been denied synchronously.
+  using PointerLockCallback =
+      base::OnceCallback<void(mojom::PointerLockResult)>;
   virtual bool RequestPointerLock(WebLocalFrame* requester_frame,
+                                  PointerLockCallback callback,
                                   bool request_unadjusted_movement) {
     return false;
   }

@@ -74,6 +74,8 @@
           file="icons/googlemic_clr_24px.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_MIC_SVG"
           file="icons/mic.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_LINK_SVG"
+          file="icons/link.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_MINI_PAGE_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/mini_page.js"
           use_base_dir="false" type="BINDATA" compress="gzip" />

@@ -278,7 +278,7 @@
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/storage_management_activity_label"
-        android:name="org.chromium.chrome.browser.settings.website.ManageSpaceActivity"
+        android:name="org.chromium.chrome.browser.site_settings.ManageSpaceActivity"
         android:theme="@style/Theme.Chromium.Settings.ManageSpace"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
@@ -1003,7 +1003,7 @@
         android:launchMode="singleTask"
         android:name="org.chromium.android_webview.devui.MainActivity"
         android:process=":webview_apk"
-        android:taskAffinity="org.chromium.android_webview.devui"
+        android:taskAffinity="org.chromium.chrome.org.chromium.android_webview.devui"
         android:theme="@style/Theme.DevUi.DayNight">
       <intent-filter>
         <action android:name="com.android.webview.SHOW_DEV_UI"/>
@@ -1028,7 +1028,7 @@
         android:launchMode="singleTop"
         android:name="org.chromium.android_webview.devui.CrashesListActivity"
         android:process=":webview_apk"
-        android:taskAffinity="org.chromium.android_webview.devui"
+        android:taskAffinity="org.chromium.chrome.org.chromium.android_webview.devui"
         android:theme="@style/Theme.DevUi.DayNight"/>
     <activity
         android:label="WebView
@@ -1036,7 +1036,7 @@
         android:launchMode="singleTop"
         android:name="org.chromium.android_webview.devui.FlagsActivity"
         android:process=":webview_apk"
-        android:taskAffinity="org.chromium.android_webview.devui"
+        android:taskAffinity="org.chromium.chrome.org.chromium.android_webview.devui"
         android:theme="@style/Theme.DevUi.DayNight"/>
     <activity
         android:enabled="false"

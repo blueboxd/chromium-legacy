@@ -136,6 +136,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
                    size_t row_bytes,
                    int x,
                    int y) override;
+  void WillOverwriteCanvas() override;
 
  private:
   bool have_recorded_draw_commands_;

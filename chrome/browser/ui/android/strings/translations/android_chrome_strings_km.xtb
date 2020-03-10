@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">អ្នកអាចបើក​សមកាលកម្ម​បានគ្រប់ពេល​នៅក្នុងការកំណត់</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{ចំណាំ <ph name="BOOKMARKS_COUNT_ONE" />}other{ចំណាំ <ph name="BOOKMARKS_COUNT_MANY" />}}</translation>
 <translation id="3089395242580810162">បើកនៅក្នុងផ្ទាំងអនាមិក</translation>
+<translation id="3114012059975132928">កម្មវិធី​ចាក់​វីដេអូ</translation>
 <translation id="3123473560110926937">បាន​ទប់ស្កាត់នៅលើគេហទំព័រ​មួយចំនួន</translation>
 <translation id="3123734510202723619">សេចក្តីប្រកាស</translation>
 <translation id="3137521801621304719">ចាកចេញពីរបៀបអនាមិក</translation>
@@ -352,6 +353,7 @@
 <translation id="3587482841069643663">ទាំងអស់</translation>
 <translation id="358794129225322306">អនុញ្ញាតឱ្យ​គេហទំព័រទាញយក​ឯកសារជាច្រើន​ដោយស្វ័យប្រវត្តិ។</translation>
 <translation id="3590487821116122040">ទំហំផ្ទុកគេហទំព័រដែល Chrome គិតថាមិនសំខាន់ (ឧ៖ គេហទំព័រដែលគ្មានការកំណត់ដែលបានរក្សាទុក ឬគេហទំព័រដែលអ្នកមិនសូវចូលទៅកាន់ញឹកញាប់)</translation>
+<translation id="3594780231884063836">បិទ​សំឡេង​វីដេអូ</translation>
 <translation id="3599863153486145794">សម្អាតប្រវត្តិពីឧបករណ៍ទាំងអស់ដែលបានចូលគណនី។ គណនី Google របស់អ្នកអាចនឹងមានទម្រង់ប្រវត្តិរុករកផ្សេងទៀតនៅ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ។</translation>
 <translation id="3600792891314830896">បិទសំឡេងទំព័រដែលចាក់សំឡេង</translation>
 <translation id="3616113530831147358">សម្លេង</translation>
@@ -605,6 +607,7 @@
 <translation id="5456381639095306749">ទាញយកទំព័រ</translation>
 <translation id="548278423535722844">បើកនៅក្នុងកម្មវិធីផែនទី</translation>
 <translation id="5487521232677179737">ជម្រះទិន្នន័យ</translation>
+<translation id="5489227211564503167">រយៈពេល​ដែលកន្លងផុត <ph name="ELAPSED_TIME" /> នៃ <ph name="TOTAL_TIME" />។</translation>
 <translation id="5494752089476963479">ទប់ស្កាត់​ការផ្សាយពាណិជ្ជកម្ម​នៅលើគេហទំព័រ​ដែលបង្ហាញ​ការផ្សាយពាណិជ្ជកម្ម​នាំឱ្យយល់ច្រឡំ ឬរំខាន</translation>
 <translation id="5500777121964041360">ប្រហែលជា​មិនអាចប្រើ​នៅក្នុង​ទីតាំង​របស់អ្នកបានទេ</translation>
 <translation id="5505264765875738116">គេហទំព័រ​មិនអាច​ស្នើសុំ​ការអនុញ្ញាត​ដើម្បី​ផ្ញើ​ការជូន​ដំណឹង​បានទេ</translation>
@@ -665,6 +668,7 @@
 <translation id="5864419784173784555">កំពុង​រង់ចាំ​ការទាញយក​ផ្សេង​ទៀត…</translation>
 <translation id="5865733239029070421">ផ្ញើស្ថិតិប្រើប្រាស់ និងរបាយការណ៍អំពីការគាំងទៅ Google ដោយស្វ័យប្រវត្តិ</translation>
 <translation id="5869522115854928033">ពាក្យសម្ងាត់ដែលបានរក្សាទុក</translation>
+<translation id="5876056640971328065">ផ្អាក​វីដេអូ</translation>
 <translation id="5884076754568147479">ដើម្បី​ជួយអ្នកក្នុងការបំពេញ​កិច្ចការផ្សេងៗ Google នឹង​ទទួល​ URL និងខ្លឹមសារ​របស់គេហទំព័រ ដែលអ្នកប្រើជាមួយជំនួយការរបស់អ្នក ព្រមទាំងព័ត៌មានដែលអ្នកដាក់បញ្ជូនតាមរយៈជំនួយការ</translation>
 <translation id="5902828464777634901">ទិន្នន័យមូលដ្ឋានទាំងអស់ដែលបានរក្សាទុកដោយគេហទំព័រនេះរាប់ទាំងខុកឃីនឹងត្រូវបានលុប។</translation>
 <translation id="5919204609460789179">អាប់ដេត <ph name="PRODUCT_NAME" /> ដើម្បីចាប់ផ្តើមធ្វើសមកាលកម្ម</translation>
@@ -728,6 +732,7 @@
 <translation id="6381421346744604172">ធ្វើឱ្យគេហទំព័រប្រែជាងងឹត</translation>
 <translation id="6388207532828177975">ជម្រះ និងកំណត់ឡើងវិញ</translation>
 <translation id="6395288395575013217">តំណ</translation>
+<translation id="6397616442223433927">មានអ៊ីនធឺណិត​វិញ</translation>
 <translation id="6404511346730675251">កែប្រែចំណាំ</translation>
 <translation id="6406506848690869874">សមកាលកម្ម</translation>
 <translation id="6410973561433500075">ចូល AR ពី <ph name="DOMAIN" /> ឬ?</translation>
@@ -796,6 +801,7 @@
 <translation id="6846298663435243399">កំពុងដំណើរការ...</translation>
 <translation id="6850409657436465440">ការទាញយក​របស់អ្នក​កំពុង​ដំណើរការ​នៅឡើយ</translation>
 <translation id="6850830437481525139">បានបិទផ្ទាំង <ph name="TAB_COUNT" /></translation>
+<translation id="6864395892908308021">ឧបករណ៍នេះ​មិនអាចអាន NFC បានទេ</translation>
 <translation id="6864459304226931083">ទាញយករូបភាព</translation>
 <translation id="6865313869410766144">បំពេញទិន្នន័យបែបបទស្វ័យប្រវត្តិ</translation>
 <translation id="6884306546558072722">បន្តរុករក​ដោយគ្មាន​អ៊ីនធឺណិត</translation>
@@ -916,6 +922,7 @@
 <translation id="780301667611848630">ទេ អរគុណ</translation>
 <translation id="7810647596859435254">បើក​ដោយ​ប្រើ…</translation>
 <translation id="7821588508402923572">ការសន្សំសំចៃ​ទិន្នន័យ​របស់អ្នក​នឹង​បង្ហាញ​នៅ​ទីនេះ</translation>
+<translation id="783819812427904514">បើក​សំឡេង​វីដេអូ</translation>
 <translation id="784934925303690534">ចន្លោះពេល</translation>
 <translation id="7851858861565204677">ឧបករណ៍ផ្សេងទៀត</translation>
 <translation id="7875915731392087153">បង្កើតអ៊ីមែល</translation>

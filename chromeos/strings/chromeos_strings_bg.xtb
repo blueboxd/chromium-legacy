@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Срокът за промяна на паролата е изтекъл</translation>
 <translation id="2049639323467105390">Това устройство се управлява от <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Включете Bluetooth, за да бъдат открити устройствата в близост</translation>
+<translation id="2375079107209812402">Остават <ph name="ATTEMPTS_LEFT" /> опита</translation>
 <translation id="2805756323405976993">Приложения</translation>
 <translation id="2872961005593481000">Изключване</translation>
 <translation id="3008341117444806826">ОПРЕСНЯВАНЕ</translation>
@@ -42,6 +43,7 @@
 <translation id="808894953321890993">Промяна на паролата</translation>
 <translation id="8208861521865154048">Предимства</translation>
 <translation id="8747900814994928677">Потвърждаване на промяната</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Оставащи опити: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Опресняване на пропуска за <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Отключване</translation>
 </translationbundle>

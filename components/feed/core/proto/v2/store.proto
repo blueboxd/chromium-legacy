@@ -6,9 +6,8 @@ syntax = "proto3";
 
 package feedstore;
 
-import "components/feed/core/proto/ui/action/ui_feed_action.proto";
-import "components/feed/core/proto/ui/stream/stream_structure.proto";
-import "components/feed/core/proto/wire/content_id.proto";
+import "components/feed/core/proto/v2/wire/content_id.proto";
+import "components/feed/core/proto/v2/wire/feed_action.proto";
 
 option optimize_for = LITE_RUNTIME;
 
@@ -111,7 +110,24 @@ message ContentInfo {
   // Unix timestamp (seconds) that content was received by Chrome.
   int64 availability_time_seconds = 2;
   RepresentationData representation_data = 3;
-  components.feed.core.proto.ui.stream.OfflineMetadata offline_metadata = 4;
+  OfflineMetadata offline_metadata = 4;
+}
+
+message OfflineMetadata {
+  // Title of the content.
+  string title = 1;
+
+  // Url for image for the content.
+  string image_url = 2;
+
+  // Publisher of the content.
+  string publisher = 3;
+
+  // Url for the favicon for the content.
+  string favicon_url = 4;
+
+  // Short string from the content, typically the start of an article.
+  string snippet = 5;
 }
 
 message Content {
@@ -136,7 +152,7 @@ message StoredAction {
   // How many times we have tried to upload the action.
   int32 upload_attempt_count = 2;
   // The action to upload.
-  components.feed.core.proto.ui.action.FeedAction action = 3;
+  feedwire.FeedAction action = 3;
 }
 
 // The internal version of the server response. Includes feature tree and

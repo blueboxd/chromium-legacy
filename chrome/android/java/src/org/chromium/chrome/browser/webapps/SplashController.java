@@ -20,7 +20,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.compositor.CompositorView;
@@ -326,10 +326,7 @@ public class SplashController
             method.invoke(mActivity);
         } catch (ReflectiveOperationException e) {
             // Method not found or threw an exception.
-            CachedMetrics.BooleanHistogramSample histogram =
-                    new CachedMetrics.BooleanHistogramSample(
-                            "Mobile.Splash.TranslucencyRemovalFailed");
-            histogram.record(true);
+            RecordHistogram.recordBooleanHistogram("Mobile.Splash.TranslucencyRemovalFailed", true);
             assert false : "Failed to remove activity translucency reflectively";
             Log.e(TAG, "Failed to remove activity translucency reflectively");
         }

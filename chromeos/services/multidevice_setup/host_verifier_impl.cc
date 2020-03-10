@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -134,9 +135,12 @@ bool HostVerifierImpl::IsHostVerified() {
   // The host is not considered verified if it does not have the data needed for
   // secure communication via Bluetooth. These values could be missing if v2
   // DeviceSync data was not decrypted, for instance.
-  if (current_host->public_key().empty() ||
-      current_host->persistent_symmetric_key().empty() ||
-      current_host->beacon_seeds().empty()) {
+  bool has_crypto_data = !current_host->public_key().empty() &&
+                         !current_host->persistent_symmetric_key().empty() &&
+                         !current_host->beacon_seeds().empty();
+  base::UmaHistogramBoolean(
+      "MultiDevice.Setup.HostVerifier.DoesHostHaveCryptoData", has_crypto_data);
+  if (!has_crypto_data) {
     return false;
   }
 

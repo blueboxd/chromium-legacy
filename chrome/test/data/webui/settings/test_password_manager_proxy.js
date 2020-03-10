@@ -14,6 +14,7 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
     super([
       'requestPlaintextPassword',
       'startBulkPasswordCheck',
+      'stopBulkPasswordCheck',
       'getCompromisedCredentialsInfo',
       'getPasswordCheckStatus',
     ]);
@@ -150,6 +151,11 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
   /** @override */
   startBulkPasswordCheck() {
     this.methodCalled('startBulkPasswordCheck');
+  }
+
+  /** @override */
+  stopBulkPasswordCheck() {
+    this.methodCalled('stopBulkPasswordCheck');
   }
 
   /** @override */

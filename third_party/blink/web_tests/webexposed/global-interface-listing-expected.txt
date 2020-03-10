@@ -7835,6 +7835,7 @@ interface SVGViewElement : SVGElement
     setter zoomAndPan
 interface Scheduler
     attribute @@toStringTag
+    getter currentTaskSignal
     method constructor
     method postTask
 interface Scheduling

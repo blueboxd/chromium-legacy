@@ -855,6 +855,14 @@ Color LayoutTheme::FocusRingColor() const {
                                       : GetTheme().PlatformFocusRingColor();
 }
 
+bool LayoutTheme::DelegatesMenuListRendering() const {
+  return delegates_menu_list_rendering_;
+}
+
+void LayoutTheme::SetDelegatesMenuListRenderingForTesting(bool flag) {
+  delegates_menu_list_rendering_ = flag;
+}
+
 String LayoutTheme::DisplayNameForFile(const File& file) const {
   return file.name();
 }

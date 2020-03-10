@@ -15,6 +15,7 @@ Local changes:
 * copy .gitignore from https://git.xiph.org/?p=opus.git;a=tree
 * set 'x' flags: "chmod 750 win32/genversion.bat"
 * remove assertion messages in release builds (see crbug/1053572)
+* apply patch to fix int-overflow in silk (https://gitlab.xiph.org/xiph/opus/-/commit/923bebde)
 
 Opus' own unit tests are located in ./src/tests
 Additional chromium tests are located in ./tests

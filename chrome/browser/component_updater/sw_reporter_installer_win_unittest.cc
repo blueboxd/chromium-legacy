@@ -36,7 +36,7 @@ namespace component_updater {
 
 namespace {
 
-constexpr char kErrorHistogramName[] = "SoftwareReporter.ExperimentErrors";
+constexpr char kErrorHistogramName[] = "SoftwareReporter.ConfigurationErrors";
 constexpr char kExperimentTag[] = "experiment_tag";
 constexpr char kMissingTag[] = "missing_tag";
 
@@ -192,8 +192,7 @@ class SwReporterInstallerTest : public ::testing::Test {
   void ExpectLaunchError() {
     // The SwReporter should not be launched, and an error should be logged.
     EXPECT_TRUE(extracted_invocations_.container().empty());
-    histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                   SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
+    histograms_.ExpectUniqueSample(kErrorHistogramName, kBadParams, 1);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -229,16 +228,14 @@ TEST_F(SwReporterInstallerTest, MissingTag) {
   SwReporterInstallerPolicy policy(on_component_ready_callback_);
   CreateFeatureWithoutTag();
   ExpectAttributesWithTag(policy, kMissingTag);
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_TAG, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 1);
 }
 
 TEST_F(SwReporterInstallerTest, InvalidTag) {
   SwReporterInstallerPolicy policy(on_component_ready_callback_);
   CreateFeatureWithTag("tag with invalid whitespace chars");
   ExpectAttributesWithTag(policy, kMissingTag);
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_TAG, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 1);
 }
 
 TEST_F(SwReporterInstallerTest, TagTooLong) {
@@ -246,16 +243,14 @@ TEST_F(SwReporterInstallerTest, TagTooLong) {
   std::string tag_too_long(500, 'x');
   CreateFeatureWithTag(tag_too_long);
   ExpectAttributesWithTag(policy, kMissingTag);
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_TAG, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 1);
 }
 
 TEST_F(SwReporterInstallerTest, EmptyTag) {
   SwReporterInstallerPolicy policy(on_component_ready_callback_);
   CreateFeatureWithTag("");
   ExpectAttributesWithTag(policy, kMissingTag);
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_TAG, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadTag, 1);
 }
 
 TEST_F(SwReporterInstallerTest, ValidTag) {
@@ -530,8 +525,7 @@ TEST_F(SwReporterInstallerTest, BadSuffix) {
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadParams, 1);
 }
 
 TEST_F(SwReporterInstallerTest, SuffixTooLong) {
@@ -553,8 +547,7 @@ TEST_F(SwReporterInstallerTest, SuffixTooLong) {
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadParams, 1);
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_ArgumentsIsNotAList) {
@@ -574,8 +567,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_ArgumentsIsNotAList) {
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadParams, 1);
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_InvocationParamsIsNotAList) {
@@ -596,8 +588,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_InvocationParamsIsNotAList) {
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadParams, 1);
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_SuffixIsAList) {
@@ -617,8 +608,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_SuffixIsAList) {
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadParams, 1);
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_PromptIsNotABoolean) {
@@ -639,8 +629,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_PromptIsNotABoolean) {
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadParams, 1);
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsScalar) {
@@ -653,8 +642,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsScalar) {
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadParams, 1);
 }
 
 TEST_F(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsDict) {
@@ -667,8 +655,7 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsDict) {
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
-  histograms_.ExpectUniqueSample(kErrorHistogramName,
-                                 SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
+  histograms_.ExpectUniqueSample(kErrorHistogramName, kBadParams, 1);
 }
 
 class SwReporterOnDemandFetcherTest : public ::testing::Test,

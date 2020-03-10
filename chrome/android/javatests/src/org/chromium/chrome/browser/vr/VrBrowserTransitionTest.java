@@ -40,7 +40,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.settings.website.SingleWebsiteSettings;
+import org.chromium.chrome.browser.site_settings.SingleWebsiteSettings;
 import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;

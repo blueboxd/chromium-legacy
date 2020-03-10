@@ -331,7 +331,7 @@ gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
                 .GetNativeImageNamed(resource_id)
                 .ToImageSkia();
 #else
-  folder = GetFolderIcon(ui::MaterialDesignController::touch_ui()
+  folder = GetFolderIcon(ui::MaterialDesignController::GetInstance()->touch_ui()
                              ? vector_icons::kFolderTouchIcon
                              : vector_icons::kFolderIcon,
                          text_color);
@@ -352,7 +352,7 @@ gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
                 .GetNativeImageNamed(resource_id)
                 .ToImageSkia();
 #else
-  folder = GetFolderIcon(ui::MaterialDesignController::touch_ui()
+  folder = GetFolderIcon(ui::MaterialDesignController::GetInstance()->touch_ui()
                              ? vector_icons::kFolderManagedTouchIcon
                              : vector_icons::kFolderManagedIcon,
                          text_color);

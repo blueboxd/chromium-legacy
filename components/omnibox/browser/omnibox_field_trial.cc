@@ -608,7 +608,7 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
   }
 
   // Touch-optimized UI always swaps title and URL.
-  if (ui::MaterialDesignController::touch_ui())
+  if (ui::MaterialDesignController::GetInstance()->touch_ui())
     return EMPHASIZE_WHEN_NONEMPTY;
 
   // Look up the parameter named kEmphasizeTitlesRule + "_" + input.type(),

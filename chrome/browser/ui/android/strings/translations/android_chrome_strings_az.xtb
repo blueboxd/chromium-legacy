@@ -286,6 +286,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="3058498974290601450">Sinxronizasiyanı istənilən vaxt ayarlarda deaktiv edə bilərsiniz</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> əlfəcin}other{<ph name="BOOKMARKS_COUNT_MANY" /> əlfəcin}}</translation>
 <translation id="3089395242580810162">Gizli tabda açın</translation>
+<translation id="3114012059975132928">Video pleyer</translation>
 <translation id="3123473560110926937">Bəzi saytlarda bloklandı</translation>
 <translation id="3123734510202723619">Elanlar</translation>
 <translation id="3137521801621304719">Gizli rejimdən çıxın</translation>
@@ -352,6 +353,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="3587482841069643663">Hamısı</translation>
 <translation id="358794129225322306">Sayta çoxsaylı faylları avtomatik endirmək icazəsi verin.</translation>
 <translation id="3590487821116122040">Sayt yaddaşı Chrome vacib olduğunu düşünmür (məs. yadda saxlanmayan ayarlar ilə olan və ya tez-tez daxil olmadığınız saytlar)</translation>
+<translation id="3594780231884063836">Videonu səssiz rejimə keçirin</translation>
 <translation id="3599863153486145794">Bütün daxil olunmuş cihazlardan tarixçəni silir. <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> linkində Google Hesabına məxsus axtarış tarixçəsinin başqa formaları ola bilər.</translation>
 <translation id="3600792891314830896">Səs oxudan saytları səssiz rejimə keçirin</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -605,6 +607,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5456381639095306749">Endirmə səhifəsi</translation>
 <translation id="548278423535722844">Xəritə tətbiqində açın</translation>
 <translation id="5487521232677179737">Datanı silin</translation>
+<translation id="5489227211564503167">Keçən vaxt: <ph name="ELAPSED_TIME" /> / <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">İntruziv və aldadıcı reklamlar göstərən saytlardakı reklamları bloklayın</translation>
 <translation id="5500777121964041360">Ərazinizdə əlçatan olmaya bilər</translation>
 <translation id="5505264765875738116">Saytlar bildiriş göndərilməsini tələb edə bilməz</translation>
@@ -665,6 +668,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5864419784173784555">Başqa endirmə gözlənilir…</translation>
 <translation id="5865733239029070421">İstifadə statistikası və qəza raportlarını avtomatik Google'a göndərir</translation>
 <translation id="5869522115854928033">Saxlanılmış parollar</translation>
+<translation id="5876056640971328065">Videoya pauza verin</translation>
 <translation id="5884076754568147479">Tapşırıqları tamamlamaqda sizə kömək etmək üçün Google Assistentdən istifadə etdiyiniz saytların URL və məzmunlarını, eləcə də Assistent vasitəsilə təqdim etdiyiniz məlumatları əldə edəcək</translation>
 <translation id="5902828464777634901">Bu sayt tərəfindən saxlanmış bütün lokal data silinəcək.</translation>
 <translation id="5919204609460789179">Sinxronizasiyanı başlatmaq üçün <ph name="PRODUCT_NAME" /> məhsulunu yeniləyin</translation>
@@ -726,6 +730,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6381421346744604172">Qaranlıq veb saytlar</translation>
 <translation id="6388207532828177975">Təmizləyin və sıfırlayın</translation>
 <translation id="6395288395575013217">LİNK</translation>
+<translation id="6397616442223433927">Bağlantı bərpa edildi</translation>
 <translation id="6404511346730675251">Əlfəcinə düzəliş edin</translation>
 <translation id="6406506848690869874">Sinx</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" /> saytından AR rejiminə daxil olunsun?</translation>
@@ -794,6 +799,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6846298663435243399">Yüklənir...</translation>
 <translation id="6850409657436465440">Endirmə hələ də gözlənilir</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> panel bağlanıldı</translation>
+<translation id="6864395892908308021">Bu cihazda NFC dəstəklənmir</translation>
 <translation id="6864459304226931083">Şəkli endirin</translation>
 <translation id="6865313869410766144">Avtomatik data doldurması</translation>
 <translation id="6884306546558072722">Oflayn şəkildə araşdırmağa davam edin</translation>
@@ -914,6 +920,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="780301667611848630">Yox, çox sağ olun</translation>
 <translation id="7810647596859435254">Bununla açın...</translation>
 <translation id="7821588508402923572">Data istifadəsi burada görünəcək</translation>
+<translation id="783819812427904514">Videonu səssiz rejimdən çıxarın</translation>
 <translation id="784934925303690534">Vaxt aralığı</translation>
 <translation id="7851858861565204677">Digər cihazlar</translation>
 <translation id="7875915731392087153">E-poçt yaradın</translation>

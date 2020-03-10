@@ -91,6 +91,9 @@ export class ContentController {
   /** @abstract */
   rotateCounterclockwise() {}
 
+  /** @abstract */
+  setTwoUpView(enableTwoUpView) {}
+
   /** Triggers printing of the current document. */
   print() {}
 
@@ -172,6 +175,11 @@ export class InkController extends ContentController {
   /** @override */
   rotateCounterclockwise() {
     // TODO(dstockwell): implement rotation
+  }
+
+  /** @override */
+  setTwoUpView(enableTwoUpView) {
+    // TODO(dstockwell): Implement two up view.
   }
 
   /** @override */
@@ -331,6 +339,14 @@ export class PluginController extends ContentController {
   /** @override */
   rotateCounterclockwise() {
     this.postMessage_({type: 'rotateCounterclockwise'});
+  }
+
+  /** @override */
+  setTwoUpView(enableTwoUpView) {
+    this.postMessage_({
+      type: 'setTwoUpView',
+      enableTwoUpView: enableTwoUpView,
+    });
   }
 
   /** @override */

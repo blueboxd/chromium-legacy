@@ -302,25 +302,6 @@ TEST_F(ShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   second_observer.Reset();
 }
 
-TEST_F(ShelfObserverIconTest, BoundsChanged) {
-  // When scrollable shelf enabled, the shelf view's bounds are calculated in
-  // scrollable shelf and may remain unchanged when shelf widget's bounds are
-  // changed.
-  // TODO(https://crbug.com/1002576): revisit when scrollable shelf is launched.
-  if (chromeos::switches::ShouldShowScrollableShelf())
-    return;
-
-  views::Widget* widget =
-      GetPrimaryShelf()->GetShelfViewForTesting()->GetWidget();
-  gfx::Rect shelf_bounds = widget->GetWindowBoundsInScreen();
-  shelf_bounds.set_width(shelf_bounds.width() / 2);
-  ASSERT_GT(shelf_bounds.width(), 0);
-  widget->SetBounds(shelf_bounds);
-  // No animation happens for ShelfView bounds change.
-  EXPECT_TRUE(observer()->icon_positions_changed());
-  observer()->Reset();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfView tests.
 
@@ -1195,49 +1176,6 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
       shelf_view_->GetMirroredXInView(center_point.x()), center_point.y())));
 }
 
-// Test that by moving the mouse cursor off the button onto the bubble it closes
-// the bubble.
-TEST_P(HotseatShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
-  if (chromeos::switches::ShouldShowShelfHotseat() ||
-      chromeos::switches::ShouldShowScrollableShelf()) {
-    return;
-  }
-  ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
-  tooltip_manager->set_timer_delay_for_test(0);
-  ui::test::EventGenerator* generator = GetEventGenerator();
-
-  // Move the mouse off any item and check that no tooltip is shown.
-  generator->MoveMouseTo(gfx::Point(0, 0));
-  EXPECT_FALSE(tooltip_manager->IsVisible());
-
-  // Move the mouse over the button and check that it is visible.
-  views::View* button = shelf_view_->first_visible_button_for_testing();
-  gfx::Rect bounds = button->GetBoundsInScreen();
-  generator->MoveMouseTo(bounds.CenterPoint());
-  // Wait for the timer to go off.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(tooltip_manager->IsVisible());
-
-  // Move the mouse cursor slightly to the right of the item. The tooltip should
-  // now close.
-  generator->MoveMouseBy(bounds.width() / 2 + 5, 0);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(tooltip_manager->IsVisible());
-
-  // Move back - it should appear again.
-  generator->MoveMouseBy(-(bounds.width() / 2 + 5), 0);
-  // Make sure there is no delayed close.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(tooltip_manager->IsVisible());
-
-  // Now move the mouse cursor slightly above the item - so that it is over the
-  // tooltip bubble. Now it should disappear.
-  generator->MoveMouseBy(0, -(bounds.height() / 2 + 5));
-  // Wait until the delayed close kicked in.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(tooltip_manager->IsVisible());
-}
-
 // Checks the rip an item off from left aligned shelf in secondary monitor.
 TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   UpdateDisplay("800x600,800x600");
@@ -1362,14 +1300,12 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   observer.Reset();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ((chromeos::switches::ShouldShowScrollableShelf() ? 1 : 100),
-            observer.icon_positions_animation_duration().InMilliseconds());
+  EXPECT_EQ(1, observer.icon_positions_animation_duration().InMilliseconds());
 
   observer.Reset();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ((chromeos::switches::ShouldShowScrollableShelf() ? 1 : 100),
-            observer.icon_positions_animation_duration().InMilliseconds());
+  EXPECT_EQ(1, observer.icon_positions_animation_duration().InMilliseconds());
 
   // The shelf items should not animate if we are entering or exiting tablet
   // mode, and the shelf alignment is not bottom aligned.

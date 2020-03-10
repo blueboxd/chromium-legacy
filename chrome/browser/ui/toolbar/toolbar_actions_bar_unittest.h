@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "extensions/common/extension_builder.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 class ScopedTestingLocalState;
 class ToolbarActionsBar;
@@ -22,12 +23,6 @@ class ToolbarActionsModel;
 namespace extensions {
 class Extension;
 }
-
-namespace ui {
-namespace test {
-class MaterialDesignControllerTestAPI;
-}
-}  // namespace ui
 
 // A cross-platform unit test for the ToolbarActionsBar that uses the
 // TestToolbarActionsBarHelper to create the platform-specific containers.
@@ -86,7 +81,7 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest,
   base::test::ScopedFeatureList feature_list_;
 
   // The associated ToolbarActionsModel (owned by the keyed service setup).
-  ToolbarActionsModel* toolbar_model_;
+  ToolbarActionsModel* toolbar_model_ = nullptr;
 
   // A ExtensionActionTestHelper object constructed with the associated
   // ToolbarActionsBar.
@@ -95,8 +90,7 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest,
   // The overflow container's ExtensionActionTestHelper.
   std::unique_ptr<ExtensionActionTestHelper> overflow_browser_action_test_util_;
 
-  std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
-      material_design_state_;
+  ui::MaterialDesignController::TouchUiScoperForTesting touch_ui_scoper_;
 
   // Local state for the browser process.
   std::unique_ptr<ScopedTestingLocalState> local_state_;

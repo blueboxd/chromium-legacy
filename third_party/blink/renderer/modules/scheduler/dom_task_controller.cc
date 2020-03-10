@@ -18,8 +18,10 @@ DOMTaskController* DOMTaskController::Create(Document& document,
 
 DOMTaskController::DOMTaskController(Document& document,
                                      WebSchedulingPriority priority)
-    : AbortController(
-          MakeGarbageCollected<DOMTaskSignal>(&document, priority)) {
+    : AbortController(MakeGarbageCollected<DOMTaskSignal>(
+          &document,
+          priority,
+          DOMTaskSignal::Type::kCreatedByController)) {
   DCHECK(!document.IsContextDestroyed());
 }
 

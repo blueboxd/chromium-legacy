@@ -44,7 +44,7 @@ class TestBookmarkClient : public BookmarkClient {
 
  private:
   // BookmarkClient:
-  bool IsPermanentNodeVisible(const BookmarkPermanentNode* node) override;
+  bool IsPermanentNodeVisibleWhenEmpty(BookmarkNode::Type type) override;
   void RecordAction(const base::UserMetricsAction& action) override;
   LoadManagedNodeCallback GetLoadManagedNodeCallback() override;
   bool CanSetPermanentNodeTitle(const BookmarkNode* permanent_node) override;

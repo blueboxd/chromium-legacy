@@ -38,17 +38,19 @@ void RenderWidgetMouseLockDispatcher::SendUnlockMouseRequest() {
     host->UnlockMouse();
 }
 
-void RenderWidgetMouseLockDispatcher::OnLockMouseACK(bool succeeded) {
+void RenderWidgetMouseLockDispatcher::OnLockMouseACK(
+    blink::mojom::PointerLockResult result) {
   // Notify the base class.
-  MouseLockDispatcher::OnLockMouseACK(succeeded);
+  MouseLockDispatcher::OnLockMouseACK(result);
 
   // Mouse Lock removes the system cursor and provides all mouse motion as
   // .movementX/Y values on events all sent to a fixed target. This requires
   // content to specifically request the mode to be entered.
   // Mouse Capture is implicitly given for the duration of a drag event, and
   // sends all mouse events to the initial target of the drag.
-  // If Lock is entered it supercedes any in progress Capture.
-  if (succeeded && render_widget_->GetWebWidget())
+  // If Lock is entered it supersedes any in progress Capture.
+  if (result == blink::mojom::PointerLockResult::kSuccess &&
+      render_widget_->GetWebWidget())
     render_widget_->GetWebWidget()->MouseCaptureLost();
 }
 

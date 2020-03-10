@@ -95,6 +95,7 @@ js_library("controller") {
 
 js_library("pdf_viewer") {
   deps = [
+    ":constants",
     ":controller",
     ":metrics",
     ":navigator",

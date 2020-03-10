@@ -498,7 +498,8 @@ blink::mojom::DisplayMode Shell::GetDisplayMode(
 void Shell::RequestToLockMouse(WebContents* web_contents,
                                bool user_gesture,
                                bool last_unlocked_by_target) {
-  web_contents->GotResponseToLockMouseRequest(true);
+  web_contents->GotResponseToLockMouseRequest(
+      blink::mojom::PointerLockResult::kSuccess);
 }
 
 void Shell::CloseContents(WebContents* source) {
@@ -513,8 +514,10 @@ bool Shell::CanOverscrollContent() {
 #endif
 }
 
-void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {
-  PlatformSetAddressBarURL(web_contents->GetVisibleURL());
+void Shell::NavigationStateChanged(WebContents* source,
+                                   InvalidateTypes changed_flags) {
+  if (changed_flags & INVALIDATE_TYPE_URL)
+    PlatformSetAddressBarURL(source->GetVisibleURL());
 }
 
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(

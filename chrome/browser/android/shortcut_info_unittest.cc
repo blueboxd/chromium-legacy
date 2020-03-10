@@ -148,3 +148,17 @@ TEST_F(ShortcutInfoTest, ShortcutItemsPopulated) {
   EXPECT_EQ(info_.best_shortcut_icon_urls[1].path(), "/i2_2");
   EXPECT_FALSE(info_.best_shortcut_icon_urls[2].is_valid());
 }
+
+// Tests that if the optional shortcut short_name value is not provided, the
+// required name value is used.
+TEST_F(ShortcutInfoTest, ShortcutShortNameBackfilled) {
+  // Create a shortcut without a |short_name|.
+  manifest_.shortcuts.push_back(
+      CreateShortcut(/* name= */ "name", /* icons= */ {}));
+
+  info_.UpdateFromManifest(manifest_);
+
+  ASSERT_EQ(info_.shortcut_items.size(), 1u);
+  EXPECT_EQ(info_.shortcut_items[0].short_name.string(),
+            base::UTF8ToUTF16("name"));
+}

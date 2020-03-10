@@ -244,7 +244,7 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
 gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
     ButtonState state,
     const gfx::Image& gaia_account_image) const {
-  const int icon_size = ui::MaterialDesignController::touch_ui()
+  const int icon_size = ui::MaterialDesignController::GetInstance()->touch_ui()
                             ? kDefaultTouchableIconSize
                             : kIconSizeForNonTouchUi;
   SkColor icon_color = GetForegroundColor(state);
@@ -274,9 +274,8 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
 void AvatarToolbarButton::SetInsets() {
   // In non-touch mode we use a larger-than-normal icon size for avatars so we
   // need to compensate it by smaller insets.
-  gfx::Insets layout_insets(ui::MaterialDesignController::touch_ui()
-                                ? 0
-                                : (kDefaultIconSize - kIconSizeForNonTouchUi) /
-                                      2);
+  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
+  gfx::Insets layout_insets(
+      touch_ui ? 0 : (kDefaultIconSize - kIconSizeForNonTouchUi) / 2);
   SetLayoutInsetDelta(layout_insets);
 }

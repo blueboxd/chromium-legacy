@@ -279,8 +279,13 @@ void FidoRequestHandlerBase::DiscoveryStarted(
     FidoDiscoveryBase* discovery,
     bool success,
     std::vector<FidoAuthenticator*> authenticators) {
-  for (auto* authenticator : authenticators) {
-    AuthenticatorAdded(discovery, authenticator);
+  if (!success) {
+    transport_availability_info_.available_transports.erase(
+        discovery->transport());
+  } else {
+    for (auto* authenticator : authenticators) {
+      AuthenticatorAdded(discovery, authenticator);
+    }
   }
   DCHECK(notify_observer_callback_);
   notify_observer_callback_.Run();

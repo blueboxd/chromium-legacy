@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -37,7 +38,7 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
 
   // Use a transparent background so that the menu's background shows through.
   // None of the children use layers, so this should be ok.
-  SetBackgroundColor(SK_ColorTRANSPARENT);
+  SetBackgroundColor(base::nullopt);
   BrowserActionsContainer* main =
       toolbar_button_provider->GetBrowserActionsContainer();
   auto container = std::make_unique<BrowserActionsContainer>(browser_, main,

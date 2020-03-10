@@ -42,6 +42,7 @@ cc_component("cc") {
     "input/page_scale_animation.h",
     "input/scroll_elasticity_helper.cc",
     "input/scroll_elasticity_helper.h",
+    "input/scroll_input_type.h",
     "input/scroll_snap_data.cc",
     "input/scroll_snap_data.h",
     "input/scroll_state.cc",

@@ -25,7 +25,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_transform.h"
 #include "ui/display/manager/display_layout_store.h"

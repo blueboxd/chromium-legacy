@@ -286,6 +286,7 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="3058498974290601450">Anda dapat mengaktifkan sinkronisasi kapan saja di setelan</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> bookmark}}</translation>
 <translation id="3089395242580810162">Buka di tab samaran</translation>
+<translation id="3114012059975132928">Pemutar video</translation>
 <translation id="3123473560110926937">Diblokir di beberapa situs</translation>
 <translation id="3123734510202723619">Pengumuman</translation>
 <translation id="3137521801621304719">Tutup mode samaran</translation>
@@ -352,6 +353,7 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="3587482841069643663">Semua</translation>
 <translation id="358794129225322306">Izinkan situs untuk otomatis mendownload beberapa file.</translation>
 <translation id="3590487821116122040">Penyimpanan situs yang dianggap tidak penting oleh Chrome (misalnya situs yang tidak memiliki setelan penyimpanan atau situs yang tidak sering Anda kunjungi)</translation>
+<translation id="3594780231884063836">Bisukan video</translation>
 <translation id="3599863153486145794">Menghapus histori dari semua perangkat yang dibuat login. Akun Google Anda mungkin memiliki bentuk histori penjelajahan lainnya di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Nonaktifkan suara situs yang memutar suara</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -605,6 +607,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5456381639095306749">Download halaman</translation>
 <translation id="548278423535722844">Buka di aplikasi peta</translation>
 <translation id="5487521232677179737">Hapus data</translation>
+<translation id="5489227211564503167">Waktu berlalu <ph name="ELAPSED_TIME" /> dari <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Blokir iklan di situs yang menampilkan iklan yang mengganggu atau menyesatkan</translation>
 <translation id="5500777121964041360">Mungkin tidak tersedia di lokasi Anda</translation>
 <translation id="5505264765875738116">Situs tidak dapat meminta izin mengirimkan notifikasi</translation>
@@ -665,6 +668,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5864419784173784555">Menunggu proses download lain…</translation>
 <translation id="5865733239029070421">Secara otomatis mengirimkan statistik penggunaan dan laporan kerusakan ke Google</translation>
 <translation id="5869522115854928033">Sandi tersimpan</translation>
+<translation id="5876056640971328065">Jeda video</translation>
 <translation id="5884076754568147479">Untuk membantu Anda menyelesaikan tugas, Google akan menerima URL dan konten situs tempat Anda menggunakan Asisten, serta informasi yang Anda kirimkan melalui Asisten</translation>
 <translation id="5902828464777634901">Semua data lokal yang disimpan oleh situs web ini, termasuk cookie, akan dihapus.</translation>
 <translation id="5919204609460789179">Perbarui <ph name="PRODUCT_NAME" /> untuk memulai sinkronisasi</translation>
@@ -728,6 +732,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6381421346744604172">Gelapkan situs</translation>
 <translation id="6388207532828177975">Hapus &amp; setel ulang</translation>
 <translation id="6395288395575013217">LINK</translation>
+<translation id="6397616442223433927">Kembali online</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6406506848690869874">Sinkronisasi</translation>
 <translation id="6410973561433500075">Masuk ke sesi AR dari <ph name="DOMAIN" />?</translation>
@@ -796,6 +801,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6846298663435243399">Memuat…</translation>
 <translation id="6850409657436465440">Download sedang berlangsung</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tab ditutup</translation>
+<translation id="6864395892908308021">Perangkat ini tidak dapat membaca NFC</translation>
 <translation id="6864459304226931083">Download gambar</translation>
 <translation id="6865313869410766144">Data formulir isi-otomatis</translation>
 <translation id="6884306546558072722">Terus menjelajah saat offline</translation>
@@ -916,6 +922,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="780301667611848630">Lain kali</translation>
 <translation id="7810647596859435254">Buka dengan...</translation>
 <translation id="7821588508402923572">Penghematan data Anda akan terlihat di sini</translation>
+<translation id="783819812427904514">Bunyikan video</translation>
 <translation id="784934925303690534">Rentang waktu</translation>
 <translation id="7851858861565204677">Perangkat lain</translation>
 <translation id="7875915731392087153">Buat email</translation>

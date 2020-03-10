@@ -12,3 +12,12 @@ export const FittingType = {
   FIT_TO_WIDTH: 'fit-to-width',
   FIT_TO_HEIGHT: 'fit-to-height',
 };
+
+/**
+ * Enumeration of two up view actions.
+ * @enum {string}
+ */
+export const TwoUpViewAction = {
+  TWO_UP_VIEW_ENABLE: 'two-up-view-enable',
+  TWO_UP_VIEW_DISABLE: 'two-up-view-disable',
+};

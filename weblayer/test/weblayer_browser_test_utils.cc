@@ -44,6 +44,11 @@ void NavigateAndWaitForFailure(const GURL& url, Shell* shell) {
                           TestNavigationObserver::NavigationEvent::kFailure);
 }
 
+void NavigateAndWaitForStart(const GURL& url, Tab* tab) {
+  NavigateAndWaitForEvent(url, tab,
+                          TestNavigationObserver::NavigationEvent::kStart);
+}
+
 base::Value ExecuteScript(Shell* shell,
                           const std::string& script,
                           bool use_separate_isolate) {

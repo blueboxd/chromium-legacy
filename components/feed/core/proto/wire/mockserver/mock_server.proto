@@ -14,7 +14,7 @@ option java_outer_classname = "MockServerProto";
 
 message MockServer {
   // The initial response
-  optional feedwire.Response initial_response = 1;
+  optional feedwire1.Response initial_response = 1;
 
   // conditional responses represent responses for paged content
   repeated ConditionalResponse conditional_responses = 2;
@@ -25,7 +25,7 @@ message MockServer {
 /** This represents a response providing updates to the stream. */
 message MockUpdate {
   // The response with the push update
-  optional feedwire.Response response = 1;
+  optional feedwire1.Response response = 1;
 
   // The amount of time to wait, in milliseconds, before the push is triggered.
   // This is relative to the time the GCL file is loaded.
@@ -38,5 +38,5 @@ message ConditionalResponse {
   optional bytes continuation_token = 1;
 
   // The response to use
-  optional feedwire.Response response = 2;
+  optional feedwire1.Response response = 2;
 }

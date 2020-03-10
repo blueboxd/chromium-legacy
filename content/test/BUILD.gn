@@ -649,7 +649,10 @@ mojom("content_test_mojo_bindings") {
     "frame_host_test_interface.mojom",
     "test_browser_associated_interfaces.mojom",
   ]
-  public_deps = [ "//url/mojom:url_mojom_gurl" ]
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//url/mojom:url_mojom_gurl",
+  ]
 }
 
 mojom("web_ui_test_mojo_bindings") {
@@ -915,8 +918,6 @@ test("content_browsertests") {
     "../browser/idle/idle_browsertest.cc",
     "../browser/indexed_db/indexed_db_browsertest.cc",
     "../browser/indexed_db/indexed_db_feature_observer_browsertest.cc",
-    "../browser/indexed_db/mock_browsertest_indexed_db_class_factory.cc",
-    "../browser/indexed_db/mock_browsertest_indexed_db_class_factory.h",
     "../browser/isolated_origin_browsertest.cc",
     "../browser/keyboard_lock_browsertest.cc",
     "../browser/keyboard_lock_browsertest.h",

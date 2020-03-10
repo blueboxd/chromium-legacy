@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {isRTL} from 'chrome://resources/js/util.m.js';
+
 /**
  * The minimum amount of pixels needed for the user to swipe for the position
  * (controlled by transform property) to start animating to 0.
@@ -81,6 +83,9 @@ export class TabSwiper {
 
   /** @private */
   createAnimation_() {
+    // TODO(crbug.com/1025390): padding-inline-end does not work with
+    // animations built using JS.
+    const paddingInlineEnd = isRTL() ? 'paddingLeft' : 'paddingRight';
     const animation = new Animation(new KeyframeEffect(
         this.element_,
         [
@@ -88,6 +93,7 @@ export class TabSwiper {
             // Base.
             opacity: 1,
             maxWidth: 'var(--tabstrip-tab-width)',
+            [paddingInlineEnd]: 'var(--tabstrip-tab-spacing)',
             transform: `translateY(0)`
           },
           {
@@ -100,12 +106,14 @@ export class TabSwiper {
             // Start of max-width and opacity animation swiping up.
             maxWidth: 'var(--tabstrip-tab-width)',
             offset: SWIPE_START_THRESHOLD_PX / SWIPE_FINISH_THRESHOLD_PX,
+            [paddingInlineEnd]: 'var(--tabstrip-tab-spacing)',
             opacity: 1,
           },
           {
             // Fully swiped up.
             maxWidth: '0px',
             opacity: 0,
+            [paddingInlineEnd]: 0,
             transform: `translateY(-${SWIPE_FINISH_THRESHOLD_PX}px)`
           },
         ],
@@ -113,7 +121,7 @@ export class TabSwiper {
           duration: SWIPE_FINISH_THRESHOLD_PX,
           fill: 'both',
         }));
-    animation.currentTime = 0;
+    animation.cancel();
     animation.onfinish = () => {
       this.element_.dispatchEvent(new CustomEvent('swipe'));
     };
@@ -161,6 +169,10 @@ export class TabSwiper {
     }
 
     const yDiff = this.currentPointerDownEvent_.clientY - event.clientY;
+    const animationTime = yDiff;
+    this.animation_.currentTime =
+        Math.max(0, Math.min(SWIPE_FINISH_THRESHOLD_PX, animationTime));
+
     if (!this.animationInitiated_ &&
         Math.abs(yDiff) > TRANSLATE_ANIMATION_THRESHOLD_PX) {
       this.animationInitiated_ = true;
@@ -177,20 +189,29 @@ export class TabSwiper {
       return;
     }
 
-    const yDiff = this.currentPointerDownEvent_.clientY - event.clientY;
-    const pixelsSwiped =
-        Math.max(0, Math.min(SWIPE_FINISH_THRESHOLD_PX, yDiff));
+    const pixelsSwiped = this.animation_.currentTime;
     const swipedEnoughToClose = pixelsSwiped > SWIPE_START_THRESHOLD_PX;
     const wasHighVelocity = pixelsSwiped /
             (event.timeStamp - this.currentPointerDownEvent_.timeStamp) >
         SWIPE_VELOCITY_THRESHOLD;
 
-    if (pixelsSwiped === SWIPE_FINISH_THRESHOLD_PX || swipedEnoughToClose ||
-        wasHighVelocity) {
-      this.element_.dispatchEvent(new CustomEvent('swipe'));
+    if (pixelsSwiped === SWIPE_FINISH_THRESHOLD_PX) {
+      // The user has swiped the max amount of pixels to swipe and the animation
+      // has already completed all its keyframes, so just fire the onfinish
+      // events on the animation.
+      this.animation_.finish();
+    } else if (swipedEnoughToClose || wasHighVelocity) {
+      this.animation_.play();
+    } else {
+      this.animation_.cancel();
+      this.animation_.currentTime = 0;
     }
 
     this.clearPointerEvents_();
+  }
+
+  reset() {
+    this.animation_.cancel();
   }
 
   startObserving() {

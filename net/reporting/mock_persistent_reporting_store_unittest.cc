@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
+#include "net/base/network_isolation_key.h"
 #include "net/reporting/reporting_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -29,10 +30,12 @@ ReportingData GetReportingData() {
   const url::Origin kOrigin =
       url::Origin::Create(GURL("https://example.test/"));
   const char kGroupName[] = "groupname";
-  const ReportingEndpoint kEndpoint(kOrigin, kGroupName,
+  const ReportingEndpointGroupKey kGroupKey(NetworkIsolationKey(), kOrigin,
+                                            kGroupName);
+  const ReportingEndpoint kEndpoint(kGroupKey,
                                     {GURL("https://endpoint.test/reports")});
   const CachedReportingEndpointGroup kGroup(
-      kOrigin, kGroupName, OriginSubdomains::DEFAULT,
+      kGroupKey, OriginSubdomains::DEFAULT,
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time::Now());
   return {kEndpoint, kGroup};
 }

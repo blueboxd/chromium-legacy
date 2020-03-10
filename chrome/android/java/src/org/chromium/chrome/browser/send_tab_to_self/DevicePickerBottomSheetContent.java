@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareClickResult;
@@ -79,11 +80,13 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
         SendTabToSelfAndroidBridgeJni.get().getAllTargetDeviceInfos(mProfile, targetDeviceList);
 
         if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
+            RecordUserAction.record("SharingHubAndroid.SendTabToSelf.NotSyncing");
             mContentView = (ViewGroup) LayoutInflater.from(mContext).inflate(
                     R.layout.send_tab_to_self_feature_unavailable_prompt, null);
             mToolbarView.setVisibility(View.GONE);
             enableSettingsButton();
         } else if (targetDeviceList.isEmpty()) {
+            RecordUserAction.record("SharingHubAndroid.SendTabToSelf.NoTargetDevices");
             mContentView = (ViewGroup) LayoutInflater.from(mContext).inflate(
                     R.layout.send_tab_to_self_feature_unavailable_prompt, null);
             mToolbarView.setVisibility(View.GONE);
@@ -103,6 +106,7 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
         ButtonCompat chromeSettingsButton = mContentView.findViewById(R.id.chrome_settings);
         chromeSettingsButton.setVisibility(View.VISIBLE);
         chromeSettingsButton.setOnClickListener(view -> {
+            RecordUserAction.record("SharingHubAndroid.SendTabToSelf.ChromeSettingsClicked");
             SettingsLauncher.getInstance().launchSettingsPage(ContextUtils.getApplicationContext());
         });
     }

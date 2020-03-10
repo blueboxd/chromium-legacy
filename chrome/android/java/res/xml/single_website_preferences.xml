@@ -30,7 +30,7 @@
     <PreferenceCategory
         android:key="site_usage"
         android:title="@string/website_settings_usage_category" />
-    <org.chromium.chrome.browser.settings.website.ClearWebsiteStorage
+    <org.chromium.chrome.browser.site_settings.ClearWebsiteStorage
         android:key="clear_data"
         android:title="@string/webstorage_clear_data_dialog_title"
         android:dialogMessage="@string/webstorage_clear_data_dialog_message"

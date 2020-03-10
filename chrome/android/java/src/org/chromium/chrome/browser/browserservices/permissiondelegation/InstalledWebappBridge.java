@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.browserservices.permissiondelegation;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.settings.website.ContentSettingValues;
+import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 
 /**
  * Provides Trusted Web Activity Client App permissions for native. The C++ counterpart is the

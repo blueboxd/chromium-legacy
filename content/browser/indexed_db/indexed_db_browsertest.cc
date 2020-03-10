@@ -30,7 +30,6 @@
 #include "components/services/storage/public/mojom/indexed_db_control.mojom-test-utils.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -60,8 +59,10 @@
 #include "url/origin.h"
 
 using base::ASCIIToUTF16;
-using storage::QuotaManager;
 using storage::DatabaseUtil;
+using storage::QuotaManager;
+using storage::mojom::FailClass;
+using storage::mojom::FailMethod;
 
 namespace content {
 
@@ -72,22 +73,17 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
  public:
   IndexedDBBrowserTest() = default;
 
-  void SetUp() override {
-    GetTestClassFactory()->Reset();
-    IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetIDBClassFactory);
-
+  void SetUpOnMainThread() override {
     // Some tests need more space than the default used for browser tests.
     static storage::QuotaSettings quota_settings =
         storage::GetHardCodedSettings(100 * 1024 * 1024);
     StoragePartition::SetDefaultQuotaSettingsForTesting(&quota_settings);
 
-    ContentBrowserTest::SetUp();
+    GetControlTest()->BindMockFailureSingletonForTesting(
+        failure_injector_.BindNewPipeAndPassReceiver());
   }
 
-  void TearDown() override {
-    IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(nullptr);
-    ContentBrowserTest::TearDown();
-  }
+  void TearDownOnMainThread() override { failure_injector_.reset(); }
 
   bool UseProductionQuotaSettings() override {
     // So that the browser test harness doesn't call
@@ -99,8 +95,21 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
                      FailMethod failure_method,
                      int fail_on_instance_num,
                      int fail_on_call_num) {
-    GetTestClassFactory()->FailOperation(
-        failure_class, failure_method, fail_on_instance_num, fail_on_call_num);
+    base::RunLoop loop;
+    FailOperationWithCallback(failure_class, failure_method,
+                              fail_on_instance_num, fail_on_call_num,
+                              loop.QuitClosure());
+    loop.Run();
+  }
+
+  void FailOperationWithCallback(FailClass failure_class,
+                                 FailMethod failure_method,
+                                 int fail_on_instance_num,
+                                 int fail_on_call_num,
+                                 base::OnceClosure callback) {
+    failure_injector_->FailOperation(failure_class, failure_method,
+                                     fail_on_instance_num, fail_on_call_num,
+                                     std::move(callback));
   }
 
   void SimpleTest(const GURL& test_url,
@@ -138,15 +147,6 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     TitleWatcher title_watcher(shell->web_contents(), expected_title16);
     EXPECT_TRUE(NavigateToURL(shell, url));
     EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
-  }
-
-  // TODO(enne): remove this in favor of GetControl below.
-  IndexedDBContextImpl* GetContext(Shell* browser = nullptr) {
-    if (!browser)
-      browser = shell();
-    StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
-        browser->web_contents()->GetBrowserContext());
-    return partition->GetIndexedDBContextImplForTesting();
   }
 
   storage::mojom::IndexedDBControl& GetControl(Shell* browser = nullptr) {
@@ -274,18 +274,9 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     loop.Run();
   }
 
- protected:
-  static MockBrowserTestIndexedDBClassFactory* GetTestClassFactory() {
-    static ::base::LazyInstance<MockBrowserTestIndexedDBClassFactory>::Leaky
-        s_factory = LAZY_INSTANCE_INITIALIZER;
-    return s_factory.Pointer();
-  }
-
-  static IndexedDBClassFactory* GetIDBClassFactory() {
-    return GetTestClassFactory();
-  }
-
  private:
+  mojo::Remote<storage::mojom::MockFailureInjector> failure_injector_;
+
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTest);
 };
 
@@ -381,13 +372,26 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug941965Test) {
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, NegativeDBSchemaVersion) {
+  return;
   const GURL database_open_url = GetTestUrl("indexeddb", "database_test.html");
   const url::Origin origin = url::Origin::Create(database_open_url);
   // Create the database.
   SimpleTest(database_open_url);
   // -10, little endian.
   std::string value = "\xF6\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
-  WriteToIndexedDB(origin, SchemaVersionKey::Encode(), value);
+
+  auto control_test = GetControlTest();
+  base::RunLoop loop;
+  std::string key;
+  control_test->GetDatabaseKeysForTesting(
+      base::BindLambdaForTesting([&](const std::string& schema_version_key,
+                                     const std::string& data_version_key) {
+        key = schema_version_key;
+        loop.Quit();
+      }));
+  loop.Run();
+
+  WriteToIndexedDB(origin, key, value);
   // Crash the tab to ensure no old navigations are picked up.
   CrashTab(shell()->web_contents());
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
@@ -400,7 +404,19 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, NegativeDBDataVersion) {
   SimpleTest(database_open_url);
   // -10, little endian.
   std::string value = "\xF6\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
-  WriteToIndexedDB(origin, DataVersionKey::Encode(), value);
+
+  auto control_test = GetControlTest();
+  base::RunLoop loop;
+  std::string key;
+  control_test->GetDatabaseKeysForTesting(
+      base::BindLambdaForTesting([&](const std::string& schema_version_key,
+                                     const std::string& data_version_key) {
+        key = data_version_key;
+        loop.Quit();
+      }));
+  loop.Run();
+
+  WriteToIndexedDB(origin, key, value);
   // Crash the tab to ensure no old navigations are picked up.
   CrashTab(shell()->web_contents());
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
@@ -758,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DiskFullOnCommit) {
   //   #2: IndexedDBTransaction::Commit - the test's "readwrite" transaction)
   const int instance_num = 2;
   const int call_num = 1;
-  FailOperation(FAIL_CLASS_LEVELDB_TRANSACTION, FAIL_METHOD_COMMIT_DISK_FULL,
+  FailOperation(FailClass::LEVELDB_TRANSACTION, FailMethod::COMMIT_DISK_FULL,
                 instance_num, call_num);
   SimpleTest(GetTestUrl("indexeddb", "disk_full_on_commit.html"));
 }
@@ -870,8 +886,8 @@ std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     http_response->set_code(net::HTTP_OK);
     return std::move(http_response);
   } else if (request_path == "fail" && !request_query.empty()) {
-    FailClass failure_class = FAIL_CLASS_NOTHING;
-    FailMethod failure_method = FAIL_METHOD_NOTHING;
+    FailClass failure_class = FailClass::NOTHING;
+    FailMethod failure_method = FailMethod::NOTHING;
     int instance_num = 1;
     int call_num = 1;
     std::string fail_class;
@@ -901,29 +917,29 @@ std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     }
 
     if (fail_class == "LevelDBTransaction") {
-      failure_class = FAIL_CLASS_LEVELDB_TRANSACTION;
+      failure_class = FailClass::LEVELDB_TRANSACTION;
       if (fail_method == "Get")
-        failure_method = FAIL_METHOD_GET;
+        failure_method = FailMethod::GET;
       else if (fail_method == "Commit")
-        failure_method = FAIL_METHOD_COMMIT;
+        failure_method = FailMethod::COMMIT;
       else
         NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
     } else if (fail_class == "LevelDBIterator") {
-      failure_class = FAIL_CLASS_LEVELDB_ITERATOR;
+      failure_class = FailClass::LEVELDB_ITERATOR;
       if (fail_method == "Seek")
-        failure_method = FAIL_METHOD_SEEK;
+        failure_method = FailMethod::SEEK;
       else
         NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
     } else if (fail_class == "LevelDBDatabase") {
-      failure_class = FAIL_CLASS_LEVELDB_DATABASE;
+      failure_class = FailClass::LEVELDB_DATABASE;
       if (fail_method == "Write")
-        failure_method = FAIL_METHOD_WRITE;
+        failure_method = FailMethod::WRITE;
       else
         NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
     } else if (fail_class == "LevelDBDirectTransaction") {
-      failure_class = FAIL_CLASS_LEVELDB_DIRECT_TRANSACTION;
+      failure_class = FailClass::LEVELDB_DIRECT_TRANSACTION;
       if (fail_method == "Get")
-        failure_method = FAIL_METHOD_GET;
+        failure_method = FailMethod::GET;
       else
         NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
     } else {
@@ -933,7 +949,13 @@ std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     DCHECK_GE(instance_num, 1);
     DCHECK_GE(call_num, 1);
 
-    test->FailOperation(failure_class, failure_method, instance_num, call_num);
+    base::RunLoop loop;
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IndexedDBBrowserTest::FailOperationWithCallback,
+                       base::Unretained(test), failure_class, failure_method,
+                       instance_num, call_num, loop.QuitClosure()));
+    loop.Run();
 
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
@@ -1109,14 +1131,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ForceCloseEventTest) {
 
 // The V2 schema corruption test runs in a separate class to avoid corrupting
 // an IDB store that other tests use.
-class IndexedDBBrowserTestV2SchemaCorruption : public IndexedDBBrowserTest {
- public:
-  void SetUp() override {
-    GetTestClassFactory()->Reset();
-    IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetIDBClassFactory);
-    ContentBrowserTest::SetUp();
-  }
-};
+class IndexedDBBrowserTestV2SchemaCorruption : public IndexedDBBrowserTest {};
 
 // Verify the V2 schema corruption lifecycle:
 // - create a current version backing store (v3 or later)
@@ -1187,12 +1202,6 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestSingleProcess,
 // This test is for https://crbug.com/1039446.
 class IndexedDBBrowserTestBlobKeyCorruption : public IndexedDBBrowserTest {
  public:
-  void SetUp() override {
-    GetTestClassFactory()->Reset();
-    IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetIDBClassFactory);
-    ContentBrowserTest::SetUp();
-  }
-
   int64_t GetNextBlobNumber(const url::Origin& origin, int64_t database_id) {
     int64_t number;
 

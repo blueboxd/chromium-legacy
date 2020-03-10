@@ -134,10 +134,6 @@ class FontSizeSlider {
       this.update(e.target.value);
     });
 
-    this.element.addEventListener('input', (e) => {
-      this.update(e.target.value);
-    });
-
     this.tickmarks = document.createElement('datalist');
     this.tickmarks.setAttribute('class', 'tickmarks');
     this.element.after(this.tickmarks);
@@ -156,6 +152,8 @@ class FontSizeSlider {
     this.element.style.setProperty(
         '--fontSizePercent',
         (position / (this.supportedFontSizes.length - 1) * 100) + '%');
+    this.element.setAttribute(
+        'aria-valuetext', this.supportedFontSizes[position] + 'px');
     for (let option = this.tickmarks.firstChild; option != null;
          option = option.nextSibling) {
       const isBeforeThumb = option.value < position;

@@ -78,6 +78,8 @@ void QuickAnswersControllerImpl::OnQuickAnswerReceived(
     quick_answers_ui_controller_->RenderQuickAnswersViewWithResult(
         anchor_bounds_, quick_answer_with_no_result);
   }
+
+  quick_answer_ = std::move(quick_answer);
 }
 
 void QuickAnswersControllerImpl::OnEligibilityChanged(bool eligible) {
@@ -94,6 +96,12 @@ void QuickAnswersControllerImpl::OnRetryQuickAnswersRequest() {
   request.selected_text = query_;
   quick_answers_client_->SendRequest(request);
 }
+
+void QuickAnswersControllerImpl::OnQuickAnswerClick() {
+  quick_answers_client_->OnQuickAnswerClick(
+      quick_answer_ ? quick_answer_->result_type : ResultType::kNoResult);
+}
+
 void QuickAnswersControllerImpl::UpdateQuickAnswersAnchorBounds(
     const gfx::Rect& anchor_bounds) {
   quick_answers_ui_controller_->UpdateQuickAnswersBounds(anchor_bounds);

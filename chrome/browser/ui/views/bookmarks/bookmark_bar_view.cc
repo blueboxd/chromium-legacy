@@ -1548,7 +1548,8 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     bool themify_icon = node->url().SchemeIs(content::kChromeUIScheme);
     gfx::ImageSkia favicon = model_->GetFavicon(node).AsImageSkia();
     if (favicon.isNull()) {
-      if (ui::MaterialDesignController::touch_ui() && GetThemeProvider()) {
+      if (ui::MaterialDesignController::GetInstance()->touch_ui() &&
+          GetThemeProvider()) {
         // This favicon currently does not match the default favicon icon used
         // elsewhere in the codebase.
         // See https://crbug/814447
@@ -1896,12 +1897,12 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
 
   const SkColor overflow_color =
       theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
   overflow_button_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(ui::MaterialDesignController::touch_ui()
-                                ? kBookmarkbarTouchOverflowIcon
-                                : kOverflowChevronIcon,
-                            overflow_color));
+      gfx::CreateVectorIcon(
+          touch_ui ? kBookmarkbarTouchOverflowIcon : kOverflowChevronIcon,
+          overflow_color));
 
   // Redraw the background.
   SchedulePaint();

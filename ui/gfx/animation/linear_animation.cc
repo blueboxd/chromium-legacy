@@ -9,15 +9,12 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/numerics/ranges.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/animation_delegate.h"
-
-namespace {
-
-double g_duration_scale_factor = 1.0;
-
-}  // namespace
+#include "ui/gfx/switches.h"
 
 namespace gfx {
 
@@ -65,17 +62,21 @@ void LinearAnimation::End() {
 }
 
 void LinearAnimation::SetDuration(base::TimeDelta duration) {
-  duration_ = duration * g_duration_scale_factor;
+  static const double duration_scale_factor = []() {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    double animation_duration_scale;
+    return (base::StringToDouble(command_line->GetSwitchValueASCII(
+                                     switches::kAnimationDurationScale),
+                                 &animation_duration_scale) &&
+            (animation_duration_scale >= 0.0))
+               ? animation_duration_scale
+               : 1.0;
+  }();
+  duration_ = duration * duration_scale_factor;
   if (duration_ < timer_interval())
     duration_ = timer_interval();
   if (is_animating())
     SetStartTime(container()->last_tick_time());
-}
-
-// static
-void LinearAnimation::SetDurationScale(const double scale_factor) {
-  if (scale_factor >= 0.0)
-    g_duration_scale_factor = scale_factor;
 }
 
 void LinearAnimation::Step(base::TimeTicks time_now) {

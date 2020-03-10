@@ -47,6 +47,7 @@
 <translation id="2309047409763057870">นี่เป็นการติดตั้ง Google Chrome แบบสำรอง และไม่สามารถใช้เป็นเบราว์เซอร์เริ่มต้นของคุณ</translation>
 <translation id="2341767445688917208">Chrome OS ซิงค์รหัสผ่านของคุณไม่ได้ แก้ไขเลย</translation>
 <translation id="2348335408836342058">Chrome ต้องการสิทธิ์เข้าถึงไมโครโฟนและกล้องถ่ายรูปของคุณสำหรับเว็บไซต์นี้</translation>
+<translation id="234869673307233423">Chrome ตรวจสอบรหัสผ่านของคุณไม่ได้ โปรดลองอีกครั้งภายหลัง</translation>
 <translation id="2429317896000329049">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากไม่สามารถใช้การซิงค์กับโดเมนของคุณ</translation>
 <translation id="2467438592969358367">Google Chrome ต้องการส่งออกรหัสผ่านของคุณ พิมพ์รหัสผ่าน Windows เพื่ออนุญาตให้ดำเนินการ</translation>
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
@@ -67,6 +68,8 @@
 <translation id="2857540653560290388">กำลังเปิด Chrome...</translation>
 <translation id="2871893339301912279">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว!</translation>
 <translation id="2888126860611144412">เกี่ยวกับ Chrome</translation>
+<translation id="2929907241665500097">Chrome ไม่ได้อัปเดตเนื่องจากเกิดข้อผิดพลาด <ph name="BEGIN_LINK" />โปรดแก้ปัญหาการอัปเดต Chrome และการอัปเดตที่ไม่สำเร็จ<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - หน้าลงชื่อเข้าใช้ของเครือข่าย - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome กำลังอยู่ในโหมดทำงานในพื้นหลัง</translation>
 <translation id="3065168410429928842">แท็บ Chrome</translation>
 <translation id="3080151273017101988">เรียกใช้แอปพลิเคชันเบื้องหลังต่อไปเมื่อ Google Chrome ถูกปิดลง</translation>
@@ -105,7 +108,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">Chrome ช่วยให้คุณปลอดภัยจากการละเมิดข้อมูล ส่วนขยายที่ไม่ปลอดภัย และอื่นๆ ได้</translation>
 <translation id="4343195214584226067">เพิ่ม <ph name="EXTENSION_NAME" /> ลงใน Chrome แล้ว</translation>
+<translation id="4384570495110188418">Chrome ตรวจสอบรหัสผ่านไม่ได้เพราะคุณไม่ได้ลงชื่อเข้าใช้</translation>
 <translation id="4407807842708586359">ระบบปฏิบัติการ Google Chrome</translation>
+<translation id="4450664632294415862">Chrome - หน้าลงชื่อเข้าใช้ของเครือข่าย - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome กำลังดำเนินการอย่างอื่นอยู่ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="4480040274068703980">Chrome OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากเกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="4561051373932531560">Google Chrome ทำให้คุณสามารถคลิกที่หมายเลขโทรศัพท์บนเว็บแล้วโทรหาด้วย Skype!</translation>
@@ -115,6 +120,7 @@
 <translation id="4600710005438004015">Chrome อัปเดตเป็นเวอร์ชันล่าสุดไม่ได้ คุณจึงไม่ได้รับฟีเจอร์ใหม่และการแก้ไขด้านความปลอดภัย</translation>
 <translation id="4631713731678262610">ซ่อนในเมนู Chrome</translation>
 <translation id="4633000520311261472">เพื่อให้ Chrome ปลอดภัยขึ้น เราปิดส่วนขยายบางรายการที่ไม่ได้ระบุไว้ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> และอาจถูกเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
+<translation id="4653397506175047429">Chrome ตรวจสอบรหัสผ่านทั้งหมดของคุณไม่ได้ โปรดลองอีกครั้งหลังผ่านไป 24 ชั่วโมง</translation>
 <translation id="4728575227883772061">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Google Chrome ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
 <translation id="4750550185319565338">รีสตาร์ท Chrome เพื่อเปิดใช้ <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -147,6 +153,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">เปิด Chrome ไม่ได้ โปรดลองอีกครั้ง</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - หน้าลงชื่อเข้าใช้ของเครือข่าย</translation>
 <translation id="5940385492829620908">เว็บของคุณ บุ๊กมาร์ก และสิ่งอื่นๆ ใน Chrome พร้อมใช้แล้วที่นี่</translation>
 <translation id="5941830788786076944">ทำให้ Google Chrome เป็นเบราว์เซอร์เริ่มต้น</translation>
 <translation id="6070348360322141662">Google Chrome จะเข้ารหัสลับข้อมูลของคุณเพื่อเพิ่มความปลอดภัยให้มากยิ่งขึ้น</translation>
@@ -202,6 +209,7 @@
 <translation id="7855730255114109580">Google Chrome อัปเดตแล้ว</translation>
 <translation id="7890208801193284374">ถ้าคุณให้ผู้อื่นใช้คอมพิวเตอร์ร่วมด้วย เพื่อนๆ และครอบครัวของคุณสามารถท่องเว็บแยกกันได้และตั้งค่า Chrome ได้ตามที่พวกเขาต้องการ</translation>
 <translation id="7896673875602241923">ก่อนหน้านี้มีผู้ลงชื่อเข้าใช้ Chrome ในคอมพิวเตอร์นี้ด้วยชื่อ <ph name="ACCOUNT_EMAIL_LAST" /> โปรดสร้างผู้ใช้ Chrome ใหม่เพื่อเก็บข้อมูลแยก</translation>
+<translation id="7905891027772979035">Chrome ตรวจสอบส่วนขยายของคุณไม่ได้ โปรดลองอีกครั้งภายหลัง</translation>
 <translation id="7916016681687251387">Chrome OS ซิงค์ข้อมูลของคุณไม่ได้ แก้ไขเลย</translation>
 <translation id="7930071585467473040">Google Chrome กำลังพยายามคัดลอกรหัสผ่าน</translation>
 <translation id="7962410387636238736">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดต Google Chrome อีกต่อไปเพราะระบบไม่รองรับ Windows XP และ Windows Vista แล้ว</translation>

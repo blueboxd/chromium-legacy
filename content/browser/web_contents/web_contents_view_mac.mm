@@ -399,9 +399,6 @@ void WebContentsViewMac::SetPageTitle(const base::string16& title) {
 }
 
 
-void WebContentsViewMac::RenderViewCreated(RenderViewHost* host) {
-}
-
 void WebContentsViewMac::RenderViewReady() {}
 
 void WebContentsViewMac::RenderViewHostChanged(RenderViewHost* old_host,

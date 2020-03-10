@@ -1,0 +1,23 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+// Status for the Feed response.
+enum ResponseStatusCode {
+  UNKNOWN_STATUS_CODE = 0;
+
+  // Eligible for feed and no errors encountered.
+  STATUS_OK = 1;
+
+  // Ineligible for Feed.
+  STATUS_INELIGIBLE_FOR_FEED = 2;
+
+  // No cards.
+  STATUS_NO_CONTENT_RETURNED = 3;
+}

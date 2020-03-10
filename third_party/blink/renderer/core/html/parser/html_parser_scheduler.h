@@ -42,10 +42,10 @@ class SpeculationsPumpSession : public NestingLevelIncrementer {
   STACK_ALLOCATED();
 
  public:
-  SpeculationsPumpSession(unsigned& nesting_level);
+  explicit SpeculationsPumpSession(unsigned& nesting_level);
   ~SpeculationsPumpSession();
 
-  base::TimeDelta ElapsedTime() const;
+  base::TimeDelta ElapsedTime() const { return start_time_.Elapsed(); }
   void AddedElementTokens(size_t count);
   size_t ProcessedElementTokens() const { return processed_element_tokens_; }
 

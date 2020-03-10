@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_before_unload_tracker.h"
 #include "chrome/browser/ui/webui/tab_strip/thumbnail_tracker.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -49,6 +50,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   void RegisterMessages() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, CloseTab);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, GetGroupVisualData);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, GroupTab);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveGroup);
@@ -66,6 +68,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   void HandleGetGroupVisualData(const base::ListValue* args);
   void HandleGetThemeColors(const base::ListValue* args);
   void HandleCloseContainer(const base::ListValue* args);
+  void HandleCloseTab(const base::ListValue* args);
   void HandleShowBackgroundContextMenu(const base::ListValue* args);
   void HandleShowEditDialogForGroup(const base::ListValue* args);
   void HandleShowTabContextMenu(const base::ListValue* args);
@@ -80,6 +83,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   void HandleReportTabCreationDuration(const base::ListValue* args);
   void HandleThumbnailUpdate(content::WebContents* tab,
                              ThumbnailTracker::CompressedThumbnailData image);
+  void OnTabCloseCancelled(content::WebContents* tab);
   void ReportTabDurationHistogram(const char* histogram_fragment,
                                   int tab_count,
                                   base::TimeDelta duration);
@@ -87,6 +91,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   Browser* const browser_;
   TabStripUIEmbedder* const embedder_;
   ThumbnailTracker thumbnail_tracker_;
+  tab_strip_ui::TabBeforeUnloadTracker tab_before_unload_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripUIHandler);
 };

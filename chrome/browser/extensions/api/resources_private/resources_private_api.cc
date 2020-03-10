@@ -60,6 +60,8 @@ void AddStringsForPdf(base::DictionaryValue* dict) {
     {"tooltipPrint", IDS_PDF_TOOLTIP_PRINT},
     {"tooltipFitToPage", IDS_PDF_TOOLTIP_FIT_PAGE},
     {"tooltipFitToWidth", IDS_PDF_TOOLTIP_FIT_WIDTH},
+    {"tooltipTwoUpViewEnable", IDS_PDF_TOOLTIP_TWO_UP_VIEW_ENABLE},
+    {"tooltipTwoUpViewDisable", IDS_PDF_TOOLTIP_TWO_UP_VIEW_DISABLE},
     {"tooltipZoomIn", IDS_PDF_TOOLTIP_ZOOM_IN},
     {"tooltipZoomOut", IDS_PDF_TOOLTIP_ZOOM_OUT},
 #if defined(OS_CHROMEOS)
@@ -130,6 +132,9 @@ void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
   dict->SetKey("pdfAnnotationsEnabled",
                base::Value(base::FeatureList::IsEnabled(
                    chrome_pdf::features::kPDFAnnotations)));
+  dict->SetKey("pdfTwoUpViewEnabled",
+               base::Value(base::FeatureList::IsEnabled(
+                   chrome_pdf::features::kPDFTwoUpView)));
 
   bool enable_printing = true;
 #if defined(OS_CHROMEOS)

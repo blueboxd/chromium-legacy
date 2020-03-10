@@ -4,155 +4,92 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
-#include "ui/base/ui_base_switches.h"
 
 namespace ui {
 
-using MD = MaterialDesignController;
-using MDObserver = MaterialDesignControllerObserver;
-
 namespace {
 
-class TestObserver : public MDObserver {
+class TestObserver : public MaterialDesignControllerObserver {
  public:
-  TestObserver() = default;
+  explicit TestObserver(MaterialDesignController* controller) {
+    observer_.Add(controller);
+  }
   ~TestObserver() override = default;
 
   int touch_ui_changes() const { return touch_ui_changes_; }
 
  private:
-  // MDObserver:
+  // MaterialDesignControllerObserver:
   void OnTouchUiChanged() override { ++touch_ui_changes_; }
 
   int touch_ui_changes_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
-};
-
-// Test fixture for the MaterialDesignController class.
-class MaterialDesignControllerTest : public testing::Test {
- public:
-  MaterialDesignControllerTest() = default;
-  ~MaterialDesignControllerTest() override = default;
-
- protected:
-  // testing::Test:
-  void SetUp() override {
-    testing::Test::SetUp();
-    MD::Initialize();
-  }
-
-  void TearDown() override {
-    testing::Test::TearDown();
-  }
-
-  void SetCommandLineSwitch(const std::string& value_string) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kTopChromeTouchUi, value_string);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MaterialDesignControllerTest);
-};
-
-class MaterialDesignControllerTestCommandLineTouchUiDisabled
-    : public MaterialDesignControllerTest {
- public:
-  MaterialDesignControllerTestCommandLineTouchUiDisabled() {
-    SetCommandLineSwitch(switches::kTopChromeTouchUiDisabled);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      MaterialDesignControllerTestCommandLineTouchUiDisabled);
-};
-
-class MaterialDesignControllerTestCommandLineTouchUiEnabled
-    : public MaterialDesignControllerTest {
- public:
-  MaterialDesignControllerTestCommandLineTouchUiEnabled() {
-    SetCommandLineSwitch(switches::kTopChromeTouchUiEnabled);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      MaterialDesignControllerTestCommandLineTouchUiEnabled);
-};
-
-class MaterialDesignControllerTestCommandLineTouchUiAuto
-    : public MaterialDesignControllerTest {
- public:
-  MaterialDesignControllerTestCommandLineTouchUiAuto() {
-    SetCommandLineSwitch(switches::kTopChromeTouchUiAuto);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MaterialDesignControllerTestCommandLineTouchUiAuto);
+  ScopedObserver<MaterialDesignController, MaterialDesignControllerObserver>
+      observer_{this};
 };
 
 }  // namespace
 
 // Verifies that non-touch is the default.
-TEST_F(MaterialDesignControllerTest, NoCommandLineFlagIsNonTouch) {
-  ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kTopChromeTouchUi));
-  EXPECT_FALSE(MD::touch_ui());
+TEST(MaterialDesignControllerTest, DefaultIsNonTouch) {
+  MaterialDesignController controller;
+  EXPECT_FALSE(controller.touch_ui());
 }
 
-// Verifies that switches::kTopChromeTouchUiDisabled maps to non-touch (the
-// default).
-TEST_F(MaterialDesignControllerTestCommandLineTouchUiDisabled,
-       CheckApiReturns) {
-  EXPECT_FALSE(MD::touch_ui());
+// Verifies that kDisabled maps to non-touch.
+TEST(MaterialDesignControllerTest, DisabledIsNonTouch) {
+  MaterialDesignController controller(
+      MaterialDesignController::TouchUiState::kDisabled);
+  EXPECT_FALSE(controller.touch_ui());
 }
 
-// Verifies that switches::kTopChromeTouchUiEnabled maps to touch.
-TEST_F(MaterialDesignControllerTestCommandLineTouchUiEnabled, CheckApiReturns) {
-  EXPECT_TRUE(MD::touch_ui());
+// Verifies that kAuto maps to non-touch (the default).
+TEST(MaterialDesignControllerTest, AutoIsNonTouch) {
+  MaterialDesignController controller(
+      MaterialDesignController::TouchUiState::kAuto);
+  EXPECT_FALSE(controller.touch_ui());
 }
 
-// Verifies that switches::kTopChromeTouchUiAuto maps to non-touch.
-TEST_F(MaterialDesignControllerTestCommandLineTouchUiAuto, CheckApiReturns) {
-  EXPECT_FALSE(MD::touch_ui());
+// Verifies that kEnabled maps to touch.
+TEST(MaterialDesignControllerTest, EnabledIsNonTouch) {
+  MaterialDesignController controller(
+      MaterialDesignController::TouchUiState::kEnabled);
+  EXPECT_TRUE(controller.touch_ui());
 }
 
 // Verifies that when the mode is set to non-touch and the tablet mode toggles,
 // the touch UI state does not change.
-TEST_F(MaterialDesignControllerTestCommandLineTouchUiDisabled,
-       TabletOnTouchUiChanged) {
-  TestObserver observer;
-  ScopedObserver<MD, MDObserver> scoped_observer(&observer);
-  scoped_observer.Add(MD::GetInstance());
+TEST(MaterialDesignControllerTest, TabletToggledOnTouchUiDisabled) {
+  MaterialDesignController controller(
+      MaterialDesignController::TouchUiState::kDisabled);
+  TestObserver observer(&controller);
 
-  MD::OnTabletModeToggled(true);
-  EXPECT_FALSE(MD::touch_ui());
+  controller.OnTabletModeToggled(true);
+  EXPECT_FALSE(controller.touch_ui());
   EXPECT_EQ(0, observer.touch_ui_changes());
 
-  MD::OnTabletModeToggled(false);
-  EXPECT_FALSE(MD::touch_ui());
+  controller.OnTabletModeToggled(false);
+  EXPECT_FALSE(controller.touch_ui());
   EXPECT_EQ(0, observer.touch_ui_changes());
 }
 
 // Verifies that when the mode is set to auto and the tablet mode toggles, the
 // touch UI state changes and the observer gets called back.
-TEST_F(MaterialDesignControllerTestCommandLineTouchUiAuto,
-       TabletOnTouchUiChanged) {
-  TestObserver observer;
-  ScopedObserver<MD, MDObserver> scoped_observer(&observer);
-  scoped_observer.Add(MD::GetInstance());
+TEST(MaterialDesignControllerTest, TabletToggledOnTouchUiAuto) {
+  MaterialDesignController controller(
+      MaterialDesignController::TouchUiState::kAuto);
+  TestObserver observer(&controller);
 
-  MD::OnTabletModeToggled(true);
-  EXPECT_TRUE(MD::touch_ui());
+  controller.OnTabletModeToggled(true);
+  EXPECT_TRUE(controller.touch_ui());
   EXPECT_EQ(1, observer.touch_ui_changes());
 
-  MD::OnTabletModeToggled(false);
-  EXPECT_FALSE(MD::touch_ui());
+  controller.OnTabletModeToggled(false);
+  EXPECT_FALSE(controller.touch_ui());
   EXPECT_EQ(2, observer.touch_ui_changes());
 }
 

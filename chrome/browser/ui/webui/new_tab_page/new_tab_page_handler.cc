@@ -54,6 +54,21 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   theme->shortcut_background_color = ntp_theme.shortcut_color;
   theme->shortcut_text_color = ntp_theme.text_color;
   theme->is_dark = !color_utils::IsDark(ntp_theme.text_color);
+  if (!ntp_theme.custom_background_url.is_empty()) {
+    theme->background_image_url = ntp_theme.custom_background_url;
+  }
+  if (!ntp_theme.custom_background_attribution_line_1.empty()) {
+    theme->background_image_attribution_1 =
+        ntp_theme.custom_background_attribution_line_1;
+  }
+  if (!ntp_theme.custom_background_attribution_line_2.empty()) {
+    theme->background_image_attribution_2 =
+        ntp_theme.custom_background_attribution_line_2;
+  }
+  if (!ntp_theme.custom_background_attribution_action_url.is_empty()) {
+    theme->background_image_attribution_url =
+        ntp_theme.custom_background_attribution_action_url;
+  }
   return theme;
 }
 
@@ -78,7 +93,7 @@ NewTabPageHandler::NewTabPageHandler(
   CHECK(web_contents_);
   instant_service_->AddObserver(this);
   ntp_background_service_->AddObserver(this);
-  page_->SetTheme(MakeTheme(*instant_service_->GetInitializedNtpTheme()));
+  instant_service_->UpdateNtpTheme();
 }
 
 NewTabPageHandler::~NewTabPageHandler() {

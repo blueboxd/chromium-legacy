@@ -8,6 +8,7 @@ interface Bluetooth : EventTarget
     getter onadvertisementreceived
     method constructor
     method getAvailability
+    method getDevices
     method requestDevice
     method requestLEScan
     setter onadvertisementreceived

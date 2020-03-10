@@ -28,23 +28,6 @@ source_set("network_fetcher_sources") {
   ]
 }
 
-source_set("update_service_client_sources") {
-  sources = [
-    "update_service_out_of_process.h",
-    "update_service_out_of_process.mm",
-  ]
-
-  deps = [
-    "//base",
-    "//chrome/updater:base",
-    "//chrome/updater:version_header",
-    "//chrome/updater/server/mac:protocol",
-    "//components/update_client",
-  ]
-
-  libs = [ "Foundation.framework" ]
-}
-
 source_set("updater_tests") {
   testonly = true
 
@@ -67,7 +50,6 @@ mac_app_bundle("updater_bundle") {
   sources = [ "main.cc" ]
   deps = [
     ":network_fetcher_sources",
-    ":update_service_client_sources",
     ":updater_setup_sources",
     "//chrome/updater:lib",
   ]

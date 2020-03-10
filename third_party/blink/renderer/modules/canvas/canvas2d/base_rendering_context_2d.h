@@ -380,7 +380,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual void DisableAcceleration() {}
 
   virtual bool IsPaint2D() const { return false; }
-  virtual void WillOverwriteCanvas() {}
+  virtual void WillOverwriteCanvas() = 0;
 
  private:
   void RealizeSaves();

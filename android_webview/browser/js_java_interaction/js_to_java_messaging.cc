@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/origin.h"
+#include "url/url_util.h"
 
 namespace android_webview {
 
@@ -54,10 +55,22 @@ void JsToJavaMessaging::PostMessage(
     int_ports[i] = ports[i].release().value();
   }
 
+  // We want to pass a string "null" for local file schemes, to make it
+  // consistent to the Blink side SecurityOrigin serialization. When both
+  // setAllow{File,Universal}AccessFromFileURLs are false, Blink::SecurityOrigin
+  // will be serialized as string "null" for local file schemes, but when
+  // setAllowFileAccessFromFileURLs is true, Blink::SecurityOrigin will be
+  // serialized as the scheme, which will be inconsistentt to this place. In
+  // this case we want to let developer to know that local files are not safe,
+  // so we still pass "null".
+  std::string origin_string =
+      base::Contains(url::GetLocalSchemes(), source_origin.scheme())
+          ? "null"
+          : source_origin.Serialize();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_WebMessageListenerHolder_onPostMessage(
       env, listener_ref_, base::android::ConvertUTF16ToJavaString(env, message),
-      base::android::ConvertUTF8ToJavaString(env, source_origin.Serialize()),
+      base::android::ConvertUTF8ToJavaString(env, origin_string),
       web_contents->GetMainFrame() == render_frame_host_,
       base::android::ToJavaIntArray(env, int_ports.data(), int_ports.size()),
       reply_proxy_->GetJavaPeer());

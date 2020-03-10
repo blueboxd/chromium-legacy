@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">您随时可在“设置”中开启同步功能</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 个书签}other{<ph name="BOOKMARKS_COUNT_MANY" /> 个书签}}</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
+<translation id="3114012059975132928">视频播放器</translation>
 <translation id="3123473560110926937">已禁止部分网站显示广告</translation>
 <translation id="3123734510202723619">通告</translation>
 <translation id="3137521801621304719">退出隐身模式</translation>
@@ -352,6 +353,7 @@
 <translation id="3587482841069643663">全部</translation>
 <translation id="358794129225322306">允许网站自动下载多个文件。</translation>
 <translation id="3590487821116122040">Chrome 认为不重要的网站（例如未保存任何设置的网站或您不常访问的网站）存储的数据</translation>
+<translation id="3594780231884063836">将视频静音</translation>
 <translation id="3599863153486145794">清除所有登录过的设备上的历史记录。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="3600792891314830896">将播放声音的网站静音</translation>
 <translation id="3616113530831147358">音频</translation>
@@ -605,6 +607,7 @@
 <translation id="5456381639095306749">下载网页</translation>
 <translation id="548278423535722844">在地图应用中打开</translation>
 <translation id="5487521232677179737">清除数据</translation>
+<translation id="5489227211564503167">已播时长为 <ph name="ELAPSED_TIME" />，总时长为 <ph name="TOTAL_TIME" />。</translation>
 <translation id="5494752089476963479">禁止会展示侵扰性或误导性广告的网站显示广告</translation>
 <translation id="5500777121964041360">可能无法在您所在的国家/地区使用</translation>
 <translation id="5505264765875738116">网站无法询问能否向您发送通知</translation>
@@ -665,6 +668,7 @@
 <translation id="5864419784173784555">正在等待完成另一项下载…</translation>
 <translation id="5865733239029070421">自动将使用情况统计信息和崩溃报告发送至 Google</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
+<translation id="5876056640971328065">暂停视频</translation>
 <translation id="5884076754568147479">为了帮助您执行各种操作，Google 将会收到您使用 Google 助理时所在网站的网址和内容，以及您通过 Google 助理提交的信息</translation>
 <translation id="5902828464777634901">该网站存储的所有本地数据（包括 Cookie）都将被删除。</translation>
 <translation id="5919204609460789179">需更新 <ph name="PRODUCT_NAME" />，才能开始同步</translation>
@@ -728,6 +732,7 @@
 <translation id="6381421346744604172">调暗网站颜色</translation>
 <translation id="6388207532828177975">清除并重置</translation>
 <translation id="6395288395575013217">链接</translation>
+<translation id="6397616442223433927">已恢复在线状态</translation>
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6406506848690869874">同步</translation>
 <translation id="6410973561433500075">从 <ph name="DOMAIN" /> 进入 AR 环境？</translation>
@@ -796,6 +801,7 @@
 <translation id="6846298663435243399">正在加载...</translation>
 <translation id="6850409657436465440">您的下载仍在进行中</translation>
 <translation id="6850830437481525139">已关闭 <ph name="TAB_COUNT" /> 个标签页</translation>
+<translation id="6864395892908308021">此设备无法读取 NFC 数据</translation>
 <translation id="6864459304226931083">下载图片</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
 <translation id="6884306546558072722">离线时也能畅享网络内容</translation>
@@ -916,6 +922,7 @@
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7810647596859435254">打开方式…</translation>
 <translation id="7821588508402923572">您的数据流量节省情况将显示在这里</translation>
+<translation id="783819812427904514">将视频取消静音</translation>
 <translation id="784934925303690534">时间范围</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="7875915731392087153">创建电子邮件</translation>

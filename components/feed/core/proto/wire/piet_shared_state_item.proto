@@ -7,7 +7,7 @@ syntax = "proto2";
 import "components/feed/core/proto/ui/piet/piet.proto";
 import "components/feed/core/proto/wire/content_id.proto";
 
-package feedwire;
+package feedwire1;
 
 option optimize_for = LITE_RUNTIME;
 

@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.night_mode;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 
 import java.lang.annotation.Retention;
@@ -16,17 +16,6 @@ import java.lang.annotation.RetentionPolicy;
  * Records user actions and histograms related to the night mode state.
  */
 public class NightModeMetrics {
-    private static final CachedMetrics.BooleanHistogramSample BOOLEAN_NIGHT_MODE_STATE =
-            new CachedMetrics.BooleanHistogramSample("Android.DarkTheme.EnabledState");
-
-    private static final CachedMetrics
-            .EnumeratedHistogramSample ENUMERATED_NIGHT_MODE_ENABLED_REASON =
-            new CachedMetrics.EnumeratedHistogramSample(
-                    "Android.DarkTheme.EnabledReason", NightModeEnabledReason.NUM_ENTRIES);
-
-    private static final CachedMetrics.EnumeratedHistogramSample ENUMERATED_THEME_PREFERENCE_STATE =
-            new CachedMetrics.EnumeratedHistogramSample(
-                    "Android.DarkTheme.Preference.State", ThemeType.NUM_ENTRIES);
 
     /**
      * Different ways that night mode (aka dark theme) can be enabled. This is used for histograms
@@ -49,7 +38,7 @@ public class NightModeMetrics {
      * @param isInNightMode Whether the app is currently in night mode.
      */
     public static void recordNightModeState(boolean isInNightMode) {
-        BOOLEAN_NIGHT_MODE_STATE.record(isInNightMode);
+        RecordHistogram.recordBooleanHistogram("Android.DarkTheme.EnabledState", isInNightMode);
     }
 
     /**
@@ -58,8 +47,9 @@ public class NightModeMetrics {
      * @param powerSaveModeOn Whether or not power save mode is on.
      */
     public static void recordNightModeEnabledReason(@ThemeType int theme, boolean powerSaveModeOn) {
-        ENUMERATED_NIGHT_MODE_ENABLED_REASON.record(
-                calculateNightModeEnabledReason(theme, powerSaveModeOn));
+        RecordHistogram.recordEnumeratedHistogram("Android.DarkTheme.EnabledReason",
+                calculateNightModeEnabledReason(theme, powerSaveModeOn),
+                NightModeEnabledReason.NUM_ENTRIES);
     }
 
     @NightModeEnabledReason
@@ -77,7 +67,8 @@ public class NightModeMetrics {
      * @param theme The new {@link ThemeType} that the user selects.
      */
     public static void recordThemePreferencesState(@ThemeType int theme) {
-        ENUMERATED_THEME_PREFERENCE_STATE.record(theme);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.DarkTheme.Preference.State", theme, ThemeType.NUM_ENTRIES);
     }
 
     /**

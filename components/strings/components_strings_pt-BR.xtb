@@ -809,6 +809,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="4466881336512663640">As alterações no formulário serão perdidas. Tem certeza de que quer continuar?</translation>
 <translation id="4477350412780666475">Próxima faixa</translation>
 <translation id="4482953324121162758">Este site não será traduzido.</translation>
+<translation id="4486757593530038591">Quando ativado, os sites não podem usar atividades de navegação entre sites diferentes para personalizar anúncios. Os recursos de alguns sites podem falhar.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">Esses recursos são desativados por padrão e não estarão disponíveis em versões futuras do Chrome.</translation>
 <translation id="4493480324863638523">URL inválido. É necessário um URL com um esquema padrão, como http://example.com ou https://example.com.</translation>
@@ -1045,6 +1046,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="549333378215107354">Tamanho 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Favoritos gerenciados</translation>
+<translation id="5510481203689988000">Essa configuração é controlada nas configurações de cookies.</translation>
 <translation id="5510766032865166053">Talvez tenha sido movido ou excluído.</translation>
 <translation id="5523118979700054094">Nome da política</translation>
 <translation id="55293785478302737">Costurar borda</translation>

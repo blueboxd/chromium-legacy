@@ -4,12 +4,15 @@
 
 package org.chromium.components.payments.intent;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.JsonWriter;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentCurrencyAmount;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentDetailsModifier;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentItem;
@@ -20,6 +23,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -51,11 +55,65 @@ public class WebPaymentIntentHelper {
     private static final String EXTRA_DEPRECATED_METHOD_NAME = "methodName";
     private static final String EXTRA_DEPRECATED_ORIGIN = "origin";
 
+    // Response from the payment app.
+    private static final String EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS = "instrumentDetails";
+    private static final String EXTRA_RESPONSE_DETAILS = "details";
+    private static final String EXTRA_RESPONSE_METHOD_NAME = "methodName";
+
     private static final String EMPTY_JSON_DATA = "{}";
 
+    /** Invoked to report error for {@link #parsePaymentResponse}. */
+    public interface PaymentErrorCallback {
+        /** @param errorString The string that explains the error. */
+        void onError(String errorString);
+    }
+
+    /** Invoked to receive parsed data for {@link #parsePaymentResponse}. */
+    public interface PaymentSuccessCallback {
+        /**
+         * @param methodName The method name parsed from the intent response.
+         * @param details The instrument details parsed from the intent response.
+         */
+        void onSuccess(String methodName, String details);
+    }
+
     /**
-     * Build the 'extra' property for an intent.
+     * Parse the Payment Intent response.
+     * @param resultCode Result code of the requested intent.
+     * @param data The intent response data.
+     * @param errorCallback Callback to handle parsing errors. Invoked synchronously.
+     * @param successCallback Callback to receive the parsed data. Invoked synchronously.
+     **/
+    public static void parsePaymentResponse(int resultCode, Intent data,
+            PaymentErrorCallback errorCallback, PaymentSuccessCallback successCallback) {
+        if (data == null) {
+            errorCallback.onError(ErrorStrings.MISSING_INTENT_DATA);
+        } else if (data.getExtras() == null) {
+            errorCallback.onError(ErrorStrings.MISSING_INTENT_EXTRAS);
+        } else if (resultCode == Activity.RESULT_CANCELED) {
+            errorCallback.onError(ErrorStrings.RESULT_CANCELED);
+        } else if (resultCode != Activity.RESULT_OK) {
+            errorCallback.onError(String.format(
+                    Locale.US, ErrorStrings.UNRECOGNIZED_ACTIVITY_RESULT, resultCode));
+        } else {
+            String details = data.getExtras().getString(EXTRA_RESPONSE_DETAILS);
+            if (details == null) {
+                details = data.getExtras().getString(EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS);
+            }
+            if (details == null) details = EMPTY_JSON_DATA;
+            String methodName = data.getExtras().getString(EXTRA_RESPONSE_METHOD_NAME);
+            if (methodName == null) methodName = "";
+            // TODO(crbug.com/1026667): Support payer data delegation for native apps instead of
+            // returning empty PayerData.
+            successCallback.onSuccess(/*methodName=*/methodName, /*details=*/details);
+        }
+    }
+
+    /**
+     * Create an intent to invoke a native payment app.
      *
+     * @param packageName The name of the package of the payment app.
+     * @param activityName The name of the payment activity in the payment app.
      * @param id The unique identifier of the PaymentRequest.
      * @param merchantName The name of the merchant.
      * @param schemelessOrigin The schemeless origin of this merchant
@@ -68,9 +126,48 @@ public class WebPaymentIntentHelper {
      * @param total The total amount.
      * @param displayItems The shopping cart items.
      * @param modifiers The relevant payment details modifiers.
-     * @return the 'extra' property built for the intent.
+     * @return The intent to invoke the payment app.
      */
-    public static Bundle buildExtras(@Nullable String id, @Nullable String merchantName,
+    public static Intent createPayIntent(String packageName, String activityName, String id,
+            String merchantName, String schemelessOrigin, String schemelessIframeOrigin,
+            byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
+            PaymentItem total, List<PaymentItem> displayItems,
+            Map<String, PaymentDetailsModifier> modifiers) {
+        Intent payIntent = new Intent();
+        payIntent.setClassName(packageName, activityName);
+        payIntent.setAction(ACTION_PAY);
+        payIntent.putExtras(buildExtras(id, merchantName, schemelessOrigin, schemelessIframeOrigin,
+                certificateChain, methodDataMap, total, displayItems, modifiers));
+        return payIntent;
+    }
+
+    /**
+     * Create an intent to invoke a service that can answer "is ready to pay" query, or null of
+     * none.
+     *
+     * @param packageName The name of the package of the payment app.
+     * @param serviceName The name of the service.
+     * @param schemelessOrigin The schemeless origin of this merchant
+     * @param schemelessIframeOrigin The schemeless origin of the iframe that invoked PaymentRequest
+     * @param certificateChain The site certificate chain of the merchant. Can be null for localhost
+     *                         or local file, which are secure contexts without SSL.
+     * @param methodDataMap The payment-method specific data for all applicable payment methods,
+     *                         e.g., whether the app should be invoked in test or production, a
+     *                         merchant identifier, or a public key.
+     * @return The intent to invoke the service.
+     */
+    public static Intent createIsReadyToPayIntent(String packageName, String serviceName,
+            String schemelessOrigin, String schemelessIframeOrigin, byte[][] certificateChain,
+            Map<String, PaymentMethodData> methodDataMap) {
+        Intent isReadyToPayIntent = new Intent();
+        isReadyToPayIntent.setClassName(packageName, serviceName);
+        isReadyToPayIntent.putExtras(buildExtras(/*id=*/null,
+                /*merchantName=*/null, schemelessOrigin, schemelessIframeOrigin, certificateChain,
+                methodDataMap, /*total=*/null, /*displayItems=*/null, /*modifiers=*/null));
+        return isReadyToPayIntent;
+    }
+
+    private static Bundle buildExtras(@Nullable String id, @Nullable String merchantName,
             String schemelessOrigin, String schemelessIframeOrigin,
             @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
             @Nullable PaymentItem total, @Nullable List<PaymentItem> displayItems,

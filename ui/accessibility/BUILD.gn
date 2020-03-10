@@ -135,6 +135,12 @@ jumbo_component("accessibility") {
       "platform/ax_platform_text_boundary.h",
     ]
 
+    if (use_atk) {
+      # ax_platform_text_boundary.h includes atk.h, so ATK is needed as a public
+      # config to ensure anything that includes this is able to find atk.h.
+      public_configs = [ "//build/config/linux/atk" ]
+    }
+
     if (is_mac) {
       sources += [
         "platform/ax_platform_node_mac.h",

@@ -6,6 +6,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_scheduler_post_task_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_task_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/scheduler/dom_task.h"
@@ -40,7 +41,8 @@ DOMScheduler* DOMScheduler::From(Document& document) {
 }
 
 DOMScheduler::DOMScheduler(Document* document)
-    : ExecutionContextLifecycleObserver(document) {
+    : ExecutionContextLifecycleObserver(document),
+      Supplement<Document>(*document) {
   if (document->IsContextDestroyed())
     return;
   DCHECK(document->GetScheduler());
@@ -70,31 +72,36 @@ ScriptPromise DOMScheduler::postTask(ScriptState* script_state,
                                      ExceptionState& exception_state) {
   if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return RejectPromiseImmediately(exception_state);
+  if (options->signal() && options->signal()->aborted())
+    return RejectPromiseImmediately(exception_state);
 
-  // Always honor the priority and the task signal if given. Therefore:
-  // * If both priority and signal are set, use the signal but choose the
-  //   default task runner for the given priority, so that it is scheduled at
-  //   the given priority.
-  // * If only the signal is set, use the signal and its associated priority.
-  // * If only a priority is set, use the default task runner for that priority,
-  //   and no signal.
-  // * If neither is set, use the default priority task runner and no signal.
-  //
-  // Note that |options->signal()| may be a generic AbortSignal, rather than a
-  // TaskSignal. In that case, use it for abort signalling, but use a default
-  // task runner for priority purposes.
-  base::SingleThreadTaskRunner* task_runner = nullptr;
-  if (options->hasPriority()) {
-    WebSchedulingPriority priority =
-        WebSchedulingPriorityFromString(AtomicString(options->priority()));
-    task_runner = GetTaskRunnerFor(priority);
-  } else if (auto* task_signal = DynamicTo<DOMTaskSignal>(options->signal())) {
-    task_runner = task_signal->GetTaskRunner();
-    if (!task_runner)
-      return RejectPromiseImmediately(exception_state);
+  // Always honor the priority and the task signal if given.
+  DOMTaskSignal* task_signal = nullptr;
+  if (!options->hasPriority() && IsA<DOMTaskSignal>(options->signal())) {
+    // If only a signal is given, and it is a TaskSignal rather than an
+    // basic AbortSignal, use it.
+    task_signal = To<DOMTaskSignal>(options->signal());
   } else {
-    task_runner = GetTaskRunnerFor(WebSchedulingPriority::kUserVisiblePriority);
+    // Otherwise, construct an implicit TaskSignal. Have it follow the signal
+    // if it was given, so that it can still honor any aborts, but have it
+    // at the fixed given priority (or default if none was specified).
+    //
+    // An implicit TaskSignal, in addition to being read-only, won't own its
+    // own task queue. Instead, it will use the appropriate task queue from
+    // |global_task_queues_|.
+    WebSchedulingPriority priority =
+        options->hasPriority()
+            ? WebSchedulingPriorityFromString(AtomicString(options->priority()))
+            : WebSchedulingPriority::kUserVisiblePriority;
+    task_signal = MakeGarbageCollected<DOMTaskSignal>(
+        GetSupplementable(), priority, DOMTaskSignal::Type::kImplicit);
+    if (options->signal())
+      task_signal->Follow(options->signal());
   }
+
+  DCHECK(task_signal);
+  if (!task_signal->GetTaskRunner())
+    return RejectPromiseImmediately(exception_state);
 
   // TODO(shaseley): We need to figure out the behavior we want for delay. For
   // now, we use behavior that is very similar to setTimeout: negative delays
@@ -106,8 +113,20 @@ ScriptPromise DOMScheduler::postTask(ScriptState* script_state,
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   MakeGarbageCollected<DOMTask>(this, resolver, callback_function, args,
-                                task_runner, options->signal(), delay);
+                                task_signal, delay);
   return resolver->Promise();
+}
+
+DOMTaskSignal* DOMScheduler::currentTaskSignal(
+    ScriptState* script_state) const {
+  v8::Local<v8::Value> embedder_data =
+      script_state->GetContext()->GetContinuationPreservedEmbedderData();
+  if (V8TaskSignal::HasInstance(embedder_data, script_state->GetIsolate()))
+    return V8TaskSignal::ToImpl(v8::Local<v8::Object>::Cast(embedder_data));
+
+  return MakeGarbageCollected<DOMTaskSignal>(
+      GetSupplementable(), WebSchedulingPriority::kUserVisiblePriority,
+      DOMTaskSignal::Type::kImplicit);
 }
 
 base::SingleThreadTaskRunner* DOMScheduler::GetTaskRunnerFor(

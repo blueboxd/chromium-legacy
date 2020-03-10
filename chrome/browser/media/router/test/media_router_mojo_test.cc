@@ -30,7 +30,6 @@ const char kPresentationId[] = "presentationId";
 const char kRouteId[] = "routeId";
 const char kSource[] = "source1";
 const char kSinkId[] = "sink";
-const char kSinkId2[] = "sink2";
 const int kInvalidTabId = -1;
 const int kTimeoutMillis = 5 * 1000;
 const uint8_t kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
@@ -77,11 +76,6 @@ void MockMediaRouteProvider::RouteRequestTimeout(RouteCallback& cb) const {
 void MockMediaRouteProvider::TerminateRouteSuccess(
     TerminateRouteCallback& cb) const {
   std::move(cb).Run(std::string(), RouteRequestResult::OK);
-}
-
-void MockMediaRouteProvider::SearchSinksSuccess(SearchSinksCallback& cb) const {
-  std::string sink_id = route_ ? route_->media_sink_id() : std::string();
-  std::move(cb).Run(sink_id);
 }
 
 void MockMediaRouteProvider::CreateMediaRouteControllerSuccess(
@@ -361,34 +355,6 @@ void MediaRouterMojoTest::TestDetachRoute() {
   ProvideTestRoute(MediaRouteProviderId::EXTENSION, kRouteId);
   EXPECT_CALL(mock_extension_provider_, DetachRoute(kRouteId));
   router()->DetachRoute(kRouteId);
-  base::RunLoop().RunUntilIdle();
-}
-
-void MediaRouterMojoTest::TestSearchSinks() {
-  std::string search_input("input");
-  std::string domain("google.com");
-  MediaSource media_source(kSource);
-  ProvideTestSink(MediaRouteProviderId::EXTENSION, kSinkId);
-
-  EXPECT_CALL(mock_extension_provider_,
-              SearchSinksInternal(kSinkId, kSource, _, _))
-      .WillOnce(
-          Invoke([&search_input, &domain](
-                     const std::string& sink_id, const std::string& source,
-                     const mojom::SinkSearchCriteriaPtr& search_criteria,
-                     mojom::MediaRouteProvider::SearchSinksCallback& cb) {
-            EXPECT_EQ(search_input, search_criteria->input);
-            EXPECT_EQ(domain, search_criteria->domain);
-            std::move(cb).Run(kSinkId2);
-          }));
-
-  SinkResponseCallbackHandler sink_handler;
-  EXPECT_CALL(sink_handler, Invoke(kSinkId2)).Times(1);
-  MediaSinkSearchResponseCallback sink_callback = base::BindOnce(
-      &SinkResponseCallbackHandler::Invoke, base::Unretained(&sink_handler));
-
-  router()->SearchSinks(kSinkId, kSource, search_input, domain,
-                        std::move(sink_callback));
   base::RunLoop().RunUntilIdle();
 }
 

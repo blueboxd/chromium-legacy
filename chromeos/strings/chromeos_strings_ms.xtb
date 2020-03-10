@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Kata laluan perlu ditukar</translation>
 <translation id="2049639323467105390">Peranti ini diuruskan oleh <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Hidupkan Bluetooth untuk menemui peranti berdekatan</translation>
+<translation id="2375079107209812402"><ph name="ATTEMPTS_LEFT" /> percubaan lagi</translation>
 <translation id="2805756323405976993">Apl</translation>
 <translation id="2872961005593481000">Mematikan</translation>
 <translation id="3008341117444806826">MUAT SEMULA</translation>
@@ -42,6 +43,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="808894953321890993">Tukar kata laluan</translation>
 <translation id="8208861521865154048">Manfaat</translation>
 <translation id="8747900814994928677">Sahkan penukaran</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> percubaan lagi</translation>
 <translation id="910415269708673980">Muat semula tiket untuk <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Buka kunci</translation>
 </translationbundle>

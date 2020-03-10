@@ -38,7 +38,12 @@ class MockPointerLockWebContentsDelegate : public WebContentsDelegate {
   void RequestToLockMouse(WebContents* web_contents,
                           bool user_gesture,
                           bool last_unlocked_by_target) override {
-    web_contents->GotResponseToLockMouseRequest(user_gesture);
+    if (user_gesture)
+      web_contents->GotResponseToLockMouseRequest(
+          blink::mojom::PointerLockResult::kSuccess);
+    else
+      web_contents->GotResponseToLockMouseRequest(
+          blink::mojom::PointerLockResult::kRequiresUserGesture);
   }
 
   void LostMouseLock() override {}
@@ -62,13 +67,14 @@ class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewAura {
       UnlockMouse();
   }
 
-  bool LockMouse(bool request_unadjusted_movement) override {
+  blink::mojom::PointerLockResult LockMouse(
+      bool request_unadjusted_movement) override {
     event_handler()->mouse_locked_ = true;
     event_handler()->mouse_locked_unadjusted_movement_ =
         request_unadjusted_movement
             ? std::make_unique<ScopedEnableUnadjustedMouseEventsForTesting>()
             : nullptr;
-    return true;
+    return blink::mojom::PointerLockResult::kSuccess;
   }
 
   void UnlockMouse() override {

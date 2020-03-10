@@ -32,7 +32,7 @@
 namespace blink {
 
 class ComputedStyle;
-class FilterData;
+class FilterEffect;
 class LayoutObject;
 class LayoutSVGResourceClipper;
 class LayoutSVGResourceFilter;
@@ -41,6 +41,7 @@ class LayoutSVGResourceMasker;
 class LayoutSVGResourcePaintServer;
 class SVGElement;
 class SVGElementResourceClient;
+class SVGFilterGraphNodeMap;
 
 // Holds a set of resources associated with a LayoutObject
 class SVGResources {
@@ -190,6 +191,35 @@ class SVGResources {
   std::unique_ptr<FillStrokeData> fill_stroke_data_;
   LayoutSVGResourceContainer* linked_resource_;
   DISALLOW_COPY_AND_ASSIGN(SVGResources);
+};
+
+class FilterData final : public GarbageCollected<FilterData> {
+ public:
+  /*
+   * The state transitions should follow the following:
+   * Initial->RecordingContent->ReadyToPaint->PaintingFilter->ReadyToPaint
+   *              |     ^                       |     ^
+   *              v     |                       v     |
+   *     RecordingContentCycleDetected     PaintingFilterCycle
+   */
+  enum FilterDataState {
+    kInitial,
+    kRecordingContent,
+    kRecordingContentCycleDetected,
+    kReadyToPaint,
+    kPaintingFilter,
+    kPaintingFilterCycleDetected
+  };
+
+  FilterData() : state_(kInitial) {}
+
+  void Dispose();
+
+  void Trace(Visitor*);
+
+  Member<FilterEffect> last_effect;
+  Member<SVGFilterGraphNodeMap> node_map;
+  FilterDataState state_;
 };
 
 class SVGElementResourceClient final

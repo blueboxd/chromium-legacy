@@ -119,8 +119,6 @@ jumbo_source_set("common_sources") {
     "content_switches.h",
     "context_menu_params.cc",
     "context_menu_params.h",
-    "cursor_info.cc",
-    "cursor_info.h",
     "drop_data.cc",
     "drop_data.h",
     "font_cache_dispatcher_win.h",

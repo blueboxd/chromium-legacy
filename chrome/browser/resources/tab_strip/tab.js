@@ -226,16 +226,14 @@ export class TabElement extends CustomElement {
    * @private
    */
   onClose_(event) {
-    if (!this.tab_) {
-      return;
-    }
-
+    assert(this.tab_);
     event.stopPropagation();
     this.tabsApi_.closeTab(this.tab_.id, CloseTabAction.CLOSE_BUTTON);
   }
 
   /** @private */
   onSwipe_() {
+    assert(this.tab_);
     this.tabsApi_.closeTab(this.tab_.id, CloseTabAction.SWIPED_TO_CLOSE);
   }
 
@@ -247,6 +245,10 @@ export class TabElement extends CustomElement {
     if (event.key === 'Enter' || event.key === ' ') {
       this.onClick_();
     }
+  }
+
+  resetSwipe() {
+    this.tabSwiper_.reset();
   }
 
   /**
@@ -307,8 +309,8 @@ export class TabElement extends CustomElement {
    * @return {!Promise}
    */
   slideOut() {
-    if (!this.embedderApi_.isVisible() || this.tab_.pinned) {
-      // There is no point in animating if the tab strip is hidden.
+    if (!this.embedderApi_.isVisible() || this.tab_.pinned ||
+        this.tabSwiper_.wasSwiping()) {
       this.remove();
       return Promise.resolve();
     }

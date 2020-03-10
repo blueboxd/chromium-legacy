@@ -261,9 +261,6 @@ RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForChildWidget(
   return new RenderWidgetHostViewAndroid(rwhi, nullptr);
 }
 
-void WebContentsViewAndroid::RenderViewCreated(RenderViewHost* host) {
-}
-
 void WebContentsViewAndroid::RenderViewReady() {
   if (device_orientation_ == 0)
     return;

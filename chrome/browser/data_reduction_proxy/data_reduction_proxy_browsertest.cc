@@ -869,7 +869,7 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
 
   // Load a webpage in holdback group as well. This ensures that while in
   // holdback group, Chrome does not fetch the client config. If Chrome were to
-  // fetch the client config, the DHCECKs and other conditionals that check that
+  // fetch the client config, the DCHECKs and other conditionals that check that
   // holdback is not enabled would trigger and cause the test to fail.
   ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
 

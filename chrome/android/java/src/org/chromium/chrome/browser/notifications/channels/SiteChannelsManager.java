@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.notifications.NotificationChannelStatus;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge.SiteChannel;
-import org.chromium.chrome.browser.settings.website.WebsiteAddress;
+import org.chromium.chrome.browser.site_settings.WebsiteAddress;
 
 import java.util.ArrayList;
 import java.util.List;

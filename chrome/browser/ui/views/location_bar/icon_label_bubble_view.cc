@@ -426,7 +426,7 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
 int IconLabelBubbleView::GetInternalSpacing() const {
   if (image()->GetPreferredSize().IsEmpty())
     return 0;
-  return (MD::touch_ui() ? 10 : 8) + GetExtraInternalSpacing();
+  return (MD::GetInstance()->touch_ui() ? 10 : 8) + GetExtraInternalSpacing();
 }
 
 int IconLabelBubbleView::GetExtraInternalSpacing() const {

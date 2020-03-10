@@ -76,13 +76,8 @@ void ShelfFocusCycler::FocusShelf(bool last_element) {
     Shell::Get()->focus_cycler()->FocusWidget(shelf_widget);
   } else {
     HotseatWidget* hotseat_widget = shelf_->hotseat_widget();
-    if (chromeos::switches::ShouldShowScrollableShelf()) {
-      hotseat_widget->scrollable_shelf_view()->set_default_last_focusable_child(
-          last_element);
-    } else {
-      hotseat_widget->GetShelfView()->set_default_last_focusable_child(
-          last_element);
-    }
+    hotseat_widget->scrollable_shelf_view()->set_default_last_focusable_child(
+        last_element);
     Shell::Get()->focus_cycler()->FocusWidget(hotseat_widget);
   }
 }

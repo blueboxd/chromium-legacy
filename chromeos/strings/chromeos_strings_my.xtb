@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">စကားဝှက်ပြောင်းလဲမှု သက်တမ်းကုန်သွားပါပြီ</translation>
 <translation id="2049639323467105390">ဤစက်ပစ္စည်းကို <ph name="DOMAIN" /> မှစီမံသည်။</translation>
 <translation id="2338501278241028356">အနီးတဝိုက်ရှိ စက်ပစ္စည်းများကို ရှာဖွေရန် ဘလူးတုသ်ကို ဖွင့်ပါ</translation>
+<translation id="2375079107209812402">လုပ်ဆောင်ခွင့် <ph name="ATTEMPTS_LEFT" /> ကြိမ် ကျန်သည်</translation>
 <translation id="2805756323405976993">အက်ပ်များ</translation>
 <translation id="2872961005593481000">ပိတ်ရန်</translation>
 <translation id="3008341117444806826">ပြန်လည်စတင်ရန်</translation>
@@ -41,6 +42,7 @@
 <translation id="808894953321890993">စကားဝှက် ပြောင်းရန်</translation>
 <translation id="8208861521865154048">ခံစားခွင့်များ</translation>
 <translation id="8747900814994928677">ပြောင်းလဲမှုကို အတည်ပြုခြင်း</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> လုပ်ဆောင်ခွင့် <ph name="ATTEMPTS_LEFT" /> ကြိမ် ကျန်သည်</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> အတွက် လက်မှတ်ကို ပြန်လည်စတင်ပါ</translation>
 <translation id="9111102763498581341">သော့ဖွင့်ရန်</translation>
 </translationbundle>

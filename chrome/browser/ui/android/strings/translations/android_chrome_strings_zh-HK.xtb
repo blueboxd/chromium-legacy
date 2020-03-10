@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">您可隨時在設定中開啟同步功能</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 個書籤}other{<ph name="BOOKMARKS_COUNT_MANY" /> 個書籤}}</translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
+<translation id="3114012059975132928">影片播放器</translation>
 <translation id="3123473560110926937">在部分網站上設定封鎖</translation>
 <translation id="3123734510202723619">公告</translation>
 <translation id="3137521801621304719">離開無痕模式</translation>
@@ -352,6 +353,7 @@
 <translation id="3587482841069643663">全部</translation>
 <translation id="358794129225322306">允許網站自動下載多個檔案。</translation>
 <translation id="3590487821116122040">Chrome 認為不重要的網站 (例如未儲存任何設定的網站，或您不常瀏覽的網站) 儲存空間的資料</translation>
+<translation id="3594780231884063836">將影片靜音</translation>
 <translation id="3599863153486145794">清除所有已登入裝置上的記錄。您的 Google 帳戶在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的瀏覽記錄。</translation>
 <translation id="3600792891314830896">將播放音效的網站設為靜音</translation>
 <translation id="3616113530831147358">音效檔案</translation>
@@ -605,6 +607,7 @@
 <translation id="5456381639095306749">下載網頁</translation>
 <translation id="548278423535722844">在地圖應用程式中開啟</translation>
 <translation id="5487521232677179737">清除資料</translation>
+<translation id="5489227211564503167">播咗嘅時間係 <ph name="ELAPSED_TIME" />，影片總長度係 <ph name="TOTAL_TIME" />。</translation>
 <translation id="5494752089476963479">在顯示滋擾或誤導廣告的網站上封鎖廣告</translation>
 <translation id="5500777121964041360">此功能可能無法在您所在的地區使用</translation>
 <translation id="5505264765875738116">網站將無法要求向您傳送通知</translation>
@@ -665,6 +668,7 @@
 <translation id="5864419784173784555">正在等待其他下載程序完成…</translation>
 <translation id="5865733239029070421">自動將使用情況統計和當機報告傳送給 Google</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
+<translation id="5876056640971328065">暫停影片</translation>
 <translation id="5884076754568147479">為協助您完成工作，系統會將您使用「Google 助理」的網站網址和內容，以及您透過「Google 助理」提交的資料傳送給 Google</translation>
 <translation id="5902828464777634901">這個網站儲存的所有本機資料 (包括 Cookie) 將被刪除。</translation>
 <translation id="5919204609460789179">更新 <ph name="PRODUCT_NAME" /> 即可開始同步處理</translation>
@@ -728,6 +732,7 @@
 <translation id="6381421346744604172">調暗網站顏色</translation>
 <translation id="6388207532828177975">清除並重設</translation>
 <translation id="6395288395575013217">連結</translation>
+<translation id="6397616442223433927">已重新連線</translation>
 <translation id="6404511346730675251">編輯書籤</translation>
 <translation id="6406506848690869874">同步處理</translation>
 <translation id="6410973561433500075">要從 <ph name="DOMAIN" /> 進入 AR 嗎？</translation>
@@ -796,6 +801,7 @@
 <translation id="6846298663435243399">載入中…</translation>
 <translation id="6850409657436465440">仍在下載</translation>
 <translation id="6850830437481525139">已關閉 <ph name="TAB_COUNT" /> 個分頁</translation>
+<translation id="6864395892908308021">此裝置無法讀取 NFC</translation>
 <translation id="6864459304226931083">下載圖片</translation>
 <translation id="6865313869410766144">自動填入表格數據</translation>
 <translation id="6884306546558072722">離線時繼續探索</translation>
@@ -916,6 +922,7 @@
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7810647596859435254">選擇開啟應用程式…</translation>
 <translation id="7821588508402923572">節省的數據會在這裡顯示</translation>
+<translation id="783819812427904514">將影片取消靜音</translation>
 <translation id="784934925303690534">時間範圍</translation>
 <translation id="7851858861565204677">其他裝置</translation>
 <translation id="7875915731392087153">建立電郵</translation>

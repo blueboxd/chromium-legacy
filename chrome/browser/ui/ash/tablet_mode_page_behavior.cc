@@ -32,7 +32,7 @@ TabletModePageBehavior::~TabletModePageBehavior() {
 
 void TabletModePageBehavior::OnTabletModeToggled(bool enabled) {
   SetMobileLikeBehaviorEnabled(enabled);
-  ui::MaterialDesignController::OnTabletModeToggled(enabled);
+  ui::MaterialDesignController::GetInstance()->OnTabletModeToggled(enabled);
 }
 
 void TabletModePageBehavior::OnTabletModeStarting() {

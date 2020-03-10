@@ -37,6 +37,12 @@
 #error "This file requires ARC support."
 #endif
 
+namespace breakpad {
+// IMPORTANT: be careful if ever increasing this value, Breakpad reports have an
+// overall size limit
+const int kBreadcrumbsKeyCount = 6;
+}
+
 // WebStateListObserver that allows loaded urls to be sent to the crash server.
 @interface CrashReporterURLObserver
     : NSObject <WebStateListObserving, CRWWebStateObserver> {
@@ -442,6 +448,8 @@ void ClearStateForWebStateList(WebStateList* web_state_list) {
 void MonitorBreadcrumbManager(BreadcrumbManager* breadcrumb_manager) {
   [[CrashReporterBreadcrumbObserver uniqueInstance]
       observeBreadcrumbManager:breadcrumb_manager];
+  [CrashReporterBreadcrumbObserver uniqueInstance].breadcrumbsKeyCount =
+      kBreadcrumbsKeyCount;
 }
 
 void StopMonitoringBreadcrumbManager(BreadcrumbManager* breadcrumb_manager) {

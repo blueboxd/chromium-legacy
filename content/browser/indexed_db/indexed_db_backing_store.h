@@ -247,11 +247,13 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     };
 
     const blink::IndexedDBKey& key() const { return *current_key_; }
-    bool Continue(leveldb::Status* s) { return Continue(NULL, NULL, SEEK, s); }
+    bool Continue(leveldb::Status* s) {
+      return Continue(nullptr, nullptr, SEEK, s);
+    }
     bool Continue(const blink::IndexedDBKey* key,
                   IteratorState state,
                   leveldb::Status* s) {
-      return Continue(key, NULL, state, s);
+      return Continue(key, nullptr, state, s);
     }
     bool Continue(const blink::IndexedDBKey* key,
                   const blink::IndexedDBKey* primary_key,

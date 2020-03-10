@@ -921,7 +921,7 @@ void ToolbarView::LoadImages() {
         ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
   }
 
-  const bool touch_ui = ui::MaterialDesignController::touch_ui();
+  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
 
   const gfx::VectorIcon& back_image =
       touch_ui ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;

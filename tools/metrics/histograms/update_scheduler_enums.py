@@ -28,4 +28,5 @@ if __name__ == '__main__':
       source_enum_path=source_file,
       start_marker='^enum class WebSchedulerTrackedFeature {',
       end_marker='^kMaxValue',
-      strip_k_prefix=True)
+      strip_k_prefix=True,
+      calling_script=os.path.basename(__file__))

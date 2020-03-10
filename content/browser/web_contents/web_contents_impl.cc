@@ -193,6 +193,11 @@ namespace {
 const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
 const char kDotGoogleDotCom[] = ".google.com";
 
+// TODO(crbug.com/1059903): Clean up after the initial investigation.
+constexpr base::Feature kCheckWebContentsAccessFromNonCurrentFrame{
+    "CheckWebContentsAccessFromNonCurrentFrame",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 base::LazyInstance<std::vector<
     WebContentsImpl::FriendWrapper::CreatedCallback>>::DestructorAtExit
     g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
@@ -368,6 +373,11 @@ WebContents* WebContents::FromRenderViewHost(RenderViewHost* rvh) {
 WebContents* WebContents::FromRenderFrameHost(RenderFrameHost* rfh) {
   if (!rfh)
     return nullptr;
+  if (!rfh->IsCurrent() && base::FeatureList::IsEnabled(
+                               kCheckWebContentsAccessFromNonCurrentFrame)) {
+    // TODO(crbug.com/1059903): return nullptr here eventually.
+    base::debug::DumpWithoutCrashing();
+  }
   return static_cast<RenderFrameHostImpl*>(rfh)->delegate()->GetAsWebContents();
 }
 
@@ -640,7 +650,8 @@ WebContentsImpl::~WebContentsImpl() {
   }
 
   if (mouse_lock_widget_)
-    mouse_lock_widget_->RejectMouseLockOrUnlockIfNecessary();
+    mouse_lock_widget_->RejectMouseLockOrUnlockIfNecessary(
+        blink::mojom::PointerLockResult::kElementDestroyed);
 
   for (FrameTreeNode* node : frame_tree_.Nodes()) {
     // Delete all RFHs pending shutdown, which will lead the corresponding RVHs
@@ -2734,7 +2745,8 @@ void WebContentsImpl::RequestToLockMouse(
   for (WebContentsImpl* current = this; current;
        current = current->GetOuterWebContents()) {
     if (current->mouse_lock_widget_) {
-      render_widget_host->GotResponseToLockMouseRequest(false);
+      render_widget_host->GotResponseToLockMouseRequest(
+          blink::mojom::PointerLockResult::kAlreadyLocked);
       return;
     }
   }
@@ -2742,7 +2754,8 @@ void WebContentsImpl::RequestToLockMouse(
   if (privileged) {
     DCHECK(!GetOuterWebContents());
     mouse_lock_widget_ = render_widget_host;
-    render_widget_host->GotResponseToLockMouseRequest(true);
+    render_widget_host->GotResponseToLockMouseRequest(
+        blink::mojom::PointerLockResult::kSuccess);
     return;
   }
 
@@ -2763,7 +2776,8 @@ void WebContentsImpl::RequestToLockMouse(
 
     delegate_->RequestToLockMouse(this, user_gesture, last_unlocked_by_target);
   } else {
-    render_widget_host->GotResponseToLockMouseRequest(false);
+    render_widget_host->GotResponseToLockMouseRequest(
+        blink::mojom::PointerLockResult::kWrongDocument);
   }
 }
 
@@ -4226,15 +4240,16 @@ gfx::Size WebContentsImpl::GetPreferredSize() {
   return IsBeingCaptured() ? preferred_size_for_capture_ : preferred_size_;
 }
 
-bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
+bool WebContentsImpl::GotResponseToLockMouseRequest(
+    blink::mojom::PointerLockResult result) {
   if (mouse_lock_widget_) {
     if (mouse_lock_widget_->delegate()->GetAsWebContents() != this) {
       return mouse_lock_widget_->delegate()
           ->GetAsWebContents()
-          ->GotResponseToLockMouseRequest(allowed);
+          ->GotResponseToLockMouseRequest(result);
     }
 
-    if (mouse_lock_widget_->GotResponseToLockMouseRequest(allowed))
+    if (mouse_lock_widget_->GotResponseToLockMouseRequest(result))
       return true;
   }
 
@@ -4244,6 +4259,12 @@ bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
   }
 
   return false;
+}
+
+void WebContentsImpl::GotLockMousePermissionResponse(bool allowed) {
+  GotResponseToLockMouseRequest(
+      allowed ? blink::mojom::PointerLockResult::kSuccess
+              : blink::mojom::PointerLockResult::kPermissionDenied);
 }
 
 bool WebContentsImpl::GotResponseToKeyboardLockRequest(bool allowed) {
@@ -4370,7 +4391,8 @@ void WebContentsImpl::GetManifest(GetManifestCallback callback) {
 
 void WebContentsImpl::ExitFullscreen(bool will_cause_resize) {
   // Clean up related state and initiate the fullscreen exit.
-  GetRenderViewHost()->GetWidget()->RejectMouseLockOrUnlockIfNecessary();
+  GetRenderViewHost()->GetWidget()->RejectMouseLockOrUnlockIfNecessary(
+      blink::mojom::PointerLockResult::kUserRejected);
   ExitFullscreenMode(will_cause_resize);
 }
 
@@ -5941,8 +5963,6 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
       NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
       Source<WebContents>(this),
       Details<RenderViewHost>(render_view_host));
-
-  view_->RenderViewCreated(render_view_host);
 
   for (auto& observer : observers_)
     observer.RenderViewCreated(render_view_host);

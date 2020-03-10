@@ -449,7 +449,7 @@ void IndexedDBFactoryImpl::AbortTransactionsForDatabase(
 
 void IndexedDBFactoryImpl::HandleBackingStoreFailure(const Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // NULL after ContextDestroyed() called, and in some unit tests.
+  // nullptr after ContextDestroyed() called, and in some unit tests.
   if (!context_)
     return;
   context_->ForceCloseSync(
@@ -574,7 +574,7 @@ void IndexedDBFactoryImpl::ReportOutstandingBlobs(const Origin& origin,
 
 void IndexedDBFactoryImpl::BlobFilesCleaned(const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // NULL after ContextDestroyed() called, and in some unit tests.
+  // nullptr after ContextDestroyed() called, and in some unit tests.
   if (!context_)
     return;
   context_->BlobFilesCleaned(origin);

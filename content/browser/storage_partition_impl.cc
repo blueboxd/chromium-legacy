@@ -1695,11 +1695,6 @@ storage::mojom::IndexedDBControl& StoragePartitionImpl::GetIndexedDBControl() {
   return *indexed_db_control_;
 }
 
-IndexedDBContextImpl*
-StoragePartitionImpl::GetIndexedDBContextImplForTesting() {
-  return GetIndexedDBContextInternal();
-}
-
 IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContextInternal() {
   DCHECK(initialized_);
   return indexed_db_context_.get();

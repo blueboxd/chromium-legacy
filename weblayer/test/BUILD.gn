@@ -177,6 +177,7 @@ test("weblayer_browsertests") {
       # integration tests.
       "../browser/persistence/browser_persister_browsertest.cc",
       "../browser/persistence/minimal_browser_persister_browsertest.cc",
+      "../browser/url_bar/url_bar_browsertest.cc",
     ]
   }
 }

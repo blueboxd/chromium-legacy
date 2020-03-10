@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/test/ocmock/OCMockObject+BreakpadControllerTesting.h"
 #import "ios/testing/scoped_block_swizzler.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,6 +101,8 @@ TEST_F(CrashReporterBreadcrumbObserverTest, EventsAttachedToCrashReport) {
           chrome_browser_state_.get());
   CrashReporterBreadcrumbObserver* crash_reporter_breadcrumb_observer =
       [[CrashReporterBreadcrumbObserver alloc] init];
+  crash_reporter_breadcrumb_observer.breadcrumbsKeyCount =
+      breakpad::kBreadcrumbsKeyCount;
   [crash_reporter_breadcrumb_observer
       observeBreadcrumbManagerService:breadcrumb_service];
 
@@ -134,6 +137,8 @@ TEST_F(CrashReporterBreadcrumbObserverTest, MultipleKeysAttachedToCrashReport) {
           chrome_browser_state_.get());
   CrashReporterBreadcrumbObserver* crash_reporter_breadcrumb_observer =
       [[CrashReporterBreadcrumbObserver alloc] init];
+  crash_reporter_breadcrumb_observer.breadcrumbsKeyCount =
+      breakpad::kBreadcrumbsKeyCount;
   [crash_reporter_breadcrumb_observer
       observeBreadcrumbManagerService:breadcrumb_service];
 
@@ -179,6 +184,8 @@ TEST_F(CrashReporterBreadcrumbObserverTest, ProductDataOverflow) {
           chrome_browser_state_.get());
   CrashReporterBreadcrumbObserver* crash_reporter_breadcrumb_observer =
       [[CrashReporterBreadcrumbObserver alloc] init];
+  // Testing with 2 keys requires less code and complexity.
+  crash_reporter_breadcrumb_observer.breadcrumbsKeyCount = 2;
   [crash_reporter_breadcrumb_observer
       observeBreadcrumbManagerService:breadcrumb_service];
 
@@ -244,6 +251,8 @@ TEST_F(CrashReporterBreadcrumbObserverTest,
           chrome_browser_state_.get());
   CrashReporterBreadcrumbObserver* crash_reporter_breadcrumb_observer =
       [[CrashReporterBreadcrumbObserver alloc] init];
+  crash_reporter_breadcrumb_observer.breadcrumbsKeyCount =
+      breakpad::kBreadcrumbsKeyCount;
   [crash_reporter_breadcrumb_observer
       observeBreadcrumbManagerService:breadcrumb_service];
 

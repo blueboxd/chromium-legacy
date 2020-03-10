@@ -96,7 +96,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   bool BubbleScrollEvent(const blink::WebGestureEvent& event) override;
   bool HasFocus() override;
   void FocusRootView() override;
-  bool LockMouse(bool request_unadjusted_movement) override;
+  blink::mojom::PointerLockResult LockMouse(
+      bool request_unadjusted_movement) override;
   void UnlockMouse() override;
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;

@@ -21,26 +21,20 @@ DOMTask::DOMTask(DOMScheduler* scheduler,
                  ScriptPromiseResolver* resolver,
                  V8Function* callback,
                  const HeapVector<ScriptValue>& args,
-                 base::SingleThreadTaskRunner* task_runner,
-                 AbortSignal* signal,
+                 DOMTaskSignal* signal,
                  base::TimeDelta delay)
     : scheduler_(scheduler),
       callback_(callback),
       arguments_(args),
-      resolver_(resolver) {
+      resolver_(resolver),
+      signal_(signal) {
+  DCHECK(signal_);
+  DCHECK(signal_->GetTaskRunner());
   DCHECK(callback_);
-  DCHECK(task_runner);
-  if (signal) {
-    if (signal->aborted()) {
-      Abort();
-      return;
-    }
-
-    signal->AddAlgorithm(WTF::Bind(&DOMTask::Abort, WrapWeakPersistent(this)));
-  }
+  signal_->AddAlgorithm(WTF::Bind(&DOMTask::Abort, WrapWeakPersistent(this)));
 
   task_handle_ = PostDelayedCancellableTask(
-      *task_runner, FROM_HERE,
+      *signal_->GetTaskRunner(), FROM_HERE,
       WTF::Bind(&DOMTask::Invoke, WrapPersistent(this)), delay);
 
   ScriptState* script_state =
@@ -55,6 +49,7 @@ void DOMTask::Trace(Visitor* visitor) {
   visitor->Trace(callback_);
   visitor->Trace(arguments_);
   visitor->Trace(resolver_);
+  visitor->Trace(signal_);
 }
 
 void DOMTask::Invoke() {
@@ -72,8 +67,9 @@ void DOMTask::Invoke() {
 }
 
 void DOMTask::InvokeInternal(ScriptState* script_state) {
+  v8::Isolate* isolate = script_state->GetIsolate();
   ScriptState::Scope scope(script_state);
-  v8::TryCatch try_catch(script_state->GetIsolate());
+  v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
 
   ExecutionContext* context = ExecutionContext::From(script_state);
@@ -81,11 +77,15 @@ void DOMTask::InvokeInternal(ScriptState* script_state) {
   probe::AsyncTask async_task(context, &async_task_id_);
   probe::UserCallback probe(context, "postTask", AtomicString(), true);
 
+  v8::Local<v8::Context> v8_context = script_state->GetContext();
+  v8_context->SetContinuationPreservedEmbedderData(
+      ToV8(signal_.Get(), v8_context->Global(), isolate));
   ScriptValue result;
   if (callback_->Invoke(nullptr, arguments_).To(&result))
     resolver_->Resolve(result.V8Value());
   else if (try_catch.HasCaught())
     resolver_->Reject(try_catch.Exception());
+  v8_context->SetContinuationPreservedEmbedderData(v8::Local<v8::Object>());
 }
 
 void DOMTask::Abort() {

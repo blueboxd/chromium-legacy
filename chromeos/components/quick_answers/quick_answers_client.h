@@ -24,6 +24,7 @@ namespace quick_answers {
 struct QuickAnswer;
 struct QuickAnswersRequest;
 enum class IntentType;
+enum class ResultType;
 
 // A delegate interface for the QuickAnswersClient.
 class QuickAnswersDelegate {
@@ -85,6 +86,9 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   // Send a quick answer request. Virtual for testing.
   virtual void SendRequest(const QuickAnswersRequest& quick_answers_request);
 
+  // User clicks on the Quick Answers result. Virtual for testing.
+  virtual void OnQuickAnswerClick(ResultType result_type);
+
   static void SetResultLoaderFactoryForTesting(
       ResultLoaderFactoryCallback* factory);
 
@@ -104,6 +108,8 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   ash::mojom::AssistantAllowedState assistant_allowed_state_ =
       ash::mojom::AssistantAllowedState::ALLOWED;
   bool is_eligible_ = false;
+  // Time when the quick answer is received.
+  base::TimeTicks quick_answer_received_time_;
 };
 
 }  // namespace quick_answers

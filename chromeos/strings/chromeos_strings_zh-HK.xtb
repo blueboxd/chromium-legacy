@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">變更密碼已逾期</translation>
 <translation id="2049639323467105390">這部裝置由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2338501278241028356">開啟藍牙即可探索附近的裝置</translation>
+<translation id="2375079107209812402">剩餘嘗試次數：<ph name="ATTEMPTS_LEFT" /> 次</translation>
 <translation id="2805756323405976993">應用程式</translation>
 <translation id="2872961005593481000">關閉</translation>
 <translation id="3008341117444806826">更新</translation>
@@ -42,6 +43,7 @@
 <translation id="808894953321890993">變更密碼</translation>
 <translation id="8208861521865154048">獎賞</translation>
 <translation id="8747900814994928677">確認變更</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" />剩餘嘗試次數：<ph name="ATTEMPTS_LEFT" /> 次</translation>
 <translation id="910415269708673980">更新 <ph name="PRINCIPAL_NAME" /> 的票證</translation>
 <translation id="9111102763498581341">解鎖</translation>
 </translationbundle>

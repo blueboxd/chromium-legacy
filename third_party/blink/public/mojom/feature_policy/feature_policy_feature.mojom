@@ -54,9 +54,6 @@ enum FeaturePolicyFeature {
   // Controls the layout size of intrinsically sized images and videos. When
   // disabled, default size (300 x 150) is used to prevent relayout.
   kUnsizedMedia = 21,
-  // When disallowed, restricts source image size to be no more 2x larger than
-  // the image's containing block.
-  kOversizedImages = 25,
   // Controls access to Picture-in-Picture.
   kPictureInPicture = 26,
   // Controls the ability to block and interfere with vertical scrolling.
@@ -93,11 +90,6 @@ enum FeaturePolicyFeature {
   kHid = 43,
   // Controls access to Idle Detection
   kIdleDetection = 44,
-
-  // When disallowed, these policies require images to have a reasonable byte-to-pixel ratio.
-  kUnoptimizedLossyImages = 45,
-  kUnoptimizedLosslessImages = 46,
-  kUnoptimizedLosslessImagesStrict = 47,
 
   // Loading policies.
   kLoadingFrameDefaultEager = 48,

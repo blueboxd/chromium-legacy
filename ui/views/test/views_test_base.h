@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/test/test_views_delegate.h"
@@ -50,10 +49,6 @@ class ViewsTestBase : public PlatformTest {
       : task_environment_(base::in_place,
                           base::test::TaskEnvironment::MainThreadType::UI,
                           std::forward<TaskEnvironmentTraits>(traits)...) {
-    // MaterialDesignController is initialized here instead of in SetUp because
-    // a subclass might construct a MaterialDesignControllerTestAPI as a member
-    // to override the value, and this must happen first.
-    ui::MaterialDesignController::Initialize();
   }
 
   // Alternatively a subclass may pass this tag to ask this ViewsTestBase not to

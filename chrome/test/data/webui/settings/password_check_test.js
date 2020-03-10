@@ -77,10 +77,135 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that clicking 'Check again' make proper function call to
     // password manager
-    test('testCheckAgainButton', function() {
-      const checkPasswordSection = createCheckPasswordSection();
-      checkPasswordSection.$.controlPasswordCheckButton.click();
-      return passwordManager.whenCalled('startBulkPasswordCheck');
+    test('testCheckAgainButtonWhenIdle', function() {
+      assertEquals(
+          PasswordCheckState.IDLE, passwordManager.data.checkStatus.state);
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus')
+          .then(() => {
+            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            expectEquals(
+                section.i18n('checkPasswordsAgain'),
+                section.$.controlPasswordCheckButton.innerText);
+            section.$.controlPasswordCheckButton.click();
+          })
+          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
+    });
+
+    // Test verifies that clicking 'Check again' make proper function call to
+    // password manager
+    test('testStopButtonWhenRunning', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.RUNNING,
+              /*checked=*/ 0,
+              /*remaining=*/ 2);
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus')
+          .then(() => {
+            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            expectEquals(
+                section.i18n('checkPasswordsStop'),
+                section.$.controlPasswordCheckButton.innerText);
+            section.$.controlPasswordCheckButton.click();
+          })
+          .then(() => passwordManager.whenCalled('stopBulkPasswordCheck'));
+    });
+
+    // Test verifies that 'Try again' is not visible if users are out of quota.
+    test('testNoRetryAfterHittingQuota', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.QUOTA_LIMIT);
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
+      });
+    });
+
+    // Test verifies that 'Try again' is not visible if users have too many
+    // passwords. Instead, there should be a link to their Google Account.
+    test('testNoRetryForTooManyPasswords', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.TOO_MANY_PASSWORDS);
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
+        expectTrue(isElementVisible(section.$.linkToGoogleAccount));
+      });
+    });
+
+    // Test verifies that 'Try again' visible and working when users encounter a
+    // generic error.
+    test('testShowRetryAfterGenericError', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.OTHER_ERROR);
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus')
+          .then(() => {
+            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            expectEquals(
+                section.i18n('checkPasswordsAgainAfterError'),
+                section.$.controlPasswordCheckButton.innerText);
+            section.$.controlPasswordCheckButton.click();
+          })
+          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
+    });
+
+    // Test verifies that 'Try again' visible and working when users encounter a
+    // not-signed-in error.
+    test('testShowRetryAfterSignOutError', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.SIGNED_OUT);
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus')
+          .then(() => {
+            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            expectEquals(
+                section.i18n('checkPasswordsAgainAfterError'),
+                section.$.controlPasswordCheckButton.innerText);
+            section.$.controlPasswordCheckButton.click();
+          })
+          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
+    });
+
+    // Test verifies that 'Try again' visible and working when users encounter a
+    // no-saved-passwords error.
+    test('testShowRetryAfterNoPasswordsError', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.NO_PASSWORDS);
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus')
+          .then(() => {
+            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            expectEquals(
+                section.i18n('checkPasswordsAgainAfterError'),
+                section.$.controlPasswordCheckButton.innerText);
+            section.$.controlPasswordCheckButton.click();
+          })
+          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
+    });
+
+    // Test verifies that 'Try again' visible and working when users encounter a
+    // connection error.
+    test('testShowRetryAfterNoConnectionError', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.OFFLINE);
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus')
+          .then(() => {
+            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            expectEquals(
+                section.i18n('checkPasswordsAgainAfterError'),
+                section.$.controlPasswordCheckButton.innerText);
+            section.$.controlPasswordCheckButton.click();
+          })
+          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
     });
 
     // Test verifies that if no compromised credentials found than list is not
@@ -446,7 +571,8 @@ cr.define('settings_passwords_check', function() {
         assert(isElementVisible(title));
         // TODO(crbug.com/1047726): Check for account redirection.
         expectEquals(
-            section.i18n('checkPasswordsErrorTooManyPasswords'),
+            section.i18n('checkPasswordsErrorTooManyPasswords') + ' ' +
+                section.i18n('checkPasswordsAgainInAccount'),
             title.innerText);
         expectFalse(isElementVisible(section.$.subtitle));
       });
@@ -482,6 +608,33 @@ cr.define('settings_passwords_check', function() {
         expectEquals(
             section.i18n('checkPasswordsErrorGeneric'), title.innerText);
         expectFalse(isElementVisible(section.$.subtitle));
+      });
+    });
+
+    // Transform check-button to stop-button if a check is running.
+    test('testButtonChangesTextAccordingToStatus', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(PasswordCheckState.IDLE);
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        assert(isElementVisible(section.$.controlPasswordCheckButton));
+        expectEquals(
+            section.i18n('checkPasswordsAgain'),
+            section.$.controlPasswordCheckButton.innerText);
+
+        // Change status from running to IDLE.
+        assert(!!passwordManager.lastCallback.addPasswordCheckStatusListener);
+        passwordManager.lastCallback.addPasswordCheckStatusListener(
+            autofill_test_util.makePasswordCheckStatus(
+                /*state=*/ PasswordCheckState.RUNNING,
+                /*checked=*/ 0,
+                /*remaining=*/ 2));
+
+        assert(isElementVisible(section.$.controlPasswordCheckButton));
+        expectEquals(
+            section.i18n('checkPasswordsStop'),
+            section.$.controlPasswordCheckButton.innerText);
       });
     });
   });

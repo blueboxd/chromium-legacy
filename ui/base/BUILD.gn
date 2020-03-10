@@ -689,8 +689,6 @@ jumbo_static_library("test_support") {
   sources = [
     "resource/mock_resource_bundle_delegate.cc",
     "resource/mock_resource_bundle_delegate.h",
-    "test/material_design_controller_test_api.cc",
-    "test/material_design_controller_test_api.h",
   ]
 
   if (is_mac) {

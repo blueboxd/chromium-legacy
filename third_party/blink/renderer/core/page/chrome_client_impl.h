@@ -37,6 +37,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -228,7 +229,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
       const String& dialog_message,
       Document::PageDismissalType) const override;
 
-  bool RequestPointerLock(LocalFrame*, bool) override;
+  bool RequestPointerLock(LocalFrame*,
+                          WebWidgetClient::PointerLockCallback,
+                          bool) override;
   void RequestPointerUnlock(LocalFrame*) override;
 
   // AutofillClient pass throughs:

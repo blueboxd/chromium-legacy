@@ -5,8 +5,9 @@
 #include "components/feed/core/v2/stream_model.h"
 
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/feed/core/proto/v2/store.pb.h"
-#include "components/feed/core/proto/wire/content_id.pb.h"
+#include "components/feed/core/proto/v2/wire/content_id.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
@@ -15,48 +16,46 @@ using feedwire::ContentId;
 using EphemeralChangeId = StreamModel::EphemeralChangeId;
 using ContentRevision = StreamModel::ContentRevision;
 
-ContentId MakeContentId(const std::string& domain, const std::string& table) {
+ContentId MakeContentId(const std::string& domain, int id_number) {
   ContentId id;
   id.set_content_domain(domain);
-  id.set_table(table);
+  id.set_id(id_number);
   return id;
 }
 
-ContentId MakeClusterId(const std::string& name) {
-  return MakeContentId("cluster", name);
+ContentId MakeClusterId(int id_number) {
+  return MakeContentId("cluster", id_number);
 }
 
-ContentId MakeContentContentId(const std::string& name) {
-  return MakeContentId("content", name);
+ContentId MakeContentContentId(int id_number) {
+  return MakeContentId("content", id_number);
 }
-ContentId MakeRootId(const std::string& name = "root") {
-  return MakeContentId("stream", name);
+ContentId MakeRootId(int id_number = 0) {
+  return MakeContentId("stream", id_number);
 }
 
-feedstore::StreamStructure MakeStream(const std::string& name = "root") {
+feedstore::StreamStructure MakeStream(int id_number = 0) {
   feedstore::StreamStructure result;
   result.set_type(feedstore::StreamStructure::STREAM);
   result.set_operation(feedstore::StreamStructure::UPDATE_OR_APPEND);
-  *result.mutable_content_id() = MakeRootId(name);
+  *result.mutable_content_id() = MakeRootId(id_number);
   return result;
 }
 
-feedstore::StreamStructure MakeCluster(const std::string& name,
-                                       ContentId parent) {
+feedstore::StreamStructure MakeCluster(int id_number, ContentId parent) {
   feedstore::StreamStructure result;
   result.set_type(feedstore::StreamStructure::CLUSTER);
   result.set_operation(feedstore::StreamStructure::UPDATE_OR_APPEND);
-  *result.mutable_content_id() = MakeClusterId(name);
+  *result.mutable_content_id() = MakeClusterId(id_number);
   *result.mutable_parent_id() = parent;
   return result;
 }
 
-feedstore::StreamStructure MakeContentNode(const std::string& name,
-                                           ContentId parent) {
+feedstore::StreamStructure MakeContentNode(int id_number, ContentId parent) {
   feedstore::StreamStructure result;
   result.set_type(feedstore::StreamStructure::CONTENT);
   result.set_operation(feedstore::StreamStructure::UPDATE_OR_APPEND);
-  *result.mutable_content_id() = MakeContentContentId(name);
+  *result.mutable_content_id() = MakeContentContentId(id_number);
   *result.mutable_parent_id() = parent;
   return result;
 }
@@ -68,10 +67,10 @@ feedstore::StreamStructure MakeRemove(ContentId id) {
   return result;
 }
 
-feedstore::Content MakeContent(const std::string& name) {
+feedstore::Content MakeContent(int id_number) {
   feedstore::Content result;
-  *result.mutable_content_id() = MakeContentContentId(name);
-  result.set_frame("f:" + name);
+  *result.mutable_content_id() = MakeContentContentId(id_number);
+  result.set_frame("f:" + base::NumberToString(id_number));
   return result;
 }
 
@@ -103,12 +102,12 @@ std::vector<std::string> GetContentFrames(const StreamModel& model) {
 std::vector<feedstore::DataOperation> MakeTypicalStreamOperations() {
   return {
       MakeOperation(MakeStream()),
-      MakeOperation(MakeCluster("A", MakeRootId())),
-      MakeOperation(MakeContentNode("A", MakeClusterId("A"))),
-      MakeOperation(MakeContent("A")),
-      MakeOperation(MakeCluster("B", MakeRootId())),
-      MakeOperation(MakeContentNode("B", MakeClusterId("B"))),
-      MakeOperation(MakeContent("B")),
+      MakeOperation(MakeCluster(0, MakeRootId())),
+      MakeOperation(MakeContentNode(0, MakeClusterId(0))),
+      MakeOperation(MakeContent(0)),
+      MakeOperation(MakeCluster(1, MakeRootId())),
+      MakeOperation(MakeContentNode(1, MakeClusterId(1))),
+      MakeOperation(MakeContent(1)),
   };
 }
 
@@ -145,7 +144,7 @@ TEST(StreamModelTest, AddStreamClusterContent) {
   model.ExecuteOperations(MakeTypicalStreamOperations());
 
   EXPECT_TRUE(observer.ContentListChanged());
-  EXPECT_EQ(std::vector<std::string>({"f:A", "f:B"}), GetContentFrames(model));
+  EXPECT_EQ(std::vector<std::string>({"f:0", "f:1"}), GetContentFrames(model));
 }
 
 TEST(StreamModelTest, AddContentWithoutRoot) {
@@ -153,9 +152,9 @@ TEST(StreamModelTest, AddContentWithoutRoot) {
   StreamModel model(&observer);
 
   std::vector<feedstore::DataOperation> operations{
-      MakeOperation(MakeCluster("A", MakeRootId())),
-      MakeOperation(MakeContentNode("A", MakeClusterId("A"))),
-      MakeOperation(MakeContent("A")),
+      MakeOperation(MakeCluster(0, MakeRootId())),
+      MakeOperation(MakeContentNode(0, MakeClusterId(0))),
+      MakeOperation(MakeContent(0)),
   };
   model.ExecuteOperations(operations);
 
@@ -170,12 +169,12 @@ TEST(StreamModelTest, AddStreamContent) {
 
   std::vector<feedstore::DataOperation> operations{
       MakeOperation(MakeStream()),
-      MakeOperation(MakeContentNode("A", MakeRootId())),
-      MakeOperation(MakeContent("A")),
+      MakeOperation(MakeContentNode(0, MakeRootId())),
+      MakeOperation(MakeContent(0)),
   };
   model.ExecuteOperations(operations);
 
-  EXPECT_EQ(std::vector<std::string>({"f:A"}), GetContentFrames(model));
+  EXPECT_EQ(std::vector<std::string>({"f:0"}), GetContentFrames(model));
 }
 
 TEST(StreamModelTest, AddRootAsChild) {
@@ -183,11 +182,11 @@ TEST(StreamModelTest, AddRootAsChild) {
   TestObserver observer;
   StreamModel model(&observer);
   feedstore::StreamStructure stream_with_parent = MakeStream();
-  *stream_with_parent.mutable_parent_id() = MakeContentContentId("A");
+  *stream_with_parent.mutable_parent_id() = MakeContentContentId(0);
   std::vector<feedstore::DataOperation> operations{
       MakeOperation(MakeStream()),
-      MakeOperation(MakeContentNode("A", MakeRootId())),
-      MakeOperation(MakeContent("A")),
+      MakeOperation(MakeContentNode(0, MakeRootId())),
+      MakeOperation(MakeContent(0)),
       MakeOperation(stream_with_parent),
   };
 
@@ -206,8 +205,8 @@ TEST(StreamModelTest, ChangeStreamToCluster) {
 
   std::vector<feedstore::DataOperation> operations{
       MakeOperation(MakeStream()),
-      MakeOperation(MakeContentNode("A", MakeRootId())),
-      MakeOperation(MakeContent("A")),
+      MakeOperation(MakeContentNode(0, MakeRootId())),
+      MakeOperation(MakeContent(0)),
       MakeOperation(stream_as_cluster),
   };
 
@@ -222,11 +221,11 @@ TEST(StreamModelTest, RemoveCluster) {
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
-  operations.push_back(MakeOperation(MakeRemove(MakeClusterId("A"))));
+  operations.push_back(MakeOperation(MakeRemove(MakeClusterId(0))));
 
   model.ExecuteOperations(operations);
 
-  EXPECT_EQ(std::vector<std::string>({"f:B"}), GetContentFrames(model));
+  EXPECT_EQ(std::vector<std::string>({"f:1"}), GetContentFrames(model));
 }
 
 TEST(StreamModelTest, RemoveContent) {
@@ -235,11 +234,11 @@ TEST(StreamModelTest, RemoveContent) {
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
-  operations.push_back(MakeOperation(MakeRemove(MakeContentContentId("A"))));
+  operations.push_back(MakeOperation(MakeRemove(MakeContentContentId(0))));
 
   model.ExecuteOperations(operations);
 
-  EXPECT_EQ(std::vector<std::string>({"f:B"}), GetContentFrames(model));
+  EXPECT_EQ(std::vector<std::string>({"f:1"}), GetContentFrames(model));
 }
 
 TEST(StreamModelTest, RemoveRoot) {
@@ -266,7 +265,7 @@ TEST(StreamModelTest, RemoveAndAddRoot) {
 
   model.ExecuteOperations(operations);
 
-  EXPECT_EQ(std::vector<std::string>({"f:A", "f:B"}), GetContentFrames(model));
+  EXPECT_EQ(std::vector<std::string>({"f:0", "f:1"}), GetContentFrames(model));
 }
 
 TEST(StreamModelTest, SwitchStreams) {
@@ -275,26 +274,24 @@ TEST(StreamModelTest, SwitchStreams) {
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
-  operations.push_back(MakeOperation(MakeStream("root2")));
-  operations.push_back(
-      MakeOperation(MakeContentNode("F", MakeRootId("root2"))));
-  operations.push_back(MakeOperation(MakeContent("F")));
+  operations.push_back(MakeOperation(MakeStream(2)));
+  operations.push_back(MakeOperation(MakeContentNode(9, MakeRootId(2))));
+  operations.push_back(MakeOperation(MakeContent(9)));
 
   model.ExecuteOperations(operations);
 
   // The last stream added becomes the root, so only children of 'root2' are
   // included.
-  EXPECT_EQ(std::vector<std::string>({"f:F"}), GetContentFrames(model));
+  EXPECT_EQ(std::vector<std::string>({"f:9"}), GetContentFrames(model));
 
   // Adding the original stream back will re-activate it.
   model.ExecuteOperations({MakeOperation(MakeStream())});
 
-  EXPECT_EQ(std::vector<std::string>({"f:A", "f:B"}), GetContentFrames(model));
+  EXPECT_EQ(std::vector<std::string>({"f:0", "f:1"}), GetContentFrames(model));
 
   // Removing 'root' will now make 'root2' active again.
   model.ExecuteOperations({MakeOperation(MakeRemove(MakeRootId()))});
-  EXPECT_EQ(std::vector<std::string>({"f:F"}), GetContentFrames(model));
-  LOG(ERROR) << "VS:" << sizeof(std::vector<int>);
+  EXPECT_EQ(std::vector<std::string>({"f:9"}), GetContentFrames(model));
 }
 
 TEST(StreamModelTest, RemoveAndUpdateCluster) {
@@ -305,12 +302,12 @@ TEST(StreamModelTest, RemoveAndUpdateCluster) {
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
-  operations.push_back(MakeOperation(MakeRemove(MakeClusterId("A"))));
-  operations.push_back(MakeOperation(MakeCluster("A", MakeRootId())));
+  operations.push_back(MakeOperation(MakeRemove(MakeClusterId(0))));
+  operations.push_back(MakeOperation(MakeCluster(0, MakeRootId())));
 
   model.ExecuteOperations(operations);
 
-  EXPECT_EQ(std::vector<std::string>({"f:A", "f:B"}), GetContentFrames(model));
+  EXPECT_EQ(std::vector<std::string>({"f:0", "f:1"}), GetContentFrames(model));
 }
 
 TEST(StreamModelTest, RemoveAndAppendToNewParent) {
@@ -320,12 +317,12 @@ TEST(StreamModelTest, RemoveAndAppendToNewParent) {
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
-  operations.push_back(MakeOperation(MakeRemove(MakeClusterId("A"))));
-  operations.push_back(MakeOperation(MakeCluster("A", MakeClusterId("B"))));
+  operations.push_back(MakeOperation(MakeRemove(MakeClusterId(0))));
+  operations.push_back(MakeOperation(MakeCluster(0, MakeClusterId(1))));
 
   model.ExecuteOperations(operations);
 
-  EXPECT_EQ(std::vector<std::string>({"f:A", "f:B"}), GetContentFrames(model));
+  EXPECT_EQ(std::vector<std::string>({"f:0", "f:1"}), GetContentFrames(model));
 }
 
 TEST(StreamModelTest, EphemeralNewCluster) {
@@ -336,13 +333,13 @@ TEST(StreamModelTest, EphemeralNewCluster) {
   observer.Clear();
 
   model.CreateEphemeralChange({
-      MakeOperation(MakeCluster("C", MakeRootId())),
-      MakeOperation(MakeContentNode("C", MakeClusterId("C"))),
-      MakeOperation(MakeContent("C")),
+      MakeOperation(MakeCluster(2, MakeRootId())),
+      MakeOperation(MakeContentNode(2, MakeClusterId(2))),
+      MakeOperation(MakeContent(2)),
   });
 
   EXPECT_TRUE(observer.ContentListChanged());
-  EXPECT_EQ(std::vector<std::string>({"f:A", "f:B", "f:C"}),
+  EXPECT_EQ(std::vector<std::string>({"f:0", "f:1", "f:2"}),
             GetContentFrames(model));
 }
 
@@ -352,9 +349,9 @@ TEST(StreamModelTest, CommitEphemeralChange) {
 
   model.ExecuteOperations(MakeTypicalStreamOperations());
   EphemeralChangeId change_id = model.CreateEphemeralChange({
-      MakeOperation(MakeCluster("C", MakeRootId())),
-      MakeOperation(MakeContentNode("C", MakeClusterId("C"))),
-      MakeOperation(MakeContent("C")),
+      MakeOperation(MakeCluster(2, MakeRootId())),
+      MakeOperation(MakeContentNode(2, MakeClusterId(2))),
+      MakeOperation(MakeContent(2)),
   });
 
   EXPECT_TRUE(model.CommitEphemeralChange(change_id));
@@ -362,7 +359,7 @@ TEST(StreamModelTest, CommitEphemeralChange) {
   // Can't reject after commit.
   EXPECT_FALSE(model.RejectEphemeralChange(change_id));
 
-  EXPECT_EQ(std::vector<std::string>({"f:A", "f:B", "f:C"}),
+  EXPECT_EQ(std::vector<std::string>({"f:0", "f:1", "f:2"}),
             GetContentFrames(model));
 }
 
@@ -372,9 +369,9 @@ TEST(StreamModelTest, RejectEphemeralChange) {
 
   model.ExecuteOperations(MakeTypicalStreamOperations());
   EphemeralChangeId change_id = model.CreateEphemeralChange({
-      MakeOperation(MakeCluster("C", MakeRootId())),
-      MakeOperation(MakeContentNode("C", MakeClusterId("C"))),
-      MakeOperation(MakeContent("C")),
+      MakeOperation(MakeCluster(2, MakeRootId())),
+      MakeOperation(MakeContentNode(2, MakeClusterId(2))),
+      MakeOperation(MakeContent(2)),
   });
   observer.Clear();
 
@@ -383,7 +380,7 @@ TEST(StreamModelTest, RejectEphemeralChange) {
   // Can't commit after reject.
   EXPECT_FALSE(model.CommitEphemeralChange(change_id));
 
-  EXPECT_EQ(std::vector<std::string>({"f:A", "f:B"}), GetContentFrames(model));
+  EXPECT_EQ(std::vector<std::string>({"f:0", "f:1"}), GetContentFrames(model));
 }
 
 TEST(StreamModelTest, RejectFirstEphemeralChange) {
@@ -392,15 +389,15 @@ TEST(StreamModelTest, RejectFirstEphemeralChange) {
 
   model.ExecuteOperations(MakeTypicalStreamOperations());
   EphemeralChangeId change_id1 = model.CreateEphemeralChange({
-      MakeOperation(MakeCluster("C", MakeRootId())),
-      MakeOperation(MakeContentNode("C", MakeClusterId("C"))),
-      MakeOperation(MakeContent("C")),
+      MakeOperation(MakeCluster(2, MakeRootId())),
+      MakeOperation(MakeContentNode(2, MakeClusterId(2))),
+      MakeOperation(MakeContent(2)),
   });
 
   model.CreateEphemeralChange({
-      MakeOperation(MakeCluster("D", MakeRootId())),
-      MakeOperation(MakeContentNode("D", MakeClusterId("D"))),
-      MakeOperation(MakeContent("D")),
+      MakeOperation(MakeCluster(3, MakeRootId())),
+      MakeOperation(MakeContentNode(3, MakeClusterId(3))),
+      MakeOperation(MakeContent(3)),
   });
   observer.Clear();
 
@@ -409,7 +406,7 @@ TEST(StreamModelTest, RejectFirstEphemeralChange) {
   // Can't commit after reject.
   EXPECT_FALSE(model.CommitEphemeralChange(change_id1));
 
-  EXPECT_EQ(std::vector<std::string>({"f:A", "f:B", "f:D"}),
+  EXPECT_EQ(std::vector<std::string>({"f:0", "f:1", "f:3"}),
             GetContentFrames(model));
 }
 

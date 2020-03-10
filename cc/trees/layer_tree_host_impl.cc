@@ -37,6 +37,7 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scroll_elasticity_helper.h"
+#include "cc/input/scroll_input_type.h"
 #include "cc/input/scroll_state.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/scrollbar_animation_controller.h"
@@ -207,14 +208,14 @@ void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
 
 enum ScrollThread { MAIN_THREAD, CC_THREAD };
 
-void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
+void RecordCompositorSlowScrollMetric(ScrollInputType type,
                                       ScrollThread scroll_thread) {
-  DCHECK_NE(type, InputHandler::SCROLL_INPUT_UNKNOWN);
+  DCHECK_NE(type, ScrollInputType::kUnknown);
   bool scroll_on_main_thread = (scroll_thread == MAIN_THREAD);
-  if (type == InputHandler::WHEEL) {
+  if (type == ScrollInputType::kWheel) {
     UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorWheelScrollUpdateThread",
                           scroll_on_main_thread);
-  } else if (type == InputHandler::TOUCHSCREEN) {
+  } else if (type == ScrollInputType::kTouchscreen) {
     UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorTouchScrollUpdateThread",
                           scroll_on_main_thread);
   }
@@ -3883,7 +3884,7 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
 
 InputHandler::ScrollStatus LayerTreeHostImpl::RootScrollBegin(
     ScrollState* scroll_state,
-    InputHandler::ScrollInputType type) {
+    ScrollInputType type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::RootScrollBegin");
   if (!OuterViewportScrollNode()) {
     ScrollStatus scroll_status;
@@ -3900,7 +3901,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::RootScrollBegin(
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     ScrollState* scroll_state,
-    InputHandler::ScrollInputType type) {
+    ScrollInputType type) {
   DCHECK(scroll_state);
   DCHECK(scroll_state->delta_x() == 0 && scroll_state->delta_y() == 0);
 
@@ -4039,10 +4040,10 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 // from touch.
 bool LayerTreeHostImpl::IsTouchDraggingScrollbar(
     LayerImpl* first_scrolling_layer_or_scrollbar,
-    InputHandler::ScrollInputType type) {
+    ScrollInputType type) {
   return first_scrolling_layer_or_scrollbar &&
          first_scrolling_layer_or_scrollbar->is_scrollbar() &&
-         type == InputHandler::TOUCHSCREEN;
+         type == ScrollInputType::kTouchscreen;
 }
 
 ScrollNode* LayerTreeHostImpl::GetNodeToScroll(ScrollNode* node) const {
@@ -4424,7 +4425,7 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state,
       // controls if needed.
       Viewport::ScrollResult result = viewport().ScrollBy(
           delta, viewport_point, scroll_state->is_direct_manipulation(),
-          latched_scroll_type_ != InputHandler::WHEEL,
+          latched_scroll_type_ != ScrollInputType::kWheel,
           scroll_node.scrolls_outer_viewport);
 
       applied_delta = result.consumed_delta;
@@ -4478,10 +4479,9 @@ static bool CanPropagate(ScrollNode* scroll_node, float x, float y) {
                         OverscrollBehavior::kOverscrollBehaviorTypeAuto);
 }
 
-ScrollNode* LayerTreeHostImpl::FindNodeToLatch(
-    ScrollState* scroll_state,
-    ScrollNode* starting_node,
-    InputHandler::ScrollInputType type) {
+ScrollNode* LayerTreeHostImpl::FindNodeToLatch(ScrollState* scroll_state,
+                                               ScrollNode* starting_node,
+                                               ScrollInputType type) {
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = nullptr;
   for (ScrollNode* cur_node = starting_node; cur_node;
@@ -4499,7 +4499,7 @@ ScrollNode* LayerTreeHostImpl::FindNodeToLatch(
 
     // For UX reasons, autoscrolling should always latch to the top-most
     // scroller, even if it can't scroll in the initial direction.
-    if (type == InputHandler::AUTOSCROLL ||
+    if (type == ScrollInputType::kAutoscroll ||
         CanConsumeDelta(*scroll_state, *cur_node)) {
       scroll_node = cur_node;
       break;
@@ -4526,7 +4526,7 @@ ScrollNode* LayerTreeHostImpl::FindNodeToLatch(
 }
 
 void LayerTreeHostImpl::DidLatchToScroller(const ScrollState& scroll_state,
-                                           InputHandler::ScrollInputType type) {
+                                           ScrollInputType type) {
   DCHECK(CurrentlyScrollingNode());
   deferred_scroll_end_ = false;
   browser_controls_offset_manager_->ScrollBegin();
@@ -4537,7 +4537,7 @@ void LayerTreeHostImpl::DidLatchToScroller(const ScrollState& scroll_state,
   last_latched_scroller_ = CurrentlyScrollingNode()->element_id;
   latched_scroll_type_ = type;
 
-  frame_trackers_.StartSequence(latched_scroll_type_ == InputHandler::WHEEL
+  frame_trackers_.StartSequence(latched_scroll_type_ == ScrollInputType::kWheel
                                     ? FrameSequenceTrackerType::kWheelScroll
                                     : FrameSequenceTrackerType::kTouchScroll);
   client_->RenewTreePriority();
@@ -4605,7 +4605,7 @@ bool LayerTreeHostImpl::ShouldAnimateScroll(
 
   // Mac does not smooth scroll wheel events (crbug.com/574283). We allow tests
   // to force it on.
-  return latched_scroll_type_ == InputHandler::SCROLLBAR
+  return latched_scroll_type_ == ScrollInputType::kScrollbar
              ? true
              : force_smooth_wheel_scrolling_for_testing_;
 #else
@@ -4785,7 +4785,7 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
 
   DCHECK(last_scroll_update_state_);
   bool imprecise_wheel_scrolling =
-      latched_scroll_type_ == InputHandler::WHEEL &&
+      latched_scroll_type_ == ScrollInputType::kWheel &&
       last_scroll_update_state_->delta_granularity() !=
           ui::ScrollGranularity::kScrollByPrecisePixel;
   gfx::ScrollOffset last_scroll_delta(last_scroll_update_state_->delta_x(),
@@ -4937,7 +4937,7 @@ void LayerTreeHostImpl::ScrollEnd(bool should_snap) {
   DCHECK(latched_scroll_type_.has_value());
 
   browser_controls_offset_manager_->ScrollEnd();
-  frame_trackers_.StopSequence(latched_scroll_type_ == InputHandler::WHEEL
+  frame_trackers_.StopSequence(latched_scroll_type_ == ScrollInputType::kWheel
                                    ? FrameSequenceTrackerType::kWheelScroll
                                    : FrameSequenceTrackerType::kTouchScroll);
 
@@ -6126,16 +6126,15 @@ void LayerTreeHostImpl::SetContextVisibility(bool is_visible) {
   }
 }
 
-void LayerTreeHostImpl::UpdateScrollSourceInfo(
-    const ScrollState& scroll_state,
-    InputHandler::ScrollInputType type) {
-  if (type == InputHandler::WHEEL &&
+void LayerTreeHostImpl::UpdateScrollSourceInfo(const ScrollState& scroll_state,
+                                               ScrollInputType type) {
+  if (type == ScrollInputType::kWheel &&
       scroll_state.delta_granularity() ==
           ui::ScrollGranularity::kScrollByPrecisePixel) {
     has_scrolled_by_precisiontouchpad_ = true;
-  } else if (type == InputHandler::WHEEL) {
+  } else if (type == ScrollInputType::kWheel) {
     has_scrolled_by_wheel_ = true;
-  } else if (type == InputHandler::TOUCHSCREEN) {
+  } else if (type == ScrollInputType::kTouchscreen) {
     has_scrolled_by_touch_ = true;
   }
 }

@@ -22,6 +22,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/input/scroll_input_type.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
@@ -101,22 +102,21 @@ cc::ScrollState CreateScrollStateForInertialUpdate(
   return cc::ScrollState(scroll_state_data);
 }
 
-cc::InputHandler::ScrollInputType GestureScrollInputType(
-    blink::WebGestureDevice device) {
+cc::ScrollInputType GestureScrollInputType(blink::WebGestureDevice device) {
   switch (device) {
     case blink::WebGestureDevice::kTouchpad:
-      return cc::InputHandler::WHEEL;
+      return cc::ScrollInputType::kWheel;
     case blink::WebGestureDevice::kTouchscreen:
-      return cc::InputHandler::TOUCHSCREEN;
+      return cc::ScrollInputType::kTouchscreen;
     case blink::WebGestureDevice::kSyntheticAutoscroll:
-      return cc::InputHandler::AUTOSCROLL;
+      return cc::ScrollInputType::kAutoscroll;
     case blink::WebGestureDevice::kScrollbar:
-      return cc::InputHandler::SCROLLBAR;
+      return cc::ScrollInputType::kScrollbar;
     case blink::WebGestureDevice::kUninitialized:
       break;
   }
   NOTREACHED();
-  return cc::InputHandler::SCROLL_INPUT_UNKNOWN;
+  return cc::ScrollInputType::kUnknown;
 }
 
 cc::SnapFlingController::GestureScrollType GestureScrollEventType(

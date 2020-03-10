@@ -273,6 +273,8 @@ class TabListElement extends CustomElement {
       this.addWebUIListener_(
           'tab-active-changed', tabId => this.onTabActivated_(tabId));
       this.addWebUIListener_(
+          'tab-close-cancelled', tabId => this.onTabCloseCancelled_(tabId));
+      this.addWebUIListener_(
           'tab-group-state-changed',
           (tabId, index, groupId) =>
               this.onTabGroupStateChanged_(tabId, index, groupId));
@@ -456,6 +458,18 @@ class TabListElement extends CustomElement {
     }
     this.activatingTabId_ = id;
     this.activatingTabIdTimestamp_ = Date.now();
+  }
+
+  /**
+   * @param {number} id
+   * @private
+   */
+  onTabCloseCancelled_(id) {
+    const tabElement = this.findTabElement_(id);
+    if (!tabElement) {
+      return;
+    }
+    tabElement.resetSwipe();
   }
 
   /**

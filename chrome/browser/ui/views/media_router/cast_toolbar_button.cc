@@ -191,8 +191,8 @@ void CastToolbarButton::UpdateIcon() {
                         GetIconColor(views::Button::STATE_DISABLED, &icon));
   // This icon is smaller than the touchable-UI expected 24dp, so we need to pad
   // the insets to match.
-  SetLayoutInsetDelta(
-      gfx::Insets(ui::MaterialDesignController::touch_ui() ? 4 : 0));
+  SetLayoutInsetDelta(gfx::Insets(
+      ui::MaterialDesignController::GetInstance()->touch_ui() ? 4 : 0));
 }
 
 MediaRouterActionController* CastToolbarButton::GetActionController() const {

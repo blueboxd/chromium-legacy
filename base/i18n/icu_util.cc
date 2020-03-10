@@ -16,6 +16,8 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -23,6 +25,7 @@
 #include "build/chromecast_buildflags.h"
 #include "third_party/icu/source/common/unicode/putil.h"
 #include "third_party/icu/source/common/unicode/udata.h"
+#include "third_party/icu/source/common/unicode/utrace.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
@@ -349,6 +352,36 @@ void InitializeIcuTimeZone() {
 #endif  // defined(OS_ANDROID)
 }
 
+const char kICUDataFile[] = "ICU.DataFile";
+
+// Callback function to report the opening of ICU Data File to UMA.
+// This help us to understand what built-in ICU data files are rarely used
+// in the user's machines.
+static void U_CALLCONV TraceICUDataFile(const void* context,
+                                        int32_t fn_number,
+                                        int32_t level,
+                                        const char* fmt,
+                                        va_list args) {
+  if (fn_number == UTRACE_UDATA_DATA_FILE) {
+    std::string icu_data_file_name(va_arg(args, const char*));
+    va_end(args);
+    // Skip icu version specified prefix if exist.
+    // path is prefixed with icu version prefix such as "icudt65l-".
+    // Histogram only the part after the -.
+    if (icu_data_file_name.find("icudt") == 0) {
+      size_t dash = icu_data_file_name.find("-");
+      if (dash != std::string::npos) {
+        icu_data_file_name = icu_data_file_name.substr(dash + 1);
+      }
+    }
+    // UmaHistogramSparse should track less than 100 values.
+    // We currently have about total 55 built-in data files inside ICU
+    // so it fit the UmaHistogramSparse usage.
+    int hash = base::HashMetricName(icu_data_file_name);
+    base::UmaHistogramSparse(kICUDataFile, hash);
+  }
+}
+
 // Common initialization to run regardless of how ICU is initialized.
 // There are multiple exposed InitializeIcu* functions. This should be called
 // as at the end of (the last functions in the sequence of) these functions.
@@ -358,6 +391,9 @@ bool DoCommonInitialization() {
   // when requested.
   InitializeIcuTimeZone();
 
+  const void* context = nullptr;
+  utrace_setFunctions(context, nullptr, nullptr, TraceICUDataFile);
+  utrace_setLevel(UTRACE_VERBOSE);
   return true;
 }
 

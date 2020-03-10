@@ -58,7 +58,6 @@ jumbo_component("gtk") {
     "//base",
     "//build/config/linux/gtk",
     "//build/config/linux/gtk:gtkprint",
-    "//chrome/browser/ui/views",
     "//chrome/common:constants",
     "//components/prefs",
     "//content/public/browser",

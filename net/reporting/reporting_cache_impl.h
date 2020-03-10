@@ -31,8 +31,6 @@
 
 namespace net {
 
-class NetworkIsolationKey;
-
 class ReportingCacheImpl : public ReportingCache {
  public:
   ReportingCacheImpl(ReportingContext* context);
@@ -56,8 +54,7 @@ class ReportingCacheImpl : public ReportingCache {
       const std::vector<const ReportingReport*>& reports) override;
   void IncrementReportsAttempts(
       const std::vector<const ReportingReport*>& reports) override;
-  void IncrementEndpointDeliveries(const url::Origin& origin,
-                                   const std::string& group_name,
+  void IncrementEndpointDeliveries(const ReportingEndpointGroupKey& group_key,
                                    const GURL& url,
                                    int reports_delivered,
                                    bool successful) override;
@@ -70,33 +67,33 @@ class ReportingCacheImpl : public ReportingCache {
   void OnParsedHeader(
       const url::Origin& origin,
       std::vector<ReportingEndpointGroup> parsed_header) override;
-  std::vector<url::Origin> GetAllOrigins() const override;
-  void RemoveClient(const url::Origin& origin) override;
+  std::set<url::Origin> GetAllOrigins() const override;
+  void RemoveClient(const NetworkIsolationKey& network_isolation_key,
+                    const url::Origin& origin) override;
+  void RemoveClientsForOrigin(const url::Origin& origin) override;
   void RemoveAllClients() override;
-  void RemoveEndpointGroup(const url::Origin& origin,
-                           const std::string& name) override;
+  void RemoveEndpointGroup(const ReportingEndpointGroupKey& group_key) override;
   void RemoveEndpointsForUrl(const GURL& url) override;
   void AddClientsLoadedFromStore(
       std::vector<ReportingEndpoint> loaded_endpoints,
       std::vector<CachedReportingEndpointGroup> loaded_endpoint_groups)
       override;
   std::vector<ReportingEndpoint> GetCandidateEndpointsForDelivery(
-      const NetworkIsolationKey& network_isolation_key,
-      const url::Origin& origin,
-      const std::string& group_name) override;
+      const ReportingEndpointGroupKey& group_key) override;
   base::Value GetClientsAsValue() const override;
   size_t GetEndpointCount() const override;
   void Flush() override;
-  ReportingEndpoint GetEndpointForTesting(const url::Origin& origin,
-                                          const std::string& group_name,
-                                          const GURL& url) const override;
-  bool EndpointGroupExistsForTesting(const url::Origin& origin,
-                                     const std::string& group_name,
+  ReportingEndpoint GetEndpointForTesting(
+      const ReportingEndpointGroupKey& group_key,
+      const GURL& url) const override;
+  bool EndpointGroupExistsForTesting(const ReportingEndpointGroupKey& group_key,
                                      OriginSubdomains include_subdomains,
                                      base::Time expires) const override;
+  bool ClientExistsForTesting(const NetworkIsolationKey& network_isolation_key,
+                              const url::Origin& origin) const override;
   size_t GetEndpointGroupCountForTesting() const override;
-  void SetEndpointForTesting(const url::Origin& origin,
-                             const std::string& group_name,
+  size_t GetClientCountForTesting() const override;
+  void SetEndpointForTesting(const ReportingEndpointGroupKey& group_key,
                              const GURL& url,
                              OriginSubdomains include_subdomains,
                              base::Time expires,
@@ -104,17 +101,25 @@ class ReportingCacheImpl : public ReportingCache {
                              int weight) override;
 
  private:
-  // Represents the entire Report-To configuration for an origin.
-  struct OriginClient {
-    explicit OriginClient(url::Origin origin);
+  // Represents the entire Report-To configuration for a (NIK, origin) pair.
+  struct Client {
+    Client(const NetworkIsolationKey& network_isolation_key,
+           const url::Origin& origin);
 
-    OriginClient(const OriginClient& other);
-    OriginClient(OriginClient&& other);
+    Client(const Client& other);
+    Client(Client&& other);
 
-    ~OriginClient();
+    Client& operator=(const Client& other);
+    Client& operator=(Client&& other);
+
+    ~Client();
+
+    // NIK of the context associated with this client. Needed to prevent leaking
+    // third party contexts across sites.
+    NetworkIsolationKey network_isolation_key;
 
     // Origin that configured this client.
-    const url::Origin origin;
+    url::Origin origin;
 
     // Total number of endpoints for this origin. Should stay in sync with the
     // sum of endpoint counts for all the groups within this client.
@@ -131,7 +136,7 @@ class ReportingCacheImpl : public ReportingCache {
 
   using ReportSet = base::flat_set<std::unique_ptr<ReportingReport>,
                                    base::UniquePtrComparator>;
-  using OriginClientMap = std::unordered_multimap<std::string, OriginClient>;
+  using ClientMap = std::multimap<std::string, Client>;
   using EndpointGroupMap =
       std::map<ReportingEndpointGroupKey, CachedReportingEndpointGroup>;
   using EndpointMap =
@@ -150,8 +155,8 @@ class ReportingCacheImpl : public ReportingCache {
   // Helper methods for SanityCheckClients():
 #if DCHECK_IS_ON()
   // Returns number of endpoint groups found in |client|.
-  size_t SanityCheckOriginClient(const std::string& domain,
-                                 const OriginClient& client) const;
+  size_t SanityCheckClient(const std::string& domain,
+                           const Client& client) const;
 
   // Returns the number of endpoints found in |group|.
   size_t SanityCheckEndpointGroup(
@@ -163,9 +168,16 @@ class ReportingCacheImpl : public ReportingCache {
                            EndpointMap::const_iterator endpoint_it) const;
 #endif  // DCHECK_IS_ON()
 
-  // Finds iterator to the client with the given |origin|, if one exists.
-  // Returns |origin_clients_.end()| if none is found.
-  OriginClientMap::iterator FindClientIt(const url::Origin& origin);
+  // Finds iterator to the client with the given |network_isolation_key| and
+  // |origin|, if one exists. Returns |clients_.end()| if none is found.
+  ClientMap::iterator FindClientIt(
+      const NetworkIsolationKey& network_isolation_key,
+      const url::Origin& origin);
+
+  // Overload that takes a ReportingEndpointGroupKey and finds the client
+  // to which a group specified by the |group_key| would belong. The group name
+  // of the key is ignored.
+  ClientMap::iterator FindClientIt(const ReportingEndpointGroupKey& group_key);
 
   // Finds iterator to the endpoint group identified by |group_key| (origin and
   // name), if one exists. Returns |endpoint_groups_.end()| if none is found.
@@ -181,8 +193,8 @@ class ReportingCacheImpl : public ReportingCache {
 
   // Adds a new client, endpoint group, or endpoint to the cache, if none
   // exists. If one already exists, updates the existing entry to match the new
-  // one.
-  void AddOrUpdateClient(OriginClient new_client);
+  // one. Returns iterator to newly added client.
+  ClientMap::iterator AddOrUpdateClient(Client new_client);
   void AddOrUpdateEndpointGroup(CachedReportingEndpointGroup new_group);
   void AddOrUpdateEndpoint(ReportingEndpoint new_endpoint);
 
@@ -193,10 +205,11 @@ class ReportingCacheImpl : public ReportingCache {
       const ReportingEndpointGroupKey& group_key,
       const std::set<GURL>& endpoints_to_keep_urls);
 
-  // Remove all the endpoint groups for |origin| whose names are not in
-  // |groups_to_keep_names|. Does not guarantee that all the groups in
-  // |groups_to_keep_names| exist in the cache for that origin.
-  void RemoveEndpointGroupsForOriginOtherThan(
+  // Remove all the endpoint groups for the NIK and origin whose names are not
+  // in |groups_to_keep_names|. Does not guarantee that all the groups in
+  // |groups_to_keep_names| exist in the cache for that client.
+  void RemoveEndpointGroupsForClientOtherThan(
+      const NetworkIsolationKey& network_isolation_key,
       const url::Origin& origin,
       const std::set<std::string>& groups_to_keep_names);
 
@@ -209,7 +222,7 @@ class ReportingCacheImpl : public ReportingCache {
       const ReportingEndpointGroupKey& group_key) const;
 
   // Updates the last_used time for the given origin and endpoint group.
-  void MarkEndpointGroupAndClientUsed(OriginClientMap::iterator client_it,
+  void MarkEndpointGroupAndClientUsed(ClientMap::iterator client_it,
                                       EndpointGroupMap::iterator group_it,
                                       base::Time now);
 
@@ -221,7 +234,7 @@ class ReportingCacheImpl : public ReportingCache {
   // either of |group_it| or |client_it| were invalidated. (If |client_it| is
   // invalidated, then so must |group_it|).
   base::Optional<EndpointMap::iterator> RemoveEndpointInternal(
-      OriginClientMap::iterator client_it,
+      ClientMap::iterator client_it,
       EndpointGroupMap::iterator group_it,
       EndpointMap::iterator endpoint_it);
 
@@ -234,7 +247,7 @@ class ReportingCacheImpl : public ReportingCache {
   // Returns the iterator following the endpoint group removed, or base::nullopt
   // if |client_it| was invalidated.
   base::Optional<EndpointGroupMap::iterator> RemoveEndpointGroupInternal(
-      OriginClientMap::iterator client_it,
+      ClientMap::iterator client_it,
       EndpointGroupMap::iterator group_it,
       size_t* num_endpoints_removed = nullptr);
 
@@ -242,11 +255,10 @@ class ReportingCacheImpl : public ReportingCache {
   // along with all of its endpoint groups and endpoints. Invalidates
   // |client_it|.
   // Returns the iterator following the client removed.
-  OriginClientMap::iterator RemoveClientInternal(
-      OriginClientMap::iterator client_it);
+  ClientMap::iterator RemoveClientInternal(ClientMap::iterator client_it);
 
-  // Evict endpoints from |origin| and globally, if necessary to obey the
-  // per-origin and global endpoint limits set in the ReportingPolicy.
+  // Evict endpoints from the specified client and globally, if necessary to
+  // obey the per-client and global endpoint limits set in the ReportingPolicy.
   //
   // To evict from a client: First evicts any stale or expired groups for that
   // origin. If that removes enough endpoints, then stop. Otherwise, find the
@@ -255,26 +267,26 @@ class ReportingCacheImpl : public ReportingCache {
   // that group.
   // To evict globally: Find the stalest client with the most endpoints and do
   // the above.
-  void EnforcePerOriginAndGlobalEndpointLimits(const url::Origin& origin);
+  void EnforcePerClientAndGlobalEndpointLimits(ClientMap::iterator client_it);
 
   // Evicts endpoints from a client until it has evicted |endpoints_to_evict|
   // endpoints. First tries to remove expired and stale groups. If that fails to
   // satisfy the limit, finds the stalest group with the most endpoints and
   // evicts the least important endpoints from it.
-  void EvictEndpointsFromClient(OriginClientMap::iterator client_it,
+  void EvictEndpointsFromClient(ClientMap::iterator client_it,
                                 size_t endpoints_to_evict);
 
   // Evicts the least important endpoint from a group (the endpoint with lowest
   // priority and lowest weight). May cause the group and/or client to be
   // deleted and the iterators invalidated.
-  void EvictEndpointFromGroup(OriginClientMap::iterator client_it,
+  void EvictEndpointFromGroup(ClientMap::iterator client_it,
                               EndpointGroupMap::iterator group_it);
 
   // Removes all expired or stale groups from the given client. May delete the
   // client and invalidate |client_it| if it becomes empty.
   // Increments |*num_endpoints_removed| by the number of endpoints removed.
   // Returns true if |client_it| was invalidated.
-  bool RemoveExpiredOrStaleGroups(OriginClientMap::iterator client_it,
+  bool RemoveExpiredOrStaleGroups(ClientMap::iterator client_it,
                                   size_t* num_endpoints_removed);
 
   // Adds/removes (if it exists) |endpoint_it| from |endpoint_its_by_url_|.
@@ -282,7 +294,7 @@ class ReportingCacheImpl : public ReportingCache {
   void RemoveEndpointItFromIndex(EndpointMap::iterator endpoint_it);
 
   // Helper methods for GetClientsAsValue().
-  base::Value GetOriginClientAsValue(const OriginClient& client) const;
+  base::Value GetClientAsValue(const Client& client) const;
   base::Value GetEndpointGroupAsValue(
       const CachedReportingEndpointGroup& group) const;
   base::Value GetEndpointAsValue(const ReportingEndpoint& endpoint) const;
@@ -297,9 +309,9 @@ class ReportingCacheImpl : public ReportingCache {
   // Reports that have not yet been successfully uploaded.
   ReportSet reports_;
 
-  // Map of clients for all configured origins, keyed on domain name (there may
-  // be multiple origins per domain name).
-  OriginClientMap origin_clients_;
+  // Map of clients for all configured origins and NIKs, keyed on domain name
+  // (there may be multiple NIKs and origins per domain name).
+  ClientMap clients_;
 
   // Map of endpoint groups, keyed on origin and group name.
   EndpointGroupMap endpoint_groups_;

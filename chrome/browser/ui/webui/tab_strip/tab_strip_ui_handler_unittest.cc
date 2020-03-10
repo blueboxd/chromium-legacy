@@ -509,3 +509,16 @@ TEST_F(TabStripUIHandlerTest, UngroupTab) {
 
   ASSERT_FALSE(browser()->tab_strip_model()->GetTabGroupForTab(0).has_value());
 }
+
+TEST_F(TabStripUIHandlerTest, CloseTab) {
+  AddTab(browser(), GURL("http://foo"));
+  AddTab(browser(), GURL("http://bar"));
+
+  base::ListValue args;
+  args.AppendInteger(extensions::ExtensionTabUtil::GetTabId(
+      browser()->tab_strip_model()->GetWebContentsAt(0)));
+  args.AppendBoolean(false);  // If the tab is closed by swipe.
+  handler()->HandleCloseTab(&args);
+
+  ASSERT_EQ(1, browser()->tab_strip_model()->GetTabCount());
+}

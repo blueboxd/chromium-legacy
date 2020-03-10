@@ -84,6 +84,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
 // Enabled notification expansion animation.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationExpansionAnimation;
 
+// Shorten notification timeouts to 6 seconds.
+ASH_PUBLIC_EXPORT extern const base::Feature
+    kNotificationExperimentalShortTimeouts;
+
 // Enables notification scroll bar in UnifiedSystemTray.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationScrollBar;
 
@@ -159,6 +163,8 @@ ASH_PUBLIC_EXPORT bool IsLockScreenInlineReplyEnabled();
 ASH_PUBLIC_EXPORT bool IsLockScreenHideSensitiveNotificationsSupported();
 
 ASH_PUBLIC_EXPORT bool IsNotificationExpansionAnimationEnabled();
+
+ASH_PUBLIC_EXPORT bool IsNotificationExperimentalShortTimeoutsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNotificationScrollBarEnabled();
 

@@ -9,7 +9,7 @@
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/common/cursor_info.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -30,15 +30,15 @@ namespace content {
 class CONTENT_EXPORT WebCursor {
  public:
   WebCursor();
-  explicit WebCursor(const CursorInfo& info);
+  explicit WebCursor(const ui::Cursor& info);
   explicit WebCursor(const WebCursor& other);
   WebCursor& operator=(const WebCursor& other);
   ~WebCursor();
 
-  const CursorInfo& info() const { return info_; }
+  const ui::Cursor& cursor() const { return cursor_; }
 
-  // Sets the cursor |info|; returns whether the struct has reasonable values.
-  bool SetInfo(const CursorInfo& info);
+  // Sets the ui::Cursor |cursor|; returns whether it has reasonable values.
+  bool SetCursor(const ui::Cursor& cursor);
 
   // Equality operator; performs bitmap content comparison as needed.
   bool operator==(const WebCursor& other) const;
@@ -76,7 +76,7 @@ class CONTENT_EXPORT WebCursor {
   float GetCursorScaleFactor(SkBitmap* bitmap);
 
   // The basic cursor info.
-  CursorInfo info_;
+  ui::Cursor cursor_;
 
 #if defined(USE_AURA) || defined(USE_OZONE)
   // Only used for custom cursors.

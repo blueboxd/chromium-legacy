@@ -108,7 +108,7 @@ namespace performance_manager {
 // -- user_of_foo.cc --
 // Foo* foo = Foo::GetOrCreate(page_node);
 // foo->DoSomething();
-// DHCECK_EQ(foo, Foo::Get(page_node));
+// DCHECK_EQ(foo, Foo::Get(page_node));
 // DCHECK(Foo::Destroy(page_node));
 // -- user_of_foo.cc --
 

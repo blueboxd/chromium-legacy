@@ -64,6 +64,10 @@
       設定這項政策後，使用者即無法變更或覆寫。</translation>
 <translation id="1062011392452772310">為裝置啟用遠端認證機制</translation>
 <translation id="1062407476771304334">取代</translation>
+<translation id="1073983258515362346">回報有關裝置背光的資訊。
+
+      如果將這項政策設為 False 或未設定，系統將不會回報這項資訊。
+      如果設為 True，系統會回報裝置背光的資訊。</translation>
 <translation id="1078643757670228170">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 82 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定 AC 供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會關閉螢幕。
@@ -319,6 +323,11 @@
 
       如未設定這項政策，系統將會對受企業管理的使用者套用預設值「MultiProfileUserBehaviorMustBePrimary」，並對不屬於管理化環境的使用者使用「MultiProfileUserBehaviorUnrestricted」。</translation>
 <translation id="1465619815762735808">點擊執行</translation>
+<translation id="1467633031685836974">這項功能可讓超連結和網址列的網址導覽功能鎖定網頁中的特定文字。當網頁載入完成後，系統會將頁面捲動至該文字的顯示位置。
+
+如果啟用或不設定這項政策，系統會啟用透過網址將網頁捲動至特定文字片段的功能。
+
+如果停用這項政策，系統會停用透過網址將網頁捲動至特定文字片段的功能。</translation>
 <translation id="1468707346106619889">如果將這項政策設為 true，即可允許使用整合桌面，
       並預設啟用整合桌面，讓應用程式擴展到多個畫面。
       使用者如要為個別畫面停用整合桌面，可在顯示設定中
@@ -328,6 +337,7 @@
       在這種情況下，使用者將無法啟用這項功能。</translation>
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1486021504508098388">回報背光資訊</translation>
 <translation id="1502843533062797703">啟用禁止第三方軟體置入可執行程式碼的政策</translation>
 <translation id="1507382822467487898">
           設定當裝置插入座架時，要使用的 MAC (媒體存取控制) 位址。
@@ -3381,6 +3391,7 @@
           指定政策值時需以毫秒為單位。該值必須小於閒置延遲時間值。</translation>
 <translation id="6097601282776163274">啟用輸入網址匿名資料收集功能</translation>
 <translation id="6099853574908182288">預設列印色彩模式</translation>
+<translation id="6102342563050263313">啟用捲動至網址片段所指定文字的功能</translation>
 <translation id="6107642964266628393">控管 Chrome 作業系統的更新方式和更新時間。</translation>
 <translation id="6111936128861357925">允許 Dinosaur Easter Egg Game (恐龍復活節彩蛋遊戲)</translation>
 <translation id="6114416803310251055">淘汰的</translation>
@@ -4341,6 +4352,9 @@
 <translation id="7713608076604149344">下載限制</translation>
 <translation id="7715711044277116530">簡報模式中的螢幕調暗延遲時間延長百分比</translation>
 <translation id="7717938661004793600">設定 <ph name="PRODUCT_OS_NAME" /> 無障礙功能。</translation>
+<translation id="7724652568947700864">如果設定了這項政策，系統會將所有指定的資料類型從同步處理作業 (包含 Google Sync 和漫遊設定檔的同步處理作業) 中排除。這有助於縮減漫遊設定檔的大小，或限制上傳到 Google Sync 伺服器的資料類型。
+
+      這項政策目前涵蓋的資料類型為：「bookmarks」、「preferences」、「passwords」、「autofill」、「themes」、「typedUrls」、「extensions」、「apps」、「tabs」、「wifiConfiguration」。這些名稱有大小寫之分。</translation>
 <translation id="7731026922044991970">將所有網站上的 Cookie 還原成舊版的 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為</translation>
 <translation id="7747447585227954402">允許裝置在 <ph name="PRODUCT_OS_NAME" /> 使用 <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749024457938190837">這些擴充功能在透過 chrome.printing API 傳送列印工作時，可以略過確認對話方塊</translation>

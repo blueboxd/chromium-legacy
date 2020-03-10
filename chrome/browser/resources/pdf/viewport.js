@@ -19,7 +19,12 @@ import {InactiveZoomManager, ZoomManager} from './zoom_manager.js';
  */
 let DocumentDimensions;
 
-/** @typedef {{defaultPageOrientation: number}} */
+/**
+ * @typedef {{
+ *   defaultPageOrientation: number,
+ *   twoUpViewEnabled: boolean,
+ * }}
+ */
 export let LayoutOptions;
 
 /** @typedef {{x: number, y: number}} */
@@ -136,12 +141,6 @@ export class Viewport {
     /** @private {!FittingType} */
     this.fittingType_ = FittingType.NONE;
 
-    /**
-     * |twoUpView_| should be in sync with |two_up_view_| in PDFiumEngine.
-     * @private {boolean}
-     */
-    this.twoUpView_ = false;
-
     /** @private {number} */
     this.prevScale_ = 1;
 
@@ -220,9 +219,13 @@ export class Viewport {
     return this.rotations_;
   }
 
-  /** @param {boolean} twoUpView The new two up view state to set. */
-  setTwoUpView(twoUpView) {
-    this.twoUpView_ = twoUpView;
+  /** @return {boolean} Whether viewport is in two-up view mode. */
+  twoUpViewEnabled() {
+    const options = this.getLayoutOptions();
+    if (options === undefined) {
+      return false;
+    }
+    return options.twoUpViewEnabled;
   }
 
   /**
@@ -677,7 +680,7 @@ export class Viewport {
   getLastPageInViewport_(viewportRect) {
     const pageAtY = this.getPageAtY_(viewportRect.y + viewportRect.height);
 
-    if (!this.twoUpView_ || pageAtY % 2 === 1 ||
+    if (!this.twoUpViewEnabled() || pageAtY % 2 === 1 ||
         pageAtY + 1 >= this.pageDimensions_.length) {
       return pageAtY;
     }
@@ -1070,7 +1073,8 @@ export class Viewport {
    */
   goToNextPage() {
     const currentPage = this.getMostVisiblePage();
-    const nextPageOffset = (this.twoUpView_ && currentPage % 2 === 0) ? 2 : 1;
+    const nextPageOffset =
+        (this.twoUpViewEnabled() && currentPage % 2 === 0) ? 2 : 1;
     this.goToPage(currentPage + nextPageOffset);
   }
 
@@ -1082,7 +1086,7 @@ export class Viewport {
     const currentPage = this.getMostVisiblePage();
     let previousPageOffset = -1;
 
-    if (this.twoUpView_) {
+    if (this.twoUpViewEnabled()) {
       previousPageOffset = (currentPage % 2 === 0) ? -2 : -3;
     }
 

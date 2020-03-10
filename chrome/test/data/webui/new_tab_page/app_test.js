@@ -5,7 +5,7 @@
 import 'chrome://new-tab-page/app.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
-import {assertStyle, createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
+import {assertNotStyle, assertStyle, createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageAppTest', () => {
@@ -58,6 +58,10 @@ suite('NewTabPageAppTest', () => {
       shortcutBackgroundColor: {value: 0xff00ff00},
       shortcutTextColor: {value: 0xff0000ff},
       isDark: false,
+      backgroundImageUrl: null,
+      backgroundImageAttribution1: '',
+      backgroundImageAttribution2: '',
+      backgroundImageAttributionUrl: null,
     };
 
     // Act.
@@ -69,7 +73,7 @@ suite('NewTabPageAppTest', () => {
         theme, app.shadowRoot.querySelector('ntp-customize-dialog').theme);
   });
 
-  test('setting theme updates background color and most visited', async () => {
+  test('setting theme updates ntp', async () => {
     // Act.
     testProxy.callbackRouterRemote.setTheme({
       type: newTabPage.mojom.ThemeType.DEFAULT,
@@ -84,11 +88,14 @@ suite('NewTabPageAppTest', () => {
     // Assert.
     assertStyle(app.$.background, 'background-color', 'rgb(255, 0, 0)');
     assertStyle(
-        app.shadowRoot.querySelector('ntp-most-visited'),
-        '--icon-background-color', 'rgb(0, 255, 0)');
-    assertStyle(
-        app.shadowRoot.querySelector('ntp-most-visited'), '--tile-title-color',
-        'rgb(0, 0, 255)');
+        app.$.background, '--ntp-theme-shortcut-background-color',
+        'rgb(0, 255, 0)');
+    assertStyle(app.$.background, '--ntp-theme-text-color', 'rgb(0, 0, 255)');
+    assertFalse(app.$.background.hasAttribute('has-background-image'));
+    assertStyle(app.$.backgroundImage, 'display', 'none');
+    assertStyle(app.$.backgroundGradient, 'display', 'none');
+    assertStyle(app.$.backgroundImageAttribution, 'display', 'none');
+    assertStyle(app.$.backgroundImageAttribution2, 'display', 'none');
   });
 
   test('clicking voice search button opens voice search overlay', async () => {
@@ -98,5 +105,60 @@ suite('NewTabPageAppTest', () => {
 
     // Assert.
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
+  });
+
+  test('setting background images shows iframe and gradient', async () => {
+    // Act.
+    const theme = {
+      type: newTabPage.mojom.ThemeType.DEFAULT,
+      info: {chromeThemeId: 0},
+      backgroundColor: {value: 0xffff0000},
+      shortcutBackgroundColor: {value: 0xff00ff00},
+      shortcutTextColor: {value: 0xff0000ff},
+      isDark: false,
+      backgroundImageUrl: {url: 'https://img.png'},
+      backgroundImageAttribution1: '',
+      backgroundImageAttribution2: '',
+      backgroundImageAttributionUrl: null,
+    };
+
+    // Act.
+    testProxy.callbackRouterRemote.setTheme(theme);
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+
+    // Assert.
+    assertNotStyle(app.$.backgroundImage, 'display', 'none');
+    assertNotStyle(app.$.backgroundGradient, 'display', 'none');
+    assertNotStyle(app.$.backgroundImageAttribution, 'text-shadow', 'none');
+    assertEquals(app.$.backgroundImage.path, 'image?https://img.png');
+  });
+
+  test('setting attributions shows attributions', async function() {
+    // Act.
+    const theme = {
+      type: newTabPage.mojom.ThemeType.DEFAULT,
+      info: {chromeThemeId: 0},
+      backgroundColor: {value: 0xffff0000},
+      shortcutBackgroundColor: {value: 0xff00ff00},
+      shortcutTextColor: {value: 0xff0000ff},
+      isDark: false,
+      backgroundImageUrl: null,
+      backgroundImageAttribution1: 'foo',
+      backgroundImageAttribution2: 'bar',
+      backgroundImageAttributionUrl: {url: 'https://info.com'},
+    };
+
+    // Act.
+    testProxy.callbackRouterRemote.setTheme(theme);
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+
+    // Assert.
+    assertNotStyle(app.$.backgroundImageAttribution, 'display', 'none');
+    assertNotStyle(app.$.backgroundImageAttribution2, 'display', 'none');
+    assertEquals(
+        app.$.backgroundImageAttribution.getAttribute('href'),
+        'https://info.com');
+    assertEquals(app.$.backgroundImageAttribution1.textContent.trim(), 'foo');
+    assertEquals(app.$.backgroundImageAttribution2.textContent.trim(), 'bar');
   });
 });

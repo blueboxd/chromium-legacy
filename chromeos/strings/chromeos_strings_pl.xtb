@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Zaległa zmiana hasła</translation>
 <translation id="2049639323467105390">To urządzenie jest zarządzane przez: <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Włącz Bluetooth, by wykryć urządzenia w pobliżu</translation>
+<translation id="2375079107209812402">Pozostałe próby: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="2805756323405976993">Aplikacje</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="3008341117444806826">ODŚWIEŻ</translation>
@@ -42,6 +43,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="808894953321890993">Zmień hasło</translation>
 <translation id="8208861521865154048">Korzyści</translation>
 <translation id="8747900814994928677">Potwierdź zmianę</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Pozostałe próby: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Odśwież bilet przypisany do konta <ph name="PRINCIPAL_NAME" />.</translation>
 <translation id="9111102763498581341">Odblokuj</translation>
 </translationbundle>

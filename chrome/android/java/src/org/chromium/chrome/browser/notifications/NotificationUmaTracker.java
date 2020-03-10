@@ -18,7 +18,6 @@ import androidx.core.app.NotificationManagerCompat;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.MathUtils;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -177,10 +176,8 @@ public class NotificationUmaTracker {
     public void onNotificationContentClick(@SystemNotificationType int type, long createTime) {
         if (type == SystemNotificationType.UNKNOWN) return;
 
-        new CachedMetrics
-                .EnumeratedHistogramSample("Mobile.SystemNotification.Content.Click",
-                        SystemNotificationType.NUM_ENTRIES)
-                .record(type);
+        RecordHistogram.recordEnumeratedHistogram("Mobile.SystemNotification.Content.Click", type,
+                SystemNotificationType.NUM_ENTRIES);
         recordNotificationAgeHistogram("Mobile.SystemNotification.Content.Click.Age", createTime);
 
         switch (type) {
@@ -209,10 +206,8 @@ public class NotificationUmaTracker {
 
         // TODO(xingliu): This may not work if Android kill Chrome before native library is loaded.
         // Cache data in Android shared preference and flush them to native when available.
-        new CachedMetrics
-                .EnumeratedHistogramSample(
-                        "Mobile.SystemNotification.Dismiss", SystemNotificationType.NUM_ENTRIES)
-                .record(type);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Mobile.SystemNotification.Dismiss", type, SystemNotificationType.NUM_ENTRIES);
         recordNotificationAgeHistogram("Mobile.SystemNotification.Dismiss.Age", createTime);
 
         switch (type) {
@@ -243,10 +238,8 @@ public class NotificationUmaTracker {
 
         // TODO(xingliu): This may not work if Android kill Chrome before native library is loaded.
         // Cache data in Android shared preference and flush them to native when available.
-        new CachedMetrics
-                .EnumeratedHistogramSample(
-                        "Mobile.SystemNotification.Action.Click", ActionType.NUM_ENTRIES)
-                .record(actionType);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Mobile.SystemNotification.Action.Click", actionType, ActionType.NUM_ENTRIES);
         recordNotificationAgeHistogram("Mobile.SystemNotification.Action.Click.Age", createTime);
 
         switch (notificationType) {
@@ -336,9 +329,7 @@ public class NotificationUmaTracker {
         int ageSample = (int) MathUtils.clamp(
                 (System.currentTimeMillis() - createTime) / DateUtils.MINUTE_IN_MILLIS, 0,
                 Integer.MAX_VALUE);
-        new CachedMetrics
-                .CustomCountHistogramSample(
-                        name, 1, (int) (DateUtils.WEEK_IN_MILLIS / DateUtils.MINUTE_IN_MILLIS), 50)
-                .record(ageSample);
+        RecordHistogram.recordCustomCountHistogram(name, ageSample, 1,
+                (int) (DateUtils.WEEK_IN_MILLIS / DateUtils.MINUTE_IN_MILLIS), 50);
     }
 }

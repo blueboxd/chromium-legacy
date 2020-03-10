@@ -1,0 +1,38 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+import "components/feed/core/proto/v2/wire/action_payload.proto";
+import "components/feed/core/proto/v2/wire/content_id.proto";
+
+message FeedAction {
+  // The Id for the content that this action was triggered on.
+  optional ContentId content_id = 1;
+  // Additional logging data that is on a per-action level
+  optional ActionPayload action_payload = 2;
+  // Client-generated data that pertains to the action.
+  optional ClientData client_data = 3;
+  // Next Id: 7
+
+  // The data the client provides to the server.
+  message ClientData {
+    // When the action was recorded on the client
+    optional int64 timestamp_seconds = 1;
+
+    // A monotonically-increasing sequence number that increments per
+    // user + device. Used in experiments to measure action loss between client
+    // and server.
+    optional int64 sequence_number = 2;
+
+    // The duration for the action in milliseconds. In case of view actions this
+    // is the duration for which the content is considered "viewed".
+    optional int64 duration_ms = 3;
+  }
+  reserved 4, 5, 6;
+}

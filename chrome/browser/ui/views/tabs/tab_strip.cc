@@ -267,7 +267,8 @@ TabDragController::EventSource EventSourceFromEvent(
 }
 
 int GetStackableTabWidth() {
-  return TabStyle::GetTabOverlap() + (MD::touch_ui() ? 136 : 102);
+  return TabStyle::GetTabOverlap() +
+         (MD::GetInstance()->touch_ui() ? 136 : 102);
 }
 
 }  // namespace
@@ -1908,25 +1909,13 @@ SkColor TabStrip::GetTabBackgroundColor(
   if (active == TabActive::kActive)
     return tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
 
-  bool is_active_frame;
-  if (active_state == BrowserFrameActiveState::kUseCurrent)
-    is_active_frame = ShouldPaintAsActiveFrame();
-  else
-    is_active_frame = active_state == BrowserFrameActiveState::kActive;
-
-  const int color_id = is_active_frame
-                           ? ThemeProperties::COLOR_BACKGROUND_TAB
-                           : ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE;
-  // When the background tab color has not been customized, use the actual frame
-  // color instead of COLOR_BACKGROUND_TAB.
-  const SkColor frame = controller_->GetFrameColor(active_state);
-  const SkColor background =
-      tp->HasCustomColor(color_id)
-          ? tp->GetColor(color_id)
-          : color_utils::HSLShift(
-                frame, tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB));
-
-  return background;
+  using State = BrowserFrameActiveState;
+  const bool is_active_frame =
+      (active_state == State::kActive) ||
+      ((active_state == State::kUseCurrent) && ShouldPaintAsActiveFrame());
+  return tp->GetColor(is_active_frame
+                          ? ThemeProperties::COLOR_BACKGROUND_TAB
+                          : ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE);
 }
 
 SkColor TabStrip::GetTabForegroundColor(TabActive active,

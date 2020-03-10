@@ -185,18 +185,6 @@ void ExtensionMediaRouteProviderProxy::UpdateMediaSinks(
       MediaRouteProviderWakeReason::UPDATE_MEDIA_SINKS);
 }
 
-void ExtensionMediaRouteProviderProxy::SearchSinks(
-    const std::string& sink_id,
-    const std::string& media_source,
-    mojom::SinkSearchCriteriaPtr search_criteria,
-    SearchSinksCallback callback) {
-  request_manager_->RunOrDefer(
-      base::BindOnce(&ExtensionMediaRouteProviderProxy::DoSearchSinks,
-                     weak_factory_.GetWeakPtr(), sink_id, media_source,
-                     std::move(search_criteria), std::move(callback)),
-      MediaRouteProviderWakeReason::SEARCH_SINKS);
-}
-
 void ExtensionMediaRouteProviderProxy::ProvideSinks(
     const std::string& provider_name,
     const std::vector<media_router::MediaSinkInternal>& sinks) {
@@ -366,16 +354,6 @@ void ExtensionMediaRouteProviderProxy::DoUpdateMediaSinks(
     const std::string& media_source) {
   DVLOG(1) << "DoUpdateMediaSinks: " << media_source;
   media_route_provider_->UpdateMediaSinks(media_source);
-}
-
-void ExtensionMediaRouteProviderProxy::DoSearchSinks(
-    const std::string& sink_id,
-    const std::string& media_source,
-    mojom::SinkSearchCriteriaPtr search_criteria,
-    SearchSinksCallback callback) {
-  DVLOG(1) << "SearchSinks";
-  media_route_provider_->SearchSinks(
-      sink_id, media_source, std::move(search_criteria), std::move(callback));
 }
 
 void ExtensionMediaRouteProviderProxy::DoProvideSinks(

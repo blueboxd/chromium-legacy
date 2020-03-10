@@ -4244,6 +4244,8 @@ jumbo_static_library("ui") {
       "views/toolbar/webui_tab_counter_button.h",
       "webui/tab_strip/chrome_content_browser_client_tab_strip_part.cc",
       "webui/tab_strip/chrome_content_browser_client_tab_strip_part.h",
+      "webui/tab_strip/tab_before_unload_tracker.cc",
+      "webui/tab_strip/tab_before_unload_tracker.h",
       "webui/tab_strip/tab_strip_ui.cc",
       "webui/tab_strip/tab_strip_ui.h",
       "webui/tab_strip/tab_strip_ui_embedder.h",

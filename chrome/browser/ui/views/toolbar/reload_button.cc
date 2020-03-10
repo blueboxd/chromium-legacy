@@ -37,10 +37,12 @@ const int kReloadMenuItems[]  = {
 
 const gfx::VectorIcon& GetIconForMode(ReloadButton::IconStyle icon_style,
                                       bool is_reload) {
+  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
+
 #if defined(OS_WIN)
   if (icon_style == ReloadButton::IconStyle::kMinimalUi &&
       UseWindowsIconsForMinimalUI()) {
-    if (ui::MaterialDesignController::touch_ui()) {
+    if (touch_ui) {
       return is_reload ? kReloadWindowsTouchIcon
                        : kNavigateStopWindowsTouchIcon;
     }
@@ -49,7 +51,7 @@ const gfx::VectorIcon& GetIconForMode(ReloadButton::IconStyle icon_style,
   }
 #endif
 
-  if (ui::MaterialDesignController::touch_ui())
+  if (touch_ui)
     return is_reload ? kReloadTouchIcon : kNavigateStopTouchIcon;
 
   return is_reload ? vector_icons::kReloadIcon : kNavigateStopIcon;

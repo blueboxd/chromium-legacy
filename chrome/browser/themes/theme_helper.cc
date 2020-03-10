@@ -244,7 +244,19 @@ SkColor ThemeHelper::GetDefaultColor(
     const CustomThemeSupplier* theme_supplier) const {
   // For backward compat with older themes, some newer colors are generated from
   // older ones if they are missing.
+  const auto get_frame_color = [this, incognito, theme_supplier](bool active) {
+    return this->GetColor(active ? TP::COLOR_FRAME : TP::COLOR_FRAME_INACTIVE,
+                          incognito, theme_supplier);
+  };
   switch (id) {
+    case TP::COLOR_BACKGROUND_TAB:
+      return color_utils::HSLShift(get_frame_color(/*active=*/true),
+                                   GetTint(ThemeProperties::TINT_BACKGROUND_TAB,
+                                           incognito, theme_supplier));
+    case TP::COLOR_BACKGROUND_TAB_INACTIVE:
+      return color_utils::HSLShift(get_frame_color(/*active=*/false),
+                                   GetTint(ThemeProperties::TINT_BACKGROUND_TAB,
+                                           incognito, theme_supplier));
     case TP::COLOR_TOOLBAR_BUTTON_ICON:
     case TP::COLOR_TOOLBAR_BUTTON_ICON_HOVERED:
     case TP::COLOR_TOOLBAR_BUTTON_ICON_PRESSED:
@@ -262,10 +274,8 @@ SkColor ThemeHelper::GetDefaultColor(
     case TP::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE: {
       const SkColor tab_color =
           GetColor(TP::COLOR_TOOLBAR, incognito, theme_supplier);
-      const int frame_id = (id == TP::COLOR_TOOLBAR_TOP_SEPARATOR)
-                               ? TP::COLOR_FRAME
-                               : TP::COLOR_FRAME_INACTIVE;
-      const SkColor frame_color = GetColor(frame_id, incognito, theme_supplier);
+      const SkColor frame_color =
+          get_frame_color(/*active=*/id == TP::COLOR_TOOLBAR_TOP_SEPARATOR);
       const SeparatorColorKey key(tab_color, frame_color);
       auto i = GetSeparatorColorCache().find(key);
       if (i != GetSeparatorColorCache().end())

@@ -19,7 +19,6 @@ class Profile;
 namespace bookmarks {
 class BookmarkModel;
 class BookmarkNode;
-class BookmarkPermanentNode;
 class ManagedBookmarkService;
 }
 
@@ -51,8 +50,8 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient {
       base::CancelableTaskTracker* tracker) override;
   bool SupportsTypedCountForUrls() override;
   void GetTypedCountForUrls(UrlTypedCountMap* url_typed_count_map) override;
-  bool IsPermanentNodeVisible(
-      const bookmarks::BookmarkPermanentNode* node) override;
+  bool IsPermanentNodeVisibleWhenEmpty(
+      bookmarks::BookmarkNode::Type type) override;
   void RecordAction(const base::UserMetricsAction& action) override;
   bookmarks::LoadManagedNodeCallback GetLoadManagedNodeCallback() override;
   bool CanSetPermanentNodeTitle(

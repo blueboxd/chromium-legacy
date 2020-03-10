@@ -13,6 +13,17 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
+    /**
+     * This URL redirects to the passwords check for sync users.
+     * @type {!string}
+     * @private
+     */
+    passwordCheckUrl_: {
+      type: String,
+      value:
+          'https://passwords.google.com/checkup/start?utm_source=chrome&utm_medium=desktop&utm_campaign=leak_dialog&hideExplanation=true',
+    },
+
     /** @private */
     lastCompletedCheck_: String,
 
@@ -119,9 +130,22 @@ Polymer({
    * @private
    */
   onPasswordCheckButtonClick_() {
-    // TODO(https://crbug.com/1047726): By click on this button user should be
-    // able to 'Cancel' current check.
-    this.passwordManager_.startBulkPasswordCheck();
+    switch (this.status_.state) {
+      case CheckState.RUNNING:
+        this.passwordManager_.stopBulkPasswordCheck();
+        return;
+      case CheckState.IDLE:
+      case CheckState.CANCELED:
+      case CheckState.OFFLINE:
+      case CheckState.SIGNED_OUT:
+      case CheckState.NO_PASSWORDS:
+      case CheckState.OTHER_ERROR:
+        this.passwordManager_.startBulkPasswordCheck();
+        return;
+      case CheckState.TOO_MANY_PASSWORDS:
+      case CheckState.QUOTA_LIMIT:
+    }
+    throw 'Can\'t trigger an action for state: ' + this.status_.state;
   },
 
   /**
@@ -175,7 +199,7 @@ Polymer({
    */
   getStatusIcon_(status, leakedPasswords) {
     if (!this.hasLeaksOrErrors_(status, leakedPasswords)) {
-      return 'cr:check';
+      return 'settings:check-circle';
     }
     if (this.hasLeakedCredentials_(leakedPasswords)) {
       return 'cr:warning';
@@ -253,6 +277,64 @@ Polymer({
     return status.state == CheckState.IDLE;
   },
 
+  /**
+   * Returns the button caption indicating it's current functionality.
+   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
+   * @return {string}
+   * @private
+   */
+  getButtonText_(status) {
+    switch (status.state) {
+      case CheckState.IDLE:
+      case CheckState.CANCELED:
+        return this.i18n('checkPasswordsAgain');
+      case CheckState.RUNNING:
+        return this.i18n('checkPasswordsStop');
+      case CheckState.OFFLINE:
+      case CheckState.SIGNED_OUT:
+      case CheckState.NO_PASSWORDS:
+      case CheckState.OTHER_ERROR:
+        return this.i18n('checkPasswordsAgainAfterError');
+      case CheckState.QUOTA_LIMIT:
+      case CheckState.TOO_MANY_PASSWORDS:
+        return '';  // Undefined behavior. Don't show any misleading text.
+    }
+    throw 'Can\'t find a button text for state: ' + status.state;
+  },
+
+  /**
+   * Returns true iff the check/stop button should be visible for a given state.
+   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
+   * @return {!boolean}
+   * @private
+   */
+  isButtonHidden_(status) {
+    switch (status.state) {
+      case CheckState.IDLE:
+      case CheckState.CANCELED:
+      case CheckState.RUNNING:
+      case CheckState.OFFLINE:
+      case CheckState.SIGNED_OUT:
+      case CheckState.NO_PASSWORDS:
+      case CheckState.OTHER_ERROR:
+        return false;
+      case CheckState.TOO_MANY_PASSWORDS:
+      case CheckState.QUOTA_LIMIT:
+        return true;
+    }
+    throw 'Can\'t determine button visibility for state: ' + status.state;
+  },
+
+  /**
+   * Returns true iff the backend communicated that there are too many saved
+   * passwords to check them locally.
+   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
+   * @return {boolean}
+   * @private
+   */
+  hasTooManyPasswords_(status) {
+    return status.state == CheckState.TOO_MANY_PASSWORDS;
+  },
 
   /**
    * Returns true if there are leaked credentials or the status is unexpected

@@ -12,6 +12,7 @@
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/overscroll_behavior.h"
+#include "cc/input/scroll_input_type.h"
 #include "cc/input/scroll_state.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/touch_action.h"
@@ -140,14 +141,6 @@ class CC_EXPORT InputHandler {
     ScrollThread thread;
     uint32_t main_thread_scrolling_reasons;
     bool bubble;
-  };
-
-  enum ScrollInputType {
-    TOUCHSCREEN,
-    WHEEL,
-    AUTOSCROLL,
-    SCROLLBAR,
-    SCROLL_INPUT_UNKNOWN
   };
 
   enum class TouchStartOrMoveEventListenerType {

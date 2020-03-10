@@ -139,9 +139,9 @@ void MediaToolbarButtonView::UpdateIcon() {
   if (!GetWidget())
     return;
 
-  const gfx::VectorIcon& icon = ui::MaterialDesignController::touch_ui()
-                                    ? kMediaToolbarButtonTouchIcon
-                                    : kMediaToolbarButtonIcon;
+  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
+  const gfx::VectorIcon& icon =
+      touch_ui ? kMediaToolbarButtonTouchIcon : kMediaToolbarButtonIcon;
   UpdateIconsWithStandardColors(icon);
 }
 

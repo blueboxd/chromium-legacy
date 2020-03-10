@@ -20,7 +20,6 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "services/service_manager/embedder/result_codes.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
@@ -129,7 +128,6 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
 }
 
 void BrowserMainPartsImpl::PreMainMessageLoopRun() {
-  ui::MaterialDesignController::Initialize();
   // It's necessary to have a complete dependency graph of
   // BrowserContextKeyedServices before calling out to the delegate (which
   // will potentially create a profile), so that a profile creation message is

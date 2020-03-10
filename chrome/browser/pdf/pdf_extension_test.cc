@@ -803,6 +803,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Printing) {
 }
 #endif
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TwoUpViewFeature) {
+  RunTestsInJsModule("two_up_view_feature_test.js", "test.pdf");
+}
+
 // TODO(tsepez): See https://crbug.com/696650.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_NoBeep) {
   // Block the exact query from pdf/main.js while still allowing enough

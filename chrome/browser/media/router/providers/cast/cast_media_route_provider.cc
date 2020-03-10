@@ -250,14 +250,6 @@ void CastMediaRouteProvider::UpdateMediaSinks(const std::string& media_source) {
   app_discovery_service_->Refresh();
 }
 
-void CastMediaRouteProvider::SearchSinks(
-    const std::string& sink_id,
-    const std::string& media_source,
-    mojom::SinkSearchCriteriaPtr search_criteria,
-    SearchSinksCallback callback) {
-  std::move(callback).Run(std::string());
-}
-
 void CastMediaRouteProvider::ProvideSinks(
     const std::string& provider_name,
     const std::vector<media_router::MediaSinkInternal>& sinks) {

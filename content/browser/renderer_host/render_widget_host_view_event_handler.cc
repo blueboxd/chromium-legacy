@@ -153,22 +153,21 @@ void RenderWidgetHostViewEventHandler::UpdateMouseLockRegion() {
 }
 #endif
 
-bool RenderWidgetHostViewEventHandler::LockMouse(
+blink::mojom::PointerLockResult RenderWidgetHostViewEventHandler::LockMouse(
     bool request_unadjusted_movement) {
   aura::Window* root_window = window_->GetRootWindow();
   if (!root_window)
-    return false;
+    return blink::mojom::PointerLockResult::kWrongDocument;
 
   if (mouse_locked_)
-    return true;
+    return blink::mojom::PointerLockResult::kSuccess;
 
   if (request_unadjusted_movement && window_->GetHost()) {
     mouse_locked_unadjusted_movement_ =
         window_->GetHost()->RequestUnadjustedMovement();
     if (!mouse_locked_unadjusted_movement_)
-      return false;
+      return blink::mojom::PointerLockResult::kUnsupportedOptions;
   }
-
   mouse_locked_ = true;
 
 #if !defined(OS_WIN)
@@ -187,7 +186,7 @@ bool RenderWidgetHostViewEventHandler::LockMouse(
     MoveCursorToCenter(nullptr);
 
   delegate_->SetTooltipsEnabled(false);
-  return true;
+  return blink::mojom::PointerLockResult::kSuccess;
 }
 
 void RenderWidgetHostViewEventHandler::UnlockMouse() {

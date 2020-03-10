@@ -33,7 +33,7 @@ class ReportingNetworkChangeObserverTest : public ReportingTestBase {
 
   void SetEndpoint() {
     ASSERT_TRUE(
-        SetEndpointInCache(kOrigin_, kGroup_, kEndpoint_,
+        SetEndpointInCache(kGroupKey_, kEndpoint_,
                            base::Time::Now() + base::TimeDelta::FromDays(7)));
   }
 
@@ -49,6 +49,8 @@ class ReportingNetworkChangeObserverTest : public ReportingTestBase {
   const std::string kUserAgent_ = "Mozilla/1.0";
   const std::string kGroup_ = "group";
   const std::string kType_ = "default";
+  const ReportingEndpointGroupKey kGroupKey_ =
+      ReportingEndpointGroupKey(NetworkIsolationKey(), kOrigin_, kGroup_);
 };
 
 TEST_F(ReportingNetworkChangeObserverTest, ClearNothing) {

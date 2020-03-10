@@ -82,8 +82,9 @@ TabCloseButton::~TabCloseButton() {}
 
 // static
 int TabCloseButton::GetWidth() {
-  return ui::MaterialDesignController::touch_ui() ? kTouchGlyphWidth
-                                                  : kGlyphWidth;
+  return ui::MaterialDesignController::GetInstance()->touch_ui()
+             ? kTouchGlyphWidth
+             : kGlyphWidth;
 }
 
 void TabCloseButton::SetIconColors(SkColor foreground_color,

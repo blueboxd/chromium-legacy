@@ -1237,7 +1237,6 @@ void ScrollableShelfView::DestroyDragIconProxy() {
   }
 
   const bool drag_originated_from_app_list =
-      chromeos::switches::ShouldShowScrollableShelf() &&
       shelf_view_->IsShelfViewHandlingDragAndDrop();
 
   // The drag proxy is the DragImageView created for the DragAndDropHost which

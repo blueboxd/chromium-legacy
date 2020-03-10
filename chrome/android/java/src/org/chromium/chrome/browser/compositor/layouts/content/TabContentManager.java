@@ -28,7 +28,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
@@ -458,10 +457,6 @@ public class TabContentManager {
                     notifyOnLastThumbnail();
                 }
                 if (jpeg != null) {
-                    CachedMetrics.EnumeratedHistogramSample histogram =
-                            new CachedMetrics.EnumeratedHistogramSample(
-                                    UMA_THUMBNAIL_FETCHING_RESULT,
-                                    ThumbnailFetchingResult.NUM_ENTRIES);
                     if (CachedFeatureFlags.getValue(ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION)) {
                         double jpegAspectRatio = jpeg.getHeight() == 0
                                 ? 0
@@ -471,7 +466,7 @@ public class TabContentManager {
                         if (!mRefectchedTabIds.contains(tabId)
                                 && Math.abs(jpegAspectRatio - mExpectedThumbnailAspectRatio)
                                         >= ASPECT_RATIO_PRECISION) {
-                            histogram.record(
+                            recordThumbnailFetchingResult(
                                     ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG);
                             mRefectchedTabIds.add(tabId);
                             if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
@@ -481,7 +476,7 @@ public class TabContentManager {
                             return;
                         }
                     }
-                    histogram.record(ThumbnailFetchingResult.GOT_JPEG);
+                    recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_JPEG);
 
                     callback.onResult(jpeg);
                     return;
@@ -490,20 +485,19 @@ public class TabContentManager {
                 TabContentManagerJni.get().getEtc1TabThumbnail(
                         mNativeTabContentManager, TabContentManager.this, tabId, (etc1) -> {
                             if (etc1 != null) {
-                                RecordHistogram.recordEnumeratedHistogram(
-                                        UMA_THUMBNAIL_FETCHING_RESULT,
-                                        ThumbnailFetchingResult.GOT_ETC1,
-                                        ThumbnailFetchingResult.NUM_ENTRIES);
+                                recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_ETC1);
                             } else {
-                                RecordHistogram.recordEnumeratedHistogram(
-                                        UMA_THUMBNAIL_FETCHING_RESULT,
-                                        ThumbnailFetchingResult.GOT_NOTHING,
-                                        ThumbnailFetchingResult.NUM_ENTRIES);
+                                recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_NOTHING);
                             }
                             callback.onResult(etc1);
                         });
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private static void recordThumbnailFetchingResult(@ThumbnailFetchingResult int result) {
+        RecordHistogram.recordEnumeratedHistogram(
+                UMA_THUMBNAIL_FETCHING_RESULT, result, ThumbnailFetchingResult.NUM_ENTRIES);
     }
 
     /**

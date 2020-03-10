@@ -81,7 +81,7 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
                                      SkColor button_color) {
   const gfx::VectorIcon* icon = nullptr;
   int image_width = GetLayoutConstant(TAB_ALERT_INDICATOR_ICON_WIDTH);
-  const bool touch_ui = ui::MaterialDesignController::touch_ui();
+  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
   switch (alert_state) {
     case TabAlertState::AUDIO_PLAYING:
       icon = touch_ui ? &kTabAudioRoundedIcon : &kTabAudioIcon;

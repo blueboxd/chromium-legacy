@@ -64,6 +64,10 @@
       このポリシーを設定した場合、ユーザーはパスワードを変更したりオーバーライドしたりすることはできません。</translation>
 <translation id="1062011392452772310">デバイスのリモート認証を有効にする</translation>
 <translation id="1062407476771304334">置換</translation>
+<translation id="1073983258515362346">デバイスのバックライトに関する情報を報告します。
+
+      このポリシーを false に設定するか未設定のままにした場合、この情報は報告されません。
+      このポリシーを true に設定した場合、デバイスのバックライトに関する情報が報告されます。</translation>
 <translation id="1078643757670228170">このポリシーはサポートが終了しており、<ph name="PRODUCT_OS_NAME" /> バージョン 82 で削除されます。代わりに <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> を使用してください。
 
           AC 電源での使用中、ユーザー入力が行われなくなってから画面をオフにするまでの時間を指定します。
@@ -338,6 +342,7 @@
       できません。</translation>
 <translation id="1474273443907024088">TLS False Start を無効にする</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1486021504508098388">バックライト情報を報告する</translation>
 <translation id="1502843533062797703">第三者ソフトウェアからのコードの挿入をブロックする</translation>
 <translation id="1507382822467487898">
           ホルダーがデバイスに装着されているときに使用される MAC（メディア アクセス制御）アドレスを設定します。

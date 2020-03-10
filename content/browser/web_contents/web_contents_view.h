@@ -97,10 +97,6 @@ class WebContentsView {
   // trying to find a specific window.
   virtual void SetPageTitle(const base::string16& title) = 0;
 
-  // Invoked when the WebContents is notified that the RenderView has been
-  // fully created.
-  virtual void RenderViewCreated(RenderViewHost* host) = 0;
-
   // Invoked when the WebContents is notified that the RenderView is ready.
   virtual void RenderViewReady() = 0;
 

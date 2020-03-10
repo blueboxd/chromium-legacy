@@ -1658,4 +1658,75 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(CommandLineFlagSecurityWarningsPolicy::kNoPolicy,
                       CommandLineFlagSecurityWarningsPolicy::kEnabled,
                       CommandLineFlagSecurityWarningsPolicy::kDisabled));
+
+// Verifies that infobars are not displayed in Kiosk mode.
+class StartupBrowserCreatorInfobarsKioskTest : public InProcessBrowserTest {
+ public:
+  StartupBrowserCreatorInfobarsKioskTest() = default;
+
+ protected:
+  InfoBarService* LaunchKioskBrowserAndGetCreatedInfobarService(
+      const std::string& extra_switch) {
+    Profile* profile = browser()->profile();
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    command_line.AppendSwitch(switches::kKioskMode);
+    command_line.AppendSwitch(extra_switch);
+    StartupBrowserCreatorImpl launch(base::FilePath(), command_line,
+                                     chrome::startup::IS_NOT_FIRST_RUN);
+    EXPECT_TRUE(launch.Launch(profile, std::vector<GURL>(), true));
+
+    // This should have created a new browser window.
+    Browser* new_browser = FindOneOtherBrowser(browser());
+    EXPECT_TRUE(new_browser);
+    if (!new_browser)
+      return nullptr;
+
+    return InfoBarService::FromWebContents(
+        new_browser->tab_strip_model()->GetActiveWebContents());
+  }
+};
+
+// Verify that the Automation Enabled infobar is still shown in Kiosk mode.
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorInfobarsKioskTest,
+                       CheckInfobarForEnableAutomation) {
+  InfoBarService* infobar_service =
+      LaunchKioskBrowserAndGetCreatedInfobarService(
+          switches::kEnableAutomation);
+  ASSERT_TRUE(infobar_service);
+
+  bool found_automation_infobar = false;
+  for (size_t i = 0; i < infobar_service->infobar_count(); i++) {
+    infobars::InfoBar* infobar = infobar_service->infobar_at(i);
+    if (infobar->delegate()->GetIdentifier() ==
+        infobars::InfoBarDelegate::AUTOMATION_INFOBAR_DELEGATE) {
+      found_automation_infobar = true;
+    }
+  }
+
+  EXPECT_TRUE(found_automation_infobar);
+}
+
+// Verify that the Bad Flags infobar is not shown in kiosk mode.
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorInfobarsKioskTest,
+                       CheckInfobarForBadFlag) {
+  // BadFlagsPrompt::ShowBadFlagsPrompt uses CommandLine::ForCurrentProcess
+  // instead of the command-line passed to StartupBrowserCreator. In browser
+  // tests, this references the browser test's instead of the new process.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableWebSecurity);
+
+  // Passing the kDisableWebSecurity argument here presently does not do
+  // anything because of the aforementioned limitation.
+  // https://crbug.com/1060293
+  InfoBarService* infobar_service =
+      LaunchKioskBrowserAndGetCreatedInfobarService(
+          switches::kDisableWebSecurity);
+  ASSERT_TRUE(infobar_service);
+
+  for (size_t i = 0; i < infobar_service->infobar_count(); i++) {
+    infobars::InfoBar* infobar = infobar_service->infobar_at(i);
+    EXPECT_NE(infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE,
+              infobar->delegate()->GetIdentifier());
+  }
+}
 #endif  // !defined(OS_CHROMEOS)

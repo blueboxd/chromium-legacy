@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "net/base/network_isolation_key.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_endpoint.h"
 #include "url/origin.h"
@@ -45,23 +46,17 @@ class MockPersistentReportingStore
     // DELETE_REPORTING_ENDPOINT
     Command(Type type, const ReportingEndpoint& endpoint);
     Command(Type type,
-            const GURL& origin,
-            const std::string& group,
-            const GURL& endpoint);
-    Command(Type type,
-            const url::Origin& origin,
-            const std::string& group,
-            const GURL& endpoint);
+            const ReportingEndpointGroupKey& group_key,
+            const GURL& endpoint_url);
     // Constructors for endpoint group commands. |type| must be one of
     // ADD_REPORTING_ENDPOINT_GROUP,
     // UPDATE_REPORTING_ENDPOINT_GROUP_ACCESS_TIME,
     // UPDATE_REPORTING_ENDPOINT_GROUP_DETAILS, or
     // DELETE_REPORTING_ENDPOINT_GROUP
     Command(Type type, const CachedReportingEndpointGroup& group);
-    Command(Type type, const GURL& origin, const std::string& group);
-    Command(Type type, const url::Origin& origin, const std::string& group);
+    Command(Type type, const ReportingEndpointGroupKey& group_key);
     // |type| must be LOAD_REPORTING_CLIENTS or FLUSH.
-    Command(Type type);
+    explicit Command(Type type);
 
     Command(const Command& other);
     Command(Command&& other);
@@ -73,8 +68,7 @@ class MockPersistentReportingStore
 
     // Identifies the group to which the command pertains. (Applies to endpoint
     // and endpoint group commands.)
-    ReportingEndpointGroupKey group_key =
-        ReportingEndpointGroupKey(url::Origin(), "");
+    ReportingEndpointGroupKey group_key = ReportingEndpointGroupKey();
 
     // Identifies the endpoint to which the command pertains. (Applies to
     // endpoint commands only.)

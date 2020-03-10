@@ -145,22 +145,6 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
       bool allowlist_includes_none = false;
       bool allowlist_includes_origin = false;
 
-      // Detect usage of UnoptimizedImagePolicies origin trial.
-      if (feature == mojom::blink::FeaturePolicyFeature::kOversizedImages ||
-          feature ==
-              mojom::blink::FeaturePolicyFeature::kUnoptimizedLossyImages ||
-          feature ==
-              mojom::blink::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
-          feature == mojom::blink::FeaturePolicyFeature::
-                         kUnoptimizedLosslessImagesStrict) {
-        if (delegate) {
-          delegate->CountFeaturePolicyUsage(
-              mojom::WebFeature::kUnoptimizedImagePolicies);
-        }
-        // Don't analyze allowlists for origin trial features.
-        count_allowlist_type = false;
-      }
-
       // Detect usage of UnsizedMediaPolicy origin trial
       if (feature == mojom::blink::FeaturePolicyFeature::kUnsizedMedia) {
         if (delegate) {
@@ -364,21 +348,6 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
 // parameterized feature (i.e. boolean-type policy value).
 PolicyValue FeaturePolicyParser::GetFallbackValueForFeature(
     mojom::blink::FeaturePolicyFeature feature) {
-  if (feature == mojom::blink::FeaturePolicyFeature::kOversizedImages) {
-    return PolicyValue(2.0);
-  }
-  if (feature == mojom::blink::FeaturePolicyFeature::kUnoptimizedLossyImages) {
-    // Lossy images default to at most 0.5 bytes per pixel.
-    return PolicyValue(0.5);
-  }
-  if (feature ==
-          mojom::blink::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
-      feature == mojom::blink::FeaturePolicyFeature::
-                     kUnoptimizedLosslessImagesStrict) {
-    // Lossless images default to at most 1 byte per pixel.
-    return PolicyValue(1.0);
-  }
-
   return PolicyValue(false);
 }
 

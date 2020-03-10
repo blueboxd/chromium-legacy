@@ -9,15 +9,18 @@ namespace feed {
 
 bool Equal(const feedwire::ContentId& a, const feedwire::ContentId& b) {
   return a.content_domain() == b.content_domain() && a.id() == b.id() &&
-         a.table() == b.table();
+         a.type() == b.type();
 }
 
 bool CompareContentId(const feedwire::ContentId& a,
                       const feedwire::ContentId& b) {
-  const int a_id = a.id();  // tie() needs l-values
+  // Local variables because tie() needs l-values.
+  const int a_id = a.id();
   const int b_id = b.id();
-  return std::tie(a.content_domain(), a_id, a.table()) <
-         std::tie(b.content_domain(), b_id, b.table());
+  const feedwire::ContentId::Type a_type = a.type();
+  const feedwire::ContentId::Type b_type = b.type();
+  return std::tie(a.content_domain(), a_id, a_type) <
+         std::tie(b.content_domain(), b_id, b_type);
 }
 
 }  // namespace feed

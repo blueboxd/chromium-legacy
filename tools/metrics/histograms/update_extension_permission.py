@@ -22,7 +22,9 @@ if __name__ == '__main__':
     sys.exit(1)
 
   header_file = 'extensions/common/permissions/api_permission.h'
-  UpdateHistogramEnum(histogram_enum_name='ExtensionPermission3',
-                      source_enum_path=header_file,
-                      start_marker='^enum ID {',
-                      end_marker='^kEnumBoundary')
+  UpdateHistogramEnum(
+      histogram_enum_name='ExtensionPermission3',
+      source_enum_path=header_file,
+      start_marker='^enum ID {',
+      end_marker='^kEnumBoundary',
+      calling_script=os.path.basename(__file__))

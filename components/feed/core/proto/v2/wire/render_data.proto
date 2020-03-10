@@ -1,0 +1,22 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+// Contains data to use during client-side rendering of the response, like
+// templates and themes.
+message RenderData {
+  // Enum denoting which extension contains the render data.
+  enum RenderDataType {
+    UNKNOWN_RENDER_DATA_TYPE = 0;
+    XSURFACE = 1;
+  }
+  optional RenderDataType render_data_type = 1;
+
+  extensions 1000;  // ElementsRenderData
+}

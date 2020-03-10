@@ -1,0 +1,19 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+import "components/feed/core/proto/v2/wire/content_id.proto";
+
+// Metadata common to all payloads in a DataOperation.
+message PayloadMetadata {
+  // The unique identifier of the payload.
+  optional ContentId content_id = 1;
+
+  reserved 2, 3, 4, 5;
+}

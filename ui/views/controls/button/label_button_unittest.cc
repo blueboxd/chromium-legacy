@@ -11,8 +11,6 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_FEED_CORE_V2_PROTO_UTIL_H_
 #define COMPONENTS_FEED_CORE_V2_PROTO_UTIL_H_
 
-#include "components/feed/core/proto/wire/content_id.pb.h"
+#include "components/feed/core/proto/v2/wire/content_id.pb.h"
 
 // Helper functions/classes for dealing with feed proto messages.
 

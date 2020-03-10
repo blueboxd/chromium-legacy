@@ -58,10 +58,8 @@ class VisibilityComparator {
                   const std::unique_ptr<BookmarkNode>& n2) {
     DCHECK(n1->is_permanent_node());
     DCHECK(n2->is_permanent_node());
-    bool n1_visible = client_->IsPermanentNodeVisible(
-        static_cast<BookmarkPermanentNode*>(n1.get()));
-    bool n2_visible = client_->IsPermanentNodeVisible(
-        static_cast<BookmarkPermanentNode*>(n2.get()));
+    bool n1_visible = client_->IsPermanentNodeVisibleWhenEmpty(n1->type());
+    bool n2_visible = client_->IsPermanentNodeVisibleWhenEmpty(n2->type());
     return n1_visible != n2_visible && n1_visible;
   }
 

@@ -143,18 +143,10 @@ bool ThemePainter::Paint(const LayoutObject& o,
   switch (part) {
     case kCheckboxPart: {
       COUNT_APPEARANCE(doc, Checkbox);
-      // Count usage of non-rectangular checkbox and radio buttons.
-      if (r.Width() != r.Height()) {
-        UseCounter::Count(doc, WebFeature::kInputTypeCheckboxRenderedNonSquare);
-      }
       return PaintCheckbox(node, o.GetDocument(), style, paint_info, r);
     }
     case kRadioPart: {
       COUNT_APPEARANCE(doc, Radio);
-      // Count usage of non-rectangular checkbox and radio buttons.
-      if (r.Width() != r.Height()) {
-        UseCounter::Count(doc, WebFeature::kInputTypeRadioRenderedNonSquare);
-      }
       return PaintRadio(node, o.GetDocument(), style, paint_info, r);
     }
     case kPushButtonPart: {

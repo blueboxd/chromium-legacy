@@ -48,6 +48,7 @@
 <translation id="2309047409763057870">Como esta es una instalación secundaria de Google Chrome, no puede establecerse como tu navegador predeterminado.</translation>
 <translation id="2341767445688917208">El Sistema operativo Chrome no pudo sincronizar tus contraseñas. Soluciona el problema ahora.</translation>
 <translation id="2348335408836342058">Chrome necesita permiso para acceder a tu cámara y micrófono para este sitio</translation>
+<translation id="234869673307233423">Chrome no puede revisar las contraseñas. Vuelve a intentarlo más tarde.</translation>
 <translation id="2429317896000329049">Google Chrome no pudo sincronizar los datos porque la sincronización no está disponible para el dominio.</translation>
 <translation id="2467438592969358367">Google Chrome desea exportar tus contraseñas. Para permitirlo, ingresa tu contraseña de Windows.</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
@@ -68,6 +69,8 @@
 <translation id="2857540653560290388">Iniciando Chrome…</translation>
 <translation id="2871893339301912279">Accediste a Google Chrome.</translation>
 <translation id="2888126860611144412">Acerca de Chrome</translation>
+<translation id="2929907241665500097">No se actualizó Chrome porque se produjo un error. <ph name="BEGIN_LINK" />Soluciona los problemas de actualización y las actualizaciones con error de Chrome.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" />: Acceso a la red - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome está en modo de segundo plano</translation>
 <translation id="3065168410429928842">Pestaña de Chrome</translation>
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
@@ -106,7 +109,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">Chrome puede protegerte ante violaciones de la seguridad de los datos, extensiones dañadas y mucho más</translation>
 <translation id="4343195214584226067">Se agregó <ph name="EXTENSION_NAME" /> a Chrome</translation>
+<translation id="4384570495110188418">Chrome no puede revisar las contraseñas porque no accediste a tu cuenta</translation>
 <translation id="4407807842708586359">SO de Google Chrome</translation>
+<translation id="4450664632294415862">Chrome: Acceso a la red - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Hay otra operación en Google Chrome en curso. Vuelve a intentarlo más tarde.</translation>
 <translation id="4480040274068703980">El Sistema operativo Chrome no pudo sincronizar los datos porque se produjo un error de acceso.</translation>
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la web y ¡llamarlo por Skype!</translation>
@@ -116,6 +121,7 @@
 <translation id="4600710005438004015">Chrome no se pudo actualizar a la última versión, por lo que te estás perdiendo las nuevas funciones y correcciones de seguridad.</translation>
 <translation id="4631713731678262610">Ocultar en el menú de Chrome</translation>
 <translation id="4633000520311261472">Para que Chrome sea más seguro, inhabilitamos algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que posiblemente se hayan agregado sin tu conocimiento.</translation>
+<translation id="4653397506175047429">Chrome no puede revisar todas las contraseñas. Vuelve a intentarlo después de 24 horas.</translation>
 <translation id="4728575227883772061">No se pudo completar la instalación debido a un error no identificado. Si Google Chrome se está ejecutando en este momento, ciérrelo e intente nuevamente.</translation>
 <translation id="4750550185319565338">Reiniciar Chrome para habilitar <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (tráfico mDNS entrante)</translation>
@@ -149,6 +155,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" />: Google Chrome Canary</translation>
 <translation id="5804318322022881572">No se pudo iniciar Chrome. Vuelve a intentarlo.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" />: Acceso a la red</translation>
 <translation id="5940385492829620908">Aquí puedes encontrar tus páginas web, favoritos y otros contenidos de Chrome.</translation>
 <translation id="5941830788786076944">Haga de Google Chrome su navegador predeterminado</translation>
 <translation id="6070348360322141662">Para mejorar la seguridad, Google Chrome encriptará los datos</translation>
@@ -204,6 +211,7 @@
 <translation id="7855730255114109580">Google Chrome está actualizado</translation>
 <translation id="7890208801193284374">Si compartes una computadora, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome según los gustos individuales.</translation>
 <translation id="7896673875602241923">Alguien accedió anteriormente a Google Chrome en esta computadora como <ph name="ACCOUNT_EMAIL_LAST" />. Crea un usuario de Chrome nuevo para mantener tu información por separado.</translation>
+<translation id="7905891027772979035">Chrome no puede revisar las extensiones. Vuelve a intentarlo más tarde.</translation>
 <translation id="7916016681687251387">El Sistema operativo Chrome no pudo sincronizar los datos. Soluciona el problema ahora.</translation>
 <translation id="7930071585467473040">Google Chrome está intentando copiar contraseñas.</translation>
 <translation id="7962410387636238736">Esta computadora dejará de recibir actualizaciones de Google Chrome porque Windows XP y Windows Vista ya no son compatibles</translation>

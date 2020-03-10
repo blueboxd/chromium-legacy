@@ -26,7 +26,10 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_lock_options.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -41,13 +44,19 @@ namespace blink {
 PointerLockController::PointerLockController(Page* page)
     : page_(page), lock_pending_(false) {}
 
-void PointerLockController::RequestPointerLock(
+ScriptPromise PointerLockController::RequestPointerLock(
+    ScriptPromiseResolver* resolver,
     Element* target,
+    ExceptionState& exception_state,
     const PointerLockOptions* options) {
+  ScriptPromise promise = resolver->Promise();
+
   if (!target || !target->isConnected() ||
       document_of_removed_element_while_waiting_for_unlock_) {
     EnqueueEvent(event_type_names::kPointerlockerror, target);
-    return;
+    exception_state.ThrowDOMException(DOMExceptionCode::kWrongDocumentError,
+                                      "Target Element removed from DOM");
+    return promise;
   }
 
   target->GetDocument().CountUseOnlyInCrossOriginIframe(
@@ -72,23 +81,95 @@ void PointerLockController::RequestPointerLock(
             "Blocked pointer lock on an element because the element's frame is "
             "sandboxed and the 'allow-pointer-lock' permission is not set."));
     EnqueueEvent(event_type_names::kPointerlockerror, target);
-    return;
+    exception_state.ThrowSecurityError(
+        "Blocked pointer lock on an element because the element's frame is "
+        "sandboxed and the 'allow-pointer-lock' permission is not set.",
+        "");
+    return promise;
   }
 
   if (element_) {
     if (element_->GetDocument() != target->GetDocument()) {
       EnqueueEvent(event_type_names::kPointerlockerror, target);
-      return;
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kWrongDocumentError,
+          "The new element is not in the same shadow-root document as the "
+          "element that currently holds the lock.");
+      return promise;
     }
     EnqueueEvent(event_type_names::kPointerlockchange, target);
     element_ = target;
+    resolver->Resolve();
+
+    // Subsequent steps are handled in the browser process.
   } else if (page_->GetChromeClient().RequestPointerLock(
                  target->GetDocument().GetFrame(),
+                 WTF::Bind(&PointerLockController::LockRequestCallback,
+                           WrapWeakPersistent(this), WrapPersistent(resolver)),
                  (options ? options->unadjustedMovement() : false))) {
     lock_pending_ = true;
     element_ = target;
   } else {
     EnqueueEvent(event_type_names::kPointerlockerror, target);
+    exception_state.ThrowDOMException(DOMExceptionCode::kInUseAttributeError,
+                                      "Pointer lock pending.");
+  }
+
+  return promise;
+}
+
+void PointerLockController::LockRequestCallback(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::PointerLockResult result) {
+  if (result == mojom::blink::PointerLockResult::kSuccess) {
+    resolver->Resolve();
+    return;
+  }
+  DOMException* exception = ConvertResultToException(result);
+  RejectIfPromiseEnabled(resolver, exception);
+}
+
+DOMException* PointerLockController::ConvertResultToException(
+    mojom::blink::PointerLockResult result) {
+  switch (result) {
+    case mojom::blink::PointerLockResult::kUnsupportedOptions:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "The options asked for in this request are not supported on this "
+          "platform.");
+    case mojom::blink::PointerLockResult::kRequiresUserGesture:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotAllowedError,
+          "A user gesture is required to request Pointer Lock.");
+    case mojom::blink::PointerLockResult::kAlreadyLocked:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInUseAttributeError, "Pointer is already locked.");
+    case mojom::blink::PointerLockResult::kWrongDocument:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kWrongDocumentError,
+          "The root document of this element is not valid for pointer lock.");
+    case mojom::blink::PointerLockResult::kPermissionDenied:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError,
+          "The root document of this element is not valid for pointer lock.");
+    case mojom::blink::PointerLockResult::kElementDestroyed:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kWrongDocumentError,
+          "The element has been destroyed while making this request.");
+    default:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kUnknownError,
+          "If you see this error we have a bug. Please report this bug to "
+          "chromium.");
+  }
+}
+
+void PointerLockController::RejectIfPromiseEnabled(
+    ScriptPromiseResolver* resolver,
+    DOMException* exception) {
+  if (RuntimeEnabledFeatures::PointerLockOptionsEnabled(
+          resolver->GetExecutionContext())) {
+    resolver->Reject(exception);
   }
 }
 

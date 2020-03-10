@@ -25,6 +25,7 @@
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_offset_manager_client.h"
 #include "cc/input/input_handler.h"
+#include "cc/input/scroll_input_type.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scrollbar_controller.h"
 #include "cc/layers/layer_collections.h"
@@ -260,12 +261,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // InputHandler implementation
   void BindToClient(InputHandlerClient* client) override;
-  InputHandler::ScrollStatus ScrollBegin(
-      ScrollState* scroll_state,
-      InputHandler::ScrollInputType type) override;
-  InputHandler::ScrollStatus RootScrollBegin(
-      ScrollState* scroll_state,
-      InputHandler::ScrollInputType type) override;
+  InputHandler::ScrollStatus ScrollBegin(ScrollState* scroll_state,
+                                         ScrollInputType type) override;
+  InputHandler::ScrollStatus RootScrollBegin(ScrollState* scroll_state,
+                                             ScrollInputType type) override;
   InputHandlerScrollResult ScrollUpdate(
       ScrollState* scroll_state,
       base::TimeDelta delayed_by = base::TimeDelta()) override;
@@ -938,7 +937,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   bool IsTouchDraggingScrollbar(
       LayerImpl* first_scrolling_layer_or_drawn_scrollbar,
-      InputHandler::ScrollInputType type);
+      ScrollInputType type);
   bool IsInitialScrollHitTestReliable(
       LayerImpl* layer,
       LayerImpl* first_scrolling_layer_or_drawn_scrollbar);
@@ -949,7 +948,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // starting_node is nullptr, returns nullptr;
   ScrollNode* FindNodeToLatch(ScrollState* scroll_state,
                               ScrollNode* starting_node,
-                              InputHandler::ScrollInputType type);
+                              ScrollInputType type);
 
   // Called during ScrollBegin once a scroller was successfully latched to
   // (i.e.  it can and will consume scroll delta on the compositor thread). The
@@ -958,7 +957,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // get consensus on terminology to use and apply it consistently.
   // https://crrev.com/c/1981336/9/cc/trees/layer_tree_host_impl.cc#4520
   void DidLatchToScroller(const ScrollState& scroll_state,
-                          InputHandler::ScrollInputType type);
+                          ScrollInputType type);
 
   // Applies the scroll_state to the currently latched scroller. See comment in
   // InputHandler::ScrollUpdate declaration for the meaning of |delayed_by|.
@@ -1032,7 +1031,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // sources per page load. TODO(crbug.com/691886): Use GRC API to plumb the
   // scroll source info for Use Counters.
   void UpdateScrollSourceInfo(const ScrollState& scroll_state,
-                              InputHandler::ScrollInputType type);
+                              ScrollInputType type);
 
   bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor);
   void ShowScrollbarsForImplScroll(ElementId element_id);
@@ -1323,7 +1322,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // The source device type that started the scroll gesture. Only set between a
   // ScrollBegin and ScrollEnd.
-  base::Optional<InputHandler::ScrollInputType> latched_scroll_type_;
+  base::Optional<ScrollInputType> latched_scroll_type_;
 
   // Scroll animation can finish either before or after GSE arrival.
   // deferred_scroll_end_ is set when the GSE has arrvied before scroll

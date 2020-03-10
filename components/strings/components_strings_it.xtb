@@ -812,6 +812,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4466881336512663640">Le modifiche apportate al modulo andranno perse. Vuoi continuare?</translation>
 <translation id="4477350412780666475">Traccia successiva</translation>
 <translation id="4482953324121162758">Questo sito non verrà tradotto.</translation>
+<translation id="4486757593530038591">Se attivi questa opzione, i siti non possono usare la tua attività di navigazione su diversi siti per personalizzare gli annunci. Le funzionalità su alcuni siti potrebbero non essere disponibili.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">Queste funzionalità sono disattivate per impostazione predefinita. Non saranno disponibili nelle future versioni di Chrome.</translation>
 <translation id="4493480324863638523">URL non valido. Deve essere un URL con schema standard, ad esempio http://example.com o https://example.com.</translation>
@@ -1049,6 +1050,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="549333378215107354">Dimensione 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Preferiti gestiti</translation>
+<translation id="5510481203689988000">È possibile gestire questa impostazione nelle impostazioni Cookie.</translation>
 <translation id="5510766032865166053">Potrebbe essere stato spostato o eliminato.</translation>
 <translation id="5523118979700054094">Nome criterio</translation>
 <translation id="55293785478302737">Impuntura</translation>

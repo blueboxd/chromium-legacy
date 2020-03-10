@@ -51,8 +51,6 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/init/input_method_initializer.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_context_factories.h"
 #include "ui/display/display.h"
@@ -144,8 +142,6 @@ void AshTestHelper::SetUp(const InitParams& init_params,
   // Reset the global state for the cursor manager. This includes the
   // last cursor visibility state, etc.
   ::wm::CursorManager::ResetCursorVisibilityStateForTest();
-
-  ui::MaterialDesignController::Initialize();
 
   CreateShell(std::move(shell_init_params), init_params.local_state);
 

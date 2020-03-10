@@ -54,14 +54,6 @@ const char* const kValidPolicies[] = {
     "fullscreen  " ORIGIN_A "(false)",
     "fullscreen  " ORIGIN_A "(True)",
     "fullscreen  " ORIGIN_A "(TRUE)",
-    "oversized-images " ORIGIN_A "(2.0)",
-    "oversized-images " ORIGIN_A "(0.0)",
-    "oversized-images " ORIGIN_A "(4)",
-    "oversized-images " ORIGIN_A "(20000)",
-    "oversized-images " ORIGIN_A "(2e50)",
-    "oversized-images " ORIGIN_A "(inf)",
-    "oversized-images " ORIGIN_A "(Inf)",
-    "oversized-images " ORIGIN_A "(INF)",
     "fullscreen " ORIGIN_A "; payment *, geolocation 'self'"};
 
 const char* const kInvalidPolicies[] = {
@@ -77,12 +69,6 @@ const char* const kInvalidPolicies[] = {
     "fullscreen(true)",
     "fullscreen  " ORIGIN_A "(notabool)",
     "fullscreen " ORIGIN_A "(2.0)",
-    "oversized-images " ORIGIN_A "(true)",
-    "oversized-images " ORIGIN_A "(Something else)",
-    "oversized-images " ORIGIN_A "(1",
-    "oversized-images " ORIGIN_A "(-1)",
-    "oversized-images " ORIGIN_A "(1.2.3)",
-    "oversized-images " ORIGIN_A "(1.a.3)",
     "fullscreen  " ORIGIN_A "()"};
 
 // Names of UMA histograms
@@ -113,9 +99,7 @@ class FeaturePolicyParserTest : public testing::Test {
   const FeatureNameMap test_feature_name_map = {
       {"fullscreen", blink::mojom::blink::FeaturePolicyFeature::kFullscreen},
       {"payment", blink::mojom::blink::FeaturePolicyFeature::kPayment},
-      {"geolocation", blink::mojom::blink::FeaturePolicyFeature::kGeolocation},
-      {"oversized-images",
-       blink::mojom::blink::FeaturePolicyFeature::kOversizedImages}};
+      {"geolocation", blink::mojom::blink::FeaturePolicyFeature::kGeolocation}};
 
   const PolicyValue min_value = PolicyValue(false);
   const PolicyValue max_value = PolicyValue(true);
@@ -440,150 +424,6 @@ TEST_F(FeaturePolicyParserTest, BooleanPolicyParametersParsedCorrectly) {
   EXPECT_EQ(0UL, parsed_policy[0].values.size());
 }
 
-TEST_F(FeaturePolicyParserTest, DoublePolicyParametersParsedCorrectly) {
-  Vector<String> messages;
-  ParsedFeaturePolicy parsed_policy;
-
-  // 'self'(inf)
-  parsed_policy = FeaturePolicyParser::Parse("oversized-images 'self'(inf)",
-                                             origin_a_.get(), origin_b_.get(),
-                                             &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(1UL, parsed_policy[0].values.size());
-  EXPECT_TRUE(parsed_policy[0].values.begin()->first.IsSameOriginWith(
-      expected_url_origin_a_));
-  EXPECT_EQ(max_double_value, parsed_policy[0].values.begin()->second);
-
-  // 'self'(1.5)
-  parsed_policy = FeaturePolicyParser::Parse("oversized-images 'self'(1.5)",
-                                             origin_a_.get(), origin_b_.get(),
-                                             &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(1UL, parsed_policy[0].values.size());
-  EXPECT_TRUE(parsed_policy[0].values.begin()->first.IsSameOriginWith(
-      expected_url_origin_a_));
-  EXPECT_EQ(sample_double_value, parsed_policy[0].values.begin()->second);
-
-  // *(inf)
-  parsed_policy = FeaturePolicyParser::Parse("oversized-images *(inf)",
-                                             origin_a_.get(), origin_b_.get(),
-                                             &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(max_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(max_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(0UL, parsed_policy[0].values.size());
-
-  // *(0)
-  parsed_policy = FeaturePolicyParser::Parse("oversized-images *(0)",
-                                             origin_a_.get(), origin_b_.get(),
-                                             &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(min_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(min_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(0UL, parsed_policy[0].values.size());
-
-  // *(1.5)
-  parsed_policy = FeaturePolicyParser::Parse("oversized-images *(1.5)",
-                                             origin_a_.get(), origin_b_.get(),
-                                             &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(sample_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(sample_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(0UL, parsed_policy[0].values.size());
-
-  // 'self'(1.5) 'src'(inf)
-  // Fallbacks should be default values.
-  parsed_policy = FeaturePolicyParser::Parse(
-      "oversized-images 'self'(1.5) 'src'(inf)", origin_a_.get(),
-      origin_b_.get(), &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(2UL, parsed_policy[0].values.size());
-  auto origin_and_value = parsed_policy[0].values.begin();
-  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_a_));
-  EXPECT_EQ(sample_double_value, origin_and_value->second);
-  origin_and_value++;
-  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_b_));
-  EXPECT_EQ(max_double_value, origin_and_value->second);
-
-  // *(1.5) 'src'(inf)
-  // Fallbacks should be 1.5
-  parsed_policy = FeaturePolicyParser::Parse(
-      "oversized-images *(1.5) 'src'(inf)", origin_a_.get(), origin_b_.get(),
-      &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(sample_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(sample_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(1UL, parsed_policy[0].values.size());
-  origin_and_value = parsed_policy[0].values.begin();
-  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_b_));
-  EXPECT_EQ(max_double_value, origin_and_value->second);
-
-  // Test policy: 'self'(1.5) https://example.org(inf)
-  // Fallbacks should be default value.
-  parsed_policy = FeaturePolicyParser::Parse(
-      "oversized-images 'self'(1.5) " ORIGIN_C "(inf)", origin_a_.get(),
-      origin_b_.get(), &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(2UL, parsed_policy[0].values.size());
-  origin_and_value = parsed_policy[0].values.begin();
-  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_a_));
-  EXPECT_EQ(sample_double_value, origin_and_value->second);
-  origin_and_value++;
-  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_c_));
-  EXPECT_EQ(max_double_value, origin_and_value->second);
-
-  // Test policy: 'self'(1.5) https://example.org(inf) *(0)
-  // Fallbacks should be 0.
-  parsed_policy = FeaturePolicyParser::Parse(
-      "oversized-images 'self'(1.5) " ORIGIN_C "(inf) *(0)", origin_a_.get(),
-      origin_b_.get(), &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(min_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(min_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(2UL, parsed_policy[0].values.size());
-  origin_and_value = parsed_policy[0].values.begin();
-  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_a_));
-  EXPECT_EQ(sample_double_value, origin_and_value->second);
-  origin_and_value++;
-  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_c_));
-  EXPECT_EQ(max_double_value, origin_and_value->second);
-}
-
 TEST_F(FeaturePolicyParserTest, RedundantBooleanItemsRemoved) {
   Vector<String> messages;
   ParsedFeaturePolicy parsed_policy;
@@ -621,46 +461,6 @@ TEST_F(FeaturePolicyParserTest, RedundantBooleanItemsRemoved) {
             parsed_policy[0].feature);
   EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(0UL, parsed_policy[0].values.size());
-}
-
-TEST_F(FeaturePolicyParserTest, RedundantDoubleItemsRemoved) {
-  Vector<String> messages;
-  ParsedFeaturePolicy parsed_policy;
-
-  // 'self'(1.5) *(1.5)
-  parsed_policy = FeaturePolicyParser::Parse(
-      "oversized-images 'self'(1.5) *(1.5)", origin_a_.get(), origin_b_.get(),
-      &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(sample_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(sample_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(0UL, parsed_policy[0].values.size());
-
-  // 'self'(inf)
-  parsed_policy = FeaturePolicyParser::Parse("oversized-images 'self'(2.0)",
-                                             origin_a_.get(), origin_b_.get(),
-                                             &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(0UL, parsed_policy[0].values.size());
-
-  // (inf)
-  parsed_policy = FeaturePolicyParser::Parse("oversized-images (2.0)",
-                                             origin_a_.get(), origin_b_.get(),
-                                             &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(0UL, parsed_policy[0].values.size());
 }
 
@@ -761,72 +561,6 @@ TEST_F(FeaturePolicyParserTest, AllowHistogramDifferentDocument) {
       histogram_name,
       static_cast<int>(blink::mojom::blink::FeaturePolicyFeature::kGeolocation),
       1);
-}
-
-TEST_F(FeaturePolicyParserTest, ParseParameterizedFeatures) {
-  Vector<String> messages;
-
-  scoped_refptr<SecurityOrigin> opaque_origin =
-      SecurityOrigin::CreateUniqueOpaque();
-
-  // Simple policy with *.
-  ParsedFeaturePolicy parsed_policy = FeaturePolicyParser::Parse(
-      "oversized-images *", origin_a_.get(), opaque_origin.get(), &messages,
-      test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_EQ(max_double_value, parsed_policy[0].fallback_value);
-  EXPECT_EQ(max_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(0UL, parsed_policy[0].values.size());
-
-  // Policy with explicit origins
-  parsed_policy = FeaturePolicyParser::Parse(
-      "oversized-images https://example.net 'src'", origin_a_.get(),
-      opaque_origin.get(), &messages, test_feature_name_map);
-  EXPECT_EQ(1UL, parsed_policy.size());
-
-  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
-            parsed_policy[0].feature);
-  EXPECT_GE(default_double_value, parsed_policy[0].fallback_value);
-  EXPECT_LE(max_double_value, parsed_policy[0].opaque_value);
-  EXPECT_EQ(1UL, parsed_policy[0].values.size());
-  EXPECT_LE(max_double_value, parsed_policy[0].values.begin()->second);
-}
-
-// These declarations should each trigger the Unoptimized Images origin trial
-// use counter.
-const char* const kUnoptimizedImagesOriginTrialPolicyDeclarations[] = {
-    "unoptimized-lossy-images",           "unoptimized-lossless-images",
-    "unoptimized-lossless-images-strict", "oversized-images",
-    "oversized-images; fullscreen",       "fullscreen; oversized-images",
-    "oversized-images 'self'(2.0)",       "oversized-images 'none'",
-    "unoptimized-lossy-images *(0.125)"};
-
-TEST_F(FeaturePolicyParserTest, UnoptimizedImagesOriginTrialFeatureUseCounter) {
-  Vector<String> messages;
-
-  // Validate that features which are not in the origin trial do not trigger
-  // the use counter.
-  {
-    auto dummy = std::make_unique<DummyPageHolder>();
-    FeaturePolicyParser::ParseHeader("payment; fullscreen", origin_a_.get(),
-                                     &messages, &dummy->GetDocument());
-    EXPECT_FALSE(dummy->GetDocument().IsUseCounted(
-        WebFeature::kUnoptimizedImagePolicies));
-  }
-
-  // Validate that declarations which should trigger the use counter do.
-  for (const char* declaration :
-       kUnoptimizedImagesOriginTrialPolicyDeclarations) {
-    auto dummy = std::make_unique<DummyPageHolder>();
-    FeaturePolicyParser::ParseHeader(declaration, origin_a_.get(), &messages,
-                                     &dummy->GetDocument());
-    EXPECT_TRUE(dummy->GetDocument().IsUseCounted(
-        WebFeature::kUnoptimizedImagePolicies))
-        << declaration
-        << " should trigger the Unoptimized Images origin trial use counter.";
-  }
 }
 
 // These declarations should each trigger the Unsized Media origin trial use
@@ -1094,26 +828,6 @@ TEST_F(FeaturePolicyAllowlistHistogramTest, SrcInAttributeHistogram) {
                            1);
 
   tester.ExpectTotalCount(kAllowlistAttributeHistogram, 1);
-}
-
-TEST_F(FeaturePolicyAllowlistHistogramTest, OriginTrialFeaturesNotRecorded) {
-  Vector<String> messages;
-  HistogramTester tester;
-
-  auto dummy = std::make_unique<DummyPageHolder>();
-  const char* unoptimizedimages_declaration =
-      "unoptimized-lossy-images;"
-      "unoptimized-lossless-images;"
-      "unoptimized-lossless-images-strict;"
-      "oversized-images *;";
-  const char* unsizedmedia_declaration = "unsized-media *";
-  FeaturePolicyParser::ParseHeader(unoptimizedimages_declaration,
-                                   origin_a_.get(), &messages,
-                                   &dummy->GetDocument());
-  FeaturePolicyParser::ParseHeader(unsizedmedia_declaration, origin_a_.get(),
-                                   &messages, &dummy->GetDocument());
-
-  tester.ExpectTotalCount(kAllowlistHeaderHistogram, 0);
 }
 
 // Test policy mutation methods

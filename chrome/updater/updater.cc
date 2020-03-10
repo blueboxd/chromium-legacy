@@ -16,7 +16,9 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
+#include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
+#include "components/crash/core/common/crash_key.h"
 
 #if defined(OS_WIN)
 #include "chrome/updater/server/win/server.h"
@@ -55,7 +57,20 @@ void InitLogging(const base::CommandLine& command_line) {
                        true,    // enable_thread_id
                        true,    // enable_timestamp
                        false);  // enable_tickcount
-  VLOG(1) << "Log file " << settings.log_file_path;
+  VLOG(1) << "Version " << UPDATER_VERSION_STRING << ", log file "
+          << settings.log_file_path;
+}
+
+void InitializeCrashReporting() {
+  crash_reporter::InitializeCrashKeys();
+  static crash_reporter::CrashKeyString<16> crash_key_process_type(
+      "process_type");
+  crash_key_process_type.Set("updater");
+  if (CrashClient::GetInstance()->InitializeCrashReporting())
+    VLOG(1) << "Crash reporting initialized.";
+  else
+    VLOG(1) << "Crash reporting is not available.";
+  StartCrashReporter(UPDATER_VERSION_STRING);
 }
 
 }  // namespace
@@ -64,8 +79,9 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
   DCHECK(!command_line->HasSwitch(kCrashHandlerSwitch));
 
   if (command_line->HasSwitch(kCrashMeSwitch)) {
-    int* ptr = nullptr;
-    return *ptr;
+    // Records a backtrace in the log, crashes the program, saves a crash dump,
+    // and reports the crash.
+    CHECK(false) << "--crash-me was used.";
   }
 
   if (command_line->HasSwitch(kServerSwitch)) {
@@ -104,6 +120,8 @@ int UpdaterMain(int argc, const char* const* argv) {
 
   if (command_line->HasSwitch(kCrashHandlerSwitch))
     return CrashReporterMain();
+
+  InitializeCrashReporting();
 
   return HandleUpdaterCommands(command_line);
 }

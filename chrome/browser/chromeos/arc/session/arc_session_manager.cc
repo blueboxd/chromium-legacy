@@ -461,6 +461,10 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       break;
   }
 
+  // When ARC provisioning fails due to Chrome failing to talk to server, we
+  // don't need to keep the ARC session running as the logs necessary to
+  // investigate are already present. ARC session will not provide any useful
+  // context.
   if (result == ProvisioningResult::ARC_STOPPED ||
       result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
     if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))

@@ -13,10 +13,6 @@
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/updater/crash_client.h"
-#include "chrome/updater/crash_reporter.h"
-#include "chrome/updater/updater_version.h"
-#include "components/crash/core/common/crash_key.h"
 
 namespace updater {
 
@@ -24,16 +20,6 @@ App::App() = default;
 App::~App() = default;
 
 int App::Run() {
-  crash_reporter::InitializeCrashKeys();
-  static crash_reporter::CrashKeyString<16> crash_key_process_type(
-      "process_type");
-  crash_key_process_type.Set("updater");
-  if (CrashClient::GetInstance()->InitializeCrashReporting())
-    VLOG(1) << "Crash reporting initialized.";
-  else
-    VLOG(1) << "Crash reporting is not available.";
-  StartCrashReporter(UPDATER_VERSION_STRING);
-
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Updater");
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   Initialize();

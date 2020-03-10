@@ -16,6 +16,7 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/numerics/ranges.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
@@ -331,7 +332,7 @@ ScrollableUsersListView::ScrollableUsersListView(
       ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
   ensure_min_height->AddChildView(user_view_host_);
   SetContents(std::move(ensure_min_height));
-  SetBackgroundColor(SK_ColorTRANSPARENT);
+  SetBackgroundColor(base::nullopt);
   SetDrawOverflowIndicator(false);
 
   SetVerticalScrollBar(std::make_unique<UsersListScrollBar>(false));

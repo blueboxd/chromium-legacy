@@ -90,7 +90,10 @@ void WebWidgetTestProxy::ScheduleAnimationInternal(bool do_raster) {
   }
 }
 
-bool WebWidgetTestProxy::RequestPointerLock(blink::WebLocalFrame*, bool) {
+bool WebWidgetTestProxy::RequestPointerLock(
+    blink::WebLocalFrame*,
+    blink::WebWidgetClient::PointerLockCallback,
+    bool) {
   return GetViewTestRunner()->RequestPointerLock();
 }
 

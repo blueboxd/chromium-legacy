@@ -286,6 +286,7 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="3058498974290601450">Maaari mong i-on ang pag-sync anumang oras sa mga setting.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}one{<ph name="BOOKMARKS_COUNT_MANY" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> na bookmark}}</translation>
 <translation id="3089395242580810162">Buksan sa tab na incognito</translation>
+<translation id="3114012059975132928">Player ng video</translation>
 <translation id="3123473560110926937">Naka-block sa ilang site</translation>
 <translation id="3123734510202723619">Mga Anunsyo</translation>
 <translation id="3137521801621304719">Umalis sa mode na incognito</translation>
@@ -352,6 +353,7 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="3587482841069643663">Lahat</translation>
 <translation id="358794129225322306">Payagan ang isang site na awtomatikong mag-download ng maraming file.</translation>
 <translation id="3590487821116122040">Storage ng site na sa tingin ng Chrome ay hindi mahalaga (hal. mga site na walang mga naka-save na setting o hindi mo madalas bisitahin)</translation>
+<translation id="3594780231884063836">I-mute ang video</translation>
 <translation id="3599863153486145794">Kini-clear ang history sa lahat ng naka-sign in na device. Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">I-mute ang mga site na nagpe-play ng tunog</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -605,6 +607,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5456381639095306749">I-download ang page</translation>
 <translation id="548278423535722844">Buksan sa app na mga mapa</translation>
 <translation id="5487521232677179737">I-clear ang data</translation>
+<translation id="5489227211564503167"><ph name="ELAPSED_TIME" /> ang lumipas mula sa <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">I-block ang mga ad sa mga site na nagpapakita ng mga nakakasagabal o nakakapanlinlang na ad</translation>
 <translation id="5500777121964041360">Maaaring hindi available sa iyong lokasyon</translation>
 <translation id="5505264765875738116">Hindi puwedeng humiling ang mga site na magpadala ng mga notification</translation>
@@ -665,6 +668,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5864419784173784555">Naghihintay ng isa pang download…</translation>
 <translation id="5865733239029070421">Awtomatikong nagpapadala sa Google ng mga istatistika ng paggamit at ulat ng pag-crash</translation>
 <translation id="5869522115854928033">Mga naka-save na password</translation>
+<translation id="5876056640971328065">I-pause ang video</translation>
 <translation id="5884076754568147479">Para tulungan kang tapusin ang mga gawain, matatanggap ng Google ang mga URL at content ng mga site kung saan ka gumamit ng Assistant, gayundin ang impormasyong isinumite mo sa pamamagitan ng Assistant</translation>
 <translation id="5902828464777634901">Made-delete ang lahat ng lokal na data na ini-store ng website na ito, kasama ang cookies.</translation>
 <translation id="5919204609460789179">I-update ang <ph name="PRODUCT_NAME" /> upang simulan ang pag-sync</translation>
@@ -728,6 +732,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6381421346744604172">Padilimin ang mga website</translation>
 <translation id="6388207532828177975">I-clear at i-reset</translation>
 <translation id="6395288395575013217">LINK</translation>
+<translation id="6397616442223433927">Online ulit</translation>
 <translation id="6404511346730675251">I-edit ang bookmark</translation>
 <translation id="6406506848690869874">Pag-sync</translation>
 <translation id="6410973561433500075">Pumasok sa AR mula sa <ph name="DOMAIN" />?</translation>
@@ -796,6 +801,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6846298663435243399">Naglo-load…</translation>
 <translation id="6850409657436465440">Isinasagawa pa rin ang iyong pag-download</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> (na) tab ang isinara</translation>
+<translation id="6864395892908308021">Hindi nababasa ng device na ito ang NFC</translation>
 <translation id="6864459304226931083">I-download ang larawan</translation>
 <translation id="6865313869410766144">Data ng form ng autofill</translation>
 <translation id="6884306546558072722">Patuloy na mag-explore offline</translation>
@@ -916,6 +922,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7810647596859435254">Buksan gamit ang…</translation>
 <translation id="7821588508402923572">Lalabas dito ang mga natipid sa iyong data</translation>
+<translation id="783819812427904514">I-unmute ang video</translation>
 <translation id="784934925303690534">Sakop na oras</translation>
 <translation id="7851858861565204677">Iba pang device</translation>
 <translation id="7875915731392087153">Gumawa ng email</translation>

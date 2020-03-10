@@ -5593,11 +5593,40 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
     SetForceReattachLayoutTree();
 }
 
-void Element::requestPointerLock(const PointerLockOptions* options) {
+ScriptValue Element::requestPointerLock(ScriptState* script_state,
+                                        const PointerLockOptions* options,
+                                        ExceptionState& exception_state) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise;
   if (GetDocument().GetPage()) {
-    GetDocument().GetPage()->GetPointerLockController().RequestPointerLock(
-        this, options);
+    promise =
+        GetDocument().GetPage()->GetPointerLockController().RequestPointerLock(
+            resolver, this, exception_state, options);
+  } else {
+    promise = resolver->Promise();
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kWrongDocumentError,
+        "PointerLock cannot be request when there "
+        "is no frame or that frame has no page.");
   }
+
+  if (RuntimeEnabledFeatures::PointerLockOptionsEnabled(
+          GetExecutionContext())) {
+    if (exception_state.HadException())
+      resolver->Reject(exception_state);
+    return promise.GetScriptValue();
+  }
+
+  // The current spec for PointerLock does not have any language about throwing
+  // exceptions. Therefore to be spec compliant we must clear all exceptions.
+  // When behind our experimental flag however, we will throw exceptions which
+  // should be caught as a promise rejection.
+  exception_state.ClearException();
+
+  // Detach the resolver, since we are not using it, to prepare it for garbage
+  // collection.
+  resolver->Detach();
+  return ScriptValue();
 }
 
 SpellcheckAttributeState Element::GetSpellcheckAttributeState() const {

@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">언제든지 설정에서 동기화를 사용 설정할 수 있습니다.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{북마크 <ph name="BOOKMARKS_COUNT_ONE" />개}other{북마크 <ph name="BOOKMARKS_COUNT_MANY" />개}}</translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
+<translation id="3114012059975132928">동영상 플레이어</translation>
 <translation id="3123473560110926937">일부 사이트에서 차단됨</translation>
 <translation id="3123734510202723619">공지사항</translation>
 <translation id="3137521801621304719">시크릿 모드 나가기</translation>
@@ -352,6 +353,7 @@
 <translation id="3587482841069643663">전체</translation>
 <translation id="358794129225322306">사이트에서 여러 파일을 자동으로 다운로드하도록 허용합니다.</translation>
 <translation id="3590487821116122040">Chrome에서 중요하다고 간주하지 않는 사이트 저장공간(예: 저장된 설정이 없거나 사용자가 자주 방문하지 않는 사이트)</translation>
+<translation id="3594780231884063836">동영상 음소거</translation>
 <translation id="3599863153486145794">로그인된 모든 기기에서 방문 기록을 지웁니다. Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
 <translation id="3600792891314830896">소리를 재생하는 사이트 음소거</translation>
 <translation id="3616113530831147358">오디오</translation>
@@ -605,6 +607,7 @@
 <translation id="5456381639095306749">다운로드 페이지</translation>
 <translation id="548278423535722844">지도 앱에서 열기</translation>
 <translation id="5487521232677179737">인터넷 사용 기록 삭제</translation>
+<translation id="5489227211564503167"><ph name="TOTAL_TIME" /> 중 <ph name="ELAPSED_TIME" /> 경과</translation>
 <translation id="5494752089476963479">방해가 되거나 사용자를 현혹하는 광고를 표시하는 사이트의 광고 차단</translation>
 <translation id="5500777121964041360">현재 지역에서는 지원되지 않을 수도 있습니다.</translation>
 <translation id="5505264765875738116">사이트에서 알림 전송 허용을 요청할 수 없음</translation>
@@ -665,6 +668,7 @@
 <translation id="5864419784173784555">다른 다운로드 대기 중…</translation>
 <translation id="5865733239029070421">사용 통계 및 비정상 종료 보고서를 Google로 자동 전송</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
+<translation id="5876056640971328065">동영상 일시중지</translation>
 <translation id="5884076754568147479">작업 처리를 돕기 위해 내가 어시스턴트를 통해 제출한 정보뿐만 아니라 어시스턴트를 이용한 사이트의 URL과 콘텐츠가 Google에 전송됩니다.</translation>
 <translation id="5902828464777634901">쿠키를 포함하여 이 웹사이트에 의해 저장된 모든 로컬 데이터가 삭제됩니다.</translation>
 <translation id="5919204609460789179"><ph name="PRODUCT_NAME" />을(를) 업데이트하여 동기화를 시작합니다.</translation>
@@ -728,6 +732,7 @@
 <translation id="6381421346744604172">웹사이트 어둡게 보기</translation>
 <translation id="6388207532828177975">삭제 및 재설정</translation>
 <translation id="6395288395575013217">링크</translation>
+<translation id="6397616442223433927">인터넷에 다시 연결됨</translation>
 <translation id="6404511346730675251">북마크 수정</translation>
 <translation id="6406506848690869874">동기화</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" />에서 AR을 시작하시겠습니까?</translation>
@@ -796,6 +801,7 @@
 <translation id="6846298663435243399">로드 중...</translation>
 <translation id="6850409657436465440">아직 다운로드 중</translation>
 <translation id="6850830437481525139">탭 <ph name="TAB_COUNT" />개를 닫았습니다.</translation>
+<translation id="6864395892908308021">기기에서 NFC를 읽을 수 없음</translation>
 <translation id="6864459304226931083">이미지 다운로드</translation>
 <translation id="6865313869410766144">양식 데이터 자동 완성</translation>
 <translation id="6884306546558072722">오프라인에서 계속 탐색</translation>
@@ -916,6 +922,7 @@
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7810647596859435254">연결 프로그램...</translation>
 <translation id="7821588508402923572">절약한 데이터 양이 여기에 표시됩니다</translation>
+<translation id="783819812427904514">동영상 음소거 해제</translation>
 <translation id="784934925303690534">기간</translation>
 <translation id="7851858861565204677">다른 기기</translation>
 <translation id="7875915731392087153">이메일 만들기</translation>

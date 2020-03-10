@@ -38,8 +38,6 @@ using MockRouteCallback =
 using MockTerminateRouteCallback =
     base::MockCallback<mojom::MediaRouteProvider::TerminateRouteCallback>;
 using MockBoolCallback = base::MockCallback<base::OnceCallback<void(bool)>>;
-using MockSearchSinksCallback =
-    base::MockCallback<base::OnceCallback<void(const std::string&)>>;
 
 const char kDescription[] = "description";
 const bool kIsIncognito = false;
@@ -227,20 +225,6 @@ TEST_F(ExtensionMediaRouteProviderProxyTest, EnableMdnsDiscovery) {
 TEST_F(ExtensionMediaRouteProviderProxyTest, UpdateMediaSinks) {
   EXPECT_CALL(mock_provider_, UpdateMediaSinks(kSource));
   provider_proxy_->UpdateMediaSinks(kSource);
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(ExtensionMediaRouteProviderProxyTest, SearchSinks) {
-  EXPECT_CALL(mock_provider_, SearchSinksInternal(kSinkId, kSource, _, _))
-      .WillOnce(WithArg<3>(Invoke(
-          &mock_provider_, &MockMediaRouteProvider::SearchSinksSuccess)));
-
-  auto sink_search_criteria = mojom::SinkSearchCriteria::New();
-  MockSearchSinksCallback callback;
-  provider_proxy_->SearchSinks(kSinkId, kSource,
-                               std::move(sink_search_criteria),
-                               base::BindOnce(&MockSearchSinksCallback::Run,
-                                              base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
 }
 

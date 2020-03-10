@@ -31,7 +31,9 @@ if __name__ == '__main__':
   }
 
   for header_file, histogram_name in histograms.items():
-    UpdateHistogramEnum(histogram_enum_name=histogram_name,
-                        source_enum_path=header_file,
-                        start_marker='^enum (class )?BadMessageReason {',
-                        end_marker='^BAD_MESSAGE_MAX')
+    UpdateHistogramEnum(
+        histogram_enum_name=histogram_name,
+        source_enum_path=header_file,
+        start_marker='^enum (class )?BadMessageReason {',
+        end_marker='^BAD_MESSAGE_MAX',
+        calling_script=os.path.basename(__file__))

@@ -41,7 +41,7 @@ namespace blink {
 
 class Document;
 
-enum { kUninitializedDescriptor = -1 };
+constexpr int kUninitializedDescriptor = -1;
 
 class DescriptorParsingResult {
   STACK_ALLOCATED();

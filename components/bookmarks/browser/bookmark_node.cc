@@ -162,15 +162,22 @@ void BookmarkNode::InvalidateFavicon() {
 
 // BookmarkPermanentNode -------------------------------------------------------
 
-BookmarkPermanentNode::BookmarkPermanentNode(int64_t id, Type type)
-    : BookmarkNode(id, PermanentNodeTypeToGuid(type), GURL(), type, true) {
+BookmarkPermanentNode::BookmarkPermanentNode(int64_t id,
+                                             Type type,
+                                             bool visible_when_empty)
+    : BookmarkNode(id,
+                   PermanentNodeTypeToGuid(type),
+                   GURL(),
+                   type,
+                   /*is_permanent_node=*/true),
+      visible_when_empty_(visible_when_empty) {
   DCHECK(type != URL);
 }
 
 BookmarkPermanentNode::~BookmarkPermanentNode() = default;
 
 bool BookmarkPermanentNode::IsVisible() const {
-  return visible_ || !children().empty();
+  return visible_when_empty_ || !children().empty();
 }
 
 }  // namespace bookmarks

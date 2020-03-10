@@ -66,7 +66,7 @@ suite('Tab', function() {
     // After animation completes.
     assertEquals('100px', tabElementStyle.paddingRight);
     assertEquals('none', tabElementStyle.maxWidth);
-    assertEquals('matrix(1, 0, 0, 1, 0, 0)', tabElementStyle.transform);
+    assertEquals('none', tabElementStyle.transform);
   });
 
   test('slideIn animations for not the last tab', async () => {
@@ -87,7 +87,7 @@ suite('Tab', function() {
     // After animation completes.
     assertEquals('100px', tabElementStyle.paddingRight);
     assertEquals('none', tabElementStyle.maxWidth);
-    assertEquals('matrix(1, 0, 0, 1, 0, 0)', tabElementStyle.transform);
+    assertEquals('none', tabElementStyle.transform);
   });
 
   test('slideIn animations right to left for RTL languages', async () => {
@@ -108,7 +108,7 @@ suite('Tab', function() {
     // After animation completes.
     assertEquals('100px', tabElementStyle.paddingLeft);
     assertEquals('none', tabElementStyle.maxWidth);
-    assertEquals('matrix(1, 0, 0, 1, 0, 0)', tabElementStyle.transform);
+    assertEquals('none', tabElementStyle.transform);
   });
 
   test('slideOut animates out the element', async () => {

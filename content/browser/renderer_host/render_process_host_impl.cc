@@ -228,7 +228,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"

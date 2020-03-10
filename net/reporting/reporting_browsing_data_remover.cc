@@ -35,7 +35,7 @@ void ReportingBrowsingDataRemover::RemoveBrowsingData(
   if ((data_type_mask & DATA_TYPE_CLIENTS) != 0) {
     for (const url::Origin& origin : cache->GetAllOrigins()) {
       if (origin_filter.Run(origin.GetURL()))
-        cache->RemoveClient(origin);
+        cache->RemoveClientsForOrigin(origin);
     }
   }
   cache->Flush();

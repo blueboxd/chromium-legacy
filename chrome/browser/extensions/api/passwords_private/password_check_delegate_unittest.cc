@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/api/passwords_private/password_check_delegate.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -34,6 +35,9 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/browser/browser_context.h"
@@ -72,12 +76,14 @@ using password_manager::CompromiseType;
 using password_manager::IsLeaked;
 using password_manager::LeakCheckCredential;
 using password_manager::TestPasswordStore;
+using password_manager::prefs::kLastTimePasswordCheckCompleted;
 using signin::IdentityTestEnvironment;
 using ::testing::AllOf;
 using ::testing::AtLeast;
 using ::testing::ElementsAre;
 using ::testing::Field;
 using ::testing::IsEmpty;
+using ::testing::IsNull;
 using ::testing::Pointee;
 using ::testing::UnorderedElementsAre;
 
@@ -195,6 +201,7 @@ auto ExpectCompromisedCredential(
 class PasswordCheckDelegateTest : public ::testing::Test {
  public:
   PasswordCheckDelegateTest() {
+    prefs_.registry()->RegisterDoublePref(kLastTimePasswordCheckCompleted, 0.0);
     scoped_feature_list_.InitAndEnableFeature(
         password_manager::features::kPasswordCheck);
   }
@@ -204,6 +211,8 @@ class PasswordCheckDelegateTest : public ::testing::Test {
     return event_router_observer_;
   }
   IdentityTestEnvironment& identity_test_env() { return identity_test_env_; }
+  TestingPrefServiceSimple prefs_;
+  TestingProfile& profile() { return profile_; }
   TestPasswordStore& store() { return *store_; }
   BulkLeakCheckService* service() { return bulk_leak_check_service_; }
   PasswordCheckDelegate& delegate() { return delegate_; }
@@ -827,6 +836,36 @@ TEST_F(PasswordCheckDelegateTest,
   delegate().StartPasswordCheck();
   EXPECT_EQ(events::PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED,
             event_router_observer().events().at(kEventName)->histogram_value);
+}
+
+// Checks that the default kLastTimePasswordCheckCompleted pref value is
+// treated as no completed run yet.
+TEST_F(PasswordCheckDelegateTest, LastTimePasswordCheckCompletedNotSet) {
+  CompromisedCredentialsInfo info = delegate().GetCompromisedCredentialsInfo();
+  EXPECT_THAT(info.elapsed_time_since_last_check, IsNull());
+}
+
+// Checks that a non-default kLastTimePasswordCheckCompleted pref value is
+// treated as a completed run, and formatted accordingly.
+TEST_F(PasswordCheckDelegateTest, LastTimePasswordCheckCompletedIsSet) {
+  profile().GetPrefs()->SetDouble(
+      kLastTimePasswordCheckCompleted,
+      (base::Time::Now() - base::TimeDelta::FromMinutes(5)).ToDoubleT());
+
+  CompromisedCredentialsInfo info = delegate().GetCompromisedCredentialsInfo();
+  EXPECT_THAT(info.elapsed_time_since_last_check,
+              Pointee(std::string("5 minutes ago")));
+}
+
+// Checks that a tranistion into the idle state after starting a check results
+// in resetting the kLastTimePasswordCheckCompleted pref to the current time.
+TEST_F(PasswordCheckDelegateTest, LastTimePasswordCheckCompletedReset) {
+  delegate().StartPasswordCheck();
+  service()->set_state_and_notify(BulkLeakCheckService::State::kIdle);
+
+  CompromisedCredentialsInfo info = delegate().GetCompromisedCredentialsInfo();
+  EXPECT_THAT(info.elapsed_time_since_last_check,
+              Pointee(std::string("Just now")));
 }
 
 }  // namespace extensions

@@ -9,6 +9,7 @@ import "content/common/frame_messages.mojom";
 import "content/common/native_types.mojom";
 import "content/common/navigation_client.mojom";
 import "content/common/navigation_params.mojom";
+import "content/common/widget.mojom";
 import "content/public/common/browser_controls_state.mojom";
 import "content/public/common/transferrable_url_loader.mojom";
 import "content/public/common/window_container_type.mojom";
@@ -376,6 +377,16 @@ interface FrameHost {
           viz.mojom.FrameSinkId frame_sink_id,
           FrameReplicationState replicated_state,
           mojo_base.mojom.UnguessableToken devtools_frame_token);
+
+
+  // Similar to CreateNewWindow, except used for sub-widgets, like <select>
+  // dropdowns.
+  [Sync] CreateNewWidget(pending_remote<Widget> widget)
+      => (int32 routing_id);
+
+  // Similar to CreateNewWidget except the widget is a full screen window.
+  [Sync] CreateNewFullscreenWidget(pending_remote<Widget> widget)
+      => (int32 routing_id);
 
   // Creates and returns a KeepAliveHandle.
   IssueKeepAliveHandle(pending_receiver<KeepAliveHandle> keep_alive_handle);

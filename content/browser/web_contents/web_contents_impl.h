@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
+#include "content/browser/frame_host/file_chooser_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -502,7 +503,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsFullscreenForCurrentTab() override;
   bool ShouldShowStaleContentOnEviction() override;
   void ExitFullscreen(bool will_cause_resize) override;
-  void ForSecurityDropFullscreen() override;
+  base::ScopedClosureRunner ForSecurityDropFullscreen() override
+      WARN_UNUSED_RESULT;
   void ResumeLoadingCreatedWebContents() override;
   void SetIsOverlayContent(bool is_overlay_content) override;
   bool IsFocusedElementEditable() override;
@@ -563,12 +565,14 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHost* render_frame_host,
       bool is_reload,
       JavaScriptDialogCallback response_callback) override;
-  void RunFileChooser(RenderFrameHost* render_frame_host,
-                      std::unique_ptr<content::FileSelectListener> listener,
-                      const blink::mojom::FileChooserParams& params) override;
-  void EnumerateDirectory(RenderFrameHost* render_frame_host,
-                          std::unique_ptr<FileSelectListener> listener,
-                          const base::FilePath& directory_path) override;
+  void RunFileChooser(
+      RenderFrameHost* render_frame_host,
+      std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
+      const blink::mojom::FileChooserParams& params) override;
+  void EnumerateDirectory(
+      RenderFrameHost* render_frame_host,
+      std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
+      const base::FilePath& directory_path) override;
   void DidCancelLoading() override;
   void DidAccessInitialDocument() override;
   void DidChangeName(RenderFrameHost* render_frame_host,
@@ -706,6 +710,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnPageScaleFactorChanged(RenderFrameHostImpl* source,
                                 float page_scale_factor) override;
   bool HasSeenRecentScreenOrientationChange() override;
+  void CreateNewWidget(int32_t render_process_id,
+                       int32_t route_id,
+                       mojo::PendingRemote<mojom::Widget> widget) override;
+  void CreateNewFullscreenWidget(
+      int32_t render_process_id,
+      int32_t widget_route_id,
+      mojo::PendingRemote<mojom::Widget> widget) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -737,14 +748,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnIgnoredUIEvent() override;
   void Activate() override;
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
-  void CreateNewWidget(int32_t render_process_id,
-                       int32_t route_id,
-                       mojo::PendingRemote<mojom::Widget> widget,
-                       RenderViewHostImpl* render_view_host) override;
-  void CreateNewFullscreenWidget(int32_t render_process_id,
-                                 int32_t widget_route_id,
-                                 mojo::PendingRemote<mojom::Widget> widget,
-                                 RenderViewHostImpl* render_view_host) override;
   void ShowCreatedWidget(int process_id,
                          int widget_route_id,
                          const gfx::Rect& initial_rect) override;
@@ -1365,6 +1368,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnDialogClosed(int render_process_id,
                       int render_frame_id,
                       JavaScriptDialogCallback response_callback,
+                      base::ScopedClosureRunner fullscreen_block,
                       bool dialog_was_suppressed,
                       bool success,
                       const base::string16& user_input);
@@ -1475,8 +1479,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
                        bool is_fullscreen,
-                       mojo::PendingRemote<mojom::Widget> widget,
-                       RenderViewHostImpl* render_view_host);
+                       mojo::PendingRemote<mojom::Widget> widget);
 
   // Helper for ShowCreatedWidget/ShowCreatedFullscreenWidget.
   void ShowCreatedWidget(int process_id,
@@ -1783,6 +1786,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // See description above setter.
   bool closed_by_user_gesture_;
+
+  // The number of active fullscreen blockers.
+  int fullscreen_blocker_count_ = 0;
 
   // Minimum/maximum zoom percent.
   const int minimum_zoom_percent_;

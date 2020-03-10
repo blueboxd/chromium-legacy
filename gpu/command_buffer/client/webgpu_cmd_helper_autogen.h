@@ -37,11 +37,13 @@ void AssociateMailboxImmediate(GLuint64 device_client_id,
   }
 }
 
-void DissociateMailbox(GLuint texture_id, GLuint texture_generation) {
+void DissociateMailbox(GLuint64 device_client_id,
+                       GLuint texture_id,
+                       GLuint texture_generation) {
   webgpu::cmds::DissociateMailbox* c =
       GetCmdSpace<webgpu::cmds::DissociateMailbox>();
   if (c) {
-    c->Init(texture_id, texture_generation);
+    c->Init(device_client_id, texture_id, texture_generation);
   }
 }
 

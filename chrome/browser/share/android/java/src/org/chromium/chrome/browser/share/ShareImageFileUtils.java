@@ -123,7 +123,17 @@ public class ShareImageFileUtils {
         OnImageSaveListener listener = new OnImageSaveListener() {
             @Override
             public void onImageSaved(File imageFile) {
-                callback.onResult(ContentUriUtils.getContentUriFromFile(imageFile));
+                new AsyncTask<Uri>() {
+                    @Override
+                    protected Uri doInBackground() {
+                        return ContentUriUtils.getContentUriFromFile(imageFile);
+                    }
+
+                    @Override
+                    protected void onPostExecute(Uri uri) {
+                        callback.onResult(uri);
+                    }
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
             @Override
             public void onImageSaveError() {}

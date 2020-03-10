@@ -180,9 +180,8 @@ int OpaqueBrowserFrameViewLayout::DefaultCaptionButtonY(bool restored) const {
              : views::NonClientFrameView::kFrameShadowThickness;
 }
 
-int OpaqueBrowserFrameViewLayout::CaptionButtonY(
-    chrome::FrameButtonDisplayType button_id,
-    bool restored) const {
+int OpaqueBrowserFrameViewLayout::CaptionButtonY(views::FrameButton button_id,
+                                                 bool restored) const {
   return DefaultCaptionButtonY(restored);
 }
 
@@ -198,24 +197,6 @@ gfx::Rect OpaqueBrowserFrameViewLayout::CalculateClientAreaBounds(
   return gfx::Rect(border_thickness, top_height,
                    std::max(0, width - (2 * border_thickness)),
                    std::max(0, height - top_height - border_thickness));
-}
-
-chrome::FrameButtonDisplayType
-OpaqueBrowserFrameViewLayout::GetButtonDisplayType(
-    views::FrameButton button_id) const {
-  switch (button_id) {
-    case views::FrameButton::kMinimize:
-      return chrome::FrameButtonDisplayType::kMinimize;
-    case views::FrameButton::kMaximize:
-      return delegate_->IsMaximized()
-                 ? chrome::FrameButtonDisplayType::kRestore
-                 : chrome::FrameButtonDisplayType::kMaximize;
-    case views::FrameButton::kClose:
-      return chrome::FrameButtonDisplayType::kClose;
-    default:
-      NOTREACHED();
-      return chrome::FrameButtonDisplayType::kClose;
-  }
 }
 
 int OpaqueBrowserFrameViewLayout::GetWindowCaptionSpacing(
@@ -422,7 +403,7 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
     views::FrameButton button_id,
     views::Button* button,
     ButtonAlignment alignment) {
-  const int caption_y = CaptionButtonY(GetButtonDisplayType(button_id), false);
+  const int caption_y = CaptionButtonY(button_id, false);
 
   // There should always be the same number of non-shadow pixels visible to the
   // side of the caption buttons.  In maximized mode we extend buttons to the

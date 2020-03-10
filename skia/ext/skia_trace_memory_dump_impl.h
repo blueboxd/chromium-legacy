@@ -43,6 +43,9 @@ class SK_API SkiaTraceMemoryDumpImpl : public SkTraceMemoryDump {
                         const char* valueName,
                         const char* units,
                         uint64_t value) override;
+  void dumpStringValue(const char* dump_name,
+                       const char* value_name,
+                       const char* value) override;
   void setMemoryBacking(const char* dumpName,
                         const char* backingType,
                         const char* backingObjectId) override;

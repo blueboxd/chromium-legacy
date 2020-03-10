@@ -573,8 +573,6 @@
 <translation id="177336675152937177">Barındırılan uygulama verileri</translation>
 <translation id="1776712937009046120">Kullanıcı ekle</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Bu cihaz <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tarafından yönetiliyor.
-    <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hesabınızda oturum açmaya devam etmek için lütfen "Sonraki"yi tıklayın.</translation>
 <translation id="1779652936965200207">Lütfen bu parolayı "<ph name="DEVICE_NAME" />" cihazında girin:</translation>
 <translation id="177989070088644880">Uygulama (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Grubu Kapat</translation>
@@ -887,7 +885,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2202898655984161076">Yazıcılar listelenirken sorun oluştu. Yazıcılarınızın bazıları <ph name="CLOUD_PRINT_NAME" /> üzerinde başarılı olarak kayıt edilmemiş olabilir.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />Adres çubuğunda<ph name="END_LINK" /> kullanılan arama motoru</translation>
 <translation id="2204034823255629767">Yazdığınız her şeyi okuma ve değiştirme</translation>
-<translation id="220792432208469595">Kullanım ve teşhis verilerini gönder. Bu cihaz şu anda teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a gönderiyor. Bu veriler, sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Bu ayar, cihazın sahibi tarafından zorunlu kılınmıştır. Ek Web ve Uygulama Etkinliği açıksa bu veriler Google Hesabınıza kaydedilebilir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Lütfen "<ph name="DEVICE_NAME" />" cihazında bu PIN kodunu girin:</translation>
 <translation id="2212565012507486665">Çerezlere izin ver</translation>
 <translation id="2213140827792212876">Paylaşımı kaldır</translation>
@@ -1343,7 +1340,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2804043232879091219">Alternatif tarayıcı açılamadı</translation>
 <translation id="2804667941345577550">Açık sekmeler dahil olmak üzere bu sitede oturumunuz kapatılacak</translation>
 <translation id="2804680522274557040">Kamera devre dışı bırakıldı</translation>
-<translation id="2805539617243680210">Her şey hazır!</translation>
 <translation id="2805646850212350655">Microsoft Şifreleme Dosya Sistemi</translation>
 <translation id="2805756323405976993">Uygulamalar</translation>
 <translation id="2805770823691782631">Ek ayrıntılar</translation>
@@ -2021,6 +2017,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3742055079367172538">Ekran görüntüsü alındı</translation>
 <translation id="3742666961763734085">Belirtilen ada sahip bir kuruluş birimi bulunamadı. Lütfen tekrar deneyin.</translation>
 <translation id="3744111561329211289">Arka plan senkronizasyonu</translation>
+<translation id="3747077776423672805">Uygulamaları kaldırmak için Ayarlar &gt; Google Play Store &gt; Android tercihlerini yönet &gt; Uygulamalar veya Uygulama yöneticisi'ne gidin. Daha sonra, yüklemesini kaldırmak istediğiniz uygulamaya dokunun (uygulamayı bulmak için sağa veya sola doğru hızlıca kaydırmanız gerekebilir). Ardından, Yüklemeyi Kaldır veya Devre Dışı Bırak'a dokunun.</translation>
 <translation id="3748026146096797577">Bağlı Değil</translation>
 <translation id="3752582316358263300">Tamam...</translation>
 <translation id="3752673729237782832">Cihazlarım</translation>
@@ -2741,7 +2738,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4785719467058219317">Bu web sitesine kaydettirilmemiş bir anahtar kullanıyorsunuz</translation>
 <translation id="4788092183367008521">Lütfen ağ bağlantınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="4792711294155034829">&amp;Sorun Bildirin...</translation>
-<translation id="4795022432560487924">Kullanım ve teşhis verilerini gönder. Teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a göndererek çocuğunuzun Android deneyiminin iyileştirilmesine yardımcı olun. Bu veriler, çocuğunuzun kimliğini tespit etmek için kullanılmaz; sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Bu ayar, cihazın sahibi tarafından zorunlu kılınmıştır. Cihazın sahibi bu cihazın teşhis ve kullanım verilerini Google'a göndermeyi seçebilir. Çocuğunuz için ek Web ve Uygulama Etkinliği açıksa bu veriler çocuğunuzun Google Hesabına kaydedilebilir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Web sayfası, Sadece HTML</translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth Günlükleri<ph name="END_LINK" /> ekle (Google dahili)</translation>
 <translation id="4801448226354548035">Hesapları gizle</translation>
@@ -3362,6 +3358,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5649053991847567735">Otomatik indirmeler</translation>
 <translation id="5653154844073528838">Kaydedilmiş <ph name="PRINTER_COUNT" /> yazıcınız var.</translation>
 <translation id="5656845498778518563">Google'a Geri Bildirim gönder</translation>
+<translation id="5657156137487675418">Tüm çerezlere izin ver</translation>
 <translation id="5657667036353380798">Harici uzantının yüklenebilmesi için Chrome sürümü <ph name="MINIMUM_CHROME_VERSION" /> veya daha yenisi gerekir.</translation>
 <translation id="5658415415603568799">Daha fazla güvenlik için Smart Lock 20 saat sonra şifrenizi girmenizi isteyecektir.</translation>
 <translation id="5659593005791499971">E-posta</translation>
@@ -3568,7 +3565,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5941711191222866238">Simge durumuna küçült</translation>
 <translation id="5942964813783878922">Bu güncellemeden sonra <ph name="DEVICE_TYPE" /> cihazınız yeniden başlatılır. Gelecekteki yazılım ve güvenlik güncellemeleri otomatik olarak yüklenir.</translation>
 <translation id="5944869793365969636">QR kodunu tara</translation>
-<translation id="5945188205370098537">Kullanım ve teşhis verilerini gönder. Teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a göndererek Android deneyiminizin iyileştirilmesine yardımcı olun. Bu veriler, sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Ek Web ve Uygulama Etkinliği açıksa bu veriler Google Hesabınıza kaydedilebilir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Rapor kimliği <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Dosya ayrıştırılamıyor</translation>
 <translation id="5955282598396714173">Şifrenizin süresi doldu. Şifrenizi değiştirmek için lütfen oturumu kapatıp tekrar oturum açın.</translation>
@@ -3752,6 +3748,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6185132558746749656">Cihaz Konumu</translation>
 <translation id="6186394685773237175">Güvenliği ihlal edilmiş şifre bulunmadı</translation>
 <translation id="6195693561221576702">Bu cihaz çevrimdışı demo modunda kurulamıyor.</translation>
+<translation id="6196640612572343990">Üçüncü taraf çerezlerini engelle</translation>
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" uzantısı proxy ayarlarınızın denetimini ele geçirdi. Bu, uzantının çevrimiçinde yaptıklarınızı değiştirebileceği, kesebileceği veya dinleyebileceği anlamına gelir. Bu değişikliğin neden gerçekleştiğinden emin değilseniz muhtemelen bu değişikliği yapmayı istememişsinizdir.</translation>
 <translation id="6198102561359457428">Oturumu kapatıp tekrar açın...</translation>
 <translation id="6198252989419008588">PIN'i değiştir</translation>
@@ -4415,7 +4412,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="711902386174337313">Oturum açmış cihazlarınızın listesini okuma</translation>
 <translation id="7120865473764644444">Senkronizasyon sunucusuna bağlanılamadı. Yeniden deneniyor…</translation>
 <translation id="7121362699166175603">Geçmişi ve adres çubuğundaki otomatik tamamlamaları temizler. Google Hesabınızın <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde başka biçimlerde tarama geçmişi olabilir.</translation>
-<translation id="7121389946694989825">Kullanım ve teşhis verilerini gönder. Bu cihaz şu anda teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a gönderiyor. Bu veriler, çocuğunuzun kimliğini tespit etmek için kullanılmaz; sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Çocuğunuz için ek Web ve Uygulama Etkinliği açıksa bu veriler çocuğunuzun Google Hesabına kaydedilebilir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Geliştirici Modu</translation>
 <translation id="7121728544325372695">Akıllı Kısa Çizgiler</translation>
 <translation id="7123360114020465152">Artık desteklenmiyor</translation>
@@ -5197,7 +5193,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Sekmeyi yeni pencereye taşı}other{Sekmeleri yeni pencereye taşı}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">sayfa</translation>
-<translation id="8180294223783876911">Kullanım ve teşhis verilerini gönder. Bu cihaz şu anda teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a gönderiyor. Bu veriler, sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Ek Web ve Uygulama Etkinliği açıksa bu veriler Google Hesabınıza kaydedilebilir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />", işaretli konumlardaki resimleri, videoları ve ses dosyalarını okuyabilir ve silebilir.</translation>
 <translation id="8181215761849004992">Alan adına katılınamıyor. Hesabınızı kontrol ederek, cihazları eklemek için yeterli ayrıcalıklara sahip olduğunuzdan emin olun.</translation>
 <translation id="8182105986296479640">Uygulama yanıt vermiyor.</translation>
@@ -5219,7 +5214,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8203732864715032075">Size bildirimler gönderir ve Mesajlar uygulaması için bu bilgisayarın hatırlanmasını varsayılan ayar yapar. <ph name="LINK_BEGIN" />Daha fazla bilgi<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">"<ph name="APP_NAME" />", ebeveyniniz tarafından engellendi. Bu uygulamayı kullanmak için ebeveyninizden izin isteyin.</translation>
 <translation id="820568752112382238">En çok ziyaret edilen siteler</translation>
-<translation id="8206581664590136590">Kullanım ve teşhis verilerini gönder. Teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a göndererek çocuğunuzun Android deneyiminin iyileştirilmesine yardımcı olun. Bu veriler, çocuğunuzun kimliğini tespit etmek için kullanılmaz; sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Çocuğunuz için ek Web ve Uygulama Etkinliği açıksa bu veriler çocuğunuzun Google Hesabına kaydedilebilir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Melodi</translation>
 <translation id="8206859287963243715">Cep telefonu</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{İndirme işlemi devam ediyor}other{İndirme işlemleri devam ediyor}}</translation>
@@ -5759,7 +5753,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8912362522468806198">Google Hesabı</translation>
 <translation id="8912793549644936705">Uzat</translation>
 <translation id="8912810933860534797">Otomatik taramayı etkinleştir</translation>
-<translation id="891365694296252935">Kullanım ve teşhis verilerini gönder. Bu cihaz şu anda teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a gönderiyor. Bu veriler, çocuğunuzun kimliğini tespit etmek için kullanılmaz; sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Bu ayar, cihazın sahibi tarafından zorunlu kılınmıştır. Çocuğunuz için ek Web ve Uygulama Etkinliği açıksa bu veriler çocuğunuzun Google Hesabına kaydedilebilir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Öneriler yükleniyor</translation>
 <translation id="8916476537757519021">Gizli Alt Çerçeve: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Güvenlik anahtarınız doğrulanıyor...</translation>
@@ -5896,7 +5889,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="9101691533782776290">Uygulamayı başlat</translation>
 <translation id="9102610709270966160">Uzantıyı Etkinleştir</translation>
 <translation id="9103868373786083162">Geri gitmek için içerik menüsüne basarak geçmişi görüntüleyin</translation>
-<translation id="9104396740804929809">Kullanım ve teşhis verilerini gönder. Teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a göndererek Android deneyiminizin iyileştirilmesine yardımcı olun. Bu veriler, sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Bu ayar, cihazın sahibi tarafından zorunlu kılınmıştır. Cihazın sahibi bu cihazın teşhis ve kullanım verilerini Google'a göndermeyi seçebilir. Ek Web ve Uygulama Etkinliği açıksa bu veriler Google Hesabınıza kaydedilebilir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Yer açmak için cihaz depolama alanındaki dosyaları silin.</translation>
 <translation id="9109283579179481106">Mobil ağa bağlanın</translation>
 <translation id="9111102763498581341">Kilidi Aç</translation>

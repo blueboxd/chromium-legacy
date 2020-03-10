@@ -574,8 +574,6 @@
 <translation id="177336675152937177">Data ya programu iliyopangishwa</translation>
 <translation id="1776712937009046120">Ongeza mtumiaji</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Kifaa hiki kinadhibitiwa na <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />
-    Tafadhali bofya kwenye "Inayofuata" ili uendelee kuingia katika akaunti yako ya <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Tafadhali weka nenosiri hili kwenye "<ph name="DEVICE_NAME" />":</translation>
 <translation id="177989070088644880">Programu (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Funga Kikundi</translation>
@@ -889,7 +887,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2202898655984161076">Kulikuwa na tatizo wakati wa kuongeza printa. Huenda baadhi ya printa zako hazikuweza kusajili kwenye <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Mtambo wa kutafuta uliotumiwa kwenye <ph name="BEGIN_LINK" />sehemu ya anwani<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Kusoma na kubadilisha chochote unachocharaza</translation>
-<translation id="220792432208469595">Tuma data ya matumizi na uchunguzi. Kwa sasa, kifaa hiki kinatuma kiotomatiki data ya uchunguzi na matumizi ya programu na kifaa kwa Google. Maelezo haya yatatusaidia kuboresha uthabiti wa programu na mfumo na maboresho mengine. Baadhi ya maelezo yaliyojumlishwa pia yatasaidia programu za Google na washirika kama vile wasanidi programu za Android. Mipangilio hii inatekelezwa na mmiliki. Ikiwa umewasha mipangilio ya historia ya Shughuli za ziada kwenye Wavuti na Programu, huenda data hii itahifadhiwa kwenye Akaunti yako ya Google. <ph name="BEGIN_LINK1" />Pata maelezo zaidi<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Tafadhali weka nambari hii ya PIN kwenye "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Ruhusu vidakuzi</translation>
 <translation id="2213140827792212876">Ondoa faili ya kushiriki</translation>
@@ -1350,7 +1347,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2804043232879091219">Tumeshindwa kufungua kivinjari mbadala</translation>
 <translation id="2804667941345577550">Utaondolewa kwenye akaunti ya tovuti hii, ikiwemo vichupo ambavyo umefungua</translation>
 <translation id="2804680522274557040">Kamera imezimwa</translation>
-<translation id="2805539617243680210">Kila kitu kiko tayari!</translation>
 <translation id="2805646850212350655">Mfumo wa Microsoft wa Usimbaji wa Faili</translation>
 <translation id="2805756323405976993">Programu</translation>
 <translation id="2805770823691782631">Maelezo ya ziada</translation>
@@ -2031,6 +2027,7 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="3742055079367172538">Picha ya skrini imepigwa</translation>
 <translation id="3742666961763734085">Imeshindwa kupata kitengo cha shirika kinachotumia jina hilo. Tafadhali jaribu tena.</translation>
 <translation id="3744111561329211289">Usawazishaji wa chini chini</translation>
+<translation id="3747077776423672805">Ili kuondoa programu, nenda kwenye Mipangilio &gt; Duka la Google Play &gt;Mapendeleo ya Kudhibiti Android &gt; Kidhibiti cha programu. Kisha uguse programu unayotaka kuondoa (huenda utahitaji kutelezesha kidole kulia au kushoto ili kupata programu). Kisha uguse 'Ondoa' au 'Zima'.</translation>
 <translation id="3748026146096797577">Haujaunganishwa</translation>
 <translation id="3752582316358263300">Sawa...</translation>
 <translation id="3752673729237782832">Vifaa vyangu</translation>
@@ -2752,7 +2749,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4785719467058219317">Unatumia ufunguo wa usalama ambao haujasajiliwa kwenye tovuti hii</translation>
 <translation id="4788092183367008521">Tafadhali kagua muunganisho wako wa mtandao na ujaribu tena.</translation>
 <translation id="4792711294155034829">&amp;Ripoti Tatizo...</translation>
-<translation id="4795022432560487924">Tuma data ya matumizi na uchunguzi. Tusaidie kuboresha jinsi mtoto wako anavyotumia Android kwa kutuma kiotomatiki data ya uchunguzi na matumizi ya kifaa na programu kwa Google. Hatutatumia data hii kumtambulisha mtoto wako na itatusaidia kuboresha uthabiti wa programu na mfumo na maboresho mengine. Baadhi ya maelezo yaliyojumlishwa pia yatasaidia programu za Google na washirika kama vile wasanidi programu za Android. Mipangilio hii inatekelezwa na mmiliki. Mmiliki anaweza kuamua kutuma data ya uchunguzi na matumizi ya kifaa hiki kwa Google. Ikiwa umewasha mipangilio ya historia ya Shughuli za ziada kwenye Wavuti na Programu ya mtoto wako, data hii inaweza kuhifadhiwa kwenye Akaunti yake ya Google. <ph name="BEGIN_LINK1" />Pata maelezo zaidi<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Ukurasa wavuti, HTML Pekee</translation>
 <translation id="4798236378408895261">Ambatisha <ph name="BEGIN_LINK" />Kumbukumbu za Bluetooth<ph name="END_LINK" /> (Isitoke nje ya Google)</translation>
 <translation id="4801448226354548035">Ficha akaunti</translation>
@@ -3379,6 +3375,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5649053991847567735">Vipakuliwa vya kiotomatiki</translation>
 <translation id="5653154844073528838">Umehifadhi printa <ph name="PRINTER_COUNT" />.</translation>
 <translation id="5656845498778518563">Tuma Maoni kwa Google</translation>
+<translation id="5657156137487675418">Ruhusu vidakuzi vyote</translation>
 <translation id="5657667036353380798">Kiendelezi cha nje kinahitaji toleo la chrome la <ph name="MINIMUM_CHROME_VERSION" /> au zaidi ili kisakinishwe.</translation>
 <translation id="5658415415603568799">Kwa usalama wa ziada, Smart Lock itakuomba uweke nenosiri lako baada ya saa 20.</translation>
 <translation id="5659593005791499971">Barua pepe</translation>
@@ -3586,7 +3583,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5941711191222866238">Punguza</translation>
 <translation id="5942964813783878922"><ph name="DEVICE_TYPE" /> yako itazima kisha iwake baada ya sasisho hili. Masasisho ya baadaye ya programu na usalama yatasakinishwa kiotomatiki.</translation>
 <translation id="5944869793365969636">Changanua msimbo wa QR</translation>
-<translation id="5945188205370098537">Tuma data ya matumizi na uchunguzi. Tusaidie kuboresha jinsi unavyotumia Android kwa kutuma kiotomatiki data ya uchunguzi na matumizi ya kifaa na programu kwa Google. Maelezo haya yatatusaidia kuboresha uthabiti wa programu na mfumo na maboresho mengine. Baadhi ya maelezo yaliyojumlishwa pia yatasaidia programu za Google na washirika kama vile wasanidi programu za Android. Ikiwa umewasha mipangilio ya historia ya Shughuli za ziada kwenye Wavuti na Programu, huenda data hii itahifadhiwa kwenye Akaunti yako ya Google. <ph name="BEGIN_LINK1" />Pata maelezo zaidi<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Kitambulisho cha ripoti <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Imeshindwa kuchanganua faili</translation>
 <translation id="5955282598396714173">Nenosiri lako limekwisha muda. Tafadhali ondoka kisha uingie katika akaunti tena ili ulibadilishe.</translation>
@@ -3772,6 +3768,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6185132558746749656">Mahali Kifaa Kilipo</translation>
 <translation id="6186394685773237175">Hatukupata manenosiri yaliyoathiriwa</translation>
 <translation id="6195693561221576702">Kifaa hiki hakiwezi kuwekewa mipangilio katika hali ya onyesho la nje ya mtandao.</translation>
+<translation id="6196640612572343990">Zuia vidakuzi vya tovuti nyingine</translation>
 <translation id="6196854373336333322">Kiendelezi hiki "<ph name="EXTENSION_NAME" />" kinadhibiti mipangilio yako ya seva mbadala, kumaanisha kuwa kinaweza kubadilisha, kuvunja, au kufuatilia chochote unachokifanya mtandaoni. Ikiwa huna uhakika kwa nini mabadiliko haya yamefanyika, huenda huyahitaji.</translation>
 <translation id="6198102561359457428">Ondoka na kisha uingie tena...</translation>
 <translation id="6198252989419008588">Badilisha PIN</translation>
@@ -4438,7 +4435,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="711902386174337313">Soma orodha ya vifaa vyako ulivyoingia</translation>
 <translation id="7120865473764644444">Haikuweza kuunganisha kwenye seva ya usawazishaji. Inajaribu tena...</translation>
 <translation id="7121362699166175603">Hufuta historia na ukamilishaji kiotomatiki kwenye sehemu ya anwani. Huenda Akaunti yako ya Google ikawa na aina nyingine za historia ya kuvinjari kwenye <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Tuma data ya matumizi na uchunguzi. Kwa sasa, kifaa hiki kinatuma kiotomatiki data ya uchunguzi na matumizi ya programu na kifaa kwa Google. Hatutatumia data hii kumtambulisha mtoto wako na itatusaidia kuboresha uthabiti wa programu na mfumo na maboresho mengine. Baadhi ya maelezo yaliyojumlishwa pia yatasaidia programu za Google na washirika kama vile wasanidi programu za Android. Ikiwa umewasha mipangilio ya historia ya Shughuli za ziada kwenye Wavuti na Programu ya mtoto wako, data hii inaweza kuhifadhiwa kwenye Akaunti yake ya Google. <ph name="BEGIN_LINK1" />Pata maelezo zaidi<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Hali ya Wasanidi Programu</translation>
 <translation id="7121728544325372695">Dashi Mahiri</translation>
 <translation id="7123360114020465152">Haitumiki tena</translation>
@@ -4553,7 +4549,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7280041992884344566">Hitilafu imetokea Chrome ilipokuwa ikitafuta programu hatari</translation>
 <translation id="7280649757394340890">Mipangilio ya sauti ya Ubadilishaji wa Maandishi kwenda Usemi</translation>
 <translation id="7280877790564589615">Ruhusa imeombwa</translation>
-<translation id="7281268427852119151">Tumia historia yako ya kuvinjari ili uweke mapendeleo kwenye huduma ya Tafuta na Google, matangazo na huduma nyingine za Google</translation>
 <translation id="7282992757463864530">Upau wa maelezo</translation>
 <translation id="7287143125007575591">Umenyimwa idhini ya kufikia.</translation>
 <translation id="7287411021188441799">Rejesha mandhari chaguomsingi</translation>
@@ -5230,7 +5225,6 @@ Weka faili yako ya funguo mahali salama. Utaihitaji kuunda matoleo mapya ya kien
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Hamishia kichupo kwenye dirisha jipya}other{Hamishia vichupo kwenye dirisha jipya}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">ukurasa</translation>
-<translation id="8180294223783876911">Tuma data ya matumizi na uchunguzi. Kwa sasa, kifaa hiki kinatuma kiotomatiki data ya uchunguzi na matumizi ya programu na kifaa kwa Google. Maelezo haya yatatusaidia kuboresha uthabiti wa programu na mfumo na maboresho mengine. Baadhi ya maelezo yaliyojumlishwa pia yatasaidia programu za Google na washirika kama vile wasanidi programu za Android. Ikiwa umewasha mipangilio ya historia ya Shughuli za ziada kwenye Wavuti na Programu, huenda data hii itahifadhiwa kwenye Akaunti yako ya Google. <ph name="BEGIN_LINK1" />Pata maelezo zaidi<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" inaweza kusoma na kufuta picha, video, na faili za sauti katika maeneo yaliyowekewa alama.</translation>
 <translation id="8181215761849004992">Imeshindwa kuunganisha kwenye kikoa. Angalia akaunti yako ili uone ikiwa una ruhusa zinazohitajika kuongeza vifaa.</translation>
 <translation id="8182105986296479640">Programu haifanyi kazi</translation>
@@ -5252,7 +5246,6 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="8203732864715032075">Kukutumia arifa na mipangilio chaguomsingi ili ukumbuke kompyuta hii kwa ajili ya Ujumbe. <ph name="LINK_BEGIN" />Pata maelezo zaidi<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">"<ph name="APP_NAME" />" imezuiwa na mzazi wako. Mwombe mzazi wako ruhusa ya kutumia programu hii.</translation>
 <translation id="820568752112382238">Tovuti zilizotembelewa zaidi</translation>
-<translation id="8206581664590136590">Tuma data ya matumizi na uchunguzi. Tusaidie kuboresha jinsi mtoto wako anavyotumia Android kwa kutuma kiotomatiki data ya uchunguzi na matumizi ya kifaa na programu kwa Google. Hatutatumia data hii kumtambulisha mtoto wako na itatusaidia kuboresha uthabiti wa programu na mfumo na maboresho mengine. Baadhi ya maelezo yaliyojumlishwa pia yatasaidia programu za Google na washirika kama vile wasanidi programu za Android. Ikiwa umewasha mipangilio ya historia ya Shughuli za ziada kwenye Wavuti na Programu ya mtoto wako, data hii inaweza kuhifadhiwa kwenye Akaunti yake ya Google. <ph name="BEGIN_LINK1" />Pata maelezo zaidi<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Kimuziki</translation>
 <translation id="8206859287963243715">Simu ya Mkononi</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Inaendelea kupakua}other{Inaendelea kupakua}}</translation>
@@ -5798,7 +5791,6 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="8912362522468806198">Akaunti ya Google</translation>
 <translation id="8912793549644936705">Panua</translation>
 <translation id="8912810933860534797">Washa ukaguzi wa kiotomatiki</translation>
-<translation id="891365694296252935">Tuma data ya matumizi na uchunguzi. Kwa sasa, kifaa hiki kinatuma kiotomatiki data ya uchunguzi na matumizi ya programu na kifaa kwa Google. Hatutatumia hatua hii kumtambulisha mtoto wako na itatusaidia kuboresha uthabiti wa programu na mfumo na maboresho mengine. Baadhi ya maelezo yaliyojumlishwa pia yatasaidia programu za Google na washirika kama vile wasanidi programu za Android. Mipangilio hii inatekelezwa na mmiliki. Ikiwa umewasha mipangilio ya historia ya Shughuli za ziada kwenye Wavuti na Programu ya mtoto wako, data hii inaweza kuhifadhiwa kwenye Akaunti yake ya Google. <ph name="BEGIN_LINK1" />Pata maelezo zaidi<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Inapakia pendekezo</translation>
 <translation id="8916476537757519021">Fremu ndogo ya Hali Fiche: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Inathibitisha ufunguo wako wa usalama...</translation>
@@ -5935,7 +5927,6 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="9101691533782776290">Zindua programu</translation>
 <translation id="9102610709270966160">Ruhusu Kiendelezi</translation>
 <translation id="9103868373786083162">Bonyeza ili kurudi nyuma, bonyeza menyu ili uone historia</translation>
-<translation id="9104396740804929809">Tuma data ya matumizi na uchunguzi. Tusaidie kuboresha jinsi unavyotumia Android kwa kutuma kiotomatiki data ya uchunguzi na matumizi ya kifaa na programu kwa Google. Maelezo haya yatatusaidia kuboresha uthabiti wa programu na mfumo na maboresho mengine. Baadhi ya maelezo yaliyojumlishwa pia yatasaidia programu za Google na washirika kama vile wasanidi programu za Android. Mipangilio hii inatekelezwa na mmiliki. Mmiliki anaweza kuamua kutuma data ya uchunguzi na matumizi ya kifaa hiki kwa Google. Ikiwa umewasha mipangilio ya historia ya Shughuli za ziada kwenye Wavuti na Programu, huenda data hii itahifadhiwa kwenye Akaunti yako ya Google. <ph name="BEGIN_LINK1" />Pata maelezo zaidi<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Ili kupata nafasi, futa faili kutoka kwenye hifadhi ya kifaa.</translation>
 <translation id="9109283579179481106">Unganisha kwenye mtandao wa simu</translation>
 <translation id="9111102763498581341">Fungua</translation>

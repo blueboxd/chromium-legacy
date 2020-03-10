@@ -173,47 +173,36 @@ class AudioInputTest : public testing::Test {
 };
 
 // Test create and close of an AudioInputStream without recording audio.
-TEST_F(AudioInputTest, CreateAndClose) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioInputTest, DISABLED_CreateAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
   CloseAudioInputStreamOnAudioThread();
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// This test is failing on ARM linux: http://crbug.com/238490
-#define MAYBE_OpenAndClose DISABLED_OpenAndClose
-#else
-#define MAYBE_OpenAndClose OpenAndClose
-#endif
 // Test create, open and close of an AudioInputStream without recording audio.
-TEST_F(AudioInputTest, MAYBE_OpenAndClose) {
+// This test is failing on ARM linux: http://crbug.com/238490
+// Disabled: crbug.com/1060165
+TEST_F(AudioInputTest, DISABLED_OpenAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
   OpenAndCloseAudioInputStreamOnAudioThread();
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// This test is failing on ARM linux: http://crbug.com/238490
-#define MAYBE_OpenStopAndClose DISABLED_OpenStopAndClose
-#else
-#define MAYBE_OpenStopAndClose OpenStopAndClose
-#endif
 // Test create, open, stop and close of an AudioInputStream without recording.
-TEST_F(AudioInputTest, MAYBE_OpenStopAndClose) {
+// This test is failing on ARM linux: http://crbug.com/238490
+// Disabled: crbug.com/1060165
+TEST_F(AudioInputTest, DISABLED_OpenStopAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
   OpenStopAndCloseAudioInputStreamOnAudioThread();
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// This test is failing on ARM linux: http://crbug.com/238490
-#define MAYBE_Record DISABLED_Record
-#else
-#define MAYBE_Record Record
-#endif
 // Test a normal recording sequence using an AudioInputStream.
 // Very simple test which starts capturing and verifies that recording starts.
-TEST_F(AudioInputTest, MAYBE_Record) {
+// This test is failing on ARM linux: http://crbug.com/238490
+// Disabled: crbug.com/1060165
+TEST_F(AudioInputTest, DISABLED_Record) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
 

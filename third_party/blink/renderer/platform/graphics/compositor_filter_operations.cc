@@ -110,6 +110,10 @@ bool CompositorFilterOperations::HasFilterThatMovesPixels() const {
   return filter_operations_.HasFilterThatMovesPixels();
 }
 
+bool CompositorFilterOperations::HasReferenceFilter() const {
+  return filter_operations_.HasReferenceFilter();
+}
+
 bool CompositorFilterOperations::operator==(
     const CompositorFilterOperations& o) const {
   return reference_box_ == o.reference_box_ &&

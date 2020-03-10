@@ -54,10 +54,10 @@ class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
       const std::string& component,
       int new_state);
 
-  void VerifyDisplayedString(const base::DictionaryValue* event,
-                             const base::string16& expected);
-  void VerifyDisplayedString(const base::DictionaryValue* event,
-                             const std::string& expected);
+  void VerifyDisplayString(const base::DictionaryValue* event,
+                           const base::string16& expected);
+  void VerifyDisplayString(const base::DictionaryValue* event,
+                           const std::string& expected);
 
  protected:
   TestVersionUpdater* version_updater_ = nullptr;
@@ -116,24 +116,24 @@ SafetyCheckHandlerTest::GetSafetyCheckStatusChangedWithDataIfExists(
   return nullptr;
 }
 
-void SafetyCheckHandlerTest::VerifyDisplayedString(
+void SafetyCheckHandlerTest::VerifyDisplayString(
     const base::DictionaryValue* event,
     const base::string16& expected) {
-  base::string16 displayed;
-  ASSERT_TRUE(event->GetString("displayedString", &displayed));
-  ReplaceBrowserName(&displayed);
+  base::string16 display;
+  ASSERT_TRUE(event->GetString("displayString", &display));
+  ReplaceBrowserName(&display);
   // Need to also replace any instances of Chrome and Chromium in the expected
   // string due to an edge case on ChromeOS, where a device name is "Chrome",
-  // which gets replaced in the displayed string.
+  // which gets replaced in the display string.
   base::string16 expected_replaced = expected;
   ReplaceBrowserName(&expected_replaced);
-  EXPECT_EQ(expected_replaced, displayed);
+  EXPECT_EQ(expected_replaced, display);
 }
 
-void SafetyCheckHandlerTest::VerifyDisplayedString(
+void SafetyCheckHandlerTest::VerifyDisplayString(
     const base::DictionaryValue* event,
     const std::string& expected) {
-  VerifyDisplayedString(event, base::ASCIIToUTF16(expected));
+  VerifyDisplayString(event, base::ASCIIToUTF16(expected));
 }
 
 void SafetyCheckHandlerTest::ReplaceBrowserName(base::string16* s) {
@@ -159,7 +159,7 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Checking) {
           kUpdates,
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kChecking));
   ASSERT_TRUE(event);
-  VerifyDisplayedString(event, base::UTF8ToUTF16("Running…"));
+  VerifyDisplayString(event, base::UTF8ToUTF16("Running…"));
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_Updated) {
@@ -174,9 +174,9 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Updated) {
   base::string16 expected = base::ASCIIToUTF16("Your ") +
                             ui::GetChromeOSDeviceName() +
                             base::ASCIIToUTF16(" is up to date");
-  VerifyDisplayedString(event, expected);
+  VerifyDisplayString(event, expected);
 #else
-  VerifyDisplayedString(event, "Browser is up to date");
+  VerifyDisplayString(event, "Browser is up to date");
 #endif
 }
 
@@ -189,9 +189,9 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Updating) {
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kUpdating));
   ASSERT_TRUE(event);
 #if defined(OS_CHROMEOS)
-  VerifyDisplayedString(event, "Updating your device");
+  VerifyDisplayString(event, "Updating your device");
 #else
-  VerifyDisplayedString(event, "Updating Browser");
+  VerifyDisplayString(event, "Updating Browser");
 #endif
 }
 
@@ -204,12 +204,12 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Relaunch) {
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kRelaunch));
   ASSERT_TRUE(event);
 #if defined(OS_CHROMEOS)
-  VerifyDisplayedString(
+  VerifyDisplayString(
       event, "Nearly up to date! Restart your device to finish updating.");
 #else
-  VerifyDisplayedString(event,
-                        "Nearly up to date! Relaunch Browser to finish "
-                        "updating. Incognito windows won't reopen.");
+  VerifyDisplayString(event,
+                      "Nearly up to date! Relaunch Browser to finish "
+                      "updating. Incognito windows won't reopen.");
 #endif
 }
 
@@ -222,7 +222,7 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_DisabledByAdmin) {
           kUpdates,
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kDisabledByAdmin));
   ASSERT_TRUE(event);
-  VerifyDisplayedString(
+  VerifyDisplayString(
       event,
       "Updates are managed by <a target=\"_blank\" "
       "href=\"https://support.google.com/accounts/answer/6208960\">your "
@@ -237,9 +237,9 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_FailedOffline) {
           kUpdates,
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kFailedOffline));
   ASSERT_TRUE(event);
-  VerifyDisplayedString(event,
-                        "Browser can't check for updates. Try checking your "
-                        "internet connection.");
+  VerifyDisplayString(event,
+                      "Browser can't check for updates. Try checking your "
+                      "internet connection.");
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_Failed) {
@@ -250,7 +250,7 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Failed) {
           kUpdates,
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kFailed));
   ASSERT_TRUE(event);
-  VerifyDisplayedString(
+  VerifyDisplayString(
       event,
       "Browser didn't update, something went wrong. <a target=\"_blank\" "
       "href=\"https://support.google.com/chrome/answer/111996\">Fix Browser "
@@ -267,9 +267,9 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Enabled) {
           kSafeBrowsing,
           static_cast<int>(SafetyCheckHandler::SafeBrowsingStatus::kEnabled));
   ASSERT_TRUE(event);
-  VerifyDisplayedString(event,
-                        "Safe Browsing is up to date and protecting you from "
-                        "harmful sites and downloads");
+  VerifyDisplayString(event,
+                      "Safe Browsing is up to date and protecting you from "
+                      "harmful sites and downloads");
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Disabled) {
@@ -282,7 +282,7 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Disabled) {
           kSafeBrowsing,
           static_cast<int>(SafetyCheckHandler::SafeBrowsingStatus::kDisabled));
   ASSERT_TRUE(event);
-  VerifyDisplayedString(
+  VerifyDisplayString(
       event, "Safe Browsing is off. To stay safe on the web, turn it on.");
 }
 
@@ -299,7 +299,7 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_DisabledByAdmin) {
           static_cast<int>(
               SafetyCheckHandler::SafeBrowsingStatus::kDisabledByAdmin));
   ASSERT_TRUE(event);
-  VerifyDisplayedString(
+  VerifyDisplayString(
       event,
       "<a target=\"_blank\" "
       "href=\"https://support.google.com/accounts/answer/6208960\">Your "
@@ -319,7 +319,7 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_DisabledByExtension) {
           static_cast<int>(
               SafetyCheckHandler::SafeBrowsingStatus::kDisabledByExtension));
   ASSERT_TRUE(event);
-  VerifyDisplayedString(event, "An extension has turned off Safe Browsing");
+  VerifyDisplayString(event, "An extension has turned off Safe Browsing");
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_ObserverRemovedAfterError) {
@@ -332,7 +332,7 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_ObserverRemovedAfterError) {
           kPasswords,
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking));
   ASSERT_TRUE(event);
-  VerifyDisplayedString(event, base::UTF8ToUTF16("Running…"));
+  VerifyDisplayString(event, base::UTF8ToUTF16("Running…"));
   // Second, an "offline" state.
   test_leak_service_->set_state_and_notify(
       password_manager::BulkLeakCheckService::State::kNetworkError);
@@ -341,9 +341,9 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_ObserverRemovedAfterError) {
           kPasswords,
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kOffline));
   ASSERT_TRUE(event2);
-  VerifyDisplayedString(event2,
-                        "Browser can't check your passwords. Try checking your "
-                        "internet connection.");
+  VerifyDisplayString(event2,
+                      "Browser can't check your passwords. Try checking your "
+                      "internet connection.");
   // Another error, but since the previous state is terminal, the handler should
   // no longer be observing the BulkLeakCheckService state.
   test_leak_service_->set_state_and_notify(
@@ -365,7 +365,7 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_InterruptedAndRefreshed) {
           kPasswords,
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking));
   ASSERT_TRUE(event);
-  VerifyDisplayedString(event, base::UTF8ToUTF16("Running…"));
+  VerifyDisplayString(event, base::UTF8ToUTF16("Running…"));
   // The check gets interrupted and the page is refreshed.
   safety_check_->DisallowJavascript();
   safety_check_->AllowJavascript();
@@ -385,7 +385,7 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_InterruptedAndRefreshed) {
           kPasswords,
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kSignedOut));
   ASSERT_TRUE(event3);
-  VerifyDisplayedString(
+  VerifyDisplayString(
       event3,
       "Browser can't check your passwords because you're not signed in");
 }
@@ -409,6 +409,6 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_StartedTwice) {
           kPasswords,
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kError));
   ASSERT_TRUE(event2);
-  VerifyDisplayedString(event2,
-                        "Browser can't check your passwords. Try again later.");
+  VerifyDisplayString(event2,
+                      "Browser can't check your passwords. Try again later.");
 }

@@ -133,6 +133,7 @@ class ProfileSyncService : public SyncService,
   ModelTypeSet GetRegisteredDataTypes() const override;
   ModelTypeSet GetPreferredDataTypes() const override;
   ModelTypeSet GetActiveDataTypes() const override;
+  ModelTypeSet GetBackedOffDataTypes() const override;
   void StopAndClear() override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
@@ -188,6 +189,7 @@ class ProfileSyncService : public SyncService,
   void OnConnectionStatusChange(ConnectionStatus status) override;
   void OnMigrationNeededForTypes(ModelTypeSet types) override;
   void OnActionableError(const SyncProtocolError& error) override;
+  void OnBackedOffTypesChanged() override;
 
   // DataTypeManagerObserver implementation.
   void OnConfigureDone(const DataTypeManager::ConfigureResult& result) override;

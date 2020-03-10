@@ -157,30 +157,50 @@ struct DissociateMailbox {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLuint _texture_id, GLuint _texture_generation) {
+  void Init(GLuint64 _device_client_id,
+            GLuint _texture_id,
+            GLuint _texture_generation) {
     SetHeader();
+    gles2::GLES2Util::MapUint64ToTwoUint32(
+        static_cast<uint64_t>(_device_client_id), &device_client_id_0,
+        &device_client_id_1);
     texture_id = _texture_id;
     texture_generation = _texture_generation;
   }
 
-  void* Set(void* cmd, GLuint _texture_id, GLuint _texture_generation) {
-    static_cast<ValueType*>(cmd)->Init(_texture_id, _texture_generation);
+  void* Set(void* cmd,
+            GLuint64 _device_client_id,
+            GLuint _texture_id,
+            GLuint _texture_generation) {
+    static_cast<ValueType*>(cmd)->Init(_device_client_id, _texture_id,
+                                       _texture_generation);
     return NextCmdAddress<ValueType>(cmd);
   }
 
+  GLuint64 device_client_id() const volatile {
+    return static_cast<GLuint64>(gles2::GLES2Util::MapTwoUint32ToUint64(
+        device_client_id_0, device_client_id_1));
+  }
+
   gpu::CommandHeader header;
+  uint32_t device_client_id_0;
+  uint32_t device_client_id_1;
   uint32_t texture_id;
   uint32_t texture_generation;
 };
 
-static_assert(sizeof(DissociateMailbox) == 12,
-              "size of DissociateMailbox should be 12");
+static_assert(sizeof(DissociateMailbox) == 20,
+              "size of DissociateMailbox should be 20");
 static_assert(offsetof(DissociateMailbox, header) == 0,
               "offset of DissociateMailbox header should be 0");
-static_assert(offsetof(DissociateMailbox, texture_id) == 4,
-              "offset of DissociateMailbox texture_id should be 4");
-static_assert(offsetof(DissociateMailbox, texture_generation) == 8,
-              "offset of DissociateMailbox texture_generation should be 8");
+static_assert(offsetof(DissociateMailbox, device_client_id_0) == 4,
+              "offset of DissociateMailbox device_client_id_0 should be 4");
+static_assert(offsetof(DissociateMailbox, device_client_id_1) == 8,
+              "offset of DissociateMailbox device_client_id_1 should be 8");
+static_assert(offsetof(DissociateMailbox, texture_id) == 12,
+              "offset of DissociateMailbox texture_id should be 12");
+static_assert(offsetof(DissociateMailbox, texture_generation) == 16,
+              "offset of DissociateMailbox texture_generation should be 16");
 
 struct RequestAdapter {
   typedef RequestAdapter ValueType;

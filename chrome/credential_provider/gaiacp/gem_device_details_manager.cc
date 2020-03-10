@@ -39,13 +39,16 @@ const char kUploadDeviceDetailsRequestSerialNumberParameterName[] =
     "device_serial_number";
 const char kUploadDeviceDetailsRequestMachineGuidParameterName[] =
     "machine_guid";
+const char kUploadDeviceDetailsRequestDeviceResourceIdParameterName[] =
+    "device_resource_id";
 const char kUploadDeviceDetailsRequestUserSidParameterName[] = "user_sid";
 const char kUploadDeviceDetailsRequestUsernameParameterName[] =
     "account_username";
 const char kUploadDeviceDetailsRequestDomainParameterName[] = "device_domain";
 const char kIsAdJoinedUserParameterName[] = "is_ad_joined_user";
 const char kMacAddressParameterName[] = "wlan_mac_addr";
-
+const char kUploadDeviceDetailsResponseDeviceResourceIdParameterName[] =
+    "deviceResourceId";
 }  // namespace
 
 // static
@@ -77,8 +80,6 @@ GURL GemDeviceDetailsManager::GetGemServiceUploadDeviceDetailsUrl() {
 // Uploads the device details into GEM database using |access_token| for
 // authentication and authorization. The GEM service would use |serial_number|
 // and |machine_guid| for identifying the device entry in GEM database.
-// TODO(crbug.com/1043199): Store device_resource_id on device and send that to
-// GEM service for further optimizations.
 HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
     const std::string& access_token,
     const base::string16& sid,
@@ -114,6 +115,16 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
   request_dict_->SetKey(kMacAddressParameterName,
                         std::move(mac_address_value_list));
 
+  wchar_t known_resource_id[512];
+  ULONG known_resource_id_size = base::size(known_resource_id);
+  hr = GetUserProperty(sid, kRegUserDeviceResourceId, known_resource_id,
+                       &known_resource_id_size);
+  if (SUCCEEDED(hr) && known_resource_id_size > 0) {
+    request_dict_->SetStringKey(
+        kUploadDeviceDetailsRequestDeviceResourceIdParameterName,
+        base::UTF16ToUTF8(known_resource_id));
+  }
+
   base::Optional<base::Value> request_result;
 
   hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
@@ -131,6 +142,17 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
       request_result->FindDictKey(kErrorKeyInRequestResult);
   if (error_detail) {
     LOGFN(ERROR) << "error=" << *error_detail;
+    hr = E_FAIL;
+  }
+
+  std::string* resource_id = request_result->FindStringKey(
+      kUploadDeviceDetailsResponseDeviceResourceIdParameterName);
+  if (resource_id) {
+    hr = SetUserProperty(sid, kRegUserDeviceResourceId,
+                         base::UTF8ToUTF16(*resource_id));
+  } else {
+    LOGFN(ERROR) << "Server response does not contain "
+                 << kUploadDeviceDetailsResponseDeviceResourceIdParameterName;
     hr = E_FAIL;
   }
 

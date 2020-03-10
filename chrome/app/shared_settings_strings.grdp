@@ -83,9 +83,6 @@
   <message name="IDS_SETTINGS_CAPTIONS_DEFAULT_SETTING" desc="Name of the default setting for the caption text.">
     Default
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION" desc="Name of the setting to enable Live Caption.">
-    Enable Live Caption
-  </message>
 
  <!-- Personalization Options SubPage (strings used by the <settings-personalization-options> element) -->
   <message name="IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION" desc="The label of the checkbox to enable/disable url keyed anonymized data collection.">

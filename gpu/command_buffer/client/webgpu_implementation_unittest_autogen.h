@@ -34,9 +34,9 @@ TEST_F(WebGPUImplementationTest, DissociateMailbox) {
     cmds::DissociateMailbox cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1, 2);
+  expected.cmd.Init(1, 2, 3);
 
-  gl_->DissociateMailbox(1, 2);
+  gl_->DissociateMailbox(1, 2, 3);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

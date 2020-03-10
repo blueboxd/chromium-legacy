@@ -573,8 +573,6 @@
 <translation id="177336675152937177">Données d'application hébergée</translation>
 <translation id="1776712937009046120">Ajouter un utilisateur</translation>
 <translation id="1776883657531386793"><ph name="OID" /> : <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Cet appareil est géré par <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Veuillez cliquer sur « Suivant » pour continuer à vous connecter à votre compte <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Veuillez entrer cette clé d'accès sur « <ph name="DEVICE_NAME" /> » :</translation>
 <translation id="177989070088644880">Application (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Fermer le groupe</translation>
@@ -887,7 +885,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2202898655984161076">Un problème est survenu lors de la création de la liste des imprimantes. Certaines de vos imprimantes ne sont peut-être pas correctement enregistrées dans <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Moteur de recherche utilisé dans la <ph name="BEGIN_LINK" />barre d'adresse<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Lire et modifier tout ce que vous tapez</translation>
-<translation id="220792432208469595">Envoyer les données d'utilisation et de diagnostic. Actuellement, cet appareil envoie automatiquement à Google des données de diagnostic, de l'appareil et d'utilisation des applications. Cela nous permettra d'assurer la stabilité du système et des applications, et d'apporter d'autres améliorations. Certaines données collectées contribueront également à améliorer les applications Google et aideront nos partenaires, comme les concepteurs Android. Ce paramètre est appliqué par le propriétaire du compte. Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé, ces données peuvent être enregistrées dans votre compte Google. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Veuillez entrer ce NIP sur l'appareil « <ph name="DEVICE_NAME" /> » :</translation>
 <translation id="2212565012507486665">Autoriser les témoins</translation>
 <translation id="2213140827792212876">Supprimer le partage</translation>
@@ -1344,7 +1341,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2804043232879091219">Impossible d'ouvrir le navigateur secondaire</translation>
 <translation id="2804667941345577550">Vous serez déconnecté de ce site, y compris dans les onglets ouverts</translation>
 <translation id="2804680522274557040">Appareil photo désactivé</translation>
-<translation id="2805539617243680210">Tout est en ordre!</translation>
 <translation id="2805646850212350655">Système de fichiers de chiffrement Microsoft</translation>
 <translation id="2805756323405976993">Applications</translation>
 <translation id="2805770823691782631">Détails supplémentaires</translation>
@@ -2022,6 +2018,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3742055079367172538">Saisie d'écran enregistrée</translation>
 <translation id="3742666961763734085">Impossible de trouver une unité organisationnelle qui porte ce nom. Veuillez réessayer.</translation>
 <translation id="3744111561329211289">Synchronisation en arrière-plan</translation>
+<translation id="3747077776423672805">Pour supprimer des applications, sélectionnez Paramètres &gt; Google Play Store &gt; Gérer les préférences Android &gt; Applications ou Gestionnaire d'applications. Ensuite, touchez l'application que vous souhaitez désinstaller (vous devrez peut-être balayer l'écran à droite ou à gauche pour trouver l'application). Enfin, touchez Désinstaller ou Désactiver.</translation>
 <translation id="3748026146096797577">Non connecté</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Mes appareils</translation>
@@ -2742,7 +2739,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4785719467058219317">Vous utilisez une clé de sécurité qui n'est pas enregistrée auprès de ce site Web</translation>
 <translation id="4788092183367008521">Veuillez vérifier votre connexion réseau et réessayer.</translation>
 <translation id="4792711294155034829">&amp;Signaler un problème…</translation>
-<translation id="4795022432560487924">Envoyer les données d'utilisation et de diagnostic. Aidez-nous à améliorer l'expérience Android de votre enfant en envoyant automatiquement à Google des données de diagnostic, de l'appareil et d'utilisation des applications. L'envoi de ces données ne sera pas utilisé pour identifier votre enfant, mais pour assurer la stabilité du système et des applications, et pour apporter d'autres améliorations. Certaines données collectées contribueront également à améliorer les applications Google et aideront nos partenaires, comme les concepteurs Android. Ce paramètre est appliqué par le propriétaire du compte. C'est à lui de choisir d'envoyer ou non à Google les données de diagnostic et d'utilisation de cet appareil. Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé pour votre enfant, ces données peuvent être enregistrées dans son compte Google. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Page Web, HTML uniquement</translation>
 <translation id="4798236378408895261">Associer les <ph name="BEGIN_LINK" />journaux Bluetooth<ph name="END_LINK" /> (données internes de Google)</translation>
 <translation id="4801448226354548035">Masquer les comptes</translation>
@@ -3568,7 +3564,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5941711191222866238">Réduire</translation>
 <translation id="5942964813783878922">Votre <ph name="DEVICE_TYPE" /> redémarrera après cette mise à jour. Les versions à venir des logiciels et les mises à jour de sécurité s'installeront automatiquement.</translation>
 <translation id="5944869793365969636">Numériser le code QR</translation>
-<translation id="5945188205370098537">Envoyer les données d'utilisation et de diagnostic. Aidez-nous à améliorer votre expérience Android en envoyant automatiquement à Google des données de diagnostic, de l'appareil et d'utilisation des applications. Cela nous permettra d'assurer la stabilité du système et des applications, et d'apporter d'autres améliorations. Certaines données collectées contribueront également à améliorer les applications Google et aideront nos partenaires, comme les concepteurs Android. Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé, ces données peuvent être enregistrées dans votre compte Google. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Identifiant de rapport <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Impossible d'analyser le fichier</translation>
 <translation id="5955282598396714173">Votre mot de passe est expiré. Veuillez vous déconnecter, puis vous reconnecter pour le modifier.</translation>
@@ -3752,6 +3747,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6185132558746749656">Position de l'appareil</translation>
 <translation id="6186394685773237175">Aucun mot de passe compromis n'a été trouvé</translation>
 <translation id="6195693561221576702">Cet appareil ne peut pas être configuré en mode démo hors ligne.</translation>
+<translation id="6196640612572343990">Bloquer les témoins de tiers</translation>
 <translation id="6196854373336333322">L'extension « <ph name="EXTENSION_NAME" /> » a pris le contrôle de vos paramètres de mandataire, ce qui signifie qu'elle peut modifier ou espionner tout ce que vous faites en ligne. Si vous ne savez pas pourquoi ce changement s'est produit, vous ne voulez probablement pas l'accepter.</translation>
 <translation id="6198102561359457428">Déconnectez-vous, puis connectez-vous de nouveau...</translation>
 <translation id="6198252989419008588">Modifier le NIP</translation>
@@ -4415,7 +4411,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="711902386174337313">Consulter la liste de vos appareils sur lesquels vous êtes connectés</translation>
 <translation id="7120865473764644444">Impossible de se connecter au serveur de synchronisation. Nouvelle tentative...</translation>
 <translation id="7121362699166175603">Efface l'historique et les saisies semi-automatiques dans la barre d'adresse. D'autres formes d'historique de navigation peuvent exister sur votre compte Google à l'adresse <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Envoyer les données d'utilisation et de diagnostic. Actuellement, cet appareil envoie automatiquement à Google des données de diagnostic, de l'appareil et d'utilisation des applications. L'envoi de ces données ne sera pas utilisé pour identifier votre enfant, mais pour assurer la stabilité du système et des applications, et pour apporter d'autres améliorations. Certaines données collectées contribueront également à améliorer les applications Google et aideront nos partenaires, comme les concepteurs Android. Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé pour votre enfant, ces données peuvent être enregistrées dans son compte Google. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Mode Concepteur</translation>
 <translation id="7121728544325372695">Tirets intelligents</translation>
 <translation id="7123360114020465152">N'est plus prise en charge</translation>
@@ -5197,7 +5192,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Déplacer l'onglet vers une nouvelle fenêtre}one{Déplacer l'onglet vers une nouvelle fenêtre}other{Déplacer les onglets vers une nouvelle fenêtre}}</translation>
 <translation id="8179976553408161302">Entrée</translation>
 <translation id="8180239481735238521">page</translation>
-<translation id="8180294223783876911">Envoyer les données d'utilisation et de diagnostic. Actuellement, cet appareil envoie automatiquement à Google des données de diagnostic, de l'appareil et d'utilisation des applications. Cela nous permettra d'assurer la stabilité du système et des applications, et d'apporter d'autres améliorations. Certaines données collectées contribueront également à améliorer les applications Google et aideront nos partenaires, comme les concepteurs Android. Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé, ces données peuvent être enregistrées dans votre compte Google. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">« <ph name="EXTENSION" /> » dispose d'un droit d'accès en lecture et en écriture aux images, aux vidéos et aux fichiers audio figurant dans les dossiers sélectionnés.</translation>
 <translation id="8181215761849004992">Impossible d'associer le domaine. Vérifiez votre compte pour vous assurer que vous disposez de privilèges suffisants pour ajouter des appareils.</translation>
 <translation id="8182105986296479640">L'application ne répond pas.</translation>
@@ -5219,7 +5213,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8203732864715032075">Vous envoyer des notifications et mémoriser cet ordinateur par défaut pour les messages. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">L'application « <ph name="APP_NAME" /> » est bloquée par ton parent. Pour l'utiliser, demande l'autorisation à ton parent.</translation>
 <translation id="820568752112382238">Sites les plus visités</translation>
-<translation id="8206581664590136590">Envoyer les données d'utilisation et de diagnostic. Aidez-nous à améliorer l'expérience Android de votre enfant en envoyant automatiquement à Google des données de diagnostic, de l'appareil et d'utilisation des applications. L'envoi de ces données ne sera pas utilisé pour identifier votre enfant, mais pour assurer la stabilité du système et des applications, et pour apporter d'autres améliorations. Certaines données collectées contribueront également à améliorer les applications Google et aideront nos partenaires, comme les concepteurs Android. Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé pour votre enfant, ces données peuvent être enregistrées dans son compte Google. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Mélodie</translation>
 <translation id="8206859287963243715">Cellulaire</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Téléchargement en cours…}one{Téléchargement en cours…}other{Téléchargements en cours…}}</translation>
@@ -5759,7 +5752,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8912362522468806198">Compte Google</translation>
 <translation id="8912793549644936705">Étirer</translation>
 <translation id="8912810933860534797">Activer l'analyse automatique</translation>
-<translation id="891365694296252935">Envoyer les données d'utilisation et de diagnostic. Actuellement, cet appareil envoie automatiquement à Google des données de diagnostic, de l'appareil et d'utilisation des applications. L'envoi de ces données ne sera pas utilisé pour identifier votre enfant, mais pour assurer la stabilité du système et des applications, et pour apporter d'autres améliorations. Certaines données collectées contribueront également à améliorer les applications Google et aideront nos partenaires, comme les concepteurs Android. Ce paramètre est appliqué par le propriétaire du compte. Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé pour votre enfant, ces données peuvent être enregistrées dans son compte Google. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Chargement des suggestions en cours…</translation>
 <translation id="8916476537757519021">Sous-cadre de navigation privée : <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Vérification de votre clé de sécurité en cours…</translation>
@@ -5896,7 +5888,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9101691533782776290">Lancer l'application</translation>
 <translation id="9102610709270966160">Activer l'extension</translation>
 <translation id="9103868373786083162">Appuyez pour revenir en arrière, menu contextuel pour voir l'historique</translation>
-<translation id="9104396740804929809">Envoyer les données d'utilisation et de diagnostic. Aidez-nous à améliorer votre expérience Android en envoyant automatiquement à Google des données de diagnostic, de l'appareil et d'utilisation des applications. Cela nous permettra d'assurer la stabilité du système et des applications, et d'apporter d'autres améliorations. Certaines données collectées contribueront également à améliorer les applications Google et aideront nos partenaires, comme les concepteurs Android. Ce paramètre est appliqué par le propriétaire du compte. C'est à lui de choisir d'envoyer ou non à Google les données de diagnostic et d'utilisation de cet appareil. Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé, ces données peuvent être enregistrées dans votre compte Google. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Pour libérer de l'espace, supprimez des fichiers de l'espace de stockage de l'appareil.</translation>
 <translation id="9109283579179481106">Connexion au réseau cellulaire</translation>
 <translation id="9111102763498581341">Déverrouiller</translation>

@@ -207,8 +207,8 @@ PermissionDialogTest::MakeRegisterProtocolHandlerRequest() {
       ProtocolHandlerRegistryFactory::GetForBrowserContext(
           browser()->profile());
   // Deleted in RegisterProtocolHandlerPermissionRequest::RequestFinished().
-  return new RegisterProtocolHandlerPermissionRequest(registry, handler,
-                                                      GetUrl(), user_gesture);
+  return new RegisterProtocolHandlerPermissionRequest(
+      registry, handler, GetUrl(), user_gesture, base::ScopedClosureRunner());
 }
 
 permissions::PermissionRequest* PermissionDialogTest::MakePermissionRequest(

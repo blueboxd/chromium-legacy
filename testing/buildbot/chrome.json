@@ -17,6 +17,68 @@
     ],
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests.cros-vm"
+            }
+          ],
+          "idempotent": false
+        },
+        "test": "chrome_all_tast_tests",
+        "test_target": "//chromeos:chrome_all_tast_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests.cros-vm"
+            }
+          ]
+        },
+        "test": "cros_browser_sanity_test",
+        "test_target": "//chromeos:cros_browser_sanity_test"
+      },
+      {
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests.cros-vm"
+            }
+          ],
+          "idempotent": false
+        },
+        "test": "disk_usage_tast_test",
+        "test_target": "//chromeos:disk_usage_tast_test"
+      }
+    ]
+  },
+  "chromeos-betty-pi-arc-chrome": {
+    "additional_compile_targets": [
+      "chromiumos_preflight"
+    ],
+    "gtest_tests": [
+      {
         "args": [
           "--ozone-platform=headless"
         ],
@@ -377,8 +439,7 @@
       },
       {
         "args": [
-          "--vpython-dir=../../vpython_dir_linux_amd64",
-          "--gtest_filter=-NetworkQualityEstimatorTest.TestTCPSocketRTT"
+          "--vpython-dir=../../vpython_dir_linux_amd64"
         ],
         "merge": {
           "args": [],
@@ -610,68 +671,6 @@
           "shards": 24
         },
         "test_target": "//chrome/test:telemetry_unittests"
-      }
-    ]
-  },
-  "chromeos-betty-pi-arc-chrome": {
-    "additional_compile_targets": [
-      "chromiumos_preflight"
-    ],
-    "gtest_tests": [
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
-            }
-          ],
-          "idempotent": false
-        },
-        "test": "chrome_all_tast_tests",
-        "test_target": "//chromeos:chrome_all_tast_tests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
-            }
-          ]
-        },
-        "test": "cros_browser_sanity_test",
-        "test_target": "//chromeos:cros_browser_sanity_test"
-      },
-      {
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
-            }
-          ],
-          "idempotent": false
-        },
-        "test": "disk_usage_tast_test",
-        "test_target": "//chromeos:disk_usage_tast_test"
       }
     ]
   },

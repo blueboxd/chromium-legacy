@@ -26,6 +26,7 @@
 #include "chrome/common/open_search_description_document_handler.mojom.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/media/media_feeds.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/web_apps.h"
 #include "components/crash/core/common/crash_key.h"
@@ -342,6 +343,11 @@ void ChromeRenderFrameObserver::SetCCTClientHeader(const std::string& header) {
   GetFrameHeaderMap()[routing_id()] = header;
 }
 #endif
+
+void ChromeRenderFrameObserver::GetMediaFeedURL(
+    GetMediaFeedURLCallback callback) {
+  std::move(callback).Run(MediaFeeds::GetMediaFeedURL(render_frame()));
+}
 
 void ChromeRenderFrameObserver::SetClientSidePhishingDetection(
     bool enable_phishing_detection) {

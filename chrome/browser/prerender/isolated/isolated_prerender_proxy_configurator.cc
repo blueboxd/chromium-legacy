@@ -22,6 +22,13 @@ void IsolatedPrerenderProxyConfigurator::UpdateTunnelHeaders(
   UpdateCustomProxyConfig();
 }
 
+void IsolatedPrerenderProxyConfigurator::UpdateProxyHosts(
+    const std::vector<GURL>& proxy_hosts) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  proxy_hosts_ = proxy_hosts;
+  UpdateCustomProxyConfig();
+}
+
 void IsolatedPrerenderProxyConfigurator::AddCustomProxyConfigClient(
     mojo::Remote<network::mojom::CustomProxyConfigClient> config_client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -39,18 +46,28 @@ void IsolatedPrerenderProxyConfigurator::UpdateCustomProxyConfig() {
   if (!data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial())
     return;
 
-  if (!IsolatedPrerenderProxyServer().has_value())
+  if (!IsolatedPrerenderIsEnabled())
+    return;
+
+  // If a proxy config has never been sent, and there's no hosts to send, don't
+  // bother.
+  if (proxy_hosts_.empty() && !sent_proxy_update_)
     return;
 
   network::mojom::CustomProxyConfigPtr config = CreateCustomProxyConfig();
   for (auto& client : proxy_config_clients_) {
     client->OnCustomProxyConfigUpdated(config->Clone());
   }
+
+  if (!proxy_hosts_.empty()) {
+    sent_proxy_update_ = true;
+  }
 }
 
 network::mojom::CustomProxyConfigPtr
 IsolatedPrerenderProxyConfigurator::CreateCustomProxyConfig() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   net::ProxyConfig::ProxyRules rules;
   DCHECK(rules.proxies_for_http.IsEmpty());
   DCHECK(rules.proxies_for_https.IsEmpty());
@@ -60,9 +77,11 @@ IsolatedPrerenderProxyConfigurator::CreateCustomProxyConfig() const {
       net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
   // DIRECT is intentionally not added here because we want the proxy to always
   // be used in order to mask the user's IP address during the prerender.
-  config->rules.proxies_for_https.AddProxyServer(net::ProxyServer(
-      net::ProxyServer::SCHEME_HTTPS,
-      net::HostPortPair::FromURL(IsolatedPrerenderProxyServer().value())));
+  for (const GURL& host : proxy_hosts_) {
+    DCHECK(host.is_valid());
+    config->rules.proxies_for_https.AddProxyServer(net::ProxyServer(
+        net::ProxyServer::SCHEME_HTTPS, net::HostPortPair::FromURL(host)));
+  }
   // This ensures that the user's set proxy is honored, although we also disable
   // the feature is such cases.
   config->should_override_existing_config = false;

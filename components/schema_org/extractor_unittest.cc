@@ -9,17 +9,17 @@
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
-#include "components/schema_org/common/metadata.mojom.h"
+#include "components/schema_org/common/improved_metadata.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace schema_org {
 
-using mojom::Entity;
-using mojom::EntityPtr;
-using mojom::Property;
-using mojom::PropertyPtr;
-using mojom::Values;
-using mojom::ValuesPtr;
+using improved::mojom::Entity;
+using improved::mojom::EntityPtr;
+using improved::mojom::Property;
+using improved::mojom::PropertyPtr;
+using improved::mojom::Values;
+using improved::mojom::ValuesPtr;
 
 class SchemaOrgExtractorTest : public testing::Test {
  public:
@@ -46,7 +46,7 @@ PropertyPtr SchemaOrgExtractorTest::CreateStringProperty(
   PropertyPtr property = Property::New();
   property->name = name;
   property->values = Values::New();
-  property->values->set_string_values({value});
+  property->values->string_values.push_back(value);
   return property;
 }
 
@@ -56,7 +56,7 @@ PropertyPtr SchemaOrgExtractorTest::CreateBooleanProperty(
   PropertyPtr property = Property::New();
   property->name = name;
   property->values = Values::New();
-  property->values->set_bool_values({value});
+  property->values->bool_values.push_back(value);
   return property;
 }
 
@@ -65,7 +65,7 @@ PropertyPtr SchemaOrgExtractorTest::CreateLongProperty(const std::string& name,
   PropertyPtr property = Property::New();
   property->name = name;
   property->values = Values::New();
-  property->values->set_long_values({value});
+  property->values->long_values.push_back(value);
   return property;
 }
 
@@ -75,8 +75,7 @@ PropertyPtr SchemaOrgExtractorTest::CreateEntityProperty(
   PropertyPtr property = Property::New();
   property->name = name;
   property->values = Values::New();
-  property->values->set_entity_values(std::vector<EntityPtr>());
-  property->values->get_entity_values().push_back(std::move(value));
+  property->values->entity_values.push_back(std::move(value));
   return property;
 }
 
@@ -164,12 +163,28 @@ TEST_F(SchemaOrgExtractorTest, RepeatedProperty) {
   PropertyPtr name = Property::New();
   name->name = "name";
   name->values = Values::New();
-  std::vector<std::string> nameValues;
-  nameValues.push_back("Movie Title");
-  nameValues.push_back("The Second One");
-  name->values->set_string_values(nameValues);
+  name->values->string_values = {"Movie Title", "The Second One"};
 
   expected->properties.push_back(std::move(name));
+
+  EXPECT_EQ(expected, extracted);
+}
+
+TEST_F(SchemaOrgExtractorTest, MixedRepeatedProperty) {
+  EntityPtr extracted =
+      Extract("{\"@type\": \"VideoObject\", \"version\": [\"6.5a\", 6] }");
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+
+  PropertyPtr version = Property::New();
+  version->name = "version";
+  version->values = Values::New();
+  version->values->string_values.push_back("6.5a");
+  version->values->long_values.push_back(6);
+
+  expected->properties.push_back(std::move(version));
 
   EXPECT_EQ(expected, extracted);
 }
@@ -187,17 +202,16 @@ TEST_F(SchemaOrgExtractorTest, RepeatedObject) {
   PropertyPtr actorProperty = Property::New();
   actorProperty->name = "actor";
   actorProperty->values = Values::New();
-  actorProperty->values->set_entity_values(std::vector<EntityPtr>());
 
   EntityPtr nested1 = Entity::New();
   nested1->type = "Person";
   nested1->properties.push_back(CreateStringProperty("name", "Talented Actor"));
-  actorProperty->values->get_entity_values().push_back(std::move(nested1));
+  actorProperty->values->entity_values.push_back(std::move(nested1));
 
   EntityPtr nested2 = Entity::New();
   nested2->type = "Person";
   nested2->properties.push_back(CreateStringProperty("name", "Famous Actor"));
-  actorProperty->values->get_entity_values().push_back(std::move(nested2));
+  actorProperty->values->entity_values.push_back(std::move(nested2));
 
   expected->properties.push_back(std::move(actorProperty));
 
@@ -259,7 +273,7 @@ TEST_F(SchemaOrgExtractorTest, TruncateTooManyValuesInField) {
   for (int i = 0; i < 100; i++) {
     nameValues.push_back("a");
   }
-  name->values->set_string_values(nameValues);
+  name->values->string_values = std::move(nameValues);
   expected->properties.push_back(std::move(name));
 
   EXPECT_EQ(expected, extracted);
@@ -290,17 +304,6 @@ TEST_F(SchemaOrgExtractorTest, truncateTooManyFields) {
 
 TEST_F(SchemaOrgExtractorTest, IgnorePropertyWithEmptyArray) {
   EntityPtr extracted = Extract("{\"@type\": \"VideoObject\", \"name\": [] }");
-  ASSERT_FALSE(extracted.is_null());
-
-  EntityPtr expected = Entity::New();
-  expected->type = "VideoObject";
-
-  EXPECT_EQ(expected, extracted);
-}
-
-TEST_F(SchemaOrgExtractorTest, IgnorePropertyWithMixedTypes) {
-  EntityPtr extracted =
-      Extract("{\"@type\": \"VideoObject\", \"name\": [\"Name\", 1] }");
   ASSERT_FALSE(extracted.is_null());
 
   EntityPtr expected = Entity::New();

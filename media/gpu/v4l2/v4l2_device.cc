@@ -1552,8 +1552,11 @@ gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(
   // which in V4L2 always applies to the first component in physical plane
   // buffer.
   int coded_width = bytesperline * 8 / plane_horiz_bits_per_pixel;
-  // Sizeimage is coded_width * coded_height * total_bpp.
-  int coded_height = sizeimage * 8 / coded_width / total_bpp;
+  // Sizeimage is coded_width * coded_height * total_bpp. In the case that we
+  // don't have exact alignment due to padding in the driver, round up so that
+  // the buffer is large enough.
+  std::div_t res = std::div(sizeimage * 8, coded_width * total_bpp);
+  int coded_height = res.quot + std::min(res.rem, 1);
 
   coded_size.SetSize(coded_width, coded_height);
   DVLOGF(3) << "coded_size=" << coded_size.ToString();

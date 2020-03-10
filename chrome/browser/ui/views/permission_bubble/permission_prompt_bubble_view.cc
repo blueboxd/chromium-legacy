@@ -10,14 +10,17 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/title_origin_label.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/permissions/permission_request.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
+#include "components/vector_icons/vector_icons.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
@@ -25,6 +28,8 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -98,6 +103,40 @@ void PermissionPromptBubbleView::AddPermissionRequestLine(
       std::make_unique<views::Label>(request->GetMessageTextFragment()));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetMultiLine(true);
+
+  // Text that warns the user that flash will be deprecated. This text is only
+  // shown for flash and should be empty for all other permissions.
+  // TODO (crbug.com/1058401): Remove the warning text once flash is deprecated.
+  const auto warning_text = request->GetMessageTextWarningFragment();
+
+  if (warning_text.empty())
+    return;
+
+  // Should only be reached if the permission required is for flash.
+  DCHECK(request->GetContentSettingsType() == ContentSettingsType::PLUGINS);
+
+  auto* warning_line_container = AddChildView(std::make_unique<views::View>());
+  warning_line_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(0, provider->GetDistanceMetric(
+                         DISTANCE_SUBSECTION_HORIZONTAL_INDENT)),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
+
+  auto* warning_label = warning_line_container->AddChildView(
+      std::make_unique<views::Label>(std::move(warning_text)));
+  warning_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  warning_label->SetMultiLine(true);
+
+  auto learn_more_button = views::CreateVectorImageButton(this);
+  learn_more_button->SetFocusForPlatform();
+  learn_more_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  SkColor text_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor);
+  learn_more_button_ = learn_more_button.get();
+  views::SetImageFromVectorIcon(learn_more_button_,
+                                vector_icons::kHelpOutlineIcon, text_color);
+
+  DialogDelegate::SetExtraView(std::move(learn_more_button));
 }
 
 void PermissionPromptBubbleView::UpdateAnchorPosition() {
@@ -138,6 +177,14 @@ gfx::Size PermissionPromptBubbleView::CalculatePreferredSize() const {
                         DISTANCE_BUBBLE_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
+}
+
+void PermissionPromptBubbleView::ButtonPressed(views::Button* sender,
+                                               const ui::Event& event) {
+  if (sender == learn_more_button_)
+    chrome::AddSelectedTabWithURL(browser_,
+                                  GURL(chrome::kFlashDeprecationLearnMoreURL),
+                                  ui::PAGE_TRANSITION_LINK);
 }
 
 void PermissionPromptBubbleView::Show() {

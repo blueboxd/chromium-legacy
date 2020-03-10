@@ -27,8 +27,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_vm_gtests',
-          'isolated_scripts': 'chromeos_isolated_scripts',
+          'gtest_tests': 'chromeos_browser_integration_tests',
         },
         'swarming': {
           'dimension_sets': [
@@ -45,7 +44,8 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_browser_integration_tests',
+          'gtest_tests': 'chromeos_vm_gtests',
+          'isolated_scripts': 'chromeos_isolated_scripts',
         },
         'swarming': {
           'dimension_sets': [
@@ -1775,15 +1775,19 @@
           'gtest_tests': 'ios_code_coverage_gtests',
         },
       },
-      'ios-simulator-cr-recipe': {
+      'ios13-beta-simulator': {
+        'additional_compile_targets': [
+          'all',
+        ],
         'mixins': [
-          'chrome-swarming-pool',
-          'host_mac_10.14',
+          'ios_swarming_account',
+          'mac_10.14',
+          'mac_toolchain',
+          'out_dir_arg',
           'xcode_11c29',
-          'xcode_parallelization',
         ],
         'test_suites': {
-          'gtest_tests': 'ios_simulator_cr_recipe_gtests',
+          'gtest_tests': 'ios13_beta_simulator_gtests'
         },
       },
       'linux-annotator-rel': {

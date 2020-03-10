@@ -44,8 +44,7 @@ class StorageNamespace;
 //
 // The LocalStorage StorageNamespace object is owned internally, and
 // StorageController delegates the following methods to that namespace:
-// GetLocalStorageArea, GetWebLocalStorageArea,
-// AddLocalStorageInspectorStorageAgent,
+// GetLocalStorageArea, AddLocalStorageInspectorStorageAgent,
 // RemoveLocalStorageInspectorStorageAgent, DidDispatchLocalStorageEvent
 class MODULES_EXPORT StorageController : public mojom::blink::DomStorageClient {
   USING_FAST_MALLOC(StorageController);

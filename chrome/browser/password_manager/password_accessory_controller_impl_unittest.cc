@@ -550,3 +550,43 @@ TEST_F(PasswordAccessoryControllerTest, OnManualGenerationRequested) {
           autofill::password_generation::PasswordGenerationType::kManual));
   controller()->OnOptionSelected(AccessoryAction::GENERATE_PASSWORD_MANUAL);
 }
+
+TEST_F(PasswordAccessoryControllerTest, AddsSaveToggleIfIsBlacklisted) {
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
+      {}, CredentialCache::IsOriginBlacklisted(true),
+      url::Origin::Create(GURL(kExampleSite)));
+  AccessorySheetData::Builder data_builder(AccessoryTabType::PASSWORDS,
+                                           passwords_empty_str(kExampleDomain));
+  data_builder
+      .SetOptionToggle(base::ASCIIToUTF16("Save passwords"), false,
+                       autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS)
+      .AppendFooterCommand(manage_passwords_str(),
+                           autofill::AccessoryAction::MANAGE_PASSWORDS);
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestions(std::move(data_builder).Build()));
+  controller()->RefreshSuggestionsForField(
+      FocusedFieldType::kFillablePasswordField,
+      /*is_manual_generation_available=*/false);
+}
+
+TEST_F(PasswordAccessoryControllerTest, AddsSaveToggleIfWasBlacklisted) {
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
+      {}, CredentialCache::IsOriginBlacklisted(true),
+      url::Origin::Create(GURL(kExampleSite)));
+  // Simulate unblacklisting.
+  cache()->UpdateBlacklistedForOrigin(
+      url::Origin::Create(GURL(kExampleSite)),
+      CredentialCache::IsOriginBlacklisted(false));
+  AccessorySheetData::Builder data_builder(AccessoryTabType::PASSWORDS,
+                                           passwords_empty_str(kExampleDomain));
+  data_builder
+      .SetOptionToggle(base::ASCIIToUTF16("Save passwords"), true,
+                       autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS)
+      .AppendFooterCommand(manage_passwords_str(),
+                           autofill::AccessoryAction::MANAGE_PASSWORDS);
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestions(std::move(data_builder).Build()));
+  controller()->RefreshSuggestionsForField(
+      FocusedFieldType::kFillablePasswordField,
+      /*is_manual_generation_available=*/false);
+}

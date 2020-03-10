@@ -639,6 +639,11 @@ class BASE_EXPORT ThreadActivityTracker {
                    const ActivityData& data);
     ~ScopedActivity();
 
+    // Indicates if this activity is actually being recorded. It may not be if
+    // (a) activity tracking is not enabled globally or
+    // (b) there was insufficient stack space to hold it.
+    bool IsRecorded();
+
     // Changes some basic metadata about the activity.
     void ChangeTypeAndData(Activity::Type type, const ActivityData& data);
 
@@ -692,6 +697,9 @@ class BASE_EXPORT ThreadActivityTracker {
 
   // Indicates that an activity has completed.
   void PopActivity(ActivityId id);
+
+  // Indicates if an activity is actually being recorded.
+  bool IsRecorded(ActivityId id);
 
   // Sets the user-data information for an activity.
   std::unique_ptr<ActivityUserData> GetUserData(

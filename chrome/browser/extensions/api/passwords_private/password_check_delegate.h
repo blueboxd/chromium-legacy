@@ -131,8 +131,8 @@ class PasswordCheckDelegate
   password_manager::BulkLeakCheckServiceAdapter
       bulk_leak_check_service_adapter_;
 
-  // Remembers whether the bulk leak check was explicitly canceled by the user.
-  bool is_canceled_ = false;
+  // Remembers whether the bulk check is running due to explicit user action.
+  bool is_bulk_check_running_ = false;
 
   // A scoped observer for |saved_passwords_presenter_|.
   ScopedObserver<password_manager::SavedPasswordsPresenter,

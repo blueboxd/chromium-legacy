@@ -25,7 +25,7 @@ class SVGFilterRecordingContext {
       : initial_context_(initial_context) {}
 
   GraphicsContext* BeginContent();
-  sk_sp<PaintRecord> EndContent(const FloatRect&);
+  sk_sp<PaintRecord> EndContent();
   void Abort();
 
   GraphicsContext& PaintingContext() const { return initial_context_; }

@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "content/browser/frame_host/file_chooser_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_export.h"
@@ -77,7 +78,6 @@ class ClipboardFormatType;
 }
 
 namespace content {
-class FileSelectListener;
 class FrameTreeNode;
 class InterstitialPage;
 class PageState;
@@ -183,21 +183,24 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       std::vector<blink::mojom::FaviconURLPtr> candidates) {}
 
   // Called when a file selection is to be done.
+  //
   // Overrides of this function must call either listener->FileSelected() or
   // listener->FileSelectionCanceled().
   virtual void RunFileChooser(
       RenderFrameHost* render_frame_host,
-      std::unique_ptr<content::FileSelectListener> listener,
+      std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
       const blink::mojom::FileChooserParams& params);
 
   // Request to enumerate a directory.  This is equivalent to running the file
   // chooser in directory-enumeration mode and having the user select the given
   // directory.
+  //
   // Overrides of this function must call either listener->FileSelected() or
   // listener->FileSelectionCanceled().
-  virtual void EnumerateDirectory(RenderFrameHost* render_frame_host,
-                                  std::unique_ptr<FileSelectListener> listener,
-                                  const base::FilePath& directory_path);
+  virtual void EnumerateDirectory(
+      RenderFrameHost* render_frame_host,
+      std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
+      const base::FilePath& directory_path);
 
   // The pending page load was canceled, so the address bar should be updated.
   virtual void DidCancelLoading() {}
@@ -571,8 +574,22 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // decide if we should consume user activation when entering fullscreen.
   virtual bool HasSeenRecentScreenOrientationChange();
 
+  // The page is trying to open a new widget (e.g. a select popup). The
+  // widget should be created associated with the given |widget_route_id| in the
+  // process |render_process_id|, but it should not be shown yet. That should
+  // happen in response to ShowCreatedWidget.
+  virtual void CreateNewWidget(int32_t render_process_id,
+                               int32_t widget_route_id,
+                               mojo::PendingRemote<mojom::Widget> widget) {}
+
+  // Creates a full screen RenderWidget. Similar to above.
+  virtual void CreateNewFullscreenWidget(
+      int32_t render_process_id,
+      int32_t widget_route_id,
+      mojo::PendingRemote<mojom::Widget> widget) {}
+
  protected:
-  virtual ~RenderFrameHostDelegate() {}
+  virtual ~RenderFrameHostDelegate() = default;
 };
 
 }  // namespace content

@@ -2026,10 +2026,8 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
 
   // Synchronous IPC to obtain a routing id for the fullscreen widget.
   int32_t fullscreen_widget_routing_id = MSG_ROUTING_NONE;
-  if (!RenderThreadImpl::current_render_message_filter()
-           ->CreateFullscreenWidget(render_view()->GetRoutingID(),
-                                    std::move(widget_channel),
-                                    &fullscreen_widget_routing_id)) {
+  if (!GetFrameHost()->CreateNewFullscreenWidget(
+          std::move(widget_channel), &fullscreen_widget_routing_id)) {
     return nullptr;
   }
   RenderWidget::ShowCallback show_callback =
@@ -6308,8 +6306,8 @@ void RenderFrameImpl::BeginNavigationInternal(
       navigation_client_remote.InitWithNewEndpointAndPassReceiver());
   navigation_client_impl_->MarkWasInitiatedInThisFrame();
 
-  mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator(
-      std::move(info->navigation_initiator_handle), 0);
+  mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator =
+      std::move(info->navigation_initiator_remote);
 
   bool current_frame_has_download_sandbox_flag = !frame_->IsAllowedToDownload();
   bool has_download_sandbox_flag =

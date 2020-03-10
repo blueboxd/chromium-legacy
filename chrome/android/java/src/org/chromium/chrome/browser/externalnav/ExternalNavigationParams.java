@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.externalnav;
 
-import org.chromium.chrome.browser.tab.TabRedirectHandler;
+import org.chromium.components.external_intents.RedirectHandler;
 
 /**
  * A container object for passing navigation parameters to {@link ExternalNavigationHandler}.
@@ -29,7 +29,7 @@ public class ExternalNavigationParams {
     private final boolean mApplicationMustBeInForeground;
 
     /** A redirect handler. */
-    private final TabRedirectHandler mRedirectHandler;
+    private final RedirectHandler mRedirectHandler;
 
     /** Whether the intent should force a new tab to open. */
     private final boolean mOpenInNewTab;
@@ -57,7 +57,7 @@ public class ExternalNavigationParams {
 
     private ExternalNavigationParams(String url, boolean isIncognito, String referrerUrl,
             int pageTransition, boolean isRedirect, boolean appMustBeInForeground,
-            TabRedirectHandler redirectHandler, boolean openInNewTab,
+            RedirectHandler redirectHandler, boolean openInNewTab,
             boolean isBackgroundTabNavigation, boolean isMainFrame, String nativeClientPackageName,
             boolean hasUserGesture,
             boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent) {
@@ -108,7 +108,7 @@ public class ExternalNavigationParams {
     }
 
     /** @return The redirect handler. */
-    public TabRedirectHandler getRedirectHandler() {
+    public RedirectHandler getRedirectHandler() {
         return mRedirectHandler;
     }
 
@@ -172,7 +172,7 @@ public class ExternalNavigationParams {
         private boolean mApplicationMustBeInForeground;
 
         /** A redirect handler. */
-        private TabRedirectHandler mRedirectHandler;
+        private RedirectHandler mRedirectHandler;
 
         /** Whether the intent should force a new tab to open. */
         private boolean mOpenInNewTab;
@@ -219,7 +219,7 @@ public class ExternalNavigationParams {
         }
 
         /** Sets a tab redirect handler. */
-        public Builder setRedirectHandler(TabRedirectHandler handler) {
+        public Builder setRedirectHandler(RedirectHandler handler) {
             mRedirectHandler = handler;
             return this;
         }

@@ -12,6 +12,7 @@
     <dimen name="tab_grid_close_button_size">18dp</dimen>
     <dimen name="tab_grid_dialog_side_margin">16dp</dimen>
     <dimen name="tab_grid_dialog_top_margin">85dp</dimen>
+    <dimen name="tab_grid_iph_item_description_margin">16dp</dimen>
     <dimen name="tab_grid_iph_dialog_height">430dp</dimen>
     <dimen name="tab_grid_iph_dialog_top_margin">24dp</dimen>
     <dimen name="tab_grid_iph_dialog_side_margin">12dp</dimen>

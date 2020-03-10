@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Podatki gostujočih aplikacij</translation>
 <translation id="1776712937009046120">Dodaj uporabnika</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">To napravo upravlja domena <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Kliknite »Naprej«, če želite nadaljevati prijavo v račun za <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Geslo vnesite v napravi »<ph name="DEVICE_NAME" />«:</translation>
 <translation id="177989070088644880">Aplikacija (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Zapri skupino</translation>
@@ -892,7 +890,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2202898655984161076">Težava pri prikazu tiskalnikov. Nekateri od vaših tiskalnikov morda niso uspešno registrirani v storitvi <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2203682048752833055">Iskalnik, uporabljen v <ph name="BEGIN_LINK" />naslovni vrstici<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Branje in spreminjanje vsega, kar napišete</translation>
-<translation id="220792432208469595">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Ta naprava trenutno Googlu samodejno pošilja diagnostične podatke ter podatke o uporabi naprave in aplikacij. Te podatke uporabljamo za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. To nastavitev je uveljavil lastnik naprave. Če ste vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v vašem računu za Google. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Vnesite PIN za napravo »<ph name="DEVICE_NAME" />«:</translation>
 <translation id="2212565012507486665">Dovoli piškotke</translation>
 <translation id="2213140827792212876">Odstrani skupno rabo</translation>
@@ -1353,7 +1350,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2804043232879091219">Nadomestnega brskalnika ni bilo mogoče odpreti</translation>
 <translation id="2804667941345577550">Odjavljeni boste s tega spletnega mesta, vključno s tistim na odprtih zavihkih</translation>
 <translation id="2804680522274557040">Fotoaparat je izklopljen</translation>
-<translation id="2805539617243680210">Pripravljeni ste.</translation>
 <translation id="2805646850212350655">Microsoftov šifrirni datotečni sistem</translation>
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2805770823691782631">Dodatne podrobnosti</translation>
@@ -2034,6 +2030,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3742055079367172538">Posnetek zaslona je narejen</translation>
 <translation id="3742666961763734085">Organizacijske enote s tem imenom ni mogoče najti. Poskusite znova.</translation>
 <translation id="3744111561329211289">Sinhroniziranje v ozadju</translation>
+<translation id="3747077776423672805">Če želite odstraniti aplikacije, pojdite v »Nastavitve« &gt; »Trgovina Google Play« &gt; »Upravljanje nastavitev Androida« &gt; »Aplikacije« ali odprite Upravitelja aplikacij. Nato se dotaknite aplikacije, ki jo želite odmestiti (morda boste morali s prstom povleči v desno ali levo, da jo boste našli). Nato se dotaknite »Odmesti« ali »Onemogoči«.</translation>
 <translation id="3748026146096797577">Povezava ni vzpostavljena</translation>
 <translation id="3752582316358263300">V redu ...</translation>
 <translation id="3752673729237782832">Moje naprave</translation>
@@ -2757,7 +2754,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4785719467058219317">Varnostni ključ, ki ga uporabljate, ni registriran na tem spletnem mestu</translation>
 <translation id="4788092183367008521">Preverite omrežno povezavo in poskusite znova.</translation>
 <translation id="4792711294155034829">&amp;Prijavite težavo ...</translation>
-<translation id="4795022432560487924">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Pomagajte izboljšati otrokovo izkušnjo z Androidom s samodejnim pošiljanjem diagnostičnih podatkov ter podatkov o uporabi naprave in aplikacij Googlu. Teh podatkov ne bomo uporabljali, da bi prepoznali vašega otroka, temveč za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. To nastavitev je uveljavil lastnik naprave. Lastnik bo morda izbral, da se za to napravo pošiljajo diagnostični podatki in podatki o uporabi Googlu. Če ste za otroka vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v njegovem računu za Google. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Spletna stran, samo HTML</translation>
 <translation id="4798236378408895261">Priložite <ph name="BEGIN_LINK" />Dnevnike za Bluetooth<ph name="END_LINK" /> (Google – interno)</translation>
 <translation id="4801448226354548035">Skrij račune</translation>
@@ -3386,6 +3382,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5649053991847567735">Samodejni prenosi</translation>
 <translation id="5653154844073528838">Imate toliko shranjenih tiskalnikov: <ph name="PRINTER_COUNT" />.</translation>
 <translation id="5656845498778518563">Pošiljanje povratnih informacij Googlu</translation>
+<translation id="5657156137487675418">Dovoli vse piškotke</translation>
 <translation id="5657667036353380798">Za zunanjo razširitev mora biti nameščen Chrome <ph name="MINIMUM_CHROME_VERSION" /> ali novejši.</translation>
 <translation id="5658415415603568799">Zaradi večje varnosti vas bo Smart Lock pozval, da po 20 urah vnesete geslo.</translation>
 <translation id="5659593005791499971">E-pošta</translation>
@@ -3593,7 +3590,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5941711191222866238">Pomanjšaj</translation>
 <translation id="5942964813783878922">Naprava <ph name="DEVICE_TYPE" /> se bo po tej posodobitvi znova zagnala. Prihodnje posodobitve programske opreme in varnostne posodobitve bodo nameščene samodejno.</translation>
 <translation id="5944869793365969636">Branje kode QR</translation>
-<translation id="5945188205370098537">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Pomagajte izboljšati izkušnjo z Androidom s samodejnim pošiljanjem diagnostičnih podatkov ter podatkov o uporabi naprave in aplikacij Googlu. Te podatke uporabljamo za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. Če ste vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v vašem računu za Google. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID poročila: <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Datoteke ni mogoče razčleniti</translation>
 <translation id="5955282598396714173">Geslo je poteklo. Odjavite se in se nato znova prijavite, da ga spremenite.</translation>
@@ -3779,6 +3775,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6185132558746749656">Lokacija naprave</translation>
 <translation id="6186394685773237175">Najdeno ni bilo nobeno ogroženo geslo</translation>
 <translation id="6195693561221576702">Te naprave ni mogoče nastaviti v predstavitvenem načinu brez povezave.</translation>
+<translation id="6196640612572343990">Blokiraj piškotke drugih spletnih mest</translation>
 <translation id="6196854373336333322">Razširitev »<ph name="EXTENSION_NAME" />« je prevzela nadzor nad nastavitvami strežnika proxy, kar pomeni, da lahko spremeni, prekine ali nadzoruje vse, kar počnete v spletu. Če ne veste, zakaj je prišlo do te spremembe, je verjetno nezaželena.</translation>
 <translation id="6198102561359457428">Odjavite se in znova prijavite ...</translation>
 <translation id="6198252989419008588">Spremeni PIN</translation>
@@ -4445,7 +4442,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="711902386174337313">Branje seznama naprav, v katere ste prijavljeni</translation>
 <translation id="7120865473764644444">Povezave s strežnikom za sinhronizacijo ni bilo mogoče vzpostaviti. Vnovičen poskus …</translation>
 <translation id="7121362699166175603">Izbriše zgodovino in samodokončanja v naslovni vrstici. V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Ta naprava trenutno Googlu samodejno pošilja diagnostične podatke ter podatke o uporabi naprave in aplikacij. Teh podatkov ne bomo uporabljali, da bi prepoznali vašega otroka, temveč za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. Če ste za otroka vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v njegovem računu za Google. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Način za razvijalce</translation>
 <translation id="7121728544325372695">Pametni pomišljaji</translation>
 <translation id="7123360114020465152">Ni več podprto</translation>
@@ -4560,7 +4556,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7280041992884344566">Medtem ko je Chrome iskal škodljivo programsko opremo, je prišlo do napake</translation>
 <translation id="7280649757394340890">Glasovne nastavitve pretvorbe besedila v govor</translation>
 <translation id="7280877790564589615">Zahtevano je dovoljenje</translation>
-<translation id="7281268427852119151">Prilagajanje Iskanja Google, oglasov in drugih Googlovih storitev z zgodovino brskanja</translation>
 <translation id="7282992757463864530">Informacijska vrstica</translation>
 <translation id="7287143125007575591">Dostop zavrnjen.</translation>
 <translation id="7287411021188441799">Obnovi privzeto ozadje</translation>
@@ -5235,7 +5230,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Premik zavihka v novo okno}one{Premik zavihka v novo okno}two{Premik zavihkov v novo okno}few{Premik zavihkov v novo okno}other{Premik zavihkov v novo okno}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">stran</translation>
-<translation id="8180294223783876911">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Ta naprava trenutno Googlu samodejno pošilja diagnostične podatke ter podatke o uporabi naprave in aplikacij. Te podatke uporabljamo za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. Če ste vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v vašem računu za Google. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">Razširitev »<ph name="EXTENSION" />« lahko bere in izbriše slike, videodatoteke in zvočne datoteke na označenih lokacijah.</translation>
 <translation id="8181215761849004992">Domeni se ni mogoče pridružiti. Preverite, ali imate v računu zadostne pravice za dodajanje naprav.</translation>
 <translation id="8182105986296479640">Program se ne odziva.</translation>
@@ -5257,7 +5251,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8203732864715032075">Pošlje vam obvestila in si privzeto zapomni ta računalnik za Sporočila. <ph name="LINK_BEGIN" />Več o tem<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">Aplikacijo »<ph name="APP_NAME" />« je blokiral starš. Če želiš uporabljati to aplikacijo, prosi starša za dovoljenje.</translation>
 <translation id="820568752112382238">Najbolj obiskana spletna mesta</translation>
-<translation id="8206581664590136590">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Pomagajte izboljšati otrokovo izkušnjo z Androidom s samodejnim pošiljanjem diagnostičnih podatkov ter podatkov o uporabi naprave in aplikacij Googlu. Teh podatkov ne bomo uporabljali, da bi prepoznali vašega otroka, temveč za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. Če ste za otroka vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v njegovem računu za Google. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Glasbenik</translation>
 <translation id="8206859287963243715">Prenosni</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Poteka prenos}one{Poteka prenos}two{Potekata prenosa}few{Potekajo prenosi}other{Potekajo prenosi}}</translation>
@@ -5803,7 +5796,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8912362522468806198">Google Račun</translation>
 <translation id="8912793549644936705">Raztegni</translation>
 <translation id="8912810933860534797">Omogočanje samodejnega iskanja</translation>
-<translation id="891365694296252935">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Ta naprava trenutno Googlu samodejno pošilja diagnostične podatke ter podatke o uporabi naprave in aplikacij. Teh podatkov ne bomo uporabljali, da bi prepoznali vašega otroka, temveč za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. To nastavitev je uveljavil lastnik naprave. Če ste za otroka vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v njegovem računu za Google. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Nalaganje predloga</translation>
 <translation id="8916476537757519021">Podokvir za način brez beleženja zgodovine: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Preverjanje varnostnega ključa ...</translation>
@@ -5940,7 +5932,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9101691533782776290">Zažene aplikacijo</translation>
 <translation id="9102610709270966160">Omogoči razširitev</translation>
 <translation id="9103868373786083162">Pritisnite, če želite nazaj, s kontekstnim menijem pa prikažete zgodovino</translation>
-<translation id="9104396740804929809">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Pomagajte izboljšati izkušnjo z Androidom s samodejnim pošiljanjem diagnostičnih podatkov ter podatkov o uporabi naprave in aplikacij Googlu. Te podatke uporabljamo za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. To nastavitev je uveljavil lastnik naprave. Lastnik bo morda izbral, da se za to napravo pošiljajo diagnostični podatki in podatki o uporabi Googlu. Če ste vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v vašem računu za Google. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Če želite sprostiti prostor, izbrišite datoteke iz shrambe v napravi.</translation>
 <translation id="9109283579179481106">Povezovanje z mobilnim omrežjem</translation>
 <translation id="9111102763498581341">Odkleni</translation>

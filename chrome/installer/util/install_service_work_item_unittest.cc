@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/win/registry.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,31 +45,34 @@ class InstallServiceWorkItemTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    base::win::RegKey key;
-    if (ERROR_SUCCESS ==
-        key.Open(HKEY_LOCAL_MACHINE,
-                 install_static::GetClientStateKeyPath().c_str(),
-                 KEY_READ | KEY_WOW64_32KEY)) {
-      preexisting_clientstate_key_ = true;
-    } else {
-      ASSERT_EQ(ERROR_SUCCESS,
-                key.Create(HKEY_LOCAL_MACHINE,
-                           install_static::GetClientStateKeyPath().c_str(),
-                           KEY_READ | KEY_WOW64_32KEY));
-    }
+    DWORD disposition = 0;
+    ASSERT_EQ(
+        base::win::RegKey().CreateWithDisposition(
+            HKEY_LOCAL_MACHINE, install_static::GetClientStateKeyPath().c_str(),
+            &disposition, KEY_READ | KEY_WOW64_32KEY),
+        ERROR_SUCCESS);
+    preexisting_clientstate_key_ = (disposition == REG_OPENED_EXISTING_KEY);
   }
 
   void TearDown() override {
-    if (!preexisting_clientstate_key_) {
-      base::win::RegKey key;
-      if (key.Open(HKEY_LOCAL_MACHINE,
-                   install_static::GetClientStateKeyPath().c_str(),
-                   DELETE | KEY_WOW64_32KEY)) {
-        EXPECT_EQ(ERROR_SUCCESS, key.DeleteKey(L""));
-      }
-    }
+    // Delete the ClientState key created by this test if it is empty. While it
+    // would be ideal to only delete if !preexisting_clientstate_key_, older
+    // variants of this test failed to delete their key during TearDown.
+    auto result =
+        base::win::RegKey(HKEY_LOCAL_MACHINE, L"", KEY_READ | KEY_WOW64_32KEY)
+            .DeleteEmptyKey(install_static::GetClientStateKeyPath().c_str());
+    // Deletion should have succeeded if the key didn't exist to start with. If
+    // the key existed before the test ran, the delete may have succeeded
+    // (because the key was empty to start with) or may have failed because the
+    // key actually has data that should not be removed.
+    if (!preexisting_clientstate_key_)
+      EXPECT_EQ(result, ERROR_SUCCESS);
+    else if (result != ERROR_SUCCESS)
+      EXPECT_EQ(result, ERROR_DIR_NOT_EMPTY);
   }
 
+  // Set up InstallDetails for a system-level install.
+  const install_static::ScopedInstallDetails install_details_{true};
   bool preexisting_clientstate_key_ = false;
 };
 

@@ -91,6 +91,12 @@ class MediaHistoryKeyedService : public KeyedService,
   // for waiting for database operations in tests.
   void PostTaskToDBForTest(base::OnceClosure callback);
 
+  // Returns all the rows in the media feeds table.  This is only used for
+  // debugging because it loads all rows in the table.
+  void GetMediaFeedsForDebug(
+      base::OnceCallback<void(std::vector<media_feeds::mojom::MediaFeedPtr>)>
+          callback);
+
  private:
   class StoreHolder;
 

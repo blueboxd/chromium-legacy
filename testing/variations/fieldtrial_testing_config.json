@@ -5938,6 +5938,7 @@
     "UseSkiaRenderer": [
         {
             "platforms": [
+                "android",
                 "linux",
                 "windows"
             ],

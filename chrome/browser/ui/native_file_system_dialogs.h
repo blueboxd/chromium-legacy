@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "build/build_config.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "content/public/browser/native_file_system_permission_context.h"
@@ -56,6 +57,7 @@ void ShowNativeFileSystemDirectoryAccessConfirmationDialog(
     const url::Origin& origin,
     const base::FilePath& path,
     base::OnceCallback<void(permissions::PermissionAction result)> callback,
-    content::WebContents* web_contents);
+    content::WebContents* web_contents,
+    base::ScopedClosureRunner fullscreen_block);
 
 #endif  // CHROME_BROWSER_UI_NATIVE_FILE_SYSTEM_DIALOGS_H_

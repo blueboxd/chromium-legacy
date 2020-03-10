@@ -323,14 +323,12 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
   void SetUp() override {
     if (GetParam()) {
       scoped_feature_list_.InitWithFeatures(
-          /* enabled */ {chromeos::features::kShelfScrollable,
-                         chromeos::features::kShelfHotseat},
+          /* enabled */ {chromeos::features::kShelfHotseat},
           /* disabled */ {});
     } else {
       scoped_feature_list_.InitWithFeatures(
           /* enabled */ {},
-          /* disabled */ {chromeos::features::kShelfScrollable,
-                          chromeos::features::kShelfHotseat});
+          /* disabled */ {chromeos::features::kShelfHotseat});
     }
 
     AshTestBase::SetUp();

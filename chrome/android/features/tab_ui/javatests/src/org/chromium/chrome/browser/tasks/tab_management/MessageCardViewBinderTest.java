@@ -143,6 +143,26 @@ public class MessageCardViewBinderTest extends DummyUiActivityTestCase {
         assertTrue(mMessageServiceDismissCallbackRan.get());
     }
 
+    @Test
+    @UiThreadTest
+    @SmallTest
+    public void testSetIconVisibility() {
+        int margin = (int) getActivity().getResources().getDimension(
+                R.dimen.tab_grid_iph_item_description_margin);
+        ViewGroup.MarginLayoutParams params =
+                (ViewGroup.MarginLayoutParams) mItemView.findViewById(R.id.description)
+                        .getLayoutParams();
+        assertEquals(4, mItemView.getChildCount());
+
+        mItemViewModel.set(MessageCardViewProperties.IS_ICON_VISIBLE, false);
+        assertEquals(3, mItemView.getChildCount());
+        assertEquals(margin, params.leftMargin);
+
+        mItemViewModel.set(MessageCardViewProperties.IS_ICON_VISIBLE, true);
+        assertEquals(4, mItemView.getChildCount());
+        assertEquals(0, params.leftMargin);
+    }
+
     @Override
     public void tearDownTest() throws Exception {
         mItemMCP.destroy();

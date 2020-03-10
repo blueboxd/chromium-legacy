@@ -9,12 +9,18 @@
 #include "base/strings/string16.h"
 #include "components/permissions/permission_prompt.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/button/button.h"
 
 class Browser;
 
+namespace views {
+class ImageButton;
+}
+
 // Bubble that prompts the user to grant or deny a permission request from a
 // website.
-class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
+class PermissionPromptBubbleView : public views::ButtonListener,
+                                   public views::BubbleDialogDelegateView {
  public:
   PermissionPromptBubbleView(Browser* browser,
                              permissions::PermissionPrompt::Delegate* delegate);
@@ -28,6 +34,9 @@ class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   gfx::Size CalculatePreferredSize() const override;
+
+  // Button Listener
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
   // Holds the string to be displayed as the origin of the permission prompt,
@@ -50,6 +59,8 @@ class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
 
   // The requesting domain's name or origin.
   const DisplayNameOrOrigin name_or_origin_;
+
+  views::ImageButton* learn_more_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionPromptBubbleView);
 };

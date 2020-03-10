@@ -505,7 +505,7 @@ public class TabGridDialogTest {
 
     private void verifyTabGridDialogToolbarMenuItem(ListView listView, int index, String text) {
         View menuItemView = listView.getChildAt(index);
-        TextView menuItemText = menuItemView.findViewById(R.id.menu_item);
+        TextView menuItemText = menuItemView.findViewById(R.id.menu_item_text);
         assertEquals(text, menuItemText.getText());
     }
 

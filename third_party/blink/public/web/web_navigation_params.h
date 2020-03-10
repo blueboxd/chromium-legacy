@@ -17,6 +17,8 @@
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
@@ -133,7 +135,8 @@ struct BLINK_EXPORT WebNavigationInfo {
   WebContentSecurityPolicySourceExpression initiator_self_source;
 
   // The navigation initiator, if any.
-  mojo::ScopedMessagePipeHandle navigation_initiator_handle;
+  CrossVariantMojoRemote<mojom::NavigationInitiatorInterfaceBase>
+      navigation_initiator_remote;
 
   // Specifies whether or not a MHTML Archive can be used to load a subframe
   // resource instead of doing a network request.

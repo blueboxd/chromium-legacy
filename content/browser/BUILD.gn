@@ -869,6 +869,8 @@ jumbo_source_set("browser") {
     "frame_host/cross_process_frame_connector.h",
     "frame_host/debug_urls.cc",
     "frame_host/debug_urls.h",
+    "frame_host/file_chooser_impl.cc",
+    "frame_host/file_chooser_impl.h",
     "frame_host/form_submission_throttle.cc",
     "frame_host/form_submission_throttle.h",
     "frame_host/frame_navigation_entry.cc",

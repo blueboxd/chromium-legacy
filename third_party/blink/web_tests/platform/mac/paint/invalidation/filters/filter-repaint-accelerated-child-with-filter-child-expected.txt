@@ -19,7 +19,12 @@
         {
           "object": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow'",
           "rect": [0, 0, 212, 257],
-          "reason": "geometry"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow'",
+          "rect": [0, 0, 158, 257],
+          "reason": "paint property change"
         }
       ],
       "transform": 1

@@ -227,18 +227,16 @@
       },
     },
   },
-  'host_mac_10.14': {
-    'swarming': {
-      'dimensions': {
-        'host os': 'Mac-10.14.6',
-      },
-    },
-  },
   'intel_iris_5100': {
     'swarming': {
       'dimensions': {
         'gpu': '8086:0a2e',
       },
+    },
+  },
+  'ios_swarming_account': {
+    'swarming': {
+      'service_account': 'ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com'
     },
   },
   'kitkat': {
@@ -475,6 +473,17 @@
       },
     },
   },
+  'mac_toolchain': {
+    'swarming': {
+      'cipd_packages': [
+        {
+          "cipd_package": 'infra/tools/mac_toolchain/${platform}',
+          'location': '.',
+          'revision': 'git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a',
+        },
+      ],
+    },
+  },
   'marshmallow': {
     'swarming': {
       'dimensions': {
@@ -534,6 +543,14 @@
         'device_os': 'OPM4.171019.021.P2',
         'device_os_flavor': 'google',
       },
+    },
+  },
+  'out_dir_arg': {
+    '$mixin_append': {
+      'args': [
+        '--out-dir',
+        '${ISOLATED_OUTDIR}'
+      ],
     },
   },
   'pie-x86-emulator': {
@@ -734,16 +751,12 @@
   },
   'xcode_11c29': {
     'swarming': {
-      'dimensions': {
-        'xcode_build_version': '11c29',
-      },
-    },
-  },
-  'xcode_parallelization': {
-    'swarming': {
-      'dimensions': {
-        'xcode_parallelization': 'true',
-      },
+      'named_caches': [
+        {
+          'name': 'xcode_ios_11c29',
+          'path': 'Xcode.app',
+        },
+      ],
     },
   },
 }

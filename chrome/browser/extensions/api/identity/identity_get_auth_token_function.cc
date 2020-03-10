@@ -383,6 +383,8 @@ void IdentityGetAuthTokenFunction::StartMintTokenFlow(
       CompleteFunctionWithError(identity_constants::kNoGrant);
       return;
     }
+    // TODO(https://crbug.com/1026237): figure out whether this can be ignored
+    // when running the remote consent approval.
     if (!id_api->mint_queue()->empty(
             IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE, token_key_)) {
       // Another call is going through a consent UI.
@@ -390,6 +392,7 @@ void IdentityGetAuthTokenFunction::StartMintTokenFlow(
       return;
     }
   }
+
   id_api->mint_queue()->RequestStart(type, token_key_, this);
 }
 
@@ -469,6 +472,14 @@ void IdentityGetAuthTokenFunction::StartMintToken(
         resolution_data_ = cache_entry.resolution_data();
         StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
         break;
+
+      case IdentityTokenCacheValue::CACHE_STATUS_REMOTE_CONSENT_APPROVED:
+        consent_result_ = cache_entry.consent_result();
+        should_prompt_for_scopes_ = false;
+        should_prompt_for_signin_ = false;
+        gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE;
+        StartTokenKeyAccountAccessTokenRequest();
+        break;
     }
   } else {
     DCHECK(type == IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
@@ -485,6 +496,13 @@ void IdentityGetAuthTokenFunction::StartMintToken(
       case IdentityTokenCacheValue::CACHE_STATUS_REMOTE_CONSENT:
         ShowRemoteConsentDialog(resolution_data_);
         break;
+      case IdentityTokenCacheValue::CACHE_STATUS_REMOTE_CONSENT_APPROVED:
+        consent_result_ = cache_entry.consent_result();
+        should_prompt_for_scopes_ = false;
+        should_prompt_for_signin_ = false;
+        gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE;
+        StartTokenKeyAccountAccessTokenRequest();
+        break;
     }
   }
 }
@@ -494,8 +512,8 @@ void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
     int time_to_live) {
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnMintTokenSuccess", this);
 
-  IdentityTokenCacheValue token(access_token,
-                                base::TimeDelta::FromSeconds(time_to_live));
+  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
+      access_token, base::TimeDelta::FromSeconds(time_to_live));
   IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
       ->SetCachedToken(token_key_, token);
@@ -538,7 +556,8 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
 
   IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
-      ->SetCachedToken(token_key_, IdentityTokenCacheValue(issue_advice));
+      ->SetCachedToken(
+          token_key_, IdentityTokenCacheValue::CreateIssueAdvice(issue_advice));
   CompleteMintTokenFlow();
 
   should_prompt_for_signin_ = false;
@@ -563,7 +582,8 @@ void IdentityGetAuthTokenFunction::OnRemoteConsentSuccess(
 
   IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
-      ->SetCachedToken(token_key_, IdentityTokenCacheValue(resolution_data));
+      ->SetCachedToken(token_key_, IdentityTokenCacheValue::CreateRemoteConsent(
+                                       resolution_data));
   should_prompt_for_signin_ = false;
   resolution_data_ = resolution_data;
   CompleteMintTokenFlow();
@@ -666,7 +686,7 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowCompleted(
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnGaiaFlowCompleted", this);
   int time_to_live;
   if (!expiration.empty() && base::StringToInt(expiration, &time_to_live)) {
-    IdentityTokenCacheValue token_value(
+    IdentityTokenCacheValue token_value = IdentityTokenCacheValue::CreateToken(
         access_token, base::TimeDelta::FromSeconds(time_to_live));
     IdentityAPI::GetFactoryInstance()
         ->Get(GetProfile())
@@ -712,12 +732,29 @@ void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowApproved(
     const std::string& gaia_id) {
   // TODO(crbug.com/1026237): Reuse the same gaia id for this extension the next
   // time.
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
+      "identity", "OnGaiaRemoteConsentFlowApproved", this, "gaia_id", gaia_id);
   DCHECK(!consent_result.empty());
+
+  CompleteMintTokenFlow();
+  base::Optional<AccountInfo> account =
+      IdentityManagerFactory::GetForProfile(GetProfile())
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(gaia_id);
+  if (!account) {
+    CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
+    return;
+  }
+
+  token_key_.account_id = account->account_id;
   consent_result_ = consent_result;
   should_prompt_for_scopes_ = false;
   should_prompt_for_signin_ = false;
-  gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE;
-  StartTokenKeyAccountAccessTokenRequest();
+  IdentityAPI::GetFactoryInstance()
+      ->Get(GetProfile())
+      ->SetCachedToken(
+          token_key_,
+          IdentityTokenCacheValue::CreateRemoteConsentApproved(consent_result));
+  StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
 }
 
 void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(

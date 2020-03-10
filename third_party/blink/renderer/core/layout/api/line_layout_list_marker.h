@@ -24,16 +24,7 @@ class LineLayoutListMarker : public LineLayoutBox {
 
   LineLayoutListMarker() = default;
 
-  bool IsInside() const { return ToListMarker()->IsInside(); }
-
- private:
-  LayoutListMarker* ToListMarker() {
-    return ToLayoutListMarker(GetLayoutObject());
-  }
-
-  const LayoutListMarker* ToListMarker() const {
-    return ToLayoutListMarker(GetLayoutObject());
-  }
+  bool IsInside() const { return GetLayoutObject()->IsInsideListMarker(); }
 };
 
 }  // namespace blink

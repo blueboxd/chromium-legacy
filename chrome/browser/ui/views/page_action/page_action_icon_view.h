@@ -45,9 +45,9 @@ class PageActionIconView : public IconLabelBubbleView {
 
     virtual content::WebContents* GetWebContentsForPageActionIconView() = 0;
 
-    // Returns the border the icon should use. It depends on what kind of
-    // delegate this icon has.
-    virtual std::unique_ptr<views::Border> CreatePageActionIconBorder() const;
+    // Returns the size of the insets in which the icon should draw its inkdrop.
+    virtual gfx::Insets GetPageActionIconInsets(
+        const PageActionIconView* icon_view) const;
 
     // Delegate should override and return true when the user is editing the
     // location bar contents.

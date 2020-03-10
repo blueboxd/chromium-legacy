@@ -574,8 +574,6 @@
 <translation id="177336675152937177">Të dhënat e strehuara të aplikacionit</translation>
 <translation id="1776712937009046120">Shto përdorues</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Kjo pajisje menaxhohet nga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Kliko te "Përpara" për të vazhduar me identifikimin në llogarinë tënde <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Fut këtë çelës kalimi në "<ph name="DEVICE_NAME" />":</translation>
 <translation id="177989070088644880">Aplikacion (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Mbyll grupin</translation>
@@ -889,7 +887,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2202898655984161076">Pati një problem në renditjen e printerëve. Disa prej tyre rinterëve mund të mos jenë regjistruar me sukses në <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motori i kërkimit që përdoret në <ph name="BEGIN_LINK" />shiritin e adresës<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Lexo dhe ndrysho gjithçka që shkruan</translation>
-<translation id="220792432208469595">Dërgo të dhënat e përdorimit dhe të diagnostikimit. Aktualisht kjo pajisje po dërgon automatikisht te Google të dhënat e diagnostikimit dhe të përdorimit të pajisjes dhe të aplikacioneve. Këto do të ndihmojnë për qëndrueshmërinë e sistemit dhe të aplikacioneve dhe për përmirësime të tjera. Disa të dhëna të përmbledhura do të ndihmojnë po ashtu aplikacionet dhe partnerët e Google, si p.sh. zhvilluesit e Android. Ky cilësim zbatohet nga zotëruesi. Nëse cilësimi i "Aktivitetit shtesë të uebit dhe të aplikacioneve" është i aktivizuar, këto të dhëna mund të ruhen në "Llogarinë tënde të Google". <ph name="BEGIN_LINK1" />Mëso më shumë<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Fut këtë kod PIN në "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Lejo kukit</translation>
 <translation id="2213140827792212876">Hiq ndarjen</translation>
@@ -1350,7 +1347,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2804043232879091219">Shfletuesi alternativ nuk mund të hapej</translation>
 <translation id="2804667941345577550">Do të nxirresh nga ky sajt, duke përfshirë edhe në skedat e hapura</translation>
 <translation id="2804680522274557040">Kamera është çaktivizuar</translation>
-<translation id="2805539617243680210">Je plotësisht gati!</translation>
 <translation id="2805646850212350655">Sistemi i skedarëve të enkriptimit të Microsoft</translation>
 <translation id="2805756323405976993">Aplikacionet</translation>
 <translation id="2805770823691782631">Detaje të tjera</translation>
@@ -2031,6 +2027,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3742055079367172538">Pamja e ekranit u mor</translation>
 <translation id="3742666961763734085">Nuk mund të gjendej njësi organizative me atë emër. Provo sërish.</translation>
 <translation id="3744111561329211289">Sinkronizimi në sfond</translation>
+<translation id="3747077776423672805">Për të hequr aplikacionet, shko te "Cilësimet" &gt; "Dyqani i Google Play" &gt; "Menaxho preferencat e Android" &gt; "Aplikacionet" ose "Menaxheri i aplikacioneve". Më pas trokit tek aplikacioni që dëshiron të çinstalosh (mund të jetë e nevojshme që të rrëshqasësh djathtas ose majtas për të gjetur aplikacionin). Më pas trokit "Çinstalo" ose "Çaktivizo".</translation>
 <translation id="3748026146096797577">Nuk është i lidhur</translation>
 <translation id="3752582316358263300">Në rregull...</translation>
 <translation id="3752673729237782832">Pajisjet e mia</translation>
@@ -2754,7 +2751,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4785719467058219317">Po përdor një çelës sigurie që nuk është i regjistruar me këtë sajt uebi</translation>
 <translation id="4788092183367008521">Kontrollo lidhjen e rrjetit dhe provo përsëri.</translation>
 <translation id="4792711294155034829">&amp;Raporto një problem...</translation>
-<translation id="4795022432560487924">Dërgo të dhënat e përdorimit dhe të diagnostikimit. Ndihmo në përmirësimin e përvojës së fëmijës tënd me Android duke dërguar automatikisht te Google të dhënat e diagnostikimit dhe të përdorimit të pajisjes dhe aplikacioneve. Këto nuk do të përdoren për të identifikuar fëmijën tënd dhe do të ndihmojnë për qëndrueshmërinë e sistemit dhe të aplikacioneve dhe për përmirësime të tjera. Disa të dhëna të përmbledhura do të ndihmojnë po ashtu aplikacionet dhe partnerët e Google, si p.sh. zhvilluesit e Android. Ky cilësim zbatohet nga zotëruesi. Zotëruesi mund të zgjedhë të dërgojë te Google të dhënat e diagnostikimit dhe të përdorimit për këtë pajisje. Nëse cilësimi i "Aktivitetit shtesë të uebit dhe të aplikacioneve" është i aktivizuar për fëmijën tënd, këto të dhëna mund të ruhen në "Llogarinë e Google" të fëmijës. <ph name="BEGIN_LINK1" />Mëso më shumë<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Faqe interneti, vetëm HTML</translation>
 <translation id="4798236378408895261">Bashkëngjit <ph name="BEGIN_LINK" />Evidencat e Bluetooth-it<ph name="END_LINK" /> (e brendshme për Google)</translation>
 <translation id="4801448226354548035">Fshih llogaritë</translation>
@@ -3588,7 +3584,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5941711191222866238">Minimizo</translation>
 <translation id="5942964813783878922">Pajisja jote <ph name="DEVICE_TYPE" /> do të riniset pas këtij përditësimi. Përditësimet e ardhshme të softuerëve dhe të sigurisë do të instalohen automatikisht.</translation>
 <translation id="5944869793365969636">Skano kodin QR</translation>
-<translation id="5945188205370098537">Dërgo të dhënat e përdorimit dhe të diagnostikimit. Ndihmo me përmirësimin e përvojës sate të Android duke dërguar automatikisht te Google të dhënat e diagnostikimit dhe të përdorimit të pajisjes dhe të aplikacioneve. Këto do të ndihmojnë për qëndrueshmërinë e sistemit dhe të aplikacioneve dhe për përmirësime të tjera. Disa të dhëna të përmbledhura do të ndihmojnë po ashtu aplikacionet dhe partnerët e Google, si p.sh. zhvilluesit e Android. Nëse cilësimi i "Aktivitetit shtesë të uebit dhe të aplikacioneve" është i aktivizuar, këto të dhëna mund të ruhen në "Llogarinë tënde të Google". <ph name="BEGIN_LINK1" />Mëso më shumë<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID-ja e raportimit <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Skedari nuk mund të analizohej</translation>
 <translation id="5955282598396714173">Fjalëkalimi yt ka skaduar. Dil dhe më pas identifikohu përsëri për ta ndryshuar atë.</translation>
@@ -3774,6 +3769,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6185132558746749656">Vendndodhja e pajisjes</translation>
 <translation id="6186394685773237175">Nuk u gjetën fjalëkalime të komprometuara</translation>
 <translation id="6195693561221576702">Kjo pajisje nuk mund të konfigurohet në modalitetin e demonstrimit jashtë linje.</translation>
+<translation id="6196640612572343990">Blloko kukit e palëve të treta</translation>
 <translation id="6196854373336333322">Shtesa <ph name="EXTENSION_NAME" /> ka marrë nën kontroll cilësimet e përfaqësuesit, që do të thotë se mund të ndryshojë, shkelë ose përgjojë çdo gjë që ti bën në linjë. Nëse s'je i sigurt se pse ndodhi ky ndryshim, ndoshta nuk e do.</translation>
 <translation id="6198102561359457428">Dil dhe pastaj identifikohu sërish...</translation>
 <translation id="6198252989419008588">Ndrysho kodin PIN</translation>
@@ -4440,7 +4436,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="711902386174337313">Lexo listën e pajisjeve ku je identifikuar</translation>
 <translation id="7120865473764644444">Nuk mund të lidhej me serverin e sinkronizimit.</translation>
 <translation id="7121362699166175603">Pastron historikun dhe plotësimet automatike në shiritin e adresës. Llogaria jote e Google mund të ketë forma të tjera të historikut të shfletimit në <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Dërgo të dhënat e përdorimit dhe të diagnostikimit. Aktualisht kjo pajisje po dërgon automatikisht te Google të dhënat e diagnostikimit dhe të përdorimit të pajisjes dhe të aplikacioneve. Këto nuk do të përdoren për të identifikuar fëmijën tënd dhe do të ndihmojnë për qëndrueshmërinë e sistemit dhe të aplikacioneve dhe për përmirësime të tjera. Disa të dhëna të përmbledhura do të ndihmojnë po ashtu aplikacionet dhe partnerët e Google, si p.sh. zhvilluesit e Android. Nëse cilësimi i "Aktivitetit shtesë të uebit dhe të aplikacioneve" është i aktivizuar për fëmijën tënd, këto të dhëna mund të ruhen në "Llogarinë e Google" të fëmijës. <ph name="BEGIN_LINK1" />Mëso më shumë<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Modaliteti i zhvilluesit</translation>
 <translation id="7121728544325372695">Vizat inteligjente</translation>
 <translation id="7123360114020465152">Nuk mbështetet më</translation>
@@ -4555,7 +4550,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7280041992884344566">Ndodhi një gabim ndërkohë që Chrome po kërkonte për softuerë të dëmshëm</translation>
 <translation id="7280649757394340890">Cilësimet e zërit për tekstin në ligjërim</translation>
 <translation id="7280877790564589615">Kërkohet leje</translation>
-<translation id="7281268427852119151">Përdor historikun tënd të shfletimit për të personalizuar "Kërko", reklamat dhe shërbime të tjera të Google</translation>
 <translation id="7282992757463864530">Shiriti i informacioneve</translation>
 <translation id="7287143125007575591">Qasja refuzohet</translation>
 <translation id="7287411021188441799">Restauro sfondin e parazgjedhur</translation>
@@ -5228,7 +5222,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Zhvendose skedën në një dritare të re}other{Zhvendosi skedat në një dritare të re}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">faqja</translation>
-<translation id="8180294223783876911">Dërgo të dhënat e përdorimit dhe të diagnostikimit. Aktualisht kjo pajisje po dërgon automatikisht te Google të dhënat e diagnostikimit dhe të përdorimit të pajisjes dhe të aplikacioneve. Këto do të ndihmojnë për qëndrueshmërinë e sistemit dhe të aplikacioneve dhe për përmirësime të tjera. Disa të dhëna të përmbledhura do të ndihmojnë po ashtu aplikacionet dhe partnerët e Google, si p.sh. zhvilluesit e Android. Nëse cilësimi i "Aktivitetit shtesë të uebit dhe të aplikacioneve" është i aktivizuar, këto të dhëna mund të ruhen në "Llogarinë tënde të Google". <ph name="BEGIN_LINK1" />Mëso më shumë<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" mund të lexojë dhe fshijë imazhe, video dhe skedarë audio në vendndodhjet e verifikuara.</translation>
 <translation id="8181215761849004992">Nuk mund t'i bashkohet domenit. Kontrollo llogarinë për të parë nëse ke privilegje të mjaftueshme për të shtuar pajisje.</translation>
 <translation id="8182105986296479640">Aplikacioni nuk përgjigjet.</translation>
@@ -5250,7 +5243,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8203732864715032075">Të dërgon njoftime dhe kthen parazgjedhjen për të kujtuar këtë kompjuter për "Mesazhet". <ph name="LINK_BEGIN" />Mëso më shumë<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">"<ph name="APP_NAME" />" është bllokuar nga prindi yt. Kërko leje nga prindi që ta përdorësh këtë aplikacion.</translation>
 <translation id="820568752112382238">Sajtet më të vizituara</translation>
-<translation id="8206581664590136590">Dërgo të dhënat e përdorimit dhe të diagnostikimit. Ndihmo në përmirësimin e përvojës së fëmijës tënd me Android duke dërguar automatikisht te Google të dhënat e diagnostikimit dhe të përdorimit të pajisjes dhe aplikacioneve. Këto nuk do të përdoren për të identifikuar fëmijën tënd dhe do të ndihmojnë për qëndrueshmërinë e sistemit dhe të aplikacioneve dhe për përmirësime të tjera. Disa të dhëna të përmbledhura do të ndihmojnë po ashtu aplikacionet dhe partnerët e Google, si p.sh. zhvilluesit e Android. Nëse cilësimi i "Aktivitetit shtesë të uebit dhe të aplikacioneve" është i aktivizuar për fëmijën tënd, këto të dhëna mund të ruhen në "Llogarinë e Google" të fëmijës. <ph name="BEGIN_LINK1" />Mëso më shumë<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Bluzi</translation>
 <translation id="8206859287963243715">Rrjeti celular</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Shkarkimi është në vazhdim}other{Shkarkimet janë në vazhdim}}</translation>
@@ -5796,7 +5788,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8912362522468806198">Llogaria e Google</translation>
 <translation id="8912793549644936705">Shtrij</translation>
 <translation id="8912810933860534797">Aktivizo skanimin automatik</translation>
-<translation id="891365694296252935">Dërgo të dhënat e përdorimit dhe të diagnostikimit. Aktualisht kjo pajisje po dërgon automatikisht te Google të dhënat e diagnostikimit dhe të përdorimit të pajisjes dhe të aplikacioneve. Këto nuk do të përdoren për të identifikuar fëmijën tënd dhe do të ndihmojnë për qëndrueshmërinë e sistemit dhe të aplikacioneve dhe për përmirësime të tjera. Disa të dhëna të përmbledhura do të ndihmojnë po ashtu aplikacionet dhe partnerët e Google, si p.sh. zhvilluesit e Android. Ky cilësim zbatohet nga zotëruesi. Nëse "Aktiviteti shtesë i uebit dhe i aplikacioneve" është i aktivizuar për fëmijën tënd, këto të dhëna mund të ruhen në "Llogarinë e Google" të fëmijës. <ph name="BEGIN_LINK1" />Mëso më shumë<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Po ngarkon sugjerimin</translation>
 <translation id="8916476537757519021">Nënkorniza "e fshehtë": <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Çelësi yt i sigurisë po verifikohet...</translation>
@@ -5933,7 +5924,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="9101691533782776290">Nis aplikacionin</translation>
 <translation id="9102610709270966160">Aktivizo shtesën</translation>
 <translation id="9103868373786083162">Shtyp për t'u kthyer prapa. Historiku mund të shihet nga menyja kontekstuale.</translation>
-<translation id="9104396740804929809">Dërgo të dhënat e përdorimit dhe të diagnostikimit. Ndihmo me përmirësimin e përvojës sate të Android duke dërguar automatikisht te Google të dhënat e diagnostikimit dhe të përdorimit të pajisjes dhe të aplikacioneve. Këto do të ndihmojnë për qëndrueshmërinë e sistemit dhe të aplikacioneve dhe për përmirësime të tjera. Disa të dhëna të përmbledhura do të ndihmojnë po ashtu aplikacionet dhe partnerët e Google, si p.sh. zhvilluesit e Android. Ky cilësim zbatohet nga zotëruesi. Zotëruesi mund të zgjedhë të dërgojë te Google të dhënat e diagnostikimit dhe të përdorimit për këtë pajisje. Nëse cilësimi i "Aktivitetit shtesë të uebit dhe të aplikacioneve" është i aktivizuar, këto të dhëna mund të ruhen në "Llogarinë tënde të Google". <ph name="BEGIN_LINK1" />Mëso më shumë<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Për të liruar hapësirë, fshi skedarë nga hapësira ruajtëse e pajisjes.</translation>
 <translation id="9109283579179481106">Lidhu me rrjetin celular</translation>
 <translation id="9111102763498581341">Shkyç</translation>

@@ -277,14 +277,6 @@ class BookmarkModel : public BookmarkUndoProvider,
     return expanded_state_tracker_.get();
   }
 
-  // Sets the visibility of one of the permanent nodes (unless the node must
-  // always be visible, see |BookmarkClient::IsPermanentNodeVisible| for more
-  // details). This is set by sync.
-  void SetPermanentNodeVisible(BookmarkNode::Type type, bool value);
-
-  // Returns the permanent node of type |type|.
-  const BookmarkPermanentNode* PermanentNode(BookmarkNode::Type type);
-
   // Sets/deletes meta info of |node|.
   void SetNodeMetaInfo(const BookmarkNode* node,
                        const std::string& key,

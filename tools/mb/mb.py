@@ -46,6 +46,7 @@ def DefaultVals():
   """Default mixin values"""
   return {
       'args_file': '',
+      # TODO(crbug.com/937821): Get rid of 'cros_passthrough'.
       'cros_passthrough': False,
       'gn_args': '',
   }
@@ -1306,8 +1307,9 @@ class MetaBuildWrapper(object):
     # since that makes incremental builds incorrect. See
     # https://crbug.com/912946
     is_android = 'target_os="android"' in vals['gn_args']
-    is_cros = ('target_os="chromeos"' in vals['gn_args'] or
-               vals.get('cros_passthrough', False))
+    is_cros = ('target_os="chromeos"' in vals['gn_args']
+               or 'is_chromeos_device=true' in vals['gn_args']
+               or vals.get('cros_passthrough', False))
     is_mac = self.platform == 'darwin'
     is_msan = 'is_msan=true' in vals['gn_args']
     is_ios = 'target_os="ios"' in vals['gn_args']
@@ -1500,7 +1502,8 @@ class MetaBuildWrapper(object):
     is_fuchsia = 'target_os="fuchsia"' in vals['gn_args']
     is_cros = 'target_os="chromeos"' in vals['gn_args']
     is_ios = 'target_os="ios"' in vals['gn_args']
-    is_simplechrome = vals.get('cros_passthrough', False)
+    is_cros_device = ('is_chromeos_device=true' in vals['gn_args']
+                      or vals.get('cros_passthrough', False))
     is_mac = self.platform == 'darwin'
     is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
 
@@ -1574,7 +1577,7 @@ class MetaBuildWrapper(object):
           '--test-launcher-bot-mode',
           '--system-log-file', '${ISOLATED_OUTDIR}/system_log'
       ]
-    elif is_simplechrome and test_type != 'script':
+    elif is_cros_device and test_type != 'script':
       cmdline += [
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
@@ -1613,7 +1616,7 @@ class MetaBuildWrapper(object):
     elif test_type == 'script':
       # If we're testing a CrOS simplechrome build, assume we need to prepare a
       # DUT for testing. So prepend the command to run with the test wrapper.
-      if is_simplechrome:
+      if is_cros_device:
         cmdline = [
             os.path.join('bin', 'cros_test_wrapper'),
             '--logs-dir=${ISOLATED_OUTDIR}',

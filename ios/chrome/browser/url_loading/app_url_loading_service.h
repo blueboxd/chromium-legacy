@@ -13,10 +13,8 @@
 #include "ios/chrome/app/application_mode.h"
 #include "ui/base/page_transition_types.h"
 
-class ChromeBrowserState;
+class Browser;
 struct UrlLoadParams;
-
-@class TabModel;
 
 // Objective-C delegate for AppUrlLoadingService.
 @protocol AppURLLoadingServiceDelegate
@@ -49,9 +47,8 @@ struct UrlLoadParams;
 // doing unnecessary work related to showing the previously selected tab.
 - (void)expectNewForegroundTabForMode:(ApplicationMode)targetMode;
 
-// TODO(crbug.com/907527): refactor to remove these and most methods above.
-- (ChromeBrowserState*)currentBrowserState;
-- (TabModel*)currentTabModel;
+// TODO(crbug.com/907527): refactor to remove this and most methods above.
+@property(nonatomic, readonly) Browser* currentBrowserForURLLoading;
 
 @end
 
@@ -66,8 +63,8 @@ class AppUrlLoadingService {
   // Opens a url based on |params| in a new tab.
   virtual void LoadUrlInNewTab(const UrlLoadParams& params);
 
-  // Returns the current browser state.
-  virtual ChromeBrowserState* GetCurrentBrowserState();
+  // Returns the current active browser in the scene owning this object.
+  virtual Browser* GetCurrentBrowser();
 
  private:
   __weak id<AppURLLoadingServiceDelegate> delegate_;

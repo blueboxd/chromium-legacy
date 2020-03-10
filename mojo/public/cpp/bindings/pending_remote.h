@@ -6,17 +6,22 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_PENDING_REMOTE_H_
 
 #include <cstdint>
+#include <type_traits>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/pending_remote_state.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
+
+template <typename T>
+struct PendingRemoteConverter;
 
 // A valid PendingRemote is entangled with exactly one Receiver or
 // PendingReceiver, and can be consumed to bind a Remote in order to begin
@@ -58,6 +63,21 @@ class PendingRemote {
   // expected interface version number.
   PendingRemote(ScopedMessagePipeHandle pipe, uint32_t version)
       : state_(std::move(pipe), version) {}
+
+  // Disabled on NaCl since it crashes old version of clang.
+#if !defined(OS_NACL)
+  // Move conversion operator for custom remote types. Only participates in
+  // overload resolution if a typesafe conversion is supported.
+  template <
+      typename T,
+      std::enable_if_t<std::is_same<
+          PendingRemote<Interface>,
+          std::result_of_t<decltype (&PendingRemoteConverter<T>::template To<
+                                     Interface>)(T&&)>>::value>* = nullptr>
+  PendingRemote(T&& other)
+      : PendingRemote(PendingRemoteConverter<T>::template To<Interface>(
+            std::move(other))) {}
+#endif  // !defined(OS_NACL)
 
   ~PendingRemote() = default;
 

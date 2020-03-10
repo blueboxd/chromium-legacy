@@ -17,6 +17,13 @@ namespace android {
 // ProfileManager::GetLastUsedProfile() in the same context. If your usecase
 // cares about different profiles and their keys, then you should plumb through
 // the correct key instead.
+ProfileKey* GetLastUsedRegularProfileKey();
+
+// BE WARNED you should only use this if it would have been acceptable to use
+// ProfileManager::GetLastUsedProfile() in the same context. If your usecase
+// cares about different profiles and their keys, then you should plumb through
+// the correct key instead.
+// DEPRECATED, use GetLastUsedRegularProfileKey() instead.
 ProfileKey* GetLastUsedProfileKey();
 
 }  // namespace android

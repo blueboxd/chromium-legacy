@@ -46,6 +46,10 @@ class FakeBinaryUploadService : public BinaryUploadService {
     prepared_file_responses_[path] = response;
   }
 
+  void SetShouldAutomaticallyAuthorize(bool authorize) {
+    should_automatically_authorize_ = authorize;
+  }
+
   int requests_count() const { return requests_count_; }
 
  private:
@@ -53,6 +57,9 @@ class FakeBinaryUploadService : public BinaryUploadService {
     // The first uploaded request is the authentication one.
     if (++requests_count_ == 1) {
       authorization_request_.swap(request);
+
+      if (should_automatically_authorize_)
+        ReturnAuthorizedResponse();
     } else {
       std::string file = request->deep_scanning_request().filename();
       if (file.empty()) {
@@ -73,6 +80,7 @@ class FakeBinaryUploadService : public BinaryUploadService {
   std::map<std::string, BinaryUploadService::Result> prepared_file_results_;
   std::map<std::string, DeepScanningClientResponse> prepared_file_responses_;
   int requests_count_ = 0;
+  bool should_automatically_authorize_ = false;
 };
 
 FakeBinaryUploadService* FakeBinaryUploadServiceStorage() {
@@ -198,6 +206,8 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Files) {
   ok_file.WriteAtCurrentPos(ok_content.data(), ok_content.size());
   bad_file.WriteAtCurrentPos(bad_content.data(), bad_content.size());
 
+  FakeBinaryUploadServiceStorage()->SetShouldAutomaticallyAuthorize(true);
+
   // Set up delegate and upload service.
   EnableUploadScanning();
 
@@ -246,9 +256,8 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Files) {
           }),
       DeepScanAccessPoint::UPLOAD);
 
-  FakeBinaryUploadServiceStorage()->ReturnAuthorizedResponse();
-
   run_loop.Run();
+
   EXPECT_TRUE(called);
 
   // There should have been 1 request per file and 1 for authentication.

@@ -457,7 +457,8 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesCras) {
 }
 #else  // !defined(USE_CRAS)
 
-TEST_F(AudioManagerTest, HandleDefaultDeviceIDs) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest, DISABLED_HandleDefaultDeviceIDs) {
   // Use a fake manager so we can makeup device ids, this will still use the
   // AudioManagerBase code.
   CreateAudioManagerForTesting<FakeAudioManager>();
@@ -466,7 +467,8 @@ TEST_F(AudioManagerTest, HandleDefaultDeviceIDs) {
 }
 
 // Test that devices can be enumerated.
-TEST_F(AudioManagerTest, EnumerateInputDevices) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest, DISABLED_EnumerateInputDevices) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
   AudioDeviceDescriptions device_descriptions;
@@ -475,7 +477,8 @@ TEST_F(AudioManagerTest, EnumerateInputDevices) {
 }
 
 // Test that devices can be enumerated.
-TEST_F(AudioManagerTest, EnumerateOutputDevices) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest, DISABLED_EnumerateOutputDevices) {
   ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
 
   AudioDeviceDescriptions device_descriptions;
@@ -512,7 +515,8 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesWinMMDevice) {
 // sometimes be tested on a single system. These tests specifically
 // test Pulseaudio.
 
-TEST_F(AudioManagerTest, EnumerateInputDevicesPulseaudio) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest, DISABLED_EnumerateInputDevicesPulseaudio) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
   CreateAudioManagerForTesting<AudioManagerPulse>();
@@ -526,7 +530,8 @@ TEST_F(AudioManagerTest, EnumerateInputDevicesPulseaudio) {
   }
 }
 
-TEST_F(AudioManagerTest, EnumerateOutputDevicesPulseaudio) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest, DISABLED_EnumerateOutputDevicesPulseaudio) {
   ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
 
   CreateAudioManagerForTesting<AudioManagerPulse>();
@@ -546,7 +551,8 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesPulseaudio) {
 // sometimes be tested on a single system. These tests specifically
 // test Alsa.
 
-TEST_F(AudioManagerTest, EnumerateInputDevicesAlsa) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest, DISABLED_EnumerateInputDevicesAlsa) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
   DVLOG(2) << "Testing AudioManagerAlsa.";
@@ -556,7 +562,8 @@ TEST_F(AudioManagerTest, EnumerateInputDevicesAlsa) {
   CheckDeviceDescriptions(device_descriptions);
 }
 
-TEST_F(AudioManagerTest, EnumerateOutputDevicesAlsa) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest, DISABLED_EnumerateOutputDevicesAlsa) {
   ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
 
   DVLOG(2) << "Testing AudioManagerAlsa.";
@@ -567,7 +574,8 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesAlsa) {
 }
 #endif  // defined(USE_ALSA)
 
-TEST_F(AudioManagerTest, GetDefaultOutputStreamParameters) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest, DISABLED_GetDefaultOutputStreamParameters) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
@@ -577,7 +585,8 @@ TEST_F(AudioManagerTest, GetDefaultOutputStreamParameters) {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
-TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest, DISABLED_GetAssociatedOutputDeviceID) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable() && OutputDevicesAvailable());
 
@@ -653,7 +662,8 @@ class TestAudioManager : public FakeAudioManager {
   }
 };
 
-TEST_F(AudioManagerTest, GroupId) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest, DISABLED_GroupId) {
   CreateAudioManagerForTesting<TestAudioManager>();
   // Groups:
   // input1, output1
@@ -688,7 +698,9 @@ TEST_F(AudioManagerTest, GroupId) {
   EXPECT_NE(outputs[2].group_id, outputs[3].group_id);
 }
 
-TEST_F(AudioManagerTest, DefaultCommunicationsLabelsContainRealLabels) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest,
+       DISABLED_DefaultCommunicationsLabelsContainRealLabels) {
   CreateAudioManagerForTesting<TestAudioManager>();
   std::string default_input_id =
       device_info_accessor_->GetDefaultInputDeviceID();
@@ -713,7 +725,9 @@ TEST_F(AudioManagerTest, DefaultCommunicationsLabelsContainRealLabels) {
 
 // GetPreferredOutputStreamParameters() can make changes to its input_params,
 // ensure that creating a stream with the default parameters always works.
-TEST_F(AudioManagerTest, CheckMakeOutputStreamWithPreferredParameters) {
+// Disabled: crbug.com/1060165
+TEST_F(AudioManagerTest,
+       DISABLED_CheckMakeOutputStreamWithPreferredParameters) {
   ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
 
   AudioParameters params;

@@ -41,28 +41,55 @@
 
 namespace extensions {
 
-IdentityTokenCacheValue::IdentityTokenCacheValue()
-    : status_(CACHE_STATUS_NOTFOUND) {}
-
+IdentityTokenCacheValue::IdentityTokenCacheValue() = default;
 IdentityTokenCacheValue::IdentityTokenCacheValue(
-    const IssueAdviceInfo& issue_advice)
-    : status_(CACHE_STATUS_ADVICE), issue_advice_(issue_advice) {
-  expiration_time_ =
+    const IdentityTokenCacheValue& other) = default;
+IdentityTokenCacheValue::~IdentityTokenCacheValue() = default;
+
+// static
+IdentityTokenCacheValue IdentityTokenCacheValue::CreateIssueAdvice(
+    const IssueAdviceInfo& issue_advice) {
+  IdentityTokenCacheValue cache_value;
+  cache_value.status_ = CACHE_STATUS_ADVICE;
+  cache_value.issue_advice_ = issue_advice;
+  cache_value.expiration_time_ =
       base::Time::Now() + base::TimeDelta::FromSeconds(
                               identity_constants::kCachedIssueAdviceTTLSeconds);
+  return cache_value;
 }
 
-IdentityTokenCacheValue::IdentityTokenCacheValue(
-    const RemoteConsentResolutionData& resolution_data)
-    : status_(CACHE_STATUS_REMOTE_CONSENT), resolution_data_(resolution_data) {
-  expiration_time_ =
+// static
+IdentityTokenCacheValue IdentityTokenCacheValue::CreateRemoteConsent(
+    const RemoteConsentResolutionData& resolution_data) {
+  IdentityTokenCacheValue cache_value;
+  cache_value.status_ = CACHE_STATUS_REMOTE_CONSENT;
+  cache_value.resolution_data_ = resolution_data;
+  cache_value.expiration_time_ =
       base::Time::Now() + base::TimeDelta::FromSeconds(
                               identity_constants::kCachedIssueAdviceTTLSeconds);
+  return cache_value;
 }
 
-IdentityTokenCacheValue::IdentityTokenCacheValue(const std::string& token,
-                                                 base::TimeDelta time_to_live)
-    : status_(CACHE_STATUS_TOKEN), token_(token) {
+// static
+IdentityTokenCacheValue IdentityTokenCacheValue::CreateRemoteConsentApproved(
+    const std::string& consent_result) {
+  IdentityTokenCacheValue cache_value;
+  cache_value.status_ = CACHE_STATUS_REMOTE_CONSENT_APPROVED;
+  cache_value.consent_result_ = consent_result;
+  cache_value.expiration_time_ =
+      base::Time::Now() + base::TimeDelta::FromSeconds(
+                              identity_constants::kCachedIssueAdviceTTLSeconds);
+  return cache_value;
+}
+
+// static
+IdentityTokenCacheValue IdentityTokenCacheValue::CreateToken(
+    const std::string& token,
+    base::TimeDelta time_to_live) {
+  IdentityTokenCacheValue cache_value;
+  cache_value.status_ = CACHE_STATUS_TOKEN;
+  cache_value.token_ = token;
+
   // Remove 20 minutes from the ttl so cached tokens will have some time
   // to live any time they are returned.
   time_to_live -= base::TimeDelta::FromMinutes(20);
@@ -71,13 +98,9 @@ IdentityTokenCacheValue::IdentityTokenCacheValue(const std::string& token,
   if (time_to_live < zero_delta)
     time_to_live = zero_delta;
 
-  expiration_time_ = base::Time::Now() + time_to_live;
+  cache_value.expiration_time_ = base::Time::Now() + time_to_live;
+  return cache_value;
 }
-
-IdentityTokenCacheValue::IdentityTokenCacheValue(
-    const IdentityTokenCacheValue& other) = default;
-
-IdentityTokenCacheValue::~IdentityTokenCacheValue() {}
 
 IdentityTokenCacheValue::CacheValueStatus IdentityTokenCacheValue::status()
     const {
@@ -94,6 +117,10 @@ const IssueAdviceInfo& IdentityTokenCacheValue::issue_advice() const {
 const RemoteConsentResolutionData& IdentityTokenCacheValue::resolution_data()
     const {
   return resolution_data_;
+}
+
+const std::string& IdentityTokenCacheValue::consent_result() const {
+  return consent_result_;
 }
 
 const std::string& IdentityTokenCacheValue::token() const { return token_; }

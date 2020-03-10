@@ -54,7 +54,7 @@
       <div class="list-item secondary">$i18n{noRecentPermissions}</div>
     </div>
     <template is="dom-repeat" id="recentPermissionsList"
-        items="[[recentSitePermissionsList_]]">
+        items="[[recentSitePermissionsList_]]" on-dom-change="onDomChange_">
       <div class$="settings-box [[getClassForIndex_(index)]]">
         <div class="start row-aligned link-button"
             on-click="onRecentSitePermissionClick_" actionable
@@ -76,12 +76,13 @@
                 [[getPermissionsText_(item)]]
             </div>
           </div>
-          <cr-icon-button class="subpage-arrow"
+          <cr-icon-button id="siteEntryButton_[[index]]" class="subpage-arrow"
               hidden$="[[item.incognito]]"
               aria-label$="[[getDisplayName_(item)]]"
               aria-describedby$="displayName_[[index]]"
               focus-row-control focus-type="show-detail"></cr-icon-button>
-          <cr-tooltip-icon class="incognito-icon"
+          <cr-tooltip-icon id="incognitoInfoIcon_[[index]]"
+              class="incognito-icon"
               hidden$="[[!item.incognito]]"
               disabled$="[[item.incognito]]"
               icon-aria-label="$i18n{incognitoSiteExceptionDesc}"

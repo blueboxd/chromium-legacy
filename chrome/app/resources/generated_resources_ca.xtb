@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Dades d'aplicacions allotjades</translation>
 <translation id="1776712937009046120">Afegeix un usuari</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Aquest dispositiu està gestionat per <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Fes clic a Següent per continuar l'inici de sessió al teu compte del domini <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Introduïu aquesta contrasenya a "<ph name="DEVICE_NAME" />":</translation>
 <translation id="177989070088644880">Aplicació (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Tanca el grup</translation>
@@ -892,7 +890,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2202898655984161076">S'ha produït un problema en enumerar les impressores. Pot ser que algunes impressores no s'hagin registrat correctament a <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motor de cerca utilitzat a la <ph name="BEGIN_LINK" />barra d'adreces<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Llegir i canviar tot el que s'escrigui</translation>
-<translation id="220792432208469595">Envia dades d'ús i de diagnòstic. En aquests moments aquest dispositiu envia automàticament a Google dades de diagnòstic, del dispositiu i d''ús d'aplicacions. Aquestes dades ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. El propietari ha aplicat aquesta opció de configuració. Si tens activada l'opció Activitat al web i en aplicacions addicional, és possible que aquestes dades es desin al teu Compte de Google. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Introduïu aquest codi PIN a "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Permet les galetes</translation>
 <translation id="2213140827792212876">Deixa de compartir</translation>
@@ -1352,7 +1349,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2804043232879091219">No s'ha pogut obrir el navegador alternatiu</translation>
 <translation id="2804667941345577550">Se't tancarà la sessió d'aquest lloc web, també de les pestanyes obertes</translation>
 <translation id="2804680522274557040">La càmera està desactivada</translation>
-<translation id="2805539617243680210">Ja està tot a punt</translation>
 <translation id="2805646850212350655">Sistema de xifratge de fitxers de Microsoft</translation>
 <translation id="2805756323405976993">Aplicacions</translation>
 <translation id="2805770823691782631">Detalls addicionals</translation>
@@ -2032,6 +2028,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="3742055079367172538">Captura de pantalla feta</translation>
 <translation id="3742666961763734085">No es troba cap unitat organitzativa amb aquest nom. Torna-ho a provar.</translation>
 <translation id="3744111561329211289">Sincronització en segon pla</translation>
+<translation id="3747077776423672805">Per suprimir una aplicació, ves a Configuració &gt; Google Play Store &gt; Gestiona les preferències d'Android &gt; Aplicacions o Gestor d'aplicacions. A continuació, toca l'aplicació que vulguis desinstal·lar (és possible que hagis de lliscar cap a la dreta o cap a l'esquerra per trobar-la). Tot seguit, toca Desinstal·la o Desactiva.</translation>
 <translation id="3748026146096797577">Desconnectat</translation>
 <translation id="3752582316358263300">D'acord...</translation>
 <translation id="3752673729237782832">Els meus dispositius</translation>
@@ -2754,7 +2751,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4785719467058219317">Estàs utilitzant una clau de seguretat que no està registrada en aquest lloc web</translation>
 <translation id="4788092183367008521">Comprova la connexió a la xarxa i torna-ho a provar.</translation>
 <translation id="4792711294155034829">&amp;Informa d'un problema...</translation>
-<translation id="4795022432560487924">Envia dades d'ús i de diagnòstic. Ajuda a millorar l'experiència a Android del teu fill enviant automàticament a Google dades de diagnòstic, del dispositiu i d'ús d'aplicacions. Aquestes dades no es faran servir per identificar el teu fill i ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. El propietari ha aplicat aquesta opció de configuració. És possible que el propietari decideixi enviar a Google dades de diagnòstic i d'ús sobre aquest dispositiu. Si l'opció Activitat al web i en aplicacions addicional està activada per al teu fill, és possible que aquestes dades es desin al seu Compte de Google. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Pàgina web, només HTML</translation>
 <translation id="4798236378408895261">Adjunta <ph name="BEGIN_LINK" />registres de Bluetooth<ph name="END_LINK" /> (ús intern de Google)</translation>
 <translation id="4801448226354548035">Amaga els comptes</translation>
@@ -3383,6 +3379,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5649053991847567735">Baixades automàtiques</translation>
 <translation id="5653154844073528838">Tens <ph name="PRINTER_COUNT" /> impressores desades.</translation>
 <translation id="5656845498778518563">Envia suggeriments a Google</translation>
+<translation id="5657156137487675418">Mostra totes les galetes</translation>
 <translation id="5657667036353380798">L'extensió externa requereix que tingueu instal·lada la versió de Chrome <ph name="MINIMUM_CHROME_VERSION" /> o una de posterior.</translation>
 <translation id="5658415415603568799">Per a més seguretat, Smart Lock et demanarà que introdueixis la contrasenya al cap de 20 hores.</translation>
 <translation id="5659593005791499971">Correu electrònic</translation>
@@ -3590,7 +3587,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5941711191222866238">Minimitza</translation>
 <translation id="5942964813783878922"><ph name="DEVICE_TYPE" /> es reiniciarà després d'aquesta actualització. Les properes actualitzacions de seguretat i de programari s'instal·laran automàticament.</translation>
 <translation id="5944869793365969636">Escaneja un codi QR</translation>
-<translation id="5945188205370098537">Envia dades d'ús i de diagnòstic. Ajuda a millorar la teva experiència a Android enviant automàticament a Google dades de diagnòstic, del dispositiu i d''ús d'aplicacions. Aquestes dades ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. Si tens activada l'opció Activitat al web i en aplicacions addicional, és possible que aquestes dades es desin al teu Compte de Google. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Identificador de l'informe: <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">No es pot analitzar el fitxer</translation>
 <translation id="5955282598396714173">La contrasenya ha caducat. Tanca la sessió i torna-la a iniciar per canviar-la.</translation>
@@ -3776,6 +3772,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6185132558746749656">Ubicació del dispositiu</translation>
 <translation id="6186394685773237175">No s'ha trobat cap contrasenya en perill</translation>
 <translation id="6195693561221576702">Aquest dispositiu no es pot configurar en mode de demostració sense connexió.</translation>
+<translation id="6196640612572343990">Bloqueja les galetes de tercers</translation>
 <translation id="6196854373336333322">L'extensió <ph name="EXTENSION_NAME" /> ha passat a controlar la configuració del servidor intermediari. Això vol dir que pot modificar, desfer o espiar qualsevol acció que feu en línia. Si no esteu segur del motiu d'aquest canvi, és possible que no el vulgueu aplicar.</translation>
 <translation id="6198102561359457428">Tanca la sessió i torna-la a iniciar...</translation>
 <translation id="6198252989419008588">Canvia el PIN</translation>
@@ -4442,7 +4439,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="711902386174337313">Accedeix a la llista de dispositius en què tens la sessió iniciada</translation>
 <translation id="7120865473764644444">No s'ha pogut connectar amb el servidor de sincronització. S'està tornant a provar…</translation>
 <translation id="7121362699166175603">Esborra l'historial i les complecions automàtiques a la barra d'adreces. A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> trobaràs altres maneres d'explorar l'historial de navegació del Compte de Google.</translation>
-<translation id="7121389946694989825">Envia dades d'ús i de diagnòstic. En aquests moments aquest dispositiu envia automàticament a Google dades de diagnòstic, del dispositiu i d''ús d'aplicacions. Aquestes dades no es faran servir per identificar el teu fill i ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. Si l'opció Activitat al web i en aplicacions addicional està activada per al teu fill, és possible que aquestes dades es desin al seu Compte de Google. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Mode de desenvolupador</translation>
 <translation id="7121728544325372695">Guions intel·ligents</translation>
 <translation id="7123360114020465152">Ja no s'admet</translation>
@@ -4557,7 +4553,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7280041992884344566">S'ha produït un error mentre Chrome cercava programari nociu</translation>
 <translation id="7280649757394340890">Configuració de la veu de text a parla</translation>
 <translation id="7280877790564589615">Permís sol·licitat</translation>
-<translation id="7281268427852119151">Utilitza l'historial de navegació per personalitzar la Cerca, els anuncis i altres serveis de Google</translation>
 <translation id="7282992757463864530">Barra d'informació</translation>
 <translation id="7287143125007575591">Accés denegat.</translation>
 <translation id="7287411021188441799">Restaura el fons predeterminat</translation>
@@ -5231,7 +5226,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Mou la pestanya a una finestra nova}other{Mou les pestanyes a una finestra nova}}</translation>
 <translation id="8179976553408161302">Retorn</translation>
 <translation id="8180239481735238521">pàgina</translation>
-<translation id="8180294223783876911">Envia dades d'ús i de diagnòstic. En aquests moments aquest dispositiu envia automàticament a Google dades de diagnòstic, del dispositiu i d''ús d'aplicacions. Aquestes dades ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. Si tens activada l'opció Activitat al web i en aplicacions addicional, és possible que aquestes dades es desin al teu Compte de Google. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" pot llegir imatges, vídeos i fitxers d'àudio a les ubicacions marcades, així com suprimir aquest contingut.</translation>
 <translation id="8181215761849004992">No es pot connectar el domini. Comprova al compte si tens prou privilegis per afegir-hi dispositius.</translation>
 <translation id="8182105986296479640">L'aplicació no respon.</translation>
@@ -5253,7 +5247,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8203732864715032075">Rep notificacions en aquest ordinador i estableix-lo com a predeterminat per a Missatges. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">El teu pare o la teva mare ha bloquejat "<ph name="APP_NAME" />". Demana-li permís per utilitzar aquesta aplicació.</translation>
 <translation id="820568752112382238">Els llocs web més visitats</translation>
-<translation id="8206581664590136590">Envia dades d'ús i de diagnòstic. Ajuda a millorar l'experiència a Android del teu fill enviant automàticament a Google dades de diagnòstic, del dispositiu i d'ús d'aplicacions. Aquestes dades no es faran servir per identificar el teu fill i ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. Si l'opció Activitat al web i en aplicacions addicional està activada per al teu fill, és possible que aquestes dades es desin al seu Compte de Google. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Música</translation>
 <translation id="8206859287963243715">Cel·lular</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Baixada en curs}other{Baixades en curs}}</translation>
@@ -5800,7 +5793,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8912362522468806198">Compte de Google</translation>
 <translation id="8912793549644936705">Amplia</translation>
 <translation id="8912810933860534797">Activa la cerca automàtica</translation>
-<translation id="891365694296252935">Envia dades d'ús i de diagnòstic. En aquests moments aquest dispositiu envia automàticament a Google dades de diagnòstic, del dispositiu i d''ús d'aplicacions. Aquestes dades no es faran servir per identificar el teu fill i ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. El propietari ha aplicat aquesta opció de configuració. Si l'opció Activitat al web i en aplicacions addicional està activada per al teu fill, és possible que aquestes dades es desin al seu Compte de Google. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">S'estan carregant els suggeriments</translation>
 <translation id="8916476537757519021">Submarc d'incògnit: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">S'està verificant la clau de seguretat...</translation>
@@ -5937,7 +5929,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9101691533782776290">Inicia l'aplicació</translation>
 <translation id="9102610709270966160">Activa l'extensió</translation>
 <translation id="9103868373786083162">Premeu per anar cap enrere, menú contextual per veure l'historial</translation>
-<translation id="9104396740804929809">Envia dades d'ús i de diagnòstic. Ajuda a millorar la teva experiència a Android enviant automàticament a Google dades de diagnòstic, del dispositiu i d''ús d'aplicacions. Aquestes dades ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. El propietari ha aplicat aquesta opció de configuració. És possible que el propietari decideixi enviar a Google dades de diagnòstic i d'ús sobre aquest dispositiu. Si tens activada l'opció Activitat al web i en aplicacions addicional, és possible que aquestes dades es desin al teu Compte de Google. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
 <translation id="9109283579179481106">Connecta't a la xarxa mòbil</translation>
 <translation id="9111102763498581341">Desbloqueja</translation>

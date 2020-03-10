@@ -53,14 +53,11 @@ TEST_P(BoxPainterTest, EmptyDecorationBackground) {
                                       kDocumentBackgroundType),
                        GetLayoutView().FirstFragment().ContentsProperties(),
                        nullptr, IntRect(0, 0, 800, 600)),
-          IsPaintChunk(
-              1, 3, PaintChunk::Id(*body->Layer(), DisplayItem::kLayerChunk),
-              body->FirstFragment().LocalBorderBoxProperties(), nullptr,
-              // In CompositeAfterPaint, empty backgrounds contribute
-              // to bounds of paint chunks.
-              RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
-                  ? IntRect(-2, 0, 202, 350)
-                  : IntRect(-2, 0, 104, 202))));
+          // Empty backgrounds contribute to bounds of paint chunks.
+          IsPaintChunk(1, 3,
+                       PaintChunk::Id(*body->Layer(), DisplayItem::kLayerChunk),
+                       body->FirstFragment().LocalBorderBoxProperties(),
+                       nullptr, IntRect(-2, 0, 202, 350))));
 }
 
 TEST_P(BoxPainterTest, ScrollHitTestOrderWithScrollBackgroundAttachment) {

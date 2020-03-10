@@ -150,13 +150,34 @@ class DawnDeviceAndWireServer {
   void PerformPollingWork();
   error::Error HandleDawnCommands(const volatile char* dawn_commands,
                                   size_t size);
-  bool InjectTexture(WGPUTexture texture, uint32_t id, uint32_t generation);
+
+  error::Error AssociateMailbox(
+      SharedImageRepresentationFactory* shared_image_representation_factory,
+      const Mailbox& mailbox,
+      uint32_t texture_id,
+      uint32_t texture_generation,
+      uint32_t usage);
+  error::Error DissociateMailbox(uint32_t texture_id,
+                                 uint32_t texture_generation);
 
  private:
   WGPUDevice wgpu_device_ = nullptr;
   std::unique_ptr<dawn_wire::WireServer> wire_server_;
   std::unique_ptr<WireServerCommandSerializer> wire_serializer_;
   const DawnProcTable dawn_procs_;
+
+  // Helper struct which holds a representation and its ScopedAccess, ensuring
+  // safe destruction order.
+  struct SharedImageRepresentationAndAccess {
+    std::unique_ptr<SharedImageRepresentationDawn> representation;
+    std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess> access;
+  };
+
+  // Map from the <ID, generation> pair for a wire texture to the shared image
+  // representation and access for it.
+  base::flat_map<std::tuple<uint32_t, uint32_t>,
+                 std::unique_ptr<SharedImageRepresentationAndAccess>>
+      associated_shared_image_map_;
 };
 
 DawnDeviceAndWireServer::DawnDeviceAndWireServer(
@@ -182,6 +203,8 @@ DawnDeviceAndWireServer::DawnDeviceAndWireServer(
 }
 
 DawnDeviceAndWireServer::~DawnDeviceAndWireServer() {
+  associated_shared_image_map_.clear();
+
   // Reset the wire server first so all objects are destroyed before the
   // device.
   // TODO(enga): Handle Device/Context lost.
@@ -209,10 +232,79 @@ error::Error DawnDeviceAndWireServer::HandleDawnCommands(
   return error::kNoError;
 }
 
-bool DawnDeviceAndWireServer::InjectTexture(WGPUTexture texture,
-                                            uint32_t id,
-                                            uint32_t generation) {
-  return wire_server_->InjectTexture(texture, id, generation);
+error::Error DawnDeviceAndWireServer::AssociateMailbox(
+    SharedImageRepresentationFactory* shared_image_representation_factory,
+    const Mailbox& mailbox,
+    uint32_t texture_id,
+    uint32_t texture_generation,
+    uint32_t usage) {
+  static constexpr uint32_t kAllowedTextureUsages = static_cast<uint32_t>(
+      WGPUTextureUsage_CopySrc | WGPUTextureUsage_CopyDst |
+      WGPUTextureUsage_Sampled | WGPUTextureUsage_OutputAttachment);
+  if (usage & ~kAllowedTextureUsages) {
+    DLOG(ERROR) << "AssociateMailbox: Invalid usage";
+    return error::kInvalidArguments;
+  }
+  WGPUTextureUsage wgpu_usage = static_cast<WGPUTextureUsage>(usage);
+
+  // Create a WGPUTexture from the mailbox.
+  std::unique_ptr<SharedImageRepresentationDawn> shared_image =
+      shared_image_representation_factory->ProduceDawn(mailbox, wgpu_device_);
+  if (!shared_image) {
+    DLOG(ERROR) << "AssociateMailbox: Couldn't produce shared image";
+    return error::kInvalidArguments;
+  }
+
+  // TODO(cwallez@chromium.org): Handle texture clearing. We should either
+  // pre-clear textures, or implement a way to detect whether DAWN has cleared
+  // a texture. crbug.com/1036080
+  std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess>
+      shared_image_access = shared_image->BeginScopedAccess(
+          wgpu_usage, SharedImageRepresentation::AllowUnclearedAccess::kYes);
+  if (!shared_image_access) {
+    DLOG(ERROR) << "AssociateMailbox: Couldn't begin shared image access";
+    return error::kInvalidArguments;
+  }
+
+  // Inject the texture in the dawn_wire::Server and remember which shared image
+  // it is associated with.
+  if (!wire_server_->InjectTexture(shared_image_access->texture(), texture_id,
+                                   texture_generation)) {
+    DLOG(ERROR) << "AssociateMailbox: Invalid texture ID";
+    return error::kInvalidArguments;
+  }
+
+  std::unique_ptr<SharedImageRepresentationAndAccess>
+      representation_and_access =
+          std::make_unique<SharedImageRepresentationAndAccess>();
+  representation_and_access->representation = std::move(shared_image);
+  representation_and_access->access = std::move(shared_image_access);
+
+  std::tuple<uint32_t, uint32_t> id_and_generation{texture_id,
+                                                   texture_generation};
+  auto insertion = associated_shared_image_map_.emplace(
+      id_and_generation, std::move(representation_and_access));
+
+  // InjectTexture already validated that the (ID, generation) can't have been
+  // registered before.
+  DCHECK(insertion.second);
+
+  return error::kNoError;
+}
+
+error::Error DawnDeviceAndWireServer::DissociateMailbox(
+    uint32_t texture_id,
+    uint32_t texture_generation) {
+  std::tuple<uint32_t, uint32_t> id_and_generation{texture_id,
+                                                   texture_generation};
+  auto it = associated_shared_image_map_.find(id_and_generation);
+  if (it == associated_shared_image_map_.end()) {
+    DLOG(ERROR) << "DissociateMailbox: Invalid texture ID";
+    return error::kInvalidArguments;
+  }
+
+  associated_shared_image_map_.erase(it);
+  return error::kNoError;
 }
 
 }  // namespace
@@ -461,19 +553,6 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
 
-  // Helper struct which holds a representation and its ScopedAccess, ensuring
-  // safe destruction order.
-  struct SharedImageRepresentationAndAccess {
-    std::unique_ptr<SharedImageRepresentationDawn> representation;
-    std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess> access;
-  };
-
-  // Map from the <ID, generation> pair for a wire texture to the shared image
-  // representation and access for it.
-  base::flat_map<std::tuple<uint32_t, uint32_t>,
-                 std::unique_ptr<SharedImageRepresentationAndAccess>>
-      associated_shared_image_map_;
-
   base::flat_map<DawnDeviceClientID, std::unique_ptr<DawnDeviceAndWireServer>>
       dawn_device_and_wire_servers_;
 
@@ -525,7 +604,6 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
 }
 
 WebGPUDecoderImpl::~WebGPUDecoderImpl() {
-  associated_shared_image_map_.clear();
   dawn_device_and_wire_servers_.clear();
 }
 
@@ -885,66 +963,17 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   DLOG_IF(ERROR, !mailbox.Verify())
       << "AssociateMailbox was passed an invalid mailbox";
 
+  // Get the correct DawnDeviceAndWireServer
   auto iter = dawn_device_and_wire_servers_.find(device_client_id);
   if (iter == dawn_device_and_wire_servers_.end() || device_generation != 0) {
     DLOG(ERROR) << "AssociateMailbox: Invalid device client ID";
     return error::kInvalidArguments;
   }
-
   DawnDeviceAndWireServer* dawn_device_and_wire_server = iter->second.get();
-  static constexpr uint32_t kAllowedTextureUsages = static_cast<uint32_t>(
-      WGPUTextureUsage_CopySrc | WGPUTextureUsage_CopyDst |
-      WGPUTextureUsage_Sampled | WGPUTextureUsage_OutputAttachment);
-  if (usage & ~kAllowedTextureUsages) {
-    DLOG(ERROR) << "AssociateMailbox: Invalid usage";
-    return error::kInvalidArguments;
-  }
-  WGPUTextureUsage wgpu_usage = static_cast<WGPUTextureUsage>(usage);
 
-  // Create a WGPUTexture from the mailbox.
-  WGPUDevice wgpu_device = dawn_device_and_wire_server->GetWGPUDevice();
-  DCHECK(wgpu_device);
-  std::unique_ptr<SharedImageRepresentationDawn> shared_image =
-      shared_image_representation_factory_->ProduceDawn(mailbox, wgpu_device);
-  if (!shared_image) {
-    DLOG(ERROR) << "AssociateMailbox: Couldn't produce shared image";
-    return error::kInvalidArguments;
-  }
-
-  // TODO(cwallez@chromium.org): Handle texture clearing. We should either
-  // pre-clear textures, or implement a way to detect whether DAWN has cleared
-  // a texture. crbug.com/1036080
-  std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess>
-      shared_image_access = shared_image->BeginScopedAccess(
-          wgpu_usage, SharedImageRepresentation::AllowUnclearedAccess::kYes);
-  if (!shared_image_access) {
-    DLOG(ERROR) << "AssociateMailbox: Couldn't begin shared image access";
-    return error::kInvalidArguments;
-  }
-
-  // Inject the texture in the dawn_wire::Server and remember which shared image
-  // it is associated with.
-  if (!dawn_device_and_wire_server->InjectTexture(
-          shared_image_access->texture(), id, generation)) {
-    DLOG(ERROR) << "AssociateMailbox: Invalid texture ID";
-    return error::kInvalidArguments;
-  }
-
-  std::unique_ptr<SharedImageRepresentationAndAccess>
-      representation_and_access =
-          std::make_unique<SharedImageRepresentationAndAccess>();
-  representation_and_access->representation = std::move(shared_image);
-  representation_and_access->access = std::move(shared_image_access);
-
-  std::tuple<uint32_t, uint32_t> id_and_generation{id, generation};
-  auto insertion = associated_shared_image_map_.emplace(
-      id_and_generation, std::move(representation_and_access));
-
-  // InjectTexture already validated that the (ID, generation) can't have been
-  // registered before.
-  DCHECK(insertion.second);
-
-  return error::kNoError;
+  return dawn_device_and_wire_server->AssociateMailbox(
+      shared_image_representation_factory_.get(), mailbox, id, generation,
+      usage);
 }
 
 error::Error WebGPUDecoderImpl::HandleDissociateMailbox(
@@ -952,19 +981,21 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailbox(
     const volatile void* cmd_data) {
   const volatile webgpu::cmds::DissociateMailbox& c =
       *static_cast<const volatile webgpu::cmds::DissociateMailbox*>(cmd_data);
+  DawnDeviceClientID device_client_id =
+      static_cast<DawnDeviceClientID>(c.device_client_id());
   uint32_t texture_id = static_cast<uint32_t>(c.texture_id);
   uint32_t texture_generation = static_cast<uint32_t>(c.texture_generation);
 
-  std::tuple<uint32_t, uint32_t> id_and_generation{texture_id,
-                                                   texture_generation};
-  auto it = associated_shared_image_map_.find(id_and_generation);
-  if (it == associated_shared_image_map_.end()) {
-    DLOG(ERROR) << "DissociateMailbox: Invalid texture ID";
+  // Get the correct DawnDeviceAndWireServer
+  auto iter = dawn_device_and_wire_servers_.find(device_client_id);
+  if (iter == dawn_device_and_wire_servers_.end()) {
+    DLOG(ERROR) << "AssociateMailbox: Invalid device client ID";
     return error::kInvalidArguments;
   }
+  DawnDeviceAndWireServer* dawn_device_and_wire_server = iter->second.get();
 
-  associated_shared_image_map_.erase(it);
-  return error::kNoError;
+  return dawn_device_and_wire_server->DissociateMailbox(texture_id,
+                                                        texture_generation);
 }
 
 error::Error WebGPUDecoderImpl::HandleRemoveDevice(

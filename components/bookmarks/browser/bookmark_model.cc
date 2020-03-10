@@ -47,11 +47,6 @@ BookmarkNode* AsMutable(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
 
-// Helper to get a mutable permanent bookmark node.
-BookmarkPermanentNode* AsMutable(const BookmarkPermanentNode* node) {
-  return const_cast<BookmarkPermanentNode*>(node);
-}
-
 // Comparator used when sorting permanent nodes. Nodes that are initially
 // visible are sorted before nodes that are initially hidden.
 class VisibilityComparator {
@@ -772,31 +767,6 @@ void BookmarkModel::GetBookmarksMatching(
 void BookmarkModel::ClearStore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   store_.reset();
-}
-
-void BookmarkModel::SetPermanentNodeVisible(BookmarkNode::Type type,
-                                            bool value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BookmarkPermanentNode* node = AsMutable(PermanentNode(type));
-  node->set_visible(value || client_->IsPermanentNodeVisible(node));
-}
-
-const BookmarkPermanentNode* BookmarkModel::PermanentNode(
-    BookmarkNode::Type type) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(loaded_);
-
-  switch (type) {
-    case BookmarkNode::BOOKMARK_BAR:
-      return bookmark_bar_node_;
-    case BookmarkNode::OTHER_NODE:
-      return other_node_;
-    case BookmarkNode::MOBILE:
-      return mobile_node_;
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
 }
 
 void BookmarkModel::RestoreRemovedNode(const BookmarkNode* parent,

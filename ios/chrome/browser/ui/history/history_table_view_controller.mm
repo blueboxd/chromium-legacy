@@ -165,6 +165,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   self.clearsSelectionOnViewWillAppear = NO;
   self.tableView.allowsMultipleSelection = YES;
   self.tableView.accessibilityIdentifier = kHistoryTableViewIdentifier;
+  // Add a tableFooterView in order to hide the separator lines where there's no
+  // history content.
+  self.tableView.tableFooterView = [[UIView alloc] init];
 
   // ContextMenu gesture recognizer.
   UILongPressGestureRecognizer* longPressRecognizer = [

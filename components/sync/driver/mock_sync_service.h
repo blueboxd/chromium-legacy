@@ -51,6 +51,7 @@ class MockSyncService : public SyncService {
   MOCK_CONST_METHOD0(GetRegisteredDataTypes, ModelTypeSet());
   MOCK_CONST_METHOD0(GetPreferredDataTypes, ModelTypeSet());
   MOCK_CONST_METHOD0(GetActiveDataTypes, ModelTypeSet());
+  MOCK_CONST_METHOD0(GetBackedOffDataTypes, ModelTypeSet());
 
   MOCK_METHOD0(StopAndClear, void());
   MOCK_METHOD1(OnDataTypeRequestsSyncStartup, void(ModelType type));

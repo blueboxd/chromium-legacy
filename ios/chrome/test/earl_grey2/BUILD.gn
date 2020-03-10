@@ -130,6 +130,8 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/webui:eg2_tests",
   ]
   data_deps = [ ":ios_chrome_eg2tests" ]
+
+  shards = 2
 }
 
 chrome_ios_eg2_test("ios_chrome_web_eg2tests_module") {

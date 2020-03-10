@@ -49,6 +49,9 @@ const char kSyncPasswordLengthAndHashSalt[] =
 const char kLastTimeObsoleteHttpCredentialsRemoved[] =
     "profile.last_time_obsolete_http_credentials_removed";
 
+const char kLastTimePasswordCheckCompleted[] =
+    "profile.last_time_password_check_completed";
+
 const char kPasswordHashDataList[] = "profile.password_hash_data_list";
 
 const char kPasswordManagerOnboardingState[] =

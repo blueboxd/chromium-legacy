@@ -94,12 +94,12 @@ ToolbarAccountIconContainerView::GetWebContentsForPageActionIconView() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-std::unique_ptr<views::Border>
-ToolbarAccountIconContainerView::CreatePageActionIconBorder() const {
-  // With this border, the icon will have the same ink drop shape as toolbar
-  // buttons.
-  return views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::InsetsMetric::INSETS_LABEL_BUTTON));
+gfx::Insets ToolbarAccountIconContainerView::GetPageActionIconInsets(
+    const PageActionIconView* icon_view) const {
+  // Ideally, the icon should have the same ink drop shape as toolbar buttons.
+  // TODO(crbug.com/1060250): fix actual inkdrop shape.
+  return ChromeLayoutProvider::Get()->GetInsetsMetric(
+      views::InsetsMetric::INSETS_LABEL_BUTTON);
 }
 
 void ToolbarAccountIconContainerView::OnThemeChanged() {

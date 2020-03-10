@@ -70,16 +70,6 @@ bool FilterOperations::CanInterpolateWith(const FilterOperations& other) const {
   return true;
 }
 
-bool FilterOperations::HasBlurOrReferenceFilter() const {
-  for (const auto& operation : operations_) {
-    FilterOperation::OperationType type = operation->GetType();
-    if (type == FilterOperation::BLUR || type == FilterOperation::REFERENCE) {
-      return true;
-    }
-  }
-  return false;
-}
-
 FloatRect FilterOperations::MapRect(const FloatRect& rect) const {
   auto accumulate_mapped_rect = [](const FloatRect& rect,
                                    const Member<FilterOperation>& op) {

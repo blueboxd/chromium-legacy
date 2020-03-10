@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_VIEW_H_
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/permissions/permission_util.h"
@@ -40,7 +41,8 @@ class NativeFileSystemDirectoryAccessConfirmationView
       const url::Origin& origin,
       const base::FilePath& path,
       base::OnceCallback<void(permissions::PermissionAction result)> callback,
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      base::ScopedClosureRunner fullscreen_block);
 
   // views::DialogDelegateView:
   base::string16 GetWindowTitle() const override;
@@ -56,9 +58,11 @@ class NativeFileSystemDirectoryAccessConfirmationView
   NativeFileSystemDirectoryAccessConfirmationView(
       const url::Origin& origin,
       const base::FilePath& path,
-      base::OnceCallback<void(permissions::PermissionAction result)> callback);
+      base::OnceCallback<void(permissions::PermissionAction result)> callback,
+      base::ScopedClosureRunner fullscreen_block);
 
   base::OnceCallback<void(permissions::PermissionAction result)> callback_;
+  base::ScopedClosureRunner fullscreen_block_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemDirectoryAccessConfirmationView);
 };

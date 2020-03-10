@@ -127,7 +127,7 @@ void SVGFELightElement::SvgAttributeChanged(const QualifiedName& attr_name) {
       return;
 
     LayoutObject* layout_object = parent->GetLayoutObject();
-    if (!layout_object || !layout_object->IsSVGResourceFilterPrimitive())
+    if (!layout_object || !layout_object->IsSVGFilterPrimitive())
       return;
 
     SVGElement::InvalidationGuard invalidation_guard(this);
@@ -148,7 +148,7 @@ void SVGFELightElement::ChildrenChanged(const ChildrenChange& change) {
   if (!change.ByParser()) {
     if (ContainerNode* parent = parentNode()) {
       LayoutObject* layout_object = parent->GetLayoutObject();
-      if (layout_object && layout_object->IsSVGResourceFilterPrimitive())
+      if (layout_object && layout_object->IsSVGFilterPrimitive())
         MarkForLayoutAndParentResourceInvalidation(*layout_object);
     }
   }

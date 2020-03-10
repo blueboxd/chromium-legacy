@@ -573,8 +573,6 @@
 <translation id="177336675152937177">Data apl yang dihoskan</translation>
 <translation id="1776712937009046120">Tambah pengguna</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Peranti ini diurus oleh <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Sila klik "Seterusnya" untuk meneruskan proses log masuk ke akaun <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> anda.</translation>
 <translation id="1779652936965200207">Sila masukkan kekunci laluan ini pada "<ph name="DEVICE_NAME" />":</translation>
 <translation id="177989070088644880">Apl (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Tutup Kumpulan</translation>
@@ -887,7 +885,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2202898655984161076">Terdapat masalah menyenaraikan pencetak. Beberapa pencetak anda mungkin tidak berjaya didaftarkan dengan <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Enjin carian yang digunakan dalam <ph name="BEGIN_LINK" />bar alamat<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Baca dan ubah apa sahaja yang anda taip</translation>
-<translation id="220792432208469595">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Tetapan ini dikuatkuasakan oleh pemilik. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke Akaun Google anda. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Sila masukkan kod PIN ini pada "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Benarkan kuki</translation>
 <translation id="2213140827792212876">Alih keluar perkongsian</translation>
@@ -1343,7 +1340,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2804043232879091219">Penyemak imbas alternatif tidak boleh dibuka</translation>
 <translation id="2804667941345577550">Anda akan dilog keluar daripada tapak ini, termasuk dalam tab yang terbuka</translation>
 <translation id="2804680522274557040">Kamera dimatikan</translation>
-<translation id="2805539617243680210">Anda sudah bersedia!</translation>
 <translation id="2805646850212350655">Sistem Fail Penyulitan Microsoft</translation>
 <translation id="2805756323405976993">Apl</translation>
 <translation id="2805770823691782631">Butiran tambahan</translation>
@@ -2021,6 +2017,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3742055079367172538">Tangkapan skrin diambil</translation>
 <translation id="3742666961763734085">Tidak dapat menemui unit organisasi dengan nama itu. Sila cuba lagi.</translation>
 <translation id="3744111561329211289">Penyegerakan latar belakang</translation>
+<translation id="3747077776423672805">Untuk mengalih keluar apl, pergi ke Tetapan &gt; Gedung Google Play &gt; Urus pilihan Android &gt; Apl atau Pengurus aplikasi. Kemudian, ketik apl yang ingin dinyahpasang (anda mungkin perlu meleret ke kanan atau ke kiri untuk mencari apl). Kemudian, ketik Nyahpasang atau Lumpuhkan.</translation>
 <translation id="3748026146096797577">Tidak Disambung</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Peranti saya</translation>
@@ -2741,7 +2738,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4785719467058219317">Anda menggunakan kunci keselamatan yang tidak berdaftar dengan tapak web ini</translation>
 <translation id="4788092183367008521">Sila semak sambungan rangkaian dan cuba lagi.</translation>
 <translation id="4792711294155034829">&amp;Laporkan Isu...</translation>
-<translation id="4795022432560487924">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anak anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Tetapan ini dikuatkuasakan oleh pemilik. Pemilik mungkin memilih untuk menghantar data diagnostik dan penggunaan bagi peranti ini kepada Google. Jika tetapan Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke Akaun Googlenya. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Laman Web, HTML Sahaja</translation>
 <translation id="4798236378408895261">Lampirkan <ph name="BEGIN_LINK" />Log Bluetooth<ph name="END_LINK" /> (dalaman Google)</translation>
 <translation id="4801448226354548035">Sembunyikan akaun</translation>
@@ -3567,7 +3563,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5941711191222866238">Minimumkan</translation>
 <translation id="5942964813783878922"><ph name="DEVICE_TYPE" /> anda akan dimulakan semula selepas kemas kini ini. Kemas kini perisian dan keselamatan pada masa hadapan akan dipasang secara automatik.</translation>
 <translation id="5944869793365969636">Imbas kod QR</translation>
-<translation id="5945188205370098537">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke Akaun Google anda. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID Laporan <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Tidak dapat menghurai fail</translation>
 <translation id="5955282598396714173">Kata laluan anda telah tamat tempoh. Sila log keluar, kemudian log masuk semula untuk menukarnya.</translation>
@@ -3751,6 +3746,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="6185132558746749656">Lokasi Peranti</translation>
 <translation id="6186394685773237175">Tiada kata laluan yang terjejas ditemukan</translation>
 <translation id="6195693561221576702">Peranti ini tidak boleh disediakan dalam mod tunjuk cara luar talian.</translation>
+<translation id="6196640612572343990">Sekat kuki pihak ketiga</translation>
 <translation id="6196854373336333322">Sambungan "<ph name="EXTENSION_NAME" />" telah mengambil alih kawalan tetapan proksi anda, yang bermakna sambungan ini boleh mengubah, menghentikan atau mencuri dengar apa-apa sahaja yang anda lakukan dalam talian. Jika anda tidak pasti mengapa perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="6198102561359457428">Log keluar kemudian log masuk semula...</translation>
 <translation id="6198252989419008588">Tukar PIN</translation>
@@ -4414,7 +4410,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="711902386174337313">Baca senarai peranti anda yang dilog masuk</translation>
 <translation id="7120865473764644444">Tidak dapat menyambung ke pelayan penyegerakan. Mencuba semula...</translation>
 <translation id="7121362699166175603">Mengosongkan sejarah dan autoselesai dalam bar alamat. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke Akaun Googlenya. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Mod Pembangun</translation>
 <translation id="7121728544325372695">Sengkang Pintar</translation>
 <translation id="7123360114020465152">Tidak disokong lagi</translation>
@@ -5197,7 +5192,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Alihkan tab ke tetingkap baharu}other{Alihkan tab ke tetingkap baharu}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">halaman</translation>
-<translation id="8180294223783876911">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke Akaun Google anda. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" boleh membaca dan memadamkan fail imej, video dan bunyi di lokasi yang ditandai.</translation>
 <translation id="8181215761849004992">Tidak dapat menghubungkan domain. Semak akaun anda untuk mengetahui sama ada anda mempunyai keistimewaan yang mencukupi untuk menambahkan peranti.</translation>
 <translation id="8182105986296479640">Aplikasi tiada respons.</translation>
@@ -5219,7 +5213,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8203732864715032075">Hantar pemberitahuan kepada anda dan tetapkan mengingati komputer ini untuk Messages sebagai pilihan lalai. <ph name="LINK_BEGIN" />Ketahui lebih lanjut<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">"<ph name="APP_NAME" />" disekat oleh ibu bapa anda. Minta kebenaran untuk menggunakan apl ini daripada ibu bapa anda.</translation>
 <translation id="820568752112382238">Tapak yang paling kerap dilawati</translation>
-<translation id="8206581664590136590">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anak anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke Akaun Googlenya. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Sayu</translation>
 <translation id="8206859287963243715">Selular</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Muat turun sedang berlangsung}other{Muat turun sedang berlangsung}}</translation>
@@ -5760,7 +5753,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8912362522468806198">Akaun Google</translation>
 <translation id="8912793549644936705">Regang</translation>
 <translation id="8912810933860534797">Dayakan autoimbas</translation>
-<translation id="891365694296252935">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Tetapan ini dikuatkuasakan oleh pemilik. Jika Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke Akaun Googlenya. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Memuatkan cadangan</translation>
 <translation id="8916476537757519021">Subbingkai Inkognito: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Mengesahkan kunci keselamatan anda...</translation>
@@ -5897,7 +5889,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9101691533782776290">Lancarkan apl</translation>
 <translation id="9102610709270966160">Dayakan Sambungan</translation>
 <translation id="9103868373786083162">Tekan untuk kembali, menu konteks untuk melihat sejarah</translation>
-<translation id="9104396740804929809">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Tetapan ini dikuatkuasakan oleh pemilik. Pemilik mungkin memilih untuk menghantar data diagnostik dan penggunaan bagi peranti ini kepada Google. Jika tetapan Aktiviti Web &amp; Apl tambahan anda dihidupkan, data ini mungkin disimpan ke Akaun Google anda. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Untuk mengosongkan ruang, padamkan fail daripada storan peranti.</translation>
 <translation id="9109283579179481106">Sambung ke rangkaian mudah alih</translation>
 <translation id="9111102763498581341">Buka kunci</translation>

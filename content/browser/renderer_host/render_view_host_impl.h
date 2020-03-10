@@ -191,14 +191,6 @@ class CONTENT_EXPORT RenderViewHostImpl
     sudden_termination_allowed_ = enabled;
   }
 
-  // Creates a new RenderWidget with the given route id.
-  void CreateNewWidget(int32_t route_id,
-                       mojo::PendingRemote<mojom::Widget> widget);
-
-  // Creates a full screen RenderWidget.
-  void CreateNewFullscreenWidget(int32_t route_id,
-                                 mojo::PendingRemote<mojom::Widget> widget);
-
   // Send RenderViewReady to observers once the process is launched, but not
   // re-entrantly.
   void PostRenderViewReady();

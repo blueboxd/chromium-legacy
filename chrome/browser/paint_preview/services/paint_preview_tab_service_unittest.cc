@@ -138,6 +138,44 @@ TEST_F(PaintPreviewTabServiceTest, CaptureTab) {
   content::RunAllTasksUntilIdle();
 }
 
+TEST_F(PaintPreviewTabServiceTest, CaptureTabFailed) {
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("http://www.example.com"));
+  const int kTabId = 1U;
+
+  MockPaintPreviewRecorder recorder;
+  recorder.SetResponse(mojom::PaintPreviewStatus::kFailed);
+  OverrideInterface(&recorder);
+
+  auto* service = GetService();
+  base::RunLoop loop;
+  service->CaptureTab(
+      kTabId, web_contents(),
+      base::BindOnce(
+          [](base::OnceClosure quit, PaintPreviewTabService::Status status) {
+            EXPECT_EQ(status, PaintPreviewTabService::Status::kCaptureFailed);
+            std::move(quit).Run();
+          },
+          loop.QuitClosure()));
+  loop.Run();
+
+  auto file_manager = service->GetFileManager();
+  auto key = file_manager->CreateKey(kTabId);
+  service->GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::DirectoryExists, file_manager, key),
+      base::BindOnce([](bool exists) { EXPECT_TRUE(exists); }));
+  content::RunAllTasksUntilIdle();
+
+  service->TabClosed(kTabId);
+  content::RunAllTasksUntilIdle();
+  service->GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::DirectoryExists, file_manager, key),
+      base::BindOnce([](bool exists) { EXPECT_FALSE(exists); }));
+  content::RunAllTasksUntilIdle();
+}
+
 TEST_F(PaintPreviewTabServiceTest, CaptureTabTwice) {
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL("http://www.example.com"));

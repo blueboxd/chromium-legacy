@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "InlineTextBox 'abc'",
           "rect": [18, 18, 22, 19],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'abc'",

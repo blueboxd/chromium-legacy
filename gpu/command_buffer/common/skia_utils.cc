@@ -41,6 +41,12 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
     auto* dump = GetOrCreateAllocatorDump(dump_name);
     dump->AddScalar(value_name, units, value);
   }
+  void dumpStringValue(const char* dump_name,
+                       const char* value_name,
+                       const char* value) override {
+    auto* dump = GetOrCreateAllocatorDump(dump_name);
+    dump->AddString(value_name, "", value);
+  }
 
   void setMemoryBacking(const char* dump_name,
                         const char* backing_type,

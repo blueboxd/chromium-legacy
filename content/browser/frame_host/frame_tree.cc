@@ -388,11 +388,6 @@ scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
     int32_t main_frame_routing_id,
     int32_t widget_routing_id,
     bool swapped_out) {
-  scoped_refptr<RenderViewHostImpl> existing_rvh =
-      GetRenderViewHost(site_instance);
-  if (existing_rvh)
-    return existing_rvh;
-
   RenderViewHostImpl* rvh =
       static_cast<RenderViewHostImpl*>(RenderViewHostFactory::Create(
           site_instance, render_view_delegate_, render_widget_delegate_,

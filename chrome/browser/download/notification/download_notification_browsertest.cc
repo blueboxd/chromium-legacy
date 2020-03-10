@@ -209,7 +209,8 @@ class SlowDownloadInterceptor {
         "Cache-Control: max-age=0\n";
     headers += base::StringPrintf("Content-type: %s\n", mime_type.c_str());
     if (content_length >= 0) {
-      headers += base::StringPrintf("Content-Length: %ld\n", content_length);
+      headers +=
+          base::StringPrintf("Content-Length: %" PRId64 "\n", content_length);
       head->content_length = content_length;
     }
     head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(

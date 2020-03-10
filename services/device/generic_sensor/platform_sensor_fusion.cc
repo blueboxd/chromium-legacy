@@ -197,7 +197,7 @@ void PlatformSensorFusion::OnSensorReadingChanged(mojom::SensorType type) {
     return;
 
   // Round the reading to guard user privacy. See https://crbug.com/1018180.
-  RoundSensorReading(&reading, type);
+  RoundSensorReading(&reading, fusion_algorithm_->fused_type());
 
   if (GetReportingMode() == mojom::ReportingMode::ON_CHANGE &&
       !fusion_algorithm_->IsReadingSignificantlyDifferent(reading_, reading)) {

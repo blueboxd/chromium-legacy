@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Priglobti programų duomenys</translation>
 <translation id="1776712937009046120">Pridėti naudotoją</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Šį įrenginį tvarko domenas <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Spustelėkite „Toliau“, kad tęstumėte prisijungimą prie <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> paskyros.</translation>
 <translation id="1779652936965200207">„<ph name="DEVICE_NAME" />“ įveskite šį prieigos kodą:</translation>
 <translation id="177989070088644880">Programa („<ph name="ANDROID_PACKAGE_NAME" />“)</translation>
 <translation id="1780152987505130652">Uždaryti grupę</translation>
@@ -892,7 +890,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2202898655984161076">Sudarant spausdintuvų sąrašą iškilo problema. Kai kurie spausdintuvai galėjo nebūti sėkmingai užregistruoti „<ph name="CLOUD_PRINT_NAME" />“.</translation>
 <translation id="2203682048752833055">Paieškos variklis, naudojamas <ph name="BEGIN_LINK" />adreso juostoje<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Skaityti ir keisti viską, ką įvedate</translation>
-<translation id="220792432208469595">Siųskite naudojimo ir diagnostikos duomenis. Šiuo metu šis įrenginys automatiškai siunčia „Google“ diagnostikos, įrenginio ir programų naudojimo duomenis. Tai padės pagerinti sistemos bei programos stabilumą ir teikti kitus patobulinimus. Kai kurie sukaupti duomenys taip pat bus naudingi „Google“ programoms ir partneriams, pvz., „Android“ kūrėjams. Šį nustatymą taiko savininkas. Jei papildomas „Žiniatinklio ir programų veiklos“ nustatymas įjungtas, šie duomenys gali būti išsaugoti „Google“ paskyroje. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Įveskite šį PIN kodą „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="2212565012507486665">Leisti slapukus</translation>
 <translation id="2213140827792212876">Pašalinti bendrinimą</translation>
@@ -1353,7 +1350,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2804043232879091219">Nepavyko atidaryti alternatyvios naršyklės</translation>
 <translation id="2804667941345577550">Būsite atjungti nuo šios svetainės, įskaitant atidarytus skirtukus</translation>
 <translation id="2804680522274557040">Fotoaparatas išjungtas</translation>
-<translation id="2805539617243680210">Viskas nustatyta!</translation>
 <translation id="2805646850212350655">„Microsoft“ koduojamųjų failų sistema</translation>
 <translation id="2805756323405976993">Taikomosios programos</translation>
 <translation id="2805770823691782631">Papildoma informacija</translation>
@@ -2034,6 +2030,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3742055079367172538">Ekrano kopija padaryta</translation>
 <translation id="3742666961763734085">Nepavyko rasti organizacinio vieneto tokiu pavadinimu. Bandykite dar kartą.</translation>
 <translation id="3744111561329211289">Fono sinchronizavimas</translation>
+<translation id="3747077776423672805">Jei norite pašalinti programas, eikite į skiltį „Nustatymai“ &gt; „Google Play“ parduotuvė“ &gt; „Tvarkyti „Android“ nuostatas“ &gt; „Programos“ arba „Programų tvarkytuvė“. Tada palieskite programą, kurią norite pašalinti (galbūt reikės perbraukti į dešinę arba į kairę, kad rastumėte programą). Tada palieskite „Pašalinti“ arba „Išjungti“.</translation>
 <translation id="3748026146096797577">Neprisijungta</translation>
 <translation id="3752582316358263300">Gerai...</translation>
 <translation id="3752673729237782832">Mano įrenginiai</translation>
@@ -2757,7 +2754,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4785719467058219317">Naudojate saugos raktą, kuris nėra užregistruotas šioje svetainėje</translation>
 <translation id="4788092183367008521">Patikrinkite tinklo ryšį ir bandykite dar kartą.</translation>
 <translation id="4792711294155034829">&amp;Pranešti apie problemą...</translation>
-<translation id="4795022432560487924">Siųskite naudojimo ir diagnostikos duomenis. Padėkite tobulinti vaiko „Android“ funkcijas automatiškai siųsdami „Google“ diagnostikos, įrenginio ir programų naudojimo duomenis. Tai nebus naudojama siekiant nustatyti jūsų vaiko tapatybę ir padės pagerinti sistemos bei programos stabilumą ir teikti kitus patobulinimus. Kai kurie sukaupti duomenys taip pat bus naudingi „Google“ programoms ir partneriams, pvz., „Android“ kūrėjams. Šį nustatymą taiko savininkas. Savininkas gali pasirinkti siųsti šio įrenginio diagnostikos ir naudojimo duomenis „Google“. Jei papildomas „Žiniatinklio ir programų veiklos“ nustatymas įjungtas vaiko įrenginyje, šie duomenys gali būti išsaugoti vaiko „Google“ paskyroje. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Tinklalapis, tik HTML</translation>
 <translation id="4798236378408895261">Pridėti <ph name="BEGIN_LINK" />„Bluetooth“ žurnalus<ph name="END_LINK" /> („Google“ darbuotojams)</translation>
 <translation id="4801448226354548035">Slėpti paskyras</translation>
@@ -3385,6 +3381,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5649053991847567735">Automatiškai atsisiųsti</translation>
 <translation id="5653154844073528838">Esate išsaugoję <ph name="PRINTER_COUNT" /> spausdintuv.</translation>
 <translation id="5656845498778518563">Atsiliepimų siuntimas sistemai „Google“</translation>
+<translation id="5657156137487675418">Leisti visus slapukus</translation>
 <translation id="5657667036353380798">Norint naudoti išorinį plėtinį reikalinga <ph name="MINIMUM_CHROME_VERSION" /> arba naujesnės versijos „Chrome“.</translation>
 <translation id="5658415415603568799">Kad dar labiau apsaugotumėte įrenginį, „Smart Lock“ prašys įvesti slaptažodį po 20 valandų.</translation>
 <translation id="5659593005791499971">El. paštas</translation>
@@ -3592,7 +3589,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5941711191222866238">Sumažinti</translation>
 <translation id="5942964813783878922">Įdiegus šį naujinį „<ph name="DEVICE_TYPE" />“ įrenginys bus paleistas iš naujo. Būsimi programinės įrangos ir saugos naujiniai bus įdiegti automatiškai.</translation>
 <translation id="5944869793365969636">QR kodo nuskaitymas</translation>
-<translation id="5945188205370098537">Siųskite naudojimo ir diagnostikos duomenis. Padėkite tobulinti „Android“ funkcijas automatiškai siųsdami „Google“ diagnostikos, įrenginio ir programų naudojimo duomenis. Tai padės pagerinti sistemos bei programos stabilumą ir teikti kitus patobulinimus. Kai kurie sukaupti duomenys taip pat bus naudingi „Google“ programoms ir partneriams, pvz., „Android“ kūrėjams. Jei papildomas „Žiniatinklio ir programų veiklos“ nustatymas įjungtas, šie duomenys gali būti išsaugoti „Google“ paskyroje. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Ataskaitos ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Nepavyksta išanalizuoti failo</translation>
 <translation id="5955282598396714173">Baigėsi slaptažodžio galiojimo laikas. Atsijunkite, tada vėl prisijunkite, kad jį pakeistumėte.</translation>
@@ -3778,6 +3774,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6185132558746749656">Įrenginio vietovė</translation>
 <translation id="6186394685773237175">Nerasta pažeistų slaptažodžių</translation>
 <translation id="6195693561221576702">Šis įrenginys negali būti nustatytas, kai įjungtas neprisijungus pasiekiamas demonstracinis režimas.</translation>
+<translation id="6196640612572343990">Blokuoti trečiosios šalies slapukus</translation>
 <translation id="6196854373336333322">Plėtinys „<ph name="EXTENSION_NAME" />“ perėmė tarpinio serverio valdymą. Tai reiškia, kad jis gali keisti, nutraukti ar stebėti visus prisijungus atliekamus veiksmus. Jei nesate tikri, kodėl įvyko šis pakeitimas, tikriausiai jūs jo nenorite.</translation>
 <translation id="6198102561359457428">Atsijunkite, tada vėl prisijunkite...</translation>
 <translation id="6198252989419008588">Keisti PIN kodą</translation>
@@ -4444,7 +4441,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="711902386174337313">Skaityti įrenginių, prie kurių esate prisijungę, sąrašą</translation>
 <translation id="7120865473764644444">Nepavyko prisijungti prie sinchronizavimo serverio. Bandoma iš naujo...</translation>
 <translation id="7121362699166175603">Išvaloma istorija ir automatiniai užbaigimai adreso juostoje. „Google“ paskyroje gali būti kito tipo naršymo istorijos, kuri pasiekiama adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Siųskite naudojimo ir diagnostikos duomenis. Šiuo metu šis įrenginys automatiškai siunčia „Google“ diagnostikos, įrenginio ir programų naudojimo duomenis. Tai nebus naudojama siekiant nustatyti jūsų vaiko tapatybę ir padės pagerinti sistemos bei programos stabilumą ir teikti kitus patobulinimus. Kai kurie sukaupti duomenys taip pat bus naudingi „Google“ programoms ir partneriams, pvz., „Android“ kūrėjams. Jei papildomas „Žiniatinklio ir programų veiklos“ nustatymas įjungtas vaiko įrenginyje, šie duomenys gali būti išsaugoti vaiko „Google“ paskyroje. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Kūrėjo režimas</translation>
 <translation id="7121728544325372695">Išmanieji brūkšniai</translation>
 <translation id="7123360114020465152">Nebepalaikoma</translation>
@@ -4559,7 +4555,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7280041992884344566">„Chrome“ ieškant kenkėjiškos programinės įrangos įvyko klaida</translation>
 <translation id="7280649757394340890">Teksto į kalbą balso nustatymai</translation>
 <translation id="7280877790564589615">Prašoma leidimo</translation>
-<translation id="7281268427852119151">Naršymo istorijos naudojimas Paieškai, skelbimams ir kitoms „Google“ paslaugoms suasmeninti</translation>
 <translation id="7282992757463864530">Informacinė juosta</translation>
 <translation id="7287143125007575591">Prieiga atmesta.</translation>
 <translation id="7287411021188441799">Atkurti numatytąjį foną</translation>
@@ -5234,7 +5229,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Skirtuko perkėlimas į naują langą}one{Skirtukų perkėlimas į naują langą}few{Skirtukų perkėlimas į naują langą}many{Skirtukų perkėlimas į naują langą}other{Skirtukų perkėlimas į naują langą}}</translation>
 <translation id="8179976553408161302">Įvesti</translation>
 <translation id="8180239481735238521">psl.</translation>
-<translation id="8180294223783876911">Siųskite naudojimo ir diagnostikos duomenis. Šiuo metu šis įrenginys automatiškai siunčia „Google“ diagnostikos, įrenginio ir programų naudojimo duomenis. Tai padės pagerinti sistemos bei programos stabilumą ir teikti kitus patobulinimus. Kai kurie sukaupti duomenys taip pat bus naudingi „Google“ programoms ir partneriams, pvz., „Android“ kūrėjams. Jei papildomas „Žiniatinklio ir programų veiklos“ nustatymas įjungtas, šie duomenys gali būti išsaugoti „Google“ paskyroje. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">„<ph name="EXTENSION" />“ patikrintose vietovėse gali nuskaityti ir ištrinti vaizdus, vaizdo įrašus ir garso failus.</translation>
 <translation id="8181215761849004992">Nepavyko prisijungti prie domeno. Patikrinkite paskyrą, kad sužinotumėte, ar turite pakankamai teisių pridėti įrenginius.</translation>
 <translation id="8182105986296479640">Programa nereaguoja.</translation>
@@ -5256,7 +5250,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8203732864715032075">Siunčia pranešimus ir pagal numatytuosius nustatymus prisimena šį kompiuterį programoje „Messages“. <ph name="LINK_BEGIN" />Sužinokite daugiau<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">Programą „<ph name="APP_NAME" />“ užblokavo vienas iš tėvų. Paprašykite vieno iš tėvų leidimo naudoti šią programą.</translation>
 <translation id="820568752112382238">Dažniausiai lankomos svetainės</translation>
-<translation id="8206581664590136590">Siųskite naudojimo ir diagnostikos duomenis. Padėkite tobulinti vaiko „Android“ funkcijas automatiškai siųsdami „Google“ diagnostikos, įrenginio ir programų naudojimo duomenis. Tai nebus naudojama siekiant nustatyti jūsų vaiko tapatybę ir padės pagerinti sistemos bei programos stabilumą ir teikti kitus patobulinimus. Kai kurie sukaupti duomenys taip pat bus naudingi „Google“ programoms ir partneriams, pvz., „Android“ kūrėjams. Jei papildomas „Žiniatinklio ir programų veiklos“ nustatymas įjungtas vaiko įrenginyje, šie duomenys gali būti išsaugoti vaiko „Google“ paskyroje. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Bliuzas</translation>
 <translation id="8206859287963243715">Mobilusis</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Vykdomas atsisiuntimas}one{Vykdomi atsisiuntimai}few{Vykdomi atsisiuntimai}many{Vykdomi atsisiuntimai}other{Vykdomi atsisiuntimai}}</translation>
@@ -5802,7 +5795,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8912362522468806198">„Google“ paskyra</translation>
 <translation id="8912793549644936705">Ištemptas</translation>
 <translation id="8912810933860534797">Įgalinti automatinį nuskaitymą</translation>
-<translation id="891365694296252935">Siųskite naudojimo ir diagnostikos duomenis. Šiuo metu šis įrenginys automatiškai siunčia „Google“ diagnostikos, įrenginio ir programų naudojimo duomenis. Tai nebus naudojama siekiant nustatyti jūsų vaiko tapatybę ir padės pagerinti sistemos bei programos stabilumą ir teikti kitus patobulinimus. Kai kurie sukaupti duomenys taip pat bus naudingi „Google“ programoms ir partneriams, pvz., „Android“ kūrėjams. Šį nustatymą taiko savininkas. Jei papildomas „Žiniatinklio ir programų veiklos“ nustatymas įjungtas vaiko įrenginyje, šie duomenys gali būti išsaugoti vaiko „Google“ paskyroje. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Įkeliamas pasiūlymas</translation>
 <translation id="8916476537757519021">Inkognito antrinis kadras: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Patvirtinamas saugos raktas...</translation>
@@ -5939,7 +5931,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="9101691533782776290">Paleisti programą</translation>
 <translation id="9102610709270966160">Įgalinti plėtinį</translation>
 <translation id="9103868373786083162">Paspauskite, kad eitumėte atgal į kontekstinį meniu ir peržiūrėtumėte istoriją</translation>
-<translation id="9104396740804929809">Siųskite naudojimo ir diagnostikos duomenis. Padėkite tobulinti „Android“ funkcijas automatiškai siųsdami „Google“ diagnostikos, įrenginio ir programų naudojimo duomenis. Tai padės pagerinti sistemos bei programos stabilumą ir teikti kitus patobulinimus. Kai kurie sukaupti duomenys taip pat bus naudingi „Google“ programoms ir partneriams, pvz., „Android“ kūrėjams. Šį nustatymą taiko savininkas. Savininkas gali pasirinkti siųsti šio įrenginio diagnostikos ir naudojimo duomenis „Google“. Jei papildomas „Žiniatinklio ir programų veiklos“ nustatymas įjungtas, šie duomenys gali būti išsaugoti „Google“ paskyroje. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Kad atlaisvintumėte vietos, ištrinkite failus iš įrenginio saugyklos.</translation>
 <translation id="9109283579179481106">Prisijungimas prie mobiliojo ryšio tinklo</translation>
 <translation id="9111102763498581341">Atrakinti</translation>

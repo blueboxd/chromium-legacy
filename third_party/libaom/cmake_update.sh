@@ -179,6 +179,12 @@ gen_config_files linux/arm-neon-cpu-detect \
 reset_dirs linux/arm64
 gen_config_files linux/arm64 "${toolchain}/arm64-linux-gcc.cmake ${all_platforms}"
 
+reset_dirs ios/arm-neon
+gen_config_files ios/arm-neon "${toolchain}/armv7-ios.cmake ${all_platforms}"
+
+reset_dirs ios/arm64
+gen_config_files ios/arm64 "${toolchain}/arm64-ios.cmake ${all_platforms}"
+
 # Copy linux configurations and modify for Windows.
 reset_dirs win/arm64
 cp "${CFG}/linux/arm64/config"/* "${CFG}/win/arm64/config/"

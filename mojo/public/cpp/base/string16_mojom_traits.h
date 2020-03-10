@@ -17,7 +17,7 @@
 namespace mojo {
 
 template <>
-struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
+struct COMPONENT_EXPORT(MOJO_BASE_TRAITS)
     StructTraits<mojo_base::mojom::String16DataView, base::StringPiece16> {
   static base::span<const uint16_t> data(base::StringPiece16 str) {
     return base::make_span(reinterpret_cast<const uint16_t*>(str.data()),
@@ -26,7 +26,7 @@ struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
 };
 
 template <>
-struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
+struct COMPONENT_EXPORT(MOJO_BASE_TRAITS)
     StructTraits<mojo_base::mojom::String16DataView, base::string16> {
   static base::span<const uint16_t> data(const base::string16& str) {
     return StructTraits<mojo_base::mojom::String16DataView,
@@ -38,7 +38,7 @@ struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
 };
 
 template <>
-struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
+struct COMPONENT_EXPORT(MOJO_BASE_TRAITS)
     StructTraits<mojo_base::mojom::BigString16DataView, base::string16> {
   static mojo_base::BigBuffer data(const base::string16& str);
 

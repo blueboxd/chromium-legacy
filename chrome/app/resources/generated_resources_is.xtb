@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Gögn hýstra forrita</translation>
 <translation id="1776712937009046120">Bæta notanda við</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Þessu tæki er stjórnað af <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Smelltu á „Áfram“ til að halda áfram og skrá þig inn á reikninginn hjá <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Sláðu þennan aðgangslykil inn í „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="177989070088644880">Forrit (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Loka hópi</translation>
@@ -892,7 +890,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2202898655984161076">Vandamál kom upp við að birta prentara. Sumir prentaranna þinna eru ef til vill ekki skráðir á fullnægjandi hátt hjá <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Leitarvél notuð í <ph name="BEGIN_LINK" />veffangastiku<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Lesa og breyta því sem þú skrifar</translation>
-<translation id="220792432208469595">Senda notkunar- og greiningargögn. Þetta tæki sendir núna sjálfkrafa greiningargögn, tækisgögn og upplýsingar um forritanotkun til Google. Þetta mun stuðla að því að bæta stöðugleika kerfa og forrita auk annarra endurbóta. Sum uppsöfnuð gögn munu einnig gagnast forritum og samstarfsaðilum Google, til dæmis þróunaraðilum Android. Eigandi valdi þessa stillingu. Ef kveikt er á ítarlegri vef- og forritavirkni geta þessi gögn verið vistuð á Google reikningnum þínum. <ph name="BEGIN_LINK1" />Frekari upplýsingar<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Sláðu þetta PIN-númer inn í „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="2212565012507486665">Leyfa fótspor</translation>
 <translation id="2213140827792212876">Fjarlægja deilingu</translation>
@@ -1353,7 +1350,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2804043232879091219">Ekki var hægt að opna hinn vafrann</translation>
 <translation id="2804667941345577550">Þú verður skráð(ur) út af þessu vefsvæði, þar á meðal opnum flipum</translation>
 <translation id="2804680522274557040">Slökkt á myndavél</translation>
-<translation id="2805539617243680210">Allt til reiðu!</translation>
 <translation id="2805646850212350655">Dulkóðunarskráakerfi Microsoft</translation>
 <translation id="2805756323405976993">Forrit</translation>
 <translation id="2805770823691782631">Viðbótarupplýsingar</translation>
@@ -2034,6 +2030,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3742055079367172538">Skjámynd tekin</translation>
 <translation id="3742666961763734085">Skipulagseining með þessu heiti fannst ekki. Reyndu aftur.</translation>
 <translation id="3744111561329211289">Samstilling í bakgrunni</translation>
+<translation id="3747077776423672805">Til að fjarlægja forrit skaltu fara í Stillingar &gt; Google Play Store &gt; Hafa umsjón með stillingum Android &gt; Forrit eða Forritastjórnun. Ýttu síðan á forritið sem þú vilt fjarlægja (þú gætir þurft að fletta til hægri eða vinstri til að finna forritið). Ýttu svo á „Fjarlægja“ eða „Gera óvirkt“.</translation>
 <translation id="3748026146096797577">Ótengt</translation>
 <translation id="3752582316358263300">Í lagi...</translation>
 <translation id="3752673729237782832">Tækin mín</translation>
@@ -2757,7 +2754,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4785719467058219317">Þú ert að nota öryggislykil sem er ekki skráður hjá þessu vefsvæði</translation>
 <translation id="4788092183367008521">Athugaðu nettenginguna og reyndu aftur.</translation>
 <translation id="4792711294155034829">Tilkynna vandamál...</translation>
-<translation id="4795022432560487924">Senda notkunar- og greiningargögn. Hjálpaðu okkur að bæta Android fyrir barnið þitt með því að senda sjálfkrafa greiningargögn, tækisgögn og upplýsingar um forritanotkun til Google. Þetta verður ekki notað til að bera kennsl á barnið þitt og mun stuðla að því að bæta stöðugleika kerfa og forrita auk annarra endurbóta. Sum uppsöfnuð gögn munu einnig gagnast forritum og samstarfsaðilum Google, til dæmis þróunaraðilum Android. Eigandi valdi þessa stillingu. Eigandi getur kosið að senda greiningar- og notkunargögn þessa tækis til Google. Ef kveikt er á ítarlegri vef- og forritavirkni fyrir barnið geta þessi gögn verið vistuð á Google reikningi barnsins. <ph name="BEGIN_LINK1" />Frekari upplýsingar<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Vefsíða, aðeins HTML</translation>
 <translation id="4798236378408895261">Hengja við <ph name="BEGIN_LINK" />Bluetooth-skrár<ph name="END_LINK" /> (innanhúss hjá Google)</translation>
 <translation id="4801448226354548035">Fela reikninga</translation>
@@ -3591,7 +3587,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5941711191222866238">Minnka</translation>
 <translation id="5942964813783878922"><ph name="DEVICE_TYPE" /> endurræsist eftir þessa uppfærslu. Nýjar hugbúnaðar- og öryggisuppfærslur verða settar upp sjálfkrafa.</translation>
 <translation id="5944869793365969636">Skanna QR-kóða</translation>
-<translation id="5945188205370098537">Senda notkunar- og greiningargögn. Hjálpaðu okkur að bæta Android fyrir þig með því að senda sjálfkrafa greiningargögn, tækisgögn og upplýsingar um forritanotkun til Google. Þetta mun stuðla að því að bæta stöðugleika kerfa og forrita auk annarra endurbóta. Sum uppsöfnuð gögn munu einnig gagnast forritum og samstarfsaðilum Google, til dæmis þróunaraðilum Android. Ef kveikt er á ítarlegri vef- og forritavirkni geta þessi gögn verið vistuð á Google reikningnum þínum. <ph name="BEGIN_LINK1" />Frekari upplýsingar<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Auðkenni tilkynningar <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Ekki er hægt að þátta skrá</translation>
 <translation id="5955282598396714173">Aðgangsorðið er útrunnið. Skráðu þig út og aftur inn til að breyta því.</translation>
@@ -3777,6 +3772,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6185132558746749656">Staðsetning tækis</translation>
 <translation id="6186394685773237175">Engin aðgangsorð í hættu fundust</translation>
 <translation id="6195693561221576702">Ekki er hægt að setja þetta tæki upp í ótengdri prufustillingu.</translation>
+<translation id="6196640612572343990">Loka á fótspor frá þriðja aðila</translation>
 <translation id="6196854373336333322">Viðbótin „<ph name="EXTENSION_NAME" />“ hefur tekið að sér stjórn yfir proxy-stillingunum þínum, sem þýðir að hún getur breytt, slitið eða hlerað allt sem þú gerir á netinu. Ef þú veist ekki hvernig þetta gerðist er þetta líklega eitthvað sem þú vilt ekki.</translation>
 <translation id="6198102561359457428">Skráðu þig út og svo inn aftur...</translation>
 <translation id="6198252989419008588">Breyta PIN-númeri</translation>
@@ -4443,7 +4439,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="711902386174337313">Lesa lista yfir innskráð tæki sem þú átt</translation>
 <translation id="7120865473764644444">Ekki var hægt að tengjast samstillingarþjóninum. Reynir aftur...</translation>
 <translation id="7121362699166175603">Hreinsar ferilinn og sjálfvirka útfyllingu í veffangastikunni. Google reikningurinn þinn kann að vera með annars konar vefskoðunarferil á <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Senda notkunar- og greiningargögn. Þetta tæki sendir núna sjálfkrafa greiningargögn, tækisgögn og upplýsingar um forritanotkun til Google. Þetta verður ekki notað til að bera kennsl á barnið þitt og mun stuðla að því að bæta stöðugleika kerfa og forrita auk annarra endurbóta. Sum uppsöfnuð gögn munu einnig gagnast forritum og samstarfsaðilum Google, til dæmis þróunaraðilum Android. Ef kveikt er á ítarlegri vef- og forritavirkni fyrir barnið geta þessi gögn verið vistuð á Google reikningi barnsins. <ph name="BEGIN_LINK1" />Frekari upplýsingar<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Forritarastilling</translation>
 <translation id="7121728544325372695">Sjálfvirk bandstrik</translation>
 <translation id="7123360114020465152">Ekki lengur stutt</translation>
@@ -4558,7 +4553,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7280041992884344566">Villa kom upp þegar Chrome leitaði að skaðlegum hugbúnaði</translation>
 <translation id="7280649757394340890">Raddstillingar talgervils</translation>
 <translation id="7280877790564589615">Heimildar krafist</translation>
-<translation id="7281268427852119151">Nota vafraferilinn til að sérsníða leitina, auglýsingar og aðra þjónustu Google</translation>
 <translation id="7282992757463864530">Upplýsingastika</translation>
 <translation id="7287143125007575591">Aðgangur ekki veittur.</translation>
 <translation id="7287411021188441799">Endurheimta sjálfgefinn bakgrunn</translation>
@@ -5232,7 +5226,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Færa flipa í nýjan glugga}one{Færa flipa í nýjan glugga}other{Færa flipa í nýjan glugga}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">síða</translation>
-<translation id="8180294223783876911">Senda notkunar- og greiningargögn. Þetta tæki sendir núna sjálfkrafa greiningargögn, tækisgögn og upplýsingar um forritanotkun til Google. Þetta mun stuðla að því að bæta stöðugleika kerfa og forrita auk annarra endurbóta. Sum uppsöfnuð gögn munu einnig gagnast forritum og samstarfsaðilum Google, til dæmis þróunaraðilum Android. Ef kveikt er á ítarlegri vef- og forritavirkni geta þessi gögn verið vistuð á Google reikningnum þínum. <ph name="BEGIN_LINK1" />Frekari upplýsingar<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">„<ph name="EXTENSION" />“ getur lesið og eytt myndum, myndskeiðum og hljóðskrám á stöðunum sem merkt er við</translation>
 <translation id="8181215761849004992">Ekki tókst að tengjast léninu. Skoðaðu reikninginn þinn til að athuga hvort þú hafir réttindi til að bæta við tækjum.</translation>
 <translation id="8182105986296479640">Forrit svarar ekki.</translation>
@@ -5254,7 +5247,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8203732864715032075">Fáðu sendar tilkynningar og láttu muna eftir þessari tölvu fyrir Messages. <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">Foreldri þitt hefur lokað á „<ph name="APP_NAME" />“. Biddu foreldri þitt um leyfi til að nota þetta forrit.</translation>
 <translation id="820568752112382238">Mest heimsóttu vefsvæðin</translation>
-<translation id="8206581664590136590">Senda notkunar- og greiningargögn. Hjálpaðu okkur að bæta Android fyrir barnið þitt með því að senda sjálfkrafa greiningargögn, tækisgögn og upplýsingar um forritanotkun til Google. Þetta verður ekki notað til að bera kennsl á barnið þitt og mun stuðla að því að bæta stöðugleika kerfa og forrita auk annarra endurbóta. Sum uppsöfnuð gögn munu einnig gagnast forritum og samstarfsaðilum Google, til dæmis þróunaraðilum Android. Ef kveikt er á ítarlegri vef- og forritavirkni fyrir barnið geta þessi gögn verið vistuð á Google reikningi barnsins. <ph name="BEGIN_LINK1" />Frekari upplýsingar<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Blúsaður</translation>
 <translation id="8206859287963243715">Farsímakerfi</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Niðurhal er í gangi}one{Niðurhal er í gangi}other{Niðurhal er í gangi}}</translation>
@@ -5800,7 +5792,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8912362522468806198">Google reikningur</translation>
 <translation id="8912793549644936705">Teygja</translation>
 <translation id="8912810933860534797">Kveikja á sjálfvirkri skönnun</translation>
-<translation id="891365694296252935">Senda notkunar- og greiningargögn. Þetta tæki sendir núna sjálfkrafa greiningargögn, tækisgögn og upplýsingar um forritanotkun til Google. Þetta verður ekki notað til að bera kennsl á barnið þitt og mun stuðla að því að bæta stöðugleika kerfa og forrita auk annarra endurbóta. Sum uppsöfnuð gögn munu einnig gagnast forritum og samstarfsaðilum Google, til dæmis þróunaraðilum Android. Eigandi valdi þessa stillingu. Ef kveikt er á ítarlegri vef- og forritavirkni fyrir barnið geta þessi gögn verið vistuð á Google reikningi barnsins. <ph name="BEGIN_LINK1" />Frekari upplýsingar<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Hleður tillögu</translation>
 <translation id="8916476537757519021">Huliðsundirrammi: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Staðfestir öryggislykilinn...</translation>
@@ -5937,7 +5928,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="9101691533782776290">Ræsa forrit</translation>
 <translation id="9102610709270966160">Virkja viðbót</translation>
 <translation id="9103868373786083162">Ýttu til að fara til baka, farðu í efnisvalmyndina til að sjá ferilinn</translation>
-<translation id="9104396740804929809">Senda notkunar- og greiningargögn. Hjálpaðu okkur að bæta Android fyrir þig með því að senda sjálfkrafa greiningargögn, tækisgögn og upplýsingar um forritanotkun til Google. Þetta mun stuðla að því að bæta stöðugleika kerfa og forrita auk annarra endurbóta. Sum uppsöfnuð gögn munu einnig gagnast forritum og samstarfsaðilum Google, til dæmis þróunaraðilum Android. Eigandi valdi þessa stillingu. Eigandi getur kosið að senda greiningar- og notkunargögn þessa tækis til Google. Ef kveikt er á ítarlegri vef- og forritavirkni geta þessi gögn verið vistuð á Google reikningnum þínum. <ph name="BEGIN_LINK1" />Frekari upplýsingar<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Eyddu skrám úr geymslu tækisins til að losa um pláss.</translation>
 <translation id="9109283579179481106">Tengjast farsímakerfi</translation>
 <translation id="9111102763498581341">Taka úr lás</translation>

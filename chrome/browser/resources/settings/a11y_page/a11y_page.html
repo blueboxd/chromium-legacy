@@ -61,6 +61,13 @@
           <settings-captions prefs="{{prefs}}"></settings-captions>
         </settings-subpage>
       </template>
+      <template is="dom-if" if="[[enableLiveCaption_]]">
+        <settings-toggle-button
+            pref="{{prefs.accessibility.captions.live_caption_enabled}}"
+            label="$i18n{captionsEnableLiveCaptionTitle}"
+            sub-label="$i18n{captionsEnableLiveCaptionSubtitle}">
+        </settings-toggle-button>
+      </template>
 </if>
     </settings-animated-pages>
   </template>

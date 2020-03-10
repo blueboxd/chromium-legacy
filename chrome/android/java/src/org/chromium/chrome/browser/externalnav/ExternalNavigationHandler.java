@@ -27,10 +27,10 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalIntentsSwitches;
+import org.chromium.components.external_intents.RedirectHandler;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.url.URI;
@@ -330,10 +330,10 @@ public class ExternalNavigationHandler {
      */
     private boolean handleCCTRedirectsToInstantApps(ExternalNavigationParams params,
             boolean isExternalProtocol, boolean incomingIntentRedirect) {
-        TabRedirectHandler handler = params.getRedirectHandler();
+        RedirectHandler handler = params.getRedirectHandler();
         if (handler == null) return false;
         if (handler.isFromCustomTabIntent() && !isExternalProtocol && incomingIntentRedirect
-                && !handler.shouldNavigationTypeStayInChrome()
+                && !handler.shouldNavigationTypeStayInApp()
                 && mDelegate.maybeLaunchInstantApp(
                         params.getUrl(), params.getReferrerUrl(), true)) {
             if (DEBUG) {
@@ -346,11 +346,11 @@ public class ExternalNavigationHandler {
 
     private boolean redirectShouldStayInChrome(
             ExternalNavigationParams params, boolean isExternalProtocol, Intent targetIntent) {
-        TabRedirectHandler handler = params.getRedirectHandler();
+        RedirectHandler handler = params.getRedirectHandler();
         if (handler == null) return false;
-        boolean shouldStayInChrome = handler.shouldStayInChrome(
+        boolean shouldStayInApp = handler.shouldStayInApp(
                 isExternalProtocol, mDelegate.isIntentForTrustedCallingApp(targetIntent));
-        if (shouldStayInChrome || handler.shouldNotOverrideUrlLoading()) {
+        if (shouldStayInApp || handler.shouldNotOverrideUrlLoading()) {
             if (DEBUG) Log.i(TAG, "RedirectHandler decision");
             return true;
         }
@@ -999,7 +999,7 @@ public class ExternalNavigationHandler {
         // status in one shot. In order to prevent this scenario, we notify redirection
         // handler that redirection from the current navigation should stay in Chrome.
         if (params.getRedirectHandler() != null) {
-            params.getRedirectHandler().setShouldNotOverrideUrlLoadingUntilNewUrlLoading();
+            params.getRedirectHandler().setShouldNotOverrideUrlLoadingOnCurrentRedirectChain();
         }
         if (DEBUG) Log.i(TAG, "clobberCurrentTab called");
         return mDelegate.clobberCurrentTab(browserFallbackUrl, params.getReferrerUrl());

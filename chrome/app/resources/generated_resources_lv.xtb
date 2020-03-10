@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Mitinātas lietotnes dati</translation>
 <translation id="1776712937009046120">Pievienot lietotāju</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Šo ierīci pārvalda <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Lai turpinātu pierakstīšanos <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kontā, noklikšķiniet uz Tālāk.</translation>
 <translation id="1779652936965200207">Ievadiet šo ieejas atslēgu ierīcē <ph name="DEVICE_NAME" />:</translation>
 <translation id="177989070088644880">Lietotne (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Aizvērt grupu</translation>
@@ -892,7 +890,6 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2202898655984161076">Radās problēma saistībā ar printeru parādīšanu. Iespējams, daži no printeriem nav sekmīgi reģistrēti pakalpojumā <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Meklētājprogramma, kas tiek izmantota <ph name="BEGIN_LINK" />adreses joslā<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Lasīt un mainīt visu, ko rakstāt</translation>
-<translation id="220792432208469595">Lietojuma un diagnostikas datu sūtīšana. Pašlaik dati par šo ierīci un ierīces diagnostikas un lietotņu lietojuma dati tiek automātiski sūtīti uzņēmumam Google. Šī informācija palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Šo iestatījumu ir noteicis īpašnieks. Ja ir ieslēgts papildu iestatījums “Darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti jūsu Google kontā. <ph name="BEGIN_LINK1" />Uzzināt vairāk<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Ievadiet šo PIN kodu ierīcē <ph name="DEVICE_NAME" />:</translation>
 <translation id="2212565012507486665">Atļaut sīkfailus</translation>
 <translation id="2213140827792212876">Noņemt kopīgošanu</translation>
@@ -1353,7 +1350,6 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2804043232879091219">Nevarēja atvērt citu pārlūkprogrammu</translation>
 <translation id="2804667941345577550">Jūs tiksiet izrakstīts no šīs vietnes, tostarp atvērtajās cilnēs</translation>
 <translation id="2804680522274557040">Kamera ir izslēgta</translation>
-<translation id="2805539617243680210">Viss ir iestatīts!</translation>
 <translation id="2805646850212350655">Microsoft šīfrēšanas failu sistēma</translation>
 <translation id="2805756323405976993">Lietotnes</translation>
 <translation id="2805770823691782631">Papildinformācija</translation>
@@ -2034,6 +2030,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3742055079367172538">Ekrānuzņēmums ir uzņemts</translation>
 <translation id="3742666961763734085">Nevar atrast organizācijas vienību ar šādu nosaukumu. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="3744111561329211289">Sinhronizācija fonā</translation>
+<translation id="3747077776423672805">Lai noņemtu lietotnes, pārejiet uz sadaļu Iestatījumi &gt; Google Play veikals &gt; Pārvaldīt Android preferences &gt; Lietotnes vai Lietojumprogrammu pārvaldnieks. Pēc tam pieskarieties lietotnei, kuru vēlaties atinstalēt (iespējams, būs jāvelk pa labi vai pa kreisi, lai atrastu lietotni). Pēc tam pieskarieties vienumam Atinstalēt vai Atspējot.</translation>
 <translation id="3748026146096797577">Nav izveidots savienojums</translation>
 <translation id="3752582316358263300">Labi...</translation>
 <translation id="3752673729237782832">Manas ierīces</translation>
@@ -2757,7 +2754,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4785719467058219317">Jūs izmantojat drošības atslēgu, kas nav reģistrēta šajā vietnē</translation>
 <translation id="4788092183367008521">Lūdzu, pārbaudiet tīkla savienojumu un mēģiniet vēlreiz.</translation>
 <translation id="4792711294155034829">&amp;Ziņot par problēmu...</translation>
-<translation id="4795022432560487924">Lietojuma un diagnostikas datu sūtīšana. Palīdziet uzlabot bērna Android lietošanas pieredzi, automātiski nosūtot diagnostikas, ierīces un lietotņu lietojuma datus uzņēmumam Google. Šī informācija netiks izmantota jūsu bērna identificēšanai, un tā palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Šo iestatījumu ir noteicis īpašnieks. Īpašnieks var izvēlēties nosūtīt šīs ierīces diagnostikas un lietojuma datus uz Google serveriem. Ja jūsu bērnam ir ieslēgts papildu iestatījums “Darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti bērna Google kontā. <ph name="BEGIN_LINK1" />Uzzināt vairāk<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Tikai tīmekļa lapa, HTML</translation>
 <translation id="4798236378408895261">Pievienot <ph name="BEGIN_LINK" />Bluetooth žurnālus<ph name="END_LINK" /> (tikai Google darbiniekiem)</translation>
 <translation id="4801448226354548035">Slēpt kontus</translation>
@@ -3384,6 +3380,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5649053991847567735">Automātiskās lejupielādes</translation>
 <translation id="5653154844073528838">Jums ir <ph name="PRINTER_COUNT" /> saglabāti printeri.</translation>
 <translation id="5656845498778518563">Atsauksmju sūtīšana uzņēmumam Google</translation>
+<translation id="5657156137487675418">Atļaut visus sīkfailus</translation>
 <translation id="5657667036353380798">Lai varētu izmantot ārējo paplašinājumu, jāinstalē Chrome versija <ph name="MINIMUM_CHROME_VERSION" /> vai jaunāka versija.</translation>
 <translation id="5658415415603568799">Papildu drošībai Smart Lock lūgs jums ievadīt paroli pēc 20 stundām.</translation>
 <translation id="5659593005791499971">E-pasts</translation>
@@ -3591,7 +3588,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5941711191222866238">Minimizēt</translation>
 <translation id="5942964813783878922">Pēc šīs atjaunināšanas jūsu ierīce (<ph name="DEVICE_TYPE" />) tiks restartēta. Turpmāki programmatūras un drošības atjauninājumi tiks instalēti automātiski.</translation>
 <translation id="5944869793365969636">QR koda skenēšana</translation>
-<translation id="5945188205370098537">Lietojuma un diagnostikas datu sūtīšana. Palīdziet uzlabot Android lietošanas pieredzi, automātiski nosūtot diagnostikas, ierīces un lietotņu lietojuma datus uzņēmumam Google. Šī informācija palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Ja ir ieslēgts papildu iestatījums “Darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti jūsu Google kontā. <ph name="BEGIN_LINK1" />Uzzināt vairāk<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Pārskata ID: <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Nevar parsēt failu.</translation>
 <translation id="5955282598396714173">Paroles derīguma termiņš ir beidzies. Lai mainītu paroli, izrakstieties un vēlreiz pierakstieties.</translation>
@@ -3777,6 +3773,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6185132558746749656">Ierīces atrašanās vieta</translation>
 <translation id="6186394685773237175">Netika atrasta neviena uzlauzta parole.</translation>
 <translation id="6195693561221576702">Šo ierīci nevar iestatīt bezsaistes demonstrēšanas režīmā.</translation>
+<translation id="6196640612572343990">Bloķēt trešo pušu sīkfailus</translation>
 <translation id="6196854373336333322">Paplašinājums “<ph name="EXTENSION_NAME" />” pārvalda jūsu starpniekservera iestatījumus. Tas nozīmē, ka tas var mainīt, pārtraukt vai izsekot visas jūsu darbības tiešsaistē. Ja neesat pārliecināts, kāpēc notika šīs izmaiņas, visticamāk, jūs tās nevēlaties.</translation>
 <translation id="6198102561359457428">Izrakstīties un tad pierakstīties vēlreiz</translation>
 <translation id="6198252989419008588">Mainīt PIN</translation>
@@ -4443,7 +4440,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="711902386174337313">Lasīt to ierīču sarakstu, kurās esat pierakstījies</translation>
 <translation id="7120865473764644444">Nevarēja izveidot savienojumu ar sinhronizācijas serveri. Tiek mēģināts atkārtoti...</translation>
 <translation id="7121362699166175603">Notīra vēsturi un automātiskās pabeigšanas datus adreses joslā. Jūsu Google kontam var būt cita veida pārlūkošanas vēstures dati vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Lietojuma un diagnostikas datu sūtīšana. Pašlaik dati par šo ierīci un ierīces diagnostikas un lietotņu lietojuma dati tiek automātiski sūtīti uzņēmumam Google. Šī informācija netiks izmantota jūsu bērna identificēšanai, un tā palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Ja jūsu bērnam ir ieslēgts papildu iestatījums “Darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti bērna Google kontā. <ph name="BEGIN_LINK1" />Uzzināt vairāk<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Izstrādātāja režīms</translation>
 <translation id="7121728544325372695">Viedās defises</translation>
 <translation id="7123360114020465152">Vairs netiek atbalstīts</translation>
@@ -4558,7 +4554,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7280041992884344566">Kamēr pārlūks Chrome meklēja kaitīgu programmatūru, radās kļūda.</translation>
 <translation id="7280649757394340890">Balss iestatījumi teksta pārvēršanai runā</translation>
 <translation id="7280877790564589615">Atļaujas pieprasījums</translation>
-<translation id="7281268427852119151">Jūsu pārlūkošanas vēstures izmantošana, lai personalizētu Meklēšanu, reklāmas un citus Google pakalpojumus.</translation>
 <translation id="7282992757463864530">Informācijas josla</translation>
 <translation id="7287143125007575591">Piekļuve liegta.</translation>
 <translation id="7287411021188441799">Atjaunot noklusējuma fonu</translation>
@@ -5232,7 +5227,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Pārvietot cilni uz jaunu logu}zero{Pārvietot cilnes uz jaunu logu}one{Pārvietot cilnes uz jaunu logu}other{Pārvietot cilnes uz jaunu logu}}</translation>
 <translation id="8179976553408161302">Ievadīt</translation>
 <translation id="8180239481735238521">Lapa</translation>
-<translation id="8180294223783876911">Lietojuma un diagnostikas datu sūtīšana. Pašlaik dati par šo ierīci un ierīces diagnostikas un lietotņu lietojuma dati tiek automātiski sūtīti uzņēmumam Google. Šī informācija palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Ja ir ieslēgts papildu iestatījums “Darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti jūsu Google kontā. <ph name="BEGIN_LINK1" />Uzzināt vairāk<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">Ar paplašinājumu “<ph name="EXTENSION" />” var lasīt un dzēst attēlus, videoklipus un skaņu failus atzīmētajās vietās.</translation>
 <translation id="8181215761849004992">Nevar pievienoties domēnam. Pārbaudiet savā kontā, vai jums ir pietiekamas tiesības, lai pievienotu ierīces.</translation>
 <translation id="8182105986296479640">Lietojumprogramma neatbild.</translation>
@@ -5254,7 +5248,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8203732864715032075">Jums tiks sūtīti paziņojumi, un pēc noklusējuma šis dators tiks iestatīts īsziņu saņemšanai. <ph name="LINK_BEGIN" />Uzziniet vairāk<ph name="LINK_END" />.</translation>
 <translation id="8204129288640092672">Viens no vecākiem ir bloķējis lietotni <ph name="APP_NAME" />. Lai izmantotu šo lietotni, lūdziet vecākiem piešķirt atļauju.</translation>
 <translation id="820568752112382238">Biežāk apmeklētās vietnes</translation>
-<translation id="8206581664590136590">Lietojuma un diagnostikas datu sūtīšana. Palīdziet uzlabot bērna Android lietošanas pieredzi, automātiski nosūtot diagnostikas, ierīces un lietotņu lietojuma datus uzņēmumam Google. Šī informācija netiks izmantota jūsu bērna identificēšanai, un tā palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Ja jūsu bērnam ir ieslēgts papildu iestatījums “Darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti bērna Google kontā. <ph name="BEGIN_LINK1" />Uzzināt vairāk<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Blūzs</translation>
 <translation id="8206859287963243715">Mobilais tālrunis</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Notiek lejupielāde}zero{Notiek lejupielāde}one{Notiek lejupielāde}other{Notiek lejupielāde}}</translation>
@@ -5800,7 +5793,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8912362522468806198">Google konts</translation>
 <translation id="8912793549644936705">Izstiept</translation>
 <translation id="8912810933860534797">Iespējot automātisko meklēšanu</translation>
-<translation id="891365694296252935">Lietojuma un diagnostikas datu sūtīšana. Pašlaik dati par šo ierīci un ierīces diagnostikas un lietotņu lietojuma dati tiek automātiski sūtīti uzņēmumam Google. Šī informācija netiks izmantota jūsu bērna identificēšanai, un tā palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Šo iestatījumu ir noteicis īpašnieks. Ja jūsu bērnam ir ieslēgts papildu iestatījums “Darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti bērna Google kontā. <ph name="BEGIN_LINK1" />Uzzināt vairāk<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Notiek ieteikumu ielāde...</translation>
 <translation id="8916476537757519021">Inkognito apakšrāmis: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Notiek drošības atslēgas pārbaude...</translation>
@@ -5937,7 +5929,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="9101691533782776290">Palaist lietotni</translation>
 <translation id="9102610709270966160">Iespējot paplašinājumu</translation>
 <translation id="9103868373786083162">Nospiediet, lai pārietu atpakaļ; atveriet kontekstizvēlni, lai skatītu vēsturi</translation>
-<translation id="9104396740804929809">Lietojuma un diagnostikas datu sūtīšana. Palīdziet uzlabot Android lietošanas pieredzi, automātiski nosūtot diagnostikas, ierīces un lietotņu lietojuma datus uzņēmumam Google. Šī informācija palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Šo iestatījumu ir noteicis īpašnieks. Īpašnieks var izvēlēties nosūtīt šīs ierīces diagnostikas un lietojuma datus uz Google serveriem. Ja ir ieslēgts papildu iestatījums “Darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti jūsu Google kontā. <ph name="BEGIN_LINK1" />Uzzināt vairāk<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Lai atbrīvotu vietu, izdzēsiet failus no šīs ierīces.</translation>
 <translation id="9109283579179481106">Savienojuma izveide ar mobilo tīklu</translation>
 <translation id="9111102763498581341">Atbloķēt</translation>

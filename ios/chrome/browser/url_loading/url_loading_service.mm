@@ -255,6 +255,8 @@ void UrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   DCHECK(delegate_);
   DCHECK(browser_);
   ChromeBrowserState* browser_state = browser_->GetBrowserState();
+  ChromeBrowserState* active_browser_state =
+      app_service_->GetCurrentBrowser()->GetBrowserState();
 
   // Two UrlLoadingServices exist, normal and incognito.  Handle two special
   // cases that need to be sent up to the AppUrlLoadingService:
@@ -264,8 +266,7 @@ void UrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   // so the AppUrlLoadingService needs to switch modes before loading the URL.
   if (params.in_incognito != browser_state->IsOffTheRecord() ||
       (!params.in_background() &&
-       params.in_incognito !=
-           app_service_->GetCurrentBrowserState()->IsOffTheRecord())) {
+       params.in_incognito != active_browser_state->IsOffTheRecord())) {
     // When sending a load request that switches modes, ensure the tab
     // ends up appended to the end of the model, not just next to what is
     // currently selected in the other mode. This is done with the |append_to|

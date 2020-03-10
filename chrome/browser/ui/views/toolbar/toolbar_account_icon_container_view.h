@@ -39,7 +39,8 @@ class ToolbarAccountIconContainerView : public ToolbarIconContainerView,
   // PageActionIconView::Delegate:
   float GetPageActionInkDropVisibleOpacity() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
-  std::unique_ptr<views::Border> CreatePageActionIconBorder() const override;
+  gfx::Insets GetPageActionIconInsets(
+      const PageActionIconView* icon_view) const override;
 
   // views::View:
   void OnThemeChanged() override;

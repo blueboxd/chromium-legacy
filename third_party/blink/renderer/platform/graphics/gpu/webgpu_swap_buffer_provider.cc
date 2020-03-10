@@ -29,10 +29,12 @@ viz::ResourceFormat WGPUFormatToViz(WGPUTextureFormat format) {
 WebGPUSwapBufferProvider::WebGPUSwapBufferProvider(
     Client* client,
     scoped_refptr<DawnControlClientHolder> dawn_control_client,
+    uint64_t device_client_id,
     WGPUTextureUsage usage,
     WGPUTextureFormat format)
     : dawn_control_client_(dawn_control_client),
       client_(client),
+      device_client_id_(device_client_id),
       usage_(usage),
       format_(WGPUFormatToViz(format)) {
   // Create a layer that will be used by the canvas and will ask for a
@@ -82,8 +84,7 @@ void WebGPUSwapBufferProvider::Neuter() {
   neutered_ = true;
 }
 
-WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(uint64_t device_client_id,
-                                                    const IntSize& size) {
+WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(const IntSize& size) {
   DCHECK(!current_swap_buffer_ && !dawn_control_client_->IsDestroyed());
 
   gpu::webgpu::WebGPUInterface* webgpu = dawn_control_client_->GetInterface();
@@ -110,13 +111,13 @@ WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(uint64_t device_client_id,
 
   // Associate the mailbox to a dawn_wire client DawnTexture object
   gpu::webgpu::ReservedTexture reservation =
-      webgpu->ReserveTexture(device_client_id);
+      webgpu->ReserveTexture(device_client_id_);
   DCHECK(reservation.texture);
   wire_texture_id_ = reservation.id;
   wire_texture_generation_ = reservation.generation;
 
   webgpu->AssociateMailbox(
-      device_client_id, 0, reservation.id, reservation.generation, usage_,
+      device_client_id_, 0, reservation.id, reservation.generation, usage_,
       reinterpret_cast<GLbyte*>(&current_swap_buffer_->mailbox));
 
   // When the page request a texture it means we'll need to present it on the
@@ -144,7 +145,8 @@ bool WebGPUSwapBufferProvider::PrepareTransferableResource(
   // to the texture are errors.
   gpu::webgpu::WebGPUInterface* webgpu = dawn_control_client_->GetInterface();
   DCHECK_NE(wire_texture_id_, 0u);
-  webgpu->DissociateMailbox(wire_texture_id_, wire_texture_generation_);
+  webgpu->DissociateMailbox(device_client_id_, wire_texture_id_,
+                            wire_texture_generation_);
 
   // Make the compositor wait on previous Dawn commands.
   webgpu->GenUnverifiedSyncTokenCHROMIUM(

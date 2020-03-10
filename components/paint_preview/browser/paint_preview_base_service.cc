@@ -114,7 +114,7 @@ void PaintPreviewBaseService::OnCaptured(
     base::UnguessableToken guid,
     mojom::PaintPreviewStatus status,
     std::unique_ptr<PaintPreviewProto> proto) {
-  if (status != mojom::PaintPreviewStatus::kOk) {
+  if (status != mojom::PaintPreviewStatus::kOk || !proto) {
     DVLOG(1) << "ERROR: Paint Preview failed to capture for document "
              << guid.ToString() << " with error " << status;
     std::move(callback).Run(kCaptureFailed, nullptr);

@@ -573,8 +573,6 @@
 <translation id="177336675152937177">代管應用程式資料</translation>
 <translation id="1776712937009046120">新增使用者</translation>
 <translation id="1776883657531386793"><ph name="OID" />：<ph name="INFO" /></translation>
-<translation id="1777310661937894236">這個裝置是由 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 所管理。
-    請按 [下一步] 繼續登入你的 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 帳戶。</translation>
 <translation id="1779652936965200207">請在「<ph name="DEVICE_NAME" />」上輸入以下密碼金鑰：</translation>
 <translation id="177989070088644880">應用程式 (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">關閉群組</translation>
@@ -887,7 +885,6 @@
 <translation id="2202898655984161076">列出印表機清單時發生問題，你的部分印表機尚未使用 <ph name="CLOUD_PRINT_NAME" /> 完成註冊。</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />網址列<ph name="END_LINK" />中使用的搜尋引擎</translation>
 <translation id="2204034823255629767">讀取及變更你輸入的任何設定</translation>
-<translation id="220792432208469595">傳送使用狀況與診斷資料。這個裝置目前會自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google。這些資料將有助於系統和應用程式提高穩定性及做出其他改善。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。這項設定是由裝置擁有者執行。如果你的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到你的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">請在「<ph name="DEVICE_NAME" />」上輸入以下 PIN 碼：</translation>
 <translation id="2212565012507486665">允許 Cookie</translation>
 <translation id="2213140827792212876">移除共用設定</translation>
@@ -1342,7 +1339,6 @@
 <translation id="2804043232879091219">無法開啟替代瀏覽器</translation>
 <translation id="2804667941345577550">系統會將你登出這個網站 (這項操作會套用到所有已開啟的分頁)。</translation>
 <translation id="2804680522274557040">攝影機已關閉</translation>
-<translation id="2805539617243680210">大功告成！</translation>
 <translation id="2805646850212350655">Microsoft 加密檔案系統</translation>
 <translation id="2805756323405976993">應用程式</translation>
 <translation id="2805770823691782631">其他詳細資訊</translation>
@@ -2020,6 +2016,7 @@
 <translation id="3742055079367172538">已拍攝螢幕截圖</translation>
 <translation id="3742666961763734085">找不到使用該名稱的機構單位，請再試一次。</translation>
 <translation id="3744111561329211289">背景同步處理</translation>
+<translation id="3747077776423672805">如要移除應用程式，請依序前往 [設定] &gt; [Google Play 商店] &gt; [管理 Android 偏好設定] &gt; [應用程式] 或 [應用程式管理員]，然後輕觸你要解除安裝的應用程式 (你可能需要向左或向右滑動才能找出所需應用程式)。接著，輕觸 [解除安裝] 或 [停用]。</translation>
 <translation id="3748026146096797577">尚未連線</translation>
 <translation id="3752582316358263300">確定...</translation>
 <translation id="3752673729237782832">我的裝置</translation>
@@ -2739,7 +2736,6 @@
 <translation id="4785719467058219317">你目前使用的安全金鑰並未在這個網站註冊</translation>
 <translation id="4788092183367008521">請檢查你的網路連線，然後再試一次。</translation>
 <translation id="4792711294155034829">回報問題(&amp;R)...</translation>
-<translation id="4795022432560487924">傳送使用狀況與診斷資料。讓系統自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google，協助改善你的 Android 使用體驗。這些資料將有助於系統和應用程式提高穩定性及做出其他改善，並不會用於識別貴子女的身分。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。這項設定是由裝置擁有者執行。擁有者可選擇將這個裝置的診斷資料與使用狀況資料傳送給 Google。如果貴子女的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到他們的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">僅限網頁的 HTML 部分</translation>
 <translation id="4798236378408895261">附加<ph name="BEGIN_LINK" />藍牙記錄<ph name="END_LINK" /> (Google 內部使用)</translation>
 <translation id="4801448226354548035">隱藏帳戶</translation>
@@ -3359,6 +3355,7 @@
 <translation id="5649053991847567735">自動下載</translation>
 <translation id="5653154844073528838">你有 <ph name="PRINTER_COUNT" /> 台已儲存的印表機。</translation>
 <translation id="5656845498778518563">提供意見給 Google</translation>
+<translation id="5657156137487675418">允許所有 Cookie</translation>
 <translation id="5657667036353380798">這個外部擴充功能需要安裝 <ph name="MINIMUM_CHROME_VERSION" /> 版本以上的 Chrome 瀏覽器。</translation>
 <translation id="5658415415603568799">為了提升安全性，Smart Lock 會在經過 20 小時後要求您輸入密碼。</translation>
 <translation id="5659593005791499971">電子郵件</translation>
@@ -3565,7 +3562,6 @@
 <translation id="5941711191222866238">縮到最小</translation>
 <translation id="5942964813783878922">完成更新後，你的 <ph name="DEVICE_TYPE" /> 將會重新啟動。日後系統會自動安裝新版軟體和安全性更新。</translation>
 <translation id="5944869793365969636">掃描 QR 圖碼</translation>
-<translation id="5945188205370098537">傳送使用狀況與診斷資料。讓系統自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google，協助改善你的 Android 使用體驗。這些資料將有助於系統和應用程式提高穩定性及做出其他改善。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。如果你的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到你的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">報表 ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">無法剖析檔案</translation>
 <translation id="5955282598396714173">你的密碼已過期。如要變更密碼，請先登出然後重新登入。</translation>
@@ -3749,6 +3745,7 @@
 <translation id="6185132558746749656">裝置位置</translation>
 <translation id="6186394685773237175">找不到遭外洩的密碼</translation>
 <translation id="6195693561221576702">這個裝置無法設為離線示範模式。</translation>
+<translation id="6196640612572343990">封鎖第三方 Cookie</translation>
 <translation id="6196854373336333322">您的 Proxy 設定已受到擴充功能「<ph name="EXTENSION_NAME" />」控制，該擴充功能可變更、中斷、或監視您在網路上的行為。如果您不確定這項變更的發生原因，建議您停用該擴充功能。</translation>
 <translation id="6198102561359457428">登出然後再次登入...</translation>
 <translation id="6198252989419008588">變更 PIN 碼</translation>
@@ -4412,7 +4409,6 @@
 <translation id="711902386174337313">讀取已登入裝置清單</translation>
 <translation id="7120865473764644444">無法連上同步處理伺服器。重試中...</translation>
 <translation id="7121362699166175603">將歷史記錄和自動即時查詢從網址列中清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
-<translation id="7121389946694989825">傳送使用狀況與診斷資料。這個裝置目前會自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google。這些資料將有助於系統和應用程式提高穩定性及做出其他改善，並不會用於識別貴子女的身分。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。如果貴子女的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到他們的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">開發人員模式</translation>
 <translation id="7121728544325372695">智慧型破折號</translation>
 <translation id="7123360114020465152">已停止支援</translation>
@@ -5194,7 +5190,6 @@
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{將分頁移到新視窗}other{將分頁移到新視窗}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">頁面</translation>
-<translation id="8180294223783876911">傳送使用狀況與診斷資料。這個裝置目前會自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google。這些資料將有助於系統和應用程式提高穩定性及做出其他改善。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。如果你的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到你的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">「<ph name="EXTENSION" />」可以讀取及刪除勾選位置中的圖片、影片和音訊檔案。</translation>
 <translation id="8181215761849004992">無法加入網域。請檢查你的帳戶是否有新增裝置的必要權限。</translation>
 <translation id="8182105986296479640">應用程式無回應。</translation>
@@ -5216,7 +5211,6 @@
 <translation id="8203732864715032075">傳送通知給你，並預設記住這部電腦，以便在收到簡訊時傳送通知。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">你的家長已封鎖「<ph name="APP_NAME" />」。如要使用這個應用程式，請要求家長授予權限。</translation>
 <translation id="820568752112382238">最常造訪的網站</translation>
-<translation id="8206581664590136590">傳送使用狀況與診斷資料。讓系統自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google，協助改善你的 Android 使用體驗。這些資料將有助於系統和應用程式提高穩定性及做出其他改善，並不會用於識別貴子女的身分。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。如果貴子女的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到他們的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">藍調</translation>
 <translation id="8206859287963243715">手機</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{正在執行一項下載作業}other{正在執行多項下載作業}}</translation>
@@ -5756,7 +5750,6 @@
 <translation id="8912362522468806198">Google 帳戶</translation>
 <translation id="8912793549644936705">延伸</translation>
 <translation id="8912810933860534797">啟用自動掃描</translation>
-<translation id="891365694296252935">傳送使用狀況與診斷資料。這個裝置目前會自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google。這些資料將有助於系統和應用程式提高穩定性及做出其他改善，並不會用於識別貴子女的身分。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。這項設定是由裝置擁有者執行。如果貴子女的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到他們的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">正在載入建議</translation>
 <translation id="8916476537757519021">無痕模式子頁框：<ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">正在驗證安全金鑰...</translation>
@@ -5893,7 +5886,6 @@
 <translation id="9101691533782776290">啟動應用程式</translation>
 <translation id="9102610709270966160">啟用擴充功能</translation>
 <translation id="9103868373786083162">按下即可返回，內容選單會顯示歷史記錄</translation>
-<translation id="9104396740804929809">傳送使用狀況與診斷資料。讓系統自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google，協助改善你的 Android 使用體驗。這些資料將有助於系統和應用程式提高穩定性及做出其他改善。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。這項設定是由裝置擁有者執行。擁有者可選擇將這個裝置的診斷資料與使用狀況資料傳送給 Google。如果你的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到你的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">如要釋出空間，請刪除裝置儲存空間內的檔案</translation>
 <translation id="9109283579179481106">連線至行動網路</translation>
 <translation id="9111102763498581341">解除鎖定</translation>

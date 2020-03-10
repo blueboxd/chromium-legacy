@@ -388,6 +388,7 @@ void GpuChannelManager::PopulateShaderCache(int32_t client_id,
 void GpuChannelManager::LoseAllContexts() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  share_group_ = base::MakeRefCounted<gl::GLShareGroup>();
   for (auto& kv : gpu_channels_) {
     kv.second->MarkAllContextsLost();
   }

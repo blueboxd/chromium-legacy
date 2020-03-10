@@ -169,10 +169,20 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
               ExecuteImmediateCmd(cmd.cmd, sizeof(bad_mailbox.name)));
   }
 
-  // Error case: device doesn't exist.
+  // Error case: device client id doesn't exist.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(42, 42, 1, 0, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID + 1, 0, 1, 0, WGPUTextureUsage_Sampled,
+                 mailbox.name);
+    EXPECT_EQ(error::kInvalidArguments,
+              ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
+  }
+
+  // Error case: device generation is invalid.
+  {
+    AssociateMailboxCmdStorage cmd;
+    cmd.cmd.Init(kDeviceClientID, 42, 1, 0, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -229,7 +239,7 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Dissociate the image from the control case to remove its reference.
   {
     cmds::DissociateMailbox cmd;
-    cmd.Init(1, 0);
+    cmd.Init(kDeviceClientID, 1, 0);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 }
@@ -258,14 +268,28 @@ TEST_F(WebGPUDecoderTest, DissociateMailbox) {
   // Error case: wrong texture ID
   {
     cmds::DissociateMailbox cmd;
-    cmd.Init(42, 42);
+    cmd.Init(kDeviceClientID, 42, 0);
+    EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+  }
+
+  // Error case: wrong texture generation
+  {
+    cmds::DissociateMailbox cmd;
+    cmd.Init(kDeviceClientID, 1, 42);
+    EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+  }
+
+  // Error case: invalid client device ID
+  {
+    cmds::DissociateMailbox cmd;
+    cmd.Init(kDeviceClientID + 1, 1, 0);
     EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
   }
 
   // Success case
   {
     cmds::DissociateMailbox cmd;
-    cmd.Init(1, 0);
+    cmd.Init(kDeviceClientID, 1, 0);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 }

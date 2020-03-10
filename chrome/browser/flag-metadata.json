@@ -436,6 +436,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "clear-synced-data",
+    "owners": [ "fernandex" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "click-to-call-context-menu-selected-text",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 82
@@ -464,6 +469,11 @@
     "name": "click-to-open-pdf",
     "owners": [ "tommycli" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "collections-card-presentation-style",
+    "owners": [ "sczs" ],
+    "expiry_milestone": 80
   },
   {
     "name": "composited-layer-borders",
@@ -740,6 +750,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "disable-animation-on-low-battery",
+    "owners": [ "djean" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "disable-best-effort-tasks",
     "owners": [ "catan-team@chromium.org" ],
     "expiry_milestone": 75
@@ -889,6 +904,12 @@
     "name": "dynamic-tcmalloc-tuning",
     "owners": [ "bgeffon", "sonnyrao" ],
     "expiry_milestone": 89
+  },
+  {
+    "name": "embedder-block-restore-url",
+    "owners": [ "justincohen", "rohitrao" ],
+    // Needed for manual testing of fallback flow on iOS.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-accessibility-expose-aria-annotations",
@@ -1127,6 +1148,16 @@
     "name": "enable-chromeos-account-manager",
     "owners": [ "sinhak@chromium.org" ],
     "expiry_milestone": 79
+  },
+  {
+    "name": "enable-clipboard-provider-image-suggestions",
+    "owners": [ "rkgibson" ],
+    "expiry_milestone": 86
+  },
+  {
+    "name": "enable-clipboard-provider-text-suggestions",
+    "owners": [ "rkgibson" ],
+    "expiry_milestone": 86
   },
   {
     "name": "enable-close-tab-suggestions",
@@ -2255,6 +2286,11 @@
     "expiry_milestone": 87
   },
   {
+    "name": "find-in-page-iframe",
+    "owners": [ "thegreenfrog" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "focus-mode",
     "owners": [ "dfried", "pbos", "yiningwang@google.com" ],
     "expiry_milestone": 82
@@ -2292,6 +2328,11 @@
     // This is required by test teams to verify functionality on devices which
     // have no access to commandline flags.
     "expiry_milestone": -1
+  },
+  {
+    "name": "force-startup-signin-promo",
+    "owners": [ "jlebel" ],
+    "expiry_milestone": 86
   },
   {
     "name": "force-text-direction",
@@ -2339,6 +2380,17 @@
     "name": "freeze-user-agent",
     "owners": [ "yoavweiss", "aarontag" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "fullscreen-controller-browser-scoped",
+    "owners": [ "thegreenfrog", "kkhorimoto" ],
+    "expiry_milestone": 85
+  },
+  {
+    "name": "fullscreen-viewport-adjustment-experiment",
+    "owners": [ "thegreenfrog", "kkhorimoto" ],
+    // Needed for manual testing of fallback flow on iOS.
+    "expiry_milestone": -1
   },
   {
     "name": "fuzzy-app-search",
@@ -2454,6 +2506,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "ignores-viewport-scale-limits",
+    "owners": [ "eugenebut" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "improved-cookie-controls",
     "owners": [ "dullweber", "huanzhong" ],
     "expiry_milestone": 84
@@ -2474,6 +2531,11 @@
     // This flag is used by teams as they develop in-product help integrations,
     // as well as by QA; this feature is difficult to test without this.
     "expiry_milestone": -1
+  },
+  {
+    "name": "infobar-overlay-ui",
+    "owners": [ "kkhorimoto", "sczs" ],
+    "expiry_milestone": 85
   },
   {
     "name": "infobar-ui-reboot",
@@ -2509,6 +2571,13 @@
     "name": "interest-feed-notifications",
     "owners": [ "iwells", "//chrome/android/feed/OWNERS" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "ios-breadcrumbs",
+    "owners": [ "michaeldo" ],
+    // Breadcrumbs is not a launching feature, but rather a tool used on
+    // pre-stable channels for diagnosing crashes.
+    "expiry_milestone": -1
   },
   {
     "name": "isolate-origins",
@@ -2616,6 +2685,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "messages-download-infobar",
+    "owners": [ "sczs" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "messages-save-card-infobar",
     "owners": [ "sczs", "thegreenfrog" ],
     "expiry_milestone": 83
@@ -2689,6 +2763,11 @@
     "name": "no-credit-card-abort",
     "owners": [ "//components/payments/OWNERS" ],
     "expiry_milestone": 79
+  },
+  {
+    "name": "non-modal-dialogs",
+    "owners": [ "kkhorimoto" ],
+    "expiry_milestone": 85
   },
   {
     "name": "notification-scheduler-debug-options",
@@ -3148,6 +3227,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "prefetch-notification-scheduling-integration",
+    "owners": [ "hesen" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "prefetch-privacy-changes",
     "owners": [ "dom", "yhirano" ],
     "expiry_milestone": 85
@@ -3275,6 +3359,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "scanning-ui",
+    "owners": [ "jschettler", "bmgordon" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "scheduler-configuration",
     "owners": [ "kerrnel", "mnissler" ],
     "expiry_milestone": 88
@@ -3285,9 +3374,19 @@
     "expiry_milestone": 82
   },
   {
+    "name": "search-icon-toggle",
+    "owners": [ "gambard" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "security-interstitials-dark-mode",
     "owners": ["estark"],
     "expiry_milestone": 79
+  },
+  {
+    "name": "send-uma-cellular",
+    "owners": [ "thegreenfrog" ],
+    "expiry_milestone": 80
   },
   {
     "name": "set-market-url-for-testing",
@@ -3295,6 +3394,11 @@
      // This is required by test teams to verify functionality on devices which
     // have no access to commandline flags.
     "expiry_milestone": -1
+  },
+  {
+    "name": "settings-refresh",
+    "owners": [ "gambard" ],
+    "expiry_milestone": 85
   },
   {
     "name": "share-button-in-top-toolbar",
@@ -3478,6 +3582,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "snapshot-draw-view",
+    "owners": [ "//ios/chrome/browser/snapshots/OWNERS" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "split-settings-sync",
     "owners": [ "jamescook", "cros-system-services@google.com" ],
     "expiry_milestone": 84
@@ -3592,6 +3701,11 @@
   {
     "name": "tls13-hardening-for-local-anchors",
     "owners": [ "davidben", "svaldez" ],
+    "expiry_milestone": 85
+  },
+  {
+    "name": "toolbar-container",
+    "owners": [ "thegreenfrog", "kkhorimoto" ],
     "expiry_milestone": 85
   },
   {
@@ -3825,9 +3939,19 @@
     "expiry_milestone": 83
   },
   {
+    "name": "web-clear-browsing-data",
+    "owners": [ "gambard" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "web-contents-occlusion",
     "owners": [ "davidbienvenu", "fdoray" ],
     "expiry_milestone": 84
+  },
+  {
+    "name": "webpage-text-accessibility",
+    "owners": [ "rkgibson" ],
+    "expiry_milestone": 86
   },
   {
     "name": "webui-a11y-enhancements",

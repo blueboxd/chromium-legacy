@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 
 grit("webrtc_logs_resources") {
@@ -16,5 +17,17 @@ grit("webrtc_logs_resources") {
   grit_flags = [
     "-E",
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+}
+
+js_type_check("closure_compile") {
+  deps = [ ":media_feeds" ]
+}
+
+js_library("media_feeds") {
+  deps = [
+    "//chrome/browser/media/feeds:mojo_bindings_js_library_for_compile",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:util",
   ]
 }

@@ -48,7 +48,7 @@ LayoutSVGResourceFilter::~LayoutSVGResourceFilter() = default;
 
 bool LayoutSVGResourceFilter::IsChildAllowed(LayoutObject* child,
                                              const ComputedStyle&) const {
-  return child->IsSVGResourceFilterPrimitive();
+  return child->IsSVGFilterPrimitive();
 }
 
 void LayoutSVGResourceFilter::RemoveAllClientsFromCache() {

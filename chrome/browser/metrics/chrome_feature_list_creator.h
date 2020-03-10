@@ -82,6 +82,10 @@ class ChromeFeatureListCreator {
   // first-run.
   void SetupMasterPrefs();
 
+  // Must be destroyed after |local_state_|.
+  std::unique_ptr<policy::ChromeBrowserPolicyConnector>
+      browser_policy_connector_;
+
   // If TakePrefService() is called, the caller will take the ownership
   // of this variable. Stop using this variable afterwards.
   std::unique_ptr<PrefService> local_state_;
@@ -97,9 +101,6 @@ class ChromeFeatureListCreator {
       metrics_services_manager_;
 
   std::unique_ptr<ChromeBrowserFieldTrials> browser_field_trials_;
-
-  std::unique_ptr<policy::ChromeBrowserPolicyConnector>
-      browser_policy_connector_;
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   std::unique_ptr<installer::MasterPreferences> installer_master_prefs_;

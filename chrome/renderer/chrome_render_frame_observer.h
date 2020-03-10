@@ -97,6 +97,7 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
 #if defined(OS_ANDROID)
   void SetCCTClientHeader(const std::string& header) override;
 #endif
+  void GetMediaFeedURL(GetMediaFeedURLCallback callback) override;
 
   void OnRenderFrameObserverRequest(
       mojo::PendingAssociatedReceiver<chrome::mojom::ChromeRenderFrame>

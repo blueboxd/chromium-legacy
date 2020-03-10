@@ -121,6 +121,12 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
+    private void addOptionToggleToAccessorySheetData(Object objAccessorySheetData,
+            String displayText, boolean enabled, @AccessoryAction int accessoryAction) {
+        // TODO(crbug.com/1044930): Implement this.
+    }
+
+    @CalledByNative
     private Object addUserInfoToAccessorySheetData(
             Object objAccessorySheetData, String origin, boolean isPslMatch) {
         UserInfo userInfo = new UserInfo(origin, isPslMatch);

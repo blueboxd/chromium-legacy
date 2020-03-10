@@ -146,6 +146,9 @@ extern const char kExtensionControlledSettingLearnMoreURL[];
 // URL used to indicate that an extension resource load request was invalid.
 extern const char kExtensionInvalidRequestURL[];
 
+// Url to a blogpost about Flash deprecation.
+extern const char kFlashDeprecationLearnMoreURL[];
+
 // URL of the 'Activity controls' section of the privacy settings page.
 extern const char kGoogleAccountActivityControlsURL[];
 

@@ -273,10 +273,6 @@ class StructuredHeaderParser {
       if (!name)
         return base::nullopt;
       bool is_duplicate_key = !keys.insert(*name).second;
-      if (is_duplicate_key) {
-        DVLOG(1) << "ReadParameterizedMember: duplicated parameter: " << *name;
-        return base::nullopt;
-      }
 
       Item value{true};
       if (ConsumeChar('=')) {
@@ -285,7 +281,15 @@ class StructuredHeaderParser {
           return base::nullopt;
         value = std::move(*item);
       }
-      parameters.emplace_back(std::move(*name), std::move(value));
+      if (is_duplicate_key) {
+        for (auto& param : parameters) {
+          if (param.first == name)
+            param.second = std::move(value);
+          break;
+        }
+      } else {
+        parameters.emplace_back(std::move(*name), std::move(value));
+      }
       SkipWhitespaces();
     }
     return parameters;

@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Gehoste app-gegevens</translation>
 <translation id="1776712937009046120">Gebruiker toevoegen</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Dit apparaat wordt beheerd door <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Klik op Volgende om door te gaan met inloggen op je <ph name="BEGIN_BOLD" /><ph name="DOMAIN" />-account<ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Geef deze toegangscode op '<ph name="DEVICE_NAME" />' op:</translation>
 <translation id="177989070088644880">App (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Groep sluiten</translation>
@@ -892,7 +890,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2202898655984161076">Er is een probleem opgetreden met het genereren van het printeroverzicht. Sommige van je printers zijn mogelijk niet geregistreerd voor <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">De zoekmachine die wordt gebruikt in de <ph name="BEGIN_LINK" />adresbalk<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Alles lezen en wijzigen wat je typt</translation>
-<translation id="220792432208469595">Verzend gebruiks- en diagnostische gegevens. Dit apparaat verzendt momenteel automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google. Deze gegevens kunnen worden gebruikt om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Deze instelling wordt afgedwongen door de eigenaar. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld, kunnen deze gegevens worden opgeslagen in je Google-account. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Voer deze pincode in op '<ph name="DEVICE_NAME" />':</translation>
 <translation id="2212565012507486665">Cookies toestaan</translation>
 <translation id="2213140827792212876">Delen verwijderen</translation>
@@ -1353,7 +1350,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2804043232879091219">De alternatieve browser kan niet worden geopend</translation>
 <translation id="2804667941345577550">Je wordt uitgelogd bij deze site, ook in geopende tabbladen</translation>
 <translation id="2804680522274557040">Camera is uitgeschakeld</translation>
-<translation id="2805539617243680210">Je bent helemaal klaar</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2805770823691782631">Aanvullende informatie</translation>
@@ -2034,6 +2030,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3742055079367172538">Screenshot gemaakt</translation>
 <translation id="3742666961763734085">Kan geen organisatie-eenheid met die naam vinden. Probeer het opnieuw.</translation>
 <translation id="3744111561329211289">Synchronisatie op de achtergrond</translation>
+<translation id="3747077776423672805">Als je apps wilt verwijderen, ga je naar Instellingen &gt; Google Play Store &gt; Android-voorkeuren beheren &gt; Apps of App-beheer. Tik op de app die je wilt verwijderen (je moet mogelijk naar rechts of links vegen om de app te vinden). Tik vervolgens op Verwijderen of Uitschakelen.</translation>
 <translation id="3748026146096797577">Niet verbonden</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Mijn apparaten</translation>
@@ -2757,7 +2754,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4785719467058219317">Je gebruikt een beveiligingssleutel die niet is geregistreerd voor deze website</translation>
 <translation id="4788092183367008521">Controleer de netwerkverbinding en probeer het opnieuw.</translation>
 <translation id="4792711294155034829">&amp;Een probleem melden...</translation>
-<translation id="4795022432560487924">Verzend gebruiks- en diagnostische gegevens. Verbeter de Android-functionaliteit voor je kind door automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google te verzenden. Deze gegevens worden niet gebruikt om je kind te identificeren en kunnen helpen om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Deze instelling wordt afgedwongen door de eigenaar. De eigenaar kan ervoor kiezen diagnostische en gebruiksgegevens voor dit apparaat naar Google te verzenden. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld voor je kind, kunnen deze gegevens worden opgeslagen in het Google-account van je kind. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Webpagina, alleen HTML</translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth-logboeken<ph name="END_LINK" /> toevoegen (voor intern Google-gebruik)</translation>
 <translation id="4801448226354548035">Accounts verbergen</translation>
@@ -3384,6 +3380,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5649053991847567735">Automatische downloads</translation>
 <translation id="5653154844073528838">Je hebt <ph name="PRINTER_COUNT" /> opgeslagen printers.</translation>
 <translation id="5656845498778518563">Feedback sturen naar Google</translation>
+<translation id="5657156137487675418">Alle cookies toestaan</translation>
 <translation id="5657667036353380798">Voor de externe extensie moet Chrome-versie <ph name="MINIMUM_CHROME_VERSION" /> of hoger zijn geïnstalleerd.</translation>
 <translation id="5658415415603568799">Voor extra beveiliging vraagt Smart Lock je na 20 uur je wachtwoord op te geven.</translation>
 <translation id="5659593005791499971">E-mailadres</translation>
@@ -3591,7 +3588,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5941711191222866238">Minimaliseren</translation>
 <translation id="5942964813783878922">Na deze update wordt je <ph name="DEVICE_TYPE" /> opnieuw opgestart. Toekomstige software- en beveiligingsupdates worden automatisch geïnstalleerd.</translation>
 <translation id="5944869793365969636">QR-code scannen</translation>
-<translation id="5945188205370098537">Verzend gebruiks- en diagnostische gegevens. Verbeter je Android-functionaliteit door automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google te verzenden. Deze gegevens kunnen worden gebruikt om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld, kunnen deze gegevens worden opgeslagen in je Google-account. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Rapport-ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Kan bestand niet parseren</translation>
 <translation id="5955282598396714173">Je wachtwoord is verlopen. Log uit en weer in om het te wijzigen.</translation>
@@ -3777,6 +3773,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6185132558746749656">Apparaatlocatie</translation>
 <translation id="6186394685773237175">Geen gehackte wachtwoorden gevonden</translation>
 <translation id="6195693561221576702">Dit apparaat kan niet worden ingesteld in de offline demomodus.</translation>
+<translation id="6196640612572343990">Indirecte cookies blokkeren</translation>
 <translation id="6196854373336333322">De extensie '<ph name="EXTENSION_NAME" />' heeft het beheer van je proxyinstellingen overgenomen. Dit betekent dat de extensie alles wat je online doet, kan wijzigen, beschadigen of bekijken. Als je niet zeker weet waarom deze wijziging heeft plaatsgevonden, is het waarschijnlijk een ongewenste wijziging.</translation>
 <translation id="6198102561359457428">Log uit en log daarna weer in...</translation>
 <translation id="6198252989419008588">Pincode wijzigen</translation>
@@ -4443,7 +4440,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="711902386174337313">De lijst met je ingelogde apparaten lezen</translation>
 <translation id="7120865473764644444">Kan geen verbinding maken met de synchronisatieserver. Opnieuw proberen...</translation>
 <translation id="7121362699166175603">Hiermee worden de geschiedenis en automatische aanvullingen voor de adresbalk gewist. Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Verzend gebruiks- en diagnostische gegevens. Dit apparaat verzendt momenteel automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google. Deze gegevens worden niet gebruikt om je kind te identificeren en kunnen helpen om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld voor je kind, kunnen deze gegevens worden opgeslagen in het Google-account van je kind. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Ontwikkelaarsmodus</translation>
 <translation id="7121728544325372695">Slimme streepjes</translation>
 <translation id="7123360114020465152">Niet meer ondersteund</translation>
@@ -4558,7 +4554,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7280041992884344566">Er is een fout opgetreden terwijl Chrome naar schadelijke software zocht</translation>
 <translation id="7280649757394340890">Spraakinstellingen voor tekst-naar-spraak</translation>
 <translation id="7280877790564589615">Toestemming gevraagd</translation>
-<translation id="7281268427852119151">Je browsegeschiedenis gebruiken om Google Zoeken, advertenties en andere Google-services te personaliseren</translation>
 <translation id="7282992757463864530">Infobalk</translation>
 <translation id="7287143125007575591">Toegang geweigerd.</translation>
 <translation id="7287411021188441799">Standaard achtergrond herstellen</translation>
@@ -5232,7 +5227,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Tabblad verplaatsen naar nieuw venster}other{Tabbladen verplaatsen naar nieuw venster}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">pagina</translation>
-<translation id="8180294223783876911">Verzend gebruiks- en diagnostische gegevens. Dit apparaat verzendt momenteel automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google. Deze gegevens kunnen worden gebruikt om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld, kunnen deze gegevens worden opgeslagen in je Google-account. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">'<ph name="EXTENSION" />' kan afbeeldingen, video- en geluidsbestanden lezen en verwijderen op de gecontroleerde locaties.</translation>
 <translation id="8181215761849004992">Kan het domein niet koppelen. Controleer je account om te zien of je over voldoende rechten beschikt om apparaten toe te voegen.</translation>
 <translation id="8182105986296479640">App reageert niet</translation>
@@ -5254,7 +5248,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8203732864715032075">je meldingen te sturen en deze computer standaard te gebruiken voor Berichten. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672"><ph name="APP_NAME" /> is geblokkeerd door je ouder. Vraag je ouder toestemming om deze app te gebruiken.</translation>
 <translation id="820568752112382238">Meest bezochte sites</translation>
-<translation id="8206581664590136590">Verzend gebruiks- en diagnostische gegevens. Verbeter de Android-functionaliteit voor je kind door automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google te verzenden. Deze gegevens worden niet gebruikt om je kind te identificeren en kunnen helpen om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld voor je kind, kunnen deze gegevens worden opgeslagen in het Google-account van je kind. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Bluesy</translation>
 <translation id="8206859287963243715">Mobiel</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Download wordt uitgevoerd}other{Downloads worden uitgevoerd}}</translation>
@@ -5801,7 +5794,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8912362522468806198">Google-account</translation>
 <translation id="8912793549644936705">Uitrekken</translation>
 <translation id="8912810933860534797">Automatisch scannen inschakelen</translation>
-<translation id="891365694296252935">Verzend gebruiks- en diagnostische gegevens. Dit apparaat verzendt momenteel automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google. Deze gegevens worden niet gebruikt om je kind te identificeren en helpen bij het verbeteren van de systeem- en app-stabiliteit en andere optimalisaties. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Deze instelling wordt afgedwongen door de eigenaar. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld voor je kind, kunnen deze gegevens worden opgeslagen in het Google-account van je kind. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Suggestie wordt geladen</translation>
 <translation id="8916476537757519021">Incognito-subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Je beveiligingssleutel verifiëren…</translation>
@@ -5938,7 +5930,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9101691533782776290">App starten</translation>
 <translation id="9102610709270966160">Extensie inschakelen</translation>
 <translation id="9103868373786083162">Druk op Terug &gt; contextmenu om de geschiedenis te bekijken</translation>
-<translation id="9104396740804929809">Verzend gebruiks- en diagnostische gegevens. Verbeter je Android-functionaliteit door automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google te verzenden. Deze gegevens kunnen worden gebruikt om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Deze instelling wordt afgedwongen door de eigenaar. De eigenaar kan ervoor kiezen diagnostische en gebruiksgegevens voor dit apparaat naar Google te verzenden. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld, kunnen deze gegevens worden opgeslagen in je Google-account. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Verwijder bestanden uit de opslag van je apparaat om ruimte vrij te maken.</translation>
 <translation id="9109283579179481106">Verbinden met mobiel netwerk</translation>
 <translation id="9111102763498581341">Ontgrendelen</translation>

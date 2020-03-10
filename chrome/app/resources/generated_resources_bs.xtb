@@ -577,8 +577,6 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="177336675152937177">Podaci hostirane aplikacije</translation>
 <translation id="1776712937009046120">Dodaj korisnika</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Ovim uređajem upravlja <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Kliknite "Naprijed" da nastavite s prijavom na <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> račun.</translation>
 <translation id="1779652936965200207">Unesite ključ za pristup na uređaju "<ph name="DEVICE_NAME" />":</translation>
 <translation id="177989070088644880">Aplikacija (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Zatvori grupu</translation>
@@ -892,7 +890,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2202898655984161076">Došlo je do problema prilikom navođenja štampača. Moguće je da neki od vaših štampača nisu uspješno registrirani na serveru <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Pretraživač korišten u <ph name="BEGIN_LINK" />traci za adresu<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">ČItanje i mijenjanje svega što unesete</translation>
-<translation id="220792432208469595">Šaljite podatke o upotrebi i dijagnostici. Ovaj uređaj trenutno automatski Googleu šalje podatke o dijagnostici, uređaju i korištenju aplikacija. Ovo će pomoći poboljšati stabilnost sistema i aplikacija i još mnogo toga. Neki zbirni podaci će također pomoći Googleovim aplikacijama i partnerima, kao što su Android programeri. Ovu postavku je primijenio vlasnik. Ako je uključena postavka dodatna Aktivnost na webu i u aplikacijama, ovi podaci će možda biti sačuvani na vaš Google račun. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Unesite ovaj PIN kod na "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Dozvoli kolačiće</translation>
 <translation id="2213140827792212876">Ukloni dijeljenje</translation>
@@ -1353,7 +1350,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2804043232879091219">Otvaranje alternativnog preglednika nije uspjelo</translation>
 <translation id="2804667941345577550">Odjavit ćete se s ove web lokacije, uključujući otvorene kartice</translation>
 <translation id="2804680522274557040">Kamera je isključena</translation>
-<translation id="2805539617243680210">Sve je spremno!</translation>
 <translation id="2805646850212350655">Microsoft sistem za šifriranje fajlova</translation>
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2805770823691782631">Dodatni detalji</translation>
@@ -2034,6 +2030,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3742055079367172538">Snimak ekrana je napravljen</translation>
 <translation id="3742666961763734085">Nije moguće pronaći organizacionu jedinicu pod tim imenom. Pokušajte ponovo.</translation>
 <translation id="3744111561329211289">Sinhronizacija u pozadini</translation>
+<translation id="3747077776423672805">Za uklanjanje aplikacija idite na Postavke &gt; Trgovina Play &gt; Upravljanje postavkama Androida &gt; Aplikacije ili Upravitelj aplikacija. Zatim dodirnite aplikaciju koju želite deinstalirati (možda ćete morati prijeći prstom udesno ili ulijevo kako biste pronašli aplikaciju). Zatim dodirnite Deinstaliraj ili Onemogući.</translation>
 <translation id="3748026146096797577">Nije povezano</translation>
 <translation id="3752582316358263300">Uredu...</translation>
 <translation id="3752673729237782832">Moji uređaji</translation>
@@ -2757,7 +2754,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4785719467058219317">Koristite sigurnosni ključ koji nije registriran na ovoj web lokaciji</translation>
 <translation id="4788092183367008521">Provjerite mrežnu vezu i pokušajte ponovo.</translation>
 <translation id="4792711294155034829">&amp;Prijavi problem...</translation>
-<translation id="4795022432560487924">Slanje podataka o upotrebi i dijagnostici. Pomognite poboljšati djetetov doživljaj Androida automatskim slanjem dijagnostičkih podataka i podataka o upotrebi uređaja i aplikacija Googleu. Ti se podaci neće upotrebljavati za identifikaciju vašeg djeteta, a pomoći će poboljšati sustav, stabilnost aplikacija i drugo. Neki skupni podaci pomoći će i Googleovim aplikacijama i partnerima, na primjer razvojnim programerima za Android. Ovu postavku zadao je vlasnik. Vlasnik može Googleu slati dijagnostiku i podatke o upotrebi za ovaj uređaj. Ako je za vaše dijete uključena dodatna postavka Aktivnost na webu i u aplikacijama, ti se podaci mogu spremati na djetetov Google račun. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Web stranica, samo HTML</translation>
 <translation id="4798236378408895261">Priloži <ph name="BEGIN_LINK" />Bluetooth zapisnike<ph name="END_LINK" /> (Google interno)</translation>
 <translation id="4801448226354548035">Sakrij račune</translation>
@@ -3384,6 +3380,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5649053991847567735">Automatska preuzimanja</translation>
 <translation id="5653154844073528838">Imate sljedeći broj sačuvanih štampača: <ph name="PRINTER_COUNT" />.</translation>
 <translation id="5656845498778518563">Pošaljite povratne informacije Googleu</translation>
+<translation id="5657156137487675418">Dopusti sve kolačiće</translation>
 <translation id="5657667036353380798">Eksterna ekstenzija za instaliranje zahtijeva verziju Chromea <ph name="MINIMUM_CHROME_VERSION" /> ili noviju.</translation>
 <translation id="5658415415603568799">Radi dodatne sigurnosti Smart Lock će od vas tražiti da unesete lozinku nakon 20 sati.</translation>
 <translation id="5659593005791499971">E-pošta</translation>
@@ -3591,7 +3588,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5941711191222866238">Minimiziraj</translation>
 <translation id="5942964813783878922">Vaš uređaj <ph name="DEVICE_TYPE" /> će se ponovo pokrenuti nakon ovog ažuriranja. Buduća ažuriranja softvera i sigurnosna ažuriranja će se automatski instalirati.</translation>
 <translation id="5944869793365969636">Skenirajte QR kôd</translation>
-<translation id="5945188205370098537">Šalji podatke o korištenju i dijagnostici. Poboljšajte svoje iskustvo s Androidom automatskim slanjem podataka o dijagnostici, uređaju i korištenju aplikacija Googleu. Ovo će pomoći stabilnosti sistema i aplikacija, kao i drugim poboljšanjima. Neki zbirni podaci će također pomoći Googleovim aplikacijama i partnerima, kao što su Android programeri. Ako je uključena postavka dodatne Aktivnosti na webu i u aplikacijama, ti podaci se mogu sačuvati na vaš Google račun. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID izvještaja <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Nije moguće raščlaniti fajl</translation>
 <translation id="5955282598396714173">Vaša lozinka je istekla. Odjavite se pa se ponovo prijavite da biste je promijenili.</translation>
@@ -3777,6 +3773,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6185132558746749656">Lokacija uređaja</translation>
 <translation id="6186394685773237175">Nisu pronađene ugrožene lozinke</translation>
 <translation id="6195693561221576702">Ovaj uređaj se ne može postaviti u demo načinu rada van mreže.</translation>
+<translation id="6196640612572343990">Blokiraj kolačiće trećih strana</translation>
 <translation id="6196854373336333322">Ekstenzija "<ph name="EXTENSION_NAME" />" je preuzela kontrolu nad postavkama vašeg proksi servera, što znači da može promijeniti, prekinuti ili prisluškivati sve što radite na mreži. Ako niste sigurni zašto je došlo do ove promjene, vjerovatno je i ne želite.</translation>
 <translation id="6198102561359457428">Odjavite se i ponovo se prijavite…</translation>
 <translation id="6198252989419008588">Promijeni PIN</translation>
@@ -4443,7 +4440,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="711902386174337313">Čitanje liste prijavljenih uređaja</translation>
 <translation id="7120865473764644444">Povezivanje sa serverom za sinhronizaciju nije uspjelo. Ponovni pokušaj...</translation>
 <translation id="7121362699166175603">Briše historiju i automatsko dovršavanje na traci za adresu. Vaš Google račun može imati druge oblike historije pregledanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Šaljite podatke o upotrebi i dijagnostici. Ovaj uređaj trenutno automatski šalje Googleu podatke o dijagnostici, uređaju i korištenju aplikacija. Ovo se neće koristiti za identifikaciju vašeg djeteta, a pomoći će stabilnosti sistema i aplikacija, kao i drugim poboljšanjima. Neki zbirni podaci će također pomoći Googleovim aplikacijama i partnerima, kao što su programeri za Android. Ako je za vaše dijete uključena postavka za dodatnu Aktivnost na webu i u aplikacijama, ovi podaci mogu biti sačuvani na Google računu djeteta. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Način rada za programere</translation>
 <translation id="7121728544325372695">Pametne crtice</translation>
 <translation id="7123360114020465152">Nije više podržan</translation>
@@ -4558,7 +4554,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7280041992884344566">Došlo je do greške dok je Chrome tražio ima li štetnog softvera</translation>
 <translation id="7280649757394340890">Postavke glasa za pretvaranje teksta u govor</translation>
 <translation id="7280877790564589615">Upućen je zahtjev za odobrenje</translation>
-<translation id="7281268427852119151">Koristite historiju pregledanja da personalizirate Pretraživanje, oglase i druge Googleove usluge</translation>
 <translation id="7282992757463864530">Infotraka</translation>
 <translation id="7287143125007575591">Pristup je odbijen.</translation>
 <translation id="7287411021188441799">Vrati zadanu pozadinu</translation>
@@ -5233,7 +5228,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Premjesti karticu u novi prozor}one{Premjesti kartice u novi prozor}few{Premjesti kartice u novi prozor}other{Premjesti kartice u novi prozor}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">stranica</translation>
-<translation id="8180294223783876911">Šaljite podatke o korištenju i dijagnostici. Ovaj uređaj trenutno automatski šalje Googleu podatke o dijagnostici, uređaju i korištenju aplikacija. Ovo će pomoći poboljšati stabilnost sistema i aplikacija i još mnogo toga. Neki zbirni podaci će također pomoći Googleovim aplikacijama i partnerima, kao što su Android programeri. Ako vam je uključena postavka dodatna Aktivnost na webu i u aplikacijama, ti podaci će možda biti sačuvani na vašem Google računu. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" može čitati i brisati slike, videozapise i zvučne fajlove na označenim lokacijama.</translation>
 <translation id="8181215761849004992">Nije se moguće pridružiti domeni. Provjerite račun da vidite imate li dovoljno privilegija za dodavanje uređaja.</translation>
 <translation id="8182105986296479640">Aplikacija ne reagira.</translation>
@@ -5255,7 +5249,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8203732864715032075">Šalje vam obavještenja i kao zadanu postavku pamti ovaj računar za Messages. <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">Aplikaciju "<ph name="APP_NAME" />" je blokirao tvoj roditelj. Traži od roditelja odobrenje da koristiš ovu aplikaciju.</translation>
 <translation id="820568752112382238">Najposjećenije web lokacije</translation>
-<translation id="8206581664590136590">Šaljite podatke o upotrebi i dijagnostici. Poboljšajte iskustvo korištenja Androida svog djeteta automatskim slanjem podataka o dijagnostici, uređaju i korištenju aplikacija Googleu. Ovo se neće koristiti za identifikaciju vašeg djeteta, a pomoći će stabilnosti sistema i aplikacija, kao i drugim poboljšanjima. Neki prikupljeni podaci će također pomoći Googleovim aplikacijama i partnerima, kao što su programeri za Android. Ako je za vaše dijete uključena postavka dodatna Aktivnost na webu i u aplikacijama, ovi podaci mogu biti sačuvati u njihovom Google računu. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Bluesy</translation>
 <translation id="8206859287963243715">Mobitel</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Preuzimanje je u toku}one{Preuzimanja su u toku}few{Preuzimanja su u toku}other{Preuzimanja su u toku}}</translation>
@@ -5801,7 +5794,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8912362522468806198">Google račun</translation>
 <translation id="8912793549644936705">Razvučeno</translation>
 <translation id="8912810933860534797">Omogući automatsko skeniranje</translation>
-<translation id="891365694296252935">Šaljite podatke o upotrebi i dijagnostici. Ovaj uređaj trenutno automatski šalje Googleu podatke o dijagnostici, uređaju i korištenju aplikacija. Ovo se neće koristiti za identifikaciju vašeg djeteta, a pomoći će stabilnosti sistema i aplikacija, kao i drugim poboljšanjima. Neki prikupljeni podaci će također pomoći Googleovim aplikacijama i partnerima, kao što su programeri za Android. Ove postavke je nametnuo vlasnik. Ako je za vaše dijete uključena dodatna Aktivnost na webu i u aplikacijama, ovi podaci mogu biti sačuvani na njegovom Google računu. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Učitavanje prijedloga</translation>
 <translation id="8916476537757519021">Podokvir anonimnog načina: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Potvrđivanje vašeg sigurnosnog ključa...</translation>
@@ -5938,7 +5930,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="9101691533782776290">Pokreni aplikaciju</translation>
 <translation id="9102610709270966160">Omogući ekstenziju</translation>
 <translation id="9103868373786083162">Pritisnite da se vratite nazad i na kontekstni meni da pogledate historiju</translation>
-<translation id="9104396740804929809">Šaljite podatke o korištenju i dijagnostici. Poboljšajte svoje iskustvo korištenja Androida automatskim slanjem podataka o dijagnostici, uređaju i korištenju aplikacija Googleu. Ovo će pomoći poboljšati stabilnost sistema i aplikacija i još mnogo toga. Neki zbirni podaci će također pomoći Googleovim aplikacijama i partnerima, kao što su Android programeri. Ovu postavku je nametnuo vlasnik. Vlasnik može odabrati slanje podataka o dijagnostici i korištenju ovog uređaja Googleu. Ako je uključena postavka dodatne Aktivnosti na webu i u aplikacijama, ti podaci se mogu sačuvati na vaš Google račun. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Da oslobodite prostor, izbrišite fajlove iz pohrane uređaja.</translation>
 <translation id="9109283579179481106">Povežite se na mobilnu mrežu</translation>
 <translation id="9111102763498581341">Otključaj</translation>

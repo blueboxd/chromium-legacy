@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_DESKTOP_LINUX_BROWSER_FRAME_VIEW_H_
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
+#include "ui/views/linux_ui/nav_button_provider.h"
 
 // A specialization of OpaqueBrowserFrameView that is also able to
 // render frame buttons using GTK.
@@ -38,7 +39,8 @@ class DesktopLinuxBrowserFrameView : public OpaqueBrowserFrameView {
 
   // Returns one of |{minimize,maximize,restore,close}_button_|
   // corresponding to |type|.
-  views::Button* GetButtonFromDisplayType(chrome::FrameButtonDisplayType type);
+  views::Button* GetButtonFromDisplayType(
+      views::NavButtonProvider::FrameButtonDisplayType type);
 
   std::unique_ptr<views::NavButtonProvider> nav_button_provider_;
 

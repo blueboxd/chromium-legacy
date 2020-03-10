@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Dáta hostených aplikácií</translation>
 <translation id="1776712937009046120">Pridať používateľa</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Toto zariadenie je spravované doménou <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Ak sa chcete prihlásiť do účtu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, kliknite na Ďalej.</translation>
 <translation id="1779652936965200207">Zadajte tento prístupový kľúč v zariadení <ph name="DEVICE_NAME" />:</translation>
 <translation id="177989070088644880">Aplikácia (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Zavrieť skupinu</translation>
@@ -892,7 +890,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2202898655984161076">Pri vytváraní zoznamu tlačiarní sa vyskytol problém. Niektoré z vašich tlačiarní možno nie sú v službe <ph name="CLOUD_PRINT_NAME" /> registrované.</translation>
 <translation id="2203682048752833055">Vyhľadávač, ktorý sa používa v <ph name="BEGIN_LINK" />paneli s adresou<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Čítať a meniť všetko, čo napíšete</translation>
-<translation id="220792432208469595">Odosielať údaje o využití a diagnostiky. Toto zariadenie momentálne automaticky odosiela Googlu diagnostiky a údaje o používaní zariadenia a aplikácií. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Používanie tohto nastavenia je presadzované vlastníkom. Ak aktivujete dodatočnú aktivitu na internete a v aplikáciách, tieto údaje sa môžu uložiť vo vašom účte Google. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Zadajte tento kód PIN v zariadení „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="2212565012507486665">Povoliť súbory cookie</translation>
 <translation id="2213140827792212876">Odstrániť zdieľanie</translation>
@@ -1352,7 +1349,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2804043232879091219">Alternatívny prehliadač sa nepodarilo otvoriť</translation>
 <translation id="2804667941345577550">Systém vás odhlási z tohto webu (aj v otvorených kartách)</translation>
 <translation id="2804680522274557040">Kamera je vypnutá</translation>
-<translation id="2805539617243680210">Všetko je nastavené.</translation>
 <translation id="2805646850212350655">Systém šifrovania súborov spoločnosti Microsoft</translation>
 <translation id="2805756323405976993">Aplikácie</translation>
 <translation id="2805770823691782631">Ďalšie podrobnosti</translation>
@@ -2033,6 +2029,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3742055079367172538">Vytvorila sa snímka obrazovky</translation>
 <translation id="3742666961763734085">Nepodarilo sa nájsť organizačnú jednotku s daným názvom. Skúste to znova.</translation>
 <translation id="3744111561329211289">Synchronizácia na pozadí</translation>
+<translation id="3747077776423672805">Ak chcete odstrániť aplikácie, prejdite do časti Nastavenia &gt; Obchod Google Play &gt; Spravovať predvoľby Androidu &gt; Aplikácie alebo Správca aplikácií. Potom klepnite na aplikáciu, ktorú chcete odinštalovať (možno budete musieť aplikáciu nájsť potiahnutím prstom doľava alebo doprava). Potom klepnite na možnosť Odinštalovať alebo Deaktivovať.</translation>
 <translation id="3748026146096797577">Nepripojené</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Moje zariadenia</translation>
@@ -2756,7 +2753,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4785719467058219317">Používate bezpečnostný kľúč, ktorý nie je registrovaný s týmto webom</translation>
 <translation id="4788092183367008521">Skontrolujte pripojenie k sieti a skúste to znova.</translation>
 <translation id="4792711294155034829">Nahlásiť p&amp;roblém…</translation>
-<translation id="4795022432560487924">Odosielať údaje o využití a diagnostiky. Pomôžte zlepšiť prostredie Androidu svojho dieťaťa automatickým odosielaním diagnostík a údajov o používaní zariadenia a aplikácií do Googlu. Nebudú slúžiť na zistenie totožnosti vášho dieťaťa. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Používanie tohto nastavenia je presadzované vlastníkom. Vlastník môže odosielať Googlu diagnostiky a údaje o používaní pre toto zariadenie. Ak pre dieťa aktivujete nastavenie dodatočnej aktivity na internete a v aplikáciách, tieto údaje sa môžu uložiť do jeho účtu Google. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Webová stránka, len kód HTML</translation>
 <translation id="4798236378408895261">Priložiť <ph name="BEGIN_LINK" />denníky rozhrania Bluetooth<ph name="END_LINK" /> (interné informácie Google)</translation>
 <translation id="4801448226354548035">Skryť účty</translation>
@@ -3383,6 +3379,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5649053991847567735">Automatické sťahovanie</translation>
 <translation id="5653154844073528838">Máte niekoľko uložených tlačiarní (<ph name="PRINTER_COUNT" />).</translation>
 <translation id="5656845498778518563">Odoslanie spätnej väzby Googlu</translation>
+<translation id="5657156137487675418">Povoliť všetky súbory cookie</translation>
 <translation id="5657667036353380798">Inštalácia externého rozšírenia vyžaduje prehliadač Chrome verzie <ph name="MINIMUM_CHROME_VERSION" /> alebo vyšší</translation>
 <translation id="5658415415603568799">V rámci zvýšenia zabezpečenia vás Smart Lock po uplynutí 20 hodín požiada o zadanie hesla.</translation>
 <translation id="5659593005791499971">E-mail</translation>
@@ -3590,7 +3587,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5941711191222866238">Minimalizovať</translation>
 <translation id="5942964813783878922">Zariadenie <ph name="DEVICE_TYPE" /> sa po tejto aktualizácii reštartuje. Budúce aktualizácie softvéru a zabezpečenia sa budú inštalovať automaticky.</translation>
 <translation id="5944869793365969636">Skenovanie QR kódu</translation>
-<translation id="5945188205370098537">Odosielať údaje o využití a diagnostiky. Pomôžte zlepšiť prostredie Androidu automatickým odosielaním diagnostík a údajov o používaní zariadenia a aplikácií do Googlu. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Ak aktivujete dodatočnú aktivitu na internete a v aplikáciách, tieto údaje sa môžu uložiť vo vašom účte Google. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID prehľadu <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Súbor nie je možné analyzovať</translation>
 <translation id="5955282598396714173">Platnosť hesla vypršala. Odhláste sa, potom sa znova prihláste a zmeňte ho.</translation>
@@ -3776,6 +3772,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6185132558746749656">Poloha zariadenia</translation>
 <translation id="6186394685773237175">Nezistili sa žiadne prelomené heslá</translation>
 <translation id="6195693561221576702">Toto zariadenie nie je možné nastaviť v režime offline ukážky.</translation>
+<translation id="6196640612572343990">Blokovať súbory cookie tretích strán</translation>
 <translation id="6196854373336333322">Toto rozšírenie „<ph name="EXTENSION_NAME" />“ prevzalo kontrolu nad vašimi nastaveniami servera proxy, čo znamená, že môže zmeniť, prerušiť alebo zachytiť všetku vašu činnosť online. Ak neviete, prečo k tomu došlo, pravdepodobne si to neželáte.</translation>
 <translation id="6198102561359457428">Odhláste sa a potom sa znova prihláste...</translation>
 <translation id="6198252989419008588">Zmeniť PIN</translation>
@@ -4442,7 +4439,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="711902386174337313">Čítať zoznam zariadení, v ktorých ste prihlásení</translation>
 <translation id="7120865473764644444">K serveru synchronizácie sa nepodarilo pripojiť. Prebieha ďalší pokus…</translation>
 <translation id="7121362699166175603">Vymaže históriu a záznamy automatického dopĺňania v paneli s adresou. Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Odosielať údaje o využití a diagnostiky. Toto zariadenie momentálne automaticky odosiela Googlu diagnostiky a údaje o používaní zariadenia a aplikácií. Nebudú slúžiť na zistenie totožnosti vášho dieťaťa. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Ak pre dieťa aktivujete nastavenie dodatočnej aktivity na internete a v aplikáciách, tieto údaje sa môžu uložiť do jeho účtu Google. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Režim vývojára</translation>
 <translation id="7121728544325372695">Inteligentné pomlčky</translation>
 <translation id="7123360114020465152">Nepodporovaná</translation>
@@ -4557,7 +4553,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="7280041992884344566">Pri hľadaní škodlivého softvéru sa v Chrome vyskytla chyba</translation>
 <translation id="7280649757394340890">Hlasové nastavenia prevodu textu na reč</translation>
 <translation id="7280877790564589615">Vyžaduje sa povolenie</translation>
-<translation id="7281268427852119151">Prispôsobovať Vyhľadávanie, reklamy a ďalšie služby Googlu pomocou histórie prehliadania</translation>
 <translation id="7282992757463864530">Informačný panel</translation>
 <translation id="7287143125007575591">Prístup bol odmietnutý</translation>
 <translation id="7287411021188441799">Obnoviť predvolené pozadie</translation>
@@ -5231,7 +5226,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Presunúť kartu do nového okna}few{Presunúť karty do nového okna}many{Presunúť karty do nového okna}other{Presunúť karty do nového okna}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">strana</translation>
-<translation id="8180294223783876911">Odosielať údaje o využití a diagnostiky. Toto zariadenie momentálne automaticky odosiela Googlu diagnostiky a údaje o používaní zariadenia a aplikácií. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Ak aktivujete dodatočnú aktivitu na internete a v aplikáciách, tieto údaje sa môžu uložiť vo vašom účte Google. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">Rozšírenie <ph name="EXTENSION" /> dokáže čítať a odstrániť obrázky, videá a zvukové súbory vo vybratých umiestneniach.</translation>
 <translation id="8181215761849004992">Nepodarilo sa pripojiť k doméne. Skontrolujte svoj účet, či máte dostatočné oprávnenia na pridávanie zariadení.</translation>
 <translation id="8182105986296479640">Aplikácia nereaguje.</translation>
@@ -5253,7 +5247,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8203732864715032075">Odosiela upozornenia a predvolene si zapamätá tento počítač pre Správy. <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672"><ph name="APP_NAME" /> blokuje tvoj rodič. Ak chceš používať túto aplikáciu, požiadaj rodiča o povolenie.</translation>
 <translation id="820568752112382238">Najviac navštevované stránky</translation>
-<translation id="8206581664590136590">Odosielať údaje o využití a diagnostiky. Pomôžte zlepšiť prostredie Androidu svojho dieťaťa automatickým odosielaním diagnostík a údajov o používaní zariadenia a aplikácií do Googlu. Nebudú slúžiť na zistenie totožnosti vášho dieťaťa. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Ak pre dieťa aktivujete nastavenie dodatočnej aktivity na internete a v aplikáciách, tieto údaje sa môžu uložiť do jeho účtu Google. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Bluesový</translation>
 <translation id="8206859287963243715">Mobilné</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Sťahuje sa}few{Sťahujú sa}many{Sťahujú sa}other{Sťahujú sa}}</translation>
@@ -5799,7 +5792,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8912362522468806198">účtu Google</translation>
 <translation id="8912793549644936705">Roztiahnuť</translation>
 <translation id="8912810933860534797">Aktivovať automatické prehľadávanie</translation>
-<translation id="891365694296252935">Odosielať údaje o využití a diagnostiky. Toto zariadenie momentálne automaticky odosiela Googlu diagnostiky a údaje o používaní zariadenia a aplikácií. Nebudú slúžiť na zistenie totožnosti vášho dieťaťa. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Používanie tohto nastavenia je presadzované vlastníkom. Ak pre dieťa aktivujete dodatočnú aktivitu na internete a v aplikáciách, tieto údaje sa môžu uložiť do jeho účtu Google. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Načítavajú sa návrhy</translation>
 <translation id="8916476537757519021">Podrámec inkognito: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Overuje sa bezpečnostný kľúč…</translation>
@@ -5936,7 +5928,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="9101691533782776290">Spustiť aplikáciu</translation>
 <translation id="9102610709270966160">Povoliť rozšírenie</translation>
 <translation id="9103868373786083162">Stlačením tohto tlačidla prejdete späť, históriu si zobrazíte pomocou kontextovej ponuky</translation>
-<translation id="9104396740804929809">Odosielať údaje o využití a diagnostiky. Pomôžte zlepšiť prostredie Androidu automatickým odosielaním diagnostík a údajov o používaní zariadenia a aplikácií do Googlu. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Používanie tohto nastavenia je presadzované vlastníkom. Vlastník môže odosielať Googlu diagnostiky a údaje o používaní pre toto zariadenie. Ak aktivujete dodatočnú aktivitu na internete a v aplikáciách, tieto údaje sa môžu uložiť vo vašom účte Google. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Miesto uvoľníte odstránením súborov z úložiska zariadenia.</translation>
 <translation id="9109283579179481106">Pripojenie k mobilnej sieti</translation>
 <translation id="9111102763498581341">Odomknúť</translation>

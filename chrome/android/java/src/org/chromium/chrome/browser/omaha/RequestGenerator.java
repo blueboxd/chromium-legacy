@@ -70,7 +70,7 @@ public abstract class RequestGenerator {
      * with some additional dummy values supplied.
      */
     public String generateXML(String sessionID, String versionName, long installAge,
-            RequestData data) throws RequestFailureException {
+            int lastCheckDate, RequestData data) throws RequestFailureException {
         XmlSerializer serializer = Xml.newSerializer();
         StringWriter writer = new StringWriter();
         try {
@@ -86,6 +86,7 @@ public abstract class RequestGenerator {
             serializer.attribute(null, "sessionid", "{" + sessionID + "}");
             serializer.attribute(null, "installsource", data.getInstallSource());
             serializer.attribute(null, "userid", "{" + getDeviceID() + "}");
+            serializer.attribute(null, "dedup", "uid");
 
             // Set up <os platform="android"... />
             serializer.startTag(null, "os");
@@ -124,9 +125,11 @@ public abstract class RequestGenerator {
                 serializer.startTag(null, "updatecheck");
                 serializer.endTag(null, "updatecheck");
 
-                // Set up <ping active="1" />
+                // Set up <ping active="1" rd="..." ad="..." />
                 serializer.startTag(null, "ping");
                 serializer.attribute(null, "active", "1");
+                serializer.attribute(null, "ad", String.valueOf(lastCheckDate));
+                serializer.attribute(null, "rd", String.valueOf(lastCheckDate));
                 serializer.endTag(null, "ping");
             }
 

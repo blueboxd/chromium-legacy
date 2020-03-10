@@ -17,6 +17,10 @@ ContentSettingsType PermissionRequest::GetContentSettingsType() const {
   return ContentSettingsType::DEFAULT;
 }
 
+base::string16 PermissionRequest::GetMessageTextWarningFragment() const {
+  return base::string16();
+}
+
 #if defined(OS_ANDROID)
 base::string16 PermissionRequest::GetQuietTitleText() const {
   return base::string16();

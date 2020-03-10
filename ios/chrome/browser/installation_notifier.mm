@@ -161,7 +161,6 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
   __weak InstallationNotifier* weakSelf = self;
   [_dispatcher dispatchAfter:delayInNSec
                    withBlock:^{
-                     DCHECK_CURRENTLY_ON(web::WebThread::UI);
                      InstallationNotifier* strongSelf = weakSelf;
                      if (blockId == [strongSelf lastCreatedBlockId]) {
                        [strongSelf pollForTheInstallationOfApps];

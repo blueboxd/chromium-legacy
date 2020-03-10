@@ -23,7 +23,8 @@ class NativeFileSystemDirectoryAccessConfirmationViewTest
           callback_called_ = true;
           callback_result_ = result;
         }),
-        browser()->tab_strip_model()->GetActiveWebContents());
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::ScopedClosureRunner());
   }
 
  protected:

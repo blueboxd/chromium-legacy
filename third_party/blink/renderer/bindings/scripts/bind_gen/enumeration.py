@@ -163,30 +163,10 @@ def make_as_enum_function(cg_context):
 def make_nested_enum_class_def(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    enum_values = []
-    used_names = set()
-    for value in cg_context.enumeration.values:
-        name = name_style.constant(value)
-        # ChooseFileSystemEntriesType is defined as follows:
-        #
-        #   enum ChooseFileSystemEntriesType {
-        #       "open-file",
-        #       "openFile",
-        #       "save-file",
-        #       "saveFile",
-        #       "open-directory",
-        #       "openDirectory"
-        #   };
-        #
-        # Workaround until the old values get gone.
-        # TODO(https://crbug.com/1020715): Remove the workaround once the issue
-        # gets resolved.
-        if name in used_names:
-            assert (cg_context.enumeration.identifier ==
-                    "ChooseFileSystemEntriesType")
-            name = name + "2"
-        enum_values.append(TextNode(name))
-        used_names.add(name)
+    enum_values = [
+        TextNode(name_style.constant(value))
+        for value in cg_context.enumeration.values
+    ]
 
     return ListNode([
         TextNode("enum class Enum : enum_int_t {"),

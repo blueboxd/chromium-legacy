@@ -70,13 +70,14 @@ TEST_F(WebGPUFormatTest, AssociateMailboxImmediate) {
 
 TEST_F(WebGPUFormatTest, DissociateMailbox) {
   cmds::DissociateMailbox& cmd = *GetBufferAs<cmds::DissociateMailbox>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12));
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint64>(11),
+                           static_cast<GLuint>(12), static_cast<GLuint>(13));
   EXPECT_EQ(static_cast<uint32_t>(cmds::DissociateMailbox::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_id);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.texture_generation);
+  EXPECT_EQ(static_cast<GLuint64>(11), cmd.device_client_id());
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.texture_id);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.texture_generation);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

@@ -570,8 +570,6 @@
 <translation id="177336675152937177">Gehostete App-Daten</translation>
 <translation id="1776712937009046120">Nutzer hinzufügen</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Dieses Gerät wird von <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> verwaltet.
-    Klicken Sie auf "Weiter", um sich in Ihrem <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-Konto anzumelden.</translation>
 <translation id="1779652936965200207">Bitte geben Sie diesen Zugangscode auf "<ph name="DEVICE_NAME" />" ein:</translation>
 <translation id="177989070088644880">App (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Gruppe schließen</translation>
@@ -884,7 +882,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2202898655984161076">Problem beim Erstellen der Druckerliste. Einige Ihrer Drucker wurden möglicherweise nicht richtig bei <ph name="CLOUD_PRINT_NAME" /> registriert.</translation>
 <translation id="2203682048752833055">In der <ph name="BEGIN_LINK" />Adressleiste<ph name="END_LINK" /> verwendete Suchmaschine</translation>
 <translation id="2204034823255629767">Ihre Eingaben lesen und ändern</translation>
-<translation id="220792432208469595">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Dieses Gerät sendet momentan automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Die Daten helfen unter anderem dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Diese Einstellung wird vom Inhaber erzwungen. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" aktiviert ist, werden diese Daten eventuell in Ihrem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Geben Sie diesen PIN-Code bitte auf "<ph name="DEVICE_NAME" /> " ein:</translation>
 <translation id="2212565012507486665">Cookies zulassen</translation>
 <translation id="2213140827792212876">Freigabe beenden</translation>
@@ -1339,7 +1336,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2804043232879091219">Der alternative Browser konnte nicht geöffnet werden</translation>
 <translation id="2804667941345577550">Sie werden von dieser Website abgemeldet, auch in offenen Tabs</translation>
 <translation id="2804680522274557040">Kamera ausgeschaltet</translation>
-<translation id="2805539617243680210">Fertig!</translation>
 <translation id="2805646850212350655">Verschlüsselndes Microsoft-Dateisystem</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2805770823691782631">Zusätzliche Informationen</translation>
@@ -2017,6 +2013,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3742055079367172538">Screenshot erstellt</translation>
 <translation id="3742666961763734085">Keine Organisationseinheit mit diesem Namen vorhanden. Versuchen Sie es noch einmal.</translation>
 <translation id="3744111561329211289">Hintergrundsynchronisierung</translation>
+<translation id="3747077776423672805">Wenn Sie eine App entfernen möchten, gehen Sie zu "Einstellungen" &gt; "Google Play Store" &gt; "Android-Einstellungen verwalten" &gt; "Apps" oder rufen Sie den Anwendungsmanager auf. Tippen Sie dann auf die App, die Sie deinstallieren möchten, und wählen Sie "Deinstallieren" oder "Deaktivieren" aus. Möglicherweise müssen Sie nach rechts oder links wischen, um die App zu finden.</translation>
 <translation id="3748026146096797577">Nicht verbunden</translation>
 <translation id="3752582316358263300">Ok</translation>
 <translation id="3752673729237782832">Meine Geräte</translation>
@@ -2737,7 +2734,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4785719467058219317">Sie verwenden einen Sicherheitsschlüssel, der nicht auf dieser Website registriert ist</translation>
 <translation id="4788092183367008521">Bitte überprüfen Sie die Netzwerkverbindung und versuchen Sie es noch einmal.</translation>
 <translation id="4792711294155034829">&amp;Probleme melden...</translation>
-<translation id="4795022432560487924">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Sie können uns helfen, Android für Ihr Kind zu verbessern, indem Sie zulassen, dass Diagnose- sowie Geräte- und App-Nutzungsdaten automatisch an Google gesendet werden. Ihr Kind wird mithilfe dieser Daten nicht identifiziert, sie helfen jedoch beispielsweise dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Diese Einstellung wird vom Inhaber erzwungen. Der Inhaber kann festlegen, ob Diagnose- und Nutzungsdaten von diesem Gerät an Google gesendet werden. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" für Ihr Kind aktiviert ist, werden diese Daten in seinem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Webseite, nur HTML</translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth-Protokolle<ph name="END_LINK" /> anhängen (Google-intern)</translation>
 <translation id="4801448226354548035">Konten ausblenden</translation>
@@ -3357,6 +3353,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5649053991847567735">Auto-Downloads</translation>
 <translation id="5653154844073528838">Sie haben <ph name="PRINTER_COUNT" /> gespeicherte Drucker.</translation>
 <translation id="5656845498778518563">Feedback an Google senden</translation>
+<translation id="5657156137487675418">Alle Cookies zulassen</translation>
 <translation id="5657667036353380798">Für die externe Erweiterung muss die Chrome-Version <ph name="MINIMUM_CHROME_VERSION" /> oder höher installiert sein.</translation>
 <translation id="5658415415603568799">Aus Sicherheitsgründen werden Sie von Smart Lock gebeten, Ihr Passwort nach 20 Stunden noch einmal einzugeben.</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
@@ -3563,7 +3560,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5941711191222866238">Verkleinern</translation>
 <translation id="5942964813783878922">Ihr <ph name="DEVICE_TYPE" /> wird nach diesem Update neu gestartet. Künftige Software- und Sicherheitsupdates werden automatisch installiert.</translation>
 <translation id="5944869793365969636">QR-Code scannen</translation>
-<translation id="5945188205370098537">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Sie können uns helfen, Android zu verbessern, indem Sie zulassen, dass Diagnose- sowie Geräte- und App-Nutzungsdaten automatisch an Google gesendet werden. Die Daten helfen unter anderem dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" aktiviert ist, werden diese Daten eventuell in Ihrem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Bericht-ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Datei kann nicht geparst werden</translation>
 <translation id="5955282598396714173">Ihr Passwort ist abgelaufen. Melden Sie sich ab und dann wieder an, um es zu ändern.</translation>
@@ -3747,6 +3743,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6185132558746749656">Gerätestandort</translation>
 <translation id="6186394685773237175">Keine gehackten Passwörter gefunden</translation>
 <translation id="6195693561221576702">Dieses Gerät kann nicht im Offlinedemomodus eingerichtet werden.</translation>
+<translation id="6196640612572343990">Drittanbieter-Cookies blockieren</translation>
 <translation id="6196854373336333322">Die Erweiterung <ph name="EXTENSION_NAME" /> hat die Kontrolle über Ihre Proxyeinstellungen übernommen. Das bedeutet, dass sie sämtliche Onlineaktivitäten ändern, abbrechen oder überwachen kann. Wenn Sie nicht sicher sind, wie es zu dieser Änderung gekommen ist, war sie wahrscheinlich nicht beabsichtigt.</translation>
 <translation id="6198102561359457428">Abmelden und dann erneut anmelden...</translation>
 <translation id="6198252989419008588">PIN ändern</translation>
@@ -4410,7 +4407,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="711902386174337313">Liste der angemeldeten Geräte lesen</translation>
 <translation id="7120865473764644444">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden. Neuer Versuch...</translation>
 <translation id="7121362699166175603">Löscht den Verlauf und Autovervollständigungen in der Adressleiste. Unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> sind möglicherweise weitere Arten von Browserverlaufsdaten für Ihr Google-Konto gespeichert.</translation>
-<translation id="7121389946694989825">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Dieses Gerät sendet momentan automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Ihr Kind wird mithilfe dieser Daten nicht identifiziert, sie helfen jedoch beispielsweise dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" für Ihr Kind aktiviert ist, werden diese Daten in seinem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Entwicklermodus</translation>
 <translation id="7121728544325372695">Intelligente Gedankenstriche</translation>
 <translation id="7123360114020465152">Wird nicht mehr unterstützt</translation>
@@ -5192,7 +5188,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Tab in ein neues Fenster verschieben}other{Tabs in ein neues Fenster verschieben}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">Seite</translation>
-<translation id="8180294223783876911">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Dieses Gerät sendet momentan automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Die Daten helfen unter anderem dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" aktiviert ist, werden diese Daten eventuell in Ihrem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" kann Bilder, Video- und Sounddateien an den angegebenen Orten lesen und löschen.</translation>
 <translation id="8181215761849004992">Beitritt zur Domain nicht möglich. Prüfen Sie in Ihrem Konto, ob Sie Geräte hinzufügen dürfen.</translation>
 <translation id="8182105986296479640">App antwortet nicht.</translation>
@@ -5214,7 +5209,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8203732864715032075">Messages sendet Benachrichtigungen und merkt sich diesen Computer. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672"><ph name="APP_NAME" /> wurde von einem Elternteil blockiert. Bitte deine Eltern um Erlaubnis, diese App zu nutzen.</translation>
 <translation id="820568752112382238">Am häufigsten besuchte Websites</translation>
-<translation id="8206581664590136590">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Sie können uns helfen, Android für Ihr Kind zu verbessern, indem Sie zulassen, dass Diagnose- sowie Geräte- und App-Nutzungsdaten automatisch an Google gesendet werden. Ihr Kind wird mithilfe dieser Daten nicht identifiziert, sie helfen jedoch beispielsweise dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" für Ihr Kind aktiviert ist, werden diese Daten in seinem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Blues</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Download wird ausgeführt}other{Downloads werden ausgeführt}}</translation>
@@ -5754,7 +5748,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8912362522468806198">Google-Konto</translation>
 <translation id="8912793549644936705">Strecken</translation>
 <translation id="8912810933860534797">Automatischen Scan aktivieren</translation>
-<translation id="891365694296252935">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Dieses Gerät sendet momentan automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Ihr Kind wird mithilfe dieser Daten nicht identifiziert, sie helfen jedoch beispielsweise dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Diese Einstellung wird vom Inhaber erzwungen. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" für Ihr Kind aktiviert ist, werden diese Daten in seinem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Vorschläge werden geladen</translation>
 <translation id="8916476537757519021">Inkognito-Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Sicherheitsschlüssel wird geprüft…</translation>
@@ -5891,7 +5884,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9101691533782776290">App starten</translation>
 <translation id="9102610709270966160">Erweiterung aktivieren</translation>
 <translation id="9103868373786083162">Drücken, um zurückzugehen. Kontextmenü, um Verlauf aufzurufen</translation>
-<translation id="9104396740804929809">Du hast die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Du kannst uns helfen, Android zu verbessern, indem du zulässt, dass Diagnose- sowie Geräte- und App-Nutzungsdaten automatisch an Google gesendet werden. Die Daten helfen unter anderem dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Diese Einstellung wird vom Inhaber erzwungen. Der Inhaber kann festlegen, ob Diagnose- und Nutzungsdaten von diesem Gerät an Google gesendet werden. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" aktiviert ist, werden diese Daten eventuell in deinem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Löschen Sie Dateien aus dem Gerätespeicher, um Speicherplatz freizugeben.</translation>
 <translation id="9109283579179481106">Verbindung mit Mobilfunknetz herstellen</translation>
 <translation id="9111102763498581341">Entsperren</translation>

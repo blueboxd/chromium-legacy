@@ -562,11 +562,9 @@ bool ShouldShowShelfHoverPreviews() {
 }
 
 bool ShouldShowScrollableShelf() {
-  // If we're showing the new shelf design, also enable scrollable shelf.
-  if (ShouldShowShelfHotseat())
-    return true;
-
-  return base::FeatureList::IsEnabled(features::kShelfScrollable);
+  // TODO(manucornet): Remove this method and simplify conditions depending
+  // on it since it's now always true.
+  return true;
 }
 
 bool ShouldTetherHostScansIgnoreWiredConnections() {

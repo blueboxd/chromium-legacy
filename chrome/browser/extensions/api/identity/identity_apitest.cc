@@ -1455,8 +1455,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveCacheHit) {
   func->set_extension(extension.get());
 
   // pre-populate the cache with a token
-  IdentityTokenCacheValue token(kAccessToken,
-                                base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
+      kAccessToken, base::TimeDelta::FromSeconds(3600));
   SetCachedToken(token);
 
   // Get a token. Should not require a GAIA request.
@@ -1491,8 +1491,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_extension(extension.get());
 
   // pre-populate the cache with a token
-  IdentityTokenCacheValue token(kAccessToken,
-                                base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
+      kAccessToken, base::TimeDelta::FromSeconds(3600));
   SetCachedTokenForAccount(account_info.account_id, token);
 
   if (id_api()->AreExtensionsRestrictedToPrimaryAccount()) {
@@ -1522,7 +1522,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
   // pre-populate the cache with advice
   IssueAdviceInfo info;
-  IdentityTokenCacheValue token(info);
+  IdentityTokenCacheValue token =
+      IdentityTokenCacheValue::CreateIssueAdvice(info);
   SetCachedToken(token);
 
   // Should return an error without a GAIA request.
@@ -1553,8 +1554,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveCacheHit) {
   RunFunctionAsync(func.get(), "[{\"interactive\": true}]");
 
   // Populate the cache with a token while the request is blocked.
-  IdentityTokenCacheValue token(kAccessToken,
-                                base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
+      kAccessToken, base::TimeDelta::FromSeconds(3600));
   SetCachedToken(token);
 
   // When we wake up the request, it returns the cached token without
@@ -1579,8 +1580,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, LoginInvalidatesTokenCache) {
   func->set_extension(extension.get());
 
   // pre-populate the cache with a token
-  IdentityTokenCacheValue token(kAccessToken,
-                                base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
+      kAccessToken, base::TimeDelta::FromSeconds(3600));
   SetCachedToken(token);
 
   // Because the user is not signed in, the token will be removed,
@@ -2123,7 +2124,8 @@ IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, NotFound) {
 
 IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, Advice) {
   IssueAdviceInfo info;
-  IdentityTokenCacheValue advice(info);
+  IdentityTokenCacheValue advice =
+      IdentityTokenCacheValue::CreateIssueAdvice(info);
   SetCachedToken(advice);
   EXPECT_TRUE(InvalidateDefaultToken());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_ADVICE,
@@ -2131,8 +2133,8 @@ IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, Advice) {
 }
 
 IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, NonMatchingToken) {
-  IdentityTokenCacheValue token("non_matching_token",
-                                base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
+      "non_matching_token", base::TimeDelta::FromSeconds(3600));
   SetCachedToken(token);
   EXPECT_TRUE(InvalidateDefaultToken());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
@@ -2141,8 +2143,8 @@ IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, NonMatchingToken) {
 }
 
 IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, MatchingToken) {
-  IdentityTokenCacheValue token(kAccessToken,
-                                base::TimeDelta::FromSeconds(3600));
+  IdentityTokenCacheValue token = IdentityTokenCacheValue::CreateToken(
+      kAccessToken, base::TimeDelta::FromSeconds(3600));
   SetCachedToken(token);
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             GetCachedToken().status());

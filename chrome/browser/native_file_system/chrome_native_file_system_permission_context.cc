@@ -51,10 +51,12 @@ void ShowDirectoryAccessConfirmationPromptOnUIThread(
   }
 
   // Drop fullscreen mode so that the user sees the URL bar.
-  web_contents->ForSecurityDropFullscreen();
+  base::ScopedClosureRunner fullscreen_block =
+      web_contents->ForSecurityDropFullscreen();
 
   ShowNativeFileSystemDirectoryAccessConfirmationDialog(
-      origin, path, std::move(callback), web_contents);
+      origin, path, std::move(callback), web_contents,
+      std::move(fullscreen_block));
 }
 
 void ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread(

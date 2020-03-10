@@ -611,8 +611,7 @@ class ShelfViewNotScrollableTest : public ShelfViewTest {
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures({},
-                                          {chromeos::features::kShelfScrollable,
-                                           chromeos::features::kShelfHotseat});
+                                          {chromeos::features::kShelfHotseat});
     ShelfViewTest::SetUp();
   }
 

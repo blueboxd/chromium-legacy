@@ -124,4 +124,24 @@ class MessageCardView extends LinearLayout {
     void setDismissButtonOnClickListener(OnClickListener listener) {
         mCloseButton.setOnClickListener(listener);
     }
+
+    /**
+     * Modify the view based on the visibility of the icon. For messages that doesn't have an icon,
+     * remove the icon and update the margin of the description text field.
+     * @param visible  Whether icon is visible.
+     */
+    void setIconVisibility(boolean visible) {
+        MarginLayoutParams params = (MarginLayoutParams) mDescription.getLayoutParams();
+        if (visible) {
+            if (indexOfChild(mIcon) == -1) {
+                addView(mIcon, 0);
+                params.setMargins(0, 0, 0, 0);
+            }
+        } else {
+            int margin = (int) getContext().getResources().getDimension(
+                    R.dimen.tab_grid_iph_item_description_margin);
+            removeView(mIcon);
+            params.setMargins(margin, 0, 0, 0);
+        }
+    }
 }

@@ -79,6 +79,7 @@ window.onload = () => {
     // Testing vertical scroll.
     let x = standardRect.left + TRACK_WIDTH / 2;
     let y = standardRect.top + (onMacPlatform ? 0 : BUTTON_WIDTH) + 2;
+    await mouseMoveTo(x, y);
     await mouseDownAt(x, y);
     await mouseMoveTo(x, y + 15);
     await mouseUpAt(x, y + 15);
@@ -88,6 +89,7 @@ window.onload = () => {
     // Testing horizontal scroll.
     x = standardRect.right - (onMacPlatform ? 0 : BUTTON_WIDTH) - 2;
     y = standardRect.bottom - TRACK_WIDTH / 2;
+    await mouseMoveTo(x, y);
     await mouseDownAt(x, y);
     await mouseMoveTo(x - 15, y);
     await mouseUpAt(x - 15, y);

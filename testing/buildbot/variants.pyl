@@ -8,4 +8,122 @@
 # * comments are allowed, using '#' syntax; and
 # * trailing commas are allowed.
 
-{}
+{
+    'SIM_IPAD_AIR_2_12_4': {
+        'args': [
+            '--platform',
+            'iPad Air 2',
+            '--version',
+            '12.4'
+        ],
+        'identifier': 'iPad Air 2 12.4'
+    },
+    'SIM_IPAD_AIR_2_13_3': {
+        'args': [
+            '--platform',
+            'iPad Air 2',
+            '--version',
+            '13.3'
+        ],
+        'identifier': 'iPad Air 2 13.3'
+    },
+    'SIM_IPAD_AIR_3RD_GEN_12_4': {
+        'args': [
+            '--platform',
+            'iPad Air (3rd generation)',
+            '--version',
+            '12.4'
+        ],
+        'identifier': 'iPad Air (3rd generation) 12.4'
+    },
+    'SIM_IPAD_AIR_3RD_GEN_13_3': {
+        'args': [
+            '--platform',
+            'iPad Air (3rd generation)',
+            '--version',
+            '13.3'
+        ],
+        'identifier': 'iPad Air (3rd generation) 13.3'
+    },
+    'SIM_IPAD_PRO_12_4': {
+        'args': [
+          '--platform',
+          'iPad Pro (12.9-inch)',
+          '--version',
+          '12.4',
+        ],
+        'identifier': 'iPad Pro (12.9-inch) 12.4'
+    },
+    'SIM_IPAD_PRO_13_3': {
+        'args': [
+          '--platform',
+          'iPad Pro (12.9-inch)',
+          '--version',
+          '13.3',
+        ],
+        'identifier': 'iPad Pro (12.9-inch) 13.3'
+    },
+    'SIM_IPAD_6_GEN_12_4': {
+        'args': [
+          '--platform',
+          'iPad (6th generation)',
+          '--version',
+          '12.4',
+        ],
+        'identifier': 'iPad (6th generation) 12.4'
+    },
+    'SIM_IPAD_6_GEN_13_3': {
+        'args': [
+          '--platform',
+          'iPad (6th generation)',
+          '--version',
+          '13.3',
+        ],
+        'identifier': 'iPad (6th generation) 13.3'
+    },
+    'SIM_IPHONE_6S_PLUS_12_4': {
+        'args': [
+            '--platform',
+            'iPhone 6s Plus',
+            '--version',
+            '12.4',
+        ],
+        'identifier': 'iPhone 6s Plus 12.4'
+    },
+    'SIM_IPHONE_6S_PLUS_13_3': {
+        'args': [
+            '--platform',
+            'iPhone 6s Plus',
+            '--version',
+            '13.3',
+        ],
+        'identifier': 'iPhone 6s Plus 13.3'
+    },
+    'SIM_IPHONE_7_13_3': {
+        'args': [
+            '--platform',
+            'iPhone 7',
+            '--version',
+            '13.3',
+        ],
+        'identifier': 'iPhone 7 13.3'
+    },
+    'SIM_IPHONE_X_12_4': {
+        'args': [
+            '--platform',
+            'iPhone X',
+            '--version',
+            '12.4',
+        ],
+        'identifier': 'iPhone X 12.4'
+    },
+    'SIM_IPHONE_X_13_3': {
+        'args': [
+            '--platform',
+            'iPhone X',
+            '--version',
+            '13.3',
+        ],
+        'identifier': 'iPhone X 13.3'
+    },
+}

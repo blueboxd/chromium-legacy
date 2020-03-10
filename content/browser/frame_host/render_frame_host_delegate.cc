@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/frame_host/render_frame_host_delegate.h"
+
 #include <stddef.h>
 #include <memory>
 #include <utility>
@@ -10,8 +12,6 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/render_frame_host_delegate.h"
-#include "content/public/browser/file_select_listener.h"
 #include "ipc/ipc_message.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "ui/gfx/native_widget_types.h"
@@ -40,14 +40,14 @@ bool RenderFrameHostDelegate::DidAddMessageToConsole(
 
 void RenderFrameHostDelegate::RunFileChooser(
     RenderFrameHost* render_frame_host,
-    std::unique_ptr<FileSelectListener> listener,
+    std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
     const blink::mojom::FileChooserParams& params) {
   listener->FileSelectionCanceled();
 }
 
 void RenderFrameHostDelegate::EnumerateDirectory(
     RenderFrameHost* render_frame_host,
-    std::unique_ptr<FileSelectListener> listener,
+    std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
     const base::FilePath& path) {
   listener->FileSelectionCanceled();
 }

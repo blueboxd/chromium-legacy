@@ -31,9 +31,8 @@ namespace blink {
 
 class LayoutListItem;
 
-// Used to layout the list item's marker.
-// The LayoutListMarker always has to be a child of a LayoutListItem.
-class CORE_EXPORT LayoutListMarker final : public LayoutBox {
+// This class holds code shared among legacy classes for list markers.
+class CORE_EXPORT LayoutListMarker : public LayoutBox {
  public:
   explicit LayoutListMarker(Element*);
   ~LayoutListMarker() override;
@@ -52,8 +51,6 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
   // styles.
   ListStyleCategory GetListStyleCategory() const;
   static ListStyleCategory GetListStyleCategory(EListStyleType);
-
-  bool IsInside() const;
 
   void UpdateMarginsAndContent();
 
@@ -75,8 +72,6 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
   const LayoutListItem* ListItem() const;
   LayoutSize ImageBulletSize() const;
 
-  const char* GetName() const override { return "LayoutListMarker"; }
-
   LayoutUnit LineOffset() const { return line_offset_; }
 
  protected:
@@ -84,10 +79,6 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
 
  private:
   void ComputePreferredLogicalWidths() override;
-
-  bool IsOfType(LayoutObjectType type) const override {
-    return type == kLayoutObjectListMarker || LayoutBox::IsOfType(type);
-  }
 
   void Paint(const PaintInfo&) const override;
 

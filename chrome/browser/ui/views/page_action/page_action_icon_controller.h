@@ -70,6 +70,9 @@ class PageActionIconController : public zoom::ZoomEventManagerObserver {
   // See comment in browser_window.h for more info.
   void ZoomChangedForActiveTab(bool can_show_bubble);
 
+  std::vector<const PageActionIconView*> GetPageActionIconViewsForTesting()
+      const;
+
  private:
   // ZoomEventManagerObserver:
   // Updates the view for the zoom icon when default zoom levels change.

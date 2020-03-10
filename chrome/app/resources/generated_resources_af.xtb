@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Het programdata gehuisves</translation>
 <translation id="1776712937009046120">Voeg gebruiker by</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Hierdie toestel word bestuur deur <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Klik asseblief "Volgende" om voort te gaan om by jou <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-rekening aan te meld.</translation>
 <translation id="1779652936965200207">Voer asseblief hierdie wagsleutel op "<ph name="DEVICE_NAME" />" in:</translation>
 <translation id="177989070088644880">Program (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Maak groep toe</translation>
@@ -892,7 +890,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2202898655984161076">Kon nie drukkers lys nie. Sommige van jou drukkers het dalk nie suksesvol by <ph name="CLOUD_PRINT_NAME" /> geregistreer nie.</translation>
 <translation id="2203682048752833055">Soekenjin wat in die <ph name="BEGIN_LINK" />adresbalk<ph name="END_LINK" /> gebruik word</translation>
 <translation id="2204034823255629767">Lees en verander enigiets wat jy invoer</translation>
-<translation id="220792432208469595">Stuur gebruik- en diagnostiese data. Hierdie toestel stuur tans diagnostiese, toestel- en programgebruikdata outomaties na Google toe. Dit sal met stelsel- en programstabiliteit en ander verbeteringe help. Sekere saamgestelde data sal ook Google-programme en -vennote, soos Android-ontwikkelaars, help. Hierdie instelling word deur die eienaar afgedwing. As jou bykomende Web- en Programaktiwiteit-instelling aangeskakel is, kan hierdie data in jou Google-rekening gestoor word. <ph name="BEGIN_LINK1" />Kom meer te wete<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Voer hierdie PIN-kode op "<ph name="DEVICE_NAME" />" in.</translation>
 <translation id="2212565012507486665">Laat webkoekies toe</translation>
 <translation id="2213140827792212876">Verwyder deling</translation>
@@ -1353,7 +1350,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2804043232879091219">Die alternatiewe blaaier kon nie oopgemaak word nie</translation>
 <translation id="2804667941345577550">Jy sal by hierdie werf afgemeld word, insluitend in oop oortjies</translation>
 <translation id="2804680522274557040">Kamera is afgeskakel</translation>
-<translation id="2805539617243680210">Jy's gereed!</translation>
 <translation id="2805646850212350655">Microsoft-enkripterende lêerstelsel</translation>
 <translation id="2805756323405976993">Programme</translation>
 <translation id="2805770823691782631">Bykomende besonderhede</translation>
@@ -2034,6 +2030,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3742055079367172538">Skermkiekie geneem</translation>
 <translation id="3742666961763734085">Kan nie 'n organisatoriese eenheid met daardie naam kry nie. Probeer asseblief weer.</translation>
 <translation id="3744111561329211289">Agtergrondsinkronisering</translation>
+<translation id="3747077776423672805">Gaan na Instellings &gt; Google Play Winkel &gt; Bestuur Android-voorkeure &gt; Programme of Programbestuurder om programme te verwyder. Tik dan op die program wat jy wil deïnstalleer (jy sal dalk links of regs moet swiep om die program te kry). Tik dan op Deïnstalleer of Deaktiveer.</translation>
 <translation id="3748026146096797577">Nie gekoppel nie</translation>
 <translation id="3752582316358263300">OK …</translation>
 <translation id="3752673729237782832">My toestelle</translation>
@@ -2757,7 +2754,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4785719467058219317">Jy gebruik tans 'n sleutel wat nie by hierdie webwerf geregistreer is nie</translation>
 <translation id="4788092183367008521">Gaan jou netwerkverbinding na en probeer weer.</translation>
 <translation id="4792711294155034829">Meld 'n probleem aan …</translation>
-<translation id="4795022432560487924">Stuur gebruik- en diagnostiese data. Help om jou kind se Android-ervaring beter te maak deur diagnostiese, toestel- en programgebruikdata outomaties na Google toe te stuur. Dit sal nie gebruik word om jou kind te identifiseer nie en sal met stelsel- en programstabiliteit en ander verbeteringe help. Sekere saamgestelde data sal ook Google-programme en -vennote, soos Android-ontwikkelaars, help. Hierdie instelling word deur die eienaar afgedwing. Die eienaar kan kies om diagnostiese en gebruikdata vir hierdie toestel na Google toe te stuur. As die bykomende Web- en Programaktiwiteit-instelling vir jou kind aangeskakel is, kan hierdie data in hul Google-rekening gestoor word. <ph name="BEGIN_LINK1" />Kom meer te wete<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Webbladsy, net HTML</translation>
 <translation id="4798236378408895261">Heg <ph name="BEGIN_LINK" />Bluetooth-loglêers<ph name="END_LINK" /> aan (Google intern)</translation>
 <translation id="4801448226354548035">Versteek rekeninge</translation>
@@ -3592,7 +3588,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5941711191222866238">Maak kleiner</translation>
 <translation id="5942964813783878922">Jou <ph name="DEVICE_TYPE" /> sal ná hierdie opdatering herbegin. Toekomstige sagteware- en sekuriteitopdaterings sal outomaties geïnstalleer word.</translation>
 <translation id="5944869793365969636">Skandeer QR-kode</translation>
-<translation id="5945188205370098537">Stuur gebruik- en diagnostiese data. Help om jou Android-ervaring beter te maak deur diagnostiese, toestel- en programgebruikdata outomaties na Google toe te stuur. Dit sal met stelsel- en programstabiliteit en ander verbeteringe help. Sekere saamgestelde data sal ook Google-programme en -vennote, soos Android-ontwikkelaars, help. As jou bykomende Web- en Programaktiwiteit-instelling aangeskakel is, kan hierdie data in jou Google-rekening gestoor word. <ph name="BEGIN_LINK1" />Kom meer te wete<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Verslag-ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Kan nie lêer ontleed nie</translation>
 <translation id="5955282598396714173">Jou wagwoord het verval. Meld af en meld dan weer aan om dit te verander.</translation>
@@ -3778,6 +3773,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6185132558746749656">Toestelligging</translation>
 <translation id="6186394685773237175">Geen gekompromitteerde wagwoorde gekry nie</translation>
 <translation id="6195693561221576702">Hierdie toestel kan nie in vanlyn demonstrasiemodus opgestel word nie.</translation>
+<translation id="6196640612572343990">Blokkeer derdeparty-webkoekies</translation>
 <translation id="6196854373336333322">Die uitbreiding "<ph name="EXTENSION_NAME" />" het beheer oor jou instaanbedienerinstellings oorgeneem, wat beteken dat dit enigiets wat jy aanlyn doen, kan verander of breek of daarop kan inluister. As jy nie seker is hoekom hierdie verandering plaasgevind het nie, wil jy dit waarskynlik nie hê nie.</translation>
 <translation id="6198102561359457428">Meld af en meld dan weer aan …</translation>
 <translation id="6198252989419008588">Verander PIN</translation>
@@ -4444,7 +4440,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="711902386174337313">Lees die lys van jou aangemelde toestelle</translation>
 <translation id="7120865473764644444">Kon nie aan die sinkroniseringbediener koppel nie. Herprobeer tans …</translation>
 <translation id="7121362699166175603">Vee geskiedenis en outovoltooide items in die adresbalk uit. Jou Google-rekening kan dalk ander vorme van blaaigeskiedenis hê by <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Stuur gebruik- en diagnostiese data. Hierdie toestel stuur tans diagnostiese, toestel- en programgebruikdata outomaties na Google toe. Dit sal nie gebruik word om jou kind te identifiseer nie en sal met stelsel- en programstabiliteit en ander verbeteringe help. Sekere saamgestelde data sal ook Google-programme en -vennote, soos Android-ontwikkelaars, help. As die bykomende Web- en Programaktiwiteit-instelling vir jou kind aangeskakel is, kan hierdie data in hul Google-rekening gestoor word. <ph name="BEGIN_LINK1" />Kom meer te wete<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Ontwikkelaarmodus</translation>
 <translation id="7121728544325372695">Slimaandagstrepe</translation>
 <translation id="7123360114020465152">Nie meer gesteun nie</translation>
@@ -4559,7 +4554,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7280041992884344566">Iets was fout terwyl Chrome na skadelike sagteware gesoek het</translation>
 <translation id="7280649757394340890">Teks-na-spraak-steminstellings</translation>
 <translation id="7280877790564589615">Toestemming versoek</translation>
-<translation id="7281268427852119151">Gebruik jou blaaigeskiedenis om Search, advertensies en ander Google-dienste te personaliseer</translation>
 <translation id="7282992757463864530">Inligtingbalk</translation>
 <translation id="7287143125007575591">Toegang geweier.</translation>
 <translation id="7287411021188441799">Laai verstekagtergrond terug</translation>
@@ -5233,7 +5227,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Skuif oortjie na nuwe venster toe}other{Skuif oortjies na nuwe venster toe}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">bladsy</translation>
-<translation id="8180294223783876911">Stuur gebruik- en diagnostiese data. Hierdie toestel stuur tans diagnostiese, toestel- en programgebruikdata outomaties na Google toe. Dit sal met stelsel- en programstabiliteit en ander verbeteringe help. Sekere saamgestelde data sal ook Google-programme en -vennote, soos Android-ontwikkelaars, help. As jou bykomende Web- en Programaktiwiteit-instelling aangeskakel is, kan hierdie data in jou Google-rekening gestoor word. <ph name="BEGIN_LINK1" />Kom meer te wete<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" kan prente, video en klanklêers by die gemerkte liggings lees en uitvee.</translation>
 <translation id="8181215761849004992">Kan nie by die domein aansluit nie. Gaan jou rekening na om te sien of jy genoeg voorregte het om toestelle by te voeg.</translation>
 <translation id="8182105986296479640">Program reageer nie.</translation>
@@ -5255,7 +5248,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8203732864715032075">Stuur vir jou kennisgewings en stel dit as verstek om hierdie rekenaar vir Boodskappe te onthou. <ph name="LINK_BEGIN" />Kom meer te wete<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">"<ph name="APP_NAME" />" word deur jou ouer geblokkeer. Vra jou ouer vir toestemming om hierdie program te gebruik.</translation>
 <translation id="820568752112382238">Mees besoekte werwe</translation>
-<translation id="8206581664590136590">Stuur gebruik- en diagnostiese data. Help om jou kind se Android-ervaring beter te maak deur diagnostiese, toestel- en programgebruikdata outomaties na Google toe te stuur. Dit sal nie gebruik word om jou kind te identifiseer nie en sal met stelsel- en programstabiliteit en ander verbeteringe help. Sekere saamgestelde data sal ook Google-programme en -vennote, soos Android-ontwikkelaars, help. As die bykomende Web- en Programaktiwiteit-instelling vir jou kind aangeskakel is, kan hierdie data in hul Google-rekening gestoor word. <ph name="BEGIN_LINK1" />Kom meer te wete<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Blues</translation>
 <translation id="8206859287963243715">Sellulêr</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Aflaai is aan die gang}other{Aflaaie is aan die gang}}</translation>
@@ -5801,7 +5793,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8912362522468806198">Google-rekening</translation>
 <translation id="8912793549644936705">Rek</translation>
 <translation id="8912810933860534797">Aktiveer outoskandering</translation>
-<translation id="891365694296252935">Stuur gebruik- en diagnostiese data. Hierdie toestel stuur tans diagnostiese, toestel- en programgebruikdata outomaties na Google toe. Dit sal nie gebruik word om jou kind te identifiseer nie en sal met stelsel- en programstabiliteit en ander verbeteringe help. Sekere saamgestelde data sal ook Google-programme en -vennote, soos Android-ontwikkelaars, help. Hierdie instelling word deur die eienaar afgedwing. As bykomende Web- en Programaktiwiteit vir jou kind aangeskakel is, kan hierdie data in hul Google-rekening gestoor word. <ph name="BEGIN_LINK1" />Kom meer te wete<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Laai tans voorstel</translation>
 <translation id="8916476537757519021">Incognitosubraam: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Verifieer tans jou sekuriteitsleutel …</translation>
@@ -5938,7 +5929,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="9101691533782776290">Begin program</translation>
 <translation id="9102610709270966160">Aktiveer uitbreiding</translation>
 <translation id="9103868373786083162">Druk om terug te gaan, kontekskieslys om geskiedenis te sien</translation>
-<translation id="9104396740804929809">Stuur gebruik- en diagnostiese data. Help om jou Android-ervaring beter te maak deur diagnostiese, toestel- en programgebruikdata outomaties na Google toe te stuur. Dit sal met stelsel- en programstabiliteit en ander verbeteringe help. Sekere saamgestelde data sal ook Google-programme en -vennote, soos Android-ontwikkelaars, help. Hierdie instelling word deur die eienaar afgedwing. Die eienaar kan kies om diagnostiese en gebruikdata vir hierdie toestel na Google toe te stuur. As jou bykomende Web- en Programaktiwiteit-instelling aangeskakel is, kan hierdie data in jou Google-rekening gestoor word. <ph name="BEGIN_LINK1" />Kom meer te wete<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Vee lêers uit toestelberging om spasie beskikbaar te maak.</translation>
 <translation id="9109283579179481106">Koppel aan selnetwerk</translation>
 <translation id="9111102763498581341">Ontsluit</translation>

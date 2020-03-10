@@ -10,8 +10,9 @@
 #include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
+#include "third_party/blink/renderer/core/layout/layout_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
-#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
+#include "third_party/blink/renderer/core/layout/layout_outside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
@@ -115,10 +116,10 @@ LayoutObject* LayoutObjectFactory::CreateListMarker(Node& node,
       (IsA<HTMLLIElement>(parent) && !parent_style->IsInsideListElement());
   if (is_inside) {
     return CreateObject<LayoutObject, LayoutNGInsideListMarker,
-                        LayoutListMarker>(node, style, legacy);
+                        LayoutInsideListMarker>(node, style, legacy);
   }
   return CreateObject<LayoutObject, LayoutNGOutsideListMarker,
-                      LayoutListMarker>(node, style, legacy);
+                      LayoutOutsideListMarker>(node, style, legacy);
 }
 
 LayoutTableCaption* LayoutObjectFactory::CreateTableCaption(

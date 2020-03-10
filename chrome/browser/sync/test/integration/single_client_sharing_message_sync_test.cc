@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/sync/test/fake_server/fake_server_http_post_provider.h"
 
 namespace {
 
@@ -39,6 +40,16 @@ class NextCycleIterationChecker : public SingleClientStatusChangeChecker {
 
  private:
   base::Time last_synced_time_;
+};
+
+class BackedOffSharingMessageChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit BackedOffSharingMessageChecker(syncer::ProfileSyncService* service)
+      : SingleClientStatusChangeChecker(service) {}
+
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    return service()->GetBackedOffDataTypes().Has(syncer::SHARING_MESSAGE);
+  }
 };
 
 class SharingMessageEqualityChecker : public SingleClientStatusChangeChecker {
@@ -178,6 +189,39 @@ IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
       std::make_unique<SharingMessageSpecifics>(specifics), callback.Get());
 
   ASSERT_TRUE(NextCycleIterationChecker(GetSyncService(0)).Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
+                       ShouldStopDataTypeWhenBackedOff) {
+  base::MockRepeatingCallback<void(const sync_pb::SharingMessageCommitError&)>
+      callback;
+
+  ASSERT_TRUE(SetupSync());
+  SharingMessageBridge* sharing_message_bridge =
+      SharingMessageBridgeFactory::GetForBrowserContext(GetProfile(0));
+  SharingMessageSpecifics specifics;
+  specifics.set_payload("payload");
+  sharing_message_bridge->SendSharingMessage(
+      std::make_unique<SharingMessageSpecifics>(specifics), callback.Get());
+
+  EXPECT_CALL(
+      callback,
+      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF)));
+  ASSERT_FALSE(
+      GetSyncService(0)->GetBackedOffDataTypes().Has(syncer::SHARING_MESSAGE));
+
+  // Run the data type into backed off state before the message gets sent.
+  fake_server::FakeServerHttpPostProvider::DisableNetwork();
+
+  ASSERT_TRUE(BackedOffSharingMessageChecker(GetSyncService(0)).Wait());
+
+  EXPECT_TRUE(
+      GetSyncService(0)->GetBackedOffDataTypes().Has(syncer::SHARING_MESSAGE));
+  EXPECT_CALL(
+      callback,
+      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF)));
+  sharing_message_bridge->SendSharingMessage(
+      std::make_unique<SharingMessageSpecifics>(specifics), callback.Get());
 }
 
 }  // namespace

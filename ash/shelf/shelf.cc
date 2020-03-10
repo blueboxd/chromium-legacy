@@ -79,19 +79,19 @@ class HotseatWidgetAnimationMetricsReporter
       case HotseatState::kShownClamshell:
       case HotseatState::kShownHomeLauncher:
         UMA_HISTOGRAM_PERCENTAGE(
-            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
             "TransitionToShownHotseat",
             value);
         break;
       case HotseatState::kExtended:
         UMA_HISTOGRAM_PERCENTAGE(
-            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
             "TransitionToExtendedHotseat",
             value);
         break;
       case HotseatState::kHidden:
         UMA_HISTOGRAM_PERCENTAGE(
-            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
             "TransitionToHiddenHotseat",
             value);
         break;

@@ -686,6 +686,8 @@ jumbo_static_library("browser") {
     "media/cast_mirroring_service_host.h",
     "media/cast_remoting_connector.cc",
     "media/cast_remoting_connector.h",
+    "media/feeds/media_feeds_contents_observer.cc",
+    "media/feeds/media_feeds_contents_observer.h",
     "media/feeds/media_feeds_service.cc",
     "media/feeds/media_feeds_service.h",
     "media/feeds/media_feeds_service_factory.cc",
@@ -1984,6 +1986,7 @@ jumbo_static_library("browser") {
     "//chrome/browser/image_decoder",
     "//chrome/browser/media:media_engagement_preload_proto",
     "//chrome/browser/media:mojo_bindings",
+    "//chrome/browser/media/feeds:mojo_bindings",
     "//chrome/browser/media/router",
     "//chrome/browser/metrics:expired_histograms_array",
     "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
@@ -2867,6 +2870,8 @@ jumbo_static_library("browser") {
       "notifications/scheduler/display_agent_android.h",
       "notifications/scheduler/notification_background_task_scheduler_android.cc",
       "notifications/scheduler/notification_background_task_scheduler_android.h",
+      "offline_pages/prefetch/notifications/prefetch_notification_service_bridge.cc",
+      "offline_pages/prefetch/notifications/prefetch_notification_service_bridge.h",
       "offline_pages/prefetch/notifications/prefetch_notification_service_factory.cc",
       "offline_pages/prefetch/notifications/prefetch_notification_service_factory.h",
       "optimization_guide/android/optimization_guide_bridge.cc",
@@ -5660,6 +5665,7 @@ grit("dev_ui_browser_resources") {
   deps = [
     "//chrome/browser/engagement:mojo_bindings_js",
     "//chrome/browser/media:mojo_bindings_js",
+    "//chrome/browser/media/feeds:mojo_bindings_js",
     "//chrome/browser/ui/webui/interventions_internals:mojo_bindings_js",
   ]
   if (is_android) {

@@ -60,6 +60,7 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
 
   void SubmitChildCompositorFrame(ChildFrame* child_frame);
   viz::FrameTimingDetailsMap TakeChildFrameTimingDetailsMap();
+  gfx::Size GetChildFrameSize();
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(

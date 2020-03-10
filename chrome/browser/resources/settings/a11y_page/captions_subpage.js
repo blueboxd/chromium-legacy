@@ -24,16 +24,6 @@ Polymer({
     },
 
     /**
-     * Returns true if the 'LiveCaption' media switch is enabled.
-     */
-    enableLiveCaption_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableLiveCaption');
-      },
-    },
-
-    /**
      * List of options for the background opacity drop-down menu.
      * @type {!DropdownMenuOptionList}
      */

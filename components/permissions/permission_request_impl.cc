@@ -244,6 +244,12 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
+base::string16 PermissionRequestImpl::GetMessageTextWarningFragment() const {
+  if (content_settings_type_ == ContentSettingsType::PLUGINS)
+    return l10n_util::GetStringUTF16(IDS_FLASH_PERMISSION_WARNING_FRAGMENT);
+  return base::string16();
+}
+
 GURL PermissionRequestImpl::GetOrigin() const {
   return request_origin_;
 }

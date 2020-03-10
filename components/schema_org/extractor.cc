@@ -13,7 +13,7 @@
 #include "base/json/json_parser.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "components/schema_org/common/metadata.mojom.h"
+#include "components/schema_org/common/improved_metadata.mojom.h"
 #include "components/schema_org/schema_org_entity_names.h"
 
 namespace schema_org {
@@ -38,6 +38,13 @@ constexpr size_t kMaxRepeatedSize = 100;
 
 constexpr char kJSONLDKeyType[] = "@type";
 
+using improved::mojom::Entity;
+using improved::mojom::EntityPtr;
+using improved::mojom::Property;
+using improved::mojom::PropertyPtr;
+using improved::mojom::Values;
+using improved::mojom::ValuesPtr;
+
 const std::unordered_set<std::string> kSupportedTypes{
     entity::kVideoObject, entity::kMovie, entity::kTVEpisode, entity::kTVSeason,
     entity::kTVSeries};
@@ -45,67 +52,28 @@ bool IsSupportedType(const std::string& type) {
   return kSupportedTypes.find(type) != kSupportedTypes.end();
 }
 
-void ExtractEntity(base::DictionaryValue*, mojom::Entity&, int recursionLevel);
+void ExtractEntity(const base::DictionaryValue&, Entity*, int recursion_level);
 
-bool ParseRepeatedValue(base::Value::ListView& arr,
-                        mojom::Values& values,
-                        int recursionLevel) {
+bool ParseRepeatedValue(const base::Value::ConstListView& arr,
+                        Values* values,
+                        int recursion_level) {
+  DCHECK(values);
   if (arr.empty()) {
     return false;
   }
 
-  bool is_first_item = true;
-  base::Value::Type type = base::Value::Type::NONE;
-
   for (size_t j = 0; j < std::min(arr.size(), kMaxRepeatedSize); ++j) {
     auto& listItem = arr[j];
-    if (is_first_item) {
-      is_first_item = false;
-      type = listItem.type();
-      switch (type) {
-        case base::Value::Type::BOOLEAN:
-          values.set_bool_values(std::vector<bool>());
-          break;
-        case base::Value::Type::INTEGER:
-          values.set_long_values(std::vector<int64_t>());
-          break;
-        case base::Value::Type::DOUBLE:
-          // App Indexing doesn't support double type, so just encode its
-          // decimal value as a string instead.
-          values.set_string_values(std::vector<std::string>());
-          break;
-        case base::Value::Type::STRING:
-          values.set_string_values(std::vector<std::string>());
-          break;
-        case base::Value::Type::DICTIONARY:
-          if (recursionLevel + 1 >= kMaxDepth) {
-            return false;
-          }
-          values.set_entity_values(std::vector<mojom::EntityPtr>());
-          break;
-        case base::Value::Type::LIST:
-          // App Indexing doesn't support nested arrays.
-          return false;
-        default:
-          // Unknown value type.
-          return false;
-      }
-    }
 
-    if (listItem.type() != type) {
-      // App Indexing doesn't support mixed types. If there are mixed
-      // types in the parsed object, we will drop the property.
-      return false;
-    }
     switch (listItem.type()) {
       case base::Value::Type::BOOLEAN: {
         bool v;
         listItem.GetAsBoolean(&v);
-        values.get_bool_values().push_back(v);
+        values->bool_values.push_back(v);
       } break;
       case base::Value::Type::INTEGER: {
         int v = listItem.GetInt();
-        values.get_long_values().push_back(v);
+        values->long_values.push_back(v);
       } break;
       case base::Value::Type::DOUBLE: {
         // App Indexing doesn't support double type, so just encode its decimal
@@ -113,22 +81,24 @@ bool ParseRepeatedValue(base::Value::ListView& arr,
         double v = listItem.GetDouble();
         std::string s = base::NumberToString(v);
         s = s.substr(0, kMaxStringLength);
-        values.get_string_values().push_back(s);
+        values->string_values.push_back(s);
       } break;
       case base::Value::Type::STRING: {
         std::string v = listItem.GetString();
         v = v.substr(0, kMaxStringLength);
-        values.get_string_values().push_back(v);
+        values->string_values.push_back(v);
       } break;
       case base::Value::Type::DICTIONARY: {
-        values.get_entity_values().push_back(mojom::Entity::New());
-
-        base::DictionaryValue* dict_value = nullptr;
+        const base::DictionaryValue* dict_value = nullptr;
         if (listItem.GetAsDictionary(&dict_value)) {
-          ExtractEntity(dict_value, *(values.get_entity_values().at(j)),
-                        recursionLevel + 1);
+          auto entity = Entity::New();
+          ExtractEntity(*dict_value, entity.get(), recursion_level + 1);
+          values->entity_values.push_back(std::move(entity));
         }
       } break;
+      case base::Value::Type::LIST:
+        // App Indexing doesn't support nested arrays.
+        return false;
       default:
         break;
     }
@@ -136,96 +106,95 @@ bool ParseRepeatedValue(base::Value::ListView& arr,
   return true;
 }
 
-void ExtractEntity(base::DictionaryValue* val,
-                   mojom::Entity& entity,
-                   int recursionLevel) {
-  if (recursionLevel >= kMaxDepth) {
+void ExtractEntity(const base::DictionaryValue& val,
+                   Entity* entity,
+                   int recursion_level) {
+  if (recursion_level >= kMaxDepth) {
     return;
   }
 
   std::string type = "";
-  val->GetString(kJSONLDKeyType, &type);
+  val.GetString(kJSONLDKeyType, &type);
   if (type == "") {
     type = "Thing";
   }
-  entity.type = type;
-  for (const auto& entry : val->DictItems()) {
-    if (entity.properties.size() >= kMaxNumFields) {
+  entity->type = type;
+  for (const auto& entry : val.DictItems()) {
+    if (entity->properties.size() >= kMaxNumFields) {
       break;
     }
-    mojom::PropertyPtr property = mojom::Property::New();
+    PropertyPtr property = Property::New();
     property->name = entry.first;
     if (property->name == kJSONLDKeyType) {
       continue;
     }
-    property->values = mojom::Values::New();
+    property->values = Values::New();
 
     if (entry.second.is_bool()) {
       bool v;
-      val->GetBoolean(entry.first, &v);
-      property->values->set_bool_values({v});
+      val.GetBoolean(entry.first, &v);
+      property->values->bool_values.push_back(v);
     } else if (entry.second.is_int()) {
       int v;
-      val->GetInteger(entry.first, &v);
-      property->values->set_long_values({v});
+      val.GetInteger(entry.first, &v);
+      property->values->long_values.push_back(v);
     } else if (entry.second.is_double()) {
       double v;
-      val->GetDouble(entry.first, &v);
+      val.GetDouble(entry.first, &v);
       std::string s = base::NumberToString(v);
       s = s.substr(0, kMaxStringLength);
-      property->values->set_string_values({s});
+      property->values->string_values.push_back(s);
     } else if (entry.second.is_string()) {
       std::string v;
-      val->GetString(entry.first, &v);
+      val.GetString(entry.first, &v);
       v = v.substr(0, kMaxStringLength);
-      property->values->set_string_values({v});
+      property->values->string_values.push_back(v);
     } else if (entry.second.is_dict()) {
-      if (recursionLevel + 1 >= kMaxDepth) {
+      if (recursion_level + 1 >= kMaxDepth) {
         continue;
       }
-      property->values->set_entity_values(std::vector<mojom::EntityPtr>());
-      property->values->get_entity_values().push_back(mojom::Entity::New());
-
-      base::DictionaryValue* dict_value = nullptr;
+      const base::DictionaryValue* dict_value = nullptr;
       if (!entry.second.GetAsDictionary(&dict_value)) {
         continue;
       }
-      ExtractEntity(dict_value, *(property->values->get_entity_values().at(0)),
-                    recursionLevel + 1);
+      auto nested_entity = Entity::New();
+      ExtractEntity(*dict_value, nested_entity.get(), recursion_level + 1);
+      property->values->entity_values.push_back(std::move(nested_entity));
     } else if (entry.second.is_list()) {
-      base::Value::ListView list_view = entry.second.GetList();
-      if (!ParseRepeatedValue(list_view, *(property->values), recursionLevel)) {
+      const auto& list_view = entry.second.GetList();
+      if (!ParseRepeatedValue(list_view, property->values.get(),
+                              recursion_level)) {
         continue;
       }
     }
 
-    entity.properties.push_back(std::move(property));
+    entity->properties.push_back(std::move(property));
   }
 }
 
 // Extract a JSONObject which corresponds to a single (possibly nested) entity.
-mojom::EntityPtr ExtractTopLevelEntity(base::DictionaryValue* val) {
-  mojom::EntityPtr entity = mojom::Entity::New();
+EntityPtr ExtractTopLevelEntity(const base::DictionaryValue& val) {
+  EntityPtr entity = Entity::New();
   std::string type;
-  val->GetString(kJSONLDKeyType, &type);
+  val.GetString(kJSONLDKeyType, &type);
   if (!IsSupportedType(type)) {
     return nullptr;
   }
-  ExtractEntity(val, *entity, 0);
+  ExtractEntity(val, entity.get(), 0);
   return entity;
 }
 
 }  // namespace
 
-mojom::EntityPtr Extractor::Extract(const std::string& content) {
+EntityPtr Extractor::Extract(const std::string& content) {
   base::Optional<base::Value> value(base::JSONReader::Read(content));
-  base::DictionaryValue* dict_value = nullptr;
+  const base::DictionaryValue* dict_value = nullptr;
 
   if (!value || !value.value().GetAsDictionary(&dict_value)) {
     return nullptr;
   }
 
-  return ExtractTopLevelEntity(dict_value);
+  return ExtractTopLevelEntity(*dict_value);
 }
 
 }  // namespace schema_org

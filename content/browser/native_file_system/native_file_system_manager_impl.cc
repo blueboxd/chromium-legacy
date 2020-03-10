@@ -4,6 +4,7 @@
 
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -74,9 +75,11 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
   }
 
   // Drop fullscreen mode so that the user sees the URL bar.
-  web_contents->ForSecurityDropFullscreen();
+  base::ScopedClosureRunner fullscreen_block =
+      web_contents->ForSecurityDropFullscreen();
 
-  FileSystemChooser::CreateAndShow(web_contents, options, std::move(callback));
+  FileSystemChooser::CreateAndShow(web_contents, options, std::move(callback),
+                                   std::move(fullscreen_block));
 }
 
 bool CreateOrTruncateFile(const base::FilePath& path) {

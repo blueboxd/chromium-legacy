@@ -3629,10 +3629,6 @@ bool LayoutObject::GetImageAnimationPolicy(ImageAnimationPolicy& policy) {
   return true;
 }
 
-bool LayoutObject::IsOutsideListMarker() const {
-  return IsListMarker() && !ToLayoutListMarker(this)->IsInside();
-}
-
 int LayoutObject::CaretMinOffset() const {
   return 0;
 }

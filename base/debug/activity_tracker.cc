@@ -685,6 +685,10 @@ ThreadActivityTracker::ScopedActivity::~ScopedActivity() {
     tracker_->PopActivity(activity_id_);
 }
 
+bool ThreadActivityTracker::ScopedActivity::IsRecorded() {
+  return tracker_ && tracker_->IsRecorded(activity_id_);
+}
+
 void ThreadActivityTracker::ScopedActivity::ChangeTypeAndData(
     Activity::Type type,
     const ActivityData& data) {
@@ -853,6 +857,10 @@ void ThreadActivityTracker::PopActivity(ActivityId id) {
   // happen after the atomic |depth| operation above so a "release" store
   // is required.
   header_->data_version.fetch_add(1, std::memory_order_release);
+}
+
+bool ThreadActivityTracker::IsRecorded(ActivityId id) {
+  return id < stack_slots_;
 }
 
 std::unique_ptr<ActivityUserData> ThreadActivityTracker::GetUserData(

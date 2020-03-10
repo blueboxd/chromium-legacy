@@ -115,11 +115,14 @@ FileSystemChooser::Options::Options(
       file_types_(ConvertAcceptsToFileTypeInfo(accepts, include_accepts_all)) {}
 
 // static
-void FileSystemChooser::CreateAndShow(WebContents* web_contents,
-                                      const Options& options,
-                                      ResultCallback callback) {
+void FileSystemChooser::CreateAndShow(
+    WebContents* web_contents,
+    const Options& options,
+    ResultCallback callback,
+    base::ScopedClosureRunner fullscreen_block) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* listener = new FileSystemChooser(options.type(), std::move(callback));
+  auto* listener = new FileSystemChooser(options.type(), std::move(callback),
+                                         std::move(fullscreen_block));
   listener->dialog_ = ui::SelectFileDialog::Create(
       listener,
       GetContentClient()->browser()->CreateSelectFilePolicy(web_contents));
@@ -154,8 +157,11 @@ void FileSystemChooser::CreateAndShow(WebContents* web_contents,
 
 FileSystemChooser::FileSystemChooser(
     blink::mojom::ChooseFileSystemEntryType type,
-    ResultCallback callback)
-    : callback_(std::move(callback)), type_(type) {}
+    ResultCallback callback,
+    base::ScopedClosureRunner fullscreen_block)
+    : callback_(std::move(callback)),
+      type_(type),
+      fullscreen_block_(std::move(fullscreen_block)) {}
 
 FileSystemChooser::~FileSystemChooser() {
   if (dialog_)

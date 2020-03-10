@@ -11,9 +11,10 @@ DesktopLinuxBrowserFrameViewLayout::DesktopLinuxBrowserFrameViewLayout(
     : nav_button_provider_(nav_button_provider) {}
 
 int DesktopLinuxBrowserFrameViewLayout::CaptionButtonY(
-    chrome::FrameButtonDisplayType button_id,
+    views::FrameButton button_id,
     bool restored) const {
-  gfx::Insets insets = nav_button_provider_->GetNavButtonMargin(button_id);
+  auto button_type = GetButtonDisplayType(button_id);
+  gfx::Insets insets = nav_button_provider_->GetNavButtonMargin(button_type);
   return insets.top() + FrameTopThickness(!delegate_->IsMaximized());
 }
 
@@ -43,4 +44,22 @@ int DesktopLinuxBrowserFrameViewLayout::GetWindowCaptionSpacing(
   if (!is_leading_button)
     spacing += nav_button_provider_->GetInterNavButtonSpacing();
   return spacing;
+}
+
+views::NavButtonProvider::FrameButtonDisplayType
+DesktopLinuxBrowserFrameViewLayout::GetButtonDisplayType(
+    views::FrameButton button_id) const {
+  switch (button_id) {
+    case views::FrameButton::kMinimize:
+      return views::NavButtonProvider::FrameButtonDisplayType::kMinimize;
+    case views::FrameButton::kMaximize:
+      return delegate_->IsMaximized()
+                 ? views::NavButtonProvider::FrameButtonDisplayType::kRestore
+                 : views::NavButtonProvider::FrameButtonDisplayType::kMaximize;
+    case views::FrameButton::kClose:
+      return views::NavButtonProvider::FrameButtonDisplayType::kClose;
+    default:
+      NOTREACHED();
+      return views::NavButtonProvider::FrameButtonDisplayType::kClose;
+  }
 }

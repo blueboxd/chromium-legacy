@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/updateable_sequenced_task_runner.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_playback_table.h"
 #include "chrome/browser/media/history/media_history_store.mojom.h"
@@ -74,6 +75,12 @@ class MediaHistoryStore {
       base::OnceCallback<void(std::vector<mojom::MediaHistoryPlaybackRowPtr>)>
           callback);
 
+  // Returns all the rows in the media feeds table.  This is only used for
+  // debugging because it loads all rows in the table.
+  void GetMediaFeedsForDebug(
+      base::OnceCallback<void(std::vector<media_feeds::mojom::MediaFeedPtr>)>
+          callback);
+
   // Gets the playback sessions from the media history store. The results will
   // be ordered by most recent first and be limited to the first |num_sessions|.
   // For each session it calls |filter| and if that returns |true| then that
@@ -96,13 +103,12 @@ class MediaHistoryStore {
 
   scoped_refptr<base::UpdateableSequencedTaskRunner> GetDBTaskRunnerForTest();
 
-  void EraseDatabaseAndCreateNew();
-  void DeleteAllOriginData(const std::set<url::Origin>& origins);
-
   void GetURLsInTableForTest(const std::string& table,
                              base::OnceCallback<void(std::set<GURL>)> callback);
 
   void PostTaskToDBForTest(base::OnceClosure callback);
+  void EraseDatabaseAndCreateNew();
+  void DeleteAllOriginData(const std::set<url::Origin>& origins);
 
  private:
   scoped_refptr<MediaHistoryStoreInternal> db_;

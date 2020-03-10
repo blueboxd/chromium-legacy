@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/frame_button_display_types.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/window/frame_buttons.h"
@@ -84,8 +83,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   // Returns the y-coordinate of button |button_id|.  If |restored| is true,
   // acts as if the window is restored regardless of the real mode.
-  virtual int CaptionButtonY(chrome::FrameButtonDisplayType button_id,
-                             bool restored) const;
+  virtual int CaptionButtonY(views::FrameButton button_id, bool restored) const;
 
   // Returns the thickness of the top 3D edge of the window frame.  If
   // |restored| is true, acts as if the window is restored regardless of the
@@ -103,11 +101,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
-
-  // Converts a FrameButton to a FrameButtonDisplayType, taking into
-  // consideration the maximized state of the browser window.
-  chrome::FrameButtonDisplayType GetButtonDisplayType(
-      views::FrameButton button_id) const;
 
   // Returns the margin around button |button_id|.  If |leading_spacing| is
   // true, returns the left margin (in RTL), otherwise returns the right margin

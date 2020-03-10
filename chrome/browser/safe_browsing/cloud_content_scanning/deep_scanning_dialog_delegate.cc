@@ -28,8 +28,10 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/file_util_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/file_source_request.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/grit/generated_resources.h"
@@ -66,58 +68,6 @@ bool WaitForVerdict() {
   int state = g_browser_process->local_state()->GetInteger(
       prefs::kDelayDeliveryUntilVerdict);
   return state == DELAY_UPLOADS || state == DELAY_UPLOADS_AND_DOWNLOADS;
-}
-
-DeepScanningDialogDelegate::FileContents GetFileContentsForLargeFile(
-    const base::FilePath& path,
-    base::File* file) {
-  size_t file_size = file->GetLength();
-  DeepScanningDialogDelegate::FileContents file_contents;
-  file_contents.result = BinaryUploadService::Result::FILE_TOO_LARGE;
-  file_contents.size = file_size;
-
-  // Only read 50MB at a time to avoid having very large files in memory.
-  std::unique_ptr<crypto::SecureHash> secure_hash =
-      crypto::SecureHash::Create(crypto::SecureHash::SHA256);
-  size_t bytes_read = 0;
-  std::string buf;
-  buf.reserve(BinaryUploadService::kMaxUploadSizeBytes);
-  while (bytes_read < file_size) {
-    int64_t bytes_currently_read = file->ReadAtCurrentPos(
-        &buf[0], BinaryUploadService::kMaxUploadSizeBytes);
-
-    if (bytes_currently_read == -1)
-      return DeepScanningDialogDelegate::FileContents();
-
-    secure_hash->Update(buf.data(), bytes_currently_read);
-
-    bytes_read += bytes_currently_read;
-  }
-
-  file_contents.sha256.resize(crypto::kSHA256Length);
-  secure_hash->Finish(base::data(file_contents.sha256), crypto::kSHA256Length);
-  return file_contents;
-}
-
-DeepScanningDialogDelegate::FileContents GetFileContentsForNormalFile(
-    const base::FilePath& path,
-    base::File* file) {
-  size_t file_size = file->GetLength();
-  DeepScanningDialogDelegate::FileContents file_contents;
-  file_contents.result = BinaryUploadService::Result::SUCCESS;
-  file_contents.size = file_size;
-  file_contents.data.contents.resize(file_size);
-
-  int64_t bytes_currently_read =
-      file->ReadAtCurrentPos(&file_contents.data.contents[0], file_size);
-
-  if (bytes_currently_read == -1)
-    return DeepScanningDialogDelegate::FileContents();
-
-  DCHECK_EQ(static_cast<size_t>(bytes_currently_read), file_size);
-
-  file_contents.sha256 = crypto::SHA256HashString(file_contents.data.contents);
-  return file_contents;
 }
 
 // A BinaryUploadService::Request implementation that gets the data to scan
@@ -224,41 +174,6 @@ bool* UIEnabledStorage() {
 
 }  // namespace
 
-DeepScanningDialogDelegate::FileSourceRequest::FileSourceRequest(
-    base::WeakPtr<DeepScanningDialogDelegate> delegate,
-    base::FilePath path,
-    BinaryUploadService::Callback callback)
-    : Request(std::move(callback)),
-      delegate_(delegate),
-      path_(std::move(path)) {
-  set_filename(path_.BaseName().AsUTF8Unsafe());
-}
-
-DeepScanningDialogDelegate::FileSourceRequest::~FileSourceRequest() = default;
-
-void DeepScanningDialogDelegate::FileSourceRequest::GetRequestData(
-    DataCallback callback) {
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&DeepScanningDialogDelegate::GetFileContentsSHA256Blocking,
-                     path_),
-      base::BindOnce(&FileSourceRequest::OnGotFileContents,
-                     weakptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void DeepScanningDialogDelegate::FileSourceRequest::OnGotFileContents(
-    DataCallback callback,
-    FileContents file_contents) {
-  if (delegate_)
-    delegate_->SetFileInfo(path_, std::move(file_contents.sha256),
-                           file_contents.size);
-
-  set_digest(base::HexEncode(file_contents.sha256.data(),
-                             file_contents.sha256.size()));
-
-  std::move(callback).Run(file_contents.result, file_contents.data);
-}
-
 DeepScanningDialogDelegate::Data::Data() = default;
 DeepScanningDialogDelegate::Data::Data(Data&& other) = default;
 DeepScanningDialogDelegate::Data::~Data() = default;
@@ -310,9 +225,7 @@ void DeepScanningDialogDelegate::BypassWarnings() {
     ReportSensitiveDataWarningBypass(
         Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
         web_contents_->GetLastCommittedURL(), data_.paths[index].AsUTF8Unsafe(),
-        base::HexEncode(file_info_[index].sha256.data(),
-                        file_info_[index].sha256.size()),
-        file_info_[index].mime_type,
+        file_info_[index].sha256, file_info_[index].mime_type,
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
         file_info_[index].size);
   }
@@ -363,20 +276,6 @@ bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
     case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
       return AllowUnsupportedFileTypes();
   }
-}
-
-// static
-DeepScanningDialogDelegate::FileContents
-DeepScanningDialogDelegate::GetFileContentsSHA256Blocking(
-    const base::FilePath& path) {
-  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!file.IsValid())
-    return FileContents();
-
-  return static_cast<size_t>(file.GetLength()) >
-                 BinaryUploadService::kMaxUploadSizeBytes
-             ? GetFileContentsForLargeFile(path, &file)
-             : GetFileContentsForNormalFile(path, &file);
 }
 
 // static
@@ -561,9 +460,8 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
   MaybeReportDeepScanningVerdict(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
       web_contents_->GetLastCommittedURL(), path.AsUTF8Unsafe(),
-      base::HexEncode(file_info_[index].sha256.data(),
-                      file_info_[index].sha256.size()),
-      mime_type, extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
+      file_info_[index].sha256, mime_type,
+      extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
       file_info_[index].size, result, response);
 
   bool dlp_ok = DlpTriggeredRulesOK(response.dlp_scan_verdict());
@@ -691,12 +589,14 @@ void DeepScanningDialogDelegate::AnalyzerCallback(
   }
 
   auto request = std::make_unique<FileSourceRequest>(
-      weak_ptr_factory_.GetWeakPtr(), data_.paths[index],
+      data_.paths[index],
       base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
                      weak_ptr_factory_.GetWeakPtr(), data_.paths[index]));
 
-  PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request.get());
-  UploadFileForDeepScanning(data_.paths[index], std::move(request));
+  FileSourceRequest* request_raw = request.get();
+  request_raw->GetRequestData(base::BindOnce(
+      &DeepScanningDialogDelegate::OnGotFileInfo,
+      weak_ptr_factory_.GetWeakPtr(), std::move(request), data_.paths[index]));
 }
 
 void DeepScanningDialogDelegate::PrepareRequest(
@@ -781,14 +681,19 @@ void DeepScanningDialogDelegate::RunCallback() {
     std::move(callback_).Run(data_, result_);
 }
 
-void DeepScanningDialogDelegate::SetFileInfo(const base::FilePath& path,
-                                             std::string sha256,
-                                             int64_t size) {
+void DeepScanningDialogDelegate::OnGotFileInfo(
+    std::unique_ptr<BinaryUploadService::Request> request,
+    const base::FilePath& path,
+    BinaryUploadService::Result result,
+    const BinaryUploadService::Request::Data& data) {
   auto it = std::find(data_.paths.begin(), data_.paths.end(), path);
   DCHECK(it != data_.paths.end());
   size_t index = std::distance(data_.paths.begin(), it);
-  file_info_[index].sha256 = std::move(sha256);
-  file_info_[index].size = size;
+  file_info_[index].sha256 = data.hash;
+  file_info_[index].size = data.size;
+
+  PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request.get());
+  UploadFileForDeepScanning(data_.paths[index], std::move(request));
 }
 
 void DeepScanningDialogDelegate::UpdateFinalResult(

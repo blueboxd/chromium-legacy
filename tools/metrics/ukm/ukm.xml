@@ -8786,6 +8786,36 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ReaderModeActivated" singular="True">
+  <owner>gilmanmh@google.com</owner>
+  <owner>kjbooker@google.com</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    Recorded after a user activates Reader Mode for a given page.
+  </summary>
+  <metric name="ActivatedViaOmnibox" enum="Boolean">
+    <summary>
+      Whether the user activated Reader Mode via the omnibox badge.
+    </summary>
+  </metric>
+</event>
+
+<event name="ReaderModeReceivedDistillability">
+  <owner>gilmanmh@google.com</owner>
+  <owner>kjbooker@google.com</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    Recorded when the Reader Mode badge receives a result from the
+    distillability service.
+  </summary>
+  <metric name="IsPageDistillable" enum="Boolean">
+    <summary>
+      Whether the distillability service determined the page to be distillable,
+      i.e. likely to render well in Reader Mode.
+    </summary>
+  </metric>
+</event>
+
 <event name="RendererSchedulerTask">
   <owner>altimin@chromium.org</owner>
   <summary>

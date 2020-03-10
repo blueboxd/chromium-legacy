@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_PRERENDER_ISOLATED_ISOLATED_PRERENDER_SERVICE_H_
 
 #include <memory>
+#include <vector>
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "url/gurl.h"
 
 class Profile;
 class IsolatedPrerenderProxyConfigurator;
@@ -36,6 +38,8 @@ class IsolatedPrerenderService
       const net::HttpRequestHeaders& headers) override;
   void OnSettingsInitialized() override;
   void OnDataSaverEnabledChanged(bool enabled) override;
+  void OnPrefetchProxyHostsChanged(
+      const std::vector<GURL>& prefetch_proxies) override;
 
   // KeyedService:
   void Shutdown() override;

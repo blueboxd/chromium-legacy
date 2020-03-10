@@ -112,10 +112,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kReleaseNotes;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kReleaseNotesNotification;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kScanningUI;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSessionManagerLongKillTimeout;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kShelfScrollable;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kShelfHotseat;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

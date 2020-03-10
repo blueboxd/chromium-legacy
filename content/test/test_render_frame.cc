@@ -134,6 +134,25 @@ class MockFrameHost : public mojom::FrameHost {
     return true;
   }
 
+  bool CreateNewWidget(mojo::PendingRemote<::content::mojom::Widget> widget,
+                       int32_t* out_routing_id) override {
+    MockRenderThread* mock_render_thread =
+        static_cast<MockRenderThread*>(RenderThread::Get());
+    *out_routing_id = mock_render_thread->GetNextRoutingID();
+    return true;
+  }
+
+  void CreateNewWidget(mojo::PendingRemote<mojom::Widget> widget,
+                       CreateNewWidgetCallback callback) override {
+    std::move(callback).Run(MSG_ROUTING_NONE);
+  }
+
+  void CreateNewFullscreenWidget(
+      mojo::PendingRemote<mojom::Widget> widget,
+      CreateNewFullscreenWidgetCallback callback) override {
+    std::move(callback).Run(MSG_ROUTING_NONE);
+  }
+
   void CreatePortal(mojo::PendingAssociatedReceiver<blink::mojom::Portal>,
                     mojo::PendingAssociatedRemote<blink::mojom::PortalClient>,
                     CreatePortalCallback callback) override {

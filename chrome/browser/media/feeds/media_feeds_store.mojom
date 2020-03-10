@@ -1,0 +1,22 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module media_feeds.mojom;
+
+import "url/mojom/url.mojom";
+
+struct MediaFeed {
+  // The ID of the field in storage.
+  int64 id;
+
+  // The URL for the discovered feed.
+  url.mojom.Url url;
+};
+
+// MediaFeedStore allows the Media Feeds WebUI to access data from the Media
+// Feeds backend in the browser process for diagnostic purposes.
+interface MediaFeedsStore {
+  // Gets all the discovered media feeds.
+  GetMediaFeeds() => (array<MediaFeed> feeds);
+};

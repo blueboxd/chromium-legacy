@@ -59,6 +59,8 @@ class MessageCardViewBinder {
             });
         } else if (CARD_ALPHA == propertyKey) {
             itemView.setAlpha(model.get(CARD_ALPHA));
+        } else if (MessageCardViewProperties.IS_ICON_VISIBLE == propertyKey) {
+            itemView.setIconVisibility(model.get(MessageCardViewProperties.IS_ICON_VISIBLE));
         }
     }
 }

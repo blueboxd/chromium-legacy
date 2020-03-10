@@ -148,15 +148,15 @@ cr.define('autofill_test_util', function() {
   /**
    * Creates a new password check status.
    * @param {!chrome.passwordsPrivate.PasswordCheckState} state
-   * @param {number} checked
-   * @param {number} remaining
+   * @param {!number|undefined} checked
+   * @param {!number|undefined} remaining
    * @return {!chrome.passwordsPrivate.PasswordCheckStatus}
    */
   function makePasswordCheckStatus(state, checked, remaining) {
     return {
       state: state || chrome.passwordsPrivate.PasswordCheckState.IDLE,
-      alreadyProcessed: checked || 0,
-      remainingInQueue: remaining || 0
+      alreadyProcessed: checked,
+      remainingInQueue: remaining
     };
   }
 

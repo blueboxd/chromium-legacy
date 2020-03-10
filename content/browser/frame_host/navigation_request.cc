@@ -1572,6 +1572,16 @@ void NavigationRequest::OnRequestRedirected(
     return;
   }
 
+  if (const auto blocked_reason = IsBlockedByCorp()) {
+    OnRequestFailedInternal(network::URLLoaderCompletionStatus(*blocked_reason),
+                            false /* skip_throttles */,
+                            base::nullopt /* error_page_content */,
+                            false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to
+    // OnRequestFailedInternal has destroyed the NavigationRequest.
+    return;
+  }
+
   // For now, DevTools needs the POST data sent to the renderer process even if
   // it is no longer a POST after the redirect.
   if (redirect_info.new_method != "POST")
@@ -1798,52 +1808,43 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
+  if (const auto blocked_reason = IsBlockedByCorp()) {
+    OnRequestFailedInternal(network::URLLoaderCompletionStatus(*blocked_reason),
+                            false /* skip_throttles */,
+                            base::nullopt /* error_page_content */,
+                            false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to
+    // OnRequestFailedInternal has destroyed the NavigationRequest.
+    return;
+  }
+
   auto cross_origin_embedder_policy =
       response_head_->cross_origin_embedder_policy;
   if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
-    // https://mikewest.github.io/corpp/#process-navigation-response.
-    if (GetParentFrame() &&
-        cross_origin_embedder_policy.value ==
-            network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp &&
-        !common_params_->url.SchemeIsBlob() &&
-        !common_params_->url.SchemeIs(url::kDataScheme)) {
-      // The CORP check for nested navigation.
-      if (base::Optional<network::BlockedByResponseReason> blocked_reason =
-              network::CrossOriginResourcePolicy::IsNavigationBlocked(
-                  common_params_->url, redirect_chain_[0],
-                  GetParentFrame()->GetLastCommittedOrigin(), *response_head_,
-                  GetParentFrame()->GetLastCommittedOrigin(),
-                  cross_origin_embedder_policy)) {
-        OnRequestFailedInternal(
-            network::URLLoaderCompletionStatus(*blocked_reason),
-            false /* skip_throttles */, base::nullopt /* error_page_content */,
-            false /* collapse_frame */);
-        // DO NOT ADD CODE after this. The previous call to
-        // OnRequestFailedInternal has destroyed the NavigationRequest.
-        return;
-      }
-    }
-    if (GetParentFrame() &&
-        GetParentFrame()->cross_origin_embedder_policy().value ==
-            network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp) {
-      // Some special URLs not loaded using the network are inheriting the
-      // Cross-Origin-Embedder-Policy header from their parent.
-      if (common_params_->url.SchemeIsBlob() ||
-          common_params_->url.SchemeIs(url::kDataScheme)) {
-        cross_origin_embedder_policy.value =
-            network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
-      }
-      if (cross_origin_embedder_policy.value ==
-          network::mojom::CrossOriginEmbedderPolicyValue::kNone) {
-        OnRequestFailedInternal(network::URLLoaderCompletionStatus(
-                                    network::BlockedByResponseReason::
-                                        kCoepFrameResourceNeedsCoepHeader),
-                                false /* skip_throttles */,
-                                base::nullopt /* error_page_content */,
-                                false /* collapse_frame */);
-        // DO NOT ADD CODE after this. The previous call to
-        // OnRequestFailedInternal has destroyed the NavigationRequest.
-        return;
+    // https://mikewest.github.io/corpp/#integration-html
+    if (auto* const parent_frame = GetParentFrame()) {
+      const auto& parent_coep = parent_frame->cross_origin_embedder_policy();
+      const auto& url = common_params_->url;
+      if (parent_coep.value ==
+          network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp) {
+        if (url.SchemeIsBlob() || url.SchemeIs(url::kDataScheme)) {
+          // Some special URLs not loaded using the network are inheriting the
+          // Cross-Origin-Embedder-Policy header from their parent.
+          cross_origin_embedder_policy.value =
+              network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+        }
+        if (cross_origin_embedder_policy.value ==
+            network::mojom::CrossOriginEmbedderPolicyValue::kNone) {
+          OnRequestFailedInternal(network::URLLoaderCompletionStatus(
+                                      network::BlockedByResponseReason::
+                                          kCoepFrameResourceNeedsCoepHeader),
+                                  false /* skip_throttles */,
+                                  base::nullopt /* error_page_content */,
+                                  false /* collapse_frame */);
+          // DO NOT ADD CODE after this. The previous call to
+          // OnRequestFailedInternal has destroyed the NavigationRequest.
+          return;
+        }
       }
     }
 
@@ -4031,6 +4032,29 @@ void NavigationRequest::ForceEnableOriginTrials(
     const std::vector<std::string>& trials) {
   DCHECK(!HasCommitted());
   commit_params_->force_enabled_origin_trials = trials;
+}
+
+base::Optional<network::BlockedByResponseReason>
+NavigationRequest::IsBlockedByCorp() {
+  if (!base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
+    return base::nullopt;
+  }
+  // https://mikewest.github.io/corpp/#integration-html
+  auto* parent_frame = GetParentFrame();
+  if (!parent_frame) {
+    return base::nullopt;
+  }
+  const auto& url = common_params_->url;
+  // Some special URLs not loaded using the network are inheriting the
+  // Cross-Origin-Embedder-Policy header from their parent.
+  if (url.SchemeIsBlob() || url.SchemeIs(url::kDataScheme)) {
+    return base::nullopt;
+  }
+  return network::CrossOriginResourcePolicy::IsNavigationBlocked(
+      url, redirect_chain_[0], parent_frame->GetLastCommittedOrigin(),
+      *response_head_, parent_frame->GetLastCommittedOrigin(),
+      parent_frame->cross_origin_embedder_policy(),
+      parent_frame->coep_reporter());
 }
 
 std::unique_ptr<PeakGpuMemoryTracker>

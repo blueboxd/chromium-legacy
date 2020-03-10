@@ -20,6 +20,9 @@ share_java_sources = [
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/scan_tab/QrCodeScanViewBinder.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/scan_tab/QrCodeScanViewProperties.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/share_tab/QrCodeShareCoordinator.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/share_tab/QrCodeShareMediator.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/share_tab/QrCodeShareView.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/share_tab/QrCodeShareViewBinder.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/share_tab/QrCodeShareViewProperties.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/screenshot/ScreenshotCoordinator.java",
 ]

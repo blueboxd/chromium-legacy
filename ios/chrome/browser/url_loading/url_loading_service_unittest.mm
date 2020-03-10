@@ -69,7 +69,7 @@ class URLLoadingServiceTest : public BlockCleanupTest {
         otr_service_(
             UrlLoadingServiceFactory::GetForBrowserState(otr_browser_state_)) {
     // Configure app service.
-    app_service_->currentBrowserState = chrome_browser_state_;
+    app_service_->current_browser_ = browser_.get();
 
     // Disable web usage on both browsers
     WebUsageEnablerBrowserAgent::CreateForBrowser(browser_.get());
@@ -153,7 +153,7 @@ TEST_F(URLLoadingServiceTest, TestSwitchToTab) {
   service_->Load(
       UrlLoadParams::SwitchToTab(web::NavigationManager::WebLoadParams(url)));
   EXPECT_EQ(web_state_ptr_2, web_state_list->GetActiveWebState());
-  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count_);
 }
 
 // Tests that switch to open tab from the NTP close it if it doesn't have
@@ -185,7 +185,7 @@ TEST_F(URLLoadingServiceTest, TestSwitchToTabFromNTP) {
       UrlLoadParams::SwitchToTab(web::NavigationManager::WebLoadParams(url)));
   EXPECT_EQ(web_state_ptr_2, web_state_list->GetActiveWebState());
   EXPECT_EQ(1, web_state_list->count());
-  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count_);
 }
 
 // Tests that trying to switch to a closed tab open from the NTP opens it in the
@@ -208,7 +208,7 @@ TEST_F(URLLoadingServiceTest, TestSwitchToClosedTab) {
       UrlLoadParams::SwitchToTab(web::NavigationManager::WebLoadParams(url)));
   EXPECT_EQ(1, web_state_list->count());
   EXPECT_EQ(web_state_ptr, web_state_list->GetActiveWebState());
-  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count_);
 }
 
 // Tests open a new url in the NTP or the current tab.
@@ -237,7 +237,7 @@ TEST_F(URLLoadingServiceTest, TestOpenInCurrentTab) {
   EXPECT_EQ(1, web_state_list->count());
 
   // Check that we had no app level redirection.
-  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count_);
 }
 
 // Tests opening a url in a new tab.
@@ -258,7 +258,7 @@ TEST_F(URLLoadingServiceTest, TestOpenInNewTab) {
   EXPECT_EQ(2, web_state_list->count());
 
   // Check that we had no app level redirection.
-  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count_);
 }
 
 // Tests open a new url in the current incognito tab.
@@ -269,9 +269,9 @@ TEST_F(URLLoadingServiceTest, TestOpenInCurrentIncognitoTab) {
   ASSERT_EQ(0, otr_web_state_list->count());
 
   // Make app level to be otr.
-  ChromeBrowserState* otr_browser_state =
-      chrome_browser_state_->GetOffTheRecordChromeBrowserState();
-  app_service_->currentBrowserState = otr_browser_state;
+  std::unique_ptr<TestBrowser> otr_browser = std::make_unique<TestBrowser>(
+      chrome_browser_state_->GetOffTheRecordChromeBrowserState());
+  app_service_->current_browser_ = otr_browser.get();
 
   // Set a new tab.
   GURL newtab("chrome://newtab");
@@ -301,7 +301,7 @@ TEST_F(URLLoadingServiceTest, TestOpenInCurrentIncognitoTab) {
   EXPECT_EQ(1, otr_web_state_list->count());
 
   // Check that we had no app level redirection.
-  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count_);
 }
 
 // Tests opening a url in a new incognito tab.
@@ -311,9 +311,9 @@ TEST_F(URLLoadingServiceTest, TestOpenInNewIncognitoTab) {
   WebStateList* otr_web_state_list = otr_browser_->GetWebStateList();
   ASSERT_EQ(0, otr_web_state_list->count());
 
-  ChromeBrowserState* otr_browser_state =
-      chrome_browser_state_->GetOffTheRecordChromeBrowserState();
-  app_service_->currentBrowserState = otr_browser_state;
+  std::unique_ptr<TestBrowser> otr_browser = std::make_unique<TestBrowser>(
+      chrome_browser_state_->GetOffTheRecordChromeBrowserState());
+  app_service_->current_browser_ = otr_browser.get();
 
   GURL url1("http://test/1");
   UrlLoadParams params1 =
@@ -332,7 +332,7 @@ TEST_F(URLLoadingServiceTest, TestOpenInNewIncognitoTab) {
   EXPECT_EQ(2, otr_web_state_list->count());
 
   // Check if we had any app level redirection.
-  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count_);
 }
 
 // Test opening a normal url in new tab with incognito service.
@@ -342,9 +342,9 @@ TEST_F(URLLoadingServiceTest, TestOpenNormalInNewTabWithIncognitoService) {
   WebStateList* otr_web_state_list = otr_browser_->GetWebStateList();
   ASSERT_EQ(0, otr_web_state_list->count());
 
-  ChromeBrowserState* otr_browser_state =
-      chrome_browser_state_->GetOffTheRecordChromeBrowserState();
-  app_service_->currentBrowserState = otr_browser_state;
+  std::unique_ptr<TestBrowser> otr_browser = std::make_unique<TestBrowser>(
+      chrome_browser_state_->GetOffTheRecordChromeBrowserState());
+  app_service_->current_browser_ = otr_browser.get();
 
   // Send to right service.
   GURL url1("http://test/1");
@@ -365,7 +365,7 @@ TEST_F(URLLoadingServiceTest, TestOpenNormalInNewTabWithIncognitoService) {
   EXPECT_EQ(1, otr_web_state_list->count());
 
   // Check that had one app level redirection.
-  EXPECT_EQ(1, app_service_->load_new_tab_call_count);
+  EXPECT_EQ(1, app_service_->load_new_tab_call_count_);
 }
 
 // Test opening an incognito url in new tab with normal service.
@@ -375,7 +375,7 @@ TEST_F(URLLoadingServiceTest, TestOpenIncognitoInNewTabWithNormalService) {
   WebStateList* otr_web_state_list = otr_browser_->GetWebStateList();
   ASSERT_EQ(0, otr_web_state_list->count());
 
-  app_service_->currentBrowserState = chrome_browser_state_;
+  app_service_->current_browser_ = browser_.get();
 
   // Send to wrong service.
   GURL url1("http://test/1");
@@ -396,7 +396,7 @@ TEST_F(URLLoadingServiceTest, TestOpenIncognitoInNewTabWithNormalService) {
   EXPECT_EQ(0, otr_web_state_list->count());
 
   // Check that we had one app level redirection.
-  EXPECT_EQ(1, app_service_->load_new_tab_call_count);
+  EXPECT_EQ(1, app_service_->load_new_tab_call_count_);
 }
 
 // Test opening an incognito url in new tab with normal service using load
@@ -407,7 +407,7 @@ TEST_F(URLLoadingServiceTest, TestOpenIncognitoInNewTabWithLoadStrategy) {
   WebStateList* otr_web_state_list = otr_browser_->GetWebStateList();
   ASSERT_EQ(0, otr_web_state_list->count());
 
-  app_service_->currentBrowserState = chrome_browser_state_;
+  app_service_->current_browser_ = browser_.get();
 
   // Send to normal service.
   GURL url1("http://test/1");
@@ -419,7 +419,7 @@ TEST_F(URLLoadingServiceTest, TestOpenIncognitoInNewTabWithLoadStrategy) {
   EXPECT_EQ(0, otr_web_state_list->count());
 
   // Check that we had one app level redirection.
-  EXPECT_EQ(1, app_service_->load_new_tab_call_count);
+  EXPECT_EQ(1, app_service_->load_new_tab_call_count_);
 }
 
 // Test opening an incognito url in current tab with normal service using load
@@ -431,9 +431,9 @@ TEST_F(URLLoadingServiceTest, TestOpenIncognitoInCurrentTabWithLoadStrategy) {
   ASSERT_EQ(0, otr_web_state_list->count());
 
   // Make app level to be otr.
-  ChromeBrowserState* otr_browser_state =
-      chrome_browser_state_->GetOffTheRecordChromeBrowserState();
-  app_service_->currentBrowserState = otr_browser_state;
+  std::unique_ptr<TestBrowser> otr_browser = std::make_unique<TestBrowser>(
+      chrome_browser_state_->GetOffTheRecordChromeBrowserState());
+  app_service_->current_browser_ = otr_browser.get();
 
   // Set a new incognito tab.
   GURL newtab("chrome://newtab");
@@ -463,7 +463,7 @@ TEST_F(URLLoadingServiceTest, TestOpenIncognitoInCurrentTabWithLoadStrategy) {
   EXPECT_EQ(1, otr_web_state_list->count());
 
   // Check that we had no app level redirection.
-  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count_);
 }
 
 }  // namespace

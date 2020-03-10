@@ -22,6 +22,18 @@ namespace views {
 
 class NavButtonProvider {
  public:
+  // This enum is similar to views::FrameButton, except it partitions
+  // kMaximize and kRestore.  This is useful for when we want to be
+  // explicit about which buttons we want drawn, without having to
+  // implicitly determine if we should use kMaximize or kRestore
+  // depending on the browser window's maximized/restored state.
+  enum class FrameButtonDisplayType {
+    kMinimize,
+    kMaximize,
+    kRestore,
+    kClose,
+  };
+
   virtual ~NavButtonProvider() {}
 
   // Redraws all images and updates all size state.  |top_area_height|
@@ -33,14 +45,15 @@ class NavButtonProvider {
                             bool active) = 0;
 
   // Gets the cached button image corresponding to |type| and |state|.
-  virtual gfx::ImageSkia GetImage(chrome::FrameButtonDisplayType type,
-                                  views::Button::ButtonState state) const = 0;
+  virtual gfx::ImageSkia GetImage(
+      views::NavButtonProvider::FrameButtonDisplayType type,
+      views::Button::ButtonState state) const = 0;
 
   // Gets the external margin around each button.  The left inset
   // represents the leading margin, and the right inset represents the
   // trailing margin.
   virtual gfx::Insets GetNavButtonMargin(
-      chrome::FrameButtonDisplayType type) const = 0;
+      views::NavButtonProvider::FrameButtonDisplayType type) const = 0;
 
   // Gets the internal spacing (padding + border) of the top area.
   // The left inset represents the leading spacing, and the right

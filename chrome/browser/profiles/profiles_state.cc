@@ -37,7 +37,6 @@
 #include <algorithm>
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #endif
 
@@ -188,10 +187,6 @@ void UpdateGaiaProfileInfoIfNeeded(Profile* profile) {
   // The service may be null, for example during unit tests.
   if (service)
     service->Update();
-}
-
-SigninErrorController* GetSigninErrorController(Profile* profile) {
-  return SigninErrorControllerFactory::GetForProfile(profile);
 }
 
 bool SetActiveProfileToGuestIfLocked() {

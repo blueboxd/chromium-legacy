@@ -11,10 +11,10 @@
 TestAppUrlLoadingService::TestAppUrlLoadingService() {}
 
 void TestAppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
-  last_params = params;
-  load_new_tab_call_count++;
+  last_params_ = params;
+  load_new_tab_call_count_++;
 }
 
-ChromeBrowserState* TestAppUrlLoadingService::GetCurrentBrowserState() {
-  return currentBrowserState;
+Browser* TestAppUrlLoadingService::GetCurrentBrowser() {
+  return current_browser_;
 }

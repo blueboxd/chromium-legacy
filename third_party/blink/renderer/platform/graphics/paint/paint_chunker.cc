@@ -117,8 +117,13 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
 void PaintChunker::AddHitTestDataToCurrentChunk(const PaintChunk::Id& id,
                                                 const IntRect& rect,
                                                 TouchAction touch_action) {
+  // In CompositeAfterPaint, we ensure a paint chunk for correct composited
+  // hit testing. In pre-CompositeAfterPaint, this is unnecessary, except that
+  // there is special touch action, and that we have a non-root effect so that
+  // PaintChunksToCcLayer will emit paint operations for filters.
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      touch_action == TouchAction::kAuto)
+      touch_action == TouchAction::kAuto &&
+      &current_properties_.Effect() == &EffectPaintPropertyNode::Root())
     return;
 
   auto& chunk = EnsureCurrentChunk(id);

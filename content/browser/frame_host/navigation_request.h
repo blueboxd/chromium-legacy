@@ -40,6 +40,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/proxy_server.h"
 #include "net/dns/public/resolve_error_info.h"
+#include "services/network/public/cpp/blocked_by_response_reason.h"
 #include "services/network/public/cpp/origin_policy.h"
 
 #if defined(OS_ANDROID)
@@ -875,6 +876,8 @@ class CONTENT_EXPORT NavigationRequest
   void RestartBackForwardCachedNavigationImpl();
 
   void ForceEnableOriginTrials(const std::vector<std::string>& trials) override;
+
+  base::Optional<network::BlockedByResponseReason> IsBlockedByCorp();
 
   FrameTreeNode* frame_tree_node_;
 

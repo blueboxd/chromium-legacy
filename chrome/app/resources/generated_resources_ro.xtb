@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Datele aplicațiilor găzduite</translation>
 <translation id="1776712937009046120">Adaugă un utilizator</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Acest dispozitiv este gestionat de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Dă clic pe „Înainte” ca să continui conectarea la contul <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Introduceți această cheie de acces pe „<ph name="DEVICE_NAME" />":</translation>
 <translation id="177989070088644880">Aplicație (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Închide grupul</translation>
@@ -892,7 +890,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2202898655984161076">A apărut o problemă la listarea imprimantelor. Este posibil ca unele dintre imprimante să nu fi fost înregistrate la <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motorul de căutare folosit în <ph name="BEGIN_LINK" />bara de adrese<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Citește și modifică orice date introduse</translation>
-<translation id="220792432208469595">Trimite date de utilizare și diagnosticare. Momentan, dispozitivul trimite automat date de diagnosticare și de utilizare a dispozitivului și aplicațiilor la Google. Aceasta va ajuta la stabilitatea sistemului, a aplicației și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Această setare este impusă de proprietar. Dacă setarea Activitatea suplimentară de pe web și din aplicații este activată, aceste date pot fi salvate în Contul tău Google. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Introduceți acest cod PIN pe „<ph name="DEVICE_NAME" />”:</translation>
 <translation id="2212565012507486665">Permite cookie-urile</translation>
 <translation id="2213140827792212876">Elimină utilizarea comună</translation>
@@ -1353,7 +1350,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2804043232879091219">Browserul secundar nu a putut fi deschis</translation>
 <translation id="2804667941345577550">Te vei deconecta de la acest site, inclusiv din filele deschise</translation>
 <translation id="2804680522274557040">Camera foto este dezactivată</translation>
-<translation id="2805539617243680210">Gata!</translation>
 <translation id="2805646850212350655">Sistem Microsoft de criptare a fișierelor</translation>
 <translation id="2805756323405976993">Aplicații</translation>
 <translation id="2805770823691782631">Detalii suplimentare</translation>
@@ -2034,6 +2030,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3742055079367172538">Captură de ecran efectuată</translation>
 <translation id="3742666961763734085">Nu s-a găsit nicio unitate organizațională cu acest nume. Încearcă din nou.</translation>
 <translation id="3744111561329211289">Sincronizare în fundal</translation>
+<translation id="3747077776423672805">Pentru a elimina aplicații, accesează Setări &gt; Magazin Google Play &gt; Gestionează preferințele Android &gt; Aplicații sau Manager de aplicații. Apoi atinge aplicația pe care dorești să o dezinstalezi (poate fi necesar să glisezi la dreapta sau la stânga pentru a găsi aplicația). Apoi, atinge Dezinstalează sau Dezactivează.</translation>
 <translation id="3748026146096797577">Neconectat</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Dispozitivele mele</translation>
@@ -2757,7 +2754,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4785719467058219317">Folosești o cheie de securitate care nu este înregistrată pe acest site</translation>
 <translation id="4788092183367008521">Verifică conexiunea la rețea și încearcă din nou.</translation>
 <translation id="4792711294155034829">&amp;Raportează o problemă...</translation>
-<translation id="4795022432560487924">Trimite date de utilizare și diagnosticare. Contribuie la îmbunătățirea experienței Android a copilului trimițând automat la Google date de diagnosticare și utilizare a dispozitivului și a aplicațiilor. Acestea nu vor fi folosite la identificarea copilului și vor ajuta la stabilitatea sistemului, a aplicațiilor și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Această setare este impusă de proprietar. Proprietarul poate alege să trimită date de diagnosticare și utilizare a dispozitivului la Google. Dacă ai activat setarea Activitatea suplimentară de pe web și din aplicații pentru copilul tău, aceste date pot fi salvate în Contul său Google. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Pagină web, numai HTML</translation>
 <translation id="4798236378408895261">Atașează <ph name="BEGIN_LINK" />Jurnalele Bluetooth<ph name="END_LINK" /> (Utilizare internă Google)</translation>
 <translation id="4801448226354548035">Ascundeți conturile</translation>
@@ -3384,6 +3380,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5649053991847567735">Descărcări automate</translation>
 <translation id="5653154844073528838">Ai <ph name="PRINTER_COUNT" /> imprimante salvate.</translation>
 <translation id="5656845498778518563">Trimite feedback la Google</translation>
+<translation id="5657156137487675418">Permiteți toate cookie-urile</translation>
 <translation id="5657667036353380798">Extensia externă necesită instalarea versiunii Chrome <ph name="MINIMUM_CHROME_VERSION" /> sau a unei versiuni superioare.</translation>
 <translation id="5658415415603568799">Pentru mai multă siguranță, Smart Lock îți solicită să introduci parola după 20 de ore.</translation>
 <translation id="5659593005791499971">Adresă de e-mail</translation>
@@ -3591,7 +3588,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5941711191222866238">Minimizează</translation>
 <translation id="5942964813783878922"><ph name="DEVICE_TYPE" /> va reporni după această actualizare. Actualizările de software și de securitate ulterioare se vor instala automat.</translation>
 <translation id="5944869793365969636">Scanează codul QR</translation>
-<translation id="5945188205370098537">Trimite date de utilizare și diagnosticare. Contribuie la îmbunătățirea experienței Android trimițând automat la Google date privind diagnosticarea și utilizarea dispozitivelor și a aplicațiilor. Aceasta va ajuta la stabilitatea sistemului, a aplicației și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Dacă setarea Activitatea suplimentară de pe web și din aplicații este activată, aceste date pot fi salvate în Contul tău Google. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID raport <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Fișierul nu poate fi analizat</translation>
 <translation id="5955282598396714173">Parola a expirat. Pentru a o schimba, deconectează-te, apoi conectează-te din nou.</translation>
@@ -3777,6 +3773,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6185132558746749656">Locația dispozitivului</translation>
 <translation id="6186394685773237175">Nu s-au găsit parole compromise</translation>
 <translation id="6195693561221576702">Acest dispozitiv nu poate fi configurat în modul demo offline.</translation>
+<translation id="6196640612572343990">Blochează cookie-urile terță parte</translation>
 <translation id="6196854373336333322">Extensia „<ph name="EXTENSION_NAME" />” a preluat controlul asupra setărilor de proxy, ceea ce înseamnă că poate modifica, întrerupe sau intercepta tot ceea ce faci online. Dacă nu știi sigur de ce a apărut această modificare, probabil că nu ai aprobat-o.</translation>
 <translation id="6198102561359457428">Deconectați-vă, apoi conectați-vă din nou...</translation>
 <translation id="6198252989419008588">Schimbă codul PIN</translation>
@@ -4443,7 +4440,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="711902386174337313">Citește lista dispozitivelor conectate</translation>
 <translation id="7120865473764644444">Nu s-a putut stabili conexiunea cu serverul de sincronizare. Se încearcă din nou…</translation>
 <translation id="7121362699166175603">Șterge istoricul și completările automate din bara de adrese. Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Trimite date de utilizare și diagnosticare. Momentan, dispozitivul trimite automat date de diagnosticare și de utilizare a dispozitivului și aplicațiilor la Google. Acestea nu vor fi folosite la identificarea copilului și vor ajuta la stabilitatea sistemului, a aplicațiilor și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Dacă ai activat setarea Activitatea suplimentară de pe web și din aplicații pentru copilul tău, aceste date pot fi salvate în Contul său Google. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Modul pentru dezvoltatori</translation>
 <translation id="7121728544325372695">Cratime inteligente</translation>
 <translation id="7123360114020465152">Nu mai este acceptată</translation>
@@ -4558,7 +4554,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7280041992884344566">A apărut o eroare în timp ce Chrome căuta software dăunător</translation>
 <translation id="7280649757394340890">Setări ale vocii pentru redarea vocală a textului</translation>
 <translation id="7280877790564589615">Permisiune solicitată</translation>
-<translation id="7281268427852119151">Folosește istoricul de navigare pentru a personaliza Căutarea, anunțurile și alte servicii Google</translation>
 <translation id="7282992757463864530">Bară de informații</translation>
 <translation id="7287143125007575591">Acces refuzat.</translation>
 <translation id="7287411021188441799">Restabilește fundalul prestabilit</translation>
@@ -5233,7 +5228,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Mută fila în fereastră nouă}few{Mută filele în fereastră nouă}other{Mută filele în fereastră nouă}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">pagină</translation>
-<translation id="8180294223783876911">Trimite date de utilizare și diagnosticare. Momentan, dispozitivul trimite automat date de diagnosticare și de utilizare a dispozitivului și aplicațiilor la Google. Aceasta va ajuta la stabilitatea sistemului, a aplicației și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Dacă setarea Activitatea suplimentară de pe web și din aplicații este activată, aceste date pot fi salvate în Contul tău Google. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">Extensia „<ph name="EXTENSION" />” poate să citească și să șteargă fișiere imagine, video și audio din locațiile selectate.</translation>
 <translation id="8181215761849004992">Dispozitivul nu poate fi asociat domeniului. Verifică-ți contul pentru a vedea dacă ai suficiente privilegii pentru a adăuga dispozitive.</translation>
 <translation id="8182105986296479640">Aplicația nu răspunde.</translation>
@@ -5255,7 +5249,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8203732864715032075">Îți trimite notificări și are ca setare prestabilită reținerea acestui computer pentru Messages <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">„<ph name="APP_NAME" />” este blocată de părintele tău. Solicită părintelui permisiunea de a folosi această aplicație.</translation>
 <translation id="820568752112382238">Cele mai accesate site-uri</translation>
-<translation id="8206581664590136590">Trimite date de utilizare și diagnosticare. Contribuie la îmbunătățirea experienței Android a copilului trimițând automat la Google date de diagnosticare și utilizare a dispozitivului și a aplicațiilor. Acestea nu vor fi folosite la identificarea copilului și vor ajuta la stabilitatea sistemului, a aplicațiilor și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Dacă ai activat setarea Activitatea suplimentară de pe web și din aplicații pentru copilul tău, aceste date pot fi salvate în Contul său Google. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Albăstrel</translation>
 <translation id="8206859287963243715">Celular</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Descărcarea este în desfășurare}few{Descărcările sunt în desfășurare}other{Descărcările sunt în desfășurare}}</translation>
@@ -5801,7 +5794,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8912362522468806198">Contul Google</translation>
 <translation id="8912793549644936705">Extins</translation>
 <translation id="8912810933860534797">Activează scanarea automată</translation>
-<translation id="891365694296252935">Trimite date de utilizare și diagnosticare. Momentan, dispozitivul trimite automat date de diagnosticare și de utilizare a dispozitivului și aplicațiilor la Google. Acestea nu vor fi folosite la identificarea copilului și vor ajuta la stabilitatea sistemului, a aplicațiilor și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Această setare este impusă de proprietar. Dacă ai activat setarea Activitatea suplimentară de pe web și din aplicații pentru copilul tău, aceste date pot fi salvate în Contul său Google. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Se încarcă sugestiile</translation>
 <translation id="8916476537757519021">Subcadru incognito: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Se verifică cheia de securitate…</translation>
@@ -5938,7 +5930,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9101691533782776290">Lansați aplicația</translation>
 <translation id="9102610709270966160">Activează extensia</translation>
 <translation id="9103868373786083162">Apasă pentru a naviga înapoi sau folosește meniul contextual pentru a vedea istoricul</translation>
-<translation id="9104396740804929809">Trimite date de utilizare și diagnosticare. Contribuie la îmbunătățirea experienței Android trimițând automat la Google date privind diagnosticarea și utilizarea dispozitivelor și a aplicațiilor. Aceasta va ajuta la stabilitatea sistemului, a aplicației și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Această setare este impusă de proprietar. Proprietarul poate alege să trimită date de diagnosticare și utilizare a dispozitivului la Google. Dacă setarea Activitatea suplimentară de pe web și din aplicații este activată, aceste date pot fi salvate în Contul tău Google. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Pentru a elibera spațiu, șterge fișiere din stocarea dispozitivului.</translation>
 <translation id="9109283579179481106">Conectează-te la o rețea mobilă</translation>
 <translation id="9111102763498581341">Deblochează</translation>

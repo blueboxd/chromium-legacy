@@ -136,11 +136,8 @@ void SVGResourcesCache::ClientStyleChanged(LayoutObject& layout_object,
   if (!diff.HasDifference() || !layout_object.Parent())
     return;
 
-  // In this case the proper SVGFE*Element will decide whether the modified CSS
-  // properties require
-  // a relayout or paintInvalidation.
-  if (layout_object.IsSVGResourceFilterPrimitive() && !diff.NeedsLayout())
-    return;
+  // LayoutObjects for SVGFE*Element should not be calling this function.
+  DCHECK(!layout_object.IsSVGFilterPrimitive());
 
   // Dynamic changes of CSS properties like 'clip-path' may require us to
   // recompute the associated resources for a LayoutObject.

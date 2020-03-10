@@ -14,6 +14,7 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "chrome/browser/language/translate_frame_binder.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_store.mojom.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_ui.h"
 #include "chrome/browser/ui/webui/media/media_engagement_ui.h"
+#include "chrome/browser/ui/webui/media/media_feeds_ui.h"
 #include "chrome/browser/ui/webui/media/media_history_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
@@ -429,6 +431,9 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       media::mojom::MediaEngagementScoreDetailsProvider, MediaEngagementUI>(
       map);
+
+  RegisterWebUIControllerInterfaceBinder<media_feeds::mojom::MediaFeedsStore,
+                                         MediaFeedsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       media_history::mojom::MediaHistoryStore, MediaHistoryUI>(map);

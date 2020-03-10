@@ -454,6 +454,14 @@ const struct ParameterizedItemTestCase {
     {"missing terminal parameter value item",
      "text/html;q=1.0;a",
      {{Token("text/html"), {DoubleParam("q", 1), BooleanParam("a", true)}}}},
+    {"duplicate parameter keys with different value",
+     "text/html;a=1;b=2;a=3.0",
+     {{Token("text/html"), {DoubleParam("a", 3), Param("b", 2L)}}},
+     "text/html;a=3.0;b=2"},
+    {"duplicate parameter keys with missing value",
+     "text/html;a;a=1",
+     {{Token("text/html"), {Param("a", 1L)}}},
+     "text/html;a=1"},
     {"whitespace before = parameterised item", "text/html, text/plain;q =0.5",
      base::nullopt},
     {"whitespace after = parameterised item", "text/html, text/plain;q= 0.5",
@@ -627,7 +635,7 @@ const struct DictionaryTestCase {
     {"numeric key dictionary", "a=1,1b=2,a=1", base::nullopt},
     {"uppercase key dictionary", "a=1,B=2,a=1", base::nullopt},
     {"bad key dictionary", "a=1,b!=2,a=1", base::nullopt},
-    // Paramaterised dictionary tests
+    // Parameterised dictionary tests
     {"basic parameterised dict",
      "abc=123;a=1;b=2, def=456, ghi=789;q=9;r=\"+w\"",
      {Dictionary{

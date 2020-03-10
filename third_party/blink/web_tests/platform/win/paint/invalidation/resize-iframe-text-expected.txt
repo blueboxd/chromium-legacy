@@ -14,7 +14,12 @@
         {
           "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 300, 64, 22],
-          "reason": "chunk appeared"
+          "reason": "incremental"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Success'",
+          "rect": [8, 300, 64, 22],
+          "reason": "appeared"
         },
         {
           "object": "VerticalScrollbar",

@@ -88,6 +88,53 @@ class HotseatWindowTargeter : public aura::WindowTargeter {
 
 }  // namespace
 
+// Records smoothness of animations for background of the hotseat widget.
+class HotseatWidgetBackgroundAnimationMetricsReporter
+    : public HotseatTransitionAnimator::Observer,
+      public ui::AnimationMetricsReporter {
+ public:
+  explicit HotseatWidgetBackgroundAnimationMetricsReporter(HotseatState state)
+      : target_state_(state) {}
+
+  ~HotseatWidgetBackgroundAnimationMetricsReporter() override = default;
+
+  void OnHotseatTransitionAnimationWillStart(HotseatState from_state,
+                                             HotseatState to_state) override {
+    target_state_ = to_state;
+  }
+
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override {
+    switch (target_state_) {
+      case HotseatState::kShownClamshell:
+      case HotseatState::kShownHomeLauncher:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.TranslucentBackground."
+            "AnimationSmoothness.TransitionToShownHotseat",
+            value);
+        break;
+      case HotseatState::kExtended:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.TranslucentBackground."
+            "AnimationSmoothness.TransitionToExtendedHotseat",
+            value);
+        break;
+      case HotseatState::kHidden:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.TranslucentBackground."
+            "AnimationSmoothness.TransitionToHiddenHotseat",
+            value);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+ private:
+  // The state to which the animation is transitioning.
+  HotseatState target_state_;
+};
+
 class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
                                     public views::WidgetDelegateView,
                                     public OverviewObserver,
@@ -100,7 +147,8 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
 
   // Initializes the view.
   void Init(ScrollableShelfView* scrollable_shelf_view,
-            ui::Layer* parent_layer);
+            ui::Layer* parent_layer,
+            ui::AnimationMetricsReporter* background_metrics_reporter);
 
   // Updates the hotseat background.
   void UpdateTranslucentBackground();
@@ -145,6 +193,8 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;  // unowned.
   // Blur is disabled during animations to improve performance.
   bool blur_lock_ = false;
+  // Owned by the Hotseat Widget.
+  ui::AnimationMetricsReporter* background_metrics_reporter_;
 
   // The most recent color that the |translucent_background_| has been animated
   // to.
@@ -156,8 +206,7 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
 HotseatWidget::DelegateView::~DelegateView() {
   WallpaperControllerImpl* wallpaper_controller =
       Shell::Get()->wallpaper_controller();
-  OverviewController* overview_controller =
-      Shell::Get()->overview_controller();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (wallpaper_controller)
     wallpaper_controller->RemoveObserver(this);
   if (overview_controller)
@@ -166,7 +215,8 @@ HotseatWidget::DelegateView::~DelegateView() {
 
 void HotseatWidget::DelegateView::Init(
     ScrollableShelfView* scrollable_shelf_view,
-    ui::Layer* parent_layer) {
+    ui::Layer* parent_layer,
+    ui::AnimationMetricsReporter* background_metrics_reporter) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   if (!chromeos::switches::ShouldShowScrollableShelf())
@@ -174,8 +224,7 @@ void HotseatWidget::DelegateView::Init(
 
   WallpaperControllerImpl* wallpaper_controller =
       Shell::Get()->wallpaper_controller();
-  OverviewController* overview_controller =
-      Shell::Get()->overview_controller();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (wallpaper_controller)
     wallpaper_controller->AddObserver(this);
   if (overview_controller)
@@ -185,6 +234,7 @@ void HotseatWidget::DelegateView::Init(
   DCHECK(scrollable_shelf_view);
   scrollable_shelf_view_ = scrollable_shelf_view;
   UpdateTranslucentBackground();
+  background_metrics_reporter_ = background_metrics_reporter;
 }
 
 void HotseatWidget::DelegateView::UpdateTranslucentBackground() {
@@ -219,6 +269,8 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
   animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
   animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  if (animate)
+    animation_setter.SetAnimationMetricsReporter(background_metrics_reporter_);
 
   if (ShelfConfig::Get()->GetDefaultShelfColor() != target_color_) {
     target_color_ = ShelfConfig::Get()->GetDefaultShelfColor();
@@ -335,7 +387,11 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
         /*shelf_button_delegate=*/nullptr));
     shelf_view_->Init();
   }
-  delegate_view_->Init(scrollable_shelf_view(), GetLayer());
+  traslucent_background_metrics_reporter_ =
+      std::make_unique<HotseatWidgetBackgroundAnimationMetricsReporter>(
+          state());
+  delegate_view_->Init(scrollable_shelf_view(), GetLayer(),
+                       traslucent_background_metrics_reporter_.get());
 }
 
 void HotseatWidget::OnHotseatTransitionAnimatorCreated(

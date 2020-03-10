@@ -128,7 +128,8 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
 
     // Dissociate the mailbox, flushing previous commands first
     webgpu()->FlushCommands();
-    webgpu()->DissociateMailbox(reservation.id, reservation.generation);
+    webgpu()->DissociateMailbox(device_client_id, reservation.id,
+                                reservation.generation);
   }
 
   // Part 2: Read back the texture using Dawn
@@ -175,7 +176,8 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
 
     // Dissociate the mailbox, flushing previous commands first
     webgpu()->FlushCommands();
-    webgpu()->DissociateMailbox(reservation.id, reservation.generation);
+    webgpu()->DissociateMailbox(device_client_id, reservation.id,
+                                reservation.generation);
 
     // Map the buffer and assert the pixel is the correct value.
     readback_buffer.MapReadAsync(ToMockBufferMapReadCallback, 0);
@@ -224,7 +226,8 @@ TEST_F(WebGPUMailboxTest, ErrorWhenUsingTextureAfterDissociate) {
   webgpu()->AssociateMailbox(
       device_client_id, 0, reservation.id, reservation.generation,
       WGPUTextureUsage_OutputAttachment, reinterpret_cast<GLbyte*>(&mailbox));
-  webgpu()->DissociateMailbox(reservation.id, reservation.generation);
+  webgpu()->DissociateMailbox(device_client_id, reservation.id,
+                              reservation.generation);
 
   // Try using the texture, it should produce a validation error.
   wgpu::TextureView view = texture.CreateView();
@@ -263,10 +266,10 @@ TEST_F(WebGPUMailboxTest, UseA_UseB_DestroyA_DestroyB) {
 
   // Create a the shared images.
   SharedImageInterface* sii = GetSharedImageInterface();
-  Mailbox mailboxA = sii->CreateSharedImage(
+  Mailbox mailbox_a = sii->CreateSharedImage(
       viz::ResourceFormat::RGBA_8888, {1, 1}, gfx::ColorSpace::CreateSRGB(),
       SHARED_IMAGE_USAGE_WEBGPU);
-  Mailbox mailboxB = sii->CreateSharedImage(
+  Mailbox mailbox_b = sii->CreateSharedImage(
       viz::ResourceFormat::RGBA_8888, {1, 1}, gfx::ColorSpace::CreateSRGB(),
       SHARED_IMAGE_USAGE_WEBGPU);
 
@@ -276,21 +279,77 @@ TEST_F(WebGPUMailboxTest, UseA_UseB_DestroyA_DestroyB) {
   webgpu::DawnDeviceClientID device_client_id = device_and_id.client_id;
 
   // Associate both mailboxes
-  gpu::webgpu::ReservedTexture reservationA =
+  gpu::webgpu::ReservedTexture reservation_a =
       webgpu()->ReserveTexture(device_client_id);
   webgpu()->AssociateMailbox(
-      device_client_id, 0, reservationA.id, reservationA.generation,
-      WGPUTextureUsage_OutputAttachment, reinterpret_cast<GLbyte*>(&mailboxA));
+      device_client_id, 0, reservation_a.id, reservation_a.generation,
+      WGPUTextureUsage_OutputAttachment, reinterpret_cast<GLbyte*>(&mailbox_a));
 
-  gpu::webgpu::ReservedTexture reservationB =
+  gpu::webgpu::ReservedTexture reservation_b =
       webgpu()->ReserveTexture(device_client_id);
   webgpu()->AssociateMailbox(
-      device_client_id, 0, reservationB.id, reservationB.generation,
-      WGPUTextureUsage_OutputAttachment, reinterpret_cast<GLbyte*>(&mailboxB));
+      device_client_id, 0, reservation_b.id, reservation_b.generation,
+      WGPUTextureUsage_OutputAttachment, reinterpret_cast<GLbyte*>(&mailbox_b));
 
   // Dissociate both mailboxes in the same order.
-  webgpu()->DissociateMailbox(reservationA.id, reservationA.generation);
-  webgpu()->DissociateMailbox(reservationB.id, reservationB.generation);
+  webgpu()->DissociateMailbox(device_client_id, reservation_a.id,
+                              reservation_a.generation);
+  webgpu()->DissociateMailbox(device_client_id, reservation_b.id,
+                              reservation_b.generation);
+
+  // Send all the previous commands to the WebGPU decoder.
+  webgpu()->FlushCommands();
+}
+
+// Regression test for a bug where the (id, generation) for associated shared
+// images was stored globally instead of per-device. This meant that of two
+// devices tried to create shared images with the same (id, generation) (which
+// is possible because they can be on different Dawn wires) they would conflict.
+TEST_F(WebGPUMailboxTest, AssociateOnTwoDevicesAtTheSameTime) {
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+  if (!WebGPUSharedImageSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPUSharedImage isn't supported";
+    return;
+  }
+
+  // Create a the shared images.
+  SharedImageInterface* sii = GetSharedImageInterface();
+  Mailbox mailbox_a = sii->CreateSharedImage(
+      viz::ResourceFormat::RGBA_8888, {1, 1}, gfx::ColorSpace::CreateSRGB(),
+      SHARED_IMAGE_USAGE_WEBGPU);
+
+  Mailbox mailbox_b = sii->CreateSharedImage(
+      viz::ResourceFormat::RGBA_8888, {1, 1}, gfx::ColorSpace::CreateSRGB(),
+      SHARED_IMAGE_USAGE_WEBGPU);
+
+  // Two WebGPU devices to associate the shared images to.
+  DeviceAndClientID device_and_id_a = GetNewDeviceAndClientID();
+  webgpu::DawnDeviceClientID client_id_a = device_and_id_a.client_id;
+
+  DeviceAndClientID device_and_id_b = GetNewDeviceAndClientID();
+  webgpu::DawnDeviceClientID client_id_b = device_and_id_b.client_id;
+
+  // Associate both mailboxes
+  gpu::webgpu::ReservedTexture reservation_a =
+      webgpu()->ReserveTexture(client_id_a);
+  webgpu()->AssociateMailbox(
+      client_id_a, 0, reservation_a.id, reservation_a.generation,
+      WGPUTextureUsage_OutputAttachment, reinterpret_cast<GLbyte*>(&mailbox_a));
+
+  gpu::webgpu::ReservedTexture reservation_b =
+      webgpu()->ReserveTexture(client_id_b);
+  webgpu()->AssociateMailbox(
+      client_id_b, 0, reservation_b.id, reservation_b.generation,
+      WGPUTextureUsage_OutputAttachment, reinterpret_cast<GLbyte*>(&mailbox_b));
+
+  // Dissociate both mailboxes in the same order.
+  webgpu()->DissociateMailbox(client_id_a, reservation_a.id,
+                              reservation_a.generation);
+  webgpu()->DissociateMailbox(client_id_b, reservation_b.id,
+                              reservation_b.generation);
 
   // Send all the previous commands to the WebGPU decoder.
   webgpu()->FlushCommands();

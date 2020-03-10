@@ -202,6 +202,38 @@ Polymer({
   },
 
   /**
+   * Returns the title message indicating the state of the last/ongoing check.
+   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
+   * @return {string}
+   * @private
+   */
+  getTitle_(status) {
+    switch (status.state) {
+      case CheckState.IDLE:
+        return this.i18n('checkPasswords');
+      case CheckState.CANCELED:
+        return this.i18n('checkPasswordsCanceled');
+      case CheckState.RUNNING:
+        return this.i18n(
+            'checkPasswordsProgress', status.alreadyProcessed || 0,
+            status.remainingInQueue + status.alreadyProcessed);
+      case CheckState.OFFLINE:
+        return this.i18n('checkPasswordsErrorOffline');
+      case CheckState.SIGNED_OUT:
+        return this.i18n('checkPasswordsErrorSignedOut');
+      case CheckState.NO_PASSWORDS:
+        return this.i18n('checkPasswordsErrorNoPasswords');
+      case CheckState.TOO_MANY_PASSWORDS:
+        return this.i18n('checkPasswordsErrorTooManyPasswords');
+      case CheckState.QUOTA_LIMIT:
+        return this.i18n('checkPasswordsErrorQuota');
+      case CheckState.OTHER_ERROR:
+        return this.i18n('checkPasswordsErrorGeneric');
+    }
+    throw 'Can\'t find a title for state: ' + status.state;
+  },
+
+  /**
    * Returns true iff a check is running right according to the given |status|.
    * @param {!PasswordManagerProxy.PasswordCheckStatus} status
    * @return {boolean}
@@ -210,6 +242,17 @@ Polymer({
   isCheckInProgress_(status) {
     return status.state == CheckState.RUNNING;
   },
+
+  /**
+   * Returns true to show the timestamp when a check was completed successfully.
+   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
+   * @return {boolean}
+   * @private
+   */
+  showsTimestamp_(status) {
+    return status.state == CheckState.IDLE;
+  },
+
 
   /**
    * Returns true if there are leaked credentials or the status is unexpected
@@ -238,6 +281,33 @@ Polymer({
         return true;
     }
     throw 'Not specified whether to state is an error: ' + status.state;
+  },
+
+  /**
+   * Returns true if there are leaked credentials or the status is unexpected
+   * for a regular password check.
+   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
+   * @param {!Array<PasswordManagerProxy.CompromisedCredential>}
+   *     leakedPasswords
+   * @return {boolean}
+   * @private
+   */
+  showsPasswordsCount_(status, leakedPasswords) {
+    switch (status.state) {
+      case CheckState.IDLE:
+        return true;
+      case CheckState.CANCELED:
+      case CheckState.RUNNING:
+        return this.hasLeakedCredentials_(leakedPasswords);
+      case CheckState.OFFLINE:
+      case CheckState.SIGNED_OUT:
+      case CheckState.NO_PASSWORDS:
+      case CheckState.TOO_MANY_PASSWORDS:
+      case CheckState.QUOTA_LIMIT:
+      case CheckState.OTHER_ERROR:
+        return false;
+    }
+    throw 'Not specified whether to show passwords for state: ' + status.state;
   },
 });
 })();

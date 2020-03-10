@@ -100,12 +100,13 @@ HangWatchScope::~HangWatchScope() {
 
 HangWatcher::HangWatcher(RepeatingClosure on_hang_closure)
     : monitor_period_(kMonitoringPeriod),
-      monitor_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
-                     WaitableEvent::InitialState::NOT_SIGNALED),
+      should_monitor_(WaitableEvent::ResetPolicy::AUTOMATIC),
       on_hang_closure_(std::move(on_hang_closure)),
       thread_(this, kThreadName) {
   // |thread_checker_| should not be bound to the constructing thread.
   DETACH_FROM_THREAD(thread_checker_);
+
+  should_monitor_.declare_only_used_while_idle();
 
   DCHECK(!g_instance);
   g_instance = this;
@@ -124,8 +125,8 @@ void HangWatcher::Start() {
 }
 
 void HangWatcher::Stop() {
-  keep_monitoring_.store(false);
-  monitor_event_.Signal();
+  keep_monitoring_.store(false, std::memory_order_relaxed);
+  should_monitor_.Signal();
   thread_.Join();
 }
 
@@ -139,17 +140,17 @@ void HangWatcher::Run() {
   // sure of that.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  while (keep_monitoring_) {
+  while (keep_monitoring_.load(std::memory_order_relaxed)) {
     // If there is nothing to watch sleep until there is.
     if (IsWatchListEmpty()) {
-      monitor_event_.Wait();
+      should_monitor_.Wait();
     } else {
       Monitor();
     }
 
-    if (keep_monitoring_) {
+    if (keep_monitoring_.load(std::memory_order_relaxed)) {
       // Sleep until next scheduled monitoring.
-      monitor_event_.TimedWait(monitor_period_);
+      should_monitor_.TimedWait(monitor_period_);
     }
   }
 }
@@ -178,7 +179,7 @@ ScopedClosureRunner HangWatcher::RegisterThread() {
 
   // Now that there is a thread to monitor we wake the HangWatcher thread.
   if (watch_states_.size() == 1) {
-    monitor_event_.Signal();
+    should_monitor_.Signal();
   }
 
   return ScopedClosureRunner(BindOnce(&HangWatcher::UnregisterThread,
@@ -225,7 +226,7 @@ void HangWatcher::SetMonitoringPeriodForTesting(base::TimeDelta period) {
 }
 
 void HangWatcher::SignalMonitorEventForTesting() {
-  monitor_event_.Signal();
+  should_monitor_.Signal();
 }
 
 void HangWatcher::BlockIfCaptureInProgress() {
@@ -261,7 +262,7 @@ namespace internal {
 
 // |deadline_| starts at Max() to avoid validation problems
 // when setting the first legitimate value.
-HangWatchState::HangWatchState() : deadline_(TimeTicks::Max()) {
+HangWatchState::HangWatchState() {
   // There should not exist a state object for this thread already.
   DCHECK(!GetHangWatchStateForCurrentThread()->Get());
 
@@ -298,16 +299,16 @@ HangWatchState::CreateHangWatchStateForCurrentThread() {
 }
 
 TimeTicks HangWatchState::GetDeadline() const {
-  return deadline_.load();
+  return deadline_.load(std::memory_order_relaxed);
 }
 
-TimeTicks HangWatchState::SetDeadline(TimeTicks deadline) {
+void HangWatchState::SetDeadline(TimeTicks deadline) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return deadline_.exchange(deadline);
+  deadline_.store(deadline, std::memory_order_relaxed);
 }
 
 bool HangWatchState::IsOverDeadline() const {
-  return TimeTicks::Now() > deadline_.load();
+  return TimeTicks::Now() > deadline_.load(std::memory_order_relaxed);
 }
 
 #if DCHECK_IS_ON()

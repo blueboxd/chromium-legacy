@@ -7,14 +7,14 @@
 
 #include <string>
 
-#include "components/schema_org/common/metadata.mojom-forward.h"
+#include "components/schema_org/common/improved_metadata.mojom-forward.h"
 
 namespace schema_org {
 
 // Extract structured metadata (schema.org in JSON-LD) from text content.
 class Extractor {
  public:
-  static mojom::EntityPtr Extract(const std::string& content);
+  static improved::mojom::EntityPtr Extract(const std::string& content);
 };
 
 }  // namespace schema_org

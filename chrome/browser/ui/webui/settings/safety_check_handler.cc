@@ -32,7 +32,7 @@ constexpr char kSafeBrowsingEvent[] =
     "safety-check-safe-browsing-status-changed";
 constexpr char kPerformSafetyCheck[] = "performSafetyCheck";
 constexpr char kNewState[] = "newState";
-constexpr char kDisplayedString[] = "displayedString";
+constexpr char kDisplayString[] = "displayString";
 constexpr char kPasswordsCompromised[] = "passwordsCompromised";
 
 // Converts the VersionUpdater::Status to the UpdateStatus enum to be passed
@@ -140,7 +140,7 @@ void SafetyCheckHandler::OnUpdateCheckResult(VersionUpdater::Status status,
   UpdateStatus update_status = ConvertToUpdateStatus(status);
   base::DictionaryValue event;
   event.SetIntKey(kNewState, static_cast<int>(update_status));
-  event.SetStringKey(kDisplayedString, GetStringForUpdates(update_status));
+  event.SetStringKey(kDisplayString, GetStringForUpdates(update_status));
   FireWebUIListener(kUpdatesEvent, event);
 }
 
@@ -148,7 +148,7 @@ void SafetyCheckHandler::OnSafeBrowsingCheckResult(
     SafetyCheckHandler::SafeBrowsingStatus status) {
   base::DictionaryValue event;
   event.SetIntKey(kNewState, static_cast<int>(status));
-  event.SetStringKey(kDisplayedString, GetStringForSafeBrowsing(status));
+  event.SetStringKey(kDisplayString, GetStringForSafeBrowsing(status));
   FireWebUIListener(kSafeBrowsingEvent, event);
 }
 
@@ -159,7 +159,7 @@ void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
   if (status == PasswordsStatus::kCompromisedExist) {
     event.SetIntKey(kPasswordsCompromised, num_compromised);
   }
-  event.SetStringKey(kDisplayedString,
+  event.SetStringKey(kDisplayString,
                      GetStringForPasswords(status, num_compromised));
   FireWebUIListener(kPasswordsEvent, event);
 }

@@ -9,4 +9,7 @@ per-file cast_*=mfoltz@chromium.org
 # FlashEmbedRewrite
 per-file flash_embed_rewrite*=mlamouri@chromium.org
 
+# For Media Feeds.
+per-file media_feeds*=file://chrome/browser/media/feeds/OWNERS
+
 # COMPONENT: Internals>Media

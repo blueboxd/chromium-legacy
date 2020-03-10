@@ -31,6 +31,16 @@ Polymer({
     },
 
     /**
+     * Returns true if the 'LiveCaption' media switch is enabled.
+     */
+    enableLiveCaption_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableLiveCaption');
+      },
+    },
+
+    /**
      * Whether to show accessibility labels settings.
      */
     showAccessibilityLabelsSetting_: {

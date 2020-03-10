@@ -21,6 +21,7 @@ import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.components.external_intents.RedirectHandler;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.HashSet;
@@ -29,7 +30,7 @@ import java.util.List;
 /**
  * This class contains the logic to determine effective navigation/redirect.
  */
-public class TabRedirectHandler extends EmptyTabObserver implements UserData {
+public class TabRedirectHandler extends EmptyTabObserver implements UserData, RedirectHandler {
     private static final Class<TabRedirectHandler> USER_DATA_KEY = TabRedirectHandler.class;
     /**
      * An invalid entry index.
@@ -55,7 +56,7 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
     private int mInitialNavigationType;
     private int mLastCommittedEntryIndexBeforeStartingNavigation;
 
-    private boolean mShouldNotOverrideUrlLoadingUntilNewUrlLoading;
+    private boolean mShouldNotOverrideUrlLoadingOnCurrentRedirectChain;
 
     /**
      * Returns {@link TabRedirectHandler} that hangs on to a given {@link Tab}.
@@ -167,11 +168,12 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
         mInitialNavigationType = NAVIGATION_TYPE_NONE;
         mIsOnEffectiveRedirectChain = false;
         mLastCommittedEntryIndexBeforeStartingNavigation = 0;
-        mShouldNotOverrideUrlLoadingUntilNewUrlLoading = false;
+        mShouldNotOverrideUrlLoadingOnCurrentRedirectChain = false;
     }
 
-    public void setShouldNotOverrideUrlLoadingUntilNewUrlLoading() {
-        mShouldNotOverrideUrlLoadingUntilNewUrlLoading = true;
+    @Override
+    public void setShouldNotOverrideUrlLoadingOnCurrentRedirectChain() {
+        mShouldNotOverrideUrlLoadingOnCurrentRedirectChain = true;
     }
 
     /**
@@ -232,7 +234,7 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
             }
             mIsOnEffectiveRedirectChain = false;
             mLastCommittedEntryIndexBeforeStartingNavigation = lastCommittedEntryIndex;
-            mShouldNotOverrideUrlLoadingUntilNewUrlLoading = false;
+            mShouldNotOverrideUrlLoadingOnCurrentRedirectChain = false;
         } else if (mInitialNavigationType != NAVIGATION_TYPE_NONE) {
             // Redirect chain starts from the second url loading.
             mIsOnEffectiveRedirectChain = true;
@@ -242,6 +244,7 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
     /**
      * @return whether on effective intent redirect chain or not.
      */
+    @Override
     public boolean isOnEffectiveIntentRedirectChain() {
         return mInitialNavigationType == NAVIGATION_TYPE_FROM_INTENT && mIsOnEffectiveRedirectChain;
     }
@@ -250,8 +253,8 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
      * @param hasExternalProtocol whether the destination URI has an external protocol or not.
      * @return whether we should stay in Chrome or not.
      */
-    public boolean shouldStayInChrome(boolean hasExternalProtocol) {
-        return shouldStayInChrome(hasExternalProtocol, false);
+    public boolean shouldStayInApp(boolean hasExternalProtocol) {
+        return shouldStayInApp(hasExternalProtocol, false);
     }
 
     /**
@@ -260,22 +263,23 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
      *                               Chrome.
      * @return whether we should stay in Chrome or not.
      */
-    public boolean shouldStayInChrome(boolean hasExternalProtocol,
-            boolean isForTrustedCallingApp) {
+    @Override
+    public boolean shouldStayInApp(boolean hasExternalProtocol, boolean isForTrustedCallingApp) {
         // http://crbug/424029 : Need to stay in Chrome for an intent heading explicitly to Chrome.
         // http://crbug/881740 : Relax stay in Chrome restriction for Custom Tabs.
         return (mIsInitialIntentHeadingToChrome && !hasExternalProtocol)
-                || shouldNavigationTypeStayInChrome(isForTrustedCallingApp);
+                || shouldNavigationTypeStayInApp(isForTrustedCallingApp);
     }
 
     /**
      * @return Whether the current navigation is of the type that should always stay in Chrome.
      */
-    public boolean shouldNavigationTypeStayInChrome() {
-        return shouldNavigationTypeStayInChrome(false);
+    @Override
+    public boolean shouldNavigationTypeStayInApp() {
+        return shouldNavigationTypeStayInApp(false);
     }
 
-    private boolean shouldNavigationTypeStayInChrome(boolean isForTrustedCallingApp) {
+    private boolean shouldNavigationTypeStayInApp(boolean isForTrustedCallingApp) {
         // http://crbug.com/162106: Never leave Chrome from a refresh.
         if (mInitialNavigationType == NAVIGATION_TYPE_FROM_RELOAD) return true;
 
@@ -290,6 +294,7 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
     /**
      * @return Whether this navigation is initiated by a Custom Tabs {@link Intent}.
      */
+    @Override
     public boolean isFromCustomTabIntent() {
         return mIsCustomTabIntent;
     }
@@ -297,6 +302,7 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
     /**
      * @return whether navigation is from a user's typing or not.
      */
+    @Override
     public boolean isNavigationFromUserTyping() {
         return mInitialNavigationType == NAVIGATION_TYPE_FROM_USER_TYPING;
     }
@@ -304,8 +310,9 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
     /**
      * @return whether we should stay in Chrome or not.
      */
+    @Override
     public boolean shouldNotOverrideUrlLoading() {
-        return mShouldNotOverrideUrlLoadingUntilNewUrlLoading;
+        return mShouldNotOverrideUrlLoadingOnCurrentRedirectChain;
     }
 
     /**
@@ -325,6 +332,7 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
     /**
      * @return whether |intent| has a new resolver against |mIntentHistory| or not.
      */
+    @Override
     public boolean hasNewResolver(List<ResolveInfo> resolvingInfos) {
         if (mInitialIntent == null) {
             return !resolvingInfos.isEmpty();

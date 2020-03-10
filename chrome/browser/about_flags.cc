@@ -1913,9 +1913,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"shelf-hover-previews", flag_descriptions::kShelfHoverPreviewsName,
      flag_descriptions::kShelfHoverPreviewsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfHoverPreviews)},
-    {"shelf-scrollable", flag_descriptions::kShelfScrollableName,
-     flag_descriptions::kShelfScrollableDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kShelfScrollable)},
     {"show-bluetooth-debug-log-toggle",
      flag_descriptions::kShowBluetoothDebugLogToggleName,
      flag_descriptions::kShowBluetoothDebugLogToggleDescription, kOsCrOS,
@@ -3272,6 +3269,15 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          chrome::android::kUpdateNotificationSchedulingIntegration)},
+#endif
+
+#if defined(OS_ANDROID)
+    {"prefetch-notification-scheduling-integration",
+     flag_descriptions::kPrefetchNotificationSchedulingIntegrationName,
+     flag_descriptions::kPrefetchNotificationSchedulingIntegrationDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kPrefetchNotificationSchedulingIntegration)},
 #endif
 
 #if defined(OS_ANDROID)
@@ -4924,6 +4930,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableMediaFoundationVideoCaptureDescription, kOsWin,
      FEATURE_VALUE_TYPE(media::kMediaFoundationVideoCapture)},
 #endif  // defined(OS_WIN)
+
+#if defined(OS_CHROMEOS)
+    {"scanning-ui", flag_descriptions::kScanningUIName,
+     flag_descriptions::kScanningUIDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kScanningUI)},
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

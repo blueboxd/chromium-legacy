@@ -9,6 +9,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
@@ -86,7 +87,8 @@ void ShowWritePermissionPromptOnUIThread(
   }
 
   // Drop fullscreen mode so that the user sees the URL bar.
-  web_contents->ForSecurityDropFullscreen();
+  base::ScopedClosureRunner fullscreen_block =
+      web_contents->ForSecurityDropFullscreen();
 
   request_manager->AddRequest(
       {origin, path, is_directory,
@@ -116,7 +118,8 @@ void ShowWritePermissionPromptOnUIThread(
                 break;
             }
           },
-          std::move(callback)));
+          std::move(callback)),
+      std::move(fullscreen_block));
 }
 
 // Returns a callback that calls the passed in |callback| by posting a task to

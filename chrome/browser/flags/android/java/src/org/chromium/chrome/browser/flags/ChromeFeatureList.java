@@ -440,6 +440,8 @@ public abstract class ChromeFeatureList {
             "UpdateNotificationSchedulingIntegration";
     public static final String UPDATE_NOTIFICATION_IMMEDIATE_SHOW_OPTION =
             "UpdateNotificationScheduleServiceImmediateShowOption";
+    public static final String PREFETCH_NOTIFICATION_SCHEDULING_INTEGRATION =
+            "PrefetchNotificationSchedulingIntegration";
 
     @NativeMethods
     interface Natives {

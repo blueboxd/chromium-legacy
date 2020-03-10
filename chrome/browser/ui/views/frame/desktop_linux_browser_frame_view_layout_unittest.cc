@@ -79,14 +79,14 @@ class TestNavButtonProvider : public views::NavButtonProvider {
     ASSERT_EQ(false, maximized);  // This only tests the restored state.
   }
 
-  gfx::ImageSkia GetImage(chrome::FrameButtonDisplayType type,
+  gfx::ImageSkia GetImage(views::NavButtonProvider::FrameButtonDisplayType type,
                           views::Button::ButtonState state) const override {
     switch (type) {
-      case chrome::FrameButtonDisplayType::kClose:
+      case views::NavButtonProvider::FrameButtonDisplayType::kClose:
         return GetTestImageForSize(kCloseButtonSize);
-      case chrome::FrameButtonDisplayType::kMaximize:
+      case views::NavButtonProvider::FrameButtonDisplayType::kMaximize:
         return GetTestImageForSize(kMaximizeButtonSize);
-      case chrome::FrameButtonDisplayType::kMinimize:
+      case views::NavButtonProvider::FrameButtonDisplayType::kMinimize:
         return GetTestImageForSize(kMinimizeButtonSize);
       default:
         NOTREACHED();
@@ -95,13 +95,13 @@ class TestNavButtonProvider : public views::NavButtonProvider {
   }
 
   gfx::Insets GetNavButtonMargin(
-      chrome::FrameButtonDisplayType type) const override {
+      views::NavButtonProvider::FrameButtonDisplayType type) const override {
     switch (type) {
-      case chrome::FrameButtonDisplayType::kClose:
+      case views::NavButtonProvider::FrameButtonDisplayType::kClose:
         return kCloseButtonMargin;
-      case chrome::FrameButtonDisplayType::kMaximize:
+      case views::NavButtonProvider::FrameButtonDisplayType::kMaximize:
         return kMaximizeButtonMargin;
-      case chrome::FrameButtonDisplayType::kMinimize:
+      case views::NavButtonProvider::FrameButtonDisplayType::kMinimize:
         return kMinimizeButtonMargin;
       default:
         NOTREACHED();
@@ -160,10 +160,10 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
   void ResetNativeNavButtonImagesFromButtonProvider() {
     std::vector<views::ImageButton*> buttons{close_button_, maximize_button_,
                                              minimize_button_};
-    std::vector<chrome::FrameButtonDisplayType> button_types{
-        chrome::FrameButtonDisplayType::kClose,
-        chrome::FrameButtonDisplayType::kMaximize,
-        chrome::FrameButtonDisplayType::kMinimize};
+    std::vector<views::NavButtonProvider::FrameButtonDisplayType> button_types{
+        views::NavButtonProvider::FrameButtonDisplayType::kClose,
+        views::NavButtonProvider::FrameButtonDisplayType::kMaximize,
+        views::NavButtonProvider::FrameButtonDisplayType::kMinimize};
     for (size_t i = 0; i < buttons.size(); i++) {
       for (views::Button::ButtonState state :
            {views::Button::STATE_NORMAL, views ::Button::STATE_HOVERED,

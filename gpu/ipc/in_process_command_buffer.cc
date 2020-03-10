@@ -469,7 +469,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   } else {
     // When using the validating command decoder, always use the global share
     // group.
-    gl_share_group_ = task_executor_->share_group();
+    gl_share_group_ = task_executor_->GetShareGroup();
   }
 
   if (params.attribs.context_type == CONTEXT_TYPE_WEBGPU) {

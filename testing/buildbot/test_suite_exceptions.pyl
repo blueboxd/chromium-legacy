@@ -603,6 +603,7 @@
     'remove_from': [
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # https://crbug.com/1018780
+      'android-kitkat-arm-rel', # https://crbug.com/1060245
     ],
     'modifications': {
       'KitKat Phone Tester (dbg)': {

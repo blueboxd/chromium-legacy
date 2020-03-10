@@ -29,6 +29,8 @@
 #include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -114,6 +116,15 @@ MapCompromisedCredentialsToSavedPasswords(
   }
 
   return passwords_map;
+}
+
+std::string FormatElapsedTime(base::Time time) {
+  const base::TimeDelta elapsed_time = base::Time::Now() - time;
+  if (elapsed_time < base::TimeDelta::FromMinutes(1))
+    return l10n_util::GetStringUTF8(IDS_SETTINGS_PASSWORDS_JUST_NOW);
+
+  return base::UTF16ToUTF8(TimeFormat::SimpleWithMonthAndYear(
+      TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_LONG, elapsed_time, true));
 }
 
 }  // namespace
@@ -206,20 +217,24 @@ PasswordCheckDelegate::GetCompromisedCredentialsInfo() {
     api_credential.username = base::UTF16ToUTF8(credential.username);
     api_credential.compromise_time =
         credential.create_time.ToJsTimeIgnoringNull();
-    base::TimeDelta elapsed_time = base::Time::Now() - credential.create_time;
-    if (elapsed_time < base::TimeDelta::FromMinutes(1)) {
-      api_credential.elapsed_time_since_compromise =
-          l10n_util::GetStringUTF8(IDS_SETTINGS_PASSWORDS_JUST_NOW);
-    } else {
-      api_credential.elapsed_time_since_compromise =
-          base::UTF16ToUTF8(TimeFormat::SimpleWithMonthAndYear(
-              TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_LONG, elapsed_time,
-              true));
-    }
     api_credential.compromise_type =
         ConvertCompromiseType(credential.compromise_type);
+    api_credential.elapsed_time_since_compromise =
+        FormatElapsedTime(credential.create_time);
     credentials_info.compromised_credentials.push_back(
         std::move(api_credential));
+  }
+
+  // Obtain the timestamp of the last completed check. This is 0.0 in case the
+  // check never completely ran before.
+  // TODO(https://crbug.com/1047726): Expose elapsed_time_since_last_check on
+  // PasswordCheckStatus rather than CompromisedCredentialsInfo.
+  const double last_check_completed = profile_->GetPrefs()->GetDouble(
+      password_manager::prefs::kLastTimePasswordCheckCompleted);
+  if (last_check_completed) {
+    credentials_info.elapsed_time_since_last_check =
+        std::make_unique<std::string>(
+            FormatElapsedTime(base::Time::FromDoubleT(last_check_completed)));
   }
 
   return credentials_info;
@@ -290,16 +305,11 @@ bool PasswordCheckDelegate::RemoveCompromisedCredential(
 }
 
 bool PasswordCheckDelegate::StartPasswordCheck() {
-  is_canceled_ = false;
+  is_bulk_check_running_ = true;
   return bulk_leak_check_service_adapter_.StartBulkLeakCheck();
 }
 
 void PasswordCheckDelegate::StopPasswordCheck() {
-  if (bulk_leak_check_service_adapter_.GetBulkLeakCheckState() ==
-      BulkLeakCheckService::State::kRunning) {
-    is_canceled_ = true;
-  }
-
   bulk_leak_check_service_adapter_.StopBulkLeakCheck();
 }
 
@@ -336,11 +346,6 @@ PasswordCheckDelegate::GetPasswordCheckStatus() const {
     return result;
   }
 
-  if (is_canceled_) {
-    result.state = api::passwords_private::PASSWORD_CHECK_STATE_CANCELED;
-    return result;
-  }
-
   result.state = ConvertPasswordCheckState(state);
   return result;
 }
@@ -363,8 +368,16 @@ void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
   }
 }
 
-void PasswordCheckDelegate::OnStateChanged(
-    password_manager::BulkLeakCheckService::State) {
+void PasswordCheckDelegate::OnStateChanged(BulkLeakCheckService::State state) {
+  if (is_bulk_check_running_ && state == BulkLeakCheckService::State::kIdle) {
+    // When the service transitions from running into idle it has finished a
+    // check.
+    is_bulk_check_running_ = false;
+    profile_->GetPrefs()->SetDouble(
+        password_manager::prefs::kLastTimePasswordCheckCompleted,
+        base::Time::Now().ToDoubleT());
+  }
+
   // NotifyPasswordCheckStatusChanged() invokes GetPasswordCheckStatus()
   // obtaining the relevant information. Thus there is no need to forward the
   // arguments passed to OnStateChanged().

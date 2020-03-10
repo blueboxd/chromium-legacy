@@ -161,24 +161,28 @@ cr.define('settings_passwords_check', function() {
               /*state=*/ PasswordCheckState.RUNNING,
               /*checked=*/ 1,
               /*remaining=*/ 1);
-      passwordManager.data.leakedCredentials =
-          autofill_test_util.makeCompromisedCredentialsInfo([], 'just now');
 
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
-        expectEquals(PasswordCheckState.RUNNING, section.status_.state);
+        assert(isElementVisible(section.$.title));
+        expectEquals(
+            section.i18n('checkPasswordsProgress', 1, 2),
+            section.$.title.innerText);
 
         // Change status from running to IDLE.
         assert(!!passwordManager.lastCallback.addPasswordCheckStatusListener);
         passwordManager.lastCallback.addPasswordCheckStatusListener(
             autofill_test_util.makePasswordCheckStatus(
-                /*state=*/ PasswordCheckState.IDLE,
+                /*state=*/ PasswordCheckState.RUNNING,
                 /*checked=*/ 2,
                 /*remaining=*/ 0));
 
         Polymer.dom.flush();
-        expectEquals(PasswordCheckState.IDLE, section.status_.state);
+        assert(isElementVisible(section.$.title));
+        expectEquals(
+            section.i18n('checkPasswordsProgress', 2, 2),
+            section.$.title.innerText);
       });
     });
 
@@ -273,6 +277,211 @@ cr.define('settings_passwords_check', function() {
         const spinner = checkPasswordSection.$$('paper-spinner-lite');
         expectTrue(isElementVisible(spinner));
         expectFalse(isElementVisible(icon));
+      });
+    });
+
+    // While running, the check should show the processed and total passwords.
+    test('testShowOnlyProgressWhileRunningWithoutLeaks', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.RUNNING,
+              /*checked=*/ 1,
+              /*remaining=*/ 3);
+      passwordManager.data.leakedCredentials =
+          autofill_test_util.makeCompromisedCredentialsInfo([], 'just now');
+
+      section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        assert(isElementVisible(title));
+        expectEquals(
+            section.i18n('checkPasswordsProgress', 1, 4), title.innerText);
+        expectFalse(isElementVisible(section.$.subtitle));
+      });
+    });
+
+    // While running, show progress and already found leak count.
+    test('testShowProgressAndLeaksWhileRunning', function() {
+      const data = passwordManager.data;
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.RUNNING,
+          /*checked=*/ 2,
+          /*remaining=*/ 3);
+      data.leakedCredentials =
+          autofill_test_util.makeCompromisedCredentialsInfo(
+              [
+                autofill_test_util.makeCompromisedCredentials(
+                    'one.com', 'test4', 'LEAKED'),
+              ],
+              'just now');
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        const subtitle = section.$.subtitle;
+        assert(isElementVisible(title));
+        assert(isElementVisible(subtitle));
+        expectEquals(
+            section.i18n('checkPasswordsProgress', 2, 5), title.innerText);
+      });
+    });
+
+    // When canceled, show string explaining that and already found leak
+    // count.
+    test('testShowProgressAndLeaksAfterCanceled', function() {
+      const data = passwordManager.data;
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.CANCELED,
+          /*checked=*/ 2,
+          /*remaining=*/ 3);
+      data.leakedCredentials =
+          autofill_test_util.makeCompromisedCredentialsInfo(
+              [
+                autofill_test_util.makeCompromisedCredentials(
+                    'one.com', 'test4', 'LEAKED'),
+              ],
+              'just now');
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        const subtitle = section.$.subtitle;
+        assert(isElementVisible(title));
+        assert(isElementVisible(subtitle));
+        expectEquals(section.i18n('checkPasswordsCanceled'), title.innerText);
+      });
+    });
+
+    // After running, show confirmation, timestamp and number of leaks.
+    test('testShowLeakCountWhenIdle', function() {
+      const data = passwordManager.data;
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.IDLE,
+          /*checked=*/ 4,
+          /*remaining=*/ 0);
+      data.leakedCredentials =
+          autofill_test_util.makeCompromisedCredentialsInfo(
+              [
+                autofill_test_util.makeCompromisedCredentials(
+                    'one.com', 'test4', 'LEAKED'),
+              ],
+              'just now');
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        const subtitle = section.$.subtitle;
+        assert(isElementVisible(title));
+        assert(isElementVisible(subtitle));
+        expectEquals(
+            section.i18n('checkPasswords') + ' • just now', title.innerText);
+      });
+    });
+
+    // When offline, only show an error.
+    test('testShowOnlyErrorWhenOffline', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.OFFLINE);
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        assert(isElementVisible(title));
+        expectEquals(
+            section.i18n('checkPasswordsErrorOffline'), title.innerText);
+        expectFalse(isElementVisible(section.$.subtitle));
+      });
+    });
+
+    // When signed out, only show an error.
+    test('testShowOnlyErrorWhenSignedOut', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.SIGNED_OUT);
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        assert(isElementVisible(title));
+        expectEquals(
+            section.i18n('checkPasswordsErrorSignedOut'), title.innerText);
+        expectFalse(isElementVisible(section.$.subtitle));
+      });
+    });
+
+    // When no passwords are saved, only show an error.
+    test('testShowOnlyErrorWithoutPasswords', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.NO_PASSWORDS);
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        assert(isElementVisible(title));
+        expectEquals(
+            section.i18n('checkPasswordsErrorNoPasswords'), title.innerText);
+        expectFalse(isElementVisible(section.$.subtitle));
+      });
+    });
+
+    // When too many passwords were saved to check them, only show an error.
+    test('testShowOnlyErrorWhenTooManyPasswords', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.TOO_MANY_PASSWORDS);
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        assert(isElementVisible(title));
+        // TODO(crbug.com/1047726): Check for account redirection.
+        expectEquals(
+            section.i18n('checkPasswordsErrorTooManyPasswords'),
+            title.innerText);
+        expectFalse(isElementVisible(section.$.subtitle));
+      });
+    });
+
+    // When users run out of quota, only show an error.
+    test('testShowOnlyErrorWhenQuotaIsHit', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.QUOTA_LIMIT);
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        assert(isElementVisible(title));
+        expectEquals(section.i18n('checkPasswordsErrorQuota'), title.innerText);
+        expectFalse(isElementVisible(section.$.subtitle));
+      });
+    });
+
+    // When a general error occurs, only show the message.
+    test('testShowOnlyGenericError', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.OTHER_ERROR);
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        assert(isElementVisible(title));
+        expectEquals(
+            section.i18n('checkPasswordsErrorGeneric'), title.innerText);
+        expectFalse(isElementVisible(section.$.subtitle));
       });
     });
   });

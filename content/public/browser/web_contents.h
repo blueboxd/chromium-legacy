@@ -13,6 +13,8 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
@@ -987,7 +989,17 @@ class WebContents : public PageNavigator,
   // The WebContents is trying to take some action that would cause user
   // confusion if taken while in fullscreen. If this WebContents or any outer
   // WebContents is in fullscreen, drop it.
-  virtual void ForSecurityDropFullscreen() = 0;
+  //
+  // Returns a ScopedClosureRunner, and for the lifetime of that closure, this
+  // (and other related) WebContentses will not enter fullscreen. If the action
+  // should cause a one-time dropping of fullscreen (e.g. a UI element not
+  // attached to the WebContents), invoke RunAndReset() on the returned
+  // base::ScopedClosureRunner to release the fullscreen block immediately.
+  // Otherwise, if the action should cause fullscreen to be prohibited for a
+  // span of time (e.g. a UI element attached to the WebContents), keep the
+  // closure alive for that duration.
+  virtual base::ScopedClosureRunner ForSecurityDropFullscreen()
+      WARN_UNUSED_RESULT = 0;
 
   // Unblocks requests from renderer for a newly created window. This is
   // used in showCreatedWindow() or sometimes later in cases where

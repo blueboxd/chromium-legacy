@@ -78,12 +78,6 @@ class CONTENT_EXPORT RenderMessageFilter
 
   // mojom::RenderMessageFilter:
   void GenerateRoutingID(GenerateRoutingIDCallback routing_id) override;
-  void CreateNewWidget(int32_t opener_id,
-                       mojo::PendingRemote<mojom::Widget> widget,
-                       CreateNewWidgetCallback callback) override;
-  void CreateFullscreenWidget(int opener_id,
-                              mojo::PendingRemote<mojom::Widget> widget,
-                              CreateFullscreenWidgetCallback callback) override;
   void HasGpuProcess(HasGpuProcessCallback callback) override;
 #if defined(OS_LINUX)
   void SetThreadPriority(int32_t ns_tid,

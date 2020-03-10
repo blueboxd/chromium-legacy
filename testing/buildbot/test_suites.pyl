@@ -2642,39 +2642,236 @@
       'ios_components_unittests': {},
     },
 
+    'ios_common_tests': {
+      'boringssl_crypto_tests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'boringssl_ssl_tests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'crypto_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'google_apis_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_components_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_net_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_remoting_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_testing_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'net_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'services_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'sql_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'url_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+    },
+
     'ios_eg2_tests': {
+      'ios_chrome_bookmarks_eg2tests_module': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
       'ios_chrome_integration_eg2tests_module': {
-        'app': 'ios_chrome_integration_eg2tests_module',
-        'host': 'ios_chrome_eg2tests',
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
       },
       'ios_chrome_settings_eg2tests_module': {
-        'app': 'ios_chrome_settings_eg2tests_module',
-        'host': 'ios_chrome_eg2tests',
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
       },
       'ios_chrome_signin_eg2tests_module': {
-        'app': 'ios_chrome_signin_eg2tests_module',
-        'host': 'ios_chrome_eg2tests',
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
       },
       'ios_chrome_smoke_eg2tests_module': {
-        'app': 'ios_chrome_smoke_eg2tests_module',
-        'host': 'ios_chrome_eg2tests',
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
       },
       'ios_chrome_ui_eg2tests_module': {
-        'app': 'ios_chrome_ui_eg2tests_module',
-        'host': 'ios_chrome_eg2tests',
-        'shards': 2,
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        },
+        'swarming': {
+          'shards': 2,
+        }
       },
       'ios_chrome_web_eg2tests_module': {
-        'app': 'ios_chrome_web_eg2tests_module',
-        'host': 'ios_chrome_eg2tests',
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
       },
       'ios_showcase_eg2tests_module': {
-        'app': 'ios_showcase_eg2tests_module',
-        'host': 'ios_showcase_eg2tests',
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
       },
       'ios_web_shell_eg2tests_module': {
-        'app': 'ios_web_shell_eg2tests_module',
-        'host': 'ios_web_shell_eg2tests',
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+    },
+
+    'ios_eg_cq_tests': {
+      'ios_chrome_integration_egtests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        },
+        'swarming': {
+          'shards': 3,
+        }
+      },
+      'ios_chrome_signin_egtests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        },
+      },
+      'ios_chrome_ui_egtests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        },
+        'swarming': {
+          'shards': 5,
+        }
+      },
+      'ios_web_shell_egtests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+    },
+
+    'ios_eg_tests': {
+      'ios_chrome_bookmarks_egtests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_chrome_reading_list_egtests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_chrome_settings_egtests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        },
+        'swarming': {
+          'shards': 3,
+        }
+      },
+      'ios_chrome_translate_egtests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_chrome_web_egtests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_showcase_egtests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+    },
+
+    'ios_screen_size_dependent_tests': {
+      'base_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'components_unittests': {
+        'merge': {
+          'args': [],
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'gfx_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_chrome_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_web_inttests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_web_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_web_view_inttests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ios_web_view_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'skia_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
+      },
+      'ui_base_unittests': {
+        'merge': {
+          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
+        }
       },
     },
 
@@ -4509,31 +4706,48 @@
 
   'matrix_compound_suites': {
 
-    # This is a sample and is not functional
-    'ios_simulator_cr_recipe_gtests': {
-      'ios_eg2_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device type': 'iPhone X',
-              'os': '13.3',
-            },
-            {
-              'device type': 'iPhone 7',
-              'os': '13.3',
-            },
-            {
-              'device type': 'iPhone X',
-              'os': '12.4',
-            },
-            {
-              'device type': 'iPad (6th generation)',
-              'os': '12.4',
-            },
-          ],
-        },
+    'ios13_beta_simulator_gtests': {
+      'ios_common_tests': {
+        'variants': [
+          'SIM_IPHONE_X_13_3',
+          'SIM_IPHONE_X_12_4',
+        ],
       },
-    },
-
+      'ios_eg2_tests': {
+        'variants': [
+          'SIM_IPHONE_X_13_3',
+          'SIM_IPHONE_7_13_3',
+          'SIM_IPAD_6_GEN_13_3',
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPAD_6_GEN_12_4',
+        ]
+      },
+      'ios_eg_cq_tests': {
+        'variants': [
+          'SIM_IPHONE_X_13_3',
+          'SIM_IPAD_PRO_13_3',
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPAD_PRO_12_4',
+        ]
+      },
+      'ios_eg_tests': {
+        'variants': [
+          'SIM_IPHONE_X_13_3',
+          'SIM_IPAD_AIR_3RD_GEN_13_3',
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPAD_AIR_3RD_GEN_12_4',
+        ]
+      },
+      'ios_screen_size_dependent_tests': {
+        'variants': [
+          'SIM_IPHONE_6S_PLUS_13_3',
+          'SIM_IPHONE_X_13_3',
+          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_6S_PLUS_12_4',
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPAD_AIR_2_12_4',
+        ],
+      },
+    }
   }
 }

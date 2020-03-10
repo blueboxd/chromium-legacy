@@ -111,7 +111,7 @@ class DeepScanningDialogDelegate {
     FileInfo(FileInfo&& other);
     ~FileInfo();
 
-    // SHA256 hash for the given file.
+    // Hex-encoded SHA256 hash for the given file.
     std::string sha256;
 
     // File size in bytes. -1 represents an unknown size.
@@ -222,31 +222,6 @@ class DeepScanningDialogDelegate {
   // block it.
   static bool ResultShouldAllowDataUse(BinaryUploadService::Result result);
 
-  // Callback used by FileSourceRequest to read file data on a blocking thread.
-  static FileContents GetFileContentsSHA256Blocking(const base::FilePath& path);
-
-  // A BinaryUploadService::Request implementation that gets the data to scan
-  // from the contents of a file.
-  class FileSourceRequest : public BinaryUploadService::Request {
-   public:
-    FileSourceRequest(base::WeakPtr<DeepScanningDialogDelegate> delegate,
-                      base::FilePath path,
-                      BinaryUploadService::Callback callback);
-    FileSourceRequest(const FileSourceRequest&) = delete;
-    FileSourceRequest& operator=(const FileSourceRequest&) = delete;
-    ~FileSourceRequest() override;
-
-    // BinaryUploadService::Request implementation.
-    void GetRequestData(DataCallback callback) override;
-
-   private:
-    void OnGotFileContents(DataCallback callback, FileContents file_contents);
-
-    base::WeakPtr<DeepScanningDialogDelegate> delegate_;
-    base::FilePath path_;
-    base::WeakPtrFactory<FileSourceRequest> weakptr_factory_{this};
-  };
-
  protected:
   DeepScanningDialogDelegate(content::WebContents* web_contents,
                              Data data,
@@ -310,10 +285,12 @@ class DeepScanningDialogDelegate {
   // |callback_| is cleared after being run.
   void RunCallback();
 
-  // Sets the FileInfo the given file.
-  void SetFileInfo(const base::FilePath& path,
-                   std::string sha256,
-                   int64_t size);
+  // Called when the file info for |path| has been fetched. Also begins the
+  // upload process.
+  void OnGotFileInfo(std::unique_ptr<BinaryUploadService::Request> request,
+                     const base::FilePath& path,
+                     BinaryUploadService::Result result,
+                     const BinaryUploadService::Request::Data& data);
 
   // Completion of |FileRequestCallback| once the mime type is obtained
   // asynchronously.

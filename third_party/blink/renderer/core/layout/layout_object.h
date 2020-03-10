@@ -647,6 +647,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool IsFrame() const { return IsOfType(kLayoutObjectFrame); }
   bool IsFrameSet() const { return IsOfType(kLayoutObjectFrameSet); }
+  bool IsInsideListMarker() const {
+    return IsOfType(kLayoutObjectInsideListMarker);
+  }
   bool IsLayoutNGBlockFlow() const {
     return IsOfType(kLayoutObjectNGBlockFlow);
   }
@@ -655,14 +658,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool IsLayoutNGMixin() const { return IsOfType(kLayoutObjectNGMixin); }
   bool IsLayoutNGListItem() const { return IsOfType(kLayoutObjectNGListItem); }
-  bool IsLayoutNGOutsideListMarker() const {
-    return IsOfType(kLayoutObjectNGOutsideListMarker);
-  }
   bool IsLayoutNGInsideListMarker() const {
     return IsOfType(kLayoutObjectNGInsideListMarker);
   }
   bool IsLayoutNGListMarkerImage() const {
     return IsOfType(kLayoutObjectNGListMarkerImage);
+  }
+  bool IsLayoutNGOutsideListMarker() const {
+    return IsOfType(kLayoutObjectNGOutsideListMarker);
   }
   bool IsLayoutNGProgress() const { return IsOfType(kLayoutObjectNGProgress); }
   bool IsLayoutNGText() const { return IsOfType(kLayoutObjectNGText); }
@@ -670,10 +673,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return IsOfType(kLayoutObjectLayoutTableCol);
   }
   bool IsListItem() const { return IsOfType(kLayoutObjectListItem); }
-  bool IsListMarker() const { return IsOfType(kLayoutObjectListMarker); }
   bool IsMathML() const { return IsOfType(kLayoutObjectMathML); }
   bool IsMathMLRoot() const { return IsOfType(kLayoutObjectMathMLRoot); }
   bool IsMedia() const { return IsOfType(kLayoutObjectMedia); }
+  bool IsOutsideListMarker() const {
+    return IsOfType(kLayoutObjectOutsideListMarker);
+  }
   bool IsProgress() const { return IsOfType(kLayoutObjectProgress); }
   bool IsQuote() const { return IsOfType(kLayoutObjectQuote); }
   bool IsLayoutButton() const { return IsOfType(kLayoutObjectLayoutButton); }
@@ -835,8 +840,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsSVGResourceContainer() const {
     return IsOfType(kLayoutObjectSVGResourceContainer);
   }
-  bool IsSVGResourceFilterPrimitive() const {
-    return IsOfType(kLayoutObjectSVGResourceFilterPrimitive);
+  bool IsSVGFilterPrimitive() const {
+    return IsOfType(kLayoutObjectSVGFilterPrimitive);
   }
 
   // FIXME: Those belong into a SVG specific base-class for all layoutObjects
@@ -1993,13 +1998,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // There are 3 types of list marker. LayoutNG creates different types for
   // inside and outside; outside is derived from LayoutBlockFlow, and inside
   // from LayoutInline. Legacy is derived from LayoutBox.
+  bool IsListMarker() const {
+    return IsOutsideListMarker() || IsInsideListMarker();
+  }
   bool IsListMarkerIncludingNGOutside() const {
     return IsListMarker() || IsLayoutNGOutsideListMarker();
   }
   bool IsListMarkerIncludingNGOutsideAndInside() const {
     return IsListMarkerIncludingNGOutside() || IsLayoutNGInsideListMarker();
   }
-  bool IsOutsideListMarker() const;
 
   virtual bool IsCombineText() const { return false; }
 
@@ -2537,9 +2544,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectFileUploadControl,
     kLayoutObjectFrame,
     kLayoutObjectFrameSet,
+    kLayoutObjectInsideListMarker,
     kLayoutObjectLayoutTableCol,
     kLayoutObjectListItem,
-    kLayoutObjectListMarker,
     kLayoutObjectMathML,
     kLayoutObjectMathMLRoot,
     kLayoutObjectMedia,
@@ -2553,6 +2560,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectNGListMarkerImage,
     kLayoutObjectNGProgress,
     kLayoutObjectNGText,
+    kLayoutObjectOutsideListMarker,
     kLayoutObjectProgress,
     kLayoutObjectQuote,
     kLayoutObjectLayoutButton,
@@ -2599,7 +2607,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectSVGImage,
     kLayoutObjectSVGForeignObject,
     kLayoutObjectSVGResourceContainer,
-    kLayoutObjectSVGResourceFilterPrimitive,
+    kLayoutObjectSVGFilterPrimitive,
   };
   virtual bool IsOfType(LayoutObjectType type) const { return false; }
 

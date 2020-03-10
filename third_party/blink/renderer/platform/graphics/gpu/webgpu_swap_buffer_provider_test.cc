@@ -58,10 +58,15 @@ class WebGPUSwapBufferProviderForTests : public WebGPUSwapBufferProvider {
   WebGPUSwapBufferProviderForTests(
       bool* alive,
       Client* client,
+      uint64_t client_device_id_,
       scoped_refptr<DawnControlClientHolder> dawn_control_client,
       WGPUTextureUsage usage,
       WGPUTextureFormat format)
-      : WebGPUSwapBufferProvider(client, dawn_control_client, usage, format),
+      : WebGPUSwapBufferProvider(client,
+                                 dawn_control_client,
+                                 client_device_id_,
+                                 usage,
+                                 format),
         alive_(alive) {}
   ~WebGPUSwapBufferProviderForTests() override { *alive_ = false; }
 
@@ -83,12 +88,12 @@ class WebGPUSwapBufferProviderTest : public testing::Test {
 
     dawn_control_client_ =
         base::MakeRefCounted<DawnControlClientHolder>(std::move(provider));
+
+    static const uint64_t kDeviceClientID = 1;
     provider_ = base::MakeRefCounted<WebGPUSwapBufferProviderForTests>(
-        &provider_alive_, &client_, dawn_control_client_,
+        &provider_alive_, &client_, kDeviceClientID, dawn_control_client_,
         WGPUTextureUsage_OutputAttachment, WGPUTextureFormat_RGBA8Unorm);
   }
-
-  const static uint64_t kDeviceClientID = 1;
 
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
   MockWebGPUInterface* webgpu_;
@@ -119,17 +124,17 @@ TEST_F(WebGPUSwapBufferProviderTest,
 
   // Produce resources.
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation1));
-  provider_->GetNewTexture(kDeviceClientID, kSize);
+  provider_->GetNewTexture(kSize);
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource1,
                                                      &release_callback1));
 
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation2));
-  provider_->GetNewTexture(kDeviceClientID, kSize);
+  provider_->GetNewTexture(kSize);
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource2,
                                                      &release_callback2));
 
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation3));
-  provider_->GetNewTexture(kDeviceClientID, kSize);
+  provider_->GetNewTexture(kSize);
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource3,
                                                      &release_callback3));
 
@@ -157,7 +162,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyResizingProperlyAffectsResources) {
 
   // Produce one resource of size kSize.
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation));
-  provider_->GetNewTexture(kDeviceClientID, static_cast<IntSize>(kSize));
+  provider_->GetNewTexture(static_cast<IntSize>(kSize));
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource,
                                                      &release_callback));
   EXPECT_EQ(static_cast<gfx::Size>(kSize), sii_->MostRecentSize());
@@ -165,7 +170,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyResizingProperlyAffectsResources) {
 
   // Produce one resource of size kOtherSize.
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation));
-  provider_->GetNewTexture(kDeviceClientID, static_cast<IntSize>(kOtherSize));
+  provider_->GetNewTexture(static_cast<IntSize>(kOtherSize));
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource,
                                                      &release_callback));
   EXPECT_EQ(static_cast<gfx::Size>(kOtherSize), sii_->MostRecentSize());
@@ -173,7 +178,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyResizingProperlyAffectsResources) {
 
   // Produce one resource of size kSize again.
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation));
-  provider_->GetNewTexture(kDeviceClientID, static_cast<IntSize>(kSize));
+  provider_->GetNewTexture(static_cast<IntSize>(kSize));
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource,
                                                      &release_callback));
   EXPECT_EQ(static_cast<gfx::Size>(kSize), sii_->MostRecentSize());
@@ -191,7 +196,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyInsertAndWaitSyncTokenCorrectly) {
   // Produce the first resource, check that WebGPU will wait for the creation of
   // the shared image
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation));
-  provider_->GetNewTexture(kDeviceClientID, static_cast<IntSize>(kSize));
+  provider_->GetNewTexture(static_cast<IntSize>(kSize));
   EXPECT_EQ(sii_->MostRecentGeneratedToken(),
             webgpu_->most_recent_waited_token);
 

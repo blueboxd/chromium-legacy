@@ -81,10 +81,6 @@ bool SQLitePersistentStoreBackendBase::InitializeDatabase() {
     return false;
   }
 
-  int64_t db_size = 0;
-  if (base::GetFileSize(path_, &db_size))
-    base::UmaHistogramCounts1M(histogram_tag_ + ".DBSizeInKB", db_size / 1024);
-
   db_ = std::make_unique<sql::Database>();
   db_->set_histogram_tag(histogram_tag_);
 

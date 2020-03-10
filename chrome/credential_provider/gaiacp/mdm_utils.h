@@ -56,6 +56,9 @@ extern const wchar_t kRegDeviceDetailsUploadStatus[];
 // Specifies custom Chrome path to use for GLS.
 extern const wchar_t kRegGlsPath[];
 
+// Registry key where user device resource ID is stored.
+extern const wchar_t kRegUserDeviceResourceId[];
+
 // Class used in tests to force either a successful on unsuccessful enrollment
 // to google MDM.
 class GoogleMdmEnrollmentStatusForTesting {

@@ -22,7 +22,8 @@ namespace enterprise.platformKeys {
     // interface. The cryptographic operations, including key generation, are
     // hardware-backed.
     // <p>Only non-extractable RSASSA-PKCS1-V1_5 keys with
-    // <code>modulusLength</code> up to 2048 can be generated. Each key can be
+    // <code>modulusLength</code> up to 2048 and ECDSA with
+    // <code>namedCurve</code> P-256 can be generated. Each key can be
     // used for signing data at most once.</p>
     // <p>Keys generated on a specific <code>Token</code> cannot be used with
     // any other Tokens, nor can they be used with

@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/viz/service/main/viz_compositor_thread_runner_impl.h"
+#include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -41,7 +42,8 @@ class MojoUkmRecorder;
 namespace viz {
 class GpuServiceImpl;
 
-class VizMainImpl : public mojom::VizMain {
+class VizMainImpl : public mojom::VizMain,
+                    public gpu::GpuInProcessThreadServiceDelegate {
  public:
   struct LogMessage {
     int severity;
@@ -119,6 +121,10 @@ class VizMainImpl : public mojom::VizMain {
       gfx::FontRenderParams::SubpixelRendering subpixel_rendering) override;
   void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params) override;
   void CreateVizDevTools(mojom::VizDevToolsParamsPtr params) override;
+
+  // gpu::GpuInProcessThreadServiceDelegate implementation:
+  scoped_refptr<gpu::SharedContextState> GetSharedContextState() override;
+  scoped_refptr<gl::GLShareGroup> GetShareGroup() override;
 
   GpuServiceImpl* gpu_service() { return gpu_service_.get(); }
   const GpuServiceImpl* gpu_service() const { return gpu_service_.get(); }

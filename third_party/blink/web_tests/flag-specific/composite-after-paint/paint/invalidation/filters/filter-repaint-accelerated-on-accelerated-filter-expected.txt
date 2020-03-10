@@ -21,7 +21,7 @@
         {
           "object": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow accelerated'",
           "rect": [0, 0, 160, 260],
-          "reason": "geometry"
+          "reason": "paint property change"
         }
       ],
       "transform": 1

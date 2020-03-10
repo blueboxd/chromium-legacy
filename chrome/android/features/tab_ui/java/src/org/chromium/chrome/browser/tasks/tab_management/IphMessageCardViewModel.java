@@ -43,10 +43,12 @@ public class IphMessageCardViewModel {
                 .with(MessageCardViewProperties.MESSAGE_SERVICE_ACTION_PROVIDER,
                         data.getReviewActionProvider())
                 .with(MessageCardViewProperties.DESCRIPTION_TEXT, descriptionText)
+                .with(MessageCardViewProperties.DESCRIPTION_TEXT_TEMPLATE, null)
                 .with(MessageCardViewProperties.ACTION_TEXT, actionText)
                 .with(MessageCardViewProperties.DISMISS_BUTTON_CONTENT_DESCRIPTION,
                         dismissButtonContextDescription)
                 .with(MessageCardViewProperties.SHOULD_KEEP_AFTER_REVIEW, true)
+                .with(MessageCardViewProperties.IS_ICON_VISIBLE, false)
                 .with(CARD_TYPE, MESSAGE)
                 .with(CARD_ALPHA, 1f)
                 .build();

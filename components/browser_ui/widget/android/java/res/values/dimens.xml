@@ -38,7 +38,6 @@
     <!-- Custom Menu dimensions -->
     <dimen name="menu_negative_software_vertical_offset">0dp</dimen>
     <dimen name="menu_divider_padding">8dp</dimen>
-    <dimen name="menu_drawable_padding">16dp</dimen>
     <dimen name="menu_padding_start">16dp</dimen>
 
     <!-- Drag-Reorderable List dimensions -->

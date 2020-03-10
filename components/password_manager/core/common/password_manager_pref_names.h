@@ -80,6 +80,9 @@ extern const char kSyncPasswordLengthAndHashSalt[];
 // credentials was performed.
 extern const char kLastTimeObsoleteHttpCredentialsRemoved[];
 
+// The last time the password check has run to completion.
+extern const char kLastTimePasswordCheckCompleted[];
+
 // List that contains captured password hashes.
 extern const char kPasswordHashDataList[];
 

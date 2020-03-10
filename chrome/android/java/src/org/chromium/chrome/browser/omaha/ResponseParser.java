@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.omaha.XMLParser.Node;
  *
  * Expects XML formatted like:
  * <?xml version="1.0" encoding="UTF-8"?>
- *   <daystart elapsed_seconds="65524"/>
+ *   <daystart elapsed_days="4804" elapsed_seconds="65524"/>
  *   <app appid="{appid}" status="ok">
  *     <updatecheck status="ok">
  *       <urls>
@@ -58,6 +58,7 @@ public class ResponseParser {
     private final boolean mStrictParsingMode;
 
     private Integer mDaystartSeconds;
+    private Integer mDaystartDays;
     private String mAppStatus;
 
     private String mUpdateStatus;
@@ -86,12 +87,17 @@ public class ResponseParser {
         XMLParser parser = new XMLParser(xml);
         Node rootNode = parser.getRootNode();
         parseRootNode(rootNode);
-        return new VersionConfig(getNewVersion(), getURL());
+        return new VersionConfig(getNewVersion(), getURL(), getDaystartDays());
     }
 
     public int getDaystartSeconds() {
         if (mDaystartSeconds == null) return 0;
         return mDaystartSeconds;
+    }
+
+    public int getDaystartDays() {
+        if (mDaystartDays == null) return 0;
+        return mDaystartDays;
     }
 
     public String getNewVersion() {
@@ -181,6 +187,7 @@ public class ResponseParser {
     private boolean parseDaystartNode(Node node) throws RequestFailureException {
         try {
             mDaystartSeconds = Integer.parseInt(node.attributes.get("elapsed_seconds"));
+            mDaystartDays = Integer.parseInt(node.attributes.get("elapsed_days"));
         } catch (NumberFormatException e) {
             return logError(node, RequestFailureException.ERROR_PARSE_DAYSTART);
         }

@@ -24,7 +24,6 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_util.h"
-#include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -162,6 +161,15 @@ TestGpuServiceHolder::~TestGpuServiceHolder() {
   io_thread_.Stop();
 }
 
+scoped_refptr<gpu::SharedContextState>
+TestGpuServiceHolder::GetSharedContextState() {
+  return gpu_service_->GetContextState();
+}
+
+scoped_refptr<gl::GLShareGroup> TestGpuServiceHolder::GetShareGroup() {
+  return gpu_service_->share_group();
+}
+
 void TestGpuServiceHolder::ScheduleGpuTask(base::OnceClosure callback) {
   DCHECK(gpu_task_sequence_);
   gpu_task_sequence_->ScheduleTask(std::move(callback), {});
@@ -236,19 +244,15 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       /*shutdown_event=*/nullptr);
 
   task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
-      gpu_thread_.task_runner(), gpu_service_->GetGpuScheduler(),
+      this, gpu_thread_.task_runner(), gpu_service_->GetGpuScheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
-      gpu_service_->share_group(),
       gpu_service_->gpu_channel_manager()
           ->default_offscreen_surface()
           ->GetFormat(),
       gpu_service_->gpu_feature_info(),
       gpu_service_->gpu_channel_manager()->gpu_preferences(),
       gpu_service_->shared_image_manager(),
-      gpu_service_->gpu_channel_manager()->program_cache(),
-      // Unretained is safe since |gpu_service_| outlives |task_executor_|.
-      base::BindRepeating(&GpuServiceImpl::GetContextState,
-                          base::Unretained(gpu_service_.get())));
+      gpu_service_->gpu_channel_manager()->program_cache());
 
   // TODO(weiliangc): Since SkiaOutputSurface should not depend on command
   // buffer, the |gpu_task_sequence_| should be coming from

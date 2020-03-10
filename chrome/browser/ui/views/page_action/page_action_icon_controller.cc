@@ -260,6 +260,12 @@ void PageActionIconController::ZoomChangedForActiveTab(bool can_show_bubble) {
     zoom_icon_->ZoomChangedForActiveTab(can_show_bubble);
 }
 
+std::vector<const PageActionIconView*>
+PageActionIconController::GetPageActionIconViewsForTesting() const {
+  return std::vector<const PageActionIconView*>(page_action_icons_.begin(),
+                                                page_action_icons_.end());
+}
+
 void PageActionIconController::OnDefaultZoomLevelChanged() {
   ZoomChangedForActiveTab(false);
 }

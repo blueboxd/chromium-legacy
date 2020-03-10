@@ -569,8 +569,6 @@
 <translation id="177336675152937177">Aparıcı Tətbiq datası</translation>
 <translation id="1776712937009046120">İstifadəçi əlavə edin</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Bu cihaz <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tərəfindən idarə olunur.
-    <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hesabınıza daxil olmaq üçün "Növbəti" düyməsinə toxunun.</translation>
 <translation id="1779652936965200207">Bu parolu "<ph name="DEVICE_NAME" />" üzərinə daxil edin:</translation>
 <translation id="177989070088644880">Tətbiq (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Qrupu bağlayın</translation>
@@ -883,7 +881,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2202898655984161076">Printerlərin siyahısını tərtib edərkən xəta baş verdi. Bəzi printerləriniz <ph name="CLOUD_PRINT_NAME" /> ilə uğurla qeydiyyat olunmayıb..</translation>
 <translation id="2203682048752833055">Axtarış sistemi <ph name="BEGIN_LINK" />ünvan panelində<ph name="END_LINK" /> istifadə edildi</translation>
 <translation id="2204034823255629767">Oxuyun və yazdığınız istənilən şeyi dəyişin</translation>
-<translation id="220792432208469595">İstifadə və diaqnostika datasını göndərin. Bu cihaz hazırda Google'a diaqnostika, cihaz və tətbiq istifadə datasını avtomatik göndərir. Bu, sistem və tətbiq sabitliyi və digər təkmilləşdirmələrə kömək edəcək. Ümumi data, həmçinin, Google tətbiqləri və Android developerləri kimi partnyorlara kömək edəcək. Bu ayar sahibi tərəfindən tətbiq edilir. Əlavə Veb və Tətbiq Fəaliyyəti ayarı aktiv edilərsə, bu data Google Hesabında yadda saxlana bilər. <ph name="BEGIN_LINK1" />Ətraflı Məlumat<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Bu PIN kodu "<ph name="DEVICE_NAME" />" cihazına daxil edin:</translation>
 <translation id="2212565012507486665">Kukilərə icazə verin</translation>
 <translation id="2213140827792212876">Paylaşımı silin</translation>
@@ -1338,7 +1335,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2804043232879091219">Alternativ brauzeri açmaq mümkün olmadı</translation>
 <translation id="2804667941345577550">Açıq tablar da daxil olmaqla, bu saytdan çıxmış olacaqsınız</translation>
 <translation id="2804680522274557040">Kamera deaktivdir</translation>
-<translation id="2805539617243680210">Hər şey hazırdır!</translation>
 <translation id="2805646850212350655">Microsoft Şifrələmə Fayl Sistemi</translation>
 <translation id="2805756323405976993">Tətbiq</translation>
 <translation id="2805770823691782631">Əlavə məlumatlar</translation>
@@ -2016,6 +2012,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3742055079367172538">Skrinşot çəkildi</translation>
 <translation id="3742666961763734085">Bu adda təşkilatı vahid tapılmadı. Yenidən cəhd edin.</translation>
 <translation id="3744111561329211289">Arxa fon sinx</translation>
+<translation id="3747077776423672805">Tətbiqləri silmək üçün Ayarlar &gt; Google Play Market &gt; Android tərcihlərini idarə edin &gt; Tətbiqlər və ya Tətbiq meneceri bölməsinə daxil olun. Sonra quraşdırılmasını ləğv etmək istədiyiniz tətbiqə klikləyin (tətbiqi tapmaq üçün sağa və ya sola sürüşdürməlisiniz). Quraşdırılmanı Ləğv Edin və ya Deaktiv Edin seçiminə klikləyin.</translation>
 <translation id="3748026146096797577">Qoşulmayıb</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Cihazlarım</translation>
@@ -2734,7 +2731,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4785719467058219317">Bu veb saytda qeydiyyatda olmayan təhlükəsizlik açarından istifadə edirsiniz</translation>
 <translation id="4788092183367008521">Şəbəkə bağlantınızı yoxlayıb yenidən cəhd edin.</translation>
 <translation id="4792711294155034829">Problemi xəbər verin...</translation>
-<translation id="4795022432560487924">İstifadə və diaqnostika datasını göndərin. Google'a diaqnostika, cihaz və tətbiq istifadə datasını avtomatik göndərməklə övladınızın Android təcrübəsini təkmilləşdirin. Bu, övladınızı müəyyən etmək üçün istifadə edilməyəcək, eyni zamanda, sistem və tətbiq sabitliyi və digər təkmilləşdirmələrə kömək edəcək. Ümumi data, həmçinin, Google tətbiqləri və Android developerləri kimi partnyorlara kömək edəcək. Bu ayar sahibi tərəfindən tətbiq edilir. Sahibi bu cihaz üçün diaqnostika və istifadə datasını Google'a göndərməyi seçə bilər. Övladınız üçün əlavə Veb və Tətbiq Fəaliyyəti ayarı aktiv edilərsə, bu data Google Hesabında yadda saxlana bilər. <ph name="BEGIN_LINK1" />Ətraflı Məlumat<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Veb səhifə, yalnız HTML</translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth Girişləri<ph name="END_LINK" /> əlavə edin (Google daxili)</translation>
 <translation id="4801448226354548035">Hesabları gizlədin</translation>
@@ -3558,7 +3554,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5941711191222866238">Minimallaşdırın</translation>
 <translation id="5942964813783878922"><ph name="DEVICE_TYPE" /> bu güncəlləmədən sonra yenidən başlayacaq. Gələcək proqram və təhlükəsizlik güncəlləmələri avtomatik quraşdırılacaq.</translation>
 <translation id="5944869793365969636">QR kodunu skan edin</translation>
-<translation id="5945188205370098537">İstifadə və diaqnostika datasını göndərin. Google'a diaqnostika, cihaz və tətbiq istifadə datasını avtomatik göndərməklə Android təcrübəsini təkmilləşdirin. Bu, sistem və tətbiq sabitliyi və digər təkmilləşdirmələrə kömək edəcək. Ümumi data, həmçinin, Google tətbiqləri və Android developerləri kimi partnyorlara kömək edəcək. Əlavə Veb və Tətbiq Fəaliyyəti ayarı aktiv edilərsə, bu data Google Hesabında yadda saxlana bilər. <ph name="BEGIN_LINK1" />Ətraflı Məlumat<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Raport ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Faylı təhlil etmək alınmır</translation>
 <translation id="5955282598396714173">Parolun müddəti bitib. Dəyişmək üçün hesabdan çıxın və təkrar daxil olun.</translation>
@@ -3742,6 +3737,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6185132558746749656">Cihaz Məkanı</translation>
 <translation id="6186394685773237175">Oğurlanmış parol tapılmadı</translation>
 <translation id="6195693561221576702">Bu cihazı oflayn demo rejimində quraşdırmaq mümkün deyil.</translation>
+<translation id="6196640612572343990">Üçüncü tərəf kukiləri blok edin</translation>
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" artırması proksi ayarlarınıza nəzarət edir, bu o dəməkdir ki, onlayn etdiyiniz hər bir şey üzərində dəyişdirə, poza və gizli izləyə bilər. Bu dəyişikliyin niyə baş verdiyinə əmin deyilsinizsə, yəqin Siz bunu istəməmisiniz.</translation>
 <translation id="6198102561359457428">Hesabdan çıxın və yenidən daxil olun...</translation>
 <translation id="6198252989419008588">PİN kodu dəyişdirin</translation>
@@ -4405,7 +4401,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="711902386174337313">Hesaba daxil olduğunuz cihazların siyahısına baxın</translation>
 <translation id="7120865473764644444">Sinxronizasiya serverine qoşula bilmədi. Yenidən cəhd olunur...</translation>
 <translation id="7121362699166175603">Ünvan penelindəki tarixçə və avtomatik tamamlamanı silir. <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> linkində Google Hesabına məxsus axtarış tarixçəsinin başqa formaları ola bilər.</translation>
-<translation id="7121389946694989825">İstifadə və diaqnostika datasını göndərin. Bu cihaz hazırda Google'a diaqnostika, cihaz və tətbiq istifadə datasını avtomatik göndərir. Bu, övladınızı müəyyən etmək üçün istifadə edilməyəcək, eyni zamanda, sistem və tətbiq sabitliyi və digər təkmilləşdirmələrə kömək edəcək. Ümumi data, həmçinin, Google tətbiqləri və Android developerləri kimi partnyorlara kömək edəcək. Övladınız üçün əlavə Veb və Tətbiq Fəaliyyəti ayarı aktiv edilərsə, bu data Google Hesabında yadda saxlana bilər. <ph name="BEGIN_LINK1" />Ətraflı Məlumat<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Tərtibatçı Rejimi</translation>
 <translation id="7121728544325372695">Ağıllı Tirelər</translation>
 <translation id="7123360114020465152">Daha dəstəklənmir</translation>
@@ -5186,7 +5181,6 @@ Açar faylınızı güvənli yerdə saxlayın.</translation>
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Tabeli yeni pəncərəyə köçürün}other{Tabelləri yeni pəncərəyə köçürün}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">səhifə</translation>
-<translation id="8180294223783876911">İstifadə və diaqnostika datasını göndərin. Bu cihaz hazırda Google'a diaqnostika, cihaz və tətbiq istifadə datasını avtomatik göndərir. Bu, sistem və tətbiq sabitliyi və digər təkmilləşdirmələrə kömək edəcək. Ümumi data, həmçinin, Google tətbiqləri və Android developerləri kimi partnyorlara kömək edəcək. Əlavə Veb və Tətbiq Fəaliyyəti ayarı aktiv edilərsə, bu data Google Hesabında yadda saxlana bilər. <ph name="BEGIN_LINK1" />Ətraflı Məlumat<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" yoxlanılmış məkanlarda şəkil, video və səs fayllarını oxuya və silə bilər.</translation>
 <translation id="8181215761849004992">Cihaz domenə qoşulmadı.Cihaz əlavə etmək imtiyazınızın olub-olmadığını yoxlamaq üçün hesabınıza baxın.</translation>
 <translation id="8182105986296479640">Tətbiq cavab vermir.</translation>
@@ -5208,7 +5202,6 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="8203732864715032075">Bu kompüteri Mesajlaşma üçün xatırlatmaq məqsədilə ona bildirişlər və defoltlar göndərin. <ph name="LINK_BEGIN" />Ətraflı məlumat<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">"<ph name="APP_NAME" />" valideyniniz tərəfindən bloklanıb. Valideyninizdən bu tətbiqi istifadə etmək üçün icazə istəyin.</translation>
 <translation id="820568752112382238">Ən çox daxil olduğunuz saytlar</translation>
-<translation id="8206581664590136590">İstifadə və diaqnostika datasını göndərin. Google'a diaqnostika, cihaz və tətbiq istifadə datasını avtomatik göndərməklə övladınızın Android təcrübəsini təkmilləşdirin. Bu, övladınızı müəyyən etmək üçün istifadə edilməyəcək, eyni zamanda, sistem və tətbiq sabitliyi və digər təkmilləşdirmələrə kömək edəcək. Ümumi data, həmçinin, Google tətbiqləri və Android developerləri kimi partnyorlara kömək edəcək. Övladınız üçün əlavə Veb və Tətbiq Fəaliyyəti ayarı aktiv edilərsə, bu data Google Hesabında yadda saxlana bilər. <ph name="BEGIN_LINK1" />Ətraflı Məlumat<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Blyuz</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Endirmə gözlənilir}other{Endirmə gözlənilir}}</translation>
@@ -5746,7 +5739,6 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="8912362522468806198">Google Hesabı</translation>
 <translation id="8912793549644936705">Dartın</translation>
 <translation id="8912810933860534797">Avtomatik skanı aktiv edin</translation>
-<translation id="891365694296252935">İstifadə və diaqnostika datasını göndərin. Bu cihaz hazırda Google'a diaqnostika, cihaz və tətbiq istifadə datasını avtomatik göndərir. Bu, övladınızı müəyyən etmək üçün istifadə edilməyəcək, eyni zamanda, sistem və tətbiq sabitliyi və digər təkmilləşdirmələrə kömək edəcək. Ümumi data, həmçinin, Google tətbiqləri və Android developerləri kimi partnyorlara kömək edəcək. Bu ayar sahibi tərəfindən tətbiq edilir. Övladınız üçün əlavə Veb və Tətbiq Fəaliyyəti aktiv edilərsə, həmin data Google Hesabında yadda saxlana bilər. <ph name="BEGIN_LINK1" />Ətraflı Məlumat<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Təklif yüklənir</translation>
 <translation id="8916476537757519021">Gizli Altkadr: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Təhlükəsizlik açarınız doğrulanır..</translation>
@@ -5883,7 +5875,6 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="9101691533782776290">Tətbiqi işə salın</translation>
 <translation id="9102610709270966160">Artırmanı Aktiv Edin</translation>
 <translation id="9103868373786083162">Geri qayıtmaq üçün basın və tarixməni görmək üçün kontekst menyuya basın</translation>
-<translation id="9104396740804929809">İstifadə və diaqnostika datasını göndərin. Google'a diaqnostika, cihaz və tətbiq istifadə datasını avtomatik göndərməklə Android təcrübəsini təkmilləşdirin. Bu, sistem və tətbiq sabitliyi və digər təkmilləşdirmələrə kömək edəcək. Ümumi data, həmçinin, Google tətbiqləri və Android developerləri kimi partnyorlara kömək edəcək. Bu ayar sahibi tərəfindən tətbiq edilir. Sahibi bu cihaz üçün diaqnostika və istifadə datasını Google'a göndərməyi seçə bilər. Əlavə Veb və Tətbiq Fəaliyyəti ayarı aktiv edilərsə, bu data Google Hesabında yadda saxlana bilər. <ph name="BEGIN_LINK1" />Ətraflı Məlumat<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Yaddaşı boşaltmaq üçün faylları silin.</translation>
 <translation id="9109283579179481106">Mobil şəbəkəyə qoşulun</translation>
 <translation id="9111102763498581341">Kiliddən çıxarın</translation>

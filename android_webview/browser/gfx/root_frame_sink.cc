@@ -59,12 +59,23 @@ class RootFrameSink::ChildCompositorFrameSink
   uint32_t layer_tree_frame_sink_id() { return layer_tree_frame_sink_id_; }
 
   viz::CompositorFrameSinkSupport* support() { return support_.get(); }
+  gfx::Size size() { return size_; }
+
+  void SubmitCompositorFrame(
+      const viz::LocalSurfaceId& local_surface_id,
+      viz::CompositorFrame frame,
+      base::Optional<viz::HitTestRegionList> hit_test_region_list) {
+    size_ = frame.size_in_pixels();
+    support()->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                     std::move(hit_test_region_list));
+  }
 
  private:
   RootFrameSink* const owner_;
   const uint32_t layer_tree_frame_sink_id_;
   const viz::FrameSinkId frame_sink_id_;
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
+  gfx::Size size_;
 };
 
 RootFrameSink::RootFrameSink(RootFrameSinkClient* client)
@@ -197,7 +208,7 @@ void RootFrameSink::SubmitChildCompositorFrame(ChildFrame* child_frame) {
         child_frame->frame_sink_id);
   }
 
-  child_sink_support_->support()->SubmitCompositorFrame(
+  child_sink_support_->SubmitCompositorFrame(
       child_frame->local_surface_id, std::move(*child_frame->frame),
       std::move(child_frame->hit_test_region_list));
   child_frame->frame.reset();
@@ -207,6 +218,14 @@ viz::FrameTimingDetailsMap RootFrameSink::TakeChildFrameTimingDetailsMap() {
   if (child_sink_support_)
     return child_sink_support_->support()->TakeFrameTimingDetailsMap();
   return viz::FrameTimingDetailsMap();
+}
+
+gfx::Size RootFrameSink::GetChildFrameSize() {
+  // TODO(vasilyt): This is not going to work with VizFrameSubmissionForWebView.
+  if (child_sink_support_) {
+    return child_sink_support_->size();
+  }
+  return gfx::Size();
 }
 
 }  // namespace android_webview

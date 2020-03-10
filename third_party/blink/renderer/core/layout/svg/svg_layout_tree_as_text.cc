@@ -647,9 +647,6 @@ void WriteSVGResourceContainer(WTF::TextStream& ts,
 void WriteSVGContainer(WTF::TextStream& ts,
                        const LayoutObject& container,
                        int indent) {
-  // Currently LayoutSVGResourceFilterPrimitive has no meaningful output.
-  if (container.IsSVGResourceFilterPrimitive())
-    return;
   WriteStandardPrefix(ts, container, indent);
   WritePositionAndStyle(ts, container);
   ts << "\n";

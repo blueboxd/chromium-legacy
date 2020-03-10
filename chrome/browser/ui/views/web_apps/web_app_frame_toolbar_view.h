@@ -23,6 +23,7 @@ class Widget;
 
 class BrowserView;
 class ContentSettingImageView;
+class PageActionIconController;
 
 #if defined(OS_MACOSX)
 constexpr int kWebAppMenuMargin = 7;
@@ -87,7 +88,7 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   static void DisableAnimationForTesting();
   views::View* GetLeftContainerForTesting();
   views::View* GetRightContainerForTesting();
-  views::View* GetPageActionIconContainerForTesting();
+  PageActionIconController* GetPageActionIconControllerForTesting();
 
  protected:
   // views::AccessiblePaneView:

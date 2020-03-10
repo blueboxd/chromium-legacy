@@ -78,7 +78,6 @@ void AddCaptionSubpageStrings(content::WebUIDataSource* html_source) {
       {"captionsColorCyan", IDS_SETTINGS_CAPTIONS_COLOR_CYAN},
       {"captionsColorMagenta", IDS_SETTINGS_CAPTIONS_COLOR_MAGENTA},
       {"captionsDefaultSetting", IDS_SETTINGS_CAPTIONS_DEFAULT_SETTING},
-      {"captionsEnableLiveCaption", IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }

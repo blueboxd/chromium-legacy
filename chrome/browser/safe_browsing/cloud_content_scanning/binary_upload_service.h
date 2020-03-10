@@ -99,7 +99,17 @@ class BinaryUploadService {
     // Structure of data returned in the callback to GetRequestData().
     struct Data {
       Data();
+
+      // The data content.
       std::string contents;
+
+      // The SHA256 of the data.
+      std::string hash;
+
+      // The size of the data. This can differ from |contents.size()| when the
+      // file is too large for deep scanning. This field will contain the true
+      // size.
+      uint64_t size = 0;
     };
 
     // Asynchronously returns the file contents to upload.

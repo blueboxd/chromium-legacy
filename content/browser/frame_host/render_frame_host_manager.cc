@@ -2053,11 +2053,15 @@ RenderFrameHostManager::CreateRenderFrameHost(
 
   // Create a RVH for main frames, or find the existing one for subframes.
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
-  scoped_refptr<RenderViewHostImpl> render_view_host;
+  scoped_refptr<RenderViewHostImpl> render_view_host =
+      frame_tree->GetRenderViewHost(site_instance);
+
   if (frame_tree_node_->IsMainFrame()) {
-    render_view_host = frame_tree->CreateRenderViewHost(
-        site_instance, view_routing_id, frame_routing_id, widget_routing_id,
-        false);
+    if (!render_view_host) {
+      render_view_host = frame_tree->CreateRenderViewHost(
+          site_instance, view_routing_id, frame_routing_id, widget_routing_id,
+          /*swapped_out=*/false);
+    }
     // TODO(avi): It's a bit bizarre that this logic lives here instead of in
     // CreateRenderFrame(). It turns out that FrameTree::CreateRenderViewHost
     // doesn't /always/ create a new RenderViewHost. It first tries to find an
@@ -2073,14 +2077,12 @@ RenderFrameHostManager::CreateRenderFrameHost(
       DCHECK_NE(view_routing_id, widget_routing_id);
       DCHECK_EQ(view_routing_id, render_view_host->GetRoutingID());
     }
-  } else {
-    render_view_host = frame_tree->GetRenderViewHost(site_instance);
-    CHECK(render_view_host);
   }
+  CHECK(render_view_host);
 
   return RenderFrameHostFactory::Create(
       site_instance, render_view_host, frame_tree->render_frame_delegate(),
-      frame_tree, frame_tree_node_, frame_routing_id, widget_routing_id,
+      frame_tree, frame_tree_node_, frame_routing_id,
       renderer_initiated_creation);
 }
 
@@ -2141,20 +2143,9 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   DCHECK(render_frame_host_->GetSiteInstance() != instance ||
          render_frame_host_->must_be_replaced() || IsRenderDocumentEnabled());
 
-  // A RenderFrame in a different process from its parent RenderFrame
-  // requires a RenderWidget for input/layout/painting.
-  //
-  // TODO(ajwong): When RVH no longer owns a RWH, this logic should be
-  // simplified as the decision to create a RWH will be centralized here.
-  // https://crbug.com/545684
-  FrameTreeNode* parent = frame_tree_node_->parent();
-  int32_t widget_routing_id = MSG_ROUTING_NONE;
-  if (parent && parent->current_frame_host()->GetSiteInstance() != instance)
-    widget_routing_id = instance->GetProcess()->GetNextRoutingID();
-
   std::unique_ptr<RenderFrameHostImpl> new_render_frame_host =
       CreateRenderFrameHost(instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-                            widget_routing_id, false);
+                            MSG_ROUTING_NONE, false);
   DCHECK_EQ(new_render_frame_host->GetSiteInstance(), instance);
 
   // Prevent the process from exiting while we're trying to navigate in it.
@@ -2238,16 +2229,16 @@ void RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   if (!proxy) {
     // The RenderViewHost creates the page level structure in Blink. The first
     // object to depend on it is necessarily a main frame one.
-    CHECK(frame_tree_node_->frame_tree()->GetRenderViewHost(instance) ||
-          frame_tree_node_->IsMainFrame());
-
-    // Before creating a new RenderFrameProxyHost, ensure a RenderViewHost
-    // exists for |instance|, as it creates the page level structure in Blink.
     scoped_refptr<RenderViewHostImpl> render_view_host =
-        frame_tree_node_->frame_tree()->CreateRenderViewHost(
-            instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-            /*swapped_out=*/true);
-
+        frame_tree_node_->frame_tree()->GetRenderViewHost(instance);
+    CHECK(render_view_host || frame_tree_node_->IsMainFrame());
+    if (!render_view_host) {
+      // Before creating a new RenderFrameProxyHost, ensure a RenderViewHost
+      // exists for |instance|, as it creates the page level structure in Blink.
+      render_view_host = frame_tree_node_->frame_tree()->CreateRenderViewHost(
+          instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+          /*swapped_out=*/true);
+    }
     proxy = CreateRenderFrameProxyHost(instance, std::move(render_view_host));
   }
 

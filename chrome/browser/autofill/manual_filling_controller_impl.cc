@@ -294,6 +294,7 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
       return address_controller_.get();
     case AccessoryAction::MANAGE_CREDIT_CARDS:
       return cc_controller_.get();
+    case AccessoryAction::TOGGLE_SAVE_PASSWORDS:
     case AccessoryAction::AUTOFILL_SUGGESTION:
     case AccessoryAction::COUNT:
       break;  // Intentional failure;

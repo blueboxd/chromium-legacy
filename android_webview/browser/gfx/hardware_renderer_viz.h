@@ -33,7 +33,6 @@ class HardwareRendererViz : public HardwareRenderer {
   bool IsUsingVulkan() const;
 
   // Information about last delegated frame.
-  gfx::Size surface_size_;
   float device_scale_factor_ = 0;
 
   viz::SurfaceId surface_id_;

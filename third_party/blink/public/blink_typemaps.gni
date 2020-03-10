@@ -5,12 +5,6 @@
 typemaps = [
   "//gpu/ipc/common/mailbox_holder_for_blink.typemap",
   "//gpu/ipc/common/sync_token.typemap",
-  "//mojo/public/cpp/base/file.typemap",
-  "//mojo/public/cpp/base/file_info.typemap",
-  "//mojo/public/cpp/base/file_path.typemap",
-  "//mojo/public/cpp/base/file_error.typemap",
-  "//mojo/public/cpp/base/shared_memory.typemap",
-  "//mojo/public/cpp/base/read_only_buffer.typemap",
   "//services/network/public/cpp/cross_origin_embedder_policy.typemap",
   "//services/network/public/cpp/url_request.typemap",
   "//services/viz/public/cpp/compositing/begin_frame_args_for_blink.typemap",

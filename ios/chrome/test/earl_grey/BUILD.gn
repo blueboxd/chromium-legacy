@@ -54,6 +54,8 @@ chrome_ios_eg_test("ios_chrome_reading_list_egtests") {
 
 chrome_ios_eg_test("ios_chrome_bookmarks_egtests") {
   deps = [ "//ios/chrome/browser/ui/bookmarks:eg_tests" ]
+
+  shards = 3
 }
 
 chrome_ios_eg_test("ios_chrome_signin_egtests") {
@@ -99,6 +101,8 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/toolbar:eg_tests",
     "//ios/chrome/browser/ui/webui:eg_tests",
   ]
+
+  shards = 2
 }
 
 chrome_ios_eg_test("ios_chrome_web_egtests") {

@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 
 #include "base/strings/string_piece.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 
 namespace autofill {
 
@@ -113,6 +114,36 @@ std::ostream& operator<<(std::ostream& os, const FooterCommand& fc) {
             << "action: " << static_cast<int>(fc.accessory_action()) << ")";
 }
 
+OptionToggle::OptionToggle(base::string16 display_text,
+                           bool enabled,
+                           autofill::AccessoryAction action)
+    : display_text_(display_text),
+      enabled_(enabled),
+      accessory_action_(action) {}
+
+OptionToggle::OptionToggle(const OptionToggle& option_toggle) = default;
+
+OptionToggle::OptionToggle(OptionToggle&& option_toggle) = default;
+
+OptionToggle::~OptionToggle() = default;
+
+OptionToggle& OptionToggle::operator=(const OptionToggle& option_toggle) =
+    default;
+
+OptionToggle& OptionToggle::operator=(OptionToggle&& option_toggle) = default;
+
+bool OptionToggle::operator==(const OptionToggle& option_toggle) const {
+  return display_text_ == option_toggle.display_text_ &&
+         enabled_ == option_toggle.enabled_ &&
+         accessory_action_ == option_toggle.accessory_action_;
+}
+
+std::ostream& operator<<(std::ostream& os, const OptionToggle& ot) {
+  return os << "(display text: \"" << ot.display_text() << "\", "
+            << "state: " << ot.is_enabled() << ", "
+            << "action: " << static_cast<int>(ot.accessory_action()) << ")";
+}
+
 std::ostream& operator<<(std::ostream& os, const AccessoryTabType& type) {
   switch (type) {
     case AccessoryTabType::PASSWORDS:
@@ -161,8 +192,14 @@ bool AccessorySheetData::operator==(const AccessorySheetData& data) const {
 }
 
 std::ostream& operator<<(std::ostream& os, const AccessorySheetData& data) {
-  os << data.get_sheet_type() << " with title: \"" << data.title()
-     << "\", warning: \"" << data.warning() << "\", and user info list: [";
+  os << data.get_sheet_type() << " with title: \"" << data.title();
+  if (data.option_toggle().has_value()) {
+    os << "\", with option toggle: \"" << data.option_toggle().value();
+  } else {
+    os << "\", with option toggle: \"none";
+  }
+
+  os << "\", warning: \"" << data.warning() << "\", and user info list: [";
   for (const UserInfo& user_info : data.user_info_list()) {
     os << user_info << ", ";
   }
@@ -188,6 +225,23 @@ AccessorySheetData::Builder&& AccessorySheetData::Builder::SetWarning(
 AccessorySheetData::Builder& AccessorySheetData::Builder::SetWarning(
     base::string16 warning) & {
   accessory_sheet_data_.set_warning(std::move(warning));
+  return *this;
+}
+
+AccessorySheetData::Builder&& AccessorySheetData::Builder::SetOptionToggle(
+    base::string16 display_text,
+    bool enabled,
+    autofill::AccessoryAction action) && {
+  // Calls SetOptionToggle(...)& since |this| is an lvalue.
+  return std::move(SetOptionToggle(std::move(display_text), enabled, action));
+}
+
+AccessorySheetData::Builder& AccessorySheetData::Builder::SetOptionToggle(
+    base::string16 display_text,
+    bool enabled,
+    autofill::AccessoryAction action) & {
+  accessory_sheet_data_.set_option_toggle(
+      OptionToggle(std::move(display_text), enabled, action));
   return *this;
 }
 

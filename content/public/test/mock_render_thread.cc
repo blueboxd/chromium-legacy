@@ -38,35 +38,13 @@ static const blink::UserAgentMetadata kUserAgentMetadata;
 
 class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
  public:
-  explicit MockRenderMessageFilterImpl(MockRenderThread* thread)
-      : thread_(thread) {}
-  ~MockRenderMessageFilterImpl() override {}
+  MockRenderMessageFilterImpl() = default;
+  ~MockRenderMessageFilterImpl() override = default;
 
   // mojom::RenderMessageFilter:
   void GenerateRoutingID(GenerateRoutingIDCallback callback) override {
     NOTREACHED();
     std::move(callback).Run(MSG_ROUTING_NONE);
-  }
-
-  void CreateNewWidget(int32_t opener_id,
-                       mojo::PendingRemote<mojom::Widget> widget,
-                       CreateNewWidgetCallback callback) override {
-    // See comment in CreateNewWindow().
-    NOTREACHED();
-  }
-
-  bool CreateNewWidget(int32_t opener_id,
-                       mojo::PendingRemote<mojom::Widget> widget,
-                       int32_t* route_id) override {
-    thread_->OnCreateWidget(opener_id, route_id);
-    return true;
-  }
-
-  void CreateFullscreenWidget(
-      int opener_id,
-      mojo::PendingRemote<mojom::Widget> widget,
-      CreateFullscreenWidgetCallback callback) override {
-    NOTREACHED();
   }
 
   void HasGpuProcess(HasGpuProcessCallback callback) override {
@@ -77,16 +55,13 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
   void SetThreadPriority(int32_t platform_thread_id,
                          base::ThreadPriority thread_priority) override {}
 #endif
-
- private:
-  MockRenderThread* const thread_;
 };
 
 }  // namespace
 
 MockRenderThread::MockRenderThread()
     : next_routing_id_(kFirstGeneratedRoutingId),
-      mock_render_message_filter_(new MockRenderMessageFilterImpl(this)) {
+      mock_render_message_filter_(new MockRenderMessageFilterImpl()) {
   RenderThreadImpl::SetRenderMessageFilterForTesting(
       mock_render_message_filter_.get());
 }
@@ -250,12 +225,6 @@ void MockRenderThread::SetUseZoomForDSFEnabled(bool zoom_for_dsf) {
 
 int32_t MockRenderThread::GetNextRoutingID() {
   return next_routing_id_++;
-}
-
-// The Widget expects to be returned a valid route_id.
-void MockRenderThread::OnCreateWidget(int opener_id,
-                                      int* route_id) {
-  *route_id = GetNextRoutingID();
 }
 
 mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>

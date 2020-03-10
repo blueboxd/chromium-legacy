@@ -574,8 +574,6 @@
 <translation id="177336675152937177">Appdata på vertstjener</translation>
 <translation id="1776712937009046120">Legg til bruker</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Denne enheten administreres av <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Klikk på «Neste» for å fortsette med å logge på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-kontoen din.</translation>
 <translation id="1779652936965200207">Skriv inn dette passordet på «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="177989070088644880">App (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Lukk gruppen</translation>
@@ -889,7 +887,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2202898655984161076">Det oppstod et problem med oppføring av skrivere. Enkelte av skriverne dine er ikke registrert på <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Søkemotoren som brukes i <ph name="BEGIN_LINK" />adressefeltet<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">lese og endre alt du skriver</translation>
-<translation id="220792432208469595">Send bruks- og diagnostikkdata. Denne enheten sender for øyeblikket diagnostikk-, enhets- og appbruksdata til Google automatisk. Dette bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Denne innstillingen håndheves av eieren. Hvis du har slått på innstillingen for annen nett- og appaktivitet, kan disse dataene bli lagret i Google-kontoen din. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Skriv inn denne PIN-koden på «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="2212565012507486665">Tillat informasjonskapsler</translation>
 <translation id="2213140827792212876">Slutt å dele</translation>
@@ -1350,7 +1347,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2804043232879091219">Kunne ikke åpne den alternative nettleseren</translation>
 <translation id="2804667941345577550">Du blir logget av dette nettstedet, også i faner som er åpne</translation>
 <translation id="2804680522274557040">Kameraet er slått av</translation>
-<translation id="2805539617243680210">Du er klar!</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Apper</translation>
 <translation id="2805770823691782631">Flere detaljer</translation>
@@ -2031,6 +2027,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3742055079367172538">Skjermdump tatt</translation>
 <translation id="3742666961763734085">Finner ikke noen organisasjonsenhet med det navnet. Prøv på nytt.</translation>
 <translation id="3744111561329211289">Bakgrunnssynkronisering</translation>
+<translation id="3747077776423672805">For å fjerne apper, gå til Innstillinger &gt; Google Play Butikk &gt; Administrer Android-innstillinger &gt; Apper eller Appstyring. Trykk på appen du vil avinstallere (du må kanskje sveipe til høyre eller venstre for å finne den). Trykk deretter på Avinstaller eller Slå av.</translation>
 <translation id="3748026146096797577">Ikke tilkoblet</translation>
 <translation id="3752582316358263300">OK</translation>
 <translation id="3752673729237782832">Mine enheter</translation>
@@ -2752,7 +2749,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4785719467058219317">Du bruker en sikkerhetsnøkkel som ikke er registrert på dette nettstedet</translation>
 <translation id="4788092183367008521">Sjekk nettverkstilkoblingen din, og prøv på nytt.</translation>
 <translation id="4792711294155034829">&amp;Rapporter et problem</translation>
-<translation id="4795022432560487924">Send bruks- og diagnostikkdata. Hjelp til med å gjøre Android-opplevelsen bedre for barnet ditt ved å sende diagnostikk-, enhets- og appbruksdata til Google automatisk. Disse dataene brukes ikke til å identifisere barnet ditt, men bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Denne innstillingen håndheves av eieren. Eieren kan velge å sende diagnostikk- og bruksdata for denne enheten til Google. Hvis du har slått på innstillingen for annen nett- og appaktivitet for barnet ditt, kan disse dataene bli lagret i barnets Google-konto. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Nettside – bare HTML</translation>
 <translation id="4798236378408895261">Legg ved <ph name="BEGIN_LINK" />Bluetooth-logger<ph name="END_LINK" /> (Google-internt)</translation>
 <translation id="4801448226354548035">Skjul kontoer</translation>
@@ -3379,6 +3375,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5649053991847567735">Automatiske nedlastinger</translation>
 <translation id="5653154844073528838">Du har <ph name="PRINTER_COUNT" /> lagrede skrivere.</translation>
 <translation id="5656845498778518563">Send tilbakemelding til Google</translation>
+<translation id="5657156137487675418">Tillat alle informasjonskapsler</translation>
 <translation id="5657667036353380798">Den eksterne utvidelsen krever at Chrome versjon <ph name="MINIMUM_CHROME_VERSION" /> eller nyere er installert.</translation>
 <translation id="5658415415603568799">For å beskytte deg bedre ber Smart Lock deg om å skrive inn passordet ditt etter 20 timer.</translation>
 <translation id="5659593005791499971">E-post</translation>
@@ -3586,7 +3583,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5941711191222866238">Minimer</translation>
 <translation id="5942964813783878922"><ph name="DEVICE_TYPE" /> starter på nytt etter denne oppdateringen. Fremtidige programvare- og sikkerhetsoppdateringer blir installert automatisk.</translation>
 <translation id="5944869793365969636">Skann QR-koden</translation>
-<translation id="5945188205370098537">Send bruks- og diagnostikkdata. Hjelp til med å gjøre Android-opplevelsen din bedre ved å sende diagnostikk-, enhets- og appbruksdata til Google automatisk. Dette bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Hvis du har slått på innstillingen for annen nett- og appaktivitet, kan disse dataene bli lagret i Google-kontoen din. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Rapport-ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Kan ikke parse filen</translation>
 <translation id="5955282598396714173">Passordet ditt er utløpt. Logg av og på igjen for å endre det.</translation>
@@ -3772,6 +3768,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6185132558746749656">Enhetsposisjon</translation>
 <translation id="6186394685773237175">Fant ingen passord som er utsatt for sikkerhetsbrudd</translation>
 <translation id="6195693561221576702">Denne enheten kan ikke konfigureres i demomodus uten nett.</translation>
+<translation id="6196640612572343990">Blokkér informasjonskapsler fra tredjeparter</translation>
 <translation id="6196854373336333322">Utvidelsen «<ph name="EXTENSION_NAME" />» har tatt kontroll over proxy-tjenerinnstillingene dine, noe som betyr at den kan endre, ødelegge eller spionere på alt du foretar deg på nettet. Hvis du ikke er sikker på hvorfor denne endringen fant sted, vil du mest sannsynlig ikke ha den.</translation>
 <translation id="6198102561359457428">Logg deg av og på igjen</translation>
 <translation id="6198252989419008588">Endre personlig kode</translation>
@@ -4438,7 +4435,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="711902386174337313">lese listen over de påloggede enhetene dine</translation>
 <translation id="7120865473764644444">Kunne ikke koble til synkroniseringstjeneren. Prøver på nytt …</translation>
 <translation id="7121362699166175603">Tømmer loggen og fjerner autofullføringer i adressefeltet. Det kan hende Google-kontoen din har andre typer nettleserlogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Send bruks- og diagnostikkdata. Denne enheten sender for øyeblikket diagnostikk-, enhets- og appbruksdata til Google automatisk. Disse dataene brukes ikke til å identifisere barnet ditt, men bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Hvis du har slått på innstillingen for annen nett- og appaktivitet for barnet ditt, kan disse dataene bli lagret i barnets Google-konto. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Utviklermodus</translation>
 <translation id="7121728544325372695">Smarte tankestreker</translation>
 <translation id="7123360114020465152">Støttes ikke lenger</translation>
@@ -4553,7 +4549,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7280041992884344566">Det oppsto en feil mens Chrome søkte etter skadelig programvare</translation>
 <translation id="7280649757394340890">Stemmeinnstillinger for tekst til tale</translation>
 <translation id="7280877790564589615">Tillatelse forespurt</translation>
-<translation id="7281268427852119151">Bruk nettleserloggen din for å gi Søk, annonser og andre Google-tjenester et personlig preg</translation>
 <translation id="7282992757463864530">Informasjonsfelt</translation>
 <translation id="7287143125007575591">Ingen tilgang.</translation>
 <translation id="7287411021188441799">Gjenopprett standardbakgrunnen</translation>
@@ -5228,7 +5223,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Flytt fanen til et nytt vindu}other{Flytt fanene til et nytt vindu}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">side</translation>
-<translation id="8180294223783876911">Send bruks- og diagnostikkdata. Denne enheten sender for øyeblikket diagnostikk-, enhets- og appbruksdata til Google automatisk. Dette bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Hvis du har slått på innstillingen for annen nett- og appaktivitet, kan disse dataene bli lagret i Google-kontoen din. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">«<ph name="EXTENSION" />» kan lese og slette bilder, videofiler og lydfiler i posisjonene det er merket av for.</translation>
 <translation id="8181215761849004992">Kan ikke knytte til domenet. Sjekk kontoen din for å se om du har tilstrekkelige rettigheter til å legge til enheter.</translation>
 <translation id="8182105986296479640">Appen svarer ikke.</translation>
@@ -5250,7 +5244,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8203732864715032075">sende deg varsler og huske denne datamaskinen som standard for Messages (<ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" />)</translation>
 <translation id="8204129288640092672">«<ph name="APP_NAME" />» er blokkert av forelderen din. Spør forelderen din om tillatelse til å bruke denne appen.</translation>
 <translation id="820568752112382238">Mest besøkte nettsteder</translation>
-<translation id="8206581664590136590">Send bruks- og diagnostikkdata. Hjelp til med å gjøre Android-opplevelsen bedre for barnet ditt ved å sende diagnostikk-, enhets- og appbruksdata til Google automatisk. Disse dataene brukes ikke til å identifisere barnet ditt, men bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Hvis du har slått på innstillingen for annen nett- og appaktivitet for barnet ditt, kan disse dataene bli lagret i barnets Google-konto. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Plystre</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Nedlasting pågår}other{Nedlastinger pågår}}</translation>
@@ -5796,7 +5789,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8912793549644936705">Strekk ut</translation>
 <translation id="8912810933860534797">Aktivér automatisk skanning</translation>
-<translation id="891365694296252935">Send bruks- og diagnostikkdata. Denne enheten sender for øyeblikket diagnostikk-, enhets- og appbruksdata til Google automatisk. Disse dataene brukes ikke til å identifisere barnet ditt, men bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Denne innstillingen håndheves av eieren. Hvis du har slått på annen nett- og appaktivitet for barnet ditt, kan disse dataene bli lagret i barnets Google-konto. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Laster inn forslag …</translation>
 <translation id="8916476537757519021">Inkognito-underramme: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Bekrefter sikkerhetsnøkkelen din …</translation>
@@ -5933,7 +5925,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9101691533782776290">Start appen</translation>
 <translation id="9102610709270966160">Slå på utvidelsen</translation>
 <translation id="9103868373786083162">Trykk for å gå tilbake, eller trykk på kontekstmenyen for å se loggen</translation>
-<translation id="9104396740804929809">Send bruks- og diagnostikkdata. Hjelp til med å gjøre Android-opplevelsen din bedre ved å sende diagnostikk-, enhets- og appbruksdata til Google automatisk. Dette bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Denne innstillingen håndheves av eieren. Eieren kan velge å sende diagnostikk- og bruksdata for denne enheten til Google. Hvis du har slått på innstillingen for annen nett- og appaktivitet, kan disse dataene bli lagret i Google-kontoen din. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">For å frigjøre plass, slett filer fra enhetslagringen.</translation>
 <translation id="9109283579179481106">Koble til mobilnettverk</translation>
 <translation id="9111102763498581341">Lås opp</translation>

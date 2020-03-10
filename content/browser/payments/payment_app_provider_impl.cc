@@ -82,6 +82,12 @@ class InvokePaymentAppCallbackRepository {
     return base::Singleton<InvokePaymentAppCallbackRepository>::get();
   }
 
+  // Disallow copy and assign.
+  InvokePaymentAppCallbackRepository(
+      const InvokePaymentAppCallbackRepository& other) = delete;
+  InvokePaymentAppCallbackRepository& operator=(
+      const InvokePaymentAppCallbackRepository& other) = delete;
+
   RespondWithCallbacks* GetCallback(BrowserContext* browser_context) {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     auto it = invoke_callbacks_.find(browser_context);
@@ -103,8 +109,8 @@ class InvokePaymentAppCallbackRepository {
   }
 
  private:
-  InvokePaymentAppCallbackRepository() {}
-  ~InvokePaymentAppCallbackRepository() {}
+  InvokePaymentAppCallbackRepository() = default;
+  ~InvokePaymentAppCallbackRepository() = default;
 
   friend struct base::DefaultSingletonTraits<
       InvokePaymentAppCallbackRepository>;
@@ -116,40 +122,66 @@ class InvokePaymentAppCallbackRepository {
 // called.
 class RespondWithCallbacks : public PaymentHandlerResponseCallback {
  public:
-  RespondWithCallbacks(
+  static RespondWithCallbacks* CreateForInvoke(
       BrowserContext* browser_context,
-      ServiceWorkerMetrics::EventType event_type,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
-      PaymentAppProvider::InvokePaymentAppCallback callback)
-      : browser_context_(browser_context),
-        event_type_(event_type),
-        service_worker_version_(service_worker_version),
-        invoke_payment_app_callback_(std::move(callback)) {
-    request_id_ = service_worker_version->StartRequest(
-        event_type, base::BindOnce(&RespondWithCallbacks::OnErrorStatus,
-                                   weak_ptr_factory_.GetWeakPtr()));
+      PaymentAppProvider::InvokePaymentAppCallback callback) {
+    RespondWithCallbacks* callbacks = new RespondWithCallbacks(
+        browser_context, ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
+        service_worker_version,
+        /*invoke_callback=*/std::move(callback),
+        PaymentAppProvider::PaymentEventResultCallback());
     InvokePaymentAppCallbackRepository::GetInstance()->SetCallback(
-        browser_context, this);
+        browser_context, callbacks);
+    return callbacks;
   }
 
-  RespondWithCallbacks(
+  static RespondWithCallbacks* CreateForEvent(
       BrowserContext* browser_context,
       ServiceWorkerMetrics::EventType event_type,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
-      PaymentAppProvider::PaymentEventResultCallback callback)
-      : browser_context_(browser_context),
-        event_type_(event_type),
-        service_worker_version_(service_worker_version),
-        payment_event_result_callback_(std::move(callback)) {
-    request_id_ = service_worker_version->StartRequest(
-        event_type, base::BindOnce(&RespondWithCallbacks::OnErrorStatus,
-                                   weak_ptr_factory_.GetWeakPtr()));
+      PaymentAppProvider::PaymentEventResultCallback callback) {
+    RespondWithCallbacks* callbacks = new RespondWithCallbacks(
+        browser_context, event_type, service_worker_version,
+        PaymentAppProvider::InvokePaymentAppCallback(),
+        /*event_callback=*/std::move(callback));
+    return callbacks;
   }
+
+  // Disallow copy and assign.
+  RespondWithCallbacks(const RespondWithCallbacks& other) = delete;
+  RespondWithCallbacks& operator=(const RespondWithCallbacks& other) = delete;
 
   mojo::PendingRemote<PaymentHandlerResponseCallback>
   BindNewPipeAndPassRemote() {
     return receiver_.BindNewPipeAndPassRemote();
   }
+
+  void AbortPaymentSinceOpennedWindowClosing(PaymentEventResponseType reason) {
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+    service_worker_version_->FinishRequest(request_id_, false);
+    RespondWithErrorAndDeleteSelf(reason);
+  }
+
+ private:
+  RespondWithCallbacks(
+      BrowserContext* browser_context,
+      ServiceWorkerMetrics::EventType event_type,
+      scoped_refptr<ServiceWorkerVersion> service_worker_version,
+      PaymentAppProvider::InvokePaymentAppCallback invoke_callback,
+      PaymentAppProvider::PaymentEventResultCallback event_callback)
+      : browser_context_(browser_context),
+        event_type_(event_type),
+        service_worker_version_(service_worker_version),
+        invoke_payment_app_callback_(std::move(invoke_callback)),
+        payment_event_result_callback_(std::move(event_callback)) {
+    request_id_ = service_worker_version->StartRequest(
+        event_type, base::BindOnce(&RespondWithCallbacks::OnErrorStatus,
+                                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  ~RespondWithCallbacks() override = default;
 
   void OnResponseForPaymentRequest(
       PaymentHandlerResponsePtr response) override {
@@ -229,18 +261,6 @@ class RespondWithCallbacks : public PaymentHandlerResponseCallback {
     RespondWithErrorAndDeleteSelf(response_type);
   }
 
-  int request_id() { return request_id_; }
-
-  void AbortPaymentSinceOpennedWindowClosing(PaymentEventResponseType reason) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-
-    service_worker_version_->FinishRequest(request_id_, false);
-    RespondWithErrorAndDeleteSelf(reason);
-  }
-
- private:
-  ~RespondWithCallbacks() override {}
-
   void ClearCallbackRepositoryAndCloseWindow() {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
@@ -266,8 +286,6 @@ class RespondWithCallbacks : public PaymentHandlerResponseCallback {
   mojo::Receiver<PaymentHandlerResponseCallback> receiver_{this};
 
   base::WeakPtrFactory<RespondWithCallbacks> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RespondWithCallbacks);
 };
 
 void DidGetAllPaymentAppsOnCoreThread(
@@ -304,10 +322,12 @@ void DispatchAbortPaymentEvent(
   int event_finish_id = active_version->StartRequest(
       ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT, base::DoNothing());
 
-  // This object self-deletes after either success or error callback is invoked.
-  RespondWithCallbacks* invocation_callbacks = new RespondWithCallbacks(
-      browser_context, ServiceWorkerMetrics::EventType::ABORT_PAYMENT,
-      active_version, std::move(callback));
+  // This object self-deletes after either success or error callback is
+  // invoked.
+  RespondWithCallbacks* invocation_callbacks =
+      RespondWithCallbacks::CreateForEvent(
+          browser_context, ServiceWorkerMetrics::EventType::ABORT_PAYMENT,
+          active_version, std::move(callback));
 
   active_version->endpoint()->DispatchAbortPaymentEvent(
       invocation_callbacks->BindNewPipeAndPassRemote(),
@@ -333,10 +353,12 @@ void DispatchCanMakePaymentEvent(
   int event_finish_id = active_version->StartRequest(
       ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT, base::DoNothing());
 
-  // This object self-deletes after either success or error callback is invoked.
-  RespondWithCallbacks* invocation_callbacks = new RespondWithCallbacks(
-      browser_context, ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT,
-      active_version, std::move(callback));
+  // This object self-deletes after either success or error callback is
+  // invoked.
+  RespondWithCallbacks* invocation_callbacks =
+      RespondWithCallbacks::CreateForEvent(
+          browser_context, ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT,
+          active_version, std::move(callback));
 
   active_version->endpoint()->DispatchCanMakePaymentEvent(
       std::move(event_data), invocation_callbacks->BindNewPipeAndPassRemote(),
@@ -366,10 +388,11 @@ void DispatchPaymentRequestEvent(
   int event_finish_id = active_version->StartRequest(
       ServiceWorkerMetrics::EventType::PAYMENT_REQUEST, base::DoNothing());
 
-  // This object self-deletes after either success or error callback is invoked.
-  RespondWithCallbacks* invocation_callbacks = new RespondWithCallbacks(
-      browser_context, ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
-      active_version, std::move(callback));
+  // This object self-deletes after either success or error callback is
+  // invoked.
+  RespondWithCallbacks* invocation_callbacks =
+      RespondWithCallbacks::CreateForInvoke(browser_context, active_version,
+                                            std::move(callback));
 
   active_version->endpoint()->DispatchPaymentRequestEvent(
       std::move(event_data), invocation_callbacks->BindNewPipeAndPassRemote(),

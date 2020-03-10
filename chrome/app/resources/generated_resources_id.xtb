@@ -573,8 +573,6 @@
 <translation id="177336675152937177">Data aplikasi yang dihosting</translation>
 <translation id="1776712937009046120">Tambahkan pengguna</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Perangkat ini dikelola oleh <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Klik "Berikutnya" untuk melanjutkan login ke akun <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> Anda.</translation>
 <translation id="1779652936965200207">Masukkan kunci sandi ini di "<ph name="DEVICE_NAME" />":</translation>
 <translation id="177989070088644880">Apl (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Tutup Grup</translation>
@@ -887,7 +885,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2202898655984161076">Ada masalah dengan pencantuman printer. Beberapa printer Anda mungkin tidak berhasil didaftarkan ke <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Mesin telusur yang digunakan di <ph name="BEGIN_LINK" />kolom URL<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Membaca dan mengubah apa saja yang Anda ketik</translation>
-<translation id="220792432208469595">Kirim data penggunaan dan diagnostik. Perangkat ini saat ini otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini akan membantu sistem dan stabilitas aplikasi serta peningkatan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Setelan ini diterapkan oleh pemilik. Jika setelan Aktivitas Web &amp; Aplikasi tambahan diaktifkan, data ini mungkin akan disimpan ke Akun Google Anda. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Masukkan kode PIN ini ke "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Izinkan cookie</translation>
 <translation id="2213140827792212876">Hapus folder bersama</translation>
@@ -1343,7 +1340,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2804043232879091219">Browser alternatif tidak dapat dibuka</translation>
 <translation id="2804667941345577550">Anda akan logout dari situs ini, termasuk di tab yang terbuka</translation>
 <translation id="2804680522274557040">Kamera dinonaktifkan</translation>
-<translation id="2805539617243680210">Anda sudah siap.</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Apl</translation>
 <translation id="2805770823691782631">Detail tambahan</translation>
@@ -2019,6 +2015,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3742055079367172538">Screenshot telah diambil</translation>
 <translation id="3742666961763734085">Tidak dapat menemukan unit organisasi dengan nama tersebut. Coba lagi.</translation>
 <translation id="3744111561329211289">Sinkronisasi latar belakang</translation>
+<translation id="3747077776423672805">Untuk menghapus aplikasi, buka Setelan &gt; Google Play Store &gt; Kelola preferensi Android &gt; Aplikasi atau Pengelola aplikasi. Kemudian, ketuk aplikasi yang ingin di-uninstal (Anda mungkin perlu menggeser ke kanan atau ke kiri untuk menemukan aplikasi). Setelah itu, ketuk Uninstal atau Nonaktifkan.</translation>
 <translation id="3748026146096797577">Tidak Tersambung</translation>
 <translation id="3752582316358263300">Oke...</translation>
 <translation id="3752673729237782832">Perangkat saya</translation>
@@ -2739,7 +2736,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4785719467058219317">Anda menggunakan kunci keamanan yang tidak terdaftar di situs ini</translation>
 <translation id="4788092183367008521">Periksa sambungan jaringan Anda, lalu coba lagi.</translation>
 <translation id="4792711294155034829">Lapo&amp;rkan Masalah...</translation>
-<translation id="4795022432560487924">Kirim data penggunaan dan diagnostik. Bantu sempurnakan pengalaman Android Anak Anda dengan otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini tidak akan digunakan untuk mengidentifikasi anak Anda serta akan membantu sistem dan stabilitas aplikasi serta penyempurnaan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Setelan ini diterapkan oleh pemilik. Pemilik dapat memilih untuk mengirim data diagnostik dan penggunaan untuk perangkat ini ke Google. Jika setelan Aktivitas Web &amp; Aplikasi tambahan diaktifkan untuk anak Anda, data ini mungkin akan disimpan ke Akun Google miliknya. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Halaman Web, HTML Saja</translation>
 <translation id="4798236378408895261">Lampirkan <ph name="BEGIN_LINK" />Log Bluetooth<ph name="END_LINK" /> (internal Google)</translation>
 <translation id="4801448226354548035">Sembunyikan akun</translation>
@@ -3359,6 +3355,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5649053991847567735">Download otomatis</translation>
 <translation id="5653154844073528838">Anda memiliki <ph name="PRINTER_COUNT" /> printer tersimpan.</translation>
 <translation id="5656845498778518563">Kirim Masukan ke Google</translation>
+<translation id="5657156137487675418">Izinkan semua cookie</translation>
 <translation id="5657667036353380798">Ekstensi eksternal memerlukan versi chrome <ph name="MINIMUM_CHROME_VERSION" /> atau lebih tinggi untuk dipasang.</translation>
 <translation id="5658415415603568799">Untuk tambahan keamanan, Smart Lock akan meminta Anda memasukkan sandi setelah 20 jam.</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -3565,7 +3562,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5941711191222866238">Perkecil</translation>
 <translation id="5942964813783878922"><ph name="DEVICE_TYPE" /> Anda akan dimulai ulang setelah update ini. Update software dan keamanan berikutnya akan diinstal secara otomatis.</translation>
 <translation id="5944869793365969636">Pindai kode QR</translation>
-<translation id="5945188205370098537">Kirim data penggunaan dan diagnostik. Bantuan sempurnakan pengalaman Android Anda dengan otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini akan membantu sistem dan stabilitas aplikasi serta peningkatan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Jika setelan Aktivitas Web &amp; Aplikasi tambahan diaktifkan, data ini mungkin akan disimpan ke Akun Google Anda. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID Laporan <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Tidak dapat mengurai file</translation>
 <translation id="5955282598396714173">Sandi Anda sudah tidak berlaku. Harap logout, lalu login kembali untuk mengubahnya.</translation>
@@ -3749,6 +3745,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6185132558746749656">Lokasi Perangkat</translation>
 <translation id="6186394685773237175">Tidak ditemukan sandi yang telah dibobol</translation>
 <translation id="6195693561221576702">Perangkat ini tidak dapat disiapkan dalam mode demo offline.</translation>
+<translation id="6196640612572343990">Blokir cookie pihak ketiga</translation>
 <translation id="6196854373336333322">Ekstensi "<ph name="EXTENSION_NAME" />" telah mengambil alih kontrol setelan proxy Anda, yang berarti ekstensi dapat mengubah, merusak, atau menyadap apa pun yang Anda lakukan secara online. Jika tidak yakin mengapa perubahan ini terjadi, mungkin Anda tidak menginginkannya.</translation>
 <translation id="6198102561359457428">Keluar kemudian masuk lagi...</translation>
 <translation id="6198252989419008588">Ubah PIN</translation>
@@ -4412,7 +4409,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="711902386174337313">Membaca daftar perangkat tempat Anda telah masuk</translation>
 <translation id="7120865473764644444">Tidak dapat terhubung ke server sinkronisasi. Mencoba lagi...</translation>
 <translation id="7121362699166175603">Menghapus histori dan pelengkapan otomatis di kolom URL. Akun Google Anda mungkin memiliki bentuk histori penjelajahan lainnya di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Kirim data penggunaan dan diagnostik. Perangkat ini saat ini otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini tidak akan digunakan untuk mengidentifikasi anak Anda serta akan membantu sistem dan stabilitas aplikasi serta penyempurnaan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Jika setelan Aktivitas Web &amp; Aplikasi tambahan diaktifkan untuk anak Anda, data ini mungkin akan disimpan ke Akun Google miliknya. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Mode Developer</translation>
 <translation id="7121728544325372695">Smart Dashes</translation>
 <translation id="7123360114020465152">Tidak didukung lagi</translation>
@@ -5195,7 +5191,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Pindahkan tab ke jendela baru}other{Pindahkan beberapa tab ke jendela baru}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">halaman</translation>
-<translation id="8180294223783876911">Kirim data penggunaan dan diagnostik. Perangkat ini saat ini otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini akan membantu sistem dan stabilitas aplikasi serta peningkatan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Jika setelan Aktivitas Web &amp; Aplikasi tambahan diaktifkan, data ini mungkin akan disimpan ke Akun Google Anda. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" dapat membaca dan menghapus file gambar, video, dan suara di lokasi yang dicentang.</translation>
 <translation id="8181215761849004992">Tidak dapat bergabung dengan domain. Periksa akun untuk mengetahui apakah Anda memiliki hak istimewa yang memadai untuk menambahkan perangkat.</translation>
 <translation id="8182105986296479640">Aplikasi tidak merespons.</translation>
@@ -5217,7 +5212,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8203732864715032075">Mengirim notifikasi dan secara default mengingat komputer ini untuk Message. <ph name="LINK_BEGIN" />Pelajari lebih lanjut<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">"<ph name="APP_NAME" />" diblokir oleh orang tuamu. Minta izin orang tuamu untuk menggunakan aplikasi ini.</translation>
 <translation id="820568752112382238">Situs yang paling sering dikunjungi</translation>
-<translation id="8206581664590136590">Kirim data penggunaan dan diagnostik. Bantu sempurnakan pengalaman Android Anak Anda dengan otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini tidak akan digunakan untuk mengidentifikasi anak Anda serta akan membantu sistem dan stabilitas aplikasi serta penyempurnaan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Jika setelan Aktivitas Web &amp; Aplikasi tambahan diaktifkan untuk anak Anda, data ini mungkin akan disimpan ke Akun Google miliknya. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Jazzy</translation>
 <translation id="8206859287963243715">Seluler</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Proses download sedang berlangsung}other{Proses download sedang berlangsung}}</translation>
@@ -5757,7 +5751,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8912362522468806198">Akun Google</translation>
 <translation id="8912793549644936705">Meregang</translation>
 <translation id="8912810933860534797">Aktifkan pindai otomatis</translation>
-<translation id="891365694296252935">Kirim data penggunaan dan diagnostik. Perangkat ini saat ini otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini tidak akan digunakan untuk mengidentifikasi anak Anda serta akan membantu sistem dan stabilitas aplikasi serta penyempurnaan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Setelan ini diterapkan oleh pemilik. Jika Aktivitas Web &amp; Aplikasi tambahan diaktifkan untuk anak Anda, data ini mungkin akan disimpan ke Akun Google miliknya. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Memuat saran</translation>
 <translation id="8916476537757519021">Subframe Mode Samaran: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Memverifikasi kunci keamanan...</translation>
@@ -5894,7 +5887,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9101691533782776290">Luncurkan aplikasi</translation>
 <translation id="9102610709270966160">Aktifkan Ekstensi</translation>
 <translation id="9103868373786083162">Tekan untuk kembali ke menu konteks guna melihat histori</translation>
-<translation id="9104396740804929809">Kirim data penggunaan dan diagnostik. Bantuan sempurnakan pengalaman Android Anda dengan otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini akan membantu sistem dan stabilitas aplikasi serta peningkatan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Setelan ini diterapkan oleh pemilik. Pemilik dapat memilih untuk mengirim data diagnostik dan penggunaan untuk perangkat ini ke Google. Jika setelan Aktivitas Web &amp; Aplikasi tambahan diaktifkan, data ini mungkin akan disimpan ke Akun Google Anda. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Untuk mengosongkan ruang, hapus file dari penyimpanan perangkat.</translation>
 <translation id="9109283579179481106">Hubungkan ke jaringan seluler</translation>
 <translation id="9111102763498581341">Buka kunci</translation>

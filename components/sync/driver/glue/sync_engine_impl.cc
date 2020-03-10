@@ -229,7 +229,7 @@ UserShare* SyncEngineImpl::GetUserShare() const {
   return backend_->sync_manager()->GetUserShare();
 }
 
-SyncEngineImpl::Status SyncEngineImpl::GetDetailedStatus() {
+const SyncEngineImpl::Status& SyncEngineImpl::GetDetailedStatus() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsInitialized());
   return cached_status_;
@@ -438,7 +438,12 @@ void SyncEngineImpl::UpdateInvalidationVersions(
 
 void SyncEngineImpl::HandleSyncStatusChanged(const SyncStatus& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const bool backed_off_types_changed =
+      (status.backed_off_types != cached_status_.backed_off_types);
   cached_status_ = status;
+  if (backed_off_types_changed) {
+    host_->OnBackedOffTypesChanged();
+  }
 }
 
 void SyncEngineImpl::OnCookieJarChanged(bool account_mismatch,

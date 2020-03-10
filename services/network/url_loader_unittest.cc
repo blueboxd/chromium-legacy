@@ -4690,6 +4690,10 @@ TEST_F(URLLoaderTest, CrossOriginEmbedderPolicyValue) {
       {"require-corp; foo; report-to=\"x\"; bar=piyo", kNoHeader, kRequireCorp,
        "x", kNone, kNoEndpoint},
 
+      // With duplicate reporting endpoints
+      {"require-corp; report-to=\"x\"; report-to=\"y\"", kNoHeader,
+       kRequireCorp, "y", kNone, kNoEndpoint},
+
       // Errors
       {"REQUIRE-CORP", kNoHeader, kNone, kNoEndpoint, kNone, kNoEndpoint},
       {" require-corp; REPORT-TO=\"endpoint\"", kNoHeader, kNone, kNoEndpoint,
@@ -4707,8 +4711,6 @@ TEST_F(URLLoaderTest, CrossOriginEmbedderPolicyValue) {
        kNone, kNoEndpoint},
       {"TOTALLY BLOKEN", "require-corp; report-to=\"x\"", kNone, kNoEndpoint,
        kRequireCorp, "x"},
-      {"require-corp; report-to=\"x\"; report-to=\"y\"", kNoHeader, kNone,
-       kNoEndpoint, kNone, kNoEndpoint},
   };
 
   for (const auto& testcase : cases) {

@@ -80,9 +80,6 @@ void MultiStoreFormFetcher::OnGetPasswordStoreResults(
     BrowserSavePasswordProgressLogger(client_->GetLogManager())
         .LogNumber(Logger::STRING_ON_GET_STORE_RESULTS_METHOD, results.size());
   }
-
-  // TODO(crbug.com/1002000): implement password store migration.
-
   ProcessPasswordStoreResults(std::move(partial_results_));
 }
 

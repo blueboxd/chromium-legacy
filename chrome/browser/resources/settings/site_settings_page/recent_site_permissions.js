@@ -16,9 +16,14 @@ Polymer({
     /** @type boolean */
     noRecentPermissions: {
       type: Boolean,
-      computed: 'noRecentPermissions_(recentSitePermissionsList_)',
+      computed: 'computeNoRecentPermissions_(recentSitePermissionsList_)',
       notify: true,
     },
+
+    /**
+     * @private {boolean}
+     */
+    shouldFocusAfterPopulation_: Boolean,
 
     /**
      * List of recent site permissions grouped by source.
@@ -29,6 +34,37 @@ Polymer({
       type: Array,
       value: () => [],
     },
+
+    /** @type {!Map<string, (string|Function)>} */
+    focusConfig: {
+      type: Object,
+      observer: 'focusConfigChanged_',
+    },
+  },
+
+  /**
+   * When navigating to a site details sub-page, |lastSelected_| holds the
+   * origin and incognito bit associated with the link that sent the user there,
+   * as well as the index in recent permission list for that entry. This allows
+   * for an intelligent re-focus upon a back navigation.
+   * @private {!{origin: string, incognito: boolean, index: number}|null}
+   */
+  lastSelected_: null,
+
+  /**
+   * @param {!Map<string, string>} newConfig
+   * @param {?Map<string, string>} oldConfig
+   * @private
+   */
+  focusConfigChanged_(newConfig, oldConfig) {
+    // focusConfig is set only once on the parent, so this observer should
+    // only fire once.
+    assert(!oldConfig);
+
+    this.focusConfig.set(
+        settings.routes.SITE_SETTINGS_SITE_DETAILS.path, () => {
+          this.shouldFocusAfterPopulation_ = true;
+        });
   },
 
   /**
@@ -52,6 +88,7 @@ Polymer({
 
   /**
    * Perform internationalization for the given content settings type.
+   * @param {string} contentSettingsType
    * @return {string} The localised content setting type string
    * @private
    */
@@ -212,7 +249,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  noRecentPermissions_() {
+  computeNoRecentPermissions_() {
     return this.recentSitePermissionsList_.length === 0;
   },
 
@@ -220,6 +257,7 @@ Polymer({
    * Called for when incognito is enabled or disabled. Only called on change
    * (opening N incognito windows only fires one message). Another message is
    * sent when the *last* incognito window closes.
+   * @param {boolean} hasIncognito
    * @private
    */
   onIncognitoStatusChanged_(hasIncognito) {
@@ -233,7 +271,7 @@ Polymer({
 
   /**
    * A handler for selecting a recent site permissions entry.
-   * @param {!{model: !{index: number}}} e
+   * @param {!{model: !{item: !RecentSitePermissions, index: number}}} e
    * @private
    */
   onRecentSitePermissionClick_(e) {
@@ -242,6 +280,11 @@ Polymer({
         settings.routes.SITE_SETTINGS_SITE_DETAILS,
         new URLSearchParams({site: origin}));
     this.browserProxy.recordAction(settings.AllSitesAction.ENTER_SITE_DETAILS);
+    this.lastSelected_ = {
+      index: e.model.index,
+      origin: e.model.item.origin,
+      incognito: e.model.item.incognito,
+    };
   },
 
   /**
@@ -271,6 +314,39 @@ Polymer({
   },
 
   /**
+   * Called after the list has finished populating and |lastSelected_| contains
+   * a valid entry that should attempt to be focused. If lastSelected_ cannot
+   * be found the index where it used to be is focused. This may result in
+   * focusing another link arrow, or an incognito information icon. If the
+   * recent permission list is empty, focus is lost.
+   * @private
+   */
+  focusLastSelected_() {
+    if (this.noRecentPermissions) {
+      return;
+    }
+    const currentIndex =
+        this.recentSitePermissionsList_.findIndex(function(permissions) {
+          return permissions.origin === this.lastSelected_.origin &&
+              permissions.incognito === this.lastSelected_.incognito;
+        });
+
+    const fallbackIndex = Math.min(
+        this.lastSelected_.index, this.recentSitePermissionsList_.length - 1);
+
+    const index = currentIndex > -1 ? currentIndex : fallbackIndex;
+
+    if (this.recentSitePermissionsList_[index].incognito) {
+      cr.ui.focusWithoutInk(
+          assert(/** @type {{getFocusableElement: Function}} */ (
+                     this.$$(`#incognitoInfoIcon_${index}`))
+                     .getFocusableElement()));
+    } else {
+      cr.ui.focusWithoutInk(assert(this.$$(`#siteEntryButton_${index}`)));
+    }
+  },
+
+  /**
    * Retrieve the list of recently changed permissions and implicitly trigger
    * the update of the display list.
    * @private
@@ -279,5 +355,17 @@ Polymer({
     this.recentSitePermissionsList_ =
         await this.browserProxy.getRecentSitePermissions(
             this.getCategoryList(), 3);
+  },
+
+  /**
+   * Called when the dom-repeat DOM has changed. This allows updating the
+   * focused element after the elements have been adjusted.
+   * @private
+   */
+  onDomChange_() {
+    if (this.shouldFocusAfterPopulation_) {
+      this.focusLastSelected_();
+      this.shouldFocusAfterPopulation_ = false;
+    }
   },
 });

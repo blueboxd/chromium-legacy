@@ -274,9 +274,9 @@ void ServiceWorkerGlobalScopeProxy::SetupNavigationPreload(
     mojom::blink::FetchEventPreloadHandlePtr preload_handle) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   auto web_preload_handle = std::make_unique<WebFetchEventPreloadHandle>();
-  web_preload_handle->url_loader = preload_handle->url_loader.PassPipe();
+  web_preload_handle->url_loader = std::move(preload_handle->url_loader);
   web_preload_handle->url_loader_client_receiver =
-      preload_handle->url_loader_client_receiver.PassPipe();
+      std::move(preload_handle->url_loader_client_receiver);
   Client().SetupNavigationPreload(fetch_event_id, url,
                                   std::move(web_preload_handle));
 }

@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutEmbeddedObject OBJECT",
           "rect": [1, 1, 402, 202],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         },
         {
           "object": "HorizontalScrollbar",

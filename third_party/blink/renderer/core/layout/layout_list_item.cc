@@ -91,7 +91,7 @@ void LayoutListItem::SubtreeDidChange() {
 
   // If the marker is inside we need to redo the preferred width calculations
   // as the size of the item now includes the size of the list marker.
-  if (marker->IsInside())
+  if (marker->IsInsideListMarker())
     SetPreferredLogicalWidthsDirty();
 }
 
@@ -176,13 +176,14 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
     const LayoutObject* line_box_parent) {
   LayoutListMarker* marker = Marker();
   LayoutObject* marker_parent = marker->Parent();
+  bool is_inside = marker->IsInsideListMarker();
   // Deal with the situation of layout tree changed.
   if (marker_parent && marker_parent->IsAnonymous()) {
     bool marker_parent_has_lines =
         line_box_parent && line_box_parent->IsDescendantOf(marker_parent);
     // When list-position-style change from outside to inside, we need to
-    // restore LogicalHeight to auto. So add IsInside().
-    if (marker->IsInside() || marker_parent_has_lines) {
+    // restore LogicalHeight to auto. So add is_inside.
+    if (is_inside || marker_parent_has_lines) {
       // Set marker_container's LogicalHeight to auto.
       if (marker_parent->StyleRef().LogicalHeight().IsZero())
         ForceLogicalHeight(*marker_parent, Length());
@@ -192,7 +193,7 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
       // new empty line in cases like <li><span><div>text<div><span></li>
       // If the marker is inside and there are inline contents, we want them to
       // share the same block container to avoid a line break between them.
-      if (marker->IsInside() != marker_parent_has_lines) {
+      if (is_inside != marker_parent_has_lines) {
         marker->Remove();
         marker_parent = nullptr;
       }
@@ -204,7 +205,7 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
   // Create marker_container, set its height to 0px, and add it to li.
   if (!marker_parent) {
     LayoutObject* before_child = FirstNonMarkerChild(this);
-    if (!marker->IsInside() && before_child && !before_child->IsInline()) {
+    if (!is_inside && before_child && !before_child->IsInline()) {
       // Create marker_container and set its LogicalHeight to 0px.
       LayoutBlock* marker_container = CreateAnonymousBlock();
       if (line_box_parent)
@@ -246,7 +247,7 @@ bool LayoutListItem::UpdateMarkerLocation() {
     AddChild(marker, FirstChild());
   }
 
-  if (!marker->IsInside())
+  if (marker->IsOutsideListMarker())
     line_box_parent = GetParentOfFirstLineBox(this);
   if (line_box_parent && (line_box_parent->HasOverflowClip() ||
                           !line_box_parent->IsLayoutBlockFlow() ||
@@ -396,7 +397,7 @@ void LayoutListItem::AlignMarkerInBlockDirection() {
 void LayoutListItem::UpdateOverflow() {
   LayoutListMarker* marker = Marker();
   if (!marker || !marker->Parent() || !marker->Parent()->IsBox() ||
-      marker->IsInside() || !marker->InlineBoxWrapper())
+      marker->IsInsideListMarker() || !marker->InlineBoxWrapper())
     return;
 
   if (need_block_direction_align_)

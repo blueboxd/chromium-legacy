@@ -118,26 +118,6 @@ void RenderMessageFilter::GenerateRoutingID(
   std::move(callback).Run(render_widget_helper_->GetNextRoutingID());
 }
 
-void RenderMessageFilter::CreateNewWidget(
-    int32_t opener_id,
-    mojo::PendingRemote<mojom::Widget> widget,
-    CreateNewWidgetCallback callback) {
-  int route_id = MSG_ROUTING_NONE;
-  render_widget_helper_->CreateNewWidget(opener_id, std::move(widget),
-                                         &route_id);
-  std::move(callback).Run(route_id);
-}
-
-void RenderMessageFilter::CreateFullscreenWidget(
-    int opener_id,
-    mojo::PendingRemote<mojom::Widget> widget,
-    CreateFullscreenWidgetCallback callback) {
-  int route_id = 0;
-  render_widget_helper_->CreateNewFullscreenWidget(opener_id, std::move(widget),
-                                                   &route_id);
-  std::move(callback).Run(route_id);
-}
-
 #if defined(OS_LINUX)
 void RenderMessageFilter::SetThreadPriorityOnFileThread(
     base::PlatformThreadId ns_tid,

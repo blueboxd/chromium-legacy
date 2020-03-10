@@ -18,12 +18,17 @@ Profile* GetProfile() {
 
 }  // namespace
 
-ProfileKey* GetLastUsedProfileKey() {
+ProfileKey* GetLastUsedRegularProfileKey() {
   ProfileKey* key = ProfileKeyStartupAccessor::GetInstance()->profile_key();
   if (!key)
     key = GetProfile()->GetProfileKey();
   DCHECK(key);
   return key;
+}
+
+// DEPRECATED, use GetLastUsedRegularProfileKey() instead.
+ProfileKey* GetLastUsedProfileKey() {
+  return GetLastUsedRegularProfileKey();
 }
 
 }  // namespace android

@@ -126,6 +126,14 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
           ConvertUTF16ToJavaString(env, tab_data.title()),
           ConvertUTF16ToJavaString(env, tab_data.warning()));
 
+  if (tab_data.option_toggle().has_value()) {
+    autofill::OptionToggle toggle = tab_data.option_toggle().value();
+    Java_ManualFillingComponentBridge_addOptionToggleToAccessorySheetData(
+        env, java_object_, j_tab_data,
+        ConvertUTF16ToJavaString(env, toggle.display_text()),
+        toggle.is_enabled(), static_cast<int>(toggle.accessory_action()));
+  }
+
   for (const UserInfo& user_info : tab_data.user_info_list()) {
     ScopedJavaLocalRef<jobject> j_user_info =
         Java_ManualFillingComponentBridge_addUserInfoToAccessorySheetData(

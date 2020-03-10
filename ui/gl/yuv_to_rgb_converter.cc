@@ -35,7 +35,13 @@ const char kVertexHeaderCoreProfile[] =
     "#define ATTRIBUTE in\n"
     "#define VARYING out\n";
 
-const char kFragmentHeaderES2[] =
+const char kFragmentHeaderES22D[] =
+    "precision mediump float;\n"
+    "#define VARYING varying\n"
+    "#define FRAGCOLOR gl_FragColor\n"
+    "#define TEX texture2D\n";
+
+const char kFragmentHeaderES2Rect[] =
     "#extension GL_ARB_texture_rectangle : require\n"
     "precision mediump float;\n"
     "#define VARYING varying\n"
@@ -50,7 +56,13 @@ const char kFragmentHeaderES3[] =
     "#define FRAGCOLOR frag_color\n"
     "out vec4 FRAGCOLOR;\n";
 
-const char kFragmentHeaderCompatiblityProfile[] =
+const char kFragmentHeaderCompatiblityProfile2D[] =
+    "#version 110\n"
+    "#define VARYING varying\n"
+    "#define FRAGCOLOR gl_FragColor\n"
+    "#define TEX texture2D\n";
+
+const char kFragmentHeaderCompatiblityProfileRect[] =
     "#version 110\n"
     "#extension GL_ARB_texture_rectangle : require\n"
     "#define VARYING varying\n"
@@ -76,7 +88,20 @@ STRINGIZE(
   }
 );
 
-const char kFragmentShader[] =
+const char kFragmentShader2D[] =
+STRINGIZE(
+  uniform sampler2D a_y_texture;
+  uniform sampler2D a_uv_texture;
+  VARYING vec2 v_texCoord;
+  void main() {
+    vec3 yuv = vec3(
+        TEX(a_y_texture, v_texCoord).r,
+        TEX(a_uv_texture, v_texCoord * 0.5).rg);
+    FRAGCOLOR = vec4(DoColorConversion(yuv), 1.0);
+  }
+);
+
+const char kFragmentShaderRect[] =
 STRINGIZE(
   uniform sampler2DRect a_y_texture;
   uniform sampler2DRect a_uv_texture;
@@ -88,6 +113,7 @@ STRINGIZE(
     FRAGCOLOR = vec4(DoColorConversion(yuv), 1.0);
   }
 );
+
 // clang-format on
 
 }  // namespace
@@ -100,11 +126,20 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
           gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
   std::string do_color_conversion = color_transform->GetShaderSource();
 
+  // On MacOS, the default texture target for native GpuMemoryBuffers is
+  // GL_TEXTURE_RECTANGLE_ARB. This is due to CGL's requirements for creating
+  // a GL surface. However, when ANGLE is used on top of SwiftShader, it's
+  // necessary to use GL_TEXTURE_2D instead.
+  // TODO(crbug.com/1056312): The proper behavior is to check the config
+  // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
+  bool is_rect = !gl_version_info.is_angle_swiftshader;
+  source_texture_target_ = (is_rect ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D);
+
   const char* fragment_header = nullptr;
   const char* vertex_header = nullptr;
   if (gl_version_info.is_es2) {
     vertex_header = kVertexHeaderES2;
-    fragment_header = kFragmentHeaderES2;
+    fragment_header = (is_rect ? kFragmentHeaderES2Rect : kFragmentHeaderES22D);
   } else if (gl_version_info.is_es3) {
     vertex_header = kVertexHeaderES3;
     fragment_header = kFragmentHeaderES3;
@@ -114,11 +149,13 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
   } else {
     DCHECK(!gl_version_info.is_es);
     vertex_header = kVertexHeaderCompatiblityProfile;
-    fragment_header = kFragmentHeaderCompatiblityProfile;
+    fragment_header = (is_rect ? kFragmentHeaderCompatiblityProfileRect
+                               : kFragmentHeaderCompatiblityProfile2D);
   }
   DCHECK(vertex_header && fragment_header);
 
   glGenFramebuffersEXT(1, &framebuffer_);
+
   vertex_buffer_ = GLHelper::SetupQuadVertexBuffer();
   vertex_shader_ = GLHelper::LoadShader(
       GL_VERTEX_SHADER,
@@ -126,7 +163,8 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
   fragment_shader_ = GLHelper::LoadShader(
       GL_FRAGMENT_SHADER,
       base::StringPrintf("%s\n%s\n%s", fragment_header,
-                         do_color_conversion.c_str(), kFragmentShader)
+                         do_color_conversion.c_str(),
+                         (is_rect ? kFragmentShaderRect : kFragmentShader2D))
           .c_str());
   program_ = GLHelper::SetupProgram(vertex_shader_, fragment_shader_);
 
@@ -167,16 +205,28 @@ YUVToRGBConverter::~YUVToRGBConverter() {
 void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
                                         const gfx::Size& size,
                                         unsigned rgb_texture) {
+  GLenum source_target_getter = 0;
+  switch (source_texture_target_) {
+    case GL_TEXTURE_2D:
+      source_target_getter = GL_TEXTURE_BINDING_2D;
+      break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      source_target_getter = GL_TEXTURE_BINDING_RECTANGLE_ARB;
+      break;
+    default:
+      NOTIMPLEMENTED() << " Target not supported.";
+      return;
+  }
   // Note that state restoration is done explicitly instead of scoped binders to
   // avoid https://crbug.com/601729.
   GLint old_active_texture = -1;
   glGetIntegerv(GL_ACTIVE_TEXTURE, &old_active_texture);
   GLint old_texture0_binding = -1;
   glActiveTexture(GL_TEXTURE0);
-  glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &old_texture0_binding);
+  glGetIntegerv(source_target_getter, &old_texture0_binding);
   GLint old_texture1_binding = -1;
   glActiveTexture(GL_TEXTURE1);
-  glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &old_texture1_binding);
+  glGetIntegerv(source_target_getter, &old_texture1_binding);
 
   // Allocate the rgb texture.
   glActiveTexture(old_active_texture);
@@ -186,9 +236,9 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
 
   // Set up and issue the draw call.
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, y_texture_);
+  glBindTexture(source_texture_target_, y_texture_);
   glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, uv_texture_);
+  glBindTexture(source_texture_target_, uv_texture_);
   ScopedFramebufferBinder framebuffer_binder(framebuffer_);
   ScopedViewport viewport(0, 0, size.width(), size.height());
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -216,9 +266,9 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                             target, 0, 0);
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, old_texture0_binding);
+  glBindTexture(source_texture_target_, old_texture0_binding);
   glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, old_texture1_binding);
+  glBindTexture(source_texture_target_, old_texture1_binding);
   glActiveTexture(old_active_texture);
 }
 

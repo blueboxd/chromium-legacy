@@ -1124,17 +1124,6 @@ TEST_F(BookmarkModelTest, NodeVisibility) {
   EXPECT_TRUE(model_->other_node()->IsVisible());
   EXPECT_FALSE(model_->mobile_node()->IsVisible());
 
-  // Visibility of permanent node can only be changed if they are not
-  // forced to be visible by the client.
-  model_->SetPermanentNodeVisible(BookmarkNode::BOOKMARK_BAR, false);
-  EXPECT_TRUE(model_->bookmark_bar_node()->IsVisible());
-  model_->SetPermanentNodeVisible(BookmarkNode::OTHER_NODE, false);
-  EXPECT_TRUE(model_->other_node()->IsVisible());
-  model_->SetPermanentNodeVisible(BookmarkNode::MOBILE, true);
-  EXPECT_TRUE(model_->mobile_node()->IsVisible());
-  model_->SetPermanentNodeVisible(BookmarkNode::MOBILE, false);
-  EXPECT_FALSE(model_->mobile_node()->IsVisible());
-
   // Arbitrary node should be visible
   TestNode bbn;
   PopulateNodeFromString("B", &bbn);

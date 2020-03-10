@@ -2641,6 +2641,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 // 1. Fails the upload device details call due to network timeout.
 // 2. Fails the upload device details call due to invalid response
 //    from the GEM http server.
+// 3  A previously saved device resource ID is present on the device.
 class GcpGaiaCredentialBaseUploadDeviceDetailsTest
     : public GcpGaiaCredentialBaseTest,
       public ::testing::WithParamInterface<int> {};
@@ -2648,6 +2649,7 @@ class GcpGaiaCredentialBaseUploadDeviceDetailsTest
 TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
   bool fail_upload_device_details_timeout = (GetParam() == 1);
   bool fail_upload_device_details_invalid_response = (GetParam() == 2);
+  bool registry_has_device_resource_id = (GetParam() == 3);
 
   GoogleMdmEnrolledStatusForTesting force_success(true);
   // Set a fake serial number.
@@ -2681,15 +2683,24 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
     fake_gem_device_details_manager()->SetRequestTimeoutForTesting(
         base::TimeDelta::FromMilliseconds(50));
   }
+  const std::string device_resource_id = "test-device-resource-id";
+  const std::string valid_server_response =
+      "{\"deviceResourceId\": \"" + device_resource_id + "\"}";
 
   fake_http_url_fetcher_factory()->SetFakeResponse(
       fake_gem_device_details_manager()->GetGemServiceUploadDeviceDetailsUrl(),
       FakeWinHttpUrlFetcher::Headers(),
       fail_upload_device_details_invalid_response ? "Invalid json response"
-                                                  : "{}",
+                                                  : valid_server_response,
       upload_device_details_key_event
           ? upload_device_details_key_event->handle()
           : INVALID_HANDLE_VALUE);
+
+  if (registry_has_device_resource_id) {
+    HRESULT hr = SetUserProperty(sid.Copy(), kRegUserDeviceResourceId,
+                                 base::UTF8ToUTF16(device_resource_id));
+    EXPECT_TRUE(SUCCEEDED(hr));
+  }
 
   // Create provider and start logon.
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
@@ -2730,8 +2741,8 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
             base::UTF16ToUTF8((BSTR)sid));
   ASSERT_TRUE(request_dict.FindBoolKey("is_ad_joined_user").has_value());
   ASSERT_EQ(request_dict.FindBoolKey("is_ad_joined_user").value(), true);
-
   ASSERT_TRUE(request_dict.FindKey("wlan_mac_addr")->is_list());
+
   std::vector<std::string> actual_mac_address_list;
   for (const base::Value& value :
        request_dict.FindKey("wlan_mac_addr")->GetList()) {
@@ -2742,12 +2753,28 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
   ASSERT_TRUE(std::equal(actual_mac_address_list.begin(),
                          actual_mac_address_list.end(), mac_addresses.begin()));
 
+  if (registry_has_device_resource_id) {
+    ASSERT_EQ(*request_dict.FindStringKey("device_resource_id"),
+              device_resource_id);
+  }
+
+  if (!fail_upload_device_details_timeout &&
+      !fail_upload_device_details_invalid_response) {
+    wchar_t resource_id[512];
+    ULONG resource_id_size = base::size(resource_id);
+    hr = GetUserProperty(sid.Copy(), kRegUserDeviceResourceId, resource_id,
+                         &resource_id_size);
+    ASSERT_TRUE(SUCCEEDED(hr));
+    ASSERT_TRUE(resource_id_size > 0);
+    ASSERT_EQ(device_resource_id, base::UTF16ToUTF8(resource_id));
+  }
+
   ASSERT_EQ(S_OK, ReleaseProvider());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBaseUploadDeviceDetailsTest,
-                         ::testing::Values(0, 1, 2));
+                         ::testing::Values(0, 1, 2, 3));
 
 class GcpGaiaCredentialBaseFullNameUpdateTest
     : public GcpGaiaCredentialBaseTest,

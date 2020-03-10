@@ -11,8 +11,11 @@
 #include "components/dom_distiller/core/uma_helper.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using dom_distiller::url_utils::IsDistilledPage;
@@ -108,9 +111,24 @@ void ReaderModeIconView::OnExecuting(
     dom_distiller::UMAHelper::RecordReaderModeEntry(
         dom_distiller::UMAHelper::ReaderModeEntryPoint::kOmniboxIcon);
   }
+
+  content::WebContents* contents = GetWebContents();
+  if (!contents || IsDistilledPage(contents->GetLastCommittedURL()))
+    return;
+  ukm::SourceId source_id = ukm::GetSourceIdForWebContentsDocument(contents);
+  ukm::builders::ReaderModeActivated(source_id)
+      .SetActivatedViaOmnibox(true)
+      .Record(ukm::UkmRecorder::Get());
 }
 
 void ReaderModeIconView::OnResult(
     const dom_distiller::DistillabilityResult& result) {
+  content::WebContents* contents = GetWebContents();
+  if (contents && result.is_last) {
+    ukm::SourceId source_id = ukm::GetSourceIdForWebContentsDocument(contents);
+    ukm::builders::ReaderModeReceivedDistillability(source_id)
+        .SetIsPageDistillable(result.is_distillable)
+        .Record(ukm::UkmRecorder::Get());
+  }
   Update();
 }

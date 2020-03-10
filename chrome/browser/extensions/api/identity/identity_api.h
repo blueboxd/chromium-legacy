@@ -44,35 +44,42 @@ namespace extensions {
 class IdentityTokenCacheValue {
  public:
   IdentityTokenCacheValue();
-  explicit IdentityTokenCacheValue(const IssueAdviceInfo& issue_advice);
-  explicit IdentityTokenCacheValue(
-      const RemoteConsentResolutionData& resolution_data);
-  IdentityTokenCacheValue(const std::string& token,
-                          base::TimeDelta time_to_live);
   IdentityTokenCacheValue(const IdentityTokenCacheValue& other);
   ~IdentityTokenCacheValue();
 
+  static IdentityTokenCacheValue CreateIssueAdvice(
+      const IssueAdviceInfo& issue_advice);
+  static IdentityTokenCacheValue CreateRemoteConsent(
+      const RemoteConsentResolutionData& resolution_data);
+  static IdentityTokenCacheValue CreateRemoteConsentApproved(
+      const std::string& consent_result);
+  static IdentityTokenCacheValue CreateToken(const std::string& token,
+                                             base::TimeDelta time_to_live);
+
   // Order of these entries is used to determine whether or not new
-  // entries supercede older ones in SetCachedToken.
+  // entries supersede older ones in SetCachedToken.
   enum CacheValueStatus {
     CACHE_STATUS_NOTFOUND,
     CACHE_STATUS_ADVICE,
     CACHE_STATUS_REMOTE_CONSENT,
+    CACHE_STATUS_REMOTE_CONSENT_APPROVED,
     CACHE_STATUS_TOKEN
   };
 
   CacheValueStatus status() const;
   const IssueAdviceInfo& issue_advice() const;
   const RemoteConsentResolutionData& resolution_data() const;
+  const std::string& consent_result() const;
   const std::string& token() const;
   const base::Time& expiration_time() const;
 
  private:
   bool is_expired() const;
 
-  CacheValueStatus status_;
+  CacheValueStatus status_ = CACHE_STATUS_NOTFOUND;
   IssueAdviceInfo issue_advice_;
   RemoteConsentResolutionData resolution_data_;
+  std::string consent_result_;
   std::string token_;
   base::Time expiration_time_;
 };

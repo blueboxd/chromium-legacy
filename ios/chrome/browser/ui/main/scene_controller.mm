@@ -900,7 +900,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 }
 
 - (NSString*)currentPageSyncedUserName {
-  ChromeBrowserState* browserState = self.currentBrowserState;
+  ChromeBrowserState* browserState = self.currentInterface.browserState;
   if (browserState->IsOffTheRecord())
     return nil;
   signin::IdentityManager* identity_manager =
@@ -1353,12 +1353,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                                           focusOmnibox:focusOmnibox];
 }
 
-- (ChromeBrowserState*)currentBrowserState {
-  return self.browserViewWrangler.currentInterface.browserState;
-}
-
-- (TabModel*)currentTabModel {
-  return self.browserViewWrangler.currentInterface.bvc.tabModel;
+- (Browser*)currentBrowserForURLLoading {
+  return self.currentInterface.browser;
 }
 
 // Asks the respective Snapshot helper to update the snapshot for the active
@@ -1504,7 +1500,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     didDetachWebState:(web::WebState*)webState
               atIndex:(int)atIndex {
   // Do nothing on initialization.
-  if (![self currentTabModel].webStateList)
+  if (!self.currentInterface.browser)
     return;
 
   if (notifiedWebStateList->empty()) {
@@ -1540,11 +1536,13 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // Nothing to do here. The next user action (like clicking on an existing
   // regular tab or creating a new incognito tab from the settings menu) will
   // take care of the logic to mode switch.
-  if (self.tabSwitcherIsActive || ![self.currentTabModel isOffTheRecord]) {
+  if (self.tabSwitcherIsActive || !self.currentInterface.incognito) {
     return;
   }
 
-  if ([self.currentTabModel count] == 0U) {
+  WebStateList* currentWebStateList =
+      self.currentInterface.browser->GetWebStateList();
+  if (currentWebStateList->empty()) {
     [self showTabSwitcher];
   } else {
     [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
@@ -1559,7 +1557,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // closure of tabs from the main tab model when the main tab model is not
   // current.
   // Nothing to do here.
-  if (self.tabSwitcherIsActive || [self.currentTabModel isOffTheRecord]) {
+  if (self.tabSwitcherIsActive || self.currentInterface.incognito) {
     return;
   }
 
@@ -1587,7 +1585,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // until the callback is received.
   BrowsingDataRemover* browsingDataRemover =
       BrowsingDataRemoverFactory::GetForBrowserStateIfExists(
-          self.currentBrowserState);
+          self.currentInterface.browser->GetBrowserState());
   if (browsingDataRemover && browsingDataRemover->IsRemoving())
     return;
 

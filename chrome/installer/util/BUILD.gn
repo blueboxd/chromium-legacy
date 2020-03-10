@@ -278,6 +278,20 @@ if (is_win) {
     ]
   }
 
+  # This source set contains tests that must run serially. These are linked into
+  # setup_unittests, which does so.
+  source_set("serial_unittests") {
+    testonly = true
+    sources = [ "install_service_work_item_unittest.cc" ]
+    deps = [
+      ":with_no_strings",
+      "//base",
+      "//chrome/install_static:install_static_util",
+      "//chrome/install_static/test:test_support",
+      "//testing/gtest",
+    ]
+  }
+
   test("installer_util_unittests") {
     sources = [
       "advanced_firewall_manager_win_unittest.cc",
@@ -298,7 +312,6 @@ if (is_win) {
       "experiment_storage_unittest.cc",
       "experiment_unittest.cc",
       "google_update_settings_unittest.cc",
-      "install_service_work_item_unittest.cc",
       "install_util_unittest.cc",
       "l10n_string_util_unittest.cc",
       "logging_installer_unittest.cc",

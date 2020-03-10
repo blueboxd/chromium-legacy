@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Dados de aplicações alojadas</translation>
 <translation id="1776712937009046120">Adicionar utilizador</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Este dispositivo é gerido por <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Clique em "Seguinte" para continuar a iniciar sessão na sua conta de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Introduza esta chave de acesso no "<ph name="DEVICE_NAME" />":</translation>
 <translation id="177989070088644880">App (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Fechar grupo</translation>
@@ -892,7 +890,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2202898655984161076">Ocorreu um problema ao listar as impressoras. Algumas impressoras podem não ter sido registadas com êxito no <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motor de pesquisa utilizado na <ph name="BEGIN_LINK" />barra de endereço<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Ler e alterar tudo o que introduzir</translation>
-<translation id="220792432208469595">Envie dados de utilização e diagnóstico. Agora, este dispositivo está a enviar automaticamente dados de diagnóstico, de utilização de aplicações e do dispositivo para a Google. Deste modo, ajudará a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Esta definição é aplicada pelo proprietário. Se a definição Atividade da Web e de aplicações adicional estiver ativada, estes dados podem ser guardados na sua Conta Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Introduza este código PIN no "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Permitir cookies</translation>
 <translation id="2213140827792212876">Remover a partilha</translation>
@@ -1352,7 +1349,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2804043232879091219">Não foi possível abrir o navegador alternativo.</translation>
 <translation id="2804667941345577550">A sua sessão neste site será terminada, incluindo em separadores abertos.</translation>
 <translation id="2804680522274557040">A câmara está desativada</translation>
-<translation id="2805539617243680210">Está tudo pronto!</translation>
 <translation id="2805646850212350655">Sistema de encriptação de ficheiros Microsoft</translation>
 <translation id="2805756323405976993">Aplicações</translation>
 <translation id="2805770823691782631">Detalhes adicionais</translation>
@@ -2034,6 +2030,7 @@ Pretende pará-lo?</translation>
 <translation id="3742055079367172538">Captura de ecrã efetuada</translation>
 <translation id="3742666961763734085">Não é possível encontrar uma unidade organizacional com esse nome. Tente novamente.</translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
+<translation id="3747077776423672805">Para remover aplicações, aceda a Definições &gt; Google Play Store &gt; Gerir preferências do Android &gt; Aplicações ou Gestor de aplicações. Toque na aplicação que pretende desinstalar (pode ter de deslizar rapidamente para a direita ou para a esquerda para encontrar a aplicação). Em seguida, toque em Desinstalar ou em Desativar.</translation>
 <translation id="3748026146096797577">Desligado</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Os meus dispositivos</translation>
@@ -2757,7 +2754,6 @@ Pretende pará-lo?</translation>
 <translation id="4785719467058219317">Está a utilizar uma chave de segurança que não está registada neste Website.</translation>
 <translation id="4788092183367008521">Verifique a sua ligação à rede e tente novamente.</translation>
 <translation id="4792711294155034829">&amp;Comunicar um problema...</translation>
-<translation id="4795022432560487924">Envie dados de utilização e diagnóstico. Ajude a melhorar a experiência Android da criança ao enviar automaticamente dados de diagnóstico, de utilização de aplicações e do dispositivo para a Google. Estes dados não serão utilizados para identificar a criança e ajudarão a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Esta definição é aplicada pelo proprietário. O proprietário pode optar por enviar dados de diagnóstico e de utilização deste dispositivo para a Google. Se a definição Atividade da Web e de aplicações adicional estiver ativada para a criança, estes dados podem ser guardados na respetiva Conta Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Página Web, Apenas HTML</translation>
 <translation id="4798236378408895261">Anexar <ph name="BEGIN_LINK" />registos do Bluetooth<ph name="END_LINK" /> (interno da Google)</translation>
 <translation id="4801448226354548035">Ocultar contas</translation>
@@ -3385,6 +3381,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5649053991847567735">Transferências automáticas</translation>
 <translation id="5653154844073528838">Tem <ph name="PRINTER_COUNT" /> impressoras guardadas.</translation>
 <translation id="5656845498778518563">Enviar comentários para a Google</translation>
+<translation id="5657156137487675418">Mostrar todos os cookies</translation>
 <translation id="5657667036353380798">A extensão externa requer que esteja instalada a versão <ph name="MINIMUM_CHROME_VERSION" /> ou superior do Chrome.</translation>
 <translation id="5658415415603568799">Para maior segurança, o Smart Lock pedir-lhe-á para introduzir a palavra-passe após 20 horas.</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -3592,7 +3589,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5941711191222866238">Minimizar</translation>
 <translation id="5942964813783878922">O dispositivo <ph name="DEVICE_TYPE" /> irá reiniciar após esta atualização. As atualizações de software e segurança futuras serão instaladas automaticamente.</translation>
 <translation id="5944869793365969636">Leia o código QR</translation>
-<translation id="5945188205370098537">Envie dados de utilização e diagnóstico. Ajude a melhorar a experiência Android ao enviar automaticamente dados de diagnóstico, de utilização do dispositivo e das aplicações para a Google. Deste modo, ajudará a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Se a definição Atividade da Web e de aplicações adicional estiver ativada, estes dados podem ser guardados na sua Conta Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID do relatório <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Não é possível analisar o ficheiro</translation>
 <translation id="5955282598396714173">A sua palavra-passe expirou. Termine e inicie sessão novamente para a alterar.</translation>
@@ -3778,6 +3774,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6185132558746749656">Localização do dispositivo</translation>
 <translation id="6186394685773237175">Não foram encontradas palavras-passe comprometidas.</translation>
 <translation id="6195693561221576702">Não é possível configurar este dispositivo no modo de demonstração offline.</translation>
+<translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
 <translation id="6196854373336333322">A extensão "<ph name="EXTENSION_NAME" />" apoderou-se das suas definições de proxy, o que significa que pode alterar, interromper ou intercetar qualquer coisa que esteja a fazer online. Se não tem a certeza do motivo pelo qual aconteceu esta alteração, é provável que não a queira.</translation>
 <translation id="6198102561359457428">Terminar sessão e, em seguida, iniciar sessão novamente...</translation>
 <translation id="6198252989419008588">Alterar PIN</translation>
@@ -4444,7 +4441,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="711902386174337313">Ler a lista dos dispositivos com sessão iniciada</translation>
 <translation id="7120865473764644444">Não foi possível estabelecer ligação ao servidor de sincronização. A tentar novamente…</translation>
 <translation id="7121362699166175603">Limpa o histórico e os preenchimentos automáticos na barra de endereço. A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Envie dados de utilização e diagnóstico. Agora, este dispositivo está a enviar automaticamente dados de diagnóstico, de utilização de aplicações e do dispositivo para a Google. Estes dados não serão utilizados para identificar a criança e ajudarão a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Se a definição Atividade da Web e de aplicações adicional estiver ativada para a criança, estes dados podem ser guardados na respetiva Conta Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Modo de programador</translation>
 <translation id="7121728544325372695">Traços inteligentes</translation>
 <translation id="7123360114020465152">Já não é suportada.</translation>
@@ -4559,7 +4555,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7280041992884344566">Ocorreu um erro enquanto o Chrome procurava software prejudicial.</translation>
 <translation id="7280649757394340890">Definições de voz para a síntese de voz</translation>
 <translation id="7280877790564589615">Autorização solicitada</translation>
-<translation id="7281268427852119151">Utilize o seu histórico de navegação para personalizar a Pesquisa, os anúncios e outros Serviços Google</translation>
 <translation id="7282992757463864530">Barra de informações</translation>
 <translation id="7287143125007575591">Acesso negado.</translation>
 <translation id="7287411021188441799">Restaurar fundo predefinido</translation>
@@ -5233,7 +5228,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Mover separador para nova janela}other{Mover separadores para nova janela}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">página</translation>
-<translation id="8180294223783876911">Envie dados de utilização e diagnóstico. Agora, este dispositivo está a enviar automaticamente dados de diagnóstico, de utilização de aplicações e do dispositivo para a Google. Deste modo, ajudará a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Se a definição Atividade da Web e de aplicações adicional estiver ativada, estes dados podem ser guardados na sua Conta Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">A extensão "<ph name="EXTENSION" />" consegue ler e eliminar imagens, ficheiros de vídeo e de som nas localizações marcadas.</translation>
 <translation id="8181215761849004992">Não é possível associar ao domínio. Verifique a sua conta para saber se tem privilégios suficientes para adicionar dispositivos.</translation>
 <translation id="8182105986296479640">A aplicação não está a responder</translation>
@@ -5255,7 +5249,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8203732864715032075">Enviar-lhe notificações e memorizar este computador para a aplicação Mensagens como predefinição. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">A app "<ph name="APP_NAME" />" foi bloqueada pelo teu Pai/Mãe. Solicita autorização ao teu Pai/Mãe para utilizares esta app.</translation>
 <translation id="820568752112382238">Sites mais visitados</translation>
-<translation id="8206581664590136590">Envie dados de utilização e diagnóstico. Ajude a melhorar a experiência Android da criança ao enviar automaticamente dados de diagnóstico, de utilização de aplicações e do dispositivo para a Google. Estes dados não serão utilizados para identificar a criança e ajudarão a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Se a definição Atividade da Web e de aplicações adicional estiver ativada para a criança, estes dados podem ser guardados na respetiva Conta Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Bluesy</translation>
 <translation id="8206859287963243715">Telemóvel</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Transferência em curso}other{Transferências em curso}}</translation>
@@ -5801,7 +5794,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8912362522468806198">Conta Google</translation>
 <translation id="8912793549644936705">Esticar</translation>
 <translation id="8912810933860534797">Ativar análise automática</translation>
-<translation id="891365694296252935">Envie dados de utilização e diagnóstico. Agora, este dispositivo está a enviar automaticamente dados de diagnóstico, de utilização de aplicações e do dispositivo para a Google. Estes dados não serão utilizados para identificar a criança e ajudarão a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Esta definição é aplicada pelo proprietário. Se a Atividade da Web e de aplicações adicional estiver ativada para a criança, estes dados podem ser guardados na respetiva Conta Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">A carregar sugestão</translation>
 <translation id="8916476537757519021">Subestrutura da navegação anónima: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">A validar a sua chave de segurança…</translation>
@@ -5938,7 +5930,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9101691533782776290">Iniciar aplicação</translation>
 <translation id="9102610709270966160">Ativar extensão</translation>
 <translation id="9103868373786083162">Premir para voltar, menu de contexto para ver o histórico</translation>
-<translation id="9104396740804929809">Envie dados de utilização e diagnóstico. Ajude a melhorar a experiência Android ao enviar automaticamente dados de diagnóstico, de utilização do dispositivo e das aplicações para a Google. Deste modo, ajudará a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Esta definição é aplicada pelo proprietário. O proprietário pode optar por enviar dados de diagnóstico e de utilização deste dispositivo para a Google. Se a definição Atividade da Web e de aplicações adicional estiver ativada, estes dados podem ser guardados na sua Conta Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Para libertar espaço, elimine ficheiros do armazenamento do dispositivo.</translation>
 <translation id="9109283579179481106">Ligue-se à rede móvel</translation>
 <translation id="9111102763498581341">Desbloquear</translation>

@@ -233,7 +233,7 @@ public class VrShell extends GvrLayout
 
         mTabRedirectHandler = new TabRedirectHandler() {
             @Override
-            public boolean shouldStayInChrome(boolean hasExternalProtocol) {
+            public boolean shouldStayInApp(boolean hasExternalProtocol) {
                 return !hasExternalProtocol;
             }
         };

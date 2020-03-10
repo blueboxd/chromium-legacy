@@ -219,6 +219,7 @@ TEST_F(ActivityTrackerTest, ScopedTaskTest) {
     ScopedTaskRunActivity activity1(task1);
     ActivityUserData& user_data1 = activity1.user_data();
     (void)user_data1;  // Tell compiler it's been used.
+    EXPECT_TRUE(activity1.IsRecorded());
 
     ASSERT_TRUE(tracker->CreateSnapshot(&snapshot));
     ASSERT_EQ(1U, snapshot.activity_stack_depth);

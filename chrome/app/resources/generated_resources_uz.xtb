@@ -575,8 +575,6 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="177336675152937177">Joylashtiriladigan ilovalarning ma’lumotlari</translation>
 <translation id="1776712937009046120">Foydalanuvchi kiritish</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Bu qurilma <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> domeni orqali boshqariladi.
-    “Davom etish” ustiga bosib <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hisobiga kiring.</translation>
 <translation id="1779652936965200207">Bu kalitni "<ph name="DEVICE_NAME" />"da kiriting:</translation>
 <translation id="177989070088644880">Ilova (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Guruhni yopish</translation>
@@ -890,7 +888,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2202898655984161076">Printerlar ro‘yxatini yuklashda xatolik yuz berdi. Ba’zi printerlar <ph name="CLOUD_PRINT_NAME" /> yordamida ro‘yxatdan o‘tkazilmagan bo‘lishi mumkin.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />Manzil qatorida<ph name="END_LINK" /> ishlatiladigan qidiruv tizimi</translation>
 <translation id="2204034823255629767">Kiritilayotgan matnni ko‘rish va o‘zagartirish</translation>
-<translation id="220792432208469595">Foydalanish va diagnostika axborotini yuborish. Bu qurilma hozirda qurilma va ilovalardan foydalanish haqidagi hamda diagnostika axborotini avtomatik tarzda Google kompaniyasiga yubormoqda. Ular tizim va ilovalar barqarorligi kabilarni yaxshilash uchun ishlatiladi. Ayrim toʻplangan maʼlumotlar Android dasturchilar kabi hamkorlarimizga ham oʻz ilovalari va mahsulotlarini yanada yaxshilashga yordam beradi. Bu parametr qurilma egasi tomonidan oʻrnatilgan. Agar Kengaytirilgan veb-qidiruv va ilovalar tarixi yoqilgan boʻlsa, bu maʼlumotlar Google hisobingizda saqlanadi. <ph name="BEGIN_LINK1" />Batafsil<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">“<ph name="DEVICE_NAME" />” qurilmasi PIN-kodini kiriting:</translation>
 <translation id="2212565012507486665">Cookie fayllariga ruxsat berish</translation>
 <translation id="2213140827792212876">Ulashuvni bekor qilish</translation>
@@ -1351,7 +1348,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2804043232879091219">Muqobil brauzer ochilmadi</translation>
 <translation id="2804667941345577550">Bu saytdagi hisobingizdan avtomatik chiqarilasiz (shuningdek, ochiq varaqlardan ham)</translation>
 <translation id="2804680522274557040">Kamera faolsizlantirilgan</translation>
-<translation id="2805539617243680210">Tayyor!</translation>
 <translation id="2805646850212350655">Microsoft (EFS) shifrlangan fayl tizimi</translation>
 <translation id="2805756323405976993">Ilovalar</translation>
 <translation id="2805770823691782631">Batafsil</translation>
@@ -2032,6 +2028,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3742055079367172538">Ekran suratga olindi</translation>
 <translation id="3742666961763734085">Bu nomdagi tashkilot qismi topilmadi. Qayta urining.</translation>
 <translation id="3744111561329211289">Orqa fonda sinxronlash</translation>
+<translation id="3747077776423672805">Ilovalarni oʻchirib tashlash uchun Sozlamalar &gt; Google Play Market &gt; Android sozlamalari boshqaruvi &gt; Ilovalar yoki Ilovalar menejeri menyusiga kiring. Kerakli ilovani tanlab (ilovani topish uchun ekranni oʻng yoki chapga suring), “Oʻchirib tashlash” yoki “Faolsizlantirish” tugmasini bosing.</translation>
 <translation id="3748026146096797577">Ulanilmagan</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Mening qurilmalarim</translation>
@@ -2755,7 +2752,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4785719467058219317">Elektron kalitingiz bu sayt roʻyxatidan oʻtkazilmagan</translation>
 <translation id="4788092183367008521">Tarmoq ulanishini tekshiring va qaytadan urining.</translation>
 <translation id="4792711294155034829">&amp;Muammo haqida xabar qilish...</translation>
-<translation id="4795022432560487924">Foydalanish va diagnostika axborotini yuborish. Diagnostika hamda qurilma va ilovadan foydalanish statistikasini Google kompaniyasiga avtomatik yuborish orqali Androidni yaxshilashga yordam bering. Ushbu axborotdan farzandingiz shaxsini aniqlash uchun foydalanilmaydi. Ular tizim va ilovalar barqarorligi kabilarni yaxshilash uchun ishlatiladi. Ayrim toʻplangan maʼlumotlar Android dasturchilar kabi hamkorlarimizga ham oʻz ilovalari va mahsulotlarini yanada yaxshilashga yordam beradi. Bu parametr qurilma egasi tomonidan oʻrnatilgan. Qurilma egasi undagi foydalanish haqidagi va diagnostika axborotini Google serverlariga avtomatik yuborilishini tayinlashi mumkin. Agar farzandingiz uchun Kengaytirilgan veb-qidiruv va ilovalar tarixi yoqilgan boʻlsa, bu maʼlumotlar uning Google hisobiga saqlanadi. <ph name="BEGIN_LINK1" />Batafsil<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Veb-sahifa, faqat HTML</translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth jurnali<ph name="END_LINK" /> biriktirilsin (Google ichki tekshiruvi uchun)</translation>
 <translation id="4801448226354548035">Hisoblarni yashirish</translation>
@@ -3589,7 +3585,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="5941711191222866238">Yig‘ish</translation>
 <translation id="5942964813783878922">Bu yangilanishdan keyin <ph name="DEVICE_TYPE" /> qayta ishga tushadi. Dastur va xavfsizlik sozlamalari avtomatik yangilanadi.</translation>
 <translation id="5944869793365969636">QR kodni skanerlash</translation>
-<translation id="5945188205370098537">Foydalanish va diagnostika axborotini yuborish. Diagnostika hamda qurilma va ilovadan foydalanish statistikasini Google kompaniyasiga avtomatik yuborish orqali Androidni yaxshilashga yordam bering. Ular tizim va ilovalar barqarorligi kabilarni yaxshilash uchun ishlatiladi. Ayrim toʻplangan maʼlumotlar Android dasturchilar kabi hamkorlarimizga ham oʻz ilovalari va mahsulotlarini yanada yaxshilashga yordam beradi. Agar Kengaytirilgan veb-qidiruv va ilovalar tarixi yoqilgan boʻlsa, bu maʼlumotlar Google hisobingizda saqlanadi. <ph name="BEGIN_LINK1" />Batafsil<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Hisobot identifikatori: <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Faylni ochib bo‘lmadi</translation>
 <translation id="5955282598396714173">Parolingiz eskirdi. Yangilash uchun hisobingizdan chiqing va qayta kiring.</translation>
@@ -3775,6 +3770,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6185132558746749656">Qurilma joylashuvi</translation>
 <translation id="6186394685773237175">Oshkor qilingan parollar topilmadi</translation>
 <translation id="6195693561221576702">Bu qurilmani oflayn demo rejimda sozlab boʻlmaydi.</translation>
+<translation id="6196640612572343990">Tashqi cookie-fayllarni bloklash.</translation>
 <translation id="6196854373336333322">“<ph name="EXTENSION_NAME" />” kengaytmasi proksi-server sozlamalarini nazorat qiladi. U internetda bajargan ishlaringizni o‘zgartirishi, buzishi yoki bildirmasdan eshitishi mumkin. Agar bu haqda eshitmagan bo‘lsangiz, uni o‘chirib qo‘yganingiz yaxshi.</translation>
 <translation id="6198102561359457428">Chiqish va qaytadan kirish...</translation>
 <translation id="6198252989419008588">PIN-kodni o‘zgartirish</translation>
@@ -4441,7 +4437,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="711902386174337313">Tizimga kirish amali bajarilgan qurilmalar ro‘yxati</translation>
 <translation id="7120865473764644444">Sinxronizatsiya serveriga ulana olmadi. Qayta urinilmoqda...</translation>
 <translation id="7121362699166175603">Manzil qatoridagi tarix va avto‘ldirishlarni tozalaydi. Google hisobingiz orqali bajargan internetdagi faoliyatingizni <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> orqali ko‘rishingiz mumkin.</translation>
-<translation id="7121389946694989825">Foydalanish va diagnostika axborotini yuborish. Bu qurilma hozirda qurilma va ilovalardan foydalanish haqidagi hamda diagnostika axborotini avtomatik tarzda Google kompaniyasiga yubormoqda. Ushbu axborotdan farzandingiz shaxsini aniqlash uchun foydalanilmaydi. Ular tizim va ilovalar barqarorligi kabilarni yaxshilash uchun ishlatiladi. Ayrim toʻplangan maʼlumotlar Android dasturchilar kabi hamkorlarimizga ham oʻz ilovalari va mahsulotlarini yanada yaxshilashga yordam beradi. Agar farzandingiz uchun Kengaytirilgan veb-qidiruv va ilovalar tarixi yoqilgan boʻlsa, bu maʼlumotlar uning Google hisobiga saqlanadi. <ph name="BEGIN_LINK1" />Batafsil<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Dasturchi rejimi</translation>
 <translation id="7121728544325372695">Smart tirelar</translation>
 <translation id="7123360114020465152">Printer ta’minoti to‘xtatilgan</translation>
@@ -4556,7 +4551,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7280041992884344566">Kompyuterdagi zararli dasturlar qidiruvi vaqtida xatolik yuz berdi</translation>
 <translation id="7280649757394340890">Nutq sintezatori uchun ovoz sozlamalari</translation>
 <translation id="7280877790564589615">Ruxsat so‘ralmoqda</translation>
-<translation id="7281268427852119151">Qidiruv, rekama va boshqa xizmatlarni sizga moslashtirish uchun tarix maʼlumotlaringiz ishlatilishi mumkin</translation>
 <translation id="7282992757463864530">Axborot paneli</translation>
 <translation id="7287143125007575591">Ruxsat berilmadi.</translation>
 <translation id="7287411021188441799">Standart fonni tiklash</translation>
@@ -5229,7 +5223,6 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Varaqni yangi oynaga olish}other{Varaqlarni yangi oynaga olish}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">sahifa</translation>
-<translation id="8180294223783876911">Foydalanish va diagnostika axborotini yuborish. Bu qurilma hozirda qurilma va ilovalardan foydalanish haqidagi hamda diagnostika axborotini avtomatik tarzda Google kompaniyasiga yubormoqda. Ular tizim va ilovalar barqarorligi kabilarni yaxshilash uchun ishlatiladi. Ayrim toʻplangan maʼlumotlar Android dasturchilar kabi hamkorlarimizga ham oʻz ilovalari va mahsulotlarini yanada yaxshilashga yordam beradi. Agar Kengaytirilgan veb-qidiruv va ilovalar tarixi yoqilgan boʻlsa, bu maʼlumotlar Google hisobingizda saqlanadi. <ph name="BEGIN_LINK1" />Batafsil<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">“<ph name="EXTENSION" />” kengaytmasi belgilangan jildlardan rasm, audio va video fayllarni o‘qishi va o‘chirishi mumkin.</translation>
 <translation id="8181215761849004992">Domenga ulana olmadi. Qurilmalarni ulash huquqi sizga berilmagan bo‘lishi mumkin,</translation>
 <translation id="8182105986296479640">Ilova javob bermayapti.</translation>
@@ -5251,7 +5244,6 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8203732864715032075">Bu kompyuter xabarlashuv uchun birlamchi bo‘lishi uchun sizga bildirishnoma yuborildi. <ph name="LINK_BEGIN" />Batafsil axborot<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672"><ph name="APP_NAME" /> ota-onangiz tomonidan bloklangan. Bu ilovadan foydalanish uchun ota-onangizdan ruxsat oling.</translation>
 <translation id="820568752112382238">Eng koʻp ochilgan saytlar</translation>
-<translation id="8206581664590136590">Foydalanish va diagnostika axborotini yuborish. Diagnostika hamda qurilma va ilovadan foydalanish statistikasini Google kompaniyasiga avtomatik yuborish orqali Androidni yaxshilashga yordam bering. Ushbu axborotdan farzandingiz shaxsini aniqlash uchun foydalanilmaydi. Ular tizim va ilovalar barqarorligi kabilarni yaxshilash uchun ishlatiladi. Ayrim toʻplangan maʼlumotlar Android dasturchilar kabi hamkorlarimizga ham oʻz ilovalari va mahsulotlarini yanada yaxshilashga yordam beradi. Agar farzandingiz uchun Kengaytirilgan veb-qidiruv va ilovalar tarixi yoqilgan boʻlsa, bu maʼlumotlar uning Google hisobiga saqlanadi. <ph name="BEGIN_LINK1" />Batafsil<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Blyuz</translation>
 <translation id="8206859287963243715">Uyali</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Yuklab olinmoqda}other{Yuklab olinmoqda}}</translation>
@@ -5797,7 +5789,6 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8912362522468806198">Google hisobi</translation>
 <translation id="8912793549644936705">Cho‘zish</translation>
 <translation id="8912810933860534797">Avtomatik skanerlashni yoqish</translation>
-<translation id="891365694296252935">Foydalanish va diagnostika axborotini yuborish. Bu qurilma hozirda qurilma va ilovalardan foydalanish haqidagi hamda diagnostika axborotini avtomatik tarzda Google kompaniyasiga yubormoqda. Ushbu axborotdan farzandingiz shaxsini aniqlash uchun foydalanilmaydi. Ular tizim va ilovalar barqarorligi kabilarni yaxshilash uchun ishlatiladi. Ayrim toʻplangan maʼlumotlar Android dasturchilar kabi hamkorlarimizga ham oʻz ilovalari va mahsulotlarini yanada yaxshilashga yordam beradi. Bu parametr qurilma egasi tomonidan oʻrnatilgan. Agar farzandingiz uchun Kengaytirilgan veb-qidiruv va ilovalar tarixi yoqilgan boʻlsa, bu maʼlumotlar uning Google hisobiga saqlanadi. <ph name="BEGIN_LINK1" />Batafsil<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Taklif yuklanmoqda</translation>
 <translation id="8916476537757519021">Inkognito rejimidagi quyi freym: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Elektron kalit tasdiqlanmoqda...</translation>
@@ -5934,7 +5925,6 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="9101691533782776290">Ishga tushirish</translation>
 <translation id="9102610709270966160">Kengaytmani yoqish</translation>
 <translation id="9103868373786083162">Ortga qaytish uchun bosing, brauzer tarixini ko‘rish uchun kontekst menyusini tanlang</translation>
-<translation id="9104396740804929809">Foydalanish va diagnostika axborotini yuborish. Diagnostika hamda qurilma va ilovadan foydalanish statistikasini Google kompaniyasiga avtomatik yuborish orqali Androidni yaxshilashga yordam bering. Ular tizim va ilovalar barqarorligi kabilarni yaxshilash uchun ishlatiladi. Ayrim toʻplangan maʼlumotlar Android dasturchilar kabi hamkorlarimizga ham oʻz ilovalari va mahsulotlarini yanada yaxshilashga yordam beradi. Bu parametr qurilma egasi tomonidan oʻrnatilgan. Qurilma egasi undagi foydalanish haqidagi va diagnostika axborotini Google serverlariga avtomatik yuborilishini tayinlashi mumkin. Agar Kengaytirilgan veb-qidiruv va ilovalar tarixi yoqilgan boʻlsa, bu maʼlumotlar Google hisobingizda saqlanadi. <ph name="BEGIN_LINK1" />Batafsil<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Joy ochish uchun qurilma xotirasidan fayllarni o‘chiring</translation>
 <translation id="9109283579179481106">Mobil tarmoqqa ulanish</translation>
 <translation id="9111102763498581341">Qulfdan yechish</translation>

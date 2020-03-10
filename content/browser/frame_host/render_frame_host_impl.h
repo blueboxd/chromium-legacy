@@ -1446,7 +1446,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
                       int32_t routing_id,
-                      int32_t widget_routing_id,
                       bool renderer_initiated_creation);
 
   // The SendCommit* functions below are wrappers for commit calls
@@ -1572,6 +1571,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
                            UnloadHandlersArePowerfulGrandChild);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplTest, ExpectedMainWorldOrigin);
+  FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
+                           AttemptDuplicateRenderWidgetHost);
 
   class DroppedInterfaceRequestLogger;
 
@@ -1645,6 +1646,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
       CreatePortalCallback callback) override;
   void AdoptPortal(const base::UnguessableToken& portal_token,
                    AdoptPortalCallback callback) override;
+  void CreateNewWidget(mojo::PendingRemote<mojom::Widget> widget,
+                       CreateNewWidgetCallback callback) override;
+  void CreateNewFullscreenWidget(
+      mojo::PendingRemote<mojom::Widget> widget,
+      CreateNewFullscreenWidgetCallback callback) override;
   void IssueKeepAliveHandle(
       mojo::PendingReceiver<mojom::KeepAliveHandle> receiver) override;
   void DidCommitProvisionalLoad(

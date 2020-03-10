@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Isännöidyn sovelluksen tiedot</translation>
 <translation id="1776712937009046120">Lisää käyttäjä</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Tätä laitetta hallinnoi <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Jatka tilillesi (<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />) kirjautumista valitsemalla Seuraava.</translation>
 <translation id="1779652936965200207">Kirjoita tämä salasana laitteelle <ph name="DEVICE_NAME" />:</translation>
 <translation id="177989070088644880">Sovellus (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Sulje ryhmä</translation>
@@ -892,7 +890,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2202898655984161076">Tulostimien luetteloinnissa tapahtui virhe. Kaikkia tulostimiasi ei ole välttämättä rekisteröity palveluun <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Hakukone, jota käytetään <ph name="BEGIN_LINK" />osoitepalkissa<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Lukea ja muuttaa kaikkea kirjoittamaasi</translation>
-<translation id="220792432208469595">Lähetä käyttö- ja diagnostiikkadataa. Laite lähettää tällä hetkellä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Datan avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Omistaja on ottanut tämän asetuksen käyttöön. Jos olet ottanut käyttöön muun verkko- ja sovellustoiminnan asetuksen, tätä dataa voidaan tallentaa Google-tilillesi. <ph name="BEGIN_LINK1" />Lue lisää<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Syötä tämä PIN-koodi laitteella <ph name="DEVICE_NAME" />:</translation>
 <translation id="2212565012507486665">Salli evästeet</translation>
 <translation id="2213140827792212876">Poista jakaminen</translation>
@@ -1353,7 +1350,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2804043232879091219">Toisen selaimen avaaminen epäonnistui</translation>
 <translation id="2804667941345577550">Sinut kirjataan ulos tältä sivustolta, myös avoimilta välilehdiltä.</translation>
 <translation id="2804680522274557040">Kamera poistettiin käytöstä</translation>
-<translation id="2805539617243680210">Kaikki on valmista.</translation>
 <translation id="2805646850212350655">Microsoftin tietojärjestelmän salaus</translation>
 <translation id="2805756323405976993">Sovellukset</translation>
 <translation id="2805770823691782631">Lisätietoja</translation>
@@ -2034,6 +2030,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="3742055079367172538">Kuvakaappaus otettu</translation>
 <translation id="3742666961763734085">Tämännimistä organisaatioyksikköä ei löydy. Yritä uudelleen.</translation>
 <translation id="3744111561329211289">Taustasynkronointi</translation>
+<translation id="3747077776423672805">Jos haluat poistaa sovelluksia, valitse Asetukset &gt; Google Play Kauppa &gt; Hallitse Android-asetuksia &gt; Sovellukset tai Sovellusten hallinta. Valitse sitten sovellus, jonka haluat poistaa (jos sovellusta ei näy, pyyhkäise oikealle tai vasemmalle). Valitse sitten Poista tai Poista käytöstä.</translation>
 <translation id="3748026146096797577">Ei yhteyttä</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Omat laitteet</translation>
@@ -2754,7 +2751,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4785719467058219317">Käytät suojausavainta, jota ei ole rekisteröity tällä sivustolla.</translation>
 <translation id="4788092183367008521">Tarkista verkkoyhteys ja yritä uudelleen.</translation>
 <translation id="4792711294155034829">&amp;Ilmoita ongelmasta...</translation>
-<translation id="4795022432560487924">Lähetä käyttö- ja diagnostiikkadataa. Auta parantamaan lapsesi Android-käyttökokemusta lähettämällä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Dataa ei käytetä lapsesi henkilöllisyyden selvittämiseen – sen avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Omistaja on ottanut tämän asetuksen käyttöön. Omistaja voi lähettää tätä laitetta koskevaa diagnostiikka- ja käyttödataa Googlelle. Jos muun verkko- ja sovellustoiminnan asetus on lapsella käytössä, tätä dataa voidaan tallentaa hänen Google-tililleen. <ph name="BEGIN_LINK1" />Lue lisää<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Verkkosivu, vain HTML</translation>
 <translation id="4798236378408895261">Liitä <ph name="BEGIN_LINK" />Bluetooth-lokit<ph name="END_LINK" /> (Googlen sisäinen)</translation>
 <translation id="4801448226354548035">Piilota tilit</translation>
@@ -3381,6 +3377,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5649053991847567735">Automaattiset lataukset</translation>
 <translation id="5653154844073528838">Sinulla on <ph name="PRINTER_COUNT" /> tallennettua tulostinta</translation>
 <translation id="5656845498778518563">Lähetä palautetta Googlelle</translation>
+<translation id="5657156137487675418">Salli kaikki evästeet</translation>
 <translation id="5657667036353380798">Ulkoinen laajennus vaatii Chrome-version <ph name="MINIMUM_CHROME_VERSION" /> tai uudemman.</translation>
 <translation id="5658415415603568799">Turvallisuussyistä Smart Lock pyytää antamaan salasanan, kun 20 tuntia on kulunut.</translation>
 <translation id="5659593005791499971">Sähköposti</translation>
@@ -3588,7 +3585,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="5941711191222866238">Pienennä</translation>
 <translation id="5942964813783878922"><ph name="DEVICE_TYPE" /> käynnistyy uudelleen päivityksen jälkeen. Tulevat ohjelmistot ja tietoturvapäivitykset asennetaan automaattisesti.</translation>
 <translation id="5944869793365969636">Skannaa QR-koodi</translation>
-<translation id="5945188205370098537">Lähetä käyttö- ja diagnostiikkadataa. Auta parantamaan Android-käyttökokemusta lähettämällä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Datan avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Jos olet ottanut käyttöön muun verkko- ja sovellustoiminnan asetuksen, tätä dataa voidaan tallentaa Google-tilillesi. <ph name="BEGIN_LINK1" />Lue lisää<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Raporttitunnus: <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Tiedoston jäsentäminen ei onnistu.</translation>
 <translation id="5955282598396714173">Salasana on vanhentunut. Kirjaudu ulos ja uudelleen sisään, niin voit vaihtaa sen.</translation>
@@ -3776,6 +3772,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6185132558746749656">Laitteen sijainti</translation>
 <translation id="6186394685773237175">Vaarantuneita salasanoja ei löytynyt</translation>
 <translation id="6195693561221576702">Tätä laitetta ei voi määrittää offline-demotilassa.</translation>
+<translation id="6196640612572343990">Estä kolmannen osapuolen evästeet</translation>
 <translation id="6196854373336333322">Välityspalvelimesi asetuksia hallinnoi tällä hetkellä tämä laajennus <ph name="EXTENSION_NAME" />, joka voi muokata, haitata tai salakuunnella kaikkia verkkotoimiasi. Jos et tiedä, miksi tämä muutos tehtiin, et luultavasti halua käyttää sitä.</translation>
 <translation id="6198102561359457428">Kirjaudu ulos ja kirjaudu uudelleen sisään...</translation>
 <translation id="6198252989419008588">Vaihda PIN-koodi</translation>
@@ -4442,7 +4439,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="711902386174337313">Käyttää kirjautuneiden laitteidesi luetteloa</translation>
 <translation id="7120865473764644444">Synkronointipalvelimeen ei saada yhteyttä. Yritetään uudelleen…</translation>
 <translation id="7121362699166175603">Tyhjentää historian ja osoitekentän automaattiset täydennykset. Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Lähetä käyttö- ja diagnostiikkadataa. Laite lähettää tällä hetkellä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Dataa ei käytetä lapsesi henkilöllisyyden selvittämiseen – sen avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Jos muun verkko- ja sovellustoiminnan asetus on lapsella käytössä, tätä dataa voidaan tallentaa hänen Google-tililleen. <ph name="BEGIN_LINK1" />Lue lisää<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Kehittäjätila</translation>
 <translation id="7121728544325372695">Älykkäät väliviivat</translation>
 <translation id="7123360114020465152">Ei enää tueta</translation>
@@ -4557,7 +4553,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7280041992884344566">Chromen etsiessä haittaohjelmia tapahtui virhe.</translation>
 <translation id="7280649757394340890">Tekstistä puheeksi ‑ääniasetukset</translation>
 <translation id="7280877790564589615">Käyttölupapyyntö</translation>
-<translation id="7281268427852119151">Personoi Hakua, mainoksia ja muita Googlen palveluja selaushistoriasi perusteella</translation>
 <translation id="7282992757463864530">Tietopalkki</translation>
 <translation id="7287143125007575591">Pääsy evätty.</translation>
 <translation id="7287411021188441799">Palauta oletustausta</translation>
@@ -5231,7 +5226,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Siirrä välilehti uuteen ikkunaan}other{Siirrä välilehdet uuteen ikkunaan}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">sivu</translation>
-<translation id="8180294223783876911">Lähetä käyttö- ja diagnostiikkadataa. Laite lähettää tällä hetkellä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Datan avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Jos olet ottanut käyttöön muun verkko- ja sovellustoiminnan asetuksen, tätä dataa voidaan tallentaa Google-tilillesi. <ph name="BEGIN_LINK1" />Lue lisää<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389"><ph name="EXTENSION" /> voi lukea ja poistaa kuva-, video- ja äänitiedostoja valituissa sijainneissa.</translation>
 <translation id="8181215761849004992">Verkkotunnukseen liittyminen ei onnistu. Katso tililtäsi, onko sinulla laitteiden lisäämisoikeudet.</translation>
 <translation id="8182105986296479640">Sovellus ei vastaa.</translation>
@@ -5253,7 +5247,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8203732864715032075">Voit saada ilmoituksia, ja tämä tietokone voidaan muistaa oletuksena Messages-sovellusta käytettäessä. <ph name="LINK_BEGIN" />Lisätietoja<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672"><ph name="APP_NAME" /> on vanhempasi estämä. Pyydä vanhemmaltasi lupaa käyttää tätä sovellusta.</translation>
 <translation id="820568752112382238">Useimmin vieraillut sivustot</translation>
-<translation id="8206581664590136590">Lähetä käyttö- ja diagnostiikkadataa. Auta parantamaan lapsesi Android-käyttökokemusta lähettämällä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Dataa ei käytetä lapsesi henkilöllisyyden selvittämiseen – sen avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Jos muun verkko- ja sovellustoiminnan asetus on lapsella käytössä, tätä dataa voidaan tallentaa hänen Google-tililleen. <ph name="BEGIN_LINK1" />Lue lisää<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Muusikko</translation>
 <translation id="8206859287963243715">Matkapuhelin</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Lataus on käynnissä}other{Latauksia on käynnissä}}</translation>
@@ -5799,7 +5792,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8912362522468806198">Google-tilisi avulla</translation>
 <translation id="8912793549644936705">Venytä</translation>
 <translation id="8912810933860534797">Ota automaattinen skannaus käyttöön</translation>
-<translation id="891365694296252935">Lähetä käyttö- ja diagnostiikkadataa. Laite lähettää tällä hetkellä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Dataa ei käytetä lapsesi henkilöllisyyden selvittämiseen – sen avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Omistaja on ottanut tämän asetuksen käyttöön. Jos muun verkko- ja sovellustoiminnan asetus on lapsella käytössä, tätä dataa voidaan tallentaa hänen Google-tililleen. <ph name="BEGIN_LINK1" />Lue lisää<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Ladataan ehdotusta</translation>
 <translation id="8916476537757519021">Incognito-alakehys: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Vahvistetaan suojausavainta…</translation>
@@ -5936,7 +5928,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9101691533782776290">Käynnistä sovellus</translation>
 <translation id="9102610709270966160">Ota laajennus käyttöön</translation>
 <translation id="9103868373786083162">Siirry taaksepäin painamalla tai avaa historia kontekstivalikon kautta.</translation>
-<translation id="9104396740804929809">Lähetä käyttö- ja diagnostiikkadataa. Auta parantamaan Android-käyttökokemusta lähettämällä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Datan avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Omistaja on ottanut tämän asetuksen käyttöön. Omistaja voi lähettää tätä laitetta koskevaa diagnostiikka- ja käyttödataa Googlelle. Jos olet ottanut käyttöön muun verkko- ja sovellustoiminnan asetuksen, tätä dataa voidaan tallentaa Google-tilillesi. <ph name="BEGIN_LINK1" />Lue lisää<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Vapauta tilaa poistamalla laitteeseen tallennettuja tiedostoja.</translation>
 <translation id="9109283579179481106">Yhdistä mobiiliverkkoon</translation>
 <translation id="9111102763498581341">Poista lukitus</translation>

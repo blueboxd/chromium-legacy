@@ -32,19 +32,15 @@ GraphicsContext* SVGFilterRecordingContext::BeginContent() {
   return context_.get();
 }
 
-sk_sp<PaintRecord> SVGFilterRecordingContext::EndContent(
-    const FloatRect& bounds) {
+sk_sp<PaintRecord> SVGFilterRecordingContext::EndContent() {
   // Use the context that contains the filtered content.
   DCHECK(paint_controller_);
   DCHECK(context_);
-  context_->BeginRecording(bounds);
   paint_controller_->CommitNewDisplayItems();
+  sk_sp<PaintRecord> content =
+      paint_controller_->GetPaintArtifact().GetPaintRecord(
+          initial_context_.GetPaintController().CurrentPaintChunkProperties());
 
-  paint_controller_->GetPaintArtifact().Replay(
-      *context_,
-      initial_context_.GetPaintController().CurrentPaintChunkProperties());
-
-  sk_sp<PaintRecord> content = context_->EndRecording();
   // Content is cached by the source graphic so temporaries can be freed.
   paint_controller_ = nullptr;
   context_ = nullptr;
@@ -54,7 +50,7 @@ sk_sp<PaintRecord> SVGFilterRecordingContext::EndContent(
 void SVGFilterRecordingContext::Abort() {
   if (!paint_controller_)
     return;
-  EndContent(FloatRect());
+  EndContent();
 }
 
 static void PaintFilteredContent(GraphicsContext& context,
@@ -155,7 +151,7 @@ void SVGFilterPainter::FinishEffect(
   FloatRect bounds = filter->FilterRegion();
   if (filter_data->state_ == FilterData::kRecordingContent) {
     DCHECK(filter->GetSourceGraphic());
-    sk_sp<PaintRecord> content = recording_context.EndContent(bounds);
+    sk_sp<PaintRecord> content = recording_context.EndContent();
     paint_filter_builder::BuildSourceGraphic(filter->GetSourceGraphic(),
                                              std::move(content), bounds);
     filter_data->state_ = FilterData::kReadyToPaint;

@@ -573,8 +573,6 @@
 <translation id="177336675152937177">Dữ liệu ứng dụng lưu trữ trên máy chủ</translation>
 <translation id="1776712937009046120">Thêm người dùng</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Thiết bị này do <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> quản lý.
-    Vui lòng nhấp vào "Tiếp theo" để tiếp tục đăng nhập vào tài khoản <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> của bạn.</translation>
 <translation id="1779652936965200207">Vui lòng nhập mã xác nhận này trên "<ph name="DEVICE_NAME" />":</translation>
 <translation id="177989070088644880">Ứng dụng (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Đóng nhóm</translation>
@@ -887,7 +885,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2202898655984161076">Đã có sự cố khi liệt kê máy in. Một số máy in của bạn có thể chưa được đăng ký thành công với <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Công cụ tìm kiếm được sử dụng trên <ph name="BEGIN_LINK" />thanh địa chỉ<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Đọc và thay đổi mọi nội dung bạn nhập</translation>
-<translation id="220792432208469595">Gửi dữ liệu chẩn đoán và dữ liệu về mức sử dụng. Thiết bị này hiện tự động gửi dữ liệu chẩn đoán, dữ liệu về mức sử dụng ứng dụng và thiết bị cho Google. Những thông tin này sẽ giúp tăng độ ổn định của hệ thống và ứng dụng cũng như cải thiện các mặt khác. Một số dữ liệu tổng hợp cũng sẽ hữu ích cho các ứng dụng và đối tác của Google, chẳng hạn như những nhà phát triển Android. Mục cài đặt này do chủ sở hữu thực thi. Nếu bạn bật mục cài đặt bổ sung Hoạt động trên web và ứng dụng thì dữ liệu này có thể được lưu vào Tài khoản Google của bạn. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Vui lòng nhập mã PIN này trên "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Cho phép cookie</translation>
 <translation id="2213140827792212876">Xóa thư mục dùng chung</translation>
@@ -1343,7 +1340,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2804043232879091219">Không thể mở trình duyệt thay thế</translation>
 <translation id="2804667941345577550">Bạn sẽ bị đăng xuất khỏi trang web này, bao gồm cả các tab đang mở</translation>
 <translation id="2804680522274557040">Đã tắt máy ảnh</translation>
-<translation id="2805539617243680210">Bạn đã hoàn tất!</translation>
 <translation id="2805646850212350655">Hệ thống Tệp Mã hóa của Microsoft</translation>
 <translation id="2805756323405976993">Ứng dụng</translation>
 <translation id="2805770823691782631">Thông tin chi tiết bổ sung</translation>
@@ -2021,6 +2017,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3742055079367172538">Ảnh màn hình đã chụp</translation>
 <translation id="3742666961763734085">Không tìm thấy đơn vị tổ chức có tên đó. Vui lòng thử lại.</translation>
 <translation id="3744111561329211289">Đồng bộ hóa dưới nền</translation>
+<translation id="3747077776423672805">Để xóa ứng dụng, hãy chuyển đến mục Cài đặt &gt; Cửa hàng Google Play &gt; Quản lý tùy chọn Android &gt; Ứng dụng hoặc Trình quản lý ứng dụng. Tiếp theo, hãy nhấn vào ứng dụng mà bạn muốn gỡ cài đặt (bạn có thể phải vuốt sang phải hoặc trái để tìm ứng dụng đó). Sau đó, hãy nhấn vào Gỡ cài đặt hoặc Tắt.</translation>
 <translation id="3748026146096797577">Chưa được kết nối</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Thiết bị của tôi</translation>
@@ -2741,7 +2738,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4785719467058219317">Bạn đang sử dụng một khóa bảo mật chưa đăng ký với trang web này</translation>
 <translation id="4788092183367008521">Vui lòng kiểm tra kết nối mạng và thử lại.</translation>
 <translation id="4792711294155034829">&amp;Báo cáo sự cố...</translation>
-<translation id="4795022432560487924">Gửi dữ liệu chẩn đoán và dữ liệu về mức sử dụng. Giúp cải thiện trải nghiệm Android của con bạn bằng cách tự động gửi dữ liệu chẩn đoán cũng như dữ liệu về mức sử dụng ứng dụng và thiết bị cho Google. Những thông tin này sẽ không dùng để nhận dạng con bạn mà giúp tăng độ ổn định của hệ thống và ứng dụng cũng như cải thiện các mặt khác. Một số dữ liệu tổng hợp cũng sẽ hữu ích cho các ứng dụng và đối tác của Google, chẳng hạn như những nhà phát triển Android. Mục cài đặt này do chủ sở hữu thực thi. Chủ sở hữu có thể chọn gửi dữ liệu chẩn đoán và dữ liệu về mức sử dụng của thiết bị này cho Google. Nếu bạn bật mục cài đặt bổ sung Hoạt động trên web và ứng dụng cho con mình thì dữ liệu này có thể được lưu vào Tài khoản Google của trẻ. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Trang web, chỉ HTML</translation>
 <translation id="4798236378408895261">Đính kèm <ph name="BEGIN_LINK" />Nhật ký Bluetooth<ph name="END_LINK" /> (nội bộ Google)</translation>
 <translation id="4801448226354548035">Ẩn tài khoản</translation>
@@ -3361,6 +3357,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5649053991847567735">Tự động tải xuống</translation>
 <translation id="5653154844073528838">Bạn đã lưu <ph name="PRINTER_COUNT" /> máy in.</translation>
 <translation id="5656845498778518563">Gửi ý kiến phản hồi cho Google</translation>
+<translation id="5657156137487675418">Cho phép tất cả cookie</translation>
 <translation id="5657667036353380798">Tiện ích bên ngoài yêu cầu cài đặt phiên bản phiên bản Chrome <ph name="MINIMUM_CHROME_VERSION" /> trở lên.</translation>
 <translation id="5658415415603568799">Để tăng cường bảo mật, Smart Lock sẽ yêu cầu bạn nhập mật khẩu sau 20 giờ.</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -3567,7 +3564,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5941711191222866238">Thu nhỏ</translation>
 <translation id="5942964813783878922"><ph name="DEVICE_TYPE" /> sẽ khởi động lại sau quá trình cập nhật này. Các bản cập nhật bảo mật và phần mềm trong tương lai sẽ tự động cài đặt.</translation>
 <translation id="5944869793365969636">Quét mã QR</translation>
-<translation id="5945188205370098537">Gửi dữ liệu chẩn đoán và dữ liệu về mức sử dụng. Giúp cải thiện trải nghiệm Android của bạn bằng cách tự động gửi dữ liệu chẩn đoán cũng như dữ liệu về mức sử dụng ứng dụng và thiết bị cho Google. Những thông tin này sẽ giúp tăng độ ổn định của hệ thống và ứng dụng cũng như cải thiện các mặt khác. Một số dữ liệu tổng hợp cũng sẽ hữu ích cho các ứng dụng và đối tác của Google, chẳng hạn như những nhà phát triển Android. Nếu bạn bật mục cài đặt bổ sung Hoạt động trên web và ứng dụng thì dữ liệu này có thể được lưu vào Tài khoản Google của bạn. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID báo cáo <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Không thể phân tích cú pháp tệp</translation>
 <translation id="5955282598396714173">Mật khẩu của bạn đã hết hạn. Vui lòng đăng xuất rồi đăng nhập lại để thay đổi mật khẩu.</translation>
@@ -3751,6 +3747,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6185132558746749656">Vị trí thiết bị</translation>
 <translation id="6186394685773237175">Không phát hiện thấy mật khẩu nào bị lộ</translation>
 <translation id="6195693561221576702">Không thể thiết lập thiết bị này ở chế độ minh họa ngoại tuyến.</translation>
+<translation id="6196640612572343990">Chặn cookie của bên thứ ba</translation>
 <translation id="6196854373336333322">Tiện ích "<ph name="EXTENSION_NAME" />" đã chiếm quyền kiểm soát cài đặt proxy của bạn, điều đó có nghĩa là tiện ích này có thể thay đổi, làm gián đoạn hoặc nghe trộm bất kỳ điều gì bạn thực hiện trực tuyến. Nếu bạn không chắc chắn về lý do thay đổi này diễn ra, bạn có thể không cần tiện ích này.</translation>
 <translation id="6198102561359457428">Đăng xuất rồi đăng nhập lại...</translation>
 <translation id="6198252989419008588">Thay đổi mã PIN</translation>
@@ -4414,7 +4411,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="711902386174337313">Đọc danh sách các thiết bị đã đăng nhập của bạn</translation>
 <translation id="7120865473764644444">Không thể kết nối với máy chủ đồng bộ hóa. Đang thử lại...</translation>
 <translation id="7121362699166175603">Xóa lịch sử duyệt web và nội dung tự động hoàn thành trong thanh địa chỉ. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Gửi dữ liệu chẩn đoán và dữ liệu về mức sử dụng. Thiết bị này hiện tự động gửi dữ liệu chẩn đoán, dữ liệu về mức sử dụng ứng dụng và thiết bị cho Google. Những thông tin này sẽ không dùng để nhận dạng con bạn mà giúp tăng độ ổn định của hệ thống và ứng dụng cũng như cải thiện các mặt khác. Một số dữ liệu tổng hợp cũng sẽ hữu ích cho các ứng dụng và đối tác của Google, chẳng hạn như những nhà phát triển Android. Nếu bạn bật mục cài đặt bổ sung Hoạt động trên web và ứng dụng cho con mình thì dữ liệu này có thể được lưu vào Tài khoản Google của trẻ. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Chế độ nhà phát triển</translation>
 <translation id="7121728544325372695">Dấu gạch ngang thông minh</translation>
 <translation id="7123360114020465152">Không còn được hỗ trợ</translation>
@@ -5197,7 +5193,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Di chuyển thẻ sang cửa sổ mới}other{Di chuyển các thẻ sang cửa sổ mới}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">trang</translation>
-<translation id="8180294223783876911">Gửi dữ liệu chẩn đoán và dữ liệu về mức sử dụng. Thiết bị này hiện tự động gửi dữ liệu chẩn đoán, dữ liệu về mức sử dụng ứng dụng và thiết bị cho Google. Những thông tin này sẽ giúp tăng độ ổn định của hệ thống và ứng dụng cũng như cải thiện các mặt khác. Một số dữ liệu tổng hợp cũng sẽ hữu ích cho các ứng dụng và đối tác của Google, chẳng hạn như những nhà phát triển Android. Nếu bạn bật mục cài đặt bổ sung Hoạt động trên web và ứng dụng thì dữ liệu này có thể được lưu vào Tài khoản Google của bạn. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" có thể đọc và xóa các tệp hình ảnh, video và âm thanh trong vị trí đã chọn.</translation>
 <translation id="8181215761849004992">Không thể kết hợp miền. Hãy kiểm tra tài khoản của bạn để xem bạn có đủ đặc quyền thêm thiết bị hay không.</translation>
 <translation id="8182105986296479640">Ứng dụng không phản hồi.</translation>
@@ -5219,7 +5214,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8203732864715032075">Gửi cho bạn thông báo và đặt mặc định để ghi nhớ máy tính này cho ứng dụng Messages. <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">Cha mẹ bạn đã chặn "<ph name="APP_NAME" />". Hãy xin phép cha mẹ cấp quyền sử dụng ứng dụng này.</translation>
 <translation id="820568752112382238">Trang web truy cập nhiều nhất</translation>
-<translation id="8206581664590136590">Gửi dữ liệu chẩn đoán và dữ liệu về mức sử dụng. Giúp cải thiện trải nghiệm Android của con bạn bằng cách tự động gửi dữ liệu chẩn đoán cũng như dữ liệu về mức sử dụng ứng dụng và thiết bị cho Google. Những thông tin này sẽ không dùng để nhận dạng con bạn mà giúp tăng độ ổn định của hệ thống và ứng dụng cũng như cải thiện các mặt khác. Một số dữ liệu tổng hợp cũng sẽ hữu ích cho các ứng dụng và đối tác của Google, chẳng hạn như những nhà phát triển Android. Nếu bạn bật mục cài đặt bổ sung Hoạt động trên web và ứng dụng cho con mình thì dữ liệu này có thể được lưu vào Tài khoản Google của trẻ. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Nốt nhạc xanh</translation>
 <translation id="8206859287963243715">Di động</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Đang tải xuống}other{Đang tải xuống}}</translation>
@@ -5759,7 +5753,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8912793549644936705">Kéo dãn</translation>
 <translation id="8912810933860534797">Bật tính năng tự động quét</translation>
-<translation id="891365694296252935">Gửi dữ liệu chẩn đoán và dữ liệu về mức sử dụng. Thiết bị này hiện tự động gửi dữ liệu chẩn đoán, dữ liệu về mức sử dụng ứng dụng và thiết bị cho Google. Những thông tin này sẽ không dùng để nhận dạng con bạn mà giúp tăng độ ổn định của hệ thống và ứng dụng cũng như cải thiện các mặt khác. Một số dữ liệu tổng hợp cũng sẽ hữu ích cho các ứng dụng và đối tác của Google, chẳng hạn như những nhà phát triển Android. Mục cài đặt này do chủ sở hữu thực thi. Nếu bạn bật mục cài đặt bổ sung Hoạt động trên web và ứng dụng cho con mình thì dữ liệu này có thể được lưu vào Tài khoản Google của trẻ. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Đang tải đề xuất</translation>
 <translation id="8916476537757519021">Khung ẩn danh phụ: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Đang xác minh khóa bảo mật...</translation>
@@ -5896,7 +5889,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9101691533782776290">Chạy ứng dụng</translation>
 <translation id="9102610709270966160">Bật tiện ích</translation>
 <translation id="9103868373786083162">Nhấn để quay lại, nhấn menu ngữ cảnh để xem lịch sử</translation>
-<translation id="9104396740804929809">Gửi dữ liệu chẩn đoán và dữ liệu về mức sử dụng. Giúp cải thiện trải nghiệm Android của bạn bằng cách tự động gửi dữ liệu chẩn đoán cũng như dữ liệu về mức sử dụng ứng dụng và thiết bị cho Google. Những thông tin này sẽ giúp tăng độ ổn định của hệ thống và ứng dụng cũng như cải thiện các mặt khác. Một số dữ liệu tổng hợp cũng sẽ hữu ích cho các ứng dụng và đối tác của Google, chẳng hạn như những nhà phát triển Android. Mục cài đặt này do chủ sở hữu thực thi. Chủ sở hữu có thể chọn gửi dữ liệu chẩn đoán và dữ liệu về mức sử dụng của thiết bị này cho Google. Nếu bạn bật mục cài đặt bổ sung Hoạt động trên web và ứng dụng thì dữ liệu này có thể được lưu vào Tài khoản Google của bạn. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Để giải phóng dung lượng, hãy xóa tệp khỏi bộ nhớ thiết bị.</translation>
 <translation id="9109283579179481106">Kết nối với mạng di động</translation>
 <translation id="9111102763498581341">Mở khóa</translation>

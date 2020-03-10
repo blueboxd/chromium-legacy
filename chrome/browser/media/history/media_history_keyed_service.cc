@@ -185,4 +185,10 @@ void MediaHistoryKeyedService::PostTaskToDBForTest(base::OnceClosure callback) {
   store_->GetForRead()->PostTaskToDBForTest(std::move(callback));
 }
 
+void MediaHistoryKeyedService::GetMediaFeedsForDebug(
+    base::OnceCallback<void(std::vector<media_feeds::mojom::MediaFeedPtr>)>
+        callback) {
+  store_->GetForRead()->GetMediaFeedsForDebug(std::move(callback));
+}
+
 }  // namespace media_history

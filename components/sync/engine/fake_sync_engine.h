@@ -77,7 +77,7 @@ class FakeSyncEngine : public SyncEngine {
 
   UserShare* GetUserShare() const override;
 
-  SyncStatus GetDetailedStatus() override;
+  const SyncStatus& GetDetailedStatus() const override;
 
   void HasUnsyncedItemsForTest(
       base::OnceCallback<void(bool)> cb) const override;
@@ -102,6 +102,7 @@ class FakeSyncEngine : public SyncEngine {
  private:
   bool fail_initial_download_ = false;
   bool initialized_ = false;
+  const SyncStatus default_sync_status_;
 };
 
 }  // namespace syncer

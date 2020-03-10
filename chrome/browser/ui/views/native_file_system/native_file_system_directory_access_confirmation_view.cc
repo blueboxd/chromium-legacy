@@ -36,10 +36,11 @@ views::Widget* NativeFileSystemDirectoryAccessConfirmationView::ShowDialog(
     const url::Origin& origin,
     const base::FilePath& path,
     base::OnceCallback<void(permissions::PermissionAction result)> callback,
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    base::ScopedClosureRunner fullscreen_block) {
   auto delegate =
       base::WrapUnique(new NativeFileSystemDirectoryAccessConfirmationView(
-          origin, path, std::move(callback)));
+          origin, path, std::move(callback), std::move(fullscreen_block)));
   return constrained_window::ShowWebModalDialogViews(delegate.release(),
                                                      web_contents);
 }
@@ -78,8 +79,10 @@ NativeFileSystemDirectoryAccessConfirmationView::
     NativeFileSystemDirectoryAccessConfirmationView(
         const url::Origin& origin,
         const base::FilePath& path,
-        base::OnceCallback<void(permissions::PermissionAction result)> callback)
-    : callback_(std::move(callback)) {
+        base::OnceCallback<void(permissions::PermissionAction result)> callback,
+        base::ScopedClosureRunner fullscreen_block)
+    : callback_(std::move(callback)),
+      fullscreen_block_(std::move(fullscreen_block)) {
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
@@ -121,7 +124,9 @@ void ShowNativeFileSystemDirectoryAccessConfirmationDialog(
     const url::Origin& origin,
     const base::FilePath& path,
     base::OnceCallback<void(permissions::PermissionAction result)> callback,
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    base::ScopedClosureRunner fullscreen_block) {
   NativeFileSystemDirectoryAccessConfirmationView::ShowDialog(
-      origin, path, std::move(callback), web_contents);
+      origin, path, std::move(callback), web_contents,
+      std::move(fullscreen_block));
 }

@@ -16,22 +16,10 @@ bool IsolatedPrerenderIsEnabled() {
   return base::FeatureList::IsEnabled(features::kIsolatePrerenders);
 }
 
-base::Optional<GURL> IsolatedPrerenderProxyServer() {
-  if (!base::FeatureList::IsEnabled(features::kIsolatedPrerenderUsesProxy))
-    return base::nullopt;
-
-  GURL url(base::GetFieldTrialParamValueByFeature(
-      features::kIsolatedPrerenderUsesProxy, "proxy_server_url"));
-  if (!url.is_valid() || !url.has_host() || !url.has_scheme())
-    return base::nullopt;
-  return url;
-}
-
 bool IsolatedPrerenderShouldReplaceDataReductionCustomProxy() {
   bool replace =
       data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() &&
-      IsolatedPrerenderIsEnabled() &&
-      IsolatedPrerenderProxyServer().has_value();
+      IsolatedPrerenderIsEnabled();
   // TODO(robertogden): Remove this once all pieces are landed.
   DCHECK(!replace);
   return replace;

@@ -573,8 +573,6 @@
 <translation id="177336675152937177">የተስተናገደ የመተግበሪያ ውሂብ</translation>
 <translation id="1776712937009046120">ተጠቃሚን ያክሉ</translation>
 <translation id="1776883657531386793"><ph name="OID" />፦ <ph name="INFO" /></translation>
-<translation id="1777310661937894236">ይህ መሣሪያ በ<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ነው የሚቀናበረው።
-    ወደ የእርስዎ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> መለያ መግባቱን ለመቀጠል እባክዎ «ቀጣይ»ን ጠቅ ያድርጉ።</translation>
 <translation id="1779652936965200207">እባክዎ ይህን የይለፍ ቁልፍ በ«<ph name="DEVICE_NAME" />» ላይ ያስገቡ፦</translation>
 <translation id="177989070088644880">መተግበሪያ (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">ቡድንን ዝጋ</translation>
@@ -887,7 +885,6 @@
 <translation id="2202898655984161076">አታሚዎችን መዘርዘር ላይ ችግር ነበር። አንዳንድ አታሚዎችዎ በተሳካ ሁኔታ <ph name="CLOUD_PRINT_NAME" /> ላይ አልተመዘገቡም።</translation>
 <translation id="2203682048752833055">በ<ph name="BEGIN_LINK" />አድራሻ አሞሌው<ph name="END_LINK" /> ላይ ሥራ ላይ የዋለው የፍለጋ ፕሮግራም</translation>
 <translation id="2204034823255629767">የሚተይቡትን ማንኛውም ነገር ያነብባል እና ይቀይራል</translation>
-<translation id="220792432208469595">የአጠቃቀም እና የምርመራ ውሂብ ይላኩ። ይህ መሣሪያ በአሁኑ ጊዜ በራስ-ሰር የምርመራ፣ የመሣሪያ እና የመተግበሪያ አጠቃቀም ውሂብ ወደ Google እየላከ ነው። ይህ የስርዓት እና የመተግበሪያ እርጋታን እና ሌሎች ማሻሻያዎችን ያግዛል። አንዳንድ ውሑድ ውሂብ እንዲሁም የGoogle መተግበሪያዎችን እና እንደ የAndroid ገንቢዎች ያሉ አጋሮችን ያግዛሉ። ይህ ቅንብር በባለቤቱ ተፈጻሚ ይደረጋል። የእርስዎ የተጨማሪ ድር እና መተግበሪያ እንቅስቃሴ ቅንብር በርቶ ከሆነ ይህ ውሂብ በGoogle መለያዎ ላይ ሊቀመጥ ይችላል። <ph name="BEGIN_LINK1" />የበለጠ ለመረዳት<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">እባክዎ ይህን የፒን ኮድ በ«<ph name="DEVICE_NAME" />» ላይ ያስገቡት፦</translation>
 <translation id="2212565012507486665">ኩኪዎችን ፍቀድ</translation>
 <translation id="2213140827792212876">ማጋራትን አስወግድ</translation>
@@ -1342,7 +1339,6 @@
 <translation id="2804043232879091219">ተለዋጩ አሳሽ ሊከፈት አይችልም</translation>
 <translation id="2804667941345577550">ክፍት ትሮችን ጨምሮ፣ ከዚህ ጣቢያ ዘግተው እንዲወጡ ይደረጋሉ</translation>
 <translation id="2804680522274557040">ካሜራ ጠፍቷል</translation>
-<translation id="2805539617243680210">በሙሉ ተዘጋጅተዋል!</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">መተግበሪያዎች</translation>
 <translation id="2805770823691782631">ተጨማሪ ዝርዝሮች</translation>
@@ -2020,6 +2016,7 @@
 <translation id="3742055079367172538">ቅጽበታዊ ገጽ እይታ ተነስቷል</translation>
 <translation id="3742666961763734085">ይህ ስም ያለው ድርጅታዊ አሃድ ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="3744111561329211289">የዳራ ስምረት</translation>
+<translation id="3747077776423672805">መተግበሪያዎችን ለማስወገድ ወደ ቅንብሮች &gt; &gt; Google Play መደብር &gt; የAndroid ምርጫዎችን ያስተዳድሩ &gt;መተግበሪያዎች ወይም የመተግበሪያ አስተዳዳሪ ይሂዱ። ከዚያ ለማራገፍ የሚፈልጉትን መተግበሪያ መታ ያድርጉ (መተግበሪያውን ለማግኘት ወደ ቀኝ ወይም ወደ ግራ ማንሸራተት ሊኖርብዎት ይችላል)። ከዚያ አራግፍ ወይም አሰናክል የሚለውን መታ ያድርጉ።</translation>
 <translation id="3748026146096797577">አልተገናኘም</translation>
 <translation id="3752582316358263300">እሺ...</translation>
 <translation id="3752673729237782832">የእኔ መሣሪያዎች</translation>
@@ -2738,7 +2735,6 @@
 <translation id="4785719467058219317">በዚህ ድር ጣቢያ ያልተመዘገበ የደህንነት ቁልፍ እየተጠቀሙ ነው</translation>
 <translation id="4788092183367008521">እባክዎ የአውታረ መረብ ግንኙነትዎን ይፈትሹትና እንደገና ይሞክሩ።</translation>
 <translation id="4792711294155034829">&amp;ችግር ሪፖርት ያድርጉ...</translation>
-<translation id="4795022432560487924">የአጠቃቀም እና የምርመራ ውሂብ ይላኩ። የምርመራ፣ የመሣሪያ እና የመተግበሪያ አጠቃቀም ውሂብ በራስ-ሰር ወደ Google በመላክ የልጅዎን የAndroid ተሞክሮ እንዲሻሻል ያግዙ። ይህ ልጅዎን ለመለየት ስራ ላይ አይውልም፣ እና የስርዓት እና የመተግበሪያ እርጋታን እና ሌሎች ማሻሻያዎችን ያግዛል። አንዳንድ ውሑድ ውሂብ እንዲሁም የGoogle መተግበሪያዎችን እና እንደ የAndroid ገንቢዎች ያሉ አጋሮችን ያግዛሉ። ይህ ቅንብር በባለቤቱ ተፈጻሚ ይደረጋል። ባለቤቱ የዚህ መሣሪያ የምርመራ እና የአጠቃቀም ለGoogle ለመላክ ሊመርጥ ይችላሉ። የተጨማሪ የድር እና መተግበሪያ እንቅስቃሴ ቅንብር ለልጅዎ በርቶ ከሆነ ይህ ውሂብ ወደ የGoogle መለያቸው ሊቀመጥ ይችላል። <ph name="BEGIN_LINK1" />የበለጠ ለመረዳት<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">ድረ-ገጽ፣ ኤች ቲ ኤም ኤል ብቻ</translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />የብሉቱዝ ምዝግብ ማስታወሻ<ph name="END_LINK" />ን ያያይዙ (Google ውስጣዊ)</translation>
 <translation id="4801448226354548035">መለያዎችን ደብቅ</translation>
@@ -3358,6 +3354,7 @@
 <translation id="5649053991847567735">ራስ-ሰር ውርዶች</translation>
 <translation id="5653154844073528838">የተቀመጡ <ph name="PRINTER_COUNT" /> አታሚዎች አልዎት።</translation>
 <translation id="5656845498778518563">ግብረመልስ ወደ Google ይላኩ</translation>
+<translation id="5657156137487675418">ሁሉንም ኩኪዎች ፍቀድ</translation>
 <translation id="5657667036353380798">ውጫዊ ቅጥያው እንዲጫን የchrome ስሪት <ph name="MINIMUM_CHROME_VERSION" /> ወይም ከዚያ በላይ መጫን አለበት።</translation>
 <translation id="5658415415603568799">ለተጨማሪ ደህንነት ሲባል Smart Lock ከ20 ሰዓቶች በኋላ የእርስዎን የይለፍ ቃል እንዲያስገቡ ይጠይቀዎታል።</translation>
 <translation id="5659593005791499971">ኢሜይል</translation>
@@ -3564,7 +3561,6 @@
 <translation id="5941711191222866238">አሳንስ</translation>
 <translation id="5942964813783878922">የእርስዎ <ph name="DEVICE_TYPE" /> ከዚህ ዝማኔ በኋላ እንደገና ይጀምራል። ወደፊት ሶፍትዌር እና ደህንነት ዝማኔዎች በራስሰር ይጫናሉ።</translation>
 <translation id="5944869793365969636">የQR ኮድ ይቃኙ</translation>
-<translation id="5945188205370098537">የአጠቃቀም እና የምርመራ ውሂብ ይላኩ። የምርመራ፣ የመሣሪያ እና የመተግበሪያ አጠቃቀም ውሂብ በራስ-ሰር ወደ በራስ-ሰር ወደ Google በመላክ የAndroid ተሞክሮዎ እንዲሻሻል ያግዙ። ይህ የስርዓት እና የመተግበሪያ እርጋታን እና ሌሎች ማሻሻያዎችን ያግዛል። አንዳንድ ውሑድ ውሂብ እንዲሁም የGoogle መተግበሪያዎችን እና እንደ የAndroid ገንቢዎች ያሉ አጋሮችን ያግዛሉ። የእርስዎ የተጨማሪ ድር እና መተግበሪያ እንቅስቃሴ ቅንብር በርቶ ከሆነ ይህ ውሂብ በGoogle መለያዎ ላይ ሊቀመጥ ይችላል። <ph name="BEGIN_LINK1" />የበለጠ ለመረዳት<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">የሪፖርት መታወቂያ <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">ፋይልን መተንተን አልተቻለም</translation>
 <translation id="5955282598396714173">የእርስዎ የይለፍ ቃል ጊዜው አልፎበታል። ለመቀየር እባክዎ ዘግተው ይውጡና እንደገና ይግቡ።</translation>
@@ -3748,6 +3744,7 @@
 <translation id="6185132558746749656">የመሣሪያ አካባቢ</translation>
 <translation id="6186394685773237175">ምንም የተጠለፈ የይለፍ ቃል አልተገኘም</translation>
 <translation id="6195693561221576702">ይህ መሣሪያ በመስመር ውጭ የቅንጭብ ማሳያ ሁነታ ላይ ሊቀናበር አይችልም።</translation>
+<translation id="6196640612572343990">የሦስተኛ ወገን ኩኪዎችን አግድ</translation>
 <translation id="6196854373336333322">ይህ «<ph name="EXTENSION_NAME" />» ቅጥያ የተኪ ቅንብሮችዎን ተቆጣጥሯል፣ ይሄ ማለት መስመር ላይ የሚያደርጉት ማንኛውም ነገር ሊቀይር፣ ሊሰብር ወይም በድብቅ ሊከታተል ይችላል። ይሄ ለውጥ ለምን እንደተከሰተ እርግጠኛ ካልሆኑ የማይፈልጉት ነገር ሳይሆን አይቀርም።</translation>
 <translation id="6198102561359457428">ዘግተው ይውጡና ከዚያ እንደገና ይግቡ...</translation>
 <translation id="6198252989419008588">ፒን ይቀይሩ</translation>
@@ -4411,7 +4408,6 @@
 <translation id="711902386174337313">በመለያ የገቡ የእርስዎ መሣሪያዎች ዝርዝር ያነብባል</translation>
 <translation id="7120865473764644444">ከስምረት አገልጋዩ ጋር መገናኘት አልተቻለም። ዳግም በመሞከር ላይ...</translation>
 <translation id="7121362699166175603">በአድራሻ አሞሌው ላይ ታሪክን እና ራስ-ማጠናቀቆችን ያጸዳል። የእርስዎ Google መለያ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ አይነቶች ሊኖሩት ይችላል።</translation>
-<translation id="7121389946694989825">የአጠቃቀም እና የምርመራ ውሂብ ይላኩ። ይህ መሣሪያ በአሁኑ ጊዜ በራስ-ሰር የምርመራ፣ የመሣሪያ እና የመተግበሪያ አጠቃቀም ውሂብ ወደ Google እየላከ ነው። ይህ ልጅዎን ለመለየት ስራ ላይ አይውልም፣ እና የስርዓት እና የመተግበሪያ እርጋታን እና ሌሎች ማሻሻያዎችን ያግዛል። አንዳንድ ውሑድ ውሂብ እንዲሁም የGoogle መተግበሪያዎችን እና እንደ የAndroid ገንቢዎች ያሉ አጋሮችን ያግዛሉ። የተጨማሪ የድር እና መተግበሪያ እንቅስቃሴ ቅንብር ለልጅዎ በርቶ ከሆነ ይህ ውሂብ ወደ የGoogle መለያቸው ሊቀመጥ ይችላል። <ph name="BEGIN_LINK1" />የበለጠ ለመረዳት<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">የገንቢ ሁነታ</translation>
 <translation id="7121728544325372695">ዘመናዊ ዳሾች</translation>
 <translation id="7123360114020465152">ከአሁን በኋላ አይደገፍም</translation>
@@ -5198,7 +5194,6 @@ nil</translation>
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{ትር ወደ አዲስ መስኮት ውሰድ}one{ትሮችን ወደ አዲስ መስኮት ውሰድ}other{ትሮችን ወደ አዲስ መስኮት ውሰድ}}</translation>
 <translation id="8179976553408161302">አስገባ</translation>
 <translation id="8180239481735238521">ገፅ</translation>
-<translation id="8180294223783876911">የአጠቃቀም እና የምርመራ ውሂብ ይላኩ። ይህ መሣሪያ በአሁኑ ጊዜ በራስ-ሰር የምርመራ፣ የመሣሪያ እና የመተግበሪያ አጠቃቀም ውሂብ ወደ Google እየላከ ነው። ይህ የስርዓት እና የመተግበሪያ እርጋታን እና ሌሎች ማሻሻያዎችን ያግዛል። አንዳንድ ውሑድ ውሂብ እንዲሁም የGoogle መተግበሪያዎችን እና እንደ የAndroid ገንቢዎች ያሉ አጋሮችን ያግዛሉ። የእርስዎ የተጨማሪ ድር እና መተግበሪያ እንቅስቃሴ ቅንብር በርቶ ከሆነ ይህ ውሂብ በGoogle መለያዎ ላይ ሊቀመጥ ይችላል። <ph name="BEGIN_LINK1" />የበለጠ ለመረዳት<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">«<ph name="EXTENSION" />» ምልክት በተደረገባቸው አካባቢዎች ላይ ያሉ ምስሎችን፣ ቪዲዮ እና የድምጽ ፋይሎችን ማንበብ እና መሰረዝ ይችላል።</translation>
 <translation id="8181215761849004992">ጎራውን መቀላቀል አልተቻለም። መሣሪያዎችን ለማክከል በቂ ልዩ መብቶች ካለዎት ለማረጋገጥ መለያዎን ይመልከቱ።</translation>
 <translation id="8182105986296479640">መተግበሪያ ምላሽ እየሰጠ አይደለም።</translation>
@@ -5220,7 +5215,6 @@ nil</translation>
 <translation id="8203732864715032075">ማሳወቂያዎችን ለእርስዎ ይልካል እና ይህን ኮምፒውተር ለመልዕክቶች በነባሪነት ያስታውሳል። <ph name="LINK_BEGIN" />የበለጠ ለመረዳት<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">«<ph name="APP_NAME" />» በወላጅዎ ታግዷል። ወላጅዎ ይህን መተግበሪያ እንዲጠቀሙ ፈቃድ ይጠይቋቸው።</translation>
 <translation id="820568752112382238">በብዛት የተጎበኙ ጣቢያዎች</translation>
-<translation id="8206581664590136590">የአጠቃቀም እና የምርመራ ውሂብ ይላኩ። የምርመራ፣ የመሣሪያ እና የመተግበሪያ አጠቃቀም ውሂብ በራስ-ሰር ወደ Google በመላክ የልጅዎን የAndroid ተሞክሮ እንዲሻሻል ያግዙ። ይህ ልጅዎን ለመለየት ስራ ላይ አይውልም፣ እና የስርዓት እና የመተግበሪያ እርጋታን እና ሌሎች ማሻሻያዎችን ያግዛል። አንዳንድ ውሑድ ውሂብ እንዲሁም የGoogle መተግበሪያዎችን እና እንደ የAndroid ገንቢዎች ያሉ አጋሮችን ያግዛሉ። የተጨማሪ የድር እና መተግበሪያ እንቅስቃሴ ቅንብር ለልጅዎ በርቶ ከሆነ ይህ ውሂብ ወደ የGoogle መለያቸው ሊቀመጥ ይችላል። <ph name="BEGIN_LINK1" />የበለጠ ለመረዳት<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Bluesy</translation>
 <translation id="8206859287963243715">ሴሉላር</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{ማውረድ በሂደት ላይ ነው}one{ውርዶች በሂደት ላይ ናቸው}other{ውርዶች በሂደት ላይ ናቸው}}</translation>
@@ -5760,7 +5754,6 @@ nil</translation>
 <translation id="8912362522468806198">የGoogle መለያ</translation>
 <translation id="8912793549644936705">ወጥር</translation>
 <translation id="8912810933860534797">ራስ-ቃኝን አንቃ</translation>
-<translation id="891365694296252935">የአጠቃቀም እና የምርመራ ውሂብ ይላኩ። ይህ መሣሪያ በአሁኑ ጊዜ በራስ-ሰር የምርመራ፣ የመሣሪያ እና የመተግበሪያ አጠቃቀም ውሂብ ወደ Google እየላከ ነው። ይህ ልጅዎን ለመለየት ስራ ላይ አይውልም፣ እና የስርዓት እና የመተግበሪያ እርጋታን እና ሌሎች ማሻሻያዎችን ያግዛል። አንዳንድ ውሑድ ውሂብ እንዲሁም የGoogle መተግበሪያዎችን እና እንደ የAndroid ገንቢዎች ያሉ አጋሮችን ያግዛሉ። ይህ ቅንብር በባለቤቱ ተፈጻሚ ይደረጋል። የተጨማሪ ድር እና መተግበሪያ እንቅስቃሴ ለልጅዎ በርቶ ከሆነ ይህ ውሂብ አሁን በGoogle መለያቸው ላይ ሊቀመጥ ይችላል። <ph name="BEGIN_LINK1" />የበለጠ ለመረዳት<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">የጥቆማ አስተያየት በመጫን ላይ</translation>
 <translation id="8916476537757519021">ማንነት የማያሳውቅ ንዑስ ክፈፍ፦ <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">የደህንነት ቁልፍዎን በማረጋገጥ ላይ...</translation>
@@ -5897,7 +5890,6 @@ nil</translation>
 <translation id="9101691533782776290">መተግበሪያ አስጀምር</translation>
 <translation id="9102610709270966160">ቅጥያውን አንቃ</translation>
 <translation id="9103868373786083162">ለመመለስ ይጫኑ፣ ታሪክን ለማየት የአውድ ምናሌ</translation>
-<translation id="9104396740804929809">የአጠቃቀም እና የምርመራ ውሂብ ይላኩ። የምርመራ፣ የመሣሪያ እና የመተግበሪያ አጠቃቀም ውሂብ በራስ-ሰር ወደ በራስ-ሰር ወደ Google በመላክ የAndroid ተሞክሮዎ እንዲሻሻል ያግዙ። ይህ የስርዓት እና የመተግበሪያ እርጋታን እና ሌሎች ማሻሻያዎችን ያግዛል። አንዳንድ ውሑድ ውሂብ እንዲሁም የGoogle መተግበሪያዎችን እና እንደ የAndroid ገንቢዎች ያሉ አጋሮችን ያግዛሉ። ይህ ቅንብር በባለቤቱ ተፈጻሚ ይደረጋል። ባለቤቱ የዚህ መሣሪያ የምርመራ እና የአጠቃቀም ለGoogle ለመላክ ሊመርጥ ይችላሉ። የእርስዎ የተጨማሪ ድር እና መተግበሪያ እንቅስቃሴ ቅንብር በርቶ ከሆነ ይህ ውሂብ በGoogle መለያዎ ላይ ሊቀመጥ ይችላል። <ph name="BEGIN_LINK1" />የበለጠ ለመረዳት<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">ባዶ ቦታ ለማስለቀቅ ከመሣሪያ ማከማቻ ፋይሎችን ይሰርዙ።</translation>
 <translation id="9109283579179481106">ወደ ሞባይል አውታረመረብ ያገናኙ</translation>
 <translation id="9111102763498581341">ክፈት</translation>

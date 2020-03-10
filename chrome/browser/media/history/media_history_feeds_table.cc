@@ -74,4 +74,29 @@ bool MediaHistoryFeedsTable::SaveFeed(const GURL& url) {
   return statement.Run();
 }
 
+std::vector<media_feeds::mojom::MediaFeedPtr>
+MediaHistoryFeedsTable::GetRows() {
+  std::vector<media_feeds::mojom::MediaFeedPtr> feeds;
+  if (!CanAccessDatabase())
+    return feeds;
+
+  sql::Statement statement(
+      DB()->GetUniqueStatement(base::StringPrintf("SELECT id, url "
+                                                  "FROM %s",
+                                                  kTableName)
+                                   .c_str()));
+
+  while (statement.Step()) {
+    media_feeds::mojom::MediaFeedPtr feed(media_feeds::mojom::MediaFeed::New());
+
+    feed->id = statement.ColumnInt64(0);
+    feed->url = GURL(statement.ColumnString(1));
+
+    feeds.push_back(std::move(feed));
+  }
+
+  DCHECK(statement.Succeeded());
+  return feeds;
+}
+
 }  // namespace media_history

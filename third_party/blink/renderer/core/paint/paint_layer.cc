@@ -2534,7 +2534,7 @@ PaintLayer* PaintLayer::HitTestChildren(
 }
 
 void PaintLayer::UpdateFilterReferenceBox() {
-  if (!NeedsFilterReferenceBox())
+  if (!HasFilterThatMovesPixels())
     return;
   FloatRect reference_box =
       FloatRect(PhysicalBoundingBoxIncludingStackingChildren(
@@ -2546,16 +2546,6 @@ void PaintLayer::UpdateFilterReferenceBox() {
   if (!ResourceInfo() || ResourceInfo()->FilterReferenceBox() != reference_box)
     GetLayoutObject().SetNeedsPaintPropertyUpdate();
   EnsureResourceInfo().SetFilterReferenceBox(reference_box);
-}
-
-bool PaintLayer::NeedsFilterReferenceBox() const {
-  if (GetLayoutObject().HasReflection() && GetLayoutObject().IsBox())
-    return true;
-  FilterOperations operations = GetLayoutObject().StyleRef().Filter();
-  if (operations.HasBlurOrReferenceFilter())
-    return true;
-  operations = GetLayoutObject().StyleRef().BackdropFilter();
-  return !operations.IsEmpty();
 }
 
 FloatRect PaintLayer::FilterReferenceBox() const {
@@ -3485,7 +3475,7 @@ bool PaintLayer::HasFilterThatMovesPixels() const {
   const ComputedStyle& style = GetLayoutObject().StyleRef();
   if (style.HasFilter() && style.Filter().HasFilterThatMovesPixels())
     return true;
-  if (style.HasBoxReflect())
+  if (GetLayoutObject().HasReflection())
     return true;
   return false;
 }

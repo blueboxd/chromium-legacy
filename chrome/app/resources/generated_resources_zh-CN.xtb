@@ -570,8 +570,6 @@
 <translation id="177336675152937177">托管应用数据</translation>
 <translation id="1776712937009046120">添加用户</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">此设备由 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 管理。
-    请点击“下一步”，以继续使用您的 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 帐号登录。</translation>
 <translation id="1779652936965200207">请在“<ph name="DEVICE_NAME" />”上输入此匹配密钥：</translation>
 <translation id="177989070088644880">应用 (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">关闭群组</translation>
@@ -884,7 +882,6 @@
 <translation id="2202898655984161076">列出打印机时发生问题。您的某些打印机可能尚未成功使用“<ph name="CLOUD_PRINT_NAME" />”进行注册。</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />地址栏<ph name="END_LINK" />中使用的搜索引擎</translation>
 <translation id="2204034823255629767">读取和更改您输入的任何内容</translation>
-<translation id="220792432208469595">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。这项设置是由此设备的所有者强制指定的。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">请在“<ph name="DEVICE_NAME" />”上输入此 PIN 码：</translation>
 <translation id="2212565012507486665">允许使用 Cookie</translation>
 <translation id="2213140827792212876">停止共享</translation>
@@ -1339,7 +1336,6 @@
 <translation id="2804043232879091219">无法打开替代浏览器</translation>
 <translation id="2804667941345577550">您将会自动退出这个网站（包括打开的标签页）</translation>
 <translation id="2804680522274557040">摄像头已关闭</translation>
-<translation id="2805539617243680210">您已设置完毕！</translation>
 <translation id="2805646850212350655">Microsoft 加密文件系统</translation>
 <translation id="2805756323405976993">应用</translation>
 <translation id="2805770823691782631">更多详情</translation>
@@ -2017,6 +2013,7 @@
 <translation id="3742055079367172538">已完成屏幕截图</translation>
 <translation id="3742666961763734085">找不到使用该名称的组织单元。请重试。</translation>
 <translation id="3744111561329211289">后台同步</translation>
+<translation id="3747077776423672805">要想卸载应用，请依次转到“设置”&gt;“Google Play 商店”&gt;“管理 Android 偏好设置”&gt;“应用”或“应用管理器”，点按您要卸载的应用（您可能需要左右滑动才能找到相应的应用），然后点按“卸载”或“停用”。</translation>
 <translation id="3748026146096797577">未建立连接</translation>
 <translation id="3752582316358263300">确定...</translation>
 <translation id="3752673729237782832">我的设备</translation>
@@ -2736,7 +2733,6 @@
 <translation id="4785719467058219317">您使用的安全密钥尚未在此网站注册</translation>
 <translation id="4788092183367008521">请检查您的网络连接，然后重试。</translation>
 <translation id="4792711294155034829">报告问题(&amp;R)...</translation>
-<translation id="4795022432560487924">发送使用情况数据和诊断数据。通过自动向 Google 发送诊断数据、设备数据和应用使用情况数据，帮助改善您孩子的 Android 使用体验。这些数据不会被用来辨识您孩子的身份，而是会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。这项设置是由此设备的所有者强制指定的。此设备的所有者可以选择向 Google 发送此设备的诊断数据和使用情况数据。如果您已为孩子开启“其他网络与应用活动记录”设置，这些数据可能会被保存到其 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">网页，仅 HTML</translation>
 <translation id="4798236378408895261">附加<ph name="BEGIN_LINK" />蓝牙日志<ph name="END_LINK" />（Google 内部使用）</translation>
 <translation id="4801448226354548035">隐藏帐号</translation>
@@ -3356,6 +3352,7 @@
 <translation id="5649053991847567735">自动下载项</translation>
 <translation id="5653154844073528838">您有 <ph name="PRINTER_COUNT" /> 台已保存的打印机。</translation>
 <translation id="5656845498778518563">向 Google 发送反馈</translation>
+<translation id="5657156137487675418">允许所有 Cookie</translation>
 <translation id="5657667036353380798">该外部扩展程序需要安装 <ph name="MINIMUM_CHROME_VERSION" /> 或更高版本的 Chrome。</translation>
 <translation id="5658415415603568799">为了提升安全性，Smart Lock 会在 20 小时后要求您输入您的密码。</translation>
 <translation id="5659593005791499971">电子邮件</translation>
@@ -3562,7 +3559,6 @@
 <translation id="5941711191222866238">最小化</translation>
 <translation id="5942964813783878922">安装此更新之后，您的 <ph name="DEVICE_TYPE" /> 将会重启。后续的软件更新和安全更新将会自动安装。</translation>
 <translation id="5944869793365969636">扫描二维码</translation>
-<translation id="5945188205370098537">发送使用情况数据和诊断数据。通过自动向 Google 发送诊断数据、设备数据和应用使用情况数据，帮助改善您的 Android 使用体验。这些数据会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">报告ID：<ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">无法解析文件</translation>
 <translation id="5955282598396714173">您的密码已过期。请退出并重新登录以更改密码。</translation>
@@ -3746,6 +3742,7 @@
 <translation id="6185132558746749656">设备位置</translation>
 <translation id="6186394685773237175">未发现任何已泄露的密码</translation>
 <translation id="6195693561221576702">无法在此设备上设置离线演示模式。</translation>
+<translation id="6196640612572343990">阻止第三方 Cookie</translation>
 <translation id="6196854373336333322">“<ph name="EXTENSION_NAME" />”扩展程序控制了您的代理设置，也就是说，它可以更改、中断或窃听您在网上执行的任何操作。如果您不确定出现这种变化的原因，那么这种变化可能并不是您所希望的。</translation>
 <translation id="6198102561359457428">退出后重新登录...</translation>
 <translation id="6198252989419008588">更改 PIN</translation>
@@ -4409,7 +4406,6 @@
 <translation id="711902386174337313">读取您登录过的设备的列表</translation>
 <translation id="7120865473764644444">无法连接到同步服务器。正在重试…</translation>
 <translation id="7121362699166175603">清除历史记录和地址栏中的自动填充项。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
-<translation id="7121389946694989825">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据不会被用来辨识您孩子的身份，而是会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。如果您已为孩子开启“其他网络与应用活动记录”设置，这些数据可能会被保存到其 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">开发者模式</translation>
 <translation id="7121728544325372695">智能破折号</translation>
 <translation id="7123360114020465152">已不再受支持</translation>
@@ -5191,7 +5187,6 @@
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{将标签页移至新窗口}other{将标签页移至新窗口}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">页</translation>
-<translation id="8180294223783876911">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">“<ph name="EXTENSION" />”可以读取及删除选中位置的图片、视频及音频文件。</translation>
 <translation id="8181215761849004992">无法加入到该网域中。请检查您的帐号以了解您是否有足够的权限来添加设备。</translation>
 <translation id="8182105986296479640">应用无响应。</translation>
@@ -5213,7 +5208,6 @@
 <translation id="8203732864715032075">向您发送通知，并默认记住这台计算机以便在您收到短信时向其发送通知。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">“<ph name="APP_NAME" />”已被您的家长禁用。请让您的家长授权您使用此应用。</translation>
 <translation id="820568752112382238">最常访问的网站</translation>
-<translation id="8206581664590136590">发送使用情况数据和诊断数据。通过自动向 Google 发送诊断数据、设备数据和应用使用情况数据，帮助改善您孩子的 Android 使用体验。这些数据不会被用来辨识您孩子的身份，而是会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。如果您已为孩子开启“其他网络与应用活动记录”设置，这些数据可能会被保存到其 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">音符</translation>
 <translation id="8206859287963243715">蜂窝网络设备</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{有 1 项下载正在进行中}other{有多项下载正在进行中}}</translation>
@@ -5753,7 +5747,6 @@
 <translation id="8912362522468806198">Google 帐号</translation>
 <translation id="8912793549644936705">拉伸</translation>
 <translation id="8912810933860534797">启用自动扫描</translation>
-<translation id="891365694296252935">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据不会被用来辨识您孩子的身份，而是会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。这项设置是由此设备的所有者强制指定的。如果您已为孩子开启“其他网络与应用活动记录”设置，这些数据可能会被保存到其 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">正在加载建议</translation>
 <translation id="8916476537757519021">隐身辅助框架：<ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">正在验证您的安全密钥…</translation>
@@ -5890,7 +5883,6 @@
 <translation id="9101691533782776290">启动应用</translation>
 <translation id="9102610709270966160">启用扩展程序</translation>
 <translation id="9103868373786083162">点按该按钮可后退，点按上下文菜单可查看历史记录</translation>
-<translation id="9104396740804929809">发送使用情况数据和诊断数据。通过自动向 Google 发送诊断数据、设备数据和应用使用情况数据，帮助改善您的 Android 使用体验。这些数据会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。这项设置是由此设备的所有者强制指定的。此设备的所有者可以选择向 Google 发送此设备的诊断数据和使用情况数据。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">要释放空间，请将文件从设备存储空间中删除。</translation>
 <translation id="9109283579179481106">连接到移动网络</translation>
 <translation id="9111102763498581341">解锁</translation>

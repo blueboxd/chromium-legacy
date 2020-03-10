@@ -853,20 +853,6 @@ void RenderViewHostImpl::RenderWidgetDidClose() {
   ClosePageIgnoringUnloadEvents();
 }
 
-void RenderViewHostImpl::CreateNewWidget(
-    int32_t widget_route_id,
-    mojo::PendingRemote<mojom::Widget> widget) {
-  delegate_->CreateNewWidget(GetProcess()->GetID(), widget_route_id,
-                             std::move(widget), this);
-}
-
-void RenderViewHostImpl::CreateNewFullscreenWidget(
-    int32_t widget_route_id,
-    mojo::PendingRemote<mojom::Widget> widget) {
-  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), widget_route_id,
-                                       std::move(widget), this);
-}
-
 void RenderViewHostImpl::OnShowWidget(int widget_route_id,
                                       const gfx::Rect& initial_rect) {
   delegate_->ShowCreatedWidget(GetProcess()->GetID(), widget_route_id,

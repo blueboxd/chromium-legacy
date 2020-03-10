@@ -987,9 +987,34 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ALLOWED_RECOMMENDED" desc="Summary text explaining that a permission is allowed, which is the recommended setting.">
         Allowed (recommended)
       </message>
+
+      <!-- Cookie settings strings. -->
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOWED" desc="Summary text explaining that sites are allowed to use cookies and that it is the recommended setting.">
         Allow sites to save and read cookie data (recommended)
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOW_TITLE" desc="Text used to explain the allow cookies option in settings">
+        Allow cookies
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_BLOCK_THIRD_PARTY_INCOGNITO_TITLE" desc="Text used to explain the block third-party cookies in incognito option in settings">
+        Block third-party cookies in Incognito
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_BLOCK_THIRD_PARTY_TITLE" desc="Text used to explain the block third-party cookies option in settings">
+        Block third-party cookies
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_BLOCK_TITLE" desc="Text used to explain the block cookies option in settings">
+        Block all cookies (not recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOW_ADDITION" desc="Additional text used to explain the allow cookies option in settings">
+        Sites will work normally
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_BLOCK_THIRD_PARTY_ADDITION" desc="Additional text used to explain the block third-party cookies option in settings">
+        Features on some sites may break
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_BLOCK_ADDITION" desc="Additional text used to explain the block cookies option in settings">
+        Features on many sites may break
+      </message>
+
+
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_JAVASCRIPT_ALLOWED" desc="Summary text explaining that sites are allowed to run Javascript and that it is the recommended setting.">
         Allow sites to run JavaScript (recommended)
       </message>
@@ -4047,6 +4072,10 @@ Only you can see what your camera is looking at. The site can't see your camera'
 
       <message name="IDS_QR_CODE_NOT_A_URL_LABEL" desc="Text on toast on QR code scanning tab indicating that the QR Code does not correspond to a URL and can not be opened.">
         This QR Code is not a URL: <ph name="QrCodeValue">%1$s<ex>QR Code Text</ex></ph>
+      </message>
+
+      <message name="IDS_QR_CODE_FILENAME_PREFIX" desc="File name prefix for downloaded qrcode that is followed by timestamp.">
+        chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS">%1$s<ex>1582667748515</ex></ph>
       </message>
 
       <!-- Chime DFM module strings -->

@@ -13,9 +13,6 @@
 // Returns true if the Isolated Prerender feature is enabled.
 bool IsolatedPrerenderIsEnabled();
 
-// Returns the URL of the proxy server to use in isolated prerenders, if any.
-base::Optional<GURL> IsolatedPrerenderProxyServer();
-
 // Returns true if the proxy for Isolated Prerenders should replace the DRP
 // custom proxy.
 bool IsolatedPrerenderShouldReplaceDataReductionCustomProxy();

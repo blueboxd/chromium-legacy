@@ -65,7 +65,8 @@ class IsolatedPrerenderProxyConfiguratorTest : public testing::Test {
   }
 
   void VerifyLatestProxyConfig(const GURL& proxy_url,
-                               const net::HttpRequestHeaders& headers) {
+                               const net::HttpRequestHeaders& headers,
+                               bool want_empty = false) {
     auto config = LatestProxyConfig();
     ASSERT_TRUE(config);
 
@@ -83,8 +84,12 @@ class IsolatedPrerenderProxyConfiguratorTest : public testing::Test {
     EXPECT_EQ(config->rules.proxies_for_http.size(), 0U);
     EXPECT_EQ(config->rules.proxies_for_ftp.size(), 0U);
 
-    ASSERT_EQ(config->rules.proxies_for_https.size(), 1U);
-    EXPECT_EQ(GURL(config->rules.proxies_for_https.Get().ToURI()), proxy_url);
+    if (want_empty) {
+      EXPECT_EQ(config->rules.proxies_for_https.size(), 0U);
+    } else {
+      ASSERT_EQ(config->rules.proxies_for_https.size(), 1U);
+      EXPECT_EQ(GURL(config->rules.proxies_for_https.Get().ToURI()), proxy_url);
+    }
   }
 
   IsolatedPrerenderProxyConfigurator* configurator() {
@@ -97,10 +102,10 @@ class IsolatedPrerenderProxyConfiguratorTest : public testing::Test {
   std::unique_ptr<TestCustomProxyConfigClient> config_client_;
 };
 
-TEST_F(IsolatedPrerenderProxyConfiguratorTest, BothFeaturesOff) {
+TEST_F(IsolatedPrerenderProxyConfiguratorTest, FeaturesOff) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {}, {features::kIsolatedPrerenderUsesProxy,
+      {}, {features::kIsolatePrerenders,
            data_reduction_proxy::features::kDataReductionProxyHoldback});
 
   configurator()->UpdateCustomProxyConfig();
@@ -111,7 +116,7 @@ TEST_F(IsolatedPrerenderProxyConfiguratorTest, BothFeaturesOff) {
 TEST_F(IsolatedPrerenderProxyConfiguratorTest, DRPFeatureOff) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kIsolatedPrerenderUsesProxy},
+      {features::kIsolatePrerenders},
       {data_reduction_proxy::features::kDataReductionProxyHoldback});
 
   configurator()->UpdateCustomProxyConfig();
@@ -120,11 +125,11 @@ TEST_F(IsolatedPrerenderProxyConfiguratorTest, DRPFeatureOff) {
   EXPECT_FALSE(LatestProxyConfig());
 }
 
-TEST_F(IsolatedPrerenderProxyConfiguratorTest, ProxyFeatureOff) {
+TEST_F(IsolatedPrerenderProxyConfiguratorTest, PrefetchFeatureOff) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {data_reduction_proxy::features::kDataReductionProxyHoldback},
-      {features::kIsolatedPrerenderUsesProxy});
+      {features::kIsolatePrerenders});
 
   configurator()->UpdateCustomProxyConfig();
   base::RunLoop().RunUntilIdle();
@@ -132,64 +137,48 @@ TEST_F(IsolatedPrerenderProxyConfiguratorTest, ProxyFeatureOff) {
   EXPECT_FALSE(LatestProxyConfig());
 }
 
-TEST_F(IsolatedPrerenderProxyConfiguratorTest, NoProxyServer) {
-  base::test::ScopedFeatureList drp_scoped_feature_list;
-  drp_scoped_feature_list.InitAndEnableFeature(
-      data_reduction_proxy::features::kDataReductionProxyHoldback);
+TEST_F(IsolatedPrerenderProxyConfiguratorTest, NoProxyServers) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kIsolatePrerenders,
+       data_reduction_proxy::features::kDataReductionProxyHoldback},
+      {});
 
-  base::test::ScopedFeatureList proxy_scoped_feature_list;
-  proxy_scoped_feature_list.InitAndEnableFeature(
-      features::kIsolatedPrerenderUsesProxy);
-
-  configurator()->UpdateCustomProxyConfig();
+  configurator()->UpdateProxyHosts({});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(LatestProxyConfig());
 }
 
-TEST_F(IsolatedPrerenderProxyConfiguratorTest, InvalidProxyServerURL_NoScheme) {
-  base::test::ScopedFeatureList drp_scoped_feature_list;
-  drp_scoped_feature_list.InitAndEnableFeature(
-      data_reduction_proxy::features::kDataReductionProxyHoldback);
+TEST_F(IsolatedPrerenderProxyConfiguratorTest, ClearProxyServers) {
+  GURL proxy_url("https://proxy.com");
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kIsolatePrerenders,
+       data_reduction_proxy::features::kDataReductionProxyHoldback},
+      {});
 
-  base::test::ScopedFeatureList proxy_scoped_feature_list;
-  proxy_scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kIsolatedPrerenderUsesProxy, {{"proxy_server_url", "invalid"}});
-
-  configurator()->UpdateCustomProxyConfig();
+  configurator()->UpdateProxyHosts({proxy_url});
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(LatestProxyConfig());
-}
+  net::HttpRequestHeaders headers;
+  VerifyLatestProxyConfig(proxy_url, headers);
 
-TEST_F(IsolatedPrerenderProxyConfiguratorTest, InvalidProxyServerURL_NoHost) {
-  base::test::ScopedFeatureList drp_scoped_feature_list;
-  drp_scoped_feature_list.InitAndEnableFeature(
-      data_reduction_proxy::features::kDataReductionProxyHoldback);
-
-  base::test::ScopedFeatureList proxy_scoped_feature_list;
-  proxy_scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kIsolatedPrerenderUsesProxy,
-      {{"proxy_server_url", "https://"}});
-
-  configurator()->UpdateCustomProxyConfig();
+  configurator()->UpdateProxyHosts({});
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(LatestProxyConfig());
+  VerifyLatestProxyConfig(GURL(), headers, /*want_empty=*/true);
 }
 
 TEST_F(IsolatedPrerenderProxyConfiguratorTest, ValidProxyServerURL) {
   GURL proxy_url("https://proxy.com");
-  base::test::ScopedFeatureList drp_scoped_feature_list;
-  drp_scoped_feature_list.InitAndEnableFeature(
-      data_reduction_proxy::features::kDataReductionProxyHoldback);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kIsolatePrerenders,
+       data_reduction_proxy::features::kDataReductionProxyHoldback},
+      {});
 
-  base::test::ScopedFeatureList proxy_scoped_feature_list;
-  proxy_scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kIsolatedPrerenderUsesProxy,
-      {{"proxy_server_url", proxy_url.spec()}});
-
-  configurator()->UpdateCustomProxyConfig();
+  configurator()->UpdateProxyHosts({proxy_url});
   base::RunLoop().RunUntilIdle();
 
   net::HttpRequestHeaders headers;
@@ -198,18 +187,16 @@ TEST_F(IsolatedPrerenderProxyConfiguratorTest, ValidProxyServerURL) {
 
 TEST_F(IsolatedPrerenderProxyConfiguratorTest, ValidProxyServerURLWithHeaders) {
   GURL proxy_url("https://proxy.com");
-  base::test::ScopedFeatureList drp_scoped_feature_list;
-  drp_scoped_feature_list.InitAndEnableFeature(
-      data_reduction_proxy::features::kDataReductionProxyHoldback);
-
-  base::test::ScopedFeatureList proxy_scoped_feature_list;
-  proxy_scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kIsolatedPrerenderUsesProxy,
-      {{"proxy_server_url", proxy_url.spec()}});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kIsolatePrerenders,
+       data_reduction_proxy::features::kDataReductionProxyHoldback},
+      {});
 
   net::HttpRequestHeaders headers;
   headers.SetHeader("X-Testing", "Hello World");
   configurator()->UpdateTunnelHeaders(headers);
+  configurator()->UpdateProxyHosts({proxy_url});
 
   base::RunLoop().RunUntilIdle();
   VerifyLatestProxyConfig(proxy_url, headers);

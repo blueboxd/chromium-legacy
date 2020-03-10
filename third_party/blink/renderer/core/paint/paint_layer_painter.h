@@ -106,8 +106,6 @@ class CORE_EXPORT PaintLayerPainter {
                            const ClipRect&,
                            const DisplayItemClient&);
 
-  void PaintEmptyContentForFilters(GraphicsContext&);
-
   void AdjustForPaintProperties(const GraphicsContext&,
                                 PaintLayerPaintingInfo&,
                                 PaintLayerFlags&);

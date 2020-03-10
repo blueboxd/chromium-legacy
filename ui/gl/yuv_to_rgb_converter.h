@@ -40,6 +40,7 @@ class YUVToRGBConverter {
   unsigned y_texture_ = 0;
   unsigned uv_texture_ = 0;
   unsigned vertex_array_object_ = 0;
+  unsigned source_texture_target_ = 0;
 };
 
 }  // namespace gl

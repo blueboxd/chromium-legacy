@@ -442,9 +442,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       local_painting_info.GetGlobalPaintFlags() & kGlobalPaintSelectionOnly;
 
   {  // Begin block for the lifetime of any filter.
-    size_t display_item_list_size_before_painting =
-        context.GetPaintController().NewDisplayItemList().size();
-
     bool is_painting_root_layer = (&paint_layer_) == painting_info.root_layer;
     bool should_paint_background =
         should_paint_content && !selection_only &&
@@ -520,19 +517,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       // video controls.
       PaintSelfOutlineForFragments(layer_fragments, context,
                                    local_painting_info, paint_flags);
-    }
-
-    if (!is_painting_overlay_overflow_controls) {
-      // For filters, if the layer painted nothing, we need to issue a no-op
-      // display item to ensure the filters won't be ignored. For backdrop
-      // filters, we issue the display item regardless of other paintings to
-      // ensure correct bounds of the composited layer for the backdrop filter.
-      if ((paint_layer_.PaintsWithFilters() &&
-           display_item_list_size_before_painting ==
-               context.GetPaintController().NewDisplayItemList().size()) ||
-          paint_layer_.GetLayoutObject().HasBackdropFilter()) {
-        PaintEmptyContentForFilters(context);
-      }
     }
   }  // FilterPainter block
 
@@ -851,23 +835,6 @@ void PaintLayerPainter::FillMaskingFragment(GraphicsContext& context,
   DrawingRecorder recorder(context, client, DisplayItem::kClippingMask);
   IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
   context.FillRect(snapped_clip_rect, Color::kBlack);
-}
-
-// Generate a no-op DrawingDisplayItem to ensure a non-empty chunk for the
-// filter without content.
-void PaintLayerPainter::PaintEmptyContentForFilters(GraphicsContext& context) {
-  DCHECK(paint_layer_.PaintsWithFilters() ||
-         paint_layer_.GetLayoutObject().HasBackdropFilter());
-
-  ScopedPaintChunkProperties paint_chunk_properties(
-      context.GetPaintController(),
-      paint_layer_.GetLayoutObject().FirstFragment().LocalBorderBoxProperties(),
-      paint_layer_, DisplayItem::kEmptyContentForFilters);
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, paint_layer_, DisplayItem::kEmptyContentForFilters))
-    return;
-  DrawingRecorder recorder(context, paint_layer_,
-                           DisplayItem::kEmptyContentForFilters);
 }
 
 }  // namespace blink

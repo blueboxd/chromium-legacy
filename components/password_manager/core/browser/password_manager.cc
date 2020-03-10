@@ -200,6 +200,7 @@ void PasswordManager::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterDoublePref(prefs::kLastTimeObsoleteHttpCredentialsRemoved,
                                0.0);
+  registry->RegisterDoublePref(prefs::kLastTimePasswordCheckCompleted, 0.0);
   registry->RegisterIntegerPref(
       prefs::kPasswordManagerOnboardingState,
       static_cast<int>(metrics_util::OnboardingState::kDoNotShow));

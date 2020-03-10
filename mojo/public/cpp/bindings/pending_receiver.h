@@ -5,9 +5,11 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_PENDING_RECEIVER_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_PENDING_RECEIVER_H_
 
+#include <type_traits>
 #include <utility>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
@@ -16,6 +18,9 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
+
+template <typename T>
+struct PendingReceiverConverter;
 
 // A PendingReceiver receives and accumulates a queue of incoming Interface
 // method calls made by a single corresponding Remote. PendingReceiver instances
@@ -56,6 +61,21 @@ class PendingReceiver {
   // Constructs a valid PendingReceiver from a valid raw message pipe handle.
   explicit PendingReceiver(ScopedMessagePipeHandle pipe)
       : state_(std::move(pipe)) {}
+
+  // Disabled on NaCl since it crashes old version of clang.
+#if !defined(OS_NACL)
+  // Move conversion operator for custom receiver types. Only participates in
+  // overload resolution if a typesafe conversion is supported.
+  template <
+      typename T,
+      std::enable_if_t<std::is_same<
+          PendingReceiver<Interface>,
+          std::result_of_t<decltype (&PendingReceiverConverter<T>::template To<
+                                     Interface>)(T&&)>>::value>* = nullptr>
+  PendingReceiver(T&& other)
+      : PendingReceiver(PendingReceiverConverter<T>::template To<Interface>(
+            std::move(other))) {}
+#endif  // !defined(OS_NACL)
 
   ~PendingReceiver() = default;
 

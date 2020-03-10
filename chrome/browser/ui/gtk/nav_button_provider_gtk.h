@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/component_export.h"
-#include "chrome/browser/ui/frame_button_display_types.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/linux_ui/nav_button_provider.h"
@@ -23,18 +22,19 @@ class COMPONENT_EXPORT(GTK) NavButtonProviderGtk
 
   // views::NavButtonProvider:
   void RedrawImages(int top_area_height, bool maximized, bool active) override;
-  gfx::ImageSkia GetImage(chrome::FrameButtonDisplayType type,
+  gfx::ImageSkia GetImage(views::NavButtonProvider::FrameButtonDisplayType type,
                           views::Button::ButtonState state) const override;
   gfx::Insets GetNavButtonMargin(
-      chrome::FrameButtonDisplayType type) const override;
+      views::NavButtonProvider::FrameButtonDisplayType type) const override;
   gfx::Insets GetTopAreaSpacing() const override;
   int GetInterNavButtonSpacing() const override;
 
  private:
-  std::map<chrome::FrameButtonDisplayType,
+  std::map<views::NavButtonProvider::FrameButtonDisplayType,
            gfx::ImageSkia[views::Button::STATE_COUNT]>
       button_images_;
-  std::map<chrome::FrameButtonDisplayType, gfx::Insets> button_margins_;
+  std::map<views::NavButtonProvider::FrameButtonDisplayType, gfx::Insets>
+      button_margins_;
   gfx::Insets top_area_spacing_;
   int inter_button_spacing_;
 };

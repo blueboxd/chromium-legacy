@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -29,6 +31,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -43,6 +46,8 @@ using autofill::UserInfo;
 using autofill::mojom::FocusedFieldType;
 using password_manager::CredentialCache;
 using password_manager::UiCredential;
+using BlacklistedStatus =
+    password_manager::OriginCredentialStore::BlacklistedStatus;
 using FillingSource = ManualFillingController::FillingSource;
 using IsPslMatch = autofill::UserInfo::IsPslMatch;
 
@@ -251,12 +256,26 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
       manage_passwords_title, autofill::AccessoryAction::MANAGE_PASSWORDS));
 
   bool has_suggestions = !info_to_add.empty();
+  AccessorySheetData data = autofill::CreateAccessorySheetData(
+      autofill::AccessoryTabType::PASSWORDS, GetTitle(has_suggestions, origin),
+      std::move(info_to_add), std::move(footer_commands_to_add));
 
-  GetManualFillingController()->RefreshSuggestions(
-      autofill::CreateAccessorySheetData(autofill::AccessoryTabType::PASSWORDS,
-                                         GetTitle(has_suggestions, origin),
-                                         std::move(info_to_add),
-                                         std::move(footer_commands_to_add)));
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kRecoverFromNeverSaveAndroid) &&
+      is_password_field) {
+    BlacklistedStatus blacklisted_status =
+        credential_cache_->GetCredentialStore(origin).GetBlacklistedStatus();
+    if (blacklisted_status == BlacklistedStatus::kWasBlacklisted ||
+        blacklisted_status == BlacklistedStatus::kIsBlacklisted) {
+      bool enabled = (blacklisted_status == BlacklistedStatus::kWasBlacklisted);
+      autofill::OptionToggle option_toggle = autofill::OptionToggle(
+          l10n_util::GetStringUTF16(IDS_PASSWORD_SAVING_STATUS_TOGGLE), enabled,
+          autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS);
+      data.set_option_toggle(option_toggle);
+    }
+  }
+
+  GetManualFillingController()->RefreshSuggestions(std::move(data));
 }
 
 void PasswordAccessoryControllerImpl::OnGenerationRequested(

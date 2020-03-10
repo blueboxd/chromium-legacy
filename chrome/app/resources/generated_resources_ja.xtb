@@ -573,8 +573,6 @@
 <translation id="177336675152937177">ホストされているアプリデータ</translation>
 <translation id="1776712937009046120">ユーザーを追加</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">このデバイスは <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> によって管理されています。
-    このまま <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> アカウントにログインするには [次へ] をクリックしてください。</translation>
 <translation id="1779652936965200207">「<ph name="DEVICE_NAME" />」でこのパスキーを入力してください:</translation>
 <translation id="177989070088644880">アプリ（<ph name="ANDROID_PACKAGE_NAME" />）</translation>
 <translation id="1780152987505130652">グループを閉じる</translation>
@@ -887,7 +885,6 @@
 <translation id="2202898655984161076">プリンタのリスト作成中に問題が発生しました。一部のプリンタが <ph name="CLOUD_PRINT_NAME" /> に正常に登録されていない可能性があります。</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />アドレスバー<ph name="END_LINK" />で使用される検索エンジン</translation>
 <translation id="2204034823255629767">すべての入力内容の読み取りと変更</translation>
-<translation id="220792432208469595">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。この設定は所有者によって管理されています。[その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータは Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">「<ph name="DEVICE_NAME" />」の PIN コードを入力してください:</translation>
 <translation id="2212565012507486665">Cookie を許可</translation>
 <translation id="2213140827792212876">共有を解除します</translation>
@@ -1343,7 +1340,6 @@
 <translation id="2804043232879091219">代替ブラウザを開けませんでした</translation>
 <translation id="2804667941345577550">開いているすべてのタブで、このサイトからログアウトします</translation>
 <translation id="2804680522274557040">カメラがオフになっています</translation>
-<translation id="2805539617243680210">これで準備完了です。</translation>
 <translation id="2805646850212350655">Microsoft 暗号化ファイル システム</translation>
 <translation id="2805756323405976993">アプリ</translation>
 <translation id="2805770823691782631">詳細</translation>
@@ -2021,6 +2017,7 @@
 <translation id="3742055079367172538">スクリーンショット撮影完了</translation>
 <translation id="3742666961763734085">この名前の組織部門が見つかりません。もう一度お試しください。</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
+<translation id="3747077776423672805">アプリを削除するには、まず [設定] &gt; [Google Play ストア] &gt; [Android 設定を管理] &gt; [アプリ] または [アプリケーション管理] に移動して、アンインストールするアプリをタップします（必要であれば左右にスワイプしてアプリを見つけます）。次に、[アンインストール] または [無効にする] をタップします。</translation>
 <translation id="3748026146096797577">接続されていません</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">マイ デバイス</translation>
@@ -2741,7 +2738,6 @@
 <translation id="4785719467058219317">このウェブサイトに登録されていないセキュリティ キーを使用しています</translation>
 <translation id="4788092183367008521">ネットワーク接続を確認してからもう一度お試しください。</translation>
 <translation id="4792711294155034829">問題の報告(&amp;R)...</translation>
-<translation id="4795022432560487924">使用状況データや診断データを送信します。診断データやデバイスとアプリの使用状況データを Google に自動送信して、お子様向けの Android 機能の向上にご協力ください。この情報を使ってお子様個人が特定されることはありません。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。この設定は所有者によって管理されています。このデバイスの診断データや使用状況データを Google に送信するよう所有者が設定している可能性があります。お子様の [その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータはお子様の Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">ウェブページ、HTML のみ</translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth ログ<ph name="END_LINK" />を添付する（Google 内部）</translation>
 <translation id="4801448226354548035">アカウントを非表示にする</translation>
@@ -3361,6 +3357,7 @@
 <translation id="5649053991847567735">自動ダウンロード</translation>
 <translation id="5653154844073528838">保存済みのプリンタは <ph name="PRINTER_COUNT" /> 件です。</translation>
 <translation id="5656845498778518563">Google にフィードバックを送信</translation>
+<translation id="5657156137487675418">Cookie をすべて受け入れる</translation>
 <translation id="5657667036353380798">外部の拡張機能で、Chrome バージョン <ph name="MINIMUM_CHROME_VERSION" /> 以上がインストールされていることが要件となっています。</translation>
 <translation id="5658415415603568799">セキュリティ強化のため、Smart Lock では 20 時間が経過するとパスワードの入力が求められます。</translation>
 <translation id="5659593005791499971">メール</translation>
@@ -3567,7 +3564,6 @@
 <translation id="5941711191222866238">最小化</translation>
 <translation id="5942964813783878922">この更新が行われた後、<ph name="DEVICE_TYPE" /> は再起動します。今後はソフトウェアとセキュリティに関するアップデートが自動的にインストールされます。</translation>
 <translation id="5944869793365969636">QR コードのスキャン</translation>
-<translation id="5945188205370098537">使用状況データや診断データを送信します。診断データやデバイスとアプリの使用状況データを Google に自動送信して、Android の機能向上にご協力ください。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。[その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータは Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">レポート ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">ファイルを解析できません</translation>
 <translation id="5955282598396714173">パスワードの有効期限が切れています。パスワードを変更するには、いったんログアウトして再度ログインしてください。</translation>
@@ -3751,6 +3747,7 @@
 <translation id="6185132558746749656">デバイスの位置情報</translation>
 <translation id="6186394685773237175">不正使用されたパスワードは見つかりませんでした</translation>
 <translation id="6195693561221576702">このデバイスはオフライン デモモードで設定できません。</translation>
+<translation id="6196640612572343990">サードパーティの Cookie をブロックする</translation>
 <translation id="6196854373336333322">拡張機能「<ph name="EXTENSION_NAME" />」によってプロキシ設定が制御されています。オンラインで行う操作は、この拡張機能によって変更、遮断、傍受される可能性があります。この変更が行われた理由に心当たりがない場合、これは不正な変更と考えられます。</translation>
 <translation id="6198102561359457428">ログアウトしてから再度ログイン...</translation>
 <translation id="6198252989419008588">PIN を変更</translation>
@@ -4414,7 +4411,6 @@
 <translation id="711902386174337313">ログインしたデバイスのリストの読み取り</translation>
 <translation id="7120865473764644444">同期サーバーに接続できませんでした。再試行しています...</translation>
 <translation id="7121362699166175603">アドレスバーの履歴とオートコンプリートを削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
-<translation id="7121389946694989825">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報を使ってお子様個人が特定されることはありません。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。お子様の [その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータはお子様の Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">デベロッパー モード</translation>
 <translation id="7121728544325372695">スマート ダッシュ</translation>
 <translation id="7123360114020465152">サポートが終了しています</translation>
@@ -5197,7 +5193,6 @@
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{タブを新しいウィンドウに移動}other{タブを新しいウィンドウに移動}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">ページ</translation>
-<translation id="8180294223783876911">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。[その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータは Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">「<ph name="EXTENSION" />」は、チェックした場所にある画像、動画、音声ファイルの読み取りと削除ができます。</translation>
 <translation id="8181215761849004992">ドメインを追加できません。アカウントにデバイスを追加する権限があるかどうかご確認ください。</translation>
 <translation id="8182105986296479640">アプリケーションから応答がありません。</translation>
@@ -5219,7 +5214,6 @@
 <translation id="8203732864715032075">デフォルトでこのパソコンにメッセージの通知を送信する<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">「<ph name="APP_NAME" />」は保護者によってブロックされています。このアプリを使用するには、保護者の許可が必要です。</translation>
 <translation id="820568752112382238">よくアクセスするサイト</translation>
-<translation id="8206581664590136590">使用状況データや診断データを送信します。診断データやデバイスとアプリの使用状況データを Google に自動送信して、お子様向けの Android 機能の向上にご協力ください。この情報を使ってお子様個人が特定されることはありません。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。お子様の [その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータはお子様の Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">ブルース</translation>
 <translation id="8206859287963243715">携帯電話</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{ダウンロードが進行中です}other{ダウンロードが進行中です}}</translation>
@@ -5759,7 +5753,6 @@
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8912793549644936705">拡大</translation>
 <translation id="8912810933860534797">自動スキャンを有効にする</translation>
-<translation id="891365694296252935">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報を使ってお子様個人が特定されることはありません。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。この設定は所有者によって管理されています。お子様の [その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータはお子様の Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">候補を読み込んでいます</translation>
 <translation id="8916476537757519021">シークレット サブフレーム: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">セキュリティ キーの確認中...</translation>
@@ -5896,7 +5889,6 @@
 <translation id="9101691533782776290">アプリを起動</translation>
 <translation id="9102610709270966160">拡張機能を有効にする</translation>
 <translation id="9103868373786083162">ボタンを押して前に戻ります。履歴を表示するにはコンテキスト メニューを選択します</translation>
-<translation id="9104396740804929809">使用状況データや診断データを送信します。診断データやデバイスとアプリの使用状況データを Google に自動送信して、Android の機能向上にご協力ください。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。この設定は所有者によって管理されています。このデバイスの診断データや使用状況データを Google に送信するよう所有者が設定している可能性があります。[その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータは Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">空き領域を確保するために、デバイスのストレージからファイルを削除してください。</translation>
 <translation id="9109283579179481106">モバイル ネットワークへの接続</translation>
 <translation id="9111102763498581341">ロック解除</translation>

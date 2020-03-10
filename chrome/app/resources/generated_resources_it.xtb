@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Dati app in hosting</translation>
 <translation id="1776712937009046120">Aggiungi utente</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Questo dispositivo è gestito da <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Fai clic su "Avanti" per continuare ad accedere al tuo account <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Inserisci questa passkey su "<ph name="DEVICE_NAME" />":</translation>
 <translation id="177989070088644880">App (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Chiudi gruppo</translation>
@@ -892,7 +890,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2202898655984161076">Si è verificato un problema nella visualizzazione dell'elenco di stampanti. È possibile che alcune stampanti non siano state registrate correttamente con <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motore di ricerca utilizzato nella <ph name="BEGIN_LINK" />barra degli indirizzi<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Lettura e modifica del testo digitato</translation>
-<translation id="220792432208469595">Invia dati diagnostici e sull'utilizzo. Questo dispositivo attualmente invia a Google dati diagnostici e sull'utilizzo delle app e del dispositivo. Tali dati contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Questa impostazione è applicata dal proprietario. Se hai attivato l'impostazione Attività web e app aggiuntiva, queste informazioni potrebbero essere salvate nel tuo Account Google. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Inserisci questo codice PIN su "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Consenti cookie</translation>
 <translation id="2213140827792212876">Rimuovi condivisione</translation>
@@ -1352,7 +1349,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2804043232879091219">Impossibile aprire il browser alternativo</translation>
 <translation id="2804667941345577550">Uscirai da questo sito (schede aperte incluse)</translation>
 <translation id="2804680522274557040">Fotocamera disattivata</translation>
-<translation id="2805539617243680210">Ecco fatto.</translation>
 <translation id="2805646850212350655">Crittografia file system Microsoft</translation>
 <translation id="2805756323405976993">App</translation>
 <translation id="2805770823691782631">Dettagli aggiuntivi</translation>
@@ -2033,6 +2029,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3742055079367172538">Screenshot acquisito</translation>
 <translation id="3742666961763734085">Impossibile trovare un'unità organizzativa con il nome indicato. Riprova.</translation>
 <translation id="3744111561329211289">Sincronizzazione in background</translation>
+<translation id="3747077776423672805">Per rimuovere le app apri Impostazioni &gt; Google Play Store &gt; Gestisci le preferenze Android &gt; App o Gestione applicazioni, quindi tocca l'app che vuoi disinstallare (potresti dover scorrere verso sinistra o verso destra per trovarla) e infine tocca Disinstalla o Disattiva.</translation>
 <translation id="3748026146096797577">Non connesso</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">I miei dispositivi</translation>
@@ -2756,7 +2753,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4785719467058219317">Stai usando un token di sicurezza non registrato su questo sito web</translation>
 <translation id="4788092183367008521">Controlla la connessione di rete e riprova.</translation>
 <translation id="4792711294155034829">&amp;Segnala un problema...</translation>
-<translation id="4795022432560487924">Invia dati diagnostici e sull'utilizzo. Contribuisci a migliorare l'esperienza Android di tuo figlio tramite l'invio automatico a Google di dati diagnostici e sull'utilizzo delle app e del dispositivo. Non verranno utilizzati per identificare tuo figlio e contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Questa impostazione è applicata dal proprietario. Il proprietario potrebbe decidere di inviare a Google dati di diagnostica e utilizzo relativi a questo dispositivo. Se l'impostazione Attività web e app aggiuntiva è attiva per tuo figlio, questi dati potrebbero essere salvati nel suo Account Google. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Pagina web, solo HTML</translation>
 <translation id="4798236378408895261">Allega <ph name="BEGIN_LINK" />log Bluetooth<ph name="END_LINK" /> (interno di Google)</translation>
 <translation id="4801448226354548035">Nascondi account</translation>
@@ -3383,6 +3379,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5649053991847567735">Download automatici</translation>
 <translation id="5653154844073528838">Hai <ph name="PRINTER_COUNT" /> stampanti salvate.</translation>
 <translation id="5656845498778518563">Invia feedback a Google</translation>
+<translation id="5657156137487675418">Accetta tutti i cookie</translation>
 <translation id="5657667036353380798">Per poter installare l'estensione esterna occorre la versione di Chrome <ph name="MINIMUM_CHROME_VERSION" /> o successiva.</translation>
 <translation id="5658415415603568799">Per maggiore sicurezza, Smart Lock ti chiederà di inserire la password dopo 20 ore.</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -3590,7 +3587,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5941711191222866238">Riduci a icona</translation>
 <translation id="5942964813783878922">Il dispositivo <ph name="DEVICE_TYPE" /> si riavvierà dopo questo aggiornamento. I futuri aggiornamenti software e della sicurezza verranno installati automaticamente.</translation>
 <translation id="5944869793365969636">Scansiona codice QR</translation>
-<translation id="5945188205370098537">Invia dati diagnostici e sull'utilizzo. Contribuisci a migliorare la tua esperienza Android tramite l'invio automatico a Google di dati diagnostici e sull'utilizzo delle app e del dispositivo. Tali dati contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Se hai attivato l'impostazione Attività web e app aggiuntiva, queste informazioni potrebbero essere salvate nel tuo Account Google. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID rapporto <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Impossibile analizzare il file</translation>
 <translation id="5955282598396714173">La password è scaduta. Esci e accedi nuovamente per modificarla.</translation>
@@ -3776,6 +3772,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6185132558746749656">Posizione del dispositivo</translation>
 <translation id="6186394685773237175">Non sono state trovate password compromesse</translation>
 <translation id="6195693561221576702">Impossibile configurare il dispositivo in modalità demo offline.</translation>
+<translation id="6196640612572343990">Blocca cookie di terze parti</translation>
 <translation id="6196854373336333322">L'estensione "<ph name="EXTENSION_NAME" />" ha assunto il controllo delle tue impostazioni proxy, il che significa che può cambiare, interrompere o intercettare tutto ciò che fai online. Se non sei sicuro del motivo per cui si sia verificato questo cambiamento, è probabile che sia indesiderato.</translation>
 <translation id="6198102561359457428">Esci e accedi di nuovo...</translation>
 <translation id="6198252989419008588">Modifica PIN</translation>
@@ -4442,7 +4439,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="711902386174337313">Lettura dell'elenco di dispositivi su cui è stato eseguito l'accesso</translation>
 <translation id="7120865473764644444">Impossibile collegarsi al server di sincronizzazione. Nuovo tentativo...</translation>
 <translation id="7121362699166175603">Consente di cancellare la cronologia e i completamenti automatici nella barra degli indirizzi. Il tuo Account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Invia dati diagnostici e sull'utilizzo. Questo dispositivo attualmente invia a Google dati diagnostici e sull'utilizzo delle app e del dispositivo. Non verranno utilizzati per identificare tuo figlio e contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Se l'impostazione Attività web e app aggiuntiva è attiva per tuo figlio, questi dati potrebbero essere salvati nel suo Account Google. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Modalità sviluppatore</translation>
 <translation id="7121728544325372695">Trattini smart</translation>
 <translation id="7123360114020465152">La stampante non è più supportata</translation>
@@ -4557,7 +4553,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7280041992884344566">Si è verificato un errore in Chrome durante la ricerca di software dannoso</translation>
 <translation id="7280649757394340890">Impostazioni voce per sintesi vocale</translation>
 <translation id="7280877790564589615">Richiesta di autorizzazione</translation>
-<translation id="7281268427852119151">Utilizza la tua cronologia di navigazione per personalizzare la Ricerca, gli annunci e altri servizi Google</translation>
 <translation id="7282992757463864530">Barra delle informazioni</translation>
 <translation id="7287143125007575591">Accesso negato.</translation>
 <translation id="7287411021188441799">Ripristina sfondo predefinito</translation>
@@ -5231,7 +5226,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Sposta scheda in una nuova finestra}other{Sposta schede in una nuova finestra}}</translation>
 <translation id="8179976553408161302">Invio</translation>
 <translation id="8180239481735238521">pagina</translation>
-<translation id="8180294223783876911">Invia dati diagnostici e sull'utilizzo. Questo dispositivo attualmente invia a Google dati diagnostici e sull'utilizzo delle app e del dispositivo. Tali dati contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Se hai attivato l'impostazione Attività web e app aggiuntiva, queste informazioni potrebbero essere salvate nel tuo Account Google. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">L'estensione "<ph name="EXTENSION" />" può leggere ed eliminare file di immagini, video e audio nelle posizioni selezionate.</translation>
 <translation id="8181215761849004992">Impossibile aggiungere al dominio. Controlla il tuo account per verificare se hai privilegi sufficienti per aggiungere dispositivi.</translation>
 <translation id="8182105986296479640">L'applicazione non risponde.</translation>
@@ -5253,7 +5247,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8203732864715032075">Ricevere notifiche e impostare come predefinita la memorizzazione di questo computer per Messaggi. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">L'app "<ph name="APP_NAME" />" è stata bloccata da uno dei tuoi genitori. Chiedi al tuo genitore l'autorizzazione per poter usare l'app.</translation>
 <translation id="820568752112382238">Siti più visitati</translation>
-<translation id="8206581664590136590">Invia dati diagnostici e sull'utilizzo. Contribuisci a migliorare l'esperienza Android di tuo figlio tramite l'invio automatico a Google di dati diagnostici e sull'utilizzo delle app e del dispositivo. Non verranno utilizzati per identificare tuo figlio e contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Se l'impostazione Attività web e app aggiuntiva è attiva per tuo figlio, questi dati potrebbero essere salvati nel suo Account Google. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Bluesy</translation>
 <translation id="8206859287963243715">Cellulare</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Download in corso}other{Download in corso}}</translation>
@@ -5799,7 +5792,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8912793549644936705">Allunga</translation>
 <translation id="8912810933860534797">Attiva scansione automatica</translation>
-<translation id="891365694296252935">Invia dati diagnostici e sull'utilizzo. Questo dispositivo attualmente invia a Google dati diagnostici e sull'utilizzo delle app e del dispositivo. Non verranno utilizzati per identificare tuo figlio e contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Questa impostazione è applicata dal proprietario. Se l'impostazione Attività web e app aggiuntiva è attiva per tuo figlio, queste informazioni potrebbero essere salvate nel suo Account Google. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Caricamento suggerimento</translation>
 <translation id="8916476537757519021">Frame secondario modalità di navigazione in incognito: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Verifica del token di sicurezza…</translation>
@@ -5936,7 +5928,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9101691533782776290">Avvia app</translation>
 <translation id="9102610709270966160">Attiva estensione</translation>
 <translation id="9103868373786083162">Premi per tornare indietro, menu contestuale per visualizzare la cronologia</translation>
-<translation id="9104396740804929809">Invia dati diagnostici e sull'utilizzo. Contribuisci a migliorare la tua esperienza Android tramite l'invio automatico a Google di dati diagnostici e sull'utilizzo delle app e del dispositivo. Tali dati contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Questa impostazione è applicata dal proprietario. Il proprietario potrebbe decidere di inviare a Google dati di diagnostica e utilizzo relativi a questo dispositivo. Se hai attivato l'impostazione Attività web e app aggiuntiva, queste informazioni potrebbero essere salvate nel tuo Account Google. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Per liberare spazio, elimina i file dallo spazio di archiviazione del dispositivo.</translation>
 <translation id="9109283579179481106">Collegati alla rete mobile</translation>
 <translation id="9111102763498581341">Sblocca</translation>

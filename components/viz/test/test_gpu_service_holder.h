@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
+#include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/vulkan/buildflags.h"
 
 namespace gpu {
@@ -32,7 +33,7 @@ class GpuServiceImpl;
 // Starts GPU Main and IO threads, and creates a GpuServiceImpl that can be used
 // to create a SkiaOutputSurfaceImpl. This isn't a full GPU service
 // implementation and should only be used in tests.
-class TestGpuServiceHolder {
+class TestGpuServiceHolder : public gpu::GpuInProcessThreadServiceDelegate {
  public:
   class ScopedResetter {
    public:
@@ -62,7 +63,7 @@ class TestGpuServiceHolder {
   static void DoNotResetOnTestExit();
 
   explicit TestGpuServiceHolder(const gpu::GpuPreferences& preferences);
-  ~TestGpuServiceHolder();
+  ~TestGpuServiceHolder() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner() {
     return gpu_thread_.task_runner();
@@ -85,6 +86,10 @@ class TestGpuServiceHolder {
     return false;
 #endif
   }
+
+  // gpu::GpuInProcessThreadServiceDelegate implementation:
+  scoped_refptr<gpu::SharedContextState> GetSharedContextState() override;
+  scoped_refptr<gl::GLShareGroup> GetShareGroup() override;
 
  private:
   friend struct base::DefaultSingletonTraits<TestGpuServiceHolder>;

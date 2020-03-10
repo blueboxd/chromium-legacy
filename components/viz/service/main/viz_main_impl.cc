@@ -19,7 +19,6 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_finch_features.h"
-#include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_init.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "media/gpu/buildflags.h"
@@ -235,15 +234,12 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
   // the same signature. https://crbug.com/928845
   CHECK(!task_executor_);
   task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
-      gpu_thread_task_runner_, gpu_service_->GetGpuScheduler(),
+      this, gpu_thread_task_runner_, gpu_service_->GetGpuScheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
-      gpu_service_->share_group(), format, gpu_service_->gpu_feature_info(),
+      format, gpu_service_->gpu_feature_info(),
       gpu_service_->gpu_channel_manager()->gpu_preferences(),
       gpu_service_->shared_image_manager(),
-      gpu_service_->gpu_channel_manager()->program_cache(),
-      // Unretained is safe since |gpu_service_| outlives |task_executor_|.
-      base::BindRepeating(&GpuServiceImpl::GetContextState,
-                          base::Unretained(gpu_service_.get())));
+      gpu_service_->gpu_channel_manager()->program_cache());
 
   viz_compositor_thread_runner_->CreateFrameSinkManager(
       std::move(params), task_executor_.get(), gpu_service_.get());
@@ -253,6 +249,14 @@ void VizMainImpl::CreateVizDevTools(mojom::VizDevToolsParamsPtr params) {
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
   viz_compositor_thread_runner_->CreateVizDevTools(std::move(params));
 #endif
+}
+
+scoped_refptr<gpu::SharedContextState> VizMainImpl::GetSharedContextState() {
+  return gpu_service_->GetContextState();
+}
+
+scoped_refptr<gl::GLShareGroup> VizMainImpl::GetShareGroup() {
+  return gpu_service_->share_group();
 }
 
 void VizMainImpl::ExitProcess(bool immediately) {

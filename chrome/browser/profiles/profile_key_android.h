@@ -22,8 +22,8 @@ class ProfileKeyAndroid {
   static ProfileKey* FromProfileKeyAndroid(
       const base::android::JavaRef<jobject>& obj);
 
-  static base::android::ScopedJavaLocalRef<jobject> GetLastUsedProfileKey(
-      JNIEnv* env);
+  static base::android::ScopedJavaLocalRef<jobject>
+  GetLastUsedRegularProfileKey(JNIEnv* env);
 
   // Return the original profile key.
   base::android::ScopedJavaLocalRef<jobject> GetOriginalKey(

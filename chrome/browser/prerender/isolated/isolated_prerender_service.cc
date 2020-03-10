@@ -37,5 +37,10 @@ void IsolatedPrerenderService::OnProxyRequestHeadersChanged(
   proxy_configurator_->UpdateTunnelHeaders(headers);
 }
 
+void IsolatedPrerenderService::OnPrefetchProxyHostsChanged(
+    const std::vector<GURL>& prefetch_proxies) {
+  proxy_configurator_->UpdateProxyHosts(prefetch_proxies);
+}
+
 void IsolatedPrerenderService::OnSettingsInitialized() {}
 void IsolatedPrerenderService::OnDataSaverEnabledChanged(bool enabled) {}

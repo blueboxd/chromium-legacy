@@ -82,16 +82,6 @@ TEST_F(RenderViewHostTest, FilterAbout) {
   EXPECT_EQ(GURL(kBlockedURL), controller().GetVisibleEntry()->GetURL());
 }
 
-// Create a full screen popup RenderWidgetHost and View.
-TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
-  int32_t routing_id = process()->GetNextRoutingID();
-
-  mojo::PendingRemote<mojom::Widget> widget;
-  std::unique_ptr<MockWidgetImpl> widget_impl =
-      std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
-  test_rvh()->CreateNewFullscreenWidget(routing_id, std::move(widget));
-}
-
 // The RenderViewHost tells the renderer process about SetBackgroundOpaque()
 // changes.
 TEST_F(RenderViewHostTest, SetBackgroundOpaque) {

@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Hosted app data</translation>
 <translation id="1776712937009046120">Add user</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">This device is managed by <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Please click 'Next' to continue signing in to your <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> account.</translation>
 <translation id="1779652936965200207">Please enter this passkey on "<ph name="DEVICE_NAME" />":</translation>
 <translation id="177989070088644880"><ph name="ANDROID_PACKAGE_NAME" />, app</translation>
 <translation id="1780152987505130652">Close Group</translation>
@@ -892,7 +890,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2202898655984161076">There was a problem while listing printers. Some of your printers may not have registered successfully with <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Search engine used in the <ph name="BEGIN_LINK" />address bar<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Read and change anything that you type</translation>
-<translation id="220792432208469595">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Please enter this PIN code on "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Allow cookies</translation>
 <translation id="2213140827792212876">Remove sharing</translation>
@@ -1353,7 +1350,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2804043232879091219">The alternative browser could not be opened</translation>
 <translation id="2804667941345577550">You’ll be signed out of this site, including in open tabs</translation>
 <translation id="2804680522274557040">Camera turned off</translation>
-<translation id="2805539617243680210">You're ready!</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2805770823691782631">Additional details</translation>
@@ -2034,6 +2030,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3742055079367172538">Screenshot taken</translation>
 <translation id="3742666961763734085">Can’t find an organisational unit with that name. Please try again.</translation>
 <translation id="3744111561329211289">Background sync</translation>
+<translation id="3747077776423672805">To remove apps, go to Settings &gt; Google Play Store &gt; Manage Android preferences &gt; Apps or Application manager. Then tap the app that you want to uninstall (you may need to swipe right or left to find the app). Then tap Uninstall or Disable.</translation>
 <translation id="3748026146096797577">Not Connected</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">My devices</translation>
@@ -2757,7 +2754,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4785719467058219317">You're using a security key that's not registered with this website</translation>
 <translation id="4788092183367008521">Please check your network connection and try again.</translation>
 <translation id="4792711294155034829">&amp;Report an Issue...</translation>
-<translation id="4795022432560487924">Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Web Page, HTML Only</translation>
 <translation id="4798236378408895261">Attach <ph name="BEGIN_LINK" />Bluetooth Logs<ph name="END_LINK" /> (Google internal)</translation>
 <translation id="4801448226354548035">Hide accounts</translation>
@@ -3384,6 +3380,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5649053991847567735">Automatic downloads</translation>
 <translation id="5653154844073528838">You have <ph name="PRINTER_COUNT" /> saved printers.</translation>
 <translation id="5656845498778518563">Send Feedback to Google</translation>
+<translation id="5657156137487675418">Allow all cookies</translation>
 <translation id="5657667036353380798">The external extension requires chrome version <ph name="MINIMUM_CHROME_VERSION" /> or greater to be installed.</translation>
 <translation id="5658415415603568799">For added security, Smart Lock will ask you to enter your password after 20 hours.</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -3591,7 +3588,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5941711191222866238">Minimise</translation>
 <translation id="5942964813783878922">Your <ph name="DEVICE_TYPE" /> will restart after this update. Future software and security updates will install automatically.</translation>
 <translation id="5944869793365969636">Scan QR code</translation>
-<translation id="5945188205370098537">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Report ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Unable to parse file</translation>
 <translation id="5955282598396714173">Your password has expired. Please sign out then sign in again to change it.</translation>
@@ -3777,6 +3773,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6185132558746749656">Device Location</translation>
 <translation id="6186394685773237175">No compromised passwords found</translation>
 <translation id="6195693561221576702">This device cannot be set up in offline demo mode.</translation>
+<translation id="6196640612572343990">Block third-party cookies</translation>
 <translation id="6196854373336333322">The extension "<ph name="EXTENSION_NAME" />" has taken control of your proxy settings, which means it can change, break or eavesdrop on anything you do online. If you aren't sure why this change happened, you probably don't want it.</translation>
 <translation id="6198102561359457428">Sign out then sign in again...</translation>
 <translation id="6198252989419008588">Change PIN</translation>
@@ -4443,7 +4440,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="711902386174337313">Read the list of your signed-in devices</translation>
 <translation id="7120865473764644444">Couldn't connect to the sync server. Retrying...</translation>
 <translation id="7121362699166175603">Clears history and auto-completions in the address bar. Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Developer mode</translation>
 <translation id="7121728544325372695">Smart Dashes</translation>
 <translation id="7123360114020465152">No longer supported</translation>
@@ -4558,7 +4554,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7280041992884344566">An error occurred while Chrome was searching for harmful software</translation>
 <translation id="7280649757394340890">Text-to-Speech voice settings</translation>
 <translation id="7280877790564589615">Permission requested</translation>
-<translation id="7281268427852119151">Use your browsing history to personalise Search, ads and other Google services</translation>
 <translation id="7282992757463864530">Infobar</translation>
 <translation id="7287143125007575591">Access denied</translation>
 <translation id="7287411021188441799">Restore default background</translation>
@@ -5233,7 +5228,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Move tab to new window}other{Move tabs to new window}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">page</translation>
-<translation id="8180294223783876911">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" can read and delete images, video and sound files in the ticked locations.</translation>
 <translation id="8181215761849004992">Can't join the domain. Check your account to see if you have sufficient privileges to add devices.</translation>
 <translation id="8182105986296479640">Application not responding.</translation>
@@ -5255,7 +5249,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8203732864715032075">Send you notifications and default to remembering this computer for Messages. <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">'<ph name="APP_NAME" />' is blocked by your parent. Ask your parent for permission to use this app.</translation>
 <translation id="820568752112382238">Most-visited sites</translation>
-<translation id="8206581664590136590">Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Bluesy</translation>
 <translation id="8206859287963243715">Mobile</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Download is in progress}other{Downloads are in progress}}</translation>
@@ -5801,7 +5794,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8912793549644936705">Stretch</translation>
 <translation id="8912810933860534797">Enable auto-scan</translation>
-<translation id="891365694296252935">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. If additional Web &amp; App Activity is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Loading suggestion</translation>
 <translation id="8916476537757519021">Incognito Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Verifying your security key...</translation>
@@ -5938,7 +5930,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9101691533782776290">Launch app</translation>
 <translation id="9102610709270966160">Enable Extension</translation>
 <translation id="9103868373786083162">Press to go back, context menu to see history</translation>
-<translation id="9104396740804929809">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">To free up space, delete files from device storage.</translation>
 <translation id="9109283579179481106">Connect to mobile network</translation>
 <translation id="9111102763498581341">Unlock</translation>

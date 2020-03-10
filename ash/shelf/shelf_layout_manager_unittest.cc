@@ -201,7 +201,7 @@ class ShelfLayoutManagerTest : public ShelfLayoutManagerTestBase,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Used to test the Hotseat, ScrollabeShelf, and DenseShelf features.
+// Used to test the Hotseat, ScrollableShelf, and DenseShelf features.
 INSTANTIATE_TEST_SUITE_P(All, ShelfLayoutManagerTest, testing::Bool());
 
 // Makes sure SetVisible updates work area and widget appropriately.

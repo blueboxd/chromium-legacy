@@ -59,7 +59,6 @@ class HardwareRendererViz::OnViz : public viz::DisplayClient {
   void DrawAndSwapOnViz(const gfx::Size& viewport,
                         const gfx::Rect& clip,
                         const gfx::Transform& transform,
-                        const gfx::Size& frame_size,
                         const viz::SurfaceId& child_id,
                         float device_scale_factor,
                         const gfx::ColorSpace& color_space,
@@ -136,7 +135,6 @@ void HardwareRendererViz::OnViz::DrawAndSwapOnViz(
     const gfx::Size& viewport,
     const gfx::Rect& clip,
     const gfx::Transform& transform,
-    const gfx::Size& frame_size,
     const viz::SurfaceId& child_id,
     float device_scale_factor,
     const gfx::ColorSpace& color_space,
@@ -151,6 +149,8 @@ void HardwareRendererViz::OnViz::DrawAndSwapOnViz(
     DCHECK(!viz_frame_submission_);
     without_gpu_->SubmitChildCompositorFrame(child_frame);
   }
+
+  gfx::Size frame_size = without_gpu_->GetChildFrameSize();
 
   if (!child_frame->copy_requests.empty()) {
     viz::FrameSinkManagerImpl* manager = GetFrameSinkManager();
@@ -344,8 +344,8 @@ void HardwareRendererViz::DrawAndSwap(HardwareRendererDrawParams* params) {
   VizCompositorThreadRunnerWebView::GetInstance()->ScheduleOnVizAndBlock(
       base::BindOnce(&HardwareRendererViz::OnViz::DrawAndSwapOnViz,
                      base::Unretained(on_viz_.get()), viewport, clip, transform,
-                     viewport, surface_id_, device_scale_factor_,
-                     params->color_space, child_frame_.get()));
+                     surface_id_, device_scale_factor_, params->color_space,
+                     child_frame_.get()));
 
   output_surface_provider_.gl_surface()->MaybeDidPresent(
       gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(),

@@ -36,6 +36,8 @@ GPU_EXPORT extern const base::Feature kGpuWatchdogV2;
 
 GPU_EXPORT extern const base::Feature kGpuWatchdogV1NewTimeout;
 
+GPU_EXPORT extern const base::Feature kGpuWatchdogV2NewTimeout;
+
 #if defined(OS_MACOSX)
 GPU_EXPORT extern const base::Feature kMetal;
 #endif

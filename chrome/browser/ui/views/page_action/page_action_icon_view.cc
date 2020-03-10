@@ -30,10 +30,9 @@ float PageActionIconView::Delegate::GetPageActionInkDropVisibleOpacity() const {
   return GetOmniboxStateOpacity(OmniboxPartState::SELECTED);
 }
 
-std::unique_ptr<views::Border>
-PageActionIconView::Delegate::CreatePageActionIconBorder() const {
-  return views::CreateEmptyBorder(
-      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING));
+gfx::Insets PageActionIconView::Delegate::GetPageActionIconInsets(
+    const PageActionIconView* icon_view) const {
+  return GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING);
 }
 
 bool PageActionIconView::Delegate::IsLocationBarUserInputInProgress() const {
@@ -104,8 +103,10 @@ base::string16 PageActionIconView::GetTooltipText(const gfx::Point& p) const {
 void PageActionIconView::ViewHierarchyChanged(
     const views::ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
-  if (details.is_add && details.child == this && GetNativeTheme())
+  if (details.is_add && details.child == this && GetNativeTheme()) {
     UpdateIconImage();
+    UpdateBorder();
+  }
 }
 
 void PageActionIconView::OnThemeChanged() {
@@ -239,5 +240,7 @@ content::WebContents* PageActionIconView::GetWebContents() const {
 }
 
 void PageActionIconView::UpdateBorder() {
-  SetBorder(delegate_->CreatePageActionIconBorder());
+  const gfx::Insets new_insets = delegate_->GetPageActionIconInsets(this);
+  if (new_insets != GetInsets())
+    SetBorder(views::CreateEmptyBorder(new_insets));
 }

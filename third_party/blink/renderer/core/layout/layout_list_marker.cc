@@ -281,7 +281,7 @@ void LayoutListMarker::UpdateMargins() {
   LayoutUnit margin_start;
   LayoutUnit margin_end;
   const ComputedStyle& style = StyleRef();
-  if (IsInside()) {
+  if (IsInsideListMarker()) {
     std::tie(margin_start, margin_end) =
         InlineMarginsForInside(style, IsImage());
   } else {
@@ -440,14 +440,6 @@ LayoutListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory(
       NOTREACHED();
       return ListStyleCategory::kLanguage;
   }
-}
-
-bool LayoutListMarker::IsInside() const {
-  const LayoutListItem* list_item = ListItem();
-  const ComputedStyle& parent_style = list_item->StyleRef();
-  return parent_style.ListStylePosition() == EListStylePosition::kInside ||
-         (IsA<HTMLLIElement>(list_item->GetNode()) &&
-          !parent_style.IsInsideListElement());
 }
 
 LayoutRect LayoutListMarker::GetRelativeMarkerRect() const {

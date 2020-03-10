@@ -36,9 +36,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_fetch_context.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "v8/include/v8.h"
@@ -55,10 +57,9 @@ class WebString;
 // Used to pass the mojom struct blink.mojom.FetchEventPreloadHandle across the
 // boundary between //content and Blink.
 struct WebFetchEventPreloadHandle {
-  // For mojo::PendingRemote<network::mojom::URLLoader>.
-  mojo::ScopedMessagePipeHandle url_loader;
-  // For mojo::PendingReceiver<network::mojom::URLLoaderClient>.
-  mojo::ScopedMessagePipeHandle url_loader_client_receiver;
+  CrossVariantMojoRemote<network::mojom::URLLoaderInterfaceBase> url_loader;
+  CrossVariantMojoReceiver<network::mojom::URLLoaderClientInterfaceBase>
+      url_loader_client_receiver;
 };
 
 // WebServiceWorkerContextClient is a "client" of a service worker execution

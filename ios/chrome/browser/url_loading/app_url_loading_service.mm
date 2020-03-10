@@ -27,6 +27,9 @@ void AppUrlLoadingService::SetDelegate(
 void AppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   DCHECK(delegate_);
 
+  ChromeBrowserState* current_browser_state =
+      delegate_.currentBrowserForURLLoading->GetBrowserState();
+
   if (params.web_params.url.is_valid()) {
     UrlLoadParams saved_params = params;
     saved_params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
@@ -46,19 +49,18 @@ void AppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
       [delegate_
           dismissModalDialogsWithCompletion:^{
             [delegate_ setCurrentInterfaceForMode:mode];
-            UrlLoadingServiceFactory::GetForBrowserState(
-                [delegate_ currentBrowserState])
+            UrlLoadingServiceFactory::GetForBrowserState(current_browser_state)
                 ->Load(saved_params);
           }
                              dismissOmnibox:YES];
     }
   } else {
-    if ([delegate_ currentBrowserState] -> IsOffTheRecord() !=
-                                               params.in_incognito) {
+    if (current_browser_state->IsOffTheRecord() != params.in_incognito) {
       // Must take a snapshot of the tab before we switch the incognito mode
       // because the currentTab will change after the switch.
       web::WebState* currentWebState =
-          [delegate_ currentTabModel].webStateList->GetActiveWebState();
+          delegate_.currentBrowserForURLLoading->GetWebStateList()
+              ->GetActiveWebState();
       if (currentWebState) {
         SnapshotTabHelper::FromWebState(currentWebState)
             ->UpdateSnapshotWithCallback(nil);
@@ -81,6 +83,6 @@ void AppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   }
 }
 
-ChromeBrowserState* AppUrlLoadingService::GetCurrentBrowserState() {
-  return [delegate_ currentBrowserState];
+Browser* AppUrlLoadingService::GetCurrentBrowser() {
+  return [delegate_ currentBrowserForURLLoading];
 }

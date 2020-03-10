@@ -107,9 +107,6 @@ class MockRenderThread : public RenderThread {
   void OnCreateWindow(const mojom::CreateNewWindowParams& params,
                       mojom::CreateNewWindowReply* reply);
 
-  // The Widget expects to be returned a valid route_id.
-  void OnCreateWidget(int opener_id, int* route_id);
-
   // Returns the receiver end of the InterfaceProvider interface whose client
   // end was passed in to construct RenderFrame with |routing_id|; if any. The
   // client end will be used by the RenderFrame to service interface receivers

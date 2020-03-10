@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
@@ -133,6 +134,21 @@ class MediaHistoryStoreUnitTest : public testing::Test,
 
     service->GetMediaHistoryPlaybackRowsForDebug(base::BindLambdaForTesting(
         [&](std::vector<mojom::MediaHistoryPlaybackRowPtr> rows) {
+          out = std::move(rows);
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return out;
+  }
+
+  std::vector<media_feeds::mojom::MediaFeedPtr> GetMediaFeedsSync(
+      MediaHistoryKeyedService* service) {
+    base::RunLoop run_loop;
+    std::vector<media_feeds::mojom::MediaFeedPtr> out;
+
+    service->GetMediaFeedsForDebug(base::BindLambdaForTesting(
+        [&](std::vector<media_feeds::mojom::MediaFeedPtr> rows) {
           out = std::move(rows);
           run_loop.Quit();
         }));
@@ -524,13 +540,22 @@ TEST_P(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
 
   {
     // Check the feeds were recorded.
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
+    std::vector<media_feeds::mojom::MediaFeedPtr> feeds =
+        GetMediaFeedsSync(service());
 
-    EXPECT_EQ(IsReadOnly() ? 0 : 2,
-              stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(2u, feeds.size());
+
+      EXPECT_EQ(1, feeds[0]->id);
+      EXPECT_EQ(url_a, feeds[0]->url);
+      EXPECT_EQ(2, feeds[1]->id);
+      EXPECT_EQ(url_b, feeds[1]->url);
+    }
 
     // The OTR service should have the same data.
-    EXPECT_EQ(stats, GetStatsSync(otr_service()));
+    EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
   }
 
   service()->SaveMediaFeed(url_c);
@@ -538,12 +563,22 @@ TEST_P(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
 
   {
     // Check the feeds were recorded.
-    mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
-    EXPECT_EQ(IsReadOnly() ? 0 : 2,
-              stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+    std::vector<media_feeds::mojom::MediaFeedPtr> feeds =
+        GetMediaFeedsSync(service());
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      EXPECT_EQ(2u, feeds.size());
+
+      EXPECT_EQ(2, feeds[0]->id);
+      EXPECT_EQ(url_b, feeds[0]->url);
+      EXPECT_EQ(3, feeds[1]->id);
+      EXPECT_EQ(url_c, feeds[1]->url);
+    }
 
     // The OTR service should have the same data.
-    EXPECT_EQ(stats, GetStatsSync(otr_service()));
+    EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
   }
 }
 

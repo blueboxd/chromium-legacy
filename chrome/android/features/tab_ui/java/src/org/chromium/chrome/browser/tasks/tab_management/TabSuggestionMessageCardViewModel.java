@@ -52,6 +52,7 @@ public class TabSuggestionMessageCardViewModel {
                 .with(MessageCardViewProperties.ACTION_TEXT, actionText)
                 .with(MessageCardViewProperties.DISMISS_BUTTON_CONTENT_DESCRIPTION,
                         dismissButtonContextDescription)
+                .with(MessageCardViewProperties.IS_ICON_VISIBLE, true)
                 .with(CARD_TYPE, MESSAGE)
                 .with(CARD_ALPHA, 1f)
                 .build();

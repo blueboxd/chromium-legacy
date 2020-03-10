@@ -427,8 +427,8 @@ public class FeedConfigurationTest {
         Configuration configuration = FeedConfiguration.createConfiguration();
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.ABANDON_RESTORE_BELOW_FOLD, true));
-        Assert.assertFalse(
-                configuration.getValueOrDefault(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, true));
+        Assert.assertTrue(
+                configuration.getValueOrDefault(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, false));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.CONSUME_SYNTHETIC_TOKENS, true));
         Assert.assertTrue(configuration.getValueOrDefault(
@@ -462,8 +462,8 @@ public class FeedConfigurationTest {
         Assert.assertEquals((long) FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT,
                 configuration.getValueOrDefault(
                         ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS, 0L));
-        Assert.assertFalse(
-                configuration.getValueOrDefault(ConfigKey.MANAGE_INTERESTS_ENABLED, true));
+        Assert.assertTrue(
+                configuration.getValueOrDefault(ConfigKey.MANAGE_INTERESTS_ENABLED, false));
         Assert.assertEquals((long) FeedConfiguration.MAXIMUM_GC_ATTEMPTS_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.MAXIMUM_GC_ATTEMPTS, 0L));
         Assert.assertEquals((long) FeedConfiguration.NON_CACHED_MIN_PAGE_SIZE_DEFAULT,
@@ -481,8 +481,8 @@ public class FeedConfigurationTest {
                 configuration.getValueOrDefault(ConfigKey.STORAGE_MISS_THRESHOLD, 0L));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION, true));
-        Assert.assertFalse(
-                configuration.getValueOrDefault(ConfigKey.UNDOABLE_ACTIONS_ENABLED, true));
+        Assert.assertTrue(
+                configuration.getValueOrDefault(ConfigKey.UNDOABLE_ACTIONS_ENABLED, false));
         Assert.assertTrue(configuration.getValueOrDefault(ConfigKey.USE_TIMEOUT_SCHEDULER, false));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.USE_SECONDARY_PAGE_REQUEST, true));

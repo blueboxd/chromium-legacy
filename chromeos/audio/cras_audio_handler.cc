@@ -290,7 +290,7 @@ void CrasAudioHandler::MediaSessionPositionChanged(
   }
 
   int64_t current_position = position->GetPosition().InMicroseconds();
-  if (current_position < 0 || current_position > duration)
+  if (current_position < 0 || (duration > 0 && current_position > duration))
     return;
 
   CrasAudioClient::Get()->SetPlayerPosition(current_position);

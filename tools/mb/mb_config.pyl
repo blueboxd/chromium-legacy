@@ -98,7 +98,7 @@
       'chromeos-amd64-generic-asan-rel': 'cros_chrome_sdk_asan',
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-amd64-generic-dbg': 'cros_chrome_sdk_dbg',
-      'chromeos-amd64-generic-rel': 'cros_chrome_sdk',
+      'chromeos-amd64-generic-rel': 'chromeos_amd64-generic',
       'chromeos-arm-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-arm-generic-rel': 'cros_chrome_sdk',
       'chromeos-kevin-rel': 'cros_chrome_sdk',
@@ -235,6 +235,7 @@
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
+      'ios13-beta-simulator': 'ios_simulator_debug_static_bot',
       'ios-simulator': 'ios_error',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
@@ -755,7 +756,7 @@
       # and two kevin bots when the PFQ has it enabled.
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-amd64-generic-dbg': 'cros_chrome_sdk_dbg',
-      'chromeos-amd64-generic-rel': 'cros_chrome_sdk',
+      'chromeos-amd64-generic-rel': 'chromeos_amd64-generic',
       'chromeos-arm-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-arm-generic-rel': 'cros_chrome_sdk_dcheck_always_on',
       'chromeos-kevin-compile-rel': 'cros_chrome_sdk',
@@ -1340,6 +1341,10 @@
 
     'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_goma': [
       'cfi_full', 'cfi_icall', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'goma',
+    ],
+
+    'chromeos_amd64-generic': [
+      'chromeos_device', 'amd64-generic',
     ],
 
     'chromeos_asan_lsan_fuzzer_v8_heap_release_bot': [
@@ -2056,6 +2061,10 @@
   'mixins': {
     'afl': { 'gn_args': 'use_afl=true' },
 
+    'amd64-generic': {
+      'args_file': '//build/args/chromeos/amd64-generic.gni',
+    },
+
     # We build Android with codecs on most bots to ensure maximum test
     # coverage, but use 'android_without_codecs' on bots responsible for
     # building publicly advertised non-Official Android builds --
@@ -2147,6 +2156,11 @@
 
     'chromeos_codecs': {
       'mixins': ['ffmpeg_branding_chromeos', 'proprietary_codecs'],
+    },
+
+    'chromeos_device': {
+      'gn_args': 'is_chromeos_device=true ozone_platform_headless=true',
+      'mixins': ['goma'],
     },
 
     'chromeos_with_codecs': {

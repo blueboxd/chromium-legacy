@@ -385,16 +385,15 @@ RenderFrameHostDelegate* TestWebContents::CreateNewWindow(
   return nullptr;
 }
 
-void TestWebContents::CreateNewWidget(int32_t render_process_id,
-                                      int32_t route_id,
-                                      mojo::PendingRemote<mojom::Widget> widget,
-                                      RenderViewHostImpl* render_view_host) {}
+void TestWebContents::CreateNewWidget(
+    int32_t render_process_id,
+    int32_t route_id,
+    mojo::PendingRemote<mojom::Widget> widget) {}
 
 void TestWebContents::CreateNewFullscreenWidget(
     int32_t render_process_id,
     int32_t route_id,
-    mojo::PendingRemote<mojom::Widget> widget,
-    RenderViewHostImpl* render_view_host) {}
+    mojo::PendingRemote<mojom::Widget> widget) {}
 
 void TestWebContents::ShowCreatedWindow(int process_id,
                                         int route_id,

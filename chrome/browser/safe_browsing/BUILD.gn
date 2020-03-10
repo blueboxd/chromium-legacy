@@ -151,6 +151,8 @@ jumbo_static_library("safe_browsing") {
         "cloud_content_scanning/deep_scanning_dialog_views.h",
         "cloud_content_scanning/deep_scanning_utils.cc",
         "cloud_content_scanning/deep_scanning_utils.h",
+        "cloud_content_scanning/file_source_request.cc",
+        "cloud_content_scanning/file_source_request.h",
         "cloud_content_scanning/multipart_uploader.cc",
         "cloud_content_scanning/multipart_uploader.h",
         "dm_token_utils.cc",

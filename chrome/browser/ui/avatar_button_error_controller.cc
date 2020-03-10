@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 
@@ -39,14 +40,14 @@ AvatarButtonErrorController::SigninErrorObserver::SigninErrorObserver(
     : profile_(profile),
       avatar_button_error_controller_(avatar_button_error_controller) {
   SigninErrorController* signin_error_controller =
-      profiles::GetSigninErrorController(profile_);
+      SigninErrorControllerFactory::GetForProfile(profile_);
   if (signin_error_controller)
     signin_error_controller->AddObserver(this);
 }
 
 AvatarButtonErrorController::SigninErrorObserver::~SigninErrorObserver() {
   SigninErrorController* signin_error_controller =
-      profiles::GetSigninErrorController(profile_);
+      SigninErrorControllerFactory::GetForProfile(profile_);
   if (signin_error_controller)
     signin_error_controller->RemoveObserver(this);
 }
@@ -56,8 +57,8 @@ void AvatarButtonErrorController::SigninErrorObserver::OnErrorChanged() {
 }
 
 bool AvatarButtonErrorController::SigninErrorObserver::HasSigninError() {
-  const SigninErrorController* signin_error_controller =
-      profiles::GetSigninErrorController(profile_);
+  SigninErrorController* signin_error_controller =
+      SigninErrorControllerFactory::GetForProfile(profile_);
   return signin_error_controller && signin_error_controller->HasError();
 }
 

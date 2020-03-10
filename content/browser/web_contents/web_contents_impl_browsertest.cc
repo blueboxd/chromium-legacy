@@ -1623,9 +1623,11 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
   DISALLOW_COPY_AND_ASSIGN(TestWCDelegateForDialogsAndFullscreen);
 };
 
-class MockFileSelectListener : public FileSelectListener {
+class MockFileSelectListener : public FileChooserImpl::FileSelectListenerImpl {
  public:
-  MockFileSelectListener() {}
+  MockFileSelectListener() : FileChooserImpl::FileSelectListenerImpl(nullptr) {
+    SetListenerFunctionCalledTrueForTesting();
+  }
   void FileSelected(std::vector<blink::mojom::FileChooserFileInfoPtr> files,
                     const base::FilePath& base_dir,
                     blink::mojom::FileChooserParams::Mode mode) override {}
@@ -2952,6 +2954,39 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyFullscreenAcquired) {
     EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
     EXPECT_EQ(main_frame, web_contents->current_fullscreen_frame_);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, RejectFullscreenIfBlocked) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestWCDelegateForDialogsAndFullscreen test_delegate(web_contents);
+
+  GURL url("about:blank");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  RenderFrameHostImpl* main_frame = web_contents->GetMainFrame();
+
+  EXPECT_TRUE(ExecuteScript(
+      main_frame,
+      "document.body.onfullscreenchange = "
+      "function (event) { document.title = 'onfullscreenchange' };"));
+  EXPECT_TRUE(ExecuteScript(
+      main_frame,
+      "document.body.onfullscreenerror = "
+      "function (event) { document.title = 'onfullscreenerror' };"));
+
+  TitleWatcher title_watcher(web_contents,
+                             base::ASCIIToUTF16("onfullscreenchange"));
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("onfullscreenerror"));
+
+  // While the |fullscreen_block| is in scope, fullscreen should fail with an
+  // error.
+  base::ScopedClosureRunner fullscreen_block =
+      web_contents->ForSecurityDropFullscreen();
+
+  EXPECT_TRUE(ExecuteScript(main_frame, "document.body.requestFullscreen();"));
+
+  base::string16 title = title_watcher.WaitAndGetTitle();
+  ASSERT_EQ(title, base::ASCIIToUTF16("onfullscreenerror"));
 }
 
 // Regression test for https://crbug.com/855018.

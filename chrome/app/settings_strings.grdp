@@ -60,6 +60,12 @@
   <message name="IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_SUBTITLE" desc="Subtitle for screen reader image labels feature.">
     If an image doesn’t have a useful description, Chrome will try to provide one for you. To create descriptions, images are sent to Google.
   </message>
+  <message name="IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_TITLE" desc="Name of the setting to enable Live Caption.">
+    Live caption
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE" desc="Subtitle of the setting to enable Live Caption.">
+    Live caption detects speech in media and automatically generates captions for all media playing in Chrome.
+  </message>
   <if expr="chromeos">
     <!-- Android Apps Page -->
     <message name="IDS_SETTINGS_ANDROID_APPS_TITLE" desc="The title of Google Play Store (Arc++ / Android Apps) section.">
@@ -320,11 +326,32 @@
   <message name="IDS_SETTINGS_CHECK_PASSWORDS" desc="Name for the check passwords subsection and settings entry used to perform a password bulk check.">
     Check passwords
   </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_CANCELED" desc="Message for when the password check was canceled by the user.">
+    Canceled
+  </message>
   <message name="IDS_SETTINGS_CHECKED_PASSWORDS" desc="Title above amount of found compromised passwords after password bulk check.">
     Checked passwords
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_DESCRIPTION" desc="Explanation of the passwords bulk check feature found within the password settings.">
     Keep your passwords safe from data breaches and other security issues
+  </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_OFFLINE" desc="Error message when the password check can't be completed because the user is offline.">
+    Chrome can't check your passwords. Try checking your internet connection.
+  </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_SIGNED_OUT" desc="Error message when the password check can't be completed because the user is not signed in.">
+    Chrome can check your passwords when you sign in with your Google Account.
+  </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_NO_PASSWORDS" desc="Error message when the password check can't be completed since no passwords could be checked.">
+    No saved passwords. Chrome can check your passwords when you save them.
+  </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_TOO_MANY_PASSWORDS" desc="Error message when the password check can't be completed since the user saved too many passwords.">
+    Chrome can't check your passwords because there are too many.
+  </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT" desc="Error message when the password check can't be completed since the user hit the quota limit.">
+    Chrome can't check your passwords. Try again tomorrow.
+  </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_GENERIC" desc="Error message when the password check can't be completed for an unspecified reason.">
+    Chrome can't check your passwords.
   </message>
   <message name="IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT" desc="Number of compromised passwords present in the database">
     {COUNT, plural,
@@ -332,8 +359,14 @@
       =1 {{COUNT} compromised password}
       other {{COUNT} compromised passwords}}
   </message>
+  <message name="IDS_SETTINGS_LEAKED_PASSWORDS_COUNT" desc="Number of compromised passwords found during bulk check.">
+    <ph name="COUNT">$1<ex>5</ex></ph> compromised passwords
+  </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_AGAIN" desc="Button to start bulk password check manually in passwords check section.">
     Check again
+  </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_PROGRESS" desc="Text for a label showing how many passwords were checked so far and how many passwords need to be checked in total.">
+    Checking passwords (<ph name="CHECKED_PASSWORDS">$1<ex>6</ex></ph> of <ph name="TOTAL_PASSWORDS">$2<ex>31</ex></ph>)…
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_JUST_NOW" desc="Label shown when a compromised credential was found less than a minute ago">
     Just now

@@ -90,6 +90,9 @@ class SyncEngineHost {
 
   // Called when the sync cycle returns there is an user actionable error.
   virtual void OnActionableError(const SyncProtocolError& error) = 0;
+
+  // Called when the set of backed off types is changed.
+  virtual void OnBackedOffTypesChanged() = 0;
 };
 
 }  // namespace syncer

@@ -995,9 +995,6 @@ extern const char kShelfHotseatDescription[];
 extern const char kShelfHoverPreviewsName[];
 extern const char kShelfHoverPreviewsDescription[];
 
-extern const char kShelfScrollableName[];
-extern const char kShelfScrollableDescription[];
-
 extern const char kShowAndroidFilesInFilesAppName[];
 extern const char kShowAndroidFilesInFilesAppDescription[];
 
@@ -1497,6 +1494,9 @@ extern const char kUpdateNotificationSchedulingIntegrationName[];
 extern const char kUpdateNotificationSchedulingIntegrationDescription[];
 extern const char kUpdateNotificationServiceImmediateShowOptionName[];
 extern const char kUpdateNotificationServiceImmediateShowOptionDescription[];
+
+extern const char kPrefetchNotificationSchedulingIntegrationName[];
+extern const char kPrefetchNotificationSchedulingIntegrationDescription[];
 
 extern const char kUsageStatsDescription[];
 extern const char kUsageStatsName[];
@@ -2011,6 +2011,9 @@ extern const char kReduceDisplayNotificationsDescription[];
 
 extern const char kReleaseNotesName[];
 extern const char kReleaseNotesDescription[];
+
+extern const char kScanningUIName[];
+extern const char kScanningUIDescription[];
 
 extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];

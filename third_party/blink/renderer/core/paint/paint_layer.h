@@ -1270,8 +1270,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool ShouldApplyTransformToBoundingBox(const PaintLayer& composited_layer,
                                          CalculateBoundsOptions) const;
 
-  bool NeedsFilterReferenceBox() const;
-
   AncestorDependentCompositingInputs& EnsureAncestorDependentCompositingInputs()
       const {
     if (!ancestor_dependent_compositing_inputs_) {

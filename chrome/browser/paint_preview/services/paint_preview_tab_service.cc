@@ -77,7 +77,10 @@ void PaintPreviewTabService::OnCaptured(
     FinishedCallback callback,
     PaintPreviewBaseService::CaptureStatus status,
     std::unique_ptr<PaintPreviewProto> proto) {
-  auto result = base::MakeRefCounted<base::RefCountedData<bool>>(false);
+  if (status != PaintPreviewBaseService::CaptureStatus::kOk || !proto) {
+    std::move(callback).Run(Status::kCaptureFailed);
+    return;
+  }
   auto file_manager = GetFileManager();
   GetTaskRunner()->PostTaskAndReplyWithResult(
       FROM_HERE,

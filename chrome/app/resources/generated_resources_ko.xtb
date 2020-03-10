@@ -573,8 +573,6 @@
 <translation id="177336675152937177">호스팅된 앱 데이터</translation>
 <translation id="1776712937009046120">사용자 추가</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에서 관리하는 기기입니다.
-    '다음'을 클릭하여 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 계정에 로그인하세요.</translation>
 <translation id="1779652936965200207">다음 패스키를 '<ph name="DEVICE_NAME" />'에 입력하세요.</translation>
 <translation id="177989070088644880">앱(<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">그룹 닫기</translation>
@@ -887,7 +885,6 @@
 <translation id="2202898655984161076">프린터를 나열하는 데 문제가 발생했습니다. <ph name="CLOUD_PRINT_NAME" />에 성공적으로 등록되지 못한 프린터가 있을 수 있습니다.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />주소 표시줄<ph name="END_LINK" />에서 사용되는 검색엔진</translation>
 <translation id="2204034823255629767">입력한 항목 조회 및 변경</translation>
-<translation id="220792432208469595">사용 및 진단 데이터를 보냅니다. 이 기기는 현재 진단, 기기 및 앱 사용 데이터를 Google에 자동으로 보내고 있습니다. 이 데이터는 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 이 설정은 소유자가 지정합니다. 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">'<ph name="DEVICE_NAME" />'의 PIN 코드를 입력하세요:</translation>
 <translation id="2212565012507486665">쿠키 허용</translation>
 <translation id="2213140827792212876">공유 폴더 삭제</translation>
@@ -1343,7 +1340,6 @@
 <translation id="2804043232879091219">대체 브라우저를 열 수 없습니다.</translation>
 <translation id="2804667941345577550">열려 있는 탭을 포함하여 이 사이트에서 로그아웃됩니다.</translation>
 <translation id="2804680522274557040">카메라 사용 중지됨</translation>
-<translation id="2805539617243680210">설정 완료</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">앱</translation>
 <translation id="2805770823691782631">추가 세부정보</translation>
@@ -2021,6 +2017,7 @@
 <translation id="3742055079367172538">찍은 스크린샷</translation>
 <translation id="3742666961763734085">해당 이름의 조직 단위를 찾을 수 없습니다. 다시 시도해 보세요.</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
+<translation id="3747077776423672805">앱을 삭제하려면 설정 &gt; Google Play 스토어 &gt; Android 환경설정 관리 &gt; 앱 또는 애플리케이션 관리자로 이동합니다. 그런 다음 제거하려는 앱을 탭합니다(앱을 찾으려면 오른쪽이나 왼쪽으로 스와이프해야 할 수 있음). 그런 다음 제거 또는 사용 중지를 탭합니다.</translation>
 <translation id="3748026146096797577">연결되어 있지 않음</translation>
 <translation id="3752582316358263300">확인...</translation>
 <translation id="3752673729237782832">내 기기</translation>
@@ -2739,7 +2736,6 @@
 <translation id="4785719467058219317">이 웹사이트에 등록되지 않은 보안 키를 사용하고 있습니다.</translation>
 <translation id="4788092183367008521">네트워크 연결을 확인한 다음 다시 시도하세요.</translation>
 <translation id="4792711294155034829">문제 신고(&amp;R)...</translation>
-<translation id="4795022432560487924">사용 및 진단 데이터를 보냅니다. 진단, 기기, 앱 사용 데이터를 Google에 자동으로 보내 자녀의 Android 사용 환경 개선에 참여합니다. 이 데이터는 자녀를 식별하는 용도로 사용되지 않으며, 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 이 설정은 소유자가 지정합니다. 소유자가 이 기기의 진단 및 사용 데이터를 Google에 전송할지 선택할 수 있습니다. 자녀의 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 자녀의 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">웹페이지, HTML만</translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />블루투스 로그<ph name="END_LINK" /> 첨부(Google 사내용)</translation>
 <translation id="4801448226354548035">계정 숨기기</translation>
@@ -3359,6 +3355,7 @@
 <translation id="5649053991847567735">자동 다운로드</translation>
 <translation id="5653154844073528838">저장된 프린터가 <ph name="PRINTER_COUNT" />대 있습니다.</translation>
 <translation id="5656845498778518563">Google에 의견 보내기</translation>
+<translation id="5657156137487675418">모든 쿠키 허용</translation>
 <translation id="5657667036353380798">외부 확장 프로그램을 사용하려면 Chrome 버전 <ph name="MINIMUM_CHROME_VERSION" /> 이상이 설치되어 있어야 합니다.</translation>
 <translation id="5658415415603568799">보안을 강화하기 위해 Smart Lock에서 20시간 후에 비밀번호를 입력하라는 메시지를 표시합니다.</translation>
 <translation id="5659593005791499971">이메일</translation>
@@ -3565,7 +3562,6 @@
 <translation id="5941711191222866238">최소화</translation>
 <translation id="5942964813783878922">업데이트 후 <ph name="DEVICE_TYPE" /> 기기가 다시 시작됩니다. 향후 소프트웨어 및 보안 업데이트는 자동 설치됩니다.</translation>
 <translation id="5944869793365969636">QR 코드 스캔</translation>
-<translation id="5945188205370098537">사용 및 진단 데이터를 보냅니다. 진단, 기기, 앱 사용 데이터를 Google에 자동으로 보내 Android 사용 환경 개선에 참여합니다. 이 데이터는 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">보고서 ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">파일을 파싱할 수 없습니다.</translation>
 <translation id="5955282598396714173">비밀번호가 만료되었습니다. 로그아웃한 다음 다시 로그인하여 비밀번호를 변경해 주세요.</translation>
@@ -3749,6 +3745,7 @@
 <translation id="6185132558746749656">기기 위치</translation>
 <translation id="6186394685773237175">유출된 비밀번호가 없습니다.</translation>
 <translation id="6195693561221576702">이 기기는 오프라인 데모 모드에서 설정할 수 없습니다.</translation>
+<translation id="6196640612572343990">타사 쿠키 차단</translation>
 <translation id="6196854373336333322">'<ph name="EXTENSION_NAME" />' 확장 프로그램이 프록시 설정을 제어할 수 있게 되었으며, 따라서 사용자가 온라인에서 수행하는 모든 작업을 변경, 중단하거나 엿볼 수 있게 되었습니다. 이와 같이 변경된 이유를 잘 모른다면 이 설정을 사용하지 않는 것이 좋습니다.</translation>
 <translation id="6198102561359457428">로그아웃한 후 다시 로그인...</translation>
 <translation id="6198252989419008588">PIN 변경</translation>
@@ -4412,7 +4409,6 @@
 <translation id="711902386174337313">로그인한 기기 목록 조회</translation>
 <translation id="7120865473764644444">동기화 서버에 연결하지 못했습니다. 다시 시도 중...</translation>
 <translation id="7121362699166175603">검색주소창에 저장된 방문 기록과 자동 완성 내역을 지웁니다. Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
-<translation id="7121389946694989825">사용 및 진단 데이터를 보냅니다. 이 기기는 현재 진단, 기기 및 앱 사용 데이터를 Google에 자동으로 보내고 있습니다. 이 데이터는 자녀를 식별하는 용도로 사용되지 않으며, 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 자녀의 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 자녀의 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">개발자 모드</translation>
 <translation id="7121728544325372695">스마트 대시</translation>
 <translation id="7123360114020465152">프린터가 더 이상 지원되지 않습니다.</translation>
@@ -5195,7 +5191,6 @@
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{탭을 새 창으로 이동}other{탭을 새 창으로 이동}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">페이지</translation>
-<translation id="8180294223783876911">사용 및 진단 데이터를 보냅니다. 이 기기는 현재 진단, 기기 및 앱 사용 데이터를 Google에 자동으로 보내고 있습니다. 이 데이터는 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">'<ph name="EXTENSION" />'은(는) 선택된 위치에서 이미지, 동영상 및 사운드 파일을 읽고 삭제할 수 있습니다.</translation>
 <translation id="8181215761849004992">도메인에 가입할 수 없습니다. 기기를 추가하기에 충분한 권한이 계정에 있는지 확인하세요.</translation>
 <translation id="8182105986296479640">애플리케이션이 응답하지 않음</translation>
@@ -5217,7 +5212,6 @@
 <translation id="8203732864715032075">알림을 보내고 메시지에서 이 컴퓨터를 기억하도록 기본값으로 설정합니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">부모님이 ‘<ph name="APP_NAME" />’ 앱을 차단했습니다. 이 앱을 사용하려면 부모님에게 권한을 요청하세요.</translation>
 <translation id="820568752112382238">자주 방문한 사이트</translation>
-<translation id="8206581664590136590">사용 및 진단 데이터를 보냅니다. 진단, 기기, 앱 사용 데이터를 Google에 자동으로 보내 자녀의 Android 사용 환경 개선에 참여합니다. 이 데이터는 자녀를 식별하는 용도로 사용되지 않으며, 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 자녀의 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 자녀의 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">음악</translation>
 <translation id="8206859287963243715">휴대전화</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{다운로드 진행 중}other{다운로드 진행 중}}</translation>
@@ -5757,7 +5751,6 @@
 <translation id="8912362522468806198">Google 계정</translation>
 <translation id="8912793549644936705">늘이기</translation>
 <translation id="8912810933860534797">자동 스캔 사용</translation>
-<translation id="891365694296252935">사용 및 진단 데이터를 보냅니다. 이 기기는 현재 진단, 기기 및 앱 사용 데이터를 Google에 자동으로 보내고 있습니다. 이 데이터는 자녀를 식별하는 용도로 사용되지 않으며, 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 이 설정은 소유자가 지정합니다. 자녀의 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 자녀의 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">추천 단어 로드 중...</translation>
 <translation id="8916476537757519021">시크릿 모드 서브프레임: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">보안 키 인증 중...</translation>
@@ -5894,7 +5887,6 @@
 <translation id="9101691533782776290">앱 실행</translation>
 <translation id="9102610709270966160">확장 프로그램 사용</translation>
 <translation id="9103868373786083162">돌아가려면 뒤로 버튼을 누르고, 방문 기록을 보려면 컨텍스트 메뉴 키를 누릅니다.</translation>
-<translation id="9104396740804929809">사용 및 진단 데이터를 보냅니다. 진단, 기기, 앱 사용 데이터를 Google에 자동으로 보내 Android 사용 환경 개선에 참여합니다. 이 데이터는 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 이 설정은 소유자가 지정합니다. 소유자가 이 기기의 진단 및 사용 데이터를 Google에 전송할지 선택할 수 있습니다. 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">저장 공간을 확보하려면 기기 저장소에서 파일을 삭제하세요.</translation>
 <translation id="9109283579179481106">모바일 네트워크에 연결</translation>
 <translation id="9111102763498581341">잠금 해제</translation>

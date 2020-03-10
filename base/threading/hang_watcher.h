@@ -40,10 +40,12 @@ namespace base {
 //
 // If DoSomeWork() takes more than 5s to run and the HangWatcher
 // inspects the thread state before Foobar returns a hang will be
-// reported. Instances of this object should live on the stack only as they are
-// intrinsically linked to the execution scopes that contain them.
-// Keeping a HangWatchScope alive after the scope in which it was created has
-// exited would lead to non-actionable hang reports.
+// reported.
+//
+// HangWatchScopes are typically meant to live on the stack. In some cases it's
+// necessary to keep a HangWatchScope instance as a class member but special
+// care is required when doing so as a HangWatchScope that stays alive longer
+// than intended will generate non-actionable hang reports.
 class BASE_EXPORT HangWatchScope {
  public:
   // A good default value needs to be large enough to represent a significant
@@ -148,7 +150,7 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
 
   // Use to make the HangWatcher thread wake or sleep to schedule the
   // appropriate monitoring frequency.
-  WaitableEvent monitor_event_;
+  WaitableEvent should_monitor_;
 
   bool IsWatchListEmpty() LOCKS_EXCLUDED(watch_state_lock_);
 
@@ -204,7 +206,7 @@ class BASE_EXPORT HangWatchState {
   TimeTicks GetDeadline() const;
 
   // Atomically sets the deadline to a new value and return the previous value.
-  TimeTicks SetDeadline(TimeTicks deadline);
+  void SetDeadline(TimeTicks deadline);
 
   // Tests whether the associated thread's execution has gone over the deadline.
   bool IsOverDeadline() const;
@@ -224,7 +226,7 @@ class BASE_EXPORT HangWatchState {
 
   // If the deadline fails to be updated before TimeTicks::Now() ever
   // reaches the value contained in it this constistutes a hang.
-  std::atomic<TimeTicks> deadline_;
+  std::atomic<TimeTicks> deadline_{base::TimeTicks::Max()};
 
 #if DCHECK_IS_ON()
   // Used to keep track of the current HangWatchScope and detect improper usage.

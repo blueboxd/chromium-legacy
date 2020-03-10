@@ -41,6 +41,7 @@ class PermissionRequestImpl : public PermissionRequest {
   base::string16 GetQuietMessageText() const override;
 #endif
   base::string16 GetMessageTextFragment() const override;
+  base::string16 GetMessageTextWarningFragment() const override;
   GURL GetOrigin() const override;
   void PermissionGranted() override;
   void PermissionDenied() override;

@@ -22,8 +22,6 @@ typemaps = [
   "//third_party/blink/renderer/platform/blob/serialized_blob.typemap",
   "//third_party/blink/renderer/platform/cookie/canonical_cookie.typemap",
   "//third_party/blink/renderer/platform/mojo/fetch_api_request_headers.typemap",
-  "//third_party/blink/renderer/platform/mojo/kurl.typemap",
-  "//third_party/blink/renderer/platform/mojo/security_origin.typemap",
   "//third_party/blink/renderer/platform/mojo/string.typemap",
   "//third_party/blink/renderer/platform/mojo/time.typemap",
   "//third_party/blink/renderer/platform/network/encoded_form_data_element.typemap",

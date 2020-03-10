@@ -45,30 +45,12 @@ class RenderWidgetHelper
   // store in a scoped_refptr.
   static RenderWidgetHelper* FromProcessHostID(int render_process_host_id);
 
-  // IO THREAD ONLY -----------------------------------------------------------
-  void CreateNewWidget(int opener_id,
-                       mojo::PendingRemote<mojom::Widget>,
-                       int* route_id);
-  void CreateNewFullscreenWidget(int opener_id,
-                                 mojo::PendingRemote<mojom::Widget>,
-                                 int* route_id);
-
  private:
   friend class base::RefCountedThreadSafe<RenderWidgetHelper>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
   friend class base::DeleteHelper<RenderWidgetHelper>;
 
   ~RenderWidgetHelper();
-
-  // Called on the UI thread to finish creating a widget.
-  void OnCreateWidgetOnUI(int32_t opener_id,
-                          int32_t route_id,
-                          mojo::PendingRemote<mojom::Widget> widget);
-
-  // Called on the UI thread to create a fullscreen widget.
-  void OnCreateFullscreenWidgetOnUI(int32_t opener_id,
-                                    int32_t route_id,
-                                    mojo::PendingRemote<mojom::Widget> widget);
 
   int render_process_id_;
 

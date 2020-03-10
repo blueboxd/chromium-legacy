@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_GPU_MEMORY_BUFFER_SUPPORT_H_
 #define GPU_COMMAND_BUFFER_COMMON_GPU_MEMORY_BUFFER_SUPPORT_H_
 
+#include "build/build_config.h"
 #include "gpu/gpu_export.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -52,6 +53,11 @@ GPU_EXPORT bool IsImageSizeValidForGpuMemoryBufferFormat(
 
 // Returns the texture target to use with native GpuMemoryBuffers.
 GPU_EXPORT uint32_t GetPlatformSpecificTextureTarget();
+
+#if defined(OS_MACOSX)
+// Set the texture target to use with MacOS native GpuMemoryBuffers.
+GPU_EXPORT void SetMacOSSpecificTextureTarget(uint32_t texture_target);
+#endif  // defined(OS_MACOSX)
 
 // Returns the texture target to be used for the given |usage| and |format|
 // based on |capabilities|.

@@ -277,6 +277,7 @@ void ConversionContext::TranslateForLayerOffsetOnce() {
 }
 
 void ConversionContext::SwitchToChunkState(const PaintChunk& chunk) {
+  TranslateForLayerOffsetOnce();
   chunk_to_layer_mapper_.SwitchToChunk(chunk);
 
   const auto& chunk_state = chunk.properties;
@@ -591,6 +592,19 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
       EffectBoundsInfo{save_layer_id, current_transform_});
   current_clip_ = input_clip;
   current_effect_ = &effect;
+
+  if (effect.Filter().HasReferenceFilter()) {
+    auto reference_box = effect.Filter().ReferenceBox();
+    reference_box.MoveBy(effect.FiltersOrigin());
+    effect_bounds_stack_.back().bounds = reference_box;
+    if (current_effect_->Filter().HasReferenceFilter()) {
+      // Emit an empty paint operation to add the filter's source bounds (mapped
+      // to layer space) to the visual rect of the filter's SaveLayerOp.
+      cc_list_.StartPaint();
+      cc_list_.EndPaintOfUnpaired(chunk_to_layer_mapper_.MapVisualRect(
+          EnclosingIntRect(reference_box)));
+    }
+  }
 }
 
 void ConversionContext::UpdateEffectBounds(
@@ -727,17 +741,16 @@ void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
       else
         continue;
 
-      // If we have an empty paint record, then we would prefer not to draw it.
-      // However, if we also have a non-root effect, it means that the filter
-      // applied might draw something even if the record is empty. We need to
-      // "draw" this record in order to ensure that the effect has correct
-      // visual rects.
+      // If we have an empty paint record, then we would prefer ignoring it.
+      // However, if we also have a non-root effect, the empty paint record
+      // might be for a mask with empty content which should make the masked
+      // content fully invisible. We need to "draw" this record to ensure that
+      // the effect has correct visual rect.
       if ((!record || record->size() == 0) &&
           &chunk_state.Effect() == &EffectPaintPropertyNode::Root()) {
         continue;
       }
 
-      TranslateForLayerOffsetOnce();
       if (!switched_to_chunk_state) {
         SwitchToChunkState(chunk);
         switched_to_chunk_state = true;
@@ -749,7 +762,18 @@ void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
       cc_list_.EndPaintOfUnpaired(
           chunk_to_layer_mapper_.MapVisualRect(item.VisualRect()));
     }
-    UpdateEffectBounds(FloatRect(chunk.bounds), chunk_state.Transform());
+
+    // If we have an empty paint chunk, then we would prefer ignoring it.
+    // However, a reference filter can generate visible effect from invisible
+    // source, and we need to emit paint operations for it.
+    if (!switched_to_chunk_state && &chunk_state.Effect() != current_effect_)
+      SwitchToChunkState(chunk);
+
+    // Most effects apply to drawable contents only. Reference filters are
+    // exceptions, for which we have already added the reference box to the
+    // bounds of the effect in StartEffect().
+    UpdateEffectBounds(FloatRect(chunk.drawable_bounds),
+                       chunk_state.Transform());
   }
 }
 

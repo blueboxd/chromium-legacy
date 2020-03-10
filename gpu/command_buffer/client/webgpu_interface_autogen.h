@@ -19,6 +19,7 @@ virtual void AssociateMailbox(GLuint64 device_client_id,
                               GLuint generation,
                               GLuint usage,
                               const GLbyte* mailbox) = 0;
-virtual void DissociateMailbox(GLuint texture_id,
+virtual void DissociateMailbox(GLuint64 device_client_id,
+                               GLuint texture_id,
                                GLuint texture_generation) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_INTERFACE_AUTOGEN_H_

@@ -1348,8 +1348,8 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   // Do a synchronous IPC to obtain a routing ID.
   int32_t widget_routing_id = MSG_ROUTING_NONE;
   bool success =
-      RenderThreadImpl::current_render_message_filter()->CreateNewWidget(
-          GetRoutingID(), std::move(widget_channel), &widget_routing_id);
+      RenderFrameImpl::FromWebFrame(creator)->GetFrameHost()->CreateNewWidget(
+          std::move(widget_channel), &widget_routing_id);
   if (!success) {
     // When the renderer is being killed the mojo message will fail.
     return nullptr;

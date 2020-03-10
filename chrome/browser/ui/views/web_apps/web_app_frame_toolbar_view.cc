@@ -370,15 +370,18 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
       public ContentSettingImageView::Delegate,
       public ImmersiveModeController::Observer,
       public PageActionIconView::Delegate,
+      public PageActionIconContainer,
       public views::WidgetObserver {
  public:
-  ToolbarButtonContainer(views::Widget* widget, BrowserView* browser_view);
+  ToolbarButtonContainer(views::Widget* widget,
+                         BrowserView* browser_view,
+                         ToolbarButtonProvider* toolbar_button_provider);
   ~ToolbarButtonContainer() override;
 
   void UpdateStatusIconsVisibility() {
     if (content_settings_container_)
       content_settings_container_->UpdateContentSettingViewsVisibility();
-    page_action_icon_container_view_->controller()->UpdateAll();
+    page_action_icon_controller_->UpdateAll();
   }
 
   void SetColors(SkColor foreground_color, SkColor background_color) {
@@ -390,8 +393,7 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
       content_settings_container_->SetIconColor(foreground_color_);
     if (extensions_container_)
       extensions_container_->OverrideIconColor(foreground_color_);
-    page_action_icon_container_view_->controller()->SetIconColor(
-        foreground_color_);
+    page_action_icon_controller_->SetIconColor(foreground_color_);
     web_app_menu_button_->SetColor(foreground_color_);
   }
 
@@ -417,8 +419,8 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
     return content_settings_container_;
   }
 
-  PageActionIconContainerView* page_action_icon_container_view() {
-    return page_action_icon_container_view_;
+  PageActionIconController* page_action_icon_controller() {
+    return page_action_icon_controller_.get();
   }
 
   BrowserActionsContainer* browser_actions_container() {
@@ -432,6 +434,26 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
   WebAppMenuButton* web_app_menu_button() { return web_app_menu_button_; }
 
  private:
+  // PageActionIconContainer:
+  void AddPageActionIcon(views::View* icon) override {
+    AddChildViewAt(icon, page_action_insertion_point_++);
+    views::SetHitTestComponent(icon, static_cast<int>(HTCLIENT));
+  }
+
+  // PageActionIconView::Delegate:
+  gfx::Insets GetPageActionIconInsets(
+      const PageActionIconView* icon_view) const override {
+    const int icon_size =
+        icon_view->GetImageView()->GetPreferredSize().height();
+    if (icon_size == 0)
+      return gfx::Insets();
+
+    const int height =
+        toolbar_button_provider_->GetToolbarButtonSize().height();
+    const int inset_size = std::max(0, (height - icon_size) / 2);
+    return gfx::Insets(inset_size);
+  }
+
   // Methods for coordinate the titlebar animation (origin text slide, menu
   // highlight and icon fade in).
   bool ShouldAnimate() const {
@@ -529,14 +551,17 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
 
   // The containing browser view.
   BrowserView* const browser_view_;
+  ToolbarButtonProvider* const toolbar_button_provider_;
 
   SkColor foreground_color_ = gfx::kPlaceholderColor;
   SkColor background_color_ = gfx::kPlaceholderColor;
 
+  std::unique_ptr<PageActionIconController> page_action_icon_controller_;
+  int page_action_insertion_point_ = 0;
+
   // All remaining members are owned by the views hierarchy.
   WebAppOriginText* web_app_origin_text_ = nullptr;
   ContentSettingsContainer* content_settings_container_ = nullptr;
-  PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
   BrowserActionsContainer* browser_actions_container_ = nullptr;
   ExtensionsToolbarContainer* extensions_container_ = nullptr;
   WebAppMenuButton* web_app_menu_button_ = nullptr;
@@ -544,8 +569,12 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
 
 WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
     views::Widget* widget,
-    BrowserView* browser_view)
-    : browser_view_(browser_view) {
+    BrowserView* browser_view,
+    ToolbarButtonProvider* toolbar_button_provider)
+    : browser_view_(browser_view),
+      toolbar_button_provider_(toolbar_button_provider),
+      page_action_icon_controller_(
+          std::make_unique<PageActionIconController>()) {
   views::FlexLayout* const layout =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kHorizontal)
@@ -578,6 +607,10 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
                                static_cast<int>(HTCLIENT));
   }
 
+  // This is the point where we will be inserting page action icons.
+  page_action_insertion_point_ = int{children().size()};
+
+  // Insert the default page action icons.
   PageActionIconParams params;
   params.types_enabled.push_back(PageActionIconType::kFind);
   params.types_enabled.push_back(PageActionIconType::kManagePasswords);
@@ -596,10 +629,7 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
   params.command_updater = browser_view_->browser()->command_controller();
   params.icon_label_bubble_delegate = this;
   params.page_action_icon_delegate = this;
-  page_action_icon_container_view_ =
-      AddChildView(std::make_unique<PageActionIconContainerView>(params));
-  views::SetHitTestComponent(page_action_icon_container_view_,
-                             static_cast<int>(HTCLIENT));
+  page_action_icon_controller_->Init(params, this);
 
   // Extensions toolbar area with pinned extensions is lower priority than, for
   // example, the menu button or other toolbar buttons, and pinned extensions
@@ -715,7 +745,7 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
           .WithOrder(3));
 
   right_container_ = AddChildView(
-      std::make_unique<ToolbarButtonContainer>(widget, browser_view));
+      std::make_unique<ToolbarButtonContainer>(widget, browser_view, this));
   right_container_->web_app_menu_button()->SetMinSize(GetToolbarButtonSize());
   right_container_->SetProperty(
       views::kFlexBehaviorKey,
@@ -815,9 +845,7 @@ views::View* WebAppFrameToolbarView::GetDefaultExtensionDialogAnchorView() {
 
 PageActionIconView* WebAppFrameToolbarView::GetPageActionIconView(
     PageActionIconType type) {
-  return right_container_->page_action_icon_container_view()
-      ->controller()
-      ->GetIconView(type);
+  return right_container_->page_action_icon_controller()->GetIconView(type);
 }
 
 AppMenuButton* WebAppFrameToolbarView::GetAppMenuButton() {
@@ -859,9 +887,8 @@ views::View* WebAppFrameToolbarView::GetAnchorView(PageActionIconType type) {
 }
 
 void WebAppFrameToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
-  right_container_->page_action_icon_container_view()
-      ->controller()
-      ->ZoomChangedForActiveTab(can_show_bubble);
+  right_container_->page_action_icon_controller()->ZoomChangedForActiveTab(
+      can_show_bubble);
 }
 
 AvatarToolbarButton* WebAppFrameToolbarView::GetAvatarToolbarButton() {
@@ -888,8 +915,9 @@ views::View* WebAppFrameToolbarView::GetRightContainerForTesting() {
   return right_container_;
 }
 
-views::View* WebAppFrameToolbarView::GetPageActionIconContainerForTesting() {
-  return right_container_->page_action_icon_container_view();
+PageActionIconController*
+WebAppFrameToolbarView::GetPageActionIconControllerForTesting() {
+  return right_container_->page_action_icon_controller();
 }
 
 const char* WebAppFrameToolbarView::GetClassName() const {

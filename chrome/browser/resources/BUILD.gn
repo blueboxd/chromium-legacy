@@ -17,6 +17,7 @@ if (closure_compile) {
       "components:closure_compile",
       "engagement:closure_compile",
       "interventions_internals:closure_compile",
+      "media:closure_compile",
       "reset_password:closure_compile",
     ]
     if (is_linux || is_win || is_mac) {

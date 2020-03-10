@@ -280,7 +280,7 @@ bool HostService::Enable() {
   // uses the chmod binary to do so.
   base::CommandLine chmod_cmd(base::FilePath("/bin/chmod"));
   chmod_cmd.AppendArg("+a");
-  chmod_cmd.AppendArg(GetUsername() + ":allow:read");
+  chmod_cmd.AppendArg("user:" + GetUsername() + ":allow:read");
   chmod_cmd.AppendArgPath(config_file_);
   std::string output;
   if (!base::GetAppOutputAndError(chmod_cmd, &output)) {

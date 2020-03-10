@@ -63,10 +63,12 @@ public class OmahaBase {
     public static class VersionConfig {
         public final String latestVersion;
         public final String downloadUrl;
+        public final int serverDate;
 
-        protected VersionConfig(String latestVersion, String downloadUrl) {
+        protected VersionConfig(String latestVersion, String downloadUrl, int serverDate) {
             this.latestVersion = latestVersion;
             this.downloadUrl = downloadUrl;
+            this.serverDate = serverDate;
         }
     }
 
@@ -76,6 +78,7 @@ public class OmahaBase {
     static final String PREF_INSTALL_SOURCE = "installSource";
     static final String PREF_LATEST_VERSION = "latestVersion";
     static final String PREF_MARKET_URL = "marketURL";
+    static final String PREF_SERVER_DATE = "serverDate";
     static final String PREF_PERSISTED_REQUEST_ID = "persistedRequestID";
     static final String PREF_SEND_INSTALL_EVENT = "sendInstallEvent";
     static final String PREF_TIMESTAMP_FOR_NEW_REQUEST = "timestampForNewRequest";
@@ -84,6 +87,8 @@ public class OmahaBase {
     static final String PREF_TIMESTAMP_OF_REQUEST = "timestampOfRequest";
 
     static final int MIN_API_JOB_SCHEDULER = Build.VERSION_CODES.M;
+
+    private static final int UNKNOWN_DATE = -2;
 
     /** Whether or not the Omaha server should really be contacted. */
     private static boolean sIsDisabled;
@@ -125,6 +130,7 @@ public class OmahaBase {
     private long mTimestampOfInstall;
     private long mTimestampForNextPostAttempt;
     private long mTimestampForNewRequest;
+    private int mServerDate;
     private String mInstallSource;
     protected VersionConfig mVersionConfig;
     protected boolean mSendInstallEvent;
@@ -242,8 +248,9 @@ public class OmahaBase {
                     currentTimestamp, mTimestampOfInstall, mCurrentRequest.isSendInstallEvent());
             String version =
                     VersionNumberGetter.getInstance().getCurrentlyUsedVersion(getContext());
-            String xml = getRequestGenerator().generateXML(
-                    sessionID, version, installAgeInDays, mCurrentRequest);
+            String xml = getRequestGenerator().generateXML(sessionID, version, installAgeInDays,
+                    mVersionConfig == null ? UNKNOWN_DATE : mVersionConfig.serverDate,
+                    mCurrentRequest);
 
             // Send the request to the server & wait for a response.
             String response = postRequest(currentTimestamp, xml);
@@ -538,10 +545,14 @@ public class OmahaBase {
                 versionConfig == null ? "" : versionConfig.latestVersion);
         editor.putString(
                 OmahaBase.PREF_MARKET_URL, versionConfig == null ? "" : versionConfig.downloadUrl);
+        if (versionConfig != null) {
+            editor.putInt(OmahaBase.PREF_SERVER_DATE, versionConfig.serverDate);
+        }
     }
 
     static VersionConfig getVersionConfig(SharedPreferences sharedPref) {
         return new VersionConfig(sharedPref.getString(OmahaBase.PREF_LATEST_VERSION, ""),
-                sharedPref.getString(OmahaBase.PREF_MARKET_URL, ""));
+                sharedPref.getString(OmahaBase.PREF_MARKET_URL, ""),
+                sharedPref.getInt(OmahaBase.PREF_SERVER_DATE, -2));
     }
 }

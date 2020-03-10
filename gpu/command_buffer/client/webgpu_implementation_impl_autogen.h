@@ -32,12 +32,14 @@ void WebGPUImplementation::AssociateMailbox(GLuint64 device_client_id,
   CheckGLError();
 }
 
-void WebGPUImplementation::DissociateMailbox(GLuint texture_id,
+void WebGPUImplementation::DissociateMailbox(GLuint64 device_client_id,
+                                             GLuint texture_id,
                                              GLuint texture_generation) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] wgDissociateMailbox(" << texture_id
-                     << ", " << texture_generation << ")");
-  helper_->DissociateMailbox(texture_id, texture_generation);
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] wgDissociateMailbox("
+                     << device_client_id << ", " << texture_id << ", "
+                     << texture_generation << ")");
+  helper_->DissociateMailbox(device_client_id, texture_id, texture_generation);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_IMPL_AUTOGEN_H_

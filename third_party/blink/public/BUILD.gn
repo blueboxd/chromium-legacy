@@ -115,6 +115,7 @@ source_set("blink_headers") {
     "platform/audio/web_audio_device_source_type.h",
     "platform/blame_context.h",
     "platform/code_cache_loader.h",
+    "platform/cross_variant_mojo_util.h",
     "platform/file_path_conversion.h",
     "platform/interface_registry.h",
     "platform/linux/web_sandbox_support.h",
@@ -455,6 +456,7 @@ group("blink_devtools_frontend_resources") {
 }
 
 group("blink_devtools_frontend_resources_files") {
+  testonly = true
   data_deps = [ "$devtools_frontend_path:devtools_all_files" ]
 }
 

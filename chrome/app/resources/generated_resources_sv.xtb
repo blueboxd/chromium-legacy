@@ -577,8 +577,6 @@
 <translation id="177336675152937177">Appdata som har en värd</translation>
 <translation id="1776712937009046120">Lägg till användare</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">Den här enheten hanteras av <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
-    Fortsätt med inloggningen på kontot på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> genom att klicka på Nästa.</translation>
 <translation id="1779652936965200207">Ange denna nyckel på <ph name="DEVICE_NAME" />:</translation>
 <translation id="177989070088644880">App (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Stäng grupp</translation>
@@ -892,7 +890,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2202898655984161076">Ett problem uppstod när skrivare skulle listas. Vissa av dina skrivare kanske inte har registrerats med <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Sökmotorn som används i <ph name="BEGIN_LINK" />adressfältet<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Läsa och ändra allt som du skriver</translation>
-<translation id="220792432208469595">Skicka diagnostik- och användningsdata. Den här enheten skickar för närvarande diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Ägaren har gjort denna inställning obligatorisk. Om ytterligare webb- och appaktivitet har aktiverats kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Ange den här pinkoden på <ph name="DEVICE_NAME" />:</translation>
 <translation id="2212565012507486665">Tillåt cookies</translation>
 <translation id="2213140827792212876">Ta bort delning</translation>
@@ -1353,7 +1350,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2804043232879091219">Det gick inte att öppna den andra webbläsaren</translation>
 <translation id="2804667941345577550">Du loggas ut från den här webbplatsen, även på öppna flikar</translation>
 <translation id="2804680522274557040">Kamera har inaktiverats</translation>
-<translation id="2805539617243680210">Nu är det klart.</translation>
 <translation id="2805646850212350655">Microsofts krypterande filsystem</translation>
 <translation id="2805756323405976993">Appar</translation>
 <translation id="2805770823691782631">Ytterligare information</translation>
@@ -2034,6 +2030,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3742055079367172538">Skärmdumpen har tagits</translation>
 <translation id="3742666961763734085">Ingen organisationsenhet med det namnet hittades. Försök igen.</translation>
 <translation id="3744111561329211289">Synkronisera i bakgrunden</translation>
+<translation id="3747077776423672805">Om du vill ta bort appar öppnar du Inställningar &gt; Google Play Butik &gt; Hantera Android-inställningar &gt; Appar eller Apphanteraren. Tryck sedan på appen du vill avinstallera (du kanske måste svepa åt höger eller vänster för att hitta appen). Tryck sedan på Avinstallera eller Inaktivera.</translation>
 <translation id="3748026146096797577">Ej ansluten</translation>
 <translation id="3752582316358263300">OK ...</translation>
 <translation id="3752673729237782832">Mina enheter</translation>
@@ -2757,7 +2754,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4785719467058219317">Säkerhetsnyckeln som du använder är inte registrerad på den här webbplatsen</translation>
 <translation id="4788092183367008521">Kontrollera nätverksanslutningen och försök igen.</translation>
 <translation id="4792711294155034829">&amp;Rapportera ett problem...</translation>
-<translation id="4795022432560487924">Skicka diagnostik- och användningsdata. Hjälp till att göra Android bättre för ditt barn genom att skicka diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera och inte till att identifiera ditt barn. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Ägaren har gjort denna inställning obligatorisk. Ägaren kan ange att diagnostik- och användningsdata om den här enheten ska skickas till Google. Om ytterligare webb- och appaktivitet har aktiverats för ditt barn kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Webbsida, endast HTML</translation>
 <translation id="4798236378408895261">Bifoga <ph name="BEGIN_LINK" />Bluetooth-loggar<ph name="END_LINK" /> (internt för Google)</translation>
 <translation id="4801448226354548035">Dölj konton</translation>
@@ -3384,6 +3380,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5649053991847567735">Automatiska nedladdningar</translation>
 <translation id="5653154844073528838">Du har <ph name="PRINTER_COUNT" /> sparade skrivare.</translation>
 <translation id="5656845498778518563">Skicka feedback till Google</translation>
+<translation id="5657156137487675418">Tillåt alla cookies</translation>
 <translation id="5657667036353380798">Det externa tillägget kräver att version <ph name="MINIMUM_CHROME_VERSION" /> eller senare av Chrome är installerat.</translation>
 <translation id="5658415415603568799">Av säkerhetsskäl blir du ombedd att ange lösenordet efter 20 timmar med Smart Lock.</translation>
 <translation id="5659593005791499971">E-post</translation>
@@ -3591,7 +3588,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5941711191222866238">Minimera</translation>
 <translation id="5942964813783878922">Din <ph name="DEVICE_TYPE" /> startas om efter uppdateringen. Framtida programvara och säkerhetsuppdateringar installeras automatiskt.</translation>
 <translation id="5944869793365969636">Skanna QR-kod</translation>
-<translation id="5945188205370098537">Skicka diagnostik- och användningsdata. Hjälp till att göra Android bättre genom att skicka diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Om ytterligare webb- och appaktivitet har aktiverats kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Rapport-id <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Det gick inte att analysera filen</translation>
 <translation id="5955282598396714173">Lösenordet har upphört att gälla. Logga ut och logga sedan in igen innan du ändrar det.</translation>
@@ -3777,6 +3773,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6185132558746749656">Enhetsplats</translation>
 <translation id="6186394685773237175">Inga utsatta lösenord hittades</translation>
 <translation id="6195693561221576702">Den här enheten kan inte konfigureras i offlinedemoläge.</translation>
+<translation id="6196640612572343990">Blockera cookies från tredje part</translation>
 <translation id="6196854373336333322">Tillägget <ph name="EXTENSION_NAME" /> har tagit kontroll över dina proxyinställningar, vilket innebär att det kan ändra, knäcka eller tjuvlyssna på allt du gör på webben. Om du inte vet varför den här ändringen inträffade är den troligen inte önskvärd.</translation>
 <translation id="6198102561359457428">Logga ut och sedan in igen ...</translation>
 <translation id="6198252989419008588">Byt pinkod</translation>
@@ -4443,7 +4440,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="711902386174337313">Läsa listan med dina inloggade enheter</translation>
 <translation id="7120865473764644444">Det gick inte att ansluta till synkroniseringsservern. Försöker igen …</translation>
 <translation id="7121362699166175603">Historik och autoslutföranden i adressfältet rensas. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7121389946694989825">Skicka diagnostik- och användningsdata. Den här enheten skickar för närvarande diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera och inte till att identifiera ditt barn. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Om ytterligare webb- och appaktivitet har aktiverats för ditt barn kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Utvecklarläge</translation>
 <translation id="7121728544325372695">Smarta bindestreck</translation>
 <translation id="7123360114020465152">Stöds inte längre</translation>
@@ -4558,7 +4554,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7280041992884344566">Ett fel uppstod vid sökningen efter skadlig programvara med Chrome</translation>
 <translation id="7280649757394340890">Röstinställningar för text till tal</translation>
 <translation id="7280877790564589615">Tillstånd begärt</translation>
-<translation id="7281268427852119151">Anpassa Sök, annonser och andra tjänster från Google utifrån webbhistoriken</translation>
 <translation id="7282992757463864530">Informationsfält</translation>
 <translation id="7287143125007575591">Åtkomst nekad.</translation>
 <translation id="7287411021188441799">Återställ standardbakgrund</translation>
@@ -5233,7 +5228,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Flytta fliken till ett nytt fönster}other{Flytta flikarna till ett nytt fönster}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">sida</translation>
-<translation id="8180294223783876911">Skicka diagnostik- och användningsdata. Den här enheten skickar för närvarande diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Om ytterligare webb- och appaktivitet har aktiverats kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389"><ph name="EXTENSION" /> kan läsa och ta bort bilder, video och ljudfiler på de markerade platserna.</translation>
 <translation id="8181215761849004992">Det gick inte att ansluta till domänen. Kontrollera att du använder ett konto med behörighet att lägga till enheter.</translation>
 <translation id="8182105986296479640">Appen svarar inte.</translation>
@@ -5255,7 +5249,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8203732864715032075">Skicka aviseringar till dig och komma ihåg den här datorn som standard för Messages. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672"><ph name="APP_NAME" /> har blockerats av en förälder. Be en förälder om behörighet att använda den här appen.</translation>
 <translation id="820568752112382238">Mest besökta webbplatser</translation>
-<translation id="8206581664590136590">Skicka diagnostik- och användningsdata. Hjälp till att göra Android bättre för ditt barn genom att skicka diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera och inte till att identifiera ditt barn. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Om ytterligare webb- och appaktivitet har aktiverats för ditt barn kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Bluesig</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Nedladdning pågår}other{Nedladdningar pågår}}</translation>
@@ -5801,7 +5794,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8912793549644936705">Förläng</translation>
 <translation id="8912810933860534797">Aktivera automatisk genomsökning</translation>
-<translation id="891365694296252935">Skicka diagnostik- och användningsdata. Den här enheten skickar för närvarande diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera och inte till att identifiera ditt barn. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Ägaren har gjort denna inställning obligatorisk. Om ytterligare webb- och appaktivitet har aktiverats för ditt barn kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Läser in förslag</translation>
 <translation id="8916476537757519021">Underram i inkognitoläge: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Säkerhetsnyckeln verifieras …</translation>
@@ -5938,7 +5930,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9101691533782776290">Starta appen</translation>
 <translation id="9102610709270966160">Aktivera tillägget</translation>
 <translation id="9103868373786083162">Tryck här om du vill återgå till föregående, visa historiken med snabbmenyn</translation>
-<translation id="9104396740804929809">Skicka diagnostik- och användningsdata. Hjälp till att göra Android bättre genom att skicka diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Ägaren har gjort denna inställning obligatorisk. Ägaren kan ange att diagnostik- och användningsdata om den här enheten ska skickas till Google. Om ytterligare webb- och appaktivitet har aktiverats kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Frigör utrymme genom att ta bort filer från lagringsutrymmet på enheten.</translation>
 <translation id="9109283579179481106">Anslut till ett mobilnätverk</translation>
 <translation id="9111102763498581341">Lås upp</translation>

@@ -53,8 +53,14 @@ enum class GpuWatchdogTimeoutEvent {
   kProgressAfterWait,
   // Just continue if it's not on the TTY of our host X11 server.
   kContinueOnNonHostServerTty,
-
-  kMaxValue = kContinueOnNonHostServerTty,
+  // Windows only: After detecting GPU hang and continuing running through
+  // OnGpuWatchdogTimeout for the max cycles, the GPU main thread still cannot
+  // get the full thread time.
+  kLessThanFullThreadTimeAfterCapped,
+  // Windows only: The GPU main thread went through the
+  // kLessThanFullThreadTimeAfterCapped stage before the process is killed.
+  kKillOnLessThreadTime,
+  kMaxValue = kKillOnLessThreadTime,
 };
 
 // A thread that intermitently sends tasks to a group of watched message loops

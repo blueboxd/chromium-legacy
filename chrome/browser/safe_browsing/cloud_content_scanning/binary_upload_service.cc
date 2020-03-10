@@ -456,10 +456,12 @@ void BinaryUploadService::IsAuthorized(AuthorizationCallback callback) {
 
   if (!can_upload_enterprise_data_.has_value()) {
     // Send a request to check if the browser can upload data.
+    authorization_callbacks_.push_back(std::move(callback));
     if (!pending_validate_data_upload_request_) {
       auto dm_token = GetDMToken(profile_);
       if (!dm_token.is_valid()) {
-        std::move(callback).Run(false);
+        can_upload_enterprise_data_ = false;
+        RunAuthorizationCallbacks();
         return;
       }
 
@@ -470,7 +472,6 @@ void BinaryUploadService::IsAuthorized(AuthorizationCallback callback) {
       request->set_dm_token(dm_token.value());
       UploadForDeepScanning(std::move(request));
     }
-    authorization_callbacks_.push_back(std::move(callback));
     return;
   }
   std::move(callback).Run(can_upload_enterprise_data_.value());

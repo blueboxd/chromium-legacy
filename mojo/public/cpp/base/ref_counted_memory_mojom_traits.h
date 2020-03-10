@@ -16,7 +16,7 @@
 namespace mojo {
 
 template <>
-struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
+struct COMPONENT_EXPORT(MOJO_BASE_TRAITS)
     StructTraits<mojo_base::mojom::RefCountedMemoryDataView,
                  scoped_refptr<base::RefCountedMemory>> {
   static mojo_base::BigBuffer data(

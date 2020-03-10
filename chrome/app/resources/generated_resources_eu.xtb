@@ -573,8 +573,6 @@
 <translation id="177336675152937177">Aplikazio ostatatuen datuak</translation>
 <translation id="1776712937009046120">Gehitu erabiltzailea</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> da gailuaren kudeatzailea.
-<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kontuan saioa hasteko, sakatu "Hurrengoa".</translation>
 <translation id="1779652936965200207">Idazti pasagako hau "<ph name="DEVICE_NAME" />" gailuan:</translation>
 <translation id="177989070088644880">Aplikazioa (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Itxi taldea</translation>
@@ -887,7 +885,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2202898655984161076">Arazo bat izan da inprimagailuak zerrendatzean. Agian inprimagailuetako batzuk ez dira behar bezala erregistratu <ph name="CLOUD_PRINT_NAME" /> zerbitzuan.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />Helbide-barran<ph name="END_LINK" /> egiten diren bilaketetarako erabiltzen den bilatzailea</translation>
 <translation id="2204034823255629767">Irakurri eta aldatu idazten duzuna</translation>
-<translation id="220792432208469595">Bidali erabilera- eta diagnostiko-datuak. Gailu honek automatikoki bidaltzen dizkio Google-ri diagnostikoak eta gailu zein aplikazioen erabilerari buruzko datuak. Horri esker, sistemaren eta aplikazioen egonkortasuna hobetuko da, besteak beste. Gainera, multzokatutako datu batzuk oso baliagarriak izango dira Google-ren aplikazioak hobetzeko eta bazkideei laguntzeko (adibidez, Android-en garatzaileei). Jabeak konfiguratu du ezarpen hori. Sareko eta aplikazioetako jarduera gehigarriak ezarpena aktibatuta badago, baliteke datu horiek Google-ko kontuan gordetzea. <ph name="BEGIN_LINK1" />Lortu informazio gehiago<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Idatzi PIN kodea "<ph name="DEVICE_NAME" />" gailuan:</translation>
 <translation id="2212565012507486665">Onartu cookieak</translation>
 <translation id="2213140827792212876">Kendu partekatzeko aukera</translation>
@@ -1343,7 +1340,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2804043232879091219">Ezin izan da ireki beste arakatzaile bat</translation>
 <translation id="2804667941345577550">Webguneko saioa amaituko da, baita irekita dauden fitxetakoa ere</translation>
 <translation id="2804680522274557040">Kamera erabiltzeko baimena desaktibatuta dago</translation>
-<translation id="2805539617243680210">Dena prest!</translation>
 <translation id="2805646850212350655">Fitxategiak enkriptatzeko Microsoft sistema (EFS)</translation>
 <translation id="2805756323405976993">Aplikazioak</translation>
 <translation id="2805770823691782631">Xehetasun gehigarriak</translation>
@@ -2021,6 +2017,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3742055079367172538">Pantaila-argazkia hartu da</translation>
 <translation id="3742666961763734085">Ez da aurkitu izen hori duen antolamendu-unitaterik. Saiatu berriro.</translation>
 <translation id="3744111561329211289">Atzeko planoko sinkronizazioa</translation>
+<translation id="3747077776423672805">Aplikazioak kentzeko, joan Ezarpenak &gt; Google Play Store &gt; Kudeatu Android hobespenak &gt; Aplikazioak edo Aplikazioen kudeatzailea atalera. Sakatu desinstalatu nahi duzun aplikazioa (baliteke hatza eskuinera edo ezkerrera pasatu behar izatea hura aurkitzeko). Ondoren, sakatu Desinstalatu edo Desgaitu.</translation>
 <translation id="3748026146096797577">Konektatu gabe</translation>
 <translation id="3752582316358263300">Ados…</translation>
 <translation id="3752673729237782832">Nire gailuak</translation>
@@ -2741,7 +2738,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4785719467058219317">Webgune honetan erregistratuta ez dagoen segurtasun-giltza bat erabiltzen ari zara</translation>
 <translation id="4788092183367008521">Egiaztatu sarera konektatuta zaudela eta saiatu berriro.</translation>
 <translation id="4792711294155034829">Eman a&amp;razo baten berri…</translation>
-<translation id="4795022432560487924">Bidali erabilera- eta diagnostiko-datuak. Bidali diagnostikoak eta gailu zein aplikazioen erabilerari buruzko datuak Google-ri automatikoki haurrak darabiltzan Android zerbitzuak hobetzen laguntzeko. Informazio hori ez da erabiliko haurra identifikatzeko eta, hari esker, sistemaren eta aplikazioen egonkortasuna hobetuko da, besteak beste. Gainera, multzokatutako datu batzuk oso baliagarriak izango dira Google-ren aplikazioak hobetzeko eta bazkideei laguntzeko (adibidez, Android-en garatzaileei). Jabeak konfiguratu du ezarpen hori. Gailu honen diagnostikoak eta erabilera-datuak Google-ri bidaltzea aukera dezake jabeak. Haurraren kontuko Sareko eta aplikazioetako jarduera gehigarriak ezarpena aktibatuta badago, baliteke datu horiek haren Google-ko kontuan gordetzea. <ph name="BEGIN_LINK1" />Lortu informazio gehiago<ph name="END_LINK1" /></translation>
 <translation id="479536056609751218">Web-orria, HTML soilik</translation>
 <translation id="4798236378408895261">Erantsi <ph name="BEGIN_LINK" />Bluetooth konexioari buruzko erregistroak<ph name="END_LINK" /> (Google barnekoa)</translation>
 <translation id="4801448226354548035">Ezkutatu kontuak</translation>
@@ -3567,7 +3563,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5941711191222866238">Minimizatu</translation>
 <translation id="5942964813783878922">Eguneratzen amaitutakoan, berrabiarazi egingo da <ph name="DEVICE_TYPE" />. Aurrerantzean, automatikoki instalatuko dira software- eta segurtasun-eguneratzeak.</translation>
 <translation id="5944869793365969636">Eskaneatu QR kodea</translation>
-<translation id="5945188205370098537">Bidali erabilera- eta diagnostiko-datuak. Bidali diagnostikoak eta gailu zein aplikazioen erabilerari buruzko datuak Google-ri automatikoki haurrak darabiltzan Android zerbitzuak hobetzen laguntzeko. Horri esker, sistemaren eta aplikazioen egonkortasuna hobetuko da, besteak beste. Gainera, multzokatutako datu batzuk oso baliagarriak izango dira Google-ren aplikazioak hobetzeko eta bazkideei laguntzeko (adibidez, Android-en garatzaileei). Sareko eta aplikazioetako jarduera gehigarriak ezarpena aktibatuta badago, baliteke datu horiek Google-ko kontuan gordetzea. <ph name="BEGIN_LINK1" />Lortu informazio gehiago<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Txostenaren IDa: <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Ezin da analizatu fitxategia</translation>
 <translation id="5955282598396714173">Pasahitza iraungi egin da. Aldatzeko, amaitu saioa eta has ezazu berriro.</translation>
@@ -3751,6 +3746,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6185132558746749656">Gailuaren kokapena</translation>
 <translation id="6186394685773237175">Ez da aurkitu arriskuan dagoen pasahitzik</translation>
 <translation id="6195693561221576702">Ezin da konfiguratu gailua konexiorik gabeko demo moduan.</translation>
+<translation id="6196640612572343990">Blokeatu hirugarrenen cookieak</translation>
 <translation id="6196854373336333322"><ph name="EXTENSION_NAME" /> luzapenak zure proxy-ezarpenen kontrola hartu du; alegia, sarean egiten duzun edozer alda, honda edo zelata dezake. Aldaketa zergatik gertatu den ziur ez badakizu, baliteke aldaketa nahi ez izatea.</translation>
 <translation id="6198102561359457428">Amaitu saioa eta hasi berriro</translation>
 <translation id="6198252989419008588">Aldatu PIN kodea</translation>
@@ -4414,7 +4410,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="711902386174337313">Irakurri saioa hasita daukaten gailuen zerrenda</translation>
 <translation id="7120865473764644444">Ezin izan da konektatu sinkronizazio-zerbitzarira. Berriro saiatzen…</translation>
 <translation id="7121362699166175603">Helbide-barrako historia eta osatze automatikoak garbitzen ditu. Google-ko kontuko historia arakatzeko beste modu batzuk aurki zenitzake <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webgunean.</translation>
-<translation id="7121389946694989825">Bidali erabilera- eta diagnostiko-datuak. Gailu honek automatikoki bidaltzen dizkio Google-ri diagnostikoak eta gailu zein aplikazioen erabilerari buruzko datuak. Informazio hori ez da erabiliko haurra identifikatzeko eta, hari esker, sistemaren eta aplikazioen egonkortasuna hobetuko da, besteak beste. Gainera, multzokatutako datu batzuk oso baliagarriak izango dira Google-ren aplikazioak hobetzeko eta bazkideei laguntzeko (adibidez, Android-en garatzaileei). Haurraren kontuko Sareko eta aplikazioetako jarduera gehigarriak ezarpena aktibatuta badago, baliteke datu horiek haren Google-ko kontuan gordetzea. <ph name="BEGIN_LINK1" />Lortu informazio gehiago<ph name="END_LINK1" /></translation>
 <translation id="7121438501124788993">Garatzaileen modua</translation>
 <translation id="7121728544325372695">Marra adimendunak</translation>
 <translation id="7123360114020465152">Ez da onartzen jada</translation>
@@ -5196,7 +5191,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Eraman fitxa leiho berri batera}other{Eraman fitxak leiho berri batera}}</translation>
 <translation id="8179976553408161302">Sartu</translation>
 <translation id="8180239481735238521">orria</translation>
-<translation id="8180294223783876911">Bidali erabilera- eta diagnostiko-datuak. Gailu honek automatikoki bidaltzen dizkio Google-ri diagnostikoak eta gailu zein aplikazioen erabilerari buruzko datuak. Horri esker, sistemaren eta aplikazioen egonkortasuna hobetuko da, besteak beste. Gainera, multzokatutako datu batzuk oso baliagarriak izango dira Google-ren aplikazioak hobetzeko eta bazkideei laguntzeko (adibidez, Android-en garatzaileei). Sareko eta aplikazioetako jarduera gehigarriak ezarpena aktibatuta badago, baliteke datu horiek Google-ko kontuan gordetzea. <ph name="BEGIN_LINK1" />Lortu informazio gehiago<ph name="END_LINK1" /></translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" luzapenak markatutako kokapenetako irudiak, bideoak eta soinu-fitxategiak irakur eta ezaba ditzake.</translation>
 <translation id="8181215761849004992">Ezin da sartu domeinuan. Gailuak gehitzeko pribilegioak dituzula ziurtatzeko, egiaztatu kontua.</translation>
 <translation id="8182105986296479640">Aplikazioak ez du erantzuten.</translation>
@@ -5218,7 +5212,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8203732864715032075">Jaso jakinarazpenak eta ezarri ordenagailua lehenetsi gisa Mezuak aplikazioan gogoratzeko. <ph name="LINK_BEGIN" />Lortu informazio gehiago<ph name="LINK_END" /></translation>
 <translation id="8204129288640092672">Guraso batek blokeatu du "<ph name="APP_NAME" />". Eska iezaiozu baimena aplikazioa erabiltzeko.</translation>
 <translation id="820568752112382238">Gehien bisitatutako webguneak</translation>
-<translation id="8206581664590136590">Bidali erabilera- eta diagnostiko-datuak. Bidali diagnostikoak eta gailu zein aplikazioen erabilerari buruzko datuak Google-ri automatikoki haurrak darabiltzan Android zerbitzuak hobetzen laguntzeko. Informazio hori ez da erabiliko haurra identifikatzeko eta, hari esker, sistemaren eta aplikazioen egonkortasuna hobetuko da, besteak beste. Gainera, multzokatutako datu batzuk oso baliagarriak izango dira Google-ren aplikazioak hobetzeko eta bazkideei laguntzeko (adibidez, Android-en garatzaileei). Haurraren kontuko Sareko eta aplikazioetako jarduera gehigarriak ezarpena aktibatuta badago, baliteke datu horiek haren Google-ko kontuan gordetzea. <ph name="BEGIN_LINK1" />Lortu informazio gehiago<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Blues-zalea</translation>
 <translation id="8206859287963243715">Konexio mugikorra</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Deskarga abian da}other{Deskargak abian dira}}</translation>
@@ -5758,7 +5751,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8912362522468806198">Google-ko kontua</translation>
 <translation id="8912793549644936705">Zabaldu</translation>
 <translation id="8912810933860534797">Gaitu bilaketa automatikoa</translation>
-<translation id="891365694296252935">Bidali erabilera- eta diagnostiko-datuak. Gailu honek automatikoki bidaltzen dizkio Google-ri diagnostikoak eta gailu zein aplikazioen erabilerari buruzko datuak. Informazio hori ez da erabiliko haurra identifikatzeko eta, hari esker, sistemaren eta aplikazioen egonkortasuna hobetuko da, besteak beste. Gainera, multzokatutako datu batzuk oso baliagarriak izango dira Google-ren aplikazioak hobetzeko eta bazkideei laguntzeko (adibidez, Android-en garatzaileei). Jabeak konfiguratu du ezarpen hori. Haurraren kontuko Sareko eta aplikazioetako jarduera gehigarriak ezarpena aktibatuta badago, baliteke datu horiek haren Google-ko kontuan gordetzea. <ph name="BEGIN_LINK1" />Lortu informazio gehiago<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Iradokizuna kargatzen</translation>
 <translation id="8916476537757519021">Ezkutuko moduko azpimarkoa: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8921366488406707015">Segurtasun-giltza egiaztatzen…</translation>
@@ -5895,7 +5887,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="9101691533782776290">Abiarazi aplikazioa</translation>
 <translation id="9102610709270966160">Gaitu luzapena</translation>
 <translation id="9103868373786083162">Sakatu itzultzeko, laster-menua historia ikusteko</translation>
-<translation id="9104396740804929809">Bidali erabilera- eta diagnostiko-datuak. Bidali diagnostikoak eta gailu zein aplikazioen erabilerari buruzko datuak Google-ri automatikoki haurrak darabiltzan Android zerbitzuak hobetzen laguntzeko. Horri esker, sistemaren eta aplikazioen egonkortasuna hobetuko da, besteak beste. Gainera, multzokatutako datu batzuk oso baliagarriak izango dira Google-ren aplikazioak hobetzeko eta bazkideei laguntzeko (adibidez, Android-en garatzaileei). Jabeak konfiguratu du ezarpen hori. Gailu honen diagnostikoak eta erabilera-datuak Google-ri bidaltzea aukera dezake jabeak. Sareko eta aplikazioetako jarduera gehigarriak ezarpena aktibatuta badago, baliteke datu horiek Google-ko kontuan gordetzea. <ph name="BEGIN_LINK1" />Lortu informazio gehiago<ph name="END_LINK1" /></translation>
 <translation id="9109122242323516435">Tokia egiteko, ezabatu gailuko memorian dauden fitxategiak.</translation>
 <translation id="9109283579179481106">Konektatu sare mugikorrera</translation>
 <translation id="9111102763498581341">Desblokeatu</translation>

@@ -5,6 +5,7 @@
 #include "chrome/browser/native_file_system/origin_scoped_native_file_system_permission_context.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
@@ -136,7 +137,8 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
     }
 
     // Drop fullscreen mode so that the user sees the URL bar.
-    web_contents->ForSecurityDropFullscreen();
+    base::ScopedClosureRunner fullscreen_block =
+        web_contents->ForSecurityDropFullscreen();
 
     NativeFileSystemPermissionRequestManager::Access access =
         type_ == GrantType::kRead
@@ -151,7 +153,8 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
     request_manager->AddRequest(
         {origin_, path_, is_directory_, access},
         base::BindOnce(&PermissionGrantImpl::OnPermissionRequestResult, this,
-                       std::move(callback)));
+                       std::move(callback)),
+        std::move(fullscreen_block));
   }
 
   const url::Origin& origin() const {

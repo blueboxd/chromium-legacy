@@ -55,8 +55,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                       RenderFrameHostDelegate* delegate,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
-                      int32_t routing_id,
-                      int32_t widget_routing_id);
+                      int32_t routing_id);
   ~TestRenderFrameHost() override;
 
   // RenderFrameHostImpl overrides (same values, but in Test*/Mock* types)
@@ -207,6 +206,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // Simulates RenderFrameHost finishing loading and dispatching all relevant
   // callbacks.
   void SimulateLoadingCompleted(LoadingScenario loading_scenario);
+
+  // Expose CreateNewFullscreenWidget for tests.
+  using RenderFrameHostImpl::CreateNewFullscreenWidget;
 
  protected:
   void SendCommitNavigation(

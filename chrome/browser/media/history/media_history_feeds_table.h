@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_FEEDS_TABLE_H_
 #define CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_FEEDS_TABLE_H_
 
+#include <vector>
+
+#include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_table_base.h"
 #include "sql/init_status.h"
 #include "url/gurl.h"
@@ -33,6 +36,9 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
 
   // Saves a newly discovered feed in the database.
   bool SaveFeed(const GURL& url);
+
+  // Returns the feed rows in the database.
+  std::vector<media_feeds::mojom::MediaFeedPtr> GetRows();
 };
 
 }  // namespace media_history

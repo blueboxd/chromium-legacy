@@ -622,7 +622,7 @@ public class OmahaBaseTest {
             String response = "";
             response += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
             response += "<response protocol=\"3.0\" server=\"prod\">";
-            response += "<daystart elapsed_seconds=\"12345\"/>";
+            response += "<daystart elapsed_days=\"4088\" elapsed_seconds=\"12345\"/>";
             response += "<app appid=\"";
             response += (isOnTablet ? MockRequestGenerator.UUID_TABLET
                                     : MockRequestGenerator.UUID_PHONE);

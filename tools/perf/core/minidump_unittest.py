@@ -21,6 +21,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   # TODO(crbug.com/1038043): Test is failing on chromeos-betty-chrome.
   # TODO(crbug.com/1056235): Re-enable on Linux once the crashes are fixed.
   @decorators.Disabled('chromeos-local', 'chromeos-board-betty',
+                       'chromeos-board-betty-pi-arc',
                        'chromeos-amd64-generic-rel', 'linux')
   def testSymbolizeMinidump(self):
     # Wait for the browser to restart fully before crashing
@@ -66,6 +67,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   # TODO(crbug.com/1038043): Test is failing on chromeos-betty-chrome.
   # TODO(crbug.com/1056235): Re-enable on Linux once the crashes are fixed.
   @decorators.Disabled('chromeos-local', 'chromeos-board-betty',
+                       'chromeos-board-betty-pi-arc',
                        'chromeos-amd64-generic-rel', 'linux')
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing

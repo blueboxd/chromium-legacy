@@ -65,7 +65,6 @@ class PLATFORM_EXPORT DisplayItem {
     kDocumentBackground,
     kDragImage,
     kDragCaret,
-    kEmptyContentForFilters,
     kForcedColorsModeBackplate,
     kSVGImage,
     kLinkHighlight,
@@ -225,6 +224,8 @@ class PLATFORM_EXPORT DisplayItem {
     DCHECK(fragment < (1 << 14));
     fragment_ = fragment;
   }
+
+  void SetVisualRectForTesting(const IntRect& r) { visual_rect_ = r; }
 
 // See comments of enum Type for usage of the following macros.
 #define DEFINE_CATEGORY_METHODS(Category)                           \

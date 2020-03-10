@@ -49,9 +49,10 @@ class PLATFORM_EXPORT CompositorFilterOperations {
   FloatRect MapRect(const FloatRect& input_rect) const;
 
   bool HasFilterThatMovesPixels() const;
+  bool HasReferenceFilter() const;
 
   void SetReferenceBox(const FloatRect& r) { reference_box_ = r; }
-  FloatRect ReferenceBox() const { return reference_box_; }
+  const FloatRect& ReferenceBox() const { return reference_box_; }
 
   // For reference filters, this equality operator compares pointers of the
   // image_filter fields instead of their values.

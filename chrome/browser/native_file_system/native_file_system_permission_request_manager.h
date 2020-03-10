@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_PERMISSION_REQUEST_MANAGER_H_
 #define CHROME_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_PERMISSION_REQUEST_MANAGER_H_
 
+#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
@@ -64,7 +65,8 @@ class NativeFileSystemPermissionRequestManager
 
   void AddRequest(
       RequestData request,
-      base::OnceCallback<void(permissions::PermissionAction result)> callback);
+      base::OnceCallback<void(permissions::PermissionAction result)> callback,
+      base::ScopedClosureRunner fullscreen_block);
 
   // Do NOT use this method in production code. Use this method in browser
   // tests that need to accept or deny permissions when requested in

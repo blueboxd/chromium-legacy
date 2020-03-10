@@ -7,6 +7,7 @@
 #include <initializer_list>
 
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -160,25 +161,42 @@ struct TestChunks {
   DisplayItemList items = DisplayItemList(0);
 
   // Add a paint chunk with a non-empty paint record and given property nodes.
-  void AddChunk(const TransformPaintPropertyNode& t,
-                const ClipPaintPropertyNode& c,
-                const EffectPaintPropertyNode& e,
-                const IntRect& bounds = IntRect(0, 0, 100, 100)) {
+  void AddChunk(
+      const TransformPaintPropertyNode& t,
+      const ClipPaintPropertyNode& c,
+      const EffectPaintPropertyNode& e,
+      const IntRect& bounds = IntRect(0, 0, 100, 100),
+      const base::Optional<IntRect>& drawable_bounds = base::nullopt) {
     auto record = sk_make_sp<PaintRecord>();
-    record->push<cc::DrawRectOp>(bounds, cc::PaintFlags());
-    AddChunk(std::move(record), t, c, e, bounds);
+    record->push<cc::DrawRectOp>(drawable_bounds ? *drawable_bounds : bounds,
+                                 cc::PaintFlags());
+    AddChunk(std::move(record), t, c, e, bounds, drawable_bounds);
   }
 
   // Add a paint chunk with a given paint record and property nodes.
-  void AddChunk(sk_sp<PaintRecord> record,
-                const TransformPaintPropertyNode& t,
-                const ClipPaintPropertyNode& c,
-                const EffectPaintPropertyNode& e,
-                const IntRect& bounds = IntRect(0, 0, 100, 100)) {
+  void AddChunk(
+      sk_sp<PaintRecord> record,
+      const TransformPaintPropertyNode& t,
+      const ClipPaintPropertyNode& c,
+      const EffectPaintPropertyNode& e,
+      const IntRect& bounds = IntRect(0, 0, 100, 100),
+      const base::Optional<IntRect>& drawable_bounds = base::nullopt) {
     auto i = items.size();
     items.AllocateAndConstruct<DrawingDisplayItem>(
         DefaultId().client, DefaultId().type, std::move(record));
+    if (drawable_bounds)
+      items.Last().SetVisualRectForTesting(*drawable_bounds);
     chunks.emplace_back(i, i + 1, DefaultId(), PropertyTreeState(t, c, e));
+    chunks.back().bounds = bounds;
+    chunks.back().drawable_bounds = drawable_bounds ? *drawable_bounds : bounds;
+  }
+
+  void AddEmptyChunk(const TransformPaintPropertyNode& t,
+                     const ClipPaintPropertyNode& c,
+                     const EffectPaintPropertyNode& e,
+                     const IntRect& bounds = IntRect(0, 0, 100, 100)) {
+    auto i = items.size();
+    chunks.emplace_back(i, i, DefaultId(), PropertyTreeState(t, c, e));
     chunks.back().bounds = bounds;
   }
 };
@@ -1328,6 +1346,89 @@ TEST_P(PaintChunksToCcLayerTest, EmptyChunkRect) {
               PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,   // <e1>
                                         cc::PaintOpType::Restore}));  // </e1>
   EXPECT_EFFECT_BOUNDS(0, 0, 0, 0, *output, 0);
+}
+
+TEST_P(PaintChunksToCcLayerTest, ReferenceFilterOnEmptyChunk) {
+  CompositorFilterOperations filter;
+  filter.AppendReferenceFilter(sk_make_sp<cc::RecordPaintFilter>(
+      sk_make_sp<cc::PaintOpBuffer>(), SkRect::MakeIWH(100, 100)));
+  filter.SetReferenceBox(FloatRect(11, 22, 33, 44));
+  ASSERT_TRUE(filter.HasReferenceFilter());
+  auto e1 = CreateFilterEffect(e0(), t0(), &c0(), filter, FloatPoint(10, 20));
+  TestChunks chunks;
+  chunks.AddEmptyChunk(t0(), c0(), *e1, IntRect(0, 0, 200, 300));
+
+  auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(
+      cc::DisplayItemList::kTopLevelDisplayItemList);
+  PaintChunksToCcLayer::ConvertInto(chunks.chunks, PropertyTreeState::Root(),
+                                    gfx::Vector2dF(5, 10), FloatSize(),
+                                    chunks.items, *cc_list);
+  ASSERT_EQ(9u, cc_list->TotalOpCount());
+  // (16 32) is (11, 22) + filter_offset - layer_offset.
+  gfx::Rect expected_visual_rect(16, 32, 33, 44);
+  for (size_t i = 0; i < cc_list->TotalOpCount(); i++) {
+    SCOPED_TRACE(testing::Message() << "Visual rect of op " << i);
+    EXPECT_EQ(expected_visual_rect, cc_list->VisualRectForTesting(i));
+  }
+
+  auto output = cc_list->ReleaseAsRecord();
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make(
+                  {cc::PaintOpType::Save,
+                   cc::PaintOpType::Translate,  // layer offset
+                   cc::PaintOpType::Save,       // <e1>
+                   cc::PaintOpType::Translate, cc::PaintOpType::SaveLayer,
+                   cc::PaintOpType::Translate, cc::PaintOpType::Restore,
+                   cc::PaintOpType::Restore,  // </e1>
+                   cc::PaintOpType::Restore}));
+  EXPECT_EFFECT_BOUNDS(11, 22, 33, 44, *output, 4);
+}
+
+TEST_P(PaintChunksToCcLayerTest, ReferenceFilterOnChunkWithDrawingDisplayItem) {
+  CompositorFilterOperations filter;
+  filter.AppendReferenceFilter(sk_make_sp<cc::RecordPaintFilter>(
+      sk_make_sp<cc::PaintOpBuffer>(), SkRect::MakeIWH(100, 100)));
+  filter.SetReferenceBox(FloatRect(11, 22, 33, 44));
+  ASSERT_TRUE(filter.HasReferenceFilter());
+  auto e1 = CreateFilterEffect(e0(), t0(), &c0(), filter, FloatPoint(10, 20));
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c0(), *e1, IntRect(5, 10, 200, 300),
+                  IntRect(10, 15, 20, 30));
+
+  auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(
+      cc::DisplayItemList::kTopLevelDisplayItemList);
+  PaintChunksToCcLayer::ConvertInto(chunks.chunks, PropertyTreeState::Root(),
+                                    gfx::Vector2dF(5, 10), FloatSize(),
+                                    chunks.items, *cc_list);
+  ASSERT_EQ(11u, cc_list->TotalOpCount());
+  // This is the visual rect for all filter related paint operations, which is
+  // the union of the draw record and reference box of the filter in the layer's
+  // space.
+  gfx::Rect expected_filter_visual_rect(5, 5, 44, 71);
+  // This is the visual rect of the DrawingDisplayItem in the layer's space.
+  gfx::Rect expected_draw_visual_rect(5, 5, 20, 30);
+  // TotalOpCount() - 1 because the DrawRecord op has a sub operation.
+  for (size_t i = 0; i < cc_list->TotalOpCount() - 1; i++) {
+    SCOPED_TRACE(testing::Message() << "Visual rect of op " << i);
+    EXPECT_EQ(i == 6 ? expected_draw_visual_rect : expected_filter_visual_rect,
+              cc_list->VisualRectForTesting(i));
+  }
+
+  auto output = cc_list->ReleaseAsRecord();
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make(
+                  {cc::PaintOpType::Save,
+                   cc::PaintOpType::Translate,   // layer offset
+                   cc::PaintOpType::Save,        //
+                   cc::PaintOpType::Translate,   // e1->FilterOrigin()
+                   cc::PaintOpType::SaveLayer,   // <e1>
+                   cc::PaintOpType::Translate,   // -e1->FilterOrigin()
+                   cc::PaintOpType::DrawRecord,  // the DrawingDisplayItem
+                   cc::PaintOpType::Restore,     // </e1>
+                   cc::PaintOpType::Restore, cc::PaintOpType::Restore}));
+  // The effect bounds are the union of the chunk's drawable_bounds and the
+  // reference box in the filter's space.
+  EXPECT_EFFECT_BOUNDS(0, -5, 44, 71, *output, 4);
 }
 
 }  // namespace

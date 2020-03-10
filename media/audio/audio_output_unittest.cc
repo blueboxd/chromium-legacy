@@ -75,14 +75,16 @@ class AudioOutputTest : public testing::TestWithParam<bool> {
 };
 
 // Test that can it be created and closed.
-TEST_P(AudioOutputTest, GetAndClose) {
+// Disabled: crbug.com/1060165
+TEST_P(AudioOutputTest, DISABLED_GetAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
   CreateWithDefaultParameters();
   ASSERT_TRUE(stream_);
 }
 
 // Test that it can be opened and closed.
-TEST_P(AudioOutputTest, OpenAndClose) {
+// Disabled: crbug.com/1060165
+TEST_P(AudioOutputTest, DISABLED_OpenAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
 
   CreateWithDefaultParameters();
@@ -91,7 +93,8 @@ TEST_P(AudioOutputTest, OpenAndClose) {
 }
 
 // Verify that Stop() can be called before Start().
-TEST_P(AudioOutputTest, StopBeforeStart) {
+// Disabled: crbug.com/1060165
+TEST_P(AudioOutputTest, DISABLED_StopBeforeStart) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
   CreateWithDefaultParameters();
   EXPECT_TRUE(stream_->Open());
@@ -99,7 +102,8 @@ TEST_P(AudioOutputTest, StopBeforeStart) {
 }
 
 // Verify that Stop() can be called more than once.
-TEST_P(AudioOutputTest, StopTwice) {
+// Disabled: crbug.com/1060165
+TEST_P(AudioOutputTest, DISABLED_StopTwice) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
   CreateWithDefaultParameters();
   EXPECT_TRUE(stream_->Open());
@@ -111,7 +115,8 @@ TEST_P(AudioOutputTest, StopTwice) {
 }
 
 // This test produces actual audio for .25 seconds on the default device.
-TEST_P(AudioOutputTest, Play200HzTone) {
+// Disabled: crbug.com/1060165
+TEST_P(AudioOutputTest, DISABLED_Play200HzTone) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
 
   stream_params_ =
@@ -149,7 +154,8 @@ TEST_P(AudioOutputTest, Play200HzTone) {
 }
 
 // Test that SetVolume() and GetVolume() work as expected.
-TEST_P(AudioOutputTest, VolumeControl) {
+// Disabled: crbug.com/1060165
+TEST_P(AudioOutputTest, DISABLED_VolumeControl) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
 
   CreateWithDefaultParameters();

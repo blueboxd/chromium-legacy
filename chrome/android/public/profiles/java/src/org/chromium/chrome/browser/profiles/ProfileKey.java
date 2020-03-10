@@ -23,10 +23,28 @@ public class ProfileKey {
                 ProfileKeyJni.get().isOffTheRecord(mNativeProfileKeyAndroid, ProfileKey.this);
     }
 
+    /**
+     * Returns the original profile key, even if it is called in an incognito context.
+     *
+     * https://crbug.com/1041781: Remove after auditing and replacing all usecases.
+     *
+     * @deprecated use {@link #getLastUsedRegularProfileKey()} instead.
+     */
+    @Deprecated
     public static ProfileKey getLastUsedProfileKey() {
+        return getLastUsedRegularProfileKey();
+    }
+
+    /**
+     * Returns the regular (i.e., not off-the-record) profile key.
+     *
+     * Note: The function name uses the "last used" terminology for consistency with
+     * profile_manager.cc which supports multiple regular profiles.
+     */
+    public static ProfileKey getLastUsedRegularProfileKey() {
         // TODO(mheikal): Assert at least reduced mode is started when https://crbug.com/973241 is
         // fixed.
-        return (ProfileKey) ProfileKeyJni.get().getLastUsedProfileKey();
+        return (ProfileKey) ProfileKeyJni.get().getLastUsedRegularProfileKey();
     }
 
     public ProfileKey getOriginalKey() {
@@ -55,7 +73,7 @@ public class ProfileKey {
 
     @NativeMethods
     interface Natives {
-        Object getLastUsedProfileKey();
+        Object getLastUsedRegularProfileKey();
         Object getOriginalKey(long nativeProfileKeyAndroid, ProfileKey caller);
         boolean isOffTheRecord(long nativeProfileKeyAndroid, ProfileKey caller);
     }

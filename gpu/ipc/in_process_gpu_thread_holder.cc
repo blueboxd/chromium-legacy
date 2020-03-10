@@ -17,7 +17,6 @@
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
-#include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "ui/gl/init/gl_factory.h"
 
 namespace gpu {
@@ -103,11 +102,9 @@ void InProcessGpuThreadHolder::InitializeOnGpuThread(
                                       gpu_driver_bug_workarounds, nullptr);
 
   task_executor_ = std::make_unique<GpuInProcessThreadService>(
-      task_runner(), scheduler_.get(), sync_point_manager_.get(),
-      mailbox_manager_.get(), nullptr, gl::GLSurfaceFormat(), gpu_feature_info_,
-      gpu_preferences_, shared_image_manager_.get(), nullptr,
-      base::BindRepeating(&InProcessGpuThreadHolder::GetSharedContextState,
-                          base::Unretained(this)));
+      this, task_runner(), scheduler_.get(), sync_point_manager_.get(),
+      mailbox_manager_.get(), gl::GLSurfaceFormat(), gpu_feature_info_,
+      gpu_preferences_, shared_image_manager_.get(), nullptr);
 
   completion->Signal();
 }
@@ -128,6 +125,12 @@ scoped_refptr<SharedContextState>
 InProcessGpuThreadHolder::GetSharedContextState() {
   DCHECK(context_state_);
   return context_state_;
+}
+
+scoped_refptr<gl::GLShareGroup> InProcessGpuThreadHolder::GetShareGroup() {
+  if (!share_group_)
+    share_group_ = base::MakeRefCounted<gl::GLShareGroup>();
+  return share_group_;
 }
 
 }  // namespace gpu

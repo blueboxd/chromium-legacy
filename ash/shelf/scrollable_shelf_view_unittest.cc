@@ -75,8 +75,6 @@ class ScrollableShelfViewTest : public AshTestBase {
   ~ScrollableShelfViewTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kShelfScrollable}, {});
 
     AshTestBase::SetUp();
     scrollable_shelf_view_ = GetPrimaryShelf()
@@ -90,7 +88,6 @@ class ScrollableShelfViewTest : public AshTestBase {
   }
 
   void TearDown() override {
-    scoped_feature_list_.Reset();
     AshTestBase::TearDown();
   }
 
@@ -168,7 +165,6 @@ class ScrollableShelfViewTest : public AshTestBase {
     EXPECT_LE(ripple_right, shelf_container_bounds_in_screen.right());
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;
   ShelfView* shelf_view_ = nullptr;
   std::unique_ptr<ShelfViewTestAPI> test_api_;

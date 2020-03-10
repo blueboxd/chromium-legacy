@@ -29,12 +29,10 @@ _typemap_imports = [
   "//device/vr/public/mojom/typemaps.gni",
   "//fuchsia/mojom/test_typemaps.gni",
   "//gpu/ipc/common/typemaps.gni",
-  "//ipc/typemaps.gni",
   "//media/capture/mojom/typemaps.gni",
   "//media/fuchsia/mojom/typemaps.gni",
   "//media/learning/mojo/public/cpp/typemaps.gni",
   "//media/mojo/mojom/typemaps.gni",
-  "//mojo/public/cpp/base/typemaps.gni",
   "//mojo/public/cpp/bindings/tests/chromium_typemaps.gni",
   "//sandbox/mac/mojom/typemaps.gni",
   "//services/audio/public/cpp/typemaps.gni",
@@ -61,7 +59,6 @@ _typemap_imports = [
   "//ui/gfx/typemaps.gni",
   "//ui/gl/typemaps.gni",
   "//ui/latency/mojom/typemaps.gni",
-  "//url/mojom/typemaps.gni",
 ]
 
 _typemaps = []

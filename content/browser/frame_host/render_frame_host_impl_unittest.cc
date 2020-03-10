@@ -80,4 +80,13 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
   EXPECT_EQ(initial_rfh, main_rfh());
 }
 
+// Create a full screen popup RenderWidgetHost and View.
+TEST_F(RenderFrameHostImplTest, CreateFullscreenWidget) {
+  mojo::PendingRemote<mojom::Widget> widget;
+  std::unique_ptr<MockWidgetImpl> widget_impl =
+      std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
+  main_test_rfh()->CreateNewFullscreenWidget(std::move(widget),
+                                             base::DoNothing());
+}
+
 }  // namespace content

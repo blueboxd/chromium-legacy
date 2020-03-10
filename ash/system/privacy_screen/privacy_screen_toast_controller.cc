@@ -37,6 +37,8 @@ void PrivacyScreenToastController::ShowToast() {
     return;
   }
 
+  tray_->CloseSecondaryBubbles();
+
   TrayBubbleView::InitParams init_params;
   init_params.shelf_alignment = tray_->shelf()->alignment();
   init_params.min_width = kPrivacyScreenToastMinWidth;
@@ -64,6 +66,9 @@ void PrivacyScreenToastController::ShowToast() {
 
   StartAutoCloseTimer();
   UpdateToastView();
+
+  tray_->SetTrayBubbleHeight(
+      bubble_widget_->GetWindowBoundsInScreen().height());
 }
 
 void PrivacyScreenToastController::HideToast() {

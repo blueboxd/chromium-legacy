@@ -152,9 +152,9 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   bool is_visible() const { return is_visible_; }
   void set_is_visible(bool is_visible) { is_visible_ = is_visible; }
 
-  bool is_recommendation() const { return is_recommendation_; }
+  bool is_recommendation() const { return metadata_->is_recommendation; }
   void set_is_recommendation(bool is_recommendation) {
-    is_recommendation_ = is_recommendation;
+    metadata_->is_recommendation = is_recommendation;
   }
 
   void NotifyItemInstalled();
@@ -189,7 +189,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   bool is_installing_ = false;
   int percent_downloaded_ = 0;
   bool is_visible_ = true;
-  bool is_recommendation_ = false;
 
   std::unique_ptr<SearchResultMetadata> metadata_;
 

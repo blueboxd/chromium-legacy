@@ -1,3 +1,19 @@
+<style type="text/css">
+.compact {
+  margin: 0;
+  padding-left: 20px;
+}
+.code-font {
+  font-family: 'Source Code Pro', sans-serif;
+}
+.green {
+  color: green
+}
+.red {
+  color: red
+}
+</style>
+
 <h2 id="manifest">Manifest</h2>
 
 <p>
@@ -179,9 +195,9 @@ The following actions are considered at this stage:
 </p>
 
 <ul>
-  <li>Block actions with type <code>block</code></li>
-  <li>Redirect actions with type <code>redirect</code> or <code>upgradeScheme</code></li>
-  <li>Allow actions with type <code>allow</code><code>allowAllRequests</code></li>
+  <li>Actions which block requests of type <code>block</code></li>
+  <li>Actions which redirect requests of type <code>redirect</code> or <code>upgradeScheme</code></li>
+  <li>Actions which allow requests of type <code>allow</code> or <code>allowAllRequests</code></li>
 </ul>
 
 <p>
@@ -334,12 +350,33 @@ are evaluated on the request and response headers. All matching
         "main_frame"
       ]
     }
+  },
+  {
+    "id" : 8,
+    "priority": 2,
+    "action" : {
+      "type" : "allowAllRequests"
+    },
+    "condition" : {
+      "urlFilter" : "||b.com/path",
+      "resourceTypes" : ["sub_frame"]
+    }
+  },
+  {
+    "id" : 9,
+    "priority": 1,
+    "action" : {
+      "type" : "block"
+    },
+    "condition" : {
+      "urlFilter" : "script.js",
+      "resourceTypes" : ["script"]
+    }
   }
 ]
 </pre>
 
 <ul>
-  <!--TODO(crbug.com/1038831): Add examples for allowAllRequests rules. -->
   <li>
     Consider a navigation to <code>"http://google.com"</code>. Rules with id
     (1) and (4) match. The request will be blocked because blocking rules have
@@ -372,5 +409,32 @@ are evaluated on the request and response headers. All matching
     Consider a navigation to <code>"http://www.abc.xyz.com/path"</code>. The
     rule with id (7) matches. The request will be redirected to <code>
     "https://abc.xyz.com/path"</code>.
+  </li>
+  <li>
+    Consider the following request hierarchy:
+      <ul class="compact">
+        <li><span class="code-font">https://a.com/path</span> (main-frame request)
+          <ul class="compact">
+            <li><span class="code-font green">https://b.com/path</span> (sub-frame request, matches rule with id (8))
+              <ul class="compact">
+                <li><span class="code-font green">https://c.com/path</span> (sub-frame request, matches rule with id (8))
+                  <ul class="compact"><li><span class="code-font green">https://c.com/script.js</span> (script request, matches rules with ids (8, 9) but (8) has higher priority)</li></ul>
+                </li>
+                <li><span class="code-font green">https://b.com/script.js</span> (script request, matches rules with ids (8, 9) but (8) has higher priority)</li>
+              </ul>
+            </li>
+            <li><span class="code-font green">https://d.com/path</span> (sub-frame request)
+              <ul class="compact">
+                <li>
+                  <span class="code-font red">https://d.com/script.js</span> (script request, matches rule with ids (9))
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    All requests in green will be allow-listed due to rule with id (8) and not
+    be evaluated by the extensions’ ruleset. Requests in red will be blocked due
+    to rule with id (9).
   </li>
 </ul>

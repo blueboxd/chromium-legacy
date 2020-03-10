@@ -479,7 +479,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="3024663005179499861">Qoida turi noto‘g‘ri</translation>
 <translation id="3037605927509011580">Ana xolos!</translation>
 <translation id="3041612393474885105">Sertifikat haqida ma’lumot</translation>
-<translation id="3057676462092457419"><ph name="SECURE_DNS_MODE_SECURE" /> DnsOverHttps rejimi hozircha ishlamaydi, rejim faolsizlantirildi: <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Xizmatni tuzatish</translation>
 <translation id="3064966200440839136">Tashqi ilova orqali to‘lash uchun inkognito rejimidan chiqib ketasiz. Davom ettirilsinmi?</translation>
@@ -576,6 +575,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="3484560055331845446">Google hisobingiz xavf ostida. Parolingizni yangilashni tavsiya qilamiz. Hisobingizga qayta kirishingiz talab qilinadi.</translation>
 <translation id="3487845404393360112">Tarnov 4</translation>
 <translation id="3495081129428749620">“<ph name="PAGE_TITLE" />” sahifasidan qidirish</translation>
+<translation id="3507936815618196901">Atrofingiz 3D xaritasini yaratish va kamera holatini kuzatish</translation>
 <translation id="3512163584740124171">Bu parametr shu guruhdagi boshqa parametr ustunligi tufayli inkor etilgan.</translation>
 <translation id="3518941727116570328">Bir nechta obyektni qayta ishlash</translation>
 <translation id="3528171143076753409">Server sertifikati ishonchli emas.</translation>
@@ -928,6 +928,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="5030338702439866405">Berilgan vaqt:</translation>
 <translation id="503069730517007720">“<ph name="SOFTWARE_NAME" />” uchun negiz sertifikati zarur, lekin o‘rnatilmagan. Tarmoq administratori bu muammoning yechimini “<ph name="SOFTWARE_NAME" />” konfiguratsiyasi ko‘rsatmalaridan izlashi zarur. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google Tarjimon haqida</translation>
+<translation id="503498442187459473"><ph name="HOST" /> kamera va mikrofoningizdan foydalanishni istaydi</translation>
 <translation id="5039804452771397117">Ruxsat berish</translation>
 <translation id="5040262127954254034">Shaxsiy ma’lumotlar</translation>
 <translation id="5043480802608081735">Nusxalangan havola</translation>
@@ -1036,7 +1037,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="5457113250005438886">Yaroqsiz</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> va yana <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ta}other{<ph name="CONTACT_PREVIEW" /> va yana <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ta}}</translation>
 <translation id="5470861586879999274">O‘zgarishlarni &amp;qaytarish</translation>
-<translation id="5472133193607270166">Agar yoqilsa, saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi. Ayrim saytlar nosoz ishlashi mumkin.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Bu kontent zararli dastur o‘rnatishga yoki shaxsiy ma’lumotlaringizni o‘g‘irlashga urinishi mumkin. <ph name="BEGIN_LINK" />Baribir ko‘rsatilsin<ph name="END_LINK" />.</translation>
 <translation id="54817484435770891">To‘g‘ri manzilni kiriting</translation>
@@ -1321,6 +1321,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6710594484020273272">&lt;Qidiruv so‘rovini kiriting&gt;</translation>
 <translation id="671076103358959139">Qaydnoma tokeni:</translation>
 <translation id="6711464428925977395">Proksi serverda xatolik mavjud yoki manzil noto‘g‘ri kiritildi.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> sayti atrofingiz 3D xaritasini yaratmoqchi va kamera holatini kuzatmoqchi</translation>
 <translation id="6738516213925468394">Maʼlumotlaringiz <ph name="TIME" /> sanasida <ph name="BEGIN_LINK" />kodli ibora<ph name="END_LINK" /> bilan shifrlangan. Sinxronizatsiyani boshlash uchun uni kiriting.</translation>
 <translation id="674375294223700098">Sertifikat serverida noma’lum xato</translation>
 <translation id="6744009308914054259">Aloqa o‘rnatilguncha Yuklanmalar jildini ochib oflayn maqolalar o‘qishingiz mumkin.</translation>
@@ -1741,7 +1742,6 @@ Batafsil axborot:
 <translation id="8589998999637048520">Eng sifatli</translation>
 <translation id="860043288473659153">Karta egasining ismi</translation>
 <translation id="8606726445206553943">MIDI qurilmalaridan foydalanish</translation>
-<translation id="8616822740383114808">Bu parametr <ph name="SETTINGS_PAGE" /> sahifasida <ph name="ENFORCING_SETTING" /> tomonidan boshqariladi</translation>
 <translation id="861775596732816396">Hajmi: 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Kartani bu qurilmaga saqlash</translation>

@@ -37,10 +37,10 @@
 <translation id="1207086294218137981">ไม่มีส่วนหัวระดับ 4 ถัดไป</translation>
 <translation id="1212770441379271564">แป้นพิมพ์ลัดต่อไปนี้ไม่ใช่คำสั่ง ChromeVox แต่มีประโยชน์มากเพื่อให้ได้รับประโยชน์สูงสุดจาก Chrome
 หากต้องการนำทางไปข้างหน้าผ่านรายการที่ดำเนินการได้ เช่น ปุ่มและลิงก์ ให้กดแป้น Tab หากต้องการนำทางย้อนกลับ ให้กด Shift+Tab
-หากต้องการป้อนข้อมูลในช่องที่อยู่ของเบราว์เซอร์ Chrome หรือที่เรียกอีกอย่างว่าแถบอเนกประสงค์ ให้กด Control + L
-หากต้องการเปิดและไปที่แท็บใหม่อัตโนมัติ ให้กด Control+T เคอร์เซอร์จะอยู่ในแถบอเนกประสงค์
+หากต้องการป้อนข้อมูลในช่องที่อยู่ของเบราว์เซอร์ Chrome หรือที่เรียกอีกอย่างว่าแถบอเนกประสงค์ ให้กด Control+L
+หากต้องการเปิดและไปที่แท็บใหม่โดยอัตโนมัติ ให้กด Control+T เคอร์เซอร์จะอยู่ในแถบอเนกประสงค์
 หากต้องการปิดแท็บ ให้กด Control+W
-หากต้องการเลื่อนไปข้างหน้าระหว่างแท็บ ให้ใช้ Control+Tab
+หากต้องการเลื่อนไปข้างหน้าระหว่างแท็บที่เปิดอยู่ ให้ใช้ Control+Tab
 หากต้องการเปิดเมนูเบราว์เซอร์ Chrome ให้กด Alt+F</translation>
 <translation id="1213216066620407844">ChromeVox - ทำให้ Chrome สามารถพูดได้</translation>
 <translation id="1225969361094801578">สีเทาอมฟ้าเข้ม</translation>
@@ -576,7 +576,7 @@
 "en_US": "อังกฤษ (สหรัฐอเมริกา)",
 "eo": "เอสเปอแรนโต",
 "es": "สเปน",
-"et": "เอสโทเนีย",
+"et": "เอสโตเนีย",
 "fa": "เปอร์เซีย",
 "fr": "ฝรั่งเศส",
 "fr_CA": "ฝรั่งเศส (แคนาดา)",
@@ -629,12 +629,12 @@
 "ta": "ทมิฬ",
 "te": "เตลูกู",
 "tr": "ตุรกี",
-"tsn": "แอฟริกา",
+"tsn": "แอฟริคานส์",
 "uk": "ยูเครน",
 "ur": "อูรดู",
 "vi": "เวียดนาม",
 "zh": "จีน",
-"zh_TW": "จีน (ตัวเต็ม)"}</translation>
+"zh_TW": "จีน (อักษรฮั่นตัวเต็ม)"}</translation>
 <translation id="4647836961514597010">ตัวเลือกสี</translation>
 <translation id="4660783501463101648">นำเวอร์ชันคลาสสิกออกแล้ว ระบบนำการสลับแป้นพิมพ์เพื่อสลับกลับไปยัง ChromeVox คลาสสิกออกแล้ว</translation>
 <translation id="4661075872484491155">แผนผัง</translation>
@@ -741,13 +741,13 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{เครื่องหมายจุลภาค}other{# เครื่องหมายจุลภาค}}</translation>
 <translation id="532371086589123547">ช่องข้อความ <ph name="VALUE" /></translation>
 <translation id="532485153932049746">การจัดรูปแบบข้อความ
-<ph name="FONT_SIZE_STRING" />
-<ph name="COLOR_STRING" />
-<ph name="BOLD_STRING" />
-<ph name="ITALIC_STRING" />
-<ph name="UNDERLINE_STRING" />
-<ph name="LINE_THROUGH_STRING" />
-<ph name="FONT_FAMILY_STRING" /></translation>
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590">ลิงก์ <ph name="NAME" /></translation>
 <translation id="5331522683003474486">ควบคุมอุปกรณ์ด้วยสวิตช์เพียง 1 หรือ 2 ปุ่ม</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -1083,7 +1083,7 @@
 <translation id="7693840228159394336">ปุ่มตัวเลือกก่อนหน้า</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">ไม่มีช่องตัวเลือกรวมถัดไป</translation>
-<translation id="772146615414628379">ยินดีด้วย! คุณได้เรียนรู้ข้อมูลสำคัญเกี่ยวกับการใช้งาน ChromeVox แล้ว โปรดทราบว่าคุณเปิดเมนูคำสั่ง ChromeVox ได้ทุกเมื่อด้วยการกดแป้นค้นหา + เครื่องหมายจุด ดูข้อมูลเพิ่มเติมเกี่ยวกับ ChromeVox และ Chrome OS ได้ที่บทความต่อไปนี้
+<translation id="772146615414628379">ยินดีด้วย! คุณได้เรียนรู้ข้อมูลสำคัญเกี่ยวกับการใช้งาน ChromeVox เรียบร้อยแล้ว โปรดทราบว่าคุณเปิดเมนูคำสั่ง ChromeVox ได้ทุกเมื่อด้วยการกดแป้นค้นหา + เครื่องหมายจุด ดูข้อมูลเพิ่มเติมเกี่ยวกับ ChromeVox และ Chrome OS ได้ที่บทความต่อไปนี้
     หากศึกษาบทแนะนำเรียบร้อยแล้ว ให้ใช้ ChromeVox เพื่อนำทางไปยังปุ่ม "ปิด" แล้วคลิกปุ่มดังกล่าว</translation>
 <translation id="7724603315864178912">ตัด</translation>
 <translation id="7731785449856576010">ไม่มีวิดเจ็ตสื่อถัดไป</translation>

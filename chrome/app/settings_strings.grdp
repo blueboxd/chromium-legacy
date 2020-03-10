@@ -1987,6 +1987,45 @@
   <message name="IDS_SETTINGS_COOKIES_PAGE_DESCRIPTION" desc="Description of the settings page which controls cookie settings">
     Allows websites to remember your visit and track you across the web
   </message>
+  <message name="IDS_SETTINGS_COOKIES_CONTROLS" desc="Title of the general cookies control section.">
+    General Settings
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_ALLOW_ALL" desc="Label for allow all cookies radio toggle">
+    Allow all cookies
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_ALLOW_ALL_BULLET_ONE" desc="Description for the first bullet of allow all cookies radio toggle">
+    Sites can use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping cart.
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_ALLOW_ALL_BULLET_TWO" desc="Description for the first bullet of allow all cookies radio toggle">
+    Sites can use cookies to see your browsing activity across different sites, for example, to personalize ads.
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_INCOGNITO" desc="Label for block third party cookies in incognito radio toggle">
+    Block third-party cookies in Incognito
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_INCOGNITO_BULLET_ONE" desc="Description for the first bullet of block third party cookies in incognito radio toggle">
+    Sites can use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping cart.
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_INCOGNITO_BULLET_TWO" desc="Description for the first bullet of block third party cookies in incognito radio toggle">
+    While in incognito, sites can't use your cookies to see your browsing activity across different sites, for example, to personalize ads. Some sites may not work properly.
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_THIRD_PARTY" desc="Label for block third party cookies radio toggle">
+    Block third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_BULLET_ONE" desc="Description for the first bullet of block third party cookies radio toggle">
+    Sites can use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping cart.
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_BULLET_TWO" desc="Description for the first bullet of block third party cookies radio toggle">
+    Sites can't use your cookies to see your browsing activity across different sites, for example, to personalize ads.  Some sites may not work properly.
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_ALL" desc="Label for block all cookies radio toggle">
+    Block all cookies (not recommended)
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_ALL_BULLET_ONE" desc="Description for the first bullet of block all cookies radio toggle">
+    Sites can't use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping cart. Many sites may not work properly.
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_ALL_BULLET_TWO" desc="Description for the first bullet of block all cookies radio toggle">
+    Sites can't use your cookies to see your browsing activity across different sites, for example, to personalize ads.  Many sites may not work properly.
+  </message>
   <message name="IDS_SETTINGS_COOKIES_SITE_SPECIFIC_EXCEPTIONS" desc="Title of cookies page section for managing site specific cookie settings">
     Manage site specific exceptions
   </message>

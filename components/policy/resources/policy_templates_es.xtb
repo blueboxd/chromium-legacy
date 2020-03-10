@@ -61,6 +61,10 @@
       Si se asigna un valor a esta política, el usuario no podrá cambiarlo ni anularlo.</translation>
 <translation id="1062011392452772310">Habilitar confirmación remota para el dispositivo</translation>
 <translation id="1062407476771304334">Sustituir</translation>
+<translation id="1073983258515362346">Enviar información sobre la retroiluminación de un dispositivo.
+
+      Si se asigna el valor "false" a esta política o no se establece, no se enviará ninguna información.
+      Si se le asigna el valor "true", se enviará la información sobre la retroiluminación del dispositivo.</translation>
 <translation id="1078643757670228170">Ten en cuenta que esta política está obsoleta y se eliminará de la versión 82 de <ph name="PRODUCT_OS_NAME" />. Utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> en su lugar.
 
           Permite especificar el tiempo que debe transcurrir sin que el usuario realice ninguna acción antes de que se apague la pantalla (con conexión a la red eléctrica).
@@ -170,6 +174,17 @@ Si esta política se establece en False, no se informará sobre el estado del co
 
 Si no se establece ningún valor para esta política, la frecuencia predeterminada serán 3 horas. La frecuencia mínima permitida son 60 segundos.</translation>
 <translation id="1204263402976895730">Impresoras de empresa habilitadas</translation>
+<translation id="1216890727647348501">Habilita la protección mejorada para la función de Navegación Segura de <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta opción.
+
+      Si habilitas esta opción, la protección mejorada para la función de Navegación Segura estará siempre activa.
+
+      Si inhabilitas esta opción, no estará activada nunca.
+
+      Si defines esta política como obligatoria, los usuarios no podrán cambiar ni anular la opción de "Habilitar protección contra phishing y software malicioso" en <ph name="PRODUCT_NAME" />.
+
+      Si no se establece esta política, la protección mejorada para Navegación Segura estará inhabilitada de forma predeterminada, pero el usuario podrá habilitarla.
+
+      Consulta la página https://developers.google.com/safe-browsing para obtener más información acerca de Navegación Segura.</translation>
 <translation id="1216919699175573511">Habilitar compatibilidad con Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Especifica si el dispositivo debería volver a instalar la versión establecida por <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> si utiliza una versión posterior.
 
@@ -262,6 +277,7 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
           Si no se establece esta política, el comportamiento de las políticas más específicas no se verá afectado.</translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Envía el estado de las actualizaciones del sistema operativo</translation>
+<translation id="1388918874748125262">Habilitar la protección mejorada para Navegación Segura</translation>
 <translation id="1393485621820363363">Impresoras de dispositivos de empresa habilitadas</translation>
 <translation id="1397855852561539316">URL de sugerencia del proveedor de búsquedas predeterminadas</translation>
 <translation id="1398636873839401839">Habilitar todas las variaciones en la pantalla de inicio de sesión</translation>
@@ -322,6 +338,7 @@ El usuario puede inhabilitar el escritorio unificado para pantallas individuales
 Si esta política está establecida en "false" o no está establecida, se inhabilitará el escritorio unificado. En este caso, el usuario no puede habilitar la función.</translation>
 <translation id="1474273443907024088">Inhabilitar el inicio falso de TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1486021504508098388">Enviar información sobre la retroiluminación</translation>
 <translation id="1502843533062797703">Habilitar el bloqueo de inserción de software de terceros</translation>
 <translation id="1507382822467487898">
           Configura qué dirección MAC (control de acceso al medio) se usará cuando se conecte una base al dispositivo.
@@ -1185,6 +1202,9 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="26023406105317310">Configurar las cuentas de Kerberos</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con el uso compartido de archivos del sistema.</translation>
 <translation id="2615240493030733717">Informar sobre la zona horaria</translation>
+<translation id="2620943247255660284">Esta política está obsoleta y se ha sustituido por la política AdvancedProtectionExtraSecurityAllowed.
+
+      Esta política controla si a los usuarios registrados en el Programa de Protección Avanzada se les permite enviar a Google el contenido descargado para realizar un análisis de software malicioso. Si se asigna el valor "true" a esta política o no se le asigna ningún valor, se le pedirá al usuario que envíe los archivos descargados a Google para realizar un análisis profundo. Si el usuario selecciona "Analizar", los archivos descargados se enviarán a Google. Si se le asigna el valor "false", no se le pedirá nada al usuario y los archivos descargados no se enviarán a Google.</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
@@ -1440,6 +1460,21 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="2987227569419001736">Controlar el uso de la API Bluetooth web</translation>
 <translation id="3016255526521614822">Aplicaciones para tomar notas incluidas en la lista blanca que están permitidas en la pantalla de bloqueo de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Controla las políticas de supervisión parental, que se aplican exclusivamente a las cuentas infantiles.</translation>
+<translation id="3020953534071988875">Al configurar esta política, se habilita o inhabilita la autenticación pasiva para los perfiles de incógnito y de invitado en <ph name="PRODUCT_NAME" />.
+
+      La autenticación pasiva permite realizar la autenticación HTTP con credenciales predeterminadas si no se proporcionan credenciales explícitas a través de estructuras de desafío-respuesta de NTLM, Kerberos o Negotiate.
+
+      Si se establece la opción <ph name="REGULAR_ONLY_OPTION_NAME" /> (valor 0), se permite la autenticación pasiva únicamente en las sesiones normales. Las sesiones de incógnito y de invitado no podrán usar la autenticación pasiva.
+
+      Si se establece la opción <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valor 1), se permite la autenticación pasiva en las sesiones normales y de incógnito. Las sesiones de invitado no podrán usar la autenticación pasiva.
+
+      Si se establece la opción <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valor 2), se permite la autenticación pasiva en las sesiones normales y de invitado. Las sesiones de incógnito no podrán usar la autenticación pasiva.
+
+      Si se establece la opción <ph name="ALL_OPTION_NAME" /> (valor 3), se permite la autenticación pasiva en todas las sesiones.
+
+      Ten en cuenta que la autenticación pasiva siempre está permitida en los perfiles normales.
+
+      En la versión 81 y versiones posteriores de <ph name="PRODUCT_NAME" />, si no se establece la política, la autenticación pasiva se habilitará únicamente en las sesiones normales.</translation>
 <translation id="3021562480854470924">Se permite restaurar el número de eventos clave</translation>
 <translation id="3023572080620427845">URL de un archivo XML que contiene las URL que se cargarán en un navegador alternativo.</translation>
 <translation id="3026740867910702435">Habilita la función de accesibilidad del cursor grande en la pantalla de inicio de sesión.
@@ -1923,6 +1958,7 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
           Si no se le asigna ningún valor, la función de dictado estará inhabilitada inicialmente en la pantalla de inicio de sesión, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="3811562426301733860">Permitir anuncios en todos los sitios web</translation>
 <translation id="3816312845600780067">Habilitar combinación de teclas de rescate para inicio de sesión automático</translation>
+<translation id="3817323252437541502">Permitir que los usuarios registrados en el Programa de Protección Avanzada cuenten con más opciones de protección</translation>
 <translation id="3820526221169548563">Habilita la función de accesibilidad del teclado en pantalla.
 
 Si esta política se establece en True, el teclado en pantalla siempre estará habilitado.
@@ -2399,9 +2435,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4449545651113180484">Girar la pantalla 270 grados hacia la derecha</translation>
 <translation id="445270821089253489">Controla el tipo de información del usuario y del dispositivo que se proporciona.</translation>
 <translation id="4453913621209182880">Permitir imprimir solo con gráficos de fondo</translation>
-<translation id="4454586530530448054">Si se establece esta política, todos los tipos de datos especificados se excluirán de la sincronización de Google Sync y de la sincronización del perfil de itinerancia. Esto puede ser útil para reducir el tamaño del perfil de itinerancia o para limitar el tipo de datos que se suben a los servidores de Google Sync.
-
-      Los tipos de datos actuales para esta política son los siguientes: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" y "wifiConfiguration". Estos nombres distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="4454820008017317557">Mostrar el icono de la barra de herramientas de <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
 <translation id="4474167089968829729">Habilitar el almacenamiento de contraseñas en el gestor de contraseñas</translation>
@@ -2585,7 +2618,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se habilita esta política, los usuarios podrán inhabilitar el comportamiento predeterminado con el que cada sitio web se ejecuta en su propio proceso.
       Si esta política no se configura o se inhabilita, el usuario podrá inhabilitar el aislamiento de sitio web
       (por ejemplo, utilizando la entrada "Inhabilitar el aislamiento de sitio web" en chrome://flags).  Si la política se configura como inhabilitada o no se configura, no se desactivará el aislamiento de sitio web.
-      En la versión 76 de <ph name="PRODUCT_OS_NAME" /> y en las anteriores, también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
+      En la versión 76 de <ph name="PRODUCT_OS_NAME" /> y en las anteriores, también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política de usuarios.
 
       Nota: Esta política no se aplica a Android. Para habilitar SitePerProcess en Android, utiliza la configuración de política SitePerProcessAndroid.
       </translation>
@@ -4268,7 +4301,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7340034977315324840">Notificar tiempo de actividad del dispositivo</translation>
 <translation id="7343497214039883642">Archivo de configuración de las impresoras de empresa para los dispositivos</translation>
 <translation id="7359307926583593395">
-      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica a la sesión del usuario. Se recomienda asignar el mismo valor a ambas políticas. Si los valores de las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
+      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica a la sesión del usuario. Se recomienda asignar el mismo valor a ambas políticas. Si los valores de las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política de usuarios.
       </translation>
 <translation id="7360181094056034924">Controla el comportamiento de <ph name="PRODUCT_NAME" /> con los datos subidos y descargados que deban analizarse.  Retrasar la entrega implica que <ph name="PRODUCT_NAME" /> no permitirá que el usuario acceda a un archivo descargado, seleccione un archivo para subir, pegue datos desde el portapapeles ni arrastre y suelte datos hasta que se haya analizado el contenido y se conozca el diagnóstico del análisis.  Esta restricción solo se aplica a los archivos o datos que deban analizarse, según se especifique en las políticas <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> y en las políticas que controlan la lista de dominios en los que se hayan habilitado las comprobaciones.
 
@@ -4882,13 +4915,13 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
       Si se establece, las instantáneas antiguas se eliminarán según sea necesario para respetar el límite. Si se asigna el valor "0" a esta política, no se realizarán instantáneas.</translation>
 <translation id="8451988835943702790">Utilizar página Nueva pestaña como página principal</translation>
 <translation id="8455529558077979314">Configuración de la pantalla de privacidad</translation>
-<translation id="8459216513698220096">Especifica si la política del usuario del GPO del ordenador se procesa o no y cómo lo hace.
+<translation id="8459216513698220096">Especifica si la política de usuarios del GPO del ordenador se procesa o no y cómo lo hace.
 
-      Si se le asigna el valor "Predeterminado" a la política o no se le asigna ningún valor, la política del usuario solo podrá consultarse desde los GPO del usuario (se ignorarán los GPO del ordenador).
+      Si se le asigna el valor "Predeterminado" a la política o no se le asigna ningún valor, la política de usuarios solo podrá consultarse desde los GPO del usuario (se ignorarán los GPO del ordenador).
 
-      Si se le asigna el valor "Combinar" a la política, la política del usuario de los GPO del usuario se combinará con la política del usuario de los GPO del ordenador (los GPO del ordenador tienen preferencia).
+      Si se le asigna el valor "Combinar" a la política, la política de usuarios de los GPO del usuario se combinará con la política de usuarios de los GPO del ordenador (los GPO del ordenador tienen preferencia).
 
-      Si se le asigna el valor "Sustituir" a la política, la política del usuario de los GPO del usuario se sustituirá por la política del usuario de los GPO del ordenador (se ignorarán los GPO del usuario).</translation>
+      Si se le asigna el valor "Sustituir" a la política, la política de usuarios de los GPO del usuario se sustituirá por la política de usuarios de los GPO del ordenador (se ignorarán los GPO del usuario).</translation>
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
 <translation id="8465746466645315861">Si no se define esta política, el usuario podrá habilitar o inhabilitar el corrector ortográfico en la configuración de idioma.
 
@@ -5188,6 +5221,7 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
       sobre el estado de la pantalla y la tarjeta gráfica.</translation>
 <translation id="891435090623616439">codificado como cadena JSON, consulta <ph name="COMPLEX_POLICIES_URL" /> para obtener más información</translation>
 <translation id="8917070657147922192">Permite que los usuarios gestionen los certificados de CA instalados.</translation>
+<translation id="8924721011887485485">Esta política controla si los usuarios registrados en el Programa de Protección Avanzada tienen acceso a funciones de seguridad adicionales. Puede que algunas de estas funciones impliquen compartir datos con Google (por ejemplo, los usuarios del Programa de Protección Avanzada podrán enviar sus descargas a Google para que realice un análisis de software malicioso). Si se le asigna el valor "true" a esta política o no se establece, los usuarios registrados tendrán acceso a funciones de seguridad adicionales. Si se le asigna el valor "false", los usuarios de Protección Avanzada solo tendrán acceso a las funciones de seguridad generales.</translation>
 <translation id="8926275581598789324">Ten en cuenta que esta política está obsoleta y se eliminará de la versión 82 de <ph name="PRODUCT_OS_NAME" />. Utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> en su lugar.
 
           Permite especificar el tiempo que debe transcurrir sin que el usuario realice ninguna acción antes de que se habilite el modo de inactividad (con batería).
@@ -5212,7 +5246,7 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 
       Si no se establece esta política, se utilizará <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
-<translation id="8937282917198525844"> A partir de la versión M81, se renovaron los elementos de control de formulario estándar (p. ej., &lt;select&gt;, &lt;button&gt; o &lt;input type=date&gt;) para mejorar su accesibilidad y uniformidad en distintas plataformas. Esta política restaura los elementos de control de formularios antiguos hasta la versión M84.
+<translation id="8937282917198525844"> A partir de la versión M81, se renovaron los elementos de control de formulario estándar (por ejemplo, &lt;select&gt;, &lt;button&gt; o &lt;input type=date&gt;) para mejorar su accesibilidad y uniformidad en distintas plataformas. Esta política restaura los elementos de control de formularios antiguos hasta la versión M84.
 
       Si se asigna el valor "True" a esta política, se usarán los elementos de control de formularios antiguos en todos los sitios web.
 

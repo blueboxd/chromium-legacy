@@ -311,6 +311,12 @@
       "chrome://tab-strip/*",
       "chrome://welcome/*"
     ]
+  }, {
+    "channel": "stable",
+    "contexts": ["webui_untrusted"],
+    "matches": [
+      "chrome-untrusted://help-app/*"
+    ]
   }],
   "metricsPrivate.getIsCrashReportingEnabled": {
     "whitelist": [

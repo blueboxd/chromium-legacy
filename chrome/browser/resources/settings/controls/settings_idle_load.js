@@ -22,7 +22,7 @@ Polymer({
   /** @private {?Element} */
   child_: null,
 
-  /** @private {?Element} */
+  /** @private {?Element|?TemplateInstanceBase} */
   instance_: null,
 
   /** @private {number} */
@@ -51,7 +51,7 @@ Polymer({
     }
 
     this.loading_ = new Promise((resolve, reject) => {
-      this.importHref(this.url, () => {
+      /* #ignore */ this.importHref(this.url, () => {
         const template =
             /** @type {!HTMLTemplateElement} */ (this.getContentChildren()[0]);
         const TemplateClass = Polymer.Templatize.templatize(template, this, {
@@ -68,7 +68,7 @@ Polymer({
         resolve(this.child_);
 
         this.fire('lazy-loaded');
-      }, reject, true);
+     /* #ignore */ }, reject, true);
     });
 
     return this.loading_;

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -82,9 +83,10 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
   current_interaction();
 
   // mojom::Assistant overrides:
-  void StartCachedScreenContextInteraction() override;
   void StartEditReminderInteraction(const std::string& client_id) override;
-  void StartMetalayerInteraction(const gfx::Rect& region) override;
+  void StartScreenContextInteraction(
+      ax::mojom::AssistantStructurePtr assistant_structure,
+      const std::vector<uint8_t>& assistant_screenshot) override;
   void StartTextInteraction(
       const std::string& query,
       chromeos::assistant::mojom::AssistantQuerySource source,
@@ -102,8 +104,6 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
       int action_index) override;
   void DismissNotification(chromeos::assistant::mojom::AssistantNotificationPtr
                                notification) override;
-  void CacheScreenContext(CacheScreenContextCallback callback) override;
-  void ClearScreenContextCache() override {}
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
   void SendAssistantFeedback(
       chromeos::assistant::mojom::AssistantFeedbackPtr feedback) override;

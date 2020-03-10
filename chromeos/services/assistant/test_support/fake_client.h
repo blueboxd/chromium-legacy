@@ -28,8 +28,6 @@ class FakeClient : public mojom::Client {
   // mojom::Client implementation:
   void OnAssistantStatusChanged(ash::mojom::AssistantState new_state) override {
   }
-  void RequestAssistantStructure(
-      RequestAssistantStructureCallback callback) override {}
   void RequestAssistantController(
       mojo::PendingReceiver<mojom::AssistantController> receiver) override {}
   void RequestAssistantAlarmTimerController(

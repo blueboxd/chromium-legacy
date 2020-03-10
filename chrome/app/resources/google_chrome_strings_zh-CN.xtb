@@ -37,7 +37,6 @@
 <translation id="1900795423379050516">如果此页面中未显示某项设置，请在 <ph name="LINK_BEGIN" />
       Chrome 浏览器设置<ph name="LINK_END" />中查找</translation>
 <translation id="1919130412786645364">允许登录 Chrome</translation>
-<translation id="1983547493073464667">Chrome 无法检查您的密码</translation>
 <translation id="2063848847527508675">需要重新启动 Chrome 操作系统以应用更新。</translation>
 <translation id="2094919256425865063">仍要退出 Chrome？</translation>
 <translation id="2120620239521071941">这会从这台设备上删除 <ph name="ITEMS_COUNT" /> 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chrome。</translation>
@@ -53,19 +52,17 @@
 <translation id="2467438592969358367">Google Chrome 想导出您的密码。请输入您的 Windows 密码以允许此操作。</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="2534507159460261402">Google Pay（已复制到 Chrome）</translation>
-<translation id="2559627601176023786">没有任何已保存的密码。仅当您将密码保存到自己的 Google 帐号后，Chrome 才会检查您的密码。</translation>
 <translation id="2580411288591421699">无法安装与当前运行版本相同的 Google Chrome 浏览器。请关闭 Google Chrome 浏览器，然后重试。</translation>
 <translation id="2586406160782125153">这会从这台设备上删除您的浏览数据。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chrome。</translation>
 <translation id="2588322182880276190">Chrome 徽标</translation>
-<translation id="261226884343006626">Chrome 无法检查您的密码。请明天再试。</translation>
-<translation id="2622559029861875898">Chrome 无法检查是否有更新。请尝试检查您的互联网连接状况。</translation>
+<translation id="2622559029861875898">Chrome 无法检查是否有更新。请检查您的互联网连接。</translation>
 <translation id="2644798301485385923">Chrome 操作系统</translation>
 <translation id="2652691236519827073">在 Chrome 新标签页中打开链接(&amp;T)</translation>
 <translation id="2665296953892887393">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Google Chrome。</translation>
 <translation id="2689103672227170538">此扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
 <translation id="2765403129283291972">Chrome 需要获得相应权限，才能允许此网站使用您的麦克风</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
-<translation id="2775140325783767197">Chrome 无法检查您的密码。请尝试检查您的互联网连接状况。</translation>
+<translation id="2775140325783767197">Chrome 无法检查您的密码。请检查您的互联网连接。</translation>
 <translation id="2799223571221894425">重新启动</translation>
 <translation id="2847461019998147611">以这种语言显示 Google Chrome</translation>
 <translation id="2857540653560290388">正在启动 Chrome…</translation>
@@ -81,7 +78,6 @@
 <translation id="3395323229510056640">获取有关 Chrome 操作系统的帮助</translation>
 <translation id="3396977131400919238">安装过程中出现操作系统错误。请重新下载 Google Chrome。</translation>
 <translation id="3398288718845740432">在 Chrome 菜单中隐藏</translation>
-<translation id="3434246496373299699">仅当您使用自己的 Google 帐号登录后，Chrome 才会检查您的密码</translation>
 <translation id="3451115285585441894">正在添加到 Chrome 浏览器...</translation>
 <translation id="345171907106878721">将您自己添加到Chrome</translation>
 <translation id="34857402635545079">一并清除 Chrome (<ph name="URL" />) 中的数据</translation>
@@ -97,7 +93,6 @@
 <translation id="386202838227397562">请关闭所有 Google Chrome 浏览器窗口，然后重试。</translation>
 <translation id="3873044882194371212">在 Chrome 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="3889417619312448367">卸载 Google Chrome</translation>
-<translation id="3943605108614542032">您的管理员负责管理 Chrome 更新</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="4053720452172726777">自定义及控制 Google Chrome</translation>
 <translation id="4143243756087420366">Chrome 名称和图片</translation>
@@ -207,7 +202,6 @@
 <translation id="7808348361785373670">从Chrome中移除…</translation>
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="7855730255114109580">Google Chrome 已是最新版本</translation>
-<translation id="7888686278524752658">Chrome 未能更新，因为出了点问题。请解决导致 Chrome 更新失败的问题。</translation>
 <translation id="7890208801193284374">如果您与亲朋好友共用计算机，他们将能够使用单独的帐号进行浏览，并可随心所欲地设置Chrome。</translation>
 <translation id="7896673875602241923">之前已有人在此计算机上以 <ph name="ACCOUNT_EMAIL_LAST" /> 的身份登录了 Chrome。请新建一个 Chrome 用户来单独保存您的信息。</translation>
 <translation id="7916016681687251387">Chrome 操作系统无法同步您的数据。请立即修正。</translation>

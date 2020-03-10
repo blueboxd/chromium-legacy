@@ -46,6 +46,10 @@ class ASH_EXPORT AssistantTestApi {
   // This will ensure the new value is propagated to the |AssistantState|.
   virtual void SetAssistantEnabled(bool enabled) = 0;
 
+  // Enables/Disables Assistant in settings.
+  // This will ensure the new value is propagated to the |AssistantState|.
+  virtual void SetScreenContextEnabled(bool enabled) = 0;
+
   virtual void SetTabletMode(bool enable) = 0;
 
   // Changes the user preference controlling the status of user consent.

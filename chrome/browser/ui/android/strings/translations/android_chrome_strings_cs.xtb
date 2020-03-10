@@ -168,6 +168,7 @@ Vyhledávání spustíte klepnutím na libovolné slovo. Chcete-li vyhledáván�
 <translation id="2156074688469523661">Zbývající weby (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Chcete-li něco z telefonu sdílet do jiného zařízení, zapněte v nastavení Chromu na obou zařízeních synchronizaci</translation>
 <translation id="2175927920773552910">QR kód</translation>
+<translation id="2182457891543959921">Předtím, než webům bude povoleno vytvořit 3D mapu vašeho okolí nebo sledovat polohu kamery, se zeptat (doporučeno)</translation>
 <translation id="218608176142494674">Sdílení</translation>
 <translation id="2227444325776770048">Pokračovat jako uživatel <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Synchronizace a služby Google</translation>
@@ -193,7 +194,6 @@ Vyhledávání spustíte klepnutím na libovolné slovo. Chcete-li vyhledáván�
 <translation id="2407481962792080328">Když se přihlásíte k účtu Google, je tato funkce zapnutá</translation>
 <translation id="2410754283952462441">Vyberte účet</translation>
 <translation id="2414886740292270097">Tmavé</translation>
-<translation id="2416359993254398973">Chrome pro tento web potřebuje oprávnění k přístupu k fotoaparátu.</translation>
 <translation id="2426805022920575512">Vybrat jiný účet</translation>
 <translation id="2433507940547922241">Vzhled</translation>
 <translation id="2434158240863470628">Stažení bylo dokončeno <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="3522247891732774234">K dispozici je aktualizace. Další možnosti</translation>
 <translation id="3524138585025253783">Uživatelské rozhraní pro vývojáře</translation>
 <translation id="3527085408025491307">Složka</translation>
+<translation id="3538390592868664640">Bránit webům ve vytváření 3D mapy okolí a ve sledování polohy kamery</translation>
 <translation id="3542235761944717775">Dostupné místo: <ph name="KILOBYTES" /> kB</translation>
 <translation id="3549657413697417275">Prohledávat historii</translation>
 <translation id="3557336313807607643">Přidat do kontaktů</translation>
@@ -439,6 +440,7 @@ Pouze vy uvidíte, na co se kamera zaměřuje. Web snímky z kamery neuvidí.</
 <translation id="4298388696830689168">Propojené weby</translation>
 <translation id="4307992518367153382">Základy</translation>
 <translation id="4314815835985389558">Správa synchronizace</translation>
+<translation id="4320177379694898372">Žádné připojení k internetu</translation>
 <translation id="4321739720395210191">Kameru nelze otevřít. Restartujte zařízení a zkuste to znovu.</translation>
 <translation id="4351244548802238354">Zavřít dialogové okno</translation>
 <translation id="4353114845960720315">V režimu virtuální reality tento web může získat následující informace:</translation>
@@ -617,7 +619,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5530766185686772672">Zavřít anonymní karty</translation>
 <translation id="5534640966246046842">Web byl zkopírován</translation>
 <translation id="5561549206367097665">Čekání na síť…</translation>
-<translation id="557283862590186398">Chrome pro tento web potřebuje oprávnění k přístupu k mikrofonu.</translation>
 <translation id="55737423895878184">Určování polohy a oznámení jsou povoleny</translation>
 <translation id="5578795271662203820">Hledat obrázek pomocí <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Synchronizované položky můžete kdykoliv vybrat v <ph name="BEGIN_LINK1" />nastavení<ph name="END_LINK1" />.</translation>
@@ -726,7 +727,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6378173571450987352">Podrobnosti: Seřazeno podle množství využitých dat</translation>
 <translation id="6381421346744604172">Ztmavit webové stránky</translation>
 <translation id="6388207532828177975">Vymazat a resetovat</translation>
-<translation id="6393863479814692971">Chrome pro tento web potřebuje oprávnění k přístupu k fotoaparátu a mikrofonu.</translation>
 <translation id="6395288395575013217">ODKAZ</translation>
 <translation id="6404511346730675251">Upravit záložku</translation>
 <translation id="6406506848690869874">Synchronizace</translation>
@@ -779,7 +779,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6676840375528380067">Vymazat z tohoto zařízení data prohlížeče Chrome?</translation>
 <translation id="6689172468748959065">Profilové fotky</translation>
 <translation id="6697492270171225480">Zobrazovat návrhy podobných stránek, když stránku nelze najít</translation>
-<translation id="6697947395630195233">Chrome potřebuje přístup k vaší poloze, aby ji mohl sdílet s tímto webem.</translation>
 <translation id="6698801883190606802">Správa synchronizovaných dat</translation>
 <translation id="6699370405921460408">Servery Google budou navštěvované stránky optimalizovat.</translation>
 <translation id="6710213216561001401">Předchozí</translation>
@@ -971,6 +970,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8186512483418048923">Zbývající soubory: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Zbývá: 1 d</translation>
 <translation id="8200772114523450471">Pokračovat</translation>
+<translation id="8206354486702514201">Toto nastavení je vyžadováno administrátorem.</translation>
 <translation id="8209050860603202033">Otevřít obrázek</translation>
 <translation id="8218622182176210845">Správa účtu</translation>
 <translation id="8224471946457685718">Stahovat články pro vás přes Wi-Fi</translation>
@@ -992,7 +992,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8364299278605033898">Zobrazit populární weby</translation>
 <translation id="8368027906805972958">Neznámé nebo nepodporované zařízení (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Povolit synchronizaci na pozadí konkrétnímu webu.</translation>
-<translation id="8378714024927312812">Spravováno vaší organizací</translation>
 <translation id="8380167699614421159">Tento web zobrazuje rušivé nebo zavádějící reklamy</translation>
 <translation id="8393700583063109961">Odeslat zprávu</translation>
 <translation id="8413126021676339697">Zobrazit celou historii</translation>

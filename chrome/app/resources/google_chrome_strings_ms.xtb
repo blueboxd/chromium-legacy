@@ -37,7 +37,6 @@
 <translation id="1900795423379050516">Jika tetapan tidak ditunjukkan pada halaman ini, lihat dalam <ph name="LINK_BEGIN" />
       tetapan penyemak imbas Chrome anda<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Benarkan log masuk Chrome</translation>
-<translation id="1983547493073464667">Chrome tidak dapat menyemak kata laluan anda</translation>
 <translation id="2063848847527508675">OS Chrome perlu dimulakan semula untuk melaksanakan kemas kini.</translation>
 <translation id="2094919256425865063">Keluar daripada Chrome juga?</translation>
 <translation id="2120620239521071941">Tindakan ini akan memadamkan <ph name="ITEMS_COUNT" /> item daripada peranti ini. Untuk mendapatkan kembali data anda kemudian, log masuk ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
@@ -53,11 +52,9 @@
 <translation id="2467438592969358367">Google Chrome mahu mengeksport kata laluan anda. Taip kata laluan Windows anda untuk membenarkannya.</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
 <translation id="2534507159460261402">Google Pay (disalin ke Chrome)</translation>
-<translation id="2559627601176023786">Tiada kata laluan yang disimpan. Chrome boleh menyemak kata laluan anda apabila anda menyimpan kata laluan tersebut dalam Akaun Google anda.</translation>
 <translation id="2580411288591421699">Tidak dapat memasang versi Google Chrome yang sama yang kini dijalankan. Sila tutup Google Chrome dan cuba semula.</translation>
 <translation id="2586406160782125153">Tindakan ini akan memadamkan data semakan imbas anda daripada peranti ini. Untuk mendapatkan kembali data anda kemudian, log masuk ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
-<translation id="261226884343006626">Chrome tidak dapat menyemak kata laluan anda. Cuba lagi esok.</translation>
 <translation id="2622559029861875898">Chrome tidak dapat menyemak kemas kini. Cuba periksa sambungan Internet anda.</translation>
 <translation id="2644798301485385923">Sistem OS Chrome</translation>
 <translation id="2652691236519827073">Buka Pautan dalam &amp;tab Chrome Baharu</translation>
@@ -81,7 +78,6 @@
 <translation id="3395323229510056640">Dapatkan bantuan berkenaan Chrome OS</translation>
 <translation id="3396977131400919238">Ralat sistem pengendalian berlaku semasa pemasangan. Sila muat turun Google Chrome semula.</translation>
 <translation id="3398288718845740432">Sembunyikan dalam Menu Chrome</translation>
-<translation id="3434246496373299699">Chrome boleh menyemak kata laluan anda apabila anda log masuk menggunakan Akaun Google anda</translation>
 <translation id="3451115285585441894">Menambahkan pada Chrome...</translation>
 <translation id="345171907106878721">Tambahkan diri anda kepada Chrome</translation>
 <translation id="34857402635545079">Kosongkan data daripada Chrome (<ph name="URL" />) juga</translation>
@@ -97,7 +93,6 @@
 <translation id="386202838227397562">Sila tutup semua tetingkap Google Chrome dan cuba semula.</translation>
 <translation id="3873044882194371212">Buka pautan dalam tetingkap inko&amp;gnito Chrome</translation>
 <translation id="3889417619312448367">Nyahpasang Google Chrome</translation>
-<translation id="3943605108614542032">Pentadbir anda mengurus kemas kini Chrome</translation>
 <translation id="4050175100176540509">Peningkatan keselamatan penting dan ciri baharu tersedia dalam versi terkini.</translation>
 <translation id="4053720452172726777">Sesuaikan dan kawal Google Chrome</translation>
 <translation id="4143243756087420366">Nama dan gambar Chrome</translation>
@@ -207,7 +202,6 @@ tetapan OS Chrome<ph name="LINK_END" /> anda</translation>
 <translation id="7808348361785373670">Alih keluar daripada Chrome...</translation>
 <translation id="7825851276765848807">Gagal pemasangan disebabkan ralat yang tidak dinyatakan. Sila muat turun semula Google Chrome.</translation>
 <translation id="7855730255114109580">Google Chrome adalah yang terkini</translation>
-<translation id="7888686278524752658">Chrome tidak dikemas kini, kesilapan telah berlaku. Selesaikan masalah kemas kini dan kegagalan kemas kini Chrome.</translation>
 <translation id="7890208801193284374">Jika anda berkongsi komputer, rakan dan keluarga boleh menyemak imbas secara berasingan dan menyediakan Chrome sebagaimana yang mereka mahukan.</translation>
 <translation id="7896673875602241923">Sebelum ini, seseorang telah log masuk ke Chrome pada komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST" />. Sila buat pengguna Chrome baharu untuk mengasingkan maklumat anda.</translation>
 <translation id="7916016681687251387">OS Chrome tidak dapat menyegerakkan data anda. Betulkan sekarang.</translation>

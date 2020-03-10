@@ -168,6 +168,7 @@ Axtarmaq üçün istənilən sözə toxunun. Axtarışı dəqiqləşdirmək üç
 <translation id="2156074688469523661">Qalan saytlar (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Telefonunuzdakı hər hansı elementi digər cihaz ilə paylaşmaq üçün hər iki cihazın Chrome ayarlarında sinxronizasiyanı aktiv edin</translation>
 <translation id="2175927920773552910">QR Kod</translation>
+<translation id="2182457891543959921">Saytların ətrafınızdakı sahələrin 3D xəritəsini yaratmasına və ya kamera mövqeyini izləməsinə icazə verməzdən əvvəl icazə tələb edin (tövsiyə edilir)</translation>
 <translation id="218608176142494674">Paylaşım</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> kimi davam edin</translation>
 <translation id="2234876718134438132">Sinxronizasiya və Google xidmətləri</translation>
@@ -193,7 +194,6 @@ Axtarmaq üçün istənilən sözə toxunun. Axtarışı dəqiqləşdirmək üç
 <translation id="2407481962792080328">Google Hesabınıza daxil olduqda, bu xüsusiyyət aktivləşir</translation>
 <translation id="2410754283952462441">Hesab seçin</translation>
 <translation id="2414886740292270097">Qara</translation>
-<translation id="2416359993254398973">Chrome bu sayt üçün kameraya giriş icazəsi tələb edir.</translation>
 <translation id="2426805022920575512">Başqa hesab seçin</translation>
 <translation id="2433507940547922241">Görünüş</translation>
 <translation id="2434158240863470628">Endirmə tamamlandı <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="3522247891732774234">Güncəlləmə əlçatandır. Daha çox seçim</translation>
 <translation id="3524138585025253783">Developer UI</translation>
 <translation id="3527085408025491307">Qovluq</translation>
+<translation id="3538390592868664640">Saytların ətrafınızdakı sahələrin 3D xəritəsini yaratmasına və ya kamera mövqeyini izləməsinə qarşı blok qoyun</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB əlçatandır</translation>
 <translation id="3549657413697417275">Tarixçənizdə axtarın</translation>
 <translation id="3557336313807607643">Kontakta əlavə edin</translation>
@@ -439,6 +440,7 @@ Kamerada görünəni ancaq siz görə bilərsiniz. Sayt kameranızdakı şəkill
 <translation id="4298388696830689168">Əlaqədar saytlar</translation>
 <translation id="4307992518367153382">Əsaslar</translation>
 <translation id="4314815835985389558">Sinxronizasiyanı idarə edin</translation>
+<translation id="4320177379694898372">İnternet bağlantısı yoxdur</translation>
 <translation id="4321739720395210191">Kameranı açmaq olmur. Cihazı yenidən başladıb təkrar cəhd edin.</translation>
 <translation id="4351244548802238354">Dialoqu qapadın</translation>
 <translation id="4353114845960720315">VR-da olarkən bu sayt aşağıdakı məlumatları əldə edə bilər:</translation>
@@ -617,7 +619,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5530766185686772672">Gizli panelləri bağlayın</translation>
 <translation id="5534640966246046842">Sayt kopyalandı</translation>
 <translation id="5561549206367097665">Şəbəkə gözlənilir…</translation>
-<translation id="557283862590186398">Chrome bu sayt üçün mikrofona giriş icazəsi tələb edir.</translation>
 <translation id="55737423895878184">Məkan və bildirişlər aktivdir</translation>
 <translation id="5578795271662203820">Bu şəkil üçün <ph name="SEARCH_ENGINE" /> axtarın</translation>
 <translation id="5581519193887989363">Sinxronizasiya seçimlərini <ph name="BEGIN_LINK1" />ayarlarda<ph name="END_LINK1" /> edə bilərsiniz.</translation>
@@ -724,7 +725,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6378173571450987352">Məlumat: İstifadə edilnmiş data həcminə görə çeşidlənib</translation>
 <translation id="6381421346744604172">Qaranlıq veb saytlar</translation>
 <translation id="6388207532828177975">Təmizləyin və sıfırlayın</translation>
-<translation id="6393863479814692971">Chrome bu sayt üçün kamera və mikrofona giriş icazəsi tələb edir.</translation>
 <translation id="6395288395575013217">LİNK</translation>
 <translation id="6404511346730675251">Əlfəcinə düzəliş edin</translation>
 <translation id="6406506848690869874">Sinx</translation>
@@ -777,7 +777,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6676840375528380067">Chrome datası bu cihazdan silinsin?</translation>
 <translation id="6689172468748959065">Profil fotoları</translation>
 <translation id="6697492270171225480">Səhifə tapılmadığı zaman oxşar səhifələr üçün təklifləri göstərin</translation>
-<translation id="6697947395630195233">Chrome məkanı bu saytla paylaşmaq üçün məkana giriş tələb edir.</translation>
 <translation id="6698801883190606802">Sinxronlaşmış datanı idarə edin</translation>
 <translation id="6699370405921460408">Google serverləri daxil olduğunuz səhifələri optimallaşdıracaq.</translation>
 <translation id="6710213216561001401">Əvvəlki</translation>
@@ -969,6 +968,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8186512483418048923"><ph name="FILES" /> fayl qalır</translation>
 <translation id="8190358571722158785">1 gün qaldı</translation>
 <translation id="8200772114523450471">Davam edin</translation>
+<translation id="8206354486702514201">Bu ayar administratorunuz tərəfindən icra olunur.</translation>
 <translation id="8209050860603202033">Şəkli açın</translation>
 <translation id="8218622182176210845">Hesabınızı idarə edin</translation>
 <translation id="8224471946457685718">Wi-Fi ilə məqalələr endirin</translation>
@@ -990,7 +990,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8364299278605033898">Populyar veb saytlara baxın</translation>
 <translation id="8368027906805972958">Naməlum və ya dəstəklənməyən cihaz (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Xüsusi sayt üçün Arxa fon Sinxronizasiyasına icazə verin.</translation>
-<translation id="8378714024927312812">Təşkilatınız tərəfindən idarə olunur</translation>
 <translation id="8380167699614421159">Bu sayt inadçı və ya aldadıcı reklamlar göstərir</translation>
 <translation id="8393700583063109961">Mesaj göndərin</translation>
 <translation id="8413126021676339697">Tam tarixçəni göstərin</translation>

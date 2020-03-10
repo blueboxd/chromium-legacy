@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Изберете профил</translation>
 <translation id="3311748811247479259">Изключено</translation>
 <translation id="3324193307694657476">Адрес 2</translation>
+<translation id="3328801116991980348">Информация за сайта</translation>
 <translation id="3329904751041170572">Не можа да се установи връзка със сървъра.</translation>
 <translation id="3335947283844343239">Повторно отваряне на затворения раздел</translation>
 <translation id="3371831930909698441">Налице е превод. Опциите са достъпни в долната част на екрана.</translation>
@@ -490,7 +491,7 @@
 <translation id="7460314822154045102">Използване на камерата</translation>
 <translation id="7464701184726199289">Синхронизираните данни ще се изчистят от всички устройства. Запазените настройки за сайтове няма да бъдат изтрити и може да отразяват навиците ви при сърфиране. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Име на фирмата</translation>
-<translation id="7481312909269577407">Препращане</translation>
+<translation id="7481312909269577407">Напред</translation>
 <translation id="750493650310597496">Избрахте 0</translation>
 <translation id="7514365320538308">Изтегляне</translation>
 <translation id="7537586195939242955">Понастоящем пропускът не може да се инсталира в Passbook.</translation>
@@ -600,6 +601,7 @@
 <translation id="9223358826628549784">Сигналите за сривове са изпратени.</translation>
 <translation id="952704832371081537">Отказ</translation>
 <translation id="988141524645182168">Други устройства</translation>
+<translation id="989697783705943787">Сигурност на сайта</translation>
 <translation id="989988560359834682">Редактиране на адреса</translation>
 <translation id="994757059139821576">Предложения за статии</translation>
 </translationbundle>

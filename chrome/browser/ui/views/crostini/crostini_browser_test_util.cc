@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
@@ -88,6 +89,12 @@ class CrostiniBrowserTestChromeBrowserMainExtraParts
 CrostiniDialogBrowserTest::CrostiniDialogBrowserTest(bool register_termina)
     : register_termina_(register_termina) {
   scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
+  fake_crostini_features_.set_allowed(true);
+  fake_crostini_features_.set_ui_allowed(true);
+  fake_crostini_features_.set_enabled(true);
+  fake_crostini_features_.set_export_import_ui_allowed(true);
+  fake_crostini_features_.set_root_access_allowed(true);
+  fake_crostini_features_.container_upgrade_ui_allowed(true);
 }
 
 CrostiniDialogBrowserTest::~CrostiniDialogBrowserTest() = default;

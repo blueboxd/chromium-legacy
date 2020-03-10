@@ -22,6 +22,34 @@ ActivityRecord::ActivityRecord(
 
 ActivityRecord::~ActivityRecord() = default;
 
+mojom::RoutePresentationConnectionPtr ActivityRecord::AddClient(
+    const CastMediaSource& source,
+    const url::Origin& origin,
+    int tab_id) {
+  const std::string& client_id = source.client_id();
+  DCHECK(!base::Contains(connected_clients_, client_id));
+  std::unique_ptr<CastSessionClient> client =
+      client_factory_for_test_
+          ? client_factory_for_test_->MakeClientForTest(client_id, origin,
+                                                        tab_id)
+          : std::make_unique<CastSessionClientImpl>(
+                client_id, origin, tab_id, source.auto_join_policy(), this);
+  auto presentation_connection = client->Init();
+  connected_clients_.emplace(client_id, std::move(client));
+
+  // Route is now local due to connected client.
+  route_.set_local(true);
+  return presentation_connection;
+}
+
+void ActivityRecord::RemoveClient(const std::string& client_id) {
+  // Don't erase by key here as the |client_id| may be referring to the
+  // client being deleted.
+  auto it = connected_clients_.find(client_id);
+  if (it != connected_clients_.end())
+    connected_clients_.erase(it);
+}
+
 CastSession* ActivityRecord::GetSession() const {
   DCHECK(session_id_);
   CastSession* session = session_tracker_->GetSessionById(*session_id_);
@@ -51,18 +79,91 @@ void ActivityRecord::SetOrUpdateSession(const CastSession& session,
 }
 
 void ActivityRecord::SendStopSessionMessageToClients(
-    const std::string& hash_token) {}
+    const std::string& hash_token) {
+  for (const auto& client : connected_clients_) {
+    client.second->SendMessageToClient(
+        CreateReceiverActionStopMessage(client.first, sink_, hash_token));
+  }
+}
 
 void ActivityRecord::SendMessageToClient(
     const std::string& client_id,
-    blink::mojom::PresentationConnectionMessagePtr message) {}
+    blink::mojom::PresentationConnectionMessagePtr message) {
+  auto it = connected_clients_.find(client_id);
+  if (it == connected_clients_.end()) {
+    DLOG(ERROR) << "Attempting to send message to nonexistent client: "
+                << client_id;
+    return;
+  }
+  it->second->SendMessageToClient(std::move(message));
+}
 
 void ActivityRecord::SendMediaStatusToClients(const base::Value& media_status,
-                                              base::Optional<int> request_id) {}
+                                              base::Optional<int> request_id) {
+  for (auto& client : connected_clients_)
+    client.second->SendMediaStatusToClient(media_status, request_id);
+}
 
 void ActivityRecord::ClosePresentationConnections(
-    blink::mojom::PresentationConnectionCloseReason close_reason) {}
+    blink::mojom::PresentationConnectionCloseReason close_reason) {
+  for (auto& client : connected_clients_)
+    client.second->CloseConnection(close_reason);
+}
 
-void ActivityRecord::TerminatePresentationConnections() {}
+void ActivityRecord::TerminatePresentationConnections() {
+  for (auto& client : connected_clients_)
+    client.second->TerminateConnection();
+}
+
+base::Optional<int> ActivityRecord::SendMediaRequestToReceiver(
+    const CastInternalMessage& cast_message) {
+  NOTIMPLEMENTED();
+  return base::nullopt;
+}
+
+cast_channel::Result ActivityRecord::SendAppMessageToReceiver(
+    const CastInternalMessage& cast_message) {
+  NOTIMPLEMENTED();
+  return cast_channel::Result::kFailed;
+}
+
+void ActivityRecord::SendSetVolumeRequestToReceiver(
+    const CastInternalMessage& cast_message,
+    cast_channel::ResultCallback callback) {
+  NOTIMPLEMENTED();
+  std::move(callback).Run(cast_channel::Result::kFailed);
+}
+
+void ActivityRecord::StopSessionOnReceiver(
+    const std::string& client_id,
+    cast_channel::ResultCallback callback) {
+  if (!session_id_)
+    std::move(callback).Run(cast_channel::Result::kFailed);
+
+  message_handler_->StopSession(cast_channel_id(), *session_id_, client_id,
+                                std::move(callback));
+}
+
+void ActivityRecord::HandleLeaveSession(const std::string& client_id) {
+  auto client_it = connected_clients_.find(client_id);
+  CHECK(client_it != connected_clients_.end());
+  auto& client = *client_it->second;
+  std::vector<std::string> leaving_client_ids;
+  for (const auto& pair : connected_clients_) {
+    if (pair.second->MatchesAutoJoinPolicy(client.origin(), client.tab_id()))
+      leaving_client_ids.push_back(pair.first);
+  }
+
+  for (const auto& client_id : leaving_client_ids) {
+    auto leaving_client_it = connected_clients_.find(client_id);
+    CHECK(leaving_client_it != connected_clients_.end());
+    leaving_client_it->second->CloseConnection(
+        blink::mojom::PresentationConnectionCloseReason::CLOSED);
+    connected_clients_.erase(leaving_client_it);
+  }
+}
+
+CastSessionClientFactoryForTest* ActivityRecord::client_factory_for_test_ =
+    nullptr;
 
 }  // namespace media_router

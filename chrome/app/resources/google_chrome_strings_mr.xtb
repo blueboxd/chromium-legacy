@@ -40,7 +40,6 @@
 <translation id="1900795423379050516">या पेजवर सेटिंग दिसत नसल्यास, तुमच्या <ph name="LINK_BEGIN" />
       Chrome ब्राउझर सेटिंग्ज<ph name="LINK_END" /> मध्ये पाहा</translation>
 <translation id="1919130412786645364">Chrome मध्ये साइन इन करण्यासाठी अनुमती द्या</translation>
-<translation id="1983547493073464667">Chrome तुमचे पासवर्ड तपासू शकत नाही</translation>
 <translation id="2063848847527508675">अपडेट लागू करण्यासाठी Chrome OS रीस्टार्ट करणे आवश्यक आहे.</translation>
 <translation id="2094919256425865063">तरीही Chrome बंद करायचे?</translation>
 <translation id="2120620239521071941">हे या डिव्‍हाइस मधून <ph name="ITEMS_COUNT" /> आयटम हटवेल. नंतर तुमचा डेटा पुनर्प्राप्त करण्‍यासाठी Chrome मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
@@ -56,11 +55,9 @@
 <translation id="2467438592969358367">Google Chrome ला तुमचे पासवर्ड निर्यात करायचे आहेत. हे करू देण्यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
 <translation id="2485422356828889247">अनइंस्टॉल करा</translation>
 <translation id="2534507159460261402">Google Pay (Chrome वर कॉपी केले)</translation>
-<translation id="2559627601176023786">सेव्ह केलेले पासवर्ड नाहीत. तुमचे पासवर्ड तुम्ही तुमच्या Google खाते मध्ये सेव्ह केल्यावर Chrome ते तपासू शकते.</translation>
 <translation id="2580411288591421699">सध्या चालत असलेली Google Chrome ची समान आवृत्ती इंस्टॉल करू शकत नाही. कृपया Google Chrome बंद करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="2586406160782125153">हे या डिव्‍हाइस मधून तुमचा ब्राउझिंग डेटा हटवेल. नंतर तुमचा डेटा पुनर्प्राप्त करण्‍यासाठी, Chrome मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
 <translation id="2588322182880276190">Chrome लोगो</translation>
-<translation id="261226884343006626">Chrome तुमचे पासवर्ड तपासू शकत नाही. उद्या पुन्हा प्रयत्न करा.</translation>
 <translation id="2622559029861875898">Chrome अपडेट तपासू शकत नाही. तुमचे इंटरनेट कनेक्शन तपासून पहा.</translation>
 <translation id="2644798301485385923">Chrome OS सिस्टम</translation>
 <translation id="2652691236519827073">लिंक नवीन Chrome &amp;टॅबमध्ये उघडा</translation>
@@ -84,7 +81,6 @@
 <translation id="3395323229510056640">Chrome OS सह मदत मिळवा</translation>
 <translation id="3396977131400919238">स्थापनेदरम्यान एक ऑपरेटिंग सिस्टम‍ एरर आली. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
 <translation id="3398288718845740432">Chrome मेनूमध्‍ये लपवा</translation>
-<translation id="3434246496373299699">तुम्ही तुमचे Google खाते वापरून साइन इन करता तेव्हा, Chrome तुमचे पासवर्ड तपासू शकते</translation>
 <translation id="3451115285585441894">Chrome मध्‍ये जोडत आहे...</translation>
 <translation id="345171907106878721">Chrome वर आपल्या स्वतःस जोडा</translation>
 <translation id="34857402635545079">Chrome (<ph name="URL" />) वरील डेटा देखील साफ करा</translation>
@@ -100,7 +96,6 @@
 <translation id="386202838227397562">कृपया सर्व Google Chrome विंडो बंद करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="3873044882194371212">लिंक Chrome गुप्त विंडोमध्ये उघडा</translation>
 <translation id="3889417619312448367">Google Chrome अनइंस्टॉल करा</translation>
-<translation id="3943605108614542032">Chrome अपडेट तुमचा अ‍ॅडमिनिस्ट्रेटर व्यवस्थापित करतो</translation>
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
 <translation id="4053720452172726777">Google Chrome कस्टमाइझ करा आणि नियंत्रित करा</translation>
 <translation id="4143243756087420366">Chrome नाव आणि फोटो</translation>
@@ -213,7 +208,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7808348361785373670">Chrome मधून काढून टाका...</translation>
 <translation id="7825851276765848807">नमूद न केलेल्या एररमुळे स्थापना अयशस्वी. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
 <translation id="7855730255114109580">Google Chrome अपडेट झाले आहे</translation>
-<translation id="7888686278524752658">Chrome अपडेट झाले नाही, काहीतरी चूक झाली. Chrome अपडेट समस्या आणि अयशस्वी झालेल्या अपडेटचे निराकरण करा.</translation>
 <translation id="7890208801193284374">तुम्ही कॉंप्युटर शेअर केल्यास, मित्र आणि कुटुंब स्वतंत्रपणे ब्राउझ करू शकतात आणि त्यांना पाहिजे तसे Chrome सेट अप करू शकतात.</translation>
 <translation id="7896673875602241923">कोणीतरी यापूर्वी <ph name="ACCOUNT_EMAIL_LAST" /> म्हणून या संंगणकावरील Chrome मध्ये साइन इन केले आहे. कृपया तुमची माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chrome वापरकर्ता तयार करा.</translation>
 <translation id="7916016681687251387">Chrome OS तुमचा डेटा सिंक करू शकले नाही. आता निराकरण करा.</translation>

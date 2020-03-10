@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="my">
 <translation id="1195447618553298278">မှားရသည့်အကြောင်း မသိပါ။</translation>
+<translation id="1468664791493211953">ကမ်းလှမ်းချက်များ</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> က ဤကိရိယာကို စီမံခန့်ခွဲပြီး သင်၏ လုပ်ဆောင်ချက်ကို စောင့်ကြည့်နိုင်ပါသည်။</translation>
 <translation id="150962533380566081">PUK မမှန်ကန်ပါ။</translation>
 <translation id="1510238584712386396">Launcher</translation>
@@ -17,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">ပင်နံပါတ် မမှန်ကန်ပါ။</translation>
 <translation id="3838338534323494292">စကားဝှက်အသစ်</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> ထပ်စမ်းကြည့်ပါ။ ကျန်ရှိအခေါက်ရေ− <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> သည် ဤကိရိယာကို စီမံခန့်ခွဲပြီး ဝင်ကြည့်ထားသည့် ဝဘ်စာမျက်နှာများ၊ စကားဝှက်များနှင့် အီးမေးလ်အပါအဝင် အသုံးပြုသူ လုပ်ဆောင်ချက်အားလုံးကို အသုံးပြုခွင့်ရှိပါသည်။</translation>
 <translation id="4227825898293920515">စကားဝှက်သည် <ph name="TIME" /> တွင် သက်တမ်းကုန်ပါမည်</translation>
 <translation id="4429881212383817840">Kerberos လက်မှတ်သည် မကြာမီ သက်တမ်းကုန်ပါတော့မည်</translation>
@@ -27,8 +27,6 @@
 <translation id="4890353053343094602">ချက်ချင်း အသစ်တစ်ခု ‌ရွေးပါ</translation>
 <translation id="5212543919916444558">သင့်မျက်နှာပြင်တွင် ကျွန်ုပ်ကူညီနိုင်သည့် အကြောင်းအရာများကို မတွေ့ပါ။ မိုက်ကို တို့ပြီး နှစ်သက်ရာ မေးနိုင်ပါသည်။</translation>
 <translation id="5222676887888702881">ထွက်ခွာရန်</translation>
-<translation id="5275776633505022322">ကျန်ရှိအခေါက်ရေ− <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> ထပ်စမ်းကြည့်ပါ။</translation>
 <translation id="5317780077021120954">သိမ်းရန်</translation>
 <translation id="5332948983412042822">ယခု အသစ်တစ်ခု ရွေးရန်</translation>
 <translation id="5457599981699367932">ဧည့်သည့် အဖြစ် ရှာကြည့်ရန်</translation>
@@ -41,6 +39,7 @@
 <translation id="7658239707568436148">မလုပ်တော့</translation>
 <translation id="7690294790491645610">စကားဝှက်အသစ်ကို အတည်ပြုပါ</translation>
 <translation id="808894953321890993">စကားဝှက် ပြောင်းရန်</translation>
+<translation id="8208861521865154048">ခံစားခွင့်များ</translation>
 <translation id="8747900814994928677">ပြောင်းလဲမှုကို အတည်ပြုခြင်း</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> အတွက် လက်မှတ်ကို ပြန်လည်စတင်ပါ</translation>
 <translation id="9111102763498581341">သော့ဖွင့်ရန်</translation>

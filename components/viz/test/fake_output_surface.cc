@@ -120,4 +120,8 @@ scoped_refptr<gpu::GpuTaskSchedulerHelper>
 FakeOutputSurface::GetGpuTaskSchedulerHelper() {
   return nullptr;
 }
+
+gpu::MemoryTracker* FakeOutputSurface::GetMemoryTracker() {
+  return nullptr;
+}
 }  // namespace viz

@@ -10,6 +10,7 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -116,6 +117,15 @@ public class RadioButtonWithEditText extends RadioButtonWithDescription {
 
         // Handle touches beside the Edit text
         mEditText.setOnFocusChangeListener((v, hasFocus) -> { onEditTextFocusChanged(hasFocus); });
+    }
+
+    @Override
+    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+        // Fix the announcement for a11y as EditText cannot be correctly read out as a child
+        // of a ViewGroup. Setting EditText as the label for this custom view is a workaround
+        // as label will be announce at end of ViewGroup's readable a11y children.
+        super.onInitializeAccessibilityNodeInfo(info);
+        info.setLabeledBy(mEditText);
     }
 
     @Override

@@ -41,7 +41,7 @@ enum CommandId {
   // Used by ShelfContextMenu.
   LAUNCH_TYPE_TABBED_WINDOW = 20,
 
-  // Used by AppContextMenu.
+  // Used by AppContextMenu and/or ShelfContextMenu.
   LAUNCH_NEW = 100,
   TOGGLE_PIN = 101,
   SHOW_APP_INFO = 102,
@@ -51,6 +51,7 @@ enum CommandId {
   APP_CONTEXT_MENU_NEW_WINDOW = 106,
   APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW = 107,
   INSTALL = 108,
+  SETTINGS = 109,
   USE_LAUNCH_TYPE_COMMAND_START = 200,
   USE_LAUNCH_TYPE_PINNED = USE_LAUNCH_TYPE_COMMAND_START,
   USE_LAUNCH_TYPE_REGULAR = 201,

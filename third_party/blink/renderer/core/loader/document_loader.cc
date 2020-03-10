@@ -181,6 +181,7 @@ DocumentLoader::DocumentLoader(
   frame_policy_ = params_->frame_policy.value_or(FramePolicy());
 
   document_policy_ = CreateDocumentPolicy();
+
   // If the document is blocked by document policy, there won't be content
   // in the sub-frametree, thus no need to initialize required_policy for
   // subtree.
@@ -1487,6 +1488,13 @@ void DocumentLoader::InstallNewDocument(
   // Re-validate Document Policy feature before installing the new document.
   if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(owner_document))
     document_policy_ = DocumentPolicy::FeatureState{};
+
+  if (document_policy_.contains(
+          mojom::blink::DocumentPolicyFeature::kForceLoadAtTop)) {
+    navigation_scroll_allowed_ =
+        !(document_policy_[mojom::blink::DocumentPolicyFeature::kForceLoadAtTop]
+              .BoolValue());
+  }
 
   DocumentInit init =
       DocumentInit::Create()

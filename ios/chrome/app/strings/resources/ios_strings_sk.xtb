@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Výber účtu</translation>
 <translation id="3311748811247479259">Vypnuté</translation>
 <translation id="3324193307694657476">Adresa 2</translation>
+<translation id="3328801116991980348">Informácie o stránkach</translation>
 <translation id="3329904751041170572">Nepodarilo sa pripojiť k serveru.</translation>
 <translation id="3335947283844343239">Znova otvoriť zatvorenú kartu</translation>
 <translation id="3371831930909698441">Prekladač je k dispozícii. Možnosti nájdete v dolnej časti obrazovky.</translation>
@@ -600,6 +601,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="9223358826628549784">Správa o zlyhaní bola odoslaná.</translation>
 <translation id="952704832371081537">Zrušiť</translation>
 <translation id="988141524645182168">Iné zariadenia</translation>
+<translation id="989697783705943787">Zabezpečenie webu</translation>
 <translation id="989988560359834682">Úprava adresy</translation>
 <translation id="994757059139821576">Návrhy článkov</translation>
 </translationbundle>

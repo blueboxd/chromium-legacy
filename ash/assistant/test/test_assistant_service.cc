@@ -238,16 +238,14 @@ TestAssistantService::current_interaction() {
   return current_interaction_subscriber_->current_interaction();
 }
 
-void TestAssistantService::StartCachedScreenContextInteraction() {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
 void TestAssistantService ::StartEditReminderInteraction(
     const std::string& client_id) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void TestAssistantService ::StartMetalayerInteraction(const gfx::Rect& region) {
+void TestAssistantService ::StartScreenContextInteraction(
+    ax::mojom::AssistantStructurePtr assistant_structure,
+    const std::vector<uint8_t>& assistant_screenshot) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
@@ -298,11 +296,6 @@ void TestAssistantService ::RetrieveNotification(
 void TestAssistantService ::DismissNotification(
     chromeos::assistant::mojom::AssistantNotificationPtr notification) {
   NOTIMPLEMENTED_LOG_ONCE();
-}
-
-void TestAssistantService ::CacheScreenContext(
-    CacheScreenContextCallback callback) {
-  std::move(callback).Run();
 }
 
 void TestAssistantService ::OnAccessibilityStatusChanged(

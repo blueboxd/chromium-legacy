@@ -1183,7 +1183,8 @@ void FrameLoader::CommitDocumentLoader(
 void FrameLoader::RestoreScrollPositionAndViewState() {
   if (!frame_->GetPage() || !GetDocumentLoader() ||
       !GetDocumentLoader()->GetHistoryItem() ||
-      !GetDocumentLoader()->GetHistoryItem()->GetViewState()) {
+      !GetDocumentLoader()->GetHistoryItem()->GetViewState() ||
+      !GetDocumentLoader()->NavigationScrollAllowed()) {
     return;
   }
   RestoreScrollPositionAndViewState(
@@ -1307,12 +1308,15 @@ void FrameLoader::ProcessFragment(const KURL& url,
   // restoration type is manual, then we should not override it unless this
   // is a same document reload.
   bool should_scroll_to_fragment =
-      (load_start_type == kNavigationWithinSameDocument &&
-       !IsBackForwardLoadType(frame_load_type)) ||
-      (!GetDocumentLoader()->GetInitialScrollState().did_restore_from_history &&
-       !(GetDocumentLoader()->GetHistoryItem() &&
-         GetDocumentLoader()->GetHistoryItem()->ScrollRestorationType() ==
-             kScrollRestorationManual));
+      GetDocumentLoader()->NavigationScrollAllowed() &&
+      ((load_start_type == kNavigationWithinSameDocument &&
+        !IsBackForwardLoadType(frame_load_type)) ||
+       (!GetDocumentLoader()
+             ->GetInitialScrollState()
+             .did_restore_from_history &&
+        !(GetDocumentLoader()->GetHistoryItem() &&
+          GetDocumentLoader()->GetHistoryItem()->ScrollRestorationType() ==
+              kScrollRestorationManual)));
 
   view->ProcessUrlFragment(url,
                            load_start_type == kNavigationWithinSameDocument,

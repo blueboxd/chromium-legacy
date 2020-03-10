@@ -473,7 +473,6 @@
 <translation id="3024663005179499861">ತಪ್ಪಾದ ನೀತಿಯ ಪ್ರಕಾರ</translation>
 <translation id="3037605927509011580">ಓಹ್, ಹೋಯ್ತು!</translation>
 <translation id="3041612393474885105">ಪ್ರಮಾಣಪತ್ರ ಮಾಹಿತಿ</translation>
-<translation id="3057676462092457419">DnsOverHttps ಮೋಡ್ <ph name="SECURE_DNS_MODE_SECURE" /> ಇನ್ನೂ ಬೆಂಬಲಿಸುತ್ತಿಲ್ಲ, ಮೋಡ್ ಅನ್ನು <ph name="SECURE_DNS_MODE_OFF" /> ಗೆ ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">ಪ್ಯಾಚ್ ಸೇವೆ</translation>
 <translation id="3064966200440839136">ಬಾಹ್ಯ ಅಪ್ಲಿಕೇಶನ್‌‌ ಮೂಲಕರ ಪಾವತಿಸಲು ಅದೃಶ್ಯ ಮೋಡ್‌‌ ತೊರೆಯಲಾಗುತ್ತಿದೆ. ಮುಂದುವರಿಸುವುದೇ?</translation>
@@ -571,6 +570,7 @@
 <translation id="3487845404393360112">ಟ್ರೇ 4</translation>
 <translation id="3495081129428749620">ಪುಟದಲ್ಲಿ ಹುಡುಕಿ
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ 3D ನಕ್ಷೆಗಳನ್ನು ರಚಿಸಿ ಮತ್ತು ಕ್ಯಾಮರಾ ಸ್ಥಿತಿಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ</translation>
 <translation id="3512163584740124171">ಈ ಕಾರ್ಯನೀತಿಯನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗುತ್ತದೆ ಏಕೆಂದರೆ, ಅದೇ ಕಾರ್ಯನೀತಿಯ ಗುಂಪಿನ ಮತ್ತೊಂದು ಕಾರ್ಯನೀತಿಯು ಹೆಚ್ಚಿನ ಆದ್ಯತೆಯನ್ನು ಹೊಂದಿದೆ.</translation>
 <translation id="3518941727116570328">ಹಲವಾರು ಆಬ್ಜೆಕ್ಟ್‌ಗಳ ನಿರ್ವಹಣೆ</translation>
 <translation id="3528171143076753409">ಸರ್ವರ್‌ನ ಪ್ರಮಾಣಪತ್ರ ನಂಬಲರ್ಹವಾಗಿಲ್ಲ.</translation>
@@ -922,6 +922,7 @@
 <translation id="5030338702439866405">ಇವರಿಂದ ನೀಡಲಾಗಿದೆ</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" ಗೆ ರೂಟ್ ಪ್ರಮಾಣಪತ್ರದ ಅಗತ್ಯವಿದೆ ಆದರೆ ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಲಾಗಿಲ್ಲ. ಈ ಸಮಸ್ಯೆಯನ್ನು ಪರಿಹರಿಸಲು ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರು "<ph name="SOFTWARE_NAME" />" ಗಾಗಿ ಕಾನ್ಫಿಗರೇಶನ್ ಸೂಚನೆಗಳ ಕಡೆ ಗಮನವಿಡಬೇಕು. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google ಅನುವಾದದ ಕುರಿತು</translation>
+<translation id="503498442187459473"><ph name="HOST" /> ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್ ಬಳಸಲು ಬಯಸುತ್ತದೆ</translation>
 <translation id="5039804452771397117">ಅನುಮತಿಸಿ</translation>
 <translation id="5040262127954254034">ಗೌಪ್ಯತೆ</translation>
 <translation id="5043480802608081735">ನೀವು ನಕಲಿಸಿದ ಲಿಂಕ್</translation>
@@ -1030,7 +1031,6 @@
 <translation id="5457113250005438886">ಅಮಾನ್ಯ</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ಇನ್ನಷ್ಟು}one{<ph name="CONTACT_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ಇನ್ನಷ್ಟು}other{<ph name="CONTACT_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ಇನ್ನಷ್ಟು}}</translation>
 <translation id="5470861586879999274">&amp;ಎಡಿಟ್ ಮಾಡುವುದನ್ನು ಪುನಃ ಮಾಡು</translation>
-<translation id="5472133193607270166">ಆನ್ ಆಗಿರುವಾಗ, ಜಾಹೀರಾತುಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು, ವಿಭಿನ್ನ ಸೈಟ್‌ಗಳಲ್ಲಿ ನೀವು ನಡೆಸುವ ಬ್ರೌಸಿಂಗ್ ಚಟುವಟಿಕೆಯನ್ನು ಸೈಟ್‌ಗಳು ಬಳಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಕೆಲವು ಸೈಟ್‌ಗಳು ಸರಿಯಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸದೆ ಇರಬಹುದು.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">ಈ ಕಂಟೆಂಟ್‌ ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿರುವ ಮಾಹಿತಿಯನ್ನು ಕದಿಯುವ ಅಥವಾ ಅಳಿಸುವ ಅಪಾಯಕಾರಿ ಸಾಫ್ಟ್‌ವೇರ್ ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರಬಹುದು. <ph name="BEGIN_LINK" />ಹೇಗಿದ್ದರೂ ತೋರಿಸಿ<ph name="END_LINK" />.</translation>
 <translation id="54817484435770891">ಮಾನ್ಯವಾದ ವಿಳಾಸ ಸೇರಿಸಿ</translation>
@@ -1315,6 +1315,7 @@
 <translation id="6710594484020273272">&lt;ಹುಡುಕಾಟದ ಪದ ಟೈಪ್ ಮಾಡಿ&gt;</translation>
 <translation id="671076103358959139">ನೋಂದಣಿಯ ಟೋಕನ್:</translation>
 <translation id="6711464428925977395">ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌‌ನಲ್ಲಿ ಏನೋ ದೋಷವಿದೆ ಅಥವಾ ವಿಳಾಸವು ತಪ್ಪಾಗಿದೆ.</translation>
+<translation id="6716672519412350405">ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ 3D ನಕ್ಷೆಗಳನ್ನು ರಚಿಸುವುದು ಅಥವಾ ಕ್ಯಾಮರಾ ಸ್ಥಿತಿಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು <ph name="URL" /> ಬಯಸುತ್ತಿದೆ</translation>
 <translation id="6738516213925468394">ನಿಮ್ಮ ಡೇಟಾವನ್ನು <ph name="TIME" /> ಸಮಯಕ್ಕೆ ನಿಮ್ಮ <ph name="BEGIN_LINK" />ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್<ph name="END_LINK" /> ನೊಂದಿಗೆ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ. ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು ಅದನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="674375294223700098">ಅಪರಿಚಿತ ಸರ್ವರ್ ಪ್ರಮಾಣಪತ್ರ ದೋಷ.</translation>
 <translation id="6744009308914054259">ಸಂಪರ್ಕಕ್ಕಾಗಿ ನಿರೀಕ್ಷಿಸುತ್ತಿರುವಾಗ, ಆಫ್‌ಲೈನ್ ​​ಲೇಖನಗಳನ್ನು ಓದಲು ನೀವು ಡೌನ್‌ಲೋಡ್‌ಗಳಿಗೆ ಭೇಟಿ ನೀಡಬಹುದು.</translation>
@@ -1735,7 +1736,6 @@
 <translation id="8589998999637048520">ಅತ್ಯುತ್ತಮ ಗುಣಮಟ್ಟ</translation>
 <translation id="860043288473659153">ಕಾರ್ಡ್‌ಹೋಲ್ಡರ್ ಹೆಸರು</translation>
 <translation id="8606726445206553943">ನಿಮ್ಮ MIDI ಸಾಧನಗಳನ್ನು ಬಳಸಿ</translation>
-<translation id="8616822740383114808">ಈ ಸೆಟ್ಟಿಂಗ್‌ ಅನ್ನು "<ph name="ENFORCING_SETTING" />" ನಿಂದ "<ph name="SETTINGS_PAGE" />" ನಲ್ಲಿ ಜಾರಿಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="861775596732816396">ಗಾತ್ರ 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">ಈ ಕಾರ್ಡ್ ಅನ್ನು ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಿ</translation>

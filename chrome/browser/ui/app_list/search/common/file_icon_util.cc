@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/file_manager/file_manager_resource_util.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
 #include "ui/gfx/image/image.h"
@@ -22,173 +23,182 @@
 namespace app_list {
 namespace internal {
 
-enum class Icon {
-  AUDIO,
-  ARCHIVE,
-  CHART,
-  EXCEL,
-  FOLDER,
-  FORM,
-  GDOC,
-  GDRAW,
-  GENERIC,
-  GSHEET,
-  GSITE,
-  GSLIDES,
-  GTABLE,
-  IMAGE,
-  MAP,
-  PDF,
-  PPT,
-  SCRIPT,
-  SITES,
-  TINI,
-  VIDEO,
-  WORD,
-};
-
-int GetIconResourceIdForLocalFilePath(const base::FilePath& filepath) {
+IconType GetIconTypeForPath(const base::FilePath& filepath) {
   // Changes to these three maps should be reflected in
   // ui/file_manager/file_manager/common/js/file_type.js.
 
-  static const base::NoDestructor<base::flat_map<std::string, Icon>>
+  static const base::NoDestructor<base::flat_map<std::string, IconType>>
+      // Changes to this map should be reflected in
+      // ui/file_manager/file_manager/common/js/file_type.js.
       extension_to_icon({
           // Image
-          {".JPEG", Icon::IMAGE},
-          {".JPG", Icon::IMAGE},
-          {".BMP", Icon::IMAGE},
-          {".GIF", Icon::IMAGE},
-          {".ICO", Icon::IMAGE},
-          {".PNG", Icon::IMAGE},
-          {".WEBP", Icon::IMAGE},
-          {".TIFF", Icon::IMAGE},
-          {".TIF", Icon::IMAGE},
-          {".SVG", Icon::IMAGE},
+          {".JPEG", IconType::IMAGE},
+          {".JPG", IconType::IMAGE},
+          {".BMP", IconType::IMAGE},
+          {".GIF", IconType::IMAGE},
+          {".ICO", IconType::IMAGE},
+          {".PNG", IconType::IMAGE},
+          {".WEBP", IconType::IMAGE},
+          {".TIFF", IconType::IMAGE},
+          {".TIF", IconType::IMAGE},
+          {".SVG", IconType::IMAGE},
 
           // Raw
-          {".ARW", Icon::IMAGE},
-          {".CR2", Icon::IMAGE},
-          {".DNG", Icon::IMAGE},
-          {".NEF", Icon::IMAGE},
-          {".NRW", Icon::IMAGE},
-          {".ORF", Icon::IMAGE},
-          {".RAF", Icon::IMAGE},
-          {".RW2", Icon::IMAGE},
+          {".ARW", IconType::IMAGE},
+          {".CR2", IconType::IMAGE},
+          {".DNG", IconType::IMAGE},
+          {".NEF", IconType::IMAGE},
+          {".NRW", IconType::IMAGE},
+          {".ORF", IconType::IMAGE},
+          {".RAF", IconType::IMAGE},
+          {".RW2", IconType::IMAGE},
 
           // Video
-          {".3GP", Icon::VIDEO},
-          {".3GPP", Icon::VIDEO},
-          {".AVI", Icon::VIDEO},
-          {".MOV", Icon::VIDEO},
-          {".MKV", Icon::VIDEO},
-          {".MP4", Icon::VIDEO},
-          {".M4V", Icon::VIDEO},
-          {".MPG", Icon::VIDEO},
-          {".MPEG", Icon::VIDEO},
-          {".MPG4", Icon::VIDEO},
-          {".MPEG4", Icon::VIDEO},
-          {".OGM", Icon::VIDEO},
-          {".OGV", Icon::VIDEO},
-          {".OGX", Icon::VIDEO},
-          {".WEBM", Icon::VIDEO},
+          {".3GP", IconType::VIDEO},
+          {".3GPP", IconType::VIDEO},
+          {".AVI", IconType::VIDEO},
+          {".MOV", IconType::VIDEO},
+          {".MKV", IconType::VIDEO},
+          {".MP4", IconType::VIDEO},
+          {".M4V", IconType::VIDEO},
+          {".MPG", IconType::VIDEO},
+          {".MPEG", IconType::VIDEO},
+          {".MPG4", IconType::VIDEO},
+          {".MPEG4", IconType::VIDEO},
+          {".OGM", IconType::VIDEO},
+          {".OGV", IconType::VIDEO},
+          {".OGX", IconType::VIDEO},
+          {".WEBM", IconType::VIDEO},
 
           // Audio
-          {".AMR", Icon::AUDIO},
-          {".FLAC", Icon::AUDIO},
-          {".MP3", Icon::AUDIO},
-          {".M4A", Icon::AUDIO},
-          {".OGA", Icon::AUDIO},
-          {".OGG", Icon::AUDIO},
-          {".WAV", Icon::AUDIO},
+          {".AMR", IconType::AUDIO},
+          {".FLAC", IconType::AUDIO},
+          {".MP3", IconType::AUDIO},
+          {".M4A", IconType::AUDIO},
+          {".OGA", IconType::AUDIO},
+          {".OGG", IconType::AUDIO},
+          {".WAV", IconType::AUDIO},
 
           // Text
-          {".TXT", Icon::GENERIC},
+          {".TXT", IconType::GENERIC},
 
           // Archive
-          {".ZIP", Icon::ARCHIVE},
-          {".RAR", Icon::ARCHIVE},
-          {".TAR", Icon::ARCHIVE},
-          {".TAR.BZ2", Icon::ARCHIVE},
-          {".TBZ", Icon::ARCHIVE},
-          {".TBZ2", Icon::ARCHIVE},
-          {".TAR.GZ", Icon::ARCHIVE},
-          {".TGZ", Icon::ARCHIVE},
+          {".ZIP", IconType::ARCHIVE},
+          {".RAR", IconType::ARCHIVE},
+          {".TAR", IconType::ARCHIVE},
+          {".TAR.BZ2", IconType::ARCHIVE},
+          {".TBZ", IconType::ARCHIVE},
+          {".TBZ2", IconType::ARCHIVE},
+          {".TAR.GZ", IconType::ARCHIVE},
+          {".TGZ", IconType::ARCHIVE},
 
           // Hosted doc
-          {".GDOC", Icon::GDOC},
-          {".GSHEET", Icon::GSHEET},
-          {".GSLIDES", Icon::GSLIDES},
-          {".GDRAW", Icon::GDRAW},
-          {".GTABLE", Icon::GTABLE},
-          {".GLINK", Icon::GENERIC},
-          {".GFORM", Icon::GENERIC},
-          {".GMAPS", Icon::MAP},
-          {".GSITE", Icon::GSITE},
+          {".GDOC", IconType::GDOC},
+          {".GSHEET", IconType::GSHEET},
+          {".GSLIDES", IconType::GSLIDES},
+          {".GDRAW", IconType::GDRAW},
+          {".GTABLE", IconType::GTABLE},
+          {".GLINK", IconType::GENERIC},
+          {".GFORM", IconType::GENERIC},
+          {".GMAPS", IconType::MAP},
+          {".GSITE", IconType::GSITE},
 
           // Other
-          {".PDF", Icon::PDF},
-          {".HTM", Icon::GENERIC},
-          {".HTML", Icon::GENERIC},
-          {".MHT", Icon::GENERIC},
-          {".MHTM", Icon::GENERIC},
-          {".MHTML", Icon::GENERIC},
-          {".SHTML", Icon::GENERIC},
-          {".XHT", Icon::GENERIC},
-          {".XHTM", Icon::GENERIC},
-          {".XHTML", Icon::GENERIC},
-          {".DOC", Icon::WORD},
-          {".DOCX", Icon::WORD},
-          {".PPT", Icon::PPT},
-          {".PPTX", Icon::PPT},
-          {".XLS", Icon::EXCEL},
-          {".XLSX", Icon::EXCEL},
-          {".TINI", Icon::TINI},
+          {".PDF", IconType::PDF},
+          {".HTM", IconType::GENERIC},
+          {".HTML", IconType::GENERIC},
+          {".MHT", IconType::GENERIC},
+          {".MHTM", IconType::GENERIC},
+          {".MHTML", IconType::GENERIC},
+          {".SHTML", IconType::GENERIC},
+          {".XHT", IconType::GENERIC},
+          {".XHTM", IconType::GENERIC},
+          {".XHTML", IconType::GENERIC},
+          {".DOC", IconType::WORD},
+          {".DOCX", IconType::WORD},
+          {".PPT", IconType::PPT},
+          {".PPTX", IconType::PPT},
+          {".XLS", IconType::EXCEL},
+          {".XLSX", IconType::EXCEL},
+          {".TINI", IconType::TINI},
       });
 
-  static const base::NoDestructor<base::flat_map<Icon, int>>
-      icon_to_2x_resource_id({
-          {Icon::AUDIO, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_AUDIO},
-          {Icon::ARCHIVE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_ARCHIVE},
-          {Icon::CHART, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_CHART},
-          {Icon::EXCEL, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_EXCEL},
-          {Icon::FOLDER, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_FOLDER},
-          {Icon::FORM, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GFORM},
-          {Icon::GDOC, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GDOC},
-          {Icon::GDRAW, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GDRAW},
-          {Icon::GENERIC, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GENERIC},
-          {Icon::GSHEET, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSHEET},
-          {Icon::GSITE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSITE},
-          {Icon::GSLIDES, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSLIDES},
-          {Icon::GTABLE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GTABLE},
-          {Icon::IMAGE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_IMAGE},
-          {Icon::MAP, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GMAP},
-          {Icon::PDF, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PDF},
-          {Icon::PPT, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PPT},
-          {Icon::SCRIPT, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_SCRIPT},
-          {Icon::SITES, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_SITES},
-          {Icon::TINI, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_TINI},
-          {Icon::VIDEO, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_VIDEO},
-          {Icon::WORD, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_WORD},
-      });
-
-  Icon icon;
   const auto& icon_it =
       extension_to_icon->find(base::ToUpperASCII(filepath.Extension()));
-  if (icon_it != extension_to_icon->end())
-    icon = icon_it->second;
-  else
-    icon = Icon::GENERIC;
+  if (icon_it != extension_to_icon->end()) {
+    return icon_it->second;
+  } else {
+    return IconType::GENERIC;
+  }
+}
+
+int GetResourceIdForIconType(IconType icon) {
+  // Changes to this map should be reflected in
+  // ui/file_manager/file_manager/common/js/file_type.js.
+  static const base::NoDestructor<base::flat_map<IconType, int>>
+      icon_to_2x_resource_id({
+          {IconType::AUDIO, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_AUDIO},
+          {IconType::ARCHIVE,
+           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_ARCHIVE},
+          {IconType::CHART, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_CHART},
+          {IconType::EXCEL, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_EXCEL},
+          {IconType::FOLDER, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_FOLDER},
+          {IconType::FORM, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GFORM},
+          {IconType::GDOC, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GDOC},
+          {IconType::GDRAW, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GDRAW},
+          {IconType::GENERIC,
+           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GENERIC},
+          {IconType::GSHEET, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSHEET},
+          {IconType::GSITE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSITE},
+          {IconType::GSLIDES,
+           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSLIDES},
+          {IconType::GTABLE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GTABLE},
+          {IconType::IMAGE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_IMAGE},
+          {IconType::MAP, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GMAP},
+          {IconType::PDF, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PDF},
+          {IconType::PPT, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PPT},
+          {IconType::SCRIPT, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_SCRIPT},
+          {IconType::SITES, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_SITES},
+          {IconType::TINI, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_TINI},
+          {IconType::VIDEO, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_VIDEO},
+          {IconType::WORD, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_WORD},
+      });
 
   const auto& id_it = icon_to_2x_resource_id->find(icon);
   DCHECK(id_it != icon_to_2x_resource_id->end());
   return id_it->second;
 }
 
+int GetChipResourceIdForIconType(IconType icon) {
+  static const base::NoDestructor<base::flat_map<IconType, int>>
+      icon_to_chip_resource_id({
+          {IconType::GDOC, IDR_LAUNCHER_CHIP_ICON_GDOC},
+          {IconType::GENERIC, IDR_LAUNCHER_CHIP_ICON_GENERIC},
+          {IconType::GSHEET, IDR_LAUNCHER_CHIP_ICON_GSHEET},
+          {IconType::GSLIDES, IDR_LAUNCHER_CHIP_ICON_GSLIDES},
+          {IconType::IMAGE, IDR_LAUNCHER_CHIP_ICON_IMAGE},
+      });
+
+  const auto& id_it = icon_to_chip_resource_id->find(icon);
+  if (id_it != icon_to_chip_resource_id->end()) {
+    return id_it->second;
+  } else {
+    return GetResourceIdForIconType(icon);
+  }
+}
+
 }  // namespace internal
 
-gfx::ImageSkia GetIconForLocalFilePath(const base::FilePath& filepath) {
+gfx::ImageSkia GetIconForPath(const base::FilePath& filepath) {
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      internal::GetIconResourceIdForLocalFilePath(filepath));
+      internal::GetResourceIdForIconType(
+          internal::GetIconTypeForPath(filepath)));
+}
+
+gfx::ImageSkia GetChipIconForPath(const base::FilePath& filepath) {
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      internal::GetChipResourceIdForIconType(
+          internal::GetIconTypeForPath(filepath)));
 }
 
 }  // namespace app_list

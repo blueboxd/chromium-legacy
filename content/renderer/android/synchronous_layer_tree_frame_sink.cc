@@ -133,6 +133,7 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
       override {
     return nullptr;
   }
+  gpu::MemoryTracker* GetMemoryTracker() override { return nullptr; }
 };
 
 base::TimeDelta SynchronousLayerTreeFrameSink::StubDisplayClient::

@@ -25,6 +25,8 @@ std::string ToLiveStatusString(mojom::AccessibilityLiveRegionType type);
 
 bool IsImportantInAndroid(mojom::AccessibilityNodeInfoData* node);
 
+bool IsWebViewNode(mojom::AccessibilityNodeInfoData* node);
+
 bool HasImportantProperty(mojom::AccessibilityNodeInfoData* node);
 
 bool HasStandardAction(mojom::AccessibilityNodeInfoData* node,

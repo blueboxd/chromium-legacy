@@ -169,4 +169,20 @@ void NativeFileSystemFileHandle::RequestPermissionImpl(
   mojo_ptr_->RequestPermission(writable, std::move(callback));
 }
 
+void NativeFileSystemFileHandle::IsSameEntryImpl(
+    mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> other,
+    base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr, bool)>
+        callback) {
+  if (!mojo_ptr_) {
+    std::move(callback).Run(
+        mojom::blink::NativeFileSystemError::New(
+            mojom::blink::NativeFileSystemStatus::kInvalidState,
+            base::File::Error::FILE_ERROR_FAILED, "Context Destroyed"),
+        false);
+    return;
+  }
+
+  mojo_ptr_->IsSameEntry(std::move(other), std::move(callback));
+}
+
 }  // namespace blink

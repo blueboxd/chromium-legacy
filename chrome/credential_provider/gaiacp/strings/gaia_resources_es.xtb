@@ -3,11 +3,11 @@
 <translationbundle lang="es">
 <translation id="1156061499538526818">La contraseña de tu cuenta de trabajo ha cambiado. Escribe tu contraseña de Windows para sincronizar tu cuenta de Windows con tu cuenta de trabajo.</translation>
 <translation id="1383286653814676580">Se usa para ejecutar la página de inicio de sesión de Google Credential Provider.</translation>
-<translation id="200772894174702141">No podemos iniciar sesión en tu cuenta de trabajo. Comprueba que tu dispositivo esté conectado a Internet y vuelve a intentarlo.</translation>
+<translation id="200772894174702141">No se ha podido iniciar sesión en tu cuenta de trabajo. Comprueba que tu dispositivo esté conectado a Internet y vuelve a intentarlo.</translation>
 <translation id="2048923169632968961">Se ha producido un error al intentar sincronizar la contraseña de tu cuenta de trabajo con tu perfil de Windows. Ponte en contacto con tu administrador.</translation>
 <translation id="2515346402363002066">Tu sesión ha caducado. Inicia sesión con tu cuenta de trabajo.</translation>
 <translation id="2844349213149998955">No se permite iniciar sesión con una cuenta personal en este dispositivo. Inicia sesión con una cuenta de trabajo.</translation>
-<translation id="3217145568844727893">Si continúas sin escribir tu contraseña actual de Windows, podrías perder datos de este dispositivo de forma irreversible.</translation>
+<translation id="3217145568844727893">Si continúas sin introducir tu contraseña actual de Windows, podrías perder datos de este dispositivo de forma irreversible.</translation>
 <translation id="3285576391135346912">Solo puedes iniciar sesión con una dirección de correo electrónico que termine en alguno de estos dominios: <ph name="EMAIL_DOMAINS" />. Vuelve a intentarlo usando una cuenta de trabajo.</translation>
 <translation id="3306357053520292004">Ya se ha registrado otro usuario en este ordenador con esta cuenta. Inicia sesión con otra cuenta.</translation>
 <translation id="3355053591933237049">Comprueba que tu dispositivo esté conectado a Internet y vuelve a intentarlo.</translation>
@@ -29,6 +29,7 @@
 <translation id="7209941495304122410">Introduce la contraseña de Windows</translation>
 <translation id="74122330823428762">Solo puede iniciar sesión en este dispositivo el usuario que lo haya bloqueado.</translation>
 <translation id="7536769223115622137">Añadir cuenta de trabajo</translation>
+<translation id="7884688232028658212">Inicia sesión con tu cuenta de trabajo</translation>
 <translation id="8109730953933509335">Se ha intentado cambiar la contraseña de un usuario no válido. Ponte en contacto con tu administrador.</translation>
 <translation id="8448455363630347124">Tu cuenta se ha inhabilitado porque se ha intentado introducir una contraseña incorrecta demasiadas veces. Ponte en contacto con tu administrador para habilitar la cuenta.</translation>
 <translation id="8453641970025433267">Tu administrador no te permite iniciar sesión con esta cuenta. Prueba con otra cuenta.</translation>

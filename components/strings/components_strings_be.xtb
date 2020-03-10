@@ -480,7 +480,6 @@
 <translation id="3024663005179499861">Няправільны тып палітыкі</translation>
 <translation id="3037605927509011580">Якая неспадзяванка!</translation>
 <translation id="3041612393474885105">Інфармацыя аб сертыфікаце</translation>
-<translation id="3057676462092457419">Рэжым DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> пакуль не падтрымліваецца. Ён пераведзены ў стан "<ph name="SECURE_DNS_MODE_OFF" />".</translation>
 <translation id="3060227939791841287">C9 (канверт)</translation>
 <translation id="3061707000357573562">Сэрвіс выпраўленняў</translation>
 <translation id="3064966200440839136">Выхад з рэжыму інкогніта для плацяжу праз знешнюю праграму. Працягнуць?</translation>
@@ -579,6 +578,7 @@
 <translation id="3484560055331845446">Вы можаце страціць доступ да свайго Уліковага запісу Google. Chrome рэкамендуе змяніць пароль. Вас папросяць увайсці ва ўліковы запіс.</translation>
 <translation id="3487845404393360112">Латок 4</translation>
 <translation id="3495081129428749620">Знайсці на старонцы "<ph name="PAGE_TITLE" />"</translation>
+<translation id="3507936815618196901">стварыць 3D-карту вашага асяроддзя і адсочваць становішча камеры</translation>
 <translation id="3512163584740124171">Гэта палітыка ігнаруецца, бо іншая палітыка з той жа групы палітык мае вышэйшы прыярытэт.</translation>
 <translation id="3518941727116570328">Апрацоўка некалькіх аб'ектаў</translation>
 <translation id="3528171143076753409">Ненадзейны сертыфікат сервера.</translation>
@@ -932,6 +932,7 @@
 <translation id="5030338702439866405">Хто выдаў</translation>
 <translation id="503069730517007720">Патрабуецца каранёвы сертыфікат для "<ph name="SOFTWARE_NAME" />", але ён не ўсталяваны. Каб выправіць гэту праблему, адміністратар павінен азнаёміцца з інструкцыяй па наладжванні для "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" />.</translation>
 <translation id="5031870354684148875">Пра Перакладчык Google</translation>
+<translation id="503498442187459473"><ph name="HOST" /> запытвае доступ да камеры і мікрафона</translation>
 <translation id="5039804452771397117">Дазволіць</translation>
 <translation id="5040262127954254034">Прыватнасць</translation>
 <translation id="5043480802608081735">Скапіраваная вамі спасылка</translation>
@@ -1040,7 +1041,6 @@
 <translation id="5457113250005438886">Несапраўдная</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Адрабіць змену</translation>
-<translation id="5472133193607270166">Калі ўключыць гэту наладу, сайты не змогуць выкарыстоўваць вашы дзеянні ў браўзеры на розных сайтах у мэтах персаналізацыі рэкламы. Некаторыя сайты могуць не працаваць належным чынам.</translation>
 <translation id="5478437291406423475">B6/C4 (канверт)</translation>
 <translation id="5481076368049295676">Праз гэта змесціва на вашу прыладу можа ўсталявацца небяспечнае праграмнае забеспячэнне, якое будзе красці або выдаляць інфармацыю. <ph name="BEGIN_LINK" />Усе роўна паказаць<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Дадайце сапраўдны адрас</translation>
@@ -1326,6 +1326,7 @@
 <translation id="6710594484020273272">&lt;Увядзіце пошукавы запыт&gt;</translation>
 <translation id="671076103358959139">Маркер рэгістрацыі:</translation>
 <translation id="6711464428925977395">Нешта не так з проксі-серверам або адрас няправільны.</translation>
+<translation id="6716672519412350405">Сайт <ph name="URL" /> запытвае дазвол стварыць 3D-карту вашага асяроддзя і адсочваць становішча камеры</translation>
 <translation id="6738516213925468394">Даныя былі зашыфраваны з дапамогай <ph name="BEGIN_LINK" />фразы-пароля для сінхранізацыі<ph name="END_LINK" /> <ph name="TIME" />. Увядзіце яе, каб пачаць сінхранізацыю.</translation>
 <translation id="674375294223700098">Невядомая памылка сертыфіката сервера.</translation>
 <translation id="6744009308914054259">Пакуль чакаецца падключэнне, вы можаце пачытаць артыкулы, спампаваныя раней.</translation>
@@ -1747,7 +1748,6 @@
 <translation id="8589998999637048520">Найлепшая якасць</translation>
 <translation id="860043288473659153">Імя ўладальніка карткі</translation>
 <translation id="8606726445206553943">Выкарыстоўваць прылады MIDI</translation>
-<translation id="8616822740383114808">Гэтай наладай кіруе налада "<ph name="ENFORCING_SETTING" />" на старонцы "<ph name="SETTINGS_PAGE" />"</translation>
 <translation id="861775596732816396">Памер 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Захаваць гэту картку на гэту прыладу</translation>

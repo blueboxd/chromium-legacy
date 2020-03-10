@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="or">
 <translation id="1195447618553298278">ଅଜ୍ଞାତ ତୃଟି ।</translation>
+<translation id="1468664791493211953">ଅଫରଗୁଡ଼ିକ</translation>
 <translation id="1482734542997480527">ଏହି ଡିଭାଇସ୍‌କୁ <ph name="ENROLLMENT_DOMAIN" /> ପରିଚାଳନା କରିଥାଏ ଏବଂ ଆପଣଙ୍କର କାର୍ଯ୍ୟକଳାପ ନିରୀକ୍ଷଣ କରିବାକୁ ସକ୍ଷମ ହୋଇପାରନ୍ତି।</translation>
 <translation id="150962533380566081">ଅବୈଧ PUK।</translation>
 <translation id="1510238584712386396">ଲଞ୍ଚର୍</translation>
@@ -17,7 +18,6 @@
 <translation id="3169472444629675720">ଖୋଜି ପାଆନ୍ତୁ</translation>
 <translation id="3820172043799983114">ଅବୈଧ PIN।</translation>
 <translation id="3838338534323494292">ନୂଆ ପାସ୍‌ୱାର୍ଡ</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ। ବାକି ଥିବା ପ୍ରଚେଷ୍ଟା: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451">ଏହି ଡିଭାଇସ୍‍କୁ <ph name="ENROLLMENT_DOMAIN" /> ପରିଚାଳନା କରିଥାଏ ଏବଂ ଏହା ପାଖରେ ଯାଇଥିବା ୱେବ୍‍ପୃଷ୍ଠାଗୁଡ଼ିକ, ପାସ୍‌ୱାର୍ଡଗୁଡ଼ିକ ଏବଂ ଇମେଲ୍ ସହ ସମସ୍ତ ଉପଯୋଗକର୍ତ୍ତା କାର୍ଯ୍ୟକଳାପକୁ ଆକ୍ସେସ୍ ଅଛି।</translation>
 <translation id="4227825898293920515"><ph name="TIME" />ରେ ପାସ୍‌ୱାର୍ଡର ମିଆଦ ଶେଷ ହେଉଛି</translation>
 <translation id="4429881212383817840">Kerberos ଟିକେଟ୍‍ର ମିଆଦ ଶୀଘ୍ର ଶେଷ ହୋଇଯିବ</translation>
@@ -28,8 +28,6 @@
 <translation id="5212543919916444558">ଆପଣଙ୍କର ସ୍କ୍ରିନ୍‌ରେ ମୁଁ କିଛି ଖୋଜିପାଇଲି ନାହିଁ ଯାହାଦ୍ୱାରା ମୁଁ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିପାରିବି।
 ମୋତେ ଯାହା କିଛି ପଚାରିବା ପାଇଁ ମାଇକ୍‌ ଟାପ୍‌ କରି ଦେଖନ୍ତୁ।</translation>
 <translation id="5222676887888702881">ସାଇନ୍ ଆଉଟ୍ କରନ୍ତୁ</translation>
-<translation id="5275776633505022322">ପ୍ରଚେଷ୍ଟା ବାକି ରହିଲା: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="5317780077021120954">ସଞ୍ଚୟ</translation>
 <translation id="5332948983412042822">ବର୍ତ୍ତମାନ ଏକ ନୂଆ ବାଛନ୍ତୁ</translation>
 <translation id="5457599981699367932">ଅତିଥି ହିସାବରେ ବ୍ରାଉଜ୍ କରନ୍ତୁ</translation>
@@ -42,6 +40,7 @@
 <translation id="7658239707568436148">ବାତିଲ୍</translation>
 <translation id="7690294790491645610">ନୂଆ ପାସ୍‌ୱାର୍ଡ ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="808894953321890993">ପାସ୍‌ୱାର୍ଡ ବଦଳାନ୍ତୁ</translation>
+<translation id="8208861521865154048">ପର୍କଗୁଡ଼ିକ</translation>
 <translation id="8747900814994928677">ପରିବର୍ତ୍ତନକୁ ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> ପାଇଁ ଟିକେଟ୍ ରିଫ୍ରେଶ୍ କରନ୍ତୁ</translation>
 <translation id="9111102763498581341">ଅନ୍‌ଲକ୍ କରନ୍ତୁ</translation>

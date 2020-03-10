@@ -1,4 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="2359808026110333948">Naprej</translation>
+<translation id="2416359993254398973">Chrome potrebuje dovoljenje za dostop do fotoaparata za to spletno mesto.</translation>
+<translation id="557283862590186398">Chrome potrebuje dovoljenje za dostop do mikrofona za to spletno mesto.</translation>
+<translation id="6393863479814692971">Chrome potrebuje dovoljenje za dostop do fotoaparata in mikrofona za to spletno mesto.</translation>
+<translation id="6697947395630195233">Chrome potrebuje dostop do vaše lokacije, da jo bo lahko delil s tem spletnim mestom.</translation>
 </translationbundle>

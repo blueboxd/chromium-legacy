@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database.h"
@@ -61,7 +62,7 @@ void WebAppMigrationManager::OnWebAppDatabaseOpened(
     // called once. All the migrated entities are already listed in sync
     // metadata. Any additional apps from this point in time should be installed
     // via WebAppSyncBridge::CommitUpdate() "as if" a user installs them.
-    CloseDatabaseAndCallCallback(/*success=*/true);
+    ScheduleDestructDatabaseAndCallCallback(/*success=*/true);
     return;
   }
 
@@ -207,7 +208,7 @@ void WebAppMigrationManager::MigrateBookmarkAppsRegistry() {
   DCHECK(database_);
 
   if (bookmark_app_ids_.empty()) {
-    CloseDatabaseAndCallCallback(/*success=*/true);
+    ScheduleDestructDatabaseAndCallCallback(/*success=*/true);
     return;
   }
 
@@ -232,17 +233,25 @@ void WebAppMigrationManager::OnWebAppRegistryWritten(bool success) {
   if (!success)
     DLOG(ERROR) << "Web app registry commit failed.";
 
-  CloseDatabaseAndCallCallback(success);
+  ScheduleDestructDatabaseAndCallCallback(success);
 }
 
 void WebAppMigrationManager::ReportDatabaseError(
     const syncer::ModelError& error) {
   DLOG(ERROR) << "Web app database error. " << error.ToString();
 
-  CloseDatabaseAndCallCallback(/*success=*/false);
+  ScheduleDestructDatabaseAndCallCallback(/*success=*/false);
 }
 
-void WebAppMigrationManager::CloseDatabaseAndCallCallback(bool success) {
+void WebAppMigrationManager::ScheduleDestructDatabaseAndCallCallback(
+    bool success) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WebAppMigrationManager::DestructDatabaseAndCallCallback,
+                     weak_ptr_factory_.GetWeakPtr(), success));
+}
+
+void WebAppMigrationManager::DestructDatabaseAndCallCallback(bool success) {
   // Close the database.
   database_ = nullptr;
 

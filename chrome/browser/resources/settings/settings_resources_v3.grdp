@@ -115,6 +115,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/controls/settings_dropdown_menu.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_CONTROLS_SETTINGS_IDLE_LOAD_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/controls/settings_idle_load.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_CONTROLS_PREF_CONTROL_BEHAVIOR_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/controls/pref_control_behavior.m.js"
            use_base_dir="false"

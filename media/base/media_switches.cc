@@ -184,6 +184,12 @@ const char kOverrideEnabledCdmInterfaceVersion[] =
 const char kOverrideHardwareSecureCodecsForTesting[] =
     "override-hardware-secure-codecs-for-testing";
 
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+// Force to disable kChromeosVideoDecoder feature, used for unsupported boards.
+const char kForceDisableNewAcceleratedVideoDecoder[] =
+    "force-disable-new-accelerated-video-decoder";
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+
 namespace autoplay {
 
 // Autoplay policy that requires a document user activation.

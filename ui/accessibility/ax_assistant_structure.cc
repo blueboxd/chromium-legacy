@@ -374,6 +374,11 @@ AssistantNode::~AssistantNode() = default;
 AssistantTree::AssistantTree() = default;
 AssistantTree::~AssistantTree() = default;
 
+AssistantTree::AssistantTree(const AssistantTree& other) {
+  for (const auto& node : other.nodes)
+    nodes.emplace_back(std::make_unique<AssistantNode>(*node));
+}
+
 std::unique_ptr<AssistantTree> CreateAssistantTree(const AXTreeUpdate& update,
                                                    bool show_password) {
   auto tree = std::make_unique<AXSerializableTree>();

@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">ទំព័រនៅសល់ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">ដើម្បី​ចែករំលែក​អ្វីមួយ​ពី​ទូរសព្ទរបស់អ្នកទៅឧបករណ៍​ផ្សេងទៀត សូមបើក​សមកាលកម្ម​នៅក្នុងការកំណត់ Chrome នៅលើឧបករណ៍ទាំងពីរ</translation>
 <translation id="2175927920773552910">កូដ QR</translation>
+<translation id="2182457891543959921">សួរ​មុនពេល​អនុញ្ញាតឱ្យ​គេហទំព័របង្កើតផែនទី 3D នៃមជ្ឈដ្ឋានជុំវិញរបស់អ្នក ឬតាមដានទីតាំងកាមេរ៉ា (បានណែនាំ)</translation>
 <translation id="218608176142494674">ការចែករំលែក</translation>
 <translation id="2227444325776770048">បន្តជា <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">សមកាលកម្ម និងសេវាកម្ម Google</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">នៅពេលអ្នក​ចូលគណនី Google របស់អ្នក មុខងារនេះ​ត្រូវបានបើក</translation>
 <translation id="2410754283952462441">ជ្រើសរើស​គណនី</translation>
 <translation id="2414886740292270097">ងងឹត</translation>
-<translation id="2416359993254398973">Chrome ត្រូវការការអនុញ្ញាត​ដើម្បី​ចូល​ប្រើប្រាស់​កាមេរ៉ា​របស់​អ្នក​សម្រាប់ទំព័រនេះ។</translation>
 <translation id="2426805022920575512">ជ្រើសរើស​គណនី​ផ្សេងទៀត</translation>
 <translation id="2433507940547922241">ការបង្ហាញខ្លួន</translation>
 <translation id="2434158240863470628">ការទាញយក​បានបញ្ចប់ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@
 <translation id="3522247891732774234">មានផ្តល់ជូនការអាប់ដេត។ ជម្រើសច្រើនទៀត</translation>
 <translation id="3524138585025253783">UI អ្នកអភិវឌ្ឍន៍</translation>
 <translation id="3527085408025491307">ថតឯកសារ</translation>
+<translation id="3538390592868664640">ទប់ស្កាត់គេហទំព័រមិនឱ្យបង្កើតផែនទី 3D នៃមជ្ឈដ្ឋានជុំវិញរបស់អ្នក ឬតាមដានទីតាំងកាមេរ៉ា</translation>
 <translation id="3542235761944717775">ទំនេរ <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">ស្វែងរក​ប្រវត្តិ​របស់អ្នក</translation>
 <translation id="3557336313807607643">បញ្ចូល​ទៅ​ក្នុង​ទំនាក់ទំនង</translation>
@@ -439,6 +440,7 @@
 <translation id="4298388696830689168">គេហទំព័រ​ដែលបានតភ្ជាប់</translation>
 <translation id="4307992518367153382">មូលដ្ឋាន</translation>
 <translation id="4314815835985389558">គ្រប់គ្រង​សមកាលកម្ម</translation>
+<translation id="4320177379694898372">គ្មានការភ្ជាប់អ៊ីនធឺណិតទេ</translation>
 <translation id="4321739720395210191">មិនអាចបើក​កាមេរ៉ា​របស់អ្នក​បានទេ។ សូម​ចាប់ផ្ដើម​ឧបករណ៍​របស់អ្នក​ឡើងវិញ រួច​ព្យាយាម​ម្ដងទៀត។</translation>
 <translation id="4351244548802238354">បិទប្រអប់</translation>
 <translation id="4353114845960720315">នៅពេល​អ្នកនៅក្នុង VR គេហទំព័រនេះ​ប្រហែលជាអាច​ដឹងអំពី៖</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">បិទផ្ទាំងអនាមិក</translation>
 <translation id="5534640966246046842">បានចម្លង​ទំព័រ</translation>
 <translation id="5561549206367097665">កំពុង​រង់​ចាំ​បណ្ដាញ​…</translation>
-<translation id="557283862590186398">Chrome ត្រូវការការអនុញ្ញាត ដើម្បីចូលប្រើប្រាស់មីក្រូហ្វូនរបស់អ្នកសម្រាប់ទំព័រនេះ។</translation>
 <translation id="55737423895878184">ទីតាំង និង​ការជូន​ដំណឹង​ត្រូវ​បាន​អនុញ្ញាត</translation>
 <translation id="5578795271662203820">ស្វែងរក <ph name="SEARCH_ENGINE" /> សម្រាប់រូបភាពនេះ</translation>
 <translation id="5581519193887989363">អ្នកអាចជ្រើសរើស​អ្វីដែលត្រូវធ្វើសមកាលកម្ម​នៅក្នុង<ph name="BEGIN_LINK1" />ការកំណត់<ph name="END_LINK1" />បានជានិច្ច។</translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">ព័ត៌មាន​លម្អិត៖ ​តម្រៀប​តាមទំហំ​ទិន្នន័យ​ដែលបានប្រើប្រាស់</translation>
 <translation id="6381421346744604172">ធ្វើឱ្យគេហទំព័រប្រែជាងងឹត</translation>
 <translation id="6388207532828177975">ជម្រះ និងកំណត់ឡើងវិញ</translation>
-<translation id="6393863479814692971">Chrome ត្រូវការការអនុញ្ញាត ដើម្បីចូលប្រើប្រាស់កាមេរ៉ា និងមីក្រូហ្វូនរបស់អ្នកសម្រាប់ទំព័រនេះ។</translation>
 <translation id="6395288395575013217">តំណ</translation>
 <translation id="6404511346730675251">កែប្រែចំណាំ</translation>
 <translation id="6406506848690869874">សមកាលកម្ម</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">សម្អាតទិន្នន័យ​ Chrome ​របស់អ្នកពី​ឧបករណ៍នេះមែនទេ?</translation>
 <translation id="6689172468748959065">រូបថត​កម្រង​ព័ត៌មាន</translation>
 <translation id="6697492270171225480">បង្ហាញ​ការណែនាំ​សម្រាប់​ទំព័រ​ស្រដៀង​គ្នា នៅ​ពេល​មិនអាច​រកឃើញទំព័រ</translation>
-<translation id="6697947395630195233">Chrome ត្រូវការការចូលប្រើប្រាស់ទីកន្លែងរបស់អ្នក ដើម្បីចែករំលែកទីកន្លែងរបស់អ្នកជាមួយទំព័រនេះ។</translation>
 <translation id="6698801883190606802">គ្រប់គ្រងទិន្នន័យដែលបានធ្វើសមកាលកម្ម</translation>
 <translation id="6699370405921460408">ម៉ាស៊ីនមេ Google នឹងបង្កើនប្រសិទ្ធភាពទំព័រដែលអ្នកចូលមើល។</translation>
 <translation id="6710213216561001401">មុន</translation>
@@ -971,6 +970,7 @@
 <translation id="8186512483418048923">នៅសល់ឯកសារចំនួន <ph name="FILES" /></translation>
 <translation id="8190358571722158785">នៅសល់ 1 ថ្ងៃទៀត</translation>
 <translation id="8200772114523450471">បន្ត</translation>
+<translation id="8206354486702514201">ការកំណត់នេះត្រូវបានអនុវត្តដោយអ្នកគ្រប់គ្រងរបស់អ្នក។</translation>
 <translation id="8209050860603202033">បើករូបភាព</translation>
 <translation id="8218622182176210845">គ្រប់គ្រង​គណនី​របស់អ្នក</translation>
 <translation id="8224471946457685718">ទាញយក​អត្ថបទ​សម្រាប់​អ្នក​តាមរយៈ Wi-Fi</translation>
@@ -992,7 +992,6 @@
 <translation id="8364299278605033898">មើល​គេហទំព័រ​ពេញនិយម</translation>
 <translation id="8368027906805972958">ឧបករណ៍ដែល​មិនស្គាល់ ឬ​មិនអាច​ប្រើបាន (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">អនុញ្ញាតការធ្វើសមកាលកម្មផ្ទៃខាងក្រោយសម្រាប់គេហទំព័រជាក់លាក់។</translation>
-<translation id="8378714024927312812">គ្រប់គ្រងដោយ​ស្ថាប័ន​របស់អ្នក</translation>
 <translation id="8380167699614421159">គេហទំព័រ​នេះបង្ហាញ​ការផ្សាយពាណិជ្ជកម្ម​ដែលនាំឱ្យយល់ច្រឡំ ឬរំខាន</translation>
 <translation id="8393700583063109961">ផ្ញើ​សារ</translation>
 <translation id="8413126021676339697">បង្ហាញប្រវត្តិពេញលេញ</translation>

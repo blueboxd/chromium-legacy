@@ -33,6 +33,20 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     private final SuggestionHost mSuggestionHost;
     private boolean mEnableCompactSuggestions;
     private final int mDesiredFaviconWidthPx;
+    private int mSuggestionSizePx;
+
+    /**
+     * @param context Current context.
+     * @param host A handle to the object using the suggestions.
+     */
+    public BaseSuggestionViewProcessor(Context context, SuggestionHost host) {
+        mContext = context;
+        mSuggestionHost = host;
+        mDesiredFaviconWidthPx = mContext.getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_favicon_size);
+        mSuggestionSizePx = mContext.getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_comfortable_height);
+    }
 
     @Override
     public void onUrlFocusChange(boolean hasFocus) {}
@@ -47,19 +61,18 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     public void onNativeInitialized() {
         mEnableCompactSuggestions =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS);
+        if (mEnableCompactSuggestions) {
+            mSuggestionSizePx = mContext.getResources().getDimensionPixelSize(
+                    R.dimen.omnibox_suggestion_compact_height);
+        }
     }
 
     @Override
     public void onSuggestionsReceived() {}
 
-    /**
-     * @param host A handle to the object using the suggestions.
-     */
-    public BaseSuggestionViewProcessor(Context context, SuggestionHost host) {
-        mContext = context;
-        mSuggestionHost = host;
-        mDesiredFaviconWidthPx = mContext.getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_favicon_size);
+    @Override
+    public int getMinimumSuggestionViewHeight() {
+        return mSuggestionSizePx;
     }
 
     /**

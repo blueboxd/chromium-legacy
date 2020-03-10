@@ -13,7 +13,6 @@
 <translation id="151962892725702025">Chromium ОС не може да ги синхронизира вашите податоци бидејќи синхронизацијата не е достапна за вашиот домен.</translation>
 <translation id="1524282610922162960">Споделете картичка на Chromium</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Администраторот бара да го рестартирате Chromium за да се примени ажурирање}=1{Администраторот бара да го рестартирате Chromium за да се примени ажурирање. Прозорецот „Инкогнито“ нема да се отвори повторно.}one{Администраторот бара да го рестартирате Chromium за да се примени ажурирање. # прозорец „Инкогнито“ нема да се отвори повторно.}other{Администраторот бара да го рестартирате Chromium за да се примени ажурирање. # прозорци „Инкогнито“ нема да се отворат повторно.}}</translation>
-<translation id="1663739491876737434">Chromium не може да ги провери вашите лозинки. Обидете се повторно утре.</translation>
 <translation id="1708666629004767631">Достапна е нова, побезбедна верзија на Chromium.</translation>
 <translation id="1774152462503052664">Остави го Chromium да работи во заднина</translation>
 <translation id="1779356040007214683">За Chromium да биде побезбеден, оневозможивме неколку наставки што не се наведени во <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и можеби се додадени без ваше знаење.</translation>
@@ -85,7 +84,6 @@
 <translation id="4423735387467980091">Приспособи го и контролирај го Chromium</translation>
 <translation id="4567424176335768812">Најавени сте како <ph name="USER_EMAIL_ADDRESS" />. Сега може да пристапувате кон вашите обележувачи, историја и други поставки на сите најавени уреди.</translation>
 <translation id="459535195905078186">Апликации на Chromium</translation>
-<translation id="4621240073146040695">Речиси ажурирано! Рестартирајте го Chromium за да се заврши ажурирањето.</translation>
 <translation id="4677944499843243528">Изгледа дека друг процес на Chromium го користи профилот (<ph name="PROCESS_ID" />) на друг компјутер (<ph name="HOST_NAME" />). Chromium го заклучи профилот за да не се оштети. Доколку сте сигурни дека други процеси не го користат овој профил, може да го отклучите и повторно да го стартувате Chromium.</translation>
 <translation id="469338717132742108">Добијте помош за Chromium OS</translation>
 <translation id="4708774505295300557">Некој претходно се најави на Chromium од овој компјутер како <ph name="ACCOUNT_EMAIL_LAST" />. Создајте нов корисник на Chromium за да ги чувате информациите одделно.</translation>
@@ -96,7 +94,6 @@
 <translation id="4943838377383847465">Chromium е во заднински режим.</translation>
 <translation id="4987820182225656817">Гостите може да го користат Chromium без оставање никакви траги зад нив.</translation>
 <translation id="4994636714258228724">Додај се себеси на Chromium</translation>
-<translation id="5093066630040073147">Нема зачувани лозинки. Chromium може да ги проверува вашите лозинки кога ќе ги зачувате во вашата сметка на Google.</translation>
 <translation id="5277894862589591112">За да се применат измените, рестартирајте го Chromium</translation>
 <translation id="5310059007469274549">Chromium не може да ги провери вашите лозинки бидејќи ги има премногу</translation>
 <translation id="5358375970380395591">Се пријавувате со управувана сметка и му давате контрола на администраторот над вашиот профил на Chromium. Вашите податоци на Chromium, како на пример ваши апликации, обележувачи, историја, лозинки и други поставки ќе бидат трајно поврзани со <ph name="USER_NAME" />. Може да ги бришете овие податоци преку информациската табла со сметки на Google, но нема да може да ги поврзувате овие податоци со друга сметка. <ph name="LEARN_MORE" /></translation>
@@ -108,14 +105,12 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
 <translation id="5479196819031988440">ОС на Chromium не може да ја отвори страницава.</translation>
 <translation id="5480860683791598150">На Chromium му треба пристап до вашата локација за да ја сподели со сајтов</translation>
-<translation id="5488573303232097702">Chromium не се ажурираше, нешто тргна наопаку. Поправете ги проблемите со ажурирањето на Chrome и со неуспешните ажурирања.</translation>
 <translation id="549669000822060376">Почекајте додека Chromium ги инсталира последните системски ажурирања.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Достапно е ажурирање за Chromium}=1{Достапно е ажурирање за Chromium}one{Достапно е ажурирање за Chromium веќе # ден}other{Достапно е ажурирање за Chromium веќе # дена}}</translation>
 <translation id="5631814766731275228">Име и слика на Chromium</translation>
 <translation id="5634636535844844681">Chromium бара Windows 7 или понова верзија.</translation>
 <translation id="5653831366781983928">Рестартирајте го Chromium сега</translation>
 <translation id="5698481217667032250">Прикажи го Chromium на овој јазик</translation>
-<translation id="5814748786105822016">Chromium не може да ги провери вашите лозинки</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Добре дојдовте во Chromium</translation>
 <translation id="5895138241574237353">Рестартирај</translation>
@@ -131,7 +126,7 @@
 <translation id="6212496753309875659">Овој компјутер веќе има најнова верзија на Chromium. Доколку софтверот не работи, деинсталирајте го Chromium и обидете се повторно.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium ќе се рестартира сега}=1{Chromium ќе се рестартира по 1 секунда}one{Chromium ќе се рестартира по # секунда}other{Chromium ќе се рестартира по # секунди}}</translation>
 <translation id="6248213926982192922">Постави го Chromium за стандарден прелистувач</translation>
-<translation id="6266342355635466082">Chromium не може да провери за ажурирања. Проверете ја интернет-врската.</translation>
+<translation id="6266342355635466082">Chromium не може да провери дали се достапни ажурирања. Проверете ја интернет-врската.</translation>
 <translation id="6268381023930128611">Ќе се одјавите од Chromium?</translation>
 <translation id="6295779123002464101">Датотеката <ph name="FILE_NAME" /> може да биде опасна, па затоа Chromium ја блокираше.</translation>
 <translation id="6309712487085796862">Chromium ја користи камерата.</translation>
@@ -207,7 +202,6 @@ Chromium не може да ги обнови вашите поставки.</tr
 <translation id="8417404458978023919">{0,plural, =1{Рестартирајте го Chromium во рок од еден ден}one{Рестартирајте го Chromium во рок од # ден}other{Рестартирајте го Chromium во рок од # дена}}</translation>
 <translation id="8453117565092476964">Архивата на инсталаторот е оштетена или невалидна. Преземете го Chromium повторно.</translation>
 <translation id="8493179195440786826">Chromium е застарен</translation>
-<translation id="8568283329061645092">Chromium може да ги проверува вашите лозинки кога ќе се најавите со вашата сметка на Google</translation>
 <translation id="8586442755830160949">Авторски права <ph name="YEAR" /> на Авторите на Chromium. Сите права се задржани.</translation>
 <translation id="8619360774459241877">Се стартува Chromium…</translation>
 <translation id="8621669128220841554">Инсталирањето не успеа поради неназначена грешка. Преземете го Chromium повторно.</translation>
@@ -215,7 +209,6 @@ Chromium не може да ги обнови вашите поставки.</tr
     поставките за прелистувачот Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Контролира и која страница се прикажува кога го стартувате Chromium или ако пребарувате од лентата за адреси.</translation>
 <translation id="8704119203788522458">Ова е вашиот Chromium</translation>
-<translation id="8774315820480073720">Вашиот администратор управува со ажурирањата на Chromium</translation>
 <translation id="8796602469536043152">На Chromium му треба дозвола за да пристапи до камерата и микрофонот за сајтов</translation>
 <translation id="8803635938069941624">Услови на Chromium OS</translation>
 <translation id="8821041990367117597">Chromium не може да ги синхронизира вашите податоци бидејќи вашите информации за пријавување на сметката се застарени.</translation>

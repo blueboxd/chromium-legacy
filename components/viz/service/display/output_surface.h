@@ -250,6 +250,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // instead of passing it out here.
   virtual scoped_refptr<gpu::GpuTaskSchedulerHelper>
   GetGpuTaskSchedulerHelper() = 0;
+  virtual gpu::MemoryTracker* GetMemoryTracker() = 0;
 
  protected:
   struct OutputSurface::Capabilities capabilities_;

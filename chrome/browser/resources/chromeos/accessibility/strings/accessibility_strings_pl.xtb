@@ -760,7 +760,7 @@
 <translation id="5402367795255837559">Pismo Braille'a</translation>
 <translation id="5402791055281059602">Alert w oknie modalnym</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{średnik}few{# średniki}many{# średników}other{# semicolons}}</translation>
-<translation id="5420259671171615858">Przeszukaj menu.</translation>
+<translation id="5420259671171615858">Przeszukaj menu</translation>
 <translation id="5435274640623994081">Włącz rejestrowanie ikony audio</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{mniejszy niż}few{# znaki mniejszości}many{# znaków mniejszości}other{# less than signs}}</translation>
 <translation id="5444587279251314700">(aktywna)</translation>
@@ -1044,7 +1044,7 @@
 <translation id="7400575256015741911">Wykryto błąd pisowni</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">powrót</translation>
-<translation id="7429415133937917139">Symuluje wyjście odświeżanego monitora brajlowskiego w panelu ChromeVoxa u góry ekranu.</translation>
+<translation id="7429415133937917139">Symuluje wyjście odświeżanego monitora brajlowskiego w panelu ChromeVoxa u góry ekranu</translation>
 <translation id="7434509671034404296">Deweloper</translation>
 <translation id="743783356331413498">Przykład</translation>
 <translation id="7439060726180460871">Katalog</translation>
@@ -1138,6 +1138,7 @@
 <translation id="8065607967589909823">Bieżący wybór to</translation>
 <translation id="8066678206530322333">Baner</translation>
 <translation id="8076492880354921740">Karty</translation>
+<translation id="8083115023881784332">Brak bieżącego zaznaczenia w ChromeVox. Naciśnij Alt+Shift+L, by uruchomić Menu z aplikacjami.</translation>
 <translation id="8091452896542422286">Odstęp</translation>
 <translation id="8096975275316362544">Miętowokremowy</translation>
 <translation id="8098587210054821856">Szaroniebieski</translation>

@@ -315,7 +315,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="2289385804009217824">Punguza</translation>
 <translation id="2292556288342944218">Ufikiaji wako wa intaneti umezuiwa</translation>
 <translation id="2297722699537546652">B5 (Bahasha)</translation>
-<translation id="2300306941146563769">Hazijapakiwa</translation>
+<translation id="2300306941146563769">Haikupakiwa</translation>
 <translation id="2310021320168182093">Chou2 (Bahasha)</translation>
 <translation id="2315864634253056100">Jina la tovuti hii linafafana na la <ph name="LOOKALIKE_DOMAIN" />. Wakati mwingine, wadukuzi huiga tovuti kwa kufanya mabadiliko ambayo si rahisi kuonekana kwenye anwani ya tovuti.</translation>
 <translation id="2316887270356262533">Huongeza nafasi isiyozidi MB 1. Baadhi ya tovuti huenda zikapakia polepole zaidi utakapozivinjari tena.</translation>
@@ -478,7 +478,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="3024663005179499861">Aina mbaya ya sera</translation>
 <translation id="3037605927509011580">Lo!</translation>
 <translation id="3041612393474885105">Maelezo ya Cheti</translation>
-<translation id="3057676462092457419">Hali ya DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> bado haitumiki, hali imewekwa kuwa <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Bahasha)</translation>
 <translation id="3061707000357573562">Huduma ya Kurekebisha</translation>
 <translation id="3064966200440839136">Inaacha hali fiche ili kulipa kupitia programu ya nje. Je, ungependa kuendelea?</translation>
@@ -578,6 +577,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="3487845404393360112">Trei ya nne</translation>
 <translation id="3495081129428749620">Pata katika ukurasa wa
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Kubuni ramani ya 3D ya mazingira yako na kufuatilia mkao wa kamera</translation>
 <translation id="3512163584740124171">Sera hii haitumiki kwa sababu sera nyingine kutoka kundi sawa la sera inapewa kipaumbele zaidi.</translation>
 <translation id="3518941727116570328">Kushughulikia vipengee vingi</translation>
 <translation id="3528171143076753409">Cheti cha seva hakiaminiki.</translation>
@@ -930,6 +930,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="5030338702439866405">Kimetolewa Na</translation>
 <translation id="503069730517007720">Cheti cha msingi cha "<ph name="SOFTWARE_NAME" />" kinahitajika lakini hakijasakinishwa. Ni lazima msimamizi wako wa TEHAMA asome mipangilio ya "<ph name="SOFTWARE_NAME" />" ili atatue tatizo hili. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Kuhusu Google Tafsiri</translation>
+<translation id="503498442187459473"><ph name="HOST" /> inataka kutumia kamera na maikrofoni yako</translation>
 <translation id="5039804452771397117">Ruhusu</translation>
 <translation id="5040262127954254034">Faragha</translation>
 <translation id="5043480802608081735">Kiungo Ulichonakili</translation>
@@ -1038,7 +1039,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="5457113250005438886">Haiwezi kutumika</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> na mwingine <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> na wengine <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">Rudia kuhariri</translation>
-<translation id="5472133193607270166">Ukiwasha, tovuti haziwezi kutumia shughuli zako za kuvinjari kwenye tovuti tofauti ili kukuonyesha matangazo yanayokufaa zaidi. Huenda baadhi ya tovuti zisifanye kazi vizuri.</translation>
 <translation id="5478437291406423475">B6/C4 (Bahasha)</translation>
 <translation id="5481076368049295676">Huenda maudhui haya yakajaribu kusakinisha programu hatari inayoiba au kufuta maelezo yaliyo kwenye kifaa chako. <ph name="BEGIN_LINK" />Onyesha tu<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Ongeza anwani sahihi ya barua pepe</translation>
@@ -1324,6 +1324,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="6710594484020273272">&lt;Andika neno unalotaka kutafuta&gt;</translation>
 <translation id="671076103358959139">Tokeni ya Kujiandikisha:</translation>
 <translation id="6711464428925977395">Kuna hitilafu katika seva mbadala, au anwani siyo sahihi.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> inataka kubuni ramani ya 3D ya mazingira yako na kufuatilia mkao wa kamera</translation>
 <translation id="6738516213925468394">Data yako ilisimbwa kwa kutumia <ph name="BEGIN_LINK" />kauli ya siri ya usawazishaji<ph name="END_LINK" /> mnamo <ph name="TIME" />. Iweke ili uanze kusawazisha.</translation>
 <translation id="674375294223700098">Hitilafu isiyojulikana ya cheti cha seva.</translation>
 <translation id="6744009308914054259">Wakati unasubiri muunganisho, unaweza kutembelea Vipakuliwa ili usome makala yaliyo nje ya mtandao.</translation>
@@ -1697,7 +1698,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ikiwa unaelewa hatari kwa usalama wako, unaweza <ph name="BEGIN_LINK" />kutembelea tovuti hii<ph name="END_LINK" /> kabla programu hatari hazijaondolewa.</translation>
 <translation id="8349305172487531364">Sehemu ya Alamisho</translation>
-<translation id="8355270400102541638">Muktadha ya Ripoti ya Ndani ya Programu Kuacha Kufanya:</translation>
+<translation id="8355270400102541638">Muktadha wa Ripoti ya Kuacha Kufanya:</translation>
 <translation id="8363502534493474904">Kuzima hali ya ndegeni</translation>
 <translation id="8364627913115013041">Haijawekwa.</translation>
 <translation id="8368476060205742148">Huduma za Google Play</translation>
@@ -1741,7 +1742,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="8589998999637048520">Ubora wa juu zaidi</translation>
 <translation id="860043288473659153">Jina la mmiliki wa kadi</translation>
 <translation id="8606726445206553943">Tumia vifaa vyako vya MIDI</translation>
-<translation id="8616822740383114808">Mipangilio hii imetekelezwa na "<ph name="ENFORCING_SETTING" />" katika "<ph name="SETTINGS_PAGE" />"</translation>
 <translation id="861775596732816396">Ukubwa wa 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Hifadhi Maelezo ya Kadi Hii kwenye Kifaa Hiki</translation>

@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">其余的网站（<ph name="NUMBER_OF_SITES" /> 个）</translation>
 <translation id="2157851137955077194">如果想将您手机上的内容分享到另一部设备，那么对于这两部设备，您都需在 Chrome 设置中开启同步功能</translation>
 <translation id="2175927920773552910">二维码</translation>
+<translation id="2182457891543959921">在允许网站为您的周边环境创建 3D 地图或跟踪摄像头位置之前询问您（推荐）</translation>
 <translation id="218608176142494674">共享</translation>
 <translation id="2227444325776770048">以“<ph name="USER_FULL_NAME" />”的身份继续</translation>
 <translation id="2234876718134438132">同步功能和 Google 服务</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">当您登录自己的 Google 帐号后，系统即会启用此功能</translation>
 <translation id="2410754283952462441">选择帐号</translation>
 <translation id="2414886740292270097">深色调</translation>
-<translation id="2416359993254398973">Chrome 需要获得相应权限，才能允许此网站使用您的摄像头。</translation>
 <translation id="2426805022920575512">选择其他帐号</translation>
 <translation id="2433507940547922241">外观</translation>
 <translation id="2434158240863470628">下载完成 <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -325,7 +325,7 @@
 <translation id="3350687908700087792">关闭所有隐身标签页</translation>
 <translation id="3353615205017136254">由 Google 提供的精简版网页。点按“加载原始网页”按钮即可加载原始网页。</translation>
 <translation id="3367813778245106622">重新登录以开始同步</translation>
-<translation id="3373979091428520308">如果想将此页分享到另一部设备，请在相应设备上的 Chrome 设置中开启同步</translation>
+<translation id="3373979091428520308">如果想将此页分享到其他设备，请在相应设备上的 Chrome 设置中开启同步</translation>
 <translation id="3374023511497244703">您的书签、历史记录、密码和其他 Chrome 数据将不再同步到您的 Google 帐号中</translation>
 <translation id="3384347053049321195">分享图片</translation>
 <translation id="3386292677130313581">网站需要先询问并得到您的许可才能获取您的位置信息（推荐）</translation>
@@ -343,6 +343,7 @@
 <translation id="3522247891732774234">有更新。更多选项</translation>
 <translation id="3524138585025253783">开发者界面</translation>
 <translation id="3527085408025491307">文件夹</translation>
+<translation id="3538390592868664640">禁止网站为您的周边环境创建 3D 地图或跟踪摄像头位置</translation>
 <translation id="3542235761944717775">可用空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">搜索您的历史记录</translation>
 <translation id="3557336313807607643">添加到通讯录</translation>
@@ -439,6 +440,7 @@
 <translation id="4298388696830689168">已关联的网站</translation>
 <translation id="4307992518367153382">基本</translation>
 <translation id="4314815835985389558">管理同步数据</translation>
+<translation id="4320177379694898372">未连接到互联网</translation>
 <translation id="4321739720395210191">无法打开您的摄像头。请重启设备，然后重试。</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
 <translation id="4353114845960720315">当您处于 VR 环境时，此网站或许能够得知：</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">关闭隐身标签页</translation>
 <translation id="5534640966246046842">已复制网站</translation>
 <translation id="5561549206367097665">正在等待连接到网络…</translation>
-<translation id="557283862590186398">Chrome 需要获得相应权限，才能允许此网站使用您的麦克风。</translation>
 <translation id="55737423895878184">允许使用位置信息以及显示通知</translation>
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE" />中搜索此图片</translation>
 <translation id="5581519193887989363">您始终可在<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />中选择要同步的内容。</translation>
@@ -674,7 +675,7 @@
 <translation id="5956665950594638604">在新标签页中打开 Chrome 帮助中心</translation>
 <translation id="5958275228015807058">在“下载内容”中查找您的文件和网页</translation>
 <translation id="5962718611393537961">点按即可收起</translation>
-<translation id="5964805880140440652">如果想将此页分享到另一部设备，请在 Chrome 设置中开启同步</translation>
+<translation id="5964805880140440652">如果想将此页分享到其他设备，请在 Chrome 设置中开启同步</translation>
 <translation id="6000066717592683814">继续使用 Google</translation>
 <translation id="6005538289190791541">建议的密码</translation>
 <translation id="6036057147555329831">额外的 ICU</translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">详细信息：按已使用的数据流量排序</translation>
 <translation id="6381421346744604172">调暗网站颜色</translation>
 <translation id="6388207532828177975">清除并重置</translation>
-<translation id="6393863479814692971">Chrome 需要获得相应权限，才能允许此网站使用您的摄像头和麦克风。</translation>
 <translation id="6395288395575013217">链接</translation>
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6406506848690869874">同步</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">从这部设备中清除您的 Chrome 数据？</translation>
 <translation id="6689172468748959065">个人资料照片</translation>
 <translation id="6697492270171225480">找不到相应网页时，显示有关类似网页的建议</translation>
-<translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
 <translation id="6699370405921460408">Google 服务器会优化您访问的网页。</translation>
 <translation id="6710213216561001401">上一个</translation>
@@ -971,6 +970,7 @@
 <translation id="8186512483418048923">还剩 <ph name="FILES" /> 个文件</translation>
 <translation id="8190358571722158785">还剩 1 天</translation>
 <translation id="8200772114523450471">继续</translation>
+<translation id="8206354486702514201">此设置是由您的管理员执行的。</translation>
 <translation id="8209050860603202033">打开图片</translation>
 <translation id="8218622182176210845">管理您的帐号</translation>
 <translation id="8224471946457685718">在连接到 Wi-Fi 时下载为您推荐的文章</translation>
@@ -992,7 +992,6 @@
 <translation id="8364299278605033898">查看热门网站</translation>
 <translation id="8368027906805972958">未知或不支持的设备 (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
-<translation id="8378714024927312812">由贵单位管理</translation>
 <translation id="8380167699614421159">此网站会展示侵扰性或误导性广告</translation>
 <translation id="8393700583063109961">发送消息</translation>
 <translation id="8413126021676339697">显示全部历史记录</translation>

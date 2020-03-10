@@ -102,11 +102,16 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     /** Supplies additional control over suggestion model. */
     private final SuggestionHost mSuggestionHost;
 
+    /** Minimum height of the corresponding view. */
+    private final int mMinViewHeight;
+
     /**
      * @param locationBarDelegate A means of modifying the location bar.
      */
     public EditUrlSuggestionProcessor(Context context, SuggestionHost suggestionHost,
             LocationBarDelegate locationBarDelegate, Supplier<LargeIconBridge> iconBridgeSupplier) {
+        mMinViewHeight = context.getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_comfortable_height);
         mLocationBarDelegate = locationBarDelegate;
         mDesiredFaviconWidthPx = context.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_favicon_size);
@@ -123,6 +128,11 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         LayoutInflater inflater =
                 (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         return (ViewGroup) inflater.inflate(R.layout.edit_url_suggestion_layout, null);
+    }
+
+    @Override
+    public int getMinimumSuggestionViewHeight() {
+        return mMinViewHeight;
     }
 
     @Override

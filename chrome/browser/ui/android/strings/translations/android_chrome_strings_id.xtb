@@ -168,6 +168,7 @@ Ketuk kata apa pun untuk menelusuri. Untuk menyaring penelusuran, sentuh lama un
 <translation id="2156074688469523661">Situs yang tersisa (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Untuk berbagi dari ponsel Anda ke perangkat lain, aktifkan sinkronisasi di setelan Chrome pada kedua perangkat</translation>
 <translation id="2175927920773552910">Kode QR</translation>
+<translation id="2182457891543959921">Tanyakan sebelum mengizinkan situs membuat peta 3D untuk area di sekeliling Anda atau melacak posisi kamera (direkomendasikan)</translation>
 <translation id="218608176142494674">Berbagi</translation>
 <translation id="2227444325776770048">Lanjutkan sebagai <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sinkronisasi dan layanan Google</translation>
@@ -193,7 +194,6 @@ Ketuk kata apa pun untuk menelusuri. Untuk menyaring penelusuran, sentuh lama un
 <translation id="2407481962792080328">Saat login ke Akun Google Anda, fitur ini akan diaktifkan</translation>
 <translation id="2410754283952462441">Pilih akun</translation>
 <translation id="2414886740292270097">Gelap</translation>
-<translation id="2416359993254398973">Chrome memerlukan izin akses ke kamera untuk situs ini.</translation>
 <translation id="2426805022920575512">Pilih akun lain</translation>
 <translation id="2433507940547922241">Tampilan</translation>
 <translation id="2434158240863470628">Download selesai <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="3522247891732774234">Pembaruan tersedia. Opsi lainnya</translation>
 <translation id="3524138585025253783">UI Developer</translation>
 <translation id="3527085408025491307">Folder</translation>
+<translation id="3538390592868664640">Blokir situs agar tidak membuat peta 3D untuk area di sekeliling Anda atau melacak posisi kamera</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB tersedia</translation>
 <translation id="3549657413697417275">Telusuri histori penggunaan</translation>
 <translation id="3557336313807607643">Tambahkan ke kontak</translation>
@@ -439,6 +440,7 @@ Hanya Anda yang dapat melihat hal-hal yang dilihat kamera Anda. Situs ini tidak 
 <translation id="4298388696830689168">Situs tertaut</translation>
 <translation id="4307992518367153382">Dasar</translation>
 <translation id="4314815835985389558">Kelola sinkronisasi</translation>
+<translation id="4320177379694898372">Tidak ada sambungan internet</translation>
 <translation id="4321739720395210191">Tidak dapat membuka kamera Anda. Mulai ulang perangkat Anda dan coba lagi.</translation>
 <translation id="4351244548802238354">Tutup dialog</translation>
 <translation id="4353114845960720315">Ketika Anda berada dalam VR, situs ini mungkin dapat mempelajari:</translation>
@@ -617,7 +619,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5530766185686772672">Tutup tab samaran</translation>
 <translation id="5534640966246046842">Situs disalin</translation>
 <translation id="5561549206367097665">Menunggu jaringan…</translation>
-<translation id="557283862590186398">Chrome memerlukan izin akses ke mikrofon untuk situs ini.</translation>
 <translation id="55737423895878184">Lokasi dan notifikasi diizinkan</translation>
 <translation id="5578795271662203820">Telusuri <ph name="SEARCH_ENGINE" /> untuk gambar ini</translation>
 <translation id="5581519193887989363">Anda dapat memilih konten apa yang akan disinkronkan di <ph name="BEGIN_LINK1" />setelan<ph name="END_LINK1" /> kapan saja.</translation>
@@ -726,7 +727,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6378173571450987352">Detail: Diurutkan menurut jumlah kuota yang digunakan</translation>
 <translation id="6381421346744604172">Gelapkan situs</translation>
 <translation id="6388207532828177975">Hapus &amp; setel ulang</translation>
-<translation id="6393863479814692971">Chrome memerlukan izin akses ke kamera dan mikrofon untuk situs ini.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6406506848690869874">Sinkronisasi</translation>
@@ -779,7 +779,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6676840375528380067">Hapus data Chrome Anda dari perangkat ini?</translation>
 <translation id="6689172468748959065">Foto profil</translation>
 <translation id="6697492270171225480">Tampilkan saran untuk halaman yang serupa jika halaman tidak dapat ditemukan</translation>
-<translation id="6697947395630195233">Chrome memerlukan akses ke lokasi Anda untuk berbagi lokasi dengan situs ini.</translation>
 <translation id="6698801883190606802">Kelola data yang disinkronkan</translation>
 <translation id="6699370405921460408">Server Google akan mengoptimalkan halaman yang Anda kunjungi.</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
@@ -971,6 +970,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8186512483418048923"><ph name="FILES" /> file tersisa</translation>
 <translation id="8190358571722158785">1 hari lagi</translation>
 <translation id="8200772114523450471">Lanjutkan</translation>
+<translation id="8206354486702514201">Setelan ini diberlakukan oleh administrator Anda.</translation>
 <translation id="8209050860603202033">Buka gambar</translation>
 <translation id="8218622182176210845">Kelola akun Anda</translation>
 <translation id="8224471946457685718">Download artikel untuk Anda pada jaringan Wi-Fi</translation>
@@ -992,7 +992,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8364299278605033898">Lihat situs yang populer</translation>
 <translation id="8368027906805972958">Perangkat tidak dikenal atau tidak didukung (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Mengizinkan Sinkronisasi Latar Belakang untuk situs tertentu.</translation>
-<translation id="8378714024927312812">Dikelola oleh organisasi</translation>
 <translation id="8380167699614421159">Situs ini menampilkan iklan yang mengganggu atau menyesatkan</translation>
 <translation id="8393700583063109961">Kirim pesan</translation>
 <translation id="8413126021676339697">Tampilkan histori lengkap</translation>

@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">Այլ կայքեր (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Ձեր հեռախոսի բովանդակությամբ մեկ այլ սարքի հետ կիսվելու համար միացրեք համաժամացումը երկու սարքերի Chrome-ի կարգավորումներում</translation>
 <translation id="2175927920773552910">QR կոդ</translation>
+<translation id="2182457891543959921">Կայքերի համար թույլտվություն խնդրել՝ ստեղծելու շրջակայքի եռաչափ քարտեզն ու հետագծելու ձեր տեսախցիկի դիրքը (խորհուրդ է տրվում)</translation>
 <translation id="218608176142494674">Ընդհանուր օգտագործում</translation>
 <translation id="2227444325776770048">Շարունակել որպես <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Համաժամացում և Google-ի ծառայություններ</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">Այս գործառույթը միանում է, երբ դուք մտնում եք Google հաշիվ</translation>
 <translation id="2410754283952462441">Ընտրեք հաշիվ</translation>
 <translation id="2414886740292270097">Մուգ</translation>
-<translation id="2416359993254398973">Chrome-ին այս կայքի համար անհրաժեշտ է ձեր տեսախցիկն օգտագործելու թույլտվություն։</translation>
 <translation id="2426805022920575512">Ընտրել այլ հաշիվ</translation>
 <translation id="2433507940547922241">Արտաքին տեսք</translation>
 <translation id="2434158240863470628">Ներբեռնումն ավարտված է՝ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">Համաժամացումը կարող եք ցանկացած ժամանակ միացնել կարգավորումներում:</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> էջանիշ}one{<ph name="BOOKMARKS_COUNT_MANY" /> էջանիշ}other{<ph name="BOOKMARKS_COUNT_MANY" /> էջանիշ}}</translation>
 <translation id="3089395242580810162">Բացել ինկոգնիտո ներդիրում</translation>
+<translation id="3114012059975132928">Տեսանվագարկիչ</translation>
 <translation id="3123473560110926937">Արգելափակված է որոշ կայքերում</translation>
 <translation id="3123734510202723619">Հայտարարություններ</translation>
 <translation id="3137521801621304719">Դուրս գալ ինկոգնիտո ռեժիմից</translation>
@@ -343,6 +344,7 @@
 <translation id="3522247891732774234">Առկա է թարմացում: Լրացուցիչ ընտրանքներ</translation>
 <translation id="3524138585025253783">Մշակողի միջերես</translation>
 <translation id="3527085408025491307">Պանակ</translation>
+<translation id="3538390592868664640">Արգելել կայքերին ստեղծել շրջակայքի եռաչափ քարտեզը և հետագծել տեսախցիկի դիրքը</translation>
 <translation id="3542235761944717775">Հասանելի է <ph name="KILOBYTES" /> ԿԲ</translation>
 <translation id="3549657413697417275">Որոնեք պատմության մեջ</translation>
 <translation id="3557336313807607643">Ավելացնել կոնտակտներում</translation>
@@ -351,6 +353,7 @@
 <translation id="3587482841069643663">Բոլորը</translation>
 <translation id="358794129225322306">Թույլ տալ կայքին ավտոմատ ներբեռնել մեկից ավել ֆայլեր։</translation>
 <translation id="3590487821116122040">Ըստ Chrome-ի ոչ կարևոր կայքերի տվյալներ (օր.` առանց պահված կարգավորումների կայքերը կամ այն կայքերը, որոնք վաղուց չեք այցելել)</translation>
+<translation id="3594780231884063836">Անջատել տեսանյութի ձայնը</translation>
 <translation id="3599863153486145794">Մաքրում է պատմությունը բոլոր սարքերից, որոնցում մուտք եք գործել։ Ձեր Google հաշվում կարող են լինել այցելությունների պատմության այլ ձևեր ևս: Դրանք կարող եք գտնել <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> էջում։</translation>
 <translation id="3600792891314830896">Անջատել կայքերի ձայնը</translation>
 <translation id="3616113530831147358">Աուդիո</translation>
@@ -439,6 +442,7 @@
 <translation id="4298388696830689168">Կապված կայքեր</translation>
 <translation id="4307992518367153382">Հիմնական</translation>
 <translation id="4314815835985389558">Համաժամացման կառավարում</translation>
+<translation id="4320177379694898372">Համացանցի կապակցում չկա</translation>
 <translation id="4321739720395210191">Չհաջողվեց բացել տեսախցիկը։ Վերագործարկեք սարքը և նորից փորձեք։</translation>
 <translation id="4351244548802238354">Փակել երկխոսությունը</translation>
 <translation id="4353114845960720315">VR ռեժիմում կայքին կարող են հասանելի լինել՝</translation>
@@ -603,6 +607,7 @@
 <translation id="5456381639095306749">Ներբեռնել էջը</translation>
 <translation id="548278423535722844">Բացեք Քարտեզներ հավելվածում</translation>
 <translation id="5487521232677179737">Ջնջել տվյալները</translation>
+<translation id="5489227211564503167">Անցած ժամանակը՝ <ph name="ELAPSED_TIME" />/<ph name="TOTAL_TIME" />։</translation>
 <translation id="5494752089476963479">Արգելափակել գովազդը կայքերում, որոնք հոգնեցնող կամ մոլորեցնող գովազդ են ցուցադրում</translation>
 <translation id="5500777121964041360">Գործառույթը կարող է հասանելի չլինել ձեր երկրում։</translation>
 <translation id="5505264765875738116">Կայքերը չեն կարող խնդրել ծանուցումներ ուղարկել</translation>
@@ -617,7 +622,6 @@
 <translation id="5530766185686772672">Փակել ինկոգնիտո ներդիրները</translation>
 <translation id="5534640966246046842">Կայքը պատճենվեց</translation>
 <translation id="5561549206367097665">Ցանցի որոնում…</translation>
-<translation id="557283862590186398">Chrome-ին այս կայքի համար անհրաժեշտ է ձեր խոսափողն օգտագործելու թույլտվություն։</translation>
 <translation id="55737423895878184">Տեղորոշումն ու ծանուցումները թույլատրված են</translation>
 <translation id="5578795271662203820">Որոնել այս պատկերը <ph name="SEARCH_ENGINE" />-ում</translation>
 <translation id="5581519193887989363">Ցանկացած ժամանակ կարող եք անցնել <ph name="BEGIN_LINK1" />կարգավորումներ<ph name="END_LINK1" /> և ընտրել, թե ինչն եք ուզում համաժամացնել:</translation>
@@ -664,6 +668,7 @@
 <translation id="5864419784173784555">Նախորդ ներբեռնումն ավարտվում է…</translation>
 <translation id="5865733239029070421">Ավտոմատ Google-ին է ուղարկում օգտագործման վիճակագրությունը և խափանումների մասին հաշվետվությունները</translation>
 <translation id="5869522115854928033">Պահված գաղտնաբառեր</translation>
+<translation id="5876056640971328065">Դադարեցնել</translation>
 <translation id="5884076754568147479">Ձեր աշխատանքը հեշտացնելու համար Google-ը կստանա կայքերի հասցեներն ու բովանդակությունը, որոնցում օգտվում եք Օգնականից, ինչպես նաև տվյալները, որոնք ուղարկում եք Օգնականի միջոցով։</translation>
 <translation id="5902828464777634901">Այս կայքի պահած բոլոր տեղային տվյալները կջնջվեն, այդ թվում նաև քուքիները:</translation>
 <translation id="5919204609460789179">Թարմացրեք <ph name="PRODUCT_NAME" />-ը՝ համաժամացումը սկսելու համար</translation>
@@ -726,8 +731,8 @@
 <translation id="6378173571450987352">Տեղեկություններ․ տեսակավորված է ըստ օգտագործված տվյալների ծավալի</translation>
 <translation id="6381421346744604172">Մգացնել կայքերը</translation>
 <translation id="6388207532828177975">Մաքրել և զրոյացնել</translation>
-<translation id="6393863479814692971">Chrome-ին այս կայքի համար անհրաժեշտ է ձեր տեսախցիկն ու խոսափողը օգտագործելու թույլտվություն։</translation>
 <translation id="6395288395575013217">ՀՂՈՒՄ</translation>
+<translation id="6397616442223433927">Կապը վերականգնվեց</translation>
 <translation id="6404511346730675251">Փոփոխել էջանիշը</translation>
 <translation id="6406506848690869874">Համաժամացում</translation>
 <translation id="6410973561433500075">Մտնե՞լ լրացված իրականության ռեժիմ <ph name="DOMAIN" /> կայքից</translation>
@@ -779,7 +784,6 @@
 <translation id="6676840375528380067">Հեռացնե՞լ Chrome-ի տվյալները այս սարքից</translation>
 <translation id="6689172468748959065">Պրոֆիլի լուսանկարներ</translation>
 <translation id="6697492270171225480">Ցուցադրել նմանատիպ էջերի առաջարկներ, երբ որևէ էջ չհաջողվի գտնել</translation>
-<translation id="6697947395630195233">Chrome-ին այս կայքի համար անհրաժեշտ է ձեզ տեղորոշելու թույլտվություն։</translation>
 <translation id="6698801883190606802">Կառավարել համաժամացված տվյալները</translation>
 <translation id="6699370405921460408">Google-ի սերվերները կօպտիմալացնեն ձեր այցելած էջերը։</translation>
 <translation id="6710213216561001401">Նախորդը</translation>
@@ -797,6 +801,7 @@
 <translation id="6846298663435243399">Բեռնում…</translation>
 <translation id="6850409657436465440">Ներբեռնումն ընթացքում է</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> փակված ներդիր</translation>
+<translation id="6864395892908308021">Այս սարքում NFC-ն չի աջակցվում</translation>
 <translation id="6864459304226931083">Ներբեռնել պատկերը</translation>
 <translation id="6865313869410766144">Ինքնալցման տվյալներ</translation>
 <translation id="6884306546558072722">Բովանդակության հասանելիություն անցանց ռեժիմում</translation>
@@ -917,6 +922,7 @@
 <translation id="780301667611848630">Ոչ</translation>
 <translation id="7810647596859435254">Բացել հավելվածով…</translation>
 <translation id="7821588508402923572">Թրաֆիկի տնտեսման մասին տվյալները կցուցադրվեն այստեղ</translation>
+<translation id="783819812427904514">Միացնել տեսանյութի ձայնը</translation>
 <translation id="784934925303690534">Ժամանակի սանդղակ</translation>
 <translation id="7851858861565204677">Այլ սարքեր</translation>
 <translation id="7875915731392087153">Ստեղծեք նամակ</translation>
@@ -971,6 +977,7 @@
 <translation id="8186512483418048923">Մնաց <ph name="FILES" /> ֆայլ</translation>
 <translation id="8190358571722158785">Մնացել է 1 օր</translation>
 <translation id="8200772114523450471">Շարունակել</translation>
+<translation id="8206354486702514201">Այս կարգավորումը պարտադրված է ձեր ադմինիստրատորի կողմից:</translation>
 <translation id="8209050860603202033">Բացել պատկերը</translation>
 <translation id="8218622182176210845">Կառավարեք ձեր հաշիվը</translation>
 <translation id="8224471946457685718">Ներբեռնել հոդվածներ Wi-Fi-ի միջոցով</translation>
@@ -992,7 +999,6 @@
 <translation id="8364299278605033898">Դիտեք թոփ կայքերը</translation>
 <translation id="8368027906805972958">Անհայտ կամ չաջակցվող սարք (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Թույլատրել ֆոնային համաժամացումը նշված կայքում:</translation>
-<translation id="8378714024927312812">Կառավարվում է ձեր կազմակերպության կողմից</translation>
 <translation id="8380167699614421159">Այս կայքը հոգնեցնող կամ մոլորեցնող գովազդ է ցուցադրում։</translation>
 <translation id="8393700583063109961">Ուղարկել հաղորդագրություն</translation>
 <translation id="8413126021676339697">Ցույց տալ ամբողջ պատմությունը</translation>

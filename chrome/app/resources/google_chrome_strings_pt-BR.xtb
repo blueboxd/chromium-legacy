@@ -36,7 +36,6 @@
 <translation id="1877026089748256423">O Google Chrome está desatualizado</translation>
 <translation id="1900795423379050516">Se uma configuração não for exibida nesta página, verifique as <ph name="LINK_BEGIN" />configurações do navegador Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Permitir login no Chrome</translation>
-<translation id="1983547493073464667">O Chromium não pode verificar suas senhas.</translation>
 <translation id="2063848847527508675">É necessário reiniciar o Chrome OS para aplicar a atualização.</translation>
 <translation id="2094919256425865063">Sair do Chrome mesmo assim?</translation>
 <translation id="2120620239521071941">Essa ação excluirá <ph name="ITEMS_COUNT" /> itens desse dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como <ph name="USER_EMAIL" />.</translation>
@@ -48,15 +47,14 @@
 <translation id="2309047409763057870">Como esta é uma instalação secundária do Google Chrome, ele não pode se tornar seu navegador padrão.</translation>
 <translation id="2341767445688917208">O Chrome OS não pôde sincronizar suas senhas. Corrigir agora.</translation>
 <translation id="2348335408836342058">O Chrome precisa de permissão para este site acessar sua câmera e seu microfone</translation>
+<translation id="234869673307233423">O Chrome não pode verificar suas senhas. Tente mais tarde.</translation>
 <translation id="2429317896000329049">O Google Chrome não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
 <translation id="2467438592969358367">O Google Chrome quer exportar suas senhas. Digite sua senha do Windows para permitir isso.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2534507159460261402">Google Pay (copiado para o Chrome)</translation>
-<translation id="2559627601176023786">Nenhuma senha salva. O Chrome pode verificar suas senhas quando elas estiverem salvas na sua Conta do Google.</translation>
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome que está em execução. Feche o Google Chrome e tente novamente.</translation>
 <translation id="2586406160782125153">Essa ação excluirá seus dados de navegação desse dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logotipo do Google Chrome</translation>
-<translation id="261226884343006626">O Chrome não pode verificar suas senhas. Tente novamente amanhã.</translation>
 <translation id="2622559029861875898">O Chrome não pode verificar se há atualizações. Verifique sua conexão com a Internet.</translation>
 <translation id="2644798301485385923">Sistema Chrome OS</translation>
 <translation id="2652691236519827073">Abrir link em nova &amp;guia do Chrome</translation>
@@ -70,6 +68,8 @@
 <translation id="2857540653560290388">Iniciando o Chrome…</translation>
 <translation id="2871893339301912279">Você fez login no Google Chrome.</translation>
 <translation id="2888126860611144412">Sobre o Google Chrome</translation>
+<translation id="2929907241665500097">A atualização do Chrome não foi concluída. Algo deu errado. <ph name="BEGIN_LINK" />Corrija as atualizações com falhas e os problemas de atualização do Chrome.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Login na rede - Chrome</translation>
 <translation id="3037838751736561277">O Google Chrome está em modo de segundo plano.</translation>
 <translation id="3065168410429928842">Guia do Chrome</translation>
 <translation id="3080151273017101988">Executar aplicativos em segundo plano quando o Google Chrome estiver fechado</translation>
@@ -80,7 +80,6 @@
 <translation id="3395323229510056640">Ajuda com o Chrome OS</translation>
 <translation id="3396977131400919238">Ocorreu um erro no sistema operacional durante a instalação. Baixe o Google Chrome novamente.</translation>
 <translation id="3398288718845740432">Esconder no menu do Google Chrome</translation>
-<translation id="3434246496373299699">O Chrome pode verificar suas senhas quando você faz login com sua Conta do Google</translation>
 <translation id="3451115285585441894">Adicionando ao Google Chrome...</translation>
 <translation id="345171907106878721">Cadastrar-se no Chrome</translation>
 <translation id="34857402635545079">Limpar também dados do Chrome (<ph name="URL" />)</translation>
@@ -96,7 +95,6 @@
 <translation id="386202838227397562">Feche todas as janelas do Google Chrome e tente novamente.</translation>
 <translation id="3873044882194371212">Abrir link na janela &amp;sem rastros do Chrome</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
-<translation id="3943605108614542032">O administrador gerencia as atualizações do Chrome</translation>
 <translation id="4050175100176540509">Melhorias de segurança importantes e novos recursos estão disponíveis na versão mais recente.</translation>
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
 <translation id="4143243756087420366">Nome e foto do Chrome</translation>
@@ -110,7 +108,9 @@
 <translation id="4331809312908958774">Sistema operacional Chrome</translation>
 <translation id="4335235004908507846">O Chrome pode ajudar a proteger você de violações de dados, extensões maliciosas e muito mais</translation>
 <translation id="4343195214584226067">A extensão <ph name="EXTENSION_NAME" /> foi adicionada ao Chrome</translation>
+<translation id="4384570495110188418">O Chrome não pode verificar suas senhas porque sua conta não está conectada</translation>
 <translation id="4407807842708586359">Sistema operacional (OS) do Google Chrome</translation>
+<translation id="4450664632294415862">Chrome - Login na rede - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Outra operação está em andamento no Google Chrome. Tente novamente mais tarde.</translation>
 <translation id="4480040274068703980">O Chrome OS não pôde sincronizar seus dados devido a um erro durante o login.</translation>
 <translation id="4561051373932531560">O Google Chrome permite que você clique em um número de telefone na web e ligue para ele com o Skype!</translation>
@@ -120,6 +120,7 @@
 <translation id="4600710005438004015">Não foi possível atualizar o Chrome para a versão mais recente. Com isso, você está perdendo novos recursos e correções de segurança.</translation>
 <translation id="4631713731678262610">Esconder no menu do Google Chrome</translation>
 <translation id="4633000520311261472">Para tornar o Google Chrome mais seguro, desativamos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e podem ser sido adicionadas sem seu conhecimento.</translation>
+<translation id="4653397506175047429">O Chrome não pode verificar todas as suas senhas. Tente novamente em 24 horas.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não-especificado. Se o Google Chrome estiver em execução no momento, feche-o e tente novamente.</translation>
 <translation id="4750550185319565338">Reiniciar o Chrome para ativar o plug-in <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -152,6 +153,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" />: Google Chrome Canary</translation>
 <translation id="5804318322022881572">Não foi possível iniciar o Chrome. Tente novamente.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - Login na rede</translation>
 <translation id="5940385492829620908">Sua Web, seus favoritos e demais conteúdo do Chrome estão aqui.</translation>
 <translation id="5941830788786076944">Fazer do Google Chrome o navegador padrão</translation>
 <translation id="6070348360322141662">Para maior segurança, o Google Chrome criptografará seus dados</translation>
@@ -205,9 +207,9 @@
 <translation id="7808348361785373670">Remover do Chrome</translation>
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>
 <translation id="7855730255114109580">O Google Chrome está atualizado</translation>
-<translation id="7888686278524752658">A atualização do Chrome não foi concluída. Algo deu errado. Corrija as atualizações com falhas e problemas de atualização do Google Chrome.</translation>
 <translation id="7890208801193284374">Se você usa um computador compartilhado, seus amigos e familiares podem navegar separadamente e configurar o Google Chrome da maneira que desejarem.</translation>
 <translation id="7896673875602241923">Anteriormente, alguém fez login no Chrome neste computador como <ph name="ACCOUNT_EMAIL_LAST" />. Crie um novo usuário do Chrome para manter suas informações separadas.</translation>
+<translation id="7905891027772979035">O Chrome não pode verificar suas extensões. Tente mais tarde.</translation>
 <translation id="7916016681687251387">O Chrome OS não pôde sincronizar seus dados. Corrigir agora.</translation>
 <translation id="7930071585467473040">O Google Chrome está tentando copiar senhas.</translation>
 <translation id="7962410387636238736">Este computador não receberá mais atualizações do Google Chrome porque o Windows XP e o Windows Vista não são mais compatíveis</translation>

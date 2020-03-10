@@ -315,6 +315,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2289385804009217824">Paikliin</translation>
 <translation id="2292556288342944218">Naka-block ang iyong access sa Internet</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
+<translation id="2300306941146563769">Hindi na-upload</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2315864634253056100">Mukhang katulad ng pangalan ng site na ito ang pangalan ng <ph name="LOOKALIKE_DOMAIN" />. Kung minsan, ginagaya ng mga attacker ang mga site sa pamamagitan ng paggawa ng mga mahirap makitang pagbabago sa address sa web.</translation>
 <translation id="2316887270356262533">Magbabakante ng wala pang 1 MB. Maaaring mag-load nang mas mabagal ang ilang site sa iyong susunod na pagbisita.</translation>
@@ -439,6 +440,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2909946352844186028">May nakitang pagbabago sa network.</translation>
 <translation id="2910133103376701357">Ang iyong device at account ay pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">User ID ng accounting ng trabaho</translation>
+<translation id="2915068235268646559">Pag-crash mula noong <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Isara ang iba pang program</translation>
 <translation id="2922350208395188000">Hindi masuri ang certificate ng server.</translation>
 <translation id="2925673989565098301">Paraan ng Paghahatid</translation>
@@ -447,6 +449,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2930577230479659665">Paikliin pagkatapos ng bawat pagkopya</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; mula sa <ph name="DOMAIN2" /> ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
+<translation id="2943895734390379394">Oras ng Pag-upload:</translation>
 <translation id="2948083400971632585">Maaari mong i-disable ang anumang mga proxy na naka-configure para sa isang koneksyon mula sa pahina ng mga setting.</translation>
 <translation id="2951588413176968965">Aking mailbox</translation>
 <translation id="295526156371527179">Babala: Hindi na-merge ang patakarang ito bilang isang diksyunaryo gaya ng tinukoy ng patakaran dahil hindi ito isang diksyunaryo.</translation>
@@ -473,7 +476,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="3024663005179499861">Maling uri ng patakaran</translation>
 <translation id="3037605927509011580">Ay, Naku!</translation>
 <translation id="3041612393474885105">Impormasyon sa Certificate</translation>
-<translation id="3057676462092457419">Ang DnsOverHttps mode <ph name="SECURE_DNS_MODE_SECURE" /> ay hindi pa sinusuportahan, itinakda sa <ph name="SECURE_DNS_MODE_OFF" /> ang mode.</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Serbisyo sa Pag-patch</translation>
 <translation id="3064966200440839136">Aalis sa incognito mode upang magbayad sa pamamagitan ng external na application. Magpatuloy?</translation>
@@ -573,6 +575,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="3487845404393360112">Tray 4</translation>
 <translation id="3495081129428749620">Hanapin sa page
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Gumawa ng 3D na mapa ng iyong kapaligiran at subaybayan ang posisyon ng camera</translation>
 <translation id="3512163584740124171">Binabalewala ang patakarang ito dahil may isa pang patakaran mula sa parehong pangkat ng patakaran na may mas mataas na priyoridad.</translation>
 <translation id="3518941727116570328">Pangangasiwa sa maraming object</translation>
 <translation id="3528171143076753409">Hindi pinagkakatiwalaan ang certificate ng server.</translation>
@@ -925,6 +928,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5030338702439866405">Ibinigay Ni</translation>
 <translation id="503069730517007720">Kinakailangan ang root certificate para sa "<ph name="SOFTWARE_NAME" />" ngunit hindi ito naka-install. Dapat tingnan ng IT administrator ang mga tagubilin sa pag-configure para sa "<ph name="SOFTWARE_NAME" />" upang maayos ang problemang ito. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Tungkol sa Google Translate</translation>
+<translation id="503498442187459473">Gustong gamitin ng <ph name="HOST" /> ang iyong camera at mikropono</translation>
 <translation id="5039804452771397117">Payagan</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5043480802608081735">Link na Kinopya Mo</translation>
@@ -1033,7 +1037,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5457113250005438886">Di-wasto</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> pa}one{<ph name="CONTACT_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> pa}other{<ph name="CONTACT_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> pa}}</translation>
 <translation id="5470861586879999274">&amp;Gawing muli ang pag-e-edit</translation>
-<translation id="5472133193607270166">Kapag naka-on, hindi magagamit ng mga site ang iyong aktibidad sa pag-browse sa iba't ibang site para i-personalize ang mga ad. Puwedeng hindi gumana nang maayos ang ilang site.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Maaaring subukan ng content na ito na mag-install ng mapanganib na software sa iyong device na magnanakaw o magde-delete ng impormasyon mo. <ph name="BEGIN_LINK" />Ipakita pa rin<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Magdagdag ng wastong address</translation>
@@ -1078,6 +1081,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="563324245173044180">Na-block ang mapanlinlang na content.</translation>
 <translation id="5644090287519800334">Pag-shift ng gilid 1 larawan X</translation>
 <translation id="5645854190134202180">Pangalawang shift</translation>
+<translation id="5654927323611874862">ID ng Na-upload na Ulat ng Pag-crash:</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5663614846592581799">9x11 (Envelope)</translation>
 <translation id="5663955426505430495">Ang administrator ng device na ito ay nag-install ng mga extension para sa mga karagdagang function. May access ang mga extension sa ilan sa iyong data.</translation>
@@ -1318,6 +1322,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="6710594484020273272">&lt;I-type ang termino para sa paghahanap&gt;</translation>
 <translation id="671076103358959139">Token sa Pag-enroll</translation>
 <translation id="6711464428925977395">May problema sa proxy server, o mali ang address.</translation>
+<translation id="6716672519412350405">Gusto ng <ph name="URL" /> na gumawa ng 3D na mapa ng iyong kapaligiran at subaybayan ang posisyon ng camera</translation>
 <translation id="6738516213925468394">Na-encrypt ang data mo gamit ang iyong <ph name="BEGIN_LINK" />passphrase sa pag-sync<ph name="END_LINK" /> noong <ph name="TIME" />. Ilagay ito para simulan ang pag-sync.</translation>
 <translation id="674375294223700098">Hindi alam na error sa certificate ng server</translation>
 <translation id="6744009308914054259">Habang naghihintay ng koneksyon, maaari mong bisitahin ang Mga Download para magbasa ng mga offline na artikulo.</translation>
@@ -1385,6 +1390,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="7079718277001814089">Naglalaman ng malware ang site na ito</translation>
 <translation id="7081308185095828845">Hindi available ang feature na ito sa iyong device</translation>
 <translation id="7083258188081898530">Tray 9</translation>
+<translation id="7086090958708083563">Hiniling ng user ang pag-upload</translation>
 <translation id="7087282848513945231">Lalawigan</translation>
 <translation id="7090678807593890770">Hanapin sa Google ang <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Itago</translation>
@@ -1547,6 +1553,7 @@ Mga karagdagang detalye:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Magpatuloy sa <ph name="SITE" /> (hindi ligtas)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificate</translation>
 <translation id="7716147886133743102">Na-block ng iyong administrator</translation>
+<translation id="7716375162095500223">Hindi pa naa-upload, o binalewala</translation>
 <translation id="7716424297397655342">Hindi maaaring i-load ang site na ito mula sa cache</translation>
 <translation id="7723047071702270851">I-edit ang Card</translation>
 <translation id="7740996059027112821">Karaniwan</translation>
@@ -1691,6 +1698,7 @@ Mga karagdagang detalye:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Kung nauunawaan mo ang mga peligro sa iyong seguridad, maaari mong <ph name="BEGIN_LINK" />bisitahin ang site na ito<ph name="END_LINK" /> bago maalis ang mga mapanirang program.</translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
+<translation id="8355270400102541638">Konteksto ng Lokal na Pag-crash:</translation>
 <translation id="8363502534493474904">I-off ang airplane mode</translation>
 <translation id="8364627913115013041">Hindi nakatakda.</translation>
 <translation id="8368476060205742148">Mga serbisyo ng Google Play</translation>
@@ -1711,6 +1719,7 @@ Mga karagdagang detalye:
 <translation id="8461694314515752532">I-encrypt ang naka-sync na data gamit ang iyong sariling passphrase sa pag-sync</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 credit card}one{# credit card}other{# na credit card}}</translation>
 <translation id="8473863474539038330">Mga address at higit pa</translation>
+<translation id="8474910779563686872">Ipakita ang mga detalye ng developer</translation>
 <translation id="8479754468255770962">Staple bottom left</translation>
 <translation id="8483780878231876732">Upang gumamit ng mga card mula sa iyong Google Account, mag-sign in sa Chrome</translation>
 <translation id="8488350697529856933">Nalalapat sa</translation>
@@ -1734,7 +1743,6 @@ Mga karagdagang detalye:
 <translation id="8589998999637048520">Pinakamahusay na kalidad</translation>
 <translation id="860043288473659153">Pangalan ng cardholder</translation>
 <translation id="8606726445206553943">Gamitin ang iyong mga MIDI device</translation>
-<translation id="8616822740383114808">Ipinatupad ng "<ph name="ENFORCING_SETTING" />" ang setting na ito sa "<ph name="SETTINGS_PAGE" />"</translation>
 <translation id="861775596732816396">Laki 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">I-save ang Card na Ito sa Device na Ito</translation>
@@ -1836,6 +1844,7 @@ Mga karagdagang detalye:
 <translation id="9103872766612412690">Karaniwang gumagamit ang <ph name="SITE" /> ng pag-encrypt upang protektahan ang iyong impormasyon. Noong sinubukang kumonekta ng Chromium sa <ph name="SITE" /> sa pagkakataong ito, nagbalik ang website ng mga hindi pangkaraniwan at maling kredensyal. Maaari itong mangyari kapag sinusubukan ng isang attacker na magpanggap bilang <ph name="SITE" />, o naputol ang koneksyon dahil sa isang screen ng pag-sign in sa Wi-Fi. Secure pa rin ang iyong impormasyon dahil inihinto ng Chromium ang koneksyon bago magkaroon ng palitan ng anumang data.</translation>
 <translation id="9106062320799175032">Magdagdag ng Billing Address</translation>
 <translation id="9114524666733003316">Kinukumpirma ang card...</translation>
+<translation id="9119042192571987207">Na-upload</translation>
 <translation id="9128870381267983090">Kumonekta sa network</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
 <translation id="9141013498910525015">Pamahalaan ang mga address</translation>

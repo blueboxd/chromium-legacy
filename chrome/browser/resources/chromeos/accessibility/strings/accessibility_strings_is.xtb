@@ -36,7 +36,7 @@
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Engin næsta 4. stigs fyrirsögn</translation>
 <translation id="1212770441379271564">Eftirfarandi flýtilyklar eru ekki ChromeVox skipanir, en eru samt mjög gagnlegir upp á að fá sem mest út úr Chrome.
-Til að fletta áfram gegnum aðgerðaratriði eins og hnappa og tengla skal ýta á dálkalykilinn. Til að fletta til baka skal ýta á Shift + dálkalykil.
+Til að fletta áfram í gegnum aðgerðaratriði eins og hnappa og tengla skal ýta á dálkalykilinn. Til að fletta til baka skal ýta á Shift + dálkalykil.
 Til að opna veffangastiku Chrome skal ýta á Ctrl+L.
 Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn verður í veffangastikunni.
 Til að loka flipa skal ýta á Ctrl+W.
@@ -1139,6 +1139,7 @@ Til að opna vafravalmynd Chrome skal ýta á Alt+F.</translation>
 <translation id="8065607967589909823">Valið er</translation>
 <translation id="8066678206530322333">Borði</translation>
 <translation id="8076492880354921740">Flipar</translation>
+<translation id="8083115023881784332">Enginn virkur ChromeVox fókus. Ýttu á Alt+Shift+L til að fara í ræsiforritið.</translation>
 <translation id="8091452896542422286">Bil</translation>
 <translation id="8096975275316362544">Mintugrænn</translation>
 <translation id="8098587210054821856">Gráblár</translation>

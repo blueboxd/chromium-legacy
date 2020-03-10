@@ -158,6 +158,17 @@
 
       如果此政策未设置，默认频率为 3 小时。允许的最低频率为 60 秒。</translation>
 <translation id="1204263402976895730">已启用企业打印机</translation>
+<translation id="1216890727647348501">启用 <ph name="PRODUCT_NAME" /> 的安全浏览增强型保护功能，并禁止用户更改此设置。
+
+      如果您启用了此设置，安全浏览增强型保护功能将一直处于启用状态。
+
+      如果您停用了此设置，安全浏览增强型保护功能将一直处于停用状态。
+
+      如果您将此政策设为强制性要求，用户便无法在 <ph name="PRODUCT_NAME" /> 中更改或覆盖“启用针对网上诱骗和恶意软件的防护功能”设置。
+
+      如果未设置此政策，安全浏览增强型保护功能会默认处于停用状态，但用户可以启用它。
+
+      要详细了解“安全浏览”服务，请访问 https://developers.google.com/safe-browsing。</translation>
 <translation id="1216919699175573511">启用 Signed HTTP Exchange (SXG) 支持</translation>
 <translation id="1219695476179627719">指定是否要将已在运行较新版本的设备回滚到 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> 所设定的版本。
 
@@ -250,6 +261,7 @@
           如果未设置此政策，更具体政策的行为不会受到影响。</translation>
 <translation id="1384459581748403878">参考页面：<ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">报告操作系统更新状态</translation>
+<translation id="1388918874748125262">启用安全浏览增强型保护功能</translation>
 <translation id="1393485621820363363">已启用企业设备打印机</translation>
 <translation id="1397855852561539316">默认搜索服务提供商建议网址</translation>
 <translation id="1398636873839401839">在登录屏幕上启用所有变体</translation>
@@ -1122,6 +1134,9 @@
 <translation id="26023406105317310">配置 Kerberos 帐号</translation>
 <translation id="2604182581880595781">配置网络文件共享功能相关政策。</translation>
 <translation id="2615240493030733717">报告时区信息</translation>
+<translation id="2620943247255660284">此政策已被弃用，且已被 AdvancedProtectionExtraSecurityAllowed 取代。
+
+      此政策用于控制是否允许已加入“高级保护”计划的用户将他们的下载内容发送给 Google 进行恶意软件扫描。如果此政策设为 True 或未设置，系统会提示用户将他们的文件发送给 Google 进行深度扫描。如果用户选择“扫描”，系统便会将他们的下载内容发送给 Google。如果此政策设为 False，系统不会提示用户，也不会将他们的下载内容发送给 Google。</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">为企业打印机提供配置。
@@ -1368,6 +1383,21 @@
 <translation id="2987227569419001736">控制对 Web Bluetooth API 的使用</translation>
 <translation id="3016255526521614822">允许在 <ph name="PRODUCT_OS_NAME" />锁定屏幕启用加入白名单的备注应用</translation>
 <translation id="3020064401262077616">控制仅应用于未成年人帐号的家长监督政策。</translation>
+<translation id="3020953534071988875">通过配置此政策，您可以允许/禁止对 <ph name="PRODUCT_NAME" /> 中的无痕模式和访客个人资料进行静默身份验证。
+
+      静默身份验证是指在未通过 NTLM/Kerberos/Negotiate 质询-响应方案提供明确凭据的情况下，采用默认凭据进行的 HTTP 身份验证。
+
+      设置 <ph name="REGULAR_ONLY_OPTION_NAME" />（值为 0）会仅允许常规会话执行静默身份验证，不允许无痕会话和访客会话静默地验证用户身份。
+
+      设置 <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />（值为 1）会允许无痕会话和常规会话执行静默身份验证，不允许访客会话静默地验证用户身份。
+
+      设置 <ph name="GUEST_AND_REGULAR_OPTION_NAME" />（值为 2）会允许访客会话和常规会话执行静默身份验证，不允许无痕会话静默地验证用户身份。
+
+      设置 <ph name="ALL_OPTION_NAME" />（值为 3）会允许所有会话执行静默身份验证。
+
+      请注意：系统始终允许对常规个人资料进行静默身份验证。
+
+      在 <ph name="PRODUCT_NAME" /> 版本 81 及更高版本中，如果未设置此政策，系统将会仅在常规会话中启用静默身份验证。</translation>
 <translation id="3021562480854470924">指定允许回滚到的里程碑的数量</translation>
 <translation id="3023572080620427845">与包含要在替代浏览器中加载的网址的 XML 文件对应的网址。</translation>
 <translation id="3026740867910702435">在登录屏幕上启用大号光标无障碍功能。
@@ -1838,6 +1868,7 @@
           如果此政策未设置，“语音输入”在登录屏幕上最初会处于停用状态，但用户可以随时启用它。</translation>
 <translation id="3811562426301733860">允许所有网站展示广告</translation>
 <translation id="3816312845600780067">启用停止自动登录的键盘快捷键</translation>
+<translation id="3817323252437541502">为已加入“高级保护”计划的用户启用更多保护功能</translation>
 <translation id="3820526221169548563">启用屏幕键盘辅助功能。
 
           如果此政策设为true，屏幕键盘将始终处于启用状态。
@@ -2297,9 +2328,6 @@
 <translation id="4449545651113180484">将屏幕顺时针旋转 270 度</translation>
 <translation id="445270821089253489">控制要报告的用户和设备信息种类。</translation>
 <translation id="4453913621209182880">仅允许在有背景图片的情况下打印</translation>
-<translation id="4454586530530448054">如果设置了此政策，所有指定的数据类型都会被从同步操作（无论是对于 Google 同步还是对于漫游个人资料同步）中排除。这有助于缩减漫游个人资料的大小或限制向 Google 同步服务器上传的数据的类型。
-
-      此政策当前可用的数据类型为：“bookmarks”、“preferences”、“passwords”、“autofill”、“themes”、“typedUrls”、“apps”、“tabs”、“wifiConfiguration”。这些名称区分大小写！</translation>
 <translation id="4454820008017317557">显示 <ph name="PRODUCT_NAME" /> 工具栏图标</translation>
 <translation id="4467952432486360968">阻止第三方 Cookie</translation>
 <translation id="4474167089968829729">允许将密码保存到密码管理器</translation>
@@ -4968,6 +4996,7 @@
       如果此政策设为 false 或未设置，系统将不会报告显示状态和图形状态。如果此政策设为 true，系统将会报告显示状态和图形状态。</translation>
 <translation id="891435090623616439">已编码为 JSON 字符串。有关详情，请访问 <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">允许用户管理已安装的 CA 证书。</translation>
+<translation id="8924721011887485485">此政策用于控制已加入“高级保护”计划的用户是否可获享额外的安全功能。其中的部分功能可能会涉及与 Google 分享数据（例如，已加入“高级保护”计划的用户将能够把他们的下载内容发送给 Google 进行恶意软件扫描）。如果此政策设为 True 或未设置，已加入“高级保护”计划的用户将会获享额外的安全功能。如果此政策设为 False，已加入“高级保护”计划的用户将只能获享消费者级别的安全功能。</translation>
 <translation id="8926275581598789324">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用电池供电时系统应在设备闲置多久后采取闲置操作。
@@ -4992,11 +5021,11 @@
 
       如果此政策未设置，则系统将会默认使用 <ph name="PRINTERS_ALLOW_ALL" />。
       </translation>
-<translation id="8937282917198525844"> 从 M81 开始，我们不仅更新了标准表单控件元素（例如 &lt;select&gt;、&lt;button&gt;、&lt;input type=date&gt;）的外观和风格，还改进了无障碍功能并提升了平台统一性。此政策用于在 M84 之前的版本中恢复过去的“旧版”表单控件元素。
+<translation id="8937282917198525844"> 从 M81 开始，我们不仅更新了标准表单控件元素（例如 &lt;select&gt;、&lt;button&gt;、&lt;input type=date&gt;）的外观和风格，还改进了无障碍功能并提升了平台统一性。此政策用于在 M84 之前的版本中恢复“旧版”表单控件元素。
 
       如果此政策设为 True，系统将会为所有网站使用“旧版”表单控件元素。
 
-      如果此政策设为 False 或未设置，系统就会在 M81、M82 和 M83 推出时启用其中的表单控件元素。
+      如果此政策设为 False 或未设置，系统会在 M81、M82 和 M83 版本推出时启用其中的表单控件元素。
 
       在 Chrome 84 之后，此政策将被移除。</translation>
 <translation id="8938932171964587769">已在 M69 中弃用。请改用 OverrideSecurityRestrictionsOnInsecureOrigin。

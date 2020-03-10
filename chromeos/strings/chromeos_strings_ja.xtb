@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">無効な PIN です。</translation>
 <translation id="3838338534323494292">新しいパスワード</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" />もう一度お試しください。残り試行回数: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> はこのデバイスを管理しており、閲覧したウェブページ、パスワード、メールなど、すべてのユーザー アクティビティにアクセスできます。</translation>
 <translation id="4227825898293920515">パスワードの有効期限はあと <ph name="TIME" />です</translation>
 <translation id="4429881212383817840">Kerberos チケットはまもなく有効期限が切れます</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">画面からはサポートできる内容が見つかりませんでした。
 マイクをタップして質問してみてください。</translation>
 <translation id="5222676887888702881">ログアウト</translation>
-<translation id="5275776633505022322">残り試行回数: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" />もう一度お試しください。</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5332948983412042822">新しいパスワードを今すぐ選択してください</translation>
 <translation id="5457599981699367932">ゲストとしてブラウジング</translation>

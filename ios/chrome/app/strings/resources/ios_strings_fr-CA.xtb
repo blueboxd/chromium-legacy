@@ -97,6 +97,7 @@
 <translation id="2149973817440762519">Modifier le favori</translation>
 <translation id="2179182049312275900">Vous pouvez activer la synchronisation à tout moment dans les paramètres.</translation>
 <translation id="2198757192731523470">Google peut utiliser votre historique pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
+<translation id="2218443599109088993">Zoom arrière</translation>
 <translation id="2230173723195178503">Page Web chargée</translation>
 <translation id="2239626343334228536">Effacement des données de navigation en cours…</translation>
 <translation id="2257567812274161158">La synchronisation ne fonctionne pas.</translation>
@@ -178,6 +179,7 @@
 <translation id="3290875554372353449">Choisir un compte</translation>
 <translation id="3311748811247479259">Désactivé</translation>
 <translation id="3324193307694657476">Ligne adresse 2</translation>
+<translation id="3328801116991980348">Information sur le site</translation>
 <translation id="3329904751041170572">Impossible de se connecter au serveur.</translation>
 <translation id="3335947283844343239">Rouvrir l'onglet fermé</translation>
 <translation id="3371831930909698441">La traduction est disponible. Vous trouverez les options vers le bas de l'écran.</translation>
@@ -417,6 +419,7 @@ Vos données ont été chiffrées avec votre phrase de passe le <ph name="TIME" 
 <translation id="6464071786529933911">Ouvrir ds nv ong nav priv</translation>
 <translation id="6476800141292307438">Traduction de la page en <ph name="LANGUAGE" /> en cours… Les options sont affichées dans le bas de l'écran.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments supprimés</translation>
+<translation id="6561262006871132942">Zoom avant</translation>
 <translation id="6610002944194042868">Options de traduction</translation>
 <translation id="6628106477656132239">Date d'expiration incorrecte</translation>
 <translation id="6638511529934826365">Zoomer sur le texte…</translation>

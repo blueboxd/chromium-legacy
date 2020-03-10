@@ -209,6 +209,7 @@
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> کے زیر نظم اکاؤنٹ</translation>
 <translation id="3573179567135747900">واپس "<ph name="FROM_LOCALE" />" میں تبدیل کریں (ری اسٹارٹ مطلوب ہے)</translation>
 <translation id="3576141592585647168">ٹائم زون تبدیل کریں</translation>
+<translation id="3593646411856133110">کھلی ایپس کو دیکھنے کے لیے سوائپ اپ اور ہولڈ کریں</translation>
 <translation id="3595596368722241419">بیٹری پوری چارج ہے</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> ڈیسک تخلیق کر دی گئی ہے</translation>
 <translation id="3606978283550408104">بریل ڈسپلے منسلک ہو گیا۔</translation>
@@ -365,6 +366,7 @@
 <translation id="5745612484876805746">غروب آفتاب کے وقت نائٹ لائٹ خودکار طور پر آن ہو جاتی ہے</translation>
 <translation id="5750765938512549687">بلوٹوتھ آف ہے</translation>
 <translation id="576453121877257266">نائٹ لائٹ آن ہے۔</translation>
+<translation id="5769373120130404283">رازداری کی اسکرین</translation>
 <translation id="5777841717266010279">اسکرین کا اشتراک روکیں؟</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> پر <ph name="ROUTE_TITLE" /> کو روکیں</translation>
@@ -406,6 +408,7 @@
 <translation id="6297287540776456956">علاقہ منتخب کرنے کیلئے اسٹائلس استعمال کریں</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> کو <ph name="ROTATION" /> میں گھما دیا گیا تھا</translation>
 <translation id="6376931439017688372">بلوٹوتھ آن ہے</translation>
+<translation id="6381109794406942707">‏آلہ غیر مقفل کرنے کے لیے، اپنا PIN درج کریں۔</translation>
 <translation id="639644700271529076">‏CAPS LOCK آف ہے</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" /></translation>
@@ -531,7 +534,7 @@
 <translation id="8000066093800657092">کوئی نیٹ ورک نہیں ہے</translation>
 <translation id="8029629653277878342">‏مزید سیکیورٹی کیلئے PIN یا پاس ورڈ درکار ہے</translation>
 <translation id="8030169304546394654">منقطع</translation>
-<translation id="8042024183333293953">نئے اشاروں والی نیویگیشن آزمائیں</translation>
+<translation id="8042024183333293953">اشاروں والی نئی نیویگیشن آزمائیں</translation>
 <translation id="8048123526339889627">بلوٹوتھ کی ترتیبات</translation>
 <translation id="8054466585765276473">بیٹری کے وقت کا حساب لگایا جا رہا ہے۔</translation>
 <translation id="8061464966246066292">اعلی تناسب امتزاج</translation>
@@ -619,6 +622,7 @@
 <translation id="9072519059834302790">بیٹری خالی ہونے میں <ph name="TIME_LEFT" /> باقی ہے۔</translation>
 <translation id="9074739597929991885">بلوٹوتھ</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">ہوم پر جانے کے لیے اوپر سوائپ کریں</translation>
 <translation id="9080206825613744995">مائیکروفون زیر استعمال ہے۔</translation>
 <translation id="9084606467167974638">مینو پوزیشن کو ٹوگل کریں</translation>
 <translation id="9089416786594320554">اندراج کے طریقے</translation>

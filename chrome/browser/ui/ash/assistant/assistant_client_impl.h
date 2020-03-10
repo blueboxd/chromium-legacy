@@ -45,6 +45,9 @@ class AssistantClientImpl : public ash::AssistantClient,
   void BindAssistant(
       mojo::PendingReceiver<chromeos::assistant::mojom::Assistant> receiver)
       override;
+  void RequestAssistantStructure(
+      ash::AssistantClient::RequestAssistantStructureCallback callback)
+      override;
 
   // content::NotificationObserver overrides:
   void Observe(int type,
@@ -53,8 +56,6 @@ class AssistantClientImpl : public ash::AssistantClient,
 
   // assistant::mojom::Client overrides:
   void OnAssistantStatusChanged(ash::mojom::AssistantState new_state) override;
-  void RequestAssistantStructure(
-      RequestAssistantStructureCallback callback) override;
   void RequestAssistantController(
       mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
           receiver) override;

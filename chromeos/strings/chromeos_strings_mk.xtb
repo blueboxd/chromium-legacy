@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Откриј</translation>
 <translation id="3820172043799983114">Неважечки PIN.</translation>
 <translation id="3838338534323494292">Нова лозинка</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Обидете се повторно. Преостанати обиди: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управува со уредов и има пристап до целата активност на корисникот, вклучувајќи ги посетените веб-страници, лозинките и е-поштата.</translation>
 <translation id="4227825898293920515">Лозинката истекува за <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Билетот на Kerberos истекува наскоро</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">Не можам да најдам ништо на екранот со што би можел ви помогнам.
 Допрете го микрофонот за да ме прашате нешто.</translation>
 <translation id="5222676887888702881">Одјави се</translation>
-<translation id="5275776633505022322">Преостанати обиди: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Обидете се повторно.</translation>
 <translation id="5317780077021120954">Зачувај</translation>
 <translation id="5332948983412042822">Може да изберете нова сега</translation>
 <translation id="5457599981699367932">Прелистувај како гостин</translation>
@@ -43,7 +40,7 @@
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7690294790491645610">Потврдете ја новата лозинка</translation>
 <translation id="808894953321890993">Промени лозинка</translation>
-<translation id="8208861521865154048">Привилегии</translation>
+<translation id="8208861521865154048">Поволности</translation>
 <translation id="8747900814994928677">Потврдете ја измената</translation>
 <translation id="910415269708673980">Освежете го билетот за <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Отклучи</translation>

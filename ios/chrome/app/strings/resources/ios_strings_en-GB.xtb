@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Choose an Account</translation>
 <translation id="3311748811247479259">Off</translation>
 <translation id="3324193307694657476">Address 2</translation>
+<translation id="3328801116991980348">Site information</translation>
 <translation id="3329904751041170572">Could not connect to the server.</translation>
 <translation id="3335947283844343239">Re-open Closed Tab</translation>
 <translation id="3371831930909698441">Translate is available. Options available near bottom of the screen.</translation>
@@ -600,6 +601,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="9223358826628549784">Crash report sent.</translation>
 <translation id="952704832371081537">Cancel</translation>
 <translation id="988141524645182168">Other devices</translation>
+<translation id="989697783705943787">Site security</translation>
 <translation id="989988560359834682">Edit Address</translation>
 <translation id="994757059139821576">Article Suggestions</translation>
 </translationbundle>

@@ -45,6 +45,7 @@
 #import "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #import "third_party/blink/renderer/platform/web_test_support.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/native_theme/native_theme.h"
 
 // This is a view whose sole purpose is to tell AppKit that it's flipped.
 @interface BlinkFlippedControl : NSControl
@@ -346,6 +347,11 @@ Color LayoutThemeMacRefresh::FocusRingColor() const {
   if (UsesTestModeFocusRingColor()) {
     return HasCustomFocusRingColor() ? GetCustomFocusRingColor()
                                      : kDefaultFocusRingColor;
+  }
+
+  if (ui::NativeTheme::GetInstanceForWeb()->UsesHighContrastColors()) {
+    // When high contrast is enabled, #101010 should be used.
+    return Color(0xFF101010);
   }
 
   // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.

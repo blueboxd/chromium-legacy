@@ -71,11 +71,6 @@ void CopyToActiveInterpolationsMap(
   }
 }
 
-bool CompareSampledEffects(const Member<SampledEffect>& sampled_effect1,
-                           const Member<SampledEffect>& sampled_effect2) {
-  DCHECK(sampled_effect1 && sampled_effect2);
-  return sampled_effect1->SequenceNumber() < sampled_effect2->SequenceNumber();
-}
 
 void CopyNewAnimationsToActiveInterpolationsMap(
     const HeapVector<Member<const InertEffect>>& new_animations,
@@ -90,6 +85,21 @@ void CopyNewAnimationsToActiveInterpolationsMap(
 }
 
 }  // namespace
+
+bool EffectStack::CompareSampledEffects(
+    const Member<SampledEffect>& sampled_effect1,
+    const Member<SampledEffect>& sampled_effect2) {
+  if (sampled_effect1->Effect() && sampled_effect2->Effect()) {
+    Animation* animation1 = sampled_effect1->Effect()->GetAnimation();
+    Animation* animation2 = sampled_effect2->Effect()->GetAnimation();
+    if (animation1 && animation2) {
+      return Animation::HasLowerCompositeOrdering(
+          animation1, animation2,
+          Animation::CompareAnimationsOrdering::kPointerOrder);
+    }
+  }
+  return sampled_effect1->SequenceNumber() < sampled_effect2->SequenceNumber();
+}
 
 EffectStack::EffectStack() = default;
 
@@ -126,9 +136,9 @@ ActiveInterpolationsMap EffectStack::ActiveInterpolations(
   if (effect_stack) {
     HeapVector<Member<SampledEffect>>& sampled_effects =
         effect_stack->sampled_effects_;
+    effect_stack->RemoveRedundantSampledEffects();
     std::sort(sampled_effects.begin(), sampled_effects.end(),
               CompareSampledEffects);
-    effect_stack->RemoveRedundantSampledEffects();
     bool reached_cuttoff = false;
     for (const auto& sampled_effect : sampled_effects) {
       if (reached_cuttoff)

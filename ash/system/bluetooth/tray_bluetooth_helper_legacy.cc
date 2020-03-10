@@ -13,7 +13,6 @@
 #include "ash/system/model/system_tray_model.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -39,21 +38,15 @@ namespace {
 // System tray shows a limited number of bluetooth devices.
 const int kMaximumDevicesShown = 50;
 
-void RecordUserInitiatedReconnectionAttemptResult(bool success) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result", success);
-  UMA_HISTOGRAM_BOOLEAN(
-      "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result.SystemTray",
-      success);
-}
-
 void BluetoothSetDiscoveringError() {
   LOG(ERROR) << "BluetoothSetDiscovering failed.";
 }
 
 void OnBluetoothDeviceConnect(bool was_device_already_paired) {
-  if (was_device_already_paired)
-    RecordUserInitiatedReconnectionAttemptResult(true /* success */);
+  if (was_device_already_paired) {
+    device::RecordUserInitiatedReconnectionAttemptResult(
+        true /* success */, device::BluetoothUiSurface::kSystemTray);
+  }
 }
 
 void OnBluetoothDeviceConnectError(
@@ -63,8 +56,10 @@ void OnBluetoothDeviceConnectError(
              << "]. The attempted device was previously ["
              << (was_device_already_paired ? "paired" : "not paired") << "].";
 
-  if (was_device_already_paired)
-    RecordUserInitiatedReconnectionAttemptResult(false /* success */);
+  if (was_device_already_paired) {
+    device::RecordUserInitiatedReconnectionAttemptResult(
+        false /* success */, device::BluetoothUiSurface::kSystemTray);
+  }
 }
 
 std::string BluetoothAddressToStr(const BluetoothAddress& address) {
@@ -229,7 +224,8 @@ void TrayBluetoothHelperLegacy::ConnectToBluetoothDevice(
         base::UserMetricsAction("StatusArea_Bluetooth_Connect_Known"));
 
     if (!device->IsConnectable()) {
-      RecordUserInitiatedReconnectionAttemptResult(false /* success */);
+      device::RecordUserInitiatedReconnectionAttemptResult(
+          false /* success */, device::BluetoothUiSurface::kSystemTray);
       return;
     }
 

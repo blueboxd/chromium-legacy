@@ -24,18 +24,16 @@ from core.tbmv3 import trace_processor
 
 _CHROMIUM_SRC_PATH  = os.path.join(
     os.path.dirname(__file__), '..', '..', '..', '..')
-_DEFAULT_TP_PATH = os.path.realpath(os.path.join(
-    _CHROMIUM_SRC_PATH, 'out', 'Debug', 'trace_processor_shell'))
-
 
 
 def _WriteHistogramSetToFile(histograms, outfile):
   with open(outfile, 'w') as f:
     json.dump(histograms.AsDicts(), f, indent=2, sort_keys=True,
               separators=(',', ': '))
+    f.write("\n")
 
 
-def Main():
+def Main(cli_args):
   parser = argparse.ArgumentParser(
     description='[Experimental] Runs TBMv3 metrics on local traces and '
     'produces histogram json.')
@@ -43,12 +41,13 @@ def Main():
                       help='Trace file you want to compute metric on')
   parser.add_argument('--metric', required=True,
                       help=('Name of the metric you want to run'))
-  parser.add_argument('--trace-processor-path', default=_DEFAULT_TP_PATH,
-                      help='Path to trace processor shell. '
-                      'Default: %(default)s')
+  parser.add_argument(
+      '--trace-processor-path',
+      help='Path to trace processor shell. '
+      'Default: Binary downloaded from cloud storage.')
   parser.add_argument('--outfile', default='results.json',
                       help='Path to output file. Default: %(default)s')
-  args = parser.parse_args()
+  args = parser.parse_args(cli_args)
 
   histograms = trace_processor.RunMetric(args.trace_processor_path,
                                          args.trace, args.metric)
@@ -57,4 +56,4 @@ def Main():
 
 
 if __name__ == '__main__':
-  sys.exit(Main())
+  sys.exit(Main(sys.argv[1:]))

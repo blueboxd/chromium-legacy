@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/test/test_assistant_client.h"
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/highlighter/highlighter_controller.h"
@@ -327,6 +328,7 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
 
  private:
   base::SimpleTestTickClock simulated_clock_;
+  TestAssistantClient assistant_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PaletteTrayTestWithAssistant);
 };
@@ -339,6 +341,8 @@ TEST_F(PaletteTrayTestWithAssistant, MetalayerToolViewCreated) {
 TEST_F(PaletteTrayTestWithAssistant, MetalayerToolActivatesHighlighter) {
   ui::ScopedAnimationDurationScaleMode animation_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  assistant_state()->NotifyFeatureAllowed(
+      mojom::AssistantAllowedState::ALLOWED);
   assistant_state()->NotifyStatusChanged(mojom::AssistantState::READY);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,

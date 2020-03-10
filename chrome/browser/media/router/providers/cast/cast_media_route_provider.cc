@@ -98,11 +98,14 @@ void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
                                          base::TimeDelta timeout,
                                          bool incognito,
                                          CreateRouteCallback callback) {
+  DVLOG(2) << "CreateRoute with origin: " << origin << " and tab ID " << tab_id;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // TODO(https://crbug.com/809249): Handle mirroring routes, including
   // mirror-to-Cast transitions.
   const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
   if (!sink) {
+    DVLOG(2) << "CreateRoute: sink not found";
     std::move(callback).Run(base::nullopt, nullptr,
                             std::string("Sink not found"),
                             RouteRequestResult::ResultCode::SINK_NOT_FOUND);
@@ -112,6 +115,7 @@ void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
   std::unique_ptr<CastMediaSource> cast_source =
       CastMediaSource::FromMediaSourceId(source_id);
   if (!cast_source) {
+    DVLOG(2) << "CreateRoute: invalid source";
     std::move(callback).Run(
         base::nullopt, nullptr, std::string("Invalid source"),
         RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
@@ -167,13 +171,13 @@ void CastMediaRouteProvider::TerminateRoute(const std::string& route_id,
 
 void CastMediaRouteProvider::SendRouteMessage(const std::string& media_route_id,
                                               const std::string& message) {
-  NOTIMPLEMENTED();
+  activity_manager_->SendRouteMessage(media_route_id, message);
 }
 
 void CastMediaRouteProvider::SendRouteBinaryMessage(
     const std::string& media_route_id,
     const std::vector<uint8_t>& data) {
-  NOTIMPLEMENTED();
+  NOTREACHED() << "Binary messages are not supported for Cast routes.";
 }
 
 void CastMediaRouteProvider::StartObservingMediaSinks(

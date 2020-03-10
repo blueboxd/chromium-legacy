@@ -10,7 +10,9 @@ var TestMessageResponseData;
  *     testQuery: string,
  *     pathToRoot: (Array<string>|undefined),
  *     property: (string|undefined),
- *     requestFullscreen: (boolean|undefined)}}
+ *     requestFullscreen: (boolean|undefined),
+ *     overwriteLastFile: (string|undefined)
+ * }}
  */
 var TestMessageQueryData;
 

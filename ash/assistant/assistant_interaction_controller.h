@@ -138,10 +138,11 @@ class AssistantInteractionController
   bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) const;
   void AttemptWarmerWelcome();
 
-  void StartMetalayerInteraction(const gfx::Rect& region);
   void StartProactiveSuggestionsInteraction(
       scoped_refptr<const ProactiveSuggestions> proactive_suggestions);
-  void StartScreenContextInteraction(AssistantQuerySource query_source);
+  void StartScreenContextInteraction(bool include_assistant_structure,
+                                     const gfx::Rect& region,
+                                     AssistantQuerySource query_source);
 
   void StartVoiceInteraction();
   void StopActiveInteraction(bool cancel_conversation);
@@ -166,6 +167,8 @@ class AssistantInteractionController
   // Might overflow so do not use for super critical things.
   int number_of_times_shown_ = 0;
 
+  base::WeakPtrFactory<AssistantInteractionController>
+      screen_context_request_factory_{this};
   base::WeakPtrFactory<AssistantInteractionController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantInteractionController);

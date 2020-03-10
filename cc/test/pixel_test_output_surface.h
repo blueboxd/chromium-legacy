@@ -43,6 +43,7 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   gfx::OverlayTransform GetDisplayTransform() override;
   scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
       override;
+  gpu::MemoryTracker* GetMemoryTracker() override;
 
   void set_has_external_stencil_test(bool has_test) {
     external_stencil_test_ = has_test;

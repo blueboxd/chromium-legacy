@@ -88,6 +88,7 @@ class OverlayOutputSurface : public OutputSurface {
       override {
     return nullptr;
   }
+  gpu::MemoryTracker* GetMemoryTracker() override { return nullptr; }
 
   unsigned bind_framebuffer_count() const { return bind_framebuffer_count_; }
 

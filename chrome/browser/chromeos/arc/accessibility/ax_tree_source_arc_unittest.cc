@@ -1019,7 +1019,7 @@ TEST_F(AXTreeSourceArcTest, OnFocusEvent) {
   AXNodeInfoData* node2 = event->node_data.back().get();
   node2->id = 2;
   SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
-  SetProperty(node1, AXBooleanProperty::VISIBLE_TO_USER, true);
+  SetProperty(node2, AXBooleanProperty::VISIBLE_TO_USER, true);
   SetProperty(node2, AXStringProperty::TEXT, "sample string2.");
 
   // Chrome should focus to node2, even if node1 has 'focus' in Android.
@@ -1196,31 +1196,58 @@ TEST_F(AXTreeSourceArcTest, SerializeWebView) {
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({1}));
   SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
 
-  // node1 is a webView
+  // Add a webview node.
   event->node_data.emplace_back(AXNodeInfoData::New());
-  AXNodeInfoData* node1 = event->node_data.back().get();
-  node1->id = 1;
-  SetProperty(node1, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({2}));
-  SetProperty(node1, AXStringProperty::CHROME_ROLE, "rootWebArea");
+  AXNodeInfoData* webview = event->node_data.back().get();
+  webview->id = 1;
+  SetProperty(webview, AXBooleanProperty::VISIBLE_TO_USER, true);
+  SetProperty(webview, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({2, 3}));
+  SetProperty(webview, AXStringProperty::CHROME_ROLE, "rootWebArea");
 
   event->node_data.emplace_back(AXNodeInfoData::New());
-  AXNodeInfoData* node2 = event->node_data.back().get();
-  node2->id = 2;
+  AXNodeInfoData* button1 = event->node_data.back().get();
+  button1->id = 2;
+  button1->bounds_in_screen = gfx::Rect(0, 0, 50, 50);
+  SetProperty(button1, AXStringProperty::CLASS_NAME, ui::kAXButtonClassname);
+  SetProperty(button1, AXBooleanProperty::VISIBLE_TO_USER, true);
   SetProperty(
-      node2, AXIntListProperty::STANDARD_ACTION_IDS,
+      button1, AXIntListProperty::STANDARD_ACTION_IDS,
       std::vector<int>({static_cast<int>(AXActionType::NEXT_HTML_ELEMENT),
                         static_cast<int>(AXActionType::FOCUS)}));
-  SetProperty(node2, AXStringProperty::CONTENT_DESCRIPTION, "text");
+  SetProperty(button1, AXStringProperty::CONTENT_DESCRIPTION, "button1");
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* button2 = event->node_data.back().get();
+  button2->id = 3;
+  button2->bounds_in_screen = gfx::Rect(0, 0, 100, 100);
+  SetProperty(button2, AXStringProperty::CLASS_NAME, ui::kAXButtonClassname);
+  SetProperty(button2, AXBooleanProperty::VISIBLE_TO_USER, true);
+  SetProperty(
+      button2, AXIntListProperty::STANDARD_ACTION_IDS,
+      std::vector<int>({static_cast<int>(AXActionType::NEXT_HTML_ELEMENT),
+                        static_cast<int>(AXActionType::FOCUS)}));
+  SetProperty(button2, AXStringProperty::CONTENT_DESCRIPTION, "button2");
 
   CallNotifyAccessibilityEvent(event.get());
 
   std::unique_ptr<ui::AXNodeData> data;
-  CallSerializeNode(node1, &data);
+  CallSerializeNode(webview, &data);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, data->role);
 
   // Node inside a WebView is not ignored even if it's not set importance.
-  CallSerializeNode(node2, &data);
+  CallSerializeNode(button1, &data);
   ASSERT_FALSE(data->HasState(ax::mojom::State::kIgnored));
+
+  CallSerializeNode(button2, &data);
+  ASSERT_FALSE(data->HasState(ax::mojom::State::kIgnored));
+
+  // Children are not reordered under WebView.
+  std::vector<AccessibilityInfoDataWrapper*> children;
+  CallGetChildren(webview, &children);
+  ASSERT_EQ(2U, children.size());
+  EXPECT_EQ(button1->id, children[0]->GetId());
+  EXPECT_EQ(button2->id, children[1]->GetId());
 }
 
 TEST_F(AXTreeSourceArcTest, SyncFocus) {

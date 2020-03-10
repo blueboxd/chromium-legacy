@@ -7,10 +7,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
 
@@ -47,9 +49,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void SyncDeviceAppsStatus() override {}
 
   // mojom::Assistant overrides:
-  void StartCachedScreenContextInteraction() override;
   void StartEditReminderInteraction(const std::string& client_id) override;
-  void StartMetalayerInteraction(const gfx::Rect& region) override;
+  void StartScreenContextInteraction(
+      ax::mojom::AssistantStructurePtr assistant_structure,
+      const std::vector<uint8_t>& assistant_screenshot) override;
   void StartTextInteraction(const std::string& query,
                             mojom::AssistantQuerySource source,
                             bool allow_tts) override;
@@ -64,8 +67,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
                             int action_index) override;
   void DismissNotification(
       mojom::AssistantNotificationPtr notification) override;
-  void CacheScreenContext(CacheScreenContextCallback callback) override;
-  void ClearScreenContextCache() override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
   void SendAssistantFeedback(mojom::AssistantFeedbackPtr feedback) override;
   void NotifyEntryIntoAssistantUi(

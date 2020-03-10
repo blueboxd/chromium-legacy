@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/apps/app_block_dialog_view.h"
 
-#include "chrome/browser/apps/app_service/arc_apps.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,9 +20,9 @@ AppBlockDialogView* g_app_block_dialog_view = nullptr;
 namespace apps {
 
 // static
-void ArcApps::CreateBlockDialog(const std::string& app_name,
-                                const gfx::ImageSkia& image,
-                                Profile* profile) {
+void AppServiceProxy::CreateBlockDialog(const std::string& app_name,
+                                        const gfx::ImageSkia& image,
+                                        Profile* profile) {
   views::DialogDelegate::CreateDialogWidget(
       new AppBlockDialogView(app_name, image, profile), nullptr, nullptr)
       ->Show();

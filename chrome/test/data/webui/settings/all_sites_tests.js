@@ -59,7 +59,10 @@ suite('AllSites', function() {
   });
 
   // Initialize a site-list before each test.
-  setup(function() {
+  setup(async function() {
+    PolymerTest.clearBody();
+    await settings.forceLazyLoaded();
+
     prefsVarious = test_util.createSiteSettingsPrefs([], [
       test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.GEOLOCATION,
@@ -87,7 +90,6 @@ suite('AllSites', function() {
     localDataBrowserProxy = new TestLocalDataBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
     settings.LocalDataBrowserProxyImpl.instance_ = localDataBrowserProxy;
-    PolymerTest.clearBody();
     testElement = document.createElement('all-sites');
     assertTrue(!!testElement);
     document.body.appendChild(testElement);

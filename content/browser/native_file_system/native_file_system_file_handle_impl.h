@@ -41,6 +41,9 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
   void AsBlob(AsBlobCallback callback) override;
   void CreateFileWriter(bool keep_existing_data,
                         CreateFileWriterCallback callback) override;
+  void IsSameEntry(
+      mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
+      IsSameEntryCallback callback) override;
   void Transfer(
       mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken> token)
       override;
@@ -72,6 +75,9 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
       storage::IsolatedContext::ScopedFSHandle swap_file_system,
       CreateFileWriterCallback callback,
       base::File::Error result);
+
+  void IsSameEntryImpl(IsSameEntryCallback callback,
+                       NativeFileSystemTransferTokenImpl* other);
 
   // A FileWriter will write to a "swap" file until the `Close()` operation is
   // called to swap the file into the target path. For each writer, a new swap

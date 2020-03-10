@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
-#define CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
+#ifndef CONTENT_BROWSER_QUOTA_QUOTA_DISPATCHER_HOST_H_
+#define CONTENT_BROWSER_QUOTA_QUOTA_DISPATCHER_HOST_H_
 
 #include "base/macros.h"
 #include "content/public/browser/quota_permission_context.h"
@@ -92,4 +92,4 @@ class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
+#endif  // CONTENT_BROWSER_QUOTA_QUOTA_DISPATCHER_HOST_H_

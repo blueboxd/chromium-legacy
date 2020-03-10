@@ -478,7 +478,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="3024663005179499861">Nem megfelelő irányelvtípus</translation>
 <translation id="3037605927509011580">A manóba!</translation>
 <translation id="3041612393474885105">Tanúsítvány adatai</translation>
-<translation id="3057676462092457419">A DnsOverHttps módot (<ph name="SECURE_DNS_MODE_SECURE" />) még nem támogatja a rendszer, ezért az alkalmazott módot <ph name="SECURE_DNS_MODE_OFF" /> állapotra állította.</translation>
 <translation id="3060227939791841287">C9 (boríték)</translation>
 <translation id="3061707000357573562">Javítókészlet szolgáltatás</translation>
 <translation id="3064966200440839136">Inkognitómód elhagyása külső alkalmazással történő fizetéshez. Folytatja?</translation>
@@ -576,6 +575,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="3487845404393360112">4. tálca</translation>
 <translation id="3495081129428749620">Keresés a következő oldalon:
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">3D-s térkép készítése az Ön környezetéről és a kamera pozíciójának követése</translation>
 <translation id="3512163584740124171">A böngésző figyelmen kívül hagyja ezt a házirendet, mert magasabb prioritással rendelkezik egy másik házirend ugyanabból a házirendcsoportból.</translation>
 <translation id="3518941727116570328">Több elem kezelése</translation>
 <translation id="3528171143076753409">A szervezet tanúsítványa nem megbízható.</translation>
@@ -929,6 +929,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="5030338702439866405">Kiállította:</translation>
 <translation id="503069730517007720">A(z) „<ph name="SOFTWARE_NAME" />” szoftverhez főtanúsítványra van szükség, amely azonban nincs telepítve. A rendszergazda a(z) „<ph name="SOFTWARE_NAME" />” beállítási útmutatójában találhat segítséget a probléma megoldásához. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">A Google Fordító leírása</translation>
+<translation id="503498442187459473">A(z) <ph name="HOST" /> webhely használni szeretné a kamerát és a mikrofont</translation>
 <translation id="5039804452771397117">Engedélyezés</translation>
 <translation id="5040262127954254034">Adatvédelem</translation>
 <translation id="5043480802608081735">Vágólapra másolt link</translation>
@@ -1037,7 +1038,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="5457113250005438886">Érvénytelen</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> és további <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> és további <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Szerkesztés újra</translation>
-<translation id="5472133193607270166">Ha be van kapcsolva, a webhelyek nem használhatják fel az Ön különböző webhelyeken végzett böngészési tevékenységeit a hirdetések személyre szabásához. Előfordulhat, hogy ennek következtében egyes webhelyek nem működnek megfelelően.</translation>
 <translation id="5478437291406423475">B6/C4 (boríték)</translation>
 <translation id="5481076368049295676">Lehet, hogy ez a tartalom megpróbál olyan veszélyes szoftvert telepíteni az eszközre, amely ellophatja vagy törölheti az Ön adatait. <ph name="BEGIN_LINK" />Megjelenítés mindenképpen<ph name="END_LINK" />.</translation>
 <translation id="54817484435770891">Érvényes címet adjon meg</translation>
@@ -1323,6 +1323,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="6710594484020273272">&lt;Írja be a keresési kifejezést&gt;</translation>
 <translation id="671076103358959139">Regisztrációs token</translation>
 <translation id="6711464428925977395">Valami gond van a proxyszerverrel, vagy a cím nem megfelelő.</translation>
+<translation id="6716672519412350405">A(z) <ph name="URL" /> 3D-s térképet szeretne készíteni az Ön környezetéről, és követni szeretné a kamera pozícióját</translation>
 <translation id="6738516213925468394">Adatai titkosítva lettek <ph name="BEGIN_LINK" />összetett szinkronizálási jelszavával<ph name="END_LINK" /> a következő időpontban: <ph name="TIME" />. Adja meg a jelszót a szinkronizálás megkezdéséhez.</translation>
 <translation id="674375294223700098">Ismeretlen szervertanúsítvány-hiba.</translation>
 <translation id="6744009308914054259">Miközben kapcsolatra vár, a Letöltések között elolvashatja az offline cikkeket.</translation>
@@ -1390,7 +1391,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="7079718277001814089">A webhely rosszindulatú programokat tartalmaz</translation>
 <translation id="7081308185095828845">Ez a funkció nem áll rendelkezésre az eszközén</translation>
 <translation id="7083258188081898530">9. tálca</translation>
-<translation id="7086090958708083563">Feltöltés kérve a felhasználó által</translation>
+<translation id="7086090958708083563">A felhasználó kérte a feltöltést</translation>
 <translation id="7087282848513945231">Megye</translation>
 <translation id="7090678807593890770">Keresés a Google-on a következőre: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Elrejtés</translation>
@@ -1744,7 +1745,6 @@ További részletek:
 <translation id="8589998999637048520">Legjobb minőség</translation>
 <translation id="860043288473659153">Kártyatulajdonos neve</translation>
 <translation id="8606726445206553943">MIDI-eszközök használata</translation>
-<translation id="8616822740383114808">Ezt a beállítást megköveteli a(z) „<ph name="SETTINGS_PAGE" />” oldalon lévő „<ph name="ENFORCING_SETTING" />” beállítás</translation>
 <translation id="861775596732816396">Méret: 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Kártya mentése az eszközre</translation>

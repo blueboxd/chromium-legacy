@@ -474,7 +474,6 @@
 <translation id="3024663005179499861">Неправильний тип правила</translation>
 <translation id="3037605927509011580">От халепа!</translation>
 <translation id="3041612393474885105">Інформація про сертифікат</translation>
-<translation id="3057676462092457419">Значення режиму DnsOverHttps "<ph name="SECURE_DNS_MODE_SECURE" />" ще не підтримується, тому вибрано значення "<ph name="SECURE_DNS_MODE_OFF" />".</translation>
 <translation id="3060227939791841287">C9 (конверт)</translation>
 <translation id="3061707000357573562">Служба виправлень</translation>
 <translation id="3064966200440839136">Щоб оплатити в зовнішньому додатку, ви вийдете з режиму анонімного перегляду. Продовжити?</translation>
@@ -574,6 +573,7 @@
 <translation id="3487845404393360112">Лоток 4</translation>
 <translation id="3495081129428749620">Знайти на сторінці
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Створити 3D-карту вашого оточення та відстежувати положення камери</translation>
 <translation id="3512163584740124171">Це правило ігнорується, оскільки інше правило цієї групи має вищий пріоритет.</translation>
 <translation id="3518941727116570328">Обробка кількох об'єктів</translation>
 <translation id="3528171143076753409">Сертифікат сервера ненадійний.</translation>
@@ -926,6 +926,7 @@
 <translation id="5030338702439866405">Ким видано:</translation>
 <translation id="503069730517007720">Для програмного забезпечення <ph name="SOFTWARE_NAME" /> потрібен кореневий сертифікат, однак його не встановлено. Вашому IT-адміністратору потрібно переглянути вказівки з налаштування <ph name="SOFTWARE_NAME" />, щоб вирішити цю проблему. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Про Google Перекладач</translation>
+<translation id="503498442187459473">Сайт <ph name="HOST" /> хоче отримати доступ до ваших камери й мікрофона</translation>
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="5040262127954254034">Конфіденційність</translation>
 <translation id="5043480802608081735">Скопійоване посилання</translation>
@@ -1034,7 +1035,6 @@
 <translation id="5457113250005438886">Недійсні дані</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Повторити редагування</translation>
-<translation id="5472133193607270166">Якщо цей параметр увімкнено, сайти не можуть використовувати дані про ваші дії у веб-переглядачі, щоб персоналізувати рекламу. Деякі сайти можуть працювати неналежним чином.</translation>
 <translation id="5478437291406423475">B6/C4 (конверт)</translation>
 <translation id="5481076368049295676">Цей вміст може намагатися встановити на ваш пристрій небезпечну програму, яка викрадає або видаляє інформацію. <ph name="BEGIN_LINK" />Усе одно показати<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Додати дійсну адресу</translation>
@@ -1320,6 +1320,7 @@
 <translation id="6710594484020273272">&lt;Введіть пошуковий термін&gt;</translation>
 <translation id="671076103358959139">Маркер реєстрації:</translation>
 <translation id="6711464428925977395">Помилка проксі-сервера або неправильна адреса.</translation>
+<translation id="6716672519412350405">Хост <ph name="URL" /> намагається створити 3D-карту вашого оточення й відстежувати положення камери</translation>
 <translation id="6738516213925468394">Ваші дані було зашифровано за допомогою <ph name="BEGIN_LINK" />парольної фрази для синхронізації<ph name="END_LINK" /> від <ph name="TIME" />. Введіть її, щоб почати синхронізацію.</translation>
 <translation id="674375294223700098">Помилка "Невідомий сертифікат сервера".</translation>
 <translation id="6744009308914054259">Очікуючи на з’єднання, можете перейти в папку "Завантаження" й переглянути статті, доступні в режимі офлайн.</translation>
@@ -1716,7 +1717,7 @@
 <translation id="8461694314515752532">Шифрувати синхронізовані дані за допомогою власної парольної фрази</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна картка}one{# кредитна картка}few{# кредитні картки}many{# кредитних карток}other{# кредитної картки}}</translation>
 <translation id="8473863474539038330">Адреси й інше</translation>
-<translation id="8474910779563686872">Показати інформацію про розробника</translation>
+<translation id="8474910779563686872">Показати інформацію розробника</translation>
 <translation id="8479754468255770962">Скріпити внизу ліворуч</translation>
 <translation id="8483780878231876732">Щоб користуватися картками у своєму обліковому записі Google, увійдіть у Chrome</translation>
 <translation id="8488350697529856933">Застосовується до:</translation>
@@ -1741,7 +1742,6 @@
 <translation id="8589998999637048520">Найкраща якість</translation>
 <translation id="860043288473659153">Ім’я та прізвище власника картки</translation>
 <translation id="8606726445206553943">Використовувати ваші пристрої MIDI</translation>
-<translation id="8616822740383114808">Це налаштування застосовується параметром "<ph name="ENFORCING_SETTING" />" у меню "<ph name="SETTINGS_PAGE" />"</translation>
 <translation id="861775596732816396">Розмір 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Зберегти цю картку на пристрої</translation>

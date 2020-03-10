@@ -107,12 +107,23 @@ aura::Window* AssistantTestApiImpl::root_window() {
   return Shell::Get()->GetPrimaryRootWindow();
 }
 
-void AssistantTestApiImpl::SetAssistantEnabled(bool value) {
+void AssistantTestApiImpl::SetAssistantEnabled(bool enabled) {
   Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetBoolean(
-      chromeos::assistant::prefs::kAssistantEnabled, value);
+      chromeos::assistant::prefs::kAssistantEnabled, enabled);
 
   // Ensure the value has taken effect.
-  ASSERT_EQ(GetAssistantState()->settings_enabled(), value)
+  ASSERT_EQ(GetAssistantState()->settings_enabled(), enabled)
+      << "Changing this preference did not take effect immediately, which will "
+         "cause timing issues in this test. If this trace is seen we must add "
+         "a waiter here to wait for the new state to take effect.";
+}
+
+void AssistantTestApiImpl::SetScreenContextEnabled(bool enabled) {
+  Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetBoolean(
+      chromeos::assistant::prefs::kAssistantContextEnabled, enabled);
+
+  // Ensure the value has taken effect.
+  ASSERT_EQ(GetAssistantState()->context_enabled(), enabled)
       << "Changing this preference did not take effect immediately, which will "
          "cause timing issues in this test. If this trace is seen we must add "
          "a waiter here to wait for the new state to take effect.";

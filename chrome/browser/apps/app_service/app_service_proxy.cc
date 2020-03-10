@@ -24,6 +24,7 @@
 #include "url/url_constants.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
 #endif
 
@@ -200,9 +201,11 @@ void AppServiceProxy::Launch(const std::string& app_id,
   if (app_service_.is_connected()) {
     cache_.ForOneApp(app_id, [this, event_flags, launch_source,
                               display_id](const apps::AppUpdate& update) {
-      if (update.Paused() == apps::mojom::OptionalBool::kTrue) {
+#if defined(OS_CHROMEOS)
+      if (MaybeShowLaunchPreventionDialog(update)) {
         return;
       }
+#endif
       RecordAppLaunch(update.AppId(), launch_source);
       app_service_->Launch(update.AppType(), update.AppId(), event_flags,
                            launch_source, display_id);
@@ -218,9 +221,11 @@ void AppServiceProxy::LaunchAppWithIntent(
   if (app_service_.is_connected()) {
     cache_.ForOneApp(app_id, [this, &intent, launch_source,
                               display_id](const apps::AppUpdate& update) {
-      if (update.Paused() == apps::mojom::OptionalBool::kTrue) {
+#if defined(OS_CHROMEOS)
+      if (MaybeShowLaunchPreventionDialog(update)) {
         return;
       }
+#endif
       RecordAppLaunch(update.AppId(), launch_source);
       app_service_->LaunchAppWithIntent(update.AppType(), update.AppId(),
                                         std::move(intent), launch_source,
@@ -287,7 +292,11 @@ void AppServiceProxy::PauseApps(
     }
 
     cache_.ForOneApp(data.first, [this, &data](const apps::AppUpdate& update) {
-      this->LoadIconForPauseDialog(update, data.second);
+      LoadIconForDialog(
+          update,
+          base::BindOnce(&AppServiceProxy::OnLoadIconForPauseDialog,
+                         weak_ptr_factory_.GetWeakPtr(), update.AppType(),
+                         update.AppId(), update.Name(), data.second));
     });
   }
 }
@@ -497,31 +506,84 @@ void AppServiceProxy::OnUninstallDialogClosed(
 }
 
 #if defined(OS_CHROMEOS)
-void AppServiceProxy::LoadIconForPauseDialog(const apps::AppUpdate& update,
-                                             const PauseData& pause_data) {
+bool AppServiceProxy::MaybeShowLaunchPreventionDialog(
+    const apps::AppUpdate& update) {
+  // Return true, and load the icon for the app block dialog when the app
+  // is blocked by policy.
+  if (update.Readiness() == apps::mojom::Readiness::kDisabledByPolicy) {
+    LoadIconForDialog(
+        update, base::BindOnce(&AppServiceProxy::OnLoadIconForBlockDialog,
+                               weak_ptr_factory_.GetWeakPtr(), update.Name()));
+    return true;
+  }
+
+  // Return true, and load the icon for the app pause dialog when the app
+  // is paused.
+  if (update.Paused() == apps::mojom::OptionalBool::kTrue) {
+    chromeos::app_time::AppTimeLimitInterface* app_limit =
+        chromeos::app_time::AppTimeLimitInterface::Get(profile_);
+    DCHECK(app_limit);
+    auto time_limit =
+        app_limit->GetTimeLimitForApp(update.AppId(), update.AppType());
+    if (!time_limit.has_value()) {
+      NOTREACHED();
+      return true;
+    }
+    PauseData pause_data;
+    pause_data.hours = time_limit.value().InHours();
+    pause_data.minutes = time_limit.value().InMinutes() % 60;
+    LoadIconForDialog(
+        update, base::BindOnce(&AppServiceProxy::OnLoadIconForPauseDialog,
+                               weak_ptr_factory_.GetWeakPtr(), update.AppType(),
+                               update.AppId(), update.Name(), pause_data));
+    return true;
+  }
+
+  // The app is not prevented from launching and we didn't show any dialog.
+  return false;
+}
+
+void AppServiceProxy::LoadIconForDialog(
+    const apps::AppUpdate& update,
+    apps::mojom::Publisher::LoadIconCallback callback) {
   apps::mojom::IconKeyPtr icon_key = update.IconKey();
   constexpr bool kAllowPlaceholderIcon = false;
-  constexpr int32_t kPauseIconSize = 48;
+  constexpr int32_t kIconSize = 48;
 
-  // For browser tests, still load the app icon, because there is no family link
+  // For browser tests, load the app icon, because there is no family link
   // logo for browser tests.
-  if (!dialog_created_callback_.is_null()) {
-    LoadIconFromIconKey(
-        update.AppType(), update.AppId(), std::move(icon_key),
-        apps::mojom::IconCompression::kUncompressed, kPauseIconSize,
-        kAllowPlaceholderIcon,
-        base::BindOnce(&AppServiceProxy::OnLoadIconForPauseDialog,
-                       weak_ptr_factory_.GetWeakPtr(), update.AppType(),
-                       update.AppId(), update.Name(), pause_data));
+  //
+  // For non_child profile, load the app icon, because the app is blocked by
+  // admin.
+  if (!dialog_created_callback_.is_null() || !profile_->IsChild()) {
+    LoadIconFromIconKey(update.AppType(), update.AppId(), std::move(icon_key),
+                        apps::mojom::IconCompression::kUncompressed, kIconSize,
+                        kAllowPlaceholderIcon, std::move(callback));
     return;
   }
 
-  LoadIconFromResource(
-      apps::mojom::IconCompression::kUncompressed, kPauseIconSize,
-      IDR_FAMILY_LINK_LOGO, kAllowPlaceholderIcon, IconEffects::kNone,
-      base::BindOnce(&AppServiceProxy::OnLoadIconForPauseDialog,
-                     weak_ptr_factory_.GetWeakPtr(), update.AppType(),
-                     update.AppId(), update.Name(), pause_data));
+  // Load the family link kite logo icon for the app pause dialog or the app
+  // block dialog for the child profile.
+  LoadIconFromResource(apps::mojom::IconCompression::kUncompressed, kIconSize,
+                       IDR_FAMILY_LINK_LOGO, kAllowPlaceholderIcon,
+                       IconEffects::kNone, std::move(callback));
+}
+
+void AppServiceProxy::OnLoadIconForBlockDialog(
+    const std::string& app_name,
+    apps::mojom::IconValuePtr icon_value) {
+  if (icon_value->icon_compression !=
+      apps::mojom::IconCompression::kUncompressed) {
+    return;
+  }
+
+  AppServiceProxy::CreateBlockDialog(app_name, icon_value->uncompressed,
+                                     profile_);
+
+  // For browser tests, call the dialog created callback to stop the run loop.
+  if (!dialog_created_callback_.is_null()) {
+    std::move(dialog_created_callback_).Run();
+  }
 }
 
 void AppServiceProxy::OnLoadIconForPauseDialog(
@@ -541,6 +603,7 @@ void AppServiceProxy::OnLoadIconForPauseDialog(
       base::BindOnce(&AppServiceProxy::OnPauseDialogClosed,
                      weak_ptr_factory_.GetWeakPtr(), app_type, app_id));
 
+  // For browser tests, call the dialog created callback to stop the run loop.
   if (!dialog_created_callback_.is_null()) {
     std::move(dialog_created_callback_).Run();
   }

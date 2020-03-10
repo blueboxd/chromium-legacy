@@ -129,7 +129,8 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, true),
       page_factory_receiver_(this),
       profile_(Profile::FromWebUI(web_ui)),
-      instant_service_(InstantServiceFactory::GetForProfile(profile_)) {
+      instant_service_(InstantServiceFactory::GetForProfile(profile_)),
+      web_contents_(web_ui->GetWebContents()) {
   content::WebUIDataSource::Add(profile_,
                                 CreateNewTabPageUiHtmlSource(profile_));
 
@@ -172,7 +173,8 @@ void NewTabPageUI::CreatePageHandler(
         pending_page_handler) {
   DCHECK(pending_page.is_valid());
   page_handler_ = std::make_unique<NewTabPageHandler>(
-      std::move(pending_page_handler), std::move(pending_page), profile_);
+      std::move(pending_page_handler), std::move(pending_page), profile_,
+      web_contents_);
 }
 
 void NewTabPageUI::NtpThemeChanged(const NtpTheme& theme) {

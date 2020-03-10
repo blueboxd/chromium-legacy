@@ -6,19 +6,25 @@
 #define ASH_ASSISTANT_ASSISTANT_SCREEN_CONTEXT_CONTROLLER_H_
 
 #include <memory>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_screen_context_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
+struct AssistantTree;
 class LayerTreeOwner;
 }  // namespace ui
 
@@ -29,8 +35,13 @@ class AssistantController;
 class ASH_EXPORT AssistantScreenContextController
     : public mojom::AssistantScreenContextController,
       public AssistantControllerObserver,
-      public AssistantUiModelObserver {
+      public AssistantUiModelObserver,
+      public AssistantViewDelegateObserver {
  public:
+  using ScreenContextCallback =
+      base::OnceCallback<void(ax::mojom::AssistantStructurePtr,
+                              const std::vector<uint8_t>&)>;
+
   explicit AssistantScreenContextController(
       AssistantController* assistant_controller);
   ~AssistantScreenContextController() override;
@@ -61,9 +72,34 @@ class ASH_EXPORT AssistantScreenContextController
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
 
+  // AssistantViewDelegateObserver:
+  void OnHostViewVisibilityChanged(bool visible) override;
+
+  void RequestScreenContext(bool include_assistant_structure,
+                            const gfx::Rect& region,
+                            ScreenContextCallback callback);
+
   std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshotForTest();
 
  private:
+  friend class AssistantScreenContextControllerTest;
+
+  // Requests or clears the cached Assistant structure based on |visible|.
+  void UpdateAssistantStructure(bool visible);
+
+  void RequestAssistantStructure();
+
+  // Clears the cached Assistant structure.
+  void ClearAssistantStructure();
+
+  void OnRequestAssistantStructureCompleted(
+      ax::mojom::AssistantExtraPtr assistant_extra,
+      std::unique_ptr<ui::AssistantTree> assistant_tree);
+
+  void OnRequestScreenshotCompleted(bool include_assistant_structure,
+                                    ScreenContextCallback callback,
+                                    const std::vector<uint8_t>& screenshot);
+
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   mojo::Receiver<mojom::AssistantScreenContextController> receiver_{this};
@@ -73,9 +109,7 @@ class ASH_EXPORT AssistantScreenContextController
 
   AssistantScreenContextModel model_;
 
-  // Weak pointer factory used for screen context requests.
-  base::WeakPtrFactory<AssistantScreenContextController>
-      screen_context_request_factory_{this};
+  base::WeakPtrFactory<AssistantScreenContextController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantScreenContextController);
 };

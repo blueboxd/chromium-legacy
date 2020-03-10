@@ -13,29 +13,74 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/event_monitor.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
-
-using chromeos::quick_answers::QuickAnswer;
-using chromeos::quick_answers::QuickAnswerUiElement;
-using chromeos::quick_answers::QuickAnswerUiElementType;
 
 namespace ash {
 namespace {
+
+using chromeos::quick_answers::QuickAnswer;
+using chromeos::quick_answers::QuickAnswerText;
+using chromeos::quick_answers::QuickAnswerUiElement;
+using chromeos::quick_answers::QuickAnswerUiElementType;
+using views::Label;
+using views::View;
+
+// Spacing between this view and the anchor view.
+constexpr int kMarginDip = 10;
+
+constexpr gfx::Insets kMainViewInsets(16, 0, 16, 18);
+
 constexpr int kAssistantIconSizeDip = 16;
-constexpr int kDefaultPaddingBelowDip = 10;
-constexpr int kDefaultPaddingRightDip = 20;
-constexpr int kDefaultIconLeftPaddingDip = 8;
-constexpr int kDefaultIconRightPaddingDip = 8;
-constexpr int kDefaultIconUpperPaddingDip = 22;
-constexpr int kDefaultLabelRightPaddingDip = 2;
-constexpr int kDefaultTextUpperPaddingDip = 10;
+constexpr gfx::Insets kAssistantIconInsets(2, 10, 0, 8);
+
+// Spacing between lines in the main view.
+constexpr int kLineSpacingDip = 4;
 constexpr int kLineHeightDip = 20;
-constexpr int kHeightForOneRowAnswerDip = 60;
-constexpr int kHeightForTwoRowAnswerDip = 75;
+
+// Spacing between labels in the horizontal elements view.
+constexpr int kLabelSpacingDip = 2;
 
 constexpr char kDefaultLoadingStr[] = "Loading...";
 constexpr char kDefaultRetryStr[] = "Retry";
 constexpr char kNetworkErrorStr[] = "Cannot connect to internet.";
+
+// Adds |text_element| as label to the container.
+Label* AddTextElement(const QuickAnswerText& text_element, View* container) {
+  auto* label =
+      container->AddChildView(std::make_unique<Label>(text_element.text));
+  label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  label->SetEnabledColor(text_element.color);
+  label->SetLineHeight(kLineHeightDip);
+  return label;
+}
+
+// Adds the list of |QuickAnswerUiElement| horizontally to the container.
+View* AddHorizontalUiElements(
+    const std::vector<std::unique_ptr<QuickAnswerUiElement>>& elements,
+    View* container) {
+  auto* labels_container =
+      container->AddChildView(std::make_unique<views::View>());
+  labels_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+      kLabelSpacingDip));
+
+  for (const auto& element : elements) {
+    switch (element->type) {
+      case QuickAnswerUiElementType::kText:
+        AddTextElement(*static_cast<QuickAnswerText*>(element.get()),
+                       labels_container);
+        break;
+      case QuickAnswerUiElementType::kImage:
+        // TODO(yanxiao): Add image view
+        break;
+      default:
+        break;
+    }
+  }
+
+  return labels_container;
+}
 
 }  // namespace
 
@@ -153,8 +198,8 @@ void QuickAnswersView::UpdateView(const gfx::Rect& anchor_view_bounds,
   has_second_row_answer_ = !quick_answer.second_answer_row.empty();
   anchor_view_bounds_ = anchor_view_bounds;
   retry_label_ = nullptr;
-  RemoveAllChildViews(true);
-  UpdateChildViews(quick_answer);
+
+  UpdateQuickAnswerResult(quick_answer);
   UpdateBounds();
 }
 
@@ -162,80 +207,52 @@ void QuickAnswersView::ShowRetryView() {
   if (retry_label_)
     return;
 
-  RemoveAllChildViews(true);
-
-  AddAssistantIcon();
+  content_view_->RemoveAllChildViews(true);
 
   // Add title.
-  int label_start = kDefaultIconLeftPaddingDip + kAssistantIconSizeDip +
-                    kDefaultIconRightPaddingDip;
-  AddLabel(label_start, kDefaultTextUpperPaddingDip, title_);
+  AddTextElement({title_}, content_view_);
 
   // Add error label.
-  label_start =
-      AddLabel(label_start, kDefaultTextUpperPaddingDip + kLineHeightDip,
-               kNetworkErrorStr);
+  std::vector<std::unique_ptr<QuickAnswerUiElement>> description_labels;
+  description_labels.push_back(
+      std::make_unique<QuickAnswerText>(kNetworkErrorStr, gfx::kGoogleGrey700));
+  auto* description_container =
+      AddHorizontalUiElements(description_labels, content_view_);
 
   // Add retry label.
-  retry_label_ = AddChildView(
-      std::make_unique<views::Label>(base::UTF8ToUTF16(kDefaultRetryStr)));
-  retry_label_->SetFontList(gfx::FontList());
-  retry_label_->SetEnabledColor(SK_ColorBLUE);
-  retry_label_->SetBoundsRect(
-      {label_start, kDefaultTextUpperPaddingDip + kLineHeightDip,
-       retry_label_->CalculatePreferredSize().width(), kLineHeightDip});
-  retry_label_->SetLineHeight(kLineHeightDip);
+  retry_label_ = AddTextElement({kDefaultRetryStr, gfx::kGoogleBlue600},
+                                description_container);
 }
 
 void QuickAnswersView::AddAssistantIcon() {
   // Add Assistant icon.
   auto* assistant_icon = AddChildView(std::make_unique<views::ImageView>());
+  assistant_icon->SetBorder(views::CreateEmptyBorder(kAssistantIconInsets));
   assistant_icon->SetImage(gfx::CreateVectorIcon(
       kAssistantIcon, kAssistantIconSizeDip, gfx::kPlaceholderColor));
-  assistant_icon->SetBoundsRect({kDefaultIconLeftPaddingDip,
-                                 kDefaultIconUpperPaddingDip,
-                                 kAssistantIconSizeDip, kAssistantIconSizeDip});
-}
-
-int QuickAnswersView::AddLabel(int label_start,
-                               int upper_padding,
-                               const std::string& title) {
-  // TODO(yanxiao):Add more padding if there is image on the right side.
-  int label_max_width =
-      anchor_view_bounds_.width() - label_start - kDefaultPaddingRightDip;
-  auto* label =
-      AddChildView(std::make_unique<views::Label>(base::UTF8ToUTF16(title)));
-  int label_width =
-      std::min(label_max_width, label->CalculatePreferredSize().width());
-
-  // TODO(yanxiao):Consider use LayoutManager such as BoxLayout.
-  label->SetBoundsRect(
-      {label_start, upper_padding, label_width, kLineHeightDip});
-  label->SetLineHeight(kLineHeightDip);
-  return label_start + label->CalculatePreferredSize().width() +
-         kDefaultLabelRightPaddingDip;
-}
-
-int QuickAnswersView::GetPreferredHeight() {
-  return has_second_row_answer_ ? kHeightForTwoRowAnswerDip
-                                : kHeightForOneRowAnswerDip;
 }
 
 void QuickAnswersView::InitLayout() {
   SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal, kMainViewInsets));
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kStart);
+
   AddAssistantIcon();
 
-  // Add title
-  int label_start = kDefaultIconLeftPaddingDip + kAssistantIconSizeDip +
-                    kDefaultIconRightPaddingDip;
+  // Add content view.
+  content_view_ = AddChildView(std::make_unique<views::View>());
+  content_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      kLineSpacingDip));
 
-  AddLabel(label_start, kDefaultTextUpperPaddingDip, title_);
+  // Add title.
+  AddTextElement({title_}, content_view_);
 
-  // Add loading label
-  // TODO(yanxiao): change the string to loading animation.
-  AddLabel(label_start, kDefaultTextUpperPaddingDip + kLineHeightDip,
-           kDefaultLoadingStr);
+  // Add loading place holder.
+  AddTextElement({kDefaultLoadingStr, gfx::kGoogleGrey700}, content_view_);
 }
 
 void QuickAnswersView::InitWidget() {
@@ -252,75 +269,35 @@ void QuickAnswersView::InitWidget() {
 }
 
 void QuickAnswersView::UpdateBounds() {
-  int y =
-      anchor_view_bounds_.y() - kDefaultPaddingBelowDip - GetPreferredHeight();
+  int height = GetHeightForWidth(anchor_view_bounds_.width());
+  int y = anchor_view_bounds_.y() - kMarginDip - height;
   if (y < display::Screen::GetScreen()
               ->GetDisplayMatching(anchor_view_bounds_)
               .bounds()
               .y()) {
     // The Quick Answers view will be off screen if showing above the anchor.
     // Show below the anchor instead.
-    y = anchor_view_bounds_.y() + anchor_view_bounds_.height() +
-        kDefaultPaddingBelowDip;
+    y = anchor_view_bounds_.bottom() + kMarginDip;
   }
 
   GetWidget()->SetBounds(gfx::Rect(anchor_view_bounds_.x(), y,
-                                   anchor_view_bounds_.width(),
-                                   GetPreferredHeight()));
+                                   anchor_view_bounds_.width(), height));
 }
 
-void QuickAnswersView::UpdateChildViews(const QuickAnswer& quick_answer) {
-  AddAssistantIcon();
+void QuickAnswersView::UpdateQuickAnswerResult(
+    const QuickAnswer& quick_answer) {
+  content_view_->RemoveAllChildViews(true);
 
-  int start_y = kDefaultTextUpperPaddingDip;
-  // Add title
-  UpdateOneRowAnswer(quick_answer.title, start_y);
+  // Add title.
+  AddHorizontalUiElements(quick_answer.title, content_view_);
 
   // Add first row answer.
-  start_y += kLineHeightDip;
-  UpdateOneRowAnswer(quick_answer.first_answer_row, start_y);
+  if (quick_answer.first_answer_row.size() > 0)
+    AddHorizontalUiElements(quick_answer.first_answer_row, content_view_);
 
   // Add second row answer.
-  start_y += kLineHeightDip;
-  if (quick_answer.second_answer_row.size() > 0) {
-    UpdateOneRowAnswer(quick_answer.second_answer_row, start_y);
-  }
-}
-
-void QuickAnswersView::UpdateOneRowAnswer(
-    const std::vector<std::unique_ptr<QuickAnswerUiElement>>& answers,
-    int y) {
-  int label_start = kDefaultIconLeftPaddingDip + kAssistantIconSizeDip +
-                    kDefaultIconRightPaddingDip;
-  for (const auto& element : answers) {
-    switch (element->type) {
-      case QuickAnswerUiElementType::kText: {
-        QuickAnswerUiElement* ui_element = element.get();
-        auto* text_element =
-            static_cast<chromeos::quick_answers::QuickAnswerText*>(ui_element);
-        auto* label =
-            AddChildView(std::make_unique<views::Label>(text_element->text));
-        // TODO(yanxiao):Add more padding if there is image on the right side.
-        int label_max_width = anchor_view_bounds_.width() - label_start -
-                              kDefaultLabelRightPaddingDip;
-        int label_width =
-            std::min(label_max_width, label->CalculatePreferredSize().width());
-        label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-        label->SetEnabledColor(text_element->color);
-        label->SetFontList(gfx::FontList());
-        label->SetBoundsRect({label_start, y, label_width, kLineHeightDip});
-        label->SetLineHeight(kLineHeightDip);
-        label_start += label->CalculatePreferredSize().width() +
-                       kDefaultLabelRightPaddingDip;
-        break;
-      }
-      case QuickAnswerUiElementType::kImage:
-        // TODO(yanxiao): Add image view
-        break;
-      default:
-        break;
-    }
-  }
+  if (quick_answer.second_answer_row.size() > 0)
+    AddHorizontalUiElements(quick_answer.second_answer_row, content_view_);
 }
 
 }  // namespace ash

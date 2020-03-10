@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -104,6 +105,11 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
 
     case ash::UNINSTALL:
       controller()->UninstallApp(profile(), app_id());
+      break;
+
+    case ash::SETTINGS:
+      if (app_id() == crostini::GetTerminalId())
+        crostini::LaunchTerminalSettings(profile());
       break;
 
     case ash::APP_CONTEXT_MENU_NEW_WINDOW:

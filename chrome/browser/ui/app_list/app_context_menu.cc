@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -103,6 +104,8 @@ const gfx::VectorIcon& AppContextMenu::GetMenuItemVectorIcon(
     case ash::INSTALL:
       // Deprecated.
       return gfx::kNoneIcon;
+    case ash::SETTINGS:
+      return vector_icons::kSettingsIcon;
     case ash::USE_LAUNCH_TYPE_PINNED:
     case ash::USE_LAUNCH_TYPE_REGULAR:
     case ash::USE_LAUNCH_TYPE_FULLSCREEN:

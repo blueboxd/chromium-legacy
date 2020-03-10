@@ -3328,12 +3328,10 @@ const FeatureEntry kFeatureEntries[] = {
          kMarkHttpAsFeatureVariations,
          "HTTPReallyBadFinal")},
 
-#if !defined(OS_ANDROID)
     {"enable-web-authentication-cable-v2-support",
      flag_descriptions::kEnableWebAuthenticationCableV2SupportName,
      flag_descriptions::kEnableWebAuthenticationCableV2SupportDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(device::kWebAuthPhoneSupport)},
-#endif  // !defined(OS_ANDROID)
+     kOsDesktop | kOsAndroid, FEATURE_VALUE_TYPE(device::kWebAuthPhoneSupport)},
 
     {"use-preferred-interval-for-video",
      flag_descriptions::kUsePreferredIntervalForVideoName,

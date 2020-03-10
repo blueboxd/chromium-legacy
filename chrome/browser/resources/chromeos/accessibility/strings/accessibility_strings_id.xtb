@@ -629,7 +629,7 @@
     "ta": "Tamil",
     "te": "Telugu",
     "tr": "Turki",
-    "tsn": "Afrika",
+    "tsn": "Afrikaans",
     "uk": "Ukraina",
     "ur": "Urdu",
     "vi": "Vietnam",
@@ -1044,8 +1044,7 @@
 <translation id="7400575256015741911">Kesalahan ejaan terdeteksi</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">kembali</translation>
-<translation id="7429415133937917139">Menyimulasikan keluaran tampilan braille yang dapat diperbarui
-        di panel ChromeVox pada bagian atas layar.</translation>
+<translation id="7429415133937917139">Menyimulasikan keluaran tampilan braille yang dapat diperbarui di panel ChromeVox pada bagian atas layar.</translation>
 <translation id="7434509671034404296">Pengembang</translation>
 <translation id="743783356331413498">Contoh</translation>
 <translation id="7439060726180460871">Direktori</translation>
@@ -1085,7 +1084,7 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Tidak ada kotak kombinasi berikutnya</translation>
 <translation id="772146615414628379">Selamat! Anda telah berhasil mempelajari dasar-dasar menggunakan ChromeVox. Ingat bahwa Anda dapat membuka menu perintah ChromeVox kapan saja dengan menekan tombol Penelusuran+Titik. Untuk mempelajari ChromeVox dan Chrome OS lebih lanjut, buka artikel berikut ini.
-    Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk memilih tombol Tutup, lalu klik tombolnya.</translation>
+    Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengarahkan ke tombol Tutup, lalu klik tombolnya.</translation>
 <translation id="7724603315864178912">Potong</translation>
 <translation id="7731785449856576010">Tidak ada widget media berikutnya</translation>
 <translation id="773906353055481349">Tekan Search+Ctrl+Alt dengan tombol panah untuk memilih sel</translation>

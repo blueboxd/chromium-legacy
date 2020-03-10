@@ -595,6 +595,9 @@ void AXTreeSourceArc::GetChildren(
   if (out_children->empty())
     return;
 
+  if (IsWebViewNode(info_data->GetNode()))
+    return;
+
   std::map<int32_t, size_t> id_to_index;
   for (size_t i = 0; i < out_children->size(); i++)
     id_to_index[out_children->at(i)->GetId()] = i;

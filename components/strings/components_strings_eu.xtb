@@ -477,7 +477,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="3024663005179499861">Gidalerro mota okerra</translation>
 <translation id="3037605927509011580">Hutsegite bat izan da.</translation>
 <translation id="3041612393474885105">Ziurtagiriari buruzko informazioa</translation>
-<translation id="3057676462092457419"><ph name="SECURE_DNS_MODE_SECURE" /> DnsOverHttps modua ez dugu oraindik onartzen eta <ph name="SECURE_DNS_MODE_OFF" /> modura aldatu dugu.</translation>
 <translation id="3060227939791841287">C9 (gutun-azala)</translation>
 <translation id="3061707000357573562">Adabaki-zerbitzua</translation>
 <translation id="3064966200440839136">Ezkutuko modutik irtengo zara kanpoko aplikazio baten bidez ordaintzeko. Aurrera egin nahi duzu?</translation>
@@ -573,6 +572,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="3484560055331845446">Google-ko konturako sarbidea gal zenezake. Pasahitza aldatzea gomendatzen dizu Chrome-k. Horretarako, saioa hasi beharko duzu.</translation>
 <translation id="3487845404393360112">4. erretilua</translation>
 <translation id="3495081129428749620">Bilatu <ph name="PAGE_TITLE" /> orrian</translation>
+<translation id="3507936815618196901">Sortu inguruaren 3D mapa bat eta egin kameraren posizioaren jarraipena</translation>
 <translation id="3512163584740124171">Ez ikusi egin zaio gidalerro honi, gidalerro-talde bereko beste gidalerro batek lehentasun handiagoa duelako.</translation>
 <translation id="3518941727116570328">Objektu bat baino gehiago kudeatzea</translation>
 <translation id="3528171143076753409">Zerbitzariaren ziurtagiria ez da fidagarria.</translation>
@@ -926,6 +926,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5030338702439866405">Jaulkitzailea:</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" softwareak instalatuta ez dagoen erroko ziurtagiri bat behar du. Arazoa konpontzeko, IKT saileko administratzaileak "<ph name="SOFTWARE_NAME" />" bilatu behar du konfigurazio-argibideetan. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google Translate zerbitzuari buruz</translation>
+<translation id="503498442187459473"><ph name="HOST" /> ostalariak zure kamera eta mikrofonoa erabili nahi ditu</translation>
 <translation id="5039804452771397117">Baimendu</translation>
 <translation id="5040262127954254034">Pribatutasuna</translation>
 <translation id="5043480802608081735">Kopiatu duzun esteka</translation>
@@ -1034,7 +1035,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5457113250005438886">Ez du balio</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> eta beste <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> eta beste <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Berregin editatzea</translation>
-<translation id="5472133193607270166">Aktibatuta badago, webguneek ezingo dituzte erabili zure arakatze-jarduerak webguneetan erakusten zaizkizun iragarkiak pertsonalizatzeko. Baliteke webgune batzuek behar bezala ez funtzionatzea.</translation>
 <translation id="5478437291406423475">B6/C4 (gutun-azala)</translation>
 <translation id="5481076368049295676">Baliteke edukiak software kaltegarria instalatzen saiatzea zure informazioa lapurtu edo ezabatzeko. <ph name="BEGIN_LINK" />Erakutsi, hala ere<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Gehitu balio duen helbide bat</translation>
@@ -1319,6 +1319,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="6710594484020273272">&lt;Idatzi bilaketa-hitza&gt;</translation>
 <translation id="671076103358959139">Izena emateko tokena:</translation>
 <translation id="6711464428925977395">Arazo bat dago proxy-zerbitzariarekin edo helbidea okerra da.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> webguneak inguruaren 3D mapa bat sortu eta kameraren posizioaren jarraipena egin nahi du</translation>
 <translation id="6738516213925468394">Data honetan hasi ziren enkriptatzen zure datuak <ph name="BEGIN_LINK" />Sinkronizatzeko pasaesaldiaren<ph name="END_LINK" /> bidez: <ph name="TIME" />. Idatz ezazu sinkronizatzen hasteko.</translation>
 <translation id="674375294223700098">Zerbitzari-ziurtagiriaren errore ezezaguna.</translation>
 <translation id="6744009308914054259">Konexio baten zain zauden bitartean, Deskargak atalera joan zaitezke konexiorik behar ez duten artikuluak irakurtzera.</translation>
@@ -1386,7 +1387,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="7079718277001814089">Webguneak malwarea dauka</translation>
 <translation id="7081308185095828845">Eginbidea ez dago erabilgarri zure gailuan</translation>
 <translation id="7083258188081898530">9. erretilua</translation>
-<translation id="7086090958708083563">Erabiltzaileak eskatu du kargatzea</translation>
+<translation id="7086090958708083563">Erabiltzaileak eskatutako kargatzea</translation>
 <translation id="7087282848513945231">Konderria</translation>
 <translation id="7090678807593890770">Bilatu <ph name="LINK" /> Google-n</translation>
 <translation id="7108338896283013870">Ezkutatu</translation>
@@ -1739,7 +1740,6 @@ Xehetasun gehiago:
 <translation id="8589998999637048520">Kalitaterik onena</translation>
 <translation id="860043288473659153">Txartelaren titularraren izena</translation>
 <translation id="8606726445206553943">Erabili MIDI gailuak</translation>
-<translation id="8616822740383114808">"<ph name="SETTINGS_PAGE" />" orriko "<ph name="ENFORCING_SETTING" />" ezarpenak betearazten du ezarpena</translation>
 <translation id="861775596732816396">Tamaina: 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Gorde txartela gailu honetan</translation>

@@ -33,6 +33,14 @@ class MessageData {
 }
 
 /**
+ * The Object placed in MessageData.message (and thrown by the Promise returned
+ * by sendMessage) if an exception is caught on the receiving end.
+ *
+ * @typedef {{message: string}}
+ */
+let GenericErrorResponse;
+
+/**
  * The type of a message handler function which gets called when the message
  * pipe receives a message.
  *
@@ -162,6 +170,14 @@ class MessagePipe {
      */
     this.rethrowErrors = rethrowErrors;
 
+    /**
+     * Client error logger. Mockable for tests that check for errors. This is
+     * only used to log errors generated from handlers. Logging occurs on both
+     * sides of the message pipe if rethrowErrors is set, otherwise only on
+     * the side that sent the message.
+     */
+    this.logClientError = (/** * */ object) =>
+        console.error(JSON.stringify(object));
 
     /**
      * Maps a message type to a message handler, a function which takes in
@@ -266,6 +282,7 @@ class MessagePipe {
     if (messageType === RESPONSE_TYPE) {
       resolver.resolve(message);
     } else if (messageType === ERROR_TYPE) {
+      this.logClientError(message);
       resolver.reject(message);
     } else {
       console.error(`Response for message ${
@@ -296,10 +313,12 @@ class MessagePipe {
     try {
       response = await this.messageHandlers_.get(messageType)(message);
     } catch (/** @type {!Error} */ err) {
+      // If an error happened capture the error and send it back.
       error = err;
       sawError = true;
-      // If an error happened capture the error and send it back.
-      response = {message: error.message || ''};
+      /** @type{GenericErrorResponse} */
+      const errorRespose = {message: error.message || ''};
+      response = errorRespose;
     }
 
     this.postToTarget_(error ? ERROR_TYPE : RESPONSE_TYPE, response, messageId);
@@ -307,6 +326,7 @@ class MessagePipe {
     if (sawError && this.rethrowErrors) {
       // Rethrow the error so the current frame has visibility on its handler
       // failures.
+      this.logClientError(error);
       throw error;
     }
   }
@@ -342,10 +362,11 @@ class MessagePipe {
 
     if (!this.messageHandlers_.has(type)) {
       // If there is no listener for this event send a error message to source.
-      this.postToTarget_(
-          ERROR_TYPE,
-          {message: `No handler registered for message type '${type}'`},
-          messageId);
+      /** @type {GenericErrorResponse} */
+      const errorResponse = {
+        message: `No handler registered for message type '${type}'`
+      };
+      this.postToTarget_(ERROR_TYPE, errorResponse, messageId);
       return;
     }
 

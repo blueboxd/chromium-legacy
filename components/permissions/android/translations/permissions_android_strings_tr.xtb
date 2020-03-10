@@ -1,4 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
+<translation id="2359808026110333948">Devam et</translation>
+<translation id="2416359993254398973">Chrome'un bu sitede kameranıza erişmesi için izin gerekiyor.</translation>
+<translation id="557283862590186398">Chrome'un bu sitede mikrofonunuza erişmesi için izin gerekiyor.</translation>
+<translation id="6393863479814692971">Chrome'un bu sitede kameranıza ve mikrofonunuza erişmesi için izin gerekiyor.</translation>
+<translation id="6697947395630195233">Konumunuzu bu siteyle paylaşabilmek için Chrome'un konum bilgilerinize erişmesi gerekiyor.</translation>
 </translationbundle>

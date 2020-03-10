@@ -168,6 +168,7 @@ Sök genom att trycka på ett ord. Du kan finjustera sökningen genom att trycka
 <translation id="2156074688469523661">Återstående webbplatser (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Om du vill dela något från telefonen till en annan enhet aktiverar du synkronisering i Chrome-inställningarna på båda enheterna</translation>
 <translation id="2175927920773552910">QR-kod</translation>
+<translation id="2182457891543959921">Fråga innan webbplatser tillåts att skapa en 3D-karta över dina omgivningar eller registrera kamerans position (rekommenderas)</translation>
 <translation id="218608176142494674">Delar</translation>
 <translation id="2227444325776770048">Fortsätt som <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Synk och Googles tjänster</translation>
@@ -193,7 +194,6 @@ Sök genom att trycka på ett ord. Du kan finjustera sökningen genom att trycka
 <translation id="2407481962792080328">Den här funktionen är aktiverad när du loggar in på Google-kontot</translation>
 <translation id="2410754283952462441">Välj ett konto</translation>
 <translation id="2414886740292270097">Mörk</translation>
-<translation id="2416359993254398973">Du behöver ge Chrome behörighet att använda kameran på den här webbplatsen.</translation>
 <translation id="2426805022920575512">Välj ett annat konto</translation>
 <translation id="2433507940547922241">Utseende</translation>
 <translation id="2434158240863470628">Nedladdningen är klar<ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
@@ -286,6 +286,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3058498974290601450">Du kan när som helst inaktivera synkroniseringen i inställningarna</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bokmärke}other{<ph name="BOOKMARKS_COUNT_MANY" /> bokmärken}}</translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
+<translation id="3114012059975132928">Videospelare</translation>
 <translation id="3123473560110926937">Blockeras på vissa webbplatser</translation>
 <translation id="3123734510202723619">Meddelanden</translation>
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
@@ -343,6 +344,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3522247891732774234">Det finns en tillgänglig uppdatering. Fler alternativ</translation>
 <translation id="3524138585025253783">Utvecklargränssnitt</translation>
 <translation id="3527085408025491307">Mapp</translation>
+<translation id="3538390592868664640">Blockera webbplatser från att skapa en 3D-karta över dina omgivningar eller registrera kamerans position</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kB tillgängligt</translation>
 <translation id="3549657413697417275">Sök i historik</translation>
 <translation id="3557336313807607643">Lägg till i kontakter</translation>
@@ -351,6 +353,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3587482841069643663">Alla</translation>
 <translation id="358794129225322306">Tillåt att en webbplats laddar ned flera filer automatiskt.</translation>
 <translation id="3590487821116122040">Webbplatslagring som Chrome bedömer som oviktig (t.ex. webbplatser utan sparade inställningar eller som du inte besöker ofta)</translation>
+<translation id="3594780231884063836">Stäng av ljudet för videon</translation>
 <translation id="3599863153486145794">Historik rensas från alla inloggade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Stäng av ljudet på webbplatser</translation>
 <translation id="3616113530831147358">Ljud</translation>
@@ -439,6 +442,7 @@ Det är endast du som kan se det kameran avbildar. Bilderna från kameran visas 
 <translation id="4298388696830689168">Länkade webbplatser</translation>
 <translation id="4307992518367153382">Grunderna</translation>
 <translation id="4314815835985389558">Hantera synkronisering</translation>
+<translation id="4320177379694898372">Ingen internetanslutning</translation>
 <translation id="4321739720395210191">Det gick inte att öppna kameran. Starta om enheten och försök igen.</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
 <translation id="4353114845960720315">Medan du använder VR-läget kan den här webbplatsen ta reda på följande om dig:</translation>
@@ -603,6 +607,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5456381639095306749">Ladda ned sida</translation>
 <translation id="548278423535722844">Öppna i kartapp</translation>
 <translation id="5487521232677179737">Rensa data</translation>
+<translation id="5489227211564503167">Förfluten tid: <ph name="ELAPSED_TIME" /> av <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Blockera annonser på webbplatser där påträngande eller vilseledande annonser visas</translation>
 <translation id="5500777121964041360">Kanske inte tillgängligt i ditt land</translation>
 <translation id="5505264765875738116">Webbplatser får inte be om tillåtelse att skicka aviseringar</translation>
@@ -617,7 +622,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5530766185686772672">Stäng inkognitoflikar</translation>
 <translation id="5534640966246046842">Webbplatsen har kopierats</translation>
 <translation id="5561549206367097665">Väntar på nätverket …</translation>
-<translation id="557283862590186398">Du behöver ge Chrome behörighet att använda mikrofonen på den här webbplatsen.</translation>
 <translation id="55737423895878184">Plats och aviseringar tillåts</translation>
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE" /> efter denna bild</translation>
 <translation id="5581519193887989363">Du kan alltid välja vad som ska synkroniseras i <ph name="BEGIN_LINK1" />inställningarna<ph name="END_LINK1" />.</translation>
@@ -664,6 +668,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5864419784173784555">Väntar på nästa nedladdning …</translation>
 <translation id="5865733239029070421">Skickar användningsstatistik och felrapporter till Google automatiskt</translation>
 <translation id="5869522115854928033">Sparade lösenord</translation>
+<translation id="5876056640971328065">Pausa video</translation>
 <translation id="5884076754568147479">Innehållet på en webbplats där du använder Google Assistent, dess webbadress samt information som du skickar via assistenten överförs till Google så att du kan få uppgifterna utförda</translation>
 <translation id="5902828464777634901">All data som sparats lokalt av webbplatsen tas bort, inklusive cookies.</translation>
 <translation id="5919204609460789179">Uppdatera <ph name="PRODUCT_NAME" /> för att starta synkronisering</translation>
@@ -726,8 +731,8 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6378173571450987352">Mer information: Sorterad efter dataförbrukning</translation>
 <translation id="6381421346744604172">Gör webbplatser mörkare</translation>
 <translation id="6388207532828177975">Ta bort och återställ</translation>
-<translation id="6393863479814692971">Du behöver ge Chrome behörighet att använda kameran och mikrofonen på den här webbplatsen.</translation>
 <translation id="6395288395575013217">LÄNK</translation>
+<translation id="6397616442223433927">Online igen</translation>
 <translation id="6404511346730675251">Redigera bokmärke</translation>
 <translation id="6406506848690869874">Synkronisera</translation>
 <translation id="6410973561433500075">Vill du starta AR från <ph name="DOMAIN" />?</translation>
@@ -779,7 +784,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6676840375528380067">Vill du rensa din data i Chrome från den här enheten?</translation>
 <translation id="6689172468748959065">Profilfoton</translation>
 <translation id="6697492270171225480">Visa förslag på liknande sidor om en sida inte hittas</translation>
-<translation id="6697947395630195233">Du behöver ge Chrome åtkomstbehörighet till din plats om den ska kunna delas med webbplatsen.</translation>
 <translation id="6698801883190606802">Hantera synkroniserad data</translation>
 <translation id="6699370405921460408">Googles servrar optimerar sidor du besöker.</translation>
 <translation id="6710213216561001401">Föregående</translation>
@@ -797,6 +801,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6846298663435243399">Läser in…</translation>
 <translation id="6850409657436465440">Nedladdningen pågår fortfarande</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> flikar har stängts</translation>
+<translation id="6864395892908308021">Enheten kan inte läsa NFC</translation>
 <translation id="6864459304226931083">Ladda ned bild</translation>
 <translation id="6865313869410766144">Formuläruppgifter för Autofyll</translation>
 <translation id="6884306546558072722">Fortsätta utforska offline</translation>
@@ -917,6 +922,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7810647596859435254">Öppna med …</translation>
 <translation id="7821588508402923572">Här visas hur mycket data du har sparat</translation>
+<translation id="783819812427904514">Slå på ljudet för videon</translation>
 <translation id="784934925303690534">Tidsintervall</translation>
 <translation id="7851858861565204677">Andra enheter</translation>
 <translation id="7875915731392087153">Skapa ett e-postmeddelande</translation>
@@ -971,6 +977,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8186512483418048923"><ph name="FILES" /> filer återstår</translation>
 <translation id="8190358571722158785">1 dag kvar</translation>
 <translation id="8200772114523450471">Återuppta</translation>
+<translation id="8206354486702514201">Administratören har gjort den här inställningen obligatorisk.</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
 <translation id="8218622182176210845">Hantera kontot</translation>
 <translation id="8224471946457685718">Ladda ned artiklar för dig via Wi-Fi</translation>
@@ -992,7 +999,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8364299278605033898">Visa populära webbplatser</translation>
 <translation id="8368027906805972958">Enheten är okänd eller stöds inte (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Tillåt bakgrundssynkronisering för en specifik webbplats.</translation>
-<translation id="8378714024927312812">Hanteras av organisationen</translation>
 <translation id="8380167699614421159">Påträngande eller vilseledande annonser visas på den här webbplatsen</translation>
 <translation id="8393700583063109961">Skicka meddelande</translation>
 <translation id="8413126021676339697">Visa fullständig historik</translation>

@@ -168,6 +168,17 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wenn die Richtlinie nicht konfiguriert ist, beträgt der Standardwert 3 Stunden.
       Die geringste zulässige Häufigkeit beträgt 60 Sekunden.</translation>
 <translation id="1204263402976895730">Aktivierte Unternehmensdrucker</translation>
+<translation id="1216890727647348501">Mit dieser Richtlinie können Sie die erweiterte Safe Browsing-Funktion von <ph name="PRODUCT_NAME" /> aktivieren oder deaktivieren sowie verhindern, dass Nutzer diese Einstellung ändern können.
+
+      Wenn diese Einstellung aktiviert ist, ist erweitertes Safe Browsing immer aktiv.
+
+      Wenn sie deaktiviert ist, ist erweitertes Safe Browsing nie aktiv.
+
+      Wird diese Richtlinie als verbindlich konfiguriert, können Nutzer die Einstellung "Phishing- und Malware-Schutz aktivieren" in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, ist das erweiterte Safe Browsing standardmäßig deaktiviert, aber Nutzer können es aktivieren.
+
+      Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="1216919699175573511">Unterstützung für Signed HTTP Exchange (SXG) aktivieren</translation>
 <translation id="1219695476179627719">Gibt an, ob das Gerät auf die von <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> festgelegte Version zurückgesetzt werden soll, obwohl bereits eine neuere Version ausgeführt wird.
 
@@ -261,6 +272,7 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
           Ist sie nicht konfiguriert, bleibt das Verhalten der spezifischeren Richtlinien unverändert.</translation>
 <translation id="1384459581748403878">Referenz: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Update-Status des Betriebssystems melden</translation>
+<translation id="1388918874748125262">Erweitertes Safe Browsing aktivieren</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="1397855852561539316">Vorschlags-URL für die Standardsuchmaschine</translation>
 <translation id="1398636873839401839">Alle Variationen auf dem Anmeldebildschirm aktivieren</translation>
@@ -1168,6 +1180,9 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="26023406105317310">Kerberos-Konten konfigurieren</translation>
 <translation id="2604182581880595781">Richtlinien für Netzwerkfreigaben konfigurieren.</translation>
 <translation id="2615240493030733717">Informationen zur Zeitzone ausgeben</translation>
+<translation id="2620943247255660284">Diese Richtlinie ist veraltet und wurde durch "AdvancedProtectionExtraSecurityAllowed" ersetzt.
+
+      Mit dieser Richtlinie wird festgelegt, ob Nutzer, die am erweiterten Sicherheitsprogramm teilnehmen, ihre heruntergeladenen Dateien für einen Malware-Scan an Google senden können. Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden Nutzer dazu aufgefordert, ihre heruntergeladenen Dateien für einen Tiefenscan an Google zu senden. Wenn der Nutzer "Suchen" auswählt, wird der Download an Google gesendet. Wird diese Richtlinie auf "false" gesetzt, werden Nutzer nicht dazu aufgefordert, ihre heruntergeladenen Dateien an Google zu senden.</translation>
 <translation id="2623014935069176671">Auf erste Nutzeraktivität warten</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME" /> aktivieren</translation>
 <translation id="2627554163382448569">Stellt Konfigurationen für Unternehmensdrucker bereit.
@@ -1414,6 +1429,21 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="2987227569419001736">Verwendung der Web Bluetooth API steuern</translation>
 <translation id="3016255526521614822">Auf dem <ph name="PRODUCT_OS_NAME" />-Sperrbildschirm zulässige Notizen-Apps auf die weiße Liste setzen</translation>
 <translation id="3020064401262077616">Legt die Richtlinien für die Elternaufsicht fest. Diese werden nur auf Kinderkonten angewendet.</translation>
+<translation id="3020953534071988875">Über diese Richtlinie können Sie festlegen, ob die passive Authentifizierung für Inkognito- und Gastprofile in <ph name="PRODUCT_NAME" /> zulässig ist.
+
+      Eine passive Authentifizierung ist eine HTTP-Authentifizierung mit Standardanmeldedaten. Sie wird durchgeführt, wenn keine spezifischen Anmeldedaten über ein Challenge-Response-Verfahren (NTLM, Kerberos oder Negotiate) angegeben werden.
+
+      Wenn Sie die Option "<ph name="REGULAR_ONLY_OPTION_NAME" />" festlegen (Wert: 0), ist die passive Authentifizierung ausschließlich für reguläre Sitzungen zulässig. Inkognito- und Gastsitzungen dürfen dann nicht passiv authentifiziert werden.
+
+      Wenn Sie die Option "<ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />" festlegen (Wert: 1), ist die passive Authentifizierung für Inkognito- und reguläre Sitzungen zulässig. Gastsitzungen dürfen dann nicht passiv authentifiziert werden.
+
+      Wenn Sie die Option "<ph name="GUEST_AND_REGULAR_OPTION_NAME" />" festlegen (Wert: 2), ist die passive Authentifizierung für Gast- und reguläre Sitzungen zulässig. Inkognitositzungen dürfen dann nicht passiv authentifiziert werden.
+
+      Wenn Sie die Option "<ph name="ALL_OPTION_NAME" />" festlegen (Wert: 3), ist die passive Authentifizierung für alle Sitzungen zulässig.
+
+      Für reguläre Profile ist die passive Authentifizierung immer zulässig.
+
+      Wenn diese Richtlinie in <ph name="PRODUCT_NAME" /> (Version 81 oder neuer) nicht konfiguriert ist, wird die passive Authentifizierung nur für reguläre Sitzungen aktiviert.</translation>
 <translation id="3021562480854470924">Rollback bei erreichter Anzahl von Meilensteinen ist erlaubt</translation>
 <translation id="3023572080620427845">URL einer XML-Datei, die URLs enthält, mit denen ein alternativer Browser geladen werden kann.</translation>
 <translation id="3026740867910702435">Mit dieser Richtlinie kann die Bedienungshilfe "großer Cursor" auf der Anmeldeseite aktiviert werden.
@@ -1884,6 +1914,7 @@ Wenn diese Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Un
           Wird sie nicht konfiguriert, ist die Bedienungshilfe "Spracheingabe" auf dem Anmeldebildschirm anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="3811562426301733860">Werbung auf allen Websites zulassen</translation>
 <translation id="3816312845600780067">Tastenkombination zur Umgehung der automatischen Anmeldung aktivieren</translation>
+<translation id="3817323252437541502">Erweiterte Sicherheitsfunktionen für Teilnehmer des erweiterten Sicherheitsprogramms aktivieren</translation>
 <translation id="3820526221169548563">Aktiviert die Bedienungshilfefunktion für die Bildschirmtastatur.
 
           Ist diese Richtlinie auf "true" gesetzt, ist die Bildschirmtastatur immer aktiviert.
@@ -2346,9 +2377,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4449545651113180484">Bildschirm um 270 Grad im Uhrzeigersinn drehen</translation>
 <translation id="445270821089253489">Legt fest, welche Art von Nutzer- und Geräteinformationen gesendet wird.</translation>
 <translation id="4453913621209182880">Drucken nur mit Hintergrundgrafiken zulassen</translation>
-<translation id="4454586530530448054">Wenn Sie diese Richtlinie konfigurieren, werden alle angegebenen Datentypen von der Synchronisierung ausgeschlossen. Dies gilt sowohl für Google Sync als auch für die Synchronisierung von Roaming-Profilen. Dadurch lässt sich die Größe von Roaming-Profilen reduzieren und Sie können einschränken, welche Arten von Daten auf die Google Sync-Server hochgeladen werden.
-
-      Aktuell werden folgende Datentypen unterstützt: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" und "wifiConfiguration". Bei diesen Namen muss die Groß- und Kleinschreibung beachtet werden.</translation>
 <translation id="4454820008017317557">Symbol von <ph name="PRODUCT_NAME" /> in der Symbolleiste anzeigen</translation>
 <translation id="4467952432486360968">Drittanbieter-Cookies blockieren</translation>
 <translation id="4474167089968829729">Aktiviert das Speichern von Passwörtern im Passwortmanager</translation>
@@ -5045,6 +5073,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Status von Display und Grafikkarte gemeldet.</translation>
 <translation id="891435090623616439">Als JSON-String codiert, weitere Informationen unter <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Nutzern erlauben, installierte CA-Zertifikate zu verwalten.</translation>
+<translation id="8924721011887485485">Mit dieser Richtlinie wird festgelegt, ob Nutzer, die am erweiterten Sicherheitsprogramm teilnehmen, zusätzliche Sicherheitsfunktionen verwenden können. Bei manchen dieser Funktionen werden Daten mit Google geteilt. Nutzer, die die erweiterte Sicherheit verwenden, können beispielsweise ihre heruntergeladenen Dateien für einen Malware-Scan an Google senden. Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, können diese Nutzer zusätzliche Sicherheitsfunktionen verwenden. Wird sie auf "false" gesetzt, stehen ihnen nur die Sicherheitsfunktionen für Privatnutzer zur Verfügung.</translation>
 <translation id="8926275581598789324">Diese Richtlinie ist veraltet und wird in Version 82 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
 
           Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe im Akkubetrieb in den Inaktivitätsmodus gewechselt wird.

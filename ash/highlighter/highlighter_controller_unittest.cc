@@ -6,13 +6,13 @@
 
 #include <memory>
 
+#include "ash/assistant/test/assistant_ash_test_base.h"
 #include "ash/fast_ink/fast_ink_points.h"
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/shell.h"
 #include "ash/system/palette/mock_palette_tool_delegate.h"
 #include "ash/system/palette/palette_tool.h"
 #include "ash/system/palette/tools/metalayer_mode.h"
-#include "ash/test/ash_test_base.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
@@ -58,13 +58,13 @@ class TestHighlighterObserver : public HighlighterController::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestHighlighterObserver);
 };
 
-class HighlighterControllerTest : public AshTestBase {
+class HighlighterControllerTest : public AssistantAshTestBase {
  public:
   HighlighterControllerTest() = default;
   ~HighlighterControllerTest() override = default;
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    AssistantAshTestBase::SetUp();
     controller_ = Shell::Get()->highlighter_controller();
     controller_test_api_ =
         std::make_unique<HighlighterControllerTestApi>(controller_);
@@ -78,7 +78,7 @@ class HighlighterControllerTest : public AshTestBase {
     // This needs to be called first to reset the controller state before the
     // shell instance gets torn down.
     controller_test_api_.reset();
-    AshTestBase::TearDown();
+    AssistantAshTestBase::TearDown();
   }
 
   void UpdateDisplayAndWaitForCompositingEnded(

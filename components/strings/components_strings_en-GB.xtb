@@ -476,7 +476,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="3024663005179499861">Wrong policy type</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
 <translation id="3041612393474885105">Certificate Information</translation>
-<translation id="3057676462092457419">The DnsOverHttps mode <ph name="SECURE_DNS_MODE_SECURE" /> is not yet supported; the mode has been set to <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Patch Service</translation>
 <translation id="3064966200440839136">Leaving incognito mode to pay via an external application. Continue?</translation>
@@ -576,6 +575,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="3487845404393360112">Tray 4</translation>
 <translation id="3495081129428749620">Find in page
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Create a 3D map of your surroundings and track camera position</translation>
 <translation id="3512163584740124171">This policy is ignored because another policy from the same policy group has a higher priority.</translation>
 <translation id="3518941727116570328">Multiple objects handling</translation>
 <translation id="3528171143076753409">Server's certificate is not trusted</translation>
@@ -928,6 +928,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5030338702439866405">Issued By</translation>
 <translation id="503069730517007720">A root certificate for '<ph name="SOFTWARE_NAME" />' is required but isn’t installed. Your IT administrator should look at configuration instructions for '<ph name="SOFTWARE_NAME" />' to fix this problem. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">About Google Translate</translation>
+<translation id="503498442187459473"><ph name="HOST" /> wants to use your camera and microphone</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5043480802608081735">Link that you copied</translation>
@@ -1036,7 +1037,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5457113250005438886">Invalid</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}other{<ph name="CONTACT_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}}</translation>
 <translation id="5470861586879999274">&amp;Redo edit</translation>
-<translation id="5472133193607270166">When on, sites can’t use your browsing activity across different sites to personalise ads. Some sites may not work properly.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">This content might try to install dangerous software on your device that steals or deletes your information. <ph name="BEGIN_LINK" />Show anyway<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Add valid address</translation>
@@ -1322,6 +1322,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6710594484020273272">&lt;Type search term&gt;</translation>
 <translation id="671076103358959139">Enrolment Token:</translation>
 <translation id="6711464428925977395">There is something wrong with the proxy server or the address is incorrect.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> wants to create a 3D map of your surroundings and track camera position</translation>
 <translation id="6738516213925468394">Your data was encrypted with your <ph name="BEGIN_LINK" />sync passphrase<ph name="END_LINK" /> on <ph name="TIME" />. Enter it to start sync.</translation>
 <translation id="674375294223700098">Unknown server certificate error.</translation>
 <translation id="6744009308914054259">While waiting for a connection, you can visit Downloads to read offline articles.</translation>
@@ -1742,7 +1743,6 @@ Additional details:
 <translation id="8589998999637048520">Best quality</translation>
 <translation id="860043288473659153">Cardholder name</translation>
 <translation id="8606726445206553943">Use your MIDI devices</translation>
-<translation id="8616822740383114808">This setting is enforced by '<ph name="ENFORCING_SETTING" />' in '<ph name="SETTINGS_PAGE" />'</translation>
 <translation id="861775596732816396">Size 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Save This Card to This Device</translation>

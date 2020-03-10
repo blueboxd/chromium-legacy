@@ -96,7 +96,7 @@
     <oobe-dialog id="finalAccessibilityPage" role="dialog" has-buttons
         hidden="[[!isAccessibilitySettingsShown_]]"
         title-key="finalA11yPageTitle"
-        aria-label$="[[i18nDynamic(locale, 'finalA11yPageTitle')]]">>
+        aria-label$="[[i18nDynamic(locale, 'finalA11yPageTitle')]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="marketing-opt-in-32:accessibility"
           icon2x="marketing-opt-in-64:accessibility">
@@ -118,7 +118,8 @@
       <div slot="bottom-buttons" class="layout horizontal justified">
         <oobe-back-button on-tap="onToggleAccessibilityPage_"
             id="final-accessibility-back-button"></oobe-back-button>
-        <oobe-text-button on-tap="onAllSet_" class="focus-on-show" inverse
+        <oobe-text-button on-tap="onAllSet_" class="focus-on-show"
+            id="final-accessibility-next-button" inverse
             text-key="finalA11yPageDoneButtonTitle">
         </oobe-text-button>
       </div>

@@ -22,4 +22,6 @@
         optional FileSystemHandlePermissionDescriptor descriptor = {});
     [CallWith=ScriptState] Promise<PermissionState> requestPermission(
         optional FileSystemHandlePermissionDescriptor descriptor = {});
+
+    [CallWith=ScriptState, Measure] Promise<boolean> isSameEntry(FileSystemHandle other);
 };

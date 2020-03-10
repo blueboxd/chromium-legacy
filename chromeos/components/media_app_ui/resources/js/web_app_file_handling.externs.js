@@ -13,14 +13,19 @@ class FileSystemWriter {
   /**
    * @param {number} position
    * @param {BufferSource|Blob|string} data
+   * @return {Promise<undefined>}
    */
   async write(position, data) {}
 
   /**
    * @param {number} size
+   * @return {Promise<undefined>}
    */
   async truncate(size) {}
 
+  /**
+   * @return {Promise<undefined>}
+   */
   async close() {}
 }
 

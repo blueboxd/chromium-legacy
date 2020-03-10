@@ -7,6 +7,7 @@
 #         qualcomm qualcomm-adreno-(tm)-540 ]
 # tags: [ debug ]
 # tags: [ intel_lt_25.20.100.6444 intel_lt_25.20.100.6577 mesa_lt_19.1.2 ]
+# tags: [ no-asan asan ]
 # results: [ Failure RetryOnFailure Skip ]
 
 
@@ -92,7 +93,7 @@ crbug.com/735483 conformance2/rendering/texture-switch-performance.html [ Skip ]
 # if [ win intel opengl passthrough ] [ Failure ] suppression is lifted.
 crbug.com/979444 [ chromeos ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ mac ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ mac no-asan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ win nvidia ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ win amd ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ win intel d3d11 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
@@ -595,6 +596,14 @@ crbug.com/982294 [ mac passthrough ] deqp/functional/gles3/transformfeedback/ran
 crbug.com/982294 [ mac passthrough ] deqp/functional/gles3/transformfeedback/random_separate_lines.html [ Failure ]
 crbug.com/982294 [ mac passthrough ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
 crbug.com/982294 [ mac passthrough ] deqp/functional/gles3/transformfeedback/random_separate_triangles.html [ Failure ]
+
+# Mac ASAN flakes
+crbug.com/1059760 [ mac asan ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/1059760 [ mac asan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/1059760 [ mac asan ] conformance/textures/video/* [ RetryOnFailure ]
+crbug.com/1059760 [ mac asan ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/1059760 [ mac asan ] conformance2/textures/misc/tex-image-with-bad-args-from-dom-elements.html [ RetryOnFailure ]
+crbug.com/1059760 [ mac asan ] conformance2/textures/video/* [ RetryOnFailure ]
 
 ####################
 # Linux failures   #

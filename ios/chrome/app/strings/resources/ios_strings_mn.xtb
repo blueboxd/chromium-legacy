@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Бүртгэл сонгох</translation>
 <translation id="3311748811247479259">Унтраалттай байна</translation>
 <translation id="3324193307694657476">Хаяг 2</translation>
+<translation id="3328801116991980348">Сайтын мэдээлэл</translation>
 <translation id="3329904751041170572">Сервертэй холбогдож чадсангүй.</translation>
 <translation id="3335947283844343239">Хаасан Tab-г дахин нээнэ үү.</translation>
 <translation id="3371831930909698441">Орчуулах боломжтой байна. Дэлгэцийн доод хэсгийн ойролцоо сонголт хийх боломжтой.</translation>
@@ -493,7 +494,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="750493650310597496">0 сонгогдсон</translation>
 <translation id="7514365320538308">Татаж авах</translation>
 <translation id="7537586195939242955">Уучлаарай, таны Pass-ыг одоогоор Passbook руу суулгаж болохгүй байна.</translation>
-<translation id="7554791636758816595">Шинэ цонх</translation>
+<translation id="7554791636758816595">Шинэ таб</translation>
 <translation id="7561196759112975576">Үргэлж</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" />-ийг хэзээ ч бүү хөрвүүл</translation>
 <translation id="7603852183842204213">Мэдээллийн цонхнуудыг хориглосон байна (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
@@ -599,6 +600,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="9223358826628549784">Алдаа ослын тайланг илгээсэн байна.</translation>
 <translation id="952704832371081537">Цуцлах</translation>
 <translation id="988141524645182168">Бусад төхөөрөмжүүд</translation>
+<translation id="989697783705943787">Сайтын аюулгүй байдал</translation>
 <translation id="989988560359834682">Хаягийг засварлах</translation>
 <translation id="994757059139821576">Нийтлэлийн зөвлөмж</translation>
 </translationbundle>

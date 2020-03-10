@@ -100,26 +100,9 @@ OpenOperationResult OpenPathWithPlatformUtil(Profile* profile,
   return open_result;
 }
 
-// Runs |script| in the unprivileged app frame of |web_ui|.
-content::EvalJsResult EvalJsInAppFrame(content::WebContents* web_ui,
-                                       const std::string& script) {
-  // Clients of this helper all run in the same isolated world.
-  constexpr int kWorldId = 1;
-
-  // GetAllFrames does a breadth-first traversal. Assume the first subframe
-  // is the app.
-  std::vector<content::RenderFrameHost*> frames = web_ui->GetAllFrames();
-  EXPECT_EQ(2u, frames.size());
-  content::RenderFrameHost* app_frame = frames[1];
-  EXPECT_TRUE(app_frame);
-
-  return EvalJs(app_frame, script, content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                kWorldId);
-}
-
 void PrepareAppForTest(content::WebContents* web_ui) {
   EXPECT_TRUE(WaitForLoadStop(web_ui));
-  EXPECT_EQ(nullptr, EvalJsInAppFrame(
+  EXPECT_EQ(nullptr, MediaAppUiBrowserTest::EvalJsInAppFrame(
                          web_ui, MediaAppUiBrowserTest::AppJsTestLibrary()));
 }
 
@@ -141,7 +124,7 @@ content::EvalJsResult WaitForOpenedImage(content::WebContents* web_ui) {
       })();
   )";
 
-  return EvalJsInAppFrame(web_ui, kScript);
+  return MediaAppUiBrowserTest::EvalJsInAppFrame(web_ui, kScript);
 }
 
 // Clears the `src` attribute of a blob:-backed <img> in the light DOM.
@@ -154,7 +137,7 @@ content::EvalJsResult ClearOpenedImage(content::WebContents* web_ui) {
       })();
   )";
 
-  return EvalJsInAppFrame(web_ui, kScript);
+  return MediaAppUiBrowserTest::EvalJsInAppFrame(web_ui, kScript);
 }
 
 }  // namespace

@@ -207,6 +207,11 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
+  // TODO(crbug.com/1055983): Remove this when the execution context validity
+  // check is not required in the AudioNode factory methods.
+  if (!context.CheckExecutionContextAndThrowIfNecessary(exception_state))
+    return nullptr;
+
   return MakeGarbageCollected<MediaStreamAudioDestinationNode>(
       context, number_of_channels);
 }

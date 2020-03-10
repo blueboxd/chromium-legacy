@@ -42,6 +42,8 @@ class NativeFileSystemHandle : public ScriptWrappable,
   ScriptPromise requestPermission(ScriptState*,
                                   const FileSystemHandlePermissionDescriptor*);
 
+  ScriptPromise isSameEntry(ScriptState*, NativeFileSystemHandle* other);
+
   // Grab a handle to a transfer token. This may return an invalid PendingRemote
   // if the context is already destroyed.
   virtual mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
@@ -57,6 +59,10 @@ class NativeFileSystemHandle : public ScriptWrappable,
       bool writable,
       base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr,
                               mojom::blink::PermissionStatus)>) = 0;
+  virtual void IsSameEntryImpl(
+      mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> other,
+      base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr,
+                              bool)>) = 0;
 
   String name_;
 };

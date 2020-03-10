@@ -125,6 +125,9 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kEnableZeroCopy,
     ::switches::kEnableHardwareOverlays,
     ::switches::kEdgeTouchFiltering,
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+    ::switches::kForceDisableNewAcceleratedVideoDecoder,
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     ::switches::kHostWindowBounds,
     ::switches::kMainFrameResizesAreOrientationChanges,
     ::switches::kForceDeviceScaleFactor,

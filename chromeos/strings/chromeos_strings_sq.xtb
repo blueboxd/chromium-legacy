@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">Kodi PIN i pavlefshëm</translation>
 <translation id="3838338534323494292">Fjalëkalimi i ri</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Provo përsëri. Tentativa të mbetura: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> menaxhon këtë pajisje dhe ka qasje te i gjithë aktiviteti i përdoruesit, duke përfshirë faqet e uebit të vizituara, fjalëkalimet dhe email-i.</translation>
 <translation id="4227825898293920515">Fjalëkalimi skadon për <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Bileta e Kerberos skadon së shpejti</translation>
@@ -28,8 +27,6 @@
 <translation id="4890353053343094602">Zgjidh një të re menjëherë</translation>
 <translation id="5212543919916444558">Nuk mund të gjej diçka në ekranin tënd me të cilën mund të të ndihmoj. Provo të trokasësh te mikrofoni për të më kërkuar diçka.</translation>
 <translation id="5222676887888702881">Dil</translation>
-<translation id="5275776633505022322">Përpjekje të mbetura: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Provo përsëri.</translation>
 <translation id="5317780077021120954">Ruaj</translation>
 <translation id="5332948983412042822">Zgjidh një të ri tani</translation>
 <translation id="5457599981699367932">Shfleto si vizitor</translation>

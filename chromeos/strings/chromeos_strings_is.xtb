@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">Ógilt PIN-númer.</translation>
 <translation id="3838338534323494292">Nýtt aðgangsorð</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Reyndu aftur. Tilraunir eftir: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> stjórnar þessu tæki og hefur aðgang að öllum aðgerðum, þ.m.t. heimsóttum vefsíðum, aðgangsorðum og tölvupósti.</translation>
 <translation id="4227825898293920515">Aðgangsorð rennur út eftir <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos-miði rennur út fljótlega</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">Ég finn ekkert á skjánum sem ég get aðstoðað þig með.
 Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</translation>
 <translation id="5222676887888702881">Skrá út</translation>
-<translation id="5275776633505022322">Tilraunir eftir: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Reyndu aftur.</translation>
 <translation id="5317780077021120954">Vista</translation>
 <translation id="5332948983412042822">Veldu nýtt núna</translation>
 <translation id="5457599981699367932">Vafra sem gestur</translation>

@@ -28,7 +28,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 namespace bt = extensions::api::bluetooth;
 namespace bt_private = extensions::api::bluetooth_private;
@@ -41,89 +41,24 @@ static base::LazyInstance<BrowserContextKeyedAPIFactory<BluetoothPrivateAPI>>::
 
 namespace {
 
-// This enum is tied directly to a UMA enum defined in
-// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
-// change one without changing the other).
-enum BluetoothTransportType {
-  kUnknown = 0,
-  kClassic = 1,
-  kLE = 2,
-  kDual = 3,
-  kInvalid = 4,
-  kMaxValue
-};
+#if defined(OS_CHROMEOS)
+device::BluetoothTransport GetBluetoothTransport(bt::Transport transport) {
+  switch (transport) {
+    case bt::Transport::TRANSPORT_CLASSIC:
+      return device::BLUETOOTH_TRANSPORT_CLASSIC;
+    case bt::Transport::TRANSPORT_LE:
+      return device::BLUETOOTH_TRANSPORT_LE;
+    case bt::Transport::TRANSPORT_DUAL:
+      return device::BLUETOOTH_TRANSPORT_DUAL;
+    default:
+      return device::BLUETOOTH_TRANSPORT_INVALID;
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 std::string GetListenerId(const EventListenerInfo& details) {
   return !details.extension_id.empty() ? details.extension_id
                                        : details.listener_url.host();
-}
-
-void RecordPairingDuration(const std::string& histogram_name,
-                           base::TimeDelta pairing_duration) {
-  base::UmaHistogramCustomTimes(histogram_name, pairing_duration,
-                                base::TimeDelta::FromMilliseconds(1) /* min */,
-                                base::TimeDelta::FromSeconds(30) /* max */,
-                                50 /* buckets */);
-}
-
-void RecordPairingResult(bool success,
-                         bt::Transport transport,
-                         int pairing_duration_ms) {
-  std::string transport_histogram_name;
-  switch (transport) {
-    case bt::Transport::TRANSPORT_CLASSIC:
-      transport_histogram_name = "Classic";
-      break;
-    case bt::Transport::TRANSPORT_LE:
-      transport_histogram_name = "BLE";
-      break;
-    case bt::Transport::TRANSPORT_DUAL:
-      transport_histogram_name = "Dual";
-      break;
-    default:
-      // A transport type of INVALID or other is unexpected, and no success
-      // metric for it exists.
-      return;
-  }
-
-  base::UmaHistogramBoolean("Bluetooth.ChromeOS.Pairing.Result", success);
-  base::UmaHistogramBoolean(
-      "Bluetooth.ChromeOS.Pairing.Result." + transport_histogram_name, success);
-
-  std::string duration_histogram_name_prefix =
-      "Bluetooth.ChromeOS.Pairing.Duration";
-  std::string success_histogram_name = success ? "Success" : "Failure";
-
-  std::string base_histogram_name =
-      duration_histogram_name_prefix + "." + success_histogram_name;
-  RecordPairingDuration(base_histogram_name,
-                        base::TimeDelta::FromMilliseconds(pairing_duration_ms));
-  RecordPairingDuration(base_histogram_name + "." + transport_histogram_name,
-                        base::TimeDelta::FromMilliseconds(pairing_duration_ms));
-}
-
-void RecordPairingTransport(bt::Transport transport) {
-  BluetoothTransportType type;
-  switch (transport) {
-    case bt::Transport::TRANSPORT_CLASSIC:
-      type = BluetoothTransportType::kClassic;
-      break;
-    case bt::Transport::TRANSPORT_LE:
-      type = BluetoothTransportType::kLE;
-      break;
-    case bt::Transport::TRANSPORT_DUAL:
-      type = BluetoothTransportType::kDual;
-      break;
-    case bt::Transport::TRANSPORT_INVALID:
-      type = BluetoothTransportType::kInvalid;
-      break;
-    default:
-      type = BluetoothTransportType::kUnknown;
-      break;
-  }
-
-  base::UmaHistogramEnumeration("Bluetooth.ChromeOS.Pairing.TransportType",
-                                type);
 }
 
 }  // namespace
@@ -697,9 +632,11 @@ bool BluetoothPrivateRecordPairingFunction::CreateParams() {
 
 void BluetoothPrivateRecordPairingFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  RecordPairingResult(params_->success, params_->transport,
-                      params_->pairing_duration_ms);
-  RecordPairingTransport(params_->transport);
+#if defined(OS_CHROMEOS)
+  device::RecordPairingResult(
+      params_->success, GetBluetoothTransport(params_->transport),
+      base::TimeDelta::FromMilliseconds(params_->pairing_duration_ms));
+#endif  // defined(OS_CHROMEOS)
 
   Respond(NoArguments());
 }
@@ -719,12 +656,10 @@ bool BluetoothPrivateRecordReconnectionFunction::CreateParams() {
 
 void BluetoothPrivateRecordReconnectionFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  base::UmaHistogramBoolean(
-      "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result",
-      params_->success);
-  base::UmaHistogramBoolean(
-      "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result.Settings",
-      params_->success);
+#if defined(OS_CHROMEOS)
+  device::RecordUserInitiatedReconnectionAttemptResult(
+      params_->success, device::BluetoothUiSurface::kSettings);
+#endif  // defined(OS_CHROMEOS)
 
   Respond(NoArguments());
 }
@@ -745,26 +680,11 @@ bool BluetoothPrivateRecordDeviceSelectionFunction::CreateParams() {
 void BluetoothPrivateRecordDeviceSelectionFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
 #if defined(OS_CHROMEOS)
-  device::BluetoothTransport transport;
-  switch (params_->transport) {
-    case bt::Transport::TRANSPORT_CLASSIC:
-      transport = device::BLUETOOTH_TRANSPORT_CLASSIC;
-      break;
-    case bt::Transport::TRANSPORT_LE:
-      transport = device::BLUETOOTH_TRANSPORT_LE;
-      break;
-    case bt::Transport::TRANSPORT_DUAL:
-      transport = device::BLUETOOTH_TRANSPORT_DUAL;
-      break;
-    default:
-      transport = device::BLUETOOTH_TRANSPORT_INVALID;
-      break;
-  }
-
   device::RecordDeviceSelectionDuration(
       base::TimeDelta::FromMilliseconds(params_->selection_duration_ms),
-      device::BluetoothUiSurface::kSettings, params_->was_paired, transport);
-#endif
+      device::BluetoothUiSurface::kSettings, params_->was_paired,
+      GetBluetoothTransport(params_->transport));
+#endif  // defined(OS_CHROMEOS)
 
   Respond(NoArguments());
 }

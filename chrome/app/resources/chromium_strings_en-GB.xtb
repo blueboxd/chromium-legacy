@@ -13,17 +13,18 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="151962892725702025">Chromium OS could not sync your data because Sync is not available for your domain.</translation>
 <translation id="1524282610922162960">Share a Chromium tab</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Your administrator requires that you relaunch Chromium to apply an update}=1{Your administrator requires that you relaunch Chromium to apply an update. Your Incognito window won't reopen.}other{Your administrator requires that you relaunch Chromium to apply an update. Your # Incognito windows won't reopen.}}</translation>
-<translation id="1663739491876737434">Chromium can't check your passwords. Try again tomorrow.</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
 <translation id="1774152462503052664">Let Chromium run in the background</translation>
 <translation id="1779356040007214683">To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="1808667845054772817">Reinstall Chromium</translation>
 <translation id="1881322772814446296">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chromium data separate. <ph name="LEARN_MORE" /></translation>
+<translation id="1911747963917069754">Chromium can't check all your passwords. Try again after 24 hours.</translation>
 <translation id="1911763535808217981">By turning this off, you can sign in to Google sites such as Gmail, without signing in to Chromium</translation>
 <translation id="1929939181775079593">Chromium is unresponsive. Relaunch now?</translation>
 <translation id="1966382378801805537">Chromium cannot determine or set the default browser</translation>
 <translation id="2008474315282236005">This will delete 1 item from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="2147976119693222405">Chromium OS could not sync your data. Fix now.</translation>
+<translation id="2185166961232948079">Chromium – Network sign-in – <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">If you share a computer, friends and family can browse separately and set up Chromium just the way they want.</translation>
 <translation id="2347108572062610441">This extension has changed the page that is shown when you start Chromium.</translation>
 <translation id="2396765026452590966">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you start Chromium.</translation>
@@ -44,6 +45,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2886012850691518054">Optional: Help make Chrome better by automatically sending usage statistics and crash reports to Google.</translation>
 <translation id="2910007522516064972">About &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium is up to date</translation>
+<translation id="3032706164202344641">Chromium can't check your passwords. Try again later.</translation>
 <translation id="3032787606318309379">Adding to Chromium ...</translation>
 <translation id="3068515742935458733">Help make Chromium better by sending crash reports and <ph name="UMA_LINK" /> to Google</translation>
 <translation id="3103660991484857065">The installer failed to uncompress archive. Please download Chromium again.</translation>
@@ -75,6 +77,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3945058413678539331">Chromium is trying to copy passwords. Type your Windows password to allow this.</translation>
 <translation id="4036079820698952681">Help make Chromium better by reporting the <ph name="BEGIN_LINK" />current settings<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Important security improvements and new features are available in the latest version.</translation>
+<translation id="419998258129752635"><ph name="PAGE_TITLE" /> – Network sign-in – Chromium</translation>
 <translation id="421369550622382712">Discover great apps, games, extensions and themes for Chromium.</translation>
 <translation id="4216212958613226427">This language is used to display the Chromium UI</translation>
 <translation id="4230135487732243613">Link my Chromium data to this account</translation>
@@ -83,9 +86,9 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4407044323746248786">Exit Chromium anyway?</translation>
 <translation id="4415566066719264597">Let Chromium Run in the Background</translation>
 <translation id="4423735387467980091">Customise and control Chromium</translation>
+<translation id="4544142686420020088">Chromium didn't update. Something went wrong. <ph name="BEGIN_LINK" />Fix Chromium update problems and failed updates.<ph name="END_LINK" /></translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="459535195905078186">Chromium Apps</translation>
-<translation id="4621240073146040695">Nearly up to date! Relaunch Chromium to finish updating.</translation>
 <translation id="4677944499843243528">The profile appears to be in use by another Chromium process (<ph name="PROCESS_ID" />) on another computer (<ph name="HOST_NAME" />). Chromium has locked the profile so that it doesn't get corrupted. If you are sure that no other processes are using this profile, you can unlock the profile and relaunch Chromium.</translation>
 <translation id="469338717132742108">Get help with Chromium OS</translation>
 <translation id="4708774505295300557">Someone previously signed in to Chromium on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. Please create a new Chromium user to keep your information separate.</translation>
@@ -96,7 +99,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4943838377383847465">Chromium is in background mode.</translation>
 <translation id="4987820182225656817">Guests can use Chromium without leaving anything behind.</translation>
 <translation id="4994636714258228724">Add yourself to Chromium</translation>
-<translation id="5093066630040073147">No saved passwords. Chromium can check your passwords when you save them in your Google Account.</translation>
 <translation id="5277894862589591112">To apply your changes, relaunch Chromium</translation>
 <translation id="5310059007469274549">Chromium can't check your passwords because there are too many</translation>
 <translation id="5358375970380395591">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE" /></translation>
@@ -108,17 +110,16 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5479196819031988440">Chromium OS can't open this page.</translation>
 <translation id="5480860683791598150">Chromium needs access to your location to share your location with this site</translation>
-<translation id="5488573303232097702">Chromium didn't update. Something went wrong. Fix Chrome update problems and failed updates.</translation>
 <translation id="549669000822060376">Please wait while Chromium installs the latest system updates.</translation>
 <translation id="5623402015214259806">{0,plural, =0{A Chromium update is available}=1{A Chromium update is available}other{A Chromium update has been available for # days}}</translation>
 <translation id="5631814766731275228">Chromium name and picture</translation>
 <translation id="5634636535844844681">Chromium requires Windows 7 or higher.</translation>
 <translation id="5653831366781983928">Please restart Chromium now</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
-<translation id="5814748786105822016">Chromium can't check your passwords</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Welcome to Chromium</translation>
 <translation id="5895138241574237353">Restart</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Network sign-in</translation>
 <translation id="5987687638152509985">Update Chromium to start sync</translation>
 <translation id="6013050204643758987">Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS" />open source software<ph name="END_LINK_CROS_OSS" />, as is <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6055895534982063517">There's a new version of Google Chrome available and it's faster than ever.</translation>
@@ -158,6 +159,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6893813176749746474">Chromium has been updated, but you haven't used it for 30 days or more.</translation>
 <translation id="6964305034639999644">Open link in Chromium inco&amp;gnito window</translation>
 <translation id="6990124437352146030">Chromium needs permission to access your microphone for this site</translation>
+<translation id="701244094609242530">Chromium can't check your extensions. Try again later.</translation>
 <translation id="705851970750939768">Update Chromium</translation>
 <translation id="7066436765290594559">Chromium OS could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="7067091210845072982">If an image doesn’t have a useful description, Chromium will try to provide one for you. To create descriptions, images are sent to Google.</translation>
@@ -200,6 +202,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8013436988911883588">Once Chromium has access, websites will be able to ask you for access.</translation>
 <translation id="81770708095080097">This file is dangerous, so Chromium has blocked it.</translation>
 <translation id="8248265253516264921">If an image doesn’t have a useful description, Chromium will try to provide one for you. To create descriptions, images are sent to Google. You can turn this off in settings at any time.</translation>
+<translation id="8266560134891435528">Chromium can't check your passwords because you're not signed in</translation>
 <translation id="8276522524898344151">Chromium is trying to copy passwords.</translation>
 <translation id="8290862415967981663">This file may be dangerous, so Chromium has blocked it.</translation>
 <translation id="8330519371938183845">Sign in to sync and personalise Chromium across your devices</translation>
@@ -207,7 +210,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Relaunch Chromium within a day}other{Relaunch Chromium within # days}}</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>
 <translation id="8493179195440786826">Chromium is Out of Date</translation>
-<translation id="8568283329061645092">Chromium can check your passwords when you sign in with your Google Account</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8619360774459241877">Launching Chromium...</translation>
 <translation id="8621669128220841554">Installation failed due to unspecified error. Please download Chromium again.</translation>
@@ -215,7 +217,6 @@ Google Chrome is unable to recover your settings.</translation>
       Chromium browser settings<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">It also controls what page is shown when you start Chromium or search from the Omnibox.</translation>
 <translation id="8704119203788522458">This is your Chromium</translation>
-<translation id="8774315820480073720">Your administrator manages Chromium updates</translation>
 <translation id="8796602469536043152">Chromium needs permission to access your camera and microphone for this site</translation>
 <translation id="8803635938069941624">Chromium OS terms</translation>
 <translation id="8821041990367117597">Chromium could not sync your data because your account sign-in details are out of date.</translation>

@@ -84,6 +84,8 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
 #endif
   EXPECT_EQ(left.enable_native_gpu_memory_buffers,
             right.enable_native_gpu_memory_buffers);
+  EXPECT_EQ(left.force_disable_new_accelerated_video_decoder,
+            right.force_disable_new_accelerated_video_decoder);
 }
 
 }  // namespace
@@ -176,6 +178,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
                                base::MessagePumpType::UI)
 #endif
     GPU_PREFERENCES_FIELD(enable_native_gpu_memory_buffers, true);
+    GPU_PREFERENCES_FIELD(force_disable_new_accelerated_video_decoder, true);
 
     input_prefs.texture_target_exception_list.emplace_back(
         gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888);

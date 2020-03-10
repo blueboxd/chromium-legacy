@@ -87,6 +87,9 @@ void MarketingOptInScreenHandler::RegisterMessages() {
   AddCallback(
       "login.MarketingOptInScreen.setA11yNavigationButtonsEnabled",
       &MarketingOptInScreenHandler::HandleSetA11yNavigationButtonsEnabled);
+  AddCallback(
+      "login.MarketingOptInScreen.accessibilityPageVisibilityChanged",
+      &MarketingOptInScreenHandler::HandleAccessibilityPageVisibilityChanged);
 }
 
 void MarketingOptInScreenHandler::GetAdditionalParameters(
@@ -101,6 +104,11 @@ void MarketingOptInScreenHandler::HandleAllSet(
     bool play_communications_opt_in,
     bool tips_communications_opt_in) {
   screen_->OnAllSet(play_communications_opt_in, tips_communications_opt_in);
+}
+
+void MarketingOptInScreenHandler::HandleAccessibilityPageVisibilityChanged(
+    bool shown) {
+  screen_->OnAccessibilityPageVisibilityChanged(shown);
 }
 
 void MarketingOptInScreenHandler::HandleSetA11yNavigationButtonsEnabled(

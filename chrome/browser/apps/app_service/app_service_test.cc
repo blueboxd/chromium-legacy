@@ -67,12 +67,4 @@ void AppServiceTest::FlushMojoCalls() {
   }
 }
 
-#if defined(OS_CHROMEOS)
-void AppServiceTest::SetArcAppsUseTestingProfile() {
-  ArcAppsFactory::GetInstance()
-      ->GetForProfile(profile_)
-      ->SetUseTestingProfile();
-}
-#endif  // OS_CHROMEOS
-
 }  // namespace apps

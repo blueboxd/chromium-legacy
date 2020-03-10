@@ -5,14 +5,14 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_TEST_SUPPORT_MOCK_ASSISTANT_H_
 #define CHROMEOS_SERVICES_ASSISTANT_TEST_SUPPORT_MOCK_ASSISTANT_H_
 
+#include <vector>
+
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-namespace gfx {
-class Rect;
-}  // namespace gfx
+#include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace chromeos {
 namespace assistant {
@@ -22,14 +22,15 @@ class MockAssistant : public mojom::Assistant {
   MockAssistant();
   ~MockAssistant() override;
 
-  MOCK_METHOD0(StartCachedScreenContextInteraction, void());
-
   MOCK_METHOD1(StartEditReminderInteraction, void(const std::string&));
 
-  MOCK_METHOD1(StartMetalayerInteraction, void(const gfx::Rect&));
+  MOCK_METHOD(void,
+              StartScreenContextInteraction,
+              (ax::mojom::AssistantStructurePtr, const std::vector<uint8_t>&));
 
-  MOCK_METHOD3(StartTextInteraction,
-               void(const std::string&, mojom::AssistantQuerySource, bool));
+  MOCK_METHOD(void,
+              StartTextInteraction,
+              (const std::string&, mojom::AssistantQuerySource, bool));
 
   MOCK_METHOD0(StartVoiceInteraction, void());
 
@@ -47,18 +48,6 @@ class MockAssistant : public mojom::Assistant {
 
   MOCK_METHOD1(DismissNotification,
                void(chromeos::assistant::mojom::AssistantNotificationPtr));
-
-  // Mock DoCacheScreenContext in lieu of CacheScreenContext.
-  MOCK_METHOD1(DoCacheScreenContext, void(base::OnceClosure*));
-
-  // Note: We can't mock CacheScreenContext directly because of the move
-  // semantics required around base::OnceClosure. Instead, we route calls to a
-  // mockable delegate method, DoCacheScreenContext.
-  void CacheScreenContext(base::OnceClosure callback) override {
-    DoCacheScreenContext(&callback);
-  }
-
-  MOCK_METHOD0(ClearScreenContextCache, void());
 
   MOCK_METHOD1(OnAccessibilityStatusChanged, void(bool));
 

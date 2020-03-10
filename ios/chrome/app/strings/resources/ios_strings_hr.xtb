@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Odabir računa</translation>
 <translation id="3311748811247479259">Isključeno</translation>
 <translation id="3324193307694657476">2. adresni redak</translation>
+<translation id="3328801116991980348">Informacije o web-lokaciji</translation>
 <translation id="3329904751041170572">Povezivanje s poslužiteljem nije moguće.</translation>
 <translation id="3335947283844343239">Ponovo otvori zatvorenu karticu</translation>
 <translation id="3371831930909698441">Prevoditelj je dostupan. Opcije su dostupne pri dnu zaslona.</translation>
@@ -600,6 +601,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="9223358826628549784">Izvješće o rušenju programa poslano je.</translation>
 <translation id="952704832371081537">Odustani</translation>
 <translation id="988141524645182168">Ostali uređaji</translation>
+<translation id="989697783705943787">Sigurnost web-lokacije</translation>
 <translation id="989988560359834682">Uređivanje adrese</translation>
 <translation id="994757059139821576">Predloženi članci</translation>
 </translationbundle>

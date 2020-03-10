@@ -61,8 +61,8 @@ ZeroStateFileResult::ZeroStateFileResult(const base::FilePath& filepath,
       l10n_util::GetStringUTF16(IDS_FILEMANAGER_APP_NAME), true);
   base::i18n::SanitizeUserSuppliedString(&sanitized_name);
   SetDetails(sanitized_name);
-  SetIcon(GetIconForLocalFilePath(filepath));
-  SetChipIcon(GetIconForLocalFilePath(filepath));
+  SetIcon(GetIconForPath(filepath));
+  SetChipIcon(GetChipIconForPath(filepath));
 }
 
 ZeroStateFileResult::~ZeroStateFileResult() = default;

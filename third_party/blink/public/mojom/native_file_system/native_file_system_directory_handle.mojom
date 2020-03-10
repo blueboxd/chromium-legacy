@@ -70,6 +70,14 @@ interface NativeFileSystemDirectoryHandle {
   // To delete recursively, set |recurse| to true.
   RemoveEntry(string basename, bool recurse) => (NativeFileSystemError result);
 
+  // If |possible_child| is not a descendant of this directory, |path| will be
+  // null. If |possible_child| is equal to this directory, |path| will be an
+  // empty array. And if |possible_child| is a descendant of this directory,
+  // |path| will contain the path components making up the path of
+  // |possible_child| relative to this directory.
+  Resolve(pending_remote<NativeFileSystemTransferToken> possible_child) =>
+      (NativeFileSystemError result, array<string>? path);
+
   // Create a TransferToken for this directory. This token can be used to pass
   // a reference to this directory to other methods, for example to copy or move
   // the directory, or when transferring the handle over postMessage.

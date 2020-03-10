@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/vector_icons.h"
@@ -214,6 +215,8 @@ const gfx::VectorIcon& ShelfContextMenu::GetCommandIdVectorIcon(
       return views::kInfoIcon;
     case ash::UNINSTALL:
       return views::kUninstallIcon;
+    case ash::SETTINGS:
+      return vector_icons::kSettingsIcon;
     case ash::MENU_PIN:
       return controller_->IsPinned(item_.id) ? views::kUnpinIcon
                                              : views::kPinIcon;

@@ -1061,7 +1061,6 @@ body.check-select #search-box {
 }
 
 #search-box .clear {
-  border: 0;
   cursor: pointer;
   display: none;
   margin: 0;
@@ -1076,14 +1075,19 @@ body.check-select #search-box {
       url(../images/files/ui/search_clear.png) 1x,
       url(../images/files/ui/2x/search_clear.png) 2x)
       no-repeat center;
+  border: 0;
   height: 16px;
   width: 16px;
 }
 
 .dialog-header.files-ng #search-box .clear {
+  background: none;
+  height: 36px;
+  width: 36px;
+}
+
+.dialog-header.files-ng #search-box .clear > .icon {
   -webkit-mask-image: url(../images/files/ui/search_clear_filled.svg);
-  height: 20px;
-  width: 20px;
 }
 
 .dialog-header:not(.files-ng) #search-box .clear:focus {

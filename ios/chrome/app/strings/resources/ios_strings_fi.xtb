@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Valitse tili</translation>
 <translation id="3311748811247479259">Pois päältä</translation>
 <translation id="3324193307694657476">Osoite 2</translation>
+<translation id="3328801116991980348">Tietoja sivustosta</translation>
 <translation id="3329904751041170572">Palvelimeen ei saada yhteyttä.</translation>
 <translation id="3335947283844343239">Avaa suljettu välilehti uudelleen</translation>
 <translation id="3371831930909698441">Kääntäjä on käytössä. Asetukset löytyvät näytön alalaidasta.</translation>
@@ -600,6 +601,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="9223358826628549784">Virheraportti lähetettiin.</translation>
 <translation id="952704832371081537">Peruuta</translation>
 <translation id="988141524645182168">Muut laitteet</translation>
+<translation id="989697783705943787">Sivuston tietoturva</translation>
 <translation id="989988560359834682">Osoitteen muokkaus</translation>
 <translation id="994757059139821576">Ehdotetut artikkelit</translation>
 </translationbundle>

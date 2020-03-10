@@ -55,6 +55,10 @@ MEDIA_EXPORT extern const char kForceProtectedVideoOutputBuffers[];
 MEDIA_EXPORT extern const char kEnableFuchsiaAudioConsumer[];
 #endif
 
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+MEDIA_EXPORT extern const char kForceDisableNewAcceleratedVideoDecoder[];
+#endif
+
 #if defined(USE_CRAS)
 MEDIA_EXPORT extern const char kUseCras[];
 #endif

@@ -474,7 +474,6 @@
 <translation id="3024663005179499861">არასწორი პოლიტიკის ტიპი</translation>
 <translation id="3037605927509011580">უი, ხარვეზი!</translation>
 <translation id="3041612393474885105">სერტიფიკატის ინფორმაცია</translation>
-<translation id="3057676462092457419">DnsOverHttps რეჟიმი <ph name="SECURE_DNS_MODE_SECURE" /> ჯერჯერობით მხარდაჭერილი არ არის, დაყენებულია <ph name="SECURE_DNS_MODE_OFF" /> რეჟიმი.</translation>
 <translation id="3060227939791841287">C9 (კონვერტი)</translation>
 <translation id="3061707000357573562">ჩასწორების სერვისი</translation>
 <translation id="3064966200440839136">გარე აპლიკაციით გადახდის შემთხვევაში, ინკოგნიტო რეჟიმიდან გამოსვლა მოხდება. გსურთ გაგრძელება?</translation>
@@ -574,6 +573,7 @@
 <translation id="3487845404393360112">ლანგარი 4</translation>
 <translation id="3495081129428749620">გვერდზე
     „<ph name="PAGE_TITLE" />“ პოვნა</translation>
+<translation id="3507936815618196901">თქვენი გარემოს 3-განზომილებიანი რუკის შექმნა ან კამერის პოზიციისთვის თვალის მიდევნება</translation>
 <translation id="3512163584740124171">ეს წესები იგნორირებული იქნება, ვინაიდან წესების იმავე ჯგუფში შემავალ სხვა წესებს უფრო მაღალი პრიორიტეტი აქვს.</translation>
 <translation id="3518941727116570328">მრავალი ობიექტის დამუშავება</translation>
 <translation id="3528171143076753409">სერვერის სერთიფიკატი არასანდოა.</translation>
@@ -926,6 +926,7 @@
 <translation id="5030338702439866405">გამცემი:</translation>
 <translation id="503069730517007720">საჭიროა „<ph name="SOFTWARE_NAME" />“-ის ძირეული სერტიფიკატი, რომელიც არ არის დაინსტალირებული. ამ პრობლემის მოსაგვარებლად თქვენმა IT ადმინისტრატორმა უნდა გადახედოს „<ph name="SOFTWARE_NAME" />“-ის კონფიგურაციის ინსტრუქციას. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google Translate-ის შესახებ</translation>
+<translation id="503498442187459473"><ph name="HOST" /> ითხოვს თქვენი კამერისა და მიკროფონის გამოყენების ნებართვას</translation>
 <translation id="5039804452771397117">დაშვება</translation>
 <translation id="5040262127954254034">კონფიდენციალურობა</translation>
 <translation id="5043480802608081735">თქვენ მიერ კოპირებული ბმული</translation>
@@ -1034,7 +1035,6 @@
 <translation id="5457113250005438886">არასწორი</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> და <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> სხვა}other{<ph name="CONTACT_PREVIEW" /> და <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> სხვა}}</translation>
 <translation id="5470861586879999274">რედაქტირების &amp;გამეორება</translation>
-<translation id="5472133193607270166">ჩართვის შემთხვევაში ვებსაიტები ვერ გამოიყენებს თქვენი დათვალიერების აქტივობას სხვადასხვა ვებსაიტზე რეკლამის პერსონალიზებისთვის. ზოგიერთმა ვებსაიტმა შეიძლება გაუმართავად იმუშაოს.</translation>
 <translation id="5478437291406423475">B6/C4 (კონვერტი)</translation>
 <translation id="5481076368049295676">ამ კონტენტმა შეიძლება თქვენს მოწყობილობაზე დააინსტალიროს სახიფათო პროგრამული უზრუნველყოფა, რომელიც შეძლებს თქვენი ინფორმაციის მოპარვას ან წაშლას. <ph name="BEGIN_LINK" />მაინც ჩვენება<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">დაამატეთ სწორი მისამართი</translation>
@@ -1320,6 +1320,7 @@
 <translation id="6710594484020273272">&lt;აკრიფეთ საძიებო ფრაზა&gt;</translation>
 <translation id="671076103358959139">რეგისტრაციის ჟეტონი:</translation>
 <translation id="6711464428925977395">პროქსი-სერვერთან დაკავშირებით რაღაც პრობლემაა, ან მისამართი არასწორია.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> ითხოვს თქვენი გარემოს 3-განზომილებიანი რუკის შექმნასა და კამერის პოზიციისთვის თვალის მიდევნების ნებართვას</translation>
 <translation id="6738516213925468394"><ph name="TIME" />-დან თქვენი მონაცემები დაშიფრულია <ph name="BEGIN_LINK" />სინქრონიზაციის საიდუმლო ფრაზით<ph name="END_LINK" />. შეიყვანეთ ის სინქრონიზაციის დასაწყებად.</translation>
 <translation id="674375294223700098">უცნობი სერვერის სერტიფიკატის შეცდომა.</translation>
 <translation id="6744009308914054259">სანამ კავშირის აღდგენას ელოდებით, შეგიძლიათ გადახვიდეთ ჩამოტვირთვებზე და წაიკითხოთ სტატიები ხაზგარეშე რეჟიმში.</translation>
@@ -1740,7 +1741,6 @@
 <translation id="8589998999637048520">საუკეთესო ხარისხი</translation>
 <translation id="860043288473659153">ბარათის მფლობელის სახელი</translation>
 <translation id="8606726445206553943">თქვენი MIDI მოწყობილობების გამოყენება</translation>
-<translation id="8616822740383114808">ეს პარამეტრი იძულებითაა დაყენებული „<ph name="ENFORCING_SETTING" />“-ის მიერ „<ph name="SETTINGS_PAGE" />“-ში</translation>
 <translation id="861775596732816396">ზომა 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">ბარათის შენახვა ამ მოწყობილობაზე</translation>

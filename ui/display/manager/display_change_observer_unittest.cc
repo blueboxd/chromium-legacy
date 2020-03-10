@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "cc/base/math_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
@@ -25,7 +27,7 @@ namespace display {
 namespace {
 
 float ComputeDeviceScaleFactor(float diagonal_inch,
-                               const gfx::Rect& resolution) {
+                               const gfx::Size& resolution) {
   // We assume that displays have square pixel.
   float diagonal_pixel = std::sqrt(std::pow(resolution.width(), 2) +
                                    std::pow(resolution.height(), 2));
@@ -193,48 +195,65 @@ TEST_P(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
 }
 
 TEST_P(DisplayChangeObserverTest, FindDeviceScaleFactor) {
-  EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(19.5f, gfx::Rect(1600, 900)));
+  constexpr struct Data {
+    const float diagonal_size;
+    const gfx::Size resolution;
+    const float expected_dsf;
+    const gfx::Size expected_dp_size;
+    const bool screenshot_size_error;
+  } display_configs[] = {
+      // clang-format off
+      // inch,  resolution,  DSF,        size in DP,   screenshot size error
+      {19.5,   {1600, 900},  1.f,        {1600, 900},  false},
+      {21.5f,  {1920, 1080}, 1.f,        {1920, 1080}, false},
+      {10.0f,  {1920, 1200}, kDsf_1_777, {1080, 675},  false},
+      {12.1f,  {1280, 800},  1.0f,       {1280, 800},  false},
+      {13.3f,  {1920, 1080}, 1.25f,      {1536, 864},  false},
+      {14.0f,  {1920, 1080}, 1.25f,      {1536, 864},  false},
+      {11.6f,  {1920, 1080}, 1.6f,       {1200, 675},  false},
+      {12.02f, {2160, 1440}, 1.6f,       {1350, 900},  false},
+      {12.85f, {2560, 1700}, 2.0f,       {1280, 850},  false},
+      {12.3f,  {2400, 1600}, 2.0f,       {1200, 800},  false},
+      {10.1f,  {1920, 1200}, kDsf_1_777, {1080, 675},  false},
+      {11.0f,  {2160, 1440}, 2.f,        {1080, 720},  false},
+      {12.3f,  {3000, 2000}, kDsf_2_252, {1332, 888},  true},
+      {13.1f,  {3840, 2160}, kDsf_2_666, {1440, 810},  false},
+      // clang-format on
+  };
 
-  // 21.5" 1920x1080
-  EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(21.5f, gfx::Rect(1920, 1080)));
+  for (auto& entry : display_configs) {
+    SCOPED_TRACE(base::StringPrintf(
+        "%dx%d, diag=%1.3f inch, expected=%1.10f", entry.resolution.width(),
+        entry.resolution.height(), entry.diagonal_size, entry.expected_dsf));
+    // Check ScaleFactor.
+    float scale_factor =
+        ComputeDeviceScaleFactor(entry.diagonal_size, entry.resolution);
+    EXPECT_EQ(entry.expected_dsf, scale_factor);
 
-  // 10" 1920x1200
-  EXPECT_EQ(kDsf_1_777, ComputeDeviceScaleFactor(10.f, gfx::Rect(1920, 1200)));
+    // Check DP size.
+    const gfx::Size dp_size =
+        gfx::ScaleToCeiledSize(entry.resolution, 1.f / scale_factor);
 
-  // 12.1" 1280x800
-  EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(12.1f, gfx::Rect(1280, 800)));
+    // Check Screenshot size.
+    EXPECT_EQ(entry.expected_dp_size, dp_size);
+    gfx::Transform transform;
+    transform.Scale(scale_factor, scale_factor);
+    const gfx::Size screenshot_size =
+        cc::MathUtil::MapEnclosingClippedRect(transform, gfx::Rect(dp_size))
+            .size();
+    if (entry.screenshot_size_error) {
+      EXPECT_NE(entry.resolution, screenshot_size);
+      constexpr float kEpsilon = 0.001f;
+      EXPECT_EQ(entry.resolution,
+                cc::MathUtil::MapEnclosingClippedRectIgnoringError(
+                    transform, gfx::Rect(dp_size), kEpsilon)
+                    .size());
+    } else {
+      EXPECT_EQ(entry.resolution, screenshot_size);
+    }
+  }
 
-  // 13.3" 1920x1080
-  EXPECT_EQ(1.25f, ComputeDeviceScaleFactor(13.3f, gfx::Rect(1920, 1080)));
-
-  // 14" 1920x1080
-  EXPECT_EQ(1.25f, ComputeDeviceScaleFactor(14.0f, gfx::Rect(1920, 1080)));
-
-  // 11.6" 1920x1080
-  EXPECT_EQ(1.6f, ComputeDeviceScaleFactor(11.6f, gfx::Rect(1920, 1080)));
-
-  // 12.02" 2160x1440
-  EXPECT_EQ(1.6f, ComputeDeviceScaleFactor(12.02f, gfx::Rect(2160, 1440)));
-
-  // 12.85" 2560x1700
-  EXPECT_EQ(2.0f, ComputeDeviceScaleFactor(12.85f, gfx::Rect(2560, 1700)));
-
-  // 12.3" 2400x1600
-  EXPECT_EQ(2.0f, ComputeDeviceScaleFactor(12.3f, gfx::Rect(2400, 1600)));
-
-  // 10.1" 1920x1200
-  EXPECT_EQ(display::kDsf_1_777,
-            ComputeDeviceScaleFactor(10.1f, gfx::Rect(1920, 1200)));
-
-  // 12.3" 3000x2000
-  EXPECT_EQ(display::kDsf_2_252,
-            ComputeDeviceScaleFactor(12.3f, gfx::Rect(3000, 2000)));
-
-  // 13.1" 3840x2160 uses maximum scale factor which is 2.66666...
   float max_scale_factor = kDsf_2_666;
-  EXPECT_EQ(max_scale_factor,
-            ComputeDeviceScaleFactor(13.1f, gfx::Rect(3840, 2160)));
-
   // Erroneous values should still work.
   EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(-100.0f));
   EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(0.0f));

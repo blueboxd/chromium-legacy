@@ -145,6 +145,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
       sk_sp<SkColorSpace> color_space) override;
 
+  gpu::MemoryTracker* GetMemoryTracker() override;
+
   // Set the fields of |capabilities_| and propagates to |impl_on_gpu_|. Should
   // be called after BindToClient().
   void SetCapabilitiesForTesting(gfx::SurfaceOrigin output_surface_origin);

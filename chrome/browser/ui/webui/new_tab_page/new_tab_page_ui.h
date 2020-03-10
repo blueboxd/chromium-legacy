@@ -14,6 +14,7 @@
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace content {
+class WebContents;
 class WebUI;
 }
 class GURL;
@@ -57,6 +58,7 @@ class NewTabPageUI : public ui::MojoWebUIController,
       page_factory_receiver_;
   Profile* profile_;
   InstantService* instant_service_;
+  content::WebContents* web_contents_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 

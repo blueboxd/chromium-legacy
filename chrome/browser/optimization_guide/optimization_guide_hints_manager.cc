@@ -1186,11 +1186,12 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
 }
 
 void OptimizationGuideHintsManager::OnNavigationFinish(
-    const GURL& navigation_url,
+    const std::vector<GURL>& navigation_redirect_chain,
     OptimizationGuideNavigationData* navigation_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Populate navigation data with hint information.
+  const GURL navigation_url = navigation_redirect_chain.back();
   if (navigation_data && navigation_url.has_host()) {
     const std::string host = navigation_url.host();
     navigation_data->set_has_hint_after_commit(hint_cache_->HasHint(host));
@@ -1205,10 +1206,12 @@ void OptimizationGuideHintsManager::OnNavigationFinish(
 
   // The callbacks will be invoked when the fetch request comes back, so it
   // will be cleaned up later.
-  if (IsHintBeingFetchedForNavigation(navigation_url))
-    return;
+  for (const auto& url : navigation_redirect_chain) {
+    if (IsHintBeingFetchedForNavigation(url))
+      continue;
 
-  PrepareToInvokeRegisteredCallbacks(navigation_url);
+    PrepareToInvokeRegisteredCallbacks(url);
+  }
 }
 
 void OptimizationGuideHintsManager::ClearFetchedHints() {

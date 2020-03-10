@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">Eftirstandandi vefsvæði (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Til að deila einhverju úr símanum þínum í annað tæki skaltu kveikja á samstillingu Chrome í báðum tækjum</translation>
 <translation id="2175927920773552910">QR-kóði</translation>
+<translation id="2182457891543959921">Spyrja áður en vefsvæðum er leyft að búa til þrívíddarkort af umhverfinu eða rekja staðsetningu myndavélarinnar (ráðlagt)</translation>
 <translation id="218608176142494674">Deiling</translation>
 <translation id="2227444325776770048">Halda áfram sem <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Samstilling og þjónusta Google</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">Kveikt er á þessum eiginleika þegar þú skráir þig inn á Google reikninginn þinn</translation>
 <translation id="2410754283952462441">Veldu reikning</translation>
 <translation id="2414886740292270097">Dökkt</translation>
-<translation id="2416359993254398973">Chrome þarf leyfi til að nota myndavélina þína á þessu vefsvæði.</translation>
 <translation id="2426805022920575512">Velja annan reikning</translation>
 <translation id="2433507940547922241">Útlit</translation>
 <translation id="2434158240863470628">Niðurhali lokið <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -286,6 +286,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="3058498974290601450">Hægt er að kveikja á samstillingu hvenær sem er í stillingunum</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bókamerki}one{<ph name="BOOKMARKS_COUNT_MANY" /> bókamerki}other{<ph name="BOOKMARKS_COUNT_MANY" /> bókamerki}}</translation>
 <translation id="3089395242580810162">Opna í huliðsflipa</translation>
+<translation id="3114012059975132928">Myndspilari</translation>
 <translation id="3123473560110926937">Útilokaðar á sumum vefsvæðum</translation>
 <translation id="3123734510202723619">Tilkynningar</translation>
 <translation id="3137521801621304719">Slökkva á huliðsstillingu</translation>
@@ -343,6 +344,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="3522247891732774234">Uppfærsla í boði. Fleiri valkostir</translation>
 <translation id="3524138585025253783">Notendaviðmót forritara</translation>
 <translation id="3527085408025491307">Mappa</translation>
+<translation id="3538390592868664640">Komdu í veg fyrir að vefsvæði búi til þrívíddarkort af umhverfinu eða reki staðsetningu myndavélarinnar</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB tiltæk</translation>
 <translation id="3549657413697417275">Leita í ferlinum</translation>
 <translation id="3557336313807607643">Bæta við tengiliði</translation>
@@ -351,6 +353,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="3587482841069643663">Allar</translation>
 <translation id="358794129225322306">Leyfa vefsvæði að sækja margar skrár sjálfkrafa.</translation>
 <translation id="3590487821116122040">Geymsla vefsvæða sem Chrome telur ekki mikilvæg (t.d. vefsvæði með engar vistaðar stillingar eða sem þú heimsækir sjaldan)</translation>
+<translation id="3594780231884063836">Slökkva á mynd</translation>
 <translation id="3599863153486145794">Hreinsar ferilinn úr öllum innskráðum tækjum. Google reikningurinn þinn kann að vera með annars konar vefskoðunarferil á <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Slökkva á hljóði vefsvæða sem spila hljóð</translation>
 <translation id="3616113530831147358">Hljóð</translation>
@@ -439,6 +442,7 @@ Aðeins þú getur séð að hverju myndavélin beinist. Vefsvæðið getur ekki
 <translation id="4298388696830689168">Tengd vefsvæði</translation>
 <translation id="4307992518367153382">Grunnatriði</translation>
 <translation id="4314815835985389558">Stjórna samstillingu</translation>
+<translation id="4320177379694898372">Engin nettenging</translation>
 <translation id="4321739720395210191">Ekki tókst að opna myndavélina. Endurræstu tækið og reyndu aftur.</translation>
 <translation id="4351244548802238354">Loka glugga</translation>
 <translation id="4353114845960720315">Þegar þú ert í sýndarveruleika kann þetta vefsvæði að fá upplýsingar um:</translation>
@@ -603,6 +607,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5456381639095306749">Sækja síðu</translation>
 <translation id="548278423535722844">Opna í kortaforriti</translation>
 <translation id="5487521232677179737">Hreinsa gögn</translation>
+<translation id="5489227211564503167">Liðinn tími: <ph name="ELAPSED_TIME" /> af <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Útiloka auglýsingar á vefsvæðum sem birta ágengar eða villandi auglýsingar</translation>
 <translation id="5500777121964041360">Hugsanlega ekki í boði á þínu svæði.</translation>
 <translation id="5505264765875738116">Vefsvæði geta ekki óskað eftir því að senda tilkynningar</translation>
@@ -617,7 +622,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5530766185686772672">Loka huliðsflipum</translation>
 <translation id="5534640966246046842">Vefsvæði afritað</translation>
 <translation id="5561549206367097665">Bíður eftir neti…</translation>
-<translation id="557283862590186398">Chrome þarf leyfi til að nota hljóðnemann þinn á þessu vefsvæði.</translation>
 <translation id="55737423895878184">Staðsetning og tilkynningar eru leyfðar</translation>
 <translation id="5578795271662203820">Leita að þessari mynd á <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Þú getur alltaf valið hvað á að samstilla í <ph name="BEGIN_LINK1" />stillingunum<ph name="END_LINK1" />.</translation>
@@ -664,6 +668,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5864419784173784555">Bíður eftir öðru niðurhali…</translation>
 <translation id="5865733239029070421">Sendir sjálfkrafa talnagögn um notkun og tilkynningar um hrun til Google</translation>
 <translation id="5869522115854928033">Vistuð aðgangsorð</translation>
+<translation id="5876056640971328065">Gera hlé á spilun</translation>
 <translation id="5884076754568147479">Google fær vefslóðir og innihald vefsvæða þar sem þú notar hjálparann, auk upplýsinga sem þú sendir með hjálparanum, til að hjálpa þér að ljúka við verkefni</translation>
 <translation id="5902828464777634901">Öllum staðbundnum gögnum sem vefsvæðið geymir verður eytt, að fótsporum meðtöldum.</translation>
 <translation id="5919204609460789179">Uppfærðu <ph name="PRODUCT_NAME" /> til að hefja samstillingu</translation>
@@ -726,8 +731,8 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6378173571450987352">Upplýsingar: Raðað eftir gagnanotkun</translation>
 <translation id="6381421346744604172">Dekkja vefsvæði</translation>
 <translation id="6388207532828177975">Hreinsa og endurstilla</translation>
-<translation id="6393863479814692971">Chrome þarf leyfi til að nota myndavélina og hljóðnemann þinn á þessu vefsvæði.</translation>
 <translation id="6395288395575013217">TENGILL</translation>
+<translation id="6397616442223433927">Nettenging komin aftur</translation>
 <translation id="6404511346730675251">Breyta bókamerki</translation>
 <translation id="6406506848690869874">Samstilling</translation>
 <translation id="6410973561433500075">Fara í AR úr <ph name="DOMAIN" />?</translation>
@@ -779,7 +784,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6676840375528380067">Viltu hreinsa Chrome gögnin úr þessu tæki?</translation>
 <translation id="6689172468748959065">Prófílmyndir</translation>
 <translation id="6697492270171225480">Birta tillögur að svipuðum síðum þegar síða finnst ekki</translation>
-<translation id="6697947395630195233">Chrome þarf staðsetningaraðgang til að deila staðsetningu þinni með þessu vefsvæði.</translation>
 <translation id="6698801883190606802">Stjórna samstilltum gögnum</translation>
 <translation id="6699370405921460408">Vefþjónar Google munu sérsníða síðurnar sem þú heimsækir.</translation>
 <translation id="6710213216561001401">Til baka</translation>
@@ -797,6 +801,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6846298663435243399">Hleður…</translation>
 <translation id="6850409657436465440">Enn er verið að sækja</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> flipum lokað</translation>
+<translation id="6864395892908308021">Þetta tæki getur ekki lesið NFC</translation>
 <translation id="6864459304226931083">Sækja mynd</translation>
 <translation id="6865313869410766144">Gögn sjálfvirkrar útfyllingar eyðublaða</translation>
 <translation id="6884306546558072722">Haltu áfram að vafra án nettengingar</translation>
@@ -917,6 +922,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="780301667611848630">Nei, takk</translation>
 <translation id="7810647596859435254">Opna með…</translation>
 <translation id="7821588508402923572">Gagnasparnaður birtist hér</translation>
+<translation id="783819812427904514">Kveikja á mynd</translation>
 <translation id="784934925303690534">Tímabil</translation>
 <translation id="7851858861565204677">Önnur tæki</translation>
 <translation id="7875915731392087153">Skrifa tölvupóst</translation>
@@ -971,6 +977,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="8186512483418048923"><ph name="FILES" /> skrár eftir</translation>
 <translation id="8190358571722158785">Einn dagur eftir</translation>
 <translation id="8200772114523450471">Halda áfram</translation>
+<translation id="8206354486702514201">Stjórnandi valdi þessa stillingu.</translation>
 <translation id="8209050860603202033">Opna mynd</translation>
 <translation id="8218622182176210845">Stjórna reikningnum þínum</translation>
 <translation id="8224471946457685718">Sækja greinar fyrir þig með Wi-Fi</translation>
@@ -992,7 +999,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="8364299278605033898">Sjáðu vinsæl vefsvæði</translation>
 <translation id="8368027906805972958">Óþekkt eða óstutt tæki (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Leyfa bakgrunnssamstillingu fyrir ákveðið vefsvæði.</translation>
-<translation id="8378714024927312812">Stjórnað af fyrirtækinu þínu</translation>
 <translation id="8380167699614421159">Þetta vefsvæði sýnir ágengar eða villandi auglýsingar</translation>
 <translation id="8393700583063109961">Senda skilaboð</translation>
 <translation id="8413126021676339697">Sýna allan feril</translation>

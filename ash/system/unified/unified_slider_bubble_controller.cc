@@ -149,6 +149,8 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
     return;
   }
 
+  tray_->CloseSecondaryBubbles();
+
   DCHECK(!bubble_view_);
 
   slider_type_ = slider_type;

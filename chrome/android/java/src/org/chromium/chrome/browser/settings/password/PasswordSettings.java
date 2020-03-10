@@ -27,6 +27,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -38,6 +39,7 @@ import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SearchUtils;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.TextMessagePreference;
+import org.chromium.chrome.browser.webauth.authenticator.CableAuthenticatorUIFactory;
 import org.chromium.ui.text.SpanApplier;
 
 import java.util.Locale;
@@ -63,8 +65,10 @@ public class PasswordSettings
     public static final String PREF_SAVE_PASSWORDS_SWITCH = "save_passwords_switch";
     public static final String PREF_AUTOSIGNIN_SWITCH = "autosignin_switch";
     public static final String PREF_KEY_MANAGE_ACCOUNT_LINK = "manage_account_link";
+    public static final String PREF_KEY_SECURITY_KEY_LINK = "security_key_link";
 
     // A PasswordEntryViewer receives a boolean value with this key. If set true, the the entry was
+
     // part of a search result.
     public static final String EXTRA_FOUND_VIA_SEARCH = "found_via_search_args";
 
@@ -75,9 +79,10 @@ public class PasswordSettings
     private static final int ORDER_SWITCH = 0;
     private static final int ORDER_AUTO_SIGNIN_CHECKBOX = 1;
     private static final int ORDER_MANAGE_ACCOUNT_LINK = 2;
-    private static final int ORDER_SAVED_PASSWORDS = 3;
-    private static final int ORDER_EXCEPTIONS = 4;
-    private static final int ORDER_SAVED_PASSWORDS_NO_TEXT = 5;
+    private static final int ORDER_SECURITY_KEY = 3;
+    private static final int ORDER_SAVED_PASSWORDS = 4;
+    private static final int ORDER_EXCEPTIONS = 5;
+    private static final int ORDER_SAVED_PASSWORDS_NO_TEXT = 6;
 
     private boolean mNoPasswords;
     private boolean mNoPasswordExceptions;
@@ -87,6 +92,7 @@ public class PasswordSettings
 
     private String mSearchQuery;
     private Preference mLinkPref;
+    private Preference mSecurityKey;
     private ChromeSwitchPreference mSavePasswordsSwitch;
     private ChromeBaseCheckBoxPreference mAutoSignInSwitch;
     private TextMessagePreference mEmptyView;
@@ -258,6 +264,11 @@ public class PasswordSettings
     public void passwordListAvailable(int count) {
         resetList(PREF_KEY_CATEGORY_SAVED_PASSWORDS);
         resetNoEntriesTextMessage();
+
+        if (CableAuthenticatorUIFactory.isAvailable()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_AUTH_PHONE_SUPPORT)) {
+            displaySecurityKeyLink();
+        }
 
         mNoPasswords = count == 0;
         if (mNoPasswords) {
@@ -478,6 +489,21 @@ public class PasswordSettings
         mLinkPref.setOnPreferenceClickListener(this);
         mLinkPref.setOrder(ORDER_MANAGE_ACCOUNT_LINK);
         getPreferenceScreen().addPreference(mLinkPref);
+    }
+
+    private void displaySecurityKeyLink() {
+        if (mSecurityKey == null) {
+            mSecurityKey = new ChromeBasePreference(getStyledContext());
+            mSecurityKey.setKey(PREF_KEY_SECURITY_KEY_LINK);
+            mSecurityKey.setTitle(R.string.phone_as_security_key_text);
+            mSecurityKey.setOnPreferenceClickListener(preference -> {
+                SettingsLauncher.getInstance().launchSettingsPage(
+                        getActivity(), CableAuthenticatorUIFactory.getFragmentClass(), null);
+                return true;
+            });
+            mSecurityKey.setOrder(ORDER_SECURITY_KEY);
+        }
+        getPreferenceScreen().addPreference(mSecurityKey);
     }
 
     private Context getStyledContext() {

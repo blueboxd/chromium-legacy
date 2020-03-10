@@ -173,6 +173,17 @@
       Nếu chính sách này không được đặt thì tần suất mặc định là 3 giờ. Tần
       suất nhỏ nhất được phép là 60 giây.</translation>
 <translation id="1204263402976895730">Đã bật máy in dành cho doanh nghiệp</translation>
+<translation id="1216890727647348501">Bật tính năng Bảo vệ tăng cường của chế độ Duyệt web an toàn của <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi tùy chọn cài đặt này.
+
+      Nếu bạn bật tùy chọn cài đặt này, thì tính năng Bảo vệ tăng cường của chế độ Duyệt web an toàn sẽ luôn hoạt động.
+
+      Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Bảo vệ tăng cường của chế độ Duyệt web an toàn sẽ không bao giờ hoạt động.
+
+      Nếu bạn đặt chính sách này thành bắt buộc, thì người dùng sẽ không thể thay đổi hoặc ghi đè tùy chọn cài đặt "Bật tính năng bảo vệ chống lừa đảo trực tuyến và phần mềm độc hại" trong <ph name="PRODUCT_NAME" />.
+
+      Nếu bạn không đặt chính sách này, thì tính năng Bảo vệ tăng cường của chế độ Duyệt web an toàn sẽ tắt theo mặc định nhưng người dùng có thể bật tính năng này.
+
+      Để biết thêm thông tin về dịch vụ Duyệt web an toàn, vui lòng truy cập vào https://developers.google.com/safe-browsing.</translation>
 <translation id="1216919699175573511">Bật tính năng hỗ trợ cho Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Chỉ định xem thiết bị có phải khôi phục về phiên bản do <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> đặt không nếu đã chạy phiên bản mới hơn.
 
@@ -266,6 +277,7 @@
           Khi bạn không đặt chính sách này, thì hoạt động của các chính sách cụ thể hơn sẽ không bị ảnh hưởng.</translation>
 <translation id="1384459581748403878">Tham khảo: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Báo cáo trạng thái cập nhật hệ điều hành</translation>
+<translation id="1388918874748125262">Bật tính năng Bảo vệ tăng cường chế độ Duyệt web an toàn</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1398636873839401839">Cho phép tất cả các biến thể trên màn hình đăng nhập</translation>
@@ -1186,6 +1198,9 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 <translation id="26023406105317310">Định cấu hình các tài khoản Kerberos</translation>
 <translation id="2604182581880595781">Định cấu hình các chính sách liên quan đến tính năng Chia sẻ tệp trong mạng.</translation>
 <translation id="2615240493030733717">Báo cáo thông tin về múi giờ</translation>
+<translation id="2620943247255660284">Chính sách này không còn dùng nữa và đã được thay thế bằng AdvancedProtectionExtraSecurityAllowed.
+
+      Chính sách này kiểm soát liệu người dùng đăng ký chương trình Bảo vệ nâng cao có được phép gửi các tệp đã tải xuống cho Google để quét tìm phần mềm độc hại hay không. Nếu bạn đặt hoặc không đặt thành True, thì người dùng đã đăng ký sẽ được nhắc gửi các tệp của họ cho Google để quét sâu. Nếu người dùng chọn 'Quét' thì tệp họ đã tải xuống sẽ được gửi cho Google. Nếu bạn đặt thành False thì người dùng sẽ không được nhắc và các tệp họ đã tải xuống sẽ không được gửi cho Google.</translation>
 <translation id="2623014935069176671">Đợi hoạt động người dùng đầu tiên</translation>
 <translation id="262740370354162807">Cho phép gửi tài liệu tới <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Cung cấp cấu hình máy in dành cho doanh nghiệp.
@@ -1439,6 +1454,21 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2987227569419001736">Kiểm soát việc sử dụng API Web Bluetooth</translation>
 <translation id="3016255526521614822">Đưa các ứng dụng ghi chú được phép trên màn hình khóa của <ph name="PRODUCT_OS_NAME" /> vào danh sách cho phép</translation>
 <translation id="3020064401262077616">Kiểm soát các chính sách về sự giám sát của cha mẹ (chỉ áp dụng cho tài khoản người dùng là trẻ em).</translation>
+<translation id="3020953534071988875">Việc định cấu hình chính sách này sẽ cho phép/không cho phép xác thực môi trường xung quanh đối với các cấu hình chế độ Khách và cấu hình chế độ Ẩn danh trong <ph name="PRODUCT_NAME" />.
+
+      Xác thực môi trường xung quanh là quy trình xác thực http bằng bằng chứng xác thực mặc định nếu bằng chứng xác thực rõ ràng không được cung cấp qua lược đồ thách thức/phản hồi NTLM/Kerberos/Negotiate.
+
+      Việc đặt <ph name="REGULAR_ONLY_OPTION_NAME" /> (giá trị 0) chỉ cho phép xác thực môi trường xung quanh đối với các phiên Thông thường. Các phiên Khách và phiên Ẩn danh sẽ không được phép xác thực môi trường xung quanh.
+
+      Việc đặt <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (giá trị 1) cho phép xác thực môi trường xung quanh đối với các phiên Thông thường và phiên Ẩn danh. Các phiên Khách sẽ không được phép xác thực môi trường xung quanh.
+
+      Việc đặt <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (giá trị 2) cho phép xác thực môi trường xung quanh đối với các phiên Khách và phiên Thông thường. Các phiên Ẩn danh sẽ không được phép xác thực môi trường xung quanh.
+
+      Việc đặt <ph name="ALL_OPTION_NAME" /> (giá trị 3) cho phép xác thực môi trường xung quanh đối với tất cả các phiên.
+
+      Lưu ý rằng quy trình xác thực môi trường xung quanh luôn được phép trên các hồ sơ thông thường.
+
+      Trong <ph name="PRODUCT_NAME" /> phiên bản 81 trở lên, nếu bạn không đặt chính sách này, thì tùy chọn xác thực môi trường sẽ chỉ được bật trong các phiên thông thường.</translation>
 <translation id="3021562480854470924">Số mốc cho phép khôi phục</translation>
 <translation id="3023572080620427845">URL của một tệp XML chứa các URL sẽ tải trên một trình duyệt thay thế.</translation>
 <translation id="3026740867910702435">Bật tính năng hỗ trợ tiếp cận về con trỏ lớn trên màn hình đăng nhập.
@@ -1919,6 +1949,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng đọc chính tả sẽ tắt trên màn hình đăng nhập nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="3811562426301733860">Cho phép quảng cáo trên tất cả các trang web</translation>
 <translation id="3816312845600780067">Bật phím tắt bailout để tự động đăng nhập</translation>
+<translation id="3817323252437541502">Bật các tính năng bảo vệ bổ sung cho người dùng đã đăng ký chương trình Bảo vệ nâng cao</translation>
 <translation id="3820526221169548563">Bật tính năng trợ năng bàn phím ảo.
 
           Nếu chính sách này được đặt thành true, bàn phím ảo sẽ luôn được bật.
@@ -2393,9 +2424,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="4449545651113180484">Xoay màn hình 270 độ theo chiều kim đồng hồ</translation>
 <translation id="445270821089253489">Kiểm soát loại thông tin thiết bị và người dùng được báo cáo.</translation>
 <translation id="4453913621209182880">Chỉ cho phép in có đồ họa nền</translation>
-<translation id="4454586530530448054">Nếu bạn đặt chính sách này thì tất cả các loại dữ liệu đã chỉ định sẽ bị loại trừ khỏi cả quá trình đồng bộ hóa của Google Sync lẫn quá trình đồng bộ hóa cấu hình chuyển vùng. Điều này có thể giúp giảm kích thước của cấu hình chuyển vùng hoặc giới hạn loại dữ liệu đã tải lên các máy chủ Google Sync.
-
-      Chính sách này hiện áp dụng cho các loại dữ liệu sau: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfiguration". Tên của các loại dữ liệu đó phân biệt chữ hoa chữ thường!</translation>
 <translation id="4454820008017317557">Hiển thị biểu tượng thanh công cụ của <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Chặn cookie của bên thứ ba</translation>
 <translation id="4474167089968829729">Bật lưu mật khẩu cho trình quản lý mật khẩu</translation>
@@ -5188,6 +5216,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       sẽ được báo cáo.</translation>
 <translation id="891435090623616439">được mã hóa dưới dạng chuỗi JSON, để biết chi tiết hãy xem <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Cho phép người dùng quản lý các chứng chỉ CA đã cài đặt.</translation>
+<translation id="8924721011887485485">Chính sách này kiểm soát việc người dùng đăng ký chương trình Bảo vệ nâng cao có nhận được các tính năng tăng cường bảo mật hay không. Một số tính năng trong số này có thể chia sẻ dữ liệu với Google (ví dụ: người dùng chương trình Bảo vệ nâng cao có thể gửi các tệp đã tải xuống cho Google để quét tìm phần mềm độc hại). Nếu bạn đặt chính sách này thành True hoặc không đặt, thì người dùng đã đăng ký sẽ nhận được các tính năng tăng cường bảo mật. Nếu bạn đặt chính sách này thành False, thì người dùng chương trình Bảo vệ nâng cao sẽ chỉ nhận được các tính năng bảo mật dành cho người dùng cá nhân.</translation>
 <translation id="8926275581598789324">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm hệ thống thực hiện hành động ở chế độ tạm vắng khi chạy trên nguồn pin.

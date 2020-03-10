@@ -46,7 +46,7 @@
 <translation id="1291207594882862231">Исчистете ги историјата, колачињата, податоците на сајтот, кешот…</translation>
 <translation id="129382876167171263">Датотеките зачувани од веб-сајтовите се појавуваат тука</translation>
 <translation id="129553762522093515">Неодамна затворено</translation>
-<translation id="1303339473099049190">Лозинката не може да се најде. Проверете го правописот и обидете се повторно.</translation>
+<translation id="1303339473099049190">Лозинката не може да се најде. Проверете дали ја внесувате правилно и обидете се повторно.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Испратено од <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Групирај картички</translation>
 <translation id="1311657260431405215">Овој QR-код не е URL: <ph name="QRCODEVALUE" /></translation>
@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">Останати сајтови (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">За да споделите нешто од телефонот на друг уред, вклучете ја синхронизацијата во поставките за Chrome на двата уреди</translation>
 <translation id="2175927920773552910">QR-код</translation>
+<translation id="2182457891543959921">Прашувај пред да им дозволиш на сајтовите да создадат 3D-карта на опкружувањето или да ја следат позицијата на камерата (препорачано)</translation>
 <translation id="218608176142494674">Се споделува</translation>
 <translation id="2227444325776770048">Продолжи како <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Синхронизација и услуги на Google</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">Функцијава е вклучена кога ќе се најавите на сметката на Google</translation>
 <translation id="2410754283952462441">Изберете сметка</translation>
 <translation id="2414886740292270097">Темна</translation>
-<translation id="2416359993254398973">На Chrome му треба дозвола за да пристапи до камерата за сајтов.</translation>
 <translation id="2426805022920575512">Изберете друга сметка</translation>
 <translation id="2433507940547922241">Изглед</translation>
 <translation id="2434158240863470628">Преземањето е завршено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -325,7 +325,7 @@
 <translation id="3350687908700087792">Затвори ги сите инкогнито картички</translation>
 <translation id="3353615205017136254">Lite-страница овозможена од Google. Допрете го копчето за вчитување на оригиналот за да се вчита оригиналната страница.</translation>
 <translation id="3367813778245106622">Најавете се повторно за да започнете со синхронизација</translation>
-<translation id="3373979091428520308">За да ја споделите страницава со друг уред, исклучете ја синхронизацијата во поставките за Chrome на другиот уред</translation>
+<translation id="3373979091428520308">За да ја споделите страницава со друг уред, вклучете ја синхронизацијата во поставките за Chrome на другиот уред</translation>
 <translation id="3374023511497244703">Обележувачите, историјата, лозинките и другите податоци на Chrome веќе нема да се синхронизираат со вашата сметка на Google</translation>
 <translation id="3384347053049321195">Сподели ја сликата</translation>
 <translation id="3386292677130313581">Прашај пред да дозволиш сајтовите да ја дознаат локацијата (се препорачува)</translation>
@@ -343,6 +343,7 @@
 <translation id="3522247891732774234">Достапно е ажурирање. Повеќе опции</translation>
 <translation id="3524138585025253783">Кориснички интерфејс за програмери</translation>
 <translation id="3527085408025491307">Папка</translation>
+<translation id="3538390592868664640">Не дозволувај им на сајтовите да создаваат 3D-карта на опкружувањето или да ја следат позицијата на камерата</translation>
 <translation id="3542235761944717775">Достапни се <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">Пребарајте ја историјата</translation>
 <translation id="3557336313807607643">Додај во контакти</translation>
@@ -439,6 +440,7 @@
 <translation id="4298388696830689168">Поврзани сајтови</translation>
 <translation id="4307992518367153382">Основи</translation>
 <translation id="4314815835985389558">Управувајте со синхронизацијата</translation>
+<translation id="4320177379694898372">Нема интернет поврзување</translation>
 <translation id="4321739720395210191">Камерата не може да се отвори. Рестартирајте го уредот и обидете се повторно.</translation>
 <translation id="4351244548802238354">Затвори дијалог</translation>
 <translation id="4353114845960720315">Додека сте во VR, сајтов ќе може да дознае за:</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">Затвори инкогнито-картички</translation>
 <translation id="5534640966246046842">Сајтот е копиран</translation>
 <translation id="5561549206367097665">Се чека мрежа…</translation>
-<translation id="557283862590186398">На Chrome му треба дозвола за да пристапи до микрофонот за сајтов.</translation>
 <translation id="55737423895878184">Локацијата и известувањата се дозволени</translation>
 <translation id="5578795271662203820">Пребарај во <ph name="SEARCH_ENGINE" /> за сликава</translation>
 <translation id="5581519193887989363">Секогаш може да изберете што да синхронизирате во <ph name="BEGIN_LINK1" />Поставки<ph name="END_LINK1" />.</translation>
@@ -674,7 +675,7 @@
 <translation id="5956665950594638604">Отвори „Центар за помош на Chrome“ во нова картичка</translation>
 <translation id="5958275228015807058">Вашите датотеки и страници ќе ги најдете во „Преземања“</translation>
 <translation id="5962718611393537961">Допрете за да се собере</translation>
-<translation id="5964805880140440652">За да ја споделите страницава на друг уред, вклучете ја синхронизацијата во поставките за Chrome</translation>
+<translation id="5964805880140440652">За да ја споделите страницава со друг уред, вклучете ја синхронизацијата во поставките за Chrome</translation>
 <translation id="6000066717592683814">Задржи го Google</translation>
 <translation id="6005538289190791541">Предложена лозинка</translation>
 <translation id="6036057147555329831">Дополнителен ICU</translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">Детали: подредени по количината на податоци што се користат</translation>
 <translation id="6381421346744604172">Затемнете ги веб-сајтовите</translation>
 <translation id="6388207532828177975">Исчисти и ресетирај</translation>
-<translation id="6393863479814692971">На Chrome му треба дозвола за да пристапи до камерата и микрофонот за сајтов.</translation>
 <translation id="6395288395575013217">ЛИНК</translation>
 <translation id="6404511346730675251">Измени обележувач</translation>
 <translation id="6406506848690869874">Синхронизација</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">Да се избришат податоците на Chrome од уредов?</translation>
 <translation id="6689172468748959065">Фотографии на профилот</translation>
 <translation id="6697492270171225480">Прикажувај предлози за слични страници кога страницата не може да се најде</translation>
-<translation id="6697947395630195233">На Chrome му треба пристап до вашата локација за да ја сподели со сајтов.</translation>
 <translation id="6698801883190606802">Управувајте со синхронизираните податоци</translation>
 <translation id="6699370405921460408">Серверите на Google ќе ги оптимизираат страниците што ги посетувате.</translation>
 <translation id="6710213216561001401">Претходно</translation>
@@ -971,6 +970,7 @@
 <translation id="8186512483418048923">Преостануваат <ph name="FILES" /> датотеки</translation>
 <translation id="8190358571722158785">Остана 1 ден</translation>
 <translation id="8200772114523450471">Продолжи</translation>
+<translation id="8206354486702514201">Поставката ја наметнува администраторот.</translation>
 <translation id="8209050860603202033">отвори слика</translation>
 <translation id="8218622182176210845">Управувајте со сметката</translation>
 <translation id="8224471946457685718">Преземање статии за вас преку Wi-Fi</translation>
@@ -992,7 +992,6 @@
 <translation id="8364299278605033898">Разгледајте ги популарните веб-сајтови</translation>
 <translation id="8368027906805972958">Непознат или неподдржан уред (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Дозволи Синхронизација во заднина за одреден сајт.</translation>
-<translation id="8378714024927312812">Управувано од вашата организација</translation>
 <translation id="8380167699614421159">Сајтов прикажува нападни или лажни реклами</translation>
 <translation id="8393700583063109961">Испрати порака</translation>
 <translation id="8413126021676339697">Прикажи ја целата историја</translation>

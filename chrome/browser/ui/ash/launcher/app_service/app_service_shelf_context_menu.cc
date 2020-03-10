@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -176,6 +177,11 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
         CrostiniAppRestartView::Show(item().id, display_id());
       return;
     }
+
+    case ash::SETTINGS:
+      if (item().id.app_id == crostini::GetTerminalId())
+        crostini::LaunchTerminalSettings(controller()->profile());
+      return;
 
     default:
       if (extensions::ContextMenuMatcher::IsExtensionsCustomCommandId(

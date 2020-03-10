@@ -474,7 +474,6 @@
 <translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
 <translation id="3037605927509011580">エラー</translation>
 <translation id="3041612393474885105">証明書情報</translation>
-<translation id="3057676462092457419">DnsOverHttps モード <ph name="SECURE_DNS_MODE_SECURE" /> はまだサポートされていません。モードは <ph name="SECURE_DNS_MODE_OFF" /> に設定されました。</translation>
 <translation id="3060227939791841287">C9（封筒）</translation>
 <translation id="3061707000357573562">サービスへのパッチの適用</translation>
 <translation id="3064966200440839136">外部アプリケーションを経由したお支払いの処理に進むため、シークレット モードを解除します。続行しますか？</translation>
@@ -574,6 +573,7 @@
 <translation id="3487845404393360112">トレイ 4</translation>
 <translation id="3495081129428749620"><ph name="PAGE_TITLE" />
     ページ内を検索</translation>
+<translation id="3507936815618196901">周囲の 3D マップの作成とカメラ位置の追跡</translation>
 <translation id="3512163584740124171">より優先度の高いポリシーが同じポリシー グループにあるため、このポリシーは無視されます。</translation>
 <translation id="3518941727116570328">複数オブジェクトの処理</translation>
 <translation id="3528171143076753409">サーバーの証明書を信頼できません。</translation>
@@ -926,6 +926,7 @@
 <translation id="5030338702439866405">発行元</translation>
 <translation id="503069730517007720">「<ph name="SOFTWARE_NAME" />」のルート証明書が必要ですが、インストールされていません。IT 管理者に、「<ph name="SOFTWARE_NAME" />」の設定手順を確認したうえでこの問題を修正するよう依頼してください。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google 翻訳について</translation>
+<translation id="503498442187459473"><ph name="HOST" /> から、カメラとマイクの使用許可を求められています</translation>
 <translation id="5039804452771397117">許可</translation>
 <translation id="5040262127954254034">プライバシー</translation>
 <translation id="5043480802608081735">コピーしたリンク</translation>
@@ -1034,7 +1035,6 @@
 <translation id="5457113250005438886">無効</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 件）}other{<ph name="CONTACT_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 件）}}</translation>
 <translation id="5470861586879999274">編集のやり直し（&amp;R）</translation>
-<translation id="5472133193607270166">オンにすると、サイトはあなたが別のサイトで閲覧した内容に基づいて広告をカスタマイズできなくなります。一部のサイトは適切に機能しなくなる可能性があります。</translation>
 <translation id="5478437291406423475">B6 / C4（封筒）</translation>
 <translation id="5481076368049295676">アクセス先のコンテンツによって、個人情報を入手したり削除したりする危険なソフトウェアがインストールされる可能性があります。<ph name="BEGIN_LINK" />危険性を理解したうえで表示する<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">有効なアドレスを追加</translation>
@@ -1320,6 +1320,7 @@
 <translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
 <translation id="671076103358959139">登録トークン:</translation>
 <translation id="6711464428925977395">プロキシ サーバーに問題がある、またはアドレスが正しくありません。</translation>
+<translation id="6716672519412350405"><ph name="URL" /> が周囲の 3D マップの作成とカメラ位置の追跡を求めています</translation>
 <translation id="6738516213925468394">データは <ph name="TIME" />に<ph name="BEGIN_LINK" />同期パスフレーズ<ph name="END_LINK" />で暗号化されました。同期を開始するには、同期パスフレーズを入力してください。</translation>
 <translation id="674375294223700098">不明なサーバー証明書エラー</translation>
 <translation id="6744009308914054259">接続するまでの間、[ダウンロード] に移動してオフラインで記事を読むことができます。</translation>
@@ -1741,7 +1742,6 @@
 <translation id="8589998999637048520">最高画質</translation>
 <translation id="860043288473659153">カード名義人</translation>
 <translation id="8606726445206553943">MIDI デバイスの使用</translation>
-<translation id="8616822740383114808">この設定は、「<ph name="SETTINGS_PAGE" />」の「<ph name="ENFORCING_SETTING" />」に基づくものです</translation>
 <translation id="861775596732816396">サイズ 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">このカード情報をこのデバイスに保存する</translation>

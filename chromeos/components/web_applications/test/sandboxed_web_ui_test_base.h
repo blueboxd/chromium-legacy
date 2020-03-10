@@ -27,6 +27,12 @@ class SandboxedWebUiAppTestBase : public MojoWebUIBrowserTest {
   // sandboxed frame.
   static std::string LoadJsTestLibrary(const base::FilePath& script_path);
 
+  // Runs |script| in the untrusted app frame of |web_ui|. This function assumes
+  // the first <iframe> element in |web_ui| is the untrusted (sandboxed)
+  // content.
+  static content::EvalJsResult EvalJsInAppFrame(content::WebContents* web_ui,
+                                                const std::string& script);
+
   // MojoWebUIBrowserTest:
   void SetUpOnMainThread() override;
 

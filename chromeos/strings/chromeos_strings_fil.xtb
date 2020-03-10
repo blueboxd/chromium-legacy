@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="1195447618553298278">Hindi kilalang error.</translation>
+<translation id="1468664791493211953">Mga Alok</translation>
 <translation id="1482734542997480527">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang device na ito at puwedeng masubaybayan ang iyong aktibidad.</translation>
 <translation id="150962533380566081">Di-wasto ang PUK.</translation>
 <translation id="1510238584712386396">Launcher</translation>
@@ -17,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">Di-wasto ang PIN.</translation>
 <translation id="3838338534323494292">Bagong password</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Pakisubukan ulit. Mga natitirang pagsubok: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang device na ito at mayroon itong access sa lahat ng aktibidad ng user, kabilang ang mga webpage na binisita, mga password, at email.</translation>
 <translation id="4227825898293920515">Mag-e-expire ang password sa loob ng <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Mag-e-expire na ang ticket ng Kerberos</translation>
@@ -28,8 +28,6 @@
 <translation id="5212543919916444558">Wala akong makitang kahit ano sa iyong screen kung saan ako makakatulong.
 Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
-<translation id="5275776633505022322">Mga natitirang pagsubok: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Pakisubukan ulit.</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5332948983412042822">Pumili ng bago ngayon</translation>
 <translation id="5457599981699367932">Mag-browse bilang Bisita</translation>
@@ -42,6 +40,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7690294790491645610">Kumpirmahin ang bagong password</translation>
 <translation id="808894953321890993">Palitan ang password</translation>
+<translation id="8208861521865154048">Mga Perk</translation>
 <translation id="8747900814994928677">Kumpirmahin ang pagbabago</translation>
 <translation id="910415269708673980">I-refresh ang ticket para sa <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">I-unlock</translation>

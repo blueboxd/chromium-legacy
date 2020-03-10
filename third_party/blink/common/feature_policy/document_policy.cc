@@ -156,6 +156,7 @@ bool DocumentPolicy::IsFeatureSupported(
   switch (feature) {
     case mojom::DocumentPolicyFeature::kFontDisplay:
     case mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages:
+    case mojom::DocumentPolicyFeature::kForceLoadAtTop:
       return true;
     default:
       return false;

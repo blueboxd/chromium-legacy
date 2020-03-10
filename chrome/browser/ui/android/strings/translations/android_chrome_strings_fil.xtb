@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">I-clear ang history, cookies, site data, cache…</translation>
 <translation id="129382876167171263">Lalabas dito ang mga file na na-save ng mga website</translation>
 <translation id="129553762522093515">Kamakailang isinara</translation>
+<translation id="1303339473099049190">Hindi mahanap ang password na iyon. Tingnan ang iyong spelling at subukan ulit.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Ipinadala mula sa <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Igrupo ang mga tab</translation>
 <translation id="1311657260431405215">Hindi URL ang QR Code na ito: <ph name="QRCODEVALUE" /></translation>
@@ -167,6 +168,7 @@ Mag-tap ng anumang salita para maghanap. Para pinuhin ang iyong paghahanap, pind
 <translation id="2156074688469523661">Mga natitirang site (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Para magbahagi ng isang bagay sa isa pang device mula sa iyong telepono, i-on ang pag-sync sa mga setting ng Chrome sa dalawang device</translation>
 <translation id="2175927920773552910">QR Code</translation>
+<translation id="2182457891543959921">Magtanong bago payagan ang mga site na gumawa ng 3D na mapa ng iyong kapaligiran o subaybayan ang posisyon ng camera (inirerekomenda)</translation>
 <translation id="218608176142494674">Pagbabahagi</translation>
 <translation id="2227444325776770048">Magpatuloy bilang si <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sync at mga serbisyo ng Google</translation>
@@ -192,7 +194,6 @@ Mag-tap ng anumang salita para maghanap. Para pinuhin ang iyong paghahanap, pind
 <translation id="2407481962792080328">Kapag nag-sign in ka sa iyong Google Account, mao-on ang feature na ito</translation>
 <translation id="2410754283952462441">Pumili ng account</translation>
 <translation id="2414886740292270097">Madilim</translation>
-<translation id="2416359993254398973">Kailangan ng Chrome ng pahintulot na i-access ang iyong camera para sa site na ito.</translation>
 <translation id="2426805022920575512">Pumili ng ibang account</translation>
 <translation id="2433507940547922241">Hitsura</translation>
 <translation id="2434158240863470628">Tapos nang mag-download <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -324,6 +325,7 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="3350687908700087792">Isara ang lahat ng incognito na tab</translation>
 <translation id="3353615205017136254">Hatid ng Google ang lite na page. I-tap ang button na “i-load ang orihinal” para i-load ang orihinal na page.</translation>
 <translation id="3367813778245106622">Mag-sign in muli upang simulan ang pag-sync</translation>
+<translation id="3373979091428520308">Para ibahagi ang page na ito sa isa pang device, i-on ang pag-sync sa mga setting ng Chrome sa kabilang device</translation>
 <translation id="3374023511497244703">Hindi na isi-sync ang iyong mga bookmark, history, mga password, at iba pang data ng Chrome sa Google Account mo</translation>
 <translation id="3384347053049321195">Magbahagi ng larawan</translation>
 <translation id="3386292677130313581">Magtanong bago payagan ang mga site na malaman ang iyong lokasyon (inirerekomenda)</translation>
@@ -341,6 +343,7 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="3522247891732774234">May available na update. Higit pang mga opsyon</translation>
 <translation id="3524138585025253783">Developer UI</translation>
 <translation id="3527085408025491307">Folder</translation>
+<translation id="3538390592868664640">I-block ang mga site sa paggawa ng 3D na mapa ng iyong kapaligiran o pagsubaybay sa posisyon ng camera</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB ang available</translation>
 <translation id="3549657413697417275">Hanapin sa iyong history</translation>
 <translation id="3557336313807607643">Idagdag sa mga contact</translation>
@@ -437,6 +440,7 @@ Ikaw lang ang makakakita kung ano ang tinitingnan ng iyong camera. Hindi makikit
 <translation id="4298388696830689168">Mga naka-link na site</translation>
 <translation id="4307992518367153382">Mga Pangunahing Kaalaman</translation>
 <translation id="4314815835985389558">Pamahalaan ang pag-sync</translation>
+<translation id="4320177379694898372">Walang koneksyon sa internet</translation>
 <translation id="4321739720395210191">Hindi mabuksan ang iyong camera. I-restart ang iyong device at subukan ulit.</translation>
 <translation id="4351244548802238354">Isara ang dialog</translation>
 <translation id="4353114845960720315">Habang nasa VR ka, posibleng malaman ng site na ito ang tungkol sa:</translation>
@@ -615,7 +619,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5530766185686772672">Isara ang mga tab na incognito</translation>
 <translation id="5534640966246046842">Nakopya ang site</translation>
 <translation id="5561549206367097665">Naghihintay ng network…</translation>
-<translation id="557283862590186398">Kailangan ng Chrome ng pahintulot na i-access ang iyong mikropono para sa site na ito.</translation>
 <translation id="55737423895878184">Pinapayagan ang lokasyon at mga notification</translation>
 <translation id="5578795271662203820">Hanapin sa <ph name="SEARCH_ENGINE" /> ang larawan</translation>
 <translation id="5581519193887989363">Mapipili mo kung ano ang isi-sync anumang oras sa <ph name="BEGIN_LINK1" />mga setting<ph name="END_LINK1" />.</translation>
@@ -672,6 +675,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5956665950594638604">Buksan ang Help Center ng Chrome sa bagong tab</translation>
 <translation id="5958275228015807058">Hanapin ang iyong mga file at page sa Mga Download</translation>
 <translation id="5962718611393537961">I-tap upang i-collapse</translation>
+<translation id="5964805880140440652">Para ibahagi ang page na ito sa isa pang device, i-on ang pag-sync sa mga setting ng Chrome</translation>
 <translation id="6000066717592683814">Panatilihin ang Google</translation>
 <translation id="6005538289190791541">Iminumungkahing password</translation>
 <translation id="6036057147555329831">Karagdagang ICU</translation>
@@ -723,7 +727,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6378173571450987352">Mga detalye: Pinagbukud-bukod ayon sa laki ng nagamit na data</translation>
 <translation id="6381421346744604172">Padilimin ang mga website</translation>
 <translation id="6388207532828177975">I-clear at i-reset</translation>
-<translation id="6393863479814692971">Kailangan ng Chrome ng pahintulot na i-access ang iyong camera at mikropono para sa site na ito.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">I-edit ang bookmark</translation>
 <translation id="6406506848690869874">Pag-sync</translation>
@@ -776,7 +779,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6676840375528380067">I-clear ang iyong data sa Chrome sa device na ito?</translation>
 <translation id="6689172468748959065">Mga larawan sa profile</translation>
 <translation id="6697492270171225480">Magpakita ng mga mungkahi para sa mga katulad na page kapag hindi mahanap ang isang page</translation>
-<translation id="6697947395630195233">Kailangan ng Chrome ng access sa iyong lokasyon upang ibahagi ang lokasyon mo sa site na ito.</translation>
 <translation id="6698801883190606802">Pamahalaan ang na-sync na data</translation>
 <translation id="6699370405921460408">Io-optimize ng mga server ng Google ang mga page na binibisita mo.</translation>
 <translation id="6710213216561001401">Nakaraan</translation>
@@ -968,6 +970,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8186512483418048923"><ph name="FILES" /> (na) file ang natitira</translation>
 <translation id="8190358571722158785">1 araw na lang ang natitira</translation>
 <translation id="8200772114523450471">Resume</translation>
+<translation id="8206354486702514201">Ipinapatupad ng iyong administrator ang setting na ito.</translation>
 <translation id="8209050860603202033">Buksan ang larawan</translation>
 <translation id="8218622182176210845">Pamahalaan ang iyong account</translation>
 <translation id="8224471946457685718">Mag-download ng mga artikulo para sa iyo sa Wi-Fi</translation>
@@ -989,7 +992,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8364299278605033898">Tingnan ang mga sikat na website</translation>
 <translation id="8368027906805972958">Hindi alam o hindi sinusuportahang device (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Payagan ang Pag-sync sa Background para sa isang partikular na site.</translation>
-<translation id="8378714024927312812">Pinapamahalaan ng iyong organisasyon</translation>
 <translation id="8380167699614421159">Nagpapakita ang site na ito ng mga nakakasagabal o nakakapanlinlang na ad</translation>
 <translation id="8393700583063109961">Ipadala ang mensahe</translation>
 <translation id="8413126021676339697">Ipakita ang buong history</translation>

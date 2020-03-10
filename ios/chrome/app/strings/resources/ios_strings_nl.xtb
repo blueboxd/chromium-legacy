@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Een account selecteren</translation>
 <translation id="3311748811247479259">Uit</translation>
 <translation id="3324193307694657476">Adres 2</translation>
+<translation id="3328801116991980348">Site-informatie</translation>
 <translation id="3329904751041170572">Kan geen verbinding maken met de server.</translation>
 <translation id="3335947283844343239">Open gesloten tabblad opnieuw</translation>
 <translation id="3371831930909698441">Vertalen is beschikbaar. Opties beschikbaar onderaan het scherm.</translation>
@@ -600,6 +601,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="9223358826628549784">Crashrapport verzonden.</translation>
 <translation id="952704832371081537">Annuleren</translation>
 <translation id="988141524645182168">Andere apparaten</translation>
+<translation id="989697783705943787">Sitebeveiliging</translation>
 <translation id="989988560359834682">Adres bewerken</translation>
 <translation id="994757059139821576">Artikelsuggesties</translation>
 </translationbundle>

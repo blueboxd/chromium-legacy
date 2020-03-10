@@ -55,6 +55,7 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
 #endif
   scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
       override;
+  gpu::MemoryTracker* GetMemoryTracker() override;
 
  private:
   void SwapBuffersCallback(base::TimeTicks swap_time,

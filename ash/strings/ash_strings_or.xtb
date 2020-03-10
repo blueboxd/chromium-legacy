@@ -209,6 +209,7 @@
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> ଦ୍ୱାରା ଆକାଉଣ୍ଟ ପରିଚାଳିତ ହେଉଛି</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />"ରେ ପୁଣି ପରିବର୍ତ୍ତନ କରନ୍ତୁ (ପୁନରାରମ୍ଭର ଆବଶ୍ୟକତା ଅଛି)</translation>
 <translation id="3576141592585647168">ସମୟକ୍ଷେତ୍ର ବଦଳାନ୍ତୁ</translation>
+<translation id="3593646411856133110">ଖୋଲା ଥିବା ଆପଗୁଡ଼ିକୁ ଦେଖିବାକୁ ଉପରକୁ ଉଠାଇ ଧରି ରଖନ୍ତୁ</translation>
 <translation id="3595596368722241419">ବ୍ୟାଟେରୀ ପୂର୍ଣ୍ଣ</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> ଡେସ୍କ ତିଆରି କରାଯାଇଛି</translation>
 <translation id="3606978283550408104">ବ୍ରେଲିର ଡିସ୍‌ପ୍ଲେ ସଂଯୋଗ କରାଯାଇଛି।</translation>
@@ -216,6 +217,7 @@
 <translation id="3621712662352432595">ଅଡିଓ ସେଟିଂସ୍</translation>
 <translation id="3626281679859535460">ଉଜ୍ଜ୍ୱଳତା</translation>
 <translation id="3631369015426612114">ନିମ୍ନୋକ୍ତରୁ ବିଜ୍ଞପ୍ତିକୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
+<translation id="3638400994746983214">ଗୋପନୀୟତା ସ୍କ୍ରିନ୍ ଟୋଗଲ୍ କରନ୍ତୁ। <ph name="STATE_TEXT" />।</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">ଅଞ୍ଚଳ କ୍ୟାପ୍‍ଚର୍‌ କରନ୍ତୁ</translation>
 <translation id="371370241367527062">ସାମ୍‌ନାପଟର ମାଇକ୍ରୋଫୋନ୍</translation>
@@ -243,6 +245,7 @@
 <translation id="3995138139523574647">USB-C ଡିଭାଇସ୍‌ (ଡାହାଣପଟ ପଛ ପୋର୍ଟ)</translation>
 <translation id="4017989525502048489">ଲେଜର୍ ପଏଣ୍ଟର୍</translation>
 <translation id="4021716437419160885">ତଳକୁ ସ୍କ୍ରୋଲ୍ କରନ୍ତୁ</translation>
+<translation id="402772165574991617">ଆପଗୁଡ଼ିକ ମଧ୍ୟରେ ଦ୍ରୁତ ଭାବରେ ସ୍ୱିଚ୍ କରିବାକୁ ଏବଂ ଟାବଲେଟ୍ ମୋଡରେ ଆପଣଙ୍କ chromebook ସହିତ ଇଣ୍ଟରାକ୍ଟ କରିବାକୁ ଜେଶ୍ଚରଗୁଡ଼ିକ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
 <translation id="4028481283645788203">ଅଧିକ ସୁରକ୍ଷା ପାଇଁ ପାସୱାର୍ଡ ଆବଶ୍ୟକ</translation>
 <translation id="4042660782729322247">ଆପଣ, ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ସେୟାର୍ କରୁଛନ୍ତି</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ଏକ ଆପ୍ ପାଇଁ ବନ୍ଦ ଅଛି}other{#ଟି ଆପ୍ସ ପାଇଁ ବନ୍ଦ ଅଛି}}</translation>
@@ -291,6 +294,7 @@
 <translation id="4659419629803378708">ChromeVox ସକ୍ଷମ କରାଯାଇଛି</translation>
 <translation id="4665114317261903604">'ବିରକ୍ତ କରନ୍ତୁ ନାହିଁ' ଟୋଗଲ୍ କରନ୍ତୁ। <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">ମାତାପିତାଙ୍କ କୋଡ୍‌ରେ ଡିଭାଇସ୍ ଅନଲକ୍ କରନ୍ତୁ</translation>
+<translation id="4702647871202761252">ଗୋପନୀୟତା ସ୍କ୍ରିନ୍ ବନ୍ଦ ଅଛି</translation>
 <translation id="4710243778082831592">IME ସେଟିଂସ୍</translation>
 <translation id="4731797938093519117">ମାତା-ପିତାଙ୍କର ଆକ୍ସେସ୍</translation>
 <translation id="4734965478015604180">ଭୂସମାନ୍ତର</translation>
@@ -362,6 +366,7 @@
 <translation id="5745612484876805746">ସୂର୍ଯ୍ୟାସ୍ତ ପରେ ନାଇଟ୍ ଲାଇଟ୍ ସ୍ୱଚାଳିତ ଭାବେ ଚାଲୁ ହୋଇଥାଏ</translation>
 <translation id="5750765938512549687">ବ୍ଲୁଟୁଥ୍‌ ବନ୍ଦ ଅଛି</translation>
 <translation id="576453121877257266">ନାଇଟ୍ ଲାଇଟ୍ ଚାଲୁ ଅଛି।</translation>
+<translation id="5769373120130404283">ଗୋପନୀୟତା ସ୍କ୍ରିନ୍</translation>
 <translation id="5777841717266010279">ସ୍କ୍ରିନ୍ ସେୟାରିଂ ବନ୍ଦ କରିବେ?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" />ରେ <ph name="ROUTE_TITLE" /> ବନ୍ଦ କରନ୍ତୁ</translation>
@@ -403,6 +408,7 @@
 <translation id="6297287540776456956">ଏକ ଅଞ୍ଚଳ ଚୟନ କରିବାକୁ ଷ୍ଟାଇଲସ୍ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />କୁ <ph name="ROTATION" />ରେ ଘୂରାଗଲା</translation>
 <translation id="6376931439017688372">ବ୍ଲୁଟୁଥ୍ ଚାଲୁ ଅଛି</translation>
+<translation id="6381109794406942707">ଡିଭାଇସକୁ ଅନଲକ୍ କରିବା ପାଇଁ ଆପଣଙ୍କର PIN ଲେଖନ୍ତୁ।</translation>
 <translation id="639644700271529076">କ୍ୟାପସ୍ ଲକ୍ ବନ୍ଦ ଅଛି</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" /></translation>
@@ -425,6 +431,7 @@
 <translation id="6559976592393364813">ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‍ଙ୍କୁ ପଚାରନ୍ତୁ</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />ରେ ସମୟ ଅବଧି ସମାପ୍ତ ହେବ</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />, ଆପଣଙ୍କର ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‍ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ</translation>
+<translation id="6614169507485700968">ଗୋପନୀୟତା ସ୍କ୍ରିନ୍ ଚାଲୁ ଅଛି</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6637729079642709226">ସମୟ ବଦଳାନ୍ତୁ</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" ବ୍ଲୁଟୁଥ୍ ଡିଭାଇସ୍ ପେୟାର୍ କରିବାକୁ ଅନୁମତି ଚାହୁଁଛି। ଦୟାକରି ଏହି ପାସ୍‌କୀ ସେହି ଡିଭାଇସ୍‌ରେ ଦିଅନ୍ତୁ: <ph name="PASSKEY" /></translation>
@@ -439,6 +446,7 @@
 <translation id="6715542151869432661">କୌଣସି ମୋବାଇଲ୍ ଡିଭାଇସ୍ ମିଳିଲା ନାହିଁ।</translation>
 <translation id="6723839937902243910">ପାୱର୍</translation>
 <translation id="6727969043791803658">ସଂଯୋଗ କରାଯାଇଛି, <ph name="BATTERY_PERCENTAGE" />% ବ୍ୟାଟେରୀ</translation>
+<translation id="6751052314767925245">ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ଦ୍ୱାରା ଲାଗୁ କରାଯାଇଛି</translation>
 <translation id="6751826523481687655">କାର୍ଯ୍ୟ-ସମ୍ପାଦନ ଟ୍ରେସିଂ ଚାଲୁ କରାଯାଇଛି</translation>
 <translation id="6752912906630585008"><ph name="REMOVED_DESK" /> ଡେସ୍କ କାଢ଼ି ଦିଆଯାଇଛି ଏବଂ <ph name="RECEIVE_DESK" /> ଡେସ୍କ ସହ ମିଶାଇ ଦିଆଯାଇଛି</translation>
 <translation id="6777216307882431711">ସଂଯୁକ୍ତ ଥିବା USB-C ଡିଭାଇସ୍‌ଗୁଡ଼ିକୁ ଚାଲୁ କରୁଛି</translation>
@@ -526,6 +534,7 @@
 <translation id="8000066093800657092">କୌଣସି ନେଟ୍‌ୱର୍କ ନାହିଁ</translation>
 <translation id="8029629653277878342">ଅଧିକ ସୁରକ୍ଷା ପାଇଁ PIN କିମ୍ବା ପାସୱାର୍ଡ ଆବଶ୍ୟକ</translation>
 <translation id="8030169304546394654">ବିଚ୍ଛିନ୍ନ କରାଯାଇଛି</translation>
+<translation id="8042024183333293953">ନୂଆ ନାଭିଗେସନ୍ ଜେଶ୍ଚର୍ ବ୍ୟବହାର କରି ଦେଖନ୍ତୁ</translation>
 <translation id="8048123526339889627">ବ୍ଲୁଟୁଥ୍ ସେଟିଂସ୍</translation>
 <translation id="8054466585765276473">ବ୍ୟାଟେରୀ ସମୟ ହିସାବ କରାଯାଉଛି।</translation>
 <translation id="8061464966246066292">ଉଚ୍ଚ କଣ୍ଟ୍ରାଷ୍ଟ</translation>
@@ -613,6 +622,7 @@
 <translation id="9072519059834302790">ବ୍ୟାଟେରୀ ଖାଲି ହେବା ପର୍ଯ୍ୟନ୍ତ <ph name="TIME_LEFT" /> ବାକି ଅଛି।</translation>
 <translation id="9074739597929991885">ବ୍ଲୁଟୁଥ୍</translation>
 <translation id="9079731690316798640">ୱାଇ-ଫାଇ: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">ମୂଳସ୍କ୍ରିନକୁ ଯିବା ପାଇଁ ଉପରକୁ ସ୍ୱାଇପ୍ କରନ୍ତୁ</translation>
 <translation id="9080206825613744995">ମାଇକ୍ରୋଫୋନ୍ ବ୍ୟବହାରରେ ଅଛି।</translation>
 <translation id="9084606467167974638">ଟୋଗଲ୍ ମେନୁ ଅବସ୍ଥିତି</translation>
 <translation id="9089416786594320554">ଇନ୍‌ପୁଟ୍ ପଦ୍ଧତି</translation>

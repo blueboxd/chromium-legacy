@@ -478,7 +478,6 @@
 <translation id="3024663005179499861">نوع خط‌مشی اشتباه است</translation>
 <translation id="3037605927509011580">اوه، نه!</translation>
 <translation id="3041612393474885105">اطلاعات گواهی</translation>
-<translation id="3057676462092457419">‏حالت DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> هنوز پشتیبانی نمی‌شود، حالت مربوطه روی <ph name="SECURE_DNS_MODE_OFF" /> تنظیم شده است.</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">سرویس وصله</translation>
 <translation id="3064966200440839136">درحال خروج از حالت ناشناس، برای پرداخت ازطریق یک برنامه خارجی. ادامه می‌دهید؟</translation>
@@ -578,6 +577,7 @@
 <translation id="3487845404393360112">سینی ۴</translation>
 <translation id="3495081129428749620">یافتن در صفحه
 <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">ایجاد نقشه سه‌بعدی از محیط و ردیابی موقعیت دوربین</translation>
 <translation id="3512163584740124171">این خط‌مشی، چون خط‌مشی دیگری از همین گروه خط‌مشی اولویت بالاتری دارد، لحاظ نمی‌شود.</translation>
 <translation id="3518941727116570328">کار با چند شیء</translation>
 <translation id="3528171143076753409">گواهی سرور مطمئن نیست.</translation>
@@ -931,6 +931,7 @@
 <translation id="5030338702439866405">صدور توسط</translation>
 <translation id="503069730517007720">برای «<ph name="SOFTWARE_NAME" />» گواهینامه ریشه‌ لازم است اما نصب نشده است. برای رفع این مشکل، سرپرست فناوری اطلاعات شما باید دستورالعمل‌های پیکربندی مربوط به «<ph name="SOFTWARE_NAME" />» را بررسی کند. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">‏درباره ‏‫مترجم Google‬</translation>
+<translation id="503498442187459473"><ph name="HOST" /> می‌خواهد از دوربین و میکروفن شما استفاده کند</translation>
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5040262127954254034">حریم خصوصی</translation>
 <translation id="5043480802608081735">پیوندی که کپی کرده‌اید</translation>
@@ -1039,7 +1040,6 @@
 <translation id="5457113250005438886">نامعتبر</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> مخاطب دیگر}one{<ph name="CONTACT_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> مخاطب دیگر}other{<ph name="CONTACT_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> مخاطب دیگر}}</translation>
 <translation id="5470861586879999274">&amp;انجام مجدد ویرایش</translation>
-<translation id="5472133193607270166">وقتی روشن باشد، سایت‌ها نمی‌توانند از فعالیت مرور شما در سایت‌های مختلف برای شخصی‌سازی آگهی استفاده کنند. ممکن است برخی سایت‌ها به‌درستی کار نکنند.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">شاید این محتوا تلاش کند نرم‌افزار خطرناکی در دستگاهتان نصب کند که اطلاعاتتان را به سرقت برد یا حذف کند. <ph name="BEGIN_LINK" />درهرصورت نمایش داده شود<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">نشانی معتبری اضافه کنید</translation>
@@ -1325,6 +1325,7 @@
 <translation id="6710594484020273272">&lt;عبارت جستجو را تایپ کنید&gt;</translation>
 <translation id="671076103358959139">کد ثبت‌نام:</translation>
 <translation id="6711464428925977395">مشکلی در سرور پروکسی وجود دارد یا این آدرس درست نیست.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> می‌خواهد نقشه‌ای سه‌بعدی از محیط ایجاد کند و موقعیت دوربین را ردیابی کند</translation>
 <translation id="6738516213925468394">داده‌ها با  <ph name="BEGIN_LINK" />گذرنویسه همگام‌سازی‌شده<ph name="END_LINK" /> شما در <ph name="TIME" /> رمز می‌شود. برای شروع همگام‌سازی، آن را وارد کنید.</translation>
 <translation id="674375294223700098">خطای ناشناس گواهی سرور.</translation>
 <translation id="6744009308914054259">وقتی درانتظار اتصال هستید، می‌توانید برای خواندن مقاله‌های آفلاین، «بارگیری‌ها» را مشاهده کنید.</translation>
@@ -1745,7 +1746,6 @@
 <translation id="8589998999637048520">بهترین کیفیت</translation>
 <translation id="860043288473659153">نام صاحب کارت</translation>
 <translation id="8606726445206553943">‏استفاده از دستگاه‌های MIDI شما</translation>
-<translation id="8616822740383114808">این تنظیم به‌واسطه «<ph name="ENFORCING_SETTING" />» در »<ph name="SETTINGS_PAGE" />» اعمال شده است</translation>
 <translation id="861775596732816396">اندازه ۴</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">ذخیره کردن این کارت در این دستگاه</translation>

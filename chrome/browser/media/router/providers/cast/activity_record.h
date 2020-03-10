@@ -44,6 +44,16 @@ class ActivityRecord {
   base::Optional<int> mirroring_tab_id() const { return mirroring_tab_id_; }
   const MediaSinkInternal sink() const { return sink_; }
 
+  // Adds a new client |client_id| to this session and returns the handles of
+  // the two pipes to be held by Blink It is invalid to call this method if the
+  // client already exists.
+  virtual mojom::RoutePresentationConnectionPtr AddClient(
+      const CastMediaSource& source,
+      const url::Origin& origin,
+      int tab_id);
+
+  virtual void RemoveClient(const std::string& client_id);
+
   // On the first call, saves the ID of |session|.  On subsequent calls,
   // notifies all connected clients that the session has been updated.  In both
   // cases, the stored route description is updated to match the session
@@ -83,8 +93,52 @@ class ActivityRecord {
       mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojo::PendingRemote<mojom::MediaStatusObserver> observer) = 0;
 
+  // Sends media command |cast_message|, which came from the SDK client, to the
+  // receiver hosting this session. Returns the locally-assigned request ID of
+  // the message sent to the receiver.
+  virtual base::Optional<int> SendMediaRequestToReceiver(
+      const CastInternalMessage& cast_message);
+
+  // Sends app message |cast_message|, which came from the SDK client, to the
+  // receiver hosting this session. Returns true if the message is sent
+  // successfully.
+  virtual cast_channel::Result SendAppMessageToReceiver(
+      const CastInternalMessage& cast_message);
+
+  // Sends a SET_VOLUME request to the receiver and calls |callback| when a
+  // response indicating whether the request succeeded is received.
+  virtual void SendSetVolumeRequestToReceiver(
+      const CastInternalMessage& cast_message,
+      cast_channel::ResultCallback callback);
+
+  // Stops the currently active session on the receiver, and invokes |callback|
+  // with the result. Called when a SDK client requests to stop the session.
+  virtual void StopSessionOnReceiver(const std::string& client_id,
+                                     cast_channel::ResultCallback callback);
+
+  // Called when the client given by |client_id| requests to leave the session.
+  // This will also cause all clients within the session with matching origin
+  // and/or tab ID to leave (i.e., their presentation connections will be
+  // closed).
+  virtual void HandleLeaveSession(const std::string& client_id);
+
+  static void SetClientFactoryForTest(
+      CastSessionClientFactoryForTest* factory) {
+    client_factory_for_test_ = factory;
+  }
+
  protected:
+  using ClientMap =
+      base::flat_map<std::string, std::unique_ptr<CastSessionClient>>;
+
   CastSession* GetSession() const;
+
+  CastSessionClient* GetClient(const std::string& client_id) {
+    auto it = connected_clients_.find(client_id);
+    return it == connected_clients_.end() ? nullptr : it->second.get();
+  }
+
+  int cast_channel_id() const { return sink_.cast_channel_id(); }
 
   MediaRoute route_;
   std::string app_id_;
@@ -104,6 +158,12 @@ class ActivityRecord {
   base::Optional<std::string> session_id_;
 
   MediaSinkInternal sink_;
+  ClientMap connected_clients_;
+
+ private:
+  friend class CastActivityRecordTest;
+
+  static CastSessionClientFactoryForTest* client_factory_for_test_;
 };
 
 }  // namespace media_router

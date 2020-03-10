@@ -474,7 +474,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="3024663005179499861">Lloj i gabuar politike</translation>
 <translation id="3037605927509011580">Ndërprerje aksidentale!</translation>
 <translation id="3041612393474885105">Informacioni i certifikatës</translation>
-<translation id="3057676462092457419">Modaliteti DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> nuk mbështetet ende, modaliteti është caktuar në <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Zarf)</translation>
 <translation id="3061707000357573562">Shërbimi i korrigjimit</translation>
 <translation id="3064966200440839136">Po del nga modaliteti "i fshehur" për të paguar nëpërmjet një aplikacioni të jashtëm. Do të vazhdosh?</translation>
@@ -574,6 +573,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="3487845404393360112">Tabakaja 4</translation>
 <translation id="3495081129428749620">Gjej në faqen
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Të krijojë një hartë 3D të ambientit tënd rrethues dhe të gjurmojë pozicionin e kamerës</translation>
 <translation id="3512163584740124171">Kjo politikë shpërfillet pasi një politikë tjetër nga i njëjti grup politikash ka përparësi më të lartë.</translation>
 <translation id="3518941727116570328">Menaxhimi i shumë objekteve</translation>
 <translation id="3528171143076753409">Certifikata e serverit nuk është e besuar.</translation>
@@ -926,6 +926,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5030338702439866405">Lëshuar nga</translation>
 <translation id="503069730517007720">Për "<ph name="SOFTWARE_NAME" />" kërkohet një certifikatë rrënjë, por ajo nuk është instaluar. Administratori i TI-së duhet të shikojë udhëzimet e konfigurimit për "<ph name="SOFTWARE_NAME" />" për të rregulluar këtë problem. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Rreth "Përkthe me Google"</translation>
+<translation id="503498442187459473"><ph name="HOST" /> kërkon të përdorë kamerën dhe mikrofonin</translation>
 <translation id="5039804452771397117">Lejo</translation>
 <translation id="5040262127954254034">Privatësia</translation>
 <translation id="5043480802608081735">Lidhja që kopjove</translation>
@@ -1034,7 +1035,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5457113250005438886">E pavlefshme</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> dhe <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> tjetër}other{<ph name="CONTACT_PREVIEW" /> dhe <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> të tjerë}}</translation>
 <translation id="5470861586879999274">&amp;Ribëj redaktimin</translation>
-<translation id="5472133193607270166">Kur është aktive, sajtet nuk mund t'i përdorin të dhënat e shfletimit nëpër sajte të ndryshme për t'i personalizuar reklamat. Disa sajte mund të mos punojnë mirë.</translation>
 <translation id="5478437291406423475">B6/C4 (Zarf)</translation>
 <translation id="5481076368049295676">Kjo përmbajtje mund të përpiqet të instalojë softuerë të rrezikshëm në pajisjen tënde që vjedhin ose fshijnë informacionet e tua. <ph name="BEGIN_LINK" />Shfaqe gjithsesi<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Shto një adresë të vlefshme</translation>
@@ -1319,6 +1319,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6710594484020273272">&lt;Shkruaj termin e kërkimit&gt;</translation>
 <translation id="671076103358959139">Tokeni i regjistrimit:</translation>
 <translation id="6711464428925977395">Ka një gabim me serverin përfaqësues ose adresa është e pasaktë.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> kërkon të krijojë një hartë 3D të ambientit tënd rrethues dhe të gjurmojë pozicionin e kamerës</translation>
 <translation id="6738516213925468394">Të dhënat e tua u enkriptuan me <ph name="BEGIN_LINK" />frazën e kalimit të sinkronizimit <ph name="END_LINK" /> më <ph name="TIME" />. Fute atë për të nisur sinkronizmin.</translation>
 <translation id="674375294223700098">Gabim i panjohur i certifikatës së serverit</translation>
 <translation id="6744009308914054259">Ndërkohë që pret për një lidhje, mund të vizitosh "Shkarkimet" për të lexuar artikuj jashtë linje.</translation>
@@ -1739,7 +1740,6 @@ Detaje shtesë:
 <translation id="8589998999637048520">Cilësia më e mirë</translation>
 <translation id="860043288473659153">Emri i mbajtësit të kartës</translation>
 <translation id="8606726445206553943">Përdor pajisjet e tua MIDI</translation>
-<translation id="8616822740383114808">Ky cilësim zbatohet nga "<ph name="ENFORCING_SETTING" />" në "<ph name="SETTINGS_PAGE" />"</translation>
 <translation id="861775596732816396">Madhësia 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Ruaje këtë kartë në këtë pajisje</translation>

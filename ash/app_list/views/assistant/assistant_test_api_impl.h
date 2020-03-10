@@ -30,6 +30,7 @@ class AssistantTestApiImpl : public AssistantTestApi {
   bool IsVisible() override;
   void SendTextQuery(const std::string& query) override;
   void SetAssistantEnabled(bool enable) override;
+  void SetScreenContextEnabled(bool enabled) override;
   void SetTabletMode(bool enable) override;
   void SetConsentStatus(chromeos::assistant::prefs::ConsentStatus) override;
   void SetPreferVoice(bool value) override;

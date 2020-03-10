@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="1195447618553298278">अज्ञात गड़बड़ी.</translation>
+<translation id="1468664791493211953">ऑफ़र</translation>
 <translation id="1482734542997480527">इस डिवाइस को <ph name="ENROLLMENT_DOMAIN" /> प्रबंधित करता है और आपकी गतिविधि पर नज़र रख सकता है.</translation>
 <translation id="150962533380566081">गलत पीयूके.</translation>
 <translation id="1510238584712386396">लॉन्चर</translation>
@@ -17,7 +18,6 @@
 <translation id="3169472444629675720">तलाश करें</translation>
 <translation id="3820172043799983114">गलत पिन</translation>
 <translation id="3838338534323494292">नया पासवर्ड</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> कृपया फिर से कोशिश करें. इतनी बार और कोशिश की जा सकती है: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> इस डिवाइस को प्रबंधित करता है. इसके पास उपयोगकर्ता की सभी गतिविधियों का ऐक्सेस है. इन गतिविधियों में उपयोगकर्ता के किसी वेबपेज पर जाने, उसके पासवर्ड, और ईमेल की जानकारी शामिल होती है.</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> में पासवर्ड की समयसीमा खत्म हो जाएगी</translation>
 <translation id="4429881212383817840">Kerberos टिकट की समयसीमा जल्द ही खत्म होने वाली है</translation>
@@ -28,8 +28,6 @@
 <translation id="5212543919916444558">मुझे आपकी स्क्रीन पर ऐसा कुछ नहीं मिला जिसमें मैं आपकी सहायता कर पाऊं.
 मुझे कुछ पूछने के लिए माइक टैप करके देखें.</translation>
 <translation id="5222676887888702881">साइन आउट करें</translation>
-<translation id="5275776633505022322">कोशिशें बाकी : <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> कृपया फिर से कोशिश करें.</translation>
 <translation id="5317780077021120954">सेव करें</translation>
 <translation id="5332948983412042822">कोई नया पासवर्ड चुनें</translation>
 <translation id="5457599981699367932">मेहमान के रूप में ब्राउज़ करें</translation>
@@ -42,6 +40,7 @@
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7690294790491645610">नए पासवर्ड की पुष्टि करें</translation>
 <translation id="808894953321890993">पासवर्ड बदलें</translation>
+<translation id="8208861521865154048">फ़ायदे</translation>
 <translation id="8747900814994928677">बदलाव की पुष्टि करें</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> के लिए टिकट रीफ़्रेश करें</translation>
 <translation id="9111102763498581341">अनलॉक करें</translation>

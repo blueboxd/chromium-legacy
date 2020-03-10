@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr-CA">
 <translation id="1195447618553298278">Erreur inconnue.</translation>
+<translation id="1468664791493211953">Offres</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> gère cet appareil et pourrait surveiller votre activité sur celui-ci.</translation>
 <translation id="150962533380566081">Clé PUK non valide.</translation>
 <translation id="1510238584712386396">Lanceur</translation>
@@ -17,7 +18,6 @@
 <translation id="3169472444629675720">Découvrir</translation>
 <translation id="3820172043799983114">NIP erroné.</translation>
 <translation id="3838338534323494292">Nouveau mot de passe</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Veuillez réessayer. Nombre de tentatives restantes : <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gère cet appareil et a accès à toutes les activités, y compris les pages Web que vous visitez, vos mots de passe et vos courriels.</translation>
 <translation id="4227825898293920515">Le mot de passe expire dans <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Le ticket Kerberos expire bientôt</translation>
@@ -28,8 +28,6 @@
 <translation id="5212543919916444558">Je ne trouve aucun élément sur votre écran pour lequel je peux vous aider.
 Essayez de toucher le micro pour me demander ce que vous souhaitez.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
-<translation id="5275776633505022322">Nombre de tentatives restantes : <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Veuillez réessayer.</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5332948983412042822">Choisissez-en un nouveau maintenant</translation>
 <translation id="5457599981699367932">Naviguer en tant qu'invité</translation>
@@ -42,6 +40,7 @@ Essayez de toucher le micro pour me demander ce que vous souhaitez.</translation
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7690294790491645610">Confirmez le nouveau mot de passe</translation>
 <translation id="808894953321890993">Changer le mot de passe</translation>
+<translation id="8208861521865154048">Avantages</translation>
 <translation id="8747900814994928677">Confirmer la modification</translation>
 <translation id="910415269708673980">Actualiser le ticket pour <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Déverrouiller</translation>

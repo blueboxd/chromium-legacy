@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">ቀሪ ጣቢያዎች (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">የሆነ ነገር ከስልክዎ ወደ ሌላ መሣሪያ ለማጋራት በሁለቱም መሣሪያዎች ላይ በChrome ቅንብሮች ውስጥ ስምረትን ያብሩ</translation>
 <translation id="2175927920773552910">የQR ኮድ</translation>
+<translation id="2182457891543959921">ጣቢያዎች የዙሪያዎ የ3ል ካርታ እንዲፈጥሩ ወይም የካሜራ ቦታን እንዲከታተል ከመፍቀድ በፊት ጠይቅ (የሚመከር)</translation>
 <translation id="218608176142494674">ማጋራት</translation>
 <translation id="2227444325776770048">እንደ <ph name="USER_FULL_NAME" /> ሆነው ይቀጥሉ</translation>
 <translation id="2234876718134438132">ማመሳሰል እና የGoogle አገልግሎቶች</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">ወደ የእርስዎ የ Google መለያ ሲገቡ፣ ይህ ባህሪ ይበራል</translation>
 <translation id="2410754283952462441">አንድ መለያ ይምረጡ</translation>
 <translation id="2414886740292270097">ጨለማ</translation>
-<translation id="2416359993254398973">Chrome ለዚህ ጣቢያ የእርስዎን ካሜራ ለመድረስ ፈቃድ ይፈልጋል።</translation>
 <translation id="2426805022920575512">ሌላ መለያ ይምረጡ</translation>
 <translation id="2433507940547922241">ገጽታ</translation>
 <translation id="2434158240863470628">ማውረድ ተጠናቅቋል <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@
 <translation id="3522247891732774234">ዝማኔ ይገኛል። ተጨማሪ አማራጮች</translation>
 <translation id="3524138585025253783">የገንቢ ዩአይ</translation>
 <translation id="3527085408025491307">አቃፊ</translation>
+<translation id="3538390592868664640">ጣቢያዎች የዙሪያዎ የ3ል ካርታ እንዳይፈጥሩ ወይም የካሜራ ቦታን እንዳይከታተሉ ያግዷቸው</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> ኪባ ይገኛል</translation>
 <translation id="3549657413697417275">የራስዎን ታሪክ ይፈልጉ</translation>
 <translation id="3557336313807607643">ወደ እውቂያዎች አክል</translation>
@@ -439,6 +440,7 @@
 <translation id="4298388696830689168">የተገናኙ ጣቢያዎች</translation>
 <translation id="4307992518367153382">መሠረታዊ</translation>
 <translation id="4314815835985389558">ስምረትን ያቀናብሩ</translation>
+<translation id="4320177379694898372">ምንም የበይነመረብ ግንኙነት የለም</translation>
 <translation id="4321739720395210191">የእርስዎን ካሜራ መክፈት አይቻልም። የእርስዎን መሣሪያ ዳግም ያስጀምሩት እና እንደገና ይሞክሩ።</translation>
 <translation id="4351244548802238354">መገናኛ ዝጋ</translation>
 <translation id="4353114845960720315">እርስዎ በቪአር ውስጥ ሳሉ ይህ ጣቢያ ስለእነዚህ ሊያውቅ ይችላል፦</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">ማንነት የማያሳውቁ ትሮችን ዝጋ</translation>
 <translation id="5534640966246046842">ጣቢያ ተቀድቷል</translation>
 <translation id="5561549206367097665">አውታረ መረብን በመጠበቅ ላይ…</translation>
-<translation id="557283862590186398">Chrome ለዚህ ጣቢያ የእርስዎን ማይክራፎን ለመድረስ ፈቃድ ይፈልጋል።</translation>
 <translation id="55737423895878184">አካባቢ እና ማሳወቂያዎች ይፈቀዳሉ</translation>
 <translation id="5578795271662203820">ይህንን ምስል <ph name="SEARCH_ENGINE" /> ላይ ይፈልጉት</translation>
 <translation id="5581519193887989363">በማንኛውም ጊዜ ምን እንደሚያሰምሩ በ<ph name="BEGIN_LINK1" />ቅንብሮች<ph name="END_LINK1" /> ውስጥ መምረጥ ይችላሉ።</translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">ዝርዝሮች፦ ጥቅም ላይ በዋለው የውሂብ መጠን ተደርድረዋል</translation>
 <translation id="6381421346744604172">የጨለሙ የድር ጣቢያዎች</translation>
 <translation id="6388207532828177975">አጽዳ እና ዳግም አስጀምር</translation>
-<translation id="6393863479814692971">Chrome ለዚህ ጣቢያ የእርስዎን ካሜራ እና ማይክራፎን ለመድረስ ፈቃድ ይፈልጋል።</translation>
 <translation id="6395288395575013217">አገናኝ</translation>
 <translation id="6404511346730675251">ዕልባት አርትዕ</translation>
 <translation id="6406506848690869874">አመሳስል</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">የChrome ውሂብዎ ከዚህ መሣሪያ ላይ ይጽዳ?</translation>
 <translation id="6689172468748959065">የመገለጫ ፎቶዎች</translation>
 <translation id="6697492270171225480">አንድ ገጽ ሊገኝ ካልቻለ የተመሳሳይ ገጾች የአስተያየት ጥቆማዎችን አሳይ</translation>
-<translation id="6697947395630195233">Chrome አካባቢዎን ለዚህ ጣቢያ ለማጋራት የአካባቢዎ መዳረሻ ይፈልጋል።</translation>
 <translation id="6698801883190606802">የተመሳሰለ ውሂብ ያስተዳድሩ</translation>
 <translation id="6699370405921460408">የGoogle አገልጋዮች እርስዎ የሚጎበኟቸውን ገጾች ያተባሉ።</translation>
 <translation id="6710213216561001401">ቀዳሚ</translation>
@@ -971,6 +970,7 @@
 <translation id="8186512483418048923"><ph name="FILES" /> ፋይሎች ይቀራሉ</translation>
 <translation id="8190358571722158785">1 ቀን ይቀራል</translation>
 <translation id="8200772114523450471">ከቆመበት ቀጥል</translation>
+<translation id="8206354486702514201">ይህ ቅንብር በአስተዳዳሪዎ ነው በግዳጅ እንዲፈጸም የተደረገው።</translation>
 <translation id="8209050860603202033">ምስል ክፈት</translation>
 <translation id="8218622182176210845">መለያዎን ያቀናብሩ</translation>
 <translation id="8224471946457685718">በWi-Fi ላይ ለእርስዎ ጽሑፎችን ያውርዱ</translation>
@@ -992,7 +992,6 @@
 <translation id="8364299278605033898">ታዋቂ ድር ጣቢያዎችን ይመልከቱ</translation>
 <translation id="8368027906805972958">ያልታወቀ ወይም የማይደገፍ መሣሪያ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">ለአንድ የተወሰነ ጣቢያ የጀርባ ስምረትን ይፍቀዱ።</translation>
-<translation id="8378714024927312812">በእርስዎ ድርጅት የሚተዳደር</translation>
 <translation id="8380167699614421159">ይህ ጣቢያ ረባሽ ወይም አሳሳች ማስታወቂያዎችን ያሳያል</translation>
 <translation id="8393700583063109961">መልዕክት ይላኩ</translation>
 <translation id="8413126021676339697">ሙሉ ታሪክ አሳይ</translation>

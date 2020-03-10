@@ -474,7 +474,6 @@
 <translation id="3024663005179499861">ประเภทนโยบายไม่ถูกต้อง</translation>
 <translation id="3037605927509011580">แย่จัง!</translation>
 <translation id="3041612393474885105">ข้อมูลในใบรับรอง</translation>
-<translation id="3057676462092457419">ยังไม่รองรับโหมด DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> มีการตั้งค่าโหมดดังกล่าวเป็น <ph name="SECURE_DNS_MODE_OFF" /></translation>
 <translation id="3060227939791841287">C9 (ซองจดหมาย)</translation>
 <translation id="3061707000357573562">แพตช์บริการ</translation>
 <translation id="3064966200440839136">ออกจากโหมดไม่ระบุตัวตนเพื่อชำระเงินผ่านแอปพลิเคชันภายนอก ดำเนินการต่อไหม</translation>
@@ -573,6 +572,7 @@
 <translation id="3484560055331845446">คุณอาจสูญเสียสิทธิ์เข้าถึงบัญชี Google ของคุณ Chrome ขอแนะนำให้เปลี่ยนรหัสผ่านทันที ระบบจะขอให้คุณลงชื่อเข้าใช้</translation>
 <translation id="3487845404393360112">ถาด 4</translation>
 <translation id="3495081129428749620">ค้นหาในหน้าเว็บ <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">สร้างแผนที่ 3 มิติของสิ่งที่อยู่รอบตัวคุณและติดตามตำแหน่งของกล้อง</translation>
 <translation id="3512163584740124171">ระบบจะไม่สนใจนโยบายนี้เพราะอีกนโยบายหนึ่งจากกลุ่มนโยบายเดียวกันมีลำดับความสำคัญสูงกว่า</translation>
 <translation id="3518941727116570328">การจัดการออบเจ็กต์หลายรายการ</translation>
 <translation id="3528171143076753409">ใบรับรองของเซิร์ฟเวอร์ไม่น่าเชื่อถือ</translation>
@@ -925,6 +925,7 @@
 <translation id="5030338702439866405">ออกโดย</translation>
 <translation id="503069730517007720">ไม่ได้ติดตั้งใบรับรองรากที่จำเป็นของ "<ph name="SOFTWARE_NAME" />" ผู้ดูแลระบบ IT ควรดูวิธีการกำหนดค่าของ "<ph name="SOFTWARE_NAME" />" เพื่อแก้ไขปัญหานี้ <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">เกี่ยวกับ Google แปลภาษา</translation>
+<translation id="503498442187459473"><ph name="HOST" /> ต้องการใช้กล้องถ่ายรูปและไมโครโฟนของคุณ</translation>
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="5040262127954254034">ความเป็นส่วนตัว</translation>
 <translation id="5043480802608081735">ลิงก์ที่คุณคัดลอก</translation>
@@ -1033,7 +1034,6 @@
 <translation id="5457113250005438886">ไม่ถูกต้อง</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}other{<ph name="CONTACT_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}}</translation>
 <translation id="5470861586879999274">&amp;ทำซ้ำการแก้ไข</translation>
-<translation id="5472133193607270166">เมื่อเปิดใช้ เว็บไซต์จะใช้กิจกรรมการท่องเว็บตามเว็บไซต์ต่างๆ ของคุณเพื่อปรับโฆษณาตามโปรไฟล์ของผู้ใช้ไม่ได้ บางเว็บไซต์อาจทำงานไม่ถูกต้อง</translation>
 <translation id="5478437291406423475">B6/C4 (ซองจดหมาย)</translation>
 <translation id="5481076368049295676">เนื้อหานี้อาจพยายามติดตั้งซอฟต์แวร์อันตรายที่จะขโมยหรือลบข้อมูลในอุปกรณ์ของคุณ <ph name="BEGIN_LINK" />แสดงเนื้อหา<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">เพิ่มที่อยู่ที่ถูกต้อง</translation>
@@ -1319,6 +1319,7 @@
 <translation id="6710594484020273272">&lt;พิมพ์ข้อความค้นหา&gt;</translation>
 <translation id="671076103358959139">โทเค็นการลงทะเบียน:</translation>
 <translation id="6711464428925977395">พร็อกซีเซิร์ฟเวอร์ผิดปกติหรือที่อยู่ไม่ถูกต้อง</translation>
+<translation id="6716672519412350405"><ph name="URL" /> ต้องการสร้างแผนที่ 3 มิติของสิ่งที่อยู่รอบตัวคุณและติดตามตำแหน่งของกล้อง</translation>
 <translation id="6738516213925468394">ข้อมูลของคุณเข้ารหัสลับไว้ด้วย<ph name="BEGIN_LINK" />รหัสผ่านการซิงค์<ph name="END_LINK" />เมื่อ <ph name="TIME" /> ป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="674375294223700098">ข้อผิดพลาดใบรับรองของเซิร์ฟเวอร์ที่ไม่รู้จัก</translation>
 <translation id="6744009308914054259">ระหว่างที่รอการเชื่อมต่อ คุณไปที่หน้า "ดาวน์โหลด" เพื่ออ่านบทความออฟไลน์ได้</translation>
@@ -1740,7 +1741,6 @@
 <translation id="8589998999637048520">คุณภาพดีที่สุด</translation>
 <translation id="860043288473659153">ชื่อผู้ถือบัตร</translation>
 <translation id="8606726445206553943">ใช้อุปกรณ์ MIDI ของคุณ</translation>
-<translation id="8616822740383114808">"<ph name="ENFORCING_SETTING" />" ใน "<ph name="SETTINGS_PAGE" />" ควบคุมการตั้งค่านี้</translation>
 <translation id="861775596732816396">ขนาด 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">บันทึกบัตรนี้ลงในอุปกรณ์นี้</translation>

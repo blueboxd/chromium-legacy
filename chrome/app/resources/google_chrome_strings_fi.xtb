@@ -37,7 +37,6 @@
 <translation id="1900795423379050516">Jos asetus ei näy tällä sivulla, siirry <ph name="LINK_BEGIN" />
     Chromen selainasetuksiin<ph name="LINK_END" />.</translation>
 <translation id="1919130412786645364">Salli Chrome-kirjautuminen</translation>
-<translation id="1983547493073464667">Chrome ei voi tarkistaa salasanojasi</translation>
 <translation id="2063848847527508675">Chrome-käyttöjärjestelmä täytyy käynnistää uudelleen, jotta päivitys voidaan ottaa käyttöön.</translation>
 <translation id="2094919256425865063">Suljetaanko Chrome silti?</translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä <ph name="USER_EMAIL" />.</translation>
@@ -49,15 +48,14 @@
 <translation id="2309047409763057870">Tämä on Google Chromen toissijainen asennus, eikä sitä voi asettaa oletusselaimeksi.</translation>
 <translation id="2341767445688917208">Chrome-käyttöjärjestelmä ei voinut synkronoida salasanojasi. Korjaa nyt.</translation>
 <translation id="2348335408836342058">Chrome tarvitsee oikeuden käyttää kameraasi ja mikrofoniasi tällä sivustolla.</translation>
+<translation id="234869673307233423">Chrome ei voi tarkistaa salasanojasi. Yritä myöhemmin uudelleen.</translation>
 <translation id="2429317896000329049">Google Chrome ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="2467438592969358367">Google Chrome yrittää viedä salasanojasi tiedostoon. Salli tämä kirjoittamalla Windows-salasanasi.</translation>
 <translation id="2485422356828889247">Poista</translation>
 <translation id="2534507159460261402">Google Pay (kopioitu Chromeen)</translation>
-<translation id="2559627601176023786">Ei tallennettuja salasanoja. Chrome voi tarkistaa salasanasi, kun tallennat ne Google-tilillesi.</translation>
 <translation id="2580411288591421699">Ei voi asentaa samaa Google Chromen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome ja yritä uudelleen.</translation>
 <translation id="2586406160782125153">Selaustiedot poistetaan tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome-logo</translation>
-<translation id="261226884343006626">Chrome ei voi tarkistaa salasanojasi. Yritä uudelleen huomenna.</translation>
 <translation id="2622559029861875898">Chrome ei voi tarkistaa päivityksiä. Tarkista internetyhteytesi.</translation>
 <translation id="2644798301485385923">Chrome-käyttöjärjestelmä</translation>
 <translation id="2652691236519827073">Avaa linkki uudella Chromen välilehdellä</translation>
@@ -71,6 +69,8 @@
 <translation id="2857540653560290388">Käynnistetään Chromea…</translation>
 <translation id="2871893339301912279">Olet kirjautunut Chromeen!</translation>
 <translation id="2888126860611144412">Tietoja Chromesta</translation>
+<translation id="2929907241665500097">Chromea ei päivitetty, vaan jotain meni pieleen. <ph name="BEGIN_LINK" />Korjaa Chromen päivitysongelmat ja epäonnistuneet päivitykset.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – Kirjautuminen verkkoon – Chrome</translation>
 <translation id="3037838751736561277">Google Chrome on käynnissä taustalla.</translation>
 <translation id="3065168410429928842">Chrome-välilehti</translation>
 <translation id="3080151273017101988">Jätä taustaohjelmat käyntiin, kun Google Chrome suljetaan</translation>
@@ -81,7 +81,6 @@
 <translation id="3395323229510056640">Ohjeita Chrome-käyttöjärjestelmän käyttöön</translation>
 <translation id="3396977131400919238">Asennuksessa havaittiin käyttöjärjestelmävirhe. Lataa Google Chrome uudelleen.</translation>
 <translation id="3398288718845740432">Piilota Chrome-valikkoon</translation>
-<translation id="3434246496373299699">Chrome voi tarkistaa salasanasi, kun kirjaudut sisään Google-tililläsi.</translation>
 <translation id="3451115285585441894">Lisätään Chromeen...</translation>
 <translation id="345171907106878721">Lisää itsesi Chromeen</translation>
 <translation id="34857402635545079">Poista data myös Chromesta (<ph name="URL" />)</translation>
@@ -97,7 +96,6 @@
 <translation id="386202838227397562">Sulje kaikki Chrome-ikkunat ja yritä uudelleen.</translation>
 <translation id="3873044882194371212">Avaa linkki Chromen inco&amp;gnito-ikkunassa</translation>
 <translation id="3889417619312448367">Poista Google Chromen asennus</translation>
-<translation id="3943605108614542032">Järjestelmänvalvojasi ylläpitää Chrome-päivityksiä</translation>
 <translation id="4050175100176540509">Uusimmassa versiossa on käytettävissä tärkeitä turvallisuusparannuksia ja uusia ominaisuuksia.</translation>
 <translation id="4053720452172726777">Google Chromen muokkaaminen ja hallinta</translation>
 <translation id="4143243756087420366">Chromen nimi ja kuva</translation>
@@ -111,7 +109,9 @@
 <translation id="4331809312908958774">Chrome-käyttöjärjestelmä</translation>
 <translation id="4335235004908507846">Chrome voi auttaa suojaamaan sinua tietosuojaloukkauksilta, haitallisilta laajennuksilta ja muilta</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> on lisätty Chromeen</translation>
+<translation id="4384570495110188418">Chrome ei voi tarkistaa salasanojasi, koska et ole kirjautuneena sisään</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome – Kirjautuminen verkkoon – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Toinen Google Chrome ‑prosessi on jo käynnissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="4480040274068703980">Chrome-käyttöjärjestelmä ei voi synkronoida tietoja kirjautumisvirheen vuoksi.</translation>
 <translation id="4561051373932531560">Google Chromen avulla voit klikata puhelinnumeroa verkossa ja soittaa siihen Skypellä!</translation>
@@ -121,6 +121,7 @@
 <translation id="4600710005438004015">Chromea ei voitu päivittää uusimpaan versioon, joten sinulta puuttuu joitakin uusia ominaisuuksia ja tietoturvakorjauksia.</translation>
 <translation id="4631713731678262610">Piilota Chrome-valikkoon</translation>
 <translation id="4633000520311261472">Paransimme Chromen turvallisuutta poistamalla käytöstä sovelluksia, joita ei löydy kohteesta <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja jotka on voitu lisätä ilman lupaasi.</translation>
+<translation id="4653397506175047429">Chrome ei voi tarkistaa kaikkia salasanojasi. Yritä uudelleen 24 tunnin päästä.</translation>
 <translation id="4728575227883772061">Asennus epäonnistui tuntemattoman virheen takia. Jos Google Chrome on tällä hetkellä käynnissä, sulje ohjelma ja yritä uudelleen.</translation>
 <translation id="4750550185319565338">Ota <ph name="PLUGIN_NAME" /> käyttöön käynnistämällä Chrome uudelleen.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (saapuva mDNS)</translation>
@@ -154,6 +155,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chromen käynnistäminen epäonnistui. Yritä uudelleen.</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Kirjautuminen verkkoon</translation>
 <translation id="5940385492829620908">Tämä on verkkosi, kirjanmerkkiesi ja muun Chrome-sisältösi koti.</translation>
 <translation id="5941830788786076944">Tee Google Chromesta oletusselain</translation>
 <translation id="6070348360322141662">Google Chrome lisää suojausta salaamalla tietosi</translation>
@@ -207,9 +209,9 @@
 <translation id="7808348361785373670">Poista Chromesta…</translation>
 <translation id="7825851276765848807">Asennus epäonnistui tuntemattoman virheen vuoksi. Lataa Google Chrome uudelleen.</translation>
 <translation id="7855730255114109580">Google Chrome on ajan tasalla</translation>
-<translation id="7888686278524752658">Chromea ei päivitetty, jotain meni pieleen. Korjaa Chromen päivitysongelmat ja epäonnistuneet päivitykset.</translation>
 <translation id="7890208801193284374">Jos käytät jaettua tietokonetta, kaverisi ja perheenjäsenesi voivat selata verkkoa omista profiileistaan käsin ja muokata Chromesta juuri itselleen sopivan.</translation>
 <translation id="7896673875602241923">Joku on jo kirjautunut tällä tietokoneella Chromeen käyttäjätilillä <ph name="ACCOUNT_EMAIL_LAST" />. Luo uusi Chrome-käyttäjä, jos haluat pitää tiedot erillään.</translation>
+<translation id="7905891027772979035">Chrome ei voi tarkistaa laajennuksiasi. Yritä myöhemmin uudelleen.</translation>
 <translation id="7916016681687251387">Chrome-käyttöjärjestelmä ei voinut synkronoida tietojasi. Korjaa nyt.</translation>
 <translation id="7930071585467473040">Google Chrome yrittää kopioida salasanoja.</translation>
 <translation id="7962410387636238736">Tämän tietokoneen Google Chromea ei enää päivitetä, koska Windows XP:tä ja Windows Vistaa ei enää tueta.</translation>

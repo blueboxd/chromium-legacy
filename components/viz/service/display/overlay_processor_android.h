@@ -30,6 +30,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
  public:
   OverlayProcessorAndroid(
       gpu::SharedImageManager* shared_image_manager,
+      gpu::MemoryTracker* memory_tracker,
       scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
       bool enable_overlay);
   ~OverlayProcessorAndroid() override;
@@ -58,6 +59,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
   // teardown the gpu side receiver.
   void InitializeOverlayProcessorOnGpu(
       gpu::SharedImageManager* shared_image_manager,
+      gpu::MemoryTracker* memory_tracker,
       base::WaitableEvent* event);
   void DestroyOverlayProcessorOnGpu(base::WaitableEvent* event);
   void TakeOverlayCandidates(CandidateList* candidate_list) override;

@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">Ongeldige pincode.</translation>
 <translation id="3838338534323494292">Nieuw wachtwoord</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Probeer het opnieuw. Resterende pogingen: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> beheert dit apparaat en heeft toegang tot alle gebruikersactiviteit, waaronder bezochte webpagina's, wachtwoorden en e-mails.</translation>
 <translation id="4227825898293920515">Wachtwoord verloopt over <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos-ticket verloopt binnenkort</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">Ik heb niets gevonden op je scherm waarmee ik kan helpen.
 Tik op de microfoon om me iets te vragen.</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
-<translation id="5275776633505022322">Resterende pogingen: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Probeer het opnieuw.</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5332948983412042822">Kies nu een nieuw wachtwoord</translation>
 <translation id="5457599981699367932">Gebruiken als gast</translation>

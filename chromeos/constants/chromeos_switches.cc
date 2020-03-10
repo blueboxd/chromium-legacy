@@ -246,9 +246,6 @@ const char kDisableWakeOnWifi[] = "disable-wake-on-wifi";
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
 
-// Enables "hide Skip button" for ARC setup in the OOBE flow.
-const char kEnableArcOobeOptinNoSkip[] = "enable-arc-oobe-optin-no-skip";
-
 // Enables ARC VM.
 const char kEnableArcVm[] = "enable-arcvm";
 

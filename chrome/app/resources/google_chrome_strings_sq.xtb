@@ -41,7 +41,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="1900795423379050516">Nëse cilësimi nuk shfaqet në këtë faqe, shiko te <ph name="LINK_BEGIN" />
       cilësimet e shfletuesit të Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Lejo identifikimin në Chrome</translation>
-<translation id="1983547493073464667">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua</translation>
 <translation id="2063848847527508675">Chrome OS ka nevojë të riniset për të zbatuar përditësimin.</translation>
 <translation id="2094919256425865063">Dëshiron ta mbyllësh Chrome gjithsesi?</translation>
 <translation id="2120620239521071941">Kjo do të fshijë <ph name="ITEMS_COUNT" /> artikuj nga kjo pajisje. Për t'i marrë më vonë të dhënat, identifikohu te Chrome si <ph name="USER_EMAIL" />.</translation>
@@ -53,15 +52,14 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="2309047409763057870">Ky është instalim dytësor i Google Chrome dhe nuk mund të bëhet shfletuesi yt i parazgjedhur.</translation>
 <translation id="2341767445688917208">Sistemi operativ Chrome nuk mund t'i sinkronizonte fjalëkalimet e tua. Rregulloje tani.</translation>
 <translation id="2348335408836342058">Chrome ka nevojë për leje për t'u qasur te kamera dhe mikrofoni yt për këtë sajt</translation>
+<translation id="234869673307233423">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua. Provo përsëri më vonë.</translation>
 <translation id="2429317896000329049">Google Chrome nuk mund t'i sinkronizonte të dhënat për shkak se sinkronizimi nuk ofrohet për domenin tënd.</translation>
 <translation id="2467438592969358367">Google Chrome dëshiron të eksportojë fjalëkalimet e tua. Shkruaj fjalëkalimin tënd të Windows për ta lejuar këtë.</translation>
 <translation id="2485422356828889247">Çinstalo</translation>
 <translation id="2534507159460261402">Google Pay (kopjuar në Chrome)</translation>
-<translation id="2559627601176023786">Nuk ka asnjë fjalëkalim të ruajtur. Chrome mund t'i kontrollojë fjalëkalimet e tua kur t'i ruash ato në "Llogarinë tënde të Google".</translation>
 <translation id="2580411288591421699">Nuk mund të instalohet i njëjti version i Google Chrome që po ekzekutohet aktualisht. Mbylle Google Chrome dhe provo përsëri.</translation>
 <translation id="2586406160782125153">Kjo do të fshijë të dhënat e shfletimit nga kjo pajisje. Për t'i marrë më vonë të dhënat, identifikohu te Chrome si <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logoja e Chrome</translation>
-<translation id="261226884343006626">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua. Provo sërish nesër.</translation>
 <translation id="2622559029861875898">Chrome nuk mund të kontrollojë për përditësime. Provo të kontrollosh lidhjen e internetit.</translation>
 <translation id="2644798301485385923">Sistemi i Chrome OS</translation>
 <translation id="2652691236519827073">Hape lidhjen në një &amp;skedë të re të Chrome</translation>
@@ -75,6 +73,8 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="2857540653560290388">Po hapet Chrome...</translation>
 <translation id="2871893339301912279">Je i identifikuar në Chrome!</translation>
 <translation id="2888126860611144412">Rreth Chrome</translation>
+<translation id="2929907241665500097">Chrome nuk u përditësua. Ndodhi një gabim. <ph name="BEGIN_LINK" />Rregullo problemet e përditësimit të Chrome dhe përditësimet e dështuara.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - identifikimi në rrjet - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome është në modalitetin e sfondit.</translation>
 <translation id="3065168410429928842">Skeda Chrome</translation>
 <translation id="3080151273017101988">Vazhdo ekzekutimin e aplikacioneve në sfond kur Google Chrome është i mbyllur</translation>
@@ -85,7 +85,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="3395323229510056640">Merr ndihmë për Chrome OS</translation>
 <translation id="3396977131400919238">Ndodhi një gabim në sistemin operativ gjatë instalimit. Shkarko përsëri Google Chrome.</translation>
 <translation id="3398288718845740432">Fshih në Menynë e Chrome</translation>
-<translation id="3434246496373299699">Chrome mund t'i kontrollojë fjalëkalimet e tua kur të identifikohesh me "Llogarinë tënde të Google"</translation>
 <translation id="3451115285585441894">Po shton te Chrome...</translation>
 <translation id="345171907106878721">Shtoje veten te Chrome</translation>
 <translation id="34857402635545079">Pastro po ashtu të dhënat nga Chrome (<ph name="URL" />)</translation>
@@ -101,7 +100,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="386202838227397562">Mbyll të gjitha dritaret e Google Chrome dhe provo përsëri.</translation>
 <translation id="3873044882194371212">Hape lidhjen në një dritare të fshehtë të Chrome</translation>
 <translation id="3889417619312448367">Çinstalo Google Chrome</translation>
-<translation id="3943605108614542032">Administratori yt menaxhon përditësimet e Chrome</translation>
 <translation id="4050175100176540509">Përmirësime të rëndësishme sigurie dhe funksione të reja ofrohen në versionin e fundit.</translation>
 <translation id="4053720452172726777">Personalizo dhe kontrollo Google Chrome</translation>
 <translation id="4143243756087420366">Emri dhe fotografia e Chrome</translation>
@@ -115,7 +113,9 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="4331809312908958774">Sistemi operativ Chrome</translation>
 <translation id="4335235004908507846">Chrome mund të të ndihmojë të qëndrosh i sigurt nga nxjerrjet e paautorizuara të të dhënave, shtesat e papërshtatshme etj.</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> është shtuar te Chrome</translation>
+<translation id="4384570495110188418">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua sepse nuk je identifikuar</translation>
 <translation id="4407807842708586359">Sistemi operativ Google Chrome</translation>
+<translation id="4450664632294415862">Chrome - identifikimi në rrjet - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Një veprim tjetër në Google Chrome është në vazhdim. Provo përsëri më vonë.</translation>
 <translation id="4480040274068703980">Sistemi operativ Chrome nuk mundi t'i sinkronizonte të dhënat e tua për shkak të një gabimi në identifikim.</translation>
 <translation id="4561051373932531560">Google Chrome të lejon të klikosh një numër telefoni në ueb dhe ta telefonosh me Skype!</translation>
@@ -125,6 +125,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="4600710005438004015">Chrome nuk mund të përditësohej me versionin më të fundit, kështu që të mungojnë rregullimet e sigurisë dhe funksionet e reja.</translation>
 <translation id="4631713731678262610">Fshih në menynë e Chrome</translation>
 <translation id="4633000520311261472">Për ta bërë më të sigurt Chrome, çaktivizuam disa shtesa që nuk janë të listuara në <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dhe që mund të jenë shtuar pa dijeninë tënde.</translation>
+<translation id="4653397506175047429">Chrome nuk mund t'i kontrollojë të gjitha fjalëkalimet e tua. Provo përsëri pas 24 orësh.</translation>
 <translation id="4728575227883772061">Instalimi dështoi për shkak të një gabimi të paspecifikuar. Nëse Google Chrome është aktualisht në ekzekutim, mbylle dhe provo përsëri.</translation>
 <translation id="4750550185319565338">Rinis Chrome për të aktivizuar <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -162,6 +163,7 @@ Google Chrome nuk është në gjendje të rikuperojë cilësimet e tua.</transla
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome nuk mund të hapej. Provo përsëri.</translation>
 <translation id="5895138241574237353">Rinis</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - identifikimi në rrjet</translation>
 <translation id="5940385492829620908">Këtu janë materialet e tua të uebit, të faqeshënuesve dhe të tjera nga Chrome.</translation>
 <translation id="5941830788786076944">Bëje Google Chrome shfletuesin e parazgjedhur</translation>
 <translation id="6070348360322141662">Për më shumë siguri, Google Chrome do t'i enkriptojë të dhënat e tua</translation>
@@ -215,9 +217,9 @@ Google Chrome nuk është në gjendje të rikuperojë cilësimet e tua.</transla
 <translation id="7808348361785373670">Hiqe nga Chrome...</translation>
 <translation id="7825851276765848807">Instalimi dështoi për shkak të një gabimi të papërcaktuar. Shkarkoje Google Chrome përsëri.</translation>
 <translation id="7855730255114109580">Google Chrome është i përditësuar</translation>
-<translation id="7888686278524752658">Chrome nuk u përditësua. Ndodhi një gabim. Rregullo problemet e përditësimit të Chrome dhe përditësimet e dështuara.</translation>
 <translation id="7890208801193284374">Nëse e ndan një kompjuter, miqtë dhe familja mund të shfletojnë veçmas dhe ta konfigurojnë Chrome pikërisht ashtu si dëshirojnë.</translation>
 <translation id="7896673875602241923">Dikush është identifikuar më parë në Chrome në këtë kompjuter si <ph name="ACCOUNT_EMAIL_LAST" />. Krijo një përdorues të ri të Chrome për t'i mbajtur të ndara informacionet e tua.</translation>
+<translation id="7905891027772979035">Chrome nuk mund t'i kontrollojë shtesat e tua. Provo përsëri më vonë.</translation>
 <translation id="7916016681687251387">Sistemi operativ Chrome nuk mund t'i sinkronizonte të dhënat e tua. Rregulloje tani.</translation>
 <translation id="7930071585467473040">Google Chrome po përpiqet të kopjojë fjalëkalimet.</translation>
 <translation id="7962410387636238736">Ky kompjuter nuk do të marrë më përditësime të Google Chrome sepse Windows XP dhe Windows Vista nuk mbështeten më</translation>

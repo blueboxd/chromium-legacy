@@ -12,11 +12,38 @@
 namespace app_list {
 namespace internal {
 
-int GetIconResourceIdForLocalFilePath(const base::FilePath& filepath);
+enum class IconType {
+  AUDIO,
+  ARCHIVE,
+  CHART,
+  EXCEL,
+  FOLDER,
+  FORM,
+  GDOC,
+  GDRAW,
+  GENERIC,
+  GSHEET,
+  GSITE,
+  GSLIDES,
+  GTABLE,
+  IMAGE,
+  MAP,
+  PDF,
+  PPT,
+  SCRIPT,
+  SITES,
+  TINI,
+  VIDEO,
+  WORD,
+};
 
-}
+IconType GetIconTypeForPath(const base::FilePath& filepath);
+int GetResourceIdForIconType(IconType icon);
+int GetChipResourceIdForIconType(IconType icon);
+}  // namespace internal
 
-gfx::ImageSkia GetIconForLocalFilePath(const base::FilePath& filepath);
+gfx::ImageSkia GetIconForPath(const base::FilePath& filepath);
+gfx::ImageSkia GetChipIconForPath(const base::FilePath& filepath);
 
 }  // namespace app_list
 

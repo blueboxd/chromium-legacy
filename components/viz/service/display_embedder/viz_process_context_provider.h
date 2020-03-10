@@ -77,6 +77,7 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
   void AddObserver(ContextLostObserver* obs) override;
   void RemoveObserver(ContextLostObserver* obs) override;
   gpu::SharedImageManager* GetSharedImageManager() override;
+  gpu::MemoryTracker* GetMemoryTracker() override;
 
   virtual void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback);

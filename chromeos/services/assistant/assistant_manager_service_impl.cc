@@ -23,7 +23,6 @@
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "chromeos/assistant/internal/internal_constants.h"
-#include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_input/warmer_welcome_input.pb.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -47,6 +46,7 @@
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -99,13 +99,6 @@ constexpr char kStopTrackClientOp[] = "media.STOP";
 constexpr float kDefaultSliderStep = 0.1f;
 
 constexpr char kAndroidSettingsAppPackage[] = "com.android.settings";
-
-bool IsScreenContextAllowed(ash::AssistantStateBase* assistant_state) {
-  return assistant_state->allowed_state() ==
-             ash::mojom::AssistantAllowedState::ALLOWED &&
-         assistant_state->settings_enabled().value_or(false) &&
-         assistant_state->context_enabled().value_or(false);
-}
 
 action::AppStatus GetActionAppStatus(mojom::AppStatus status) {
   switch (status) {
@@ -438,22 +431,6 @@ void AssistantManagerServiceImpl::StartWarmerWelcomeInteraction(
       [](auto) {});
 }
 
-// TODO(eyor): Add a method that can be called to clear the cached interaction
-// when the UI is hidden/closed.
-void AssistantManagerServiceImpl::StartCachedScreenContextInteraction() {
-  if (!IsScreenContextAllowed(assistant_state()))
-    return;
-
-  // It is illegal to call this method without having first cached screen
-  // context (see CacheScreenContext()). |assistant_extra_| and
-  // |assistant_tree_| could be nullptr if there is no active browser or ARC.
-  // window.
-  DCHECK(!assistant_screenshot_.empty());
-
-  SendScreenContextRequest(assistant_extra_.get(), assistant_tree_.get(),
-                           assistant_screenshot_);
-}
-
 void AssistantManagerServiceImpl::StartEditReminderInteraction(
     const std::string& client_id) {
   const std::string interaction = CreateEditReminderInteraction(client_id);
@@ -464,16 +441,30 @@ void AssistantManagerServiceImpl::StartEditReminderInteraction(
       interaction, std::string(), voiceless_options, [](auto) {});
 }
 
-void AssistantManagerServiceImpl::StartMetalayerInteraction(
-    const gfx::Rect& region) {
-  if (!IsScreenContextAllowed(assistant_state()))
-    return;
+void AssistantManagerServiceImpl::StartScreenContextInteraction(
+    ax::mojom::AssistantStructurePtr assistant_structure,
+    const std::vector<uint8_t>& assistant_screenshot) {
+  std::vector<std::string> context_protos;
 
-  assistant_screen_context_controller()->RequestScreenshot(
-      region,
-      base::BindOnce(&AssistantManagerServiceImpl::SendScreenContextRequest,
-                     weak_factory_.GetWeakPtr(), /*assistant_extra=*/nullptr,
-                     /*assistant_tree=*/nullptr));
+  // Screen context can have the |assistant_structure|, or |assistant_extra| and
+  // |assistant_tree| set to nullptr. This happens in the case where the screen
+  // context is coming from the metalayer or there is no active window. For this
+  // scenario, we don't create a context proto for the AssistantBundle that
+  // consists of the |assistant_extra| and |assistant_tree|.
+  if (assistant_structure && assistant_structure->assistant_extra &&
+      assistant_structure->assistant_tree) {
+    // Note: the value of |is_first_query| for screen context query is a no-op
+    // because it is not used for metalayer and "What's on my screen" queries.
+    context_protos.emplace_back(CreateContextProto(
+        AssistantBundle{assistant_structure->assistant_extra.get(),
+                        assistant_structure->assistant_tree.get()},
+        /*is_first_query=*/true));
+  }
+
+  // Note: the value of |is_first_query| for screen context query is a no-op.
+  context_protos.emplace_back(CreateContextProto(assistant_screenshot,
+                                                 /*is_first_query=*/true));
+  assistant_manager_internal_->SendScreenContextRequest(context_protos);
 }
 
 void AssistantManagerServiceImpl::StartTextInteraction(
@@ -1401,33 +1392,6 @@ void AssistantManagerServiceImpl::OnAlarmTimerStateChanged() {
   }
 }
 
-void AssistantManagerServiceImpl::CacheScreenContext(
-    CacheScreenContextCallback callback) {
-  if (!IsScreenContextAllowed(assistant_state())) {
-    std::move(callback).Run();
-    return;
-  }
-
-  // Our callback should be run only after both view hierarchy and screenshot
-  // data have been cached from their respective providers.
-  auto on_done = base::BarrierClosure(2, std::move(callback));
-
-  client_->RequestAssistantStructure(
-      base::BindOnce(&AssistantManagerServiceImpl::CacheAssistantStructure,
-                     weak_factory_.GetWeakPtr(), on_done));
-
-  assistant_screen_context_controller()->RequestScreenshot(
-      gfx::Rect(),
-      base::BindOnce(&AssistantManagerServiceImpl::CacheAssistantScreenshot,
-                     weak_factory_.GetWeakPtr(), on_done));
-}
-
-void AssistantManagerServiceImpl::ClearScreenContextCache() {
-  assistant_extra_.reset();
-  assistant_tree_.reset();
-  assistant_screenshot_.clear();
-}
-
 void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
     bool spoken_feedback_enabled) {
   if (spoken_feedback_enabled_ == spoken_feedback_enabled)
@@ -1466,46 +1430,6 @@ void AssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,
 
   assistant_manager_internal_->GetAlarmTimerManager()->AddTimeToTimer(
       id, duration.InSeconds());
-}
-
-void AssistantManagerServiceImpl::CacheAssistantStructure(
-    base::OnceClosure on_done,
-    ax::mojom::AssistantExtraPtr assistant_extra,
-    std::unique_ptr<ui::AssistantTree> assistant_tree) {
-  assistant_extra_ = std::move(assistant_extra);
-  assistant_tree_ = std::move(assistant_tree);
-  std::move(on_done).Run();
-}
-
-void AssistantManagerServiceImpl::CacheAssistantScreenshot(
-    base::OnceClosure on_done,
-    const std::vector<uint8_t>& assistant_screenshot) {
-  assistant_screenshot_ = assistant_screenshot;
-  std::move(on_done).Run();
-}
-
-void AssistantManagerServiceImpl::SendScreenContextRequest(
-    ax::mojom::AssistantExtra* assistant_extra,
-    ui::AssistantTree* assistant_tree,
-    const std::vector<uint8_t>& assistant_screenshot) {
-  std::vector<std::string> context_protos;
-
-  // Screen context can have the assistant_extra and assistant_tree set to
-  // nullptr. This happens in the case where the screen context is coming from
-  // the metalayer. For this scenario, we don't create a context proto for the
-  // AssistantBundle that consists of the assistant_extra and assistant_tree.
-  if (assistant_extra && assistant_tree) {
-    // Note: the value of is_first_query for screen context query is a no-op
-    // because it is not used for metalayer and "What's on my screen" queries.
-    context_protos.emplace_back(
-        CreateContextProto(AssistantBundle{assistant_extra, assistant_tree},
-                           /*is_first_query=*/true));
-  }
-
-  // Note: the value of is_first_query for screen context query is a no-op.
-  context_protos.emplace_back(CreateContextProto(assistant_screenshot,
-                                                 /*is_first_query=*/true));
-  assistant_manager_internal_->SendScreenContextRequest(context_protos);
 }
 
 void AssistantManagerServiceImpl::NotifyEntryIntoAssistantUi(

@@ -24,6 +24,7 @@ js_modulizer("modulize") {
     "fake_input_method_private.js",
     "fake_language_settings_private.js",
     "fake_settings_private.js",
+    "idle_load_tests.js",
     "languages_page_tests.js",
     "languages_tests.js",
     "on_startup_page_tests.js",

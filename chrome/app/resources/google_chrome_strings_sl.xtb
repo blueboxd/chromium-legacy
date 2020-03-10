@@ -41,7 +41,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1900795423379050516">Če nastavitev ni prikazana na tej strani, preverite <ph name="LINK_BEGIN" />
       nastavitve brskalnika Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Omogočanje prijave v Chrome</translation>
-<translation id="1983547493073464667">Chrome ne more preveriti vaših gesel</translation>
 <translation id="2063848847527508675">Če želite namestiti posodobitev, morate znova zagnati OS Chrome.</translation>
 <translation id="2094919256425865063">Želite vseeno zapreti Chrome?</translation>
 <translation id="2120620239521071941">S tem bo iz te naprave izbrisanih več elementov (<ph name="ITEMS_COUNT" />). Če želite pozneje prenesti podatke, se v Chrome prijavite kot <ph name="USER_EMAIL" />.</translation>
@@ -53,15 +52,14 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2309047409763057870">To je sekundarna namestitev Google Chroma in ga ni mogoče nastaviti kot privzeti brskalnik.</translation>
 <translation id="2341767445688917208">OS Chrome ni mogel sinhronizirati gesel. Odpravite težavo.</translation>
 <translation id="2348335408836342058">Chrome potrebuje dovoljenje za dostop do fotoaparata in mikrofona za to spletno mesto</translation>
+<translation id="234869673307233423">Chrome ne more preveriti vaših gesel. Poskusite pozneje.</translation>
 <translation id="2429317896000329049">Google Chrome ni mogel sinhronizirati podatkov, ker sinhronizacija ni na voljo za vašo domeno.</translation>
 <translation id="2467438592969358367">Google Chrome želi izvoziti gesla. Če želite omogočiti to, vnesite geslo za Windows.</translation>
 <translation id="2485422356828889247">Odmeščanje</translation>
 <translation id="2534507159460261402">Google Pay (kopirano v Chrome)</translation>
-<translation id="2559627601176023786">Ni shranjenih gesel. Chrome lahko preveri vaša gesla, ko jih shranite v računu Google.</translation>
 <translation id="2580411288591421699">Ni mogoče namestiti različice Google Chroma, enake tisti, ki se trenutno izvaja. Zaprite Google Chrome in poskusite znova.</translation>
 <translation id="2586406160782125153">S tem bodo iz te naprave izbrisani podatki brskanja. Če želite pozneje prenesti podatke, se v Chrome prijavite kot <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chromov logotip</translation>
-<translation id="261226884343006626">Chrome ne more preveriti vaših gesel. Poskusite znova jutri.</translation>
 <translation id="2622559029861875898">Chrome ne more preveriti, ali so na voljo posodobitve. Poskusite preveriti internetno povezavo.</translation>
 <translation id="2644798301485385923">Sistem OS Chrome</translation>
 <translation id="2652691236519827073">Odpiranje povezave na novem &amp;zavihku v Chromu</translation>
@@ -75,6 +73,8 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2857540653560290388">Zagon Chroma …</translation>
 <translation id="2871893339301912279">Zdaj ste prijavljeni v Chrome.</translation>
 <translation id="2888126860611144412">O brskalniku Chrome</translation>
+<translation id="2929907241665500097">Chrome se ni posodobil, prišlo je do napake. <ph name="BEGIN_LINK" />Odpravite težave s posodobitvijo Chroma in neuspelimi posodobitvami Chroma.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – Prijava v omrežje – Chrome</translation>
 <translation id="3037838751736561277">Google Chrome se izvaja v ozadju.</translation>
 <translation id="3065168410429928842">Zavihek v Chromu</translation>
 <translation id="3080151273017101988">Nadaljuj izvajanje programov v ozadju, ko je Google Chrome zaprt</translation>
@@ -85,7 +85,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3395323229510056640">Pomoč za OS Chrome</translation>
 <translation id="3396977131400919238">Med namestitvijo je prišlo do napake v operacijskem sistemu. Ponovno prenesite program Google Chrome.</translation>
 <translation id="3398288718845740432">Skrij v meniju Chroma</translation>
-<translation id="3434246496373299699">Chrome lahko preveri vaša gesla, ko se prijavite z računom Google</translation>
 <translation id="3451115285585441894">Dodajanje v Chrome ...</translation>
 <translation id="345171907106878721">Dodajte se v Chrome</translation>
 <translation id="34857402635545079">Počisti tudi podatke iz Chroma (<ph name="URL" />)</translation>
@@ -101,7 +100,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="386202838227397562">Zaprite vsa okna brskalnika Google Chrome in poskusite znova.</translation>
 <translation id="3873044882194371212">Odpiranje povezave v Chromovem oknu brez belež&amp;enja zgodovine</translation>
 <translation id="3889417619312448367">Odstrani Google Chrome</translation>
-<translation id="3943605108614542032">Posodobitve Chroma upravlja skrbnik</translation>
 <translation id="4050175100176540509">V najnovejši različici so na voljo pomembne varnostne izboljšave in nove funkcije.</translation>
 <translation id="4053720452172726777">Prilagajanje in nadziranje Google Chroma</translation>
 <translation id="4143243756087420366">Ime in slika za Chrome</translation>
@@ -115,7 +113,9 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4331809312908958774">OS Chrome</translation>
 <translation id="4335235004908507846">Chrome vas lahko varuje pred podatkovnimi kršitvami, zlonamernimi razširitvami in drugim</translation>
 <translation id="4343195214584226067">Razširitev <ph name="EXTENSION_NAME" /> je dodana v Chrome</translation>
+<translation id="4384570495110188418">Chrome ne more preveriti gesel, ker niste prijavljeni</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome – Prijava v omrežje – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Poteka druga operacija v Google Chromu. Poskusite znova pozneje.</translation>
 <translation id="4480040274068703980">Chrome OS ni mogel sinhronizirati podatkov zaradi napake pri prijavi.</translation>
 <translation id="4561051373932531560">Google Chrome vam omogoča, da na spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
@@ -125,6 +125,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4600710005438004015">Chroma ni bilo mogoče posodobiti na najnovejšo različico, zato nimate novih funkcij in popravkov varnosti.</translation>
 <translation id="4631713731678262610">Skrij v meniju Chroma</translation>
 <translation id="4633000520311261472">Zaradi večje varnosti smo v Chromu onemogočili nekatere razširitve, ki niso navedene v storitvi <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> in so bile morda dodane brez vaše vednosti.</translation>
+<translation id="4653397506175047429">Chrome ne more preveriti vseh vaših gesel. Poskusite znova čez 24 ur.</translation>
 <translation id="4728575227883772061">Namestitev ni bila izvedena zaradi nedoločene napake. Če je Google Chrome trenutno vklopljen, ga zaprite in poskusite znova.</translation>
 <translation id="4750550185319565338">Znova zaženite Chrome, če želite omogočiti <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -162,6 +163,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – delovna različica Google Chroma</translation>
 <translation id="5804318322022881572">Chroma ni bilo mogoče zagnati. Poskusite znova.</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Prijava v omrežje</translation>
 <translation id="5940385492829620908">Tu so shranjeni vaš splet, zaznamki in druge stvari v Chromu.</translation>
 <translation id="5941830788786076944">Nastavi Google Chrome kot privzeti brskalnik</translation>
 <translation id="6070348360322141662">Zaradi večje varnosti bo Google Chrome šifriral vaše podatke</translation>
@@ -215,9 +217,9 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="7808348361785373670">Odstranitev iz Chroma ...</translation>
 <translation id="7825851276765848807">Namestitev ni uspela zaradi nenavedene napake. Znova prenesite Google Chrome.</translation>
 <translation id="7855730255114109580">Google Chrome je posodobljen</translation>
-<translation id="7888686278524752658">Chrome se ni posodobil, prišlo je do napake. Odpravite težave s posodobitvijo Chroma in neuspelimi posodobitvami Chroma.</translation>
 <translation id="7890208801193284374">Če računalnik souporabljate z drugimi, lahko prijatelji in sorodniki ločeno brskajo ter nastavijo Chrome tako, kot želijo.</translation>
 <translation id="7896673875602241923">Nekdo se je prijavil v Chrome v tem računalniku kot <ph name="ACCOUNT_EMAIL_LAST" />. Ustvarite nov uporabniški profil za Chrome, če želite, da bodo vaši podatki ločeni.</translation>
+<translation id="7905891027772979035">Chrome ne more preveriti vaših razširitev. Poskusite pozneje.</translation>
 <translation id="7916016681687251387">OS Chrome ni mogel sinhronizirati podatkov. Odpravite težavo.</translation>
 <translation id="7930071585467473040">Google Chrome poskuša kopirati gesla.</translation>
 <translation id="7962410387636238736">Ta računalnik ne bo več prejemal posodobitev za Google Chrome, ker sistema Windows XP in Windows Vista nista več podprta.</translation>

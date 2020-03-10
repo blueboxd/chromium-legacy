@@ -58,12 +58,14 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2580411288591421699">Vous ne pouvez pas installer la version de Google Chrome qui est en cours d'exécution. Veuillez fermer Google Chrome et essayez de nouveau.</translation>
 <translation id="2586406160782125153">Cette action entraînera la suppression de vos données de navigation sur cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo de Google Chrome</translation>
+<translation id="2622559029861875898">Chrome ne peut pas vérifier la présence de mises à jour. Essayez de vérifier votre connexion Internet.</translation>
 <translation id="2644798301485385923">Système Chrome OS</translation>
 <translation id="2652691236519827073">Ouvrir le lien dans un nouvel ongle&amp;t Chrome</translation>
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
 <translation id="2689103672227170538">Cette extension a modifié la page qui s'affiche au démarrage de Chrome.</translation>
 <translation id="2765403129283291972">Chrome a besoin de votre autorisation pour accéder à votre appareil photo pour ce site</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
+<translation id="2775140325783767197">Chrome ne peut pas vérifier vos mots de passe. Essayez de vérifier votre connexion Internet.</translation>
 <translation id="2799223571221894425">Redémarrer</translation>
 <translation id="2847461019998147611">Afficher Google Chrome dans cette langue</translation>
 <translation id="2857540653560290388">Lancement de Chrome en cours…</translation>
@@ -236,6 +238,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8862326446509486874">Vous ne disposez pas des droits requis pour faire une installation sur le système. Relancez l'installation une fois que vous serez connecté comme administrateur.</translation>
 <translation id="8914504000324227558">Relancer Google Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Une mise à jour de Chrome est proposée}=1{Une mise à jour de Chrome est proposée}one{Une mise à jour de Chrome est proposée depuis # jour}other{Une mise à jour de Chrome est proposée depuis # jours}}</translation>
+<translation id="9025321516765676895">Chrome ne peut pas vérifier vos mots de passe parce qu'ils sont trop nombreux</translation>
 <translation id="9026991721384951619">Chrome OS n'a pas pu synchroniser vos données, car vos renseignements de connexion ne sont plus à jour.</translation>
 <translation id="9067395829937117663">Google Chrome requiert Windows 7 ou une version ultérieure.</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation?</translation>

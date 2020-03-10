@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">ልክ ያልኾነ ፒን።</translation>
 <translation id="3838338534323494292">አዲስ የይለፍ ቃል</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> እባክዎ እንደገና ይሞክሩ። የቀሩ ሙከራዎች፦ <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> ይህን መሣሪያ የሚያቀናብር ሲሆን የተጎበኙ ድረ-ገጾች፣ የይለፍ ቃላት እና ኢሜይል ጨምሮ የሁሉም የተጠቃሚ እንቅስቃሴ መዳረሻ አለው።</translation>
 <translation id="4227825898293920515">የይለፍ ቃል በ <ph name="TIME" /> ውስጥ አገልግሎት ጊዜው ያበቃል</translation>
 <translation id="4429881212383817840">የKerberos ቲኬት ጊዜው በቅርቡ ያበቃል</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">እኔ ላግዝ የምችልበት ምንም ነገር በእርስዎ ማያ ገጽ ላይ አላገኘሁም።
 ማንኛውም ነገር እኔን ለመጠየቅ ማይክሮፎኑን መታ አድርገው ይሞክሩ።</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
-<translation id="5275776633505022322">የቀሩ ሙከራዎች፦ <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="5332948983412042822">አሁን አዲስ ይምረጡ</translation>
 <translation id="5457599981699367932">እንደ እንግዳ ያስሱ</translation>

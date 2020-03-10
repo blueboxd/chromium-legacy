@@ -565,13 +565,13 @@
     "cy": "Valliy",
     "da": "Dan",
     "de": "Nemis",
-    "de_CH": "Nemis (Shveysariya)",
+    "de_CH": "Nemis (Shveytsariya)",
     "de_DE": "Nemis (Germaniya)",
     "dra": "Dravid",
     "el": "Grek",
     "en": "Ingliz",
     "en_CA": "Ingliz (Kanada)",
-    "en_GB": "Ingliz (Buyuk Britaniya)",
+    "en_GB": "Ingliz (Birlashgan Qirollik)",
     "en_US": "Ingliz (AQSH)",
     "eo": "Esperanto",
     "es": "Ispan",
@@ -628,12 +628,12 @@
     "ta": "Tamil",
     "te": "Telugu",
     "tr": "Turk",
-    "tsn": "Afrikan",
-    "uk": "Ukrayin",
+    "tsn": "Afrikaans",
+    "uk": "Ukrain",
     "ur": "Urdu",
     "vi": "Vyetnam",
     "zh": "Xitoy",
-    "zh_TW": "Xitoy (odatiy xan)"}</translation>
+    "zh_TW": "Xitoy (odatiy Han)"}</translation>
 <translation id="4647836961514597010">Rang tanlash</translation>
 <translation id="4660783501463101648">ChromeVox Classic olib tashlandi. Endi unga klaviatura orqali qaytib bo‘lmaydi.</translation>
 <translation id="4661075872484491155">daraxt</translation>
@@ -759,7 +759,7 @@
 <translation id="5402367795255837559">Brayl yozuvi</translation>
 <translation id="5402791055281059602">Modal bildirishnoma</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{nuqtali vergul}other{# ta nuqtali vergul}}</translation>
-<translation id="5420259671171615858">Menyudan qidirish</translation>
+<translation id="5420259671171615858">Menyular ichidan qidirish</translation>
 <translation id="5435274640623994081">Earcon jurnalini yoqish</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{“kichik” belgisi}other{# ta “kichik” belgisi}}</translation>
 <translation id="5444587279251314700">(faol)</translation>
@@ -1138,6 +1138,7 @@
 <translation id="8065607967589909823">Belgilangan band</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Varaqlar</translation>
+<translation id="8083115023881784332">ChromeVox hozir fokusda emas. Launcherni ochish uchun Alt+Shift+L tugmalarini bosing.</translation>
 <translation id="8091452896542422286">Probel</translation>
 <translation id="8096975275316362544">Qaymoqrang</translation>
 <translation id="8098587210054821856">Koʻkimtir kulrang</translation>

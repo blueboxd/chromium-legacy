@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">उर्वरित साइट (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">तुमच्या फोनवरून दुसऱ्या डिव्हाइसवर शेअर करण्यासाठी, दोन्ही डिव्हाइसवरील Chrome सेटिंग्जमध्ये सिंक सुरू करा</translation>
 <translation id="2175927920773552910">QR कोड</translation>
+<translation id="2182457891543959921">साइटना तुमच्या आसपासच्या परिसराचा 3D नकाशा तयार करू किंवा कॅमेर्‍याचे स्थान ट्रॅक करू देण्याआधी विचारा (शिफारस केलेले)</translation>
 <translation id="218608176142494674">शेअर करत आहे</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> म्हणून सुरू ठेवा</translation>
 <translation id="2234876718134438132">सिंक आणि Google सेवा</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">तुम्ही तुमच्या Google खात्यामध्ये साइन इन केल्यावर, हे वैशिष्ट्य सुरू केले जाते</translation>
 <translation id="2410754283952462441">एक खाते निवडा</translation>
 <translation id="2414886740292270097">गडद</translation>
-<translation id="2416359993254398973">या साइटसाठी Chromeला तुमचा कॅमेरा ॲक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
 <translation id="2426805022920575512">दुसरे खाते निवडा</translation>
 <translation id="2433507940547922241">स्वरूप</translation>
 <translation id="2434158240863470628">डाउनलोड पूर्ण झाले <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@
 <translation id="3522247891732774234">अपडेट उपलब्ध आहे. आणखी पर्याय</translation>
 <translation id="3524138585025253783">डेव्हलपर UI</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
+<translation id="3538390592868664640">तुमच्या आसपासच्या परिसराचा 3D नकाशा तयार करण्यापासून किंवा कॅमेर्‍याचे स्थान ट्रॅक करण्यापासून साइट ब्लॉक करा</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB उपलब्ध</translation>
 <translation id="3549657413697417275">तुमचा इतिहास शोधा</translation>
 <translation id="3557336313807607643">संपर्कांमध्ये जोडा</translation>
@@ -439,6 +440,7 @@
 <translation id="4298388696830689168">लिंक केलेल्या साइट</translation>
 <translation id="4307992518367153382">मूलभूत</translation>
 <translation id="4314815835985389558">सिंक व्यवस्थापित करा</translation>
+<translation id="4320177379694898372">कोणतेही इंटरनेट कनेक्शन नाही</translation>
 <translation id="4321739720395210191">तुमचा कॅमेरा उघडू शकत नाही. तुमचे डिव्हाइस रीस्टार्ट करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="4351244548802238354">डायलॉग बंद करा</translation>
 <translation id="4353114845960720315">तुम्ही VR वापरत असताना ही साइट कदाचित पुढील गोष्टींबद्दल अधिक माहिती मिळवू शकेल:</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">गुप्त टॅब बंद करा</translation>
 <translation id="5534640966246046842">साइट कॉपी केली</translation>
 <translation id="5561549206367097665">नेटवर्कची वाट पाहत आहे…</translation>
-<translation id="557283862590186398">या साइटसाठी Chromeला तुमचा मायक्रोफोन ॲक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
 <translation id="55737423895878184">स्‍थान आणि सूचनांना अनुमती आहे</translation>
 <translation id="5578795271662203820">या इमेजसाठी <ph name="SEARCH_ENGINE" /> शोधा</translation>
 <translation id="5581519193887989363">तुम्ही काय सिंक करायचे हे <ph name="BEGIN_LINK1" />सेटिंग्ज<ph name="END_LINK1" /> मध्ये कधीही निवडू शकता.</translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">तपशील: वापरलेल्या डेटाच्या प्रमाणानुसार क्रमाने लावलेला</translation>
 <translation id="6381421346744604172">डार्कन वेबसाइट</translation>
 <translation id="6388207532828177975">साफ आणि रीसेट करा</translation>
-<translation id="6393863479814692971">या साइटसाठी Chromeला तुमचा कॅमेरा आणि मायक्रोफोन ॲक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
 <translation id="6395288395575013217">लिंक</translation>
 <translation id="6404511346730675251">बुकमार्क संपादित करा</translation>
 <translation id="6406506848690869874">Sync</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">या डिव्हाइसवरून तुमचा Chrom डेटा साफ करायचा?</translation>
 <translation id="6689172468748959065">प्रोफाइल फोटो</translation>
 <translation id="6697492270171225480">जेव्हा एखादे पेज सापडत नाही तेव्हा त्यासारख्या पेजच्या सूचना दाखवा</translation>
-<translation id="6697947395630195233">तुमचे स्थान या साइटसोबत शेअर करण्यासाठी Chromeला तुमच्या स्थानाचा अ‍ॅक्सेस हवा आहे.</translation>
 <translation id="6698801883190606802">संकालित केलेला डेटा व्यवस्थापित करा</translation>
 <translation id="6699370405921460408">Google सर्व्हर तुम्ही भेट देत असलेली पेज ऑप्टिमाइझ करतील.</translation>
 <translation id="6710213216561001401">मागील</translation>
@@ -971,6 +970,7 @@
 <translation id="8186512483418048923"><ph name="FILES" /> फायली शिल्लक</translation>
 <translation id="8190358571722158785">1 दिवस शिल्लक</translation>
 <translation id="8200772114523450471">रेझ्युमे</translation>
+<translation id="8206354486702514201">या सेटिंगची अंमलबजावणी तुमच्या ॲडमिनिस्ट्रेटरकडून होते.</translation>
 <translation id="8209050860603202033">इमेज उघडा</translation>
 <translation id="8218622182176210845">तुमचे खाते व्यवस्थापित करा</translation>
 <translation id="8224471946457685718">वाय-फायवर तुमच्यासाठी लेख डाउनलोड करा</translation>
@@ -992,7 +992,6 @@
 <translation id="8364299278605033898">लोकप्रिय वेबसाइट पाहा</translation>
 <translation id="8368027906805972958">अज्ञात किंवा सपोर्ट नसलेले डिव्हाइस (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">विशिष्ट साइटसाठी पार्श्वभूमी संकालनासाठी अनुमती द्या.</translation>
-<translation id="8378714024927312812">तुमच्या संस्थेकडून व्यवस्थापित केलेले</translation>
 <translation id="8380167699614421159">ही साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवते</translation>
 <translation id="8393700583063109961">संदेश पाठवा</translation>
 <translation id="8413126021676339697">संपूर्ण इतिहास दर्शवा</translation>

@@ -442,7 +442,7 @@
 <translation id="2909946352844186028">네트워크 변경이 감지되었습니다.</translation>
 <translation id="2910133103376701357"><ph name="ENROLLMENT_DOMAIN" />에서 관리하는 기기 및 계정입니다.</translation>
 <translation id="2911973620368911614">작업 계정 사용자 ID</translation>
-<translation id="2915068235268646559"><ph name="CRASH_TIME" />에 비정상 종료됨</translation>
+<translation id="2915068235268646559"><ph name="CRASH_TIME" />에 비정상 종료 발생</translation>
 <translation id="2916038427272391327">다른 프로그램 닫기</translation>
 <translation id="2922350208395188000">서버 인증서를 확인할 수 없습니다.</translation>
 <translation id="2925673989565098301">배달 방법</translation>
@@ -478,7 +478,6 @@
 <translation id="3024663005179499861">잘못된 정책 유형</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
 <translation id="3041612393474885105">인증서 정보</translation>
-<translation id="3057676462092457419">DnsOverHttps 모드(<ph name="SECURE_DNS_MODE_SECURE" />)는 아직 지원되지 않으며 <ph name="SECURE_DNS_MODE_OFF" />(으)로 설정되었습니다.</translation>
 <translation id="3060227939791841287">C9(봉투)</translation>
 <translation id="3061707000357573562">서비스 패치</translation>
 <translation id="3064966200440839136">시크릿 모드를 종료하고 외부 애플리케이션에서 결제합니다. 계속하시겠습니까?</translation>
@@ -578,6 +577,7 @@
 <translation id="3487845404393360112">트레이 4</translation>
 <translation id="3495081129428749620"><ph name="PAGE_TITLE" />
 페이지에서 찾기</translation>
+<translation id="3507936815618196901">주변 환경의 3D 지도를 생성하고 카메라 위치를 추적</translation>
 <translation id="3512163584740124171">동일한 정책 그룹에 있는 다른 정책이 우선순위가 높기 때문에 이 정책은 무시됩니다.</translation>
 <translation id="3518941727116570328">다중 객체 처리</translation>
 <translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
@@ -931,6 +931,7 @@
 <translation id="5030338702439866405">발급 기관</translation>
 <translation id="503069730517007720">'<ph name="SOFTWARE_NAME" />'의 루트 인증서가 필요하지만 설치되어 있지 않습니다. IT 관리자가 '<ph name="SOFTWARE_NAME" />'의 설정 안내에 따라 이 문제를 해결해야 합니다. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google 번역 정보</translation>
+<translation id="503498442187459473"><ph name="HOST" />에서 카메라와 마이크를 사용하려고 합니다.</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보 보호</translation>
 <translation id="5043480802608081735">복사한 링크</translation>
@@ -1039,7 +1040,6 @@
 <translation id="5457113250005438886">잘못된 데이터</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />개}other{<ph name="CONTACT_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />개}}</translation>
 <translation id="5470861586879999274">수정 다시 실행(&amp;R)</translation>
-<translation id="5472133193607270166">사용 설정하면 사이트에서 사용자의 타 사이트 탐색 활동 정보를 이용해 광고를 맞춤설정할 수 없습니다. 일부 사이트는 제대로 작동하지 않을 수 있습니다.</translation>
 <translation id="5478437291406423475">B6/C4(봉투)</translation>
 <translation id="5481076368049295676">이 콘텐츠는 사용자의 정보를 도용하거나 삭제하는 위험한 소프트웨어를 기기에 설치하려 할 수도 있습니다. <ph name="BEGIN_LINK" />표시하기<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">유효한 주소 추가</translation>
@@ -1141,7 +1141,7 @@
 <translation id="5901630391730855834">노란색</translation>
 <translation id="5905445707201418379"><ph name="ORIGIN" />의 기존 정책에 따라 차단됨</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />(동기화됨)</translation>
-<translation id="59174027418879706">사용가능</translation>
+<translation id="59174027418879706">사용 가능</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921185718311485855">사용</translation>
 <translation id="5921639886840618607">카드를 Google 계정에 저장하시겠습니까?</translation>
@@ -1325,6 +1325,7 @@
 <translation id="6710594484020273272">&lt;검색어 입력&gt;</translation>
 <translation id="671076103358959139">등록 토큰:</translation>
 <translation id="6711464428925977395">프록시 서버에 문제가 발생했거나 주소가 잘못되었습니다.</translation>
+<translation id="6716672519412350405"><ph name="URL" />에서 주변 환경의 3D 지도를 생성하고 카메라 위치를 추적하려고 합니다.</translation>
 <translation id="6738516213925468394"><ph name="TIME" />자로 <ph name="BEGIN_LINK" />동기화 암호<ph name="END_LINK" />를 통해 데이터가 암호화되었습니다. 동기화를 시작하려면 암호를 입력하세요.</translation>
 <translation id="674375294223700098">알 수 없는 서버 인증서 오류입니다.</translation>
 <translation id="6744009308914054259">연결을 기다리는 동안 다운로드에서 오프라인 기사를 읽을 수 있습니다.</translation>
@@ -1744,7 +1745,6 @@
 <translation id="8589998999637048520">고품질 순</translation>
 <translation id="860043288473659153">카드 명의자 이름</translation>
 <translation id="8606726445206553943">MIDI 기기를 사용합니다.</translation>
-<translation id="8616822740383114808">‘<ph name="SETTINGS_PAGE" />’의 ‘<ph name="ENFORCING_SETTING" />’(으)로 인해 시행된 설정입니다.</translation>
 <translation id="861775596732816396">크기 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">이 기기에 카드 저장</translation>

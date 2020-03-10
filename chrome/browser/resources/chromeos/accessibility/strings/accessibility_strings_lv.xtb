@@ -36,7 +36,7 @@
 <translation id="1206619573307042055">slīdošais teksts</translation>
 <translation id="1207086294218137981">Nav nākamā 4. līmeņa virsraksta.</translation>
 <translation id="1212770441379271564">Daži nākamie īsinājumtaustiņi nav ChromeVox komandas, taču tie ir ļoti noderīgi efektīvai Chrome izmantošanai.
-    Lai pārietu uz priekšu pa izmantojamiem vienumiem, piemēram, pogām un saitēm, nospiediet tabulēšanas taustiņu. Lai pārietu atpakaļ, vienlaikus nospiediet pārslēgšanas un tabulēšanas taustiņu.
+    Lai pārietu uz priekšu pa izmantojamajiem vienumiem, piemēram, pogām un saitēm, nospiediet tabulēšanas taustiņu. Lai pārietu atpakaļ, vienlaikus nospiediet pārslēgšanas un tabulēšanas taustiņu.
     Lai ievadītu tekstu pārlūkprogrammas Chrome adreses joslā, kas tiek saukta arī par universālo lodziņu, vienlaikus nospiediet vadības taustiņu un taustiņu L.
     Lai atvērtu jaunu cilni un automātiski pārietu uz to, vienlaikus nospiediet vadības taustiņu un taustiņu T. Kursors atradīsies universālajā lodziņā.
     Lai aizvērtu cilni, vienlaikus nospiediet vadības taustiņu un taustiņu W.
@@ -1139,6 +1139,7 @@
 <translation id="8065607967589909823">Atlase ir</translation>
 <translation id="8066678206530322333">Reklāmkarogs</translation>
 <translation id="8076492880354921740">Cilnes</translation>
+<translation id="8083115023881784332">Pašlaik ChromeVox nav izcēlis nevienu apgabalu. Lai pārietu uz palaidēju, nospiediet taustiņu kombināciju Alt+Shift+L.</translation>
 <translation id="8091452896542422286">Atstarpe</translation>
 <translation id="8096975275316362544">Piparmētru krēma</translation>
 <translation id="8098587210054821856">Zilganpelēka</translation>

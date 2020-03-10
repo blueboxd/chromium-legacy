@@ -30,6 +30,18 @@ const char kSecurityKeyServiceUUID[] = "FFFD";
 constexpr base::TimeDelta kMaxDeviceSelectionDuration =
     base::TimeDelta::FromSeconds(30);
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other).
+enum class BluetoothTransportType {
+  kUnknown = 0,
+  kClassic = 1,
+  kLE = 2,
+  kDual = 3,
+  kInvalid = 4,
+  kMaxValue = kInvalid
+};
+
 // Get limited number of devices from |devices| and
 // prioritize paired/connecting devices over other devices.
 BluetoothAdapter::DeviceList GetLimitedNumDevices(
@@ -132,6 +144,38 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
   return result;
 }
 
+void RecordPairingDuration(const std::string& histogram_name,
+                           base::TimeDelta pairing_duration) {
+  base::UmaHistogramCustomTimes(histogram_name, pairing_duration,
+                                base::TimeDelta::FromMilliseconds(1) /* min */,
+                                base::TimeDelta::FromSeconds(30) /* max */,
+                                50 /* buckets */);
+}
+
+void RecordPairingTransport(BluetoothTransport transport) {
+  BluetoothTransportType type;
+  switch (transport) {
+    case BLUETOOTH_TRANSPORT_CLASSIC:
+      type = BluetoothTransportType::kClassic;
+      break;
+    case BLUETOOTH_TRANSPORT_LE:
+      type = BluetoothTransportType::kLE;
+      break;
+    case BLUETOOTH_TRANSPORT_DUAL:
+      type = BluetoothTransportType::kDual;
+      break;
+    case BLUETOOTH_TRANSPORT_INVALID:
+      type = BluetoothTransportType::kInvalid;
+      break;
+    default:
+      type = BluetoothTransportType::kUnknown;
+      break;
+  }
+
+  base::UmaHistogramEnumeration("Bluetooth.ChromeOS.Pairing.TransportType",
+                                type);
+}
+
 void RecordDeviceSelectionDuration(const std::string& histogram_name,
                                    base::TimeDelta duration) {
   base::UmaHistogramCustomTimes(
@@ -149,6 +193,57 @@ device::BluetoothAdapter::DeviceList FilterBluetoothDeviceList(
       filter_type == BluetoothFilterType::KNOWN ? FilterUnknownDevices(devices)
                                                 : devices;
   return GetLimitedNumDevices(max_devices, filtered_devices);
+}
+
+void RecordPairingResult(bool success,
+                         BluetoothTransport transport,
+                         base::TimeDelta duration) {
+  RecordPairingTransport(transport);
+
+  std::string result_histogram_name_prefix =
+      "Bluetooth.ChromeOS.Pairing.Result";
+
+  std::string transport_histogram_name;
+  switch (transport) {
+    case BluetoothTransport::BLUETOOTH_TRANSPORT_CLASSIC:
+      transport_histogram_name = "Classic";
+      break;
+    case BluetoothTransport::BLUETOOTH_TRANSPORT_LE:
+      transport_histogram_name = "BLE";
+      break;
+    case BluetoothTransport::BLUETOOTH_TRANSPORT_DUAL:
+      transport_histogram_name = "Dual";
+      break;
+    default:
+      // A transport type of INVALID or other is unexpected, and no success
+      // metric for it exists.
+      return;
+  }
+
+  base::UmaHistogramBoolean(result_histogram_name_prefix, success);
+  base::UmaHistogramBoolean(
+      result_histogram_name_prefix + "." + transport_histogram_name, success);
+
+  std::string duration_histogram_name_prefix =
+      "Bluetooth.ChromeOS.Pairing.Duration";
+  std::string success_histogram_name = success ? "Success" : "Failure";
+
+  std::string base_histogram_name =
+      duration_histogram_name_prefix + "." + success_histogram_name;
+  RecordPairingDuration(base_histogram_name, duration);
+  RecordPairingDuration(base_histogram_name + "." + transport_histogram_name,
+                        duration);
+}
+
+void RecordUserInitiatedReconnectionAttemptResult(bool success,
+                                                  BluetoothUiSurface surface) {
+  std::string base_histogram_name =
+      "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result";
+  base::UmaHistogramBoolean(base_histogram_name, success);
+
+  std::string surface_name =
+      (surface == BluetoothUiSurface::kSettings ? "Settings" : "SystemTray");
+  base::UmaHistogramBoolean(base_histogram_name + "." + surface_name, success);
 }
 
 void RecordDeviceSelectionDuration(base::TimeDelta duration,

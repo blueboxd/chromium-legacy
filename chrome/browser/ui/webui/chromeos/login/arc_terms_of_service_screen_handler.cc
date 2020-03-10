@@ -287,12 +287,11 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   // ToS then prefs::kArcEnabled is automatically reset in ArcSessionManager.
   arc::SetArcPlayStoreEnabledForProfile(profile, true);
 
-  // Hide the Skip button if the ToS screen can not be skipped during OOBE.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableArcOobeOptinNoSkip) ||
-      arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile)) {
-    CallJS("login.ArcTermsOfServiceScreen.hideSkipButton");
-  }
+  // Hide the Skip button in the ToS screen.
+  // TODO(crbug.com/1059048) Remove this when the ToS screen no longer has
+  // the skip button altogether. We call it all the time now so we can
+  // remove a Chrome OS flag.
+  CallJS("login.ArcTermsOfServiceScreen.hideSkipButton");
 
   action_taken_ = false;
 

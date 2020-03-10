@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Selecione uma conta</translation>
 <translation id="3311748811247479259">Desativado</translation>
 <translation id="3324193307694657476">Morada 2</translation>
+<translation id="3328801116991980348">Informações do site</translation>
 <translation id="3329904751041170572">Não foi possível ligar ao servidor.</translation>
 <translation id="3335947283844343239">Reabrir separador fechado</translation>
 <translation id="3371831930909698441">A tradução está disponível. Opções disponíveis junto à parte inferior do ecrã.</translation>
@@ -600,6 +601,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="9223358826628549784">Relatório de falha enviado.</translation>
 <translation id="952704832371081537">Cancelar</translation>
 <translation id="988141524645182168">Outros Dispositivos</translation>
+<translation id="989697783705943787">Segurança do site</translation>
 <translation id="989988560359834682">Editar endereço</translation>
 <translation id="994757059139821576">Sugestões de artigos</translation>
 </translationbundle>

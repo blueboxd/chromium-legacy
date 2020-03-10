@@ -432,7 +432,8 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
   ASSERT_EQ(popup_timers_controller->timer_finished(), 0);
 
 #if defined(OS_CHROMEOS)
-  const int dismiss_time = kAutocloseDefaultDelaySeconds;
+  const int dismiss_time =
+      popup_timers_controller->GetNotificationTimeoutDefault();
 #else
   const int dismiss_time = kAutocloseHighPriorityDelaySeconds;
 #endif

@@ -196,6 +196,11 @@ void UnifiedSystemTray::ActivateBubble() {
     bubble_->ActivateBubble();
 }
 
+void UnifiedSystemTray::CloseSecondaryBubbles() {
+  slider_bubble_controller_->CloseBubble();
+  privacy_screen_toast_controller_->HideToast();
+}
+
 void UnifiedSystemTray::CollapseMessageCenter() {
   if (message_center_bubble_)
     message_center_bubble_->CollapseMessageCenter();
@@ -423,11 +428,7 @@ void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
   if (Shell::Get()->session_controller()->IsRunningInAppMode())
     return;
 
-  // Hide volume/brightness slider popup.
-  slider_bubble_controller_->CloseBubble();
-
-  // Hide the privacy screen toast if it is shown.
-  privacy_screen_toast_controller_->HideToast();
+  CloseSecondaryBubbles();
 
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this, show_by_click);
 

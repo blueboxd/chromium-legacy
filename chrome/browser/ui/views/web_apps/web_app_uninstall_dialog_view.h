@@ -72,7 +72,7 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
   gfx::ImageSkia image_;
 
   // The web app we are showing the dialog for.
-  web_app::AppId app_id_;
+  const web_app::AppId app_id_;
   // The dialog needs launch_url copy even if app gets uninstalled.
   GURL app_launch_url_;
 

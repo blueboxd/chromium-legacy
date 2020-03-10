@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Tria un compte</translation>
 <translation id="3311748811247479259">Desactivat</translation>
 <translation id="3324193307694657476">Adreça 2</translation>
+<translation id="3328801116991980348">Informació del lloc web</translation>
 <translation id="3329904751041170572">No s'ha pogut connectar amb el servidor.</translation>
 <translation id="3335947283844343239">Torna a obrir la pestanya tancada</translation>
 <translation id="3371831930909698441">El Traductor està disponible. Tens opcions a la part inferior de la pantalla</translation>
@@ -600,6 +601,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="9223358826628549784">L'informe d'error s'ha enviat.</translation>
 <translation id="952704832371081537">Cancel·la</translation>
 <translation id="988141524645182168">Altres dispositius</translation>
+<translation id="989697783705943787">Seguretat del lloc web</translation>
 <translation id="989988560359834682">Edita l'adreça</translation>
 <translation id="994757059139821576">Suggeriments d'articles</translation>
 </translationbundle>

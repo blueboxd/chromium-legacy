@@ -321,6 +321,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
     return last_same_document_navigation_was_browser_initiated_;
   }
 
+  bool NavigationScrollAllowed() const { return navigation_scroll_allowed_; }
+
  protected:
   Vector<KURL> redirect_chain_;
 
@@ -551,6 +553,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // Whether this load request is a result of a browser initiated same-document
   // navigation.
   bool last_same_document_navigation_was_browser_initiated_ = false;
+
+  // Whether the document can be scrolled on load
+  bool navigation_scroll_allowed_ = true;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">PIN kod xato.</translation>
 <translation id="3838338534323494292">Yangi parol</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Qaytadan urining. <ph name="ATTEMPTS_LEFT" /> ta urinish qoldi</translation>
 <translation id="4003259559679196451">Bu qurilma va uning foydalanuvchilari harakatlari, ochilgan sahifalar, parollar va emaillar <ph name="ENROLLMENT_DOMAIN" /> domenida boshqariladi.</translation>
 <translation id="4227825898293920515">Parol muddati tugashiga <ph name="TIME" /> qoldi</translation>
 <translation id="4429881212383817840">Kerberos chiptasi amal qilish muddati tezda tugaydi</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">Ekranda men yordam bera oladigan hech narsa topilmadi.
 Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="5222676887888702881">Tizimdan chiqish</translation>
-<translation id="5275776633505022322"><ph name="ATTEMPTS_LEFT" /> ta urinish qoldi</translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Qaytadan urining.</translation>
 <translation id="5317780077021120954">Saqlash</translation>
 <translation id="5332948983412042822">Hoziroq yangi parol tanlang</translation>
 <translation id="5457599981699367932">Mehmon sifatida kezish</translation>

@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">Upload</translation>
 <translation id="1249250836236328755">Genre</translation>
 <translation id="1278813325885878377">Hungarian QWERTY keyboard</translation>
+<translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">Google Drive is not available right now. Uploading will automatically restart once Google Drive is back.</translation>
 <translation id="1307931752636661898">Unable to view Linux files</translation>
 <translation id="1310751437842832374">Transliteration (mausam → ନମସ୍ତେ)</translation>
@@ -520,6 +521,7 @@
 <translation id="696203921837389374">Enable syncing over mobile data</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6970230597523682626">Bulgarian</translation>
+<translation id="6973630695168034713">Folders</translation>
 <translation id="6978611942794658017">This file is designed for a PC using Windows software. This is not compatible with your device running Chrome OS. Please search the Chrome Web Store for a suitable replacement app.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">You have run out of space</translation>

@@ -42,9 +42,9 @@ class UninstallDialog;
 
 #if defined(OS_CHROMEOS)
 struct PauseData {
-  int hours;
-  int minutes;
-  bool should_show_pause_dialog;
+  int hours = 0;
+  int minutes = 0;
+  bool should_show_pause_dialog = false;
 };
 #endif
 
@@ -237,6 +237,10 @@ class AppServiceProxy : public KeyedService,
   };
 
 #if defined(OS_CHROMEOS)
+  static void CreateBlockDialog(const std::string& app_name,
+                                const gfx::ImageSkia& image,
+                                Profile* profile);
+
   static void CreatePauseDialog(const std::string& app_name,
                                 const gfx::ImageSkia& image,
                                 const PauseData& pause_data,
@@ -275,10 +279,20 @@ class AppServiceProxy : public KeyedService,
                                UninstallDialog* uninstall_dialog);
 
 #if defined(OS_CHROMEOS)
-  void LoadIconForPauseDialog(const apps::AppUpdate& update,
-                              const PauseData& pause_data);
+  // Returns true if the app cannot be launched and a launch prevention dialog
+  // is shown to the user (e.g. the app is paused or blocked). Returns false
+  // otherwise (and the app can be launched).
+  bool MaybeShowLaunchPreventionDialog(const apps::AppUpdate& update);
 
-  // Callback invoked when the icon is loaded.
+  // Loads the icon for the app block dialog or the app pause dialog.
+  void LoadIconForDialog(const apps::AppUpdate& update,
+                         apps::mojom::Publisher::LoadIconCallback callback);
+
+  // Callback invoked when the icon is loaded for the block app dialog.
+  void OnLoadIconForBlockDialog(const std::string& app_name,
+                                apps::mojom::IconValuePtr icon_value);
+
+  // Callback invoked when the icon is loaded for the pause app dialog.
   void OnLoadIconForPauseDialog(apps::mojom::AppType app_type,
                                 const std::string& app_id,
                                 const std::string& app_name,

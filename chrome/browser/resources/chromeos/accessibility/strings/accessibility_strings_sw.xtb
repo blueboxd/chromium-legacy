@@ -40,7 +40,7 @@ Ili uende mbele kupitia vipengee vinavyoweza kutekelezwa kama vile vitufe na viu
 Ili utumie upau wa kutafutia wa kivinjari cha Chrome, ambao pia unaitwa sanduku kuu, bonyeza Control + L.
 Ili ufungue na uende kwenye kichupo kipya kiotomatiki, bonyeza Control+T. Kiteuzi chako kitakuwa katika sanduku kuu.
 Ili ufunge kichupo, bonyeza Control+W.
-Ili uende mbele katikati ya vichupo vilivyofunguliwa tumia Control+Tab.
+Ili uende mbele kati ya vichupo vilivyofunguliwa, tumia Control+Tab.
 Ili ufungue menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="1213216066620407844">ChromeVox - Inaipa Chrome Sauti</translation>
 <translation id="1225969361094801578">Kijivu Kilichokolea</translation>
@@ -1139,6 +1139,7 @@ Ili ufungue menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="8065607967589909823">Uchaguzi ni</translation>
 <translation id="8066678206530322333">Bango</translation>
 <translation id="8076492880354921740">Vichupo</translation>
+<translation id="8083115023881784332">Hamna ChromeVox inayoangaziwa kwa sasa. Bonyeza Alt+Shift+L ili uende kwenye kifungua programu.</translation>
 <translation id="8091452896542422286">Nafasi</translation>
 <translation id="8096975275316362544">Kahawia ya Kijani</translation>
 <translation id="8098587210054821856">Kijivu Iliyokolea</translation>

@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">Інші сайти (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Щоб файли з вашого телефона були доступними на іншому вашому пристрої, увімкніть синхронізацію в налаштуваннях Chrome на обох пристроях</translation>
 <translation id="2175927920773552910">QR-код</translation>
+<translation id="2182457891543959921">Запитувати, перш ніж дозволяти сайтам створювати 3D-карту вашого оточення або відстежувати положення камери (рекомендовано)</translation>
 <translation id="218608176142494674">Спільний доступ</translation>
 <translation id="2227444325776770048">Продовжити як <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Синхронізація та сервіси Google</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">Ця функція вмикається, коли ви входите в обліковий запис Google</translation>
 <translation id="2410754283952462441">Виберіть обліковий запис</translation>
 <translation id="2414886740292270097">Темна</translation>
-<translation id="2416359993254398973">Chrome потрібні дозволи, щоб використовувати камеру на цьому сайті.</translation>
 <translation id="2426805022920575512">Вибрати інший обліковий запис</translation>
 <translation id="2433507940547922241">Зовнішній вигляд</translation>
 <translation id="2434158240863470628">Завантажено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">Ви можете будь-коли ввімкнути синхронізацію в налаштуваннях</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> закладка}one{<ph name="BOOKMARKS_COUNT_MANY" /> закладка}few{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}many{<ph name="BOOKMARKS_COUNT_MANY" /> закладок}other{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}}</translation>
 <translation id="3089395242580810162">Відкрити в анонімній вкладці</translation>
+<translation id="3114012059975132928">Відеопрогравач</translation>
 <translation id="3123473560110926937">Заблоковано на деяких сайтах</translation>
 <translation id="3123734510202723619">Оголошення</translation>
 <translation id="3137521801621304719">Вийти з режиму анонімного перегляду</translation>
@@ -343,6 +344,7 @@
 <translation id="3522247891732774234">Доступне оновлення. Більше опцій</translation>
 <translation id="3524138585025253783">Інтерфейс розробника</translation>
 <translation id="3527085408025491307">Папка</translation>
+<translation id="3538390592868664640">Заборонити сайтам створювати 3D-карту вашого оточення або відстежувати положення камери</translation>
 <translation id="3542235761944717775">Доступно <ph name="KILOBYTES" /> КБ</translation>
 <translation id="3549657413697417275">Пошук в історії</translation>
 <translation id="3557336313807607643">Додати до контактів</translation>
@@ -351,6 +353,7 @@
 <translation id="3587482841069643663">Все</translation>
 <translation id="358794129225322306">Дозволити сайту автоматично завантажувати декілька файлів.</translation>
 <translation id="3590487821116122040">Дані сайтів, які Chrome визначив як неважливі, зокрема сайтів із незбереженими налаштуваннями або тих, які ви рідко відвідуєте</translation>
+<translation id="3594780231884063836">Вимкнути звук у відео</translation>
 <translation id="3599863153486145794">Видалення історії на всіх пристроях, на яких ви ввійшли в обліковий запис. Історія веб-перегляду може також зберігатися у вашому обліковому записі Google на сторінці  <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Вимкнути звук на сайтах, які відтворюють його</translation>
 <translation id="3616113530831147358">Аудіо</translation>
@@ -439,6 +442,7 @@
 <translation id="4298388696830689168">Зв’язані сайти</translation>
 <translation id="4307992518367153382">Основні</translation>
 <translation id="4314815835985389558">Керування синхронізацією</translation>
+<translation id="4320177379694898372">Немає з’єднання з Інтернетом</translation>
 <translation id="4321739720395210191">Не вдається відкрити камеру. Перезапустіть пристрій і повторіть спробу.</translation>
 <translation id="4351244548802238354">Закрити діалогове вікно</translation>
 <translation id="4353114845960720315">Під час сеансу VR цей сайт може розпізнавати:</translation>
@@ -603,6 +607,7 @@
 <translation id="5456381639095306749">Завантажити сторінку</translation>
 <translation id="548278423535722844">Відкрити в додатку Карти</translation>
 <translation id="5487521232677179737">Видалити дані</translation>
+<translation id="5489227211564503167">Минуло часу: <ph name="ELAPSED_TIME" /> з <ph name="TOTAL_TIME" /></translation>
 <translation id="5494752089476963479">Блокувати рекламу на сайтах, які показують нав’язливі чи оманливі оголошення</translation>
 <translation id="5500777121964041360">Функція може бути недоступна у вашій країні</translation>
 <translation id="5505264765875738116">Сайти не можуть просити дозвіл надсилати сповіщення</translation>
@@ -617,7 +622,6 @@
 <translation id="5530766185686772672">Закрити анонімні вкладки</translation>
 <translation id="5534640966246046842">URL-адресу сайту скопійовано</translation>
 <translation id="5561549206367097665">Очікується мережа…</translation>
-<translation id="557283862590186398">Chrome потрібні дозволи, щоб використовувати мікрофон на цьому сайті.</translation>
 <translation id="55737423895878184">Геодані та сповіщення дозволено</translation>
 <translation id="5578795271662203820">Шукати зображення в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Ви можете будь-коли вибрати дані для синхронізації в <ph name="BEGIN_LINK1" />налаштуваннях<ph name="END_LINK1" />.</translation>
@@ -664,6 +668,7 @@
 <translation id="5864419784173784555">Очікується інше завантаження…</translation>
 <translation id="5865733239029070421">Автоматично надсилає статистику використання та звіти про аварійне завершення роботи в Google</translation>
 <translation id="5869522115854928033">Збережені паролі</translation>
+<translation id="5876056640971328065">Призупинити відео</translation>
 <translation id="5884076754568147479">Щоб допомагати вам виконувати завдання, Google отримуватиме URL-адреси та вміст веб-сайтів, на яких ви користуєтесь Асистентом, а також інформацію, яку надсилаєте через нього</translation>
 <translation id="5902828464777634901">Буде видалено всі локальні дані, які зберіг цей веб-сайт, зокрема файли cookie.</translation>
 <translation id="5919204609460789179">Оновіть <ph name="PRODUCT_NAME" />, щоб почати синхронізацію</translation>
@@ -726,8 +731,8 @@
 <translation id="6378173571450987352">Деталі: відсортовано за кількістю використаного трафіку</translation>
 <translation id="6381421346744604172">Затемнити веб-сайти</translation>
 <translation id="6388207532828177975">Очистити та скинути</translation>
-<translation id="6393863479814692971">Chrome потрібні дозволи, щоб використовувати камеру та мікрофон на цьому сайті.</translation>
 <translation id="6395288395575013217">ПОСИЛАННЯ</translation>
+<translation id="6397616442223433927">З'єднання відновлено</translation>
 <translation id="6404511346730675251">Редагувати закладку</translation>
 <translation id="6406506848690869874">Синхронізація</translation>
 <translation id="6410973561433500075">Почати сеанс доповненої реальності на сайті <ph name="DOMAIN" />?</translation>
@@ -779,7 +784,6 @@
 <translation id="6676840375528380067">Видалити дані Chrome із цього пристрою?</translation>
 <translation id="6689172468748959065">Фотографії профілів</translation>
 <translation id="6697492270171225480">Показувати пропозиції схожих сторінок, коли не вдається знайти сторінку</translation>
-<translation id="6697947395630195233">Chrome потрібен доступ до місцезнаходження, щоб повідомляти ваші геодані цьому сайту.</translation>
 <translation id="6698801883190606802">Керування синхронізованими даними</translation>
 <translation id="6699370405921460408">Сервери Google оптимізують сторінки, які ви відвідуєте.</translation>
 <translation id="6710213216561001401">Попереднє</translation>
@@ -797,6 +801,7 @@
 <translation id="6846298663435243399">Завантаження…</translation>
 <translation id="6850409657436465440">Завантаження ще триває</translation>
 <translation id="6850830437481525139">Закрито вкладок: <ph name="TAB_COUNT" /></translation>
+<translation id="6864395892908308021">Цей пристрій не підтримує NFC</translation>
 <translation id="6864459304226931083">Завантажити зображення</translation>
 <translation id="6865313869410766144">Дані автозаповнення форм</translation>
 <translation id="6884306546558072722">Переглядайте контент у режимі офлайн</translation>
@@ -917,6 +922,7 @@
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7810647596859435254">Відкрити за допомогою…</translation>
 <translation id="7821588508402923572">Тут буде вказано обсяг заощадженого трафіку</translation>
+<translation id="783819812427904514">Увімкнути звук у відео</translation>
 <translation id="784934925303690534">Період часу</translation>
 <translation id="7851858861565204677">Інші пристрої</translation>
 <translation id="7875915731392087153">Створити електронну адресу</translation>
@@ -971,6 +977,7 @@
 <translation id="8186512483418048923">Залишилося файлів: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Залишився 1 день</translation>
 <translation id="8200772114523450471">Поновити</translation>
+<translation id="8206354486702514201">Це налаштування застосовується вашим адміністратором.</translation>
 <translation id="8209050860603202033">Відкрити зображення</translation>
 <translation id="8218622182176210845">Керувати обліковим записом</translation>
 <translation id="8224471946457685718">Завантажувати статті через Wi-Fi</translation>
@@ -992,7 +999,6 @@
 <translation id="8364299278605033898">Перегляньте популярні сайти</translation>
 <translation id="8368027906805972958">Невідомий чи непідтримуваний пристрій (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">сайті.</translation>
-<translation id="8378714024927312812">Профілем керує ваша організація</translation>
 <translation id="8380167699614421159">Цей сайт показує нав’язливі чи оманливі оголошення</translation>
 <translation id="8393700583063109961">Надіслати повідомлення</translation>
 <translation id="8413126021676339697">Показати повну історію</translation>

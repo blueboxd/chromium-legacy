@@ -58,6 +58,16 @@ Polymer({
         .setPlay(true);
   },
 
+  /** Called when dialog is shown */
+  onBeforeShow() {
+    this.isAccessibilitySettingsShown_ = false;
+
+    this.behaviors.forEach((behavior) => {
+      if (behavior.onBeforeShow)
+        behavior.onBeforeShow.call(this);
+    });
+  },
+
   /**
    * This is 'on-tap' event handler for 'AcceptAndContinue/Next' buttons.
    * @private
@@ -108,6 +118,11 @@ Polymer({
     this.$['marketingOptInOverviewDialog']
         .querySelector('.marketing-animation')
         .setPlay(!this.isAccessibilitySettingsShown_);
+
+    chrome.send(
+        'login.MarketingOptInScreen.accessibilityPageVisibilityChanged', [
+          this.isAccessibilitySettingsShown_
+        ]);
   },
 
   /**

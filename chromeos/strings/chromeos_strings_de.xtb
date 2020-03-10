@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">Ungültige PIN.</translation>
 <translation id="3838338534323494292">Neues Passwort</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Bitte versuchen Sie es noch einmal. Noch <ph name="ATTEMPTS_LEFT" /> Versuche</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> verwaltet dieses Gerät und hat Zugriff auf alle Nutzeraktivitäten, einschließlich besuchten Webseiten, Passwörtern und E-Mails.</translation>
 <translation id="4227825898293920515">Passwort läuft in <ph name="TIME" /> ab</translation>
 <translation id="4429881212383817840">Kerberos-Ticket läuft bald ab</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">Ich finde nichts auf deinem Display, wobei ich dir helfen könnte.
 Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="5222676887888702881">Abmelden</translation>
-<translation id="5275776633505022322">Verbleibende Versuche: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Bitte versuchen Sie es noch einmal.</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5332948983412042822">Bitte legen Sie jetzt ein neues fest</translation>
 <translation id="5457599981699367932">Als Gast nutzen</translation>

@@ -209,7 +209,7 @@
 <translation id="3513798432020909783">Kontem zarządza <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zmień z powrotem na „<ph name="FROM_LOCALE" />” (wymaga ponownego uruchomienia)</translation>
 <translation id="3576141592585647168">Zmień strefę czasową</translation>
-<translation id="3593646411856133110">Aby zobaczyć otwarte aplikacje, przesuń palcem w górę i przytrzymaj.</translation>
+<translation id="3593646411856133110">Aby zobaczyć otwarte aplikacje, przesuń palcem w górę i przytrzymaj</translation>
 <translation id="3595596368722241419">Bateria naładowana</translation>
 <translation id="3604801046548457007">Utworzono biurko <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Podłączono monitor brajlowski.</translation>
@@ -622,7 +622,7 @@
 <translation id="9072519059834302790">Czas pozostały do całkowitego rozładowania baterii: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
-<translation id="9080132581049224423">Aby przejść na stronę główną, przesuń w górę.</translation>
+<translation id="9080132581049224423">Aby przejść na stronę główną, przesuń w górę</translation>
 <translation id="9080206825613744995">Mikrofon jest używany.</translation>
 <translation id="9084606467167974638">Zmień położenie menu</translation>
 <translation id="9089416786594320554">Wprowadzanie tekstu</translation>

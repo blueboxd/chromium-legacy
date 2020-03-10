@@ -172,9 +172,13 @@ class GpuIntegrationTest(
       # generator?
       if len(args) == 1 and isinstance(args[0], tuple):
         args = args[0]
+      expected_crashes = self.GetExpectedCrashes(args)
       self.RunActualGpuTest(url, *args)
     except Exception:
       if ResultType.Failure in expected_results or should_retry_on_failure:
+        # We don't check the return value here since we'll be raising the
+        # caught exception already.
+        self._ClearExpectedCrashes(expected_crashes)
         if should_retry_on_failure:
           logging.exception('Exception while running flaky test %s', test_name)
           # For robustness, shut down the browser and restart it
@@ -206,9 +210,16 @@ class GpuIntegrationTest(
         self._RestartBrowser('unexpected test failure')
       raise
     else:
+      # We always want to clear any expected crashes, but we don't bother
+      # failing the test if it's expected to fail.
+      actual_and_expected_crashes_match = self._ClearExpectedCrashes(
+          expected_crashes)
       if ResultType.Failure in expected_results:
         logging.warning(
           '%s was expected to fail, but passed.\n', test_name)
+      else:
+        if not actual_and_expected_crashes_match:
+          raise RuntimeError('Actual and expected crashes did not match')
 
   def _IsIntel(self, vendor_id):
     return vendor_id == 0x8086
@@ -237,6 +248,59 @@ class GpuIntegrationTest(
         self._IsIntel(gpu.devices[1].vendor_id)):
       return True
     return False
+
+  def _ClearExpectedCrashes(self, expected_crashes):
+    """Clears any expected crash minidumps so they're not caught later.
+
+    Args:
+      expected_crashes: A dictionary mapping crash types as strings to the
+          number of expected crashes of that type.
+
+    Returns:
+      True if the actual number of crashes matched the expected number,
+      otherwise False.
+    """
+    # We can't get crashes if we don't have a browser.
+    if self.browser is None:
+      return True
+    # TODO(crbug.com/1006331): Properly match type once we have a way of
+    # checking the crashed process type without symbolizing the minidump.
+    total_expected_crashes = sum(expected_crashes.values())
+    # The Telemetry-wide cleanup will handle any remaining minidumps, so early
+    # return here since we don't expect any, which saves us a bit of work.
+    if total_expected_crashes == 0:
+      return True
+    unsymbolized_minidumps = self.browser.GetAllUnsymbolizedMinidumpPaths()
+    total_unsymbolized_minidumps = len(unsymbolized_minidumps)
+
+    if total_expected_crashes == total_unsymbolized_minidumps:
+      for path in unsymbolized_minidumps:
+        self.browser.IgnoreMinidump(path)
+      return True
+
+    logging.error(
+        'Found %d unsymbolized minidumps when we expected %d. Expected '
+        'crash breakdown: %s', total_unsymbolized_minidumps,
+        total_expected_crashes, expected_crashes)
+    return False
+
+  def GetExpectedCrashes(self, args):
+    """Returns which crashes, per process type, to expect for the current test.
+
+    Should be overridden by child classes to actually return valid data if
+    available.
+
+    Args:
+      args: The list passed to _RunGpuTest()
+
+    Returns:
+      A dictionary mapping crash types as strings to the number of expected
+      crashes of that type. Examples include 'gpu' for the GPU process,
+      'renderer' for the renderer process, and 'browser' for the browser
+      process.
+    """
+    del args
+    return {}
 
   @classmethod
   def GenerateGpuTests(cls, options):

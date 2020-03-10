@@ -481,7 +481,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="3024663005179499861">Röng gerð stefnu</translation>
 <translation id="3037605927509011580">Rækallinn!</translation>
 <translation id="3041612393474885105">Upplýsingar um vottorð</translation>
-<translation id="3057676462092457419">DnsOverHttps-stillingin <ph name="SECURE_DNS_MODE_SECURE" /> er ekki studd enn sem komið er. Stillt var á <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (umslag)</translation>
 <translation id="3061707000357573562">Plástraþjónusta</translation>
 <translation id="3064966200440839136">Slökkva þarf á huliðsstillingu til að greiða með öðru forriti. Halda áfram?</translation>
@@ -581,6 +580,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="3487845404393360112">Bakki 4</translation>
 <translation id="3495081129428749620">Finna á síðunni
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Búa til þrívíddarkort af umhverfinu og rekja staðsetningu myndavélarinnar</translation>
 <translation id="3512163584740124171">Þessi regla er hunsuð vegna þess að önnur regla úr sama regluhópi hefur meiri forgang.</translation>
 <translation id="3518941727116570328">Meðhöndlun margra hluta</translation>
 <translation id="3528171143076753409">Vottorði þjónsins er ekki treyst.</translation>
@@ -934,6 +934,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="5030338702439866405">Gefið út af</translation>
 <translation id="503069730517007720">Rótarvottorðs er krafist fyrir „<ph name="SOFTWARE_NAME" />“ en það er ekki sett upp. Kerfisstjóri ætti að athuga leiðbeiningar fyrir stillingu á „<ph name="SOFTWARE_NAME" />“ til að lagfæra vandamálið. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Um Google Translate</translation>
+<translation id="503498442187459473"><ph name="HOST" /> vill fá að nota myndavélina og hljóðnemann</translation>
 <translation id="5039804452771397117">Leyfa</translation>
 <translation id="5040262127954254034">Persónuvernd</translation>
 <translation id="5043480802608081735">Tengill sem þú afritaðir</translation>
@@ -1042,7 +1043,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="5457113250005438886">Ógilt</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> í viðbót}one{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> í viðbót}other{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> í viðbót}}</translation>
 <translation id="5470861586879999274">&amp;Endurtaka breytingu</translation>
-<translation id="5472133193607270166">Þegar kveikt er á þessu geta vefsvæði ekki notað vafranotkun þína á mismunandi vefsvæðum til að sérsníða auglýsingar. Ekki er víst að öll vefsvæði virki rétt.</translation>
 <translation id="5478437291406423475">B6/C4 (umslag)</translation>
 <translation id="5481076368049295676">Þetta efni gæti reynt að setja upp hættulegan hugbúnað í tækinu þínu sem stelur eða eyðir upplýsingunum þínum. <ph name="BEGIN_LINK" />Sýna samt<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Bæta gildu heimilisfangi við</translation>
@@ -1087,7 +1087,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="563324245173044180">Lokað á villandi efni.</translation>
 <translation id="5644090287519800334">X-færsla myndar á hlið 1</translation>
 <translation id="5645854190134202180">Önnur vakt</translation>
-<translation id="5654927323611874862">Auðkenni sendrar hrunskýrslu</translation>
+<translation id="5654927323611874862">Auðkenni sendrar hrunskýrslu:</translation>
 <translation id="5659593005791499971">Netfang</translation>
 <translation id="5663614846592581799">9x11 (umslag)</translation>
 <translation id="5663955426505430495">Kerfisstjóri þessa tækis hefur sett upp viðbætur fyrir fleiri aðgerðir. Viðbætur hafa aðgang að sumum af gögnunum þínum.</translation>
@@ -1328,6 +1328,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="6710594484020273272">&lt;Sláðu inn leitarorð&gt;</translation>
 <translation id="671076103358959139">Skráningarlykill:</translation>
 <translation id="6711464428925977395">Eitthvað amar að staðgengilsþjóninum, eða þá að slóðin er röng.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> vill búa til þrívíddarkort af umhverfinu og rekja staðsetningu myndavélarinnar</translation>
 <translation id="6738516213925468394">Gögnin þín voru dulkóðuð með <ph name="BEGIN_LINK" />aðgangsorði samstillingar<ph name="END_LINK" /> <ph name="TIME" />. Sláðu það inn til að hefja samstillingu.</translation>
 <translation id="674375294223700098">Óþekkt villa í vottorði þjóns.</translation>
 <translation id="6744009308914054259">Á meðan þú bíður eftir tengingu geturðu skoðað „Niðurhal“ til að lesa greinar án nettengingar.</translation>
@@ -1558,7 +1559,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Halda áfram á <ph name="SITE" /> (ekki öruggt)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Vottorð</translation>
 <translation id="7716147886133743102">Kerfisstjóri lokaði fyrir þetta</translation>
-<translation id="7716375162095500223">Hvorki sent né hunsað</translation>
+<translation id="7716375162095500223">Ekki send enn eða var hunsuð</translation>
 <translation id="7716424297397655342">Ekki er hægt að hlaða þetta vefsvæði úr skyndiminni</translation>
 <translation id="7723047071702270851">Breyta korti</translation>
 <translation id="7740996059027112821">Venjulegt</translation>
@@ -1748,7 +1749,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="8589998999637048520">Mest gæði</translation>
 <translation id="860043288473659153">Nafn korthafa</translation>
 <translation id="8606726445206553943">Nota MIDI-tækin þín</translation>
-<translation id="8616822740383114808">Þessi stilling er valin af „<ph name="ENFORCING_SETTING" />“ í „<ph name="SETTINGS_PAGE" />“</translation>
 <translation id="861775596732816396">Stærð 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Vista þetta kort í þessu tæki</translation>

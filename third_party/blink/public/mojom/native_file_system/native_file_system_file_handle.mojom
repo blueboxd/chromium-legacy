@@ -29,6 +29,10 @@ interface NativeFileSystemFileHandle {
   CreateFileWriter(bool keep_existing_data) => (
       NativeFileSystemError result, pending_remote<NativeFileSystemFileWriter>? writer);
 
+  // Returns true if |other| represents the same file on disk as this handle.
+  IsSameEntry(pending_remote<NativeFileSystemTransferToken> other) =>
+      (NativeFileSystemError result, bool is_same);
+
   // Create a TransferToken for this directory. This token can be used to pass
   // a reference to this directory to other methods, for example to copy or move
   // the file, or when transferring the handle over postMessage.

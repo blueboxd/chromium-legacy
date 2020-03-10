@@ -182,6 +182,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_native_gpu_memory_buffers =
         prefs.enable_native_gpu_memory_buffers();
 
+    out->force_disable_new_accelerated_video_decoder =
+        prefs.force_disable_new_accelerated_video_decoder();
+
     return true;
   }
 
@@ -357,6 +360,10 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool enable_native_gpu_memory_buffers(
       const gpu::GpuPreferences& prefs) {
     return prefs.enable_native_gpu_memory_buffers;
+  }
+  static bool force_disable_new_accelerated_video_decoder(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.force_disable_new_accelerated_video_decoder;
   }
 };
 

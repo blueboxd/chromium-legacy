@@ -81,16 +81,36 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         /** The suggestion this info represents. */
         public final OmniboxSuggestion suggestion;
 
+        /** Whether this suggestion has been initialized. */
+        private boolean mIsInitialized;
+
         public SuggestionViewInfo(SuggestionProcessor suggestionProcessor,
                 OmniboxSuggestion omniboxSuggestion, PropertyModel propertyModel) {
             super(suggestionProcessor.getViewTypeId(), propertyModel);
             processor = suggestionProcessor;
             suggestion = omniboxSuggestion;
         }
+
+        /**
+         * Initialize model for the encompassed suggestion.
+         *
+         * @param suggestionIndex Target suggestion position in the suggestion list.
+         * @param layoutDirection View layout direction (LTR or RTL).
+         * @param useDarkColors Whether suggestions should be rendered using incognito or night mode
+         *         colors.
+         */
+        void initializeModel(int suggestionIndex, int layoutDirection, boolean useDarkColors) {
+            if (mIsInitialized) return;
+            model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, layoutDirection);
+            model.set(SuggestionCommonProperties.USE_DARK_COLORS, useDarkColors);
+            processor.populateModel(suggestion, model, suggestionIndex);
+            mIsInitialized = true;
+        }
     }
 
     private static final String TAG = "Autocomplete";
     private static final int SUGGESTION_NOT_FOUND = -1;
+    private static final int MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW = 5;
 
     private static final int MAX_IMAGE_CACHE_SIZE = 500 * ConversionUtils.BYTES_PER_KILOBYTE;
 
@@ -110,6 +130,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     // other processors because of its unique requirements.
     private @Nullable EditUrlSuggestionProcessor mEditUrlProcessor;
     private final List<SuggestionProcessor> mSuggestionProcessors;
+    private final List<SuggestionViewInfo> mAvailableSuggestions;
 
     private ToolbarDataProvider mDataProvider;
     private OverviewModeBehavior mOverviewModeBehavior;
@@ -119,11 +140,13 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private AutocompleteController mAutocomplete;
     private long mUrlFocusTime;
     private boolean mEnableAdaptiveSuggestionsCount;
+    private int mMaximumSuggestionsListHeight;
 
     @IntDef({SuggestionVisibilityState.DISALLOWED, SuggestionVisibilityState.PENDING_ALLOW,
             SuggestionVisibilityState.ALLOWED})
     @Retention(RetentionPolicy.SOURCE)
-    private @interface SuggestionVisibilityState {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @interface SuggestionVisibilityState {
         int DISALLOWED = 0;
         int PENDING_ALLOW = 1;
         int ALLOWED = 2;
@@ -172,6 +195,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         mAutocomplete = new AutocompleteController(this);
         mHandler = new Handler();
         mSuggestionProcessors = new ArrayList<>();
+        mAvailableSuggestions = new ArrayList<>();
 
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
@@ -235,6 +259,15 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     @Override
     public void onStopWithNative() {
         recordSuggestionsShown();
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void setSuggestionVisibilityState(@SuggestionVisibilityState int state) {
+        mSuggestionVisibilityState = state;
+    }
+
+    private @SuggestionVisibilityState int getSuggestionVisibilityState() {
+        return mSuggestionVisibilityState;
     }
 
     private ModelList getSuggestionModelList() {
@@ -495,7 +528,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     void onUrlFocusChange(boolean hasFocus) {
         if (hasFocus) {
             mUrlFocusTime = System.currentTimeMillis();
-            mSuggestionVisibilityState = SuggestionVisibilityState.PENDING_ALLOW;
+            setSuggestionVisibilityState(SuggestionVisibilityState.PENDING_ALLOW);
             if (mNativeInitialized) {
                 startZeroSuggest();
             } else {
@@ -508,7 +541,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         } else {
             if (mNativeInitialized) recordSuggestionsShown();
 
-            mSuggestionVisibilityState = SuggestionVisibilityState.DISALLOWED;
+            setSuggestionVisibilityState(SuggestionVisibilityState.DISALLOWED);
             mHasStartedNewOmniboxEditSession = false;
             mNewOmniboxEditSessionTimestamp = -1;
             // Prevent any upcoming omnibox suggestions from showing once a URL is loaded (and as
@@ -529,8 +562,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlAnimationFinished(boolean)
      */
     void onUrlAnimationFinished(boolean hasFocus) {
-        mSuggestionVisibilityState =
-                hasFocus ? SuggestionVisibilityState.ALLOWED : SuggestionVisibilityState.DISALLOWED;
+        setSuggestionVisibilityState(hasFocus ? SuggestionVisibilityState.ALLOWED
+                                              : SuggestionVisibilityState.DISALLOWED);
         updateOmniboxSuggestionsVisibility();
     }
 
@@ -868,7 +901,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     public void onSuggestionsReceived(
             List<OmniboxSuggestion> newSuggestions, String inlineAutocompleteText) {
         if (mShouldPreventOmniboxAutocomplete
-                || mSuggestionVisibilityState == SuggestionVisibilityState.DISALLOWED) {
+                || getSuggestionVisibilityState() == SuggestionVisibilityState.DISALLOWED) {
             return;
         }
 
@@ -889,45 +922,98 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         String userText = mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
         mUrlTextAfterSuggestionsReceived = userText + inlineAutocompleteText;
 
-        ModelList modelList = getSuggestionModelList();
-        if (modelList.size() == newSuggestions.size()) {
+        if (setNewSuggestions(newSuggestions)) {
+            // Reset all processors and clear existing suggestions if we received a new suggestions
+            // list.
+            for (SuggestionProcessor processor : mSuggestionProcessors) {
+                processor.onSuggestionsReceived();
+            }
+            mDelegate.onSuggestionsChanged(inlineAutocompleteText);
+            updateSuggestionsList(mMaximumSuggestionsListHeight);
+        }
+    }
+
+    /**
+     * Process the supplied SuggestionList to internal representation.
+     *
+     * TODO(https://crbug.com/982818): identify suggestions that have simply changed places and
+     * re-use them.
+     *
+     * @param newSuggestions List of OmniboxSuggestions to apply.
+     * @return true, if newly supplied list was different from the previously supplied and cached
+     *         list.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    boolean setNewSuggestions(List<OmniboxSuggestion> newSuggestions) {
+        final int newSuggestionsCount = newSuggestions != null ? newSuggestions.size() : 0;
+
+        final int currentSuggestionsCount = mAvailableSuggestions.size();
+        if (currentSuggestionsCount == newSuggestionsCount) {
             boolean sameSuggestions = true;
-            for (int i = 0; i < modelList.size(); i++) {
-                OmniboxSuggestion existingSuggestion =
-                        ((SuggestionViewInfo) modelList.get(i)).suggestion;
+            for (int i = 0; i < currentSuggestionsCount; i++) {
+                OmniboxSuggestion existingSuggestion = mAvailableSuggestions.get(i).suggestion;
                 if (!existingSuggestion.equals(newSuggestions.get(i))) {
                     sameSuggestions = false;
                     break;
                 }
             }
-            if (sameSuggestions) return;
+            if (sameSuggestions) return false;
         }
 
-        // Show the suggestion list.
-        List<MVCListAdapter.ListItem> newSuggestionViewInfos =
-                new ArrayList<>(newSuggestions.size());
+        mAvailableSuggestions.clear();
+        for (int index = 0; index < newSuggestionsCount; index++) {
+            final OmniboxSuggestion suggestion = newSuggestions.get(index);
+            final SuggestionProcessor processor = getProcessorForSuggestion(suggestion, index == 0);
+            final PropertyModel model = processor.createModelForSuggestion(suggestion);
+            mAvailableSuggestions.add(new SuggestionViewInfo(processor, suggestion, model));
+        }
 
-        for (SuggestionProcessor processor : mSuggestionProcessors) {
-            processor.onSuggestionsReceived();
+        return true;
+    }
+
+    /**
+     * Refresh list of presented suggestions.
+     *
+     * @param maximumListHeightPx Maximum height of the Suggestions list that guarantees 100%
+     *         content visibility.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void updateSuggestionsList(int maximumListHeightPx) {
+        if (mAvailableSuggestions.isEmpty()) {
+            hideSuggestions();
+            return;
         }
-        // Ensure the list is fully replaced before broadcasting any change notifications.
-        for (int i = 0; i < newSuggestions.size(); i++) {
-            OmniboxSuggestion suggestion = newSuggestions.get(i);
-            SuggestionProcessor processor = getProcessorForSuggestion(suggestion, i == 0);
-            PropertyModel model = processor.createModelForSuggestion(suggestion);
-            model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, mLayoutDirection);
-            model.set(SuggestionCommonProperties.USE_DARK_COLORS, mUseDarkColors);
-            processor.populateModel(suggestion, model, i);
-            newSuggestionViewInfos.add(new SuggestionViewInfo(processor, suggestion, model));
+
+        final List<MVCListAdapter.ListItem> newSuggestionViewInfos =
+                new ArrayList<>(mAvailableSuggestions.size());
+        final ModelList prepopulatedSuggestions = getSuggestionModelList();
+
+        final int numSuggestionsToShow = mAvailableSuggestions.size();
+        int totalSuggestionsHeight = 0;
+
+        for (int suggestionIndex = 0; suggestionIndex < numSuggestionsToShow; suggestionIndex++) {
+            final SuggestionViewInfo viewInfo =
+                    (SuggestionViewInfo) mAvailableSuggestions.get(suggestionIndex);
+            final SuggestionProcessor processor = viewInfo.processor;
+            final OmniboxSuggestion suggestion = viewInfo.suggestion;
+
+            totalSuggestionsHeight += processor.getMinimumSuggestionViewHeight();
+            if (mEnableAdaptiveSuggestionsCount
+                    && suggestionIndex >= MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW
+                    && totalSuggestionsHeight > maximumListHeightPx) {
+                break;
+            }
+
+            viewInfo.initializeModel(suggestionIndex, mLayoutDirection, mUseDarkColors);
+            newSuggestionViewInfos.add(viewInfo);
         }
-        modelList.set(newSuggestionViewInfos);
+
+        prepopulatedSuggestions.set(newSuggestionViewInfos);
 
         if (mListPropertyModel.get(SuggestionListProperties.VISIBLE)
                 && newSuggestionViewInfos.size() == 0) {
             hideSuggestions();
         }
-        mDelegate.onSuggestionsChanged(inlineAutocompleteText);
-
         updateOmniboxSuggestionsVisibility();
     }
 
@@ -1066,7 +1152,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * Update whether the omnibox suggestions are visible.
      */
     private void updateOmniboxSuggestionsVisibility() {
-        boolean shouldBeVisible = mSuggestionVisibilityState == SuggestionVisibilityState.ALLOWED
+        boolean shouldBeVisible =
+                getSuggestionVisibilityState() == SuggestionVisibilityState.ALLOWED
                 && getSuggestionCount() > 0;
         boolean wasVisible = mListPropertyModel.get(SuggestionListProperties.VISIBLE);
         mListPropertyModel.set(SuggestionListProperties.VISIBLE, shouldBeVisible);
@@ -1089,6 +1176,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         stopAutocomplete(true);
 
         getSuggestionModelList().clear();
+        mAvailableSuggestions.clear();
         updateOmniboxSuggestionsVisibility();
     }
 
@@ -1177,6 +1265,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     @Override
     public void onSuggestionListHeightChanged(int newHeightPx) {
         if (!mEnableAdaptiveSuggestionsCount) return;
-        // TODO(crbug.com/1050813): Update visibility of loaded suggestions.
+        mMaximumSuggestionsListHeight = newHeightPx;
+        updateSuggestionsList(mMaximumSuggestionsListHeight);
     }
 }

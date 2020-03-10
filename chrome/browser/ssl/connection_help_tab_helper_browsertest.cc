@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ssl/connection_help_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -55,14 +54,10 @@ class ConnectionHelpTabHelperTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ConnectionHelpTabHelperTest);
 };
 
-// Tests that the chrome://connection-help redirect is not triggered (and
-// metrics are not logged) for an interstitial on a site that is not the help
-// center.
+// Tests that the chrome://connection-help redirect is not triggered for an
+// interstitial on a site that is not the help center.
 IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
                        InterstitialOnNonSupportURL) {
-  const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
-  base::HistogramTester histograms;
-
   GURL expired_non_support_url = https_expired_server()->GetURL("/title2.html");
   GURL good_support_url = https_server()->GetURL("/title2.html");
   SetHelpCenterUrl(browser(), good_support_url);
@@ -71,17 +66,12 @@ IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
   base::string16 tab_title;
   ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
   EXPECT_EQ(base::UTF16ToUTF8(tab_title), "Privacy error");
-
-  histograms.ExpectTotalCount(kHistogramName, 0);
 }
 
-// Tests that the chrome://connection-help redirect is not triggered (and
-// metrics are logged) for the help center URL if there was no interstitial.
+// Tests that the chrome://connection-help redirect is not triggered for the
+// help center URL if there was no interstitial.
 IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
                        SupportURLWithNoInterstitial) {
-  const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
-  base::HistogramTester histograms;
-
   GURL good_support_url = https_server()->GetURL("/title2.html");
   SetHelpCenterUrl(browser(), good_support_url);
   ui_test_utils::NavigateToURL(browser(), good_support_url);
@@ -89,18 +79,11 @@ IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
   base::string16 tab_title;
   ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
   EXPECT_EQ(base::UTF16ToUTF8(tab_title), "Title Of Awesomeness");
-
-  histograms.ExpectUniqueSample(
-      kHistogramName, ConnectionHelpTabHelper::LearnMoreClickResult::kSucceeded,
-      1);
 }
 
-// Tests that the chrome://connection-help redirect is triggered (and metrics
-// are logged) for the help center URL if there was an interstitial.
+// Tests that the chrome://connection-help redirect is triggered for the help
+// center URL if there was an interstitial.
 IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest, InterstitialOnSupportURL) {
-  const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
-  base::HistogramTester histograms;
-
   GURL expired_url = https_expired_server()->GetURL("/title2.html");
   SetHelpCenterUrl(browser(), expired_url);
 
@@ -110,25 +93,6 @@ IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest, InterstitialOnSupportURL) {
   ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
   EXPECT_EQ(base::UTF16ToUTF8(tab_title),
             l10n_util::GetStringUTF8(IDS_CONNECTION_HELP_TITLE));
-
-  histograms.ExpectUniqueSample(
-      kHistogramName,
-      ConnectionHelpTabHelper::LearnMoreClickResult::kFailedWithInterstitial,
-      1);
-}
-
-// Tests that a non-interstitial error on the support URL is logged correctly,
-// by setting the support URL to an invalid URL and attempting to navigate to
-// it.
-IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest, NetworkErrorOnSupportURL) {
-  const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
-  base::HistogramTester histograms;
-  GURL invalid_url("http://invalid-url.test");
-  SetHelpCenterUrl(browser(), invalid_url);
-  ui_test_utils::NavigateToURL(browser(), invalid_url);
-  histograms.ExpectUniqueSample(
-      kHistogramName,
-      ConnectionHelpTabHelper::LearnMoreClickResult::kFailedOther, 1);
 }
 
 // Tests that if the help content site is opened with an error code that refers

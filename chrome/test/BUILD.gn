@@ -1633,6 +1633,7 @@ if (!is_android) {
         "../browser/extensions/alert_apitest.cc",
         "../browser/extensions/all_urls_apitest.cc",
         "../browser/extensions/api/activity_log_private/activity_log_private_apitest.cc",
+        "../browser/extensions/api/alarms/alarms_apitest.cc",
         "../browser/extensions/api/autofill_private/autofill_private_apitest.cc",
         "../browser/extensions/api/automation/automation_apitest.cc",
         "../browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest_chromeos.cc",

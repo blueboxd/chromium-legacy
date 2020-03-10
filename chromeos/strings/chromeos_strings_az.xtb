@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">Yanlış PIN.</translation>
 <translation id="3838338534323494292">Yeni parol</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Yenidən cəhd edin. Qalan cəhd sayı: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> bu cihazı idarə edir və giriş edilən veb səhifə, parol və e-poçt daxil olmaqla bütün istifadəçi fəaliyyətinə girişi var.</translation>
 <translation id="4227825898293920515">Parolun vaxtı <ph name="TIME" /> ərzində başa çatır</translation>
 <translation id="4429881212383817840">Kerberos biletinin vaxtı tezliklə başa çatacaq</translation>
@@ -28,8 +27,6 @@
 <translation id="4890353053343094602">Dərhal yenisini seçin</translation>
 <translation id="5212543919916444558">Ekranınızda kömək edə biləcəyim heç nə tapmadım. Məndən hər hansı bir şey soruşmaq üçün mikrofona klikləyin.</translation>
 <translation id="5222676887888702881">Hesabdan çıxın</translation>
-<translation id="5275776633505022322">Qalan cəhd sayı: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Yenidən cəhd edin.</translation>
 <translation id="5317780077021120954">Yadda saxlayın</translation>
 <translation id="5332948983412042822">İndi yenisini seçin</translation>
 <translation id="5457599981699367932">Qonaq kimi gözdən keçirin</translation>

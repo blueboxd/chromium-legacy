@@ -80,6 +80,7 @@
 #include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/blink/public/mojom/input/input_host.mojom.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 #include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
@@ -123,7 +124,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
-#include "third_party/blink/public/mojom/input/input_host.mojom.h"
 #include "third_party/blink/public/mojom/unhandled_tap_notifier/unhandled_tap_notifier.mojom.h"
 #endif
 
@@ -726,6 +726,10 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&BindDateTimeChooserForFrame));
   map->Add<blink::mojom::TextSuggestionHost>(
       base::BindRepeating(&BindTextSuggestionHostForFrame));
+#else
+  // TODO(crbug.com/1060004): add conditions on the renderer side instead.
+  map->Add<blink::mojom::TextSuggestionHost>(base::BindRepeating(
+      &EmptyBinderForFrame<blink::mojom::TextSuggestionHost>));
 #endif  // defined(OS_ANDROID)
 
   map->Add<blink::mojom::ClipboardHost>(

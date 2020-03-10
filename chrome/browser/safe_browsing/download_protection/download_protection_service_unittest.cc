@@ -50,6 +50,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_extension_event_observer.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
@@ -65,6 +66,7 @@
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_switches.h"
 #include "components/safe_browsing/core/db/database_manager.h"
@@ -74,6 +76,7 @@
 #include "components/safe_browsing/core/file_type_policies_test_util.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/page_navigator.h"
@@ -305,6 +308,9 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
 
     SetDMTokenForTesting(
         policy::DMToken::CreateValidTokenForTesting("dm_token"));
+
+    identity_test_env_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
   }
 
   void TearDown() override {
@@ -318,8 +324,14 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     sb_service_ = nullptr;
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
     in_process_utility_thread_helper_ = nullptr;
+    identity_test_env_adaptor_.reset();
 
     ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return IdentityTestEnvironmentProfileAdaptor::
+        GetIdentityTestEnvironmentFactories();
   }
 
   void EnableFeatures(const std::vector<base::Feature>& features) {
@@ -668,6 +680,8 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   base::ScopedTempDir temp_dir_;
   extensions::TestEventRouter* test_event_router_;
   TestingProfileManager testing_profile_manager_;
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_adaptor_;
 };
 
 class DeepScanningDownloadTest : public DownloadProtectionServiceTest,
@@ -3398,6 +3412,209 @@ TEST_F(DownloadProtectionServiceTest,
     // Simulate the request finishing.
     run_loop.Run();
   }
+}
+
+TEST_F(DownloadProtectionServiceTest, AccessTokenForEnhancedProtectionUsers) {
+  EnableFeatures({kEnhancedProtection, kDownloadRequestWithToken});
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
+
+  identity_test_env_adaptor_->identity_test_env()->MakePrimaryAccountAvailable(
+      "test@example.com");
+  identity_test_env_adaptor_->identity_test_env()
+      ->SetAutomaticIssueOfAccessTokens(/*grant=*/true);
+
+  WebUIInfoSingleton::GetInstance()->AddListenerForTesting();
+
+  {
+    SetEnhancedProtectionPref(profile()->GetPrefs(), true);
+    NiceMockDownloadItem item;
+    content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+    PrepareBasicDownloadItem(&item,
+                             {"http://www.evil.com/bla.exe"},  // url_chain
+                             "",                               // referrer
+                             FILE_PATH_LITERAL("a.tmp"),       // tmp_path
+                             FILE_PATH_LITERAL("a.exe"));      // final_path
+
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                MatchDownloadWhitelistUrl(GURL("http://www.evil.com/bla.exe")))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+        .Times(1);
+    EXPECT_CALL(*binary_feature_extractor_.get(),
+                ExtractImageFeatures(
+                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
+        .Times(1);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item,
+        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    const std::vector<std::unique_ptr<ClientDownloadRequest>>& requests =
+        WebUIInfoSingleton::GetInstance()->client_download_requests_sent();
+    ASSERT_EQ(requests.size(), 1u);
+    EXPECT_EQ(requests[0]->access_token(), "access_token");
+  }
+
+  {
+    SetEnhancedProtectionPref(profile()->GetPrefs(), false);
+    NiceMockDownloadItem item;
+    content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+    PrepareBasicDownloadItem(&item,
+                             {"http://www.evil.com/bla.exe"},  // url_chain
+                             "",                               // referrer
+                             FILE_PATH_LITERAL("a.tmp"),       // tmp_path
+                             FILE_PATH_LITERAL("a.exe"));      // final_path
+
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                MatchDownloadWhitelistUrl(GURL("http://www.evil.com/bla.exe")))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+        .Times(1);
+    EXPECT_CALL(*binary_feature_extractor_.get(),
+                ExtractImageFeatures(
+                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
+        .Times(1);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item,
+        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    const std::vector<std::unique_ptr<ClientDownloadRequest>>& requests =
+        WebUIInfoSingleton::GetInstance()->client_download_requests_sent();
+    ASSERT_EQ(requests.size(), 2u);
+    EXPECT_TRUE(requests[1]->access_token().empty());
+  }
+
+  WebUIInfoSingleton::GetInstance()->ClearListenerForTesting();
+}
+
+TEST_F(DownloadProtectionServiceTest, AccessTokenOnlyWhenSignedIn) {
+  EnableFeatures({kEnhancedProtection, kDownloadRequestWithToken});
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
+
+  identity_test_env_adaptor_->identity_test_env()
+      ->SetAutomaticIssueOfAccessTokens(/*grant=*/true);
+  SetEnhancedProtectionPref(profile()->GetPrefs(), true);
+
+  WebUIInfoSingleton::GetInstance()->AddListenerForTesting();
+
+  {
+    NiceMockDownloadItem item;
+    content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+    PrepareBasicDownloadItem(&item,
+                             {"http://www.evil.com/bla.exe"},  // url_chain
+                             "",                               // referrer
+                             FILE_PATH_LITERAL("a.tmp"),       // tmp_path
+                             FILE_PATH_LITERAL("a.exe"));      // final_path
+
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                MatchDownloadWhitelistUrl(GURL("http://www.evil.com/bla.exe")))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+        .Times(1);
+    EXPECT_CALL(*binary_feature_extractor_.get(),
+                ExtractImageFeatures(
+                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
+        .Times(1);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item,
+        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    const std::vector<std::unique_ptr<ClientDownloadRequest>>& requests =
+        WebUIInfoSingleton::GetInstance()->client_download_requests_sent();
+    ASSERT_EQ(requests.size(), 1u);
+    EXPECT_TRUE(requests[0]->access_token().empty());
+  }
+
+  identity_test_env_adaptor_->identity_test_env()->MakePrimaryAccountAvailable(
+      "test@example.com");
+
+  {
+    NiceMockDownloadItem item;
+    content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+    PrepareBasicDownloadItem(&item,
+                             {"http://www.evil.com/bla.exe"},  // url_chain
+                             "",                               // referrer
+                             FILE_PATH_LITERAL("a.tmp"),       // tmp_path
+                             FILE_PATH_LITERAL("a.exe"));      // final_path
+
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                MatchDownloadWhitelistUrl(GURL("http://www.evil.com/bla.exe")))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+        .Times(1);
+    EXPECT_CALL(*binary_feature_extractor_.get(),
+                ExtractImageFeatures(
+                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
+        .Times(1);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item,
+        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    const std::vector<std::unique_ptr<ClientDownloadRequest>>& requests =
+        WebUIInfoSingleton::GetInstance()->client_download_requests_sent();
+    ASSERT_EQ(requests.size(), 2u);
+    EXPECT_EQ(requests[1]->access_token(), "access_token");
+  }
+
+  WebUIInfoSingleton::GetInstance()->ClearListenerForTesting();
+}
+
+TEST_F(DownloadProtectionServiceTest, NoAccessTokenWhileIncognito) {
+  EnableFeatures({kEnhancedProtection, kDownloadRequestWithToken});
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
+
+  WebUIInfoSingleton::GetInstance()->AddListenerForTesting();
+
+  {
+    SetEnhancedProtectionPref(profile()->GetPrefs(), true);
+    NiceMockDownloadItem item;
+    content::DownloadItemUtils::AttachInfo(
+        &item, profile()->GetOffTheRecordProfile(), nullptr);
+    PrepareBasicDownloadItem(&item,
+                             {"http://www.evil.com/bla.exe"},  // url_chain
+                             "",                               // referrer
+                             FILE_PATH_LITERAL("a.tmp"),       // tmp_path
+                             FILE_PATH_LITERAL("a.exe"));      // final_path
+
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                MatchDownloadWhitelistUrl(GURL("http://www.evil.com/bla.exe")))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+        .Times(1);
+    EXPECT_CALL(*binary_feature_extractor_.get(),
+                ExtractImageFeatures(
+                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
+        .Times(1);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item,
+        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    const std::vector<std::unique_ptr<ClientDownloadRequest>>& requests =
+        WebUIInfoSingleton::GetInstance()->client_download_requests_sent();
+    ASSERT_EQ(requests.size(), 1u);
+    EXPECT_TRUE(requests[0]->access_token().empty());
+  }
+
+  WebUIInfoSingleton::GetInstance()->ClearListenerForTesting();
 }
 
 TEST_P(DeepScanningDownloadTest, PolicyEnabled) {

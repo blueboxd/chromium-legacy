@@ -9,8 +9,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/app_service/arc_apps.h"
-#include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +24,7 @@
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "ui/display/types/display_constants.h"
 
 class AppDialogViewBrowserTest : public DialogBrowserTest {
  public:
@@ -88,15 +87,19 @@ class AppDialogViewBrowserTest : public DialogBrowserTest {
     ASSERT_TRUE(app_service_proxy);
 
     base::RunLoop run_loop;
+    std::string app_id =
+        arc_app_list_pref_->GetAppId(app.package_name, app.activity);
     if (name == "block") {
       app.suspended = true;
-      apps::ArcAppsFactory::GetForProfile(profile_)
-          ->SetDialogCreatedCallbackForTesting(run_loop.QuitClosure());
+      app_service_proxy->SetDialogCreatedCallbackForTesting(
+          run_loop.QuitClosure());
       app_instance_->SendRefreshAppList(
           std::vector<arc::mojom::AppInfo>(1, app));
+      app_service_proxy->FlushMojoCallsForTesting();
+      app_service_proxy->Launch(app_id, ui::EventFlags::EF_NONE,
+                                apps::mojom::LaunchSource::kFromChromeInternal,
+                                display::kInvalidDisplayId);
     } else {
-      std::string app_id =
-          arc_app_list_pref_->GetAppId(app.package_name, app.activity);
       std::map<std::string, apps::PauseData> pause_data;
       pause_data[app_id].hours = 3;
       pause_data[app_id].minutes = 30;
@@ -111,8 +114,6 @@ class AppDialogViewBrowserTest : public DialogBrowserTest {
     EXPECT_EQ(ui::DIALOG_BUTTON_OK, ActiveView(name)->GetDialogButtons());
 
     app_service_proxy->FlushMojoCallsForTesting();
-    std::string app_id =
-        arc_app_list_pref_->GetAppId(app.package_name, app.activity);
     bool state_is_set = false;
     app_service_proxy->AppRegistryCache().ForOneApp(
         app_id, [&state_is_set, name](const apps::AppUpdate& update) {

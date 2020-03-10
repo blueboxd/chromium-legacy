@@ -315,6 +315,7 @@
 <translation id="2289385804009217824">ट्रिम करें</translation>
 <translation id="2292556288342944218">आपका इंटरनेट कनेक्शन ब्लॉक कर दिया गया है</translation>
 <translation id="2297722699537546652">बी5 (एन्वेलप)</translation>
+<translation id="2300306941146563769">अपलोड नहीं किया गया</translation>
 <translation id="2310021320168182093">शू2 (एन्वेलप)</translation>
 <translation id="2315864634253056100">इस साइट का नाम <ph name="LOOKALIKE_DOMAIN" /> से मिलता-जुलता है. हमलावर कभी-कभी वेब पते में छोटे और नज़र न आने वाले बदलाव करके साइट की नकल कर लेते हैं.</translation>
 <translation id="2316887270356262533">1 MB से भी कम जगह खाली करता है. जब आप अगली बार विज़िट करेंगे तो, कुछ साइटें लोड होने में ज़्यादा समय ले सकती हैं.</translation>
@@ -441,6 +442,7 @@
 <translation id="2909946352844186028">नेटवर्क में बदलाव का पता चला.</translation>
 <translation id="2910133103376701357">आपके डिवाइस और खाते का प्रबंधन <ph name="ENROLLMENT_DOMAIN" /> करता है.</translation>
 <translation id="2911973620368911614">जॉब अकाउंटिंग यूज़र आईडी</translation>
+<translation id="2915068235268646559"><ph name="CRASH_TIME" /> की खराबी रिपोर्ट</translation>
 <translation id="2916038427272391327">दूसरे प्रोग्राम बंद करें</translation>
 <translation id="2922350208395188000">सर्वर प्रमाणपत्र की जाँच नहीं की जा सकती.</translation>
 <translation id="2925673989565098301">डिलीवरी का तरीका</translation>
@@ -449,6 +451,7 @@
 <translation id="2930577230479659665">हर कॉपी के बाद ट्रिम करें</translation>
 <translation id="2934466151127459956">सरकारी-पत्र</translation>
 <translation id="2941952326391522266">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र <ph name="DOMAIN2" /> की ओर से है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
+<translation id="2943895734390379394">अपलोड करने का समय:</translation>
 <translation id="2948083400971632585">आप किसी कनेक्शन के लिए कॉन्फ़िगर की गई किसी भी प्रॉक्सी को सेटिंग पेज से बंद कर सकते हैं.</translation>
 <translation id="2951588413176968965">मेरा मेलबॉक्स</translation>
 <translation id="295526156371527179">चेतावनी: इस नीति को शब्दकोश के तौर पर नीति के बताए अनुसार मिलाया नहीं जा सकता, क्योंकि यह शब्दकोश नहीं है.</translation>
@@ -475,7 +478,6 @@
 <translation id="3024663005179499861">गलत नीति प्रकार</translation>
 <translation id="3037605927509011580">हे भगवान!</translation>
 <translation id="3041612393474885105">प्रमाणपत्र जानकारी</translation>
-<translation id="3057676462092457419">DnsOverHttps मोड <ph name="SECURE_DNS_MODE_SECURE" /> अभी इस्तेमाल नहीं किया जा सकता. मोड <ph name="SECURE_DNS_MODE_OFF" /> पर सेट किया गया है.</translation>
 <translation id="3060227939791841287">सी9 (एन्वेलप)</translation>
 <translation id="3061707000357573562">पैच सेवा</translation>
 <translation id="3064966200440839136">किसी बाहरी ऐप्लिकेशन के ज़रिए भुगतान करने के लिए गुप्त मोड छोड़ रहे हैं. जारी रखना चाहते हैं?</translation>
@@ -574,6 +576,7 @@
 <translation id="3487845404393360112">ट्रे 4</translation>
 <translation id="3495081129428749620">पेज में ढूंढें
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">आपके आस-पास की जगह का 3D मैप बनाना और कैमरे की स्थिति ट्रैक करना चाहती है</translation>
 <translation id="3512163584740124171">इस नीति को अनदेखा कर दिया गया है, क्योंकि इसी नीति समूह की दूसरी नीति को ज़्यादा प्राथमिकता दी गई है.</translation>
 <translation id="3518941727116570328">कई ऑब्जेक्ट को हैंडल करना</translation>
 <translation id="3528171143076753409">सर्वर का प्रमाणपत्र विश्वसनीय नहीं है.</translation>
@@ -927,6 +930,7 @@
 <translation id="5030338702439866405">जारीकर्ता</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" के रूट प्रमाणपत्र की ज़रूरत है लेकिन वह इंस्टॉल नहीं है. यह समस्या ठीक करने के लिए आपके आईटी व्यवस्थापक को "<ph name="SOFTWARE_NAME" />" के कॉन्फ़िगरेशन से जुड़े निर्देशों पर नज़र डालनी चाहिए. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google अनुवाद के बारे में</translation>
+<translation id="503498442187459473"><ph name="HOST" /> आपके कैमरा और माइक्रोफ़ोन का उपयोग करना चाहता है</translation>
 <translation id="5039804452771397117">अनुमति दें</translation>
 <translation id="5040262127954254034">निजता</translation>
 <translation id="5043480802608081735">आपका कॉपी किया हुआ लिंक</translation>
@@ -1035,7 +1039,6 @@
 <translation id="5457113250005438886">अमान्य</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}one{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}other{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}}</translation>
 <translation id="5470861586879999274">&amp;बदलाव को फिर से लागू करें</translation>
-<translation id="5472133193607270166">जब यह चालू होगा, तब साइटें अलग-अलग साइटों पर की गई आपकी ब्राउज़िंग गतिविधि का इस्तेमाल दर्शकों की पसंद को ध्यान में रखकर विज्ञापन दिखाने के लिए नहीं कर पाएंगी. कुछ साइटें शायद ठीक से काम नहीं करेंगी.</translation>
 <translation id="5478437291406423475">बी6/सी4 (एन्वेलप)</translation>
 <translation id="5481076368049295676">यह सामग्री आपके डिवाइस पर ऐसा खतरनाक सॉफ़्टवेयर इंस्टॉल करने की कोशिश कर सकती है जो आपकी जानकारी चुरा सकता है या उसे हटा सकता है. <ph name="BEGIN_LINK" />फिर भी दिखाएं<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">मान्य पता जोड़ें</translation>
@@ -1080,6 +1083,7 @@
 <translation id="563324245173044180">भ्रामक सामग्री ब्लॉक की गई.</translation>
 <translation id="5644090287519800334">साइड 1 इमेज X शिफ़्ट</translation>
 <translation id="5645854190134202180">दूसरी शिफ़्ट</translation>
+<translation id="5654927323611874862">खराबी रिपोर्ट आईडी अपलोड किया गया:</translation>
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5663614846592581799">9x11 (एन्वेलप)</translation>
 <translation id="5663955426505430495">इस डिवाइस के एडमिन ने और फ़ंक्शन के एक्सटेंशन इंस्टॉल किए हैं. एक्सटेंशन आपका कुछ डेटा ऐक्सेस कर सकते हैं.</translation>
@@ -1320,6 +1324,7 @@
 <translation id="6710594484020273272">&lt;खोज शब्द लिखें&gt;</translation>
 <translation id="671076103358959139">नाम दर्ज करने का टोकन:</translation>
 <translation id="6711464428925977395">प्रॉक्सी सर्वर के साथ कुछ गलत है या पता गलत है.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> आपके आस-पास की जगह का 3D मैप बनाना और कैमरे की स्थिति ट्रैक करना चाहती है</translation>
 <translation id="6738516213925468394">आपका डेटा <ph name="TIME" /> को <ph name="BEGIN_LINK" />सिंक करने के लिए लंबा पासवर्ड बनाकर<ph name="END_LINK" /> सुरक्षित किया गया था. सिंक शुरू करने के लिए पासवर्ड डालें.</translation>
 <translation id="674375294223700098">अज्ञात सर्वर प्रमाणपत्र गड़बड़ी.</translation>
 <translation id="6744009308914054259">कनेक्शन का इंतज़ार करते समय, ऑफ़लाइन लेख पढ़ने के लिए आप 'डाउनलोड' पर जा सकते हैं.</translation>
@@ -1387,6 +1392,7 @@
 <translation id="7079718277001814089">इस साइट में मैलवेयर है</translation>
 <translation id="7081308185095828845">यह सुविधा आपके डिवाइस पर उपलब्ध नहीं है</translation>
 <translation id="7083258188081898530">ट्रे 9</translation>
+<translation id="7086090958708083563">उपयोगकर्ता ने अपलोड का अनुरोध किया</translation>
 <translation id="7087282848513945231">काउंटी</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> के लिए Google में खोज करें</translation>
 <translation id="7108338896283013870">छुपाएं</translation>
@@ -1549,6 +1555,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> में आगे बढ़ें (असुरक्षित)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">प्रमाणपत्र</translation>
 <translation id="7716147886133743102">आपके व्यवस्थापक की ओर से अवरोधित है</translation>
+<translation id="7716375162095500223">अभी तक अपलोड नहीं किया गया या ध्यान नहीं दिया गया</translation>
 <translation id="7716424297397655342">इस साइट को कैश मेमोरी से लोड नहीं किया जा सकता</translation>
 <translation id="7723047071702270851">कार्ड में बदलाव करें</translation>
 <translation id="7740996059027112821">मानक</translation>
@@ -1693,6 +1700,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">अगर आप अपनी सुरक्षा संबंधी जोखिमों को समझते हैं तो, खतरनाक प्रोग्राम हटाए जाने से पहले आप <ph name="BEGIN_LINK" />इस साइट पर विज़िट<ph name="END_LINK" /> कर सकते हैं.</translation>
 <translation id="8349305172487531364">बुकमार्क बार</translation>
+<translation id="8355270400102541638">स्थानीय खराबी रिपोर्ट से जुड़ी जानकारी:</translation>
 <translation id="8363502534493474904">हवाई जहाज़ मोड बंद करें</translation>
 <translation id="8364627913115013041">सेट नहीं है.</translation>
 <translation id="8368476060205742148">Google Play सेवाएं</translation>
@@ -1713,6 +1721,7 @@
 <translation id="8461694314515752532">सिंक किए गए डेटा को अपने खुद के सिंक लंबे पासवर्ड से सुरक्षित करें</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 क्रेडिट कार्ड}one{# क्रेडिट कार्ड}other{# क्रेडिट कार्ड}}</translation>
 <translation id="8473863474539038330">पते वगैरह</translation>
+<translation id="8474910779563686872">डेवलपर की जानकारी दिखाएं</translation>
 <translation id="8479754468255770962">नीचे बाईं ओर स्टेपल</translation>
 <translation id="8483780878231876732">कार्ड का इस्तेमाल अपने Google खाते से करने के लिए, Chrome में साइन करें</translation>
 <translation id="8488350697529856933">इस पर लागू होती है</translation>
@@ -1737,7 +1746,6 @@
 <translation id="8589998999637048520">सबसे अच्छी क्वालिटी</translation>
 <translation id="860043288473659153">कार्डधारक का नाम</translation>
 <translation id="8606726445206553943">अपने MIDI डिवाइस का उपयोग करें</translation>
-<translation id="8616822740383114808">यह सेटिंग "<ph name="ENFORCING_SETTING" />" की मदद से "<ph name="SETTINGS_PAGE" />" में लागू की गई है.</translation>
 <translation id="861775596732816396">आकार 4</translation>
 <translation id="8622948367223941507">लीगल-एक्स्ट्रा</translation>
 <translation id="8625384913736129811">इस कार्ड को इस डिवाइस में सेव करें</translation>
@@ -1839,6 +1847,7 @@
 <translation id="9103872766612412690">आपकी जानकारी की सुरक्षा करने के लिए <ph name="SITE" /> आम तौर पर, सुरक्षित करने के तरीके (एन्क्रिप्शन) का उपयोग करती है. जब 'क्रोमियम' ने इस बार <ph name="SITE" /> से कनेक्ट करने की कोशिश की तो, वेबसाइट ने असामान्य और गलत क्रेडेंशियल वापस भेजे. ऐसा तब हो सकता है जब कोई हमलावर <ph name="SITE" /> होने का दावा करने की कोशिश कर रहा हो या किसी वाई-फ़ाई 'साइन इन स्क्रीन' की वजह से कनेक्शन में खराबी आ गई हो. आपकी जानकारी अभी भी सुरक्षित है क्योंकि किसी भी डेटा को एक्सचेंज करने से पहले ही 'क्रोमियम' ने कनेक्शन रोक दिया था.</translation>
 <translation id="9106062320799175032">बिलिंग पता जोड़ें</translation>
 <translation id="9114524666733003316">कार्ड की पुष्टि की जा रही है...</translation>
+<translation id="9119042192571987207">अपलोड किया गया</translation>
 <translation id="9128870381267983090">नेटवर्क से कनेक्ट करें</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
 <translation id="9141013498910525015">पते प्रबंधित करें</translation>

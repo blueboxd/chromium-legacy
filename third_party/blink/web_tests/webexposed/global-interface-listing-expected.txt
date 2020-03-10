@@ -2435,6 +2435,7 @@ interface FileSystemDirectoryHandle : FileSystemHandle
     method getEntries
     method getFile
     method removeEntry
+    method resolve
 interface FileSystemFileHandle : FileSystemHandle
     attribute @@toStringTag
     method constructor
@@ -2447,6 +2448,7 @@ interface FileSystemHandle
     getter isFile
     getter name
     method constructor
+    method isSameEntry
     method queryPermission
     method requestPermission
 interface FileSystemWritableFileStream : WritableStream

@@ -97,6 +97,7 @@
 <translation id="2149973817440762519">I-edit ang Bookmark</translation>
 <translation id="2179182049312275900">Puwede mong i-on ang pag-sync anumang oras sa mga setting.</translation>
 <translation id="2198757192731523470">Maaaring gamitin ng Google ang iyong history para i-personalize ang Search, mga ad, at iba pang serbisyo ng Google.</translation>
+<translation id="2218443599109088993">Zoom Out</translation>
 <translation id="2230173723195178503">Na-load na ang webpage</translation>
 <translation id="2239626343334228536">Kini-clear ang data sa pag-browse...</translation>
 <translation id="2257567812274161158">Hindi gumagana ang pag-sync.</translation>
@@ -178,6 +179,7 @@
 <translation id="3290875554372353449">Pumili ng Account</translation>
 <translation id="3311748811247479259">Naka-off</translation>
 <translation id="3324193307694657476">Address 2</translation>
+<translation id="3328801116991980348">Impormasyon ng site</translation>
 <translation id="3329904751041170572">Hindi makakonekta sa server.</translation>
 <translation id="3335947283844343239">Muling buksan ang Nakasarang Tab</translation>
 <translation id="3371831930909698441">Available ang pagsasalin. May mga opsyon malapit sa ibaba ng screen.</translation>
@@ -417,6 +419,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6464071786529933911">Buksan sa Bagong Tab na Incognito</translation>
 <translation id="6476800141292307438">Isinasalin ang page sa <ph name="LANGUAGE" />. May mga opsyon malapit sa ibaba ng screen.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> (na) item ang na-delete</translation>
+<translation id="6561262006871132942">Mag-zoom In</translation>
 <translation id="6610002944194042868">Mga Opsyon sa Pagsasalin</translation>
 <translation id="6628106477656132239">Invalid ang Petsa ng Pag-expire</translation>
 <translation id="6638511529934826365">I-zoom ang Text…</translation>

@@ -15,6 +15,7 @@
 namespace viz {
 OverlayProcessorAndroid::OverlayProcessorAndroid(
     gpu::SharedImageManager* shared_image_manager,
+    gpu::MemoryTracker* memory_tracker,
     scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
     bool enable_overlay)
     : OverlayProcessorUsingStrategy(),
@@ -34,7 +35,7 @@ OverlayProcessorAndroid::OverlayProcessorAndroid(
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     auto callback = base::BindOnce(
         &OverlayProcessorAndroid::InitializeOverlayProcessorOnGpu,
-        base::Unretained(this), shared_image_manager, &event);
+        base::Unretained(this), shared_image_manager, memory_tracker, &event);
     gpu_task_scheduler_->ScheduleGpuTask(std::move(callback), {});
     event.Wait();
   }
@@ -69,9 +70,10 @@ OverlayProcessorAndroid::~OverlayProcessorAndroid() {
 
 void OverlayProcessorAndroid::InitializeOverlayProcessorOnGpu(
     gpu::SharedImageManager* shared_image_manager,
+    gpu::MemoryTracker* memory_tracker,
     base::WaitableEvent* event) {
-  processor_on_gpu_ =
-      std::make_unique<OverlayProcessorOnGpu>(shared_image_manager);
+  processor_on_gpu_ = std::make_unique<OverlayProcessorOnGpu>(
+      shared_image_manager, memory_tracker);
   DCHECK(event);
   event->Signal();
 }

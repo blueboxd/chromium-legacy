@@ -13,7 +13,7 @@ namespace message_center {
 
 namespace {
 
-base::TimeDelta GetTimeoutForNotification(Notification* notification) {
+bool UseHighPriorityDelay(Notification* notification) {
 // Web Notifications are given a longer on-screen time on non-Chrome OS
 // platforms as there is no notification center to dismiss them to.
 #if defined(OS_CHROMEOS)
@@ -25,13 +25,15 @@ base::TimeDelta GetTimeoutForNotification(Notification* notification) {
       notification->notifier_id().type == NotifierType::WEB_PAGE;
 #endif
 
-  if (use_high_priority_delay)
-    return base::TimeDelta::FromSeconds(kAutocloseHighPriorityDelaySeconds);
-
-  return base::TimeDelta::FromSeconds(kAutocloseDefaultDelaySeconds);
+  return use_high_priority_delay;
 }
 
 }  // namespace
+
+int PopupTimersController::notification_timeout_default_seconds_ =
+    kAutocloseDefaultDelaySeconds;
+int PopupTimersController::notification_timeout_high_priority_seconds_ =
+    kAutocloseHighPriorityDelaySeconds;
 
 PopupTimersController::PopupTimersController(MessageCenter* message_center)
     : message_center_(message_center) {
@@ -71,6 +73,12 @@ void PopupTimersController::CancelTimer(const std::string& id) {
   popup_timers_.erase(id);
 }
 
+void PopupTimersController::SetNotificationTimeouts(int default_timeout,
+                                                    int high_priority_timeout) {
+  notification_timeout_default_seconds_ = default_timeout;
+  notification_timeout_high_priority_seconds_ = high_priority_timeout;
+}
+
 void PopupTimersController::CancelAll() {
   popup_timers_.clear();
 }
@@ -81,6 +89,20 @@ void PopupTimersController::TimerFinished(const std::string& id) {
 
   CancelTimer(id);
   message_center_->MarkSinglePopupAsShown(id, false);
+}
+
+base::TimeDelta PopupTimersController::GetTimeoutForNotification(
+    Notification* notification) {
+  if (UseHighPriorityDelay(notification)) {
+    return base::TimeDelta::FromSeconds(
+        notification_timeout_high_priority_seconds_);
+  } else {
+    return base::TimeDelta::FromSeconds(notification_timeout_default_seconds_);
+  }
+}
+
+int PopupTimersController::GetNotificationTimeoutDefault() {
+  return notification_timeout_default_seconds_;
 }
 
 void PopupTimersController::OnNotificationDisplayed(

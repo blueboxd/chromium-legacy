@@ -8,12 +8,17 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "url/origin.h"
 
 LocationBarBubbleDelegateView::WebContentMouseHandler::WebContentMouseHandler(
@@ -59,6 +64,23 @@ LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() = default;
 
 void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason,
                                                   bool allow_refocus_alert) {
+  if (web_contents()) {
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+    if (browser && base::FeatureList::IsEnabled(
+                       autofill::features::kAutofillEnableToolbarStatusChip)) {
+      ToolbarAccountIconContainerView* toolbar_account_icon_container =
+          BrowserView::GetBrowserViewForBrowser(browser)
+              ->toolbar()
+              ->toolbar_account_icon_container();
+      if (toolbar_account_icon_container &&
+          toolbar_account_icon_container->Contains(GetAnchorView())) {
+        // These must be set after the bubble is created.
+        set_adjust_if_offscreen(true);
+        GetBubbleFrameView()->set_preferred_arrow_adjustment(
+            views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
+      }
+    }
+  }
   if (reason == USER_GESTURE) {
     GetWidget()->Show();
   } else {

@@ -343,4 +343,8 @@ gpu::SharedImageManager* VizProcessContextProvider::GetSharedImageManager() {
   return command_buffer_->GetSharedImageManager();
 }
 
+gpu::MemoryTracker* VizProcessContextProvider::GetMemoryTracker() {
+  return command_buffer_->GetMemoryTracker();
+}
+
 }  // namespace viz

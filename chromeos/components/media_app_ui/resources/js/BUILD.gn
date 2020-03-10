@@ -48,6 +48,7 @@ js_library("launch") {
   ]
   deps = [
     ":message_pipe",
+    ":message_types",
     "//chromeos/components/media_app_ui:mojo_bindings_js_library_for_compile",
   ]
 }
@@ -55,9 +56,15 @@ js_library("launch") {
 js_library("message_pipe") {
 }
 
+js_library("message_types") {
+}
+
 js_library("receiver") {
   externs_list = [ "media_app.externs.js" ]
-  deps = [ ":message_pipe" ]
+  deps = [
+    ":message_pipe",
+    ":message_types",
+  ]
 }
 
 js_library("mojo_api_bootstrap") {

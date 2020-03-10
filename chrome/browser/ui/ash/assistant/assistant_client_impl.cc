@@ -123,14 +123,14 @@ void AssistantClientImpl::Observe(int type,
   AssistantServiceConnection::GetForProfile(profile_)->service()->Shutdown();
 }
 
-void AssistantClientImpl::OnAssistantStatusChanged(
-    ash::mojom::AssistantState new_state) {
-  ash::AssistantState::Get()->NotifyStatusChanged(new_state);
-}
-
 void AssistantClientImpl::RequestAssistantStructure(
     RequestAssistantStructureCallback callback) {
   RequestAssistantStructureForActiveBrowserWindow(std::move(callback));
+}
+
+void AssistantClientImpl::OnAssistantStatusChanged(
+    ash::mojom::AssistantState new_state) {
+  ash::AssistantState::Get()->NotifyStatusChanged(new_state);
 }
 
 void AssistantClientImpl::RequestAssistantController(

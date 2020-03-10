@@ -24,3 +24,60 @@ class GuestDriver {
     return result.testQueryResult;
   }
 }
+
+/** @implements FileSystemWriter */
+class FakeFileWriter {
+  constructor(/** !Blob= */ data = new Blob()) {
+    this.data = data;
+
+    /** @type{function(!Blob)} */
+    this.resolveClose;
+
+    this.closePromise = new Promise((/** function(!Blob) */ resolve) => {
+      this.resolveClose = resolve;
+    });
+  }
+  /** @override */
+  async write(position, data) {
+    this.data = new Blob([
+      this.data.slice(0, position),
+      data,
+      this.data.slice(position + data.size),
+    ]);
+  }
+  /** @override */
+  async truncate(size) {
+    this.data = this.data.slice(0, size);
+  }
+  /** @override */
+  async close() {
+    this.resolveClose(this.data);
+  }
+}
+
+/** @implements FileSystemFileHandle  */
+class FakeFileSystemFileHandle {
+  constructor() {
+    this.isFile = true;
+    this.isDirectory = false;
+    this.name = 'fakefile';
+
+    /** @type{?FakeFileWriter} */
+    this.lastWriter;
+  }
+
+  /** @override */
+  queryPermission(descriptor) {}
+  /** @override */
+  requestPermission(descriptor) {}
+  /** @override */
+  createWriter(options) {
+    this.lastWriter = new FakeFileWriter();
+    return Promise.resolve(this.lastWriter);
+  }
+  /** @override */
+  getFile() {
+    console.error('getFile() not implemented');
+    return null;
+  }
+}

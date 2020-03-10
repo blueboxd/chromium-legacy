@@ -168,6 +168,7 @@ Dodirnite bilo koju riječ da je pretražite. Za fino podešavanje pretraživanj
 <translation id="2156074688469523661">Preostale web lokacije (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Da dijelite sadržaj s telefona na drugi uređaj, u postavkama Chromea na oba uređaja uključite sinhronizaciju.</translation>
 <translation id="2175927920773552910">QR kôd</translation>
+<translation id="2182457891543959921">Web lokacije moraju tražiti odobrenje za kreiranje 3D mape okruženja i praćenje položaja kamere (preporučeno)</translation>
 <translation id="218608176142494674">Dijeljenje</translation>
 <translation id="2227444325776770048">Nastavite kao <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sinhronizacija i Googleove usluge</translation>
@@ -193,7 +194,6 @@ Dodirnite bilo koju riječ da je pretražite. Za fino podešavanje pretraživanj
 <translation id="2407481962792080328">Kada se prijavite na Google račun, ova funkcija se uključuje</translation>
 <translation id="2410754283952462441">Odaberite račun</translation>
 <translation id="2414886740292270097">Tamno</translation>
-<translation id="2416359993254398973">Chrome treba odobrenje za pristup kameri za ovu web lokaciju.</translation>
 <translation id="2426805022920575512">Odaberite drugi račun</translation>
 <translation id="2433507940547922241">Izgled</translation>
 <translation id="2434158240863470628">Preuzimanje je završeno <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -286,6 +286,7 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="3058498974290601450">Sinhronizaciju uvijek možete uključiti u postavkama</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> oznaka}one{<ph name="BOOKMARKS_COUNT_MANY" /> oznaka}few{<ph name="BOOKMARKS_COUNT_MANY" /> oznake}other{<ph name="BOOKMARKS_COUNT_MANY" /> oznaka}}</translation>
 <translation id="3089395242580810162">Otvori u anonimnoj kartici</translation>
+<translation id="3114012059975132928">Video plejer</translation>
 <translation id="3123473560110926937">Blokirano na nekim web lokacijama</translation>
 <translation id="3123734510202723619">Najave</translation>
 <translation id="3137521801621304719">Napusti anonimni načina rada</translation>
@@ -343,6 +344,7 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="3522247891732774234">Dostupno je ažuriranje. Više opcija</translation>
 <translation id="3524138585025253783">Korisnički interfejs za programere</translation>
 <translation id="3527085408025491307">Folder</translation>
+<translation id="3538390592868664640">Web lokacijama je blokirano kreiranje 3D mape vašeg okruženja ili praćenje položaja kamere</translation>
 <translation id="3542235761944717775">Dostupno: <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">Pretražite svoju historiju</translation>
 <translation id="3557336313807607643">Dodaj u kontakte</translation>
@@ -351,6 +353,7 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="3587482841069643663">Sve</translation>
 <translation id="358794129225322306">Dozvolite web lokaciji automatsko preuzimanje više fajlova.</translation>
 <translation id="3590487821116122040">Pohrana web lokacije za koju Chrome smatra da nije važna (npr. stranice bez sačuvanih postavki ili one koje ne posjećujete često)</translation>
+<translation id="3594780231884063836">Isključivanje zvuka videozapisa</translation>
 <translation id="3599863153486145794">Briše historiju sa svih prijavljenih uređaja. Vaš Google račun može imati druge oblike historije pregledanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Isključuje zvuk na web lokacijama koje ga reproduciraju</translation>
 <translation id="3616113530831147358">Zvuk</translation>
@@ -439,6 +442,7 @@ Samo vi možete vidjeti prikaz kamere. Web lokacija ne može vidjeti slike kamer
 <translation id="4298388696830689168">Povezane web lokacije</translation>
 <translation id="4307992518367153382">Osnove</translation>
 <translation id="4314815835985389558">Upravljanje sinhronizacijom</translation>
+<translation id="4320177379694898372">Nema internetske veze</translation>
 <translation id="4321739720395210191">Nije moguće otvoriti kameru. Ponovo pokrenite uređaj i pokušajte ponovo.</translation>
 <translation id="4351244548802238354">Zatvori dijalog</translation>
 <translation id="4353114845960720315">Dok ste u VR-u, ova web lokacija može saznati sljedeće:</translation>
@@ -603,6 +607,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5456381639095306749">Preuzmi stranicu</translation>
 <translation id="548278423535722844">Otvori u aplikacijama za mape</translation>
 <translation id="5487521232677179737">Obriši podatke</translation>
+<translation id="5489227211564503167">Proteklo vrijeme <ph name="ELAPSED_TIME" /> od <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Blokiraj oglase na web lokacijama koje prikazuju nametljive ili obmanjujuće oglase</translation>
 <translation id="5500777121964041360">Moguće je da nije dostupno na vašoj lokaciji</translation>
 <translation id="5505264765875738116">Web lokacije ne mogu tražiti da šalju obavještenja</translation>
@@ -617,7 +622,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5530766185686772672">Zatvori anonimne kartice</translation>
 <translation id="5534640966246046842">Web lokacija je kopirana</translation>
 <translation id="5561549206367097665">Čekanje na mrežu…</translation>
-<translation id="557283862590186398">Chrome treba dopuštenje za pristup mikrofonu za ovu web-lokaciju.</translation>
 <translation id="55737423895878184">Lokacija i obavještenja su dozvoljeni</translation>
 <translation id="5578795271662203820">Pretražuj <ph name="SEARCH_ENGINE" /> za ovu sliku</translation>
 <translation id="5581519193887989363">Uvijek možete odabrati šta želite sinhronizirati u <ph name="BEGIN_LINK1" />postavkama<ph name="END_LINK1" />.</translation>
@@ -664,6 +668,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5864419784173784555">Čekanje drugog preuzimanja…</translation>
 <translation id="5865733239029070421">Automatski šalje Googleu statistiku korištenja i izvještaje o padovima aplikacije</translation>
 <translation id="5869522115854928033">Sačuvane lozinke</translation>
+<translation id="5876056640971328065">Pauziranje videozapisa</translation>
 <translation id="5884076754568147479">Radi lakšeg završavanja zadataka, Google će primati URL-ove i sadržaj web lokacija na kojima koristite Asistenta, kao i informacije koje pošaljete putem Asistenta</translation>
 <translation id="5902828464777634901">Svi lokalni podaci koje pohrani ova web lokacija, uključujući kolačiće, bit će izbrisani.</translation>
 <translation id="5919204609460789179">Ažurirajte proizvod <ph name="PRODUCT_NAME" /> da započnete sinhronizaciju</translation>
@@ -726,8 +731,8 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="6378173571450987352">Detalji: Poredano po količini iskorištenih podataka</translation>
 <translation id="6381421346744604172">Zatamnjivanje web lokacija</translation>
 <translation id="6388207532828177975">Obriši i vrati na zadano</translation>
-<translation id="6393863479814692971">Chromeu treba odobrenje za pristup vašoj kameri i mikrofonu na ovoj web lokaciji.</translation>
 <translation id="6395288395575013217">LINK</translation>
+<translation id="6397616442223433927">Ponovo na mreži</translation>
 <translation id="6404511346730675251">Uredite oznaku</translation>
 <translation id="6406506848690869874">Sinhronizacija</translation>
 <translation id="6410973561433500075">Pokrenuti AR s domene <ph name="DOMAIN" />?</translation>
@@ -779,7 +784,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="6676840375528380067">Obrisati Chrome podatke s ovog uređaja?</translation>
 <translation id="6689172468748959065">Fotografije profila</translation>
 <translation id="6697492270171225480">Prikaži prijedloge za slične stranice kada se stranica ne može pronaći</translation>
-<translation id="6697947395630195233">Chrome traži pristup vašoj lokaciji da bi je dijelio s ovom web lokacijom.</translation>
 <translation id="6698801883190606802">Upravljajte sinhroniziranim podacima</translation>
 <translation id="6699370405921460408">Googleovi serveri će optimizirati stranice koje posjećujete.</translation>
 <translation id="6710213216561001401">Nazad</translation>
@@ -797,6 +801,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="6846298663435243399">Učitavanje…</translation>
 <translation id="6850409657436465440">Vaše preuzimanje je još uvijek u toku</translation>
 <translation id="6850830437481525139">Broj zatvorenih kartica: <ph name="TAB_COUNT" /></translation>
+<translation id="6864395892908308021">Ovaj uređaj ne može očitavati NFC</translation>
 <translation id="6864459304226931083">Preuzmi sliku</translation>
 <translation id="6865313869410766144">Podaci za automatsko popunjavanje obrasca</translation>
 <translation id="6884306546558072722">Nastavite istraživati van mreže</translation>
@@ -917,6 +922,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7810647596859435254">Otvori koristeći…</translation>
 <translation id="7821588508402923572">Vaši sačuvani podaci će se prikazati ovdje</translation>
+<translation id="783819812427904514">Uključi zvuk videozapisa</translation>
 <translation id="784934925303690534">Vremenski raspon</translation>
 <translation id="7851858861565204677">Drugi uređaji</translation>
 <translation id="7875915731392087153">Kreirajte adresu e-pošte</translation>
@@ -971,6 +977,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8186512483418048923">Broj preostalih fajlova: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Preostao je još jedan dan</translation>
 <translation id="8200772114523450471">Nastavi</translation>
+<translation id="8206354486702514201">Ovu postavku je nametnuo vaš administrator.</translation>
 <translation id="8209050860603202033">Otvori sliku</translation>
 <translation id="8218622182176210845">Upravljajte svojim računom</translation>
 <translation id="8224471946457685718">Preuzmite članke putem WiFi mreže</translation>
@@ -992,7 +999,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8364299278605033898">Pogledajte popularne web lokacije</translation>
 <translation id="8368027906805972958">Nepoznat ili nepodržan uređaj (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Dozvolite sinhronizaciju u pozadini za određenu web lokaciju.</translation>
-<translation id="8378714024927312812">Pod upravljanjem vaše organizacije</translation>
 <translation id="8380167699614421159">Ova web lokacija prikazuje ometajuće ili obmanjujuće oglase</translation>
 <translation id="8393700583063109961">Pošalji poruku</translation>
 <translation id="8413126021676339697">Pokaži cijelu povijest</translation>

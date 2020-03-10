@@ -57,12 +57,14 @@
 <translation id="2580411288591421699">বর্তমানে Google Chrome-এর যে ভার্সনটি চলছে সেটি ইনস্টল করা যায় না৷ অনুগ্রহ করে Google Chrome বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="2586406160782125153">এটি এই ডিভাইস থেকে আপনার ব্রাউজিং ডেটা মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome-এ <ph name="USER_EMAIL" /> হিসেবে সাইন-ইন করুন।</translation>
 <translation id="2588322182880276190">Chrome লোগো</translation>
+<translation id="2622559029861875898">Chrome কোনও আপডেট আছে কিনা তা চেক করে দেখতে পারছে না। আপনার ইন্টারনেট কানেকশন চেক করে দেখে নিন।</translation>
 <translation id="2644798301485385923">Chrome OS সিস্টেম</translation>
 <translation id="2652691236519827073">নতুন Chrome ট্যাবে লিঙ্ক খুলুন</translation>
 <translation id="2665296953892887393">Google-এ <ph name="UMA_LINK" /> এবং ক্র্যাশ রিপোর্ট পাঠিয়ে Google Chrome-কে আরও ভাল করতে সাহায্য় করুন৷</translation>
 <translation id="2689103672227170538">আপনি Chrome চালু করলে কোন পৃষ্ঠাটি দেখানো হবে তা এই এক্সটেনশনটি পরিবর্তন করেছে।</translation>
 <translation id="2765403129283291972">এই সাইটটির জন্য Chrome কে আপনার মাইক্রোফোনে অ্যাক্সেস দিতে হবে</translation>
 <translation id="2770231113462710648">ডিফল্ট ব্রাউজার এতে পরিবর্তন করুন:</translation>
+<translation id="2775140325783767197">আপনার পাসওয়ার্ড Chrome চেক করে দেখতে পারছে না। আপনার ইন্টারনেট কানেকশন চেক করে দেখে নিন।</translation>
 <translation id="2799223571221894425">পুনঃশুরু</translation>
 <translation id="2847461019998147611">এই ভাষায় Google Chrome প্রদর্শন করুন</translation>
 <translation id="2857540653560290388">Chrome লঞ্চ করা হচ্ছে...</translation>
@@ -234,6 +236,7 @@
 <translation id="8862326446509486874">সিস্টেম-স্তরীয় ইনস্টলের জন্য আপনার কাছে যথাযথ অধিকারগুলি নেই৷ অ্যাডমিনিস্ট্রেটর হিসেবে আবার ইনস্টলারটি চালানোর চেষ্টা করুন৷</translation>
 <translation id="8914504000324227558">Chrome আবার লঞ্চ করুন</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome-এর একটি আপডেট উপলভ্য আছে}=1{Chrome-এর একটি আপডেট উপলভ্য আছে}one{Chrome-এর একটি আপডেট # দিন ধরে উপলভ্য আছে}other{Chrome-এর একটি আপডেট # দিন ধরে উপলভ্য আছে}}</translation>
+<translation id="9025321516765676895">Chrome আপনার পাসওয়ার্ড চেক করে দেখতে পারছে না, কারণ সেগুলি সংখ্যায় অনেক বেশি</translation>
 <translation id="9026991721384951619">আপনার অ্যাকাউন্টের সাইন-ইনের বিবরণটি পুরনো হওয়ায় Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
 <translation id="9067395829937117663">Google Chrome এর জন্য Windows 7 বা উচ্চতর সংস্করণ প্রয়োজন।</translation>
 <translation id="911206726377975832">আপনার ব্রাউজিং ডেটাও মুছে দেবেন?</translation>

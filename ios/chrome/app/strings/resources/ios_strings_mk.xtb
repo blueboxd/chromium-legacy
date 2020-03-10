@@ -97,7 +97,7 @@
 <translation id="2149973817440762519">Измени Обележувач</translation>
 <translation id="2179182049312275900">Може да ја исклучите синхронизацијата во секое време во „Поставки“.</translation>
 <translation id="2198757192731523470">Google може да ја користи вашата историја за да го персонализира „Пребарувањето“, рекламите и другите услуги на Google.</translation>
-<translation id="2218443599109088993">Одзумирајте</translation>
+<translation id="2218443599109088993">Одзумирај</translation>
 <translation id="2230173723195178503">Веб-страницата е вчитана</translation>
 <translation id="2239626343334228536">Се чистат податоците од прелистувањето…</translation>
 <translation id="2257567812274161158">Синхронизацијата не функционира.</translation>
@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Изберете сметка</translation>
 <translation id="3311748811247479259">Исклучено</translation>
 <translation id="3324193307694657476">Адреса 2</translation>
+<translation id="3328801116991980348">Информации за веб-локација</translation>
 <translation id="3329904751041170572">Не можеше да се поврзе на серверот.</translation>
 <translation id="3335947283844343239">Повторно отвори затворена картичка</translation>
 <translation id="3371831930909698441">„Преведи“ е достапна. Достапни се опции на дното на екранот.</translation>
@@ -418,7 +419,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="6464071786529933911">Отв. во нова инког. карт.</translation>
 <translation id="6476800141292307438">Страницата се преведува на <ph name="LANGUAGE" />. Достапни се опции на дното на екранот.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ставки се избришани</translation>
-<translation id="6561262006871132942">Зумирајте</translation>
+<translation id="6561262006871132942">Зумирај</translation>
 <translation id="6610002944194042868">Опции за „Преведи“</translation>
 <translation id="6628106477656132239">Погрешен рок на важност</translation>
 <translation id="6638511529934826365">Зумирај текст…</translation>

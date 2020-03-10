@@ -61,6 +61,10 @@
       Se esta política for definida, o usuário não poderá alterá-la ou substitui-la.</translation>
 <translation id="1062011392452772310">Ativar declaração remota para o dispositivo</translation>
 <translation id="1062407476771304334">Substituir</translation>
+<translation id="1073983258515362346">Envia informações sobre as luzes de fundo de um dispositivo.
+
+      Se a política for definida como falsa ou se não for definida, as informações não serão enviadas.
+      Se ela for definida como verdadeira, as informações sobre as luzes de fundo do dispositivo serão enviadas.</translation>
 <translation id="1078643757670228170">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Especifica quanto tempo sem entrada do usuário a tela espera antes de desligar quando o dispositivo está funcionando com energia CA.
@@ -166,6 +170,17 @@
       Se esta política não é configurada, a frequência padrão é de três horas. A frequência
       mínima permitida é de 60 segundos.</translation>
 <translation id="1204263402976895730">Impressoras empresariais ativadas</translation>
+<translation id="1216890727647348501">Ativa o recurso "Proteção melhorada para a navegação segura" do <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
+
+      Se você ativar essa configuração, o "Proteção melhorada para a navegação segura" ficará sempre ativado.
+
+      Se você desativar essa configuração, o "Proteção melhorada para a navegação segura" nunca ficará ativado.
+
+      Se você definir essa política como obrigatória, os usuários não poderão mudar ou substituir a configuração "Ativar proteção contra phishing e malware" no <ph name="PRODUCT_NAME" />.
+
+      Se essa política não for definida, o "Proteção melhorada para a navegação segura" ficará desativado por padrão, mas o usuário poderá ativá-lo.
+
+      Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o Navegação segura.</translation>
 <translation id="1216919699175573511">Ativa a compatibilidade com Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Especifica se o dispositivo deve ser revertido para a versão definida por <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> se ele já estiver executando uma versão posterior.
 
@@ -259,6 +274,7 @@
           Se esta política não for definida, o comportamento das políticas mais específicas não será afetado.</translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Informar o status de atualização do SO</translation>
+<translation id="1388918874748125262">Ativar "Proteção melhorada para a navegação segura"</translation>
 <translation id="1393485621820363363">Impressoras empresariais ativadas</translation>
 <translation id="1397855852561539316">URL sugerido do provedor de pesquisa padrão</translation>
 <translation id="1398636873839401839">Ativar todas as variações na tela de login</translation>
@@ -320,6 +336,7 @@
       desativada. Nesse caso, não será possível ativar o recurso.</translation>
 <translation id="1474273443907024088">Desativar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1486021504508098388">Enviar informações sobre as luzes de fundo</translation>
 <translation id="1502843533062797703">Ativar bloqueio de injeção de software de terceiros</translation>
 <translation id="1507382822467487898">
           Configura qual endereço de controle de acesso de mídia (MAC, na sigla em inglês) será usado quando uma base estiver conectada ao dispositivo.
@@ -1159,6 +1176,9 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="26023406105317310">Configurar contas do Kerberos</translation>
 <translation id="2604182581880595781">Configurar políticas relacionadas ao Compartilhamento de arquivos de rede.</translation>
 <translation id="2615240493030733717">Enviar informações de fuso horário</translation>
+<translation id="2620943247255660284">Esta política está obsoleta e foi substituída por AdvancedProtectionExtraSecurityAllowed.
+
+      Esta política controla se os usuários inscritos no Programa Proteção Avançada têm permissão para enviar os downloads para o Google para verificação de malware. Se esta política for definida como verdadeira ou não for configurada, um aviso aparecerá para os usuários pedindo que enviem os arquivos para o Google para verificação detalhada. Se o usuário selecionar "Verificar", o download será enviado para o Google. Se esta política for definida como falsa, o aviso não aparecerá e os downloads não serão enviados para o Google.</translation>
 <translation id="2623014935069176671">Aguardar atividade inicial do usuário</translation>
 <translation id="262740370354162807">Ativar o envio de documentos para <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Fornece configurações para impressoras corporativas.
@@ -1403,6 +1423,21 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="2987227569419001736">Controla o uso da API Web Bluetooth</translation>
 <translation id="3016255526521614822">Colocar na lista de permissões os apps de anotação permitidos na tela de bloqueio do <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3020064401262077616">Controla as políticas de supervisão dos pais, que são aplicadas apenas às contas de crianças.</translation>
+<translation id="3020953534071988875">Configurar esta política permitirá/proibirá a autenticação pelo SO para perfis anônimos e de visitante no <ph name="PRODUCT_NAME" />.
+
+      A autenticação pelo SO é do tipo HTTP com credenciais padrão caso as explícitas não sejam fornecidas por meio de esquemas de resposta/desafio Negotiate/NTLM/Kerberos.
+
+      Definir a opção <ph name="REGULAR_ONLY_OPTION_NAME" /> (valor 0) permite a autenticação pelo SO apenas para sessões normais. As sessões anônimas e de visitante não terão permissão para usar essa autenticação.
+
+      Definir a opção <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valor 1) permite a autenticação pelo SO em sessões anônimas e normais. As sessões de visitante não terão permissão para usar essa autenticação.
+
+      Definir a opção <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valor 2) permite a autenticação pelo SO para sessões normais e de visitante. As sessões anônimas não terão permissão para usar essa autenticação.
+
+      Definir a opção <ph name="ALL_OPTION_NAME" /> (valor 3) permite a autenticação pelo SO para todas as sessões.
+
+      Essa autenticação sempre é permitida em perfis normais.
+
+      Na versão 81 e em versões mais recentes do <ph name="PRODUCT_NAME" />, se a política não for definida, a autenticação pelo SO será ativada apenas em sessões normais.</translation>
 <translation id="3021562480854470924">Número de marcos em que a reversão é permitida</translation>
 <translation id="3023572080620427845">URL de um arquivo XML que contém URLs que serão carregados em um navegador alternativo.</translation>
 <translation id="3026740867910702435">Ativar o recurso de acessibilidade de cursor grande na tela de login.
@@ -1873,6 +1908,7 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
           Se esta política não for definida, o ditado ficará inicialmente desativado na tela de login, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
 <translation id="3811562426301733860">Permitir anúncios em todos os sites</translation>
 <translation id="3816312845600780067">Ativar atalho do teclado dp plano de salvação para login automático</translation>
+<translation id="3817323252437541502">Ativar mais proteções para usuários inscritos no Programa Proteção Avançada</translation>
 <translation id="3820526221169548563">Ativa o recurso de acessibilidade ao teclado na tela.
 
           Se essa política for definida como "true", o teclado na tela ficará sempre ativado.
@@ -2336,9 +2372,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4449545651113180484">Girar tela no sentido horário em 270 graus</translation>
 <translation id="445270821089253489">Controla quais tipos de informações do usuário e do dispositivo são enviadas.</translation>
 <translation id="4453913621209182880">Permitir impressão somente com gráficos de segundo plano</translation>
-<translation id="4454586530530448054">Se esta política estiver definida, todos os tipos de dados especificados serão excluídos da sincronização, tanto para o Google Sync quanto para a sincronização de perfil de roaming. Isso pode ser benéfico para reduzir o tamanho do perfil de roaming ou limitar o tipo de dado que será enviado aos servidores do Google Sync.
-
-      Atualmente, os tipos de dados para esta política são: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" e "wifiConfiguration". Esses nomes diferenciam letras maiúsculas de minúsculas.</translation>
 <translation id="4454820008017317557">Mostrar o ícone da barra de ferramentas do <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Ativar salvamento de senhas no gerenciador de senhas</translation>
@@ -5038,6 +5071,7 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
       Se a política for definida como falsa ou não for definida, os status de tela e gráficos não serão informados. Se ela for definida como verdadeira, os status de tela e gráficos serão informados.</translation>
 <translation id="891435090623616439">codificado como um string JSON, para ver mais detalhes consulte <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Permite que o usuário gerencie os certificados de CA instalados.</translation>
+<translation id="8924721011887485485">Esta política controla se os usuários inscritos no Programa Proteção Avançada recebem recursos de segurança extra. Alguns desses recursos podem envolver o compartilhamento de dados com o Google. Por exemplo, usuários do Proteção Avançada poderão enviar os downloads ao Google para verificação de malware. Se a política for definida como verdadeira ou não for configurada, os usuários inscritos receberão recursos de segurança extra. Se for definida como falsa, os usuários do Proteção Avançada receberão apenas os recursos de segurança do consumidor.</translation>
 <translation id="8926275581598789324">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Especifica o período sem entradas do usuário após o qual a ação de inatividade é tomada quando o dispositivo funciona com energia da bateria.

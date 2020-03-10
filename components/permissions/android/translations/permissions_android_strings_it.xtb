@@ -1,4 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="2359808026110333948">Continua</translation>
+<translation id="2416359993254398973">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere alla fotocamera.</translation>
+<translation id="557283862590186398">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere al microfono.</translation>
+<translation id="6393863479814692971">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere alla fotocamera e al microfono.</translation>
+<translation id="6697947395630195233">Chrome deve poter accedere alla tua posizione per condividerla con questo sito.</translation>
 </translationbundle>

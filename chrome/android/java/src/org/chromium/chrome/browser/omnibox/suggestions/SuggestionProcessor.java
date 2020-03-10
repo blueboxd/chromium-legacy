@@ -23,6 +23,11 @@ public interface SuggestionProcessor {
     int getViewTypeId();
 
     /**
+     * @return The minimum possible height of the suggestion view for this suggestion.
+     */
+    int getMinimumSuggestionViewHeight();
+
+    /**
      * @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean)
      */
     void onUrlFocusChange(boolean hasFocus);

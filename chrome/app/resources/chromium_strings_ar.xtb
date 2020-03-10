@@ -11,7 +11,6 @@
 <translation id="151962892725702025">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
 <translation id="1524282610922162960">‏مشاركة علامة تبويب Chromium</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث.}=1{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث. لن تتم إعادة فتح نافذة التصفح المتخفي.}two{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث. لن تتم إعادة فتح نافذتَي التصفح المتخفي.}few{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}many{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}other{‏يطلب المشرف إعادة تشغيل Chromium لتطبيق تحديث. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}}</translation>
-<translation id="1663739491876737434">‏يتعذّر على Chromium التحقّق من كلمات المرور. يُرجى إعادة المحاولة غدًا.</translation>
 <translation id="1708666629004767631">‏يتوفر إصدار جديد وأكثر أمانًا Chromium.</translation>
 <translation id="1774152462503052664">‏دع Chromium يعمل في الخلفية</translation>
 <translation id="1779356040007214683">‏لجعل Chromium أكثر أمانًا، تم إيقاف بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> والتي ربما تمت إضافتها بدون علمك.</translation>
@@ -83,7 +82,6 @@
 <translation id="4423735387467980091">‏تخصيص Chromium والتحكم فيه</translation>
 <translation id="4567424176335768812">لقد سجلت دخولك باعتبارك <ph name="USER_EMAIL_ADDRESS" />. ويُمكنك الآن الاستمتاع بالدخول إلى الإشارات المرجعية، والسجلّ، والإعدادات الأخرى على جميع الأجهزة التي تسجّل الدخول إليها.</translation>
 <translation id="459535195905078186">‏تطبيقات Chromium</translation>
-<translation id="4621240073146040695">‏أوشك التحديث على الانتهاء! إعادة تشغيل Chromium لإنهاء التحديث.</translation>
 <translation id="4677944499843243528">‏يبدو أن الملف الشخصي قيد الاستخدام بواسطة عملية أخرى في Chromium (<ph name="PROCESS_ID" />) على جهاز كمبيوتر آخر (<ph name="HOST_NAME" />). وقد تمّ قفل الملف الشخصي من جانب Chromium لضمان عدم تعرضه للتلف. فإذا كنت واثقًا من عدم وجود عمليات أخرى قيد التشغيل على جهاز الكمبيوتر، فيُمكنك فتح قفل الملف الشخصي وإعادة تشغيل Chromium مجددًا.</translation>
 <translation id="469338717132742108">‏الحصول على مساعدة في نظام التشغيل Chromium</translation>
 <translation id="4708774505295300557">‏سجّل شخص ما الدخول من قبل إلى Chromium على جهاز الكمبيوتر هذا باسم <ph name="ACCOUNT_EMAIL_LAST" />. يُرجى إنشاء حساب مستخدم جديد في Chromium للإبقاء على معلوماتك بشكلٍ منفصل.</translation>
@@ -94,7 +92,6 @@
 <translation id="4943838377383847465">‏Chromium في وضع الخلفية.</translation>
 <translation id="4987820182225656817">‏يمكن للضيف استخدام Chromium بدون أن يترك أي أثر وراءه.</translation>
 <translation id="4994636714258228724">‏إضافة نفسك إلى Chromium</translation>
-<translation id="5093066630040073147">‏ما مِن كلمات مرور محفوظة. يستطيع Chromium التحقّق من كلمات المرور عند حفظها في حسابك على Google.</translation>
 <translation id="5277894862589591112">‏لتطبيق التغييرات، يُرجى إعادة تشغيل Chromium</translation>
 <translation id="5310059007469274549">‏يتعذّر على Chromium التحقّق من كلمات المرور بسبب عددها الكبير.</translation>
 <translation id="5358375970380395591">‏أنت تسجل الدخول باستخدام حساب يخضع للإدارة وتتيح للمشرف إمكانية التحكم في ملفك الشخصي على Chromium. وستكون بياناتك في Chromium مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى مرتبطة دائمًا بالمستخدم <ph name="USER_NAME" />. ستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. <ph name="LEARN_MORE" /></translation>
@@ -106,14 +103,12 @@
 <translation id="5438241569118040789">‏<ph name="PAGE_TITLE" /> - الإصدار التجريبي من Chromium</translation>
 <translation id="5479196819031988440">‏يتعذر على نظام التشغيل Chromium فتح هذه الصفحة.</translation>
 <translation id="5480860683791598150">‏يحتاج Chromium للوصول إلى موقعك الجغرافي لمشاركته مع هذا الموقع.</translation>
-<translation id="5488573303232097702">‏تعذّر تحديث Chromium بسبب حدوث خطأ. يجب إصلاح مشاكل تحديث Chrome وتعذُّر التحديثات.</translation>
 <translation id="549669000822060376">‏يُرجى الانتظار أثناء تثبيت Chromium لآخر تحديثات النظام.</translation>
 <translation id="5623402015214259806">{0,plural, =0{‏يتوفر تحديث لمتصفح Chromium}=1{‏يتوفر تحديث لمتصفح Chromium}two{‏يتوفر تحديث لمتصفح Chromium منذ يومين}few{‏يتوفر تحديث لمتصفح Chromium منذ # أيام}many{‏يتوفر تحديث لمتصفح Chromium منذ # يومًا}other{‏يتوفر تحديث لمتصفح Chromium منذ # يوم}}</translation>
 <translation id="5631814766731275228">‏الاسم والصورة على Chromium</translation>
 <translation id="5634636535844844681">‏يتطلب Chromium نظام التشغيل Windows 7 أو إصدارًا أحدث.</translation>
 <translation id="5653831366781983928">‏يُرجى إعادة تشغيل Chromium الآن</translation>
 <translation id="5698481217667032250">‏عرض Chromium بهذه اللغة</translation>
-<translation id="5814748786105822016">‏يتعذّر على Chromium التحقّق من كلمات المرور.</translation>
 <translation id="5820394555380036790">‏نظام التشغيل Chromium</translation>
 <translation id="5862307444128926510">‏مرحبًا بك في Chromium</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
@@ -205,7 +200,6 @@
 <translation id="8417404458978023919">{0,plural, =1{‏يجب إعادة تشغيل Chromium في غضون يوم واحد}zero{‏يجب إعادة تشغيل Chromium في غضون # يوم}two{‏يجب إعادة تشغيل Chromium في غضون يومين}few{‏يجب إعادة تشغيل Chromium في غضون # أيام}many{‏يجب إعادة تشغيل Chromium في غضون # يومًا}other{‏يجب إعادة تشغيل Chromium في غضون # يوم}}</translation>
 <translation id="8453117565092476964">‏أرشيف أداة التثبيت تالف أو غير صالح. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="8493179195440786826">‏إصدار Chromium قديم</translation>
-<translation id="8568283329061645092">‏يستطيع Chromium التحقّق من كلمات المرور عند تسجيل الدخول باستخدام حسابك على Google.</translation>
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="8619360774459241877">‏جارٍ إطلاق Chromium...</translation>
 <translation id="8621669128220841554">‏تعذّر التثبيت نظرًا لحدوث خطأ غير محدد. يُرجى إعادة تنزيل Chromium.</translation>
@@ -213,7 +207,6 @@
     إعدادات متصفِّح Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="8704119203788522458">‏هذا هو Chromium الخاص بك</translation>
-<translation id="8774315820480073720">‏يُدير المشرف تحديثات Chromium.</translation>
 <translation id="8796602469536043152">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا والميكروفون من أجل موقع الويب هذا.</translation>
 <translation id="8803635938069941624">‏بنود نظام تشغيل Chromium</translation>
 <translation id="8821041990367117597">‏تعذر على Chromium مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>

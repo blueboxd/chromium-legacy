@@ -169,6 +169,7 @@
 <translation id="2156074688469523661">ಉಳಿದ ಸೈಟ್‌ಗಳು (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">ನಿಮ್ಮ ಫೋನ್‌ನಿಂದ ಮತ್ತೊಂದು ಸಾಧನಕ್ಕೆ ಏನನ್ನಾದರೂ ಹಂಚಿಕೊಳ್ಳಲು, ಎರಡೂ ಸಾಧನಗಳಲ್ಲಿರುವ, Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಸಿಂಕ್ ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
 <translation id="2175927920773552910">QR ಕೋಡ್</translation>
+<translation id="2182457891543959921">ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ 3D ನಕ್ಷೆಗಳನ್ನು ರಚಿಸಲು ಅಥವಾ ಕ್ಯಾಮರಾ ಸ್ಥಿತಿಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಸೈಟ್‌ಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿರುವುದು)</translation>
 <translation id="218608176142494674">ಹಂಚಿಕೆ</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> ನಂತೆ ಮುಂದುವರಿಸಿ</translation>
 <translation id="2234876718134438132">ಸಿಂಕ್ ಮತ್ತು Google ಸೇವೆಗಳು</translation>
@@ -194,7 +195,6 @@
 <translation id="2407481962792080328">ನಿಮ್ಮ Google ಖಾತೆಗೆ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ, ಈ ವೈಶಿಷ್ಟ್ಯವು ಆನ್ ಆಗುತ್ತದೆ</translation>
 <translation id="2410754283952462441">ಖಾತೆಯೊಂದನ್ನು ಆರಿಸಿ</translation>
 <translation id="2414886740292270097">ಗಾಢ</translation>
-<translation id="2416359993254398973">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="2426805022920575512">ಇನ್ನೊಂದು ಖಾತೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="2433507940547922241">ಗೋಚರತೆ</translation>
 <translation id="2434158240863470628">ಡೌನ್‌ಲೋಡ್‌‌ ಪೂರ್ಣಗೊಂಡಿದೆ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -344,6 +344,7 @@
 <translation id="3522247891732774234">ಅಪ್‌ಡೇಟ್‌ ಲಭ್ಯವಿದೆ. ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು</translation>
 <translation id="3524138585025253783">ಡೆವಲಪರ್ UI</translation>
 <translation id="3527085408025491307">ಫೋಲ್ಡರ್</translation>
+<translation id="3538390592868664640">ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ 3D ನಕ್ಷೆಗಳನ್ನು ರಚಿಸುವುದರಿಂದ ಅಥವಾ ಕ್ಯಾಮರಾ ಸ್ಥಿತಿಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡುವುದರಿಂದ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB ಲಭ್ಯವಿದೆ</translation>
 <translation id="3549657413697417275">ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು ಹುಡುಕಿ</translation>
 <translation id="3557336313807607643">ಸಂಪರ್ಕಗಳಿಗೆ ಸೇರಿಸಿ</translation>
@@ -440,6 +441,7 @@
 <translation id="4298388696830689168">ಲಿಂಕ್ ಮಾಡಿರುವ ಸೈಟ್‌ಗಳು</translation>
 <translation id="4307992518367153382">ಬೇಸಿಕ್ಸ್</translation>
 <translation id="4314815835985389558">ಸಿಂಕ್ ಅನ್ನು ನಿರ್ವಹಿಸಿ</translation>
+<translation id="4320177379694898372">ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವಿಲ್ಲ</translation>
 <translation id="4321739720395210191">ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ತೆರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ ಹಾಗೂ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4351244548802238354">ಸಂವಾದವನ್ನು ಮುಚ್ಚಿ</translation>
 <translation id="4353114845960720315">ನೀವು VR ನಲ್ಲಿರುವಾಗ, ಈ ಸೈಟ್ ಕುರಿತು ತಿಳಿಯಲು ಸಾಧ್ಯವಾಗುತ್ತದೆ:</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿ</translation>
 <translation id="5534640966246046842">ಸೈಟ್ ಅನ್ನು ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="5561549206367097665">ನೆಟ್‌ವರ್ಕ್‌ಗಾಗಿ ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ…</translation>
-<translation id="557283862590186398">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="55737423895878184">ಸ್ಥಳ ಮತ್ತು ಅಧಿಸೂಚನೆಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="5578795271662203820">ಈ ಚಿತ್ರಕ್ಕಾಗಿ <ph name="SEARCH_ENGINE" /> ನಲ್ಲಿ ಹುಡುಕಾಡಿ</translation>
 <translation id="5581519193887989363">ನೀವು ಏನನ್ನು ಸಿಂಕ್ ಮಾಡಬೇಕು ಎಂಬುದನ್ನು <ph name="BEGIN_LINK1" />ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK1" /> ಯಾವಾಗ ಬೇಕಾದರೂ ಆರಿಸಿಕೊಳ್ಳಬಹುದು.</translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">ವಿವರಗಳು: ಡೇಟಾ ಬಳಕೆಯ ಪ್ರಮಾಣದ ಆಧಾರದಲ್ಲಿ ವಿಂಗಡಿಸಲಾಗಿದೆ</translation>
 <translation id="6381421346744604172">ಡಾರ್ಕನ್ ವೆಬ್‌ಸೈಟ್‌ಗಳು</translation>
 <translation id="6388207532828177975">ತೆರವುಗೊಳಿಸಿ &amp; ಮರುಹೊಂದಿಸಿ</translation>
-<translation id="6393863479814692971">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="6395288395575013217">ಲಿಂಕ್</translation>
 <translation id="6404511346730675251">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="6406506848690869874">ಸಿಂಕ್</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">ಈ ಸಾಧನದಿಂದ ನಿಮ್ಮ Chrome ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸುವುದೇ?</translation>
 <translation id="6689172468748959065">ಪ್ರೊಫೈಲ್ ಫೋಟೋಗಳು</translation>
 <translation id="6697492270171225480">ಯಾವುದೇ ಪುಟವನ್ನು ಕಂಡುಹಿಡಿಯಲು ಸಾಧ್ಯವಾಗದಿದ್ದರೆ, ಅಂತಹುದೇ ಪುಟಗಳ ಸಲಹೆಯನ್ನು ತೋರಿಸಿ</translation>
-<translation id="6697947395630195233">ಈ ಸೈಟ್‌ ಮೂಲಕ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು Chrome ಗೆ ನಿಮ್ಮ ಸ್ಥಳದ ಪ್ರವೇಶ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="6698801883190606802">ಸಿಂಕ್‌ ಮಾಡಲಾದ ಡೇಟಾವನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="6699370405921460408">ನೀವು ಭೇಟಿ ಮಾಡುವ ಪುಟಗಳನ್ನು Google ಸರ್ವರ್‌ಗಳು ಆಪ್ಟಿಮೈಸ್ ಮಾಡುತ್ತವೆ.</translation>
 <translation id="6710213216561001401">ಹಿಂದೆ</translation>
@@ -972,6 +971,7 @@
 <translation id="8186512483418048923"><ph name="FILES" /> ಬಾಕಿ ಉಳಿದಿರುವ ಫೈಲ್‌ಗಳು</translation>
 <translation id="8190358571722158785">1 ದಿನ ಉಳಿದಿದೆ</translation>
 <translation id="8200772114523450471">ಪುನರಾರಂಭಿಸು</translation>
+<translation id="8206354486702514201">ಈ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ಜಾರಿಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="8209050860603202033">ಚಿತ್ರವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="8218622182176210845">ನಿಮ್ಮ ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="8224471946457685718">ವೈ-ಫೈಯಲ್ಲಿ ನಿಮಗಾಗಿ ಲೇಖನಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</translation>
@@ -993,7 +993,6 @@
 <translation id="8364299278605033898">ಜನಪ್ರಿಯ ವೆಬ್‌ಸೈಟ್‌ಗಳನ್ನು ನೋಡಿ</translation>
 <translation id="8368027906805972958">ಅಪರಿಚಿತ ಅಥವಾ ಬೆಂಬಲಿತವಲ್ಲದ ಸಾಧನ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">ನಿರ್ದಿಷ್ಟ ಸೈಟ್‌ಗಾಗಿ ಹಿನ್ನೆಲೆ ಸಿಂಕ್‌ ಅನುಮತಿಸಿ.</translation>
-<translation id="8378714024927312812">ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಮೂಲಕ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="8380167699614421159">ಅತಿಕ್ರಮಣಕಾರಿಯಾಗಿರುವ ಅಥವಾ ತಪ್ಪುದಾರಿಗೆಳೆಯುವ ಜಾಹೀರಾತುಗಳನ್ನು ಈ ಸೈಟ್ ತೋರಿಸುತ್ತದೆ</translation>
 <translation id="8393700583063109961">ಸಂದೇಶ ಕಳುಹಿಸು</translation>
 <translation id="8413126021676339697">ಪೂರ್ತಿ ಇತಿಹಾಸವನ್ನು ತೋರಿಸಿ</translation>

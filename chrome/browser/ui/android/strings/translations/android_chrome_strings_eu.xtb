@@ -168,6 +168,7 @@ Sakatu bilatu nahi duzun hitza. Bilaketa mugatzeko, eduki testua sakatuta eta ha
 <translation id="2156074688469523661">Gainerako webguneak (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Telefonoko zerbait beste gailu batekin partekatzeko, joan Chrome-ren ezarpenetara eta aktibatu sinkronizazioa bi gailuetan</translation>
 <translation id="2175927920773552910">QR kodea</translation>
+<translation id="2182457891543959921">Eskatu zure baimena webguneei inguruaren 3D mapa bat sortu edo kameraren posizioaren jarraipena egiteko baimena eman aurretik (gomendatua)</translation>
 <translation id="218608176142494674">Partekatzea</translation>
 <translation id="2227444325776770048">Jarraitu <ph name="USER_FULL_NAME" /> gisa</translation>
 <translation id="2234876718134438132">Sinkronizazioa eta Google-ren zerbitzuak</translation>
@@ -193,7 +194,6 @@ Sakatu bilatu nahi duzun hitza. Bilaketa mugatzeko, eduki testua sakatuta eta ha
 <translation id="2407481962792080328">Google-ko kontuan saioa hastean, aktibatu egiten da eginbide hau</translation>
 <translation id="2410754283952462441">Aukeratu kontu bat</translation>
 <translation id="2414886740292270097">Iluna</translation>
-<translation id="2416359993254398973">Chrome-k zure baimena behar du webgune honen izenean kamera atzitzeko.</translation>
 <translation id="2426805022920575512">Aukeratu beste kontu bat</translation>
 <translation id="2433507940547922241">Itxura</translation>
 <translation id="2434158240863470628">Deskargatu da <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@ Eduki sakatuta bilatu nahi duzun hitza. Bilaketa mugatzeko, hautatu hitz gehiago
 <translation id="3522247891732774234">Eguneratze bat dago eskuragarri. Aukera gehiago.</translation>
 <translation id="3524138585025253783">Garatzaileen erabiltzaile-interfazea</translation>
 <translation id="3527085408025491307">Karpeta</translation>
+<translation id="3538390592868664640">Ez utzi inongo webguneri inguruaren 3D mapa bat sortzen edo kameraren posizioaren jarraipena egiten</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB erabilgarri</translation>
 <translation id="3549657413697417275">Bilatu historian</translation>
 <translation id="3557336313807607643">Gehitu kontaktuetan</translation>
@@ -439,6 +440,7 @@ Zuk bakarrik ikus dezakezu kamera zeri begira dagoen. Webgune honek ezin ditu ik
 <translation id="4298388696830689168">Estekatutako webguneak</translation>
 <translation id="4307992518367153382">Oinarrizko informazioa</translation>
 <translation id="4314815835985389558">Kudeatu sinkronizazioa</translation>
+<translation id="4320177379694898372">Ez zaude konektatuta Internetera</translation>
 <translation id="4321739720395210191">Ezin da ireki kamera. Berrabiarazi gailua eta saiatu berriro.</translation>
 <translation id="4351244548802238354">Itxi leihoa</translation>
 <translation id="4353114845960720315">Errealitate birtualean zauden bitartean, baliteke webgune honek hauei buruzko informazioa lortzea:</translation>
@@ -617,7 +619,6 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5530766185686772672">Itxi ezkutuko moduko fitxak</translation>
 <translation id="5534640966246046842">Kopiatu da webgunea</translation>
 <translation id="5561549206367097665">Konektatzeko zain…</translation>
-<translation id="557283862590186398">Chrome-k zure baimena behar du webgune honen izenean mikrofonoa atzitzeko.</translation>
 <translation id="55737423895878184">Kokapena eta jakinarazpenak onartzen dira</translation>
 <translation id="5578795271662203820">Bilatu irudia <ph name="SEARCH_ENGINE" /> bilatzailean</translation>
 <translation id="5581519193887989363">Zer sinkronizatu nahi duzun aukeratzeko, joan <ph name="BEGIN_LINK1" />Ezarpenak<ph name="END_LINK1" /> atalera.</translation>
@@ -726,7 +727,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="6378173571450987352">Xehetasunak: erabilitako datu kopuruaren arabera ordenatuta</translation>
 <translation id="6381421346744604172">Ilundu webguneak</translation>
 <translation id="6388207532828177975">Garbitu eta berrezarri</translation>
-<translation id="6393863479814692971">Chrome-k zure baimena behar du webgune honen izenean kamera eta mikrofonoa atzitzeko.</translation>
 <translation id="6395288395575013217">ESTEKA</translation>
 <translation id="6404511346730675251">Editatu laster-marka</translation>
 <translation id="6406506848690869874">Sinkronizazioa</translation>
@@ -779,7 +779,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="6676840375528380067">Gailu honetan dituzun Chrome-ko datuak garbitu nahi dituzu?</translation>
 <translation id="6689172468748959065">Profileko argazkiak</translation>
 <translation id="6697492270171225480">Orri bat aurkitu ezin denean, iradoki antzeko orriak</translation>
-<translation id="6697947395630195233">Chrome-k baimena behar du kokapena webgune honekin partekatzeko.</translation>
 <translation id="6698801883190606802">Kudeatu sinkronizatutako datuak</translation>
 <translation id="6699370405921460408">Google-ren zerbitzariek ikusten dituzun orriak optimizatuko dituzte.</translation>
 <translation id="6710213216561001401">Aurrekoa</translation>
@@ -971,6 +970,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="8186512483418048923"><ph name="FILES" /> fitxategi gelditzen dira</translation>
 <translation id="8190358571722158785">Egun bat gelditzen da</translation>
 <translation id="8200772114523450471">Berrekin</translation>
+<translation id="8206354486702514201">Administratzaileak betearazten du ezarpena.</translation>
 <translation id="8209050860603202033">Ireki irudia</translation>
 <translation id="8218622182176210845">Kudeatu kontua</translation>
 <translation id="8224471946457685718">Deskargatu zuretzako artikuluak wifi bidez</translation>
@@ -992,7 +992,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="8364299278605033898">Ikusi webgune ezagunak</translation>
 <translation id="8368027906805972958">Gailu ezezaguna edo bateraezina (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Baimendu atzeko planoko sinkronizazioa webgune zehatz batean.</translation>
-<translation id="8378714024927312812">Erakundeak kudeatzen du</translation>
 <translation id="8380167699614421159">Webgune honek iragarki oztopatzaile edo iruzurrezkoak erakusten ditu</translation>
 <translation id="8393700583063109961">Bidali mezua</translation>
 <translation id="8413126021676339697">Erakutsi historia osoa</translation>

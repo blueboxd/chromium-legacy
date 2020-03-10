@@ -36,7 +36,6 @@
 <translation id="1877026089748256423">Версия Chrome устарела</translation>
 <translation id="1900795423379050516">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />настройки браузера Chrome<ph name="LINK_END" />.</translation>
 <translation id="1919130412786645364">Разрешить вход в Chrome</translation>
-<translation id="1983547493073464667">Не удается запустить проверку паролей в Chrome.</translation>
 <translation id="2063848847527508675">Перезагрузите Chrome OS, чтобы установить обновление.</translation>
 <translation id="2094919256425865063">Завершить работу Chrome?</translation>
 <translation id="2120620239521071941">С устройства будут удалены объекты (<ph name="ITEMS_COUNT" />). Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
@@ -52,11 +51,9 @@
 <translation id="2467438592969358367">Чтобы экспортировать пароли из Google Chrome, введите пароль своего аккаунта Windows.</translation>
 <translation id="2485422356828889247">Удалить</translation>
 <translation id="2534507159460261402">Google Pay (скопирована в Chrome)</translation>
-<translation id="2559627601176023786">Сохраненных паролей нет. Чтобы браузер Chrome мог проверять пароли, сохраните их в аккаунте Google.</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
 <translation id="2586406160782125153">Данные о работе в браузере будут удалены с устройства. Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Логотип Chrome</translation>
-<translation id="261226884343006626">Не удается запустить проверку паролей в Chrome. Повторите попытку завтра.</translation>
 <translation id="2622559029861875898">Не удалось проверить наличие обновлений в Chrome. Проверьте подключение к Интернету.</translation>
 <translation id="2644798301485385923">Chrome OS</translation>
 <translation id="2652691236519827073">Открыть ссылку в новой вкладке браузера Chrome</translation>
@@ -80,7 +77,6 @@
 <translation id="3395323229510056640">Справка Chrome OS</translation>
 <translation id="3396977131400919238">При установке произошла ошибка операционной системы. Скачайте Google Chrome снова.</translation>
 <translation id="3398288718845740432">Не показывать в Меню Google Chrome</translation>
-<translation id="3434246496373299699">Chrome сможет проверить ваши пароли, когда вы войдете в аккаунт Google.</translation>
 <translation id="3451115285585441894">Установка...</translation>
 <translation id="345171907106878721">Добавить пользователя Chrome</translation>
 <translation id="34857402635545079">Также удалить данные из Chrome (<ph name="URL" />)</translation>
@@ -96,7 +92,6 @@
 <translation id="386202838227397562">Закройте все окна Chrome и повторите попытку снова.</translation>
 <translation id="3873044882194371212">Открыть ссылку в режиме инкогнито браузера Chrome</translation>
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
-<translation id="3943605108614542032">За обновление Chrome отвечает администратор.</translation>
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
 <translation id="4143243756087420366">Имя и фото профиля Chrome</translation>
@@ -205,7 +200,6 @@
 <translation id="7808348361785373670">Удалить из Chrome</translation>
 <translation id="7825851276765848807">Не удалось выполнить установку из-за неизвестной ошибки. Скачайте Google Chrome ещё раз.</translation>
 <translation id="7855730255114109580">Последняя версия Google Chrome уже установлена</translation>
-<translation id="7888686278524752658">Не удалось обновить Chrome. Выясните причины неполадок и устраните их.</translation>
 <translation id="7890208801193284374">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chrome на свой вкус.</translation>
 <translation id="7896673875602241923">Ранее вход в Chrome на этом компьютере выполнялся из аккаунта <ph name="ACCOUNT_EMAIL_LAST" />. Чтобы ваши данные хранились отдельно, создайте новый профиль Chrome.</translation>
 <translation id="7916016681687251387">Не удалось синхронизировать данные. Войдите, чтобы исправить эту ошибку.</translation>

@@ -15,26 +15,27 @@ namespace network_time {
 
 // Update as follows:
 //
-// curl -i http://clients2.google.com/time/1/current?cup2key=2:123123123
+// curl -i http://clients2.google.com/time/1/current?cup2key=4:123123123
 //
-// where 2 is the key version and 123123123 is the nonce.  Copy the
-// response and the x-cup-server-proof header into
-// |kGoodTimeResponseBody| and |kGoodTimeResponseServerProofHeader|
-// respectively, and the 'current_time_millis' value of the response
-// into |kGoodTimeResponseHandlerJsTime|.
+// where 4 is the key version and 123123123 is the nonce.  Copy the response
+// and the x-cup-server-proof header into |kGoodTimeResponseBody| and
+// |kGoodTimeResponseServerProofHeader| respectively, and the
+// 'current_time_millis' value of the response into
+// |kGoodTimeResponseHandlerJsTime|.  Do this twice, so that the two requests
+// appear in order below.
 const char* kGoodTimeResponseBody[] = {
-    ")]}'\n{\"current_time_millis\":1522081016324,"
-    "\"server_nonce\":-1.475187036492045E154}",
-    ")]}'\n{\"current_time_millis\":1522096305984,"
-    "\"server_nonce\":-1.1926302260014708E-276}"};
+    ")]}'\n{\"current_time_millis\":1583777597124,"
+    "\"server_nonce\":-1.2173462458909911E256}",
+    ")]}'\n{\"current_time_millis\":1583777940456,"
+    "\"server_nonce\":1.0627453636135456E-51}"};
 const char* kGoodTimeResponseServerProofHeader[] = {
-    "3046022100c0351a20558bac037253f3969547f82805b340f51de06461e83f33b41f8e85d3"
-    "022100d04162c448438e5462df4bf6171ef26c53ec7d3a0cb915409e8bec6c99c69c67:"
+    "3045022100f486431d9e9c8d4b7bef1eb9505eefef326bda6e903615543ed934b7741f4609"
+    "022019d3edc1b14f7dd404cbe42e70c813d2351468b4fbefdbde101494d4f02d1b9d:"
     "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "304402201758cc66f7be58692362dad351ee71ecce78bd8491c8bfe903da39ea048ff67d02"
-    "203aa51acfac9462b19ef3e6d6c885a60cb0858a274ae97506934737d8e66bc081:"
+    "3045022100c98cb7288bcd56d4bcb83aefc3c137dfc77bbbd9b793155b28af02df51fb2074"
+    "022022f1436e92febeccefab5dfadbe61ca2dc92447b63426a573fcf6419cfbfdba7:"
     "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"};
-const double kGoodTimeResponseHandlerJsTime[] = {1522081016324, 1522096305984};
+const double kGoodTimeResponseHandlerJsTime[] = {1583777597124, 1583777940456};
 
 std::unique_ptr<net::test_server::HttpResponse> GoodTimeResponseHandler(
     const net::test_server::HttpRequest& request) {

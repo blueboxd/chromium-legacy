@@ -740,7 +740,7 @@
 <translation id="5320727453979144100">Mode persistant activé</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{virgule}one{# virgule}other{# virgules}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, zone de texte</translation>
-<translation id="532485153932049746">Formatage du texte
+<translation id="532485153932049746">Mise en forme du texte
     <ph name="FONT_SIZE_STRING" />
     <ph name="COLOR_STRING" />
     <ph name="BOLD_STRING" />

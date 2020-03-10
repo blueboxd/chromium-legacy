@@ -36,27 +36,10 @@ void ConnectionHelpTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame() &&
       (web_contents()->GetURL().EqualsIgnoringRef(GetHelpCenterURL()) ||
-       web_contents()->GetURL().EqualsIgnoringRef(GURL(kSymantecSupportUrl)))) {
-    LearnMoreClickResult histogram_value;
-    if (navigation_handle->IsErrorPage()) {
-      if (net::IsCertificateError(navigation_handle->GetNetErrorCode())) {
-        // When committed interstitials are enabled, DidAttachInterstitialPage
-        // does not get called, so check if this navigation resulted in an SSL
-        // error.
-        histogram_value = ConnectionHelpTabHelper::LearnMoreClickResult::
-            kFailedWithInterstitial;
-        RedirectToBundledHelp(web_contents());
-      } else {
-        histogram_value =
-            ConnectionHelpTabHelper::LearnMoreClickResult::kFailedOther;
-      }
-    } else {
-      histogram_value =
-          ConnectionHelpTabHelper::LearnMoreClickResult::kSucceeded;
-    }
-    UMA_HISTOGRAM_ENUMERATION(
-        "SSL.CertificateErrorHelpCenterVisited", histogram_value,
-        ConnectionHelpTabHelper::LearnMoreClickResult::kLearnMoreResultCount);
+       web_contents()->GetURL().EqualsIgnoringRef(GURL(kSymantecSupportUrl))) &&
+      navigation_handle->IsErrorPage() &&
+      net::IsCertificateError(navigation_handle->GetNetErrorCode())) {
+    RedirectToBundledHelp(web_contents());
   }
 }
 

@@ -99,6 +99,7 @@ bool IsUrlAllowlistedBySafetyTipsComponent(
     const chrome_browser_safety_tips::SafetyTipsConfig* proto,
     const GURL& url) {
   DCHECK(proto);
+  DCHECK(url.is_valid());
   std::vector<std::string> patterns;
   UrlToSafetyTipPatterns(url, &patterns);
   auto allowed_pages = proto->allowed_pattern();

@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">ಅಮಾನ್ಯ ಪಿನ್.</translation>
 <translation id="3838338534323494292">ಹೊಸ ಪಾಸ್‌ವರ್ಡ್</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> ಪುನಃ ಪ್ರಯತ್ನಿಸಿ. ಬಾಕಿ ಉಳಿದಿರುವ ಪ್ರಯತ್ನಗಳು: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451">ಈ ಸಾಧನವನ್ನು <ph name="ENROLLMENT_DOMAIN" /> ನಿರ್ವಹಿಸುತ್ತದೆ ಮತ್ತು ಬಳಕೆದಾರರು ಭೇಟಿ ನೀಡಿದ ವೆಬ್‌ಪುಟಗಳು, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹಾಗೂ ಇಮೇಲ್ ಸೇರಿದಂತೆ ಅವರ ಎಲ್ಲಾ ಚಟುವಟಿಕೆಗಳಿಗೆ ಪ್ರವೇಶ ಹೊಂದಿರುತ್ತದೆ.</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> ಸಮಯದಲ್ಲಿ ಪಾಸ್‌ವರ್ಡ್‌ನ ಅವಧಿ ಮುಗಿಯಲಿದೆ</translation>
 <translation id="4429881212383817840">Kerberos ಟಿಕೆಟ್ ಶೀಘ್ರದಲ್ಲೇ ಅವಧಿ ಮೀರಲಿದೆ</translation>
@@ -28,8 +27,6 @@
 <translation id="4890353053343094602">ಹೊಸದೊಂದನ್ನು ತತ್‌ಕ್ಷಣ ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="5212543919916444558">ನಾನು ನಿಮಗೆ ಸಹಾಯ ಮಾಡಬಹುದಾದ ಯಾವುದೇ ವಿಷಯ ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಮೇಲೆ ನನಗೆ ಕಾಣಿಸಿಲ್ಲ. ನನ್ನ ಬಳಿ ಏನಾದರೂ ಕೇಳಬೇಕಿದ್ದರೆ, ಮೈಕ್ ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="5222676887888702881">ಸೈನ್ ಔಟ್</translation>
-<translation id="5275776633505022322">ಬಾಕಿ ಉಳಿದಿರುವ ಪ್ರಯತ್ನಗಳು: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="5317780077021120954">ಉಳಿಸು</translation>
 <translation id="5332948983412042822">ಈಗ ಹೊಸದೊಂದನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="5457599981699367932">ಅತಿಥಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡಿ</translation>

@@ -919,6 +919,11 @@
     'dbus': {
       'filepath': 'dbus/',
     },
+    'demo_mode': {
+      'filepath': 'docs/login/demo_mode.md|'\
+                  'chrome/browser/chromeos/login/demo_mode/|'\
+                  'ash/metrics/demo_session_metrics_recorder.*',
+    },
     'device_bluetooth': {
       'filepath': 'device/.*bluetooth'
     },
@@ -1175,7 +1180,8 @@
                   '|third_party/libxslt/',
     },
     'linux_sandboxing': {
-      'filepath': 'sandbox/linux/',
+      'filepath': 'sandbox/linux/'\
+                  '|services/service_manager/sandbox/linux/',
     },
     'linux_seccomp_bpf': {
       'filepath': 'content/common/sandbox.*linux.cc',
@@ -2413,6 +2419,7 @@
                     'pshmakov+watch@chromium.org'],
     'data_decoder': ['mbarowsky+watch-data-decoder@chromium.org'],
     'dbus': ['hashimoto+watch@chromium.org'],
+    'demo_mode': ['cros-essential-apps-dev+watch@chromium.org'],
     'device_bluetooth': ['mattreynolds+watch@chromium.org',
                          'ortuno+watch@chromium.org'],
     'device_chooser': ['juncai+watch@chromium.org',
@@ -2518,8 +2525,12 @@
                 'urvang@chromium.org'],
     'libxml_xslt': ['ail@google.com',
                     'dominicc+watchlist@chromium.org'],
-    'linux_sandboxing': ['jln+watch@chromium.org'],
-    'linux_seccomp_bpf': ['jln+watch@chromium.org'],
+    'linux_sandboxing': ['jln+watch@chromium.org',
+                         'mpdenton+watch@chromium.org',
+                         'rsesek+watch@chromium.org'],
+    'linux_seccomp_bpf': ['jln+watch@chromium.org',
+                          'mpdenton+watch@chromium.org',
+                          'rsesek+watch@chromium.org'],
     'mac' : ['mac-reviews@chromium.org'],
     'manifest': ['dominickn+watch-manifest@chromium.org',
                  'mlamouri+watch-manifest@chromium.org'],

@@ -143,12 +143,14 @@ cr.define('settings_privacy_page', function() {
         });
       });
 
-      setup(function() {
+      setup(async function() {
+        PolymerTest.clearBody();
+        await settings.forceLazyLoaded();
+
         const testBrowserProxy = new TestPrivacyPageBrowserProxy();
         settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
         const testSyncBrowserProxy = new TestSyncBrowserProxy();
         settings.SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
-        PolymerTest.clearBody();
 
         page = document.createElement('settings-privacy-page');
         page.prefs = {

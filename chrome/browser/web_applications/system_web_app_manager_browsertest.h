@@ -50,6 +50,11 @@ class SystemWebAppManagerBrowserTestBase : public InProcessBrowserTest {
 
   void WaitForTestSystemAppInstall();
 
+  // Wait for system apps to install, then launch one. Waits for launched app
+  // to load.
+  content::WebContents* WaitForSystemAppInstallAndLoad(
+      SystemAppType system_app_type);
+
   // Wait for system apps to install, then launch one. Returns the browser that
   // contains it.
   Browser* WaitForSystemAppInstallAndLaunch(SystemAppType system_app_type);

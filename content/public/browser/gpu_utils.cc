@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
+#include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "ui/gfx/switches.h"
 
@@ -109,6 +110,12 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 
   gpu_preferences.enable_native_gpu_memory_buffers =
       command_line->HasSwitch(switches::kEnableNativeGpuMemoryBuffers);
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+  gpu_preferences.force_disable_new_accelerated_video_decoder =
+      command_line->HasSwitch(
+          switches::kForceDisableNewAcceleratedVideoDecoder);
+#endif
 
   // Some of these preferences are set or adjusted in
   // GpuDataManagerImplPrivate::AppendGpuCommandLine.

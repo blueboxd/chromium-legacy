@@ -108,6 +108,8 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
 
   void RegisterPrefChanges(PrefService* pref_service);
 
+  bool IsScreenContextAllowed() const;
+
  protected:
   void InitializeObserver(AssistantStateObserver* observer);
   void InitializeObserverMojom(mojom::AssistantStateObserver* observer);

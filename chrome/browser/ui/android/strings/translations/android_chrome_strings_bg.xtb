@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">Останали сайтове (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">За да споделите нещо от телефона си на друго устройство, включете синхронизирането от настройките за Chrome и на двете устройства</translation>
 <translation id="2175927920773552910">Код за бърза реакция</translation>
+<translation id="2182457891543959921">Извеждане на запитване, преди да се разреши на сайтовете да създават триизмерна карта на заобикалящата ви среда или да следят позицията на камерата (препоръчително)</translation>
 <translation id="218608176142494674">Споделяне</translation>
 <translation id="2227444325776770048">Продължаване като <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Синхронизиране и услуги на Google</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">Когато влезете в профила си в Google, тази функция се включва</translation>
 <translation id="2410754283952462441">Изберете профил</translation>
 <translation id="2414886740292270097">Тъмно</translation>
-<translation id="2416359993254398973">Chrome се нуждае от разрешение за достъп до камерата ви за този сайт.</translation>
 <translation id="2426805022920575512">Избиране на друг профил</translation>
 <translation id="2433507940547922241">Облик</translation>
 <translation id="2434158240863470628">Изтеглянето завърши <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">Можете по всяко време да включите синхронизирането в настройките</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> отметка}other{<ph name="BOOKMARKS_COUNT_MANY" /> отметки}}</translation>
 <translation id="3089395242580810162">Отваряне в раздел „инкогнито“</translation>
+<translation id="3114012059975132928">Видеоплейър</translation>
 <translation id="3123473560110926937">Блокиране на някои сайтове</translation>
 <translation id="3123734510202723619">Съобщения</translation>
 <translation id="3137521801621304719">Напускане на режима „инкогнито“</translation>
@@ -343,6 +344,7 @@
 <translation id="3522247891732774234">Налице е актуализация. Още опции</translation>
 <translation id="3524138585025253783">ПИ за програмисти</translation>
 <translation id="3527085408025491307">Папка</translation>
+<translation id="3538390592868664640">Блокиране на сайтовете, така че да не могат да създават триизмерна карта на заобикалящата ви среда или да следят позицията на камерата</translation>
 <translation id="3542235761944717775">Свободно място: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="3549657413697417275">Търсене в историята ви</translation>
 <translation id="3557336313807607643">Добавяне към контактите</translation>
@@ -351,6 +353,7 @@
 <translation id="3587482841069643663">Всички</translation>
 <translation id="358794129225322306">Разрешаване на сайт автоматично да изтегля няколко файла.</translation>
 <translation id="3590487821116122040">Съхранявани данни от сайтове, които Chrome не счита за важни (напр. рядко посещавани или сайтове без запазени настройки)</translation>
+<translation id="3594780231884063836">Без образ</translation>
 <translation id="3599863153486145794">Изчиства историята от всички устройства, на които сте влезли в профила си в Google. В него може да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Спиране на звука, възпроизвеждан от сайтовете</translation>
 <translation id="3616113530831147358">Аудио</translation>
@@ -439,6 +442,7 @@
 <translation id="4298388696830689168">Свързани сайтове</translation>
 <translation id="4307992518367153382">Основни положения</translation>
 <translation id="4314815835985389558">Управление на синхронизирането</translation>
+<translation id="4320177379694898372">Няма връзка с интернет</translation>
 <translation id="4321739720395210191">Камерата не може да се отвори. Рестартирайте устройството си и опитайте отново.</translation>
 <translation id="4351244548802238354">Затваряне на диалоговия прозорец</translation>
 <translation id="4353114845960720315">Когато стартирате VR, този сайт може да научи за:</translation>
@@ -603,6 +607,7 @@
 <translation id="5456381639095306749">Изтегляне на страницата</translation>
 <translation id="548278423535722844">Отваряне в приложение за карти</translation>
 <translation id="5487521232677179737">Изчиств. на данните</translation>
+<translation id="5489227211564503167">Изминало време: <ph name="ELAPSED_TIME" /> от <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Блокиране на рекламите от сайтове, на които се показват натрапчиви или подвеждащи реклами</translation>
 <translation id="5500777121964041360">Може да не се предлага за местоположението ви</translation>
 <translation id="5505264765875738116">Сайтовете не могат да извеждат подкани за изпращане на известия</translation>
@@ -617,7 +622,6 @@
 <translation id="5530766185686772672">Раздели „инкогнито“: Затв.</translation>
 <translation id="5534640966246046842">Сайтът е копиран</translation>
 <translation id="5561549206367097665">Изчаква се връзка с мрежата…</translation>
-<translation id="557283862590186398">Chrome се нуждае от разрешение за достъп до микрофона ви за този сайт.</translation>
 <translation id="55737423895878184">Достъпът до местоположението и известията са разрешени</translation>
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Винаги можете да изберете какво да се синхронизира от <ph name="BEGIN_LINK1" />настройките<ph name="END_LINK1" />.</translation>
@@ -664,6 +668,7 @@
 <translation id="5864419784173784555">Изчаква се друго изтегляне…</translation>
 <translation id="5865733239029070421">Автоматично изпраща до Google статистически данни за използването на Chrome и сигнали за сривове</translation>
 <translation id="5869522115854928033">Запазени пароли</translation>
+<translation id="5876056640971328065">Поставяне на видеоклипа на пауза</translation>
 <translation id="5884076754568147479">За да ви помага да изпълнявате задачи, Google ще получава URL адресите и съдържанието на сайтовете, в които използвате Асистент, както и данните, които изпращате чрез услугата</translation>
 <translation id="5902828464777634901">Ще се изтрият всички локални данни, съхранявани от този уебсайт, включително „бисквитките“.</translation>
 <translation id="5919204609460789179">Актуализирайте <ph name="PRODUCT_NAME" />, за да стартира синхронизирането</translation>
@@ -726,8 +731,8 @@
 <translation id="6378173571450987352">Подробности: сортирани по количество използвани данни</translation>
 <translation id="6381421346744604172">Потъмняване на уебсайтовете</translation>
 <translation id="6388207532828177975">Изчистване и нулиране</translation>
-<translation id="6393863479814692971">Chrome се нуждае от разрешение за достъп до камерата и микрофона ви за този сайт.</translation>
 <translation id="6395288395575013217">ВРЪЗКА</translation>
+<translation id="6397616442223433927">Отново онлайн</translation>
 <translation id="6404511346730675251">Редактиране на отметката</translation>
 <translation id="6406506848690869874">Синхронизиранe</translation>
 <translation id="6410973561433500075">Да се стартира ли AR от <ph name="DOMAIN" />?</translation>
@@ -779,7 +784,6 @@
 <translation id="6676840375528380067">Искате ли данните ви в Chrome да бъдат изчистени от устройството?</translation>
 <translation id="6689172468748959065">Снимки на потребителския профил</translation>
 <translation id="6697492270171225480">Показване на предложения за подобни страници, когато дадена страница не може да бъде намерена</translation>
-<translation id="6697947395630195233">Chrome се нуждае от достъп до данните за местоположението ви, за да ги сподели с този сайт.</translation>
 <translation id="6698801883190606802">Управление на синхронизираните данни</translation>
 <translation id="6699370405921460408">Сървърите на Google ще оптимизират посещаваните от вас страници.</translation>
 <translation id="6710213216561001401">Предишна</translation>
@@ -797,6 +801,7 @@
 <translation id="6846298663435243399">Зарежда се…</translation>
 <translation id="6850409657436465440">Изтеглянето продължава</translation>
 <translation id="6850830437481525139">Затворихте <ph name="TAB_COUNT" /> раздела</translation>
+<translation id="6864395892908308021">Това устройство не може да чете NFC</translation>
 <translation id="6864459304226931083">Изтегляне на изображението</translation>
 <translation id="6865313869410766144">Данни за автоматично попълване на формуляри</translation>
 <translation id="6884306546558072722">Разглеждайте офлайн</translation>
@@ -870,7 +875,7 @@
 <translation id="7475192538862203634">Ако виждате това често, изпробвайте тези <ph name="BEGIN_LINK" />предложения<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD картата не е намерена. Някои файлове може да липсват.</translation>
 <translation id="7479104141328977413">Управление на разделите</translation>
-<translation id="7481312909269577407">Препращане</translation>
+<translation id="7481312909269577407">Напред</translation>
 <translation id="7482656565088326534">Раздел за визуализация</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Актуализирано: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">спестени данни</translation>
@@ -917,6 +922,7 @@
 <translation id="780301667611848630">Не, благодаря</translation>
 <translation id="7810647596859435254">Отваряне със…</translation>
 <translation id="7821588508402923572">Тук ще се показва количеството икономисани данни</translation>
+<translation id="783819812427904514">С образ</translation>
 <translation id="784934925303690534">Период от време</translation>
 <translation id="7851858861565204677">Други устройства</translation>
 <translation id="7875915731392087153">Създайте имейл</translation>
@@ -971,6 +977,7 @@
 <translation id="8186512483418048923">Остават <ph name="FILES" /> файла</translation>
 <translation id="8190358571722158785">Остава 1 ден</translation>
 <translation id="8200772114523450471">Възобновяване</translation>
+<translation id="8206354486702514201">Тази настройка е наложена от администратора ви.</translation>
 <translation id="8209050860603202033">Отваряне на изображението</translation>
 <translation id="8218622182176210845">Управление на профила ви</translation>
 <translation id="8224471946457685718">Изтегляне на статиите за вас през Wi-Fi</translation>
@@ -992,7 +999,6 @@
 <translation id="8364299278605033898">Вижте популярните уебсайтове</translation>
 <translation id="8368027906805972958">Неизвестно или неподдържано устройство (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Разрешаване на синхронизирането на заден план за конкретен сайт.</translation>
-<translation id="8378714024927312812">Управлява се от организацията ви</translation>
 <translation id="8380167699614421159">На този сайт се показват натрапчиви или подвеждащи реклами</translation>
 <translation id="8393700583063109961">Изпратете съобщение</translation>
 <translation id="8413126021676339697">Цялата история</translation>

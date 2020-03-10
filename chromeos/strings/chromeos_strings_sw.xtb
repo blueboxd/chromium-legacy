@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Gundua</translation>
 <translation id="3820172043799983114">PIN si sahihi</translation>
 <translation id="3838338534323494292">Nenosiri jipya</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Tafadhali jaribu tena. Mara za kujaribu ulizobakisha: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> hudhibiti kifaa hiki na ina idhini ya kufikia shughuli zote za mtumiaji, zikiwemo kurasa za wavuti alizotembelea, manenosiri na anwani za barua pepe.</translation>
 <translation id="4227825898293920515">Muda wa kutumia nenosiri utaisha baada ya <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Muda wa kutumia tiketi ya Kerberos unakaribia kuisha</translation>
@@ -28,8 +27,6 @@
 <translation id="4890353053343094602">Chagua nenosiri jipya mara moja</translation>
 <translation id="5212543919916444558">Sijapata swali lolote kwenye skrini yako. Jaribu kugonga maikrofoni ili uniulize chochote.</translation>
 <translation id="5222676887888702881">Ondoka</translation>
-<translation id="5275776633505022322">Yamesalia majaribio: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Tafadhali jaribu tena.</translation>
 <translation id="5317780077021120954">Hifadhi</translation>
 <translation id="5332948983412042822">Chagua nenosiri jipya sasa</translation>
 <translation id="5457599981699367932">Vinjari kama Mgeni</translation>

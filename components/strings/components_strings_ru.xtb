@@ -474,7 +474,6 @@
 <translation id="3024663005179499861">Неверный тип политики</translation>
 <translation id="3037605927509011580">Опаньки...</translation>
 <translation id="3041612393474885105">Данные сертификата</translation>
-<translation id="3057676462092457419">Режим DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> пока не поддерживается, настройки изменены на <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (конверт)</translation>
 <translation id="3061707000357573562">Исправление сервиса</translation>
 <translation id="3064966200440839136">Вы выйдете из режима инкогнито, чтобы произвести оплату во внешнем приложении. Продолжить?</translation>
@@ -573,6 +572,7 @@
 <translation id="3487845404393360112">Лоток 4</translation>
 <translation id="3495081129428749620">Найти на странице
     "<ph name="PAGE_TITLE" />"</translation>
+<translation id="3507936815618196901">Создание 3D-карты места, в котором вы находитесь, и отслеживание положения камеры</translation>
 <translation id="3512163584740124171">Действует правило с более высоким приоритетом.</translation>
 <translation id="3518941727116570328">Обработка нескольких объектов</translation>
 <translation id="3528171143076753409">Сертификат сервера не является доверенным.</translation>
@@ -925,6 +925,7 @@
 <translation id="5030338702439866405">Выдан:</translation>
 <translation id="503069730517007720">Необходимый корневой сертификат для программы "<ph name="SOFTWARE_NAME" />" не установлен. Чтобы устранить проблему, попросите системного администратора ознакомиться с инструкциями по настройке программы "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">О Переводчике Google</translation>
+<translation id="503498442187459473">Сайт <ph name="HOST" /> запрашивает доступ к камере и микрофону.</translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5040262127954254034">Личные данные</translation>
 <translation id="5043480802608081735">Скопированная ссылка</translation>
@@ -1033,7 +1034,6 @@
 <translation id="5457113250005438886">Недопустимые данные</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакт}one{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакт}few{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакта}many{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактов}other{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакта}}</translation>
 <translation id="5470861586879999274">&amp;Повторить изменения</translation>
-<translation id="5472133193607270166">Когда эта настройка включена, сайты не могут отслеживать ваши действия в браузере для показа персонализированной рекламы. Некоторые сайты могут работать некорректно.</translation>
 <translation id="5478437291406423475">B6/C4 (конверт)</translation>
 <translation id="5481076368049295676">Посещение этой страницы может привести к установке вредоносной программы, которая похищает или удаляет данные. <ph name="BEGIN_LINK" />Все равно продолжить<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Введите действительный адрес</translation>
@@ -1319,6 +1319,7 @@
 <translation id="6710594484020273272">&lt;Введите поисковый запрос&gt;</translation>
 <translation id="671076103358959139">Токен регистрации:</translation>
 <translation id="6711464428925977395">На прокси-сервере возникла проблема или адрес указан неверно.</translation>
+<translation id="6716672519412350405">Сайт <ph name="URL" /> запрашивает разрешение на создание 3D-карты места, в котором вы находитесь, и отслеживание положения камеры.</translation>
 <translation id="6738516213925468394">Данные были зашифрованы <ph name="TIME" /> с помощью <ph name="BEGIN_LINK" />кодовой фразы<ph name="END_LINK" />. Введите ее, чтобы начать синхронизацию.</translation>
 <translation id="674375294223700098">Неизвестная ошибка сертификата сервера.</translation>
 <translation id="6744009308914054259">В ожидании подключения вы можете открыть скачанные файлы и почитать статьи офлайн.</translation>
@@ -1739,7 +1740,6 @@
 <translation id="8589998999637048520">Лучшее качество</translation>
 <translation id="860043288473659153">Имя владельца карты</translation>
 <translation id="8606726445206553943">использование MIDI-устройств</translation>
-<translation id="8616822740383114808">Вы включили эту настройку, выбрав параметр "<ph name="ENFORCING_SETTING" />" на странице "<ph name="SETTINGS_PAGE" />"</translation>
 <translation id="861775596732816396">Размер: 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Сохранить карту на этом устройстве</translation>

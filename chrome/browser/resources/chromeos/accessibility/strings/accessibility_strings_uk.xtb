@@ -497,7 +497,7 @@
 <translation id="421884353938374759">вибір кольору</translation>
 <translation id="4221012616705981690">Немає попереднього списку</translation>
 <translation id="4221071177874897997">Позначення жирного шрифту:</translation>
-<translation id="4225355998815256469">Елементи керування формою</translation>
+<translation id="4225355998815256469">Елементи керування формами</translation>
 <translation id="4229646983878045487">дата й час</translation>
 <translation id="4230834257931120629">Світлий грифельно-сірий</translation>
 <translation id="4231102694147661229">Увімкнути параметри розробника</translation>
@@ -554,7 +554,7 @@
 <translation id="463135993322337640">Натисніть ChromeVox o, n, щоб дізнатися про нові функції</translation>
 <translation id="4646606380313237501">{"ar": "арабська",
     "as": "ассамська",
-    "aw": "Авадхі",
+    "aw": "авадхі",
     "be": "бенгальська",
     "bg": "болгарська",
     "bh": "біхарі",
@@ -1138,6 +1138,7 @@
 <translation id="8065607967589909823">Вибрано</translation>
 <translation id="8066678206530322333">Банер</translation>
 <translation id="8076492880354921740">Вкладки</translation>
+<translation id="8083115023881784332">У ChromeVox нічого не виділено. Щоб перейти на панель запуску, натисніть Alt+Shift+L.</translation>
 <translation id="8091452896542422286">Пробіл</translation>
 <translation id="8096975275316362544">М’ятно-кремовий</translation>
 <translation id="8098587210054821856">Грифельний-сірий</translation>

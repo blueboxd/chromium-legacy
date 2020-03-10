@@ -299,12 +299,6 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
     return content::NavigationThrottle::PROCEED;
   }
 
-  const auto* proto = GetSafetyTipsRemoteConfigProto();
-  if (proto &&
-      IsUrlAllowlistedBySafetyTipsComponent(proto, url.GetWithEmptyPath())) {
-    return content::NavigationThrottle::PROCEED;
-  }
-
   // Get stored interstitial parameters early. By doing so, we ensure that a
   // navigation to an irrelevant (for this interstitial's purposes) URL such as
   // chrome://settings while the lookalike interstitial is being shown clears
@@ -322,6 +316,13 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
   tab_storage->ClearInterstitialParams();
 
   if (!url.SchemeIsHTTPOrHTTPS()) {
+    return content::NavigationThrottle::PROCEED;
+  }
+
+  // If the URL is in the component updater allowlist, don't show any warning.
+  const auto* proto = GetSafetyTipsRemoteConfigProto();
+  if (proto &&
+      IsUrlAllowlistedBySafetyTipsComponent(proto, url.GetWithEmptyPath())) {
     return content::NavigationThrottle::PROCEED;
   }
 

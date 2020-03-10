@@ -215,6 +215,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
     num_readbacks_pending_--;
   }
 
+  gpu::MemoryTracker* GetMemoryTracker() { return memory_tracker_.get(); }
+
  private:
   class ScopedPromiseImageAccess;
   class OffscreenSurface;

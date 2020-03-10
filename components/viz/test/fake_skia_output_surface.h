@@ -120,6 +120,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
 
   scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
       override;
+  gpu::MemoryTracker* GetMemoryTracker() override;
 
  private:
   explicit FakeSkiaOutputSurface(

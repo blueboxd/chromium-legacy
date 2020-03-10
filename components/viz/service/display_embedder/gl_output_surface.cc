@@ -252,4 +252,8 @@ scoped_refptr<gpu::GpuTaskSchedulerHelper>
 GLOutputSurface::GetGpuTaskSchedulerHelper() {
   return viz_context_provider_->GetGpuTaskSchedulerHelper();
 }
+
+gpu::MemoryTracker* GLOutputSurface::GetMemoryTracker() {
+  return viz_context_provider_->GetMemoryTracker();
+}
 }  // namespace viz

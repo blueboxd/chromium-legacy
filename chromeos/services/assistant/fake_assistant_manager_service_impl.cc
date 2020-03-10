@@ -68,13 +68,12 @@ void FakeAssistantManagerServiceImpl::RemoveStateObserver(
   state_observers_.RemoveObserver(observer);
 }
 
-void FakeAssistantManagerServiceImpl::StartCachedScreenContextInteraction() {}
-
 void FakeAssistantManagerServiceImpl::StartEditReminderInteraction(
     const std::string& client_id) {}
 
-void FakeAssistantManagerServiceImpl::StartMetalayerInteraction(
-    const gfx::Rect& region) {}
+void FakeAssistantManagerServiceImpl::StartScreenContextInteraction(
+    ax::mojom::AssistantStructurePtr assistant_structure,
+    const std::vector<uint8_t>& assistant_screenshot) {}
 
 void FakeAssistantManagerServiceImpl::StartTextInteraction(
     const std::string& query,
@@ -99,13 +98,6 @@ void FakeAssistantManagerServiceImpl::RetrieveNotification(
 
 void FakeAssistantManagerServiceImpl::DismissNotification(
     mojom::AssistantNotificationPtr notification) {}
-
-void FakeAssistantManagerServiceImpl::CacheScreenContext(
-    CacheScreenContextCallback callback) {
-  std::move(callback).Run();
-}
-
-void FakeAssistantManagerServiceImpl::ClearScreenContextCache() {}
 
 void FakeAssistantManagerServiceImpl::OnAccessibilityStatusChanged(
     bool spoken_feedback_enabled) {}

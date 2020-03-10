@@ -274,6 +274,10 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
 
   // We ask for |max_search_result_tiles_| policy tile results first,
   // then add them to their preferred position in the tile list if found.
+  // Note: Policy tile provides a mechanism to display the result tile at the
+  // preferred position recommended by display_index() property of the search
+  // result. This is what policy referred to. It has nothing to do with
+  // Enterprise policy.
   auto policy_tiles_filter =
       base::BindRepeating([](const SearchResult& r) -> bool {
         return r.display_index() != SearchResultDisplayIndex::kUndefined &&

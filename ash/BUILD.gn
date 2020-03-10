@@ -2321,6 +2321,8 @@ static_library("test_support") {
     "app_menu/notification_menu_view_test_api.h",
     "assistant/test/assistant_ash_test_base.cc",
     "assistant/test/assistant_ash_test_base.h",
+    "assistant/test/test_assistant_client.cc",
+    "assistant/test/test_assistant_client.h",
     "assistant/test/test_assistant_service.cc",
     "assistant/test/test_assistant_service.h",
     "assistant/test/test_assistant_setup.cc",

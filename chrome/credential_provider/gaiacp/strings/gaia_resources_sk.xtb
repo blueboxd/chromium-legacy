@@ -16,7 +16,7 @@
 <translation id="4057329986137569701">Vyskytla sa interná chyba.</translation>
 <translation id="4267670563222825190">Pre váš účet sa nenašiel žiadny používateľ domény. Kontaktujte správcu.</translation>
 <translation id="4706454071748629324">Nepodarilo sa pridať nového používateľa. V tomto počítači je možné pomocou pracovného účtu vytvoriť iba jedného používateľa.</translation>
-<translation id="4744575902940448763">Heslo pracovného účtu sa nepodarilo synchronizovať do profilu systému Windows, pretože vaša organizácia obmedzila v zariadení aktualizácie hesiel. Obráťte sa na správcu a požiadajte ho o pomoc.</translation>
+<translation id="4744575902940448763">Heslo pracovného účtu sa nepodarilo synchronizovať s profilom systému Windows, pretože vaša organizácia obmedzila v zariadení aktualizácie hesiel. Obráťte sa na správcu a požiadajte ho o pomoc.</translation>
 <translation id="5186761973554910131">Pri pokuse o zmenu hesla bol zadaný nesprávny názov počítača. Kontaktujte správcu.</translation>
 <translation id="5265714013989877288">Pri zmene hesla systému Windows sa vyskytla chyba, a preto nie je možné pokračovať. Kontaktujte správcu.</translation>
 <translation id="6033715878377252112">Pomocník poskytovateľa poverení Google pre Windows</translation>
@@ -29,9 +29,10 @@
 <translation id="7209941495304122410">Zadať heslo systému Windows</translation>
 <translation id="74122330823428762">Prihlásiť sa môže iba používateľ, ktorý toto zariadenie uzamkol</translation>
 <translation id="7536769223115622137">Pridať pracovný účet</translation>
+<translation id="7884688232028658212">Prihláste sa pomocou pracovného účtu</translation>
 <translation id="8109730953933509335">Prebehol pokus o zmenu hesla neplatného používateľa. Kontaktujte správcu.</translation>
 <translation id="8448455363630347124">Účet bol deaktivovaný pre príliš veľký počet nesprávne zadaných hesiel. Ak ho chcete aktivovať, kontaktujte správcu.</translation>
-<translation id="8453641970025433267">Správca vám nepovoľuje prihlásiť sa pomocou tohto účtu. Skúste iný účet.</translation>
+<translation id="8453641970025433267">Správca vám nepovoľuje prihlásiť sa týmto účtom. Skúste iný účet.</translation>
 <translation id="8639729688781680518">Nepamätám si heslo systému Windows</translation>
 <translation id="866458870819756755">Používateľa sa nepodarilo vytvoriť.</translation>
 <translation id="9055998212250844221">Používateľský účet vytvorený poskytovateľom poverení Google pre Windows</translation>

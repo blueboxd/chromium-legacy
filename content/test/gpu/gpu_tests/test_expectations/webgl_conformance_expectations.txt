@@ -11,6 +11,7 @@
 # tags: [ intel_lt_25.20.100.6444 intel_lt_25.20.100.6577
 #         intel_lt_26.20.100.7000 intel_lt_26.20.100.7323
 #         mesa_eq_18.0.5 ]
+# tags: [ no-asan asan ]
 # results: [ Failure RetryOnFailure Skip ]
 
 
@@ -114,7 +115,7 @@ crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failur
 # if [ win intel opengl passthrough ] [ Failure ] suppression is lifted.
 crbug.com/979444 [ chromeos ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ mac no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ mac no-passthrough no-asan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ win nvidia ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ win amd ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ win intel d3d11 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
@@ -347,6 +348,11 @@ crbug.com/angleproject/3767 [ mac passthrough amd ] conformance/rendering/render
 
 # Mac Pro (AMD) / Passthrough command decoder
 crbug.com/992231 [ mac passthrough amd-0x679e ] conformance/context/context-size-change.html [ Failure ]
+
+# Mac ASAN flakes
+crbug.com/1059760 [ mac asan ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/1059760 [ mac asan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/1059760 [ mac asan ] conformance/textures/video/* [ RetryOnFailure ]
 
 ####################
 # Linux failures   #

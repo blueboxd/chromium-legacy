@@ -197,7 +197,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         private static final String TAG = "CustomTabWebContentsDelegate";
         private final ChromeActivity mActivity;
         private final @ActivityType int mActivityType;
-        private final @Nullable String mWebappScopeUrl;
+        private final @Nullable String mWebApkScopeUrl;
         private final @WebDisplayMode int mDisplayMode;
         private final MultiWindowUtils mMultiWindowUtils;
         private final boolean mShouldEnableEmbeddedMediaExperience;
@@ -207,13 +207,13 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
          * See {@link TabWebContentsDelegateAndroid}.
          */
         public CustomTabWebContentsDelegate(Tab tab, ChromeActivity activity,
-                @ActivityType int activityType, @Nullable String webappScopeUrl,
+                @ActivityType int activityType, @Nullable String webApkScopeUrl,
                 @WebDisplayMode int displayMode, MultiWindowUtils multiWindowUtils,
                 boolean shouldEnableEmbeddedMediaExperience, @Nullable PendingIntent focusIntent) {
             super(tab, activity);
             mActivity = activity;
             mActivityType = activityType;
-            mWebappScopeUrl = webappScopeUrl;
+            mWebApkScopeUrl = webApkScopeUrl;
             mDisplayMode = displayMode;
             mMultiWindowUtils = multiWindowUtils;
             mShouldEnableEmbeddedMediaExperience = shouldEnableEmbeddedMediaExperience;
@@ -332,7 +332,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
 
         @Override
         protected String getManifestScope() {
-            return mWebappScopeUrl;
+            return mWebApkScopeUrl;
         }
 
         @Override
@@ -346,7 +346,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     private final boolean mIsOpenedByChrome;
     private final @ActivityType int mActivityType;
     @Nullable
-    private final String mWebappScopeUrl;
+    private final String mWebApkScopeUrl;
     private final @WebDisplayMode int mDisplayMode;
     private final boolean mShouldEnableEmbeddedMediaExperience;
     private final BrowserControlsVisibilityDelegate mBrowserStateVisibilityDelegate;
@@ -362,8 +362,8 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
      * @param activity {@link ChromeActivity} instance.
      * @param shouldHideBrowserControls Whether or not the browser controls may auto-hide.
      * @param isOpenedByChrome Whether the CustomTab was originally opened by Chrome.
-     * @param webappScopeUrl The URL of the webapp manifest scope. Null if the delegate is not for a
-     *                       webapp.
+     * @param webApkScopeUrl The URL of the WebAPK web manifest scope. Null if the delegate is not
+     *                       for a WebAPK.
      * @param displayMode  The activity's display mode.
      * @param shouldEnableEmbeddedMediaExperience Whether embedded media experience is enabled.
      * @param visibilityDelegate The delegate that handles browser control visibility associated
@@ -373,7 +373,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
      * @param focusIntent A PendingIntent to launch to focus the client.
      */
     private CustomTabDelegateFactory(ChromeActivity<?> activity, boolean shouldHideBrowserControls,
-            boolean isOpenedByChrome, @Nullable String webappScopeUrl,
+            boolean isOpenedByChrome, @Nullable String webApkScopeUrl,
             @WebDisplayMode int displayMode, boolean shouldEnableEmbeddedMediaExperience,
             BrowserControlsVisibilityDelegate visibilityDelegate, ExternalAuthUtils authUtils,
             MultiWindowUtils multiWindowUtils, @Nullable PendingIntent focusIntent,
@@ -382,7 +382,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         mShouldHideBrowserControls = shouldHideBrowserControls;
         mIsOpenedByChrome = isOpenedByChrome;
         mActivityType = (activity == null) ? ActivityType.CUSTOM_TAB : activity.getActivityType();
-        mWebappScopeUrl = webappScopeUrl;
+        mWebApkScopeUrl = webApkScopeUrl;
         mDisplayMode = displayMode;
         mShouldEnableEmbeddedMediaExperience = shouldEnableEmbeddedMediaExperience;
         mBrowserStateVisibilityDelegate = visibilityDelegate;
@@ -399,7 +399,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
             ExternalAuthUtils authUtils, MultiWindowUtils multiWindowUtils,
             ExternalIntentsPolicyProvider externalIntentsPolicyProvider) {
         this(activity, intentDataProvider.shouldEnableUrlBarHiding(),
-                intentDataProvider.isOpenedByChrome(), getWebappScopeUrl(intentDataProvider),
+                intentDataProvider.isOpenedByChrome(), getWebApkScopeUrl(intentDataProvider),
                 getDisplayMode(intentDataProvider),
                 intentDataProvider.shouldEnableEmbeddedMediaExperience(), visibilityDelegate,
                 authUtils, multiWindowUtils, intentDataProvider.getFocusIntent(),
@@ -442,7 +442,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     @Override
     public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
         mWebContentsDelegateAndroid = new CustomTabWebContentsDelegate(tab, mActivity,
-                mActivityType, mWebappScopeUrl, mDisplayMode, mMultiWindowUtils,
+                mActivityType, mWebApkScopeUrl, mDisplayMode, mMultiWindowUtils,
                 mShouldEnableEmbeddedMediaExperience, mFocusIntent);
         return mWebContentsDelegateAndroid;
     }
@@ -481,11 +481,13 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     }
 
     /**
-     * Gets the scope URL if the {@link BrowserServicesIntentDataProvider} is for a webapp. Returns
+     * Gets the scope URL if the {@link BrowserServicesIntentDataProvider} is for a WebAPK. Returns
      * null otherwise.
      */
-    private static @Nullable String getWebappScopeUrl(
+    private static @Nullable String getWebApkScopeUrl(
             BrowserServicesIntentDataProvider intentDataProvider) {
+        if (!intentDataProvider.isWebApkActivity()) return null;
+
         WebappExtras webappExtras = intentDataProvider.getWebappExtras();
         return (webappExtras != null) ? webappExtras.scopeUrl : null;
     }

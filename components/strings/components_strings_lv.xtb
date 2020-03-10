@@ -478,7 +478,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="3024663005179499861">Politikas tips nav pareizs.</translation>
 <translation id="3037605927509011580">Cilnes avārija.</translation>
 <translation id="3041612393474885105">Sertifikāta informācija</translation>
-<translation id="3057676462092457419">DnsOverHttps režīms “<ph name="SECURE_DNS_MODE_SECURE" />” vēl netiek atbalstīts. Tika iestatīts režīms “<ph name="SECURE_DNS_MODE_OFF" />”.</translation>
 <translation id="3060227939791841287">C9 (aploksne)</translation>
 <translation id="3061707000357573562">Ielāpu pakalpojums</translation>
 <translation id="3064966200440839136">Ja maksāšanai tiks izmantota ārēja lietojumprogramma, tiks aizvērts inkognito režīms. Vai turpināt?</translation>
@@ -578,6 +577,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="3487845404393360112">4. paplāte</translation>
 <translation id="3495081129428749620">Meklēt lapā
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Izveidot jūsu apkārtnes 3D karti un izsekot kameras pozīciju</translation>
 <translation id="3512163584740124171">Šī politika tiek ignorēta, jo citai tās pašas politiku grupas politikai ir augstāka prioritāte.</translation>
 <translation id="3518941727116570328">Vairāku objektu apstrāde</translation>
 <translation id="3528171143076753409">Servera sertifikāts nav uzticams.</translation>
@@ -930,6 +930,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="5030338702439866405">Izsniedzis</translation>
 <translation id="503069730517007720">Programmatūrai <ph name="SOFTWARE_NAME" /> ir nepieciešams saknes sertifikāts, taču tas nav instalēts. Lai novērstu šo problēmu, tīkla administratoram ir jāapskata <ph name="SOFTWARE_NAME" /> konfigurācijas norādījumi. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Par Google tulkotāju</translation>
+<translation id="503498442187459473"><ph name="HOST" /> vēlas lietot jūsu kameru un mikrofonu.</translation>
 <translation id="5039804452771397117">Atļaut</translation>
 <translation id="5040262127954254034">Konfidencialitāte</translation>
 <translation id="5043480802608081735">Jūsu kopētā saite</translation>
@@ -1038,7 +1039,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="5457113250005438886">Nav derīgi</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}zero{<ph name="CONTACT_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Atcelt labojuma atsaukšanu</translation>
-<translation id="5472133193607270166">Kad ir ieslēgta šī opcija, vietnes nevar izmantot jūsu pārlūkošanas darbības dažādās vietnēs, lai personalizētu reklāmas. Dažas vietnes var nedarboties pareizi.</translation>
 <translation id="5478437291406423475">B6/C4 (aploksne)</translation>
 <translation id="5481076368049295676">Šis saturs jūsu ierīcē var mēģināt instalēt bīstamu programmatūru, kas var nozagt vai izdzēst jūsu informāciju. <ph name="BEGIN_LINK" />Tāpat rādīt<ph name="END_LINK" />.</translation>
 <translation id="54817484435770891">Derīgas adreses pievienošana</translation>
@@ -1324,6 +1324,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="6710594484020273272">&lt;Ierakstiet meklēšanas vienumu&gt;</translation>
 <translation id="671076103358959139">Reģistrācijas pilnvara:</translation>
 <translation id="6711464428925977395">Starpniekserverī radās kļūda, vai arī adrese nav pareiza.</translation>
+<translation id="6716672519412350405">Vietne <ph name="URL" /> vēlas izveidot jūsu apkārtnes 3D karti un izsekot kameras pozīciju.</translation>
 <translation id="6738516213925468394">Jūsu dati tika šifrēti, izmantojot jūsu <ph name="BEGIN_LINK" />sinhronizācijas ieejas frāzi<ph name="END_LINK" />šādā datumā: <ph name="TIME" />. Lai sāktu sinhronizāciju, ievadiet ieejas frāzi.</translation>
 <translation id="674375294223700098">Nezināma servera sertifikāta kļūda.</translation>
 <translation id="6744009308914054259">Kamēr tiek gaidīts savienojums, varat apmeklēt Lejupielādes, lai lasītu rakstu bezsaistē.</translation>
@@ -1745,7 +1746,6 @@ Papildu informācija:
 <translation id="8589998999637048520">Optimālā kvalitāte</translation>
 <translation id="860043288473659153">Bankas kartes īpašnieka vārds</translation>
 <translation id="8606726445206553943">izmantot jūsu MIDI ierīces</translation>
-<translation id="8616822740383114808">Šo iestatījumu nosaka “<ph name="ENFORCING_SETTING" />” lapā “<ph name="SETTINGS_PAGE" />”.</translation>
 <translation id="861775596732816396">4. izmērs</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Saglabāt šo karti šajā ierīcē</translation>

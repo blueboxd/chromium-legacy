@@ -30,6 +30,7 @@ class AssistantController;
 class AssistantInteractionController;
 class AssistantInteractionModel;
 class AssistantTestApi;
+class TestAssistantClient;
 class TestAssistantService;
 class TestAssistantSetup;
 class TestAssistantWebViewFactory;
@@ -41,6 +42,7 @@ class AssistantAshTestBase : public AshTestBase {
   using AssistantExitPoint = chromeos::assistant::mojom::AssistantExitPoint;
 
   AssistantAshTestBase();
+  AssistantAshTestBase(base::test::TaskEnvironment::TimeSource time);
   ~AssistantAshTestBase() override;
 
   void SetUp() override;
@@ -50,9 +52,9 @@ class AssistantAshTestBase : public AshTestBase {
   // the different ways of launching the Assistant.
   void ShowAssistantUi(
       AssistantEntryPoint entry_point = AssistantEntryPoint::kUnspecified);
-  // Close the Assistant UI without closing the launcher. The optional
-  // |exit_point| can be used to emulate the different ways of closing the
-  // Assistant.
+  // Close the Assistant UI. The optional |exit_point| can be used to emulate
+  // the different ways of closing the Assistant, such as without closing the
+  // launcher.
   void CloseAssistantUi(
       AssistantExitPoint exit_point = AssistantExitPoint::kUnspecified);
 
@@ -173,6 +175,8 @@ class AssistantAshTestBase : public AshTestBase {
 
   std::vector<std::unique_ptr<aura::Window>> windows_;
   std::vector<std::unique_ptr<views::Widget>> widgets_;
+
+  std::unique_ptr<TestAssistantClient> assistant_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAshTestBase);
 };

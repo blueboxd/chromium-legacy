@@ -470,6 +470,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method getEntries
 [Worker]     method getFile
 [Worker]     method removeEntry
+[Worker]     method resolve
 [Worker] interface FileSystemFileHandle : FileSystemHandle
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
@@ -482,6 +483,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter isFile
 [Worker]     getter name
 [Worker]     method constructor
+[Worker]     method isSameEntry
 [Worker]     method queryPermission
 [Worker]     method requestPermission
 [Worker] interface FileSystemWritableFileStream : WritableStream

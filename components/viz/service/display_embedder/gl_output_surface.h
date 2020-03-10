@@ -54,6 +54,7 @@ class GLOutputSurface : public OutputSurface {
   gpu::SurfaceHandle GetSurfaceHandle() const override;
   scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
       override;
+  gpu::MemoryTracker* GetMemoryTracker() override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }

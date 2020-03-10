@@ -1726,7 +1726,7 @@
   {
     "name": "enable-reader-mode",
     "owners": [ "gilmanmh@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "enable-reader-mode-in-cct",

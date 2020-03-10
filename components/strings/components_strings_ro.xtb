@@ -442,7 +442,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2909946352844186028">A fost detectată o schimbare a rețelei.</translation>
 <translation id="2910133103376701357">Dispozitivul și contul sunt gestionate de <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">ID-ul de utilizator al contului sarcinii</translation>
-<translation id="2915068235268646559">Blocarea de la <ph name="CRASH_TIME" /></translation>
+<translation id="2915068235268646559">Blocare survenită <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">închide celelalte programe;</translation>
 <translation id="2922350208395188000">Certificatul serverului nu poate fi verificat.</translation>
 <translation id="2925673989565098301">Metodă de livrare</translation>
@@ -478,7 +478,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="3024663005179499861">Tip de politică greșit</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3041612393474885105">Informații despre certificat</translation>
-<translation id="3057676462092457419">Modul DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> nu este încă acceptat. Modul a fost setat la <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Plic)</translation>
 <translation id="3061707000357573562">Serviciu de corecție</translation>
 <translation id="3064966200440839136">Vei părăsi modul incognito pentru a plăti folosind o aplicație externă. Continui?</translation>
@@ -578,6 +577,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="3487845404393360112">Tava 4</translation>
 <translation id="3495081129428749620">Caută în pagină
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">să creeze o hartă 3D a lucrurilor din jurul tău și să urmărească poziția camerei video</translation>
 <translation id="3512163584740124171">Această politică este ignorată deoarece o altă politică din același grup de politici are prioritate ridicată.</translation>
 <translation id="3518941727116570328">Gestionarea mai multor obiecte</translation>
 <translation id="3528171143076753409">Certificatul serverului nu este de încredere.</translation>
@@ -931,6 +931,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5030338702439866405">Emis de</translation>
 <translation id="503069730517007720">Un certificat rădăcină pentru „<ph name="SOFTWARE_NAME" />” este necesar, dar nu este instalat. Administratorul IT trebuie să verifice instrucțiunile de configurare pentru „<ph name="SOFTWARE_NAME" />” ca să remedieze problema. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Despre Google Traducere</translation>
+<translation id="503498442187459473"><ph name="HOST" /> dorește să utilizeze camera foto și microfonul</translation>
 <translation id="5039804452771397117">Permite</translation>
 <translation id="5040262127954254034">Confidențialitate</translation>
 <translation id="5043480802608081735">Linkul copiat de tine</translation>
@@ -1039,7 +1040,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5457113250005438886">Nevalide</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Repetați editarea</translation>
-<translation id="5472133193607270166">Dacă opțiunea este activată, site-urile nu pot folosi activitatea ta de navigare de pe diferite site-uri pentru a personaliza anunțurile. Unele site-uri pot să nu funcționeze corect.</translation>
 <translation id="5478437291406423475">B6/C4 (Plic)</translation>
 <translation id="5481076368049295676">Acest conținut ar putea încerca să instaleze software periculos pe dispozitivul tău, care îți fură sau îți șterge informațiile. <ph name="BEGIN_LINK" />Afișează oricum<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Adaugă o adresă validă</translation>
@@ -1084,7 +1084,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="563324245173044180">Conținutul înșelător a fost blocat.</translation>
 <translation id="5644090287519800334">Deplasarea poziției X a imaginii de pe fața 1</translation>
 <translation id="5645854190134202180">A doua tură</translation>
-<translation id="5654927323611874862">ID-ul raportului de eroare încărcat:</translation>
+<translation id="5654927323611874862">ID-ul raportului de blocare încărcat:</translation>
 <translation id="5659593005791499971">Adresă de e-mail</translation>
 <translation id="5663614846592581799">9x11 (Plic)</translation>
 <translation id="5663955426505430495">Administratorul acestui dispozitiv a instalat extensii pentru funcții suplimentare. Extensiile au acces la unele dintre datele tale.</translation>
@@ -1325,6 +1325,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="6710594484020273272">&lt;Introdu termenul de căutare&gt;</translation>
 <translation id="671076103358959139">Indicativ de înregistrare:</translation>
 <translation id="6711464428925977395">A apărut o problemă la serverul proxy sau adresa nu este corectă.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> dorește să creeze o hartă 3D a lucrurilor din jurul tău și să urmărească poziția camerei video</translation>
 <translation id="6738516213925468394">Datele au fost criptate cu <ph name="BEGIN_LINK" />expresia de acces pentru sincronizare<ph name="END_LINK" /> la <ph name="TIME" />. Introdu expresia de acces pentru a începe sincronizarea.</translation>
 <translation id="674375294223700098">Eroare de certificat de server necunoscută.</translation>
 <translation id="6744009308914054259">În timp ce aștepți o conexiune, poți accesa Descărcările pentru a citi articole offline.</translation>
@@ -1746,7 +1747,6 @@ Detalii suplimentare:
 <translation id="8589998999637048520">Calitate optimă</translation>
 <translation id="860043288473659153">Nume titular de card</translation>
 <translation id="8606726445206553943">Folosească dispozitive MIDI</translation>
-<translation id="8616822740383114808">Setarea este aplicată de „<ph name="ENFORCING_SETTING" />” în „<ph name="SETTINGS_PAGE" />”</translation>
 <translation id="861775596732816396">Mărimea 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Salvează cardul pe acest dispozitiv</translation>

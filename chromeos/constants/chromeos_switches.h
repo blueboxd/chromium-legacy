@@ -99,7 +99,6 @@ extern const char kDisableVolumeAdjustSound[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableWakeOnWifi[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableArc[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kEnableArcOobeOptinNoSkip[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableArcVm[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableCastReceiver[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

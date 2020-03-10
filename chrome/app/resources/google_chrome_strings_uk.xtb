@@ -37,7 +37,6 @@
 <translation id="1900795423379050516">Якщо налаштування не з'явиться на цій сторінці, пошукайте його в <ph name="LINK_BEGIN" />
       налаштуваннях веб-переглядача Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Дозволити вхід у Chrome</translation>
-<translation id="1983547493073464667">Chrome не можете перевірити паролі</translation>
 <translation id="2063848847527508675">Щоб застосувати це оновлення, потрібно перезапустити ОС Chrome.</translation>
 <translation id="2094919256425865063">Усе одно вийти з Chrome?</translation>
 <translation id="2120620239521071941">З цього пристрою буде видалено стільки елементів: <ph name="ITEMS_COUNT" />. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
@@ -49,15 +48,14 @@
 <translation id="2309047409763057870">Це додаткове встановлення Google Chrome. Його не можна зробити вашим веб-переглядачем за умовчанням.</translation>
 <translation id="2341767445688917208">ОС Chrome не вдалося синхронізувати ваші паролі. Виправити.</translation>
 <translation id="2348335408836342058">Chrome потрібен дозвіл на використання камери й мікрофона, щоб надати цьому сайту доступ до них</translation>
+<translation id="234869673307233423">Chrome не може перевірити паролі. Повторіть спробу пізніше.</translation>
 <translation id="2429317896000329049">Google Chrome не вдалося синхронізувати ваші дані, оскільки синхронізація для вашого домену недоступна.</translation>
 <translation id="2467438592969358367">Google Chrome хоче експортувати ваші паролі. Щоб дозволити, введіть свій пароль Windows.</translation>
 <translation id="2485422356828889247">Видалити</translation>
 <translation id="2534507159460261402">Google Pay (скопійовано в Chrome)</translation>
-<translation id="2559627601176023786">Немає збережених паролів. Chrome зможе перевірити паролі, коли ви збережете їх у своєму обліковому записі Google.</translation>
 <translation id="2580411288591421699">Поки Google Chrome працює, неможливо встановити версію, аналогічну поточній. Закрийте Google Chrome і повторіть спробу.</translation>
 <translation id="2586406160782125153">Дані веб-перегляду буде видалено з цього пристрою. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Логотип Chrome</translation>
-<translation id="261226884343006626">Chrome не можете перевірити паролі. Повторіть спробу завтра.</translation>
 <translation id="2622559029861875898">Chrome не може перевірити наявність оновлень. Перевірте інтернет-з'єднання.</translation>
 <translation id="2644798301485385923">ОС Chrome</translation>
 <translation id="2652691236519827073">Відкрити посилання в новій &amp;вкладці Chrome</translation>
@@ -65,12 +63,14 @@
 <translation id="2689103672227170538">Це розширення змінило сторінку, яка відкривається під час запуску Chrome.</translation>
 <translation id="2765403129283291972">Chrome потрібен дозвіл на використання мікрофона, щоб надати цьому сайту доступ до нього</translation>
 <translation id="2770231113462710648">Змінити веб-переглядач за умовчанням на:</translation>
-<translation id="2775140325783767197">Chrome не можете перевірити паролі. Перевірте інтернет-з'єднання.</translation>
+<translation id="2775140325783767197">Chrome не може перевірити паролі. Перевірте інтернет-з'єднання.</translation>
 <translation id="2799223571221894425">Перезапустити</translation>
 <translation id="2847461019998147611">Вибрати цю мову для Google Chrome</translation>
 <translation id="2857540653560290388">Запускається Chrome…</translation>
 <translation id="2871893339301912279">Ви ввійшли в Chrome.</translation>
 <translation id="2888126860611144412">Про Chrome</translation>
+<translation id="2929907241665500097">Не вдалось оновити веб-переглядач Chrome. <ph name="BEGIN_LINK" />Вирішіть проблеми з оновленням Chrome.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – Вхід у мережу – Chrome</translation>
 <translation id="3037838751736561277">Google Chrome у фоновому режимі.</translation>
 <translation id="3065168410429928842">Chrome</translation>
 <translation id="3080151273017101988">Продовжувати роботу фонових програм, коли Google Chrome закрито</translation>
@@ -81,7 +81,6 @@
 <translation id="3395323229510056640">Отримати довідку щодо ОС Chrome</translation>
 <translation id="3396977131400919238">Під час установлення сталася помилка операційної системи. Завантажте Google Chrome ще раз.</translation>
 <translation id="3398288718845740432">Сховати в меню Chrome</translation>
-<translation id="3434246496373299699">Chrome може перевіряти ваші паролі, коли ви входите за допомогою даних свого облікового запису Google</translation>
 <translation id="3451115285585441894">Додавання в Chrome...</translation>
 <translation id="345171907106878721">Додати себе в Chrome</translation>
 <translation id="34857402635545079">Також очистити дані Chrome (<ph name="URL" />)</translation>
@@ -97,7 +96,6 @@
 <translation id="386202838227397562">Закрийте всі вікна Google Chrome і повторіть спробу.</translation>
 <translation id="3873044882194371212">Відкрити посилання в аноні&amp;мному вікні Chrome</translation>
 <translation id="3889417619312448367">Видалити Google Chrome</translation>
-<translation id="3943605108614542032">Адміністратор керує оновленнями Chrome</translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="4053720452172726777">Налаштування та керування Google Chrome</translation>
 <translation id="4143243756087420366">Ім’я та зображення профілю Chrome</translation>
@@ -111,7 +109,9 @@
 <translation id="4331809312908958774">ОС Chrome</translation>
 <translation id="4335235004908507846">Chrome захищає від порушень безпеки даних, шкідливих розширень тощо</translation>
 <translation id="4343195214584226067">Розширення <ph name="EXTENSION_NAME" /> додано в Chrome</translation>
+<translation id="4384570495110188418">Chrome не може перевірити паролі, оскільки ви не ввійшли в обліковий запис</translation>
 <translation id="4407807842708586359">ОС Google Chrome</translation>
+<translation id="4450664632294415862">Chrome – Вхід у мережу – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">У Google Chrome виконується інша операція. Спробуйте пізніше.</translation>
 <translation id="4480040274068703980">ОС Chrome не вдалося синхронізувати ваші дані через помилку входу.</translation>
 <translation id="4561051373932531560">Google Chrome дозволяє натиснути номер телефону в Інтернеті та здійснити виклик через Skype.</translation>
@@ -121,6 +121,7 @@
 <translation id="4600710005438004015">Не вдалось оновити Chrome до останньої версії. Ви не зможете скористатися новими функціями та застосувати виправлення системи безпеки.</translation>
 <translation id="4631713731678262610">Сховати в меню Chrome</translation>
 <translation id="4633000520311261472">Щоб зробити Chrome безпечнішим, ми вимкнули деякі розширення, установлені не із сайту <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> і, можливо, додані без вашого відома.</translation>
+<translation id="4653397506175047429">Chrome не може перевірити всі паролі. Повторіть спробу через 24 години.</translation>
 <translation id="4728575227883772061">Не вдалося здійснити встановлення через невизначену помилку. Якщо наразі Google Chrome запущено, закрийте його та повторіть спробу.</translation>
 <translation id="4750550185319565338">Перезавантажте Chrome, щоб увімкнути плагін "<ph name="PLUGIN_NAME" />"</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -154,6 +155,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Не вдалося запустити Chrome. Повторіть спробу.</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Вхід у мережу</translation>
 <translation id="5940385492829620908">Тут містяться ваші веб-сторінки, закладки та інші дані Chrome.</translation>
 <translation id="5941830788786076944">Зробити Google Chrome переглядачем за промовчанням</translation>
 <translation id="6070348360322141662">Щоб підвищити безпеку, Google Chrome шифруватиме ваші дані</translation>
@@ -207,9 +209,9 @@
 <translation id="7808348361785373670">Видалити з Chrome…</translation>
 <translation id="7825851276765848807">Програму не вдалося встановити через невизначену помилку. Завантажте Google Chrome ще раз.</translation>
 <translation id="7855730255114109580">У вас остання версія Google Chrome</translation>
-<translation id="7888686278524752658">Не вдалось оновити веб-переглядач Chrome. Вирішіть проблеми з оновленням Chrome.</translation>
 <translation id="7890208801193284374">Якщо вашим комп’ютером користуєтесь не лише ви, а й ваші друзі чи сім’я, вони можуть налаштувати Chrome на свій смак.</translation>
 <translation id="7896673875602241923">Хтось раніше входив у Chrome на цьому комп’ютері як <ph name="ACCOUNT_EMAIL_LAST" />. Створіть нового користувача Chrome, щоб зберігати свою інформацію окремо.</translation>
+<translation id="7905891027772979035">Chrome не може перевірити розширення. Повторіть спробу пізніше.</translation>
 <translation id="7916016681687251387">ОС Chrome не вдалося синхронізувати ваші дані. Виправити.</translation>
 <translation id="7930071585467473040">Google Chrome намагається скопіювати паролі.</translation>
 <translation id="7962410387636238736">На цей комп’ютер не надходитимуть оновлення Google Chrome, оскільки Windows XP та Windows Vista більше не підтримуються</translation>

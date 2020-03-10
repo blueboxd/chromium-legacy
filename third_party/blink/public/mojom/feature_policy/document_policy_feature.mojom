@@ -11,6 +11,8 @@ enum DocumentPolicyFeature {
   kFontDisplay = 1,
   // When disallowed, these policies require images to have a reasonable byte-to-pixel ratio.
   kUnoptimizedLosslessImages = 2,
+  // Controls whether the browser should allow navigations that cause the page to scroll.
+  kForceLoadAtTop = 3,
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.
 };

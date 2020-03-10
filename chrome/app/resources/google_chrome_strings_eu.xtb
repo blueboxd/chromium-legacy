@@ -41,7 +41,6 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="1900795423379050516">Ezarpenen bat orri honetan agertzen ez bada, bila ezazu <ph name="LINK_BEGIN" />
       Chrome-ren arakatze-ezarpenetan.<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Baimendu Chrome-n saioa hastea</translation>
-<translation id="1983547493073464667">Chrome-k ezin ditu egiaztatu pasahitzak</translation>
 <translation id="2063848847527508675">Eguneratzea aplikatzeko, berrabiarazi egin behar da Chrome OS.</translation>
 <translation id="2094919256425865063">Chrome-tik irten nahi duzu hala ere?</translation>
 <translation id="2120620239521071941">Gailuko <ph name="ITEMS_COUNT" /> elementu ezabatuko dira. Geroago datuak eskuratu nahi izanez gero, hasi saioa Chrome-n <ph name="USER_EMAIL" /> gisa.</translation>
@@ -57,12 +56,10 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="2467438592969358367">Google Chrome-k pasahitzak esportatu nahi ditu. Hori baimentzeko, idatzi Windows pasahitza.</translation>
 <translation id="2485422356828889247">Desinstalatu</translation>
 <translation id="2534507159460261402">Google Pay (Chrome-n kopiatu da)</translation>
-<translation id="2559627601176023786">Ez dago pasahitzik gordeta. Google-ko kontuan gordetzen dituzunean egiazta ditzake Chrome-k pasahitzak.</translation>
 <translation id="2580411288591421699">Ezin da instalatu unean abian den Google Chrome-ren bertsio bera. Itxi Google Chrome eta saiatu berriro.</translation>
 <translation id="2586406160782125153">Gailuko arakatze-datuak ezabatuko dira. Geroago datuak eskuratu nahi izanez gero, hasi saioa Chrome-n <ph name="USER_EMAIL" /> gisa.</translation>
 <translation id="2588322182880276190">Chrome logotipoa</translation>
-<translation id="261226884343006626">Chrome-k ezin ditu egiaztatu pasahitzak. Saiatu berriro bihar.</translation>
-<translation id="2622559029861875898">Chrome-k ezin du begiratu eguneratzerik dagoen. Egiaztatu Internetera konektatuta zaudela.</translation>
+<translation id="2622559029861875898">Chrome-k ezin ditu bilatu eguneratzeak. Egiaztatu Internetera konektatuta zaudela.</translation>
 <translation id="2644798301485385923">Chrome OS sistema</translation>
 <translation id="2652691236519827073">Ireki esteka Chrome-ko beste &amp;fitxa batean</translation>
 <translation id="2665296953892887393">Lagundu Google Chrome hobetzen hutsegite-txostenak eta <ph name="UMA_LINK" /> Google-ri bidalita</translation>
@@ -85,7 +82,6 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="3395323229510056640">Lortu Chrome OS erabiltzeko laguntza</translation>
 <translation id="3396977131400919238">Sistema-eragilean errore bat gertatu da instalatu bitartean. Deskargatu Google Chrome berriro.</translation>
 <translation id="3398288718845740432">Ezkutatu Chrome-ko menuan</translation>
-<translation id="3434246496373299699">Google-ko kontu batekin saioa hasten duzunean egiazta ditzake Chrome-k pasahitzak</translation>
 <translation id="3451115285585441894">Chrome-n gehitzen…</translation>
 <translation id="345171907106878721">Gehitu zeure burua Chrome-n</translation>
 <translation id="34857402635545079">Halaber, garbitu Chrome-ko datuak (<ph name="URL" />)</translation>
@@ -101,7 +97,6 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="386202838227397562">Itxi Google Chrome leiho guztiak eta saiatu berriro.</translation>
 <translation id="3873044882194371212">Ireki esteka Chrome-ko &amp;ezkutuko moduko leiho batean</translation>
 <translation id="3889417619312448367">Desinstalatu Google Chrome</translation>
-<translation id="3943605108614542032">Administratzaileak kudeatzen ditu Chrome-ren eguneratzeak</translation>
 <translation id="4050175100176540509">Segurtasun-hobekuntza garrantzitsuak eta eginbide berriak dituzu erabilgarri azken bertsioan.</translation>
 <translation id="4053720452172726777">Pertsonalizatu eta kontrolatu Google Chrome</translation>
 <translation id="4143243756087420366">Chrome profilaren izena eta argazkia</translation>
@@ -215,7 +210,6 @@ Google Chrome-k ezin ditu berreskuratu zure ezarpenak.</translation>
 <translation id="7808348361785373670">Kendu Chrome-tik…</translation>
 <translation id="7825851276765848807">Instalazioak huts egin du zehaztu gabeko errore batengatik. Deskargatu Google Chrome berriro.</translation>
 <translation id="7855730255114109580">Eguneratuta dago Google Chrome</translation>
-<translation id="7888686278524752658">Chrome ez da eguneratu arazoren bat izan delako. Konpondu Chrome eguneratzeko arazoak eta huts egindako eguneratzeak.</translation>
 <translation id="7890208801193284374">Ordenagailua partekatzen baduzu, lagunek eta familiako kideek euren kontuak erabilita ibil daitezke Interneten, nahi duten moduan.</translation>
 <translation id="7896673875602241923">Norbaitek <ph name="ACCOUNT_EMAIL_LAST" /> gisa hasi du saioa Chrome-n ordenagailu hau erabilita. Zure informazioa bereizita izateko, sortu beste Chrome erabiltzaile bat.</translation>
 <translation id="7916016681687251387">Chrome OS sistema eragileak ezin izan ditu sinkronizatu datuak. Konpondu arazoa.</translation>

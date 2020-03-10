@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Vælg en konto</translation>
 <translation id="3311748811247479259">Fra</translation>
 <translation id="3324193307694657476">Adresse 2</translation>
+<translation id="3328801116991980348">Webstedoplysninger</translation>
 <translation id="3329904751041170572">Der kunne ikke oprettes forbindelse til serveren.</translation>
 <translation id="3335947283844343239">Åbn lukket fane igen</translation>
 <translation id="3371831930909698441">Oversættelse er tilgængelig. Du finder indstillingerne nederst på skærmen.</translation>
@@ -600,6 +601,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="9223358826628549784">Der er sendt en nedbrudsrapport.</translation>
 <translation id="952704832371081537">Annuller</translation>
 <translation id="988141524645182168">Andre enheder</translation>
+<translation id="989697783705943787">Sikkerhed på websitet</translation>
 <translation id="989988560359834682">Rediger adresse</translation>
 <translation id="994757059139821576">Artikelforslag</translation>
 </translationbundle>

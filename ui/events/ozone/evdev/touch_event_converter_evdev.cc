@@ -120,7 +120,9 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
       palm_detection_filter_(
           CreatePalmDetectionFilter(devinfo, shared_palm_state)),
       palm_on_touch_major_max_(
-          base::FeatureList::IsEnabled(kEnablePalmOnMaxTouchMajor)) {
+          base::FeatureList::IsEnabled(kEnablePalmOnMaxTouchMajor)),
+      palm_on_tool_type_palm_(
+          base::FeatureList::IsEnabled(kEnablePalmOnToolTypePalm)) {
   touch_evdev_debug_buffer_.Initialize(devinfo);
 }
 
@@ -516,9 +518,12 @@ bool TouchEventConverterEvdev::MaybeCancelAllTouches() {
 }
 
 bool TouchEventConverterEvdev::IsPalm(const InProgressTouchEvdev& touch) {
-  return touch.tool_type == MT_TOOL_PALM ||
-         (palm_on_touch_major_max_ && major_max_ > 0 &&
-          touch.major == major_max_);
+  if (palm_on_tool_type_palm_ && touch.tool_type == MT_TOOL_PALM)
+    return true;
+  else if (palm_on_touch_major_max_ && major_max_ > 0 &&
+           touch.major == major_max_)
+    return true;
+  return false;
 }
 
 void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {

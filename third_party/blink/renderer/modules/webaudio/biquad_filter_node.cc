@@ -152,6 +152,11 @@ BiquadFilterNode* BiquadFilterNode::Create(BaseAudioContext& context,
                                            ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
+  // TODO(crbug.com/1055983): Remove this when the execution context validity
+  // check is not required in the AudioNode factory methods.
+  if (!context.CheckExecutionContextAndThrowIfNecessary(exception_state))
+    return nullptr;
+
   return MakeGarbageCollected<BiquadFilterNode>(context);
 }
 

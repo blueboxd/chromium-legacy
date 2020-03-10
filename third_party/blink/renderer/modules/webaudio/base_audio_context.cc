@@ -894,4 +894,17 @@ void BaseAudioContext::ReportWillBeDestroyed() {
   GraphTracer().WillDestroyBaseAudioContext(this);
 }
 
+bool BaseAudioContext::CheckExecutionContextAndThrowIfNecessary(
+    ExceptionState& exception_state) {
+  if (!GetExecutionContext()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "The operation is not allowed on a detached frame or document because "
+        "no execution context is available.");
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace blink

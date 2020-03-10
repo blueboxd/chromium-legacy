@@ -244,6 +244,11 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   scoped_refptr<base::SingleThreadTaskRunner> current_task_runner_;
   std::unique_ptr<DirectRenderer> renderer_;
   SoftwareRenderer* software_renderer_ = nullptr;
+  // Currently, this OverlayProcessor takes raw pointer to memory tracker, which
+  // is owned by the OutputSurface. This OverlayProcessor also takes resource
+  // locks which contains raw pointers to DisplayResourceProvider. Make sure
+  // both the OutputSurface and the DisplayResourceProvider outlive the
+  // Overlay Processor.
   std::unique_ptr<OverlayProcessorInterface> overlay_processor_;
   std::vector<ui::LatencyInfo> stored_latency_info_;
 

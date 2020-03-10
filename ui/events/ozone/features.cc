@@ -18,6 +18,9 @@ const base::Feature kEnableNeuralStylusReportFilter{
 const base::Feature kEnablePalmOnMaxTouchMajor{
     "EnablePalmOnMaxTouchMajor", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kEnablePalmOnToolTypePalm{"EnablePalmOnToolTypePalm",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 extern const base::FeatureParam<std::string> kNeuralPalmRadiusPolynomial{
     &kEnableNeuralPalmDetectionFilter, "neural_palm_radius_polynomial", ""};
 

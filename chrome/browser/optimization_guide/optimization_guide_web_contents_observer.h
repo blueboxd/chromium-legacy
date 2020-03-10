@@ -61,9 +61,10 @@ class OptimizationGuideWebContentsObserver
   // |navigation_id| and then removes any data associated with it, including its
   // entry in |inflight_optimization_guide_navigation_datas_|. It also notifies
   // |optimization_guide_keyed_service_| that the navigation has finished.
-  void FlushMetricsAndNotifyNavigationFinish(int64_t navigation_id,
-                                             const GURL& navigation_url,
-                                             bool has_committed);
+  void FlushMetricsAndNotifyNavigationFinish(
+      int64_t navigation_id,
+      const std::vector<GURL>& navigation_redirect_chain,
+      bool has_committed);
 
   // The data related to a given navigation ID.
   std::map<int64_t, OptimizationGuideNavigationData>

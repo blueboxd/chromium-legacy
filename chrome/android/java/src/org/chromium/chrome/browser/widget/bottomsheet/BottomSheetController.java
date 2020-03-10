@@ -556,7 +556,12 @@ public class BottomSheetController implements Destroyable {
         if (mBottomSheet == null) mSheetInitializer.run();
 
         // If already showing the requested content, do nothing.
-        if (content == mBottomSheet.getCurrentSheetContent()) return true;
+        if (content == mBottomSheet.getCurrentSheetContent()) {
+            if (getSheetState() == SheetState.HIDDEN) {
+                mBottomSheet.setSheetState(mBottomSheet.getOpeningState(), animate);
+            }
+            return true;
+        }
 
         // Showing the sheet requires a tab.
         if (mTabProvider.get() == null) return false;

@@ -17,7 +17,6 @@
 <translation id="3169472444629675720">पत्ता लगाउनुहोस्</translation>
 <translation id="3820172043799983114">अमान्य PIN।</translation>
 <translation id="3838338534323494292">नयाँ पासवर्ड</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> कृपया फेरि प्रयास गर्नुहोस्। बाँकी रहेका प्रयासहरूको सङ्ख्या: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" />ले यस यन्त्रको व्यवस्थापन गर्छ र भ्रमण गरिएका वेब पृष्ठ, पासवर्ड र इमेललगायत प्रयोगकर्ताका सबै क्रियाकलापमाथि यसको पहुँच छ।</translation>
 <translation id="4227825898293920515">पासवर्डको म्याद <ph name="TIME" /> मा सकिन्छ</translation>
 <translation id="4429881212383817840">Kerberos टिकटको म्याद चाँडै सकिँदै छ</translation>
@@ -27,8 +26,6 @@
 <translation id="4890353053343094602">तुरुन्तै एउटा नयाँ पासवर्ड राख्नुहोस्</translation>
 <translation id="5212543919916444558">मैले तपाईंको स्क्रिनमा आफूले मद्दत गर्न मिल्ने कुनै पनि कुरा फेला पार्न सकिन। मलाई केही कुरा सोध्न माइकमा ट्याप गरी हेर्नुहोस्।</translation>
 <translation id="5222676887888702881">साइन आउट गर्नुहोस्</translation>
-<translation id="5275776633505022322">बाँकी रहेका प्रयासहरूको सङ्ख्या: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> कृपया फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="5317780077021120954">बचत गर्नुहोस्</translation>
 <translation id="5332948983412042822">अहिले नै एउटा नयाँ पासवर्ड राख्नुहोस्</translation>
 <translation id="5457599981699367932">पाहुनाको रूपमा ब्राउज गर्नुहोस्</translation>

@@ -135,6 +135,11 @@ MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
+  // TODO(crbug.com/1055983): Remove this when the execution context validity
+  // check is not required in the AudioNode factory methods.
+  if (!context.CheckExecutionContextAndThrowIfNecessary(exception_state))
+    return nullptr;
+
   MediaStreamTrackVector audio_tracks = media_stream.getAudioTracks();
   if (audio_tracks.IsEmpty()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,

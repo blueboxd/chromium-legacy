@@ -9,13 +9,16 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/test/test_assistant_client.h"
 #include "ash/assistant/test/test_assistant_setup.h"
 #include "ash/assistant/test/test_assistant_web_view_factory.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/shell.h"
 #include "base/run_loop.h"
+#include "base/test/task_environment.h"
 
 namespace ash {
 
@@ -57,9 +60,16 @@ void PressHomeButton() {
 }  // namespace
 
 AssistantAshTestBase::AssistantAshTestBase()
-    : test_api_(AssistantTestApi::Create()),
+    : AssistantAshTestBase(
+          base::test::TaskEnvironment::TimeSource::SYSTEM_TIME) {}
+
+AssistantAshTestBase::AssistantAshTestBase(
+    base::test::TaskEnvironment::TimeSource time)
+    : AshTestBase(time),
+      test_api_(AssistantTestApi::Create()),
       test_setup_(std::make_unique<TestAssistantSetup>()),
-      test_web_view_factory_(std::make_unique<TestAssistantWebViewFactory>()) {}
+      test_web_view_factory_(std::make_unique<TestAssistantWebViewFactory>()),
+      assistant_client_(std::make_unique<TestAssistantClient>()) {}
 
 AssistantAshTestBase::~AssistantAshTestBase() = default;
 
@@ -71,6 +81,13 @@ void AssistantAshTestBase::SetUp() {
 
   // Enable Assistant in settings.
   test_api_->SetAssistantEnabled(true);
+
+  // Enable screen context in settings.
+  test_api_->SetScreenContextEnabled(true);
+
+  // Set AssistantAllowedState to ALLOWED.
+  test_api_->GetAssistantState()->NotifyFeatureAllowed(
+      mojom::AssistantAllowedState::ALLOWED);
 
   // Cache controller.
   controller_ = Shell::Get()->assistant_controller();

@@ -399,14 +399,6 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
 
 ArcApps::~ArcApps() = default;
 
-void ArcApps::SetUseTestingProfile() {
-  is_using_testing_profile_ = true;
-}
-
-void ArcApps::SetDialogCreatedCallbackForTesting(base::OnceClosure callback) {
-  dialog_created_callback_ = std::move(callback);
-}
-
 void ArcApps::Shutdown() {
   // Disconnect the observee-observer connections that we made during the
   // constructor.
@@ -706,25 +698,11 @@ void ArcApps::OnAppStatesChanged(const std::string& app_id,
     return;
   }
 
-  if (!app_info.suspended) {
-    blocked_apps_.erase(app_id);
-  }
-
-  if (!base::Contains(blocked_apps_, app_id) && app_info.suspended &&
-      !is_using_testing_profile_) {
-    LoadIconForBlockDialog(app_id, app_info);
-  }
-
-  if (app_info.suspended) {
-    blocked_apps_.insert(app_id);
-  }
-
   Publish(Convert(prefs, app_id, app_info));
 }
 
 void ArcApps::OnAppRemoved(const std::string& app_id) {
   paused_apps_.MaybeRemoveApp(app_id);
-  blocked_apps_.erase(app_id);
 
   if (base::Contains(app_id_to_task_ids_, app_id)) {
     for (int task_id : app_id_to_task_ids_[app_id]) {
@@ -1108,32 +1086,6 @@ void ArcApps::UpdateAppIntentFilters(
       intent_helper_bridge->GetIntentFilterForPackage(package_name);
   for (auto& arc_intent_filter : arc_intent_filters) {
     intent_filters->push_back(ConvertArcIntentFilter(arc_intent_filter));
-  }
-}
-
-void ArcApps::LoadIconForBlockDialog(const std::string& app_id,
-                                     const ArcAppListPrefs::AppInfo& app_info) {
-  apps::mojom::IconKeyPtr icon_key =
-      icon_key_factory_.MakeIconKey(IconEffects::kNone);
-  constexpr bool kAllowPlaceholderIcon = false;
-  constexpr int32_t kPauseIconSize = 48;
-  LoadIcon(app_id, icon_key_factory_.MakeIconKey(IconEffects::kNone),
-           apps::mojom::IconCompression::kUncompressed, kPauseIconSize,
-           kAllowPlaceholderIcon,
-           base::BindOnce(&ArcApps::OnLoadIconForBlockDialog,
-                          weak_ptr_factory_.GetWeakPtr(), app_info.name));
-}
-
-void ArcApps::OnLoadIconForBlockDialog(const std::string& app_name,
-                                       apps::mojom::IconValuePtr icon_value) {
-  if (icon_value->icon_compression !=
-      apps::mojom::IconCompression::kUncompressed) {
-    return;
-  }
-  CreateBlockDialog(app_name, icon_value->uncompressed, profile_);
-
-  if (!dialog_created_callback_.is_null()) {
-    std::move(dialog_created_callback_).Run();
   }
 }
 

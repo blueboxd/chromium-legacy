@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** A pipe through which we can send messages to the parent frame. */
+const parentMessagePipe = new MessagePipe('chrome://media-app', window.parent);
+
 /** @implements mediaApp.AbstractFileList */
 class SingleArrayBufferFileList {
   /** @param {!mediaApp.AbstractFile} file */
@@ -15,14 +18,52 @@ class SingleArrayBufferFileList {
   }
 }
 
-/** A pipe through which we can send messages to the parent frame. */
-const parentMessagePipe = new MessagePipe('chrome://media-app', window.parent);
-
-parentMessagePipe.registerHandler('file', (message) => {
-  const fileMessage = /** @type mediaApp.MessageEventData */ (message);
-  if (fileMessage.file) {
-    loadFile(fileMessage.file);
+/**
+ * A file received from the privileged context.
+ * @implements {mediaApp.AbstractFile}
+ */
+class ReceivedFile {
+  /**
+   * @param {!File} file The received file.
+   * @param {number} token A token that identifies the file.
+   */
+  constructor(file, token) {
+    this.blob = file;
+    this.name = file.name;
+    this.size = file.size;
+    this.mimeType = file.type;
+    this.token = token;
   }
+
+  /**
+   * @override
+   * @param{!Blob} blob
+   */
+  async overwriteOriginal(blob) {
+    /** @type{OverwriteFileMessage} */
+    const message = {token: this.token, blob: blob};
+    const reply =
+        parentMessagePipe.sendMessage(Message.OVERWRITE_FILE, message);
+    try {
+      await reply;
+    } catch (/** @type{GenericErrorResponse} */ errorResponse) {
+      if (errorResponse.message === 'File not current.') {
+        const domError = new DOMError();
+        domError.name = 'NotAllowedError';
+        throw domError;
+      }
+      throw errorResponse;
+    }
+    // Note the following are skipped if an exception is thrown above.
+    this.blob = blob;
+    this.size = blob.size;
+    this.mimeType = blob.type;
+  }
+}
+
+parentMessagePipe.registerHandler(Message.LOAD_FILE, (message) => {
+  const fileMessage = /** @type{!OpenFileMessage} */ (message);
+  loadFile(fileMessage.token, fileMessage.file);
 })
 
 /**
@@ -49,15 +90,13 @@ function getApp() {
 
 /**
  * Loads files associated with a message received from the host.
+ * @param {number} token
  * @param {!File} file
+ * @return {!Promise<!ReceivedFile>} The received file (for testing).
  */
-async function loadFile(file) {
-  const fileList = new SingleArrayBufferFileList({
-    blob: file,
-    size: file.size,
-    mimeType: file.type,
-    name: file.name,
-  });
+async function loadFile(token, file) {
+  const receivedFile = new ReceivedFile(file, token);
+  const fileList = new SingleArrayBufferFileList(receivedFile);
 
   const app = getApp();
   if (app) {
@@ -65,6 +104,7 @@ async function loadFile(file) {
   } else {
     window.customLaunchData = {files: fileList};
   }
+  return receivedFile;
 }
 
 /**

@@ -69,7 +69,6 @@ source_set("browser_test_support") {
     "test/driver.js",
     "test/driver_api.js",
     "test/guest_query_receiver.js",
-    "test/receiver_api.js",
   ]
 }
 
@@ -99,18 +98,13 @@ js_type_check("closure_compile_tests") {
     ":test_driver_api_js",
     ":test_driver_js",
     ":test_guest_query_receiver_js",
-    ":test_receiver_api_js",
   ]
 }
 
 js_library("test_driver_api_js") {
   testonly = true
+  externs_list = [ "resources/js/web_app_file_handling.externs.js" ]
   sources = [ "test/driver_api.js" ]
-}
-
-js_library("test_receiver_api_js") {
-  testonly = true
-  sources = [ "test/receiver_api.js" ]
 }
 
 js_library("test_guest_query_receiver_js") {
@@ -118,8 +112,8 @@ js_library("test_guest_query_receiver_js") {
   sources = [ "test/guest_query_receiver.js" ]
   deps = [
     ":test_driver_api_js",
-    ":test_receiver_api_js",
     "//chromeos/components/media_app_ui/resources/js:message_pipe",
+    "//chromeos/components/media_app_ui/resources/js:receiver",
   ]
 }
 

@@ -10,11 +10,12 @@
 namespace viz {
 
 OverlayProcessorOnGpu::OverlayProcessorOnGpu(
-    gpu::SharedImageManager* shared_image_manager)
+    gpu::SharedImageManager* shared_image_manager,
+    gpu::MemoryTracker* memory_tracker)
     : shared_image_representation_factory_(
           std::make_unique<gpu::SharedImageRepresentationFactory>(
               shared_image_manager,
-              nullptr)) {
+              memory_tracker)) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -30,8 +31,8 @@ void OverlayProcessorOnGpu::ScheduleOverlays(
   for (auto& overlay : overlay_candidates) {
     auto shared_image_overlay =
         shared_image_representation_factory_->ProduceOverlay(overlay.mailbox);
-    // When the display is re-opened, the first few frames might not have a video
-    // resource ready. Possible investigation crbug.com/1023971.
+    // When the display is re-opened, the first few frames might not have a
+    // video resource ready. Possible investigation crbug.com/1023971.
     if (!shared_image_overlay)
       continue;
     // In the current implementation, the BeginReadAccess will end up calling

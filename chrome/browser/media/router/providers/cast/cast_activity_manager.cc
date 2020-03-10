@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/optional.h"
+#include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "chrome/browser/media/router/providers/cast/mirroring_activity_record.h"
@@ -133,20 +135,18 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
 
   mojom::RoutePresentationConnectionPtr presentation_connection;
 
-  if (cast_source.ContainsApp(kCastStreamingAppId)) {
-    // Lanch a mirroring session.
-    AddMirroringActivityRecord(route, app_id, params.tab_id, sink.cast_data());
-  } else {
-    // Launch a flinging session.
-    auto* activity_ptr = AddCastActivityRecord(route, app_id);
-    const std::string& client_id = cast_source.client_id();
-    if (!client_id.empty()) {
-      presentation_connection =
-          activity_ptr->AddClient(cast_source, params.origin, params.tab_id);
-      activity_ptr->SendMessageToClient(
-          client_id,
-          CreateReceiverActionCastMessage(client_id, sink, hash_token_));
-    }
+  ActivityRecord* activity_ptr =
+      cast_source.ContainsStreamingApp()
+          ? AddMirroringActivityRecord(route, app_id, params.tab_id,
+                                       sink.cast_data())
+          : AddCastActivityRecord(route, app_id);
+  const std::string& client_id = cast_source.client_id();
+  if (!client_id.empty()) {
+    presentation_connection =
+        activity_ptr->AddClient(cast_source, params.origin, params.tab_id);
+    activity_ptr->SendMessageToClient(
+        client_id,
+        CreateReceiverActionCastMessage(client_id, sink, hash_token_));
   }
 
   NotifyAllOnRoutesUpdated();
@@ -536,6 +536,54 @@ cast_channel::ResultCallback CastActivityManager::MakeResultCallbackForRoute(
   return base::BindOnce(&CastActivityManager::HandleStopSessionResponse,
                         weak_ptr_factory_.GetWeakPtr(), route_id,
                         std::move(callback));
+}
+
+const MediaRoute* CastActivityManager::FindMirroringRouteForTab(
+    int32_t tab_id) {
+  for (const auto& entry : activities_) {
+    const std::string& route_id = entry.first;
+    const ActivityRecord& activity = *entry.second;
+    if (activity.mirroring_tab_id() == tab_id &&
+        !base::Contains(cast_activities_, route_id)) {
+      return &activity.route();
+    }
+  }
+  return nullptr;
+}
+
+void CastActivityManager::SendRouteMessage(const std::string& media_route_id,
+                                           const std::string& message) {
+  GetDataDecoder().ParseJson(
+      message, base::BindRepeating(&CastActivityManager::SendRouteJsonMessage,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   media_route_id, message));
+}
+
+void CastActivityManager::SendRouteJsonMessage(
+    const std::string& media_route_id,
+    const std::string& message,
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (result.error) {
+    DVLOG(1) << "Error parsing JSON data: " << *result.error;
+    return;
+  }
+
+  const std::string* client_id = result.value->FindStringKey("clientId");
+  if (!client_id) {
+    DVLOG(1) << "No client ID in message.";
+    return;
+  }
+
+  const auto it = activities_.find(media_route_id);
+  if (it == activities_.end()) {
+    DVLOG(1) << "No activity for " << media_route_id;
+    return;
+  }
+  ActivityRecord& activity = *it->second;
+
+  auto message_ptr =
+      blink::mojom::PresentationConnectionMessage::NewMessage(message);
+  activity.SendMessageToClient(*client_id, std::move(message_ptr));
 }
 
 void CastActivityManager::AddNonLocalActivityRecord(

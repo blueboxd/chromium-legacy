@@ -53,6 +53,14 @@ void PrivacyScreenController::SetEnabled(bool enabled) {
     return;
   }
 
+  // Do not set the policy if it is managed by policy. However, we still want to
+  // notify observers that a change was attempted in order to show a toast.
+  if (IsManaged()) {
+    for (Observer& observer : observers_)
+      observer.OnPrivacyScreenSettingChanged(GetEnabled());
+    return;
+  }
+
   if (active_user_pref_service_) {
     active_user_pref_service_->SetBoolean(prefs::kDisplayPrivacyScreenEnabled,
                                           enabled);

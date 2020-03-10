@@ -61,6 +61,10 @@
       Als dit beleid is ingesteld, kan de gebruiker het niet wijzigen of overschrijven.</translation>
 <translation id="1062011392452772310">Externe bevestiging van apparaat inschakelen</translation>
 <translation id="1062407476771304334">Vervangen</translation>
+<translation id="1073983258515362346">Informatie rapporteren over de schermverlichting van een apparaat.
+
+      Als het beleid is ingesteld op False of niet is ingesteld, worden de gegevens niet gerapporteerd.
+      Als het beleid is ingesteld op True, wordt informatie over de schermverlichting van het apparaat gerapporteerd.</translation>
 <translation id="1078643757670228170">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" /> versie 82. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Specificeert de tijdsduur zonder gebruikersinvoer, waarna het scherm wordt uitgeschakeld als er op netstroom wordt gewerkt.
@@ -171,6 +175,17 @@
 
       Als dit beleid niet is ingesteld, is de standaardfrequentie 3 uur. De minimaal toegestane frequentie is 60 seconden.</translation>
 <translation id="1204263402976895730">Bedrijfsprinters ingeschakeld</translation>
+<translation id="1216890727647348501">Hiermee schakel je de functie voor geoptimaliseerde Safe Browsing-beveiliging van <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze instelling kunnen wijzigen.
+
+      Als je deze instelling inschakelt, is geoptimaliseerde Safe Browsing-beveiliging altijd actief.
+
+      Als je deze instelling uitschakelt, is geoptimaliseerde Safe Browsing-beveiliging nooit actief.
+
+      Als je dit beleid instelt als verplicht, kunnen gebruikers de instelling 'Bescherming tegen phishing en malware inschakelen' in <ph name="PRODUCT_NAME" /> niet wijzigen of overschrijven.
+
+      Als dit beleid niet is ingesteld, is geoptimaliseerde Safe Browsing-beveiliging standaard uitgeschakeld. De gebruiker kan de functie inschakelen.
+
+      Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="1216919699175573511">Signed HTTP Exchange-ondersteuning (SXG) inschakelen</translation>
 <translation id="1219695476179627719">Geeft aan of het apparaat moet terugkeren naar de versie die is ingesteld met <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> als er al een latere versie is geïnstalleerd.
 
@@ -264,6 +279,7 @@
           Als dit beleid niet is ingesteld, heeft dit geen invloed op het gedrag van de specifiekere beleidsregels.</translation>
 <translation id="1384459581748403878">Referentie: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">OS-updatestatus rapporten</translation>
+<translation id="1388918874748125262">Geoptimaliseerde Safe Browsing-beveiliging inschakelen</translation>
 <translation id="1393485621820363363">Zakelijke apparaatprinters ingeschakeld</translation>
 <translation id="1397855852561539316">Voorgestelde URL voor standaardzoekprovider</translation>
 <translation id="1398636873839401839">Alle varianten inschakelen op het inlogscherm</translation>
@@ -327,6 +343,7 @@
       uitgeschakeld. In dit geval kan de gebruiker de functie niet inschakelen.</translation>
 <translation id="1474273443907024088">TLS False Start uitschakelen</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1486021504508098388">Informatie over schermverlichting melden</translation>
 <translation id="1502843533062797703">Blokkering van injectie van software van derden inschakelen</translation>
 <translation id="1507382822467487898">Hiermee kun je instellen welk MAC-adres (Media Access Control) wordt gebruikt als het apparaat is aangesloten op een dock.
 
@@ -761,9 +778,9 @@
       Als het beleid is ingesteld, worden tabbladen in de browser verwijderd om geheugen te besparen als de limiet wordt bereikt. Er is geen garantie dat de browser altijd onder de limiet wordt uitgevoerd. Elke waarde lager dan 1024 wordt afgerond naar 1024.
 
       Als dit beleid niet is ingesteld, begint de browser pas met het besparen van geheugen nadat is gedetecteerd dat er nog maar een kleine hoeveelheid fysiek geheugen op de machine beschikbaar is.</translation>
-<translation id="2164922809922345834">Hiermee wordt native occlusie van vensters ingeschakeld in <ph name="PRODUCT_NAME" />.
+<translation id="2164922809922345834">Schakelt native occlusie van vensters in <ph name="PRODUCT_NAME" /> in.
 
-      Als je deze instelling inschakelt, detecteert <ph name="PRODUCT_NAME" /> of een venster wordt afgedekt door andere vensters. In dat geval wordt de weergave van de afgedekte pixels opgeschort. Op deze manier wordt het CPU- en energieverbruik verminderd.
+      Als je deze instelling inschakelt, detecteert <ph name="PRODUCT_NAME" /> of een venster wordt afgedekt door andere vensters. In dat geval wordt de weergave van de afgedekte pixels opgeschort om zo het CPU- en energieverbruik te verminderen.
 
       Als je deze instelling uitschakelt, detecteert <ph name="PRODUCT_NAME" /> niet of een venster wordt afgedekt door andere vensters.
 
@@ -900,7 +917,7 @@
       Onjuist opgemaakte templates worden genegeerd.</translation>
 <translation id="2331539005176436538">Alleen varianten voor essentiële oplossingen inschakelen op het inlogscherm</translation>
 <translation id="2345547870894930157">DNS-over-HTTPS zonder onveilige fallback inschakelen</translation>
-<translation id="2368120844613930637">Als je dit beleid configureert, kun je opgeven welke varianten mogen worden toegepast op het inlogscherm in <ph name="PRODUCT_NAME" />.
+<translation id="2368120844613930637">Als je dit beleid configureert, kun je opgeven welke varianten op <ph name="PRODUCT_NAME" /> mogen worden toegepast op het inlogscherm.
 
       Varianten vormen een manier om aanpassingen in <ph name="PRODUCT_NAME" /> aan te bieden zonder een nieuwe versie van de browser te publiceren. Hiervoor worden reeds bestaande functies selectief in- of uitgeschakeld.
 
@@ -920,7 +937,7 @@
       Als dit beleid is ingesteld op 'False' of niet is ingesteld, wordt het selectievakje 'Altijd openen' niet weergegeven en krijgt de gebruiker elke keer als er een extern protocol wordt aangeroepen een prompt.</translation>
 <translation id="2411817661175306360">Waarschuwing voor wachtwoordbeveiliging is uitgeschakeld</translation>
 <translation id="2411919772666155530">Meldingen op deze sites blokkeren</translation>
-<translation id="2413022450179356125">Het privacyscherm in-/uitschakelen.
+<translation id="2413022450179356125">Schakelt het privacyscherm in of uit.
 
 Als dit beleid is ingesteld op True, wordt het privacyscherm altijd ingeschakeld.
 
@@ -1179,6 +1196,9 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="26023406105317310">Kerberos-accounts configureren</translation>
 <translation id="2604182581880595781">Beleid met betrekking tot Network File Shares configureren.</translation>
 <translation id="2615240493030733717">Informatie over tijdzone rapporteren</translation>
+<translation id="2620943247255660284">Dit beleid is beëindigd en is vervangen door AdvancedProtectionExtraSecurityAllowed.
+
+      Met dit beleid wordt bepaald of gebruikers die zijn ingeschreven bij 'Geavanceerde beveiliging' hun downloads naar Google mogen sturen om ze te laten scannen. Als dit beleid is ingesteld op True of niet is ingesteld, wordt ingeschreven gebruikers gevraagd hun bestanden naar Google te sturen voor een uitgebreide scan. Als gebruikers 'Scannen' selecteren, worden hun downloads naar Google gestuurd. Als dit beleid is ingesteld op False, ontvangen gebruikers geen melding en worden hun downloads niet naar Google gestuurd.</translation>
 <translation id="2623014935069176671">Wachten op initiële gebruikersactiviteit</translation>
 <translation id="262740370354162807">Verzenden van documenten naar <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
 <translation id="2627554163382448569">Hiermee worden configuraties geleverd voor zakelijke printers.
@@ -1430,6 +1450,21 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="2987227569419001736">Gebruik van de Web Bluetooth API beheren</translation>
 <translation id="3016255526521614822">Notitie-apps die zijn toegestaan op het <ph name="PRODUCT_OS_NAME" />-vergrendelingsscherm toevoegen aan de witte lijst</translation>
 <translation id="3020064401262077616">Hiermee bepaal je de beleidsregels voor ouderlijk toezicht, die alleen op kinderaccounts worden toegepast.</translation>
+<translation id="3020953534071988875">Als je dit beleid configureert, wordt Ambient-verificatie voor incognito- en gastprofielen toegestaan/niet toegestaan in <ph name="PRODUCT_NAME" />.
+
+      Ambient-verificatie is HTTP-verificatie met standaardgegevens als er geen expliciete gegevens worden verstrekt via uitdaging/reactie-schema's van NTLM/Kerberos/Negotiate.
+
+      Als je <ph name="REGULAR_ONLY_OPTION_NAME" /> (waarde 0) instelt, is Ambient-verificatie alleen toegestaan voor normale sessies. Ambient-verificatie is dan niet toegestaan voor incognito- en gastsessies.
+
+      Als je <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (waarde 1) instelt, is Ambient-verificatie toegestaan voor normale en incognitosessies. Ambient-verificatie is dan niet toegestaan voor gastsessies.
+
+      Als je <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (waarde 2) instelt, is Ambient-verificatie toegestaan voor normale en gastsessies. Ambient-verificatie is dan niet toegestaan voor incognitosessies.
+
+      Als je <ph name="ALL_OPTION_NAME" /> (waarde 3) instelt, is Ambient-verificatie toegestaan voor alle sessies.
+
+      Ambient-verificatie is altijd toegestaan voor normale profielen.
+
+      Als het beleid niet is ingesteld in versie 81 en hoger van <ph name="PRODUCT_NAME" />, wordt Ambient-verificatie alleen ingeschakeld in normale sessies.</translation>
 <translation id="3021562480854470924">Aantal mijlpalen dat rollback kan terugzetten</translation>
 <translation id="3023572080620427845">URL van een XML-bestand dat URL's bevat voor laden in een alternatieve browser.</translation>
 <translation id="3026740867910702435">De toegankelijkheidsfunctie 'Grote muisaanwijzer' op het inlogscherm inschakelen.
@@ -1910,6 +1945,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           Als dit beleid niet is ingesteld, is dicteren in eerste instantie uitgeschakeld op het inlogscherm. De gebruiker kan deze functie op elk gewenst moment inschakelen.</translation>
 <translation id="3811562426301733860">Advertenties toestaan op alle sites</translation>
 <translation id="3816312845600780067">Sneltoets voor automatisch inloggen inschakelen</translation>
+<translation id="3817323252437541502">Extra beveiligingsfuncties inschakelen voor gebruikers die zijn ingeschreven bij 'Geavanceerde beveiliging'</translation>
 <translation id="3820526221169548563">De toegankelijkheidsfunctie voor het schermtoetsenbord inschakelen.
 
           Als dit beleid is ingesteld op 'True' wordt het schermtoetsenbord altijd ingeschakeld.
@@ -2376,9 +2412,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="4449545651113180484">Scherm 270 graden met de klok mee draaien</translation>
 <translation id="445270821089253489">Beheert welke gebruikers- en apparaatgegevens worden gerapporteerd.</translation>
 <translation id="4453913621209182880">Alleen afdrukken met achtergrondbeelden toestaan</translation>
-<translation id="4454586530530448054">Als dit beleid is ingesteld, worden alle opgegeven gegevenstypen uitgesloten van synchronisatie voor zowel Google Sync als synchronisatie van roaming-profielen. Dit kan handig zijn om het roaming-profiel te verkleinen of het type gegevens te beperken dat wordt geüpload naar de Google Sync-servers.
-
-      De huidige gegevenstypen voor dit beleid zijn: 'bookmarks', 'preferences', 'passwords', 'autofill', 'themes', 'typedUrls', 'extensions', 'apps', 'tabs', 'wifiConfiguration'. Die namen zijn hoofdlettergevoelig.</translation>
 <translation id="4454820008017317557">Het werkbalkpictogram van <ph name="PRODUCT_NAME" /> weergeven</translation>
 <translation id="4467952432486360968">Indirecte cookies blokkeren</translation>
 <translation id="4474167089968829729">Opslaan van wachtwoorden in Wachtwoordmanager inschakelen</translation>
@@ -5135,6 +5168,7 @@ Dit beleid wordt verwijderd in M75.</translation>
       Als het beleid is ingesteld op False of niet is ingesteld, worden de statussen van het scherm en de grafische kaart niet gerapporteerd. Als het beleid is ingesteld op True, worden de statussen van het scherm en de grafische kaart gerapporteerd.</translation>
 <translation id="891435090623616439">gecodeerd als een JSON-tekenreeks. Ga voor meer informatie naar <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Gebruikers toestaan geïnstalleerde CA-certificaten te beheren.</translation>
+<translation id="8924721011887485485">Met dit beleid wordt bepaald of gebruikers die bij 'Geavanceerde beveiliging' zijn ingeschreven, extra beveiligingsfuncties ontvangen. Voor sommige van deze functies kunnen gegevens worden gedeeld met Google (gebruikers van 'Geavanceerde beveiliging' kunnen bijvoorbeeld hun downloads naar Google sturen om ze te scannen op malware). Als dit beleid is ingesteld op True of niet is ingesteld, ontvangen ingeschreven gebruikers extra beveiligingsfuncties. Als dit beleid is ingesteld op False, ontvangen gebruikers van 'Geavanceerde beveiliging' alleen de beveiligingsfuncties voor consumenten.</translation>
 <translation id="8926275581598789324">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" /> versie 82. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Specificeert de tijdsduur zonder gebruikersinvoer, waarna de actie voor inactiviteit wordt uitgevoerd als op de batterij wordt gewerkt.
@@ -5258,7 +5292,7 @@ Dit beleid wordt verwijderd in M75.</translation>
       Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
 
       De beleidswaarde moet worden gespecificeerd in milliseconden. Waarden worden afgerond tot een bereik van dertig seconden tot vierentwintig uur.</translation>
-<translation id="9040042535845939426">De status van het privacyscherm instellen op het inlogscherm</translation>
+<translation id="9040042535845939426">Stelt de status van het privacyscherm in op het inlogscherm</translation>
 <translation id="9050853837490399534">Met dit beleid wordt bepaald of het apparaat moet worden geüpdatet naar een Quick Fix Build.
 
       Als de beleidswaarde is ingesteld op een token dat naar een Quick Fix Build verwijst, wordt het apparaat geüpdatet naar de bijbehorende Quick Fix Build als de update niet wordt geblokkeerd door een ander beleid.

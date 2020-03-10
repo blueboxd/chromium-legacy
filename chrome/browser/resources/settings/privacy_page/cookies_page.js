@@ -8,8 +8,24 @@
  * settings.
  */
 
+(function() {
+/**
+ * Enumeration of all cookies radio controls.
+ * @enum {string}
+ */
+const CookiesControl = {
+  ALLOW_ALL: 'allow-all',
+  BLOCK_THIRD_INCOGNITO: 'block-third-incognito',
+  BLOCK_THIRD: 'block-third',
+  BLOCK_ALL: 'block-all',
+};
+
 Polymer({
   is: 'settings-cookies-page',
+
+  behaviors: [
+    PrefsBehavior,
+  ],
 
   properties: {
     /**
@@ -21,8 +37,24 @@ Polymer({
     },
 
     /**
+     * Valid cookie states.
+     * @private
+     */
+    cookiesControlEnum_: {
+      type: Object,
+      value: CookiesControl,
+    },
+
+    /** @private {!CookiesControl} */
+    selectSafeBrowsingRadio_: {
+      type: String,
+      value: CookiesControl.BLOCK_THIRD_INCOGNITO,
+    },
+
+    /**
      * @private {!settings.ContentSettingsTypes}
      */
     ContentSettingsTypes: {type: Object, value: settings.ContentSettingsTypes},
   },
 });
+})();

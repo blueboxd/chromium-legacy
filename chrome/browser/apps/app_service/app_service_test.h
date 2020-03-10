@@ -35,12 +35,6 @@ class AppServiceTest {
   // Flush mojo calls to allow AppService async callbacks to run.
   void FlushMojoCalls();
 
-#if defined(OS_CHROMEOS)
-  // Set the flag in ArcApps to indicate the test environment and not create the
-  // dialog.
-  void SetArcAppsUseTestingProfile();
-#endif  // OS_CHROMEOS
-
  private:
   AppServiceProxy* app_service_proxy_ = nullptr;
 

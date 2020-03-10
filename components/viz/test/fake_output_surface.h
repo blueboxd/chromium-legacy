@@ -89,6 +89,7 @@ class FakeOutputSurface : public OutputSurface {
 #endif
   scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
       override;
+  gpu::MemoryTracker* GetMemoryTracker() override;
 
   void set_framebuffer(GLint framebuffer, GLenum format) {
     framebuffer_ = framebuffer;

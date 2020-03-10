@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">探索</translation>
 <translation id="3820172043799983114">PIN 無效。</translation>
 <translation id="3838338534323494292">新密碼</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" />請再試一次。剩餘嘗試次數：<ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> 會管理此裝置並可存取所有使用者活動，包括網頁瀏覽記錄、密碼和電郵。</translation>
 <translation id="4227825898293920515">密碼在 <ph name="TIME" />後到期</translation>
 <translation id="4429881212383817840">Kerberos 票證即將到期</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">系統在您的畫面上找不到任何可提供協助的內容。
 請嘗試輕按麥克風並發問。</translation>
 <translation id="5222676887888702881">登出</translation>
-<translation id="5275776633505022322">剩餘嘗試次數：<ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" />請再試一次。</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5332948983412042822">立即選擇新密碼</translation>
 <translation id="5457599981699367932">以訪客身分瀏覽</translation>

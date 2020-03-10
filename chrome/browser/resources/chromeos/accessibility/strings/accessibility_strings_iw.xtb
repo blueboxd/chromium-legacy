@@ -326,7 +326,7 @@
 <translation id="3109724472072898302">מכווץ</translation>
 <translation id="3112457281078985179">‏כדי להפעיל או לכבות את ChromeVox, הקש על Control+Alt+Z.</translation>
 <translation id="3128896337293924532">‏אין עוד רכיבי Blockquote</translation>
-<translation id="3131002934070407451">יש לקרוא מספרים כ:</translation>
+<translation id="3131002934070407451">יש לקרוא מספרים בתור:</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3137663468179739624">זית</translation>
 <translation id="3138767756593758860">הצג רשימת ציוני דרך</translation>
@@ -1139,6 +1139,7 @@
 <translation id="8065607967589909823">הבחירה היא</translation>
 <translation id="8066678206530322333">מודעת באנר</translation>
 <translation id="8076492880354921740">כרטיסיות</translation>
+<translation id="8083115023881784332">‏אין מיקוד נוכחי ב-ChromeVox. כדי לעבור אל מרכז האפליקציות, יש להקיש Alt+Shift+L.</translation>
 <translation id="8091452896542422286">רווח</translation>
 <translation id="8096975275316362544">מנטה בהיר</translation>
 <translation id="8098587210054821856">אפור תכלת</translation>

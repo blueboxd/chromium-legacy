@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">Pinamamahalaan ni <ph name="MANAGER_EMAIL" /> ang account</translation>
 <translation id="3573179567135747900">Palitan pabalik sa "<ph name="FROM_LOCALE" />" (kailangang i-restart)</translation>
 <translation id="3576141592585647168">Baguhin ang timezone</translation>
+<translation id="3593646411856133110">Mag-swipe pataas at i-hold para makita ang mga nakabukas na app</translation>
 <translation id="3595596368722241419">Puno na ang baterya</translation>
 <translation id="3604801046548457007">Ginawa ang Desk <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Nagkonekta ng braille display.</translation>
@@ -365,6 +366,7 @@
 <translation id="5745612484876805746">Awtomatikong nag-o-on ang Night Light sa paglubog ng araw</translation>
 <translation id="5750765938512549687">Naka-off ang Bluetooth</translation>
 <translation id="576453121877257266">Naka-on ang Night Light.</translation>
+<translation id="5769373120130404283">Screen sa privacy</translation>
 <translation id="5777841717266010279">Itigil ang screen sharing?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Ihinto ang <ph name="ROUTE_TITLE" /> sa <ph name="RECEIVER_NAME" /></translation>
@@ -406,6 +408,7 @@
 <translation id="6297287540776456956">Gamitin ang stylus upang pumili ng rehiyon</translation>
 <translation id="6310121235600822547">Na-rotate ang <ph name="DISPLAY_NAME" /> sa <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">Naka-on ang Bluetooth</translation>
+<translation id="6381109794406942707">Para i-unlock ang device, ilagay ang iyong PIN.</translation>
 <translation id="639644700271529076">Naka-off ang CAPS LOCK</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" /></translation>
@@ -619,6 +622,7 @@
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> bago maubos ang baterya.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">Mag-swipe pataas para pumunta sa home</translation>
 <translation id="9080206825613744995">Ginagamit ang mikropono.</translation>
 <translation id="9084606467167974638">I-toggle ang posisyon ng menu</translation>
 <translation id="9089416786594320554">Mga pamamaraan ng pag-input</translation>

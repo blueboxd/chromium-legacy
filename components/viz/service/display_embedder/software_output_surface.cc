@@ -155,4 +155,7 @@ SoftwareOutputSurface::GetGpuTaskSchedulerHelper() {
   return nullptr;
 }
 
+gpu::MemoryTracker* SoftwareOutputSurface::GetMemoryTracker() {
+  return nullptr;
+}
 }  // namespace viz

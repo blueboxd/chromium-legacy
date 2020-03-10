@@ -46,7 +46,7 @@
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
 <translation id="129382876167171263">تظهر هنا الملفات التي تحفظها المواقع الإلكترونية</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
-<translation id="1303339473099049190">يتعذّر العثور على كلمة المرور هذه. ينبغي إجراء تدقيق إملائي وإعادة المحاولة.</translation>
+<translation id="1303339473099049190">يتعذّر العثور على كلمة المرور هذه. يجب إجراء تدقيق إملائي وإعادة المحاولة.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - تم الإرسال من <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">دمج علامات التبويب</translation>
 <translation id="1311657260431405215">‏رمز الاستجابة السريعة هذا ليس عنوان URL: <ph name="QRCODEVALUE" />.</translation>
@@ -140,7 +140,7 @@
 <translation id="2017836877785168846">محو السجلّ وعمليات الإكمال التلقائي في شريط العناوين.</translation>
 <translation id="2021896219286479412">عناصر التحكم لموقع في وضع ملء الشاشة</translation>
 <translation id="2025115093177348061">الواقع المعزّز</translation>
-<translation id="2038563949887743358">تشغيل طلب موقع الويب لسطح المكتب</translation>
+<translation id="2038563949887743358">تفعيل طلب موقع الويب لسطح المكتب</translation>
 <translation id="2041019821020695769">‏للسماح لمتصفِّح Chrome بإرسال الإشعارات إليك، يمكنك أيضًا تفعيل الإشعارات في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">‏تتوفَّر بيانات<ph name="APP_NAME" /> أيضًا في Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">المواقع المتبقية (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">‏لمشاركة محتوى من هاتفك مع جهاز آخر، يُرجى تفعيل المزامنة في إعدادات Chrome على كلا الجهازين.</translation>
 <translation id="2175927920773552910">رمز الاستجابة السريعة</translation>
+<translation id="2182457891543959921">طلب الإذن قبل السماح لموقع إلكتروني بإنشاء خريطة ثلاثية الأبعاد للبيئة المحيطة بك أو تتبُّع موضع الكاميرا (مقترَح)</translation>
 <translation id="218608176142494674">المشاركة</translation>
 <translation id="2227444325776770048">المتابعة باسم <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">‏خدمات Google والمزامنة</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">‏عند تسجيل الدخول إلى حسابك على Google، يتم تفعيل هذه الميزة.</translation>
 <translation id="2410754283952462441">اختيار حساب</translation>
 <translation id="2414886740292270097">داكن</translation>
-<translation id="2416359993254398973">‏يحتاج Chrome إلى إذن لاستخدام الكاميرا لموقع الويب هذا.</translation>
 <translation id="2426805022920575512">اختيار حساب آخر</translation>
 <translation id="2433507940547922241">المظهر</translation>
 <translation id="2434158240863470628">اكتمل التنزيل <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -223,7 +223,7 @@
 <translation id="257088987046510401">المظاهر</translation>
 <translation id="2570922361219980984">‏الوصول إلى الموقع الجغرافي متوقف لهذا الجهاز أيضًا. يمكنك تفعليه في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">تم التوسيع - انقر للتصغير.</translation>
-<translation id="2581165646603367611">‏سيؤدي هذا إلى مسح ملفات تعريف الارتباط وذاكرة التخزين المؤقت والبيانات الأخرى للمواقع التي لا يعتقد Chrome أنها مهمة.</translation>
+<translation id="2581165646603367611">‏سيؤدي هذا إلى محو ملفات تعريف الارتباط وذاكرة التخزين المؤقت والبيانات الأخرى للمواقع التي لا يعتقد Chrome أنها مهمة.</translation>
 <translation id="2586657967955657006">الحافظة</translation>
 <translation id="2587052924345400782">يتوفر إصدار أحدث</translation>
 <translation id="2593272815202181319">أحادي المسافة</translation>
@@ -295,7 +295,7 @@
 <translation id="3157842584138209013">الاطّلاع على مقدار البيانات التي وفّرتها بالنقر على "مزيد من الخيارات"</translation>
 <translation id="3166827708714933426">اختصارات علامات التبويب والنوافذ</translation>
 <translation id="3181954750937456830">التصفُّح الآمن (يحميك ويحمي جهازك من مواقع الويب الضارة)</translation>
-<translation id="3190152372525844641">‏تشغيل الأذونات لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
+<translation id="3190152372525844641">‏تفعيل الأذونات لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> من البيانات المخزّنة</translation>
 <translation id="3205824638308738187">أوشك التحديث على الانتهاء.</translation>
 <translation id="3207960819495026254">تمت إضافتها إلى الإشارات المرجعية.</translation>
@@ -343,6 +343,7 @@
 <translation id="3522247891732774234">التحديث متاح. مزيد من الخيارات</translation>
 <translation id="3524138585025253783">واجهة مستخدم مطوّر البرامج</translation>
 <translation id="3527085408025491307">المجلد</translation>
+<translation id="3538390592868664640">منع المواقع الإلكترونية من إنشاء خريطة ثلاثية الأبعاد للبيئة المحيطة بك أو تتبُّع موضع الكاميرا</translation>
 <translation id="3542235761944717775">تتوفر مساحة <ph name="KILOBYTES" /> كيلوبايت</translation>
 <translation id="3549657413697417275">البحث في السجل</translation>
 <translation id="3557336313807607643">إضافة إلى جهات الاتصال</translation>
@@ -439,6 +440,7 @@
 <translation id="4298388696830689168">المواقع المرتبطة</translation>
 <translation id="4307992518367153382">الإعدادات الأساسية</translation>
 <translation id="4314815835985389558">إدارة المزامنة</translation>
+<translation id="4320177379694898372">لا يتوفر اتصال بالإنترنت</translation>
 <translation id="4321739720395210191">تعذّر فتح الكاميرا. يمكنك إعادة تشغيل الجهاز والمحاولة مجددًا.</translation>
 <translation id="4351244548802238354">إغلاق مربع الحوار</translation>
 <translation id="4353114845960720315">أثناء استخدامك وضع "الواقع الافتراضي"، يمكن لهذا الموقع الإلكتروني التعرُّف على ما يلي:</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">إغلاق علامات تبويب التصفح المتخفي</translation>
 <translation id="5534640966246046842">تم نسخ الموقع</translation>
 <translation id="5561549206367097665">في انتظار الشبكة...</translation>
-<translation id="557283862590186398">‏يحتاج Chrome إلى إذن لاستخدام الميكروفون لموقع الويب هذا.</translation>
 <translation id="55737423895878184">مسموح بالإشعارات وتحديد الموقع الجغرافي</translation>
 <translation id="5578795271662203820">البحث في <ph name="SEARCH_ENGINE" /> عن هذه الصورة</translation>
 <translation id="5581519193887989363">يمكنك دائمًا اختيار ما تريد مزامنته في <ph name="BEGIN_LINK1" />الإعدادات<ph name="END_LINK1" />.</translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">التفاصيل: تم الترتيب بحسب مقدار البيانات المُستخدَمة</translation>
 <translation id="6381421346744604172">تعتيم المواقع الإلكترونية</translation>
 <translation id="6388207532828177975">المحو وإعادة الضبط</translation>
-<translation id="6393863479814692971">‏يحتاج Chrome إلى إذن لاستخدام الكاميرا والميكروفون لموقع الويب هذا.</translation>
 <translation id="6395288395575013217">رابط</translation>
 <translation id="6404511346730675251">تعديل الإشارة المرجعية</translation>
 <translation id="6406506848690869874">المزامنة</translation>
@@ -751,7 +751,7 @@
 <translation id="6534565668554028783">‏استغرقت Google وقتًا أطول مما يجب للاستجابة</translation>
 <translation id="6538442820324228105">تم التنزيل بحجم <ph name="GBS" /> غيغابايت</translation>
 <translation id="6539092367496845964">حدث خطأ. يُرجى إعادة المحاولة لاحقًا.</translation>
-<translation id="6545017243486555795">مسح جميع البيانات</translation>
+<translation id="6545017243486555795">محو جميع البيانات</translation>
 <translation id="6545864417968258051">البحث عن بلوتوث</translation>
 <translation id="6560414384669816528">‏البحث باستخدام Sogou</translation>
 <translation id="656065428026159829">عرض المزيد</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">‏هل تريد محو بيانات Chrome من هذا الجهاز؟</translation>
 <translation id="6689172468748959065">صور الملف الشخصي</translation>
 <translation id="6697492270171225480">عرض اقتراحات للصفحات المشابهة عند تعذّر العثور على صفحة</translation>
-<translation id="6697947395630195233">‏يحتاج Chrome إلى الوصول إلى موقعك الجغرافي لمشاركة موقعك الجغرافي مع موقع الويب هذا.</translation>
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
 <translation id="6699370405921460408">‏ستعمل خوادم Google على تحسين الصفحات التي تزورها.</translation>
 <translation id="6710213216561001401">السابق</translation>
@@ -971,6 +970,7 @@
 <translation id="8186512483418048923"><ph name="FILES" /> من الملفات المتبقية</translation>
 <translation id="8190358571722158785">يتبقى يوم واحد</translation>
 <translation id="8200772114523450471">استئناف</translation>
+<translation id="8206354486702514201">تم فرض هذا الإعداد بواسطة المشرف.</translation>
 <translation id="8209050860603202033">فتح الصورة</translation>
 <translation id="8218622182176210845">إدارة حسابك</translation>
 <translation id="8224471946457685718">‏تنزيل مقالات لك عند الاتصال بشبكة Wi-Fi</translation>
@@ -992,7 +992,6 @@
 <translation id="8364299278605033898">عرض مواقع الويب الشائعة</translation>
 <translation id="8368027906805972958">جهاز غير معروف أو غير متوافق (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">السماح لموقع ويب معيّن بتشغيل "المزامنة في الخلفية"</translation>
-<translation id="8378714024927312812">بإدارة مؤسستك</translation>
 <translation id="8380167699614421159">يعرض هذا الموقع الإلكتروني إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="8393700583063109961">إرسال رسالة</translation>
 <translation id="8413126021676339697">عرض السجلّ بكامله</translation>

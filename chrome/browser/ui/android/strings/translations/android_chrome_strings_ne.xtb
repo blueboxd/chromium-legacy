@@ -167,6 +167,7 @@
 <translation id="2156074688469523661">बाँकी साइटहरू (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">तपाईंको फोनको कुनै कुरा अर्को यन्त्रसँग आदान प्रदान गर्न दुवै यन्त्रमा Chrome को सेटिङमा गई सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
 <translation id="2175927920773552910">QR कोड</translation>
+<translation id="2182457891543959921">साइटहरूलाई आफू वरपरको ठाउँको 3D नक्सा बनाउन वा क्यामेराको अवस्था पत्ता लगाउन दिनुअघि मलाई सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="218608176142494674">आदान प्रदान गर्दै</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> का रूपमा जारी राख्नुहोस्</translation>
 <translation id="2234876718134438132">सिंक तथा Google सेवाहरू</translation>
@@ -192,7 +193,6 @@
 <translation id="2407481962792080328">तपाईंले आफ्नो Google खातामा साइन इन गर्दा यो सुविधा सक्रिय हुन्छ</translation>
 <translation id="2410754283952462441">कुनै खाता छान्नुहोस्</translation>
 <translation id="2414886740292270097">अँध्यारो</translation>
-<translation id="2416359993254398973">यो साइटका लागि Chrome लाई तपाईंको क्यमेरामाथि पहुँच राख्न अनुमति आवश्यक हुन्छ।</translation>
 <translation id="2426805022920575512">कुनै अर्को खाता छनौट गर्नुहोस्‌</translation>
 <translation id="2433507940547922241">रूपरंग</translation>
 <translation id="2434158240863470628">डाउनलोड सम्पन्न भयो <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -341,6 +341,7 @@
 <translation id="3522247891732774234">अद्यावधिक उपलब्ध छ। थप विकल्पहरू</translation>
 <translation id="3524138585025253783">विकासकर्ताको UI</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
+<translation id="3538390592868664640">साइटहरूलाई आफू वरपरको ठाउँको 3D नक्सा बनाउन वा क्यामेराको अवस्था पत्ता लगाउन नदिनुहोस्</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> के.बि. उपलब्ध छ</translation>
 <translation id="3549657413697417275">आफ्नो ब्राउजिङको इतिहासमा खोज्नुहोस्।</translation>
 <translation id="3557336313807607643">सम्पर्क ठेगानामा थप्नुहोस्</translation>
@@ -437,6 +438,7 @@
 <translation id="4298388696830689168">लिंक गरिएका साइटहरू</translation>
 <translation id="4307992518367153382">आधारभूत</translation>
 <translation id="4314815835985389558">सिंक व्यवस्थापन गर्नुहोस्</translation>
+<translation id="4320177379694898372">कुनै इन्टरनेट जडान छैन</translation>
 <translation id="4321739720395210191">तपाईंको क्यामेरा खोल्न सकिएन। आफ्नो यन्त्र पुनः सुरु गरी फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="4351244548802238354">सम्बाद बन्द गर्नुहोस्</translation>
 <translation id="4353114845960720315">तपाईं VR मा हुँदा यो साइटले निम्न कुराबारे सिक्न सक्छ:</translation>
@@ -614,7 +616,6 @@
 <translation id="5530766185686772672">इनकगनिटो ट्याबहरू बन्द गर्नुहोस्</translation>
 <translation id="5534640966246046842">साइट प्रतिलिपि गरियो</translation>
 <translation id="5561549206367097665">नेटवर्कको प्रतीक्षा गर्दै…</translation>
-<translation id="557283862590186398">यो साइटका लागि Chrome लाई तपाईंको माइक्रोफोनमाथि पहुँच राख्न अनुमति आवश्यक हुन्छ।</translation>
 <translation id="55737423895878184">यस कार्यका लागि स्थानसम्बन्धी सेवा तथा सूचनाहरूलाई अनुमति छ</translation>
 <translation id="5578795271662203820">यस छविको लागि <ph name="SEARCH_ENGINE" /> खोज्नुहोस्</translation>
 <translation id="5581519193887989363">तपाईं जुनसुकै बेला <ph name="BEGIN_LINK1" />सेटिङहरू<ph name="END_LINK1" /> मा गई सिंक गर्ने कुरा छनौट गर्न सक्नुहुन्छ।</translation>
@@ -722,7 +723,6 @@
 <translation id="6378173571450987352">विवरणहरू: प्रयोग गरिएको डेटाको मात्राअनुसार क्रमबद्ध गरिएको</translation>
 <translation id="6381421346744604172">वेबसाइटहरू अँध्यारो पार्नुहोस्</translation>
 <translation id="6388207532828177975">खाली गरेर रिसेट गर्नुहोस्</translation>
-<translation id="6393863479814692971">यो साइटका लागि Chrome लाई  तपाईंको क्यामेरा र माइक्रोफोनमाथि पहुँच राख्न अनुमति आवश्यक हुन्छ।</translation>
 <translation id="6395288395575013217">लिंक</translation>
 <translation id="6404511346730675251">बुकमार्क सम्पादन गर्नुहोस्</translation>
 <translation id="6406506848690869874">समक्रमण</translation>
@@ -775,7 +775,6 @@
 <translation id="6676840375528380067">यस यन्त्रबाट तपाईंको Chrome को डेटा हटाउने हो?</translation>
 <translation id="6689172468748959065">प्रोफाइल तस्बिरहरू</translation>
 <translation id="6697492270171225480">कुनै पृष्ठ फेला पार्न नसकिएको खण्डमा मिल्दाजुल्दा पृष्ठसम्बन्धी सुझावहरू देखाउनुहोस्</translation>
-<translation id="6697947395630195233">यो साइटसँग तपाईंको स्थानसम्बन्धी जानकारी आदान प्रदान गर्न Chrome लाई तपाईंको स्थानमाथिको पहुँच आवश्यक हुन्छ।</translation>
 <translation id="6698801883190606802">सिंक गरिएका डेटा व्यवस्थित गर्नुहोस्</translation>
 <translation id="6699370405921460408">Google का सर्भरहरूले तपाईंले हेर्ने पृष्ठहरू अप्टिमाइज गर्ने छन्।</translation>
 <translation id="6710213216561001401">अघिल्लो</translation>
@@ -967,6 +966,7 @@
 <translation id="8186512483418048923"><ph name="FILES" /> फाइलहरू बाँकी छन्</translation>
 <translation id="8190358571722158785">१ दिन बाँकी छ</translation>
 <translation id="8200772114523450471">रिजुमी</translation>
+<translation id="8206354486702514201">यो सेटिङ तपाईंको प्रशासकद्वारा जोड दिएको छ।</translation>
 <translation id="8209050860603202033">छवि खोल्नुहोस्</translation>
 <translation id="8218622182176210845">आफ्नो खाताको व्यवस्थापन गर्नुहोस्</translation>
 <translation id="8224471946457685718">Wi-Fi को प्रयोग गरी आफ्ना लागि लेखहरू डाउनलोड गर्नुहोस्</translation>
@@ -988,7 +988,6 @@
 <translation id="8364299278605033898">लोकप्रिय वेबसाइटहरू हेर्नुहोस्</translation>
 <translation id="8368027906805972958">अज्ञात वा प्रयोग गर्न नमिल्ने यन्त्र (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">कुनै विशेष साइटलाई पृष्ठभूमिमा सिंक गर्ने सुविधाको प्रयोग गर्न अनुमति दिनुहोस्।</translation>
-<translation id="8378714024927312812">तपाईंको सङ्गठनले व्यवस्थापन गरेको</translation>
 <translation id="8380167699614421159">यो साइटले हस्तक्षेपकारी वा भ्रामक विज्ञापनहरू देखाउँछ</translation>
 <translation id="8393700583063109961">सन्देश पठाउनुहोस्</translation>
 <translation id="8413126021676339697">पूर्ण इतिहास देखाउनुहोस्</translation>

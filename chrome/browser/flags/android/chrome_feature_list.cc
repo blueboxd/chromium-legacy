@@ -42,6 +42,7 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/common/content_features.h"
+#include "device/fido/features.h"
 #include "media/base/media_switches.h"
 #include "net/base/features.h"
 #include "services/device/public/cpp/device_features.h"
@@ -72,6 +73,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillTouchToFill,
     &content_settings::kImprovedCookieControls,
     &content_settings::kImprovedCookieControlsForThirdPartyCookieBlocking,
+    &device::kWebAuthPhoneSupport,
     &download::features::kDownloadAutoResumptionNative,
     &download::features::kUseDownloadOfflineContentProvider,
     &features::kAppNotificationStatusMessaging,

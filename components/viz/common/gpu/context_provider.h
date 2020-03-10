@@ -26,6 +26,7 @@ class Lock;
 namespace gpu {
 class ContextSupport;
 struct GpuFeatureInfo;
+class MemoryTracker;
 class SharedImageInterface;
 class SharedImageManager;
 
@@ -111,6 +112,9 @@ class VIZ_COMMON_EXPORT ContextProvider {
 
   // Returns the SharedImageManager. Only available inside the GPU process.
   virtual gpu::SharedImageManager* GetSharedImageManager();
+
+  // Plumbs out the memory tracker to be shared with overlay.
+  virtual gpu::MemoryTracker* GetMemoryTracker();
 
  protected:
   virtual ~ContextProvider() = default;

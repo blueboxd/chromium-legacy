@@ -41,7 +41,6 @@ Ezinye izici kungenzeka zingabi khona futhi izinguquko kokuncamelayo ngeke zize 
 <translation id="1900795423379050516">Uma isilungiselelo singaveli kuleli khasi, bheka <ph name="LINK_BEGIN" />
       kuzilungiselelo zesiphequluli sakho se-Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Vumela ukungena ngemvume kwe-Chrome</translation>
-<translation id="1983547493073464667">I-Chrome ayikwazi ukuhlola amaphasiwedi akho</translation>
 <translation id="2063848847527508675">I-Chrome OS idinga ukuqaliswa kabusha ukuze yenze kusebenze isibuyekezo.</translation>
 <translation id="2094919256425865063">Yekela i-Chrome yize kunjalo?</translation>
 <translation id="2120620239521071941">Lokhu kuzosusa izinto ezingu-<ph name="ITEMS_COUNT" /> kusuka kule divayisi. kuze uthole idatha yakho emuva kwesikhathi, ngena ngemvume ku-Chrome njengo-<ph name="USER_EMAIL" />.</translation>
@@ -53,15 +52,14 @@ Ezinye izici kungenzeka zingabi khona futhi izinguquko kokuncamelayo ngeke zize 
 <translation id="2309047409763057870">Lokhu ukufakwa kwesibili kwe-Google Chrome, futhi akukwazi ukwenziwa isiphequluli sakho esizenzakalelayo.</translation>
 <translation id="2341767445688917208">I-Chrome OS ayikwazanga ukuvumelanisa amaphasiwedi wakho. Lungisa manje.</translation>
 <translation id="2348335408836342058">I-Chrome idinga imvume ukuze ifinyelele kukhamera yakho nemakrofoni yaleli sayithi</translation>
+<translation id="234869673307233423">I-Chrome ayikwazi ukuhlola amaphasiwedi akho. Zama futhi emuva kwesikhathi.</translation>
 <translation id="2429317896000329049">I-Google Chrome ayikwazanga ukuvumelanisa idatha yakho ngoba ukuvumelanisa akutholakali kusizinda sakho.</translation>
 <translation id="2467438592969358367">I-Google Chrome ifuna ukuthumela amaphasiwedi akho. Thayipha iphasiwedi yakho ye-Windows ukuze uvumele lokhu.</translation>
 <translation id="2485422356828889247">Khipha</translation>
 <translation id="2534507159460261402">I-Google Pay (ikopishelwe ku-Chrome)</translation>
-<translation id="2559627601176023786">Awekho amaphasiwedi alondoloziwe. I-Chrome ingahlola amaphasiwedi akho uma uwalondoloza ku-Akhawunti yakho ye-Google.</translation>
 <translation id="2580411288591421699">Ayikwazi ukufaka inguqulo ye-Google Chrome efana nalena esebenza manje. Sicela uvale i-Google Chrome uphinde uzame futhi.</translation>
 <translation id="2586406160782125153">Lokhu kuzosusa idatha yakho yokuphequlula kusukela kule divayisi. Ukuze uthole idatha yakho emuva kwesikhathi, ngena ngemvume ku-Chrome njengo-<ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Ilogo ye-Chrome</translation>
-<translation id="261226884343006626">I-Chrome ayikwazi ukuhlola amaphasiwedi akho. Zama futhi kusasa.</translation>
 <translation id="2622559029861875898">I-Chrome ayikwazi ukuhlola izibuyekezo. Zama ukuhlola ukuxhumeka kwakho ku-inthanethi.</translation>
 <translation id="2644798301485385923">Isistimu ye-Chrome OS</translation>
 <translation id="2652691236519827073">Vula isixhumanisi ku&amp;thebhu entsha ye-Chrome</translation>
@@ -75,6 +73,8 @@ Ezinye izici kungenzeka zingabi khona futhi izinguquko kokuncamelayo ngeke zize 
 <translation id="2857540653560290388">Iqalisa i-Chrome...</translation>
 <translation id="2871893339301912279">Ungene ngemvume ku-Chrome!</translation>
 <translation id="2888126860611144412">Mayelana ne-Chrome</translation>
+<translation id="2929907241665500097">I-Chrome ayibuyekezekanga, kunokuthile okungahambanga kahle. <ph name="BEGIN_LINK" />Lungisa izinkinga zokubuyekaza kwe-Chrome nezibuyekezo ezihlulekile.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Inethiwekhi Yokungena ngemvume - i-Chrome</translation>
 <translation id="3037838751736561277">I-Google Chrome ikumodi yangemuva.</translation>
 <translation id="3065168410429928842">Ithebhu le-Chrome</translation>
 <translation id="3080151273017101988">Qhubeka nokusebenzisa izinhlelo zokusebenza zangemuva ngenkathi i-Google Chrome ivaliwe</translation>
@@ -85,7 +85,6 @@ Ezinye izici kungenzeka zingabi khona futhi izinguquko kokuncamelayo ngeke zize 
 <translation id="3395323229510056640">Thola usizo nge-Chrome OS</translation>
 <translation id="3396977131400919238">Iphutha lesistimu yokusebenza livele ngesikhathi sokufakwa. Sicela ulande i-Google Chrome futhi.</translation>
 <translation id="3398288718845740432">Fihla kumenyu ye-Chrome</translation>
-<translation id="3434246496373299699">I-Chrome ingahlola amaphasiwedi akho uma ungena ngemvume nge-Akhawunti yakho ye-Google</translation>
 <translation id="3451115285585441894">Ingeza ku-Chrome...</translation>
 <translation id="345171907106878721">Zingeze ngokwakho ku-Chrome</translation>
 <translation id="34857402635545079">Futhi sula idatha kusuka ku-Chrome (<ph name="URL" />)</translation>
@@ -101,7 +100,6 @@ Ezinye izici kungenzeka zingabi khona futhi izinguquko kokuncamelayo ngeke zize 
 <translation id="386202838227397562">Sicela uvale wonke amawindi we-Google Chrome bese uzama futhi.</translation>
 <translation id="3873044882194371212">Vula isixhumanisi kuwindi le-Chrome inco&amp;gnito</translation>
 <translation id="3889417619312448367">Khipha i-Google Chrome</translation>
-<translation id="3943605108614542032">Umlawuli wakho uphatha izibuyekezo ze-Chrome</translation>
 <translation id="4050175100176540509">Ukuthuthukiswa kokuphepha okubalulekile nezici ezintsha kuyathokala kunguqulo yakamuva.</translation>
 <translation id="4053720452172726777">Yenza ngokwezifiso futhi lawula i-Google Chrome</translation>
 <translation id="4143243756087420366">Igama le-Chrome nesithombe</translation>
@@ -115,7 +113,9 @@ Ezinye izici kungenzeka zingabi khona futhi izinguquko kokuncamelayo ngeke zize 
 <translation id="4331809312908958774">I-Chrome OS</translation>
 <translation id="4335235004908507846">I-Chrome ingasiza ukukugcina uphephile kusukela ekuphulweni kwedatha, izandiso ezimbi, nokuningi</translation>
 <translation id="4343195214584226067">I-<ph name="EXTENSION_NAME" /> ingezwe ku-Chrome</translation>
+<translation id="4384570495110188418">I-Chrome ayikwazi ukuhlola amaphasiwedi akho ngoba awungenanga ngemvume</translation>
 <translation id="4407807842708586359">I-Google Chrome OS</translation>
+<translation id="4450664632294415862">I-Chrome - Inethiwekhi Yokungena ngemvume - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Okunye ukusebenza ku-Google Chrome kuyenzeka manje. Sicela uzame futhi emuva kwesikhathi.</translation>
 <translation id="4480040274068703980">I-Chrome OS ayikwazanga ukuvumelanisa idatha yakho ngenxa yephutha lokungena ngemvume.</translation>
 <translation id="4561051373932531560">I-Google Chrome ikuvumela ukuthi uchofoze inombolo yefoni kuwebhu bese wenza ikholi nge-Skype!</translation>
@@ -125,6 +125,7 @@ Ezinye izici kungenzeka zingabi khona futhi izinguquko kokuncamelayo ngeke zize 
 <translation id="4600710005438004015">I-Chrome ayikwazanga ukubuyekezela kwinguqulo yakamuva, ngakho-ke uyalahlekelwa kuzici ezintsha nokulungiswa kokuphepha.</translation>
 <translation id="4631713731678262610">Fihla kumenyu ye-Chrome</translation>
 <translation id="4633000520311261472">Ukwenza i-Chrome ivikeleke, sikhubaze ezinye izandiso ezingafakwanga kuhlu lwe-<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> futhi okungenzeka zifakwe ngaphandle kolwazi lakho.</translation>
+<translation id="4653397506175047429">I-Chrome ayikwazi ukuhlola wonke amaphasiwedi akho. Zama futhi emva kwamahora angu-24.</translation>
 <translation id="4728575227883772061">Ukufaka kuhlulekile ngenxa yephutha elingacacisiwe. Uma ngabe i-Google Chrome isebenza okwamanje, sicela uyivale uphinde uzame futhi.</translation>
 <translation id="4750550185319565338">Qala kabusha i-Chrome ukuze unike amandla i-<ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">I-Google Chrome Canary (mDNS-In)</translation>
@@ -162,6 +163,7 @@ I-Google Chrome ayikwazi ukuthola izilungiselelo zakho.</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Ayikwazanga ukuqalisa i-Chrome. Zama futhi.</translation>
 <translation id="5895138241574237353">Qalisa kabusha</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - Inethiwekhi Yokugena ngemvume</translation>
 <translation id="5940385492829620908">Iwebhu yakho, amabhukhimakhi, nezinye izinto ze-Chrome zihlala lapha.</translation>
 <translation id="5941830788786076944">Yenza i-Google Chrome ibe isiphequluli sokuzenzakalelayo</translation>
 <translation id="6070348360322141662">Ngokuvikela okungeziwe, i-Google Chromium izobethela idatha yakho</translation>
@@ -215,9 +217,9 @@ I-Google Chrome ayikwazi ukuthola izilungiselelo zakho.</translation>
 <translation id="7808348361785373670">Susa kusuka ku-Chrome...</translation>
 <translation id="7825851276765848807">Ukufakwa kuhlulekile ngenxa yephutha elingacacisiwe. Sicela ulande i-Google Chrome futhi.</translation>
 <translation id="7855730255114109580">I-Google Chrome isesikhathini samanje</translation>
-<translation id="7888686278524752658">I-Chrome ayibuyekezekanga, kunokuthile okungahambanga kahle. Lungisa izinkinga zokubuyekaza kwe-Chrome nezibuyekezo ezihlulekile.</translation>
 <translation id="7890208801193284374">Uma wabelana ngekhompyutha, abangani nomndeni bangadlulisa amehlo ngokuhlukene baphinde basethe i-Chrome ngendlela nje abayifunayo.</translation>
 <translation id="7896673875602241923">Umuntu othile ngaphambilini ungene ngemvume ku-Chrome kule khompuyutha njengo-<ph name="ACCOUNT_EMAIL_LAST" />. Sicela udale umsebenzisi omusha we-Chrome ukuze ugcine ulwazi lwakho luhlukile.</translation>
+<translation id="7905891027772979035">I-Chrome ayikwazi ukuhlola izandiso zakho. Zama futhi emuva kwesikhathi.</translation>
 <translation id="7916016681687251387">I-Chrome OS yikwazanga ukuvumelanisa idatha yakho. Lungisa manje.</translation>
 <translation id="7930071585467473040">I-Google Chrome izama ukukopisha amaphasiwedi.</translation>
 <translation id="7962410387636238736">Le khompuyutha ngeke isathola izibuyekezo ze-Google Chrome ngoba i-Windows XP ne-Windows Vista azisasekelwa</translation>

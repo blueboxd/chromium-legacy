@@ -168,6 +168,7 @@ Ketik mana-mana perkataan untuk mencari. Untuk memperhalus carian anda, sentuh &
 <translation id="2156074688469523661">Baki tapak (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Untuk berkongsi sesuatu daripada telefon anda kepada peranti lain, hidupkan penyegerakan dalam tetapan Chrome pada kedua-dua peranti</translation>
 <translation id="2175927920773552910">Kod QR</translation>
+<translation id="2182457891543959921">Tanya sebelum membenarkan tapak membuat peta 3D bagi persekitaran anda atau menjejaki kedudukan kamera (disyorkan)</translation>
 <translation id="218608176142494674">Perkongsian</translation>
 <translation id="2227444325776770048">Teruskan sebagai <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Segerak dan perkhidmatan Google</translation>
@@ -193,7 +194,6 @@ Ketik mana-mana perkataan untuk mencari. Untuk memperhalus carian anda, sentuh &
 <translation id="2407481962792080328">Apabila anda log masuk ke Akaun Google anda, ciri ini akan dihidupkan</translation>
 <translation id="2410754283952462441">Pilih akaun</translation>
 <translation id="2414886740292270097">Gelap</translation>
-<translation id="2416359993254398973">Chrome memerlukan kebenaran untuk mengakses kamera anda bagi tapak ini.</translation>
 <translation id="2426805022920575512">Pilih akaun lain</translation>
 <translation id="2433507940547922241">Tampilan</translation>
 <translation id="2434158240863470628">Muat turun selesai: <ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="3522247891732774234">Kemas kini tersedia. Lagi pilihan</translation>
 <translation id="3524138585025253783">UI Pembangun</translation>
 <translation id="3527085408025491307">Folder</translation>
+<translation id="3538390592868664640">Sekat tapak daripada membuat peta 3D bagi persekitaran anda atau menjejaki kedudukan kamera</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB tersedia</translation>
 <translation id="3549657413697417275">Cari sejarah anda</translation>
 <translation id="3557336313807607643">Tambahkan pada kenalan</translation>
@@ -439,6 +440,7 @@ Anda sahaja yang boleh melihat perkara yang dilihat oleh kamera anda. Tapak ters
 <translation id="4298388696830689168">Tapak terpaut</translation>
 <translation id="4307992518367153382">Asas</translation>
 <translation id="4314815835985389558">Urus penyegerakan</translation>
+<translation id="4320177379694898372">Tiada sambungan Internet</translation>
 <translation id="4321739720395210191">Tidak dapat membuka kamera anda. Mulakan semula peranti anda dan cuba lagi.</translation>
 <translation id="4351244548802238354">Tutup dialog</translation>
 <translation id="4353114845960720315">Semasa anda dalam VR, tapak ini boleh mendapatkan maklumat tentang:</translation>
@@ -617,7 +619,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5530766185686772672">Tutup tab inkognito</translation>
 <translation id="5534640966246046842">Tapak disalin</translation>
 <translation id="5561549206367097665">Menunggu rangkaian…</translation>
-<translation id="557283862590186398">Chrome memerlukan kebenaran untuk mengakses mikrofon anda bagi tapak ini.</translation>
 <translation id="55737423895878184">Lokasi dan pemberitahuan dibenarkan</translation>
 <translation id="5578795271662203820">Cari imej ini di <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Anda boleh memilih item yang hendak disegerakkan dalam <ph name="BEGIN_LINK1" />tetapan<ph name="END_LINK1" /> pada bila-bila masa.</translation>
@@ -726,7 +727,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6378173571450987352">Butiran: Diisih mengikut jumlah data yang digunakan</translation>
 <translation id="6381421346744604172">Tapak web digelapkan</translation>
 <translation id="6388207532828177975">Kosongkan &amp; tetapkan semula</translation>
-<translation id="6393863479814692971">Chrome memerlukan kebenaran untuk mengakses kamera dan mikrofon anda bagi tapak ini.</translation>
 <translation id="6395288395575013217">PAUTAN</translation>
 <translation id="6404511346730675251">Edit penanda halaman</translation>
 <translation id="6406506848690869874">Segerak</translation>
@@ -779,7 +779,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6676840375528380067">Kosongkan data Chrome anda daripada peranti ini?</translation>
 <translation id="6689172468748959065">Foto profil</translation>
 <translation id="6697492270171225480">Tunjukkan cadangan untuk halaman yang serupa apabila halaman tidak ditemui</translation>
-<translation id="6697947395630195233">Chrome memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini.</translation>
 <translation id="6698801883190606802">Urus data yang disegerakkan</translation>
 <translation id="6699370405921460408">Pelayan Google akan mengoptimumkan halaman yang anda lawati.</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
@@ -971,6 +970,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8186512483418048923"><ph name="FILES" /> fail lagi</translation>
 <translation id="8190358571722158785">1 hari lagi</translation>
 <translation id="8200772114523450471">Sambung semula</translation>
+<translation id="8206354486702514201">Tetapan ini dikuatkuasakan oleh pentadbir anda.</translation>
 <translation id="8209050860603202033">Buka imej</translation>
 <translation id="8218622182176210845">Urus akaun anda</translation>
 <translation id="8224471946457685718">Muat turun artikel untuk anda apabila menggunakan Wi-Fi</translation>
@@ -992,7 +992,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8364299278605033898">Lihat tapak web popular</translation>
 <translation id="8368027906805972958">Peranti tidak diketahui atau tidak disokong (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Benarkan Penyegerakan Latar Belakang untuk tapak tertentu</translation>
-<translation id="8378714024927312812">Diurus oleh organisasi anda</translation>
 <translation id="8380167699614421159">Tapak ini menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="8393700583063109961">Hantar mesej</translation>
 <translation id="8413126021676339697">Paparkan sejarah penuh</translation>

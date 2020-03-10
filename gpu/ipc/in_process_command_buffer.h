@@ -235,6 +235,12 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     return task_executor_->shared_image_manager();
   }
 
+  gpu::MemoryTracker* GetMemoryTracker() {
+    // Should only be called after initialization.
+    DCHECK(context_group_);
+    return context_group_->memory_tracker();
+  }
+
  private:
   struct InitializeOnGpuThreadParams {
     SurfaceHandle surface_handle;

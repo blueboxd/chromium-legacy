@@ -162,6 +162,17 @@
       如未設定這項政策，預設頻率為 3 小時一次。可用頻率下限
       是 60 秒。</translation>
 <translation id="1204263402976895730">啟用的企業印表機</translation>
+<translation id="1216890727647348501">啟用 <ph name="PRODUCT_NAME" /> 的安全瀏覽強化防護功能，並禁止使用者變更這項設定。
+
+      如果啟用這項設定，系統一律會啟用安全瀏覽強化防護功能。
+
+      如果停用這項設定，系統一律不會啟用安全瀏覽強化防護功能。
+
+      如果將這項政策設為強制套用，使用者即無法變更或覆寫 <ph name="PRODUCT_NAME" /> 中的「啟用網路詐騙和惡意軟體防護功能」設定。
+
+      如果未設定這項政策，系統在預設狀態下會停用安全瀏覽強化防護功能，但使用者可以自行啟用。
+
+      如要進一步瞭解「安全瀏覽」功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="1216919699175573511">啟用 Signed HTTP Exchange (SXG) 支援</translation>
 <translation id="1219695476179627719">指定是否要將已搭載較新版本的裝置復原至 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> 所設定的版本。
 
@@ -255,6 +266,7 @@
           如果不設定這項政策，內容更具體的政策行為將不會受到影響。</translation>
 <translation id="1384459581748403878">參考頁面：<ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">回報作業系統的更新狀態</translation>
+<translation id="1388918874748125262">啟用安全瀏覽強化防護功能</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
 <translation id="1397855852561539316">預設搜尋引擎建議網址</translation>
 <translation id="1398636873839401839">在登入畫面上啟用所有變化版本</translation>
@@ -1156,6 +1168,9 @@
 <translation id="26023406105317310">設定 Kerberos 帳戶</translation>
 <translation id="2604182581880595781">設定網路檔案共用功能相關政策。</translation>
 <translation id="2615240493030733717">回報時區資訊</translation>
+<translation id="2620943247255660284">這項政策已遭淘汰，並已替換為 AdvancedProtectionExtraSecurityAllowed。
+
+      這項政策可控管已加入進階保護計畫的使用者是否可以將下載內容傳送至 Google 進行惡意軟體掃描。如果設為 True 或不予設定，系統會提示已加入計畫的使用者將檔案傳送至 Google 進行深度掃描。如果使用者選取「掃描」，系統會將其下載內容傳送至 Google。如果設為 False，系統不會提示使用者，也不會將其下載內容傳送至 Google。</translation>
 <translation id="2623014935069176671">等待初始使用者活動</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME" />」文件提交功能</translation>
 <translation id="2627554163382448569">為企業印表機進行設定。
@@ -1398,6 +1413,21 @@
 <translation id="2987227569419001736">控制 Web Bluetooth API 使用權限</translation>
 <translation id="3016255526521614822">將「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面允許的筆記應用程式加入許可清單</translation>
 <translation id="3020064401262077616">控管家長監督政策，這些政策只適用於兒童帳戶。</translation>
+<translation id="3020953534071988875">你可以透過這項政策指定是否可以在 <ph name="PRODUCT_NAME" /> 的無痕模式和訪客設定檔中執行背景驗證。
+
+      如果未透過 NTLM/Kerberos/Negotiate 問題詢答的驗證配置提供明確的憑證，則背景驗證為包含預設憑證的 HTTP 驗證。
+
+      如果設為 <ph name="REGULAR_ONLY_OPTION_NAME" /> (值為 0)，則背景驗證作業只能在一般工作階段中執行，不能在無痕模式工作階段和訪客工作階段中執行。
+
+      如果設為 <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (值為 1)，則背景驗證作業可以在無痕模式工作階段和一般工作階段中執行，不能在訪客工作階段中執行。
+
+      如果設為 <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (值為 2)，則背景驗證作業可以在訪客工作階段和一般工作階段中執行，不能在無痕模式工作階段中執行。
+
+      如果設為 <ph name="ALL_OPTION_NAME" /> (值為 3)，則可以在所有工作階段中執行背景驗證。
+
+      請注意，在一般設定檔的使用環境下，系統一律允許執行背景驗證。
+
+      在 <ph name="PRODUCT_NAME" /> 81 以上版本中，如果未設定這項政策，系統只會在一般工作階段中啟用背景驗證功能。</translation>
 <translation id="3021562480854470924">允許復原的重要事件數</translation>
 <translation id="3023572080620427845">XML 檔案的網址，其中包含要在替代瀏覽器中載入的網址。</translation>
 <translation id="3026740867910702435">在登入畫面上啟用大型游標無障礙功能。
@@ -1865,6 +1895,7 @@
           如果不設定這項政策，系統會在初次顯示登入畫面時停用語音輸入，但使用者隨時可以啟用。</translation>
 <translation id="3811562426301733860">允許所有網站顯示廣告</translation>
 <translation id="3816312845600780067">啟用停止自動登入的鍵盤快速鍵</translation>
+<translation id="3817323252437541502">為加入進階保護計畫的使用者啟用額外防護功能</translation>
 <translation id="3820526221169548563">啟用螢幕小鍵盤這項無障礙功能。
 
           如果將這項政策設為 True，螢幕小鍵盤將一律為啟用狀態。
@@ -2320,9 +2351,6 @@
 <translation id="4449545651113180484">將畫面以順時針方向旋轉 270 度</translation>
 <translation id="445270821089253489">控管 Chrome 回報的使用者與裝置資訊類型。</translation>
 <translation id="4453913621209182880">只允許使用背景圖形列印</translation>
-<translation id="4454586530530448054">如果設定了這項政策，所有指定的資料類型都會從同步處理作業中排除，包含 Google Sync 和漫遊設定檔的同步處理作業。這有助於縮減漫遊設定檔的大小，或限制上傳到 Google Sync 伺服器的資料類型。
-
-      這項政策目前涵蓋的資料類型為：「bookmarks」、「preferences」、「passwords」、「autofill」、「themes」、「typedUrls」、「extensions」、「apps」、「tabs」、「wifiConfiguration」。這些名稱有大小寫之分。</translation>
 <translation id="4454820008017317557">顯示 <ph name="PRODUCT_NAME" /> 工具列圖示</translation>
 <translation id="4467952432486360968">封鎖第三方 Cookie</translation>
 <translation id="4474167089968829729">允許將密碼儲存到密碼管理員</translation>
@@ -5009,6 +5037,7 @@
       回報顯示狀態和圖形狀態。</translation>
 <translation id="891435090623616439">以 JSON 字串格式編碼，詳情請參閱 <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">允許使用者管理已安裝的 CA 憑證。</translation>
+<translation id="8924721011887485485">這項政策可控管已加入進階保護計畫的使用者是否可以享有額外的安全防護功能。部分功能可能涉及與 Google 共用資料 (例如，進階保護計畫的使用者可將下載內容傳送至 Google 進行惡意軟體掃描)。如果設為 True 或不予設定，已加入計畫的使用者將能享有額外的安全防護功能。如果設為 False，進階保護計畫的使用者只能享有一般的安全防護功能。</translation>
 <translation id="8926275581598789324">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 82 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定電池供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會執行閒置動作。
@@ -5033,11 +5062,11 @@
 
       如果未設定這項政策，系統會自動採用 <ph name="PRINTERS_ALLOW_ALL" />。
       </translation>
-<translation id="8937282917198525844"> 自 M81 版起，我們為標準表單控制項元素 (例如 &lt;select&gt;、&lt;button&gt; 和 &lt;input type=date&gt;) 提供煥然一新的外觀和風格，並改善無障礙功能及提升平台的一致性。這項政策會復原「舊版」的表單控制項元素，直到 M84 版為止。
+<translation id="8937282917198525844"> 自 M81 版起，我們為標準表單控制項元素 (例如 &lt;select&gt;、&lt;button&gt; 和 &lt;input type=date&gt;) 提供煥然一新的外觀和風格，不但強化了無障礙使用設計，在各種作業系統平台操作時，效果也能更一致。這項政策恢復納入了「舊版」表單控制項元素做為使用選項，並且一路提供到 M84 版。
 
       如果將這項政策設為 True，系統會針對所有網站使用「舊版」表單控制項元素。
 
-      如果將這項政策設為 False 或不設定，系統會在 M81、M82 和 M83 版推出時啟用其中的表單控制項元素。
+      如果將這項政策設為 False 或不去設定，系統可能啟用 M81、M82 和 M83 版的表單控制項元素，也可能使用舊版元素。
 
       這項政策將在 Chrome 第 84 版後移除。</translation>
 <translation id="8938932171964587769">這項政策自 M69 起已淘汰，請改用 OverrideSecurityRestrictionsOnInsecureOrigin。

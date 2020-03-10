@@ -172,6 +172,17 @@
       Si cette règle n'est pas définie, le délai par défaut entre deux transmissions
       est de 3 heures. Le délai minimal autorisé est de 60 secondes.</translation>
 <translation id="1204263402976895730">Imprimantes d'entreprise activées</translation>
+<translation id="1216890727647348501">Permet d'activer la fonctionnalité de protection renforcée de la navigation sécurisée de <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier ce paramètre.
+
+      Si vous activez ce paramètre, la protection renforcée de la navigation sécurisée est active en permanence.
+
+      Si vous désactivez ce paramètre, la protection renforcée de la navigation sécurisée n'est jamais active.
+
+      Si vous définissez cette règle comme obligatoire, les utilisateurs ne peuvent ni modifier, ni ignorer le paramètre "Activer la protection contre l'hameçonnage et les logiciels malveillants" dans <ph name="PRODUCT_NAME" />.
+
+      Si cette règle n'est pas configurée, la protection renforcée de la navigation sécurisée sera désactivée par défaut, mais l'utilisateur pourra l'activer.
+
+      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="1216919699175573511">Activer la compatibilité avec la fonctionnalité Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Spécifie si la version définie par <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> doit être rétablie sur l'appareil s'il exécute une version ultérieure.
 
@@ -265,6 +276,7 @@
           Si cette règle n'est pas configurée, le comportement des règles plus spécifiques n'est pas modifié.</translation>
 <translation id="1384459581748403878">Référence : <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Indiquer l'état de la mise à jour du système</translation>
+<translation id="1388918874748125262">Activer la protection renforcée de la navigation sécurisée</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
 <translation id="1397855852561539316">URL de suggestions de recherche du moteur de recherche par défaut</translation>
 <translation id="1398636873839401839">Activer toutes les variantes sur l'écran de connexion</translation>
@@ -1197,6 +1209,9 @@ Cette règle n'est disponible que sur les instances Windows qui sont associées 
 <translation id="26023406105317310">Configurer les comptes Kerberos</translation>
 <translation id="2604182581880595781">Configurer les règles associées à la fonctionnalité Partages de fichiers en réseau.</translation>
 <translation id="2615240493030733717">Transmettre le fuseau horaire</translation>
+<translation id="2620943247255660284">Cette règle est obsolète et a été remplacée par AdvancedProtectionExtraSecurityAllowed.
+
+      Elle permet de contrôler si les utilisateurs inscrits au Programme Protection Avancée sont autorisés ou non à envoyer leurs téléchargements à Google pour les faire analyser afin de détecter d'éventuels logiciels malveillants. Si cette règle est définie sur "True" ou si elle n'est pas configurée, ces utilisateurs sont invités à envoyer leurs téléchargements à Google pour une analyse approfondie. Si ces utilisateurs sélectionnent l'option d'analyse, leurs téléchargements sont envoyés à Google. Si cette règle est définie sur "False", aucune invite ne s'affiche, et les téléchargements des utilisateurs ne sont pas envoyés à Google.</translation>
 <translation id="2623014935069176671">Attendre l'activité utilisateur initiale</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
@@ -1449,6 +1464,21 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 <translation id="2987227569419001736">Contrôler l'utilisation de l'API Web Bluetooth</translation>
 <translation id="3016255526521614822">Les applications de prise de note ajoutées à la liste blanche sont autorisées sur l'écran de verrouillage de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Contrôle les règles de supervision parentale s'appliquant uniquement aux comptes d'utilisateurs mineurs.</translation>
+<translation id="3020953534071988875">La configuration de cette règle autorise/interdit l'authentification ambiante pour les profils Invité et de navigation privée dans <ph name="PRODUCT_NAME" />.
+
+      L'authentification ambiante est une authentification HTTP qui utilise des identifiants par défaut si aucun identifiant explicite n'est fourni via les systèmes de défi-réponse NTLM/Kerberos/Negotiate.
+
+      Le paramètre <ph name="REGULAR_ONLY_OPTION_NAME" /> (valeur 0) permet d'activer l'authentification ambiante uniquement pour les sessions standards. Elle reste désactivée pour les sessions Invité et de navigation privée.
+
+      Le paramètre <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valeur 1) permet d'activer l'authentification ambiante pour les sessions standards et de navigation privée. Elle reste désactivée pour les sessions Invité.
+
+      Le paramètre <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valeur 2) permet d'activer l'authentification ambiante pour les sessions standards et Invité. Elle reste désactivée pour les sessions de navigation privée.
+
+      Le paramètre <ph name="ALL_OPTION_NAME" /> (valeur 3) permet d'activer l'authentification ambiante pour toutes les sessions.
+
+      Notez que l'authentification ambiante est toujours activée pour les profils standards.
+
+      Dans <ph name="PRODUCT_NAME" /> 81 et les versions ultérieures, si la règle n'est pas définie, l'authentification ambiante sera activée pour les sessions standards uniquement.</translation>
 <translation id="3021562480854470924">Nombre de versions intermédiaires autorisées pour le rollback</translation>
 <translation id="3023572080620427845">URL d'un fichier XML qui contient des URL à charger dans un navigateur secondaire.</translation>
 <translation id="3026740867910702435">Permet d'activer la fonctionnalité d'accessibilité de grand curseur sur l'écran de connexion.
@@ -1927,6 +1957,7 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
           Si cette règle n'est pas configurée, la dictée est initialement désactivée sur l'écran de connexion, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="3811562426301733860">Autoriser les annonces sur tous les sites</translation>
 <translation id="3816312845600780067">Activer le raccourci clavier permettant d'ignorer le processus de connexion automatique</translation>
+<translation id="3817323252437541502">Activer les protections supplémentaires pour les utilisateurs inscrits au Programme Protection Avancée</translation>
 <translation id="3820526221169548563">Activer la fonctionnalité d'accessibilité du clavier à l'écran
 
           Si cette règle est définie sur "True", le clavier à l'écran est toujours activé.
@@ -2401,9 +2432,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4449545651113180484">Faire pivoter l'écran vers la droite de 270 degrés</translation>
 <translation id="445270821089253489">Contrôle le type d'informations figurant dans les rapports sur les utilisateurs et les appareils.</translation>
 <translation id="4453913621209182880">Autoriser l'impression uniquement avec des images de fond</translation>
-<translation id="4454586530530448054">Si cette règle est configurée, tous les types de données spécifiés seront exclus de la synchronisation Google Sync et de la synchronisation du profil itinérant. Cela peut permettre de réduire la taille du profil itinérant ou de limiter les types de données importés sur les serveurs Google Sync.
-
-      Les types de données actuels pour cette règle sont : "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" et "wifiConfiguration". Ces noms sont sensibles à la casse !</translation>
 <translation id="4454820008017317557">Afficher l'icône de la barre d'outils de <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Bloquer les cookies tiers</translation>
 <translation id="4474167089968829729">Activer l'enregistrement des mots de passe dans le gestionnaire de mots de passe</translation>
@@ -5179,6 +5207,7 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
       Si la règle est définie sur "False" ou n'est pas définie, les états liés aux affichages et aux graphiques ne sont pas transmis. Si elle est définie sur "True", ils sont envoyés.</translation>
 <translation id="891435090623616439">codée comme une chaîne JSON, pour plus de détails voir <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Autoriser les utilisateurs à gérer les certificats CA installés.</translation>
+<translation id="8924721011887485485">Cette règle détermine si les utilisateurs inscrits au Programme Protection Avancée reçoivent des fonctionnalités de sécurité supplémentaires. Ces fonctionnalités peuvent impliquer le partage de données avec Google (par exemple, les utilisateurs de la Protection Avancée peuvent envoyer leurs téléchargements à Google pour les faire analyser afin de détecter d'éventuels logiciels malveillants). Si cette règle est définie sur "True" ou si elle n'est pas configurée, les utilisateurs inscrits recevront des fonctionnalités de sécurité supplémentaires. Si elle est définie sur "False", les utilisateurs de la Protection Avancée recevront seulement les fonctionnalités de sécurité destinées aux consommateurs.</translation>
 <translation id="8926275581598789324">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
           Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'action à effectuer en cas d'inactivité est mise en œuvre (lorsque l'appareil fonctionne sur batterie).
@@ -5204,7 +5233,7 @@ indique uniquement les imprimantes qui peuvent être choisies.
 
       Si cette règle n'est pas définie, <ph name="PRINTERS_ALLOW_ALL" /> est supposé s'appliquer.
       </translation>
-<translation id="8937282917198525844"> À partir de la version M81, les éléments de contrôle de formulaire (par exemple, &lt;select&gt;, &lt;button&gt;, &lt;input type=date&gt;) font l'objet d'une remise à neuf améliorant leur accessibilité et l'uniformité de la plate-forme. Cette règle restaure les anciens éléments de contrôle de formulaire (jusqu'à la version M84).
+<translation id="8937282917198525844"> À partir de la version M81, les éléments de contrôle de formulaire (par exemple, &lt;select&gt;, &lt;button&gt;, &lt;input type=date&gt;) ont été actualisés pour améliorer leur accessibilité et l'uniformité de la plate-forme. Cette règle restaure les anciens éléments de contrôle de formulaire (jusqu'à la version M84).
 
       Si cette règle est définie sur "True", les anciens éléments de contrôle de formulaire seront utilisés pour tous les sites.
 

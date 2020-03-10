@@ -41,7 +41,7 @@
     Ak chcete otvoriť novú kartu a automaticky na ňu prejsť, stlačte klávesy Ctrl + T. Kurzor sa presunie do omniboxu.
     Ak chcete zavrieť kartu, stlačte kombináciu klávesov Ctrl + W.
     Ak chcete prechádzať dopredu medzi otvorenými kartami, stlačte kombináciu klávesov Ctrl + Tab.
-    Ak chcete otvoriť Ponuku prehliadača Chromw, stlačte kombináciu klávesov Alt + F.</translation>
+    Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Alt + F.</translation>
 <translation id="1213216066620407844">ChromeVox – hlas prehliadača Chrome</translation>
 <translation id="1225969361094801578">Tmavobridlicovosivá</translation>
 <translation id="1229276918471378188">Predchádzajúci skok</translation>
@@ -1138,6 +1138,7 @@
 <translation id="8065607967589909823">Výber je</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Karty</translation>
+<translation id="8083115023881784332">Žiadne aktuálne označenie čítačkou ChromeVox. Stlačením klávesov Alt+Shift+L prejdete do spúšťača.</translation>
 <translation id="8091452896542422286">Medzera</translation>
 <translation id="8096975275316362544">Mätovokrémová</translation>
 <translation id="8098587210054821856">Bridlicovosivá</translation>

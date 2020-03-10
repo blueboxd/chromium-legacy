@@ -170,6 +170,17 @@
 
       Si esta política no se establece, la frecuencia predeterminada es de 3 horas. La frecuencia mínima permitida es de 60 segundos.</translation>
 <translation id="1204263402976895730">Impresoras empresariales habilitadas</translation>
+<translation id="1216890727647348501">Habilita la función de protección mejorada para la Navegación segura de <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.
+
+      Si habilitas esta configuración, la protección mejorada para la Navegación segura siempre estará activa.
+
+      Si inhabilitas esta configuración, la protección mejorada para la Navegación segura nunca estará activa.
+
+      Si estableces esta política como obligatoria, lo usuarios no podrán cambiar ni anular la configuración para habilitar la protección contra software malicioso y suplantación de identidad (phishing) en <ph name="PRODUCT_NAME" />.
+
+      Si no se establece esta política, se inhabilitará de forma predeterminada la protección mejorada para la Navegación segura, pero el usuario podrá habilitarla.
+
+      Para obtener más información sobre la Navegación segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="1216919699175573511">Habilitar compatibilidad con intercambios HTTP firmados (SXG)</translation>
 <translation id="1219695476179627719">Especifica si el dispositivo debe volver a la versión que se establece en <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, si ya ejecuta una versión más reciente.
 
@@ -264,6 +275,7 @@
           Si no se configura, no se verá afectado el comportamiento de las políticas más específicas.</translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Informa el estado de la actualización del SO</translation>
+<translation id="1388918874748125262">Habilitar la protección mejorada para la Navegación segura</translation>
 <translation id="1393485621820363363">Impresoras empresariales habilitadas asociadas a dispositivos</translation>
 <translation id="1397855852561539316">Dirección URL sugerida para el proveedor de búsqueda predeterminado</translation>
 <translation id="1398636873839401839">Habilitar todas las variaciones en la pantalla de acceso</translation>
@@ -1158,6 +1170,9 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="26023406105317310">Configura las cuentas de Kerberos</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con la función "Network File Shares".</translation>
 <translation id="2615240493030733717">Envía información sobre la zona horaria</translation>
+<translation id="2620943247255660284">Esta política es obsoleta y se reemplazó por AdvancedProtectionExtraSecurityAllowed.
+
+      Esta política controla si los usuarios inscritos en el Programa de Protección Avanzada pueden enviar sus descargas a Google para comprobar que no incluyan software malicioso. Si se establece como verdadera o no se establece, se les pedirá a los usuarios inscritos que envíen sus archivos a Google para analizarlos en profundidad. Si el usuario selecciona "Analizar", se enviará la descarga a Google. Si se establece como falsa, no se les pedirá a los usuarios que realicen ninguna acción y no se enviarán sus descargas a Google.</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Proporciona configuraciones para las impresoras empresariales.
@@ -1404,6 +1419,21 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="2987227569419001736">Controlar el uso de la API de Bluetooth web</translation>
 <translation id="3016255526521614822">Incluir en la lista blanca las apps para tomar notas que se permiten en la pantalla bloqueada de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Controla las políticas de supervisión parental, que se aplican solo a las cuentas de menores de edad.</translation>
+<translation id="3020953534071988875">La configuración de esta política habilitará o inhabilitará la autenticación ambiental para los perfiles de incógnito y de invitado en <ph name="PRODUCT_NAME" />.
+
+      La Autenticación ambiental es la autenticación por http con credenciales predeterminadas si no se proporcionan credenciales específicas mediante esquemas de desafío/respuesta de NTLM, Kerberos y Negotiate.
+
+      Si estableces la opción <ph name="REGULAR_ONLY_OPTION_NAME" /> (valor 0), solo se habilitará la autenticación ambiental para las sesiones comunes. No se permitirá esta autenticación en las sesiones de incógnito y de invitado.
+
+      Si estableces la opción <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valor 1), se habilitará la autenticación ambiental para las sesiones comunes y de incógnito. No se permitirá esta autenticación en las sesiones de invitado.
+
+      Si estableces la opción <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valor 2), se habilitará la autenticación ambiental para las sesiones comunes y de invitado. No se permitirá esta autenticación en las sesiones de incógnito.
+
+      Si estableces la opción <ph name="ALL_OPTION_NAME" /> (valor 3), se habilitará la autenticación ambiental para todas las sesiones.
+
+      Ten en cuenta que siempre se permite la autenticación ambiental en los perfiles comunes.
+
+      En <ph name="PRODUCT_NAME" /> 81 y versiones posteriores, si no se establece la política, solo se habilitará la autenticación ambiental para las sesiones comunes.</translation>
 <translation id="3021562480854470924">Cantidad de hitos que se permiten en la reversión</translation>
 <translation id="3023572080620427845">URL de un archivo XML que contiene URL para cargarlas en un navegador alternativo</translation>
 <translation id="3026740867910702435">Habilita la función de accesibilidad del cursor grande en la pantalla de acceso.
@@ -1875,6 +1905,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Si no la estableces, el dictado estará inicialmente inhabilitado en la pantalla de acceso, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="3811562426301733860">Permitir anuncios en todos los sitios</translation>
 <translation id="3816312845600780067">Habilitar combinación de teclas para acceso directo de rescate para el acceso automático</translation>
+<translation id="3817323252437541502">Habilitar protecciones adicionales para los usuarios inscritos en el Programa de Protección Avanzada</translation>
 <translation id="3820526221169548563">Habilita la función de accesibilidad del teclado en pantalla.
 
           Si se establece esta política en True, el teclado en pantalla estará siempre habilitado.
@@ -2347,9 +2378,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4449545651113180484">Rotar la pantalla hacia la derecha 270 grados</translation>
 <translation id="445270821089253489">Controla el tipo de información sobre el dispositivo y el usuario que se envía.</translation>
 <translation id="4453913621209182880">Habilitar la impresión solo con los gráficos de fondo</translation>
-<translation id="4454586530530448054">Si configuras esta política, se excluirán todos los tipos de datos especificados de la sincronización para Google Sync y la sincronización de perfiles en roaming. Es política puede ayudar a reducir el tamaño del perfil en roaming o limitar los tipos de datos que se suben a los servidores de Google Sync.
-
-      Los tipos de datos actuales para esta política son los siguientes: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfiguration". ¡Estos nombres distinguen entre mayúsculas y minúsculas!</translation>
 <translation id="4454820008017317557">Mostrar el ícono de la barra de herramientas de <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
 <translation id="4474167089968829729">Habilitar el guardado de contraseñas en el administrador de contraseñas</translation>
@@ -5086,6 +5114,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       estos estados.</translation>
 <translation id="891435090623616439">codificada como cadena JSON; para obtener detalles, se puede consultar <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Permite que los usuarios administren los Certificados de CA instalados</translation>
+<translation id="8924721011887485485">Esta política controla si los usuarios inscritos en el Programa de Protección Avanzada reciben funciones de seguridad adicionales. Es posible que algunas de estas funciones contemplen el uso compartido de datos con Google (por ejemplo, los usuarios de la Protección avanzada podrán enviar sus descargas a Google para comprobar que no incluyan software malicioso). Si se establece como verdadera o no se establece, los usuarios inscritos recibirán funciones de seguridad adicionales. Si se establece como falsa, los usuarios de la Protección avanzada solo recibirán las funciones de seguridad para el consumidor.</translation>
 <translation id="8926275581598789324">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Especifica el período sin intervención del usuario después del cual se ejecutará la acción de inactividad cuando el dispositivo esté funcionando con batería.

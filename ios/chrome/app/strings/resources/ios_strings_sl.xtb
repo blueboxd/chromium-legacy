@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Izberite račun</translation>
 <translation id="3311748811247479259">Izklopljeno</translation>
 <translation id="3324193307694657476">Naslov 2</translation>
+<translation id="3328801116991980348">Podatki o mestu</translation>
 <translation id="3329904751041170572">Povezave s strežnikom ni mogoče vzpostaviti.</translation>
 <translation id="3335947283844343239">Znova odpri zaprt zavihek</translation>
 <translation id="3371831930909698441">Prevod je na voljo. Možnosti so na voljo pri dnu zaslona.</translation>
@@ -600,6 +601,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="9223358826628549784">Poročilo o zrušitvi poslano.</translation>
 <translation id="952704832371081537">Preklic</translation>
 <translation id="988141524645182168">Druge naprave</translation>
+<translation id="989697783705943787">Varnost spletnega mesta</translation>
 <translation id="989988560359834682">Uredi naslov</translation>
 <translation id="994757059139821576">Predlogi za članke</translation>
 </translationbundle>

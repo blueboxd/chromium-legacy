@@ -22,6 +22,7 @@ namespace ui {
 struct AssistantNode {
   AssistantNode();
   AssistantNode(const AssistantNode& other);
+  AssistantNode& operator=(const AssistantNode&) = delete;
   ~AssistantNode();
 
   std::vector<int32_t> children_indices;
@@ -55,12 +56,11 @@ struct AssistantNode {
 
 struct AssistantTree {
   AssistantTree();
+  AssistantTree(const AssistantTree& other);
+  AssistantTree& operator=(const AssistantTree&) = delete;
   ~AssistantTree();
 
   std::vector<std::unique_ptr<AssistantNode>> nodes;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AssistantTree);
 };
 
 std::unique_ptr<AssistantTree> CreateAssistantTree(const AXTreeUpdate& update,

@@ -156,9 +156,10 @@ class OptimizationGuideHintsManager
   void OnNavigationStartOrRedirect(content::NavigationHandle* navigation_handle,
                                    base::OnceClosure callback);
 
-  // Notifies |this| that a navigation with URL |navigation_url| has finished.
-  // The |navigation_data| will be updated based on the current state of |this|.
-  void OnNavigationFinish(const GURL& navigation_url,
+  // Notifies |this| that a navigation with redirect chain
+  // |navigation_redirect_chain| has finished. The |navigation_data| will be
+  // updated based on the current state of |this|.
+  void OnNavigationFinish(const std::vector<GURL>& navigation_redirect_chain,
                           OptimizationGuideNavigationData* navigation_data);
 
  private:

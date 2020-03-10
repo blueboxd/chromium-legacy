@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Temui</translation>
 <translation id="3820172043799983114">PIN tidak sah.</translation>
 <translation id="3838338534323494292">Kata laluan baharu</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Sila cuba lagi. Baki percubaan: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> mengurus peranti ini dan mempunyai akses kepada semua aktiviti pengguna, termasuk halaman web yang dilawati, kata laluan dan e-mel.</translation>
 <translation id="4227825898293920515">Kata laluan tamat tempoh dalam <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Tiket Kerberos akan tamat tempoh tidak lama lagi</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">Saya tidak menemui apa-apa pada skrin anda yang boleh saya bantu.
 Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation>
 <translation id="5222676887888702881">Log keluar</translation>
-<translation id="5275776633505022322">Baki percubaan: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Sila cuba lagi.</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5332948983412042822">Pilih kata laluan baharu sekarang</translation>
 <translation id="5457599981699367932">Semak Imbas sebagai Tetamu</translation>

@@ -328,6 +328,11 @@ class MODULES_EXPORT BaseAudioContext
   void ReportDidCreate() final;
   void ReportWillBeDestroyed() final;
 
+  // TODO(crbug.com/1055983): Remove this when the execution context validity
+  // check is not required in the AudioNode factory methods. Returns false
+  // if the execution context does not exist.
+  bool CheckExecutionContextAndThrowIfNecessary(ExceptionState&);
+
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 

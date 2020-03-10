@@ -7,7 +7,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/suggestions_url_view"
-    android:minHeight="@dimen/omnibox_suggestion_edit_url_min_height"
+    android:minHeight="@dimen/omnibox_suggestion_comfortable_height"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground" >

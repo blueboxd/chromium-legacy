@@ -80,6 +80,7 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     const OutputSurface::Capabilities& capabilities,
     const RendererSettings& renderer_settings,
     gpu::SharedImageManager* shared_image_manager,
+    gpu::MemoryTracker* memory_tracker,
     scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
     gpu::SharedImageInterface* shared_image_interface) {
 #if defined(OS_MACOSX)
@@ -130,7 +131,8 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     // overlay processing for this OutputSurface.
     overlay_enabled &= !capabilities.android_surface_control_feature_enabled;
     return std::make_unique<OverlayProcessorAndroid>(
-        shared_image_manager, gpu_task_scheduler, overlay_enabled);
+        shared_image_manager, memory_tracker, gpu_task_scheduler,
+        overlay_enabled);
   }
 #else  // Default
   return std::make_unique<OverlayProcessorStub>();

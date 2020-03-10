@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/quota_dispatcher_host.h"
+#include "content/browser/quota/quota_dispatcher_host.h"
 
 #include <stdint.h>
 

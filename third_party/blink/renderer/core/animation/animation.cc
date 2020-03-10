@@ -108,7 +108,7 @@ PseudoPriority ConvertStringtoPriority(const String& pseudo) {
 }
 
 Animation::AnimationClassPriority AnimationPriority(
-    const Animation* animation) {
+    const Animation& animation) {
   // According to the spec:
   // https://drafts.csswg.org/web-animations/#animation-class,
   // CSS tranisiton has a lower composite order than the CSS animation, and CSS
@@ -120,9 +120,9 @@ Animation::AnimationClassPriority AnimationPriority(
   // https://drafts.csswg.org/css-animations-2/#animation-composite-order and
   // https://drafts.csswg.org/css-transitions-2/#animation-composite-order
   Animation::AnimationClassPriority priority;
-  if (animation->IsCSSTransition())
+  if (animation.IsCSSTransition())
     priority = Animation::AnimationClassPriority::kCssTransitionPriority;
-  else if (animation->IsCSSAnimation())
+  else if (animation.IsCSSAnimation())
     priority = Animation::AnimationClassPriority::kCssAnimationPriority;
   else
     priority = Animation::AnimationClassPriority::kDefaultPriority;
@@ -462,8 +462,8 @@ bool Animation::HasLowerCompositeOrdering(
     const Animation* animation1,
     const Animation* animation2,
     CompareAnimationsOrdering compare_animation_type) {
-  AnimationClassPriority priority1 = AnimationPriority(animation1);
-  AnimationClassPriority priority2 = AnimationPriority(animation2);
+  AnimationClassPriority priority1 = AnimationPriority(*animation1);
+  AnimationClassPriority priority2 = AnimationPriority(*animation2);
   if (priority1 != priority2)
     return priority1 < priority2;
 

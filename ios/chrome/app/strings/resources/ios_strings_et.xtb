@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Konto valimine</translation>
 <translation id="3311748811247479259">Väljas</translation>
 <translation id="3324193307694657476">Aadress 2</translation>
+<translation id="3328801116991980348">Saiditeave</translation>
 <translation id="3329904751041170572">Serveriga ei saanud ühendust.</translation>
 <translation id="3335947283844343239">Ava uuesti suletud vaheleht</translation>
 <translation id="3371831930909698441">Tõlkimine on saadaval. Valikud on saadaval ekraanikuva allosas.</translation>
@@ -600,6 +601,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="9223358826628549784">Krahhiaruanne on saadetud.</translation>
 <translation id="952704832371081537">Tühista</translation>
 <translation id="988141524645182168">Muud seadmed</translation>
+<translation id="989697783705943787">Saidi turvalisus</translation>
 <translation id="989988560359834682">Aadressi muutmine</translation>
 <translation id="994757059139821576">Artiklite soovitused</translation>
 </translationbundle>

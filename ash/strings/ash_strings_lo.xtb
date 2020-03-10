@@ -37,7 +37,7 @@
 <translation id="1341651618736211726">ລົ້ນ</translation>
 <translation id="1346748346194534595">ເບື້ອງຂວາ</translation>
 <translation id="1351937230027495976">ຫຍໍ້ເມນູ</translation>
-<translation id="1383876407941801731">ຄົ້ນຫາ</translation>
+<translation id="1383876407941801731">ຊອກຫາ</translation>
 <translation id="1419738280318246476">ປົດລັອກອຸປະກອນເພື່ອເຮັດການດຳເນີນການແຈ້ງເຕືອນ</translation>
 <translation id="1420408895951708260">ປິດເປີດແສງກາງຄືນ. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">ແມ່ນແລ້ວ</translation>
@@ -139,7 +139,7 @@
 <translation id="2704781753052663061">ເຂົ້າຮ່ວມເຄືອຂ່າຍ Wi-Fi ອື່ນ</translation>
 <translation id="2718395828230677721">ແສງກາງຄືນ</translation>
 <translation id="2727977024730340865">ສຽບໃສ່ເຄື່ອງສາກໄຟຕໍ່າແລ້ວ. ການສາກແບັດເຕີຣີອາດຈະບໍ່ເຊື່ອຖືໄດ້.</translation>
-<translation id="2792498699870441125">Alt+ຄົ້ນຫາ</translation>
+<translation id="2792498699870441125">Alt+ຊອກຫາ</translation>
 <translation id="2819276065543622893">ທ່ານຈະຖືກອອກຈາກລະບົບດຽວນີ້.</translation>
 <translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> ບໍ່ຮອງຮັບ <ph name="SPECIFIED_RESOLUTION" />. ຄວາມລະອຽດຖືກປ່ຽນເປັນ <ph name="FALLBACK_RESOLUTION" /> ແລ້ວ.</translation>
 <translation id="2825619548187458965">ຖ້ານ</translation>
@@ -308,7 +308,7 @@
 <translation id="4849058404725798627">ໝາຍວັດຖຸດ້ວຍໂຟກັສແປ້ນພິມ</translation>
 <translation id="485592688953820832">ບໍ່ດຳເນີນການ (ຢຸດຊົ່ວຄາວ)</translation>
 <translation id="4868492592575313542">ເປີດນຳໃຊ້ແລ້ວ</translation>
-<translation id="4872237917498892622">Alt+ຄົ້ນຫາ ຫຼື Shift</translation>
+<translation id="4872237917498892622">Alt+ຊອກຫາ ຫຼື Shift</translation>
 <translation id="4890187583552566966">ຜູ້ຊ່ວຍ Google ຖືກປິດນຳໃຊ້ໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ.</translation>
 <translation id="4895488851634969361">ແບັດເຕີຣີເຕັມ.</translation>
 <translation id="490375751687810070">ລວງຕັ້ງ</translation>

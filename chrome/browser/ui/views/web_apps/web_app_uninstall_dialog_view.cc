@@ -77,8 +77,9 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
 
   // Add margins for the icon plus the icon-title padding so that the dialog
   // contents align with the title text.
-  set_margins(margins() +
-              gfx::Insets(0, margins().left() + kIconSizeInDip, 0, 0));
+  gfx::Insets insets =
+      layout_provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT);
+  set_margins(insets + gfx::Insets(0, insets.left() + kIconSizeInDip, 0, 0));
 
   base::string16 checkbox_label = l10n_util::GetStringFUTF16(
       IDS_EXTENSION_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX,

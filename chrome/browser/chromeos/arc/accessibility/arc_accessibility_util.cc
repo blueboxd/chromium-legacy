@@ -143,11 +143,27 @@ bool IsImportantInAndroid(AXNodeInfoData* node) {
     return true;
 
   // WebView and its child nodes do not have accessibility importance set.
-  // This logic can be removed once the change in crrev/c/1890402 landed
+  // This logic can be removed once the change in crrev/c/1890402 lands
   // in all ARC containers.
+  return IsWebViewNode(node);
+}
+
+bool IsWebViewNode(AXNodeInfoData* node) {
+  if (!node)
+    return false;
+
   if (HasStandardAction(node, AXActionType::NEXT_HTML_ELEMENT) ||
       HasStandardAction(node, AXActionType::PREVIOUS_HTML_ELEMENT))
     return true;
+
+  std::string chrome_role;
+  if (GetProperty(node->string_properties, AXStringProperty::CHROME_ROLE,
+                  &chrome_role)) {
+    ax::mojom::Role role_value = ui::ParseRole(chrome_role.c_str());
+    if (role_value == ax::mojom::Role::kWebView ||
+        role_value == ax::mojom::Role::kRootWebArea)
+      return true;
+  }
 
   return false;
 }

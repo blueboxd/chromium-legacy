@@ -417,6 +417,7 @@ public abstract class ChromeFeatureList {
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";
     public static final String WEBAPK_ADAPTIVE_ICON = "WebApkAdaptiveIcon";
     public static final String WEB_AUTH = "WebAuthentication";
+    public static final String WEB_AUTH_PHONE_SUPPORT = "WebAuthenticationPhoneSupport";
     public static final String WEB_PAYMENTS = "WebPayments";
     public static final String WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP =
             "AlwaysAllowJustInTimePaymentApp";

@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">အကောင့်ကို <ph name="MANAGER_EMAIL" /> က စီမံပါသည်</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" သို့ပြန်ပြောင်းရန် (ပြန်လည်အစပြုရန် လိုအပ်သည်)</translation>
 <translation id="3576141592585647168">စံတော်ချိန် ပြောင်းခြင်း</translation>
+<translation id="3593646411856133110">ဖွင့်ထားသောအက်ပ်များ ကြည့်ရန် အပေါ်သို့ပွတ်ဆွဲပြီး ဖိထားပါ</translation>
 <translation id="3595596368722241419">ဘက်ထရီ အားပြည့်နေ</translation>
 <translation id="3604801046548457007">'မြင်ကွင်း <ph name="DESK_TITILE" />' ကို ပြုလုပ်လိုက်သည်</translation>
 <translation id="3606978283550408104">မျက်မမြင်စာ ဖော်ပြချက် ချိတ်ဆက်ထားသည်။</translation>
@@ -244,7 +245,7 @@
 <translation id="3995138139523574647">USB-C ကိရိယာ (ညာဘက် နောက်ပိုင်း ပို့တ်)</translation>
 <translation id="4017989525502048489">လေဆာညွှန်တံ</translation>
 <translation id="4021716437419160885">အောက်သို့ လှိမ့်ရန်</translation>
-<translation id="402772165574991617">အက်ပ်တစ်ခုနှင့်တစ်ခုအကြား ပအမြန်ပြောင်းရန်နှင့် သင့် chromebook ကို တက်ဘလက်မုဒ်တွင် ပြန်လှန်တုံ့ပြန်၍ အသုံးပြုနိုင်ရန် လက်ဟန်များကို သုံးပါ။</translation>
+<translation id="402772165574991617">အက်ပ်တစ်ခုနှင့်တစ်ခုအကြား အမြန်ပြောင်းရန်နှင့် သင့် chromebook ကို တက်ဘလက်မုဒ်တွင် ပြန်လှန်တုံ့ပြန်၍ အသုံးပြုနိုင်ရန် လက်ဟန်များကို သုံးပါ။</translation>
 <translation id="4028481283645788203">လုံခြုံရေးပိုမိုကောင်းမွန်စေရန် စကားဝှက်လိုအပ်သည်</translation>
 <translation id="4042660782729322247">သင့်မျက်နှာပြင်ကို မျှဝေနေသည်</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{အက်ပ်တစ်ခုအတွက် ပိတ်ထားသည်}other{အက်ပ် # ခုအတွက် ပိတ်ထားသည်}}</translation>
@@ -365,6 +366,7 @@
 <translation id="5745612484876805746">နေဝင်ချိန်တွင် 'ညအလင်းရောင်' အလိုအလျောက် ပွင့်လာပါမည်</translation>
 <translation id="5750765938512549687">ဘလူးတုသ်ကို ပိတ်ထားသည်</translation>
 <translation id="576453121877257266">'ညအလင်းရောင်' ဖွင့်ထားသည်။</translation>
+<translation id="5769373120130404283">ပုဂ္ဂိုလ်ရေးလုံခြုံမှု ဖန်သားပြင်</translation>
 <translation id="5777841717266010279">မျက်နှာပြင် ဝေမျှနေခြင်း ရပ်လိုပါသလား?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> တွင် <ph name="ROUTE_TITLE" /> ကို ရပ်ရန်</translation>
@@ -406,6 +408,7 @@
 <translation id="6297287540776456956">အစိတ်အပိုင်းကိုရွေးရန် စတိုင်လက်စ်ခဲတံအား အသုံးပြုပါ</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ကို <ph name="ROTATION" />ဆီသို့ လှည့်ပေးခဲ့</translation>
 <translation id="6376931439017688372">ဘလူးတုသ်ကို ဖွင့်ထားသည်</translation>
+<translation id="6381109794406942707">ဤစက်ကိုဖွင့်ရန် သင့်ပင်နံပါတ် ထည့်ပါ။</translation>
 <translation id="639644700271529076">စာလုံးကြီးများကို နှိပ်မထား</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />၊ လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" /></translation>
@@ -619,6 +622,7 @@
 <translation id="9072519059834302790">ဘက်ထရီကုန်ရန် <ph name="TIME_LEFT" /> ကျန်သေးသည်။</translation>
 <translation id="9074739597929991885">ဘလူးတုခ့်</translation>
 <translation id="9079731690316798640">Wi−Fi လိပ်စာ− <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">ပင်မစာမျက်နှာသို့သွားရန် အပေါ်သို့ ပွတ်ဆွဲပါ</translation>
 <translation id="9080206825613744995">မိုက်ခရိုဖုန်းကို သုံးနေသည်။</translation>
 <translation id="9084606467167974638">မီနူးအနေအထား ပိတ်ဖွင့်လုပ်ရန်</translation>
 <translation id="9089416786594320554">ထည့်သွင်းခြင်းနည်းလမ်း</translation>

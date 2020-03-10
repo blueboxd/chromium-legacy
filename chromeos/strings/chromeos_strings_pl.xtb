@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">Nieprawidłowy kod PIN.</translation>
 <translation id="3838338534323494292">Nowe hasło</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Spróbuj ponownie. Pozostałe próby: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> zarządza tym urządzeniem i ma dostęp do wszelkiej aktywności użytkownika, w tym odwiedzanych stron internetowych, haseł i e-maili.</translation>
 <translation id="4227825898293920515">Hasło wygasa za <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Bilet Kerberos wkrótce straci ważność</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">Na Twoim ekranie nie ma nic, w czym mogę pomóc.
 Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
-<translation id="5275776633505022322">Pozostałe próby: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Spróbuj ponownie.</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5332948983412042822">Wybierz teraz nowe.</translation>
 <translation id="5457599981699367932">Przeglądaj jako gość</translation>

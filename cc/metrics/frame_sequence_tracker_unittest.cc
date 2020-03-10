@@ -885,6 +885,36 @@ TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage10) {
   EXPECT_EQ(MainThroughput().frames_expected, 0u);
 }
 
+// A presentation with a frame token that is > the main frame token submitted.
+TEST_F(FrameSequenceTrackerTest, MainThreadPresentWithNonMatchedToken) {
+  const char sequence[] = "b(1)B(0,1)E(1)s(1)S(1)e(1,0)b(2)s(2)S(1)e(2,1)P(2)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(MainThroughput().frames_expected, 1u);
+  EXPECT_EQ(MainThroughput().frames_produced, 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, CoalescedMainThreadPresent) {
+  const char sequence[] =
+      "b(1)B(0,1)E(1)s(1)S(1)e(1,1)b(2)B(1,2)E(2)s(2)S(2)e(2,2)P(2)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(MainThroughput().frames_expected, 2u);
+  EXPECT_EQ(MainThroughput().frames_produced, 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, MainThreadPresentWithNullTimeStamp) {
+  const char sequence[] = "b(1)B(0,1)E(1)s(1)S(1)e(1,1)";
+  GenerateSequence(sequence);
+  collection_.NotifyFramePresented(
+      1, {base::TimeTicks(), viz::BeginFrameArgs::DefaultInterval(), 0});
+  EXPECT_EQ(MainThroughput().frames_expected, 1u);
+  // No presentation, no main frame produced.
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
+  GenerateSequence("b(2)s(2)S(1)e(2,0)P(2)");
+  EXPECT_EQ(MainThroughput().frames_expected, 1u);
+  // The main frame update is caught up here.
+  EXPECT_EQ(MainThroughput().frames_produced, 1u);
+}
+
 TEST_F(FrameSequenceTrackerTest, TrackerTypeEncoding) {
   // The test begins with a kTouchScroll tracker
   EXPECT_EQ(NumberOfTrackers(), 1u);

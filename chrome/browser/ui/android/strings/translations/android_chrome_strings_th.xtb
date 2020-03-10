@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">เว็บไซต์ที่เหลือ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">หากต้องการแชร์รายการจากโทรศัพท์ไปยังอุปกรณ์อื่น ให้เปิดการซิงค์ในการตั้งค่า Chrome ในอุปกรณ์ทั้ง 2 เครื่อง</translation>
 <translation id="2175927920773552910">คิวอาร์โค้ด</translation>
+<translation id="2182457891543959921">ถามก่อนที่จะอนุญาตให้เว็บไซต์สร้างแผนที่ 3 มิติของสิ่งที่อยู่รอบตัวคุณหรือติดตามตำแหน่งของกล้อง (แนะนำ)</translation>
 <translation id="218608176142494674">การแชร์</translation>
 <translation id="2227444325776770048">ดำเนินการต่อในชื่อ <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">การซิงค์และบริการของ Google</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">ฟีเจอร์นี้จะเปิดเมื่อคุณลงชื่อเข้าใช้บัญชี Google</translation>
 <translation id="2410754283952462441">เลือกบัญชี</translation>
 <translation id="2414886740292270097">มืด</translation>
-<translation id="2416359993254398973">Chrome ต้องการสิทธิ์เข้าถึงกล้องถ่ายรูปของคุณสำหรับไซต์นี้</translation>
 <translation id="2426805022920575512">เลือกบัญชีอื่น</translation>
 <translation id="2433507940547922241">ลักษณะที่ปรากฏ</translation>
 <translation id="2434158240863470628">ดาวน์โหลดเสร็จสมบูรณ์ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@
 <translation id="3522247891732774234">มีการอัปเดตให้บริการ ตัวเลือกเพิ่มเติม</translation>
 <translation id="3524138585025253783">UI นักพัฒนาซอฟต์แวร์</translation>
 <translation id="3527085408025491307">โฟลเดอร์</translation>
+<translation id="3538390592868664640">บล็อกไม่ให้เว็บไซต์สร้างแผนที่ 3 มิติของสิ่งที่อยู่รอบตัวคุณหรือติดตามตำแหน่งของกล้อง</translation>
 <translation id="3542235761944717775">ใช้ได้ <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">ค้นหาประวัติการเข้าชม</translation>
 <translation id="3557336313807607643">เพิ่มในรายชื่อติดต่อ</translation>
@@ -439,6 +440,7 @@
 <translation id="4298388696830689168">เว็บไซต์ที่ลิงก์</translation>
 <translation id="4307992518367153382">พื้นฐาน</translation>
 <translation id="4314815835985389558">จัดการการซิงค์</translation>
+<translation id="4320177379694898372">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="4321739720395210191">เปิดกล้องไม่ได้ รีสตาร์ทอุปกรณ์และลองอีกครั้ง</translation>
 <translation id="4351244548802238354">ปิดหน้าต่างโต้ตอบ</translation>
 <translation id="4353114845960720315">ขณะอยู่ในโหมด VR เว็บไซต์นี้อาจรู้เกี่ยวกับ</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">ปิดแท็บที่ไม่ระบุตัวตน</translation>
 <translation id="5534640966246046842">คัดลอกไซต์แล้ว</translation>
 <translation id="5561549206367097665">กำลังรอเครือข่าย…</translation>
-<translation id="557283862590186398">Chrome ต้องการสิทธิ์เข้าถึงไมโครโฟนของคุณสำหรับไซต์นี้</translation>
 <translation id="55737423895878184">อนุญาตให้ใช้ตำแหน่งและแสดงการแจ้งเตือน</translation>
 <translation id="5578795271662203820">ค้นหาภาพนี้ใน <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">คุณเลือกสิ่งที่ต้องการซิงค์ได้เสมอใน<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" /></translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">รายละเอียด: จัดเรียงตามปริมาณเน็ตมือถือที่ใช้</translation>
 <translation id="6381421346744604172">ปรับเว็บไซต์ให้เป็นสีเข้ม</translation>
 <translation id="6388207532828177975">ล้างข้อมูลและรีเซ็ต</translation>
-<translation id="6393863479814692971">Chrome ต้องการสิทธิ์เข้าถึงไมโครโฟนและกล้องถ่ายรูปของคุณสำหรับไซต์นี้</translation>
 <translation id="6395288395575013217">ลิงก์</translation>
 <translation id="6404511346730675251">แก้ไขบุ๊กมาร์ก</translation>
 <translation id="6406506848690869874">การซิงค์ข้อมูล</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">ล้างข้อมูล Chrome ของคุณออกจากอุปกรณ์นี้ไหม</translation>
 <translation id="6689172468748959065">รูปโปรไฟล์</translation>
 <translation id="6697492270171225480">แสดงคำแนะนำหน้าที่คล้ายกันเมื่อไม่พบหน้าเว็บ</translation>
-<translation id="6697947395630195233">Chrome ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับไซต์นี้</translation>
 <translation id="6698801883190606802">จัดการข้อมูลที่ซิงค์</translation>
 <translation id="6699370405921460408">เซิร์ฟเวอร์ของ Google จะเพิ่มประสิทธิภาพหน้าเว็บที่คุณเข้าชม</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
@@ -971,6 +970,7 @@
 <translation id="8186512483418048923">เหลืออีก <ph name="FILES" /> ไฟล์</translation>
 <translation id="8190358571722158785">เหลือ 1 วัน</translation>
 <translation id="8200772114523450471">ทำต่อ</translation>
+<translation id="8206354486702514201">ผู้ดูแลระบบของคุณกำหนดให้ใช้การตั้งค่านี้</translation>
 <translation id="8209050860603202033">เปิดรูปภาพ</translation>
 <translation id="8218622182176210845">จัดการบัญชีของคุณ</translation>
 <translation id="8224471946457685718">ดาวน์โหลดบทความสำหรับคุณผ่าน Wi-Fi</translation>
@@ -992,7 +992,6 @@
 <translation id="8364299278605033898">ดูเว็บไซต์ยอดนิยม</translation>
 <translation id="8368027906805972958">อุปกรณ์ที่ไม่รู้จักหรือไม่รองรับ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">อนุญาตให้ใช้การซิงค์ในแบ็กกราวด์สำหรับเว็บไซต์ที่เจาะจง</translation>
-<translation id="8378714024927312812">จัดการโดยองค์กร</translation>
 <translation id="8380167699614421159">เว็บไซต์นี้แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
 <translation id="8393700583063109961">ส่งข้อความ</translation>
 <translation id="8413126021676339697">แสดงประวัติการเข้าชมทั้งหมด</translation>

@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Velg konto</translation>
 <translation id="3311748811247479259">Av</translation>
 <translation id="3324193307694657476">Adresse 2</translation>
+<translation id="3328801116991980348">Informasjon om nettstedet</translation>
 <translation id="3329904751041170572">Kunne ikke koble til tjeneren.</translation>
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
 <translation id="3371831930909698441">Oversetter er tilgjengelig. Du finner alternativer på nedre del av skjermen.</translation>
@@ -600,6 +601,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="9223358826628549784">Programstopprapporten er sendt.</translation>
 <translation id="952704832371081537">Avbryt</translation>
 <translation id="988141524645182168">Andre enheter</translation>
+<translation id="989697783705943787">Nettstedssikkerhet</translation>
 <translation id="989988560359834682">Rediger adresse</translation>
 <translation id="994757059139821576">Artikkelforslag</translation>
 </translationbundle>

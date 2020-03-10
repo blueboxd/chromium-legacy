@@ -26,9 +26,11 @@ namespace chromeos {
 
 MarketingOptInScreen::MarketingOptInScreen(
     MarketingOptInScreenView* view,
+    bool is_fullscreen,
     const base::RepeatingClosure& exit_callback)
     : BaseScreen(MarketingOptInScreenView::kScreenId),
       view_(view),
+      is_fullscreen_(is_fullscreen),
       exit_callback_(exit_callback) {
   DCHECK(view_);
   view_->Bind(this);
@@ -41,7 +43,13 @@ MarketingOptInScreen::~MarketingOptInScreen() {
 }
 
 void MarketingOptInScreen::OnShelfConfigUpdated() {
-  bool allow_shelf_gestures = !ash::ShelfConfig::Get()->shelf_controls_shown();
+  UpdateShelfGestureHandlingState();
+}
+
+void MarketingOptInScreen::UpdateShelfGestureHandlingState() {
+  const bool allow_shelf_gestures =
+      is_fullscreen_ && !ash::ShelfConfig::Get()->shelf_controls_shown() &&
+      !accessibility_page_shown_;
   if (allow_shelf_gestures == handling_shelf_gestures_)
     return;
 
@@ -96,12 +104,13 @@ void MarketingOptInScreen::ShowImpl() {
   }
 
   active_ = true;
+  accessibility_page_shown_ = false;
 
   view_->Show();
   prefs->SetBoolean(prefs::kOobeMarketingOptInScreenFinished, true);
 
   shelf_config_observer_.Add(ash::ShelfConfig::Get());
-  OnShelfConfigUpdated();
+  UpdateShelfGestureHandlingState();
 
   // Make sure the screen next button visibility is properly initialized.
   view_->UpdateAllSetButtonVisibility(!handling_shelf_gestures_ /*visible*/);
@@ -131,20 +140,22 @@ void MarketingOptInScreen::HideImpl() {
     return;
 
   active_ = false;
-
   shelf_config_observer_.RemoveAll();
-
+  active_user_pref_change_registrar_.reset();
   view_->Hide();
 
   ClearLoginShelfGestureHandler();
-
-  active_user_pref_change_registrar_.reset();
 }
 
 void MarketingOptInScreen::OnAllSet(bool play_communications_opt_in,
                                     bool tips_communications_opt_in) {
   // TODO(https://crbug.com/852557)
   ExitScreen();
+}
+
+void MarketingOptInScreen::OnAccessibilityPageVisibilityChanged(bool shown) {
+  accessibility_page_shown_ = shown;
+  UpdateShelfGestureHandlingState();
 }
 
 void MarketingOptInScreen::HandleFlingFromShelf() {

@@ -119,6 +119,7 @@ RootCompositorFrameSinkImpl::Create(
       output_surface->GetSurfaceHandle(), output_surface->capabilities(),
       params->renderer_settings,
       output_surface_provider->GetSharedImageManager(),
+      output_surface->GetMemoryTracker(),
       output_surface->GetGpuTaskSchedulerHelper(), sii);
 
   auto display = std::make_unique<Display>(

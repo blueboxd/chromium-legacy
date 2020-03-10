@@ -2022,10 +2022,15 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, AboutSrcDocUsesBeginNavigation) {
   interceptor.Wait(1);  // DidCommitNavigation is called.
 }
 
-class TextFragmentAnchorBrowserTest : public NavigationBrowserTest {
+class TextFragmentAnchorBrowserTest : public NavigationBaseBrowserTest {
+ public:
+  TextFragmentAnchorBrowserTest() {
+    feature_list_.InitAndEnableFeature(features::kDocumentPolicy);
+  }
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    NavigationBrowserTest::SetUpCommandLine(command_line);
+    NavigationBaseBrowserTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "TextFragmentIdentifiers");
@@ -2057,9 +2062,17 @@ class TextFragmentAnchorBrowserTest : public NavigationBrowserTest {
     EXPECT_TRUE(WaitForLoadStop(contents));
     EXPECT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
   }
+
+  RenderWidgetHostImpl* GetWidgetHost() {
+    return RenderWidgetHostImpl::From(
+        shell()->web_contents()->GetRenderViewHost()->GetWidget());
+  }
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/target_text_link.html"));
   GURL target_text_url(embedded_test_server()->GetURL(
       "/scrollable_page_with_content.html#:~:text=text"));
@@ -2070,11 +2083,8 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
   TestNavigationObserver observer(main_contents);
   RenderFrameSubmissionObserver frame_observer(main_contents);
 
-  RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
-      main_contents->GetRenderViewHost()->GetWidget());
-
   // We need to wait until hit test data is available.
-  HitTestRegionObserver hittest_observer(host->GetFrameSinkId());
+  HitTestRegionObserver hittest_observer(GetWidgetHost()->GetFrameSinkId());
   hittest_observer.WaitForHitTestData();
 
   ClickElementWithId(main_contents, "link");
@@ -2082,12 +2092,14 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
   EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
 
   WaitForPageLoad(main_contents);
-  frame_observer.WaitForScrollOffsetAtTop(false);
+  frame_observer.WaitForScrollOffsetAtTop(
+      /*expected_scroll_offset_at_top=*/false);
   EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
                        EnabledOnBrowserNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(
       "/scrollable_page_with_content.html#:~:text=text"));
   WebContents* main_contents = shell()->web_contents();
@@ -2096,12 +2108,14 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   WaitForPageLoad(main_contents);
-  frame_observer.WaitForScrollOffsetAtTop(false);
+  frame_observer.WaitForScrollOffsetAtTop(
+      /*expected_scroll_offset_at_top=*/false);
   EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
                        EnabledOnUserGestureScriptNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   GURL target_text_url(embedded_test_server()->GetURL(
       "/scrollable_page_with_content.html#:~:text=text"));
@@ -2119,12 +2133,14 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
 
   WaitForPageLoad(main_contents);
-  frame_observer.WaitForScrollOffsetAtTop(false);
+  frame_observer.WaitForScrollOffsetAtTop(
+      /*expected_scroll_offset_at_top=*/false);
   EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
                        DisabledOnScriptNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   GURL target_text_url(embedded_test_server()->GetURL(
       "/scrollable_page_with_content.html#:~:text=text"));
@@ -2145,11 +2161,13 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
+  RunUntilInputProcessed(GetWidgetHost());
   EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
                        DisabledOnScriptHistoryNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL target_text_url(embedded_test_server()->GetURL(
       "/scrollable_page_with_content.html#:~:text=text"));
   GURL url(embedded_test_server()->GetURL("/empty.html"));
@@ -2179,11 +2197,13 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
+  RunUntilInputProcessed(GetWidgetHost());
   EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
                        EnabledOnSameDocumentBrowserNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(
       "/scrollable_page_with_content.html#:~:text=text"));
   WebContents* main_contents = shell()->web_contents();
@@ -2205,12 +2225,14 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), same_doc_url));
 
   WaitForPageLoad(main_contents);
-  frame_observer.WaitForScrollOffsetAtTop(false);
+  frame_observer.WaitForScrollOffsetAtTop(
+      /*expected_scroll_offset_at_top=*/false);
   EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
                        DisabledOnSameDocumentScriptNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(
       embedded_test_server()->GetURL("/scrollable_page_with_content.html"));
   GURL target_text_url(embedded_test_server()->GetURL(
@@ -2232,6 +2254,85 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
+  RunUntilInputProcessed(GetWidgetHost());
+  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest, EnabledByDocumentPolicy) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/target.html");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/target.html#:~:text=text"));
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+
+  // Load the target document
+  TestNavigationManager navigation_manager(main_contents, url);
+  shell()->LoadURL(url);
+
+  // Start navigation
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+
+  // Send Document-Policy header
+  response.WaitForRequest();
+  response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "Document-Policy: no-force-load-at-top\r\n"
+      "\r\n"
+      "<p style='position: absolute; top: 10000px;'>Some text</p>");
+  response.Done();
+
+  EXPECT_TRUE(navigation_manager.WaitForResponse());
+  navigation_manager.ResumeNavigation();
+  navigation_manager.WaitForNavigationFinished();
+
+  WaitForPageLoad(main_contents);
+  frame_observer.WaitForScrollOffsetAtTop(
+      /*expected_scroll_offset_at_top=*/false);
+  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
+                       DisabledByDocumentPolicy) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/target.html");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/target.html#:~:text=text"));
+  WebContents* main_contents = shell()->web_contents();
+
+  // Load the target document
+  TestNavigationManager navigation_manager(main_contents, url);
+  shell()->LoadURL(url);
+
+  // Start navigation
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+
+  // Send Document-Policy header
+  response.WaitForRequest();
+  response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "Document-Policy: force-load-at-top\r\n"
+      "\r\n"
+      "<p style='position: absolute; top: 10000px;'>Some text</p>");
+  response.Done();
+
+  EXPECT_TRUE(navigation_manager.WaitForResponse());
+  navigation_manager.ResumeNavigation();
+  navigation_manager.WaitForNavigationFinished();
+
+  WaitForPageLoad(main_contents);
+  // Wait a short amount of time to ensure the page does not scroll.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+  RunUntilInputProcessed(GetWidgetHost());
   EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
@@ -3257,6 +3358,207 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       shell(), GURL(embedded_test_server()->GetURL("/virtual-url.html"))));
   EXPECT_EQ("/title2.html", observer.last_navigation_url().path());
   EXPECT_EQ(2, rewrite_count);
+}
+
+class DocumentPolicyBrowserTest : public NavigationBaseBrowserTest {
+ public:
+  DocumentPolicyBrowserTest() {
+    feature_list_.InitAndEnableFeature(features::kDocumentPolicy);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test that scroll restoration can be disabled with
+// Document-Policy: force-load-at-top
+IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
+                       ScrollRestorationDisabledByDocumentPolicy) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/target.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/target.html"));
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+  TestNavigationManager navigation_manager(main_contents, url);
+
+  // Load the document with document policy force-load-at-top
+  shell()->LoadURL(url);
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+  response.WaitForRequest();
+  response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "Document-Policy: force-load-at-top\r\n"
+      "\r\n"
+      "<p style='position: absolute; top: 10000px;'>Some text</p>");
+  response.Done();
+
+  EXPECT_TRUE(navigation_manager.WaitForResponse());
+  navigation_manager.ResumeNavigation();
+  navigation_manager.WaitForNavigationFinished();
+  EXPECT_TRUE(WaitForLoadStop(main_contents));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+
+  // Scroll down the page a bit
+  EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 1000)"));
+  frame_observer.WaitForScrollOffsetAtTop(false);
+
+  // Navigate away
+  EXPECT_TRUE(ExecuteScript(main_contents, "window.location = 'about:blank'"));
+  EXPECT_TRUE(WaitForLoadStop(main_contents));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+
+  // Navigate back
+  EXPECT_TRUE(ExecuteScript(main_contents, "history.back()"));
+  EXPECT_TRUE(WaitForLoadStop(main_contents));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+
+  // Wait a short amount of time to ensure the page does not scroll.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+  RunUntilInputProcessed(RenderWidgetHostImpl::From(
+      main_contents->GetRenderViewHost()->GetWidget()));
+  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+// Test that scroll restoration works as expected with
+// Document-Policy: no-force-load-at-top
+IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
+                       ScrollRestorationEnabledByDocumentPolicy) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/target.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/target.html"));
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+  TestNavigationManager navigation_manager(main_contents, url);
+
+  // Load the document with document policy no-force-load-at-top
+  shell()->LoadURL(url);
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+  response.WaitForRequest();
+  response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "Document-Policy: no-force-load-at-top\r\n"
+      "\r\n"
+      "<p style='position: absolute; top: 10000px;'>Some text</p>");
+  response.Done();
+
+  EXPECT_TRUE(navigation_manager.WaitForResponse());
+  navigation_manager.ResumeNavigation();
+  navigation_manager.WaitForNavigationFinished();
+  EXPECT_TRUE(WaitForLoadStop(main_contents));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+
+  // Scroll down the page a bit
+  EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 1000)"));
+  frame_observer.WaitForScrollOffsetAtTop(false);
+
+  // Navigate away
+  EXPECT_TRUE(ExecuteScript(main_contents, "window.location = 'about:blank'"));
+  EXPECT_TRUE(WaitForLoadStop(main_contents));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+
+  // Navigate back
+  EXPECT_TRUE(ExecuteScript(main_contents, "history.back()"));
+  EXPECT_TRUE(WaitForLoadStop(main_contents));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+
+  // Ensure scroll restoration activated
+  frame_observer.WaitForScrollOffsetAtTop(false);
+  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+// Test that element fragment anchor scrolling can be disabled with
+// Document-Policy: force-load-at-top
+IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
+                       FragmentAnchorDisabledByDocumentPolicy) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/target.html");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/target.html#text"));
+  WebContents* main_contents = shell()->web_contents();
+
+  // Load the target document
+  TestNavigationManager navigation_manager(main_contents, url);
+  shell()->LoadURL(url);
+
+  // Start navigation
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+
+  // Send Document-Policy header
+  response.WaitForRequest();
+  response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "Document-Policy: force-load-at-top\r\n"
+      "\r\n"
+      "<p id='text' style='position: absolute; top: 10000px;'>Some text</p>");
+  response.Done();
+
+  EXPECT_TRUE(navigation_manager.WaitForResponse());
+  navigation_manager.ResumeNavigation();
+  navigation_manager.WaitForNavigationFinished();
+
+  EXPECT_TRUE(WaitForLoadStop(main_contents));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+  // Wait a short amount of time to ensure the page does not scroll.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+  RunUntilInputProcessed(RenderWidgetHostImpl::From(
+      main_contents->GetRenderViewHost()->GetWidget()));
+  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+// Test that element fragment anchor scrolling works as expected with
+// Document-Policy: no-force-load-at-top
+IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
+                       FragmentAnchorEnabledByDocumentPolicy) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/target.html");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/target.html#text"));
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+
+  // Load the target document
+  TestNavigationManager navigation_manager(main_contents, url);
+  shell()->LoadURL(url);
+
+  // Start navigation
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+
+  // Send Document-Policy header
+  response.WaitForRequest();
+  response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "Document-Policy: no-force-load-at-top\r\n"
+      "\r\n"
+      "<p id='text' style='position: absolute; top: 10000px;'>Some text</p>");
+  response.Done();
+
+  EXPECT_TRUE(navigation_manager.WaitForResponse());
+  navigation_manager.ResumeNavigation();
+  navigation_manager.WaitForNavigationFinished();
+
+  EXPECT_TRUE(WaitForLoadStop(main_contents));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+  frame_observer.WaitForScrollOffsetAtTop(
+      /*expected_scroll_offset_at_top=*/false);
+  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
 }  // namespace content

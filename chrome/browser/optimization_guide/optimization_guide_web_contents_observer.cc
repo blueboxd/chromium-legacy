@@ -150,7 +150,7 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
                                     FlushMetricsAndNotifyNavigationFinish,
                                 weak_factory_.GetWeakPtr(),
                                 navigation_handle->GetNavigationId(),
-                                navigation_handle->GetURL(),
+                                navigation_handle->GetRedirectChain(),
                                 navigation_handle->HasCommitted()));
 
   if (!optimization_guide_keyed_service_)
@@ -163,19 +163,19 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
 }
 
 void OptimizationGuideWebContentsObserver::
-    FlushMetricsAndNotifyNavigationFinish(int64_t navigation_id,
-                                          const GURL& navigation_url,
-                                          bool has_committed) {
+    FlushMetricsAndNotifyNavigationFinish(
+        int64_t navigation_id,
+        const std::vector<GURL>& navigation_redirect_chain,
+        bool has_committed) {
   auto nav_data_iter =
       inflight_optimization_guide_navigation_datas_.find(navigation_id);
   if (nav_data_iter == inflight_optimization_guide_navigation_datas_.end())
     return;
 
-  // If we have a navigation data for it, it's probably safe to say that this
-  // URL is the main frame URL of the navigation.
-  if (optimization_guide_keyed_service_)
+  if (optimization_guide_keyed_service_) {
     optimization_guide_keyed_service_->OnNavigationFinish(
-        navigation_url, &nav_data_iter->second);
+        navigation_redirect_chain, &nav_data_iter->second);
+  }
 
   (nav_data_iter->second).RecordMetrics(has_committed);
 

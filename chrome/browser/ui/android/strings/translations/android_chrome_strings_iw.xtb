@@ -155,7 +155,7 @@
 <translation id="2107397443965016585">יש לבקש ממני אישור לפני מתן הרשאה לאתרים להציג תוכן מוגן (מומלץ)</translation>
 <translation id="2109711654079915747">‏ניתן לקבל מידע על נושאים שמוזכרים באתרים מבלי לצאת מהדף. התכונה 'חיפוש בנגיעה' מאפשרת לשלוח מילה ביחד עם ההקשר שלה אל חיפוש Google, כדי לקבל הגדרות, תמונות, תוצאות חיפוש ופרטים אחרים.
 
-כדי לחפש מילה, מקישים עליה. כדי להתאים את החיפוש, לוחצים לחיצה ארוכה כדי לבחור יותר מילים או פחות מילים. כדי לערוך את החיפוש, פותחים את החלונית, מקישים על הסמל כדי לפתוח את האפליקציה בכרטיסייה חדשה ומבצעים את השינויים בתיבת החיפוש.</translation>
+כדי לחפש מילה, מקישים עליה. אם רוצים לדייק את תוצאות החיפוש, אפשר ללחוץ לחיצה ארוכה ולבחור יותר מילים או פחות מילים. כדי לערוך את החיפוש, פותחים את החלונית, מקישים על הסמל כדי לפתוח את האפליקציה בכרטיסייה חדשה ומבצעים את השינויים בתיבת החיפוש.</translation>
 <translation id="2111511281910874386">מעבר לדף</translation>
 <translation id="2122601567107267586">לא ניתן היה לפתוח את היישום</translation>
 <translation id="2126426811489709554">‏מבוסס על Chrome</translation>
@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">אתרים שנותרו (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">‏כדי לשתף משהו מהטלפון שלך עם מכשיר אחר, יש להפעיל את הסנכרון בהגדרות Chrome בשני המכשירים</translation>
 <translation id="2175927920773552910">‏קוד QR</translation>
+<translation id="2182457891543959921">תוצג שאלה לפני מתן הרשאה לאתרים ליצור מפה בתלת ממד של הסביבה שלך או לעקוב אחר מיקום המצלמה (מומלץ)</translation>
 <translation id="218608176142494674">שיתוף</translation>
 <translation id="2227444325776770048">המשך בשם <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">‏סנכרון ושירותי Google</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">‏התכונה הזו מופעלת בעת הכניסה לחשבון Google</translation>
 <translation id="2410754283952462441">בחירת חשבון</translation>
 <translation id="2414886740292270097">כהה</translation>
-<translation id="2416359993254398973">‏Chrome זקוק להרשאה גישה אל המצלמה בשביל האתר הזה.</translation>
 <translation id="2426805022920575512">בחירת חשבון אחר</translation>
 <translation id="2433507940547922241">מראה</translation>
 <translation id="2434158240863470628">ההורדה הושלמה <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -286,6 +286,7 @@
 <translation id="3058498974290601450">אפשר להפעיל את הסנכרון בכל זמן דרך ההגדרות</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{סימניה אחת (<ph name="BOOKMARKS_COUNT_ONE" />)}two{<ph name="BOOKMARKS_COUNT_MANY" /> סימניות}many{<ph name="BOOKMARKS_COUNT_MANY" /> סימניות}other{<ph name="BOOKMARKS_COUNT_MANY" /> סימניות}}</translation>
 <translation id="3089395242580810162">פתיחה בכרטיסיית גלישה בסתר</translation>
+<translation id="3114012059975132928">נגן וידאו</translation>
 <translation id="3123473560110926937">חסומות בחלק מהאתרים</translation>
 <translation id="3123734510202723619">הודעות</translation>
 <translation id="3137521801621304719">צא ממצב גלישה בסתר</translation>
@@ -343,6 +344,7 @@
 <translation id="3522247891732774234">יש עדכון זמין. עוד אפשרויות</translation>
 <translation id="3524138585025253783">ממשק משתמש למפתחים</translation>
 <translation id="3527085408025491307">תיקיה</translation>
+<translation id="3538390592868664640">חסימה של יצירת מפה בתלת ממד של הסביבה שלך או של מעקב אחר מיקום המצלמה על ידי אתרים.</translation>
 <translation id="3542235761944717775">‏‎<ph name="KILOBYTES" /> KB זמינים</translation>
 <translation id="3549657413697417275">חיפוש בהיסטוריה שלך</translation>
 <translation id="3557336313807607643">הוסף לאנשי הקשר</translation>
@@ -351,6 +353,7 @@
 <translation id="3587482841069643663">הכל</translation>
 <translation id="358794129225322306">מתן הרשאה לאתר להוריד קבצים מרובים באופן אוטומטי.</translation>
 <translation id="3590487821116122040">‏נתוני אתר מאוחסנים ש-Chrome לא מחשיב כחשובים (לדוגמה, אתרים ללא הגדרות שמורות או כאלה שאינך מבקר בהם לעתים קרובות)</translation>
+<translation id="3594780231884063836">השתקת הסרטון</translation>
 <translation id="3599863153486145794">‏ניקוי ההיסטוריה מכל המכשירים שבהם המשתמש נכנס לחשבון. ייתכן שלחשבון Google שלך יהיו צורות אחרות של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">השתקת אתרים שמשמיעים צלילים</translation>
 <translation id="3616113530831147358">אודיו</translation>
@@ -439,6 +442,7 @@
 <translation id="4298388696830689168">אתרים מקושרים</translation>
 <translation id="4307992518367153382">היסודות</translation>
 <translation id="4314815835985389558">ניהול הסנכרון</translation>
+<translation id="4320177379694898372">אין חיבור לאינטרנט</translation>
 <translation id="4321739720395210191">לא ניתן לפתוח את המצלמה. כדאי להפעיל מחדש את המכשיר ולנסות שוב.</translation>
 <translation id="4351244548802238354">סגור את תיבת הדו-שיח</translation>
 <translation id="4353114845960720315">‏במצב VR, האתר הזה עשוי לקבל מידע על:</translation>
@@ -603,6 +607,7 @@
 <translation id="5456381639095306749">הורד דף זה</translation>
 <translation id="548278423535722844">פתח יישום מפות</translation>
 <translation id="5487521232677179737">ניקוי נתונים</translation>
+<translation id="5489227211564503167">צפית ב-<ph name="ELAPSED_TIME" /> מתוך <ph name="TOTAL_TIME" /> מהסרטון.</translation>
 <translation id="5494752089476963479">חסימת מודעות באתרים שמוצגות בהם מודעות מפריעות או מטעות</translation>
 <translation id="5500777121964041360">ייתכן שהאפשרות לא זמינה במיקום שלך</translation>
 <translation id="5505264765875738116">אתרים לא יכולים לבקש לשלוח התראות</translation>
@@ -617,7 +622,6 @@
 <translation id="5530766185686772672">סגור כרטיסיות גלישה בסתר</translation>
 <translation id="5534640966246046842">האתר הועתק</translation>
 <translation id="5561549206367097665">ממתין לרשת…</translation>
-<translation id="557283862590186398">‏Chrome זקוק להרשאת גישה אל המיקרופון בשביל האתר הזה.</translation>
 <translation id="55737423895878184">יש הרשאה לגישה אל המיקום ולהצגת הודעות</translation>
 <translation id="5578795271662203820">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">אפשר לבחור מה לסנכרן בכל שלב דרך <ph name="BEGIN_LINK1" />ההגדרות<ph name="END_LINK1" />.</translation>
@@ -664,6 +668,7 @@
 <translation id="5864419784173784555">ממתין להורדה נוספת…</translation>
 <translation id="5865733239029070421">‏שליחת דוחות קריסה וסטטיסטיקת שימוש אל Google באופן אוטומטי</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
+<translation id="5876056640971328065">השהיית הסרטון</translation>
 <translation id="5884076754568147479">‏כדי לעזור לך להשלים משימות, Google תקבל את כתובות ה-URL והתוכן של האתרים שבהם נעשה שימוש ב-Assistant, וכן את המידע שנשלח דרך Assistant</translation>
 <translation id="5902828464777634901">‏כל הנתונים המקומיים המאוחסנים על ידי האתר הזה יימחקו, כולל קובצי Cookie.</translation>
 <translation id="5919204609460789179">יש לעדכן את <ph name="PRODUCT_NAME" /> כדי להתחיל סנכרון</translation>
@@ -726,8 +731,8 @@
 <translation id="6378173571450987352">פרטים: מיון לפי נפח הנתונים שנצרכו</translation>
 <translation id="6381421346744604172">תצוגה כהה יותר של אתרים</translation>
 <translation id="6388207532828177975">ניקוי ואיפוס</translation>
-<translation id="6393863479814692971">‏Chrome זקוק להרשאת גישה אל המצלמה והמיקרופון בשביל האתר הזה.</translation>
 <translation id="6395288395575013217">קישור</translation>
+<translation id="6397616442223433927">חזרה למצב אונליין</translation>
 <translation id="6404511346730675251">ערוך סימניה</translation>
 <translation id="6406506848690869874">סנכרון</translation>
 <translation id="6410973561433500075">‏האם לעבור ל-AR מהדומיין <ph name="DOMAIN" />?</translation>
@@ -779,7 +784,6 @@
 <translation id="6676840375528380067">‏למחוק את נתוני Chrome שלך מהמכשיר הזה?</translation>
 <translation id="6689172468748959065">תמונות פרופיל</translation>
 <translation id="6697492270171225480">הצגת הצעות לדפים דומים אם דף מסוים לא נמצא</translation>
-<translation id="6697947395630195233">‏Chrome זקוק לגישה אל המיקום שלך כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6698801883190606802">ניהול נתונים מסונכרנים</translation>
 <translation id="6699370405921460408">‏כשנכנסים לדפים בזמן הגלישה, הם עוברים אופטימיזציה על ידי השרתים של Google.</translation>
 <translation id="6710213216561001401">הקודם</translation>
@@ -797,6 +801,7 @@
 <translation id="6846298663435243399">טוען…</translation>
 <translation id="6850409657436465440">ההורדה עדיין מתבצעת</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> כרטיסיות נסגרו</translation>
+<translation id="6864395892908308021">‏NFC לא נתמך במכשיר הזה</translation>
 <translation id="6864459304226931083">הורד תמונה</translation>
 <translation id="6865313869410766144">נתוני טפסים למילוי אוטומטי</translation>
 <translation id="6884306546558072722">המשך גלישה ללא חיבור לאינטרנט</translation>
@@ -917,6 +922,7 @@
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7810647596859435254">פתח באמצעות...</translation>
 <translation id="7821588508402923572">ערכי החיסכון בנתונים יופיעו כאן</translation>
+<translation id="783819812427904514">ביטול ההשתקה של הסרטון</translation>
 <translation id="784934925303690534">טווח זמן</translation>
 <translation id="7851858861565204677">מכשירים אחרים</translation>
 <translation id="7875915731392087153">צור הודעת אימייל</translation>
@@ -971,6 +977,7 @@
 <translation id="8186512483418048923">נותרו עוד <ph name="FILES" /> קבצים</translation>
 <translation id="8190358571722158785">נותר יום אחד</translation>
 <translation id="8200772114523450471">חדש</translation>
+<translation id="8206354486702514201">הגדרה זו נאכפת על ידי מנהל המערכת שלך.</translation>
 <translation id="8209050860603202033">פתח את התמונה</translation>
 <translation id="8218622182176210845">ניהול החשבון</translation>
 <translation id="8224471946457685718">‏הורדת מאמרים עבורך ב-Wi-Fi</translation>
@@ -992,7 +999,6 @@
 <translation id="8364299278605033898">הצגת אתרים פופולריים</translation>
 <translation id="8368027906805972958">מכשיר לא ידוע או שאינו נתמך (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">אפשר סנכרון ברקע לאתר ספציפי.</translation>
-<translation id="8378714024927312812">מנוהל על-ידי הארגון</translation>
 <translation id="8380167699614421159">באתר הזה מוצגות מודעות מפריעות או מטעות</translation>
 <translation id="8393700583063109961">שלח הודעה</translation>
 <translation id="8413126021676339697">להצגת ההיסטוריה המלאה</translation>

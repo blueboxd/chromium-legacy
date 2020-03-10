@@ -32,6 +32,7 @@ js_library("collapse_radio_button") {
 
 js_library("cookies_page") {
   deps = [
+    "../prefs:prefs_behavior",
     "../site_settings:constants",
     "//ui/webui/resources/js:load_time_data",
   ]

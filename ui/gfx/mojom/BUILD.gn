@@ -38,3 +38,15 @@ mojom("test_interfaces") {
 
   public_deps = [ ":mojom" ]
 }
+
+component("color_space_mojom_support") {
+  sources = [
+    "color_space_mojom_traits.cc",
+    "color_space_mojom_traits.h",
+  ]
+  public_deps = [
+    ":mojom_shared_cpp_sources",
+    "//ui/gfx",
+  ]
+  defines = [ "IS_UI_GFX_MOJOM_TRAITS_IMPL" ]
+}

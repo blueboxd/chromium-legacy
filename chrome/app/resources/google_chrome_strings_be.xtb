@@ -41,7 +41,6 @@
 <translation id="1900795423379050516">Калі налада адсутнічае на гэтай старонцы, перайдзіце ў <ph name="LINK_BEGIN" />
       налады браўзера Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Дазволіць уваход ва ўліковы запіс Chrome</translation>
-<translation id="1983547493073464667">Браўзеру Chrome не ўдаецца праверыць паролі</translation>
 <translation id="2063848847527508675">Каб прымяніць абнаўленне, трэба перазапусціць Chrome OS.</translation>
 <translation id="2094919256425865063">Усё роўна выйсці з Chrome?</translation>
 <translation id="2120620239521071941">З гэтай прылады будзе выдалена наступная колькасць элементаў: <ph name="ITEMS_COUNT" />. Каб потым атрымаць свае даныя, увайдзіце ў Chrome як <ph name="USER_EMAIL" />.</translation>
@@ -57,11 +56,9 @@
 <translation id="2467438592969358367">Google Chrome запытвае дазвол на экспартаванне вашых пароляў. Каб дазволіць гэта, увядзіце пароль Windows.</translation>
 <translation id="2485422356828889247">Выдаліць</translation>
 <translation id="2534507159460261402">Google Pay (скапіравана з Chrome)</translation>
-<translation id="2559627601176023786">Няма захаваных пароляў. Chrome зможа правяраць паролі толькі пасля таго, як вы станеце захоўваць іх ва Уліковым запісе Google.</translation>
 <translation id="2580411288591421699">Немагчыма ўсталяваць тую ж версію Google Chrome, што зараз працуе. Закрыйце Google Chrome і паўтарыце спробу.</translation>
 <translation id="2586406160782125153">Гэта дзеянне выдаліць з прылады даныя прагляду старонак у інтэрнэце. Каб потым атрымаць свае даныя, увайдзіце ва ўліковы запіс Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Лагатып Chrome</translation>
-<translation id="261226884343006626">Браўзеру Chrome не ўдаецца праверыць паролі. Паўтарыце спробу заўтра.</translation>
 <translation id="2622559029861875898">Браўзеру Chrome не ўдаецца праверыць наяўнасць абнаўленняў. Паспрабуйце праверыць падключэнне да інтэрнэту.</translation>
 <translation id="2644798301485385923">Сістэма Chrome OS</translation>
 <translation id="2652691236519827073">Адкрыць спасылку ў новай &amp;укладцы Chrome</translation>
@@ -85,7 +82,6 @@
 <translation id="3395323229510056640">Даведка па Chrome OS</translation>
 <translation id="3396977131400919238">Падчас усталявання адбылася памылка аперацыйнай сістэмы. Спампуйце Google Chrome зноў.</translation>
 <translation id="3398288718845740432">Схаваць у меню Chrome</translation>
-<translation id="3434246496373299699">Chrome зможа праверыць паролі толькі пасля таго, як вы ўвойдзеце ва Уліковы запіс Google</translation>
 <translation id="3451115285585441894">Ідзе дадаванне ў Chrome...</translation>
 <translation id="345171907106878721">Дадаць мяне ў Chrome</translation>
 <translation id="34857402635545079">Таксама выдаліць даныя з Chrome (<ph name="URL" />)</translation>
@@ -101,7 +97,6 @@
 <translation id="386202838227397562">Закрыйце ўсе вокны Google Chrome і паўтарыце спробу.</translation>
 <translation id="3873044882194371212">Адкрыць спасылку ў акне &amp;інкогніта Chrome</translation>
 <translation id="3889417619312448367">Выдаленне Google Chrome</translation>
-<translation id="3943605108614542032">Абнаўленнямі Chrome кіруе адміністратар</translation>
 <translation id="4050175100176540509">У апошняй версіі з'явіліся важныя паляпшэнні сістэмы бяспекі і новыя функцыі.</translation>
 <translation id="4053720452172726777">Наладжвайце Google Chrome і кіруйце ім</translation>
 <translation id="4143243756087420366">Імя і фота профілю Chrome</translation>
@@ -215,7 +210,6 @@
 <translation id="7808348361785373670">Выдаліць з Chrome...</translation>
 <translation id="7825851276765848807">Збой усталявання з-за нявызначанай памылкі. Спампуйце Google Chrome зноў.</translation>
 <translation id="7855730255114109580">Google Chrome абноўлены да апошняй версіі</translation>
-<translation id="7888686278524752658">Chrome не абнавіўся. Нешта пайшло не так. Выпраўце праблемы з абнаўленнем Chrome і памылкі абнаўлення.</translation>
 <translation id="7890208801193284374">Калі камп'ютар выкарыстоўваюць некалькі чалавек, кожны з іх можа наладзіць Chrome для сябе і праглядаць старонкі асобна ад іншых.</translation>
 <translation id="7896673875602241923">Нехта раней увайшоў у Chrome на гэтым камп'ютары як <ph name="ACCOUNT_EMAIL_LAST" />. Стварыце новага карыстальніка Chrome, каб трымаць сваю інфармацыю асобна.</translation>
 <translation id="7916016681687251387">Сістэме Chrome OS не ўдалося сінхранізаваць даныя. Вырашыце праблему.</translation>

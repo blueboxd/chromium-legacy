@@ -179,6 +179,7 @@
 <translation id="3290875554372353449">Elige una cuenta</translation>
 <translation id="3311748811247479259">Desactivada</translation>
 <translation id="3324193307694657476">Dirección 2</translation>
+<translation id="3328801116991980348">Información del sitio</translation>
 <translation id="3329904751041170572">No se ha podido establecer conexión con el servidor.</translation>
 <translation id="3335947283844343239">Volver a abrir pestaña cerrada</translation>
 <translation id="3371831930909698441">El Traductor está disponible. Opciones disponibles cerca de la parte inferior de la pantalla.</translation>
@@ -600,6 +601,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="9223358826628549784">Informe sobre fallos enviado.</translation>
 <translation id="952704832371081537">Cancelar</translation>
 <translation id="988141524645182168">Otros dispositivos</translation>
+<translation id="989697783705943787">Seguridad del sitio web</translation>
 <translation id="989988560359834682">Editar dirección</translation>
 <translation id="994757059139821576">Sugerencias de artículos</translation>
 </translationbundle>

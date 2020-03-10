@@ -736,6 +736,10 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
        "site.test/", "another-site.test/"});
   TestInterstitialNotShown(browser(), GetURL("googlé.com"));
   CheckNoUkm();
+
+  // Try a non-HTTP URL. Shouldn't crash.
+  TestInterstitialNotShown(browser(), GURL("data:text/html, test"));
+  CheckNoUkm();
 }
 
 // Tests negative examples for all heuristics.

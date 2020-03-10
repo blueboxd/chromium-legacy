@@ -22,4 +22,7 @@ gpu::SharedImageManager* ContextProvider::GetSharedImageManager() {
   return nullptr;
 }
 
+gpu::MemoryTracker* ContextProvider::GetMemoryTracker() {
+  return nullptr;
+}
 }  // namespace viz

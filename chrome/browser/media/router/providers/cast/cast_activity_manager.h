@@ -132,11 +132,20 @@ class CastActivityManager : public CastActivityManagerBase,
       const std::string& route_id,
       mojom::MediaRouteProvider::TerminateRouteCallback callback) override;
 
+  const MediaRoute* FindMirroringRouteForTab(int32_t tab_id);
+
+  void SendRouteMessage(const std::string& media_route_id,
+                        const std::string& message);
+
  private:
   friend class CastActivityManagerTest;
   using ActivityMap =
       base::flat_map<MediaRoute::Id, std::unique_ptr<ActivityRecord>>;
   using CastActivityMap = base::flat_map<MediaRoute::Id, CastActivityRecord*>;
+
+  void SendRouteJsonMessage(const std::string& media_route_id,
+                            const std::string& message,
+                            data_decoder::DataDecoder::ValueOrError result);
 
   // Bundle of parameters for DoLaunchSession().
   struct DoLaunchSessionParams {
@@ -182,8 +191,8 @@ class CastActivityManager : public CastActivityManagerBase,
 
   void RemoveActivityByRouteId(const std::string& route_id);
 
-  // Removes an activity, terminating any associated connections, then notifies
-  // the media router that routes have been updated.
+  // Removes an activity, terminating any associated connections, then
+  // notifies the media router that routes have been updated.
   void RemoveActivity(
       ActivityMap::iterator activity_it,
       blink::mojom::PresentationConnectionState state,
@@ -243,8 +252,8 @@ class CastActivityManager : public CastActivityManagerBase,
       int tab_id,
       const CastSinkExtraData& cast_data);
 
-  // Returns a sink used to convert a mirroring activity to a cast activity.  If
-  // no conversion should occur, returns base::nullopt.
+  // Returns a sink used to convert a mirroring activity to a cast activity.
+  // If no conversion should occur, returns base::nullopt.
   base::Optional<MediaSinkInternal> ConvertMirrorToCast(int tab_id);
 
   static CastActivityRecordFactoryForTest* activity_record_factory_;
@@ -255,8 +264,8 @@ class CastActivityManager : public CastActivityManagerBase,
   // activities.
   ActivityMap activities_;
 
-  // The values of this map are the subset of those in |activites_| where there
-  // is a CastActivityRecord.
+  // The values of this map are the subset of those in |activites_| where
+  // there is a CastActivityRecord.
   CastActivityMap cast_activities_;
 
   // The following raw pointer fields are assumed to outlive |this|.

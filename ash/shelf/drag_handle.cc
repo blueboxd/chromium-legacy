@@ -29,7 +29,10 @@ constexpr int kVerticalClickboxPadding = 15;
 constexpr int kDragHandleNudgeVerticalMarginRise = -4;
 
 // Drag handle translation distance for the second part of nudge animation.
-// Also the translation distance for the ContextualNudge text box.
+constexpr int kDragHandleVerticalMarginDrop = 10;
+
+// Drag handle contextual nudge text box translation distance for the nudge
+// animation at  the end.
 constexpr int kDragHandleNudgeVerticalMarginDrop = 8;
 
 // Animation time for each translation of drag handle to show contextual nudge.
@@ -257,7 +260,7 @@ void DragHandle::AnimateDragHandleShow() {
       kDragHandleNudgeVerticalMarginRise, kDragHandleAnimationTime,
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   ScheduleDragHandleTranslationAnimation(
-      kDragHandleNudgeVerticalMarginDrop, kDragHandleAnimationTime,
+      kDragHandleVerticalMarginDrop, kDragHandleAnimationTime,
       ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
 }
 

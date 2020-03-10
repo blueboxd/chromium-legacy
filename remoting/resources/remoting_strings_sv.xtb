@@ -54,7 +54,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Läs mer</translation>
 <translation id="3776024066357219166">Chrome Remote Desktop-sessionen har avslutats.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3870154837782082782">Google LLC</translation>
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3905196214175737742">Ogiltig domän för värdens ägare.</translation>
 <translation id="3931191050278863510">Värden stoppades.</translation>
@@ -118,7 +118,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="6583902294974160967">Support</translation>
 <translation id="6612717000975622067">Skicka Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Dela</translation>
-<translation id="6681800064886881394">Upphovsrätt 2013 Google Inc. Med ensamrätt.</translation>
+<translation id="6681800064886881394">Upphovsrätt 2013 Google LLC Med ensamrätt.</translation>
 <translation id="677755392401385740">Värd startad för användaren: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6939719207673461467">Visa/dölj tangentbordet.</translation>
 <translation id="6963936880795878952">Anslutningar till fjärrdatorn är tillfälligt blockerade eftersom någon har försökt ansluta till fjärrdatorn med en ogiltig pinkod. Försök igen senare.</translation>

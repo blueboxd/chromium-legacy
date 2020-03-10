@@ -26,15 +26,19 @@ namespace chrome_colors {
 class ChromeColorsService;
 }  // namespace chrome_colors
 
-class NewTabPageHandler : public content::WebContentsObserver,
-                          public new_tab_page::mojom::PageHandler,
+namespace content {
+class WebContents;
+}  // namespace content
+
+class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                           public InstantServiceObserver,
                           public NtpBackgroundServiceObserver {
  public:
   NewTabPageHandler(mojo::PendingReceiver<new_tab_page::mojom::PageHandler>
                         pending_page_handler,
                     mojo::PendingRemote<new_tab_page::mojom::Page> pending_page,
-                    Profile* profile);
+                    Profile* profile,
+                    content::WebContents* web_contents);
   ~NewTabPageHandler() override;
 
   // new_tab_page::mojom::PageHandler:
@@ -82,6 +86,7 @@ class NewTabPageHandler : public content::WebContentsObserver,
   GetBackgroundImagesCallback background_images_callback_;
   mojo::Remote<new_tab_page::mojom::Page> page_;
   mojo::Receiver<new_tab_page::mojom::PageHandler> receiver_;
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageHandler);
 };

@@ -161,6 +161,17 @@
       Bu politika ayarlanmadan bırakılırsa varsayılan sıklık 3 saattir. İzin
       verilen minimum sıklık ise 60 saniyedir.</translation>
 <translation id="1204263402976895730">Etkinleştirilmiş kurumsal yazıcılar</translation>
+<translation id="1216890727647348501"><ph name="PRODUCT_NAME" /> ürününün Güvenli Tarama Gelişmiş Koruma özelliğini etkinleştirip kullanıcıların bu ayarı değiştirmelerini önler.
+
+      Bu ayarı etkinleştirirseniz Güvenli Tarama Gelişmiş Koruma özelliği her zaman etkin olur.
+
+      Bu ayarı devre dışı bırakırsanız Güvenli Tarama Gelişmiş Koruma özelliği hiçbir zaman etkin olmaz.
+
+      Bu politikayı zorunlu olarak ayarlarsanız kullanıcılar <ph name="PRODUCT_NAME" /> içindeki "Kimlik avı ve kötü amaçlı yazılımlara karşı korumayı etkinleştir" ayarını değiştiremez veya geçersiz kılamaz.
+
+      Bu politika ayarlanmadan bırakılırsa Güvenli Tarama Gelişmiş Koruma özelliği varsayılan olarak devre dışı bırakılır, ancak kullanıcı bunu etkinleştirebilir.
+
+      Güvenli Tarama ile ilgili daha fazla bilgi edinmek için https://developers.google.com/safe-browsing sayfasına bakın.</translation>
 <translation id="1216919699175573511">İmzalı HTTP Değişimi (SXG) desteğini etkinleştir</translation>
 <translation id="1219695476179627719">Bu cihazın sonraki bir sürümü çalıştırıyor olması halinde, <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> tarafından ayarlanan sürüme geri döndürülüp döndürülmeyeceğini belirler.
 
@@ -253,6 +264,7 @@
           Bu politika ayarlanmadığında, daha özel politikaların çalışma biçimi aynı kalır.</translation>
 <translation id="1384459581748403878">Referans: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">OS güncelleme durumunu bildirir</translation>
+<translation id="1388918874748125262">Güvenli Tarama Gelişmiş Koruma özelliğini etkinleştir</translation>
 <translation id="1393485621820363363">Etkinleştirilmiş kurumsal cihaz yazıcıları</translation>
 <translation id="1397855852561539316">Arama önerileri için varsayılan arama sağlayıcı URL'si</translation>
 <translation id="1398636873839401839">Giriş ekranında tüm varyasyonları etkinleştir</translation>
@@ -1181,6 +1193,9 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 <translation id="26023406105317310">Kerberos hesaplarını yapılandır</translation>
 <translation id="2604182581880595781">Ağ Üzerinde Dosya Paylaşımı ile ilgili politikaları yapılandırın.</translation>
 <translation id="2615240493030733717">Saat dilimi bilgisi raporlama</translation>
+<translation id="2620943247255660284">Bu politika artık kullanılmamakta olup yerine AdvancedProtectionExtraSecurityAllowed politikası getirilmiştir.
+
+      Bu politika, Gelişmiş Koruma programına kayıtlı kullanıcıların indirdikleri dosyaları kötü amaçlı yazılıma karşı taranmak üzere Google'a göndermelerine izin verilip verilmeyeceğini kontrol eder. Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa kayıtlı kullanıcılardan dosyalarını ayrıntılı tarama için Google'a göndermeleri istenir. Kullanıcı "Tara" öğesini seçerse indirdiği dosya Google'a gönderilir. Bu politika False (Yanlış) değerine ayarlanırsa kullanıcılardan istekte bulunulmaz ve indirdikleri dosyalar Google'a gönderilmez.</translation>
 <translation id="2623014935069176671">İlk kullanıcı etkinliğini bekle</translation>
 <translation id="262740370354162807">Dokümanların <ph name="CLOUD_PRINT_NAME" /> için gönderilmesini etkinleştir</translation>
 <translation id="2627554163382448569">Kurumsal yazıcılar için yapılandırmalar sağlar.
@@ -1433,6 +1448,21 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 <translation id="2987227569419001736">Web Bluetooth API'sının kullanımını kontrol et</translation>
 <translation id="3016255526521614822">Beyaz listedeki not alma uygulamalarına <ph name="PRODUCT_OS_NAME" /> kilit ekranında izin verilir</translation>
 <translation id="3020064401262077616">Yalnızca çocuk hesaplarına uygulanan ebeveyn gözetimi politikalarını kontrol eder.</translation>
+<translation id="3020953534071988875">Bu politika yapılandırıldığında <ph name="PRODUCT_NAME" /> içindeki Gizli profiller ve Misafir profilleri için ambiyans kimlik doğrulamasına izin verilir/verilmez.
+
+      Ambiyans Kimlik Doğrulaması, NTLM/Kerberos/Negotiate görev/yanıt şemaları üzerinden açık kimlik bilgileri sağlanmadığında varsayılan kimlik bilgileriyle gerçekleştirilen http kimlik doğrulamasıdır.
+
+      <ph name="REGULAR_ONLY_OPTION_NAME" /> (0 değeri) ayarlanırsa ambiyans kimlik doğrulaması yalnızca Normal oturumlarda gerçekleştirilebilir. Gizli oturumlar ve Misafir oturumları ambiyans kimlik doğrulaması gerçekleştiremez.
+
+      <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (1 değeri) ayarlanırsa Gizli ve Normal oturumlarda ambiyans kimlik doğrulaması gerçekleştirilebilir. Misafir oturumları ambiyans kimlik doğrulaması gerçekleştiremez.
+
+      <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (2 değeri) ayarlanırsa Misafir oturumlarında ve Normal oturumlarda ambiyans kimlik doğrulaması gerçekleştirilebilir. Gizli oturumlar ambiyans kimlik doğrulaması gerçekleştiremez.
+
+      <ph name="ALL_OPTION_NAME" /> (3 değeri) ayarlanırsa tüm oturumlarda ambiyans kimlik doğrulaması gerçekleştirilebilir.
+
+      Normal profillerde ambiyans kimlik doğrulamasına her zaman izin verildiğini unutmayın.
+
+      <ph name="PRODUCT_NAME" /> sürüm 81 ve sonraki sürümlerde politika ayarlanmadan bırakılırsa ambiyans kimlik doğrulaması yalnızca normal oturumlarda etkinleştirilir.</translation>
 <translation id="3021562480854470924">Geri alma işleminin izin verildiği dönüm noktası sayısı</translation>
 <translation id="3023572080620427845">Alternatif bir tarayıcıda yüklenecek URL'leri içeren bir XML dosyasının URL'si.</translation>
 <translation id="3026740867910702435">Giriş ekranında büyük imleç erişilebilirlik özelliğini etkinleştirin.
@@ -1912,6 +1942,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
           Bu politika ayarlanmadan bırakılırsa giriş ekranında dikte özelliği başlangıçta devre dışı bırakılır, ancak kullanıcılar istedikleri zaman bunu etkinleştirebilir.</translation>
 <translation id="3811562426301733860">Tüm sitelerde reklamlara izin ver</translation>
 <translation id="3816312845600780067">Otomatik giriş için kurtarma klavye kısayolunu etkinleştir</translation>
+<translation id="3817323252437541502">Gelişmiş Koruma programına kayıtlı kullanıcılar için ek koruma özelliklerini etkinleştir</translation>
 <translation id="3820526221169548563">Ekran klavyesi erişilebilirliği özelliğini etkinleştirin.
 
           Bu politika doğru seçeneğine ayarlanırsa ekran klavyesi her zaman etkin olur.
@@ -2384,9 +2415,6 @@ politikayı geçersiz kılamaz.
 <translation id="4449545651113180484">Ekranı saat yönünde 270 derece döndür</translation>
 <translation id="445270821089253489">Ne tür kullanıcı ve cihaz bilgilerinin rapor edileceğini kontrol eder.</translation>
 <translation id="4453913621209182880">Yalnızca arka plan grafikleriyle yazdırmaya izin ver</translation>
-<translation id="4454586530530448054">Bu politika ayarlanırsa belirtilen tüm veri türleri hem Google Sync senkronizasyonunun hem de dolaşım profili senkronizasyonunun dışında tutulur. Bu, dolaşım profilinin boyutunu küçültmeye veya Google Sync sunucularına yüklenen veri türlerini sınırlandırmaya yarayabilir.
-
-      Şu anda bu politika kapsamında bulunan veri türleri şunlardır: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfiguration". Bu adlar büyük/küçük harfe duyarlıdır.</translation>
 <translation id="4454820008017317557"><ph name="PRODUCT_NAME" /> araç çubuğu simgesini göster</translation>
 <translation id="4467952432486360968">Üçüncü taraf çerezlerini engelle</translation>
 <translation id="4474167089968829729">Şifrelerin, şifre yöneticisine kaydedilmesini etkinleştir</translation>
@@ -5148,6 +5176,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa ekran ve grafik durumu raporlanmaz. Doğru (true) değerine ayarlanırsa ekran ve grafik durumları raporlanır.</translation>
 <translation id="891435090623616439">JSON dizesi olarak kodlanmıştır, ayrıntılar için <ph name="COMPLEX_POLICIES_URL" /> sayfasına bakın</translation>
 <translation id="8917070657147922192">Kullanıcıların yüklü CA sertifikalarını yönetmelerine izin ver.</translation>
+<translation id="8924721011887485485">Bu politika, Gelişmiş Koruma programına kayıtlı kullanıcılara ekstra güvenlik özellikleri sunulup sunulmayacağını kontrol eder. Bu özelliklerin bazıları kapsamında Google ile veri paylaşılabilir (örneğin, Gelişmiş Koruma kullanıcıları indirdikleri dosyaları Google'a göndererek kötü amaçlı yazılıma karşı taranmasını sağlayabilir). Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa kayıtlı kullanıcılara ekstra güvenlik özellikleri sunulur. Bu politika False (Yanlış) değerine ayarlanırsa Gelişmiş Koruma kullanıcılarına yalnızca tüketicilere yönelik güvenlik özellikleri sunulur.</translation>
 <translation id="8926275581598789324">Bu politikanın artık kullanılmadığını ve <ph name="PRODUCT_OS_NAME" /> sürüm 82'de kaldırılacağını unutmayın. Lütfen bunun yerine <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> politikasını kullanın.
 
           Pil gücüyle çalışırken, boşta kalma işleminin uygulanmasından önce kullanıcı girişi olmadan geçecek süreyi belirtir.

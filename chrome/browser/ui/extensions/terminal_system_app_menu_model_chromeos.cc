@@ -26,11 +26,6 @@
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 
-namespace {
-// The dialog is shifted by the height of the title bar plus a few more pixels.
-constexpr int SHIFT_DISTANCE = 47;
-}  // namespace
-
 TerminalSystemAppMenuModel::TerminalSystemAppMenuModel(
     ui::AcceleratorProvider* provider,
     Browser* browser)
@@ -55,10 +50,7 @@ bool TerminalSystemAppMenuModel::IsCommandIdEnabled(int command_id) const {
 void TerminalSystemAppMenuModel::ExecuteCommand(int command_id,
                                                 int event_flags) {
   if (command_id == IDC_OPTIONS) {
-    const gfx::Rect& bounds = browser()->window()->GetBounds();
-    crostini::LaunchTerminalSettings(
-        browser()->profile(),
-        gfx::Point(bounds.x() + SHIFT_DISTANCE, bounds.y() + SHIFT_DISTANCE));
+    crostini::LaunchTerminalSettings(browser()->profile(), browser());
     return;
   }
 

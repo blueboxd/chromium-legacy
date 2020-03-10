@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">Астатнія сайты (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Каб абагульваць файлы з тэлефона і мець да іх доступ з іншай прылады, уключыце сінхранізацыю ў наладах Chrome на абедзвюх прыладах.</translation>
 <translation id="2175927920773552910">QR-код</translation>
+<translation id="2182457891543959921">Пытацца, перш чым дазволіць сайтам ствараць 3D-карту вашага асяроддзя і адсочваць становішча камеры (рэкамендуецца)</translation>
 <translation id="218608176142494674">Абагульванне</translation>
 <translation id="2227444325776770048">Працягнуць як <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Сінхранізацыя і сэрвісы Google</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">Гэта функцыя будзе ўключацца пры ўваходзе ва Уліковы запіс Google</translation>
 <translation id="2410754283952462441">Выберыце ўліковы запіс</translation>
 <translation id="2414886740292270097">Цёмная</translation>
-<translation id="2416359993254398973">Chrome запытвае дазвол на доступ да вашай камеры для гэтага сайта.</translation>
 <translation id="2426805022920575512">Выбраць іншы ўліковы запіс</translation>
 <translation id="2433507940547922241">Выгляд</translation>
 <translation id="2434158240863470628">Спампоўванне завершана <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@
 <translation id="3522247891732774234">З'явілася абнаўленне. Дадатковыя параметры</translation>
 <translation id="3524138585025253783">Інтэрфейс для распрацоўшчыкаў</translation>
 <translation id="3527085408025491307">Папка</translation>
+<translation id="3538390592868664640">Забараніць сайтам ствараць 3D-карту вашага асяроддзя і адсочваць становішча камеры</translation>
 <translation id="3542235761944717775">Даступна <ph name="KILOBYTES" /> КБ</translation>
 <translation id="3549657413697417275">Пошук у сваёй гісторыі</translation>
 <translation id="3557336313807607643">Дадаць у кантакты</translation>
@@ -439,6 +440,7 @@
 <translation id="4298388696830689168">Звязаныя сайты</translation>
 <translation id="4307992518367153382">Асноўнае</translation>
 <translation id="4314815835985389558">Кіраванне сінхранізацыяй</translation>
+<translation id="4320177379694898372">Няма падключэння да інтэрнэту</translation>
 <translation id="4321739720395210191">Не ўдалося адкрыць камеру. Перазапусціце прыладу і паўтарыце спробу.</translation>
 <translation id="4351244548802238354">Закрыць дыялогавае акно</translation>
 <translation id="4353114845960720315">Пакуль вы знаходзіцеся ў VR, гэты сайт можа атрымліваць звесткі пра:</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">Закрыць укладкі інкогніта</translation>
 <translation id="5534640966246046842">Сайт скапіраваны</translation>
 <translation id="5561549206367097665">Чакаецца адказ сеткі…</translation>
-<translation id="557283862590186398">Chrome запытвае дазвол на доступ да мікрафона для гэтага сайта.</translation>
 <translation id="55737423895878184">Вызначэнне месцазнаходжання і апавяшчэнні дазволены</translation>
 <translation id="5578795271662203820">Шукаць гэты відарыс праз <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">У <ph name="BEGIN_LINK1" />наладах<ph name="END_LINK1" /> заўсёды можна выбраць, што трэба сінхранізаваць.</translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">Падрабязныя звесткі: адсартавана па аб'ёме выкарыстанага трафіка</translation>
 <translation id="6381421346744604172">Зацямняць вэб-сайты</translation>
 <translation id="6388207532828177975">Ачысціць і скінуць</translation>
-<translation id="6393863479814692971">Chrome запытвае дазвол на доступ да вашай камеры і мікрафона для гэтага сайта.</translation>
 <translation id="6395288395575013217">СУВЯЗЬ</translation>
 <translation id="6404511346730675251">Змяніце закладку</translation>
 <translation id="6406506848690869874">Сінхранізаваць</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">Выдаліць даныя Chrome з гэтай прылады?</translation>
 <translation id="6689172468748959065">Фота профілю</translation>
 <translation id="6697492270171225480">Паказваць прапановы падобных старонак, калі старонку не ўдаецца знайсці</translation>
-<translation id="6697947395630195233">Chrome патрабуе доступу да вашага месцазнаходжання, каб абагуліць яго з гэтым сайтам.</translation>
 <translation id="6698801883190606802">Кіраванне сінхранізаванымі данымі</translation>
 <translation id="6699370405921460408">Серверы Google будуць аптымізаваць старонкі, якія вы наведваеце.</translation>
 <translation id="6710213216561001401">Назад</translation>
@@ -971,6 +970,7 @@
 <translation id="8186512483418048923">Засталося файлаў: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Застаўся 1 дзень</translation>
 <translation id="8200772114523450471">Узнавіць</translation>
+<translation id="8206354486702514201">Гэтай наладай кіруе адміністратар.</translation>
 <translation id="8209050860603202033">Адкрыць відарыс</translation>
 <translation id="8218622182176210845">Кіраваць уліковым запісам</translation>
 <translation id="8224471946457685718">Спампоўваць артыкулы для вас пры падключэнні па Wi-Fi</translation>
@@ -992,7 +992,6 @@
 <translation id="8364299278605033898">Праглядайце папулярныя вэб-сайты</translation>
 <translation id="8368027906805972958">Прылада невядомая або не падтрымліваецца (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Дазволіць фонавую сінхранізацыю для канкрэтнага сайта.</translation>
-<translation id="8378714024927312812">Пад кіраваннем вашай арганізацыі</translation>
 <translation id="8380167699614421159">Гэты сайт паказвае назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
 <translation id="8393700583063109961">Адправіць паведамленне</translation>
 <translation id="8413126021676339697">Паказаць усю гісторыю</translation>

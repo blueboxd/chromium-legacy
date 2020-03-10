@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">ອັບ​ໂຫຼດ</translation>
 <translation id="1249250836236328755">ປະເພດ</translation>
 <translation id="1278813325885878377">ແປ້ນ​ພິມ QWERTY ພາ​ສາ​ຮົງ​ກາ​ລີ</translation>
+<translation id="1293556467332435079">ໄຟລ໌</translation>
 <translation id="1297922636971898492">ບໍ່ມີ Google Drive ຢູ່ໃນເວລານີ້. ການອັບໂຫຼດຈະເລີ່ມຕົ້ນໃໝ່ອັດຕະໂນມັດ ເມື່ອ Google Drive ກັບຄືນມາ.</translation>
 <translation id="1307931752636661898">ບໍ່ສາມາດເບິ່ງໄຟລ໌ Linux ໄດ້</translation>
 <translation id="1310751437842832374">ການປ່ຽນ​ຖ່າຍ​ຕົວ​ອັກສອນ (mausam → ມໍແຊມ)</translation>
@@ -40,7 +41,7 @@
 <translation id="1358735829858566124">ໄຟລ໌ ຫຼືບັນຊີລາຍຊື່ບໍ່ຄົງທີ່.</translation>
 <translation id="1363028406613469049">ແທຣັກ</translation>
 <translation id="1378727793141957596">ຍິນ​ດີ​ຕ້ອນ​ຮັບສູ່ Google Drive!</translation>
-<translation id="1383876407941801731">ຄົ້ນຫາ</translation>
+<translation id="1383876407941801731">ຊອກຫາ</translation>
 <translation id="1395262318152388157">​ແຖບເລື່ອນ​ຊອກ​ຫາ</translation>
 <translation id="1399648040768741453">ຄີບອດພາສາເຕກູລູ (ການອອກສຽງ​)</translation>
 <translation id="1430915738399379752">ພິມ</translation>
@@ -519,6 +520,7 @@
 <translation id="696203921837389374">ເປີດ​ໃຊ້​ງານ​ການ​ຊິງ​ຄ໌​ເທິງ​ເຄືອ​ຂ່າຍ​ມື​ຖື</translation>
 <translation id="6965382102122355670">ຕົກລົງ</translation>
 <translation id="6970230597523682626">ພາສາບຸນກາຣີ</translation>
+<translation id="6973630695168034713">ໂຟ​ລ​ເດີ</translation>
 <translation id="6978611942794658017">ໄຟລ໌ນີ້ຖືກອອກແບບສໍາລັບ PC ດ້ວຍການໃຊ້ຊອບແວ Windows. ອັນນີ້ບໍ່ເຂົ້າກັບອຸປະກອນຂອງທ່ານ ເຊິ່ງໃຊ້ Chrome OS. ກະລຸນາຊອກຫາ Chrome Web Store ສໍາລັບແອັບປ່ຽນແທນທີ່ເໝາະສົມ.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">ທ່ານໝົດບ່ອນ​ວ່າງ​ແລ້ວ</translation>
@@ -528,7 +530,7 @@
 <translation id="7040138676081995583">ເປີດດ້ວຍ...</translation>
 <translation id="7100897339030255923">ເລືອກ <ph name="COUNT" /> ລາຍ​ການ​ແລ້ວ</translation>
 <translation id="7106346894903675391">ຊື້ບ່ອນເກັບຂໍ້ມູນເພີ່ມ​ເຕີມ...</translation>
-<translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ຄົ້ນຫາ​ໄດຣ&lt;/em&gt;</translation>
+<translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ຊອກຫາ Drive&lt;/em&gt;</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">ການປ່ຽນ​ຖ່າຍ​ຕົວ​ອັກສອນ (salam →​ຊາລໍາ​)</translation>
 <translation id="7172053773111046550">ຄີບອດພາສາເອັສໂຕເນຍ</translation>

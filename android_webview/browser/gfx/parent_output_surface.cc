@@ -137,4 +137,8 @@ ParentOutputSurface::GetGpuTaskSchedulerHelper() {
   return nullptr;
 }
 
+gpu::MemoryTracker* ParentOutputSurface::GetMemoryTracker() {
+  return nullptr;
+}
+
 }  // namespace android_webview

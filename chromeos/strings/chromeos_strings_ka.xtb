@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">PIN-კოდი არასწორია.</translation>
 <translation id="3838338534323494292">ახალი პაროლი</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> გთხოვთ, ცადოთ ხელახლა. მცდელობების დარჩენილი რაოდენობა: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> მართავს ამ მოწყობილობას და აქვს წვდომა მომხმარებლების ნებისმიერ აქტივობაზე, მათ შორის, მონახულებულ ვებგვერდებზე, პაროლებსა და ელფოსტაზე.</translation>
 <translation id="4227825898293920515">პაროლი ძალაშია <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos ბილეთის მოქმედების ვადა მალე იწურება</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">თქვენს ეკრანზე ვერაფერი მოიძებნა, რითაც თქვენს დახმარებას შევძლებდი.
 გთხოვთ, შეეხოთ მიკროფონს და მკითხოთ, რაც გსურთ.</translation>
 <translation id="5222676887888702881">გამოსვლა</translation>
-<translation id="5275776633505022322">მცდელობების დარჩენილი რაოდენობა: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> გთხოვთ, ცადოთ ხელახლა.</translation>
 <translation id="5317780077021120954">შენახვა</translation>
 <translation id="5332948983412042822">ახლავე აირჩიეთ ახალი</translation>
 <translation id="5457599981699367932">დათვალიერება სტუმრის სტატუსით</translation>

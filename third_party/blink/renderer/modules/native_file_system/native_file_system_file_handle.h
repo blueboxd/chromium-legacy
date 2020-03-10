@@ -48,6 +48,10 @@ class NativeFileSystemFileHandle final : public NativeFileSystemHandle {
       bool writable,
       base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr,
                               mojom::blink::PermissionStatus)>) override;
+  void IsSameEntryImpl(
+      mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> other,
+      base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr, bool)>)
+      override;
 
   mojo::Remote<mojom::blink::NativeFileSystemFileHandle> mojo_ptr_;
 };

@@ -478,7 +478,6 @@
 <translation id="3024663005179499861">Грешен тип на правилото</translation>
 <translation id="3037605927509011580">Ужас!</translation>
 <translation id="3041612393474885105">Информация за сертификата</translation>
-<translation id="3057676462092457419">Режимът <ph name="SECURE_DNS_MODE_SECURE" /> за DnsOverHttps още не се поддържа. Зададен бе режимът <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (плик)</translation>
 <translation id="3061707000357573562">Услуга за корекции</translation>
 <translation id="3064966200440839136">Ще напуснете режим „инкогнито“, за да платите във външно приложение. Искате ли да продължите?</translation>
@@ -578,6 +577,7 @@
 <translation id="3487845404393360112">Тава 4</translation>
 <translation id="3495081129428749620">Търсене в страницата
 <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Създаване на триизмерна карта на заобикалящата ви среда и следене на позицията на камерата</translation>
 <translation id="3512163584740124171">Това правило е пренебрегнато, защото друго правило от същата група е с по-висок приоритет.</translation>
 <translation id="3518941727116570328">Обработване на няколко обекта</translation>
 <translation id="3528171143076753409">Сертификатът на сървъра не е надежден.</translation>
@@ -931,6 +931,7 @@
 <translation id="5030338702439866405">Издаден от</translation>
 <translation id="503069730517007720">За <ph name="SOFTWARE_NAME" /> се изисква основен сертификат, но такъв не е инсталиран. Системният ви администратор трябва да прегледа инструкциите за конфигуриране на <ph name="SOFTWARE_NAME" />, за да отстрани проблема. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Всичко за Google Преводач</translation>
+<translation id="503498442187459473"><ph name="HOST" /> иска да използва камерата и микрофона ви</translation>
 <translation id="5039804452771397117">Разрешаване</translation>
 <translation id="5040262127954254034">Поверителност</translation>
 <translation id="5043480802608081735">Копирана от вас връзка</translation>
@@ -1039,7 +1040,6 @@
 <translation id="5457113250005438886">Невалидно</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Възстановяване на редактирането</translation>
-<translation id="5472133193607270166">Когато тази функция е включена, сайтовете не могат да използват активността ви при сърфиране на различните сайтове, за да персонализират рекламите. Някои сайтове може да не работят правилно.</translation>
 <translation id="5478437291406423475">B6/C4 (плик)</translation>
 <translation id="5481076368049295676">Въпросното съдържание може да се опита да инсталира опасен софтуер на устройството ви, който да открадне или изтрие информацията ви. <ph name="BEGIN_LINK" />Показване въпреки това<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Добавяне на валиден адрес</translation>
@@ -1325,6 +1325,7 @@
 <translation id="6710594484020273272">&lt;Въведете дума за търсене&gt;</translation>
 <translation id="671076103358959139">Означение за регистриране:</translation>
 <translation id="6711464428925977395">Нещо не е наред с прокси сървъра или адресът е неправилен.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> иска да създаде триизмерна карта на заобикалящата ви среда и да следи позицията на камерата</translation>
 <translation id="6738516213925468394">На <ph name="TIME" /> данните ви бяха шифровани с <ph name="BEGIN_LINK" />пропуска ви за синхронизиране<ph name="END_LINK" />. Въведете го, за да стартирате синхронизирането.</translation>
 <translation id="674375294223700098">Неизвестна грешка в сертификата на сървъра.</translation>
 <translation id="6744009308914054259">Докато чакате да се установи връзка, можете да посетите страницата „Изтегляния“, за да четете офлайн статии.</translation>
@@ -1489,7 +1490,7 @@
 <translation id="7455133967321480974">Използване на глобалната стандартна стойност (блокиране)</translation>
 <translation id="7460618730930299168">Прожекцията е различна от избраната от вас. Искате ли да продължите?</translation>
 <translation id="7473891865547856676">Не, благодаря</translation>
-<translation id="7481312909269577407">Препращане</translation>
+<translation id="7481312909269577407">Напред</translation>
 <translation id="7485870689360869515">Няма намерени данни.</translation>
 <translation id="7495290002932347110">Паролата ви е била разкрита при нарушение на сигурността на данните на сайт или приложение. Chrome препоръчва да проверите запазените си пароли и да промените паролата си за <ph name="ORIGIN" /> сега.</translation>
 <translation id="7498234416455752244">Продължаване с редактирането</translation>
@@ -1745,7 +1746,6 @@
 <translation id="8589998999637048520">Най-добро качество</translation>
 <translation id="860043288473659153">Име на титуляря на картата</translation>
 <translation id="8606726445206553943">Да използва MIDI устройствата ви.</translation>
-<translation id="8616822740383114808">Тази настройка е наложена чрез „<ph name="ENFORCING_SETTING" />“ в „<ph name="SETTINGS_PAGE" />“</translation>
 <translation id="861775596732816396">Размер 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Запазване на картата на това устройство</translation>

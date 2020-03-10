@@ -67,6 +67,10 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // True if the bubble is active.
   bool IsBubbleActive() const;
 
+  // Closes all non-system tray bubbles (e.g. volume/brightness, and toasts) if
+  // any are shown.
+  void CloseSecondaryBubbles();
+
   // Activates the system tray bubble.
   void ActivateBubble();
 

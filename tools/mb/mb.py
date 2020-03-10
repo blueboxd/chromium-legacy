@@ -1499,6 +1499,7 @@ class MetaBuildWrapper(object):
     is_android = 'target_os="android"' in vals['gn_args']
     is_fuchsia = 'target_os="fuchsia"' in vals['gn_args']
     is_cros = 'target_os="chromeos"' in vals['gn_args']
+    is_ios = 'target_os="ios"' in vals['gn_args']
     is_simplechrome = vals.get('cros_passthrough', False)
     is_mac = self.platform == 'darwin'
     is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
@@ -1548,6 +1549,13 @@ class MetaBuildWrapper(object):
           '../../testing/test_env.py',
           script,
       ]
+    elif is_ios and test_type != "raw":
+      # iOS commands are all wrapped with generate_wrapper. Some targets
+      # shared with iOS aren't defined with generated_script (ie/ basic_
+      # unittests) so we force those to follow iOS' execution process by
+      # mimicking what generated_script would do
+      script = 'bin/run_{}'.format(target)
+      cmdline += ['../../testing/test_env.py', script]
     elif is_android and test_type != "script":
       if asan:
         cmdline += [os.path.join('bin', 'run_with_asan'), '--']

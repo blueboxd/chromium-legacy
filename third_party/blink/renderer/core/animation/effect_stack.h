@@ -57,6 +57,8 @@ class CORE_EXPORT EffectStack {
   void Add(SampledEffect* sampled_effect) {
     sampled_effects_.push_back(sampled_effect);
   }
+  static bool CompareSampledEffects(const Member<SampledEffect>&,
+                                    const Member<SampledEffect>&);
   bool IsEmpty() const { return sampled_effects_.IsEmpty(); }
   bool HasActiveAnimationsOnCompositor(const PropertyHandle&) const;
 

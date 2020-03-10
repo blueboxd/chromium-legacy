@@ -63,7 +63,12 @@ class WebAppMigrationManager {
   void OnWebAppRegistryWritten(bool success);
 
   void ReportDatabaseError(const syncer::ModelError& error);
-  void CloseDatabaseAndCallCallback(bool success);
+
+  // We don't want to destruct database_ object immediately in callbacks from
+  // WebAppDatabase. This would be a violation of the caller/callee contract.
+  // We should use PostTask instead.
+  void ScheduleDestructDatabaseAndCallCallback(bool success);
+  void DestructDatabaseAndCallCallback(bool success);
 
   extensions::BookmarkAppRegistrar bookmark_app_registrar_;
   extensions::BookmarkAppRegistryController bookmark_app_registry_controller_;

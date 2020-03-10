@@ -474,7 +474,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="3024663005179499861">Chybný typ pravidla</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
 <translation id="3041612393474885105">Informácie o certifikáte</translation>
-<translation id="3057676462092457419">Režim DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> zatiaľ nie je podporovaný. Režim bol nastavený na <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (obálka)</translation>
 <translation id="3061707000357573562">Služba opráv</translation>
 <translation id="3064966200440839136">Ak zaplatíte pomocou externej aplikácie, opustíte režim inkognito. Chcete pokračovať?</translation>
@@ -571,6 +570,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="3487845404393360112">Priehradka č. 4</translation>
 <translation id="3495081129428749620">Nájsť na stránke
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Vytvorenie 3D mapy vášho okolia a sledovanie umiestnenia kamier</translation>
 <translation id="3512163584740124171">Toto pravidlo sa ignoruje, pretože iné pravidlo z rovnakej skupiny má vyššiu prioritu.</translation>
 <translation id="3518941727116570328">Spracúvanie viacerých objektov</translation>
 <translation id="3528171143076753409">Certifikát servera nie je dôveryhodný.</translation>
@@ -922,6 +922,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="5030338702439866405">Vydavateľ</translation>
 <translation id="503069730517007720">Vyžaduje sa koreňový certifikát softvéru <ph name="SOFTWARE_NAME" />, ale nie je nainštalovaný. Váš správca IT by si mal prezrieť pokyny na konfiguráciu softvéru <ph name="SOFTWARE_NAME" /> a tento problém vyriešiť. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">O službe Prekladač Google</translation>
+<translation id="503498442187459473"><ph name="HOST" /> chce použiť váš fotoaparát a mikrofón</translation>
 <translation id="5039804452771397117">Povoliť</translation>
 <translation id="5040262127954254034">Ochrana súkromia</translation>
 <translation id="5043480802608081735">Skopírovaný odkaz</translation>
@@ -1030,7 +1031,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="5457113250005438886">Neplatné</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ďalší}few{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ďalšie}many{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ďalšieho}other{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ďalších}}</translation>
 <translation id="5470861586879999274">&amp;Znova upraviť</translation>
-<translation id="5472133193607270166">Keď je táto možnosť zapnutá, weby nemôžu prispôsobovať reklamy na základe vašej aktivity prehliadania na rôznych stránkach. Niektoré weby nemusia fungovať správne.</translation>
 <translation id="5478437291406423475">B6/C4 (obálka)</translation>
 <translation id="5481076368049295676">Tento obsah sa môže pokúsiť nainštalovať v zariadení nebezpečný softvér, ktorý ukradne alebo odstráni vaše informácie. <ph name="BEGIN_LINK" />Napriek tomu zobraziť<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Pridanie platnej adresy</translation>
@@ -1315,6 +1315,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="6710594484020273272">&lt;Zadajte hľadaný výraz&gt;</translation>
 <translation id="671076103358959139">Registračný token:</translation>
 <translation id="6711464428925977395">Vyskytol sa problém s proxy serverom alebo je adresa nesprávna.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> chce vytvoriť 3D mapu vášho okolia a sledovať umiestnenie kamier</translation>
 <translation id="6738516213925468394">Vaše údaje boli <ph name="TIME" /> zašifrované pomocou <ph name="BEGIN_LINK" />prístupovej frázy synchronizácie<ph name="END_LINK" />. Synchronizácia sa spustí po jej zadaní.</translation>
 <translation id="674375294223700098">Neznáma chyba spôsobená certifikátom servera.</translation>
 <translation id="6744009308914054259">Zatiaľ čo čakáte na pripojenie, môžete prejsť do priečinka stiahnutých súborov a prečítať si články v režime offline.</translation>
@@ -1736,7 +1737,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="8589998999637048520">Najlepšia kvalita</translation>
 <translation id="860043288473659153">Meno držiteľa karty</translation>
 <translation id="8606726445206553943">Používať zariadenia MIDI</translation>
-<translation id="8616822740383114808">Toto nastavenie je presadzované nastavením <ph name="ENFORCING_SETTING" /> na stránke <ph name="SETTINGS_PAGE" /></translation>
 <translation id="861775596732816396">Veľkosť 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Uložiť túto kartu do tohto zariadenia</translation>

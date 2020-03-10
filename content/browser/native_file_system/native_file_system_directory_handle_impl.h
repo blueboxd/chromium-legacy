@@ -50,6 +50,9 @@ class CONTENT_EXPORT NativeFileSystemDirectoryHandleImpl
   void RemoveEntry(const std::string& basename,
                    bool recurse,
                    RemoveEntryCallback callback) override;
+  void Resolve(mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>
+                   possible_child,
+               ResolveCallback callback) override;
   void Transfer(
       mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken> token)
       override;
@@ -79,6 +82,9 @@ class CONTENT_EXPORT NativeFileSystemDirectoryHandleImpl
   void RemoveEntryImpl(const storage::FileSystemURL& url,
                        bool recurse,
                        RemoveEntryCallback callback);
+
+  void ResolveImpl(ResolveCallback callback,
+                   NativeFileSystemTransferTokenImpl* possible_child);
 
   // Calculates a FileSystemURL for a (direct) child of this directory with the
   // given basename.  Returns an error when |basename| includes invalid input

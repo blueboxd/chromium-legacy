@@ -1,4 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ka">
+<translation id="2359808026110333948">გაგრძელება</translation>
+<translation id="2416359993254398973">Chrome საჭიროებს თქვენს კამერაზე წვდომის ნებართვას ამ საიტისთვის.</translation>
+<translation id="557283862590186398">Chrome საჭიროებს თქვენს მიკროფონზე წვდომის ნებართვას ამ საიტისთვის.</translation>
+<translation id="6393863479814692971">Chrome საჭიროებს თქვენს კამერასა და მიკროფონზე წვდომის ნებართვას ამ საიტისთვის.</translation>
+<translation id="6697947395630195233">Chrome საჭიროებს თქვენს მდებარეობაზე წვდომის ნებართვას, რათა ის ამ საიტის გაუზიაროს.</translation>
 </translationbundle>

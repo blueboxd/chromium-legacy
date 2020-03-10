@@ -6753,23 +6753,17 @@ crbug.com/1058403 external/wpt/webaudio/the-audio-api/the-audioworklet-interface
 crbug.com/1057020 [ Fuchsia ] http/tests/streams/chromium/get-reader-byob.html [ Pass Timeout ]
 
 # Sheriff 2020-03-05
-crbug.com/1058203 [ Mac10.13 ] virtual/form-controls-refresh-disabled/fast/forms/autofocus-opera-008.html [ Pass Failure ]
-crbug.com/1058203 [ Mac10.12 ] virtual/form-controls-refresh-disabled/fast/forms/autofocus-opera-008.html [ Pass Failure ]
-crbug.com/1058203 [ Mac10.10 ] virtual/form-controls-refresh-disabled/fast/forms/autofocus-opera-008.html [ Pass Failure ]
 crbug.com/1058073 [ Retina ] virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Failure ]
 crbug.com/1058073 [ Mac10.14 ] accessibility/content-changed-notification-causes-crash.html [ Pass Failure ]
 crbug.com/1058073 [ Retina ] accessibility/content-changed-notification-causes-crash.html [ Pass Failure ]
 
 # Sheriff 2020-03-06
-crbug.com/1058203 [ Mac10.11 ] virtual/form-controls-refresh-disabled/fast/forms/autofocus-opera-008.html [ Pass Failure ]
 crbug.com/1059262 http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
 crbug.com/1059262 virtual/threaded/http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
 crbug.com/1059322 [ Mac ] fast/forms/file/file-input-webkitdirectory-key-enter.html [ Pass Failure ]
 crbug.com/1059322 [ Mac ] fast/forms/file/file-input-webkitdirectory-click.html [ Pass Failure ]
 crbug.com/1059322 [ Mac ] fast/forms/file/file-input-webkitdirectory-key-space.html [ Pass Failure ]
 crbug.com/1059322 [ Mac ] fast/forms/file/file-input-click.html [ Pass Failure ]
-crbug.com/1059322 [ Mac ] fast/forms/autofocus-focus-only-once.html [ Pass Failure ]
-crbug.com/1059322 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/autofocus-focus-only-once.html [ Pass Failure ]
 crbug.com/1058244 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Pass Failure ]
 
 # Sheriff 2020-03-08

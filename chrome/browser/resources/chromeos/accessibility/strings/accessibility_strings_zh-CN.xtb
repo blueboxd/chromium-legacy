@@ -35,10 +35,10 @@
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">没有下一个 4 级标题</translation>
-<translation id="1212770441379271564">下面这几个快捷键并不是 ChromeVox 命令，但它们非常实用，有助于您充分利用 Chrome。
+<translation id="1212770441379271564">以下这些实用的快捷键并不是 ChromeVox 命令，但能够帮助您充分利用 Chrome。
     要移到下一个可操作项（例如按钮和链接），请按 Tab 键。要移到上一个可操作项，请按 Shift+Tab。
     要进入 Chrome 浏览器的地址框（也称为多功能框），请按 Ctrl+L。
-    要自动打开并转到新标签页，请按 Ctrl+T。您的光标将会位于多功能框内。
+    要自动打开并转到新标签页，请按 Ctrl+T。您的光标将会位于新标签页的多功能框内。
     要关闭标签页，请按 Ctrl+W。
     要转到下一个打开的标签页，请按 Ctrl+Tab。
     要打开 Chrome 浏览器菜单，请按 Alt+F。</translation>
@@ -1044,7 +1044,8 @@
 <translation id="7400575256015741911">检测到拼写错误</translation>
 <translation id="7408482676469142474">表格标记</translation>
 <translation id="7425395583360211003">回车</translation>
-<translation id="7429415133937917139">在屏幕顶部的 ChromeVox 面板中模拟可刷新式盲文显示屏的输出结果</translation>
+<translation id="7429415133937917139">在屏幕顶部的 ChromeVox 面板中
+模拟可刷新式盲文显示屏的输出结果</translation>
 <translation id="7434509671034404296">开发者</translation>
 <translation id="743783356331413498">示例</translation>
 <translation id="7439060726180460871">目录</translation>
@@ -1083,7 +1084,7 @@
 <translation id="7693840228159394336">上一个单选按钮</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">没有下一个组合框</translation>
-<translation id="772146615414628379">恭喜！您已顺利学完为使用 ChromeVox 而需掌握的基本知识。请记住，您随时可通过按搜索键+句点键打开 ChromeVox 命令菜单。要详细了解 ChromeVox 和 Chrome 操作系统，请阅读以下文章。
+<translation id="772146615414628379">恭喜！您已完成对 ChromeVox 基本使用方法的学习。提示：您可以随时通过按下“搜索键+句点键”打开 ChromeVox 命令菜单。如需详细了解 ChromeVox 和 Chrome 操作系统，请阅读以下文章。
     若要退出此教程，请使用 ChromeVox 找到“关闭”按钮，然后点击该按钮。</translation>
 <translation id="7724603315864178912">剪切</translation>
 <translation id="7731785449856576010">没有下一个媒体微件</translation>

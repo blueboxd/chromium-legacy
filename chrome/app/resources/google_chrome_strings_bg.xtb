@@ -38,7 +38,6 @@
 <translation id="1877026089748256423">Chrome не е актуален</translation>
 <translation id="1900795423379050516">Ако дадена настройка не се показва на тази страница, потърсете в <ph name="LINK_BEGIN" />настройките на браузъра Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Разрешаване на влизането в Chrome</translation>
-<translation id="1983547493073464667">Chrome не може да провери паролите ви</translation>
 <translation id="2063848847527508675">Chrome OS трябва да се рестартира, за да приложи актуализацията.</translation>
 <translation id="2094919256425865063">Искате ли да затворите Chrome въпреки това?</translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> елемента ще се изтрият от това устройство. За да извлечете данните си по-късно, влезте в Chrome като <ph name="USER_EMAIL" />.</translation>
@@ -50,15 +49,14 @@
 <translation id="2309047409763057870">Тази инсталация на Google Chrome е алтернативна и не може да се зададе като браузър по подразбиране.</translation>
 <translation id="2341767445688917208">Chrome OS не синхронизира паролите ви. Отстранете проблема.</translation>
 <translation id="2348335408836342058">Chrome се нуждае от разрешение за достъп до камерата и микрофона ви за този сайт</translation>
+<translation id="234869673307233423">Chrome не може да провери паролите ви. Опитайте пак по-късно.</translation>
 <translation id="2429317896000329049">Google Chrome не можа да синхронизира данните ви, защото синхронизирането не е налице за домейна ви.</translation>
 <translation id="2467438592969358367">Google Chrome иска да експортира паролите ви. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
 <translation id="2534507159460261402">Google Pay (копирано в Chrome)</translation>
-<translation id="2559627601176023786">Няма запазени пароли. Chrome може да проверява паролите ви, когато са запазени в профила ви в Google.</translation>
 <translation id="2580411288591421699">Не може да се инсталира същата версия на Google Chrome, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
 <translation id="2586406160782125153">Данните за сърфирането ви ще се изтрият от това устройство. За да ги извлечете по-късно, влезте в Chrome като <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Лого на Chrome</translation>
-<translation id="261226884343006626">Chrome не може да провери паролите ви. Опитайте отново утре.</translation>
 <translation id="2622559029861875898">Chrome не може да провери за актуализации. Проверете връзката си с интернет.</translation>
 <translation id="2644798301485385923">Система Chrome OS</translation>
 <translation id="2652691236519827073">Отваряне на връзката в нов &amp;раздел на Chrome</translation>
@@ -72,6 +70,8 @@
 <translation id="2857540653560290388">Chrome се стартира...</translation>
 <translation id="2871893339301912279">Влязохте в Chrome!</translation>
 <translation id="2888126860611144412">Всичко за Chrome</translation>
+<translation id="2929907241665500097">Chrome не се актуализира, защото нещо се обърка. <ph name="BEGIN_LINK" />Отстранете проблеми с актуализирането на Chrome и неуспешни актуализации<ph name="END_LINK" />.</translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – Вход в мрежата – Chrome</translation>
 <translation id="3037838751736561277">Google Chrome работи на заден план.</translation>
 <translation id="3065168410429928842">Раздел в Chrome</translation>
 <translation id="3080151273017101988">Изпълняване на приложения на заден план при затворен браузър Google Chrome</translation>
@@ -82,7 +82,6 @@
 <translation id="3395323229510056640">Получаване на помощ за Chrome OS</translation>
 <translation id="3396977131400919238">По време на инсталирането възникна грешка в операционната система. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="3398288718845740432">Скриване в менюто на Chrome</translation>
-<translation id="3434246496373299699">Chrome може да проверява паролите ви, когато влезете с профила си в Google</translation>
 <translation id="3451115285585441894">Добавя се към Chrome...</translation>
 <translation id="345171907106878721">Добавяне на вас към Chrome</translation>
 <translation id="34857402635545079">Да се изчистят и данните от Chrome (<ph name="URL" />)</translation>
@@ -98,7 +97,6 @@
 <translation id="386202838227397562">Моля, затворете всички прозорци на Google Chrome и опитайте отново.</translation>
 <translation id="3873044882194371212">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chrome</translation>
 <translation id="3889417619312448367">Деинсталиране на Google Chrome</translation>
-<translation id="3943605108614542032">Актуализациите на Chrome се управляват от администратора ви</translation>
 <translation id="4050175100176540509">В последната версия са налице важни подобрения в сигурността и нови функции.</translation>
 <translation id="4053720452172726777">Персонализиране и контролиране на Google Chrome</translation>
 <translation id="4143243756087420366">Име и снимка за Chrome</translation>
@@ -112,7 +110,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">Chrome може да ви защити от нарушения на сигурността на данните, злонамерени разширения и др.</translation>
 <translation id="4343195214584226067">Разширението <ph name="EXTENSION_NAME" /> бе добавено към Chrome</translation>
+<translation id="4384570495110188418">Chrome не може да провери паролите ви, защото не сте влезли в профила си</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome – Вход в мрежата – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Извършва се друго действие, свързано с Google Chrome. Моля, опитайте отново по-късно.</translation>
 <translation id="4480040274068703980">Chrome OS не можа да синхронизира данните ви поради грешка при влизане в профила.</translation>
 <translation id="4561051373932531560">Google Chrome ви позволява да кликнете върху телефонен номер в мрежата и да се обадите до него със Skype!</translation>
@@ -122,6 +122,7 @@
 <translation id="4600710005438004015">Chrome не можа да се актуализира до най-новата версия. Това означава, че пропускате нови функции и корекции за сигурност.</translation>
 <translation id="4631713731678262610">Скриване в менюто на Chrome</translation>
 <translation id="4633000520311261472">За да направим Chrome по-безопасен, деактивирахме някои разширения, които не са посочени в <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да са били добавени без ваше знание.</translation>
+<translation id="4653397506175047429">Chrome не може да провери всичките ви пароли. Опитайте отново след 24 часа.</translation>
 <translation id="4728575227883772061">Инсталирането не бе успешно поради неизвестна грешка. Ако Google Chrome понастоящем работи, моля, затворете го и опитайте отново.</translation>
 <translation id="4750550185319565338">Рестартирайте Chrome, за да активирате <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (входящ трафик за mDNS)</translation>
@@ -154,6 +155,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome не можа да се стартира. Опитайте отново.</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Вход в мрежата</translation>
 <translation id="5940385492829620908">Тук ще намерите посещаваните от вас места в мрежата, отметките и другите си неща в Chrome.</translation>
 <translation id="5941830788786076944">Искам Google Chrome да бъде браузърът по подразбиране</translation>
 <translation id="6070348360322141662">За повишаване на сигурността Google Chrome ще шифрова данните ви</translation>
@@ -207,9 +209,9 @@
 <translation id="7808348361785373670">Премахване от Chrome...</translation>
 <translation id="7825851276765848807">Инсталацията не бе успешна поради неизвестна грешка. Моля, изтеглете отново Google Chrome.</translation>
 <translation id="7855730255114109580">Google Chrome е актуален</translation>
-<translation id="7888686278524752658">Chrome не се актуализира, защото нещо се обърка. Отстранете проблеми с актуализирането на Chrome и неуспешни актуализации.</translation>
 <translation id="7890208801193284374">Ако споделяте компютър, близките и приятелите ви могат да сърфират отделно и да настроят Chrome точно така, както искат.</translation>
 <translation id="7896673875602241923">По-рано някой влезе в Chrome на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Моля, създайте нов потребител в браузъра, така че информацията ви да се съхранява отделно.</translation>
+<translation id="7905891027772979035">Chrome не може да провери разширенията ви. Опитайте пак по-късно.</translation>
 <translation id="7916016681687251387">Chrome OS не можа да синхронизира данните ви. Отстранете проблема.</translation>
 <translation id="7930071585467473040">Google Chrome се опитва да копира паролите.</translation>
 <translation id="7962410387636238736">От сега нататък този компютър няма да получава актуализации на Google Chrome, тъй като Windows XP и Windows Vista вече не се поддържат</translation>

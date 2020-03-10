@@ -315,6 +315,7 @@
 <translation id="2289385804009217824">ଟ୍ରିମ୍</translation>
 <translation id="2292556288342944218">ଆପଣଙ୍କ ଇଣ୍ଟର୍ନେ‍ଟ୍ ଆକ୍ସେସ୍ ବ୍ଲକ୍ କରାଯାଇଛି</translation>
 <translation id="2297722699537546652">B5 (ଏନଭଲପ୍)</translation>
+<translation id="2300306941146563769">ଅପଲୋଡ୍ କରାଯାଇନାହିଁ</translation>
 <translation id="2310021320168182093">Chou2 (ଏନଭଲପ୍)</translation>
 <translation id="2315864634253056100">ଏହି ସାଇଟ୍‍ର ନାମ <ph name="LOOKALIKE_DOMAIN" /> ସହ ସମାନ ଥିବା ପରି ଜଣାଯାଉଛି। ଆକ୍ରମଣକାରୀମାନେ ବେଳେବେଳେ ୱେବ୍ ଠିକଣାରେ ସହଜରେ ଦେଖା ଯାଉନଥିବା, ପରିବର୍ତ୍ତନଗୁଡ଼ିକ କରି ସାଇଟ୍‍ଗୁଡ଼ିକର ନକଲ କରିଥାନ୍ତି।</translation>
 <translation id="2316887270356262533">1 MB ଠାରୁ କମ୍ ଖାଲି କରନ୍ତି। କିଛି ସାଇଟ୍‍ ଆପଣଙ୍କର ପରବର୍ତ୍ତୀ ଭ୍ରମଣ ସମୟରେ ଆହୁରି ଧୀରେ ଲୋଡ୍ ହୋଇପାରନ୍ତି।</translation>
@@ -437,6 +438,7 @@
 <translation id="2909946352844186028">ନେଟ୍‌ୱର୍କରେ ଏକ ପରିବର୍ତ୍ତନ ଚିହ୍ନଟ କରାଯାଇଥିଲା।</translation>
 <translation id="2910133103376701357">ଆପଣଙ୍କର ଡିଭାଇସ୍ ଏବଂ ଆକାଉଣ୍ଟ <ph name="ENROLLMENT_DOMAIN" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି।</translation>
 <translation id="2911973620368911614">ଜବ୍ ଆକାଉଣ୍ଟିଂ ଉପଯୋଗକର୍ତ୍ତା ID</translation>
+<translation id="2915068235268646559"><ph name="CRASH_TIME" />ରେ କ୍ରାସ୍ ହୋଇଛି</translation>
 <translation id="2916038427272391327">ଅନ୍ୟ ପ୍ରୋଗ୍ରାମ୍‌ଗୁଡ଼ିକ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="2922350208395188000">ସର୍ଭରର ସାର୍ଟିଫିକେଟ୍‌ ଯାଞ୍ଚ କରିହେବ ନାହିଁ</translation>
 <translation id="2925673989565098301">ବିତରଣ ପଦ୍ଧତି</translation>
@@ -445,6 +447,7 @@
 <translation id="2930577230479659665">ପ୍ରତ୍ୟେକ କପି ପରେ ଟ୍ରିମ୍ କରନ୍ତୁ</translation>
 <translation id="2934466151127459956">ସରକାରୀ-ଚିଠି</translation>
 <translation id="2941952326391522266">ଏହା <ph name="DOMAIN" /> ଅଟେ ବୋଲି ଏହି ସର୍ଭର୍ ପ୍ରମାଣ କରିପାରିଲା ନାହିଁ; ଏହାର ସୁରକ୍ଷା ସାର୍ଟିଫିକେଟ୍ <ph name="DOMAIN2" /> ତରଫରୁ ଅଟେ। ଏହା ଏକ ଭୁଲ କନଫିଗ୍‌ରେସନ୍ କିମ୍ବା ଜଣେ ଆକ୍ରମଣକାରୀ ଆପଣଙ୍କର ସଂଯୋଗକୁ ପ୍ରତିରୋଧ କରୁଥିବା ଯୋଗୁଁ ହୋଇଥାଇପାରେ।</translation>
+<translation id="2943895734390379394">ଅପଲୋଡ୍ ସମୟ:</translation>
 <translation id="2948083400971632585">ଆପଣ ସେଟିଂସ୍ ପୃଷ୍ଠାରୁ ଏକ ସଂଯୋଗ ପାଇଁ କନ୍‍ଫିଗର୍ କରାଯାଇଥିବା କୌଣସି ପ୍ରକ୍ସିକୁ ଅକ୍ଷମ କରିପାରିବେ।</translation>
 <translation id="2951588413176968965">ମୋ ମେଲବକ୍ସ</translation>
 <translation id="295526156371527179">ଚେତାବନୀ: ଏହି ନୀତିକୁ ଏକ ଅଭିଧାନ ଭାବେ ନିର୍ଦ୍ଦିଷ୍ଟ କରାଯାଇଥିବା ନୀତି ଦ୍ୱାରା ମିଶାଯାଇ ନଥିଲା କାହିଁକି ନା ଏହା ଏକ ଅଭିଧାନ ନୁହେଁ।</translation>
@@ -471,7 +474,6 @@
 <translation id="3024663005179499861">ଭୁଲ ନୀତି ପ୍ରକାର</translation>
 <translation id="3037605927509011580">ଇସ!</translation>
 <translation id="3041612393474885105">ସାର୍ଟିଫିକେଟ୍ ସୂଚନା</translation>
-<translation id="3057676462092457419">DnsOverHttps ମୋଡ୍ <ph name="SECURE_DNS_MODE_SECURE" /> ଏପର୍ଯ୍ୟନ୍ତ ସମର୍ଥିତ ନାହିଁ, ମୋଡ୍‍କୁ <ph name="SECURE_DNS_MODE_OFF" />ରେ ସେଟ୍ କରାଯାଇଛି।</translation>
 <translation id="3060227939791841287">C9 (ଏନଭଲପ୍)</translation>
 <translation id="3061707000357573562">ପ୍ୟାଚ୍ ସେବା</translation>
 <translation id="3064966200440839136">ଏକ ଏକ୍ସଟର୍ନଲ୍‌ ଆପ୍ଲିକେସନ୍‌ ମାଧ୍ୟମରେ ଦେୟ ଦେବାକୁ ଇନ୍‌କଗ୍ନିଟୋ ମୋଡ୍‌ ଛାଡୁଛନ୍ତି। ଜାରି ରଖିବେ?</translation>
@@ -569,6 +571,7 @@
 <translation id="3487845404393360112">ଟ୍ରେ 4</translation>
 <translation id="3495081129428749620">ପୃଷ୍ଠାରେ ଖୋଜନ୍ତୁ
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରନ୍ତୁ ଏବଂ କ୍ୟାମେରା ସ୍ଥିତି ଟ୍ରାକ୍ କରନ୍ତୁ</translation>
 <translation id="3512163584740124171">ଏହି ନୀତିକୁ ଅଣଦେଖା କରାଯାଏ କାରଣ ସେହି ଏକା ନୀତି ଗୋଷ୍ଠୀ ଭିତରୁ ଅନ୍ୟ ଗୋଟିଏ ନୀତିର ପ୍ରାଧାନ୍ୟ ଅଛି।</translation>
 <translation id="3518941727116570328">ଏକାଧିକ ବସ୍ତୁର ପରିଚାଳନା</translation>
 <translation id="3528171143076753409">ସର୍ଭରର ସାର୍ଟିଫିକେଟ୍‍ଟି ବିଶ୍ୱସ୍ତ ନୁହେଁ।</translation>
@@ -920,6 +923,7 @@
 <translation id="5030338702439866405">ଏହାଙ୍କ ଦ୍ୱାରା ଜାରି କରାଯାଇଛି</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" ପାଇଁ ଏକ ମୂଳ ସାର୍ଟିଫିକେଟ୍ ଆବଶ୍ୟକ କିନ୍ତୁ ଇନ୍‍ଷ୍ଟଲ୍ କରାଯାଇ ନାହିଁ। ଆପଣଙ୍କର IT ବ୍ୟବସ୍ଥାପକ ଏହି ସମସ୍ୟାକୁ ଠିକ୍ କରିବା ପାଇଁ "<ph name="SOFTWARE_NAME" />"ର କନଫିଗ୍‍‍ରେସନ୍ ନିର୍ଦ୍ଦେଶାବଳୀ ଦେଖିବା ଉଚିତ। <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google ଅନୁବାଦ ବିଷୟରେ</translation>
+<translation id="503498442187459473"><ph name="HOST" /> ଆପଣଙ୍କର କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନ୍‌ ବ୍ୟବହାର କରିବାକୁ ଚାହୁଁଛନ୍ତି</translation>
 <translation id="5039804452771397117">ଅନୁମତି</translation>
 <translation id="5040262127954254034">ଗୋପନୀୟତା</translation>
 <translation id="5043480802608081735">ଆପଣ କପି କରିଥିବା ଲିଙ୍କ୍</translation>
@@ -1028,7 +1032,6 @@
 <translation id="5457113250005438886">ଅବୈଧ</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> ଏବଂ ଅଧିକ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />ଜଣ}other{<ph name="CONTACT_PREVIEW" /> ଏବଂ ଅଧିକ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />ଜଣ}}</translation>
 <translation id="5470861586879999274">&amp;ରି-ଡୁ ଏଡିଟ୍ କରନ୍ତୁ</translation>
-<translation id="5472133193607270166">ଚାଲୁ ହେଲେ, ସାଇଟ୍‍ଗୁଡ଼ିକ ବିଜ୍ଞାପନଗୁଡ଼ିକୁ ବ୍ୟକ୍ତିଗତକୃତ କରିବା ପାଇଁ ଭିନ୍ନ ସାଇଟ୍‍ଗୁଡ଼ିକରେ ଆପଣଙ୍କର ବ୍ରାଉଜିଂ କାର୍ଯ୍ୟକଳାପ ବ୍ୟବହାର କରିପାରିବ ନାହିଁ। କିଛି ସାଇଟ୍‍ଗୁଡ଼ିକ ସଠିକ୍‍ଭାବରେ କାର୍ଯ୍ୟ କରିନପାରେ।</translation>
 <translation id="5478437291406423475">B6/C4 (ଏନଭଲପ୍)</translation>
 <translation id="5481076368049295676">ଆପଣଙ୍କର ଡିଭାଇସ୍‌ରେ ଏହି ବିଷୟବସ୍ତୁ ବିପଜ୍ଜନକ ସଫ୍ଟୱେର୍ ଇନ୍‍ଷ୍ଟଲ୍‌ କରିବାକୁ ଚେଷ୍ଟା କରିପାରେ ଯାହା ଆପଣଙ୍କର ସୂଚନା ଚୋରି କରେ କିମ୍ବା ଡିଲିଟ୍‌ କରେ। <ph name="BEGIN_LINK" />ଯେକୌଣସି ଉପାୟରେ ଦେଖାନ୍ତୁ<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">ବୈଧ ଠିକଣା ଯୋଗ କରନ୍ତୁ</translation>
@@ -1073,6 +1076,7 @@
 <translation id="563324245173044180">ପ୍ରତାରଣାମୂଳକ ବିଷୟବସ୍ତୁ ବ୍ଲକ୍ କରାଯାଇଛି।</translation>
 <translation id="5644090287519800334">ସାଇଡ୍ 1 ଇମେଜ୍ X ସିଫ୍ଟ</translation>
 <translation id="5645854190134202180">ଦ୍ୱିତୀୟ ସିଫ୍ଟ</translation>
+<translation id="5654927323611874862">କ୍ରାସ୍ ରିପୋର୍ଟ ID ଅପଲୋଡ୍ କରାଯାଇଛି:</translation>
 <translation id="5659593005791499971">ଇମେଲ୍</translation>
 <translation id="5663614846592581799">9x11 (ଏନଭଲପ୍)</translation>
 <translation id="5663955426505430495">ଅତିରିକ୍ତ ଫଙ୍କ୍‌ସନ୍ସ ପାଇଁ, ଏହି ଡିଭାଇସ୍‍ର ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍ ଏକ୍ସଟେନ୍‌ସନ୍‌ଗୁଡ଼ିକ ଇନ୍‌ଷ୍ଟଲ୍ କରିଛନ୍ତି। ଆପଣଙ୍କର କିଛି ଡାଟାକୁ ଏକ୍ସଟେନ୍‌ସନ୍‌ଗୁଡ଼ିକର ଆକ୍ସେସ୍ ଅଛି।</translation>
@@ -1312,6 +1316,7 @@
 <translation id="6710594484020273272">&lt;ସନ୍ଧାନ ପଦ ଟାଇପ୍ କରନ୍ତୁ&gt;</translation>
 <translation id="671076103358959139">ନାମାଙ୍କିତ ଟୋକନ୍:</translation>
 <translation id="6711464428925977395">ପ୍ରକ୍ସି ସର୍ଭରରେ କିଛି ତ୍ରୁଟି ଅଛି କିମ୍ବା ଠିକଣା ଭୁଲ୍ ଅଛି।</translation>
+<translation id="6716672519412350405"><ph name="URL" /> ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରିବା ଏବଂ କ୍ୟାମେରା ସ୍ଥିତି ଟ୍ରାକ୍ କରିବାକୁ ଚାହୁଁଛି</translation>
 <translation id="6738516213925468394">ଆପଣଙ୍କର ଡାଟା <ph name="TIME" />ଟାରେ ଆପଣଙ୍କ <ph name="BEGIN_LINK" />ସିଙ୍କ୍ ପାସ୍‌ଫ୍ରେଜ୍<ph name="END_LINK" /> ମାଧ୍ୟମରେ ଏନ୍‌କ୍ରିପ୍ଟ କରାଯାଇଥିଲା। ସିଙ୍କ୍ ଆରମ୍ଭ କରିବାକୁ ଏହାକୁ ଲେଖନ୍ତୁ।</translation>
 <translation id="674375294223700098">ଅଜଣା ସର୍ଭର୍ ସାର୍ଟିଫିକେଟ୍ ତ୍ରୁଟି।</translation>
 <translation id="6744009308914054259">ଗୋଟିଏ ସଂଯୋଗ ପାଇଁ ଅପେକ୍ଷା କରୁଥିବା ସମୟରେ, ଅଫ୍‌ଲାଇନ୍ ଆର୍ଟିକଲ୍‍ଗୁଡିକୁ ପଢ଼ିବାକୁ ଆପଣ ଡାଉନ୍‌ଲୋଡ୍‌ଗୁଡ଼ିକୁ ଯାଇପାରିବେ।</translation>
@@ -1379,6 +1384,7 @@
 <translation id="7079718277001814089">ଏହି ସାଇଟ୍‌ରେ ମାଲ୍‌ୱେର୍‌ ଅଛି।</translation>
 <translation id="7081308185095828845">ଆପଣଙ୍କର ଡିଭାଇସ୍‌ରେ ଏହି ଫିଚର୍‍ଟି ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="7083258188081898530">ଟ୍ରେ 9</translation>
+<translation id="7086090958708083563">ଉପଯୋଗକର୍ତ୍ତାଙ୍କ ଦ୍ୱାରା ଅପଲୋଡ୍ ପାଇଁ ଅନୁରୋଧ କରାଯାଇଛି</translation>
 <translation id="7087282848513945231">ଦେଶ</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> ପାଇଁ Googleରେ ଖୋଜନ୍ତୁ</translation>
 <translation id="7108338896283013870">ଲୁଚାନ୍ତୁ</translation>
@@ -1541,6 +1547,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" />(ଅସୁରକ୍ଷିତ)କୁ ଅଗ୍ରସର ହୁଅନ୍ତୁ<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">ସାର୍ଟିଫିକେଟ୍</translation>
 <translation id="7716147886133743102">ଆପଣଙ୍କର ବ୍ୟବସ୍ଥାପକଙ୍କ ଦ୍ୱାରା ବ୍ଲକ୍ କରାଯାଇଛି</translation>
+<translation id="7716375162095500223">ଏପର୍ଯ୍ୟନ୍ତ ଅପଲୋଡ୍ ହୋଇନାହିଁ ବା ଅଣଦେଖା କରାଯାଇଛି</translation>
 <translation id="7716424297397655342">କେଚ୍‌ରୁ ଏହି ସାଇଟ୍‌ ଲୋଡ୍‌ କରାଯାଇପାରିବ ନାହିଁ</translation>
 <translation id="7723047071702270851">କାର୍ଡକୁ ଏଡିଟ୍ କରନ୍ତୁ</translation>
 <translation id="7740996059027112821">ମାନାଙ୍କ</translation>
@@ -1685,6 +1692,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">ଆପଣଙ୍କ ସୁରକ୍ଷା ପ୍ରତି ଥିବା ବିପଦକୁ ଯଦି ଆପଣ ବୁଝିପାରନ୍ତି ତେବେ, କ୍ଷତିକାରକ ପ୍ରୋଗ୍ରାମ୍‍ଗୁଡ଼ିକୁ କଢ଼ାଯିବା ପୂର୍ବରୁ ଆପଣ ଏହି <ph name="BEGIN_LINK" />ସାଇଟ୍‍କୁ ଯାଇପାରନ୍ତି<ph name="END_LINK" />।</translation>
 <translation id="8349305172487531364">ବୁକମାର୍କସ୍ ଦଣ୍ଡିକା</translation>
+<translation id="8355270400102541638">ସ୍ଥାନୀୟ କ୍ରାସ୍ ପ୍ରସଙ୍ଗ:</translation>
 <translation id="8363502534493474904">ଏରୋପ୍ଲେନ୍ ମୋଡ୍ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="8364627913115013041">ସେଟ୍ ହୋଇନାହିଁ।</translation>
 <translation id="8368476060205742148">Google Play ସେବା</translation>
@@ -1705,6 +1713,7 @@
 <translation id="8461694314515752532">ଆପଣ ନିଜର ସିଙ୍କ୍‌ ପାସ୍‌ଫ୍ରେଜ୍ ସହିତ ସିଙ୍କ୍ କରାଯାଇଥିବା ଡାଟାକୁ ଏନ୍‌କ୍ରିପ୍ଟ କରନ୍ତୁ।</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1ଟି କ୍ରେଡିଟ୍ କାର୍ଡ}other{#ଟି କ୍ରେଡିଟ୍ କାର୍ଡ}}</translation>
 <translation id="8473863474539038330">ଠିକଣାଗୁଡ଼ିକ ଏବଂ ଅଧିକ</translation>
+<translation id="8474910779563686872">ଡେଭେଲପରଙ୍କ ବିବରଣୀ ଦେଖାନ୍ତୁ</translation>
 <translation id="8479754468255770962">ତଳ ବାମ ପଟରେ ଷ୍ଟାପଲ୍</translation>
 <translation id="8483780878231876732">ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟରୁ କାର୍ଡଗୁଡ଼ିକ ବ୍ୟବହାର କରିବାକୁ, Chromeରେ ସାଇନ୍‌ ଇନ୍‌ କରନ୍ତୁ</translation>
 <translation id="8488350697529856933">ରେ ଲାଗୁ ହୋଇଥାଏ</translation>
@@ -1728,7 +1737,6 @@
 <translation id="8589998999637048520">ଉତ୍ତମ ଗୁଣବତ୍ତା</translation>
 <translation id="860043288473659153">କାର୍ଡହୋଲ୍ଡର୍‌ର ନାମ</translation>
 <translation id="8606726445206553943">ଆପଣଙ୍କର MIDI ଡିଭାଇସ୍ ବ୍ୟବହାର କରନ୍ତୁ</translation>
-<translation id="8616822740383114808">"<ph name="SETTINGS_PAGE" />" ରେ "<ph name="ENFORCING_SETTING" />" ଦ୍ୱାରା ଏହି ସେଟିଂ ଲାଗୁ କରାଯାଇଛି</translation>
 <translation id="861775596732816396">ଆକାର 4</translation>
 <translation id="8622948367223941507">ଲିଗାଲ୍-ଅତିରିକ୍ତ</translation>
 <translation id="8625384913736129811">ଏହି ଡିଭାଇସ୍‌ରେ କାର୍ଡଟିକୁ ସେଭ୍ କରନ୍ତୁ</translation>
@@ -1830,6 +1838,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> ଆପଣଙ୍କ ସୂଚନାର ସୁରକ୍ଷା ପାଇଁ ସାଧାରଣତଃ ଏନକ୍ରିପ୍‌ସନ୍‌ର ବ୍ୟବହାର କରେ। ଯେତେବେଳେ Chromium ଏଥର <ph name="SITE" />କୁ ସଂଯୋଗ କରିବାକୁ ଚେଷ୍ଟା କଲା, ସେତେବେଳେ ୱେବ୍‌ସାଇଟ୍‌ଟି ଅସ୍ୱାଭାବିକ ଏବଂ ଭୁଲ୍ ବିଶ୍ୱସନୀୟତା ଫେରାଇଲା। ଏହା ସେତେବେଳେ ହୋ‍ଇପାରେ ଯେତେବେଳେ ଆକ୍ରମଣକାରୀ <ph name="SITE" /> ଥିବାର ଛଳନା କରୁଛି କିମ୍ବା ଏକ ୱାଇ-ଫାଇ ସାଇନ୍‌-ଇନ୍‌ ସ୍କ୍ରିନ୍‌ ସଂଯୋଗରେ ବ୍ୟାଘାତ ସୃଷ୍ଟି କରୁଛି। ଆପଣଙ୍କର ସୂଚନା ଏବେ ମଧ୍ୟ ସୁରକ୍ଷିତ ଅଛି, କାରଣ କୌଣସି ପ୍ରକାର ଡାଟାର ଆଦାନ ପ୍ରଦାନ କରିବା ପୂର୍ବରୁ Chromium ସଂଯୋଗଟିକୁ ବନ୍ଦ କରିଦେଇଥିଲା।</translation>
 <translation id="9106062320799175032">ବିଲିଂ ଠିକଣା ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="9114524666733003316">କାର୍ଡ ସୁନିଶ୍ଚିତ କରାଯାଉଛି...</translation>
+<translation id="9119042192571987207">ଅପଲୋଡ୍ କରାଯାଇଛି</translation>
 <translation id="9128870381267983090">ନେଟ୍‌ୱର୍କ ସହ ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="9137013805542155359">ମୂଳ ଲେଖା ଦେଖାନ୍ତୁ</translation>
 <translation id="9141013498910525015">ଠିକଣାଗୁଡ଼ିକ ପରିଚାଳନା କରନ୍ତୁ</translation>

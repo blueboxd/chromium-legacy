@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Аныктоо</translation>
 <translation id="3820172043799983114">PIN код жараксыз.</translation>
 <translation id="3838338534323494292">Жаңы сырсөз</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Кайталап көрүңүз. Канча аракет калды: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> бул түзмөктү башкарып, андагы колдонуучунун бардык аракеттерине, анын ичинде баш баккан веб-барактарга, сырсөздөргө жана электрондук каттарга кирүү мүмкүнчүлүгү бар.</translation>
 <translation id="4227825898293920515">Сырсөздүн мөөнөтү <ph name="TIME" /> кийин бүтөт</translation>
 <translation id="4429881212383817840">Kerberos билетинин мөөнөтү өтүп баратат</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">Экраныңызда эч нерсе көрүнгөн жок.
 Мага суроо берүү үчүн микрофонду таптап коюңуз.</translation>
 <translation id="5222676887888702881">Чыгуу</translation>
-<translation id="5275776633505022322">Канча аракет калды: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Кайталап көрүңүз.</translation>
 <translation id="5317780077021120954">Сактоо</translation>
 <translation id="5332948983412042822">Жаңысын азыр тандаңыз</translation>
 <translation id="5457599981699367932">Конок катары серептөө</translation>

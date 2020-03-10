@@ -129,6 +129,7 @@ class DirectOutputSurface : public viz::OutputSurface {
       override {
     return nullptr;
   }
+  gpu::MemoryTracker* GetMemoryTracker() override { return nullptr; }
 
  private:
   void OnSwapBuffersComplete() {

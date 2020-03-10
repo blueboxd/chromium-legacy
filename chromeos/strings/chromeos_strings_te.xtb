@@ -17,7 +17,6 @@
 <translation id="3169472444629675720">కనుగొను</translation>
 <translation id="3820172043799983114">PIN చెల్లదు.</translation>
 <translation id="3838338534323494292">కొత్త పాస్‌వర్డ్</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> దయచేసి మళ్లీ ప్రయత్నించండి. మిగిలిన ప్రయత్నాల సంఖ్య: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> ఈ పరికరాన్ని నిర్వహిస్తుంది, అలాగే సందర్శించిన వెబ్ పేజీలు, పాస్‌వర్డ్‌లు, ఇమెయిల్‌లతో సహా వినియోగదారు యొక్క అన్ని కార్యకలాపాలకు యాక్సెస్‌ను కలిగి ఉంటుంది.</translation>
 <translation id="4227825898293920515"><ph name="TIME" />లో పాస్‌వర్డ్‌ గడువు ముగుస్తుంది</translation>
 <translation id="4429881212383817840">Kerberos టిక్కెట్ గడువు త్వరలో ముగుస్తుంది</translation>
@@ -27,8 +26,6 @@
 <translation id="4890353053343094602">వెంటనే ఒక కొత్త దానిని ఎంచుకోండి</translation>
 <translation id="5212543919916444558">నేను సహాయం అందించగలిగేలా మీ స్క్రీన్‌పై నాకు ఏదీ కనిపించలేదు. మైక్‌ను నొక్కి, నన్ను ఏదైనా అడగడానికి ప్రయత్నించండి.</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
-<translation id="5275776633505022322">మిగిలిన ప్రయత్నాలు: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
 <translation id="5332948983412042822">ఇప్పుడే ఒక కొత్త దానిని ఎంచుకోండి</translation>
 <translation id="5457599981699367932">అతిథి లాగా బ్రౌజ్ చేయండి</translation>

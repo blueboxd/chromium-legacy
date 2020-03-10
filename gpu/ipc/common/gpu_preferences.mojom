@@ -90,4 +90,6 @@ struct GpuPreferences {
   mojo_base.mojom.MessagePumpType message_pump_type;
 
   bool enable_native_gpu_memory_buffers;
+
+  bool force_disable_new_accelerated_video_decoder;
 };

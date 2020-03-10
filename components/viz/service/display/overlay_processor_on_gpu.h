@@ -19,6 +19,7 @@
 #endif
 
 namespace gpu {
+class MemoryTracker;
 class SharedImageManager;
 class SharedImageRepresentationFactory;
 }  // namespace gpu
@@ -39,7 +40,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorOnGpu {
   using CandidateList = OverlayCandidateList;
 #endif
 
-  explicit OverlayProcessorOnGpu(gpu::SharedImageManager* shared_image_manager);
+  OverlayProcessorOnGpu(gpu::SharedImageManager* shared_image_manager,
+                        gpu::MemoryTracker* memory_tracker);
   ~OverlayProcessorOnGpu();
 
   // This function takes the overlay candidates, and schedule them for

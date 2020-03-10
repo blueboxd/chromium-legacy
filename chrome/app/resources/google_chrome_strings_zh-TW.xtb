@@ -37,7 +37,6 @@
 <translation id="1900795423379050516">如果這個頁面上並未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />
       Chrome 瀏覽器設定<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">允許登入 Chrome</translation>
-<translation id="1983547493073464667">Chrome 無法檢查你的密碼</translation>
 <translation id="2063848847527508675">Chrome 作業系統必須重新啟動，才能套用更新。</translation>
 <translation id="2094919256425865063">確定要關閉 Chrome 嗎？</translation>
 <translation id="2120620239521071941">登出後，系統會將 <ph name="ITEMS_COUNT" /> 個項目從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chrome。</translation>
@@ -53,11 +52,9 @@
 <translation id="2467438592969358367">Google Chrome 要求匯出你的密碼。如果允許，請輸入你的 Windows 密碼。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="2534507159460261402">Google Pay (已複製到 Chrome)</translation>
-<translation id="2559627601176023786">未儲存任何密碼。如果你將密碼儲存在 Google 帳戶中，Chrome 可以檢查你的密碼。</translation>
 <translation id="2580411288591421699">你無法安裝這個版本的 Google Chrome，因為相同的版本目前正在執行中。請關閉 Google Chrome 然後再試一次。</translation>
 <translation id="2586406160782125153">登出後，系統會將你的瀏覽資料從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chrome。</translation>
 <translation id="2588322182880276190">Chrome 標誌</translation>
-<translation id="261226884343006626">Chrome 無法檢查你的密碼，請明天再試。</translation>
 <translation id="2622559029861875898">Chrome 無法檢查更新，請查看你的網際網路連線狀態。</translation>
 <translation id="2644798301485385923">Chrome 作業系統</translation>
 <translation id="2652691236519827073">在新的 Chrome 分頁中開啟連結(&amp;T)</translation>
@@ -81,7 +78,6 @@
 <translation id="3395323229510056640">前往 Chrome 作業系統說明頁面</translation>
 <translation id="3396977131400919238">安裝過程中發生作業系統錯誤，請再次下載 Google Chrome。</translation>
 <translation id="3398288718845740432">在 Chrome 選單中隱藏</translation>
-<translation id="3434246496373299699">如果你使用 Google 帳戶登入，Chrome 可以檢查你的密碼</translation>
 <translation id="3451115285585441894">正在新增至 Chrome...</translation>
 <translation id="345171907106878721">新增為 Chrome 使用者</translation>
 <translation id="34857402635545079">一併清除 Chrome 中的資料 (<ph name="URL" />)</translation>
@@ -97,7 +93,6 @@
 <translation id="386202838227397562">請關閉所有 Google Chrome 視窗，並再試一次</translation>
 <translation id="3873044882194371212">在 Chrome 無痕式視窗中開啟連結(&amp;G)</translation>
 <translation id="3889417619312448367">解除安裝 Google Chrome</translation>
-<translation id="3943605108614542032">系統管理員會管理 Chrome 更新</translation>
 <translation id="4050175100176540509">最新版本包含重要的安全性改善與新功能。</translation>
 <translation id="4053720452172726777">自訂及管理 Google Chrome</translation>
 <translation id="4143243756087420366">Chrome 名稱和相片</translation>
@@ -209,7 +204,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7808348361785373670">從 Chrome 中移除...</translation>
 <translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載 Google Chrome。</translation>
 <translation id="7855730255114109580">Google Chrome 目前是最新版本</translation>
-<translation id="7888686278524752658">發生錯誤，Chrome 未能更新。請修正 Chrome 更新問題與更新失敗問題。</translation>
 <translation id="7890208801193284374">如果你與親朋好友共用電腦，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chrome。</translation>
 <translation id="7896673875602241923">先前已有其他使用者使用 <ph name="ACCOUNT_EMAIL_LAST" /> 在這部電腦上登入 Chrome。請建立新的 Chrome 使用者，以便另行保存你的資訊。</translation>
 <translation id="7916016681687251387">Chrome 作業系統無法同步處理你的資料。立即修正。</translation>
@@ -240,7 +234,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="8862326446509486874">你沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
 <translation id="8914504000324227558">重新啟動 Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{有可用的 Chrome 更新}=1{有可用的 Chrome 更新}other{Chrome 更新已發布 # 天}}</translation>
-<translation id="9025321516765676895">你的密碼過多，因此 Chrome 無法檢查你的密碼</translation>
+<translation id="9025321516765676895">你的密碼過多，Chrome 無從檢查</translation>
 <translation id="9026991721384951619">你的帳戶登入詳細資料尚未更新，因此 Chrome 作業系統無法同步處理你的資料。</translation>
 <translation id="9067395829937117663">Google Chrome 僅支援 Windows 7 以上版本的作業系統。</translation>
 <translation id="911206726377975832">你要一併刪除瀏覽資料嗎？</translation>

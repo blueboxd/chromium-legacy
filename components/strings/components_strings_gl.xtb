@@ -478,7 +478,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3024663005179499861">Tipo de política incorrecta</translation>
 <translation id="3037605927509011580">Vaia!</translation>
 <translation id="3041612393474885105">Información do certificado</translation>
-<translation id="3057676462092457419">O modo <ph name="SECURE_DNS_MODE_SECURE" /> de DnsOverHttps aínda non é compatible e cambiouse polo modo <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (sobre)</translation>
 <translation id="3061707000357573562">Servizo de parche</translation>
 <translation id="3064966200440839136">Sairás do modo de incógnito para pagar a través dunha aplicación externa. Queres continuar?</translation>
@@ -578,6 +577,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3487845404393360112">Bandexa 4</translation>
 <translation id="3495081129428749620">Buscar na páxina
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Crear un mapa 3D do que te rodea e facer un seguimento da posición da cámara</translation>
 <translation id="3512163584740124171">Esta política ignórase porque hai outra política do mesmo grupo con máis prioridade.</translation>
 <translation id="3518941727116570328">Control de varios obxectos</translation>
 <translation id="3528171143076753409">O certificado do servidor non é de confianza.</translation>
@@ -931,6 +931,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5030338702439866405">Emitido por</translation>
 <translation id="503069730517007720">Precísase un certificado raíz para <ph name="SOFTWARE_NAME" />, pero non está instalado. O teu administrador de TI debe comprobar as instrucións de configuración de <ph name="SOFTWARE_NAME" /> para solucionar este problema. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Acerca do Tradutor de Google</translation>
+<translation id="503498442187459473">O host <ph name="HOST" /> quere utilizar a túa cámara e o micrófono</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5043480802608081735">Ligazón que copiaches</translation>
@@ -1039,7 +1040,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5457113250005438886">Non válidos</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> máis}other{<ph name="CONTACT_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> máis}}</translation>
 <translation id="5470861586879999274">&amp;Refacer modificación</translation>
-<translation id="5472133193607270166">Con esta opción activada, os sitios web non poden utilizar a túa actividade de navegación a través de distintos sitios para personalizar os anuncios. É posible que algúns sitios non funcionen correctamente.</translation>
 <translation id="5478437291406423475">B6/C4 (sobre)</translation>
 <translation id="5481076368049295676">É posible que con este contido se pretenda instalar software perigoso no teu dispositivo que che roube ou elimine información. <ph name="BEGIN_LINK" />Mostrar igualmente<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Engade un enderezo válido</translation>
@@ -1325,6 +1325,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6710594484020273272">&lt;Escribe un termo de busca&gt;</translation>
 <translation id="671076103358959139">Token de inscrición:</translation>
 <translation id="6711464428925977395">Produciuse un erro co servidor proxy ou o enderezo é incorrecto.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> quere crear un mapa 3D do que te rodea e facer un seguimento da posición da cámara</translation>
 <translation id="6738516213925468394">Os teus datos encriptáronse coa túa <ph name="BEGIN_LINK" />frase de acceso de sincronización<ph name="END_LINK" /> o <ph name="TIME" />. Introdúcea para comezar a sincronización.</translation>
 <translation id="674375294223700098">Erro de certificado de servidor descoñecido.</translation>
 <translation id="6744009308914054259">Mentres esperas a que se recupere a conexión, podes ler artigos sen conexión en Descargas.</translation>
@@ -1745,7 +1746,6 @@ Detalles adicionais:
 <translation id="8589998999637048520">Calidade máxima</translation>
 <translation id="860043288473659153">Nome do titular da tarxeta</translation>
 <translation id="8606726445206553943">Usar os dispositivos MIDI</translation>
-<translation id="8616822740383114808"><ph name="ENFORCING_SETTING" />: opción de configuración aplicada en "<ph name="SETTINGS_PAGE" />"</translation>
 <translation id="861775596732816396">Tamaño 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Gardar esta tarxeta neste dispositivo</translation>

@@ -99,6 +99,15 @@ D3D11VideoDecoder::GetD3D11DeviceCB GetD3D11DeviceCallback() {
 }
 #endif
 
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+// Return true if we switch to use new HW-accelerated video decoder.
+bool IsNewAcceleratedVideoDecoderUsed(
+    const gpu::GpuPreferences& gpu_preferences) {
+  return !gpu_preferences.force_disable_new_accelerated_video_decoder &&
+         base::FeatureList::IsEnabled(kChromeosVideoDecoder);
+}
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+
 }  // namespace
 
 GpuMojoMediaClient::GpuMojoMediaClient(
@@ -156,7 +165,7 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
       *d3d11_supported_configs_;
 
 #elif BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
+  if (IsNewAcceleratedVideoDecoderUsed(gpu_preferences_)) {
     if (!cros_supported_configs_) {
       cros_supported_configs_ =
           ChromeosVideoDecoderFactory::GetSupportedConfigs();
@@ -235,7 +244,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
               std::move(ycbcr_helper)));
 
 #elif BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-      if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
+      if (IsNewAcceleratedVideoDecoderUsed(gpu_preferences_)) {
         auto frame_pool = std::make_unique<PlatformVideoFramePool>(
             gpu_memory_buffer_factory_);
         auto frame_converter = MailboxVideoFrameConverter::Create(

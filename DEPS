@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '23899c64e3db9378bcc3a960962777f1a5c49ab4',
+  'skia_revision': 'ea3ddc9aefde96f13b18739fa4751c15dda73fea',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '1cd52d2cfe4c4dfb4ff80ef63e6ee53f4c7b2b14',
+  'angle_revision': 'c2d817317046b06c86aaf9c9c133c728cc7915f4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '8ecb862ae74dda3e98cfe7e027d0b7800514ee0f',
+  'pdfium_revision': 'da0658022d4cfbb40c85a84a1fc889fb057bcdc4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -333,7 +333,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:4166e9fbc1fa5ceab69b69710a0f8b430c50127b',
+  'gn_version': 'git_revision:fd3d768bcfd44a8d9639fe278581bd9851d0ce3a',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -1454,7 +1454,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '4e1d6ce3842277fab93bd16ec73e36d635e5d6e0',
+    Var('webrtc_git') + '/src.git' + '@' + 'a1ac244222a54e34444efd33335f4058fbd5ca46',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

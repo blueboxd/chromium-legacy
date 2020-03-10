@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">Невалиден ПИН код.</translation>
 <translation id="3838338534323494292">Нова парола</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Моля, опитайте отново. Оставащи опити: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управлява това устройство и има достъп до цялата потребителска активност, включително посетените уеб страници, паролите и имейлите.</translation>
 <translation id="4227825898293920515">Паролата изтича след <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Пропускът за Kerberos изтича скоро</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">На екрана ви не намирам нищо, за което да мога да ви помогна.
 Докоснете иконата на микрофон, за да ме попитате каквото и да е.</translation>
 <translation id="5222676887888702881">Изход</translation>
-<translation id="5275776633505022322">Оставащи опити: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Моля, опитайте отново.</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5332948983412042822">Изберете нова сега</translation>
 <translation id="5457599981699367932">Сърфиране като гост</translation>

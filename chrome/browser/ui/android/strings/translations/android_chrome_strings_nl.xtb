@@ -168,6 +168,7 @@ Tik op een woord om te zoeken. Je kunt je zoekopdracht verfijnen door te tikken 
 <translation id="2156074688469523661">Resterende sites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Als je iets op je telefoon wilt delen met een ander apparaat, schakel je de synchronisatie in de Chrome-instellingen op beide apparaten in</translation>
 <translation id="2175927920773552910">QR-code</translation>
+<translation id="2182457891543959921">Vragen voordat sites een 3D-kaart van je omgeving mogen maken of de camerapositie mogen volgen (aanbevolen)</translation>
 <translation id="218608176142494674">Delen</translation>
 <translation id="2227444325776770048">Doorgaan als <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Synchronisatie &amp; Google-services</translation>
@@ -193,7 +194,6 @@ Tik op een woord om te zoeken. Je kunt je zoekopdracht verfijnen door te tikken 
 <translation id="2407481962792080328">Als je inlogt op je Google-account, wordt deze functie ingeschakeld</translation>
 <translation id="2410754283952462441">Een account selecteren</translation>
 <translation id="2414886740292270097">Donker</translation>
-<translation id="2416359993254398973">Chrome heeft toegangsrechten voor je camera nodig voor deze site.</translation>
 <translation id="2426805022920575512">Een ander account kiezen</translation>
 <translation id="2433507940547922241">Vormgeving</translation>
 <translation id="2434158240863470628">Download voltooid <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -286,6 +286,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3058498974290601450">Je kunt synchronisatie op elk gewenst moment inschakelen via de instellingen</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bladwijzer}other{<ph name="BOOKMARKS_COUNT_MANY" /> bladwijzers}}</translation>
 <translation id="3089395242580810162">Openen op incognitotabblad</translation>
+<translation id="3114012059975132928">Videospeler</translation>
 <translation id="3123473560110926937">Geblokkeerd op bepaalde sites</translation>
 <translation id="3123734510202723619">Aankondigingen</translation>
 <translation id="3137521801621304719">Incognitomodus verlaten</translation>
@@ -343,6 +344,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3522247891732774234">Update beschikbaar. Meer opties</translation>
 <translation id="3524138585025253783">UI voor ontwikkelaars</translation>
 <translation id="3527085408025491307">Map</translation>
+<translation id="3538390592868664640">Voorkomen dat sites een 3D-kaart van je omgeving maken of de camerapositie volgen</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB beschikbaar</translation>
 <translation id="3549657413697417275">Zoek in je geschiedenis</translation>
 <translation id="3557336313807607643">Toevoegen aan contacten</translation>
@@ -351,6 +353,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3587482841069643663">Alles</translation>
 <translation id="358794129225322306">Een site toestaan automatisch meerdere bestanden te downloaden.</translation>
 <translation id="3590487821116122040">Site-opslag waarvan Chrome denkt dat deze niet belangrijk is (bijvoorbeeld sites zonder opgeslagen instellingen of sites die je niet vaak bezoekt)</translation>
+<translation id="3594780231884063836">Video dempen</translation>
 <translation id="3599863153486145794">Hiermee wordt de geschiedenis van alle ingelogde apparaten gewist. Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Sites dempen die geluid afspelen</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -439,6 +442,7 @@ Alleen jij kunt zien wat je camera ziet. De site kan de beelden van je camera ni
 <translation id="4298388696830689168">Gekoppelde sites</translation>
 <translation id="4307992518367153382">Basisinstellingen</translation>
 <translation id="4314815835985389558">Synchronisatie beheren</translation>
+<translation id="4320177379694898372">Geen internetverbinding</translation>
 <translation id="4321739720395210191">Kan de camera niet openen. Start het apparaat opnieuw op en probeer het nogmaals.</translation>
 <translation id="4351244548802238354">Dialoogvenster sluiten</translation>
 <translation id="4353114845960720315">Als VR actief is, kan deze site mogelijk informatie verzamelen over het volgende:</translation>
@@ -603,6 +607,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5456381639095306749">Pagina downloaden</translation>
 <translation id="548278423535722844">Openen in app voor passen</translation>
 <translation id="5487521232677179737">Gegevens wissen</translation>
+<translation id="5489227211564503167">De verstreken tijd is <ph name="ELAPSED_TIME" /> van <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Advertenties blokkeren op sites die opdringerige of misleidende advertenties weergeven</translation>
 <translation id="5500777121964041360">Mogelijk niet beschikbaar op jouw locatie</translation>
 <translation id="5505264765875738116">Sites kunnen niet vragen of ze je meldingen mogen sturen</translation>
@@ -617,7 +622,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5530766185686772672">Incognitotabbladen sluiten</translation>
 <translation id="5534640966246046842">Site gekopieerd</translation>
 <translation id="5561549206367097665">Wachten op netwerk…</translation>
-<translation id="557283862590186398">Chrome heeft toegangsrechten voor je microfoon nodig voor deze site.</translation>
 <translation id="55737423895878184">Locatie en meldingen zijn toegestaan</translation>
 <translation id="5578795271662203820">Zoeken op <ph name="SEARCH_ENGINE" /> naar afbeelding</translation>
 <translation id="5581519193887989363">Je kunt altijd in de <ph name="BEGIN_LINK1" />instellingen<ph name="END_LINK1" /> bepalen wat je wilt synchroniseren.</translation>
@@ -664,6 +668,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5864419784173784555">Wachten op andere download…</translation>
 <translation id="5865733239029070421">Hiermee worden automatisch gebruiksstatistieken en crashrapporten naar Google verzonden</translation>
 <translation id="5869522115854928033">Opgeslagen wachtwoorden</translation>
+<translation id="5876056640971328065">Video pauzeren</translation>
 <translation id="5884076754568147479">Google kan je helpen taken sneller te voltooien en ontvangt daarom de URL's en content van sites waarop je de Assistent gebruikt en informatie die je via de Assistent indient</translation>
 <translation id="5902828464777634901">Alle lokale gegevens die zijn opgeslagen door deze website, inclusief cookies, worden verwijderd.</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> om de synchronisatie te starten</translation>
@@ -726,8 +731,8 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6378173571450987352">Details: gesorteerd op hoeveelheid gebruikte data</translation>
 <translation id="6381421346744604172">Websites donkerder maken</translation>
 <translation id="6388207532828177975">Wissen en opnieuw instellen</translation>
-<translation id="6393863479814692971">Chrome heeft toegangsrechten voor je camera en microfoon nodig voor deze site.</translation>
 <translation id="6395288395575013217">LINK</translation>
+<translation id="6397616442223433927">Weer online</translation>
 <translation id="6404511346730675251">Bladwijzer bewerken</translation>
 <translation id="6406506848690869874">Synchronisatie</translation>
 <translation id="6410973561433500075">Wil je AR vanaf <ph name="DOMAIN" /> starten?</translation>
@@ -779,7 +784,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6676840375528380067">Je Chrome-gegevens van dit apparaat wissen?</translation>
 <translation id="6689172468748959065">Profielfoto's</translation>
 <translation id="6697492270171225480">Suggesties voor vergelijkbare pagina's weergeven wanneer een pagina niet wordt gevonden</translation>
-<translation id="6697947395630195233">Chrome heeft toegang tot je locatie nodig om je locatie met deze site te delen.</translation>
 <translation id="6698801883190606802">Gesynchroniseerde gegevens beheren</translation>
 <translation id="6699370405921460408">De Google-servers optimaliseren de pagina's die je bezoekt.</translation>
 <translation id="6710213216561001401">Vorige</translation>
@@ -797,6 +801,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6846298663435243399">Laden…</translation>
 <translation id="6850409657436465440">Je download wordt nog uitgevoerd</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tabbladen gesloten</translation>
+<translation id="6864395892908308021">Dit apparaat kan NFC niet lezen</translation>
 <translation id="6864459304226931083">Afbeelding downloaden</translation>
 <translation id="6865313869410766144">Formuliergegevens voor Automatisch aanvullen</translation>
 <translation id="6884306546558072722">Offline content ontdekken</translation>
@@ -917,6 +922,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="780301667611848630">Nee, bedankt</translation>
 <translation id="7810647596859435254">Openen met…</translation>
 <translation id="7821588508402923572">Hier wordt getoond hoeveel data je bespaart</translation>
+<translation id="783819812427904514">Dempen van video opheffen</translation>
 <translation id="784934925303690534">Periode</translation>
 <translation id="7851858861565204677">Andere apparaten</translation>
 <translation id="7875915731392087153">E-mail maken</translation>
@@ -971,6 +977,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8186512483418048923"><ph name="FILES" /> bestanden over</translation>
 <translation id="8190358571722158785">1 dag resterend</translation>
 <translation id="8200772114523450471">Doorgaan</translation>
+<translation id="8206354486702514201">Deze instelling wordt door je beheerder afgedwongen.</translation>
 <translation id="8209050860603202033">Afbeelding openen</translation>
 <translation id="8218622182176210845">Je account beheren</translation>
 <translation id="8224471946457685718">Artikelen voor je downloaden bij verbinding via wifi</translation>
@@ -992,7 +999,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8364299278605033898">Bekijk populaire websites</translation>
 <translation id="8368027906805972958">Onbekend of niet-ondersteund apparaat (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Synchronisatie op de achtergrond toestaan voor een specifieke site.</translation>
-<translation id="8378714024927312812">Beheerd door je organisatie</translation>
 <translation id="8380167699614421159">Deze site geeft opdringerige of misleidende advertenties weer</translation>
 <translation id="8393700583063109961">Bericht verzenden</translation>
 <translation id="8413126021676339697">Hele geschiedenis bekijken</translation>

@@ -265,12 +265,13 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     case CommandId::MENU_OPEN_NEW:
     case CommandId::MENU_NEW_WINDOW:
     case CommandId::MENU_NEW_INCOGNITO_WINDOW:
-    // Used by AppContextMenu.
+    // Used by AppContextMenu and/or ShelfContextMenu.
     case CommandId::LAUNCH_NEW:
     case CommandId::SHOW_APP_INFO:
     case CommandId::OPTIONS:
     case CommandId::APP_CONTEXT_MENU_NEW_WINDOW:
     case CommandId::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW:
+    case CommandId::SETTINGS:
     // Used by both AppContextMenu and ShelfContextMenu for app shortcuts.
     case CommandId::LAUNCH_APP_SHORTCUT_FIRST:
     case CommandId::LAUNCH_APP_SHORTCUT_LAST:

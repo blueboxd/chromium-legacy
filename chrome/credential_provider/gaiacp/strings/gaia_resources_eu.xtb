@@ -4,10 +4,10 @@
 <translation id="1156061499538526818">Laneko kontuaren pasahitza aldatu egin da. Windows-eko kontua laneko kontuarekin sinkroniza dadin, idatzi Windows-eko pasahitza.</translation>
 <translation id="1383286653814676580">Google-ren Kredentzial-hornitzailean saioa hasteko orria abiarazteko erabiltzen da.</translation>
 <translation id="200772894174702141">Ezin da hasi saioa laneko kontuarekin. Ziurtatu gailua Internetera konektatuta dagoela eta saiatu berriro.</translation>
-<translation id="2048923169632968961">Arazo bat gertatu da laneko kontuaren pasahitza Windows-eko profilarekin sinkronizatzean. Jarri administratzailearekin harremanetan.</translation>
+<translation id="2048923169632968961">Arazo bat izan da laneko kontuaren pasahitza Windows-eko profilarekin sinkronizatzean. Jarri administratzailearekin harremanetan.</translation>
 <translation id="2515346402363002066">Saioa iraungi egin da. Hasi saioa laneko kontuarekin.</translation>
 <translation id="2844349213149998955">Gailu honetan ezin da kontu pertsonalik erabili saioa hasteko. Hasi saioa laneko kontu batekin.</translation>
-<translation id="3217145568844727893">Windows-en erabiltzen duzun pasahitza idatzi gabe egiten baduzu aurrera, betiko galduko dituzu gailu honetako datuak.</translation>
+<translation id="3217145568844727893">Windows-en erabiltzen duzun pasahitza idatzi gabe egiten baduzu aurrera, agian betiko galduko dituzu gailu honetako datuak.</translation>
 <translation id="3285576391135346912">Honela amaitzen den helbide elektroniko bat erabili behar duzu saioa hasteko: <ph name="EMAIL_DOMAINS" />. Saiatu berriro laneko kontu batekin.</translation>
 <translation id="3306357053520292004">Kontu hau dagoeneko erabili da ordenagailuko erabiltzaile bat gehitzeko. Hasi saioa beste kontu batekin.</translation>
 <translation id="3355053591933237049">Ziurtatu gailua Internetera konektatuta dagoela eta saiatu berriro.</translation>
@@ -29,6 +29,7 @@
 <translation id="7209941495304122410">Idatzi Windows pasahitza</translation>
 <translation id="74122330823428762">Gailua blokeatu duen erabiltzaileak soilik has dezake saioa</translation>
 <translation id="7536769223115622137">Gehitu laneko kontua</translation>
+<translation id="7884688232028658212">Hasi saioa laneko kontuarekin</translation>
 <translation id="8109730953933509335">Balio ez duen erabiltzaile baten pasahitza aldatzeko saiakera egin da. Jarri administratzailearekin harremanetan.</translation>
 <translation id="8448455363630347124">Kontua desgaitu egin da gehiegitan idatzi delako pasahitza oker. Kontua gaitzeko, jarri administratzailearekin harremanetan.</translation>
 <translation id="8453641970025433267">Administratzaileak ez dizu eman baimenik kontu honekin saioa hasteko. Erabili beste kontu bat.</translation>

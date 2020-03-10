@@ -168,6 +168,7 @@ Tryk på et ord for at søge. Du kan tilpasse søgningen ved at holde fingeren n
 <translation id="2156074688469523661">Tilbageværende websites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Hvis du vil dele noget på din telefon med en anden enhed, kan du aktivere synkronisering i Chrome-indstillingerne på begge enheder</translation>
 <translation id="2175927920773552910">QR-kode</translation>
+<translation id="2182457891543959921">Spørg, inden websites kan oprette et 3D-kort over dine omgivelser eller registrere kamerapositionen (anbefales)</translation>
 <translation id="218608176142494674">Deling</translation>
 <translation id="2227444325776770048">Fortsæt som <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Synkronisering og Google-tjenester</translation>
@@ -193,7 +194,6 @@ Tryk på et ord for at søge. Du kan tilpasse søgningen ved at holde fingeren n
 <translation id="2407481962792080328">Når du logger ind på din Google-konto, er denne funktion aktiveret</translation>
 <translation id="2410754283952462441">Vælg en konto</translation>
 <translation id="2414886740292270097">Mørk</translation>
-<translation id="2416359993254398973">Chrome skal have tilladelse til at bruge dit kamera på dette website.</translation>
 <translation id="2426805022920575512">Vælg en anden konto</translation>
 <translation id="2433507940547922241">Udseende</translation>
 <translation id="2434158240863470628">Downloaden er fuldført <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -286,6 +286,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="3058498974290601450">Du kan til enhver tid aktivere synkronisering i indstillingerne</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bogmærke}one{<ph name="BOOKMARKS_COUNT_MANY" />bogmærke}other{<ph name="BOOKMARKS_COUNT_MANY" />bogmærker}}</translation>
 <translation id="3089395242580810162">Åbn på inkognitofane</translation>
+<translation id="3114012059975132928">Videoafspiller</translation>
 <translation id="3123473560110926937">Blokeret på visse websites</translation>
 <translation id="3123734510202723619">Meddelelser</translation>
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
@@ -343,6 +344,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="3522247891732774234">Tilgængelig opdatering. Flere muligheder</translation>
 <translation id="3524138585025253783">Brugerflade for udviklere</translation>
 <translation id="3527085408025491307">Mappe</translation>
+<translation id="3538390592868664640">Bloker oprettelsen af 3D-kort over dine omgivelser eller registrering af kamerapositionen for websites</translation>
 <translation id="3542235761944717775">Der er <ph name="KILOBYTES" /> kB til rådighed</translation>
 <translation id="3549657413697417275">Søg i din historik</translation>
 <translation id="3557336313807607643">Føj til kontakter</translation>
@@ -351,6 +353,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="3587482841069643663">Alle</translation>
 <translation id="358794129225322306">Tillad, at et website kan downloade flere filer automatisk.</translation>
 <translation id="3590487821116122040">Websitelagerplads, som ikke er vigtig ifølge Chrome (f.eks. websites uden gemte indstillinger eller websites, du ikke besøger så ofte)</translation>
+<translation id="3594780231884063836">Slå lyden i videoen fra</translation>
 <translation id="3599863153486145794">Rydder historikken på alle enheder, hvor du er logget ind. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Lyden slås fra for websites, der afspiller lyd</translation>
 <translation id="3616113530831147358">Lyd</translation>
@@ -439,6 +442,7 @@ Det er kun dig, der kan se, hvad kameraet ser. Websitet kan ikke se kameraets bi
 <translation id="4298388696830689168">Tilknyttede websites</translation>
 <translation id="4307992518367153382">Grundlæggende valgmuligheder</translation>
 <translation id="4314815835985389558">Administrer synkronisering</translation>
+<translation id="4320177379694898372">Ingen internetforbindelse</translation>
 <translation id="4321739720395210191">Dit kamera kan ikke åbnes. Genstart din enhed, og prøv igen.</translation>
 <translation id="4351244548802238354">Luk dialogboksen</translation>
 <translation id="4353114845960720315">Mens du bruger VR-tilstand, kan dette website muligvis få oplysninger om:</translation>
@@ -603,6 +607,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5456381639095306749">Download siden</translation>
 <translation id="548278423535722844">Åbn i kortapp</translation>
 <translation id="5487521232677179737">Ryd data</translation>
+<translation id="5489227211564503167">Forløbet tid: <ph name="ELAPSED_TIME" /> af <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Bloker annoncer på websites, der viser påtrængende eller vildledende annoncer</translation>
 <translation id="5500777121964041360">Funktionen er muligvis ikke tilgængelig på din placering</translation>
 <translation id="5505264765875738116">Websites kan ikke spørge dig, om de må sende dig notifikationer</translation>
@@ -617,7 +622,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5530766185686772672">Luk inkognitofaner</translation>
 <translation id="5534640966246046842">Websitet er kopieret</translation>
 <translation id="5561549206367097665">Venter på netværk…</translation>
-<translation id="557283862590186398">Chrome skal have tilladelse til at bruge din mikrofon på dette website.</translation>
 <translation id="55737423895878184">Placering og notifikationer er tilladt</translation>
 <translation id="5578795271662203820">Søg efter billedet på <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Du kan altid vælge, hvad der skal synkroniseres, i <ph name="BEGIN_LINK1" />indstillingerne<ph name="END_LINK1" />.</translation>
@@ -664,6 +668,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5864419784173784555">Venter på en anden download…</translation>
 <translation id="5865733239029070421">Sender automatisk brugsstatistikker og nedbrudsrapporter til Google</translation>
 <translation id="5869522115854928033">Gemte adgangskoder</translation>
+<translation id="5876056640971328065">Sæt video på pause</translation>
 <translation id="5884076754568147479">For at hjælpe dig med at udføre opgaver modtager Google webadresser for og indhold på websites, hvor du bruger Assistent, samt oplysninger du indsender via Assistent</translation>
 <translation id="5902828464777634901">Alle lokale data, der gemmes af websitet, herunder cookies, slettes</translation>
 <translation id="5919204609460789179">Opdater <ph name="PRODUCT_NAME" /> for at starte synkroniseringen</translation>
@@ -726,8 +731,8 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6378173571450987352">Info: Sorteret efter mængden af brugte data</translation>
 <translation id="6381421346744604172">Gør websites mørkere</translation>
 <translation id="6388207532828177975">Ryd og nulstil</translation>
-<translation id="6393863479814692971">Chrome skal have tilladelse til at bruge dit kamera og din mikrofon på dette website.</translation>
 <translation id="6395288395575013217">LINK</translation>
+<translation id="6397616442223433927">Online igen</translation>
 <translation id="6404511346730675251">Rediger bogmærke</translation>
 <translation id="6406506848690869874">Synkronisering</translation>
 <translation id="6410973561433500075">Vil du starte AR fra <ph name="DOMAIN" />?</translation>
@@ -779,7 +784,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6676840375528380067">Vil du rydde dine Chrome-data på denne enhed?</translation>
 <translation id="6689172468748959065">Profilbilleder</translation>
 <translation id="6697492270171225480">Se forslag til lignende sider, når en side ikke kan findes</translation>
-<translation id="6697947395630195233">Chrome skal have adgang til din placering for at dele din placering med dette website.</translation>
 <translation id="6698801883190606802">Administrer synkroniserede data</translation>
 <translation id="6699370405921460408">Google-serverne optimerer de sider, du besøger.</translation>
 <translation id="6710213216561001401">Forrige</translation>
@@ -797,6 +801,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6846298663435243399">Indlæser…</translation>
 <translation id="6850409657436465440">Der downloades stadig</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> faner blev lukket</translation>
+<translation id="6864395892908308021">Denne enhed kan ikke læse NFC</translation>
 <translation id="6864459304226931083">Download billede</translation>
 <translation id="6865313869410766144">Formulardata for AutoFyld</translation>
 <translation id="6884306546558072722">Gå på opdagelse offline</translation>
@@ -917,6 +922,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7810647596859435254">Åbn med…</translation>
 <translation id="7821588508402923572">Din databesparelse vises her</translation>
+<translation id="783819812427904514">Slå lyden i videoen til</translation>
 <translation id="784934925303690534">Tidsinterval</translation>
 <translation id="7851858861565204677">Andre enheder</translation>
 <translation id="7875915731392087153">Opret mail</translation>
@@ -971,6 +977,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8186512483418048923"><ph name="FILES" /> filer tilbage</translation>
 <translation id="8190358571722158785">1 dag tilbage</translation>
 <translation id="8200772114523450471">Genoptag</translation>
+<translation id="8206354486702514201">Denne indstilling håndhæves af din administrator.</translation>
 <translation id="8209050860603202033">Åbn billede</translation>
 <translation id="8218622182176210845">Administrer din konto</translation>
 <translation id="8224471946457685718">Download artikler til dig via Wi-Fi</translation>
@@ -992,7 +999,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8364299278605033898">Se populære websites</translation>
 <translation id="8368027906805972958">Ukendt eller ikke-understøttet enhed (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Tillad synkronisering i baggrunden for et bestemt website.</translation>
-<translation id="8378714024927312812">Administreret af din organisation</translation>
 <translation id="8380167699614421159">Dette website viser påtrængende eller vildledende annoncer</translation>
 <translation id="8393700583063109961">Send en besked</translation>
 <translation id="8413126021676339697">Vis hele historikken</translation>

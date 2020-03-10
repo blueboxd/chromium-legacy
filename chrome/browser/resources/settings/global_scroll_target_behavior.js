@@ -18,7 +18,7 @@
 // #import {Route, Router, RouteObserverBehavior} from './router.m.js';
 
 cr.define('settings', function() {
-  const scrollTargetResolver = new PromiseResolver();
+  let scrollTargetResolver = new PromiseResolver();
 
   /** @polymerBehavior */
   const GlobalScrollTargetBehaviorImpl = {
@@ -98,9 +98,13 @@ cr.define('settings', function() {
    * This should only be called once.
    * @param {HTMLElement} scrollTarget
    */
-  const setGlobalScrollTarget = function(scrollTarget) {
+  function setGlobalScrollTarget(scrollTarget) {
     scrollTargetResolver.resolve(scrollTarget);
-  };
+  }
+
+  function resetGlobalScrollTargetForTesting() {
+    scrollTargetResolver = new PromiseResolver();
+  }
 
   // This is done to make the closure compiler happy: it needs fully qualified
   // names when specifying an array of behaviors.
@@ -113,7 +117,7 @@ cr.define('settings', function() {
     GlobalScrollTargetBehaviorImpl: GlobalScrollTargetBehaviorImpl,
     GlobalScrollTargetBehavior: GlobalScrollTargetBehavior,
     setGlobalScrollTarget: setGlobalScrollTarget,
+    resetGlobalScrollTargetForTesting: resetGlobalScrollTargetForTesting,
     scrollTargetResolver: scrollTargetResolver,
   };
 });
-

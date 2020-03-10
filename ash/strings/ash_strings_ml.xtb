@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">അക്കൗണ്ട് മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER_EMAIL" /> ആണ്</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" ഭാഷയിലേയ്‌ക്ക് തിരികെ മാറ്റുക (പുനരാരംഭിക്കേണ്ടതുണ്ട്)</translation>
 <translation id="3576141592585647168">സമയമേഖല മാറ്റുക</translation>
+<translation id="3593646411856133110">തുറന്നിരിക്കുന്ന ആപ്പുകൾ കാണാൻ മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്ത് പിടിക്കുക</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
 <translation id="3604801046548457007">ഡെസ്‌ക് <ph name="DESK_TITILE" /> സൃഷ്‌ടിച്ചു</translation>
 <translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റ് ചെയ്‌തു.</translation>
@@ -365,6 +366,7 @@
 <translation id="5745612484876805746">സൂര്യാസ്‌തമയ സമയത്ത് നൈറ്റ് ലൈറ്റ് സ്വയമേവ ഓണാകും</translation>
 <translation id="5750765938512549687">Bluetooth ഓഫാണ്</translation>
 <translation id="576453121877257266">നൈറ്റ് ലൈറ്റ് ഓണാണ്.</translation>
+<translation id="5769373120130404283">സ്വകാര്യതാ സ്‌ക്രീൻ</translation>
 <translation id="5777841717266010279">സ്‌ക്രീൻ പങ്കിടൽ നിർത്തണോ?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" />-ൽ <ph name="ROUTE_TITLE" /> നിർത്തുക</translation>
@@ -406,6 +408,7 @@
 <translation id="6297287540776456956">ആവശ്യമുള്ള ഏരിയ തിരഞ്ഞെടുക്കാൻ സ്റ്റൈലസ് ഉപയോഗിക്കുക</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> എന്നതിനെ <ph name="ROTATION" /> എന്നതിലേയ്‌ക്ക് തിരിച്ചു</translation>
 <translation id="6376931439017688372">Bluetooth ഓണാണ്</translation>
+<translation id="6381109794406942707">ഉപകരണം അൺലോക്ക് ചെയ്യാൻ, നിങ്ങളുടെ പിൻ നൽകുക.</translation>
 <translation id="639644700271529076">CAPS LOCK ഓഫാണ്</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" /></translation>
@@ -619,6 +622,7 @@
 <translation id="9072519059834302790"><ph name="TIME_LEFT" />-ൽ ബാറ്ററി തീരും</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">ഹോമിലേക്ക് പോകാൻ മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="9080206825613744995">മൈക്രോഫോൺ ഉപയോഗത്തിലാണ്.</translation>
 <translation id="9084606467167974638">മെനുവിൻ്റെ സ്ഥാനം മാറ്റുക</translation>
 <translation id="9089416786594320554">ഇൻപുട്ട്  രീതികൾ</translation>

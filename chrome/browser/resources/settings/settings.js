@@ -13,6 +13,7 @@ import './controls/controlled_radio_button.m.js';
 import './controls/extension_controlled_indicator.m.js';
 import './controls/settings_checkbox.m.js';
 import './controls/settings_dropdown_menu.m.js';
+import './controls/settings_idle_load.m.js';
 import './controls/settings_slider.m.js';
 import './controls/settings_textarea.m.js';
 import './controls/settings_toggle_button.m.js';

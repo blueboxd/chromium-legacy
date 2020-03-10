@@ -4,6 +4,8 @@
 
 #include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
 
+#include <vector>
+
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
@@ -65,6 +67,23 @@ std::string SandboxedWebUiAppTestBase::LoadJsTestLibrary(
   std::string injected_content;
   EXPECT_TRUE(base::ReadFileToString(full_script_path, &injected_content));
   return injected_content;
+}
+
+content::EvalJsResult SandboxedWebUiAppTestBase::EvalJsInAppFrame(
+    content::WebContents* web_ui,
+    const std::string& script) {
+  // Clients of this helper all run in the same isolated world.
+  constexpr int kWorldId = 1;
+
+  // GetAllFrames does a breadth-first traversal. Assume the first subframe
+  // is the app.
+  std::vector<content::RenderFrameHost*> frames = web_ui->GetAllFrames();
+  EXPECT_EQ(2u, frames.size());
+  content::RenderFrameHost* app_frame = frames[1];
+  EXPECT_TRUE(app_frame);
+
+  return EvalJs(app_frame, script, content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                kWorldId);
 }
 
 void SandboxedWebUiAppTestBase::SetUpOnMainThread() {

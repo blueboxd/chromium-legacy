@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">Neveljavna koda PIN.</translation>
 <translation id="3838338534323494292">Novo geslo</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Poskusite znova. Št. preostalih poskusov: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> upravlja to napravo in ima dostop do vse dejavnosti uporabnika, vključno z obiskanimi spletnimi mesti, gesli in e-pošto.</translation>
 <translation id="4227825898293920515">Geslo poteče čez toliko časa: <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kartonček za Kerberos kmalu poteče</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">Na zaslonu ni ničesar uporabnega.
 Poskusite vprašati tako, da se dotaknete mikrofona.</translation>
 <translation id="5222676887888702881">Odjava</translation>
-<translation id="5275776633505022322">Št. preostalih poskusov: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Poskusite znova.</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5332948983412042822">Izberite novo</translation>
 <translation id="5457599981699367932">Brskajte kot gost</translation>

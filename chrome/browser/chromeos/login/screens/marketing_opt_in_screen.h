@@ -23,12 +23,17 @@ class MarketingOptInScreen : public BaseScreen,
                              public ash::ShelfConfig::Observer {
  public:
   MarketingOptInScreen(MarketingOptInScreenView* view,
+                       bool is_fullscreen,
                        const base::RepeatingClosure& exit_callback);
   ~MarketingOptInScreen() override;
 
   // On "All set" button pressed.
   void OnAllSet(bool play_communications_opt_in,
                 bool tips_communications_opt_in);
+
+  // Called when the visibility of the accessibility page within the screen
+  // changes.
+  void OnAccessibilityPageVisibilityChanged(bool shown);
 
   // ash::ShelfCondif::Observer:
   void OnShelfConfigUpdated() override;
@@ -44,6 +49,14 @@ class MarketingOptInScreen : public BaseScreen,
   void HideImpl() override;
 
  private:
+  // Enables or disables shelf gesture handling depending on the current state.
+  // Gesture handling should be disabled if shelf navigation buttons should be
+  // shown in this context, or if the screen is on the accessibility settings
+  // page.
+  // Gesture handling is only supported if the screen is shown in fullscreen
+  // OOBE.
+  void UpdateShelfGestureHandlingState();
+
   // Called when a fling from the shelf is detected - it exits the screen.
   // This is the fling callback passed to
   // LoginScreen::SetLoginShelfGestureHandler().
@@ -66,11 +79,20 @@ class MarketingOptInScreen : public BaseScreen,
 
   MarketingOptInScreenView* const view_;
 
+  // Whether the screen is shown as part the first run with OOBE display type,
+  // i.e. if the screen UI is shown fullscreen. Note that the shelf swipe
+  // gesture will only be enabled in fullscreen mode.
+  const bool is_fullscreen_;
+
   // Whether the screen is shown and exit callback has not been run.
   bool active_ = false;
 
   // Whether the screen has set a login shelf gesture handler.
   bool handling_shelf_gestures_ = false;
+
+  // Whether the accessibility page (that contains an option to make the shelf
+  // navigation buttons show in tablet mode) is currently shown.
+  bool accessibility_page_shown_ = false;
 
   base::RepeatingClosure exit_callback_;
 

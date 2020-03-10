@@ -583,7 +583,7 @@
     "fr_FR": "francuski (Francuska)",
     "fi": "finski",
     "ga": "irski",
-    "gd": "škotski gaelski",
+    "gd": "gaelski",
     "gon": "gondi",
     "gu": "gudžaratski",
     "he": "hebrejski",
@@ -598,7 +598,7 @@
     "kh": "khasi",
     "ko": "korejski",
     "kok": "konkanski",
-    "kru": "kuruški",
+    "kru": "kurukh",
     "ks": "kašmirski",
     "lt": "litavski",
     "lv": "latvijski",
@@ -1084,7 +1084,7 @@
 <translation id="7693840228159394336">Prethodni izborni gumb</translation>
 <translation id="7701196182766842984">autopop</translation>
 <translation id="7714340021005120797">Nema sljedećeg kombiniranog okvira</translation>
-<translation id="772146615414628379">Čestitamo! Saznali ste osnove potrebne za uspješnu upotrebu ChromeVoxa. Zapamtite da ChromeVoxov izbornik za naredbe možete otvoriti u bilo kojem trenutku tako što ćete pritisnuti tipku za pretraživanje i tipku za točku. Još više o ChromeVoxu i OS-u Chrome možete saznati u sljedećim člancima.
+<translation id="772146615414628379">Čestitamo! Svladali ste osnove potrebne za uspješnu upotrebu ChromeVoxa. Zapamtite da ChromeVoxov izbornik za naredbe možete otvoriti u bilo kojem trenutku tako što ćete pritisnuti tipku za pretraživanje i točku. Još više o ChromeVoxu i OS-u Chrome možete saznati u sljedećim člancima.
     Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknite ga.</translation>
 <translation id="7724603315864178912">Izreži</translation>
 <translation id="7731785449856576010">Nema sljedećeg widgeta medija</translation>
@@ -1139,6 +1139,7 @@
 <translation id="8065607967589909823">Odabir je</translation>
 <translation id="8066678206530322333">Natpis</translation>
 <translation id="8076492880354921740">Kartice</translation>
+<translation id="8083115023881784332">Nema trenutačnog ChromeVox fokusa. Pritisnite Alt+Shift+L da biste prešli na pokretač.</translation>
 <translation id="8091452896542422286">Razmak</translation>
 <translation id="8096975275316362544">Zelenkastobež</translation>
 <translation id="8098587210054821856">Sivoplava</translation>

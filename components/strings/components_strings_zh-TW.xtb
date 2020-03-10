@@ -474,7 +474,6 @@
 <translation id="3024663005179499861">政策類型有誤</translation>
 <translation id="3037605927509011580">糟糕！</translation>
 <translation id="3041612393474885105">憑證資訊</translation>
-<translation id="3057676462092457419">目前不支援將 DnsOverHttps 模式設為 <ph name="SECURE_DNS_MODE_SECURE" />，已將模式設為 <ph name="SECURE_DNS_MODE_OFF" />。</translation>
 <translation id="3060227939791841287">C9 (信封)</translation>
 <translation id="3061707000357573562">修補服務</translation>
 <translation id="3064966200440839136">即將離開無痕模式，改為使用外部應用程式付款，要繼續嗎？</translation>
@@ -574,6 +573,7 @@
 <translation id="3487845404393360112">紙匣 4</translation>
 <translation id="3495081129428749620">在
     「<ph name="PAGE_TITLE" />」網頁中尋找</translation>
+<translation id="3507936815618196901">根據你的周遭環境建立 3D 地圖並追蹤攝影機位置</translation>
 <translation id="3512163584740124171">由於相同政策群組中有其他政策的優先順序更高，因此系統已忽略這項政策。</translation>
 <translation id="3518941727116570328">多個物件處理</translation>
 <translation id="3528171143076753409">伺服器憑證授權不可靠。</translation>
@@ -926,6 +926,7 @@
 <translation id="5030338702439866405">發行者</translation>
 <translation id="503069730517007720">未安裝必要的「<ph name="SOFTWARE_NAME" />」根憑證。IT 管理員必須按照「<ph name="SOFTWARE_NAME" />」的設定說明修正這個問題。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">關於「Google 翻譯」</translation>
+<translation id="503498442187459473"><ph name="HOST" /> 要求使用攝影機和麥克風</translation>
 <translation id="5039804452771397117">允許</translation>
 <translation id="5040262127954254034">隱私權</translation>
 <translation id="5043480802608081735">你複製的連結</translation>
@@ -1034,7 +1035,6 @@
 <translation id="5457113250005438886">無效</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{「<ph name="CONTACT_PREVIEW" />」和另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 項聯絡資訊}other{「<ph name="CONTACT_PREVIEW" />」和另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 項聯絡資訊}}</translation>
 <translation id="5470861586879999274">重做編輯(&amp;R)</translation>
-<translation id="5472133193607270166">開啟這項功能時，網站不能根據你在各網站的瀏覽活動放送個人化廣告。部分網站可能無法正常運作。</translation>
 <translation id="5478437291406423475">B6/C4 (信封)</translation>
 <translation id="5481076368049295676">這項內容可能會試圖在你的裝置上安裝危險軟體，藉此竊取或刪除你的資訊。<ph name="BEGIN_LINK" />仍要顯示<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">新增有效的地址</translation>
@@ -1320,6 +1320,7 @@
 <translation id="6710594484020273272">&lt;輸入搜尋字詞&gt;</translation>
 <translation id="671076103358959139">註冊憑證：</translation>
 <translation id="6711464428925977395">Proxy 伺服器發生錯誤，或是位址不正確。</translation>
+<translation id="6716672519412350405"><ph name="URL" /> 要求根據你的周遭環境建立 3D 地圖並追蹤攝影機位置</translation>
 <translation id="6738516213925468394">你在 <ph name="TIME" />已使用<ph name="BEGIN_LINK" />同步通關密語<ph name="END_LINK" />將資料加密。如要開始同步處理資料，請輸入通關密語。</translation>
 <translation id="674375294223700098">不明的伺服器憑證錯誤。</translation>
 <translation id="6744009308914054259">等待連線的同時，你可以前往「下載」頁面閱讀離線文章。</translation>
@@ -1740,7 +1741,6 @@
 <translation id="8589998999637048520">最佳畫質</translation>
 <translation id="860043288473659153">持卡人姓名</translation>
 <translation id="8606726445206553943">使用您的 MIDI 裝置</translation>
-<translation id="8616822740383114808">這項設定由「<ph name="ENFORCING_SETTING" />」在「<ph name="SETTINGS_PAGE" />」強制執行</translation>
 <translation id="861775596732816396">粗細：4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">將這張信用卡儲存到這個裝置</translation>

@@ -38,6 +38,8 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
                             const String& name,
                             const FileSystemRemoveOptions*);
 
+  ScriptPromise resolve(ScriptState*, NativeFileSystemHandle* possible_child);
+
   static ScriptPromise getSystemDirectory(ScriptState*,
                                           const GetSystemDirectoryOptions*,
                                           ExceptionState&);
@@ -59,6 +61,12 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
       bool writable,
       base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr,
                               mojom::blink::PermissionStatus)>) override;
+  // IsSameEntry for directories is implemented in terms of resolve, as resolve
+  // also can be used to figure out if two directories are the same entry.
+  void IsSameEntryImpl(
+      mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> other,
+      base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr, bool)>)
+      override;
 
   mojo::Remote<mojom::blink::NativeFileSystemDirectoryHandle> mojo_ptr_;
 };

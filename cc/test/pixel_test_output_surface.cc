@@ -117,4 +117,7 @@ PixelTestOutputSurface::GetGpuTaskSchedulerHelper() {
   return nullptr;
 }
 
+gpu::MemoryTracker* PixelTestOutputSurface::GetMemoryTracker() {
+  return nullptr;
+}
 }  // namespace cc

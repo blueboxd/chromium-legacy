@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">დანარჩენი საიტები (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">თქვენი ტელეფონიდან სხვა მოწყობილობაზე კონტენტის გასაზიარებლად ორივე მოწყობილობაზე საჭიროა სინქრონიზაციის ჩართვა Chrome-ის პარამეტრებიდან.</translation>
 <translation id="2175927920773552910">QR კოდი</translation>
+<translation id="2182457891543959921">შეკითხვა საიტებისთვის თქვენი გარემოს 3-განზომილებიანი რუკის შექმნის ან კამერის პოზიციისთვის თვალის მიდევნების დაშვებამდე (რეკომენდებული)</translation>
 <translation id="218608176142494674">გაზიარება</translation>
 <translation id="2227444325776770048">გაგრძელება, როგორც <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">სინქრონიზაციის/Google სერვისები</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">თქვენს Google ანგარიშში შესვლისას ეს ფუნქცია ჩართული იქნება</translation>
 <translation id="2410754283952462441">აირჩიეთ ანგარიში</translation>
 <translation id="2414886740292270097">მუქი</translation>
-<translation id="2416359993254398973">Chrome საჭიროებს თქვენს კამერაზე წვდომის ნებართვას ამ საიტისთვის.</translation>
 <translation id="2426805022920575512">სხვა ანგარიშის არჩევა</translation>
 <translation id="2433507940547922241">გაფორმება</translation>
 <translation id="2434158240863470628">ჩამოტვირთვა დასრულდა: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@
 <translation id="3522247891732774234">ხელმისაწვდომია განახლება. სხვა ვარიანტები</translation>
 <translation id="3524138585025253783">დეველოპერის UI</translation>
 <translation id="3527085408025491307">საქაღალდე</translation>
+<translation id="3538390592868664640">საიტებისთვის თქვენი გარემოს 3-განზომილებიანი რუკის შექმნის ან კამერის პოზიციისთვის თვალის მიდევნების დაბლოკვა</translation>
 <translation id="3542235761944717775">ხელმისაწვდომია <ph name="KILOBYTES" /> კბაიტი</translation>
 <translation id="3549657413697417275">თქვენს ისტორიაში ძიება</translation>
 <translation id="3557336313807607643">კონტაქტებში დამატება</translation>
@@ -439,6 +440,7 @@
 <translation id="4298388696830689168">მიბმული საიტები</translation>
 <translation id="4307992518367153382">ძირითადი</translation>
 <translation id="4314815835985389558">სინქრონიზაციის მართვა</translation>
+<translation id="4320177379694898372">ინტერნეტთან კავშირი არ არის</translation>
 <translation id="4321739720395210191">კამერის გახსნა ვერ მოხერხდა. გადატვირთეთ მოწყობილობა და ცადეთ ხელახლა.</translation>
 <translation id="4351244548802238354">დიალოგის დახურვა</translation>
 <translation id="4353114845960720315">VR რეჟიმში ყოფნისას ამ საიტს შეუძლია ინფორმაციის მიღება შემდეგის შესახებ:</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">ინკოგნ. ჩანართების დახურვა</translation>
 <translation id="5534640966246046842">საიტი დაკოპირდა</translation>
 <translation id="5561549206367097665">ქსელის კავშირის მოლოდინში…</translation>
-<translation id="557283862590186398">Chrome საჭიროებს თქვენს მიკროფონზე წვდომის ნებართვას ამ საიტისთვის.</translation>
 <translation id="55737423895878184">მდებარეობა და შეტყობინებები დაშვებულია</translation>
 <translation id="5578795271662203820">ამ გამოსახულების ძიება <ph name="SEARCH_ENGINE" />-ში</translation>
 <translation id="5581519193887989363"><ph name="BEGIN_LINK1" />პარამეტრებიდან<ph name="END_LINK1" /> ნებისმიერ დროს შეგიძლიათ აირჩიოთ, რისი სინქრონიზაცია გსურთ.</translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">დეტალები: დალაგებულია გამოყენებული მონაცემების მიხედვით</translation>
 <translation id="6381421346744604172">ვებსაიტების გამუქება</translation>
 <translation id="6388207532828177975">გასუფთავება &amp; აღდგენა</translation>
-<translation id="6393863479814692971">Chrome საჭიროებს თქვენს კამერასა და მიკროფონზე წვდომის ნებართვას ამ საიტისთვის.</translation>
 <translation id="6395288395575013217">ბმული</translation>
 <translation id="6404511346730675251">სანიშნის რედაქტირება</translation>
 <translation id="6406506848690869874">სინქრონიზაცია</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">გასუფთავდეს თქვენი Chrome მონაცემები ამ მოწყობილობიდან?</translation>
 <translation id="6689172468748959065">პროფილის ფოტოები</translation>
 <translation id="6697492270171225480">მსგავსი გვერდების შემოთავაზებების ჩვენება, როცა გვერდი ვერ მოიძებნება</translation>
-<translation id="6697947395630195233">Chrome საჭიროებს თქვენს მდებარეობაზე წვდომის ნებართვას, რათა ის ამ საიტის გაუზიაროს.</translation>
 <translation id="6698801883190606802">სინქრონიზებული მონაცემების მართვა</translation>
 <translation id="6699370405921460408">Google-ის სერვერები მოახდენს თქვენ მიერ მონახულებული გვერდების ოპტიმიზაციას.</translation>
 <translation id="6710213216561001401">წინა</translation>
@@ -971,6 +970,7 @@
 <translation id="8186512483418048923">დარჩენილია <ph name="FILES" /> ფაილი</translation>
 <translation id="8190358571722158785">დარჩენილია 1 დღე</translation>
 <translation id="8200772114523450471">გაგრძელება</translation>
+<translation id="8206354486702514201">ეს პარამეტრი იძულებითაა დაყენებული თქვენი ადმინისტრატორის მიერ.</translation>
 <translation id="8209050860603202033">გამოსახულების გახსნა</translation>
 <translation id="8218622182176210845">თქვენი ანგარიშის სამართავად</translation>
 <translation id="8224471946457685718">სტატიების ჩამოტვირთვა Wi-Fi კავშირის მეშვეობით</translation>
@@ -992,7 +992,6 @@
 <translation id="8364299278605033898">იხილეთ პოპულარული ვებსაიტები</translation>
 <translation id="8368027906805972958">უცნობი ან მხარდაუჭერელი მოწყობილობა (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">კონკრეტული საიტისთვის ფონური სინქრონიზაციის დაშვება.</translation>
-<translation id="8378714024927312812">იმართება თქვენი ორგანიზაციის მიერ</translation>
 <translation id="8380167699614421159">ამ საიტზე ნაჩვენებია მომაბეზრებელი ან შეცდომაში შემყვანი რეკლამა</translation>
 <translation id="8393700583063109961">შეტყობინების გაგზავნა</translation>
 <translation id="8413126021676339697">სრული ისტორიის ჩვენება</translation>

@@ -3078,6 +3078,43 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationAsyncDoesNotStrandCallbacksAtBeginningOfChain) {
+  base::HistogramTester histogram_tester;
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so fetch is NOT activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+
+  GURL url_that_redirected("https://urlthatredirected.com");
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle_redirect =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_that_redirected);
+  hints_manager()->CanApplyOptimizationAsync(
+      url_that_redirected, optimization_guide::proto::COMPRESS_PUBLIC_IMAGES,
+      base::BindOnce(
+          [](optimization_guide::OptimizationGuideDecision decision,
+             const optimization_guide::OptimizationMetadata& metadata) {
+            EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+                      decision);
+          }));
+  hints_manager()->OnNavigationFinish(
+      {url_that_redirected, GURL("https://otherurl.com/")},
+      /*navigation_data=*/nullptr);
+  RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ApplyDecisionAsync.CompressPublicImages",
+      optimization_guide::OptimizationTypeDecision::kNoHintAvailable, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
        CanApplyOptimizationAsyncDoesNotStrandCallbacksIfFetchNotPending) {
   base::HistogramTester histogram_tester;
 
@@ -3109,7 +3146,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
             EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
                       decision);
           }));
-  hints_manager()->OnNavigationFinish(url_with_url_keyed_hint(),
+  hints_manager()->OnNavigationFinish({url_with_url_keyed_hint()},
                                       /*navigation_data=*/nullptr);
   RunUntilIdle();
 
@@ -3191,7 +3228,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
                       decision);
             EXPECT_TRUE(metadata.public_image_metadata().has_value());
           }));
-  hints_manager()->OnNavigationFinish(url_with_url_keyed_hint(),
+  hints_manager()->OnNavigationFinish({url_with_url_keyed_hint()},
                                       /*navigation_data=*/nullptr);
   RunUntilIdle();
 
@@ -3215,7 +3252,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   OptimizationGuideNavigationData* navigation_data =
       OptimizationGuideNavigationData::GetFromNavigationHandle(
           navigation_handle.get());
-  hints_manager()->OnNavigationFinish(url_with_url_keyed_hint(),
+  hints_manager()->OnNavigationFinish({url_with_url_keyed_hint()},
                                       navigation_data);
 
   RunUntilIdle();

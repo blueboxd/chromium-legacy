@@ -221,7 +221,7 @@ def _ExecuteTool(toolname, tool_args, build_directory, compdb_entry):
         # /showIncludes is used by Ninja to track header file dependencies on
         # Windows. We don't need to do this here, and it results in lots of spam
         # and a massive log file, so we strip it.
-        and a != '/showIncludes'
+        and a != '/showIncludes' and a != '/showIncludes:user'
         # -MMD has the same purpose on non-Windows. It may have a corresponding
         # '-MF <filename>', which we strip below.
         and a != '-MMD'

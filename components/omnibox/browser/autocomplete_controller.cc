@@ -83,7 +83,6 @@ void AutocompleteMatchToAssistedQuery(
       // that depend only on the URL as context.
       *subtype = 66;
     } else if (provider->type() == AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
-      DCHECK(match == AutocompleteMatchType::SEARCH_SUGGEST);
       // This subtype indicates a match from an on-device head provider.
       *subtype = 271;
     }

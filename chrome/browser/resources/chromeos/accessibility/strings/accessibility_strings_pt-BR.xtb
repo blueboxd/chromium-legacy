@@ -36,12 +36,12 @@
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Nenhum cabeçalho de nível 4 a seguir</translation>
 <translation id="1212770441379271564">Os próximos atalhos não são comandos do ChromeVox, mas ainda são muito úteis para aproveitar ao máximo o Chrome.
-Para avançar por ações necessárias, como botões e links, pressione a tecla Tab. Para retroceder, pressione Shift+Tab.
-Para digitar na caixa de endereço do navegador Chrome, também chamada de omnibox, pressione Control+L.
-Para abrir e acessar uma nova guia automaticamente, pressione Control+T. O cursor estará na omnibox.
-Para fechar uma guia, pressione Control+W.
-Para avançar entre as guias abertas, use Control+Tab.
-Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
+    Para navegar pelos itens de ação, como botões e links, pressione a tecla Tab. Para retroceder, pressione Shift+Tab.
+    Para digitar na caixa de endereço do navegador Chrome, também chamada de omnibox, pressione Control+L.
+    Para abrir e acessar uma nova guia automaticamente, pressione Control+T. O cursor estará na omnibox.
+    Para fechar uma guia, pressione Control+W.
+    Para avançar entre as guias abertas, use Control+Tab.
+    Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="1213216066620407844">ChromeVox: dando voz ao Google Chrome</translation>
 <translation id="1225969361094801578">Cinza-ardósia-escuro</translation>
 <translation id="1229276918471378188">Atalho anterior</translation>
@@ -1044,7 +1044,8 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="7400575256015741911">Erro ortográfico detectado</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">retorna</translation>
-<translation id="7429415133937917139">Simula a saída de uma linha braille atualizável na parte superior da tela do painel do ChromeVox</translation>
+<translation id="7429415133937917139">Simula a saída de uma linha braille atualizável
+    na parte superior da tela do painel do ChromeVox</translation>
 <translation id="7434509671034404296">Desenvolvedor</translation>
 <translation id="743783356331413498">Exemplo</translation>
 <translation id="7439060726180460871">Diretório</translation>
@@ -1083,7 +1084,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="7693840228159394336">Botão de opção anterior</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Nenhuma caixa de combinação a seguir</translation>
-<translation id="772146615414628379">Parabéns! Você aprendeu as noções básicas do ChromeVox. Lembre-se de que você pode abrir o menu de comandos do ChromeVox a qualquer momento pressionando a tecla de pesquisa mais ponto. Para saber mais sobre o ChromeVox e o Chrome OS, acesse os artigos a seguir.
+<translation id="772146615414628379">Parabéns! Você aprendeu as noções básicas do ChromeVox. Você pode abrir o menu de comandos do ChromeVox a qualquer momento pressionando a tecla de pesquisa mais ponto. Para saber mais sobre o ChromeVox e o Chrome OS, acesse os artigos a seguir.
     Se você não quiser mais ver o tutorial, use o ChromeVox para navegar até o botão "Fechar" e clique nele.</translation>
 <translation id="7724603315864178912">Recortar</translation>
 <translation id="7731785449856576010">Nenhum widget de mídia a seguir</translation>
@@ -1138,6 +1139,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="8065607967589909823">A seleção é</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Guias</translation>
+<translation id="8083115023881784332">O ChromeVox está sem foco. Pressione Alt+Shift+L para ir para o acesso rápido.</translation>
 <translation id="8091452896542422286">Espaço</translation>
 <translation id="8096975275316362544">Menta</translation>
 <translation id="8098587210054821856">Cinza-ardósia</translation>

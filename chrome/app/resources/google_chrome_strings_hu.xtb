@@ -36,7 +36,6 @@
 <translation id="1877026089748256423">A Chrome elavult</translation>
 <translation id="1900795423379050516">Ha valamelyik beállítás nem látható ezen az oldalon, keresse a <ph name="LINK_BEGIN" />Chrome böngésző beállításai<ph name="LINK_END" /> között</translation>
 <translation id="1919130412786645364">Chrome-bejelentkezés engedélyezése</translation>
-<translation id="1983547493073464667">A Chrome nem tudja ellenőrizni a jelszavakat</translation>
 <translation id="2063848847527508675">A frissítés alkalmazásához újra kell indítani a Chrome OS-t.</translation>
 <translation id="2094919256425865063">Biztosan kilép a Chrome-ból?</translation>
 <translation id="2120620239521071941">Ezzel <ph name="ITEMS_COUNT" /> elemet töröl az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chrome-ba a következő e-mail-címmel: <ph name="USER_EMAIL" />.</translation>
@@ -48,15 +47,14 @@
 <translation id="2309047409763057870">Ez a Google Chrome második telepítése, amelyet nem állíthat be az alapértelmezett böngészővé.</translation>
 <translation id="2341767445688917208">A Chrome OS nem tudta szinkronizálni az Ön jelszavait. Javítsa most.</translation>
 <translation id="2348335408836342058">A Chrome-nak engedélyre van szüksége ahhoz, hogy hozzáférjen a kamerához és a mikrofonhoz ennél a webhelynél</translation>
+<translation id="234869673307233423">A Chrome nem tudja ellenőrizni a jelszavait. Próbálkozzon később.</translation>
 <translation id="2429317896000329049">A Google Chrome nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="2467438592969358367">A Google Chrome exportálni szeretné a jelszavakat. Ennek engedélyezéséhez írja be Windows-jelszavát.</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
 <translation id="2534507159460261402">Google Pay (a Chrome-ba másolva)</translation>
-<translation id="2559627601176023786">Nincsenek mentett jelszavak. A Chrome akkor tudja ellenőrizni a jelszavakat, ha Ön menti őket Google-fiókjába.</translation>
 <translation id="2580411288591421699">Nem lehet ugyanazt a Google Chrome verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome-ot, és próbálja újra.</translation>
 <translation id="2586406160782125153">Ezzel az eszközön lévő összes böngészési adat törlődik. Az adatok későbbi lekéréséhez jelentkezzen be a Chrome-ba a következő e-mail-címmel: <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome embléma</translation>
-<translation id="261226884343006626">A Chrome nem tudja ellenőrizni a jelszavakat. Próbálkozzon újra holnap.</translation>
 <translation id="2622559029861875898">A Chrome nem tud frissítéseket keresni. Ellenőrizze az internetkapcsolatot.</translation>
 <translation id="2644798301485385923">Chrome OS rendszer</translation>
 <translation id="2652691236519827073">Link megnyi&amp;tása új Chrome-lapon</translation>
@@ -70,6 +68,8 @@
 <translation id="2857540653560290388">A Chrome indítása…</translation>
 <translation id="2871893339301912279">Bejelentkezett a Chrome-ba.</translation>
 <translation id="2888126860611144412">A Chrome névjegye</translation>
+<translation id="2929907241665500097">Ismeretlen hiba történt, ezért a Chrome nem frissült. <ph name="BEGIN_LINK" />A Chrome frissítési problémáinak megoldása.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – Hálózati bejelentkezés – Chrome</translation>
 <translation id="3037838751736561277">A Google Chrome háttérmódban van.</translation>
 <translation id="3065168410429928842">Chrome-lap</translation>
 <translation id="3080151273017101988">A háttéralkalmazások továbbfuttatása, ha a Google Chrome-ot bezárják</translation>
@@ -80,7 +80,6 @@
 <translation id="3395323229510056640">Segítség a Chrome OS használatával kapcsolatban</translation>
 <translation id="3396977131400919238">Az operációs rendszer hibát jelzett a telepítés során.</translation>
 <translation id="3398288718845740432">Elrejtés a Chrome-menüben</translation>
-<translation id="3434246496373299699">A Chrome ellenőrizni tudja a mentett jelszavakat, ha Ön bejelentkezik Google-fiókjával</translation>
 <translation id="3451115285585441894">Hozzáadás a Chrome-hoz...</translation>
 <translation id="345171907106878721">Adja hozzá magát a Chrome-ban</translation>
 <translation id="34857402635545079">Az adatokat is törölje a Chrome-ból (<ph name="URL" />)</translation>
@@ -96,7 +95,6 @@
 <translation id="386202838227397562">Zárjon be minden Google Chrome-ablakot, és próbálkozzon újra.</translation>
 <translation id="3873044882194371212">Link megnyitása Chrome-inko&amp;gnitóablakban</translation>
 <translation id="3889417619312448367">A Google Chrome eltávolítása</translation>
-<translation id="3943605108614542032">A Chrome frissítéseit a rendszergazda kezeli</translation>
 <translation id="4050175100176540509">A legújabb verzióban fontos biztonsági fejlesztések és új funkciók érhetők el.</translation>
 <translation id="4053720452172726777">A Google Chrome személyre szabása és beállításai</translation>
 <translation id="4143243756087420366">Chrome-név és -kép</translation>
@@ -110,7 +108,9 @@
 <translation id="4331809312908958774">Chrome operációs rendszer</translation>
 <translation id="4335235004908507846">A Chrome segíthet az adatvédelmi incidensek, nem biztonságos bővítmények és egyebek elleni védekezésben</translation>
 <translation id="4343195214584226067">A(z) <ph name="EXTENSION_NAME" /> hozzá lett adva a Chrome-hoz</translation>
+<translation id="4384570495110188418">A Chrome nem tudja ellenőrizni az Ön jelszavait, mert nincs bejelentkezve</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome – Hálózati bejelentkezés – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Egy másik Google Chrome-művelet is folyamatban van. Próbálkozzon újra később.</translation>
 <translation id="4480040274068703980">A Chrome OS egy bejelentkezési hiba miatt nem tudta szinkronizálni az adatokat.</translation>
 <translation id="4561051373932531560">A Google Chrome egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-pal!</translation>
@@ -120,6 +120,7 @@
 <translation id="4600710005438004015">Nem sikerült a Chrome frissítése a legújabb verzióra, így Ön lemarad az új funkciókról és biztonsági javításokról.</translation>
 <translation id="4631713731678262610">Elrejtés a Chrome-menüben</translation>
 <translation id="4633000520311261472">A Chrome biztonságosabbá tétele érdekében kikapcsoltunk néhány bővítményt, amelyek nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származnak, és előfordulhat, hogy az Ön tudta nélkül lettek telepítve.</translation>
+<translation id="4653397506175047429">A Chrome nem tudja ellenőrizni az Ön összes jelszavát. Próbálja újra 24 óra múlva.</translation>
 <translation id="4728575227883772061">A telepítés váratlan hiba miatt nem sikerült. Ha a Google Chrome jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="4750550185319565338">A Chrome újraindítása a(z) <ph name="PLUGIN_NAME" /> engedélyezéséhez</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -152,6 +153,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Nem sikerült a Chrome elindítása. Próbálkozzon újra.</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Hálózati bejelentkezés</translation>
 <translation id="5940385492829620908">Az Ön könyvjelzői, valamint az internetezéssel és a Chrome-mal kapcsolatos egyéb dolgai vannak itt.</translation>
 <translation id="5941830788786076944">A Google Chrome beállítása alapértelmezett böngészőként</translation>
 <translation id="6070348360322141662">A nagyobb biztonság érdekében a Google Chrome titkosítja az Ön adatait</translation>
@@ -205,9 +207,9 @@
 <translation id="7808348361785373670">Eltávolítás a Chrome-ból…</translation>
 <translation id="7825851276765848807">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Google Chrome-ot.</translation>
 <translation id="7855730255114109580">A Google Chrome naprakész</translation>
-<translation id="7888686278524752658">Ismeretlen hiba történt, ezért a Chrome nem frissült. A Chrome frissítési problémáinak megoldása.</translation>
 <translation id="7890208801193284374">Ha megoszt egy számítógépet, ismerősei és családtagjai külön fiókokban internetezve a saját kívánságaik szerint állíthatják be a Chrome-ot.</translation>
 <translation id="7896673875602241923">Valaki korábban <ph name="ACCOUNT_EMAIL_LAST" /> néven bejelentkezett a Chrome-ba erről a számítógépről. Az adatai elkülönítéséhez hozzon létre új Chrome-felhasználót.</translation>
+<translation id="7905891027772979035">A Chrome nem tudja ellenőrizni a bővítményeket. Próbálkozzon később.</translation>
 <translation id="7916016681687251387">A Chrome OS nem tudta szinkronizálni az adatait. Javítsa most.</translation>
 <translation id="7930071585467473040">A Google Chrome megpróbálkozik a jelszavak másolásával.</translation>
 <translation id="7962410387636238736">Ez a számítógép a továbbiakban már nem kapja meg a Google Chrome frissítéseit, mert már nem támogatjuk a Windows XP és Windows Vista rendszereket.</translation>

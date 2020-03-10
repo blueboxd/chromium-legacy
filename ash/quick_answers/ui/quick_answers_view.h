@@ -60,24 +60,19 @@ class ASH_EXPORT QuickAnswersView : public views::View {
   void ShowRetryView();
 
  private:
-  void AddAssistantIcon();
-  int AddLabel(int label_start, int upper_padding, const std::string& title);
-  int GetPreferredHeight();
   void InitLayout();
   void InitWidget();
+  void AddAssistantIcon();
   void UpdateBounds();
-  void UpdateChildViews(
+  void UpdateQuickAnswerResult(
       const chromeos::quick_answers::QuickAnswer& quick_answer);
-  void UpdateOneRowAnswer(
-      const std::vector<std::unique_ptr<
-          chromeos::quick_answers::QuickAnswerUiElement>>& answers,
-      int y);
 
   gfx::Rect anchor_view_bounds_;
   QuickAnswersUiController* const controller_;
   bool has_second_row_answer_ = false;
   std::string title_;
   SkColor background_color_ = SK_ColorWHITE;
+  views::View* content_view_ = nullptr;
   views::Label* retry_label_ = nullptr;
   std::unique_ptr<QuickAnswersViewHandler> quick_answers_view_handler_;
   base::WeakPtrFactory<QuickAnswersView> weak_factory_{this};

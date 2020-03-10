@@ -1,4 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="2359808026110333948">続行</translation>
+<translation id="2416359993254398973">このサイトを利用するには、Chrome でカメラの使用を許可する必要があります。</translation>
+<translation id="557283862590186398">このサイトを利用するには、Chrome でマイクの使用を許可する必要があります。</translation>
+<translation id="6393863479814692971">このサイトを利用するには、Chrome でカメラとマイクの使用を許可する必要があります。</translation>
+<translation id="6697947395630195233">このサイトで現在地を共有するには、Chrome で位置情報の使用を許可する必要があります。</translation>
 </translationbundle>

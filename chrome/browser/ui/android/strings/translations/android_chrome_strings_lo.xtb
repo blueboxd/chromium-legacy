@@ -57,7 +57,7 @@
 <translation id="1369915414381695676">ເພີ່ມ <ph name="SITE_NAME" /> ເວັບ​ໄຊ​ທ໌​ແລ້ວ</translation>
 <translation id="1373696734384179344">ຄວາມ​ຈຳ​ບໍ່​ພຽງ​ພໍ ເພື່ອ​ດາວ​ໂຫຼດ​ເນື້ອ​ໃນ​ເລືອກ​ໄວ້.</translation>
 <translation id="1376578503827013741">ກຳລັງຄຳນວນ...</translation>
-<translation id="1383876407941801731">ຄົ້ນຫາ</translation>
+<translation id="1383876407941801731">ຊອກຫາ</translation>
 <translation id="1384959399684842514">ຢຸດການດາວໂຫລດໄວ້ຊົ່ວຄາວແລ້ວ</translation>
 <translation id="1386674309198842382">ເປີດໃຊ້ເມື່ອ <ph name="LAST_UPDATED" /> ມື້ກ່ອນ</translation>
 <translation id="1397811292916898096">ຊອກຫາດ້ວຍ <ph name="PRODUCT_NAME" /></translation>
@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">ເວັບໄຊທີ່ຍັງເຫຼືອ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">ເພື່ອແບ່ງປັນບາງຢ່າງຈາກໂທລະສັບຂອງທ່ານກັບອຸປະກອນອື່ນ, ເປີດການຊິ້ງຂໍ້ມູນໃນການຕັ້ງຄ່າ Chrome ຢູ່ໃນທັງສອງອຸປະກອນ</translation>
 <translation id="2175927920773552910">ລະຫັດ QR</translation>
+<translation id="2182457891543959921">ຖາມກ່ອນທີ່ຈະອະນຸຍາດໃຫ້ເວັບໄຊສ້າງແຜນທີ່ 3 ມິຕິຂອງສິ່ງທີ່ຢູ່ອ້ອມຂ້າງຕົວທ່ານ ຫຼື ຕາມຕຳແໜ່ງກ້ອງ (ແນະນຳ)</translation>
 <translation id="218608176142494674">ການແບ່ງປັນ</translation>
 <translation id="2227444325776770048">ສືບຕໍ່ໃຊ້ໃນຊື່ <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">ການບໍລິການຊິ້ງຂໍ້ມູນ ແລະ Google</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">ຄຸນສົມບັດນີ້ຈະເປີດໃຊ້ເມື່ອທ່ານເຂົ້າສູ່ລະບົບບັນຊີ Google ຂອງທ່ານ</translation>
 <translation id="2410754283952462441">ເລືອກໜຶ່ງບັນຊີ</translation>
 <translation id="2414886740292270097">ມືດ</translation>
-<translation id="2416359993254398973">Chrome ຕ້ອງການການອະນຸຍາດເພື່ອເຂົ້າເຖິງກ້ອງຖ່າຍຮູບຂອງທ່ານສຳລັບໄຊນີ້.</translation>
 <translation id="2426805022920575512">ເລືອກບັນຊີອື່ນ</translation>
 <translation id="2433507940547922241">ລັກສະນະ​ພາຍ​ນອກ</translation>
 <translation id="2434158240863470628">ການດາວໂຫຼດສຳເລັດແລ້ວ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@
 <translation id="3522247891732774234">ອັບເດດມີໃຫ້ແລ້ວ. ຕົວເລືອກເພີ່ມເຕີມ</translation>
 <translation id="3524138585025253783">ສ່ວນຕິດຕໍ່ຜູ້ໃຊ້ສຳລັບຜູ້ພັດທະນາ</translation>
 <translation id="3527085408025491307">ໂຟລເດີ</translation>
+<translation id="3538390592868664640">ບລັອກເວັບໄຊບໍ່ໃຫ້ສ້າງແຜນທີ່ 3 ມິຕິຂອງສິ່ງທີ່ຢູ່ອ້ອມຂ້າງຕົວທ່ານ ຫຼື ຕິດຕາມຕຳແໜ່ງກ້ອງ</translation>
 <translation id="3542235761944717775">ຍັງເຫຼືອ <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">ຊອກຫາປະຫວັດຂອງທ່ານ</translation>
 <translation id="3557336313807607643">ເພີ່ມໃສ່ລາຍຊື່ຜູ້ຕິດຕໍ່</translation>
@@ -439,6 +440,7 @@
 <translation id="4298388696830689168">ເວັບໄຊທີ່ເຊື່ອມໂຍງແລ້ວ</translation>
 <translation id="4307992518367153382">ພື້ນ​ຖານ</translation>
 <translation id="4314815835985389558">ຈັດການການຊິ້ງຂໍ້ມູນ</translation>
+<translation id="4320177379694898372">ບໍ່​ມີການ​ເຊື່ອມ​ຕໍ່​ອິນ​ເຕີ​ເນັດ​</translation>
 <translation id="4321739720395210191">ບໍ່ສາມາດເປີດກ້ອງຂອງທ່ານໄດ້. ຣິສະຕາດອຸປະກອນຂອງທ່ານ ແລ້ວລອງໃໝ່.</translation>
 <translation id="4351244548802238354">ປິດ​ໜ້າ​ຕ່າງ</translation>
 <translation id="4353114845960720315">ໃນຂະນະທີ່ທ່ານຢູ່ໃນ VR, ເວັບໄຊນີ້ອາດຈະສາມາດຮຽນຮູ້ກ່ຽວກັບ:</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">ປິດແຖບທີ່ບໍ່ເຜີຍຕົວຕົນ</translation>
 <translation id="5534640966246046842">ສຳເນົາເວັບໄຊແລ້ວ</translation>
 <translation id="5561549206367097665">ກຳລັງລໍຖ້າເຄືອຂ່າຍ...</translation>
-<translation id="557283862590186398">Chrome ຕ້ອງການການອະນຸຍາດເພື່ອເຂົ້າເຖິງໄມໂຄຣໂຟນຂອງທ່ານສຳລັບເວັບໄຊນີ້.</translation>
 <translation id="55737423895878184">ອະນຸຍາດການແຈ້ງເຕືອນ ແລະ ສະຖານທີ່</translation>
 <translation id="5578795271662203820">ຄົ້ນ​ຫາ <ph name="SEARCH_ENGINE" /> ​ຮູບ​ນີ້</translation>
 <translation id="5581519193887989363">ທ່ານສາມາດເລືອກສິ່ງທີ່ຈະຊິ້ງຂໍ້ມູນໄດ້ໃນ <ph name="BEGIN_LINK1" />ການຕັ້ງຄ່າ<ph name="END_LINK1" />.</translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">ລາຍລະອຽດ: ຮຽງລຳດັບຕາມປະລິມານຂໍ້ມູນທີ່ໃຊ້</translation>
 <translation id="6381421346744604172">ປັບເວັບໄຊໃຫ້ເປັນສີເຂັ້ມ</translation>
 <translation id="6388207532828177975">ລຶບ ແລະ​ຕັ້ງ​ຄ່າ​ຄືນ​ໃໝ່</translation>
-<translation id="6393863479814692971">Chrome ຕ້ອງການການອະນຸຍາດເພື່ອເຂົ້າເຖິງກ້ອງຖ່າຍຮູບ ແລະ ໄມໂຄຣໂຟນຂອງທ່ານສຳລັບເວັບໄຊນີ້.</translation>
 <translation id="6395288395575013217">ລິ້ງ</translation>
 <translation id="6404511346730675251">ແກ້​ໄຂບຸກມາກສ໌</translation>
 <translation id="6406506848690869874">ຊິງຄ໌</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">ລຶບລ້າງຂໍ້ມູນ Chrome ຂອງທ່ານຈາກອຸປະກອນນີ້?</translation>
 <translation id="6689172468748959065">ຮູບໂປຣໄຟລ໌</translation>
 <translation id="6697492270171225480">ສະແດງການແນະນຳສຳລັບໜ້າຄ້າຍຄືກັນເມື່ອຊອກບໍ່ເຫັນໜ້າໃດໜຶ່ງ</translation>
-<translation id="6697947395630195233">Chrome ຕ້ອງການເຂົ້າເຖິງສະຖານທີ່ຂອງທ່ານເພື່ອແບ່ງປັນສະຖານທີ່ຂອງທ່ານກັບເວັບໄຊນີ້.</translation>
 <translation id="6698801883190606802">ຈັດການຂໍ້ມູນທີ່ຊິງຄ໌ແລ້ວ</translation>
 <translation id="6699370405921460408">ເຊີບເວີ Google ຈະປັບໜ້າເວັບທີ່ທ່ານເຂົ້າເບິ່ງໃຫ້ເໝາະສົມ.</translation>
 <translation id="6710213216561001401">ຜ່ານມາ</translation>
@@ -971,6 +970,7 @@
 <translation id="8186512483418048923">ຍັງເຫຼືອ <ph name="FILES" /> ໄຟລ໌</translation>
 <translation id="8190358571722158785">ຍັງ​ເຫຼືອ 1 ມື້</translation>
 <translation id="8200772114523450471">ເລີ່ມຕົ້ນປິດເປີດໃໝ່</translation>
+<translation id="8206354486702514201">ການຕັ້ງຄ່ານີ້ຖືກບັງຄັບໂດຍຜູ້ຄວບຄຸມຂອງທ່ານ.</translation>
 <translation id="8209050860603202033">ເປີດຮູບ</translation>
 <translation id="8218622182176210845">ຈັດການບັນຊີຂອງທ່ານ</translation>
 <translation id="8224471946457685718">ດາວໂຫຼດບົດຄວາມສຳລັບທ່ານເມື່ອໃຊ້ Wi-Fi</translation>
@@ -992,7 +992,6 @@
 <translation id="8364299278605033898">ເບິ່ງເວັບໄຊຍອດນິຍົມ</translation>
 <translation id="8368027906805972958">ອຸປະກອນທີ່ບໍ່ຮູ້ຈັກ ຫຼື ບໍ່ຮອງຮັບ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">ອະນຸຍາດການຊິ້ງຂໍ້ມູນໃນພື້ນຫຼັງສຳລັບເວັບໄຊສະເພາະໃດໜຶ່ງ.</translation>
-<translation id="8378714024927312812">ຈັດການໂດຍອົງການຂອງທ່ານ</translation>
 <translation id="8380167699614421159">ເວັບໄຊນີ້ສະແດງໂຄສະນາທີ່ລົບກວນ ຫຼື ຫຼອກລວງ</translation>
 <translation id="8393700583063109961">ສົ່ງຂໍ້ຄວາມ</translation>
 <translation id="8413126021676339697">ສະ​ແດງ​ປະຫວັດທັງໝົດ</translation>

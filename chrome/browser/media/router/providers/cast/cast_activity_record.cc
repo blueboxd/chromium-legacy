@@ -29,34 +29,6 @@ CastActivityRecord::CastActivityRecord(
 
 CastActivityRecord::~CastActivityRecord() = default;
 
-mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
-    const CastMediaSource& source,
-    const url::Origin& origin,
-    int tab_id) {
-  const std::string& client_id = source.client_id();
-  DCHECK(!base::Contains(connected_clients_, client_id));
-  std::unique_ptr<CastSessionClient> client =
-      client_factory_for_test_
-          ? client_factory_for_test_->MakeClientForTest(client_id, origin,
-                                                        tab_id)
-          : std::make_unique<CastSessionClientImpl>(
-                client_id, origin, tab_id, source.auto_join_policy(), this);
-  auto presentation_connection = client->Init();
-  connected_clients_.emplace(client_id, std::move(client));
-
-  // Route is now local due to connected client.
-  route_.set_local(true);
-  return presentation_connection;
-}
-
-void CastActivityRecord::RemoveClient(const std::string& client_id) {
-  // Don't erase by key here as the |client_id| may be referring to the
-  // client being deleted.
-  auto it = connected_clients_.find(client_id);
-  if (it != connected_clients_.end())
-    connected_clients_.erase(it);
-}
-
 void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
                                             const MediaSinkInternal& sink,
                                             const std::string& hash_token) {
@@ -121,74 +93,12 @@ void CastActivityRecord::SendSetVolumeRequestToReceiver(
       cast_message.client_id(), std::move(callback));
 }
 
-void CastActivityRecord::StopSessionOnReceiver(
-    const std::string& client_id,
-    cast_channel::ResultCallback callback) {
-  if (!session_id_)
-    std::move(callback).Run(cast_channel::Result::kFailed);
-
-  message_handler_->StopSession(cast_channel_id(), *session_id_, client_id,
-                                std::move(callback));
-}
-
-void CastActivityRecord::SendStopSessionMessageToClients(
-    const std::string& hash_token) {
-  // TODO(jrw): Add test for this method.
-  for (const auto& client : connected_clients_) {
-    client.second->SendMessageToClient(
-        CreateReceiverActionStopMessage(client.first, sink_, hash_token));
-  }
-}
-
-void CastActivityRecord::HandleLeaveSession(const std::string& client_id) {
-  auto client_it = connected_clients_.find(client_id);
-  CHECK(client_it != connected_clients_.end());
-  auto& client = *client_it->second;
-  std::vector<std::string> leaving_client_ids;
-  for (const auto& pair : connected_clients_) {
-    if (pair.second->MatchesAutoJoinPolicy(client.origin(), client.tab_id()))
-      leaving_client_ids.push_back(pair.first);
-  }
-
-  for (const auto& client_id : leaving_client_ids) {
-    auto leaving_client_it = connected_clients_.find(client_id);
-    CHECK(leaving_client_it != connected_clients_.end());
-    leaving_client_it->second->CloseConnection(
-        PresentationConnectionCloseReason::CLOSED);
-    connected_clients_.erase(leaving_client_it);
-  }
-}
-
-void CastActivityRecord::SendMessageToClient(
-    const std::string& client_id,
-    PresentationConnectionMessagePtr message) {
-  auto it = connected_clients_.find(client_id);
-  if (it == connected_clients_.end()) {
-    DLOG(ERROR) << "Attempting to send message to nonexistent client: "
-                << client_id;
-    return;
-  }
-  it->second->SendMessageToClient(std::move(message));
-}
-
 void CastActivityRecord::SendMediaStatusToClients(
     const base::Value& media_status,
     base::Optional<int> request_id) {
-  for (auto& client : connected_clients_)
-    client.second->SendMediaStatusToClient(media_status, request_id);
+  ActivityRecord::SendMediaStatusToClients(media_status, request_id);
   if (media_controller_)
     media_controller_->SetMediaStatus(media_status);
-}
-
-void CastActivityRecord::ClosePresentationConnections(
-    PresentationConnectionCloseReason close_reason) {
-  for (auto& client : connected_clients_)
-    client.second->CloseConnection(close_reason);
-}
-
-void CastActivityRecord::TerminatePresentationConnections() {
-  for (auto& client : connected_clients_)
-    client.second->TerminateConnection();
 }
 
 void CastActivityRecord::CreateMediaController(
@@ -256,8 +166,5 @@ bool CastActivityRecord::HasJoinableClient(AutoJoinPolicy policy,
                                                 client.second->tab_id());
                      });
 }
-
-CastSessionClientFactoryForTest* CastActivityRecord::client_factory_for_test_ =
-    nullptr;
 
 }  // namespace media_router

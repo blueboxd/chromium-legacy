@@ -64,6 +64,10 @@
       Se questo criterio viene impostato, l'utente non può modificarlo o ignorarlo.</translation>
 <translation id="1062011392452772310">Attivazione dell'attestazione da remoto per il dispositivo</translation>
 <translation id="1062407476771304334">Sostituisci</translation>
+<translation id="1073983258515362346">Consente di segnalare informazioni sulla retroilluminazione del dispositivo.
+
+      Se il criterio viene impostato su false o non viene impostato, le informazioni non vengono segnalate.
+      Se viene impostato su true, le informazioni sulla retroilluminazione del dispositivo vengono segnalate.</translation>
 <translation id="1078643757670228170">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene disattivato quando viene usata la corrente alternata.
@@ -159,6 +163,17 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
 <translation id="1204263402976895730">Stampanti aziendali attive</translation>
+<translation id="1216890727647348501">Consente di attivare la funzionalità di protezione avanzata di Navigazione sicura in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare l'impostazione.
+
+      Se attivi questa impostazione, la funzionalità di protezione avanzata di Navigazione sicura è sempre attiva.
+
+      Se disattivi questa impostazione, la funzionalità di protezione avanzata di Navigazione sicura non è mai attiva.
+
+      Se imposti questo criterio come obbligatorio, gli utenti non potranno modificare o ignorare l'impostazione "Attiva protezione contro phishing e malware" di <ph name="PRODUCT_NAME" />.
+
+      Se questo criterio non viene impostato, la funzionalità di protezione avanzata di Navigazione sicura sarà disattivata per impostazione predefinita, ma l'utente potrà attivarla.
+
+      Visita il sito https://developers.google.com/safe-browsing per ulteriori informazioni sulla funzionalità Navigazione sicura.</translation>
 <translation id="1216919699175573511">Attiva il supporto per Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Consente di specificare se il dispositivo deve eseguire il rollback alla versione impostata da <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> nel caso in cui sia già in esecuzione una versione successiva.
 
@@ -251,6 +266,7 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
           Se questo criterio non viene impostato, il comportamento dei criteri più specifici rimane invariato.</translation>
 <translation id="1384459581748403878">Riferimento: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Indica lo stato di aggiornamento del sistema operativo</translation>
+<translation id="1388918874748125262">Attiva protezione avanzata di Navigazione sicura</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
 <translation id="1397855852561539316">URL di suggerimento del provider di ricerca predefinito</translation>
 <translation id="1398636873839401839">Attiva tutte le varianti nella schermata di accesso</translation>
@@ -312,6 +328,7 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
       sarà disattivata. In questo caso, l'utente non potrà attivare la funzione.</translation>
 <translation id="1474273443907024088">Disattiva TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1486021504508098388">Segnala informazioni sulla retroilluminazione</translation>
 <translation id="1502843533062797703">Attiva blocco inserimento da software di terze parti</translation>
 <translation id="1507382822467487898">
           Consente di configurare quale indirizzo MAC (media access control) verrà utilizzato quando il dispositivo è inserito in un dock.
@@ -1139,6 +1156,9 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="26023406105317310">Configura account Kerberos</translation>
 <translation id="2604182581880595781">Configura le norme relative alla funzione Condivisioni file di rete</translation>
 <translation id="2615240493030733717">Segnala informazioni sul fuso orario</translation>
+<translation id="2620943247255660284">Questo criterio è obsoleto ed è stato sostituito dal criterio AdvancedProtectionExtraSecurityAllowed.
+
+      Questo criterio consente di stabilire se gli utenti iscritti al programma di protezione avanzata possono inviare o meno i propri download a Google per verificare l'eventuale presenza di malware. Se il criterio viene impostato su True o non viene impostato, agli utenti iscritti al programma verrà chiesto di inviare i propri file a Google per una scansione approfondita. Se l'utente seleziona "Scansiona", il download verrà inviato a Google. Se il criterio viene impostato su False, agli utenti non verrà chiesto di inviare i propri download a Google.</translation>
 <translation id="2623014935069176671">Attesa dell'attività iniziale dell'utente</translation>
 <translation id="262740370354162807">Attiva l'invio di documenti a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Consente di specificare le configurazioni delle stampanti aziendali.
@@ -1385,6 +1405,21 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2987227569419001736">Controlla l'utilizzo dell'API Web Bluetooth</translation>
 <translation id="3016255526521614822">Autorizza l'uso di app per scrivere note nella schermata di blocco di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Consente di controllare i criteri relativi alla supervisione dei genitori che vengono applicati soltanto agli account di minori.</translation>
+<translation id="3020953534071988875">Se configuri questo criterio, l'autenticazione ambientale verrà attivata o disattivata per i profili Ospite e in modalità in incognito in <ph name="PRODUCT_NAME" />.
+
+      L'autenticazione ambientale è l'autenticazione http con credenziali predefinite, se non sono fornite credenziali esplicite tramite schemi NTLM/Kerberos/Negotiate challenge/response.
+
+      L'impostazione di <ph name="REGULAR_ONLY_OPTION_NAME" /> (valore 0) consente l'autenticazione ambientale solo per le sessioni standard. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite e in modalità in incognito.
+
+      L'impostazione di <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valore 1) consente l'autenticazione ambientale per le sessioni standard e in modalità in incognito. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite.
+
+      L'impostazione di <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valore 2) consente l'autenticazione ambientale per le sessioni standard e Ospite. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni in modalità in incognito.
+
+      L'impostazione di <ph name="ALL_OPTION_NAME" /> (valore 3) consente l'autenticazione ambientale per tutte le sessioni.
+
+      Tieni presente che l'autenticazione ambientale è sempre consentita per i profili standard.
+
+      Se nella versione 81 e nelle versioni successive di <ph name="PRODUCT_NAME" /> questo criterio non viene impostato, l'autenticazione ambientale sarà consentita soltanto nelle sessioni standard.</translation>
 <translation id="3021562480854470924">Numero di obiettivi consentiti per il rollback</translation>
 <translation id="3023572080620427845">URL di un file XML che contiene gli URL da caricare su un browser alternativo.</translation>
 <translation id="3026740867910702435">Consente di attivare la funzione di accessibilità del puntatore grande nella schermata di accesso.
@@ -1858,6 +1893,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           Se questo criterio non viene impostato, inizialmente la dettatura è disattivata nella schermata di accesso, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="3811562426301733860">Consenti annunci su tutti i siti</translation>
 <translation id="3816312845600780067">Attivazione scorciatoia da tastiera bailout per accesso automatico</translation>
+<translation id="3817323252437541502">Attiva protezioni aggiuntive per gli utenti iscritti al programma di protezione avanzata</translation>
 <translation id="3820526221169548563">Attiva la funzione di accessibilità della tastiera sullo schermo.
 
           Se questa norma viene impostata su true, la tastiera sullo schermo sarà sempre attivata.
@@ -2314,9 +2350,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4449545651113180484">Ruota lo schermo in senso orario di 270°</translation>
 <translation id="445270821089253489">Consente di stabilire i tipi di informazioni su dispositivi e utenti da segnalare.</translation>
 <translation id="4453913621209182880">Consenti solo la stampa con immagini di sfondo</translation>
-<translation id="4454586530530448054">Se questo criterio è impostato, tutti i tipi di dati specificati verranno esclusi dalla sincronizzazione sia per Google Sync sia per la sincronizzazione dei profili roaming. Questa operazione può essere utile per ridurre le dimensioni del profilo roaming o per limitare il tipo di dati caricati sui server di Google Sync.
-
-      Attualmente i tipi di dati per questo criterio sono: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfiguration". Tali nomi fanno distinzione tra maiuscole e minuscole.</translation>
 <translation id="4454820008017317557">Mostra l'icona della barra degli strumenti di <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Blocca cookie di terze parti</translation>
 <translation id="4474167089968829729">Attiva il salvataggio delle password in Gestione password</translation>
@@ -5016,6 +5049,7 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
       Se il criterio viene impostato su false o non viene impostato, gli stati relativi a display e grafica non vengono segnalati. Se viene impostato su true, gli stati relativi a display e grafica vengono segnalati.</translation>
 <translation id="891435090623616439">codificato sotto forma di stringa JSON; per informazioni dettagliate, visita la pagina <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Consenti agli utenti di gestire i certificati CA installati.</translation>
+<translation id="8924721011887485485">Questo criterio consente di stabilire se gli utenti iscritti al programma di protezione avanzata ricevono o meno funzionalità di sicurezza extra. Alcune di queste funzionalità potrebbero prevedere la condivisione di dati con Google (ad esempio, gli utenti che usano la protezione avanzata potranno inviare i propri download a Google per verificare l'eventuale presenza di malware). Se questo criterio viene impostato su True o non viene impostato, gli utenti iscritti al programma riceveranno funzionalità di sicurezza extra. Se viene impostato su False, gli utenti che usano la protezione avanzata riceveranno soltanto le funzionalità di sicurezza per i consumatori.</translation>
 <translation id="8926275581598789324">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale viene compiuta l'azione stabilita per l'inattività quando viene usata la batteria.

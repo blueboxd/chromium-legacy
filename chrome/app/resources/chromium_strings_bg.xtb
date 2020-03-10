@@ -11,17 +11,18 @@
 <translation id="151962892725702025">Chromium OS не можа да синхронизира данните ви, защото тази функция не е налице за домейна ви.</translation>
 <translation id="1524282610922162960">Споделяне на раздел в Chromium</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Администраторът ви изисква да рестартирате Chromium, за да се приложи актуализация}=1{Администраторът ви изисква да рестартирате Chromium, за да се приложи актуализация. Прозорецът ви в режим „инкогнито“ няма да бъде отворен отново.}other{Администраторът ви изисква да рестартирате Chromium, за да се приложи актуализация. Вашите # прозореца в режим „инкогнито“ няма да бъдат отворени отново.}}</translation>
-<translation id="1663739491876737434">Chromium не може да провери паролите ви. Опитайте отново утре.</translation>
 <translation id="1708666629004767631">Налице е нова, по-сигурна версия на Chromium.</translation>
 <translation id="1774152462503052664">Нека Chromium да се изпълнява на заден план</translation>
 <translation id="1779356040007214683">За да направим Chromium по-безопасен, деактивирахме някои разширения, които не са посочени в <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да са били добавени без ваше знание.</translation>
 <translation id="1808667845054772817">Повторно инсталиране на Chromium</translation>
 <translation id="1881322772814446296">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Chromium. Данните ви там, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. По избор можете да създадете нов потребителски профил, за да отделите съществуващите си данни в Chromium. <ph name="LEARN_MORE" /></translation>
+<translation id="1911747963917069754">Chromium не може да провери всичките ви пароли. Опитайте отново след 24 часа.</translation>
 <translation id="1911763535808217981">С изключването на тази функция можете да влизате в сайтовете на Google, като например Gmail, без да влизате в Chromium</translation>
 <translation id="1929939181775079593">Chromium блокира. Да се стартира ли отново сега?</translation>
 <translation id="1966382378801805537">Chromium не може да определи или зададе браузъра по подразбиране</translation>
 <translation id="2008474315282236005">1 елемент ще се изтрие от това устройство. За да извлечете данните си по-късно, влезте в Chromium като <ph name="USER_EMAIL" />.</translation>
 <translation id="2147976119693222405">Chromium OS не синхронизира данните ви. Отстранете проблема.</translation>
+<translation id="2185166961232948079">Chromium – Вход в мрежата – <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">Ако споделяте компютър, близките и приятелите ви могат да сърфират отделно и да настроят Chromium точно така, както искат.</translation>
 <translation id="2347108572062610441">Това разширение промени страницата, която се показва при стартиране на Chromium.</translation>
 <translation id="2396765026452590966">Разширението „<ph name="EXTENSION_NAME" />“ промени страницата, която се показва при стартиране на Chromium.</translation>
@@ -42,6 +43,7 @@
 <translation id="2886012850691518054">По избор: Помогнете ни да подобрим Chromium, като автоматично изпращате на Google статистически данни за използването му и сигнали за сривове.</translation>
 <translation id="2910007522516064972">Всичко за &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium е актуален</translation>
+<translation id="3032706164202344641">Chromium не може да провери паролите ви. Опитайте пак по-късно.</translation>
 <translation id="3032787606318309379">Добавя се към Chromium...</translation>
 <translation id="3068515742935458733">Помогнете ни да подобрим Chromium, като ни изпращате <ph name="UMA_LINK" /> му и сигнали за сривове</translation>
 <translation id="3103660991484857065">Инсталационната програма не успя да декомпресира архива. Моля, изтеглете отново Chromium.</translation>
@@ -71,6 +73,7 @@
 <translation id="3945058413678539331">Chromium опитва да копира паролите. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="4036079820698952681">Помогнете за подобряването на Chromium, като подадете сигнал за <ph name="BEGIN_LINK" />текущите настройки<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">В последната версия са налице важни подобрения в сигурността и нови функции.</translation>
+<translation id="419998258129752635"><ph name="PAGE_TITLE" /> – Вход в мрежата – Chromium</translation>
 <translation id="421369550622382712">Открийте отлични приложения, игри, разширения и теми за Chromium.</translation>
 <translation id="4216212958613226427">Този език служи за показване на ПИ на Chromium</translation>
 <translation id="4230135487732243613">Да се свържат ли данните ви в Chromium с този профил?</translation>
@@ -79,9 +82,9 @@
 <translation id="4407044323746248786">Искате ли да излезете от Chromium въпреки това?</translation>
 <translation id="4415566066719264597">Разрешаване на Chromium да се изпълнява на заден план</translation>
 <translation id="4423735387467980091">Персонализиране и контролиране на Chromium</translation>
+<translation id="4544142686420020088">Chromium не се актуализира, защото нещо се обърка. <ph name="BEGIN_LINK" />Отстранете проблеми с актуализирането на Chromium и неуспешни актуализации<ph name="END_LINK" />.</translation>
 <translation id="4567424176335768812">Влезли сте като <ph name="USER_EMAIL_ADDRESS" />. Сега имате достъп до отметките, историята и другите си настройки на всички устройства, на които сте влезли.</translation>
 <translation id="459535195905078186">Приложения в Chromium</translation>
-<translation id="4621240073146040695">Актуализирането почти завърши! Остава само да стартирате отново Chromium.</translation>
 <translation id="4677944499843243528">Изглежда, че потребителският профил се използва от друг процес на Chromium  (<ph name="PROCESS_ID" />) на друг компютър (<ph name="HOST_NAME" />). Chromium заключи потребителския профил, за да не се повреди. Ако сте сигурни, че нито един друг процес не го използва, можете да отключите потребителския профил и да стартирате Chromium повторно.</translation>
 <translation id="469338717132742108">Получаване на помощ за Chromium OS</translation>
 <translation id="4708774505295300557">По-рано някой влезе в Chromium на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Моля, създайте нов потребител в браузъра, така че информацията ви да се съхранява отделно.</translation>
@@ -92,7 +95,6 @@
 <translation id="4943838377383847465">Chromium работи на заден план.</translation>
 <translation id="4987820182225656817">Гостите могат да използват Chromium, без да оставят следи.</translation>
 <translation id="4994636714258228724">Добавяне на вас към Chromium</translation>
-<translation id="5093066630040073147">Няма запазени пароли. Chromium може да проверява паролите ви, когато са запазени в профила ви в Google.</translation>
 <translation id="5277894862589591112">За да приложите промените си, рестартирайте Chromium</translation>
 <translation id="5310059007469274549">Chromium не може да провери паролите ви, защото са твърде много</translation>
 <translation id="5358375970380395591">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Chromium. Данните ви там, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. <ph name="LEARN_MORE" /></translation>
@@ -104,17 +106,16 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium бета</translation>
 <translation id="5479196819031988440">Chromium OS не може да отвори тази страница.</translation>
 <translation id="5480860683791598150">Chromium се нуждае от достъп до данните за местоположението ви, за да ги сподели с този сайт</translation>
-<translation id="5488573303232097702">Chromium не се актуализира, защото нещо се обърка. Отстранете проблеми с актуализирането на Chrome и неуспешни актуализации.</translation>
 <translation id="549669000822060376">Моля, изчакайте, докато Chromium инсталира най-новите системни актуализации.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Налице е актуализация за Chromium}=1{Налице е актуализация за Chromium}other{Налице е актуализация за Chromium от # дни}}</translation>
 <translation id="5631814766731275228">Име и снимка за Chromium</translation>
 <translation id="5634636535844844681">За Chromium се изисква Windows 7 или по-нова версия.</translation>
 <translation id="5653831366781983928">Моля, рестартирайте Chromium сега</translation>
 <translation id="5698481217667032250">Показване на Chromium на този език</translation>
-<translation id="5814748786105822016">Chromium не може да провери паролите ви</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Добре дошли в Chromium</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Вход в мрежата</translation>
 <translation id="5987687638152509985">Актуализирайте Chromium, за да стартира синхронизирането</translation>
 <translation id="6013050204643758987">Chromium OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />. Това се отнася и за <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6055895534982063517">Налице е нова версия на Chromium, която е по-бърза от всякога.</translation>
@@ -152,6 +153,7 @@
 <translation id="6893813176749746474">Chromium е актуализиран, но не сте го използвали от поне 30 дни.</translation>
 <translation id="6964305034639999644">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chromium</translation>
 <translation id="6990124437352146030">Chromium се нуждае от разрешение за достъп до микрофона ви за този сайт</translation>
+<translation id="701244094609242530">Chromium не може да провери разширенията ви. Опитайте пак по-късно.</translation>
 <translation id="705851970750939768">Актуализиране на Chromium</translation>
 <translation id="7066436765290594559">Chromium OS не можа да синхронизира данните ви. Моля, актуализирайте пропуска си за синхронизиране.</translation>
 <translation id="7067091210845072982">Ако няма полезно описание за дадено изображение, Chromium ще се опита да предостави такова. За да бъдат създадени описания, съответните изображения се изпращат до Google.</translation>
@@ -191,6 +193,7 @@
 <translation id="8013436988911883588">След като Chromium получи достъп, уебсайтовете ще могат да искат достъп от вас.</translation>
 <translation id="81770708095080097">Chromium блокира този файл, тъй като е опасен.</translation>
 <translation id="8248265253516264921">Ако няма полезно описание за дадено изображение, Chromium ще се опита да предостави такова. За да бъдат създадени описания, съответните изображения се изпращат до Google. По всяко време можете да изключите тази функция от настройките.</translation>
+<translation id="8266560134891435528">Chromium не може да провери паролите ви, защото не сте влезли в профила си</translation>
 <translation id="8276522524898344151">Chromium се опитва да копира паролите.</translation>
 <translation id="8290862415967981663">Chromium блокира този файл, тъй като може да е опасен.</translation>
 <translation id="8330519371938183845">Влезте в профила си, за да синхронизирате и персонализирате Chromium на всичките си устройства</translation>
@@ -198,14 +201,12 @@
 <translation id="8417404458978023919">{0,plural, =1{Повторно стартиране на Chromium до 1 ден}other{Повторно стартиране на Chromium до # дни}}</translation>
 <translation id="8453117565092476964">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете отново Chromium.</translation>
 <translation id="8493179195440786826">Chromium не е актуален</translation>
-<translation id="8568283329061645092">Chromium може да проверява паролите ви, когато влезете с профила си в Google</translation>
 <translation id="8586442755830160949">Авторски права <ph name="YEAR" /> Авторите на Chromium. Всички права запазени.</translation>
 <translation id="8619360774459241877">Chromium стартира…</translation>
 <translation id="8621669128220841554">Инсталирането не бе успешно поради неизвестна грешка. Моля, изтеглете отново Chromium.</translation>
 <translation id="8682540261359803721">Ако дадена настройка не се показва на тази страница, потърсете в <ph name="LINK_BEGIN" />настройките на браузъра Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">То също контролира коя страница се показва при стартиране на Chromium или при търсене от полето за всичко.</translation>
 <translation id="8704119203788522458">Това е вашият Chromium</translation>
-<translation id="8774315820480073720">Актуализациите на Chromium се управляват от администратора ви</translation>
 <translation id="8796602469536043152">Chromium се нуждае от разрешение за достъп до камерата и микрофона ви за този сайт</translation>
 <translation id="8803635938069941624">Общи условия на Chromium OS</translation>
 <translation id="8821041990367117597">Chromium не можа да синхронизира данните ви, защото потребителското име и паролата за вход в профила ви не са актуални.</translation>

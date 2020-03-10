@@ -16,6 +16,8 @@
 
     [CallWith=ScriptState] Promise<void> removeEntry(USVString name, optional FileSystemRemoveOptions options = {});
 
+    [CallWith=ScriptState, Measure] Promise<sequence<USVString>?> resolve(FileSystemHandle possibleChild);
+
     [CallWith=ScriptState, Measure, RaisesException]
     static Promise<FileSystemDirectoryHandle> getSystemDirectory(GetSystemDirectoryOptions options);
 };

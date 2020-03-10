@@ -634,6 +634,7 @@ void FrameSequenceTracker::ReportSubmitFrame(
 
   TRACKER_TRACE_STREAM << "s(" << frame_token << ")";
   had_impl_frame_submitted_between_commits_ = true;
+
   const bool main_changes_after_sequence_started =
       first_received_main_sequence_ &&
       origin_args.frame_id.sequence_number >= first_received_main_sequence_;
@@ -774,18 +775,21 @@ void FrameSequenceTracker::ReportFramePresented(
       last_submitted_frame_ = 0;
   }
 
-  while (!main_frames_.empty() &&
-         !viz::FrameTokenGT(main_frames_.front(), frame_token)) {
-    if (was_presented && main_frames_.front() == frame_token) {
+  if (was_presented) {
+    // This presentation includes the visual update from all main frame tokens
+    // <= |frame_token|.
+    const unsigned size_before_erase = main_frames_.size();
+    while (!main_frames_.empty() &&
+           !viz::FrameTokenGT(main_frames_.front(), frame_token)) {
+      main_frames_.pop_front();
+    }
+    if (main_frames_.size() < size_before_erase) {
       DCHECK_LT(main_throughput().frames_produced,
                 main_throughput().frames_expected)
           << TRACKER_DCHECK_MSG;
       ++main_throughput().frames_produced;
     }
-    main_frames_.pop_front();
-  }
 
-  if (was_presented) {
     if (checkerboarding_.last_frame_had_checkerboarding) {
       DCHECK(!checkerboarding_.last_frame_timestamp.is_null())
           << TRACKER_DCHECK_MSG;

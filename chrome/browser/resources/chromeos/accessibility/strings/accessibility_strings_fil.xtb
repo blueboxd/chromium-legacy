@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Walang susunod na heading sa antas 4</translation>
+<translation id="1212770441379271564">Ang susunod na ilang shortcut ay hindi mga command sa ChromeVox, pero napakakapaki-pakinabang pa rin ng mga ito para masulit ang paggamit sa Chrome.
+    Para mag-navigate papunta sa mga item ng pagkilos gaya ng mga button at link, pindutin ang key na Tab. Para mag-navigate pabalik, pindutin ang Shift+Tab.
+    Para mapunta sa box para sa address ng Chrome browser, na tinatawag ding omnibox, pindutin ang Control + L.
+    Para awtomatikong magbukas ng bagong tab at pumunta rito, pindutin ang Control+T. Mapupunta ang iyong cursor sa omnibox.
+    Para magsara ng tab, pindutin ang Control+W.
+    Para magpalipat-lipat sa mga bukas na tab, gamitin ang Control+Tab.
+    Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="1213216066620407844">ChromeVox - Nagbibigay ng Boses sa Chrome</translation>
 <translation id="1225969361094801578">Dark Slate Grey</translation>
 <translation id="1229276918471378188">Nakaraang paglaktaw</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">tagapili ng kulay</translation>
 <translation id="4221012616705981690">Walang nakaraang listahan</translation>
 <translation id="4221071177874897997">Isaad ang bold:</translation>
+<translation id="4225355998815256469">Mga Control ng Form</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">Light Slate Grey</translation>
 <translation id="4231102694147661229">I-enable ang Mga Opsyon ng Developer</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Pangungusap</translation>
 <translation id="4623097797855662355">Colophon</translation>
 <translation id="463135993322337640">Pindutin ang ChromeVox o, n upang malaman kung ano ang bago</translation>
+<translation id="4646606380313237501">{"ar": "Arabic",
+    "as": "Assamese",
+    "aw": "Awadhi",
+    "be": "Bengali",
+    "bg": "Bulgarian",
+    "bh": "Bihari",
+    "bo": "Tibetan",
+    "br": "Braj",
+    "ca": "Catalan",
+    "ckb": "Sorani",
+    "cs": "Czech",
+    "cy": "Welsh",
+    "da": "Danish",
+    "de": "German",
+    "de_CH": "German (Switzerland)",
+    "de_DE": "German (Germany)",
+    "dra": "Dravidian",
+    "el": "Greek",
+    "en": "English",
+    "en_CA": "English (Canada)",
+    "en_GB": "English (United Kingdom)",
+    "en_US": "English (United States)",
+    "eo": "Esperanto",
+    "es": "Spanish",
+    "et": "Estonian",
+    "fa": "Persian",
+    "fr": "French",
+    "fr_CA": "French (Canada)",
+    "fr_FR": "French (France)",
+    "fi": "Finnish",
+    "ga": "Irish",
+    "gd": "Gaelic",
+    "gon": "Gondi",
+    "gu": "Gujarati",
+    "he": "Hebrew",
+    "hi": "Hindi",
+    "hr": "Croatian",
+    "hu": "Hungarian",
+    "hy": "Armenian",
+    "is": "Icelandic",
+    "it": "Italian",
+    "iu": "Inuktitut",
+    "ka": "Kannada",
+    "kh": "Khasi",
+    "ko": "Korean",
+    "kok": "Konkani",
+    "kru": "Kurukh",
+    "ks": "Kashmiri",
+    "lt": "Lithuanian",
+    "lv": "Latvian",
+    "mao": "Maori",
+    "ml": "Malayalam",
+    "mt": "Maltese",
+    "mwr": "Marwari",
+    "mn": "Mongolian",
+    "mun": "Munda",
+    "nb": "Norwegian Bokmål",
+    "ne": "Nepali",
+    "nl": "Dutch",
+    "no": "Norwegian",
+    "or": "Oriya",
+    "pi": "Pali",
+    "pl": "Polish",
+    "pt": "Portuguese",
+    "pu": "Punjabi",
+    "ro": "Romanian",
+    "ru": "Russian",
+    "sa": "Sanskrit",
+    "si": "Sindhi",
+    "sin": "Sinhala",
+    "sk": "Slovak",
+    "sl": "Slovenian",
+    "sr": "Serbian",
+    "sv": "Swedish",
+    "ta": "Tamil",
+    "te": "Telugu",
+    "tr": "Turkish",
+    "tsn": "Afrikaans",
+    "uk": "Ukrainian",
+    "ur": "Urdu",
+    "vi": "Vietnamese",
+    "zh": "Chinese",
+    "zh_TW": "Chinese (Traditional Han)"}</translation>
 <translation id="4647836961514597010">Tagapili ng kulay</translation>
 <translation id="4660783501463101648">Inalis ang classic. Inalis ang toggle ng keyboard upang lumipat sa ChromeVox Classic.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Na-enable ang sticky mode</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{kuwit}one{# kuwit}other{# na kuwit}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, text box</translation>
+<translation id="532485153932049746">Pag-format ng text
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5331522683003474486">Kontrolin ang device sa pamamagitan lang ng 1 o 2 switch.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Isang modal na alerto</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{semicolon}one{# semicolon}other{# na semicolon}}</translation>
+<translation id="5420259671171615858">Hanapin sa mga menu</translation>
 <translation id="5435274640623994081">I-enable ang pag-log ng earcon</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{less than}one{# less than sign}other{# na less than sign}}</translation>
 <translation id="5444587279251314700">(aktibo)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Nakakita ng pagkakamali sa spelling</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">return</translation>
+<translation id="7429415133937917139">Ginagaya ang output ng isang nare-refresh na braille display
+    sa panel ng ChromeVox sa itaas ng screen</translation>
 <translation id="7434509671034404296">Bumubuo</translation>
 <translation id="743783356331413498">Halimbawa</translation>
 <translation id="7439060726180460871">Direktoryo</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Nakaraang radio button</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Walang susunod na combo box</translation>
+<translation id="772146615414628379">Binabati ka namin! Matagumpay mong natutunan ang mga kinakailangan sa paggamit ng ChromeVox. Tandaang mabubuksan mo ang menu ng command sa ChromeVox anumang oras sa pamamagitan ng pagpindot sa Paghahanap+Tuldok. Para matuto pa tungkol sa ChromeVox at Chrome OS, bisitahin ang mga sumusunod na artikulo.
+    Kung tapos ka na sa tutorial, gamitin ang ChromeVox para mag-navigate sa button na Isara at i-click ito.</translation>
 <translation id="7724603315864178912">I-cut</translation>
 <translation id="7731785449856576010">Walang susunod na widget ng media</translation>
 <translation id="773906353055481349">Pindutin ang Search+Ctrl+Alt at gamitin ang mga arrow para mag-navigate sa bawat cell</translation>

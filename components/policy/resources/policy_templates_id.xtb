@@ -159,6 +159,17 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
       Jika kebijakan ini tidak disetel, frekuensi defaultnya adalah 3 jam. Frekuensi minimum
       yang diizinkan adalah 60 detik.</translation>
 <translation id="1204263402976895730">Mengaktifkan printer perusahaan</translation>
+<translation id="1216890727647348501">Mengaktifkan fitur Perlindungan Safe Browsing yang Disempurnakan dari <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
+
+      Jika Anda mengaktifkan setelan ini, perlindungan Safe Browsing yang Disempurnakan akan selalu aktif.
+
+      Jika Anda menonaktifkan setelan ini, Perlindungan Safe Browsing yang Disempurnakan tidak akan pernah aktif.
+
+      Jika Anda menetapkan kebijakan ini sebagai sesuatu yang wajib, pengguna tidak dapat mengubah atau mengganti setelan "Aktifkan perlindungan dari phishing dan malware" di <ph name="PRODUCT_NAME" />.
+
+      Jika kebijakan ini tidak ditetapkan, perlindungan Safe Browsing yang Disempurnakan akan dinonaktifkan secara default tetapi pengguna dapat mengaktifkannya.
+
+      Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang Safe Browsing.</translation>
 <translation id="1216919699175573511">Aktifkan dukungan Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Menentukan apakah perangkat harus di-rollback ke versi yang disetel oleh <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> jika telah menjalankan versi lebih baru.
 
@@ -251,9 +262,10 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
           Jika kebijakan ini tidak ditetapkan, perilaku kebijakan yang lebih spesifik tetap tidak terpengaruh.</translation>
 <translation id="1384459581748403878">Referensi: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Melaporkan status update OS</translation>
+<translation id="1388918874748125262">Mengaktifkan Perlindungan Safe Browsing yang Disempurnakan</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
 <translation id="1397855852561539316">URL saran penyedia penelusuran default</translation>
-<translation id="1398636873839401839">Aktifkan semua variasi di layar login</translation>
+<translation id="1398636873839401839">Mengaktifkan semua variasi di layar login</translation>
 <translation id="1404043648050567997">Layanan Safe Browsing menampilkan halaman peringatan saat pengguna membuka situs yang ditandai sebagai berpotensi berbahaya. Mengaktifkan setelan ini akan mencegah pengguna agar tidak melanjutkan penelusuran dari halaman peringatan ke situs berbahaya.
 
       Kebijakan ini hanya mencegah pengguna agar tidak melanjutkan penelusuran pada halaman peringatan Safe Browsing (misalnya, malware dan phishing) bukan untuk masalah terkait sertifikat SSL seperti sertifikat yang masa berlakunya habis atau tidak valid.
@@ -751,7 +763,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika kebijakan ini tidak ditetapkan, browser hanya akan mulai mencoba menghemat memori setelah mendeteksi bahwa perangkatnya memiliki jumlah memori fisik yang rendah.</translation>
 <translation id="2164922809922345834">Mengaktifkan penghalangan jendela native di <ph name="PRODUCT_NAME" />.
 
-      Jika Anda mengaktifkan setelan ini, untuk mengurangi pemakaian CPU dan daya, <ph name="PRODUCT_NAME" /> akan mendeteksi saat jendela tertutup oleh jendela lain, dan akan menangguhkan piksel gambar tugas.
+      Jika Anda mengaktifkan setelan ini, untuk mengurangi pemakaian CPU dan daya, <ph name="PRODUCT_NAME" /> akan mendeteksi saat jendela tertutup oleh jendela lain, dan akan menangguhkan proses menggambar piksel.
 
       Jika Anda menonaktifkan setelan ini, <ph name="PRODUCT_NAME" /> tidak akan mendeteksi saat jendela tertutup oleh jendela lain.
 
@@ -1159,6 +1171,9 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 <translation id="26023406105317310">Konfigurasikan akun Kerberos</translation>
 <translation id="2604182581880595781">Mengonfigurasi kebijakan terkait fitur Berbagi File Jaringan.</translation>
 <translation id="2615240493030733717">Melaporkan Info Zona waktu</translation>
+<translation id="2620943247255660284">Kebijakan ini tidak digunakan lagi, dan telah digantikan dengan AdvancedProtectionExtraSecurityAllowed.
+
+      Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan diizinkan mengirimkan hasil download mereka ke Google untuk pemindaian malware. Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan diminta mengirimkan file mereka ke Google untuk pemindaian mendalam. Jika pengguna memilih 'Pindai', hasil download mereka akan dikirim ke Google. Jika ditetapkan ke Salah, pengguna tidak akan diminta mengirimkan hasil download ke Google.</translation>
 <translation id="2623014935069176671">Tunggu aktivitas pengguna awal</translation>
 <translation id="262740370354162807">Aktifkan penyerahan dokumen ke <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Memberikan konfigurasi untuk printer perusahaan.
@@ -1405,6 +1420,21 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 <translation id="2987227569419001736">Mengontrol penggunaan API Bluetooth Web</translation>
 <translation id="3016255526521614822">Beri akses aplikasi pencatat yang diizinkan di layar kunci <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Mengontrol kebijakan pengawasan orang tua, yang diterapkan hanya ke akun anak.</translation>
+<translation id="3020953534071988875">Jika kebijakan ini dikonfigurasi, profil Samaran dan Tamu di <ph name="PRODUCT_NAME" /> akan diizinkan/dilarang untuk melakukan autentikasi standby.
+
+      Autentikasi Standby adalah autentikasi http dengan kredensial default jika kredensial eksplisit tidak diberikan melalui skema verifikasi/respons NTLM/Kerberos/Negotiate.
+
+      Jika <ph name="REGULAR_ONLY_OPTION_NAME" /> (nilai 0) ditetapkan, hanya sesi Reguler yang akan diizinkan untuk melakukan autentikasi standby. Sesi Samaran dan Tamu tidak akan diizinkan untuk melakukan autentikasi secara standby.
+
+      Jika <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (nilai 1) ditetapkan, sesi Samaran dan Reguler akan diizinkan untuk melakukan autentikasi standby. Sesi Tamu tidak akan diizinkan untuk melakukan autentikasi secara standby.
+
+      Jika <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (nilai 2) ditetapkan, sesi Tamu dan Reguler akan diizinkan untuk melakukan autentikasi standby. Sesi Samaran tidak akan diizinkan untuk melakukan autentikasi secara standby.
+
+      Jika <ph name="ALL_OPTION_NAME" /> (nilai 3) ditetapkan, semua sesi akan diizinkan untuk melakukan autentikasi standby.
+
+      Perlu diketahui, autentikasi standby selalu diizinkan pada profil reguler.
+
+      Dalam <ph name="PRODUCT_NAME" /> versi 81 dan setelahnya, jika kebijakan tidak ditetapkan, autentikasi standby hanya akan diaktifkan di sesi reguler.</translation>
 <translation id="3021562480854470924">Jumlah rollback milestone diizinkan</translation>
 <translation id="3023572080620427845">URL file XML yang berisi URL yang akan dimuat di browser alternatif.</translation>
 <translation id="3026740867910702435">Mengaktifkan fitur aksesibilitas kursor besar di layar login.
@@ -1879,6 +1909,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
           Jika kebijakan ini tidak ditetapkan, dikte mula-mula akan dinonaktifkan di layar login, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="3811562426301733860">Izinkan iklan di semua situs</translation>
 <translation id="3816312845600780067">Aktifkan pintasan keyboard penyelamatan untuk masuk otomatis</translation>
+<translation id="3817323252437541502">Mengaktifkan perlindungan tambahan untuk pengguna yang terdaftar di Program Perlindungan Lanjutan</translation>
 <translation id="3820526221169548563">Mengaktifkan fitur aksesibilitas keyboard di layar.
 
           Jika kebijakan ini disetel ke true, keyboard di layar akan selalu diaktifkan.
@@ -2349,9 +2380,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4449545651113180484">Putar layar searah jarum jam sebesar 270 derajat</translation>
 <translation id="445270821089253489">Mengontrol jenis informasi perangkat dan pengguna yang dilaporkan.</translation>
 <translation id="4453913621209182880">Izinkan pencetakan hanya dengan grafis latar belakang</translation>
-<translation id="4454586530530448054">Jika kebijakan ini ditetapkan, semua jenis data yang ditentukan akan dikecualikan dari sinkronisasi, baik untuk Google Sync atau sinkronisasi profil roaming. Hal ini berguna untuk mengurangi ukuran profil roaming atau membatasi jenis data yang diupload ke Server Google Sync.
-
-      Jenis data saat ini untuk kebijakan ini adalah: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfiguration". Nama-nama tersebut peka huruf besar atau kecil.</translation>
 <translation id="4454820008017317557">Tampilkan ikon toolbar <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Cekal cookie pihak ketiga</translation>
 <translation id="4474167089968829729">Aktifkan penyimpanan sandi di pengelola sandi</translation>
@@ -4167,7 +4195,7 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
 <translation id="7426112309807051726">Menentukan apakah pengoptimalan <ph name="TLS_FALSE_START" /> harus dinonaktifkan atau tidak. Karena alasan historis, kebijakan ini diberi nama DisableSSLRecordSplitting.
 
       Jika kebijakan tidak disetel, atau disetel ke False, <ph name="TLS_FALSE_START" /> akan diaktifkan. Jika disetel ke True, <ph name="TLS_FALSE_START" /> akan dinonaktifkan.</translation>
-<translation id="7427296104923393585">Nonaktifkan semua variasi di layar login</translation>
+<translation id="7427296104923393585">Menonaktifkan semua variasi di layar login</translation>
 <translation id="7433714841194914373">Aktifkan Instan</translation>
 <translation id="7434202861148928348">Mengonfigurasi nama domain wajib untuk klien akses jarak jauh</translation>
 <translation id="7443616896860707393">Permintaan Autentikasi Dasar HTTP lintas asal</translation>
@@ -5042,6 +5070,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       akan dilaporkan.</translation>
 <translation id="891435090623616439">dienkode sebagai string JSON, untuk detailnya lihat <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Izinkan pengguna mengelola sertifikat CA yang terinstal.</translation>
+<translation id="8924721011887485485">Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan menerima fitur keamanan tambahan. Beberapa fitur ini dapat mencakup pembagian data dengan Google (misalnya, pengguna Perlindungan Lanjutan akan dapat mengirimkan hasil downloadnya ke Google untuk pemindaian malware). Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan menerima fitur keamanan tambahan. Jika ditetapkan ke Salah, pengguna Perlindungan Lanjutan hanya akan menerima fitur keamanan konsumen.</translation>
 <translation id="8926275581598789324">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           ﻿Menentukan durasi waktu tanpa input pengguna sebelum tindakan menganggur diambil, saat menggunakan daya baterai.

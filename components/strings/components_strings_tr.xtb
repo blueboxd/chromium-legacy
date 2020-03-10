@@ -477,7 +477,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="3024663005179499861">Yanlış politika türü</translation>
 <translation id="3037605927509011580">Hay aksi!</translation>
 <translation id="3041612393474885105">Sertifika Bilgileri</translation>
-<translation id="3057676462092457419">DnsOverHttps modu <ph name="SECURE_DNS_MODE_SECURE" /> henüz desteklenmiyor. Mod <ph name="SECURE_DNS_MODE_OFF" /> olarak ayarlandı.</translation>
 <translation id="3060227939791841287">C9 (Zarf)</translation>
 <translation id="3061707000357573562">Yama Hizmeti</translation>
 <translation id="3064966200440839136">Harici bir uygulama üzerinden ödeme gerçekleştirmek için gizli moddan çıkılacak. Devam edilsin mi?</translation>
@@ -577,6 +576,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="3487845404393360112">Tepsi 4</translation>
 <translation id="3495081129428749620">Şu sayfada bul:
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Çevrenizin 3D haritasını oluşturma ve kamera konumunu takip etme</translation>
 <translation id="3512163584740124171">Aynı politika grubundan farklı bir politika daha yüksek önceliği sahip olduğundan bu politika yok sayılır.</translation>
 <translation id="3518941727116570328">Birden çok nesne işleme</translation>
 <translation id="3528171143076753409">Sunucunun sertifikasına güvenilmiyor.</translation>
@@ -930,6 +930,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="5030338702439866405">Veren:</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" için bir kök sertifika gerekli, ancak yüklenmemiş. BT yöneticiniz bu sorunu çözmek için "<ph name="SOFTWARE_NAME" />" ile ilgili yapılandırma talimatlarına bakmalıdır. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google Çeviri Hakkında</translation>
+<translation id="503498442187459473"><ph name="HOST" /> kameranızı ve mikrofonunuzu kullanmak istiyor</translation>
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="5040262127954254034">Gizlilik</translation>
 <translation id="5043480802608081735">Kopyalanan Bağlantı</translation>
@@ -1038,7 +1039,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="5457113250005438886">Geçersiz</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> kişi daha}other{<ph name="CONTACT_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> kişi daha}}</translation>
 <translation id="5470861586879999274">Düzenlemeyi &amp;yeniden yap</translation>
-<translation id="5472133193607270166">Bu ayar açıkken, siteler reklamları kişiselleştirmek için farklı sitelerde gezinme etkinliğinizi kullanamaz Bazı siteler düzgün çalışmayabilir.</translation>
 <translation id="5478437291406423475">B6/C4 (Zarf)</translation>
 <translation id="5481076368049295676">Bu içerik, cihazınıza bilgilerinizi çalabilecek veya silebilecek tehlikeli yazılımlar yüklemeye çalışabilir. <ph name="BEGIN_LINK" />Yine de göster<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Geçerli adres ekleyin</translation>
@@ -1324,6 +1324,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="6710594484020273272">&lt;Arama terimini yazın&gt;</translation>
 <translation id="671076103358959139">Kayıt Jetonu:</translation>
 <translation id="6711464428925977395">Proxy sunucusunda bir sorun var veya adres yanlış.</translation>
+<translation id="6716672519412350405"><ph name="URL" />, çevrenizin 3D haritasını oluşturmak ve kamera konumunu takip etmek istiyor</translation>
 <translation id="6738516213925468394">Verileriniz <ph name="TIME" /> tarihinde <ph name="BEGIN_LINK" />senkronizasyon parolanızla<ph name="END_LINK" /> şifrelendi. Senkronizasyonu başlatmak için senkronizasyon parolanızı girin.</translation>
 <translation id="674375294223700098">Bilinmeyen sunucu sertifikası hatası.</translation>
 <translation id="6744009308914054259">Bağlantı kurulmasını beklerken çevrimdışı makaleleri okumak için İndirilenler bölümünü ziyaret edebilirsiniz.</translation>
@@ -1699,7 +1700,7 @@ Ek ayrıntılar:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Güvenliğinize ilişkin riskleri anladıysanız <ph name="BEGIN_LINK" />bu siteyi<ph name="END_LINK" /> zararlı programlar kaldırılmadan önce ziyaret edebilirsiniz.</translation>
 <translation id="8349305172487531364">Yer işaretleri çubuğu</translation>
-<translation id="8355270400102541638">Yerel Çökme Bağlamı:</translation>
+<translation id="8355270400102541638">Yerel Kilitlenme Bağlamı:</translation>
 <translation id="8363502534493474904">Uçak modunu kapatma</translation>
 <translation id="8364627913115013041">Henüz ayarlanmadı.</translation>
 <translation id="8368476060205742148">Google Play hizmetleri</translation>
@@ -1745,7 +1746,6 @@ Ek ayrıntılar:
 <translation id="8589998999637048520">En iyi kalite</translation>
 <translation id="860043288473659153">Kart sahibinin adı</translation>
 <translation id="8606726445206553943">MIDI cihazlarınızı kullanma</translation>
-<translation id="8616822740383114808">Bu ayar, "<ph name="SETTINGS_PAGE" />" sayfasında "<ph name="ENFORCING_SETTING" />" tarafından zorunlu kılındı.</translation>
 <translation id="861775596732816396">Boyut 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Bu Kartı Bu Cihaza Kaydet</translation>

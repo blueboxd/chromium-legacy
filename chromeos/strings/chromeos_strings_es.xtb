@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">PIN no válido.</translation>
 <translation id="3838338534323494292">Contraseña nueva</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Vuelve a intentarlo. Intentos restantes: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gestiona este dispositivo y tiene acceso a toda la actividad del usuario, incluidas las páginas web visitadas, sus contraseñas y su correo electrónico.</translation>
 <translation id="4227825898293920515">La contraseña caducará dentro de <ph name="TIME" /></translation>
 <translation id="4429881212383817840">El ticket de Kerberos caducará pronto</translation>
@@ -28,8 +27,6 @@
 <translation id="4890353053343094602">Selecciona otra inmediatamente</translation>
 <translation id="5212543919916444558">No encuentro nada en la pantalla con lo que pueda ayudarte. Toca el micrófono para pedirme algo.</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
-<translation id="5275776633505022322">Intentos restantes: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Vuelve a intentarlo.</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5332948983412042822">Selecciona otra ahora</translation>
 <translation id="5457599981699367932">Navegar como invitado</translation>

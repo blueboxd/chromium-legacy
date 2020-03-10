@@ -18,7 +18,6 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">Неважећи PIN.</translation>
 <translation id="3838338534323494292">Нова лозинка</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Пробајте поново. Преосталих покушаја: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управља овим уређајем и има приступ свим активностима корисника, укључујући посећене веб-странице, лозинке и имејлове.</translation>
 <translation id="4227825898293920515">Лозинка истиче за <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos тикет ускоро истиче</translation>
@@ -29,8 +28,6 @@
 <translation id="5212543919916444558">Не могу да пронађем на екрану ништа око чега могу да помогнем.
 Пробајте да додирнете микрофон да бисте ме питали нешто.</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
-<translation id="5275776633505022322">Преосталих покушаја: <ph name="ATTEMPTS_LEFT" /></translation>
-<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Пробајте поново.</translation>
 <translation id="5317780077021120954">Сачувај</translation>
 <translation id="5332948983412042822">Одаберите нову</translation>
 <translation id="5457599981699367932">Прегледајте као гост</translation>

@@ -40,7 +40,7 @@ CastSessionClientImpl::CastSessionClientImpl(const std::string& client_id,
                                              const url::Origin& origin,
                                              int tab_id,
                                              AutoJoinPolicy auto_join_policy,
-                                             CastActivityRecord* activity)
+                                             ActivityRecord* activity)
     : CastSessionClient(client_id, origin, tab_id),
       auto_join_policy_(auto_join_policy),
       activity_(activity) {}
@@ -184,9 +184,13 @@ void CastSessionClientImpl::HandleParsedClientMessage(
       break;
 
     default:
-      // TODO(jrw): Log string value of type instead of int value.
-      DLOG(ERROR) << "Unhandled message type: "
-                  << static_cast<int>(cast_message->type());
+      auto opt_string = cast_util::EnumToString(cast_message->type());
+      if (opt_string) {
+        DLOG(ERROR) << "Unhandled message type: " << *opt_string;
+      } else {
+        DLOG(ERROR) << "Invalid message type: "
+                    << static_cast<int>(cast_message->type());
+      }
   }
 }
 

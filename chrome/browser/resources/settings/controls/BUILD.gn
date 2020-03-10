@@ -136,6 +136,7 @@ js_type_check("closure_compile_module") {
     ":settings_boolean_control_behavior.m",
     ":settings_checkbox.m",
     ":settings_dropdown_menu.m",
+    ":settings_idle_load.m",
     ":settings_radio_group.m",
     ":settings_slider.m",
     ":settings_textarea.m",
@@ -232,6 +233,15 @@ js_library("settings_dropdown_menu.m") {
   extra_deps = [ ":settings_dropdown_menu_module" ]
 }
 
+js_library("settings_idle_load.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/controls/settings_idle_load.m.js" ]
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+  ]
+  extra_deps = [ ":settings_idle_load_module" ]
+}
+
 js_library("settings_radio_group.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/controls/settings_radio_group.m.js" ]
   deps = [
@@ -283,6 +293,7 @@ group("polymer3_elements") {
     ":password_prompt_dialog_module",
     ":settings_checkbox_module",
     ":settings_dropdown_menu_module",
+    ":settings_idle_load_module",
     ":settings_radio_group_module",
     ":settings_slider_module",
     ":settings_textarea_module",
@@ -342,6 +353,17 @@ polymer_modulizer("settings_dropdown_menu") {
                    "ui/webui/resources/html/assert.html|assert",
                  ]
   namespace_rewrites = settings_namespace_rewrites
+}
+
+polymer_modulizer("settings_idle_load") {
+  js_file = "settings_idle_load.js"
+  html_file = "settings_idle_load.html"
+  html_type = "dom-module"
+  auto_imports = [
+    "ui/webui/resources/html/assert.html|assert",
+    "ui/webui/resources/html/polymer.html|Polymer,html,templatize,TemplateInstanceBase",
+  ]
+  namespace_rewrites = [ "Polymer.Templatize.templatize|templatize" ]
 }
 
 polymer_modulizer("settings_radio_group") {

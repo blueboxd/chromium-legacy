@@ -5,7 +5,7 @@
 /**
  * Array of entries available in the current directory.
  *
- * @type {Array<!File>}
+ * @type {Array<{file: !File, handle: !FileSystemFileHandle}>}
  */
 const currentFiles = [];
 
@@ -16,40 +16,67 @@ const currentFiles = [];
  */
 let entryIndex = -1;
 
+/**
+ * Token that identifies the file that is currently writable. Incremented each
+ * time a new file is given focus.
+ * @type {number}
+ */
+let fileToken = 0;
+
+/**
+ * The file currently writable.
+ * @type {?FileSystemFileHandle}
+ */
+let currentlyWritableFileHandle = null;
+
 /** A pipe through which we can send messages to the guest frame. */
 const guestMessagePipe = new MessagePipe('chrome://media-app-guest');
 
 guestMessagePipe.registerHandler('openFeedbackDialog', () => {
   let response = media_app.handler.openFeedbackDialog();
   if (response === null) {
-    response = {errorMessage: 'Null response recieved'};
+    response = {errorMessage: 'Null response received'};
   }
   return response;
+});
+
+guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
+  const overwrite = /** @type{OverwriteFileMessage} */ (message);
+  if (!currentlyWritableFileHandle || overwrite.token != fileToken) {
+    throw new Error('File not current.');
+  }
+  const writer = await currentlyWritableFileHandle.createWriter();
+  await writer.write(0, overwrite.blob);
+  await writer.truncate(overwrite.blob.size);
+  await writer.close();
 });
 
 /**
  * Loads a file in the guest.
  *
- * @param {File} file
+ * @param {?File} file
+ * @param {!FileSystemFileHandle} handle
  */
-function loadFile(file) {
-  guestMessagePipe.sendMessage('file', {'file': file});
+function loadFile(file, handle) {
+  const token = ++fileToken;
+  currentlyWritableFileHandle = handle;
+  guestMessagePipe.sendMessage(Message.LOAD_FILE, {token, file});
 }
 
 /**
  * Loads a file from a handle received via the fileHandling API.
  *
- * @param {FileSystemHandle} handle
+ * @param {?FileSystemHandle} handle
  * @return {Promise<?File>}
  */
 async function loadFileFromHandle(handle) {
-  if (!handle.isFile) {
+  if (!handle || !handle.isFile) {
     return null;
   }
 
-  const fileHandle = /** @type{FileSystemFileHandle} */ (handle);
+  const fileHandle = /** @type{!FileSystemFileHandle} */ (handle);
   const file = await fileHandle.getFile();
-  loadFile(file);
+  loadFile(file, fileHandle);
   return file;
 }
 
@@ -74,10 +101,10 @@ async function setCurrentDirectory(directory, focusFile) {
 
     // Only allow traversal of matching mime types.
     if (file.type === focusFile.type) {
-      currentFiles.push(file);
+      currentFiles.push({file, handle: fileHandle});
     }
   }
-  entryIndex = currentFiles.findIndex(i => i.name == focusFile.name);
+  entryIndex = currentFiles.findIndex(i => i.file.name == focusFile.name);
 }
 
 /**
@@ -93,7 +120,8 @@ async function advance(direction) {
   if (entryIndex < 0) {
     entryIndex += currentFiles.length;
   }
-  loadFile(currentFiles[entryIndex]);
+  const entry = currentFiles[entryIndex];
+  loadFile(entry.file, entry.handle);
 }
 
 document.getElementById('prev-container')

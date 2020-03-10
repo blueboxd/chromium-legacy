@@ -53,6 +53,7 @@ class ParentOutputSurface : public viz::OutputSurface {
   gfx::OverlayTransform GetDisplayTransform() override;
   scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
       override;
+  gpu::MemoryTracker* GetMemoryTracker() override;
 
  private:
   void OnPresentation(base::TimeTicks swap_start,

@@ -5,4 +5,5 @@
 /** @fileoverview Concatenation of the JS files we use in index.html. */
 
 // <include src="message_pipe.js">
+// <include src="message_types.js">
 // <include src="launch.js">

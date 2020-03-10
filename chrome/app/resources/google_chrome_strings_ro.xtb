@@ -37,7 +37,6 @@
 <translation id="1900795423379050516">Dacă o setare nu apare în pagină, încearcă <ph name="LINK_BEGIN" />
     setările browserului Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Permite conectarea la Chrome</translation>
-<translation id="1983547493073464667">Chrome nu îți poate verifica parolele</translation>
 <translation id="2063848847527508675">Pentru a se aplica actualizarea, sistemul de operare Chrome trebuie să fie repornit.</translation>
 <translation id="2094919256425865063">Ieși din Chrome oricum?</translation>
 <translation id="2120620239521071941">Astfel, se vor șterge <ph name="ITEMS_COUNT" /> elemente de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chrome ca <ph name="USER_EMAIL" />.</translation>
@@ -49,15 +48,14 @@
 <translation id="2309047409763057870">Aceasta este o instalare secundară a browserului Google Chrome și nu poate fi setat ca browser prestabilit.</translation>
 <translation id="2341767445688917208">Sistemul de operare Chrome nu a putut sincroniza parolele. Remediază acum.</translation>
 <translation id="2348335408836342058">Chrome are nevoie de permisiune ca să acceseze camera foto și microfonul pentru acest site</translation>
+<translation id="234869673307233423">Chrome nu îți poate verifica parolele. Încearcă din nou mai târziu.</translation>
 <translation id="2429317896000329049">Google Chrome nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
 <translation id="2467438592969358367">Google Chrome vrea să îți exporte parolele. Pentru a permite asta, introdu parola pentru Windows.</translation>
 <translation id="2485422356828889247">Dezinstalează</translation>
 <translation id="2534507159460261402">Google Pay (copiat în Chrome)</translation>
-<translation id="2559627601176023786">Nu există parole salvate. Chrome îți poate verifica parolele atunci când le salvezi în Contul Google.</translation>
 <translation id="2580411288591421699">Nu se poate instala aceeași versiune Google Chrome care rulează în prezent. Închide Google Chrome și încearcă din nou.</translation>
 <translation id="2586406160782125153">Astfel, se vor șterge datele de navigare de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chrome ca <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Sigla Chrome</translation>
-<translation id="261226884343006626">Chrome nu îți poate verifica parolele. Încearcă din nou mâine.</translation>
 <translation id="2622559029861875898">Chrome nu poate căuta actualizări. Verifică-ți conexiunea la internet.</translation>
 <translation id="2644798301485385923">Sistemul de operare Chrome</translation>
 <translation id="2652691236519827073">Deschide linkul într-o &amp;filă Chrome nouă</translation>
@@ -71,6 +69,8 @@
 <translation id="2857540653560290388">Se lansează Chrome...</translation>
 <translation id="2871893339301912279">V-ați conectat la Chrome!</translation>
 <translation id="2888126860611144412">Despre Chrome</translation>
+<translation id="2929907241665500097">Chrome nu s-a actualizat. A apărut o eroare. <ph name="BEGIN_LINK" />Remediază problemele de actualizare și actualizările nereușite în Chrome.<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – conectare la rețea – Chrome</translation>
 <translation id="3037838751736561277">Google Chrome este în modul fundal.</translation>
 <translation id="3065168410429928842">Fila Chrome</translation>
 <translation id="3080151273017101988">Rulează în continuare aplicații în fundal când Google Chrome este închis</translation>
@@ -81,7 +81,6 @@
 <translation id="3395323229510056640">Obține ajutor privind sistemul de operare Chrome</translation>
 <translation id="3396977131400919238">S-a produs o eroare de sistem de operare în timpul instalării. Descarcă din nou Google Chrome.</translation>
 <translation id="3398288718845740432">Ascunde în meniul Chrome</translation>
-<translation id="3434246496373299699">Chrome poate să îți verifice parolele atunci când te conectezi folosind Contul Google</translation>
 <translation id="3451115285585441894">Se adaugă la Chrome...</translation>
 <translation id="345171907106878721">Adăugați-vă la Chrome</translation>
 <translation id="34857402635545079">Șterge și datele din Chrome (<ph name="URL" />)</translation>
@@ -97,7 +96,6 @@
 <translation id="386202838227397562">Închide toate ferestrele Google Chrome și încearcă din nou.</translation>
 <translation id="3873044882194371212">Deschide linkul într-o fereastră Chrome inco&amp;gnito</translation>
 <translation id="3889417619312448367">Dezinstalează Google Chrome</translation>
-<translation id="3943605108614542032">Administratorul tău gestionează actualizările Chrome</translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
 <translation id="4053720452172726777">Personalizați și controlați Google Chrome</translation>
 <translation id="4143243756087420366">Numele și imaginea profilului Chrome</translation>
@@ -111,7 +109,9 @@
 <translation id="4331809312908958774">Sistemul de operare Chrome</translation>
 <translation id="4335235004908507846">Chrome te protejează împotriva încălcării securității datelor, a extensiilor necorespunzătoare și nu numai</translation>
 <translation id="4343195214584226067">Extensia <ph name="EXTENSION_NAME" /> a fost adăugată la Chrome</translation>
+<translation id="4384570495110188418">Chrome nu îți poate verifica parolele, deoarece nu te-ai conectat</translation>
 <translation id="4407807842708586359">Sistemul de operare Google Chrome</translation>
+<translation id="4450664632294415862">Chrome – conectare la rețea – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">O altă operație din Google Chrome este în curs de desfășurare. Încearcă din nou mai târziu.</translation>
 <translation id="4480040274068703980">Sistemul de operare Chrome nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
 <translation id="4561051373932531560">Cu Google Chrome, poți să dai clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
@@ -121,6 +121,7 @@
 <translation id="4600710005438004015">Chrome nu s-a putut actualiza la cea mai recentă versiune. Astfel, pierzi noi funcții și remedieri de securitate.</translation>
 <translation id="4631713731678262610">Ascunde în meniul Chrome</translation>
 <translation id="4633000520311261472">Pentru ca browserul Chrome să fie mai sigur, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
+<translation id="4653397506175047429">Chrome nu îți poate verifica toate parolele. Încearcă din nou după 24 de ore.</translation>
 <translation id="4728575227883772061">Instalarea nu a reușit din cauza unei erori necunoscute. Dacă Google Chrome rulează în acest moment, închide-l și încearcă din nou.</translation>
 <translation id="4750550185319565338">Repornește Chrome pentru a activa <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -154,6 +155,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome nu a putut fi lansat. Încearcă din nou.</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – conectare la rețea</translation>
 <translation id="5940385492829620908">Experiența web personalizată, marcajele și celelalte date Chrome chiar aici.</translation>
 <translation id="5941830788786076944">Setează Google Chrome ca browser prestabilit</translation>
 <translation id="6070348360322141662">Pentru un plus de securitate, Google Chrome îți va cripta datele</translation>
@@ -207,9 +209,9 @@
 <translation id="7808348361785373670">Elimină din Chrome...</translation>
 <translation id="7825851276765848807">Instalarea nu a reușit din cauza unei erori neprecizate. Descarci Google Chrome din nou.</translation>
 <translation id="7855730255114109580">Google Chrome este actualizat</translation>
-<translation id="7888686278524752658">Chrome nu s-a actualizat. A apărut o eroare. Remediază problemele de actualizare și actualizările nereușite în Chrome.</translation>
 <translation id="7890208801193284374">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chrome cum doresc.</translation>
 <translation id="7896673875602241923">Un alt utilizator s-a conectat anterior la Chrome pe acest computer ca <ph name="ACCOUNT_EMAIL_LAST" />. Creează un nou utilizator Chrome pentru a-ți păstra separat informațiile.</translation>
+<translation id="7905891027772979035">Chrome nu îți poate verifica extensiile. Încearcă din nou mai târziu.</translation>
 <translation id="7916016681687251387">Sistemul de operare Chrome nu a putut sincroniza datele. Remediază acum.</translation>
 <translation id="7930071585467473040">Google Chrome încearcă să copieze parolele.</translation>
 <translation id="7962410387636238736">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Windows XP și Windows Vista nu mai sunt acceptate</translation>

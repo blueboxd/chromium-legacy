@@ -1,4 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="2359808026110333948">Doorgaan</translation>
+<translation id="2416359993254398973">Chrome heeft toegangsrechten voor je camera nodig voor deze site.</translation>
+<translation id="557283862590186398">Chrome heeft toegangsrechten voor je microfoon nodig voor deze site.</translation>
+<translation id="6393863479814692971">Chrome heeft toegangsrechten voor je camera en microfoon nodig voor deze site.</translation>
+<translation id="6697947395630195233">Chrome heeft toegang tot je locatie nodig om je locatie met deze site te delen.</translation>
 </translationbundle>

@@ -97,7 +97,7 @@ TEST_F('MediaAppUIBrowserTest', 'GuestCanLoad', async () => {
 });
 
 TEST_F('MediaAppUIBrowserTest', 'LoadFile', async () => {
-  loadFile(await createTestImageFile());
+  loadFile(await createTestImageFile(), new FakeFileSystemFileHandle());
   const result =
       await driver.waitForElementInGuest('img[src^="blob:"]', 'naturalWidth');
 
@@ -124,7 +124,9 @@ TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
 
   // Load a zero-byte video. It won't load, but the video element should be
   // added to the DOM (and it can still be fullscreened).
-  loadFile(new File([], 'zero_byte_video.webm', {type: 'video/webm'}));
+  loadFile(
+      new File([], 'zero_byte_video.webm', {type: 'video/webm'}),
+      new FakeFileSystemFileHandle());
 
   const SELECTOR = 'video';
   const tagName = await driver.waitForElementInGuest(
@@ -142,7 +144,9 @@ TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
 
 // Tests that we receive an error if our message is unhandled.
 TEST_F('MediaAppUIBrowserTest', 'ReceivesNoHandlerError', async () => {
+  guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
   let errorMessage = '';
+
   try {
     await guestMessagePipe.sendMessage('unknown-message', null);
   } catch (error) {
@@ -157,7 +161,9 @@ TEST_F('MediaAppUIBrowserTest', 'ReceivesNoHandlerError', async () => {
 
 // Tests that we receive an error if the handler fails.
 TEST_F('MediaAppUIBrowserTest', 'ReceivesProxiedError', async () => {
+  guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
   let errorMessage = '';
+
   try {
     await guestMessagePipe.sendMessage('bad-handler', null);
   } catch (error) {
@@ -165,5 +171,24 @@ TEST_F('MediaAppUIBrowserTest', 'ReceivesProxiedError', async () => {
   }
 
   assertEquals(errorMessage, 'This is an error');
+  testDone();
+});
+
+// Tests the IPC behind the implementation of ReceivedFile.overwriteOriginal()
+// in the untrusted context. Ensures it correctly updates the file handle owned
+// by the privileged context.
+TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
+  const handle = new FakeFileSystemFileHandle();
+  loadFile(await createTestImageFile(), handle);
+
+  // Write should not be called initially.
+  assertEquals(undefined, handle.lastWriter);
+
+  const message = {overwriteLastFile: 'Foo'};
+  const testResponse = await guestMessagePipe.sendMessage('test', message);
+  const writeResult = await handle.lastWriter.closePromise;
+
+  assertEquals(testResponse.testQueryResult, 'overwriteOriginal resolved');
+  assertEquals(await writeResult.text(), 'Foo');
   testDone();
 });

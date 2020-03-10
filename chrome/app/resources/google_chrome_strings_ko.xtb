@@ -41,7 +41,6 @@
 <translation id="1900795423379050516">페이지에 표시되지 않는 설정이 있다면 <ph name="LINK_BEGIN" />
       Chrome 브라우저 설정<ph name="LINK_END" />을 확인해 보세요.</translation>
 <translation id="1919130412786645364">Chrome 로그인 허용</translation>
-<translation id="1983547493073464667">Chrome에서 비밀번호를 확인할 수 없습니다.</translation>
 <translation id="2063848847527508675">업데이트를 적용하려면 Chrome OS를 다시 시작해야 합니다.</translation>
 <translation id="2094919256425865063">Chrome을 종료하시겠습니까?</translation>
 <translation id="2120620239521071941">항목 <ph name="ITEMS_COUNT" />개가 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chrome에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
@@ -57,11 +56,9 @@
 <translation id="2467438592969358367">Chrome에서 비밀번호를 내보내려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="2534507159460261402">Google Pay(Chrome에 복사됨)</translation>
-<translation id="2559627601176023786">저장된 비밀번호가 없습니다. Google 계정에 비밀번호를 저장하면 Chrome에서 비밀번호를 확인할 수 있습니다.</translation>
 <translation id="2580411288591421699">현재 실행 중인 Chrome과 동일한 버전은 설치할 수 없습니다. Chrome을 닫고 다시 시도하세요.</translation>
 <translation id="2586406160782125153">인터넷 사용 기록이 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chrome에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="2588322182880276190">Chrome 로고</translation>
-<translation id="261226884343006626">Chrome에서 비밀번호를 확인할 수 없습니다. 내일 다시 시도해 보세요.</translation>
 <translation id="2622559029861875898">Chrome에서 업데이트를 확인할 수 없습니다. 인터넷 연결 상태를 확인하세요.</translation>
 <translation id="2644798301485385923">Chrome OS 시스템</translation>
 <translation id="2652691236519827073">새 Chrome 탭에서 링크 열기(&amp;T)</translation>
@@ -85,7 +82,6 @@
 <translation id="3395323229510056640">Chrome OS 도움말 보기</translation>
 <translation id="3396977131400919238">설치 중 운영체제 오류가 발생했습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="3398288718845740432">Chrome 메뉴에서 숨기기</translation>
-<translation id="3434246496373299699">Google 계정으로 로그인하면 Chrome에서 비밀번호를 확인할 수 있습니다.</translation>
 <translation id="3451115285585441894">Chrome에 추가하는 중...</translation>
 <translation id="345171907106878721">Chrome에 본인 추가</translation>
 <translation id="34857402635545079">Chrome(<ph name="URL" />)에서도 데이터 삭제</translation>
@@ -101,7 +97,6 @@
 <translation id="386202838227397562">Chrome 창을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="3873044882194371212">Chrome 시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="3889417619312448367">Chrome 제거</translation>
-<translation id="3943605108614542032">관리자가 Chrome 업데이트를 관리합니다.</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
 <translation id="4143243756087420366">Chrome 이름 및 사진</translation>
@@ -215,7 +210,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7808348361785373670">Chrome에서 삭제...</translation>
 <translation id="7825851276765848807">알 수 없는 오류로 인해 설치에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="7855730255114109580">Chrome이 최신 버전입니다.</translation>
-<translation id="7888686278524752658">문제가 발생하여 Chrome이 업데이트되지 않았습니다. Chrome 업데이트 문제 및 업데이트 실패 문제를 해결하세요.</translation>
 <translation id="7890208801193284374">컴퓨터를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
 <translation id="7896673875602241923">다른 사용자가 이전에 이 컴퓨터에서 <ph name="ACCOUNT_EMAIL_LAST" />(으)로 Chrome에 로그인했습니다. 새 Chrome 사용자를 만들어 정보를 별도로 관리하세요.</translation>
 <translation id="7916016681687251387">Chrome OS에서 데이터를 동기화할 수 없습니다. 지금 문제를 해결해 주세요.</translation>

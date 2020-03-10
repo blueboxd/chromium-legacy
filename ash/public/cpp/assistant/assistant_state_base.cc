@@ -105,6 +105,12 @@ void AssistantStateBase::RegisterPrefChanges(PrefService* pref_service) {
   UpdateNotificationEnabled();
 }
 
+bool AssistantStateBase::IsScreenContextAllowed() const {
+  return allowed_state() == ash::mojom::AssistantAllowedState::ALLOWED &&
+         settings_enabled().value_or(false) &&
+         context_enabled().value_or(false);
+}
+
 void AssistantStateBase::InitializeObserver(AssistantStateObserver* observer) {
   if (consent_status_.has_value())
     observer->OnAssistantConsentStatusChanged(consent_status_.value());

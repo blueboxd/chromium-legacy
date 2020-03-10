@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
 #include "services/network/public/mojom/network_change_manager.mojom-forward.h"
@@ -35,6 +36,7 @@ class CrostiniDialogBrowserTest : public DialogBrowserTest {
   const bool register_termina_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
+  crostini::FakeCrostiniFeatures fake_crostini_features_;
 
   // Owned by content::Browser
   CrostiniBrowserTestChromeBrowserMainExtraParts* extra_parts_ = nullptr;

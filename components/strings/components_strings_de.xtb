@@ -475,7 +475,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="3024663005179499861">Falscher Richtlinientyp</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
 <translation id="3041612393474885105">Zertifikatinformationen</translation>
-<translation id="3057676462092457419">Der DnsOverHttps-Modus "<ph name="SECURE_DNS_MODE_SECURE" />" wird noch nicht unterstützt. Der Modus wurde deshalb auf "<ph name="SECURE_DNS_MODE_OFF" />" festgelegt.</translation>
 <translation id="3060227939791841287">C9 (Umschlag)</translation>
 <translation id="3061707000357573562">Patchdienst</translation>
 <translation id="3064966200440839136">Der Inkognitomodus wird beendet, um über eine externe Anwendung zu zahlen. Fortfahren?</translation>
@@ -574,6 +573,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="3484560055331845446">Sie könnten den Zugriff auf Ihr Google-Konto verlieren. Chrome empfiehlt Ihnen, Ihr Passwort jetzt zu ändern. Sie werden dazu aufgefordert, sich anzumelden.</translation>
 <translation id="3487845404393360112">Fach 4</translation>
 <translation id="3495081129428749620">Auf Seite "<ph name="PAGE_TITLE" />" suchen</translation>
+<translation id="3507936815618196901">Eine 3D-Karte Ihrer Umgebung erstellen und die Kameraposition verfolgen</translation>
 <translation id="3512163584740124171">Diese Richtlinie wird ignoriert, da eine andere Richtlinie aus derselben Richtliniengruppe eine höhere Priorität hat.</translation>
 <translation id="3518941727116570328">Handhabung mehrerer Objekte</translation>
 <translation id="3528171143076753409">Serverzertifikat ist nicht vertrauenswürdig.</translation>
@@ -926,6 +926,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="5030338702439866405">Ausgestellt von</translation>
 <translation id="503069730517007720">Für "<ph name="SOFTWARE_NAME" />" ist ein Stammzertifikat erforderlich, das nicht installiert ist. Ihr IT-Administrator sollte die Konfigurationsanweisungen für "<ph name="SOFTWARE_NAME" />" lesen, um das Problem zu beheben. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Über Google Übersetzer</translation>
+<translation id="503498442187459473"><ph name="HOST" /> möchte Ihre Kamera und Ihr Mikrofon verwenden</translation>
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="5040262127954254034">Datenschutz</translation>
 <translation id="5043480802608081735">Von Ihnen kopierter Link</translation>
@@ -1034,7 +1035,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="5457113250005438886">Ungültig</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> weiterer}other{<ph name="CONTACT_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> weitere}}</translation>
 <translation id="5470861586879999274">&amp;Bearbeiten wiederholen</translation>
-<translation id="5472133193607270166">Wenn die Funktion aktiviert ist, können Websites Ihre Browseraktivitäten auf anderen Websites nicht verwenden, um Werbung zu personalisieren. Einige Websites funktionieren dann eventuell nicht richtig.</translation>
 <translation id="5478437291406423475">B6/C4 (Umschlag)</translation>
 <translation id="5481076368049295676">Diese Inhalte versuchen möglicherweise, gefährliche Software auf Ihrem Gerät zu installieren, durch die Ihre Informationen gestohlen oder gelöscht werden. <ph name="BEGIN_LINK" />Trotzdem anzeigen<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Gültige Adresse hinzufügen</translation>
@@ -1320,6 +1320,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="6710594484020273272">&lt;Suchbegriff eingeben&gt;</translation>
 <translation id="671076103358959139">Registrierungstoken:</translation>
 <translation id="6711464428925977395">Mit dem Proxyserver ist ein Problem aufgetreten oder die Adresse ist falsch.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> möchte eine 3D-Karte Ihrer Umgebung erstellen und die Kameraposition verfolgen</translation>
 <translation id="6738516213925468394">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer <ph name="BEGIN_LINK" />Synchronisierungspassphrase<ph name="END_LINK" /> verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="674375294223700098">Fehler wegen unbekanntem Serverzertifikat</translation>
 <translation id="6744009308914054259">Während Sie auf eine Verbindung warten, können Sie "Downloads" aufrufen und Offline-Artikel lesen.</translation>
@@ -1741,7 +1742,6 @@ Weitere Details:
 <translation id="8589998999637048520">Beste Qualität</translation>
 <translation id="860043288473659153">Name des Karteninhabers</translation>
 <translation id="8606726445206553943">Ihre MIDI-Geräte verwenden</translation>
-<translation id="8616822740383114808">Diese Einstellung wird durch "<ph name="ENFORCING_SETTING" />" auf der Seite "<ph name="SETTINGS_PAGE" />" erzwungen</translation>
 <translation id="861775596732816396">Größe 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Diese Karte für dieses Gerät speichern</translation>

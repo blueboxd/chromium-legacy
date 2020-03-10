@@ -172,6 +172,17 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 설정되지 않은 경우 기본 빈도는 3시간입니다. 허용되는
       최소 빈도는 60초입니다.</translation>
 <translation id="1204263402976895730">사용 설정된 엔터프라이즈 프린터</translation>
+<translation id="1216890727647348501"><ph name="PRODUCT_NAME" />의 세이프 브라우징 향상된 보호 기능을 사용 설정하고 사용자가 이 설정을 변경하지 못하게 차단합니다.
+
+      설정이 사용되면 세이프 브라우징 향상된 보호 기능이 항상 활성화됩니다.
+
+      사용 중지하면 세이프 브라우징 향상된 보호 기능이 활성화되지 않습니다.
+
+      정책을 필수로 설정하면 사용자가 <ph name="PRODUCT_NAME" />에서 '피싱 및 멀웨어 차단 사용' 설정을 변경하거나 재정의할 수 없습니다.
+
+      설정하지 않으면 세이프 브라우징 향상된 보호 기능이 기본적으로 비활성화되지만 사용자가 활성화할 수 있습니다.
+
+      https://developers.google.com/safe-browsing에서 세이프 브라우징에 관해 자세히 알아보세요.</translation>
 <translation id="1216919699175573511">서명된 HTTP 교환(SXG) 지원 사용 설정</translation>
 <translation id="1219695476179627719">기기가 이미 이후 버전을 실행하는 경우 기기를 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />에 설정된 버전으로 롤백할지 여부를 지정합니다.
 
@@ -265,6 +276,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책이 설정되지 않아도 더 구체적인 정책 사용에 영향을 주지 않습니다.</translation>
 <translation id="1384459581748403878">참고: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">OS 업데이트 상태 보고</translation>
+<translation id="1388918874748125262">세이프 브라우징 향상된 보호 기능 사용</translation>
 <translation id="1393485621820363363">사용 설정된 엔터프라이즈 기기 프린터</translation>
 <translation id="1397855852561539316">기본 검색 공급자 추천 URL</translation>
 <translation id="1398636873839401839">로그인 화면에서 모든 변형 사용 설정</translation>
@@ -1184,6 +1196,9 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="26023406105317310">Kerberos 계정 구성</translation>
 <translation id="2604182581880595781">네트워크 파일 공유 관련 정책을 구성합니다.</translation>
 <translation id="2615240493030733717">시간대 정보 보고</translation>
+<translation id="2620943247255660284">지원이 중단된 정책이며, AdvancedProtectionExtraSecurityAllowed로 대체되었습니다.
+
+      이 정책은 고급 보호 프로그램에 등록한 사용자가 다운로드한 파일을 Google에 전송하여 멀웨어가 있는지 검사하도록 허용할지 결정합니다. 정책이 True로 설정되거나 설정되지 않으면 등록된 사용자에게 파일을 Google에 전송하여 심층 검사를 받으라는 메시지가 표시됩니다. 이때 사용자가 '검사'를 선택하면 다운로드한 파일이 Google에 전송됩니다. False로 설정되면 사용자에게 메시지가 표시되지 않으며 다운로드한 파일이 Google에 전송되지 않습니다.</translation>
 <translation id="2623014935069176671">첫 번째 사용자 활동 기다리기</translation>
 <translation id="262740370354162807"><ph name="CLOUD_PRINT_NAME" />(으)로 문서 제출 사용</translation>
 <translation id="2627554163382448569">엔터프라이즈 프린터의 설정을 제공합니다.
@@ -1436,6 +1451,21 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="2987227569419001736">Web Bluetooth API 사용 조정</translation>
 <translation id="3016255526521614822"><ph name="PRODUCT_OS_NAME" /> 잠금 화면에서 사용 설정된 메모 앱을 허용 목록에 추가</translation>
 <translation id="3020064401262077616">자녀 계정에만 적용되는 Parental Supervision 정책을 제어합니다.</translation>
+<translation id="3020953534071988875">이 정책을 설정하면 <ph name="PRODUCT_NAME" />의 시크릿 모드와 게스트 프로필에서 앰비언트 인증을 허용/금지할 수 있습니다.
+
+      앰비언트 인증은 명시적인 사용자 인증 정보가 자격 확인/응답 유형의 NTLM/Kerberos/Negotiate 방식을 통해 제공되지 않는 경우 기본 사용자 인증 정보를 사용하는 HTTP 인증입니다.
+
+      <ph name="REGULAR_ONLY_OPTION_NAME" />(값 0)를 설정하면 일반 세션에만 앰비언트 인증이 허용됩니다. 시크릿 모드와 게스트 세션에서는 앰비언트 인증을 사용할 수 없습니다.
+
+      <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />(값 1)를 설정하면 시크릿 모드와 일반 세션에서 앰비언트 인증이 허용됩니다. 게스트 세션에서는 앰비언트 인증을 사용할 수 없습니다.
+
+      <ph name="GUEST_AND_REGULAR_OPTION_NAME" />(값 2)를 설정하면 게스트 세션과 일반 세션에서 앰비언트 인증이 허용됩니다. 시크릿 모드 세션에서는 앰비언트 인증을 사용할 수 없습니다.
+
+      <ph name="ALL_OPTION_NAME" />(값 3)을 설정하면 모든 세션에서 앰비언트 인증이 허용됩니다.
+
+      일반 프로필에서는 앰비언트 인증을 항상 사용할 수 있습니다.
+
+      <ph name="PRODUCT_NAME" /> 버전 81 이상에서는 정책을 설정하지 않으면 일반 세션에서만 앰비언트 인증이 허용됩니다.</translation>
 <translation id="3021562480854470924">허용된 주요 롤백의 수</translation>
 <translation id="3023572080620427845">대체 브라우저에서 로드할 URL이 포함된 XML 파일의 URL입니다.</translation>
 <translation id="3026740867910702435">로그인 화면에서 큰 커서 접근성 기능을 사용 설정합니다.
@@ -1918,6 +1948,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           이 정책이 설정되지 않으면 처음에는 로그인 화면에서 음성기록이 사용되지 않지만 나중에 사용자가 언제든지 사용 설정할 수 있습니다.</translation>
 <translation id="3811562426301733860">모든 사이트에서 광고 허용</translation>
 <translation id="3816312845600780067">자동 로그인 시 긴급용 단축키 사용</translation>
+<translation id="3817323252437541502">고급 보호 프로그램에 등록된 사용자를 위한 추가 보호 기능 사용</translation>
 <translation id="3820526221169548563">터치 키보드 접근성 기능을 사용하도록 설정합니다.
 
           이 정책을 true로 설정하면 터치 키보드를 항상 사용하도록 설정됩니다.
@@ -2392,9 +2423,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="4449545651113180484">화면을 시계 방향으로 270도 회전</translation>
 <translation id="445270821089253489">보고되는 사용자 및 기기 정보 유형을 제어합니다.</translation>
 <translation id="4453913621209182880">배경 그래픽을 포함한 경우에만 인쇄 허용</translation>
-<translation id="4454586530530448054">정책이 설정되면 지정된 모든 데이터 유형이 Google 동기화와 로밍 프로필 동기화 모두에서 제외됩니다. 이렇게 하면 로밍 프로필의 크기를 줄이거나 Google 동기화 서버에 업로드되는 데이터의 유형을 제한하는 데 도움이 될 수 있습니다.
-
-      이 정책의 현재 데이터 유형은 'bookmarks', 'preferences', 'passwords', 'autofill', 'themes', 'typedUrls', 'extensions', 'apps', 'tabs', 'wifiConfiguration'입니다. 이름은 대소문자를 구분합니다.</translation>
 <translation id="4454820008017317557"><ph name="PRODUCT_NAME" /> 툴바 아이콘 표시</translation>
 <translation id="4467952432486360968">제3자 쿠키 차단</translation>
 <translation id="4474167089968829729">비밀번호 관리자에 비밀번호 저장 기능 사용</translation>
@@ -5201,6 +5229,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       보고됩니다.</translation>
 <translation id="891435090623616439">JSON 문자열로 인코딩됨, 자세한 내용은 <ph name="COMPLEX_POLICIES_URL" /> 참조</translation>
 <translation id="8917070657147922192">사용자가 설치된 CA 인증을 관리하도록 허용합니다.</translation>
+<translation id="8924721011887485485">이 정책은 고급 보호 프로그램에 등록한 사용자에게 추가 보안 기능을 제공할지 결정합니다. 추가 보안 기능 중 일부를 사용하려면 Google과 데이터를 공유해야 합니다. 예를 들어, 고급 보호 사용자가 멀웨어 검사를 위해 다운로드한 파일을 Google에 전송할 수 있습니다. 정책을 True로 설정하거나 설정하지 않으면 등록된 사용자에게 추가 보안 기능이 제공됩니다. False로 설정하면 고급 보호 사용자에게 일반 보안 기능만 제공됩니다.</translation>
 <translation id="8926275581598789324">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
 
           배터리 전원으로 실행할 때 사용자 입력이 없어서 유휴 작업이 수행되기까지 걸리는 시간을 지정합니다.
@@ -5227,9 +5256,9 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       </translation>
 <translation id="8937282917198525844"> M81부터 표준 양식 컨트롤 요소(예: &lt;select&gt;, &lt;button&gt;, &lt;input type=date&gt;)의 디자인이 새로워졌으며, 접근성 및 플랫폼 동일성이 개선되었습니다. 이 정책은 M84까지 이전의 '기존' 양식 컨트롤 요소를 복원합니다.
 
-      이 정책이 True로 설정되면 모든 사이트에서 '기존' 양식 컨트롤 요소가 사용됩니다.
+      정책이 True로 설정되면 모든 사이트에서 '기존' 양식 컨트롤 요소가 사용됩니다.
 
-      이 정책이 False로 설정되거나 설정되지 않으면 M81, M82, M83에서 실행될 때와 같은 양식 컨트롤 요소가 사용 설정됩니다.
+      정책이 False로 설정되거나 설정되어 있지 않으면 M81, M82, M83에서 실행될 때 새로워진 양식 컨트롤 요소가 사용 설정됩니다.
 
       이 정책은 Chrome 84 이후 삭제됩니다.</translation>
 <translation id="8938932171964587769">M69에서 지원이 중단되었습니다. 대신

@@ -37,7 +37,6 @@
 <translation id="1900795423379050516">Si no ves una opción de configuración en esta página, consulta la <ph name="LINK_BEGIN" />
       configuración del navegador Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Permitir el acceso a Chrome</translation>
-<translation id="1983547493073464667">Chrome no puede revisar las contraseñas</translation>
 <translation id="2063848847527508675">El Sistema operativo Chrome debe reiniciarse para que se aplique la actualización.</translation>
 <translation id="2094919256425865063">¿Deseas salir de Chrome de todos modos?</translation>
 <translation id="2120620239521071941">Esta acción borrará <ph name="ITEMS_COUNT" /> elementos de este dispositivo. Si más adelante deseas recuperar los datos, accede a tu cuenta en Chrome como <ph name="USER_EMAIL" />.</translation>
@@ -53,11 +52,9 @@
 <translation id="2467438592969358367">Google Chrome desea exportar tus contraseñas. Para permitirlo, ingresa tu contraseña de Windows.</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
 <translation id="2534507159460261402">Google Pay (copiada en Chrome)</translation>
-<translation id="2559627601176023786">No hay contraseñas guardadas. Chrome podrá revisar las contraseñas cuando las guardes en tu Cuenta de Google.</translation>
 <translation id="2580411288591421699">No se puede instalar la misma versión de Google Chrome que se está ejecutando actualmente. Cierra Google Chrome e intenta nuevamente.</translation>
 <translation id="2586406160782125153">Esta acción borrará tus datos de navegación de este dispositivo. Si más adelante deseas recuperarlos, accede a tu cuenta en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo de Chrome</translation>
-<translation id="261226884343006626">Chrome no puede revisar las contraseñas. Vuelve a intentarlo mañana.</translation>
 <translation id="2622559029861875898">Chrome no puede buscar actualizaciones. Revisa la conexión a Internet.</translation>
 <translation id="2644798301485385923">Sistema operativo Chrome</translation>
 <translation id="2652691236519827073">Abrir vínculo en una pes&amp;taña nueva de Chrome</translation>
@@ -81,7 +78,6 @@
 <translation id="3395323229510056640">Obtener ayuda con el Sistema operativo Chrome</translation>
 <translation id="3396977131400919238">Se produjo un error del sistema operativo durante la instalación. Descargue Google Chrome nuevamente.</translation>
 <translation id="3398288718845740432">Ocultar en el menú de Chrome</translation>
-<translation id="3434246496373299699">Chrome puede revisar las contraseñas solo cuando accedes con tu Cuenta de Google</translation>
 <translation id="3451115285585441894">Agregando a Chrome...</translation>
 <translation id="345171907106878721">Agrégate a Chrome</translation>
 <translation id="34857402635545079">Borrar también datos de Chrome (<ph name="URL" />)</translation>
@@ -97,7 +93,6 @@
 <translation id="386202838227397562">Cierra todas las ventanas de Google Chrome e intenta nuevamente.</translation>
 <translation id="3873044882194371212">Abrir vínculo en una ventana de navegación de incó&amp;gnito de Chrome</translation>
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
-<translation id="3943605108614542032">El administrador gestiona las actualizaciones de Chrome</translation>
 <translation id="4050175100176540509">La última versión proporciona importantes mejoras de seguridad y nuevas funciones.</translation>
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
 <translation id="4143243756087420366">Nombre y foto de Chrome</translation>
@@ -207,7 +202,6 @@
 <translation id="7808348361785373670">Eliminar de Chrome…</translation>
 <translation id="7825851276765848807">La instalación falló debido a un error no especificado. Descarga Google Chrome otra vez.</translation>
 <translation id="7855730255114109580">Google Chrome está actualizado</translation>
-<translation id="7888686278524752658">No se actualizó Chrome porque se produjo un error. Soluciona los problemas de actualización y las actualizaciones con error de Chrome.</translation>
 <translation id="7890208801193284374">Si compartes una computadora, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome según los gustos individuales.</translation>
 <translation id="7896673875602241923">Alguien accedió anteriormente a Google Chrome en esta computadora como <ph name="ACCOUNT_EMAIL_LAST" />. Crea un usuario de Chrome nuevo para mantener tu información por separado.</translation>
 <translation id="7916016681687251387">El Sistema operativo Chrome no pudo sincronizar los datos. Soluciona el problema ahora.</translation>

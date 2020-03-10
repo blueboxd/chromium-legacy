@@ -171,6 +171,17 @@
 
 このポリシーが未設定の場合は、3 時間に 1 回の頻度となります。最短で 60 秒に 1 回の頻度を指定できます。</translation>
 <translation id="1204263402976895730">有効な企業プリンタ</translation>
+<translation id="1216890727647348501"><ph name="PRODUCT_NAME" /> のセーフ ブラウジングの保護強化機能を有効にするとともに、ユーザーがこの設定を変更できないようにします。
+
+      この設定を有効にすると、セーフ ブラウジングの保護強化機能が常に適用されます。
+
+      この設定を無効にすると、セーフ ブラウジングの保護強化機能は適用されません。
+
+      このポリシーを必須として設定した場合、ユーザーが <ph name="PRODUCT_NAME" /> の [フィッシングや不正なソフトウェアからの保護を有効にする] 設定を変更またはオーバーライドすることはできません。
+
+      このポリシーを未設定のままにした場合、セーフ ブラウジングの保護強化機能はデフォルトで無効になりますが、ユーザーはこの機能を有効にできます。
+
+      セーフ ブラウジングについて詳しくは、https://developers.google.com/safe-browsing をご覧ください。</translation>
 <translation id="1216919699175573511">Signed HTTP Exchange（SXG）のサポートを有効にします</translation>
 <translation id="1219695476179627719">デバイスですでに新しいバージョンを実行している場合に、<ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> で設定されているバージョンに戻すかどうかを指定します。
 
@@ -263,6 +274,7 @@
           このポリシーを設定しない場合、より具体的なポリシーの動作に影響はありません。</translation>
 <translation id="1384459581748403878">参考: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">OS の更新ステータスをレポートします</translation>
+<translation id="1388918874748125262">セーフ ブラウジングの保護強化機能を有効にする</translation>
 <translation id="1393485621820363363">有効な企業デバイス プリンタ</translation>
 <translation id="1397855852561539316">デフォルト検索プロバイダ サジェスト URL</translation>
 <translation id="1398636873839401839">ログイン画面ですべてのバリエーションを有効にする</translation>
@@ -1157,6 +1169,9 @@
 <translation id="26023406105317310">Kerberos アカウントを設定する</translation>
 <translation id="2604182581880595781">ネットワーク ファイル共有に関連するポリシーを設定します。</translation>
 <translation id="2615240493030733717">タイムゾーン情報を報告する</translation>
+<translation id="2620943247255660284">このポリシーはサポートが終了しており、AdvancedProtectionExtraSecurityAllowed に置き換えられました。
+
+      このポリシーは、高度な保護機能プログラムに登録しているユーザーに対し、不正なソフトウェアがないかスキャンする目的で、ダウンロードしたコンテンツを Google に送信することを許可するかどうかを制御します。True に設定するか、未設定の場合、高度な保護機能プログラムに登録しているユーザーには、詳細なスキャンのためにファイルを Google に送信するかを確認するメッセージが表示されます。ユーザーが [スキャン] を選択した場合、ダウンロードしたコンテンツは Google に送信されます。False に設定した場合、ユーザーにメッセージは表示されず、ダウンロードしたコンテンツは Google に送信されません。</translation>
 <translation id="2623014935069176671">最初のユーザー操作を待機する</translation>
 <translation id="262740370354162807"><ph name="CLOUD_PRINT_NAME" /> へのドキュメントの送信を有効にします。</translation>
 <translation id="2627554163382448569">企業プリンタの設定を指定します。
@@ -1401,7 +1416,22 @@
 <translation id="2987155890997901449">ARC を有効にする</translation>
 <translation id="2987227569419001736">Web Bluetooth API の使用を管理する</translation>
 <translation id="3016255526521614822"><ph name="PRODUCT_OS_NAME" /> のロック画面で使用できるメモ作成アプリをホワイトリスト登録する</translation>
-<translation id="3020064401262077616">子どものアカウントのみに適用される、保護者向け監視ツールのポリシーを制御します。</translation>
+<translation id="3020064401262077616">子どものアカウントのみに適用される、保護者向け管理ツールのポリシーを制御します。</translation>
+<translation id="3020953534071988875">このポリシーを設定すると、<ph name="PRODUCT_NAME" /> のシークレット モードとゲストのプロフィールでアンビエント認証を許可または不許可にできます。
+
+      アンビエント認証は、NTLM/Kerberos/Negotiate challenge/response スキームで明示的な認証情報が指定されていない場合に使用される、デフォルトの認証情報による HTTP 認証です。
+
+      <ph name="REGULAR_ONLY_OPTION_NAME" />（値 0）に設定すると、標準のセッションでのみアンビエント認証が許可されます。シークレット モードとゲスト セッションではアンビエント認証は許可されません。
+
+      <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />（値 1）に設定すると、シークレット モードと標準のセッションでアンビエント認証が許可されます。ゲスト セッションではアンビエント認証は許可されません。
+
+      <ph name="GUEST_AND_REGULAR_OPTION_NAME" />（値 2）に設定すると、ゲストと標準のセッションでアンビエント認証が許可されます。シークレット モードのセッションではアンビエント認証は許可されません。
+
+      <ph name="ALL_OPTION_NAME" />（値 3）に設定すると、すべてのセッションでアンビエント認証が許可されます。
+
+      なお、標準のプロフィールでは常にアンビエント認証が許可されます。
+
+      <ph name="PRODUCT_NAME" /> のバージョン 81 以降では、ポリシーを未設定のままにした場合、通常のセッションでのみアンビエント認証が有効になります。</translation>
 <translation id="3021562480854470924">ロールバックできるマイルストーンの数</translation>
 <translation id="3023572080620427845">代替ブラウザで読み込む URL のリストを含む XML ファイルの URL です。</translation>
 <translation id="3026740867910702435">ログイン画面で「大きいカーソル」ユーザー補助機能を有効にします。
@@ -1717,7 +1747,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="3524204464536655762">すべてのサイトに対して WebUSB API 経由での USB デバイスへのアクセスを許可しない</translation>
 <translation id="3526752951628474302">白黒印刷のみ</translation>
 <translation id="3528000905991875314">別のエラー ページを有効にする</translation>
-<translation id="3531084733660068324">保護者向け監視ツールの設定</translation>
+<translation id="3531084733660068324">保護者向け管理ツールの設定</translation>
 <translation id="3534882636155369445">大きなファイルをブロックしない</translation>
 <translation id="3540935459049973317">アプリごとの時間制限</translation>
 <translation id="3545457887306538845">デベロッパー ツールの使用を許可する状況を管理します。
@@ -1873,6 +1903,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーを設定しない場合、音声入力は初期設定ではログイン画面で無効ですが、ユーザーはいつでも有効にできます。</translation>
 <translation id="3811562426301733860">すべてのサイトで広告の表示を許可する</translation>
 <translation id="3816312845600780067">自動ログイン回避用のキーボード ショートカットを有効にする</translation>
+<translation id="3817323252437541502">高度な保護機能プログラムに登録しているユーザーが追加の保護機能を使用できるようにする</translation>
 <translation id="3820526221169548563">画面キーボードのユーザー補助機能を有効にします。
 
           このポリシーを true に設定すると、画面キーボードが常に有効になります。
@@ -2336,9 +2367,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="4449545651113180484">画面を時計回りに 270 度回転</translation>
 <translation id="445270821089253489">レポートを送信するユーザーとデバイスの情報の種類を制御します。</translation>
 <translation id="4453913621209182880">背景のグラフィックありの印刷のみを許可する</translation>
-<translation id="4454586530530448054">このポリシーを設定した場合、指定したすべてのデータタイプが Google Sync とローミング プロファイルの同期から除外されます。これにより、ローミング プロファイルのサイズを抑えたり、Google Sync サーバーにアップロードされるデータのタイプを制限したりできます。
-
-      現在、このポリシーで指定できるデータタイプは次のとおりです。"bookmarks"、"preferences"、"passwords"、"autofill"、"themes"、"typedUrls"、"extensions"、"apps"、"tabs"、"wifiConfiguration"データタイプの名前では大文字と小文字が区別されます。</translation>
 <translation id="4454820008017317557"><ph name="PRODUCT_NAME" /> ツールバー アイコンを表示する</translation>
 <translation id="4467952432486360968">サードパーティの Cookie をブロックする</translation>
 <translation id="4474167089968829729">パスワード マネージャーへのパスワード保存を有効にする</translation>
@@ -5046,6 +5074,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       ディスプレイとグラフィックのステータスが報告されます。</translation>
 <translation id="891435090623616439">JSON 文字列としてのエンコードについて詳しくは、<ph name="COMPLEX_POLICIES_URL" /> をご覧ください</translation>
 <translation id="8917070657147922192">インストール済み CA 証明書の管理をユーザーに許可する。</translation>
+<translation id="8924721011887485485">このポリシーは、高度な保護機能プログラムに登録しているユーザーが追加のセキュリティ機能を使用できるようにするかどうかを制御します。追加のセキュリティ機能では、Google とデータが共有されることがあります。たとえば、高度な保護機能のユーザーは、不正なソフトウェアをスキャンする目的で、ダウンロードしたファイルを Google に送信できます。True に設定するか、未設定のままにした場合、登録ユーザーは追加のセキュリティ機能を使用できます。False に設定した場合、高度な保護機能のユーザーは消費者向けのセキュリティ機能のみを使用できます。</translation>
 <translation id="8926275581598789324">このポリシーはサポートが終了しており、<ph name="PRODUCT_OS_NAME" /> バージョン 82 で削除されます。代わりに <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> を使用してください。
 
           バッテリーでの使用中、ユーザー入力が行われなくなってからアイドル時の操作を行うまでの時間を指定します。
@@ -5075,7 +5104,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーを True に設定した場合、すべてのサイトで「従来」のフォーム コントロール要素が使用されます。
 
-      このポリシーを False に設定するか未設定のままにした場合、M81、M82、M83 のリリースで新しいフォーム コントロール要素が有効になります。
+      このポリシーを False に設定するか未設定のままにした場合、M81、M82、M83 でリリースされている新しいフォーム コントロール要素が有効になります。
 
       このポリシーは、Chrome 84 以降で削除されます。</translation>
 <translation id="8938932171964587769">このポリシーは M69 でサポート終了となりました。代わりに

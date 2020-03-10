@@ -483,7 +483,6 @@
 <translation id="3024663005179499861">ប្រភេទគោលការណ៍ខុស</translation>
 <translation id="3037605927509011580">អូយ ទក់!</translation>
 <translation id="3041612393474885105">ព័ត៌មានវិញ្ញាបនប័ត្រ</translation>
-<translation id="3057676462092457419">មិនទាន់អាចប្រើមុខងារ DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> បាននៅឡើយទេ មុខងារ​នេះត្រូវបានកំណត់ឱ្យ <ph name="SECURE_DNS_MODE_OFF" />។</translation>
 <translation id="3060227939791841287">C9 (ស្រោម​សំបុត្រ)</translation>
 <translation id="3061707000357573562">Patch Service</translation>
 <translation id="3064966200440839136">កំពុង​ចាកចេញ​ពី​មុខងារ​អនាមិក ដើម្បី​បង់ប្រាក់​តាមរយៈ​កម្មវិធី​ខាងក្រៅ។ បន្ត?</translation>
@@ -583,6 +582,7 @@
 <translation id="3487845404393360112">ទម្រទី 4</translation>
 <translation id="3495081129428749620">ស្វែងរក​នៅក្នុងទំព័រ
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">បង្កើតផែនទី 3D នៃមជ្ឈដ្ឋានជុំវិញរបស់អ្នក និងតាមដានទីតាំងកាមេរ៉ា</translation>
 <translation id="3512163584740124171">គោលការណ៍នេះ​នឹងមិនត្រូវបានអើពើទេ ដោយសារគោលការណ៍​ផ្សេងទៀត​ពីក្រុមគោលការណ៍តែមួយ​មានអាទិភាព​ខ្ពស់ជាង។</translation>
 <translation id="3518941727116570328">ការគ្រប់គ្រង​វត្ថុច្រើន</translation>
 <translation id="3528171143076753409">វិញ្ញាបនប័ត្រម៉ាស៊ីនមេមិនត្រូវបានជឿជាក់ទេ។</translation>
@@ -937,6 +937,7 @@
 <translation id="5030338702439866405">ចេញដោយ</translation>
 <translation id="503069730517007720">តម្រូវឱ្យមានវិញ្ញាបនបត្រគោលសម្រាប់ "<ph name="SOFTWARE_NAME" />" ប៉ុន្តែមិនចាំបាច់ដំឡើងទេ។ អ្នកគ្រប់គ្រងផ្នែកព័ត៌មានវិទ្យារបស់អ្នកគួរតែមើលការណែនាំអំពីការកំណត់រចនាសម្ព័ន្ធសម្រាប់ "<ph name="SOFTWARE_NAME" />" ដើម្បីដោះស្រាយបញ្ហានេះ។ <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">អំពី Google បកប្រែ</translation>
+<translation id="503498442187459473"><ph name="HOST" /> ចង់ប្រើកាមេរ៉ា និងមីក្រូហ្វូនរបស់អ្នក</translation>
 <translation id="5039804452771397117">អនុញ្ញាត</translation>
 <translation id="5040262127954254034">ឯកជនភាព</translation>
 <translation id="5043480802608081735">តំណដែល​អ្នកបានចម្លង</translation>
@@ -1045,7 +1046,6 @@
 <translation id="5457113250005438886">គ្មានសុពលភាព</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ទៀត}other{<ph name="CONTACT_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ទៀត}}</translation>
 <translation id="5470861586879999274">ធ្វើការកែប្រែវិញ</translation>
-<translation id="5472133193607270166">នៅពេលបើក គេហទំព័រ​មិនអាចប្រើ​សកម្មភាព​រុករក​តាមអ៊ីនធឺណិត​របស់អ្នក​នៅលើ​គេហទំព័រ​ផ្សេងៗគ្នា ដើម្បីកំណត់​ការផ្សាយ​ពាណិជ្ជកម្ម​ឱ្យ​ស្របតាម​បុគ្គលបានទេ។ គេហទំព័រ​មួយចំនួន​ប្រហែលជា​ដំណើរការ​មិនត្រឹមត្រូវទេ។</translation>
 <translation id="5478437291406423475">B6/C4 (ស្រោម​សំបុត្រ)</translation>
 <translation id="5481076368049295676">ខ្លឹមសារក្នុងទំព័រនេះអាច​នឹងព្យាយាម​ដំឡើងកម្មវិធី​គ្រោះថ្នាក់​ដែល​លួចយក ឬលុប​ព័ត៌មាន​នៅលើ​ឧបករណ៍​របស់អ្នក។ <ph name="BEGIN_LINK" />សូម​បង្ហាញ​ទោះបីជា​យ៉ាង​ណា​ក៏​ដោយ<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">បន្ថែមអាសយដ្ឋានត្រឹមត្រូវ</translation>
@@ -1331,6 +1331,7 @@
 <translation id="6710594484020273272">&lt;វាយបញ្ចូលពាក្យដែលត្រូវស្វែងរក&gt;</translation>
 <translation id="671076103358959139">ធាតុកូដចុះឈ្មោះ៖</translation>
 <translation id="6711464428925977395">មានបញ្ហាមិនប្រក្រតីជាមួយម៉ាស៊ីនមេប្រូកស៊ី ឬអាសយដ្ឋានមិនត្រឹមត្រូវ</translation>
+<translation id="6716672519412350405"><ph name="URL" /> ចង់បង្កើតផែនទី 3D នៃមជ្ឈដ្ឋានជុំវិញរបស់អ្នក និងតាមដានទីតាំងកាមេរ៉ា</translation>
 <translation id="6738516213925468394">ទិន្នន័យ​របស់អ្នក​ត្រូវបាន​អ៊ីនគ្រីប ដោយប្រើ<ph name="BEGIN_LINK" />ឃ្លា​សម្ងាត់សម​កាល​កម្ម<ph name="END_LINK" /> របស់អ្នក នៅថ្ងៃទី <ph name="TIME" />។ សូម​បញ្ចូលឃ្លា​សម្ងាត់ ដើម្បី​ចាប់ផ្ដើមធ្វើ​សមកាល​កម្ម។</translation>
 <translation id="674375294223700098">កំហុសឆ្គងវិញ្ញាបនប័ត្រម៉ាស៊ីនមេមិនស្គាល់។</translation>
 <translation id="6744009308914054259">អ្នក​អាចចូលទៅកាន់ការ​ទាញយក ដើម្បីអានអត្ថបទដែល​អាច​អានបានពេលគ្មានអ៊ីនធឺណិត នៅពេលកំពុងរង់ចាំការតភ្ជាប់។</translation>
@@ -1752,7 +1753,6 @@
 <translation id="8589998999637048520">គុណភាព​ល្អបំផុត</translation>
 <translation id="860043288473659153">ឈ្មោះ​ម្ចាស់​កាត</translation>
 <translation id="8606726445206553943">ប្រើឧបករណ៍ MIDI របស់អ្នក</translation>
-<translation id="8616822740383114808">ការកំណត់​នេះ​ត្រូវបាន​អនុវត្ត​ដោយ "<ph name="ENFORCING_SETTING" />" នៅក្នុង "<ph name="SETTINGS_PAGE" />"</translation>
 <translation id="861775596732816396">ទំហំ 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">រក្សាទុកបណ្ណនេះទៅក្នុងឧបករណ៍នេះ</translation>

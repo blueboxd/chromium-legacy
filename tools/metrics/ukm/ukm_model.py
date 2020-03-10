@@ -28,21 +28,21 @@ _ENUMERATION_TYPE = models.ObjectNodeType(
 _QUANTILES_TYPE = models.ObjectNodeType(
     'quantiles',
     attributes=[
-      ('type', unicode, None),
+      ('type', str, None),
     ],
     single_line=True)
 
 _INDEX_TYPE = models.ObjectNodeType(
     'index',
     attributes=[
-      ('fields', unicode, None),
+      ('fields', str, None),
     ],
     single_line=True)
 
 _STATISTICS_TYPE =  models.ObjectNodeType(
     'statistics',
     attributes=[
-      ('export', unicode, r'^(?i)(|true|false)$'),
+      ('export', str, r'^(?i)(|true|false)$'),
     ],
     children=[
         models.ChildType(_QUANTILES_TYPE.tag, _QUANTILES_TYPE, multiple=False),
@@ -72,9 +72,9 @@ _AGGREGATION_TYPE =  models.ObjectNodeType(
 _METRIC_TYPE =  models.ObjectNodeType(
     'metric',
     attributes=[
-      ('name', unicode, r'^[A-Za-z0-9_.]+$'),
-      ('semantic_type', unicode, None),
-      ('enum', unicode, None),
+      ('name', str, r'^[A-Za-z0-9_.]+$'),
+      ('semantic_type', str, None),
+      ('enum', str, None),
     ],
     alphabetization=[
         (_OBSOLETE_TYPE.tag, _KEEP_ORDER),
@@ -93,8 +93,8 @@ _METRIC_TYPE =  models.ObjectNodeType(
 _EVENT_TYPE =  models.ObjectNodeType(
     'event',
     attributes=[
-      ('name', unicode, r'^[A-Za-z0-9.]+$'),
-      ('singular', unicode, r'^(?i)(|true|false)$'),
+      ('name', str, r'^[A-Za-z0-9.]+$'),
+      ('singular', str, r'^(?i)(|true|false)$'),
     ],
     alphabetization=[
         (_OBSOLETE_TYPE.tag, _KEEP_ORDER),

@@ -51,6 +51,7 @@
 <translation id="2309047409763057870">ଏହା Google Chromeର ଏକ ସେକେଣ୍ଡାରୀ ଇନ୍‍ଷ୍ଟଲେସନ୍‌ ଏବଂ ଏହାକୁ ଆପଣଙ୍କର ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍‌ କରାଯାଇପାରିବ ନାହିଁ।</translation>
 <translation id="2341767445688917208">Chrome OS ଆପଣଙ୍କର ପାସ୍‌ୱାର୍ଡଗୁଡ଼ିକୁ ସିଙ୍କ୍ କରିପାରିଲା ନାହିଁ। ବର୍ତ୍ତମାନ ସମାଧାନ କରନ୍ତୁ।</translation>
 <translation id="2348335408836342058">ଏହି ସାଇଟ୍ ପାଇଁ ଆପଣଙ୍କର କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନ୍ ଆକ୍ସେସ୍ କରିବାକୁ Chrome ଅନୁମତି ଆବଶ୍ୟକ କରୁଛି</translation>
+<translation id="234869673307233423">Chrome ଆପଣଙ୍କର ପାସୱାର୍ଡଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରିପାରିବ ନାହିଁ। ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="2429317896000329049">ଆପଣଙ୍କର ଡୋମେନ୍ ପାଇଁ ସିଙ୍କ୍ ଉପଲବ୍ଧ ନଥିବାରୁ Google Chrome ଆପଣଙ୍କର ଡାଟା ସିଙ୍କ୍ କରିପାରିଲା ନାହିଁ।</translation>
 <translation id="2467438592969358367">Google Chrome ଆପଣଙ୍କର ପାସ୍‌ୱାର୍ଡଗୁଡିକୁ ଏକ୍ସପୋର୍ଟ କରିବାକୁ ଚାହେଁ। ଏହାକୁ ଅନୁମତି ଦେବା ପାଇଁ ନିଜର Windows ପାସ୍‌ୱାର୍ଡ ଟାଇପ୍ କରନ୍ତୁ।</translation>
 <translation id="2485422356828889247">ଅନ୍‍ଇନ୍‍ଷ୍ଟଲ୍‌ କରନ୍ତୁ</translation>
@@ -58,17 +59,21 @@
 <translation id="2580411288591421699">ବର୍ତ୍ତମାନ ସମୟରେ ଚାଲୁଥିବା Google Chromeର ସମାନ ସଂସ୍କରଣକୁ ଇନ୍‍ଷ୍ଟଲ୍ କରାଯାଇପାରିବ ନାହିଁ। ଦୟାକରି Google Chromeକୁ ବନ୍ଦ କରନ୍ତୁ ଏବଂ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="2586406160782125153">ଏହା ଏହି ଡିଭାଇସ୍‍ରୁ ଆପଣଙ୍କର ବ୍ରାଉଜିଂ ଡାଟା ଖାଲି କରିଦେବେ। ପରେ ଆପଣଙ୍କର ଡାଟା ପୁନଃପ୍ରାପ୍ତ କରିବାକୁ Chromeରେ <ph name="USER_EMAIL" />ରୂପେ ସାଇନ୍ ଇନ୍‌ କରନ୍ତୁ।</translation>
 <translation id="2588322182880276190">Chrome ଲୋଗୋ</translation>
+<translation id="2622559029861875898">Chrome ଅପଡେଟଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରିପାରିବ ନାହିଁ। ଆପଣଙ୍କର ଇଣ୍ଟର୍ନେଟ୍ ସଂଯୋଗ ଯାଞ୍ଚ କରି ଦେଖନ୍ତୁ।</translation>
 <translation id="2644798301485385923">Chrome OS ସିଷ୍ଟମ୍‌</translation>
 <translation id="2652691236519827073">ନୂଆ Chrome &amp;ଟାବ୍‌ରେ ଲିଙ୍କ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="2665296953892887393">Googleକୁ କ୍ରାଶ୍ ରିପୋର୍ଟ ଏବଂ <ph name="UMA_LINK" /> ପଠାଇ Google Chromeକୁ ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ।</translation>
 <translation id="2689103672227170538">ଯେତେବେଳେ ଆପଣ Chrome ଆରମ୍ଭ କରନ୍ତି, ସେତେବେଳେ କେଉଁ ପୃଷ୍ଠା ଦେଖାଯିବ, ତାହା ଏହି ଏକ୍ସଟେନ୍‌ସନ୍ ବଦଳାଇଦେଇଛି।</translation>
 <translation id="2765403129283291972">ଏହି ସାଇଟ୍ ପାଇଁ Chrome ଆପଣଙ୍କର ମାଇକ୍ରୋଫୋନ୍ ଆକ୍‌ସେସ୍ କରିବାକୁ ଅନୁମତି ଆବଶ୍ୟକ କରୁଛି</translation>
 <translation id="2770231113462710648">ଏଠାକୁ ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍‌କୁ ପରିବର୍ତ୍ତନ କରନ୍ତୁ:</translation>
+<translation id="2775140325783767197">Chrome ଆପଣଙ୍କର ପାସୱାର୍ଡଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରିପାରିବ ନାହିଁ। ଆପଣଙ୍କର ଇଣ୍ଟର୍ନେଟ୍ ସଂଯୋଗ ଯାଞ୍ଚ କରି ଦେଖନ୍ତୁ।</translation>
 <translation id="2799223571221894425">ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="2847461019998147611">ଏହି ଭାଷାରେ Google Chrome‍କୁ ପ୍ରଦର୍ଶନ କରନ୍ତୁ</translation>
 <translation id="2857540653560290388">Chrome ଲଞ୍ଚ ହେଉଛି...</translation>
 <translation id="2871893339301912279">ଆପଣ Chromeରେ ସାଇନ୍ ଇନ୍ କରିଛନ୍ତି!</translation>
 <translation id="2888126860611144412">Chrome ବିଷୟରେ</translation>
+<translation id="2929907241665500097">Chrome ଅପଡେଟ୍ ହେଲା ନାହିଁ, କିଛି ତ୍ରୁଟି ହୋଇଗଲା। <ph name="BEGIN_LINK" />Chrome ଅପଡେଟ୍ ସମସ୍ୟା ଏବଂ ବିଫଳ ଅପଡେଟଗୁଡ଼ିକର ସମାଧାନ କରନ୍ତୁ।<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - ନେଟୱାର୍କ ସାଇନ୍-ଇନ୍ - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome ପୃଷ୍ଠପଟ ମୋଡ୍‌ରେ ଅଛି।</translation>
 <translation id="3065168410429928842">Chrome ଟାବ୍</translation>
 <translation id="3080151273017101988">ଯେତେବେଳେ Google Chrome ବନ୍ଦ ଅଛି, ସେତେବେଳେ ପୃଷ୍ଠପଟରେ ଥିବା ଆପ୍ସ ଚାଲିବା ଜାରି ରଖନ୍ତୁ।</translation>
@@ -107,7 +112,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">ଡାଟା ଚୋରି, କ୍ଷତିକାରକ ଏକ୍ସଟେନସନ୍ ଏବଂ ଆହୁରି ଅନେକ କିଛିରୁ Chrome ଆପଣଙ୍କୁ ସୁରକ୍ଷିତ ରଖିବାରେ ସାହାଯ୍ୟ କରିପାରିବ</translation>
 <translation id="4343195214584226067">Chromeରେ <ph name="EXTENSION_NAME" /> ଯୋଗକରାଯାଇଛି</translation>
+<translation id="4384570495110188418">ଆପଣ ସାଇନ୍ ଇନ୍ କରିନଥିବା ଯୋଗୁଁ Chrome ଆପଣଙ୍କ ପାସୱାର୍ଡଗୁଡ଼ିକ ଯାଞ୍ଚ କରିପାରିବ ନାହିଁ</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome - ନେଟୱାର୍କ ସାଇନ୍-ଇନ୍ - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chromeରେ ଅନ୍ୟ ଏକ କାର୍ଯ୍ୟ ପ୍ରକ୍ରିୟାରତ ଅଛି। ଦୟାକରି ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="4480040274068703980">ସାଇନ୍ ଇନ୍ କରିବାରେ ଏକ ତ୍ରୁଟି ଯୋଗୁଁ Chrome OS ଆପଣଙ୍କର ଡାଟାକୁ ସିଙ୍କ୍ କରିପାରିଲା ନାହିଁ।</translation>
 <translation id="4561051373932531560">Google Chrome ଆପଣଙ୍କୁ ୱେବ୍‌ରେ ଏକ ଫୋନ୍ ନମ୍ବର କ୍ଲିକ୍ କରି Skypeରେ କଲ୍ କରିବାକୁ ଦେଇଥାଏ!</translation>
@@ -117,6 +124,7 @@
 <translation id="4600710005438004015">Chrome ନବୀନତମ ସଂସ୍କରଣରେ ଅପ୍‌ଡେଟ୍ କରିପାରିଲା ନାହିଁ, ତେଣୁ ଆପଣ ନୂତନ ବୈଶିଷ୍ଟ୍ୟ ଏବଂ ସୁରକ୍ଷା ସମସ୍ୟାର ସମାଧାନରୁ ବଞ୍ଚିତ ହେଉଛନ୍ତି।</translation>
 <translation id="4631713731678262610">Chrome ମେନୁରେ ଲୁଚାନ୍ତୁ</translation>
 <translation id="4633000520311261472">Chromeକୁ ଆହୁରି ସୁରକ୍ଷିତ କରିବା ପାଇଁ, ଆମେ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />ରେ ତାଲିକାଭୁକ୍ତ ହୋଇନଥିବା ଏବଂ ଆପଣଙ୍କର ଅଜାଣତରେ ଯୋଗ କରାଯାଇଥିବା କିଛି ଏକ୍ସ‌ଟେନ୍‌ସନ୍‌ଗୁଡ଼ିକୁ ଅକ୍ଷମ କରିଦେଇଛୁ।</translation>
+<translation id="4653397506175047429">Chrome ଆପଣଙ୍କ ସମସ୍ତ ପାସୱାର୍ଡକୁ ଯାଞ୍ଚ କରିପାରିବ ନାହିଁ। 24 ଘଣ୍ଟା ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="4728575227883772061">ଅଣନିର୍ଦ୍ଧିଷ୍ଟିତ ତ୍ରୁଟି ଯୋଗୁଁ ସଂସ୍ଥାପନ ବିଫଳ ହେଲା । ଯଦି Google Chrome ବର୍ତ୍ତମାନ ଚାଲୁଛି, ଦୟାକରି ଏହାକୁ ବନ୍ଦ କରନ୍ତୁ ଏବଂ ପୁନଃ ଚେଷ୍ଟା କରନ୍ତୁ ।</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> ସକ୍ଷମ କରିବାକୁ Chrome ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -153,6 +161,7 @@
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome କେନେରୀ</translation>
 <translation id="5804318322022881572">Chrome ଲଞ୍ଚ କରାଯାଇପାରିଲା ନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="5895138241574237353">ପୁନଃଆରମ୍ଭ</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - ନେଟୱାର୍କ ସାଇନ୍-ଇନ୍</translation>
 <translation id="5940385492829620908">ଆପଣଙ୍କର ୱେବ୍, ବୁକ୍‌ମାର୍କ ଏବଂ ଅନ୍ୟାନ୍ୟ Chrome ଷ୍ଟଫ୍ ଏଠାରେ ଅଛି।</translation>
 <translation id="5941830788786076944">ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍ ଭାବରେ Google Chrome ପ୍ରସ୍ତୁତ କରନ୍ତୁ</translation>
 <translation id="6070348360322141662">ଅତିରିକ୍ତ ସୁରକ୍ଷା ପାଇଁ, Google Chrome ଆପଣଙ୍କର ଡାଟା ଏନକ୍ରିପ୍ଟ କରିବ</translation>
@@ -208,6 +217,7 @@
 <translation id="7855730255114109580">Google Chrome ଅପ୍-ଟୁ-ଡେଟ୍ ଅଛି</translation>
 <translation id="7890208801193284374">ଯଦି ଆପଣ ଗୋଟିଏ କମ୍ପ୍ୟୁଟର୍ ସେୟାର୍ କରନ୍ତି, ତେବେ, ସାଙ୍ଗମାନେ ଓ ପରିବାରର ସଦସ୍ୟମାନେ ଅଲଗା ଭାବରେ ବ୍ରାଉଜ୍ କରିପାରିବେ ଏବଂ ସେମାନଙ୍କ ପସନ୍ଦ ଅନୁସାରେ Chromeକୁ ସେଟ୍ ଅପ୍ କରିପାରିବେ।</translation>
 <translation id="7896673875602241923">ଏହି କମ୍ପ୍ୟୁଟର୍‌ରେ କେହିଜଣେ ପୂର୍ବରୁ Chromeରେ <ph name="ACCOUNT_EMAIL_LAST" /> ଭାବରେ ସାଇନ୍ ଇନ୍ କରିଛନ୍ତି। ଦୟାକରି ଆପଣଙ୍କର ସୂଚନା ଅଲଗା ରଖିବା ପାଇଁ ଏକ ନୂତନ Chrome ଉପଯୋଗକର୍ତ୍ତା ତିଆରି କରନ୍ତୁ।</translation>
+<translation id="7905891027772979035">Chrome ଆପଣଙ୍କର ଏକ୍ସଟେନସନଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରିପାରିବ ନାହିଁ। ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="7916016681687251387">Chrome OS ଆପଣଙ୍କର ଡାଟାକୁ ସିଙ୍କ୍ କରିପାରିଲା ନାହିଁ। ବର୍ତ୍ତମାନ ସମାଧାନ କରନ୍ତୁ।</translation>
 <translation id="7930071585467473040">Google Chrome ପାସୱାର୍ଡଗୁଡ଼ିକ କପି କରିବାକୁ ଚେଷ୍ଟା କରୁଛି।</translation>
 <translation id="7962410387636238736">ଏହି କମ୍ପ୍ୟୁଟର୍‌ ଆଉ Google Chrome ଅପ‌ଡେଟ୍‍ ପ୍ରାପ୍ତ କରିବ ନାହିଁ କାରଣ ଏହା ଆଉ Windows XP ଏବଂ Windows Vista ଦ୍ୱାରା ସମର୍ଥିତ ନୁହେଁ</translation>
@@ -236,6 +246,7 @@
 <translation id="8862326446509486874">ସିଷ୍ଟମ୍-ଲେବଲ୍ ସଂସ୍ଥାପନ ପାଇଁ ଆପଣଙ୍କ ପାଖରେ ଉପଯୁକ୍ତ ଅଧିକାର ନାହିଁ । ବ୍ୟବସ୍ଥାପକ ଭାବରେ ପୁନଃ ସଂସ୍ଥାପକ ଚଳାଇବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ ।</translation>
 <translation id="8914504000324227558">Chrome ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome‍ର ଏକ ଅପ୍‍‍ଡେଟ୍ ଉପଲବ୍ଧ ଅଛି}=1{Chrome‍ର ଏକ ଅପ୍‍‍ଡେଟ୍ ଉପଲବ୍ଧ ଅଛି}other{# ଦିନ ପାଇଁ Chrome‍ର ଏକ ଅପ୍‍‍ଡେଟ୍ ଉପଲବ୍ଧ ଅଛି}}</translation>
+<translation id="9025321516765676895">ଏଠାରେ ଅନେକଗୁଡ଼ିଏ ପାସୱାର୍ଡ ଥିବାରୁ Chrome ଆପଣଙ୍କର ପାସୱାର୍ଡ ଯାଞ୍ଚ କରିପାରିବ ନାହିଁ</translation>
 <translation id="9026991721384951619">ଆପଣଙ୍କର ଆକାଉଣ୍ଟ ସାଇନ୍ ଇନ୍ ବିବରଣୀ ପୁରୁଣା ହୋଇଥିବା ଯୋଗୁଁ Chrome OS ଆପଣଙ୍କର ଡାଟା ସିଙ୍କ୍ କରିପାରିଲା ନାହିଁ।</translation>
 <translation id="9067395829937117663">Google Chrome, Windows 7 କିମ୍ୱା ଉଚ୍ଚତର OS ଆବଶ୍ୟକ କରିଥାଏ।</translation>
 <translation id="911206726377975832">ଆପଣଙ୍କ ବ୍ରାଉଜିଂ ଡାଟା ମଧ୍ୟ ବିଲୋପ କରିବେ?</translation>

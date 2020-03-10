@@ -474,7 +474,6 @@
 <translation id="3024663005179499861">策略类型有误</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
 <translation id="3041612393474885105">证书信息</translation>
-<translation id="3057676462092457419">尚不支持 DnsOverHttps 模式“<ph name="SECURE_DNS_MODE_SECURE" />”，该模式现已设为“<ph name="SECURE_DNS_MODE_OFF" />”。</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">修补服务</translation>
 <translation id="3064966200440839136">将要退出隐身模式，以便通过外部应用付款。是否继续？</translation>
@@ -571,6 +570,7 @@
 <translation id="3484560055331845446">您可能会无法再访问自己的 Google 帐号。Chrome 建议您立即更改密码。系统会要求您登录。</translation>
 <translation id="3487845404393360112">纸匣 4</translation>
 <translation id="3495081129428749620">在网页“<ph name="PAGE_TITLE" />”中查找</translation>
+<translation id="3507936815618196901">为您的周边环境创建 3D 地图并跟踪摄像头位置</translation>
 <translation id="3512163584740124171">此政策会被忽略，因为同一政策组中的另一个政策具有更高的优先级。</translation>
 <translation id="3518941727116570328">多对象处理</translation>
 <translation id="3528171143076753409">服务器的证书不受信任。</translation>
@@ -922,6 +922,7 @@
 <translation id="5030338702439866405">颁发者</translation>
 <translation id="503069730517007720">必须为“<ph name="SOFTWARE_NAME" />”安装根证书，但您尚未安装该证书。您的 IT 管理员应仔细查看“<ph name="SOFTWARE_NAME" />”的配置说明，以解决此问题。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">关于 Google 翻译</translation>
+<translation id="503498442187459473"><ph name="HOST" /> 想使用您的摄像头和麦克风</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
 <translation id="5043480802608081735">您复制的链接</translation>
@@ -1030,7 +1031,6 @@
 <translation id="5457113250005438886">无效</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 名联系人}other{<ph name="CONTACT_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 名联系人}}</translation>
 <translation id="5470861586879999274">恢复修改(&amp;R)</translation>
-<translation id="5472133193607270166">当此设置处于开启状态时，网站无法根据您在各个不同网站上的浏览活动为您展示个性化广告。某些网站可能会无法正常运行。</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">此内容可能会试图在您的设备上安装危险的软件来窃取或删除您的信息。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">添加有效地址</translation>
@@ -1315,6 +1315,7 @@
 <translation id="6710594484020273272">&lt;输入搜索字词&gt;</translation>
 <translation id="671076103358959139">注册令牌：</translation>
 <translation id="6711464428925977395">代理服务器出现问题，或者地址有误。</translation>
+<translation id="6716672519412350405"><ph name="URL" /> 想为您的周边环境创建 3D 地图并跟踪摄像头位置</translation>
 <translation id="6738516213925468394">您的数据已于 <ph name="TIME" />使用您的<ph name="BEGIN_LINK" />同步密码<ph name="END_LINK" />加密。输入该密码即可开始同步。</translation>
 <translation id="674375294223700098">未知的服务器证书错误。</translation>
 <translation id="6744009308914054259">在等待连接时，您可以前往“下载内容”页面阅读离线文章。</translation>
@@ -1736,7 +1737,6 @@
 <translation id="8589998999637048520">最佳的质量</translation>
 <translation id="860043288473659153">持卡人姓名</translation>
 <translation id="8606726445206553943">使用您的 MIDI 设备</translation>
-<translation id="8616822740383114808">此设置是由“<ph name="SETTINGS_PAGE" />”中的“<ph name="ENFORCING_SETTING" />”强制执行的</translation>
 <translation id="861775596732816396">大小：4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">将此卡的信息保存到该设备</translation>

@@ -23,6 +23,7 @@
 #include "ash/public/cpp/android_intent_helper.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -161,13 +162,17 @@ void AssistantInteractionController::OnDeepLinkReceived(
   using assistant::util::DeepLinkType;
 
   if (type == DeepLinkType::kWhatsOnMyScreen) {
+    DCHECK(AssistantState::Get()->IsScreenContextAllowed());
+
     // Explicitly call ShowUi() to set the correct Assistant entry point.
     // ShowUi() will no-op if UI is already shown.
     assistant_controller_->ui_controller()->ShowUi(
         AssistantEntryPoint::kDeepLink);
 
     // The "What's on my screen" chip initiates a screen context interaction.
-    StartScreenContextInteraction(AssistantQuerySource::kWhatsOnMyScreen);
+    StartScreenContextInteraction(
+        /*include_assistant_structure=*/true,
+        /*region=*/gfx::Rect(), AssistantQuerySource::kWhatsOnMyScreen);
     return;
   }
 
@@ -259,8 +264,12 @@ void AssistantInteractionController::OnUiVisibilityChanged(
 
 void AssistantInteractionController::OnHighlighterSelectionRecognized(
     const gfx::Rect& rect) {
+  DCHECK(AssistantState::Get()->IsScreenContextAllowed());
+
   assistant_controller_->ui_controller()->ShowUi(AssistantEntryPoint::kStylus);
-  StartMetalayerInteraction(/*region=*/rect);
+  StartScreenContextInteraction(
+      /*include_assistant_structure=*/false, rect,
+      AssistantQuerySource::kStylus);
 }
 
 void AssistantInteractionController::OnInteractionStateChanged(
@@ -336,6 +345,9 @@ void AssistantInteractionController::OnCommittedQueryChanged(
 // pending query that occur outside of this method.
 void AssistantInteractionController::OnInteractionStarted(
     AssistantInteractionMetadataPtr metadata) {
+  // Abort any request in progress.
+  screen_context_request_factory_.InvalidateWeakPtrs();
+
   // Stop the interaction if the opt-in window is active.
   auto* assistant_setup = AssistantSetup::GetInstance();
   if (assistant_setup && assistant_setup->BounceOptInWindowIfActive()) {
@@ -897,17 +909,6 @@ void AssistantInteractionController::AttemptWarmerWelcome() {
   IncrementNumWarmerWelcomeTriggered();
 }
 
-void AssistantInteractionController::StartMetalayerInteraction(
-    const gfx::Rect& region) {
-  StopActiveInteraction(false);
-
-  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
-      l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN),
-      AssistantQuerySource::kStylus));
-
-  assistant_->StartMetalayerInteraction(region);
-}
-
 void AssistantInteractionController::StartProactiveSuggestionsInteraction(
     scoped_refptr<const ProactiveSuggestions> proactive_suggestions) {
   // For a proactive suggestions interaction, we've already cached the response
@@ -944,6 +945,8 @@ void AssistantInteractionController::StartProactiveSuggestionsInteraction(
 }
 
 void AssistantInteractionController::StartScreenContextInteraction(
+    bool include_assistant_structure,
+    const gfx::Rect& region,
     AssistantQuerySource query_source) {
   StopActiveInteraction(false);
 
@@ -951,8 +954,19 @@ void AssistantInteractionController::StartScreenContextInteraction(
       l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN),
       query_source));
 
-  // Note that screen context was cached when the UI was launched.
-  assistant_->StartCachedScreenContextInteraction();
+  assistant_controller_->screen_context_controller()->RequestScreenContext(
+      include_assistant_structure, region,
+      base::BindOnce(
+          [](const base::WeakPtr<AssistantInteractionController>& self,
+             ax::mojom::AssistantStructurePtr assistant_structure,
+             const std::vector<uint8_t>& screenshot) {
+            if (!self)
+              return;
+
+            self->assistant_->StartScreenContextInteraction(
+                std::move(assistant_structure), screenshot);
+          },
+          screen_context_request_factory_.GetWeakPtr()));
 }
 
 void AssistantInteractionController::StartTextInteraction(
@@ -985,6 +999,9 @@ void AssistantInteractionController::StopActiveInteraction(
   // events belonging to the interaction being stopped.
   model_.SetInteractionState(InteractionState::kInactive);
   model_.ClearPendingQuery();
+
+  // Abort any request in progress.
+  screen_context_request_factory_.InvalidateWeakPtrs();
 
   assistant_->StopActiveInteraction(cancel_conversation);
 

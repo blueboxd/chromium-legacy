@@ -12,7 +12,7 @@
 <translation id="3306357053520292004">Na ovom je računalu već dodan korisnik pomoću tog. Prijavite se nekim drugim računom.</translation>
 <translation id="3355053591933237049">Provjerite je li vaš uređaj povezan s internetom i pokušajte ponovo</translation>
 <translation id="3926852373333893095">Prijava je dopuštena samo poslovnim korisnicima GSuitea.</translation>
-<translation id="399130515869721714">Ne možete otvoriti zaslon za Prijavu Google računom jer ima poteškoća s instalacijom Chromea na ovom uređaju. Obratite se administratoru.</translation>
+<translation id="399130515869721714">Ne možete otvoriti zaslon za prijavu Google računom zbog poteškoće s instalacijom Chromea na ovom uređaju. Obratite se administratoru.</translation>
 <translation id="4057329986137569701">Došlo je do interne pogreške.</translation>
 <translation id="4267670563222825190">Za vaš račun nije pronađen nijedan korisnik domene. Obratite se administratoru.</translation>
 <translation id="4706454071748629324">Dodavanje novog korisnika nije uspjelo. Ovo računalo dopušta izradu samo jednog korisnika s radnim računom.</translation>
@@ -21,7 +21,7 @@
 <translation id="5265714013989877288">Ne možete nastaviti jer je došlo do pogreške prilikom promjene vaše zaporke za Windows. Obratite se administratoru.</translation>
 <translation id="6033715878377252112">Pomoć za Google davatelj vjerodajnica za Windows</translation>
 <translation id="6149399665202317746">Google davatelj vjerodajnica za Windows</translation>
-<translation id="6243062314475217481">Zaporka vašeg poslovnog računa ne zadovoljava zahtjeve kompleksnosti za Windows. Obratite se administratoru ako vam je potrebna pomoć.</translation>
+<translation id="6243062314475217481">Zaporka vašeg poslovnog računa nije dovoljno složena za Windows. Obratite se administratoru ako vam je potrebna pomoć.</translation>
 <translation id="6463752215771576050">To računalo nije moguće prijaviti za poslovno upravljanje.  Prijavite se nekim drugim radnim računom.</translation>
 <translation id="6582876473835446261">Zaporka za Windows nije točna. Pokušajte ponovo.</translation>
 <translation id="6657585470893396449">Zaporka</translation>
@@ -29,6 +29,7 @@
 <translation id="7209941495304122410">Unesite zaporku za Windows</translation>
 <translation id="74122330823428762">Može se prijaviti samo korisnik koji je zaključao ovaj uređaj</translation>
 <translation id="7536769223115622137">Dodaj radni račun</translation>
+<translation id="7884688232028658212">Prijavite se svojim poslovnim računom</translation>
 <translation id="8109730953933509335">Došlo je do pokušaja promjene zaporke za nevažećeg korisnika. Obratite se administratoru.</translation>
 <translation id="8448455363630347124">Vaš je račun onemogućen zbog previše netočnih pokušaja unošenja zaporke. Obratite se administratoru radi omogućivanja računa.</translation>
 <translation id="8453641970025433267">Administrator vam ne dopušta prijavu tim računom. Pokušajte s nekim drugim računom.</translation>

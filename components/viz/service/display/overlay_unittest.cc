@@ -215,6 +215,7 @@ class OverlayOutputSurface : public OutputSurface {
       override {
     return nullptr;
   }
+  gpu::MemoryTracker* GetMemoryTracker() override { return nullptr; }
 
   void set_is_displayed_as_overlay_plane(bool value) {
     is_displayed_as_overlay_plane_ = value;

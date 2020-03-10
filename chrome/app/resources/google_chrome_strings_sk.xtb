@@ -38,7 +38,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1877026089748256423">Prehliadač Chrome je zastaraný</translation>
 <translation id="1900795423379050516">Ak nie je určité nastavenie zobrazené na tejto stránke, skontrolujte <ph name="LINK_BEGIN" />nastavenia prehliadača Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Povoliť prihlásenie do Chromu</translation>
-<translation id="1983547493073464667">Chrome nemôže kontrolovať heslá.</translation>
 <translation id="2063848847527508675">Ak chcete uplatniť aktualizáciu, musíte reštartovať systém Chrome OS.</translation>
 <translation id="2094919256425865063">Chcete Chrome napriek tomu ukončiť?</translation>
 <translation id="2120620239521071941">Táto akcia odstráni zo zariadenia niekoľko položiek (počet: <ph name="ITEMS_COUNT" />). Ak budete chcieť svoje údaje neskôr opäť načítať, prihláste sa do Chromu ako používateľ <ph name="USER_EMAIL" />.</translation>
@@ -50,15 +49,14 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2309047409763057870">Toto je sekundárna inštalácia prehliadača Google Chrome – nemôže byť nastavený ako váš predvolený prehliadač.</translation>
 <translation id="2341767445688917208">Systému Chrome OS sa nepodarilo synchronizovať vaše heslá. Opraviť.</translation>
 <translation id="2348335408836342058">Chrome potrebuje povolenie pre tento web na prístup k fotoaparátu a mikrofónu</translation>
+<translation id="234869673307233423">Chrome nemôže skontrolovať heslá. Skúste to znova neskôr.</translation>
 <translation id="2429317896000329049">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje, pretože možnosť synchronizácie nie je pre vašu doménu k dispozícii.</translation>
 <translation id="2467438592969358367">Google Chrome sa pokúša exportovať vaše heslá. Ak to chcete povoliť, zadajte heslo systému Windows.</translation>
 <translation id="2485422356828889247">Odinštalovať</translation>
 <translation id="2534507159460261402">Google Pay (skopírované do Chromu)</translation>
-<translation id="2559627601176023786">Žiadne uložené heslá. Chrome môže skontrolovať heslá, keď ich uložíte do účtu Google.</translation>
 <translation id="2580411288591421699">Nie je možné nainštalovať rovnakú verziu prehliadača Google Chrome, ako je aktuálne spustená verzia. Zavrite Google Chrome a skúste znova.</translation>
 <translation id="2586406160782125153">Táto akcia odstráni zo zariadenia údaje prehliadania. Ak budete chcieť svoje údaje neskôr opäť načítať, prihláste sa do Chromu ako používateľ <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
-<translation id="261226884343006626">Chrome nemôže skontrolovať heslá. Skúste to znova zajtra.</translation>
 <translation id="2622559029861875898">Chrome nemôže skontrolovať dostupnosť aktualizácií. Skontrolujte internetové pripojenie.</translation>
 <translation id="2644798301485385923">Systém Chrome OS</translation>
 <translation id="2652691236519827073">Otvoriť odkaz na novej &amp;karte Chromu</translation>
@@ -72,6 +70,8 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2857540653560290388">Spúšťa sa Chrome…</translation>
 <translation id="2871893339301912279">Ste prihlásený/-á do prehliadača Chrome.</translation>
 <translation id="2888126860611144412">O prehliadači Chrome</translation>
+<translation id="2929907241665500097">Chrome sa neaktualizoval. Vyskytol sa problém. <ph name="BEGIN_LINK" />Vyriešiť problémy so sťahovaním aktualizácií Chromu a neúspešnými aktualizáciami<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – prihlásenie do siete – Chrome</translation>
 <translation id="3037838751736561277">Google Chrome je v režime na pozadí.</translation>
 <translation id="3065168410429928842">Karta Chrome</translation>
 <translation id="3080151273017101988">Po zatvorení prehliadača Google Chrome nechať aplikácie na pozadí spustené</translation>
@@ -82,7 +82,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3395323229510056640">Pomoc so systémom Chrome OS</translation>
 <translation id="3396977131400919238">V priebehu inštalácie sa vyskytla chyba operačného systému. Stiahnite prehliadač Google Chrome znova.</translation>
 <translation id="3398288718845740432">Skryť v Ponuke Chrome</translation>
-<translation id="3434246496373299699">Keď sa prihlásite pomocou účtu Google, Chrome môže skontrolovať vaše heslá</translation>
 <translation id="3451115285585441894">Prebieha pridávanie do prehliadača Chrome...</translation>
 <translation id="345171907106878721">Pridajte si účet do prehliadača Chrome</translation>
 <translation id="34857402635545079">Tiež vymazať údaje z Chromu (<ph name="URL" />)</translation>
@@ -98,7 +97,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="386202838227397562">Zatvorte všetky okná prehliadača Google Chrome a skúste to znova.</translation>
 <translation id="3873044882194371212">Otvoriť odkaz v okne inko&amp;gnito Chromu</translation>
 <translation id="3889417619312448367">Odinštalovanie prehliadača Google Chrome</translation>
-<translation id="3943605108614542032">Aktualizácie Chromu riadi váš správca</translation>
 <translation id="4050175100176540509">V najnovšej verzii sú k dispozícii dôležité vylepšenia zabezpečenia a nové funkcie.</translation>
 <translation id="4053720452172726777">Prispôsobiť a ovládať prehliadač Google Chrome</translation>
 <translation id="4143243756087420366">Meno a obrázok profilu Chromu</translation>
@@ -112,7 +110,9 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4331809312908958774">OS Chrome</translation>
 <translation id="4335235004908507846">Chrome vás môže chrániť pred porušeniami ochrany údajov, škodlivými rozšíreniami a ďalšími hrozbami</translation>
 <translation id="4343195214584226067">Rozšírenie <ph name="EXTENSION_NAME" /> bolo pridané do Chromu</translation>
+<translation id="4384570495110188418">Chrome nemôže skontrolovať heslá, pretože ste sa neprihlásili</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome – prihlásenie do siete – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">V prehliadači Google Chrome práve prebieha ďalšia operácia. Skúste to znova neskôr.</translation>
 <translation id="4480040274068703980">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje, pretože sa pri prihlasovaní vyskytla chyba.</translation>
 <translation id="4561051373932531560">Prehliadač Google Chrome vám umožňuje vybrať telefónne číslo na webe a zavolať naň pomocou aplikácie Skype.</translation>
@@ -122,6 +122,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4600710005438004015">Chrome sa nepodarilo aktualizovať na najnovšiu verziu. K dispozícii tak nie sú niektoré nové funkcie a bezpečnostné opravy.</translation>
 <translation id="4631713731678262610">Skryť v Ponuke Chrome</translation>
 <translation id="4633000520311261472">Z dôvodu vyššej bezpečnosti prehliadača Chrome sme zakázali niektoré rozšírenia, ktoré nedodáva <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohli byť pridané bez vášho vedomia.</translation>
+<translation id="4653397506175047429">Chrome nemôže skontrolovať heslá. Skúste to znova o 24 hodín.</translation>
 <translation id="4728575227883772061">Inštalácia zlyhala kvôli neurčenej chybe. Ak je prehliadač Google Chrome momentálne spustený, zatvorte ho a skúste znova.</translation>
 <translation id="4750550185319565338">Ak chcete povoliť doplnok <ph name="PLUGIN_NAME" />, reštartujte Chrome</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -158,6 +159,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome sa nepodarilo spustiť. Skúste to znova.</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – prihlásenie do siete</translation>
 <translation id="5940385492829620908">Tu nájdete svoj obsah na webe, záložky a ďalšie položky prehliadača Chrome.</translation>
 <translation id="5941830788786076944">Nastaviť prehľadávač Google Chrome ako predvolený</translation>
 <translation id="6070348360322141662">V záujme vyššej miery zabezpečenia budú dáta v prehliadači Google Chrome šifrované</translation>
@@ -211,9 +213,9 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7808348361785373670">Odstrániť z prehliadača Chrome...</translation>
 <translation id="7825851276765848807">Inštalácia zlyhala kvôli neznámej chybe. Skúste aplikáciu Google Chrome stiahnuť znova.</translation>
 <translation id="7855730255114109580">Google Chrome je aktuálny.</translation>
-<translation id="7888686278524752658">Chrome sa neaktualizoval. Vyskytol sa problém. Vyriešte problémy so sťahovaním aktualizácií Chromu a neúspešnými aktualizáciami.</translation>
 <translation id="7890208801193284374">Ak počítač zdieľate s rodinou a priateľmi, môžu v prehliadači Chrome prehliadať oddelene a tiež si ho nastaviť podľa vlastných požiadaviek.</translation>
 <translation id="7896673875602241923">Do Chromu sa už na tomto počítači niekto prihlásil pomocou účtu <ph name="ACCOUNT_EMAIL_LAST" />. Ak chcete ponechať svoje informácie oddelené, vytvorte v Chrome nového používateľa.</translation>
+<translation id="7905891027772979035">Chrome nemôže skontrolovať rozšírenia. Skúste to znova neskôr.</translation>
 <translation id="7916016681687251387">Systému Chrome OS sa nepodarilo synchronizovať vaše údaje. Opraviť.</translation>
 <translation id="7930071585467473040">Google Chrome sa pokúša kopírovať heslá.</translation>
 <translation id="7962410387636238736">Tento počítač už nebude dostávať aktualizácie prehliadača Google Chrome, pretože systémy Windows XP a Windows Vista už nie sú podporované</translation>

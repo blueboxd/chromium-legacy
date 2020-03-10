@@ -46,9 +46,10 @@
 <translation id="1291207594882862231">Effacer l'historique, les témoins, les données de site, le cache…</translation>
 <translation id="129382876167171263">Les fichiers enregistrés par les sites Web s'affichent ici</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
+<translation id="1303339473099049190">Ce mot de passe est introuvable. Vérifiez l'orthographe et réessayez.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Envoyé par <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Grouper les onglets</translation>
-<translation id="1311657260431405215">Ce code QR ne correspond pas à une URL: <ph name="QRCODEVALUE" /></translation>
+<translation id="1311657260431405215">Ce code QR ne correspond pas à une URL : <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">L'historique de navigation est ouvert</translation>
 <translation id="1331212799747679585">Impossible de mettre à jour Chrome. Autres options</translation>
 <translation id="1332501820983677155">Raccourcis relatifs aux fonctionnalités Google Chrome</translation>
@@ -167,6 +168,7 @@ Touchez un mot pour lancer une recherche. Pour affiner votre recherche, maintene
 <translation id="2156074688469523661">Sites restants (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Pour partager un élément de votre téléphone avec un autre appareil, activez la synchronisation dans les paramètres de Chrome sur les deux appareils</translation>
 <translation id="2175927920773552910">Code QR</translation>
+<translation id="2182457891543959921">Demander avant d'autoriser les sites à créer une carte 3D de votre environnement ou à faire le suivi de la position de l'appareil photo (recommandé)</translation>
 <translation id="218608176142494674">Partage</translation>
 <translation id="2227444325776770048">Continuer comme <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Synchronisation et services Google</translation>
@@ -192,7 +194,6 @@ Touchez un mot pour lancer une recherche. Pour affiner votre recherche, maintene
 <translation id="2407481962792080328">Lorsque vous vous connecterez à votre compte Google, cette fonctionnalité sera activée</translation>
 <translation id="2410754283952462441">Choisir un compte</translation>
 <translation id="2414886740292270097">Foncé</translation>
-<translation id="2416359993254398973">Google Chrome a besoin de votre autorisation pour accéder à votre caméra pour ce site.</translation>
 <translation id="2426805022920575512">Choisir un autre compte</translation>
 <translation id="2433507940547922241">Apparence</translation>
 <translation id="2434158240863470628">Téléchargement terminé <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -324,6 +325,7 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="3350687908700087792">Fermer tous les onglets de navigation privée</translation>
 <translation id="3353615205017136254">Page en version simplifiée fournie par Google. Touchez le bouton Charger la page d'origine pour charger la page originale.</translation>
 <translation id="3367813778245106622">Reconnectez-vous pour commencer la synchronisation</translation>
+<translation id="3373979091428520308">Pour partager cette page sur un autre appareil, activez la synchronisation dans les paramètres de Chrome sur l'autre appareil</translation>
 <translation id="3374023511497244703">Vos favoris, votre historique, vos mots de passe et d'autres données de Chrome ne seront plus synchronisés avec votre compte Google.</translation>
 <translation id="3384347053049321195">Partager une image</translation>
 <translation id="3386292677130313581">Demander avant d'autoriser des sites à connaître votre emplacement (recommandé)</translation>
@@ -341,6 +343,7 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="3522247891732774234">Mise à jour disponible. Plus d'options</translation>
 <translation id="3524138585025253783">IU de concepteur</translation>
 <translation id="3527085408025491307">Dossier</translation>
+<translation id="3538390592868664640">Empêcher les sites de créer une carte 3D de votre environnement et de faire le suivi de la position de l'appareil photo</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> ko disponible(s)</translation>
 <translation id="3549657413697417275">Rechercher dans votre historique</translation>
 <translation id="3557336313807607643">Ajouter aux contacts</translation>
@@ -437,6 +440,7 @@ Vous seul voyez les images de l'appareil photo. Le site n'y a pas accès.</trans
 <translation id="4298388696830689168">Sites associés</translation>
 <translation id="4307992518367153382">Paramètres de base</translation>
 <translation id="4314815835985389558">Gérer la synchronisation</translation>
+<translation id="4320177379694898372">Pas de connexion Internet</translation>
 <translation id="4321739720395210191">Impossible d'ouvrir votre appareil photo. Redémarrez votre appareil et réessayez.</translation>
 <translation id="4351244548802238354">Fermer la boîte de dialogue</translation>
 <translation id="4353114845960720315">Lorsque vous êtes en mode RV, ce site pourrait en apprendre davantage sur :</translation>
@@ -615,7 +619,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5530766185686772672">Fermer les onglets de navigation privée</translation>
 <translation id="5534640966246046842">Site copié</translation>
 <translation id="5561549206367097665">En attente du réseau…</translation>
-<translation id="557283862590186398">Google Chrome a besoin de votre autorisation pour accéder à votre micro pour ce site.</translation>
 <translation id="55737423895878184">La position et les notifications sont autorisées</translation>
 <translation id="5578795271662203820">Rechercher cette image avec <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Vous pouvez toujours choisir les éléments à synchroniser dans les <ph name="BEGIN_LINK1" />paramètres<ph name="END_LINK1" />.</translation>
@@ -672,6 +675,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5956665950594638604">Centre d'aide de Chrome : nouvel onglet</translation>
 <translation id="5958275228015807058">Trouvez vos fichiers et vos pages dans Téléchargements</translation>
 <translation id="5962718611393537961">Toucher pour réduire</translation>
+<translation id="5964805880140440652">Pour partager cette page avec un autre appareil, activez la synchronisation dans les paramètres de Chrome</translation>
 <translation id="6000066717592683814">Conserver Google</translation>
 <translation id="6005538289190791541">Mot de passe suggéré</translation>
 <translation id="6036057147555329831">ICU supplémentaire</translation>
@@ -723,7 +727,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6378173571450987352">Détails : triés par quantité de données utilisées</translation>
 <translation id="6381421346744604172">Assombrir les sites Web</translation>
 <translation id="6388207532828177975">Effacer et réinitialiser</translation>
-<translation id="6393863479814692971">Google Chrome a besoin de votre autorisation pour accéder à votre caméra et à votre micro pour ce site.</translation>
 <translation id="6395288395575013217">LIEN</translation>
 <translation id="6404511346730675251">Modifier le favori</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
@@ -776,7 +779,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6676840375528380067">Effacer vos données Chrome de cet appareil?</translation>
 <translation id="6689172468748959065">Photos de profils</translation>
 <translation id="6697492270171225480">Afficher des suggestions de pages similaires lorsqu'une page ne peut pas être trouvée</translation>
-<translation id="6697947395630195233">Chrome a besoin d'accéder à votre position afin de la partager avec ce site.</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
 <translation id="6699370405921460408">Les serveurs de Google optimiseront les pages que vous consultez.</translation>
 <translation id="6710213216561001401">Précédent</translation>
@@ -968,6 +970,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8186512483418048923"><ph name="FILES" /> fichiers restants</translation>
 <translation id="8190358571722158785">Il reste 1 jour</translation>
 <translation id="8200772114523450471">Reprendre</translation>
+<translation id="8206354486702514201">Votre administrateur impose la valeur associée à ce paramètre.</translation>
 <translation id="8209050860603202033">Ouvrir l'image</translation>
 <translation id="8218622182176210845">Gérer votre compte</translation>
 <translation id="8224471946457685718">Télécharger des articles pour vous par connexion Wi-Fi</translation>
@@ -989,7 +992,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8364299278605033898">Afficher des sites Web populaires</translation>
 <translation id="8368027906805972958">Appareil inconnu ou non pris en charge (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Autorisez la synchronisation en arrière-plan pour un site en particulier.</translation>
-<translation id="8378714024927312812">Géré par votre organisation</translation>
 <translation id="8380167699614421159">Ce site diffuse des annonces intrusives ou trompeuses</translation>
 <translation id="8393700583063109961">Envoyer un message</translation>
 <translation id="8413126021676339697">Afficher l'historique complet</translation>

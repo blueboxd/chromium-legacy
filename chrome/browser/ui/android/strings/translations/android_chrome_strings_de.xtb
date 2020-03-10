@@ -168,6 +168,7 @@ Tippen Sie auf ein Wort, um eine Suche damit zu starten. Sie können Ihre Suche 
 <translation id="2156074688469523661">Restliche Websites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Wenn Sie Inhalte auf Ihrem Smartphone mit einem anderen Gerät teilen möchten, aktivieren Sie auf beiden Geräten in den Chrome-Einstellungen die Synchronisierung</translation>
 <translation id="2175927920773552910">QR-Code</translation>
+<translation id="2182457891543959921">Nachfragen, bevor Websites erlaubt wird, eine 3D-Karte meiner Umgebung zu erstellen oder die Kameraposition zu verfolgen (empfohlen)</translation>
 <translation id="218608176142494674">Freigabe</translation>
 <translation id="2227444325776770048">Als <ph name="USER_FULL_NAME" /> fortfahren</translation>
 <translation id="2234876718134438132">Synchronisierung und Google-Dienste</translation>
@@ -193,7 +194,6 @@ Tippen Sie auf ein Wort, um eine Suche damit zu starten. Sie können Ihre Suche 
 <translation id="2407481962792080328">Wenn Sie sich in Ihrem Google-Konto anmelden, ist diese Funktion eingeschaltet</translation>
 <translation id="2410754283952462441">Konto auswählen</translation>
 <translation id="2414886740292270097">Dunkel</translation>
-<translation id="2416359993254398973">Chrome benötigt für diese Website die Berechtigung, auf Ihre Kamera zuzugreifen.</translation>
 <translation id="2426805022920575512">Anderes Konto auswählen</translation>
 <translation id="2433507940547922241">Darstellung</translation>
 <translation id="2434158240863470628">Download abgeschlossen <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="3522247891732774234">Update verfügbar. Weitere Optionen</translation>
 <translation id="3524138585025253783">Benutzeroberfläche für Entwickler</translation>
 <translation id="3527085408025491307">Ordner</translation>
+<translation id="3538390592868664640">Websites daran hindern, eine 3D-Karte meiner Umgebung zu erstellen oder die Kameraposition zu verfolgen</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB verfügbar</translation>
 <translation id="3549657413697417275">Im Verlauf suchen</translation>
 <translation id="3557336313807607643">Zu Kontakten hinzufügen</translation>
@@ -439,6 +440,7 @@ Nur Sie können sehen, auf was Ihre Kamera gerichtet ist. Die Website kann die B
 <translation id="4298388696830689168">Verknüpfte Websites</translation>
 <translation id="4307992518367153382">Grundeinstellungen</translation>
 <translation id="4314815835985389558">Synchronisierung verwalten</translation>
+<translation id="4320177379694898372">Keine Internetverbindung</translation>
 <translation id="4321739720395210191">Die Kamera kann nicht geöffnet werden. Starten Sie das Gerät neu und versuchen Sie es noch einmal.</translation>
 <translation id="4351244548802238354">Dialogfeld schließen</translation>
 <translation id="4353114845960720315">Während Sie im VR-Modus sind, erhält die Website möglicherweise bestimmte Informationen über Sie. Dazu gehören:</translation>
@@ -617,7 +619,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5530766185686772672">Inkognito-Tabs schließen</translation>
 <translation id="5534640966246046842">Website kopiert</translation>
 <translation id="5561549206367097665">Warten auf Netzwerk…</translation>
-<translation id="557283862590186398">Chrome benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen.</translation>
 <translation id="55737423895878184">Standortermittlung und Benachrichtigungen sind erlaubt</translation>
 <translation id="5578795271662203820">In <ph name="SEARCH_ENGINE" /> nach dem Bild suchen</translation>
 <translation id="5581519193887989363">Sie können in den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> auswählen, was Sie synchronisieren möchten.</translation>
@@ -726,7 +727,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6378173571450987352">Details: Nach der Menge der verwendeten Daten sortiert</translation>
 <translation id="6381421346744604172">Websites verdunkeln</translation>
 <translation id="6388207532828177975">Löschen &amp; zurücksetzen</translation>
-<translation id="6393863479814692971">Chrome benötigt für diese Website die Berechtigung, auf Ihre Kamera und Ihr Mikrofon zuzugreifen.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Lesezeichen bearbeiten</translation>
 <translation id="6406506848690869874">Synchronisierung</translation>
@@ -779,7 +779,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6676840375528380067">Ihre Chrome-Daten von diesem Gerät löschen?</translation>
 <translation id="6689172468748959065">Profilfotos</translation>
 <translation id="6697492270171225480">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
-<translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
 <translation id="6699370405921460408">Google-Server optimieren die Seiten, die Sie besuchen.</translation>
 <translation id="6710213216561001401">Zurück</translation>
@@ -971,6 +970,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8186512483418048923">Noch <ph name="FILES" /> Dateien</translation>
 <translation id="8190358571722158785">1 Tag übrig</translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
+<translation id="8206354486702514201">Diese Einstellung wird von Ihrem Administrator erzwungen.</translation>
 <translation id="8209050860603202033">Bild öffnen</translation>
 <translation id="8218622182176210845">Konto verwalten</translation>
 <translation id="8224471946457685718">"Artikel für mich" bei bestehender WLAN-Verbindung herunterladen</translation>
@@ -992,7 +992,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8364299278605033898">Beliebte Websites ansehen</translation>
 <translation id="8368027906805972958">Unbekanntes oder nicht unterstütztes Gerät (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
-<translation id="8378714024927312812">Von Ihrer Organisation verwaltet</translation>
 <translation id="8380167699614421159">Diese Website zeigt aufdringliche oder irreführende Werbung an</translation>
 <translation id="8393700583063109961">Nachricht senden</translation>
 <translation id="8413126021676339697">Gesamtverlauf anzeigen</translation>

@@ -76,6 +76,16 @@ void SystemWebAppManagerBrowserTestBase::WaitForTestSystemAppInstall() {
   }
 }
 
+content::WebContents*
+SystemWebAppManagerBrowserTestBase::WaitForSystemAppInstallAndLoad(
+    SystemAppType system_app_type) {
+  WaitForTestSystemAppInstall();
+  apps::AppLaunchParams params = LaunchParamsForApp(system_app_type);
+  content::WebContents* web_contents = LaunchApp(params);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
+  return web_contents;
+}
+
 Browser* SystemWebAppManagerBrowserTestBase::WaitForSystemAppInstallAndLaunch(
     SystemAppType system_app_type) {
   WaitForTestSystemAppInstall();

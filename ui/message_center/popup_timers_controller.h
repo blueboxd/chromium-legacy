@@ -56,6 +56,14 @@ class MESSAGE_CENTER_EXPORT PopupTimersController
   // Removes and cancels a single popup timer, if it exists.
   void CancelTimer(const std::string& id);
 
+  // Set timeout values used to dismiss notifications.
+  static void SetNotificationTimeouts(int default_timeout,
+                                      int high_priority_timeout);
+
+  base::TimeDelta GetTimeoutForNotification(Notification* notification);
+
+  int GetNotificationTimeoutDefault();
+
  private:
   // Weak, global.
   MessageCenter* message_center_;
@@ -64,6 +72,11 @@ class MESSAGE_CENTER_EXPORT PopupTimersController
   using PopupTimerCollection =
       std::map<std::string, std::unique_ptr<PopupTimer>>;
   PopupTimerCollection popup_timers_;
+
+  // Timeout values used to dismiss notifications automatically after they are
+  // shown.
+  static int notification_timeout_default_seconds_;
+  static int notification_timeout_high_priority_seconds_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupTimersController);
 };

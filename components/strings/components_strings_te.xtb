@@ -477,7 +477,6 @@
 <translation id="3024663005179499861">చెల్లని విధాన రకం</translation>
 <translation id="3037605927509011580">ఆవ్, స్నాప్!</translation>
 <translation id="3041612393474885105">సర్టిఫికెట్ సమాచారం</translation>
-<translation id="3057676462092457419">DnsOverHttps మోడ్ <ph name="SECURE_DNS_MODE_SECURE" />కు ఇంకా మద్దతు లేదు, ఆ మోడ్ <ph name="SECURE_DNS_MODE_OFF" />కు సెట్ చేయబడింది.</translation>
 <translation id="3060227939791841287">C9 (ఎన్వలప్)</translation>
 <translation id="3061707000357573562">ప్యాచ్ సేవ</translation>
 <translation id="3064966200440839136">బాహ్య అప్లికేషన్‌ ద్వారా చెల్లించడానికి అజ్ఞాత మోడ్ నుండి నిష్క్రమిస్తోంది. కొనసాగించాలా?</translation>
@@ -577,6 +576,7 @@
 <translation id="3487845404393360112">ట్రే 4</translation>
 <translation id="3495081129428749620">పేజీలో కనుగొను
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">మీ పరిసరాల 3D మ్యాప్‌ను రూపొందించడం, అలాగే కెమెరా పొజిషన్‌ను ట్రాక్ చేయడం</translation>
 <translation id="3512163584740124171">ఈ విధానం విస్మరించబడుతుంది, ఎందుకంటే ఒకే విధాన సమూహం నుండి మరొక విధానం అధిక ప్రాధాన్యతను కలిగి ఉంది.</translation>
 <translation id="3518941727116570328">అనేక వస్తువులను హ్యాండిల్ చేయడం</translation>
 <translation id="3528171143076753409">సర్వర్ ప్రమాణపత్రం విశ్వసనీయమైనది కాదు.</translation>
@@ -930,6 +930,7 @@
 <translation id="5030338702439866405">వీరిచే జారీచేయబడింది</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" యొక్క రూట్ సర్టిఫికేట్ అవసరం, కానీ అది ఇన్‌స్టాల్ చేయబడలేదు. ఈ సమస్యను పరిష్కరించాలంటే, మీ IT నిర్వాహకులు "<ph name="SOFTWARE_NAME" />" యొక్క కాన్ఫిగరేషన్ సూచనలను పరిశీలించాలి. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google అనువాదం గురించి</translation>
+<translation id="503498442187459473"><ph name="HOST" /> మీ కెమెరాను మరియు మైక్రోఫోన్‌ను ఉపయోగించాలనుకుంటోంది</translation>
 <translation id="5039804452771397117">అనుమతించు</translation>
 <translation id="5040262127954254034">గోప్యత</translation>
 <translation id="5043480802608081735">మీరు కాపీ చేసిన లింక్</translation>
@@ -1038,7 +1039,6 @@
 <translation id="5457113250005438886">చెల్లదు</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;సవరించడాన్ని పునరావృతం చేయి</translation>
-<translation id="5472133193607270166">ఆన్‌లో ఉన్నప్పుడు, ప్రకటనలను వ్యక్తిగతీకరించడానికి సైట్‌లు వేర్వేరు సైట్‌లలో మీ బ్రౌజింగ్ కార్యకలాపాన్ని ఉపయోగించలేవు. కొన్ని సైట్‌లు సరిగ్గా పనిచేయకపోవచ్చు.</translation>
 <translation id="5478437291406423475">B6/C4 (ఎన్వలప్)</translation>
 <translation id="5481076368049295676">ఈ కంటెంట్ మీ సమాచారాన్ని దొంగిలించగల లేదా తొలగించగల హానికరమైన సాఫ్ట్‌వేర్‌ను మీ పరికరంలో ఇన్‌స్టాల్ చేయడానికి ప్రయత్నించవచ్చు. <ph name="BEGIN_LINK" />ఏదేమైనా చూపు<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">చెల్లుబాటు అయ్యే చిరునామాను జోడించండి</translation>
@@ -1323,6 +1323,7 @@
 <translation id="6710594484020273272">&lt;శోధన పదాన్ని టైప్ చేయండి&gt;</translation>
 <translation id="671076103358959139">నమోదు టోకెన్:</translation>
 <translation id="6711464428925977395">ప్రాక్సీ సర్వర్‌లో ఏదో తప్పు ఉంది లేదా చిరునామా సరైనది కాదు.</translation>
+<translation id="6716672519412350405">మీ పరిసరాల 3D మ్యాప్‌ను రూపొందించడానికి, కెమెరా పొజిషన్‌ను ట్రాక్ చేయడానికి <ph name="URL" /> అనుమతి అడుగుతోంది</translation>
 <translation id="6738516213925468394"><ph name="TIME" /> తేదీన మీ <ph name="BEGIN_LINK" />సింక్‌ రహస్య పదబంధం <ph name="END_LINK" />తో మీ డేటా ఎన్‌క్రిప్ట్ చేయ‌బ‌డింది. సింక్‌ను ప్రారంభించడానికి దీన్ని నమోదు చేయండి.</translation>
 <translation id="674375294223700098">తెలియని సర్వర్ ప్రమాణపత్రం లోపం.</translation>
 <translation id="6744009308914054259">కనెక్షన్ కోసం వేచి ఉన్నప్పుడు, మీరు ఆఫ్‌లైన్ కథనాలను చదవడానికి డౌన్‌లోడ్‌లను సందర్శించవచ్చు.</translation>
@@ -1739,7 +1740,6 @@
 <translation id="8589998999637048520">ఉత్తమ నాణ్యత</translation>
 <translation id="860043288473659153">కార్డుదారుని పేరు</translation>
 <translation id="8606726445206553943">మీ MIDI పరికరాలను ఉపయోగించాలనుకుంటోంది</translation>
-<translation id="8616822740383114808">ఈ సెట్టింగ్ "<ph name="ENFORCING_SETTING" />" ద్వారా "<ph name="SETTINGS_PAGE" />"లో అమలు చేయబడుతుంది</translation>
 <translation id="861775596732816396">పరిమాణం 4</translation>
 <translation id="8622948367223941507">చట్ట సంబంధితం-అదనం</translation>
 <translation id="8625384913736129811">ఈ కార్డ్‌ను ఈ పరికరానికి సేవ్ చేయి</translation>

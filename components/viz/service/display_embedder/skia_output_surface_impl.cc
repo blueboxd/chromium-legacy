@@ -677,6 +677,12 @@ void SkiaOutputSurfaceImpl::SetEnableDCLayers(bool enable) {
 }
 #endif
 
+gpu::MemoryTracker* SkiaOutputSurfaceImpl::GetMemoryTracker() {
+  // Should only be called after initialization.
+  DCHECK(impl_on_gpu_);
+  return impl_on_gpu_->GetMemoryTracker();
+}
+
 void SkiaOutputSurfaceImpl::SetCapabilitiesForTesting(
     gfx::SurfaceOrigin output_surface_origin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

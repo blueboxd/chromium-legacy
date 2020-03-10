@@ -474,7 +474,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="3024663005179499861">Tipo de política incorreto</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
 <translation id="3041612393474885105">Informações do certificado</translation>
-<translation id="3057676462092457419">O modo DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> ainda não é compatível, o modo foi definido como <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Aplicar patch ao serviço</translation>
 <translation id="3064966200440839136">Saindo do modo de navegação anônima para pagar usando um aplicativo externo. Continuar?</translation>
@@ -574,6 +573,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="3487845404393360112">Bandeja 4</translation>
 <translation id="3495081129428749620">Encontrar na página
     <ph name="PAGE_TITLE" /></translation>
+<translation id="3507936815618196901">Criar um mapa 3D dos seus arredores e acompanhar a posição da câmera</translation>
 <translation id="3512163584740124171">Esta política é ignorada porque outra política do mesmo grupo tem uma prioridade mais alta.</translation>
 <translation id="3518941727116570328">Gerenciamento de vários objetos</translation>
 <translation id="3528171143076753409">O certificado do servidor não é confiável.</translation>
@@ -926,6 +926,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5030338702439866405">Emitido por</translation>
 <translation id="503069730517007720">Um certificado raiz para "<ph name="SOFTWARE_NAME" />" é necessário, mas não está instalado. O administrador de TI deve revisar as instruções de configuração do "<ph name="SOFTWARE_NAME" />" para corrigir esse problema. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Sobre o Google Tradutor</translation>
+<translation id="503498442187459473"><ph name="HOST" /> quer usar sua câmera e seu microfone</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5043480802608081735">Link que você copiou</translation>
@@ -1034,7 +1035,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5457113250005438886">Inválidos</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Refazer editar</translation>
-<translation id="5472133193607270166">Quando ativado, os sites não podem usar atividades de navegação entre sites diferentes para personalizar anúncios. Alguns sites talvez não funcionem adequadamente.</translation>
 <translation id="5478437291406423475">Envelope 125 mm x 324 mm</translation>
 <translation id="5481076368049295676">Este conteúdo pode tentar instalar softwares perigosos no seu dispositivo que roubam ou excluem suas informações. <ph name="BEGIN_LINK" />Mostrar mesmo assim<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Adicionar endereço válido</translation>
@@ -1079,7 +1079,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="563324245173044180">Conteúdo enganoso bloqueado.</translation>
 <translation id="5644090287519800334">Mudança X no lado 1 da imagem</translation>
 <translation id="5645854190134202180">Segundo turno</translation>
-<translation id="5654927323611874862">Código do relatório de falha enviado:</translation>
+<translation id="5654927323611874862">Código do relatório de erros enviado:</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5663614846592581799">9x11 (Envelope)</translation>
 <translation id="5663955426505430495">O administrador do dispositivo instalou extensões para funções adicionais. As extensões têm acesso a alguns dos seus dados.</translation>
@@ -1320,6 +1320,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6710594484020273272">&lt;Digitar termo de pesquisa&gt;</translation>
 <translation id="671076103358959139">Token de inscrição:</translation>
 <translation id="6711464428925977395">Há algo errado com o servidor proxy, ou o endereço está incorreto.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> quer criar um mapa 3D dos seus arredores e acompanhar a posição da câmera</translation>
 <translation id="6738516213925468394">Seus dados foram criptografados com sua <ph name="BEGIN_LINK" />senha longa de sincronização<ph name="END_LINK" /> em <ph name="TIME" />. Digite-a para iniciar a sincronização.</translation>
 <translation id="674375294223700098">Erro, certificado de servidor desconhecido.</translation>
 <translation id="6744009308914054259">Enquanto espera por uma conexão, acesse "Downloads" para ler artigos off-line.</translation>
@@ -1741,7 +1742,6 @@ Mais detalhes:
 <translation id="8589998999637048520">Melhor qualidade</translation>
 <translation id="860043288473659153">Nome do titular do cartão</translation>
 <translation id="8606726445206553943">Usar seus dispositivos MIDI</translation>
-<translation id="8616822740383114808">Esta configuração é aplicada por "<ph name="ENFORCING_SETTING" />" em "<ph name="SETTINGS_PAGE" />"</translation>
 <translation id="861775596732816396">Tamanho 4</translation>
 <translation id="8622948367223941507">Legal extra</translation>
 <translation id="8625384913736129811">Salvar este cartão neste dispositivo</translation>

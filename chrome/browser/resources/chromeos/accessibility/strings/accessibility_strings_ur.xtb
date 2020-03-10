@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">اگلا</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">اگلی سطح 4 کی کوئی ہیڈنگ نہیں ہے</translation>
+<translation id="1212770441379271564">‏اگلے کچھ شارٹ کٹس ChromeVox کمانڈز نہیں ہیں، لیکن Chrome سے زیادہ سے زیادہ فائدہ حاصل کرنے کیلئے وہ ابھی بھی بہت مفید ہیں۔
+بٹنز اور لنکس جیسے کارروائی کے قابل آئٹمز میں آگے نیویگیٹ کرنے کیلئے، Tab کلید دبائیں۔ پیچھے کی طرف نیویگیٹ کرنے کیلئے، Shift+Tab کو دبائیں۔ 
+Chrome براؤزر کا پتہ باکس، جسے اومنی باکس بھی کہا جاتا ہے، اس میں داخل ہونے کیلئے، Control + L دبائیں۔ 
+کھولنے اور خودکار طور پر نئے ٹیب پر جانے کیلئے، Control+T دبائیں۔ آپ کا کرسر اومنی باکس میں ہوگا۔ 
+کوئی ٹیب بند کرنے کیلئے، Control+W دبائیں۔ 
+کھلے ہوئے ٹیبز کے درمیان آگے جانے کیلئے، Control+Tab استعمال کریں۔ 
+Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</translation>
 <translation id="1213216066620407844">‏ChromeVox‏ - Chrome کی آواز بن رہا ہے</translation>
 <translation id="1225969361094801578">گہرا سلیٹی خاکستری</translation>
 <translation id="1229276918471378188">پچھلی جمپ</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">رنگ کا منتخب کنندہ</translation>
 <translation id="4221012616705981690">کوئی سابقہ فہرست نہیں ہے</translation>
 <translation id="4221071177874897997">بولڈ کی نشاندہی کریں:</translation>
+<translation id="4225355998815256469">فارم کنٹرولز</translation>
 <translation id="4229646983878045487">تاریخ وقت</translation>
 <translation id="4230834257931120629">ہلکا سلیٹی خاکستری</translation>
 <translation id="4231102694147661229">ڈیولپر کے اختیارات فعال کریں</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">جملہ</translation>
 <translation id="4623097797855662355">خاتمہ کتاب</translation>
 <translation id="463135993322337640">‏نیا کیا ہے یہ جاننے کیلئے ChromeVox o, n دبائیں</translation>
+<translation id="4646606380313237501">‏{"ar": "عربی"،
+    "as": "آسامی"،
+    "aw": "اودھی"،
+    "be": "بنگالی"،
+    "bg": "بلغاریائی"،
+    "bh": "بِہاری"،
+    "bo": "تبتی"،
+    "br": "برج"،
+    "ca": "کیٹیلان"،
+    "ckb": "سورانی"،
+    "cs": "چیک"،
+    "cy": "ويلش"،
+    "da": "ڈينش"،
+    "de": "جرمن"،
+    "de_CH": "جرمن (سوئٹزر لینڈ)"،
+    "de_DE": "جرمن (جرمنی)"،
+    "dra": "دراوڈین"،
+    "el": "يونانی"،
+    "en": "انگريزی"،
+    "en_CA": "انگريزی (کینیڈا)"،
+    "en_GB": "انگريزی (برطانیہ)"،
+    "en_US": "انگريزی (ریاستہائے متحدہ امریکہ)"،
+    "eo": "اسپیرانٹو"،
+    "es": "ہسپانوی"،
+    "et": "اسٹونیائی"،
+    "fa": "فارسی"،
+    "fr": "فرانسيسی"،
+    "fr_CA": "فرانسيسی (کینیڈا)"،
+    "fr_FR": "فرانسيسی (فرانس)"،
+    "fi": "فننش"،
+    "ga": "آئرش"،
+    "gd": "گیلک"،
+    "gon": "گونڈی"،
+    "gu": "گجراتی"،
+    "he": "عبرانی"،
+    "hi": "ہندی"،
+    "hr": "کروشیائی"،
+    "hu": "ہنگریائی"،
+    "hy": "آرمینیائی"،
+    "is": "آئس لینڈک "،
+    "it": "اطالوی"،
+    "iu": "اینک ٹیٹوٹ"،
+    "ka": "کنّڑ"،
+    "kh": "کھاسی"،
+    "ko": "کوریائی"،
+    "kok": "کونکنی"،
+    "kru": "کورکھ"،
+    "ks": "کشمیری"،
+    "lt": "لتھوانیائی"،
+    "lv": "لاتویائی "،
+    "mao": "ماؤری"،
+    "ml": "ملیالم"،
+    "mt": "مالٹیائی"،
+    "mwr": "مارواڑی"،
+    "mn": "منگولیائی"،
+    "mun": "منڈا"،
+    "nb": "نارویجین بوکمل"،
+    "ne": "نیپالی"،
+    "nl": "ڈچ"،
+    "no": "نارويجين"،
+    "or": "اوڑیا"،
+    "pi": "پالی"،
+    "pl": "پولستانی"،
+    "pt": "پرتگالی"،
+    "pu": "پنجابی"،
+    "ro": "رومانیائی"،
+    "ru": "روسی"،
+    "sa": "سنسکرت"،
+    "si": "سندھی"،
+    "sin": "سنہالا"،
+    "sk": "سلوواک"،
+    "sl": "سلووینیائی"،
+    "sr": "سربیائی"،
+    "sv": "سویڈش"،
+    "ta": "تمل"،
+    "te": "تیلگو"،
+    "tr": "ترکی"،
+    "tsn": "افریقنز"،
+    "uk": "یوکرینیائی"،
+    "ur": "اردو"،
+    "vi": "ويتنامی"،
+    "zh": "چینی"،
+    "zh_TW": "چینی (روایتی ہان)"}</translation>
 <translation id="4647836961514597010">رنگ منتخب کنندہ</translation>
 <translation id="4660783501463101648">‏کلاسک ہٹا دیا گیا۔ ChromeVox کلاسک میں واپس سوئچ کرنے والا کی بورڈ ٹوگل ہٹا دیا گیا ہے۔</translation>
 <translation id="4661075872484491155">ٹری</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">اسٹیکی وضع فعال کر دی گئی</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{کوما}other{# کومے}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />، متن باکس</translation>
+<translation id="532485153932049746">ٹیکسٹ کی فارمیٹنگ
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />، لنک</translation>
 <translation id="5331522683003474486">صرف 1 یا 2 سوئچز کی مدد سے آلے کو کنٹرول کریں۔</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">بریل</translation>
 <translation id="5402791055281059602">ایک موڈل الرٹ</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{سیمی کولن}other{# سیمی کولنز}}</translation>
+<translation id="5420259671171615858">مینوز میں تلاش کریں</translation>
 <translation id="5435274640623994081">ایئرکون لاگنگ کو فعال کریں</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{اس سے کم}other{# اس سے کم کے نشانات}}</translation>
 <translation id="5444587279251314700">(فعال)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">املا کی غلطی کا پتہ چلا</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">ریٹرن</translation>
+<translation id="7429415133937917139">‏ریفریش کے قابل بریل ڈسپلے کے آؤٹ پٹ کو
+        ChromeVox پینل میں اسکرین کے اوپر نقل کرتا ہے</translation>
 <translation id="7434509671034404296">ڈیولپر</translation>
 <translation id="743783356331413498">مثال</translation>
 <translation id="7439060726180460871">ڈائریکٹری</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">پچھلا ریڈیو بٹن</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">کوئی اگلا کومبو باکس نہیں ہے</translation>
+<translation id="772146615414628379">‏مبارک ہو! آپ نے ChromeVox کو کامیابی کے ساتھ استعمال کرنے کے لوازمات سیکھ لیے ہیں۔ یاد رکھیں کہ آپ Search+Period کو دبا کر کسی بھی وقت ChromeVox ہدایت مینو کو کھول سکتے ہیں۔ ChromeVox اور Chrome OS کے بارے میں اور مزید جاننے کے لیے درج ذیل مضامین کا ملاحظہ کریں۔
+    اگر آپ نے ٹیوٹوریل کو مکمل کر لیا ہے تو 'بند کریں' بٹن پر نیویگیٹ کرنے اور اس پر کلک کرنے کیلئے ChromeVox استعمال کریں۔</translation>
 <translation id="7724603315864178912">کٹ کریں</translation>
 <translation id="7731785449856576010">کوئی اگلا میڈیا ویجیٹ نہیں ہے</translation>
 <translation id="773906353055481349">‏سیل کے لحاظ سے نیویگیٹ کرنے کیلئے تیروں کے ساتھ Search+Ctrl+Alt دبائیں</translation>
@@ -1035,6 +1139,7 @@
 <translation id="8065607967589909823">انتخاب ہے</translation>
 <translation id="8066678206530322333">بینر</translation>
 <translation id="8076492880354921740">ٹیبز</translation>
+<translation id="8083115023881784332">‏کوئی موجودہ ChromeVox فوکس نہیں۔ لانچر پر جانے کیلئے Alt+Shift+L دبائیں۔</translation>
 <translation id="8091452896542422286">جگہ</translation>
 <translation id="8096975275316362544">پودینہ نما کریم</translation>
 <translation id="8098587210054821856">سلیٹی خاکستری</translation>

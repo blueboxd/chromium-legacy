@@ -168,6 +168,7 @@ Tocca una parola per eseguire una ricerca. Per perfezionare la ricerca, tocca e 
 <translation id="2156074688469523661">Siti rimanenti (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Per condividere contenuti dal tuo telefono con un altro dispositivo, attiva la sincronizzazione nelle impostazioni di Chrome su entrambi i dispositivi</translation>
 <translation id="2175927920773552910">Codice QR</translation>
+<translation id="2182457891543959921">Chiedi conferma prima di consentire ai siti di creare una mappa 3D dell'ambiente circostante o di monitorare la posizione della fotocamera (opzione consigliata)</translation>
 <translation id="218608176142494674">Condivisione</translation>
 <translation id="2227444325776770048">Continua come <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sincronizzazione e servizi Google</translation>
@@ -193,7 +194,6 @@ Tocca una parola per eseguire una ricerca. Per perfezionare la ricerca, tocca e 
 <translation id="2407481962792080328">Questa funzionalità viene attivata quando accedi al tuo Account Google</translation>
 <translation id="2410754283952462441">Scegli un account</translation>
 <translation id="2414886740292270097">Scuro</translation>
-<translation id="2416359993254398973">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere alla fotocamera.</translation>
 <translation id="2426805022920575512">Scegli un altro account</translation>
 <translation id="2433507940547922241">Aspetto</translation>
 <translation id="2434158240863470628">Download completato: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -286,6 +286,7 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="3058498974290601450">Puoi attivare la sincronizzazione in qualsiasi momento nelle impostazioni</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> preferito}other{<ph name="BOOKMARKS_COUNT_MANY" /> preferiti}}</translation>
 <translation id="3089395242580810162">Apri in scheda in incognito</translation>
+<translation id="3114012059975132928">Video player</translation>
 <translation id="3123473560110926937">Bloccati su alcuni siti</translation>
 <translation id="3123734510202723619">Annunci</translation>
 <translation id="3137521801621304719">Esci dalla modalità di navigazione in incognito</translation>
@@ -343,6 +344,7 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="3522247891732774234">Aggiornamento disponibile. Altre opzioni</translation>
 <translation id="3524138585025253783">Sviluppatore UI</translation>
 <translation id="3527085408025491307">Cartella</translation>
+<translation id="3538390592868664640">Impedisci ai siti di creare una mappa 3D dell'ambiente circostante o di monitorare la posizione della fotocamera</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kB disponibili</translation>
 <translation id="3549657413697417275">Cerca nella cronologia</translation>
 <translation id="3557336313807607643">Aggiungi ai contatti</translation>
@@ -351,6 +353,7 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="3587482841069643663">Tutti</translation>
 <translation id="358794129225322306">Consenti a un sito di scaricare automaticamente più file.</translation>
 <translation id="3590487821116122040">Memoria utilizzata da siti che Chrome non ritiene importanti (ad esempio siti senza impostazioni salvate o che non visiti spesso)</translation>
+<translation id="3594780231884063836">Disattiva audio video</translation>
 <translation id="3599863153486145794">Consente di cancellare la cronologia da tutti i dispositivi su cui hai eseguito l'accesso. Il tuo Account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Disattiva l'audio nei siti che riproducono suoni</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -439,6 +442,7 @@ Soltanto tu puoi vedere cosa sta inquadrando la videocamera. Il sito non può ve
 <translation id="4298388696830689168">Siti collegati</translation>
 <translation id="4307992518367153382">Impostazioni di base</translation>
 <translation id="4314815835985389558">Gestisci sincronizzazione</translation>
+<translation id="4320177379694898372">Nessuna connessione Internet</translation>
 <translation id="4321739720395210191">Impossibile aprire la fotocamera. Riavvia il dispositivo e riprova.</translation>
 <translation id="4351244548802238354">Chiudi finestra di dialogo</translation>
 <translation id="4353114845960720315">Mentre ti trovi nella VR, il sito potrebbe riuscire ad acquisire:</translation>
@@ -603,6 +607,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5456381639095306749">Scarica la pagina</translation>
 <translation id="548278423535722844">Apri nell'app di mappe</translation>
 <translation id="5487521232677179737">Cancella dati</translation>
+<translation id="5489227211564503167">Tempo trascorso: <ph name="ELAPSED_TIME" /> di <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Blocca gli annunci su siti che mostrano annunci invasivi o fuorvianti</translation>
 <translation id="5500777121964041360">Potrebbe non essere disponibile nel tuo paese</translation>
 <translation id="5505264765875738116">I siti non possono chiedere di inviare notifiche</translation>
@@ -617,7 +622,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5530766185686772672">Chiudi schede in incognito</translation>
 <translation id="5534640966246046842">Sito copiato</translation>
 <translation id="5561549206367097665">In attesa della rete…</translation>
-<translation id="557283862590186398">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere al microfono.</translation>
 <translation id="55737423895878184">La geolocalizzazione e le notifiche sono consentite</translation>
 <translation id="5578795271662203820">Cerca questa immagine su <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5581519193887989363">Puoi scegliere in qualsiasi momento i dati da sincronizzare nelle <ph name="BEGIN_LINK1" />impostazioni<ph name="END_LINK1" />.</translation>
@@ -664,6 +668,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5864419784173784555">In attesa di un altro download…</translation>
 <translation id="5865733239029070421">Invia automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali</translation>
 <translation id="5869522115854928033">Password salvate</translation>
+<translation id="5876056640971328065">Metti in pausa il video</translation>
 <translation id="5884076754568147479">Per aiutarti a completare le attività, Google riceverà gli URL e i contenuti dei siti su cui utilizzi l'assistente, oltre alle informazioni che invii attraverso l'assistente</translation>
 <translation id="5902828464777634901">Tutti i dati locali memorizzati da questo sito web, inclusi i cookie, verranno eliminati.</translation>
 <translation id="5919204609460789179">Aggiorna <ph name="PRODUCT_NAME" /> per avviare la sincronizzazione</translation>
@@ -726,8 +731,8 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6378173571450987352">Dettagli: ordinati per quantità di dati utilizzati</translation>
 <translation id="6381421346744604172">Scurisci siti web</translation>
 <translation id="6388207532828177975">Cancella e reimposta</translation>
-<translation id="6393863479814692971">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere alla fotocamera e al microfono.</translation>
 <translation id="6395288395575013217">LINK</translation>
+<translation id="6397616442223433927">Di nuovo online</translation>
 <translation id="6404511346730675251">Modifica preferito</translation>
 <translation id="6406506848690869874">Sincronizzazione</translation>
 <translation id="6410973561433500075">Vuoi entrare nella AR da <ph name="DOMAIN" />?</translation>
@@ -779,7 +784,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6676840375528380067">Eliminare i dati di Chrome dal dispositivo?</translation>
 <translation id="6689172468748959065">Foto del profilo</translation>
 <translation id="6697492270171225480">Mostra suggerimenti per pagine simili quando una pagina non viene trovata</translation>
-<translation id="6697947395630195233">Chrome deve poter accedere alla tua posizione per condividerla con questo sito.</translation>
 <translation id="6698801883190606802">Gestisci dati sincronizzati</translation>
 <translation id="6699370405921460408">I server di Google ottimizzeranno le pagine che visiti.</translation>
 <translation id="6710213216561001401">Indietro</translation>
@@ -797,6 +801,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6846298663435243399">Caricamento in corso…</translation>
 <translation id="6850409657436465440">Il download è ancora in corso</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> schede chiuse</translation>
+<translation id="6864395892908308021">Questo dispositivo non può leggere la tecnologia NFC</translation>
 <translation id="6864459304226931083">Scarica immagine</translation>
 <translation id="6865313869410766144">Dati della compilazione automatica dei moduli</translation>
 <translation id="6884306546558072722">Continua a esplorare quando sei offline</translation>
@@ -917,6 +922,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="780301667611848630">No grazie</translation>
 <translation id="7810647596859435254">Apri con…</translation>
 <translation id="7821588508402923572">La quantità di dati risparmiata sarà visualizzata qui</translation>
+<translation id="783819812427904514">Riattiva audio video</translation>
 <translation id="784934925303690534">Intervallo di tempo</translation>
 <translation id="7851858861565204677">Altri dispositivi</translation>
 <translation id="7875915731392087153">Crea email</translation>
@@ -971,6 +977,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8186512483418048923"><ph name="FILES" /> file rimanenti</translation>
 <translation id="8190358571722158785">1 giorno rimanente</translation>
 <translation id="8200772114523450471">Riprendi</translation>
+<translation id="8206354486702514201">Questa impostazione è stata applicata dall'amministratore.</translation>
 <translation id="8209050860603202033">Apri immagine</translation>
 <translation id="8218622182176210845">Gestisci il tuo account</translation>
 <translation id="8224471946457685718">Scarica articoli per te tramite Wi-Fi</translation>
@@ -992,7 +999,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8364299278605033898">Scopri i siti web più visitati</translation>
 <translation id="8368027906805972958">Dispositivo sconosciuto o non supportato (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Consenti la sincronizzazione in background per un sito specifico.</translation>
-<translation id="8378714024927312812">Gestito dalla tua organizzazione</translation>
 <translation id="8380167699614421159">Questo sito mostra annunci invasivi o fuorvianti</translation>
 <translation id="8393700583063109961">Invia messaggio</translation>
 <translation id="8413126021676339697">Mostra cronologia completa</translation>

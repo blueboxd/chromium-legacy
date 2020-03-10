@@ -479,7 +479,6 @@
 <translation id="3024663005179499861">ખોટો નીતિ પ્રકાર</translation>
 <translation id="3037605927509011580">અરર કંઇક ભુલ થઇ!</translation>
 <translation id="3041612393474885105">પ્રમાણપત્ર માહિતી</translation>
-<translation id="3057676462092457419">DnsOverHttps મોડ <ph name="SECURE_DNS_MODE_SECURE" />ને હજુ પણ સપોર્ટ અપાતો નથી, મોડને <ph name="SECURE_DNS_MODE_OFF" /> પર સેટ કરવામાં આવ્યો છે.</translation>
 <translation id="3060227939791841287">C9 (એન્વલપ)</translation>
 <translation id="3061707000357573562">પૅચ સેવા</translation>
 <translation id="3064966200440839136">બાહ્ય ઍપ્લિકેશન મારફતે ચુકવણી કરવા માટે છુપો મોડ છોડી રહ્યાં છીએ. તો ચાલુ રાખીએ?</translation>
@@ -579,6 +578,7 @@
 <translation id="3487845404393360112">ટ્રે 4</translation>
 <translation id="3495081129428749620">પેજ
     <ph name="PAGE_TITLE" />માં શોધો</translation>
+<translation id="3507936815618196901">તમારી આજુબાજુનો 3D નકશો બનાવો અને કૅમેરાની સ્થિતિ ટ્રૅક કરો</translation>
 <translation id="3512163584740124171">આ નીતિને અવગણવામાં આવે છે કારણ કે સમાન નીતિ ગ્રૂપની બીજી નીતિ ઉચ્ચ પ્રાથમિકતા ધરાવે છે.</translation>
 <translation id="3518941727116570328">એકથી વધુ ઑબ્જેક્ટ હૅન્ડલ કરવા</translation>
 <translation id="3528171143076753409">સર્વરનું પ્રમાણપત્ર વિશ્વસનીય નથી.</translation>
@@ -931,6 +931,7 @@
 <translation id="5030338702439866405">આના દ્વારા રજૂ કરાયું</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" માટેનું રૂટ પ્રમાણપત્ર આવશ્યક છે પરંતુ તે ઇન્સ્ટૉલ કરેલું નથી. આ સમસ્યાના નિવારણ માટે તમારા IT વ્યવસ્થાપકે "<ph name="SOFTWARE_NAME" />" ની ગોઠવણી માટેની સૂચના જોવી જરૂરી છે. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google અનુવાદ વિશે</translation>
+<translation id="503498442187459473"><ph name="HOST" /> તમારા કૅમેરા અને માઇક્રોફોનનો ઉપયોગ કરવા માગે છે</translation>
 <translation id="5039804452771397117">મંજૂરી આપો</translation>
 <translation id="5040262127954254034">ગોપનીયતા</translation>
 <translation id="5043480802608081735">તમે કૉપિ કરેલી લિંક</translation>
@@ -1039,7 +1040,6 @@
 <translation id="5457113250005438886">અમાન્ય</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> વધુ}one{<ph name="CONTACT_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> વધુ}other{<ph name="CONTACT_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> વધુ}}</translation>
 <translation id="5470861586879999274">&amp;ફરી ફેરફાર કરો</translation>
-<translation id="5472133193607270166">જ્યારે ચાલુ હોય, ત્યારે સાઇટ જાહેરાતોને વ્યક્તિગત બનાવવા માટે બધી અલગ-અલગ સાઇટ પરની તમારી બ્રાઉઝિંગ પ્રવૃત્તિનો ઉપયોગ કરી શકતી નથી. અમુક સાઇટ કદાચ યોગ્ય રીતે કાર્ય કરશે નહીં.</translation>
 <translation id="5478437291406423475">B6/C4 (એન્વલપ)</translation>
 <translation id="5481076368049295676">આ કન્ટેન્ટ કદાચ તમારા ડિવાઇસ પર જોખમકારક સૉફ્ટવેર ઇન્સ્ટૉલ કરવાનો પ્રયાસ કરી શકે છે કે જે તમારી માહિતીની ચોરી કરે અથવા કાઢી નાખે છે. <ph name="BEGIN_LINK" />છતાં પણ બતાવો<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">માન્ય સરનામું ઉમેરો</translation>
@@ -1325,6 +1325,7 @@
 <translation id="6710594484020273272">&lt;શોધ શબ્દ લખો&gt;</translation>
 <translation id="671076103358959139">નોંધણી ટોકન:</translation>
 <translation id="6711464428925977395">પ્રૉક્સી સર્વરમાં કંઈક ખોટું થયું છે અથવા તો ઍડ્રેસ ખોટું છે.</translation>
+<translation id="6716672519412350405"><ph name="URL" /> તમારી આજુબાજુનો 3D નકશો બનાવવા અથવા કૅમેરાની સ્થિતિને ટ્રૅક કરવા માગે છે</translation>
 <translation id="6738516213925468394">તમારો ડેટા <ph name="TIME" />ના રોજ તમારા <ph name="BEGIN_LINK" />સિંક પાસફ્રેઝ<ph name="END_LINK" /> સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો હતો. સિંક શરૂ કરવા માટે એ દાખલ કરો.</translation>
 <translation id="674375294223700098">અજ્ઞાત સર્વર પ્રમાણપત્ર ભૂલ.</translation>
 <translation id="6744009308914054259">કનેક્શન માટે રાહ જોતી વખતે, ઑફલાઇન લેખ વાંચવા માટે તમે ડાઉનલોડની મુલાકાત લઈ શકો.</translation>
@@ -1745,7 +1746,6 @@
 <translation id="8589998999637048520">શ્રેષ્ઠ ક્વૉલિટી</translation>
 <translation id="860043288473659153">કાર્ડધારકનું નામ</translation>
 <translation id="8606726445206553943">તમારા MIDI ઉપકરણોનો ઉપયોગ કરો</translation>
-<translation id="8616822740383114808">"<ph name="SETTINGS_PAGE" />"માં "<ph name="ENFORCING_SETTING" />" દ્વારા આ સેટિંગ લાગુ કરવામાં આવ્યું છે</translation>
 <translation id="861775596732816396">કદ 4</translation>
 <translation id="8622948367223941507">કાનૂની-અતિરિક્ત</translation>
 <translation id="8625384913736129811">આ કાર્ડને આ ડિવાઇસમાં સાચવો</translation>

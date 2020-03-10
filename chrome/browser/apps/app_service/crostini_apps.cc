@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -210,10 +211,14 @@ void CrostiniApps::GetMenuModel(const std::string& app_id,
     AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
   }
 
-  if (app_id == crostini::GetTerminalId() &&
-      crostini::IsCrostiniRunning(profile_)) {
-    AddCommandItem(ash::STOP_APP, IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM,
-                   &menu_items);
+  if (app_id == crostini::GetTerminalId()) {
+    if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
+      AddCommandItem(ash::SETTINGS, IDS_INTERNAL_APP_SETTINGS, &menu_items);
+    }
+    if (crostini::IsCrostiniRunning(profile_)) {
+      AddCommandItem(ash::STOP_APP, IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM,
+                     &menu_items);
+    }
   }
 
   if (ShouldAddOpenItem(app_id, menu_type, profile_)) {

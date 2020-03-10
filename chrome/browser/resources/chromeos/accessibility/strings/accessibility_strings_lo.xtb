@@ -74,7 +74,7 @@
 <translation id="136718599399906424">ແຖວຕາ​ຕະ​ລາງ​ຕໍ່​ໄປ</translation>
 <translation id="1377925789329510816">ນີ້ແມ່ນຫົວຂໍ້ສຸດທ້າຍ. ກົດ Search+H ເພື່ອກັບຄືນໄປຫົວຂໍ້ທຳອິດ ຫຼື Search+Shift+H ເພື່ອໄປຫາຫົວຂໍ້ທີສອງໃນໜ້ານີ້.</translation>
 <translation id="138218114945450791">ສີຟ້າອ່ອນ</translation>
-<translation id="1383876407941801731">ຄົ້ນຫາ</translation>
+<translation id="1383876407941801731">ຊອກຫາ</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1405567553485452995">ສີຂຽວຈາງ</translation>
 <translation id="1417889266572670458">ສີຟ້າເຂັ້ມ</translation>
@@ -420,7 +420,7 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, ກ່ອງລາຍການ</translation>
 <translation id="3681531118904532409">ສີຊົມພູປາປາຢາວິບ</translation>
 <translation id="3687295507293856493">ເຮັດການເດົາຢູ່ຫົວຖັນຂອງເຊລປະຈຸບັນ</translation>
-<translation id="3692274950075847560">ຄົ້ນຫາ:<ph name="RESULT" /></translation>
+<translation id="3692274950075847560">ຊອກຫາ:<ph name="RESULT" /></translation>
 <translation id="370367311675896712">ຂີດຂ້າ</translation>
 <translation id="3704037000573066734">ກົດປຸ່ມ Search+A, J ເພື່ອໄປຫາລາຍລະອຽດ</translation>
 <translation id="3712520970944678024">ການ​ຄວບ​ຄຸມ​ການ​ເວົ້າ</translation>
@@ -554,7 +554,7 @@
 <translation id="463135993322337640">ກົດ ChromeVox o, n ເພື່ອຊອກຮູ້ວ່າມີຫຍັງໃໝ່</translation>
 <translation id="4646606380313237501">{"ar": "ອາຣັບ",
     "as": "ອັສຊາມີສ",
-    "aw": "ອາວຮິ",
+    "aw": "ອະວາດິ",
     "be": "ເບັງກາລີ",
     "bg": "ບັງກາຣຽນ",
     "bh": "ບີຮາຣິ",
@@ -572,7 +572,7 @@
     "el": "ກຣີກ",
     "en": "ອັງກິດ",
     "en_CA": "ອັງກິດ (ແຄນາດາ)",
-    "en_GB": "ອັງກິດ (ສະຫະລາດຊະອະນາຈັກ)",
+    "en_GB": "ອັງກິດ (ສະຫະລາດຊະອານາຈັກ)",
     "en_US": "ອັງກິດ (ສະຫະລັດ)",
     "eo": "ເອສປາຍ",
     "es": "ສະແປນິຊ",
@@ -594,7 +594,7 @@
     "is": "ໄອສແລນດິກ",
     "it": "ອິຕາລຽນ",
     "iu": "ອິນນຸກຕິຕັດ",
-    "ka": "ຄັນາດາ",
+    "ka": "ຄັນນາດາ",
     "kh": "ຄາສິ",
     "ko": "ເກົາຫລີ",
     "kok": "ກອນການີ",
@@ -1044,7 +1044,7 @@
 <translation id="7400575256015741911">ກວດພົບການສະກົດຄໍາຜິດແລ້ວ</translation>
 <translation id="7408482676469142474">ຕາຕະລາງ</translation>
 <translation id="7425395583360211003">ກັບ​ຄືນ</translation>
-<translation id="7429415133937917139">ຈຳລອງຜົນຮັບຂອງການສະແດງຜົນໜັງສືໂພງສຳລັບຄົນຕາບອດທີ່ໂຫຼດຄືນໃໝ່ໄດ້ໃນແຜງ ChromeVox ຢູ່ເທິງສຸດຂອງໜ້າຈໍ</translation>
+<translation id="7429415133937917139">ຈຳລອງຜົນຮັບຂອງການສະແດງຜົນຕົວອັກສອນນູນສຳລັບຄົນຕາບອດທີ່ໂຫຼດຄືນໃໝ່ໄດ້ໃນແຜງ ChromeVox ຢູ່ເທິງສຸດຂອງໜ້າຈໍ</translation>
 <translation id="7434509671034404296">ຜູ້ພັດ​ທະ​ນາ</translation>
 <translation id="743783356331413498">ຕົວຢ່າງ</translation>
 <translation id="7439060726180460871">ໄດເຣັກຕໍຣີ</translation>

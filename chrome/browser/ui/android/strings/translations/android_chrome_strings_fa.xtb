@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">سایت‌های باقی‌مانده (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">‏برای به‌اشتراک گذاشتن چیزی از تلفنتان با دستگاهی دیگر، در تنظیمات Chrome هر دو دستگاه «همگام‌سازی» را روشن کنید</translation>
 <translation id="2175927920773552910">‏کد QR</translation>
+<translation id="2182457891543959921">قبل از اینکه به سایت‌ها اجازه داده شود نقشه سه‌بعدی از محیط ایجاد کنند یا موقعیت دوربین را ردیابی کنند سؤال شود (توصیه می‌شود)</translation>
 <translation id="218608176142494674">هم‌رسانی</translation>
 <translation id="2227444325776770048">ادامه دادن به‌عنوان <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">‏همگام‌سازی و سرویس‌های Google</translation>
@@ -193,7 +194,6 @@
 <translation id="2407481962792080328">‏وقتی به «حساب Google» خود وارد می‌شوید، این ویژگی روشن می‌شود</translation>
 <translation id="2410754283952462441">انتخاب حساب</translation>
 <translation id="2414886740292270097">تاریک</translation>
-<translation id="2416359993254398973">‏Chrome به مجوز دسترسی به دوربین برای این سایت نیاز دارد.</translation>
 <translation id="2426805022920575512">انتخاب حسابی دیگر</translation>
 <translation id="2433507940547922241">شکل ظاهری</translation>
 <translation id="2434158240863470628">بارگیری کامل شد <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -343,6 +343,7 @@
 <translation id="3522247891732774234">به‌روزرسانی موجود است. گزینه‌های بیشتر</translation>
 <translation id="3524138585025253783">رابط کاربری برنامه‌نویس</translation>
 <translation id="3527085408025491307">پوشه</translation>
+<translation id="3538390592868664640">قابلیت سایت‌ها برای ایجاد نقشه سه‌بعدی از محیط یا ردیابی موقعیت دوربین مسدود می‌شود</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> کیلوبایت دردسترس است</translation>
 <translation id="3549657413697417275">جستجو در سابقه</translation>
 <translation id="3557336313807607643">افزودن به مخاطبین</translation>
@@ -439,6 +440,7 @@
 <translation id="4298388696830689168">سایت‌های مرتبط</translation>
 <translation id="4307992518367153382">موارد اصلی</translation>
 <translation id="4314815835985389558">مدیریت همگام‌سازی</translation>
+<translation id="4320177379694898372">اتصال اینترنتی ندارید</translation>
 <translation id="4321739720395210191">نمی‌توان دوربین را باز کرد. دستگاه را بازراه‌اندازی و دوباره امتحان کنید.</translation>
 <translation id="4351244548802238354">بستن کادر گفتگو</translation>
 <translation id="4353114845960720315">‏وقتی در حالت VR هستید، این سایت می‌تواند به این موارد پی ببرد:</translation>
@@ -617,7 +619,6 @@
 <translation id="5530766185686772672">بستن برگه‌های ناشناس</translation>
 <translation id="5534640966246046842">سایت کپی شد</translation>
 <translation id="5561549206367097665">در انتظار شبکه…</translation>
-<translation id="557283862590186398">‏Chrome برای این سایت به مجوز دسترسی به میکروفون نیاز دارد.</translation>
 <translation id="55737423895878184">مکان و اعلان‌ها مجاز هستند</translation>
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
 <translation id="5581519193887989363">هرزمان خواستید می‌توانید مواردی را که می‌خواهید همگام‌سازی شود در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /> انتخاب کنید.</translation>
@@ -726,7 +727,6 @@
 <translation id="6378173571450987352">جزئیات: مرتب‌شده براساس مقدار داده استفاده‌شده</translation>
 <translation id="6381421346744604172">تاریک کردن وب‌سایت‌ها</translation>
 <translation id="6388207532828177975">پاک کردن و بازنشانی</translation>
-<translation id="6393863479814692971">‏Chrome برای این سایت به مجوز دسترسی به دوربین و میکروفون نیاز دارد.</translation>
 <translation id="6395288395575013217">پیوند</translation>
 <translation id="6404511346730675251">ویرایش نشانک</translation>
 <translation id="6406506848690869874">همگام‌سازی</translation>
@@ -779,7 +779,6 @@
 <translation id="6676840375528380067">‏داده‌های Chrome شما از این دستگاه پاک شود؟</translation>
 <translation id="6689172468748959065">عکس‌های نمایه</translation>
 <translation id="6697492270171225480">نمایش پیشنهادهای صفحه‌های مشابه وقتی صفحه‌ای پیدا نمی‌شود</translation>
-<translation id="6697947395630195233">‏Chrome برای اشتراک‌گذاری مکانتان با این سایت باید به مکانتان دسترسی داشته باشد.</translation>
 <translation id="6698801883190606802">مدیریت داده‌های همگام‌سازی شده</translation>
 <translation id="6699370405921460408">‏سرورهای Google صفحه‌هایی را که بازدید می‌کنید بهینه می‌کنند.</translation>
 <translation id="6710213216561001401">قبلی</translation>
@@ -971,6 +970,7 @@
 <translation id="8186512483418048923"><ph name="FILES" /> فایل باقی مانده است</translation>
 <translation id="8190358571722158785">۱ روز باقی‌مانده است</translation>
 <translation id="8200772114523450471">ازسرگیری</translation>
+<translation id="8206354486702514201">این تنظیم توسط سرپرست شما اجباری شده است.</translation>
 <translation id="8209050860603202033">باز کردن تصویر</translation>
 <translation id="8218622182176210845">مدیریت حساب</translation>
 <translation id="8224471946457685718">‏بارگیری مقالات برای شما با Wi-Fi</translation>
@@ -992,7 +992,6 @@
 <translation id="8364299278605033898">مشاهده وب‌سایت‌های پرطرفدار</translation>
 <translation id="8368027906805972958">دستگاه ناشناس یا پشتیبانی‌نشده (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
-<translation id="8378714024927312812">توسط سازمانتان مدیریت می‌شود</translation>
 <translation id="8380167699614421159">این سایتْ آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهد</translation>
 <translation id="8393700583063109961">ارسال پیام</translation>
 <translation id="8413126021676339697">نمایش کل سابقه</translation>

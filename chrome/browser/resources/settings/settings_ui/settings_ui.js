@@ -177,6 +177,7 @@ cr.define('settings', function() {
     /** @override */
     detached() {
       settings.Router.getInstance().resetRouteForTesting();
+      settings.resetGlobalScrollTargetForTesting();
     },
 
     /** @param {!settings.Route} route */

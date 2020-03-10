@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/optional.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -124,7 +125,7 @@ void LaunchContainerTerminal(Profile* profile,
                              const std::vector<std::string>& terminal_args);
 
 // Launches the terminal settings popup window.
-void LaunchTerminalSettings(Profile* profile, gfx::Point window_origin);
+void LaunchTerminalSettings(Profile* profile, Browser* terminal = nullptr);
 
 // Record which terminal settings have been changed by users.
 void RecordTerminalSettingsChangesUMAs(Profile* profile);

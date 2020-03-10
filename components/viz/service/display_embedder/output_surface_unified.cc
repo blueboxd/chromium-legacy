@@ -53,4 +53,8 @@ scoped_refptr<gpu::GpuTaskSchedulerHelper>
 OutputSurfaceUnified::GetGpuTaskSchedulerHelper() {
   return nullptr;
 }
+
+gpu::MemoryTracker* OutputSurfaceUnified::GetMemoryTracker() {
+  return nullptr;
+}
 }  // namespace viz

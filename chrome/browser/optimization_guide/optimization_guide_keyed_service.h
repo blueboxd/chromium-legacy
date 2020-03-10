@@ -73,8 +73,8 @@ class OptimizationGuideKeyedService
       content::NavigationHandle* navigation_handle);
 
   // Notifies |hints_manager_| that the navigation associated with
-  // |navigation_url| has finished.
-  void OnNavigationFinish(const GURL& navigation_url,
+  // |navigation_redirect_chain| has finished.
+  void OnNavigationFinish(const std::vector<GURL>& navigation_redirect_chain,
                           OptimizationGuideNavigationData* navigation_data);
 
   // Clears data specific to the user.

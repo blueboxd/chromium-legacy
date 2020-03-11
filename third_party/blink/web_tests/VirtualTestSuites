@@ -194,7 +194,7 @@
               "fast/multicol",
               "fragmentation",
               "printing"],
-    "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
+    "args": ["--enable-blink-features=LayoutNGBlockFragmentation,LayoutNGFieldset"]
   },
   {
     "prefix": "layout_ng_fragment_traversal",
@@ -216,7 +216,7 @@
               "external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain",
               "external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements",
               "fast/forms/fieldset"],
-    "args": ["--enable-blink-features=LayoutNGFieldset"]
+    "args": ["--enable-blink-features=LayoutNGFieldset,LayoutNGBlockFragmentation"]
   },
   {
     "prefix": "dark-mode-grayscale-images",

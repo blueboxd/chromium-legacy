@@ -8,6 +8,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/feeds/media_feeds_contents_observer.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
@@ -123,7 +124,14 @@ INSTANTIATE_TEST_SUITE_P(
             "<link rel=other type=\"application/ld+json\" href=\"/test\"/>",
             false}));
 
-IN_PROC_BROWSER_TEST_P(MediaFeedsBrowserTest, Discover) {
+// Crashes on Mac/Win only.  http://crbug.com/1060626
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_Discover DISABLED_Discover
+#else
+#define MAYBE_Discover Discover
+#endif
+
+IN_PROC_BROWSER_TEST_P(MediaFeedsBrowserTest, MAYBE_Discover) {
   EXPECT_TRUE(GetDiscoveredFeedURLs().empty());
 
   MediaFeedsContentsObserver* contents_observer =

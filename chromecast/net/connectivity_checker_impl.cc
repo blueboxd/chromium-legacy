@@ -158,14 +158,18 @@ void ConnectivityCheckerImpl::CheckInternal() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(url_loader_factory_);
 
-  // Don't check connectivity if network is offline, because Internet could be
-  // accessible via netifs ignored.
   auto connection_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
-  network_connection_tracker_->GetConnectionType(
+  bool is_sync = network_connection_tracker_->GetConnectionType(
       &connection_type,
       base::BindOnce(&ConnectivityCheckerImpl::OnConnectionChanged,
                      weak_this_));
-  if (connection_type == network::mojom::ConnectionType::CONNECTION_NONE) {
+
+  // Don't check connectivity if network is offline.
+  // Also don't check connectivity if the connection_type cannot be
+  // synchronously retrieved, since OnConnectionChanged will be triggered later
+  // which will cause duplicate checks.
+  if (!is_sync ||
+      connection_type == network::mojom::ConnectionType::CONNECTION_NONE) {
     return;
   }
 

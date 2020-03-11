@@ -5,9 +5,9 @@
 ## PermissionManager and PermissionContextBase
 
 The
-[PermissionManager](https://cs.chromium.org/chromium/src/chrome/browser/permissions/permission_manager.h)
+[PermissionManager](https://cs.chromium.org/chromium/src/components/permissions/permission_manager.h)
 is the entry point for clients of the permissions infrastructure.
-[PermissionManager](https://cs.chromium.org/chromium/src/chrome/browser/permissions/permission_manager.h)
+[PermissionManager](https://cs.chromium.org/chromium/src/components/permissions/permission_manager.h)
 is a
 [KeyedService](https://cs.chromium.org/chromium/src/components/keyed_service/core/keyed_service.h)
 which means it is attached to a
@@ -20,7 +20,7 @@ Clients can perform various operations such as:
 *   Observe permissions changes
 
 Internally,
-[PermissionManager](https://cs.chromium.org/chromium/src/chrome/browser/permissions/permission_manager.h)
+[PermissionManager](https://cs.chromium.org/chromium/src/components/permissions/permission_manager.h)
 holds a list of PermissionsContexts, one per
 [ContentSettingType](https://cs.chromium.org/chromium/src/components/content_settings/core/common/content_settings_types.h?l=17).
 [PermissionContextBase](https://cs.chromium.org/chromium/src/components/permissions/permission_context_base.h)

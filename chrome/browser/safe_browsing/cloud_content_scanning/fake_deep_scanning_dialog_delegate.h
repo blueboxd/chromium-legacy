@@ -95,8 +95,6 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
                 std::unique_ptr<BinaryUploadService::Request> request);
 
   // DeepScanningDialogDelegate overrides.
-  void PrepareFileRequest(base::FilePath path,
-                          AnalyzeCallback callback) override;
   void UploadTextForDeepScanning(
       std::unique_ptr<BinaryUploadService::Request> request) override;
   void UploadFileForDeepScanning(

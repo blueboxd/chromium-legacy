@@ -335,7 +335,7 @@ cr.define('settings', function() {
     /** @private */
     onSafeBrowsingReportingToggleChange_() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_IMPROVE_SECURITY);
+          settings.PrivacyElementInteractions.IMPROVE_SECURITY);
       this.setPrefValue(
           'safebrowsing.scout_reporting_enabled',
           this.$$('#safeBrowsingReportingToggle').checked);
@@ -403,13 +403,13 @@ cr.define('settings', function() {
      */
     onCanMakePaymentChange_() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD);
+          settings.PrivacyElementInteractions.PAYMENT_METHOD);
     },
 
     /** @private */
     onManageCertificatesTap_() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES);
+          settings.PrivacyElementInteractions.MANAGE_CERTIFICATES);
       // <if expr="use_nss_certs">
       settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
       // </if>
@@ -426,7 +426,7 @@ cr.define('settings', function() {
      */
     onNetworkPredictionChange_() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_NETWORK_PREDICTION);
+          settings.PrivacyElementInteractions.NETWORK_PREDICTION);
     },
 
     /**
@@ -449,29 +449,23 @@ cr.define('settings', function() {
 
     /** @private */
     onSiteSettingsTap_() {
-      this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS);
       settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
     },
 
     /** @private */
     onSafeBrowsingToggleChange_: function() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_SAFE_BROWSING);
+          settings.PrivacyElementInteractions.SAFE_BROWSING);
     },
 
     /** @private */
     onClearBrowsingDataTap_() {
-      this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_CLEAR_BROWSING_DATA);
       settings.Router.getInstance().navigateTo(
           settings.routes.CLEAR_BROWSER_DATA);
     },
 
     /** @private */
     onCookiesClick_() {
-      this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_COOKIES);
       settings.Router.getInstance().navigateTo(settings.routes.COOKIES);
     },
 
@@ -489,8 +483,6 @@ cr.define('settings', function() {
 
     /** @private */
     onSecurityKeysTap_() {
-      this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_SECURITY_KEYS);
       settings.Router.getInstance().navigateTo(settings.routes.SECURITY_KEYS);
     },
 

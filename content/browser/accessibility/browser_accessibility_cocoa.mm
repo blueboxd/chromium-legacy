@@ -3002,14 +3002,16 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return [NSValue valueWithRect:nsrect];
   }
 
-  if ([attribute isEqualToString:@"AXUIElementCountForSearchPredicate"]) {
+  if ([attribute isEqualToString:
+                   NSAccessibilityUIElementCountForSearchPredicateParameterizedAttribute]) {
     OneShotAccessibilityTreeSearch search(_owner);
     if (InitializeAccessibilityTreeSearch(&search, parameter))
       return [NSNumber numberWithInt:search.CountMatches()];
     return nil;
   }
 
-  if ([attribute isEqualToString:@"AXUIElementsForSearchPredicate"]) {
+  if ([attribute isEqualToString:
+                     NSAccessibilityUIElementsForSearchPredicateParameterizedAttribute]) {
     OneShotAccessibilityTreeSearch search(_owner);
     if (InitializeAccessibilityTreeSearch(&search, parameter)) {
       size_t count = search.CountMatches();

@@ -50,7 +50,7 @@ public class WebApkInfoBuilder {
      * Builds {@link WebApkInfo} object using options that have been set.
      */
     public WebApkInfo build() {
-        return WebApkInfo.create(mUrl, mScope, null, null, null, null, null, mDisplayMode,
+        return WebApkInfo.create(mUrl, mScope, null, null, null, null, mDisplayMode,
                 ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, Color.WHITE,

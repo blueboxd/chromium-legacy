@@ -8,6 +8,9 @@
 #import "ios/chrome/browser/ui/overlays/overlay_coordinator_factory.h"
 
 // OverlayRequestCoordinatorFactory for OverlayModality::kTesting.
+// TODO(crbug.com/1056837): This class is only necessary to prevent the test
+// modality code from getting compiled into releases, and can be removed once
+// OverlayModality is converted from an enum to a class.
 @interface TestOverlayRequestCoordinatorFactory
     : OverlayRequestCoordinatorFactory
 // Initializer for a factory that vends OverlayRequestCoordinators for |browser|

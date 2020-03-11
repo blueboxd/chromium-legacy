@@ -36,7 +36,7 @@ Polymer({
    */
   onToggleChange_(event) {
     settings.MetricsBrowserProxyImpl.getInstance().recordSettingsPageHistogram(
-        settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK);
+        settings.PrivacyElementInteractions.DO_NOT_TRACK);
     const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
     if (!target.checked) {
       // Always allow disabling the pref.

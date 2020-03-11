@@ -3699,6 +3699,12 @@ const char kRemoteCopyReceiverDescription[] =
     "Enables the remote copy feature to handle messages by writing content to "
     "the clipboard and showing a notification to the user.";
 
+const char kRemoteCopyProgressNotificationName[] =
+    "Enables progress notifications for the remote copy feature";
+const char kRemoteCopyProgressNotificationDescription[] =
+    "Enables progress notifications to be shown for the remote copy feature "
+    "when receiving a message.";
+
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 

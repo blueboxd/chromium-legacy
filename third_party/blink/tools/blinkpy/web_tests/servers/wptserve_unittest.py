@@ -59,7 +59,7 @@ class TestWPTServe(LoggingTestCase):
         self.assertEqual(server._env, {
             'MOCK_ENVIRON_COPY': '1',
             'PATH': '/bin:/mock/bin',
-            'PYTHONPATH': '/mock-checkout/third_party/pywebsocket/src'
+            'PYTHONPATH': '/mock-checkout/third_party/pywebsocket3/src'
         })
 
     def test_prepare_config(self):

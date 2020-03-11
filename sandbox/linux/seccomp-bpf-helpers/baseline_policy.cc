@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "base/clang_coverage_buildflags.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
@@ -128,7 +128,7 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
 #endif  // defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||
         // defined(MEMORY_SANITIZER)
 
-#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   if (SyscallSets::IsPrctl(sysno)) {
     return Allow();
   }

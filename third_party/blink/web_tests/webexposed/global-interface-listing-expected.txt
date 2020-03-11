@@ -8030,10 +8030,12 @@ interface ShadowRoot : DocumentFragment
     getter mode
     getter pictureInPictureElement
     getter pointerLockElement
+    getter slotAssignment
     getter styleSheets
     method constructor
     method elementFromPoint
     method elementsFromPoint
+    method getAnimations
     method getSelection
     setter adoptedStyleSheets
     setter fullscreenElement

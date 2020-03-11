@@ -9,6 +9,8 @@ source_set("test_modality") {
     "test_contained_overlay_request_config.mm",
     "test_presented_overlay_request_config.h",
     "test_presented_overlay_request_config.mm",
+    "test_resizing_presented_overlay_request_config.h",
+    "test_resizing_presented_overlay_request_config.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

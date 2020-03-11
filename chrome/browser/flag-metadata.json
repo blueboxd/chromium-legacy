@@ -284,6 +284,11 @@
     "expiry_milestone": 73
   },
   {
+    "name": "autofill-ios-delay-between-fields",
+    "owners": [ "olivierrobin" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "autofill-keyboard-accessory-view",
     "owners": [ "fhorschig@chromium.org" ],
     "expiry_milestone": 83
@@ -342,6 +347,11 @@
     "name": "autofill-save-card-infobar-edit-support",
     "owners": [ "sczs" ],
     "expiry_milestone": 84
+  },
+  {
+    "name": "autofill-show-all-profiles-on-prefilled-forms",
+    "owners": [ "olivierrobin" ],
+    "expiry_milestone": 86
   },
   {
     "name": "autofill-use-improved-label-disambiguation",
@@ -3346,6 +3356,11 @@
     "name": "reload-sad-tab",
     "owners": [ "gambard" ],
     "expiry_milestone": 84
+  },
+  {
+    "name": "remote-copy-progress-notification",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 85
   },
   {
     "name": "remote-copy-receiver",

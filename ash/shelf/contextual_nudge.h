@@ -6,6 +6,7 @@
 #define ASH_SHELF_CONTEXTUAL_NUDGE_H_
 
 #include "ash/ash_export.h"
+#include "base/callback.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/label.h"
 
@@ -31,12 +32,14 @@ class ASH_EXPORT ContextualNudge : public views::BubbleDialogDelegateView {
   // |margins| - The margins added to the nudge bubble.
   // |text| - The nudge text.
   // |text_color| - The nudge text label foreground color.
+  // |tap_callback| - If set, the callback called when the user taps the nuge.
   ContextualNudge(views::View* anchor,
                   aura::Window* parent_window,
                   Position position,
                   const gfx::Insets& margins,
                   const base::string16& text,
-                  SkColor text_color);
+                  SkColor text_color,
+                  const base::RepeatingClosure& tap_callback);
   ~ContextualNudge() override;
 
   ContextualNudge(const ContextualNudge&) = delete;
@@ -51,8 +54,11 @@ class ASH_EXPORT ContextualNudge : public views::BubbleDialogDelegateView {
   // BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
   ui::LayerType GetLayerType() const override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
+  base::RepeatingClosure tap_callback_;
+
   views::Label* label_;
 };
 

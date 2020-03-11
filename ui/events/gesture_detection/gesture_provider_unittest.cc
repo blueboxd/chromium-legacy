@@ -298,6 +298,13 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     SetUpWithConfig(config);
   }
 
+  void SetStylusButtonAcceleratedLongPress(bool enabled) {
+    GestureProvider::Config config = GetDefaultConfig();
+    config.gesture_detector_config.stylus_button_accelerated_longpress_enabled =
+        enabled;
+    SetUpWithConfig(config);
+  }
+
   bool HasDownEvent() const { return gesture_provider_->current_down_event(); }
 
  protected:
@@ -1247,6 +1254,36 @@ TEST_F(GestureProviderTest, GestureLongPressDoesNotPreventScrolling) {
                             MotionEvent::Action::UP);
   gesture_provider_->OnTouchEvent(event);
   EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_LONG_TAP));
+}
+
+TEST_F(GestureProviderTest, StylusButtonCausesLongPress) {
+  SetStylusButtonAcceleratedLongPress(true);
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::Action::DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time + kOneMicrosecond,
+                            MotionEvent::Action::MOVE);
+  event.set_flags(EF_LEFT_MOUSE_BUTTON);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_LONG_PRESS, GetMostRecentGestureEventType());
+}
+
+TEST_F(GestureProviderTest, DisabledStylusButtonDoesNotCauseLongPress) {
+  SetStylusButtonAcceleratedLongPress(false);
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::Action::DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time + kOneMicrosecond,
+                            MotionEvent::Action::MOVE);
+  event.set_flags(EF_LEFT_MOUSE_BUTTON);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_NE(ET_GESTURE_LONG_PRESS, GetMostRecentGestureEventType());
 }
 
 TEST_F(GestureProviderTest, NoGestureLongPressDuringDoubleTap) {

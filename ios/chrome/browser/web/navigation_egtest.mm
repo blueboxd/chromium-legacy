@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -583,6 +584,13 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 // Tests that navigating forward from NTP works when resuming from session
 // restore. This is a regression test for https://crbug.com/814790.
 - (void)testRestoreHistoryToNTPAndNavigateForward {
+#if TARGET_IPHONE_SIMULATOR
+  if (!base::ios::IsRunningOnIOS13OrLater() && ![ChromeEarlGrey isIPadIdiom]) {
+    // This test is failing on one bot for that very specific configuration. See
+    // https://crbug.com/1059496 for more info.
+    EARL_GREY_TEST_DISABLED(@"Failing on iPhone 12 simulator.");
+  }
+#endif
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
   [ChromeEarlGrey loadURL:destinationURL];
@@ -603,6 +611,13 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 // Tests that restoring a placeholder URL is correctly restored.  This is a
 // regression test from http://crbug.com/1011758.
 - (void)testRestoreHistoryToPlaceholderURL {
+#if TARGET_IPHONE_SIMULATOR
+  if (!base::ios::IsRunningOnIOS13OrLater() && ![ChromeEarlGrey isIPadIdiom]) {
+    // This test is failing on one bot for that very specific configuration. See
+    // https://crbug.com/1059496 for more info.
+    EARL_GREY_TEST_DISABLED(@"Failing on iPhone 12 simulator.");
+  }
+#endif
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationURL("chrome://crash");
   [ChromeEarlGrey loadURL:destinationURL];

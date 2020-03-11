@@ -1195,8 +1195,6 @@ jumbo_static_library("browser") {
     "permissions/crowd_deny_safe_browsing_request.h",
     "permissions/permission_decision_auto_blocker_factory.cc",
     "permissions/permission_decision_auto_blocker_factory.h",
-    "permissions/permission_manager.cc",
-    "permissions/permission_manager.h",
     "permissions/permission_manager_factory.cc",
     "permissions/permission_manager_factory.h",
     "permissions/quiet_notification_permission_ui_config.cc",

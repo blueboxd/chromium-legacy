@@ -20,11 +20,6 @@ public class WebApkExtras {
     public final String webApkPackageName;
 
     /**
-     * Badge icon to use for notifications.
-     */
-    public final WebappIcon badgeIcon;
-
-    /**
      * Icon to use for the splash screen.
      */
     public final WebappIcon splashIcon;
@@ -101,7 +96,7 @@ public class WebApkExtras {
     }
 
     public static WebApkExtras createEmpty() {
-        return new WebApkExtras(null /* webApkPackageName */, new WebappIcon(), new WebappIcon(),
+        return new WebApkExtras(null /* webApkPackageName */, new WebappIcon(),
                 false /* isSplashIconMaskable */, 0 /* shellApkVersion */, null /* manifestUrl */,
                 null /* manifestStartUrl */, WebApkDistributor.OTHER,
                 null /* iconUrlToMurmur2HashMap */, new ShareTarget(),
@@ -109,14 +104,13 @@ public class WebApkExtras {
                 0 /* webApkVersionCode */);
     }
 
-    public WebApkExtras(String webApkPackageName, WebappIcon badgeIcon, WebappIcon splashIcon,
+    public WebApkExtras(String webApkPackageName, WebappIcon splashIcon,
             boolean isSplashIconMaskable, int shellApkVersion, String manifestUrl,
             String manifestStartUrl, @WebApkDistributor int distributor,
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
             boolean isSplashProvidedByWebApk, List<ShortcutItem> shortcutItems,
             int webApkVersionCode) {
         this.webApkPackageName = webApkPackageName;
-        this.badgeIcon = badgeIcon;
         this.splashIcon = splashIcon;
         this.isSplashIconMaskable = isSplashIconMaskable;
         this.shellApkVersion = shellApkVersion;

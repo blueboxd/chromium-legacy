@@ -2161,6 +2161,9 @@ extern const char kClickToCallUIDescription[];
 extern const char kRemoteCopyReceiverName[];
 extern const char kRemoteCopyReceiverDescription[];
 
+extern const char kRemoteCopyProgressNotificationName[];
+extern const char kRemoteCopyProgressNotificationDescription[];
+
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 

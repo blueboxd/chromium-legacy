@@ -100,5 +100,12 @@ const char kVariationsSeedSignature[] = "variations_seed_signature";
 const char kVariationsRestrictionsByPolicy[] =
     "variations_restrictions_by_policy";
 
+// Reflects the state of the "DeviceChromeVariations" policy which determines
+// if and which variations should be enabled for the client on ChromeOS. The
+// possible values are defined in the
+// VariationsService::RestrictionPolicyValues enum.
+const char kDeviceVariationsRestrictionsByPolicy[] =
+    "device_variations_restrictions_by_policy";
+
 }  // namespace prefs
 }  // namespace variations

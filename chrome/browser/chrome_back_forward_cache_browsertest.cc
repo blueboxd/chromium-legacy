@@ -8,7 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -17,6 +17,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/permissions/permission_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -234,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
   ASSERT_FALSE(delete_observer_rfh_a.deleted());
   base::MockOnceCallback<void(ContentSetting)> callback;
   EXPECT_CALL(callback, Run(ContentSetting::CONTENT_SETTING_ASK));
-  PermissionManager::Get(browser()->profile())
+  PermissionManagerFactory::GetForProfile(browser()->profile())
       ->RequestPermission(ContentSettingsType::GEOLOCATION, rfh_a, url_a,
                           /* user_gesture = */ true, callback.Get());
 

@@ -70,7 +70,7 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
       type_(static_cast<unsigned>(type)),
       registered_with_parent_shadow_root_(false),
       delegates_focus_(false),
-      slotting_(static_cast<unsigned>(ShadowRootSlotting::kAuto)),
+      slot_assignment_mode_(static_cast<unsigned>(SlotAssignmentMode::kAuto)),
       needs_distribution_recalc_(false),
       unused_(0) {
   if (IsV0())
@@ -108,8 +108,8 @@ Node* ShadowRoot::Clone(Document&, CloneChildrenFlag) const {
   return nullptr;
 }
 
-void ShadowRoot::SetSlotting(ShadowRootSlotting slotting) {
-  slotting_ = static_cast<unsigned>(slotting);
+void ShadowRoot::SetSlotAssignmentMode(SlotAssignmentMode assignment_mode) {
+  slot_assignment_mode_ = static_cast<unsigned>(assignment_mode);
 }
 
 String ShadowRoot::innerHTML() const {

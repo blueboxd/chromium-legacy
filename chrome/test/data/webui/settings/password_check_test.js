@@ -649,7 +649,7 @@ cr.define('settings_passwords_check', function() {
     test('testShowsPositiveBannerWhenIdle', function() {
       const data = passwordManager.data;
       assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
-      assertEquals(0, data.leakedCredentials.compromisedCredentials.length);
+      assertEquals(0, data.leakedCredentials.length);
 
       const checkPasswordSection = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -665,7 +665,7 @@ cr.define('settings_passwords_check', function() {
     // in progress but hasn't found anything yet.
     test('testShowsNeutralBannerWhenRunning', function() {
       const data = passwordManager.data;
-      assertEquals(0, data.leakedCredentials.compromisedCredentials.length);
+      assertEquals(0, data.leakedCredentials.length);
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.RUNNING, /*checked=*/ 1,
           /*remaining=*/ 5);
@@ -684,7 +684,7 @@ cr.define('settings_passwords_check', function() {
     // in progress but hasn't found anything yet.
     test('testShowsNeutralBannerWhenCanceled', function() {
       const data = passwordManager.data;
-      assertEquals(0, data.leakedCredentials.compromisedCredentials.length);
+      assertEquals(0, data.leakedCredentials.length);
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.CANCELED);
 
@@ -704,13 +704,10 @@ cr.define('settings_passwords_check', function() {
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.RUNNING, /*checked=*/ 1,
           /*remaining=*/ 5);
-      data.leakedCredentials =
-          autofill_test_util.makeCompromisedCredentialsInfo(
-              [
-                autofill_test_util.makeCompromisedCredentials(
-                    'one.com', 'test4', 'LEAKED'),
-              ],
-              'just now');
+      data.leakedCredentials = [
+          autofill_test_util.makeCompromisedCredential(
+              'one.com', 'test4', 'LEAKED'),
+      ];
 
       const checkPasswordSection = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -724,13 +721,10 @@ cr.define('settings_passwords_check', function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.IDLE);
-      data.leakedCredentials =
-          autofill_test_util.makeCompromisedCredentialsInfo(
-              [
-                autofill_test_util.makeCompromisedCredentials(
-                    'one.com', 'test4', 'LEAKED'),
-              ],
-              'Just now');
+      data.leakedCredentials = [
+          autofill_test_util.makeCompromisedCredential(
+              'one.com', 'test4', 'LEAKED'),
+      ];
 
       const checkPasswordSection = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -744,13 +738,10 @@ cr.define('settings_passwords_check', function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.CANCELED);
-      data.leakedCredentials =
-          autofill_test_util.makeCompromisedCredentialsInfo(
-              [
-                autofill_test_util.makeCompromisedCredentials(
-                    'one.com', 'test4', 'LEAKED'),
-              ],
-              'Just now');
+      data.leakedCredentials = [
+          autofill_test_util.makeCompromisedCredential(
+              'one.com', 'test4', 'LEAKED'),
+      ];
 
       const checkPasswordSection = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {

@@ -5,13 +5,11 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
-import android.os.Bundle;
 
 import androidx.browser.trusted.sharing.ShareData;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
@@ -29,13 +27,6 @@ public class WebApkActivity extends WebappActivity {
     @Override
     protected WebappInfo createWebappInfo(Intent intent) {
         return (intent == null) ? WebApkInfo.createEmpty() : WebApkInfo.create(intent);
-    }
-
-    @Override
-    protected void initializeUI(Bundle savedInstance) {
-        super.initializeUI(savedInstance);
-        WebContents webContents = getActivityTab().getWebContents();
-        if (webContents != null) webContents.notifyRendererPreferenceUpdate();
     }
 
     @Override

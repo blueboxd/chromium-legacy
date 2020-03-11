@@ -43,6 +43,7 @@ Description: This includes code for the manifest tool, lint tool, and wptserve.
     for more details on maintenance.
 Local Modifications:
 - Removed all files except for those listed in wpt/WPTWhiteList.
-- Removed a few unimported subcommands from tools/wpt/path.
 - Cherry-picked the server part of https://github.com/web-platform-tests/wpt/pull/21705
   (we cannot yet directly roll to that revision because of MANIFEST v8 changes).
+- Cherry-picked the server part of https://github.com/web-platform-tests/wpt/pull/21845
+  (Same reason with the previous cherry-pick. This enables pywebsocket3 usage).

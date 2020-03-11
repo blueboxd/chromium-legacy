@@ -496,9 +496,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kVariationsRestrictParameter,
     variations::prefs::kVariationsRestrictParameter,
     base::Value::Type::STRING },
-  { key::kChromeVariations,
-    variations::prefs::kVariationsRestrictionsByPolicy,
-    base::Value::Type::INTEGER },
   { key::kForceEphemeralProfiles,
     prefs::kForceEphemeralProfiles,
     base::Value::Type::BOOLEAN },
@@ -1060,6 +1057,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPrivacyScreenEnabled,
     ash::prefs::kDisplayPrivacyScreenEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kDeviceChromeVariations,
+    variations::prefs::kDeviceVariationsRestrictionsByPolicy,
+    base::Value::Type::INTEGER },
 #else  // defined(OS_CHROMEOS)
   { key::kMetricsReportingEnabled,
     metrics::prefs::kMetricsReportingEnabled,
@@ -1148,6 +1148,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kBrowserSwitcherDelay,
     browser_switcher::prefs::kDelay,
+    base::Value::Type::INTEGER },
+  { key::kChromeVariations,
+    variations::prefs::kVariationsRestrictionsByPolicy,
     base::Value::Type::INTEGER },
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
@@ -1686,7 +1689,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<extensions::ExtensionSettingsPolicyHandler>(
           chrome_schema));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
-      key::kDeviceLoginScreenChromeVariations, nullptr,
+      key::kDeviceChromeVariations, nullptr,
       static_cast<int>(variations::RestrictionPolicy::NO_RESTRICTIONS),
       static_cast<int>(variations::RestrictionPolicy::ALL), false));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(

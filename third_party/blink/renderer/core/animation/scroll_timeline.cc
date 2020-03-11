@@ -145,31 +145,21 @@ bool ScrollTimeline::IsActive() const {
   return layout_box && layout_box->HasOverflowClip();
 }
 
-String ScrollTimeline::phase() const {
-  // TODO(crbug.com/1046833) - Not yet Implemented
-  return "inactive";
-}
-
-// Scroll-linked animations are initialized with the start time of zero.
-base::Optional<base::TimeDelta>
-ScrollTimeline::InitialStartTimeForAnimations() {
-  return base::TimeDelta();
-}
-
-void ScrollTimeline::ScheduleNextService() {
-  DCHECK_EQ(outdated_animation_count_, 0U);
-  if (AnimationsNeedingUpdateCount() == 0)
-    return;
-  if (CurrentTimeInternal() != last_current_time_internal_)
-    ScheduleServiceOnNextFrame();
+TimelinePhase ScrollTimeline::Phase() const {
+  return ComputePhaseAndCurrentTime().phase;
 }
 
 base::Optional<base::TimeDelta> ScrollTimeline::CurrentTimeInternal() {
+  return ComputePhaseAndCurrentTime().current_time;
+}
+
+ScrollTimeline::PhaseAndTime ScrollTimeline::ComputePhaseAndCurrentTime()
+    const {
   // 1. If scroll timeline is inactive, return an unresolved time value.
   // https://github.com/WICG/scroll-animations/issues/31
   // https://wicg.github.io/scroll-animations/#current-time-algorithm
   if (!IsActive()) {
-    return base::nullopt;
+    return {TimelinePhase::kInactive, base::nullopt};
   }
   LayoutBox* layout_box = resolved_scroll_source_->GetLayoutBox();
   // 2. Otherwise, let current scroll offset be the current scroll offset of
@@ -188,10 +178,10 @@ base::Optional<base::TimeDelta> ScrollTimeline::CurrentTimeInternal() {
   if (current_offset < resolved_start_scroll_offset) {
     // Return an unresolved time value if fill is none or forwards.
     if (fill_ == Timing::FillMode::NONE || fill_ == Timing::FillMode::FORWARDS)
-      return base::nullopt;
+      return {TimelinePhase::kBefore, base::nullopt};
 
     // Otherwise, return 0.
-    return base::TimeDelta();
+    return {TimelinePhase::kBefore, base::TimeDelta()};
   }
 
   // 4. If current scroll offset is greater than or equal to endScrollOffset:
@@ -202,26 +192,37 @@ base::Optional<base::TimeDelta> ScrollTimeline::CurrentTimeInternal() {
     if (resolved_end_scroll_offset < max_offset &&
         (fill_ == Timing::FillMode::NONE ||
          fill_ == Timing::FillMode::BACKWARDS)) {
-      return base::nullopt;
+      return {TimelinePhase::kAfter, base::nullopt};
     }
 
     // Otherwise, return the effective time range.
-    return base::TimeDelta::FromMillisecondsD(time_range_);
-  }
-
-  // This is not by the spec, but avoids a negative current time.
-  // See https://github.com/WICG/scroll-animations/issues/20
-  if (resolved_start_scroll_offset >= resolved_end_scroll_offset) {
-    return base::nullopt;
+    return {TimelinePhase::kAfter,
+            base::TimeDelta::FromMillisecondsD(time_range_)};
   }
 
   // 5. Return the result of evaluating the following expression:
   //   ((current scroll offset - startScrollOffset) /
   //      (endScrollOffset - startScrollOffset)) * effective time range
-  return base::TimeDelta::FromMillisecondsD(
-      ((current_offset - resolved_start_scroll_offset) /
-       (resolved_end_scroll_offset - resolved_start_scroll_offset)) *
-      time_range_);
+  base::Optional<base::TimeDelta> calculated_current_time =
+      base::TimeDelta::FromMillisecondsD(
+          ((current_offset - resolved_start_scroll_offset) /
+           (resolved_end_scroll_offset - resolved_start_scroll_offset)) *
+          time_range_);
+  return {TimelinePhase::kActive, calculated_current_time};
+}
+
+// Scroll-linked animations are initialized with the start time of zero.
+base::Optional<base::TimeDelta>
+ScrollTimeline::InitialStartTimeForAnimations() {
+  return base::TimeDelta();
+}
+
+void ScrollTimeline::ScheduleNextService() {
+  DCHECK_EQ(outdated_animation_count_, 0U);
+  if (AnimationsNeedingUpdateCount() == 0)
+    return;
+  if (CurrentTimeInternal() != last_current_time_internal_)
+    ScheduleServiceOnNextFrame();
 }
 
 Element* ScrollTimeline::scrollSource() {

@@ -499,12 +499,6 @@ config("compiler") {
       "-Xclang",
       "-instcombine-lower-dbg-declare=0",
     ]
-
-    if (!is_chromeos && default_toolchain != "//build/toolchain/cros:target") {
-      # TODO(https://crbug.com/1049161): Remove '-DCLANG_SPAWN_CC1=ON' from build.py instead
-      # once this change has marinated a bit.
-      cflags += [ "-fintegrated-cc1" ]
-    }
   }
 
   # C11/C++11 compiler flags setup.

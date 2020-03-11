@@ -30,7 +30,7 @@
 #include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
-#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -42,6 +42,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -228,7 +229,8 @@ ContentSetting JNI_WebsitePreferenceBridge_GetSettingForOrigin(
     embedder_url = url;
   else
     embedder_url = GURL(embedder_str);
-  return PermissionManager::Get(GetActiveUserProfile(is_incognito))
+  return PermissionManagerFactory::GetForProfile(
+             GetActiveUserProfile(is_incognito))
       ->GetPermissionStatus(content_type, url, embedder_url)
       .content_setting;
 }
@@ -483,7 +485,8 @@ static jboolean JNI_WebsitePreferenceBridge_IsNotificationEmbargoedForOrigin(
     const JavaParamRef<jstring>& origin) {
   GURL origin_url(ConvertJavaStringToUTF8(env, origin));
   permissions::PermissionResult status =
-      PermissionManager::Get(ProfileAndroid::FromProfileAndroid(jprofile))
+      PermissionManagerFactory::GetForProfile(
+          ProfileAndroid::FromProfileAndroid(jprofile))
           ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS, origin_url,
                                 origin_url);
   return status.content_setting == ContentSetting::CONTENT_SETTING_BLOCK &&

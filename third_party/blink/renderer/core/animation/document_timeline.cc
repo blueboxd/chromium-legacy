@@ -187,11 +187,11 @@ base::Optional<base::TimeDelta> DocumentTimeline::CurrentTimeInternal() {
   return result;
 }
 
-String DocumentTimeline::phase() const {
+TimelinePhase DocumentTimeline::Phase() const {
   if (IsActive()) {
-    return "active";
+    return TimelinePhase::kActive;
   }
-  return "inactive";
+  return TimelinePhase::kInactive;
 }
 
 void DocumentTimeline::PauseAnimationsForTesting(double pause_time) {

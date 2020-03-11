@@ -347,8 +347,9 @@ bool GuardedPageAllocator::ReserveSlotAndMetadata(
     if (!oom_hit_) {
       if (++consecutive_failed_allocations_ == kOutOfMemoryCount) {
         oom_hit_ = true;
+        size_t allocations = total_allocations_ - kOutOfMemoryCount;
         base::AutoUnlock unlock(lock_);
-        std::move(oom_callback_).Run(total_allocations_ - kOutOfMemoryCount);
+        std::move(oom_callback_).Run(allocations);
       }
     }
     return false;

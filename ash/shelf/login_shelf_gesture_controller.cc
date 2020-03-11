@@ -43,7 +43,8 @@ LoginShelfGestureController::LoginShelfGestureController(
       is_oobe ? gfx::kGoogleGrey700 : gfx::kGoogleGrey100;
   nudge_ = new ContextualNudge(drag_handle, nullptr /*parent_window*/,
                                ContextualNudge::Position::kTop, gfx::Insets(4),
-                               gesture_nudge, nudge_text_color);
+                               gesture_nudge, nudge_text_color,
+                               base::RepeatingClosure());
   nudge_->GetWidget()->Show();
   nudge_->GetWidget()->AddObserver(this);
 }

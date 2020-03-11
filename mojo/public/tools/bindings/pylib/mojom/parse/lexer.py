@@ -6,6 +6,7 @@ import imp
 import os.path
 import sys
 
+
 def _GetDirAbove(dirname):
   """Returns the directory "above" this file containing |dirname| (which must
   also be "above" this file)."""
@@ -15,6 +16,7 @@ def _GetDirAbove(dirname):
     assert tail
     if tail == dirname:
       return path
+
 
 try:
   imp.find_module("ply")
@@ -35,7 +37,6 @@ class LexError(Error):
 # We have methods which look like they could be functions:
 # pylint: disable=R0201
 class Lexer(object):
-
   def __init__(self, filename):
     self.filename = filename
 
@@ -51,25 +52,24 @@ class Lexer(object):
   ## Reserved keywords
   ##
   keywords = (
-    'HANDLE',
-
-    'IMPORT',
-    'MODULE',
-    'STRUCT',
-    'UNION',
-    'INTERFACE',
-    'ENUM',
-    'CONST',
-    'TRUE',
-    'FALSE',
-    'DEFAULT',
-    'ARRAY',
-    'MAP',
-    'ASSOCIATED',
-    'PENDING_REMOTE',
-    'PENDING_RECEIVER',
-    'PENDING_ASSOCIATED_REMOTE',
-    'PENDING_ASSOCIATED_RECEIVER',
+      'HANDLE',
+      'IMPORT',
+      'MODULE',
+      'STRUCT',
+      'UNION',
+      'INTERFACE',
+      'ENUM',
+      'CONST',
+      'TRUE',
+      'FALSE',
+      'DEFAULT',
+      'ARRAY',
+      'MAP',
+      'ASSOCIATED',
+      'PENDING_REMOTE',
+      'PENDING_RECEIVER',
+      'PENDING_ASSOCIATED_REMOTE',
+      'PENDING_ASSOCIATED_RECEIVER',
   )
 
   keyword_map = {}
@@ -80,36 +80,42 @@ class Lexer(object):
   ## All the tokens recognized by the lexer
   ##
   tokens = keywords + (
-    # Identifiers
-    'NAME',
+      # Identifiers
+      'NAME',
 
-    # Constants
-    'ORDINAL',
-    'INT_CONST_DEC', 'INT_CONST_HEX',
-    'FLOAT_CONST',
+      # Constants
+      'ORDINAL',
+      'INT_CONST_DEC',
+      'INT_CONST_HEX',
+      'FLOAT_CONST',
 
-    # String literals
-    'STRING_LITERAL',
+      # String literals
+      'STRING_LITERAL',
 
-    # Operators
-    'MINUS',
-    'PLUS',
-    'AMP',
-    'QSTN',
+      # Operators
+      'MINUS',
+      'PLUS',
+      'AMP',
+      'QSTN',
 
-    # Assignment
-    'EQUALS',
+      # Assignment
+      'EQUALS',
 
-    # Request / response
-    'RESPONSE',
+      # Request / response
+      'RESPONSE',
 
-    # Delimiters
-    'LPAREN', 'RPAREN',         # ( )
-    'LBRACKET', 'RBRACKET',     # [ ]
-    'LBRACE', 'RBRACE',         # { }
-    'LANGLE', 'RANGLE',         # < >
-    'SEMI',                     # ;
-    'COMMA', 'DOT'              # , .
+      # Delimiters
+      'LPAREN',
+      'RPAREN',  # ( )
+      'LBRACKET',
+      'RBRACKET',  # [ ]
+      'LBRACE',
+      'RBRACE',  # { }
+      'LANGLE',
+      'RANGLE',  # < >
+      'SEMI',  # ;
+      'COMMA',
+      'DOT'  # , .
   )
 
   ##
@@ -124,7 +130,7 @@ class Lexer(object):
 
   # integer constants (K&R2: A.2.5.1)
   decimal_constant = '0|([1-9][0-9]*)'
-  hex_constant = hex_prefix+hex_digits
+  hex_constant = hex_prefix + hex_digits
   # Don't allow octal constants (even invalid octal).
   octal_constant_disallowed = '0[0-9]+'
 
@@ -144,9 +150,9 @@ class Lexer(object):
       r"""(\\("""+simple_escape+'|'+decimal_escape+'|'+hex_escape+'))'
 
   # string literals (K&R2: A.2.6)
-  string_char = r"""([^"\\\n]|"""+escape_sequence+')'
-  string_literal = '"'+string_char+'*"'
-  bad_string_literal = '"'+string_char+'*'+bad_escape+string_char+'*"'
+  string_char = r"""([^"\\\n]|""" + escape_sequence + ')'
+  string_literal = '"' + string_char + '*"'
+  bad_string_literal = '"' + string_char + '*' + bad_escape + string_char + '*"'
 
   # floating constants (K&R2: A.2.5.3)
   exponent_part = r"""([eE][-+]?[0-9]+)"""
@@ -160,7 +166,8 @@ class Lexer(object):
   missing_ordinal_value = r'@'
   # Don't allow ordinal values in octal (even invalid octal, like 09) or
   # hexadecimal.
-  octal_or_hex_ordinal_disallowed = r'@((0[0-9]+)|('+hex_prefix+hex_digits+'))'
+  octal_or_hex_ordinal_disallowed = (
+      r'@((0[0-9]+)|(' + hex_prefix + hex_digits + '))')
 
   ##
   ## Rules for the normal state
@@ -173,31 +180,31 @@ class Lexer(object):
     t.lexer.lineno += len(t.value)
 
   # Operators
-  t_MINUS             = r'-'
-  t_PLUS              = r'\+'
-  t_AMP               = r'&'
-  t_QSTN              = r'\?'
+  t_MINUS = r'-'
+  t_PLUS = r'\+'
+  t_AMP = r'&'
+  t_QSTN = r'\?'
 
   # =
-  t_EQUALS            = r'='
+  t_EQUALS = r'='
 
   # =>
-  t_RESPONSE          = r'=>'
+  t_RESPONSE = r'=>'
 
   # Delimiters
-  t_LPAREN            = r'\('
-  t_RPAREN            = r'\)'
-  t_LBRACKET          = r'\['
-  t_RBRACKET          = r'\]'
-  t_LBRACE            = r'\{'
-  t_RBRACE            = r'\}'
-  t_LANGLE            = r'<'
-  t_RANGLE            = r'>'
-  t_COMMA             = r','
-  t_DOT               = r'\.'
-  t_SEMI              = r';'
+  t_LPAREN = r'\('
+  t_RPAREN = r'\)'
+  t_LBRACKET = r'\['
+  t_RBRACKET = r'\]'
+  t_LBRACE = r'\{'
+  t_RBRACE = r'\}'
+  t_LANGLE = r'<'
+  t_RANGLE = r'>'
+  t_COMMA = r','
+  t_DOT = r'\.'
+  t_SEMI = r';'
 
-  t_STRING_LITERAL    = string_literal
+  t_STRING_LITERAL = string_literal
 
   # The following floating and integer constants are defined as
   # functions to impose a strict order (otherwise, decimal

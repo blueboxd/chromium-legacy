@@ -1404,6 +1404,28 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesStar) {
   EXPECT_FALSE(csp->AllowTrustedTypePolicy("somepolicy", true));
 }
 
+TEST_F(ContentSecurityPolicyTest, TrustedTypesStarMix) {
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  csp->DidReceiveHeader("trusted-types abc * def",
+                        ContentSecurityPolicyType::kEnforce,
+                        ContentSecurityPolicySource::kHTTP);
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("abc", false));
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("def", false));
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("ghi", false));
+  EXPECT_FALSE(csp->AllowTrustedTypePolicy("abc", true));
+  EXPECT_FALSE(csp->AllowTrustedTypePolicy("def", true));
+  EXPECT_FALSE(csp->AllowTrustedTypePolicy("ghi", true));
+}
+
+TEST_F(ContentSecurityPolicyTest, TrustedTypeDupe) {
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  csp->DidReceiveHeader("trusted-types somepolicy 'allow-duplicates'",
+                        ContentSecurityPolicyType::kEnforce,
+                        ContentSecurityPolicySource::kHTTP);
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy", false));
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy", true));
+}
+
 TEST_F(ContentSecurityPolicyTest, TrustedTypeDupeStar) {
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types * 'allow-duplicates'",

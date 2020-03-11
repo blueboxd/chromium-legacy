@@ -5957,7 +5957,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
-  // 8. Test if splitview is active, open the app list will end overview if
+  // 8. Test if splitview is not active, open the app list will end overview if
   // overview is active.
   ToggleOverview();
   // Open app list.

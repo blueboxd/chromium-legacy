@@ -46,6 +46,10 @@ void SkiaOutputDevice::SetGpuVSyncEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
 
+bool SkiaOutputDevice::IsPrimaryPlaneOverlay() const {
+  return false;
+}
+
 void SkiaOutputDevice::SchedulePrimaryPlane(
     const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane) {
   NOTIMPLEMENTED();

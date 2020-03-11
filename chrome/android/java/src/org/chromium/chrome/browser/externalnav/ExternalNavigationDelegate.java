@@ -121,6 +121,9 @@ interface ExternalNavigationDelegate {
      */
     void maybeAdjustInstantAppExtras(Intent intent, boolean isIntentToInstantApp);
 
+    /** Invoked for intents with user gestures and records the user gesture if desired. */
+    void maybeSetUserGesture(Intent intent);
+
     /**
      * Records the pending incognito URL if desired. Called only if the
      * navigation is occurring in the context of incognito mode.

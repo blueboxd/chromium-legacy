@@ -17,6 +17,7 @@ namespace blink {
 
 class LocalFrame;
 class Page;
+class TreeScope;
 
 class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
  public:
@@ -44,7 +45,7 @@ class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
   void UpdateLifecycleToLayoutClean(LocalFrame& root_frame,
                                     DocumentUpdateReason reason);
   AnimationClock& Clock() { return animation_clock_; }
-  HeapVector<Member<Animation>> GetAnimations(Document*);
+  HeapVector<Member<Animation>> GetAnimations(const TreeScope&);
 
  private:
   void UpdateHitTestOcclusionData(LocalFrame& root_frame);

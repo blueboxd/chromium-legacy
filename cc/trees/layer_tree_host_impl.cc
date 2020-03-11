@@ -1002,7 +1002,7 @@ bool LayerTreeHostImpl::ScrollLayerTo(ElementId element_id,
     return false;
 
   scroll_tree.ScrollBy(
-      scroll_node,
+      *scroll_node,
       ScrollOffsetToVector2dF(offset -
                               scroll_tree.current_scroll_offset(element_id)),
       active_tree());
@@ -3125,11 +3125,11 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
   if (InnerViewportScrollNode()) {
     active_tree_->property_trees()->scroll_tree.ClampScrollToMaxScrollOffset(
-        InnerViewportScrollNode(), active_tree_.get());
+        *InnerViewportScrollNode(), active_tree_.get());
 
     DCHECK(OuterViewportScrollNode());
     active_tree_->property_trees()->scroll_tree.ClampScrollToMaxScrollOffset(
-        OuterViewportScrollNode(), active_tree_.get());
+        *OuterViewportScrollNode(), active_tree_.get());
   }
 
   active_tree_->DidBecomeActive();
@@ -4148,14 +4148,14 @@ gfx::Vector2dF LayerTreeHostImpl::ComputeScrollDelta(
   return gfx::Vector2dF(scrolled.x(), scrolled.y());
 }
 
-bool LayerTreeHostImpl::AutoScrollAnimationCreate(ScrollNode* scroll_node,
+bool LayerTreeHostImpl::AutoScrollAnimationCreate(const ScrollNode& scroll_node,
                                                   const gfx::Vector2dF& delta,
                                                   float autoscroll_velocity) {
   return ScrollAnimationCreateInternal(scroll_node, delta, base::TimeDelta(),
                                        autoscroll_velocity);
 }
 
-bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
+bool LayerTreeHostImpl::ScrollAnimationCreate(const ScrollNode& scroll_node,
                                               const gfx::Vector2dF& delta,
                                               base::TimeDelta delayed_by) {
   return ScrollAnimationCreateInternal(scroll_node, delta, delayed_by,
@@ -4163,7 +4163,7 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
 }
 
 bool LayerTreeHostImpl::ScrollAnimationCreateInternal(
-    ScrollNode* scroll_node,
+    const ScrollNode& scroll_node,
     const gfx::Vector2dF& delta,
     base::TimeDelta delayed_by,
     base::Optional<float> autoscroll_velocity) {
@@ -4181,9 +4181,9 @@ bool LayerTreeHostImpl::ScrollAnimationCreateInternal(
   }
 
   gfx::ScrollOffset current_offset =
-      scroll_tree.current_scroll_offset(scroll_node->element_id);
+      scroll_tree.current_scroll_offset(scroll_node.element_id);
   gfx::ScrollOffset target_offset = scroll_tree.ClampScrollOffsetToLimits(
-      current_offset + gfx::ScrollOffset(delta), *scroll_node);
+      current_offset + gfx::ScrollOffset(delta), scroll_node);
 
   // Start the animation one full frame in. Without any offset, the animation
   // doesn't start until next frame, increasing latency, and preventing our
@@ -4192,11 +4192,11 @@ bool LayerTreeHostImpl::ScrollAnimationCreateInternal(
 
   if (autoscroll_velocity) {
     mutator_host_->ImplOnlyAutoScrollAnimationCreate(
-        scroll_node->element_id, gfx::ScrollOffset(delta), current_offset,
+        scroll_node.element_id, gfx::ScrollOffset(delta), current_offset,
         autoscroll_velocity.value(), animation_start_offset);
   } else {
     mutator_host_->ImplOnlyScrollAnimationCreate(
-        scroll_node->element_id, target_offset, current_offset, delayed_by,
+        scroll_node.element_id, target_offset, current_offset, delayed_by,
         animation_start_offset);
   }
 
@@ -4254,7 +4254,7 @@ bool LayerTreeHostImpl::CalculateLocalScrollDeltaAndStartPoint(
 }
 
 gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
-    ScrollNode& scroll_node,
+    const ScrollNode& scroll_node,
     const gfx::PointF& viewport_point,
     const gfx::Vector2dF& viewport_delta,
     ScrollTree* scroll_tree) {
@@ -4273,7 +4273,7 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
   // Apply the scroll delta.
   gfx::ScrollOffset previous_offset =
       scroll_tree->current_scroll_offset(scroll_node.element_id);
-  scroll_tree->ScrollBy(&scroll_node, local_scroll_delta, active_tree());
+  scroll_tree->ScrollBy(scroll_node, local_scroll_delta, active_tree());
   gfx::ScrollOffset scrolled =
       scroll_tree->current_scroll_offset(scroll_node.element_id) -
       previous_offset;
@@ -4304,7 +4304,7 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
 }
 
 static gfx::Vector2dF ScrollNodeWithLocalDelta(
-    ScrollNode& scroll_node,
+    const ScrollNode& scroll_node,
     const gfx::Vector2dF& local_delta,
     float page_scale_factor,
     LayerTreeImpl* layer_tree_impl) {
@@ -4317,7 +4317,7 @@ static gfx::Vector2dF ScrollNodeWithLocalDelta(
       scroll_tree.current_scroll_offset(scroll_node.element_id);
   gfx::Vector2dF delta = local_delta;
   delta.Scale(1.f / page_scale_factor);
-  scroll_tree.ScrollBy(&scroll_node, delta, layer_tree_impl);
+  scroll_tree.ScrollBy(scroll_node, delta, layer_tree_impl);
   gfx::ScrollOffset scrolled =
       scroll_tree.current_scroll_offset(scroll_node.element_id) -
       previous_offset;
@@ -4332,7 +4332,7 @@ static gfx::Vector2dF ScrollNodeWithLocalDelta(
 // TODO(danakj): Make this into two functions, one with delta, one with
 // viewport_point, no bool required.
 gfx::Vector2dF LayerTreeHostImpl::ScrollSingleNode(
-    ScrollNode& scroll_node,
+    const ScrollNode& scroll_node,
     const gfx::Vector2dF& delta,
     const gfx::Point& viewport_point,
     bool is_direct_manipulation,
@@ -4404,7 +4404,7 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state,
         applied_delta = viewport().ScrollAnimated(delta, delayed_by);
       } else {
         applied_delta = ComputeScrollDelta(scroll_node, delta);
-        ScrollAnimationCreate(&scroll_node, applied_delta, delayed_by);
+        ScrollAnimationCreate(scroll_node, applied_delta, delayed_by);
       }
     }
 
@@ -4830,7 +4830,7 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
         viewport().ScrollAnimated(scaled_delta, base::TimeDelta());
     did_animate = !consumed_delta.IsZero();
   } else {
-    did_animate = ScrollAnimationCreate(scroll_node, delta, base::TimeDelta());
+    did_animate = ScrollAnimationCreate(*scroll_node, delta, base::TimeDelta());
   }
   DCHECK(!IsAnimatingForSnap());
   if (did_animate) {

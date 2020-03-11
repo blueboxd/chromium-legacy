@@ -35,6 +35,9 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
   base::Optional<url::Origin> GetAutoApprovalOrigin() override;
   bool CanBypassEmbeddingOriginCheck(const GURL& requesting_origin,
                                      const GURL& embedding_origin) override;
+  base::Optional<GURL> OverrideCanonicalOrigin(
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) override;
 #if defined(OS_ANDROID)
   infobars::InfoBarManager* GetInfoBarManager(
       content::WebContents* web_contents) override;

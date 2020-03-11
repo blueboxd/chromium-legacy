@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_OR_SHADOW_ROOT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_OR_SHADOW_ROOT_H_
 
+#include "third_party/blink/renderer/core/animation/document_animation.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -48,6 +49,15 @@ class DocumentOrShadowRoot {
 
   static DOMSelection* getSelection(TreeScope& tree_scope) {
     return tree_scope.GetSelection();
+  }
+
+  static HeapVector<Member<Animation>> getAnimations(Document& document) {
+    return document.GetDocumentAnimations().getAnimations(document);
+  }
+
+  static HeapVector<Member<Animation>> getAnimations(ShadowRoot& shadow_root) {
+    return shadow_root.GetDocument().GetDocumentAnimations().getAnimations(
+        shadow_root);
   }
 
   static Element* elementFromPoint(TreeScope& tree_scope, double x, double y) {

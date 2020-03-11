@@ -46,3 +46,61 @@ source_set("feature_flags") {
     "//ios/chrome/browser:utils",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_platform_policy_provider.cc",
+    "test_platform_policy_provider.h",
+  ]
+
+  deps = [ "//base" ]
+
+  public_deps = [ "//components/policy/core/common:test_support" ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+
+  sources = [
+    "policy_egtest.mm",
+    "policy_egtest_app_interface.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/strings",
+    "//ios/chrome/browser:utils",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ui/base",
+  ]
+
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("eg_app_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "policy_egtest_app_interface.h",
+    "policy_egtest_app_interface.mm",
+  ]
+  deps = [
+    ":policy",
+    "//base",
+    "//components/policy/core/browser",
+    "//components/policy/core/common",
+    "//ios/chrome/browser",
+  ]
+  libs = [ "Foundation.framework" ]
+}

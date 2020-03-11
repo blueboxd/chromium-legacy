@@ -20,3 +20,20 @@ component("security_token_pin") {
     "//ui/base",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "error_generator_unittest.cc" ]
+
+  deps = [
+    ":security_token_pin",
+    "//base",
+    "//base:i18n",
+    "//testing/gtest",
+    "//ui/base",
+  ]
+  data_deps = [
+    "//chromeos/strings:chromeos_test_strings",
+    "//ui/resources:ui_test_pak_data",
+  ]
+}

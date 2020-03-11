@@ -14,10 +14,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
-#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -108,7 +109,8 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
 
   DCHECK(!security_origin.is_empty());
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
-  PermissionManager* permission_manager = PermissionManager::Get(profile);
+  permissions::PermissionManager* permission_manager =
+      PermissionManagerFactory::GetForProfile(profile);
   return permission_manager
              ->GetPermissionStatusForFrame(content_settings_type,
                                            render_frame_host, security_origin)

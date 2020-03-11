@@ -11,8 +11,8 @@ import android.util.Pair;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.DropdownKeyValue;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -193,7 +193,8 @@ public class EditorFieldModel {
      * Constructs a checkbox to show in the editor. It's checked by default.
      *
      * @param checkboxLabel      The label for the checkbox.
-     * @param checkboxPreference The shared preference for the checkbox status.
+     * @param checkboxPreference The shared preference key for the checkbox status. It must be in
+     *                           ChromePreferenceKeys.
      */
     public static EditorFieldModel createCheckbox(
             CharSequence checkboxLabel, CharSequence checkboxPreference) {
@@ -388,16 +389,13 @@ public class EditorFieldModel {
     /** @return Whether the checkbox is checked. */
     public boolean isChecked() {
         assert mInputTypeHint == INPUT_TYPE_HINT_CHECKBOX;
-        return ContextUtils.getAppSharedPreferences().getBoolean(mValue.toString(), true);
+        return SharedPreferencesManager.getInstance().readBoolean(mValue.toString(), true);
     }
 
     /** Sets the checkbox state. */
     public void setIsChecked(boolean isChecked) {
         assert mInputTypeHint == INPUT_TYPE_HINT_CHECKBOX;
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(mValue.toString(), isChecked)
-                .apply();
+        SharedPreferencesManager.getInstance().writeBoolean(mValue.toString(), isChecked);
     }
 
     /** @return The list of icons resource identifiers to display. */

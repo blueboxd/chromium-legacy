@@ -213,7 +213,7 @@ class CONTENT_EXPORT IndexedDBOriginState {
   ClosingState closing_stage_ = ClosingState::kNotClosing;
   base::OneShotTimer close_timer_;
   const std::unique_ptr<DisjointRangeLockManager> lock_manager_;
-  const std::unique_ptr<IndexedDBBackingStore> backing_store_;
+  std::unique_ptr<IndexedDBBackingStore> backing_store_;
 
   OriginDBMap databases_;
   // This is the refcount for the number of IndexedDBOriginStateHandle's given

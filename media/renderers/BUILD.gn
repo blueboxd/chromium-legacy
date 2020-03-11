@@ -107,6 +107,8 @@ if (is_win) {
       "win/media_engine_notify_impl.h",
       "win/media_foundation_audio_stream.cc",
       "win/media_foundation_audio_stream.h",
+      "win/media_foundation_protection_manager.cc",
+      "win/media_foundation_protection_manager.h",
       "win/media_foundation_source_wrapper.cc",
       "win/media_foundation_source_wrapper.h",
       "win/media_foundation_stream_wrapper.cc",

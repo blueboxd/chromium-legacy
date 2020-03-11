@@ -148,6 +148,8 @@ void DisplayLockContext::ContextDestroyed() {
 void DisplayLockContext::UpdateActivationObservationIfNeeded() {
   if (!document_) {
     is_observed_ = false;
+    is_registered_for_lifecycle_notifications_ = false;
+    needs_intersection_lock_check_ = false;
     return;
   }
 
@@ -165,8 +167,34 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
     document_->RegisterDisplayLockActivationObservation(element_);
   } else if (!should_observe && is_observed_) {
     document_->UnregisterDisplayLockActivationObservation(element_);
+    // We don't need intersection lock checks if we are not observing
+    // intersections anymore.
+    needs_intersection_lock_check_ = false;
+    UpdateLifecycleNotificationRegistration();
   }
   is_observed_ = should_observe;
+}
+
+bool DisplayLockContext::NeedsLifecycleNotifications() const {
+  return HasResolver() || needs_intersection_lock_check_;
+}
+
+void DisplayLockContext::UpdateLifecycleNotificationRegistration() {
+  if (!document_ || !document_->View()) {
+    is_registered_for_lifecycle_notifications_ = false;
+    return;
+  }
+
+  bool needs_notifications = NeedsLifecycleNotifications();
+  if (needs_notifications == is_registered_for_lifecycle_notifications_)
+    return;
+
+  is_registered_for_lifecycle_notifications_ = needs_notifications;
+  if (needs_notifications) {
+    document_->View()->RegisterForLifecycleNotifications(this);
+  } else {
+    document_->View()->UnregisterFromLifecycleNotifications(this);
+  }
 }
 
 void DisplayLockContext::SetActivatable(uint16_t activatable_mask) {
@@ -192,6 +220,9 @@ void DisplayLockContext::StartAcquire() {
   DCHECK(!IsLocked());
   update_budget_.reset();
   state_ = kLocked;
+
+  needs_intersection_lock_check_ = false;
+  UpdateLifecycleNotificationRegistration();
 
   // We're no longer activated, so if the signal didn't run yet, we should
   // cancel it.
@@ -283,11 +314,11 @@ bool DisplayLockContext::CleanupAndRejectCommitIfNotConnected() {
 void DisplayLockContext::MakeResolver(ScriptState* script_state,
                                       Member<ScriptPromiseResolver>* resolver) {
   DCHECK(ConnectedToView());
-  document_->View()->RegisterForLifecycleNotifications(this);
   *resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  UpdateLifecycleNotificationRegistration();
 }
 
-bool DisplayLockContext::HasResolver() {
+bool DisplayLockContext::HasResolver() const {
   return update_resolver_;
 }
 
@@ -323,8 +354,7 @@ void DisplayLockContext::FinishResolver(Member<ScriptPromiseResolver>* resolver,
       break;
   }
   *resolver = nullptr;
-  if (!HasResolver() && ConnectedToView())
-    document_->View()->UnregisterFromLifecycleNotifications(this);
+  UpdateLifecycleNotificationRegistration();
 }
 
 bool DisplayLockContext::ShouldPerformUpdatePhase(
@@ -487,6 +517,57 @@ bool DisplayLockContext::IsActivated() const {
 
 void DisplayLockContext::ClearActivated() {
   css_is_activated_ = false;
+  // If we are no longer activated, then we're either committing or acquiring a
+  // lock. In either case, we don't need to rely on lifecycle observations to
+  // become hidden.
+  // TODO(vmpstr): This needs refactoring.
+  needs_intersection_lock_check_ = false;
+  UpdateLifecycleNotificationRegistration();
+}
+
+void DisplayLockContext::NotifyIsIntersectingViewport() {
+  // If we are now intersecting, then we are definitely not nested in a locked
+  // subtree and we don't need to lock as a result.
+  needs_intersection_lock_check_ = false;
+  UpdateLifecycleNotificationRegistration();
+
+  if (!IsLocked())
+    return;
+
+  DCHECK(IsActivatable(DisplayLockActivationReason::kViewportIntersection));
+  CommitForActivationWithSignal(
+      element_, DisplayLockActivationReason::kViewportIntersection);
+}
+
+void DisplayLockContext::NotifyIsNotIntersectingViewport() {
+  if (IsLocked()) {
+    DCHECK(!needs_intersection_lock_check_);
+    return;
+  }
+
+  // There are two situations we need to consider here:
+  // 1. We are off-screen but not nested in any other lock. This means we should
+  //    re-lock (also verify that the reason we're in this state is that we're
+  //    activated).
+  // 2. We are in a nested locked context. This means we don't actually know
+  //    whether we should lock or not. In order to avoid needless dirty of the
+  //    layout and style trees up to the nested context, we remain unlocked.
+  //    However, we also need to ensure that we relock if we become unnested.
+  //    So, we simply delay this check to the next frame (via LocalFrameView),
+  //    which will call this function again and so we can perform the check
+  //    again.
+  DCHECK(ConnectedToView());
+  auto* locked_ancestor =
+      DisplayLockUtilities::NearestLockedExclusiveAncestor(*element_);
+  if (locked_ancestor) {
+    needs_intersection_lock_check_ = true;
+    UpdateLifecycleNotificationRegistration();
+  } else {
+    DCHECK(IsActivated());
+    ClearActivated();
+    StartAcquire();
+    DCHECK(!needs_intersection_lock_check_);
+  }
 }
 
 bool DisplayLockContext::ShouldCommitForActivation(
@@ -814,7 +895,7 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
 
   // Since we're observing the lifecycle updates, ensure that we listen to the
   // right document's view.
-  if (HasResolver()) {
+  if (is_registered_for_lifecycle_notifications_) {
     if (old_document.View())
       old_document.View()->UnregisterFromLifecycleNotifications(this);
     if (document_->View())
@@ -832,11 +913,28 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
 }
 
 void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
+  DCHECK(NeedsLifecycleNotifications());
+  // If we have an update budget, then forward the call to it, so that it can
+  // prepare for the lifecycle by propagating the next phase's dirty bits.
   if (update_budget_)
     update_budget_->OnLifecycleChange(view.CurrentLifecycleData());
+
+  // We might have delayed processing intersection observation update (signal
+  // that we were not intersecting) because this context was nested in another
+  // locked context. At the start of the lifecycle, we should check whether
+  // that is still true. In other words, this call will check if we're still
+  // nested. If we are, we won't do anything. If we're not, then we will lock
+  // this context.
+  //
+  // Note that when we are no longer nested and and we have not received any
+  // notifications from the intersection observer, it means that we are not
+  // visible.
+  if (needs_intersection_lock_check_)
+    NotifyIsNotIntersectingViewport();
 }
 
 void DisplayLockContext::DidFinishLifecycleUpdate(const LocalFrameView& view) {
+  DCHECK(NeedsLifecycleNotifications());
   if (state_ == kCommitting) {
     FinishUpdateResolver(kResolve);
     state_ = kUnlocked;

@@ -104,6 +104,13 @@ class PermissionsClient {
   virtual bool CanBypassEmbeddingOriginCheck(const GURL& requesting_origin,
                                              const GURL& embedding_origin);
 
+  // Allows embedder to override the canonical origin for a permission request.
+  // This is the origin that will be used for requesting/storing/displaying
+  // permissions.
+  virtual base::Optional<GURL> OverrideCanonicalOrigin(
+      const GURL& requesting_origin,
+      const GURL& embedding_origin);
+
 #if defined(OS_ANDROID)
   // Retrieves the InfoBarManager for the web contents. The returned
   // pointer has the same lifetime as |web_contents|.

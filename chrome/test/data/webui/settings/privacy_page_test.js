@@ -55,8 +55,7 @@ cr.define('settings_privacy_page', function() {
         let result = await testMetricsBrowserProxy.whenCalled(
             'recordSettingsPageHistogram');
         assertEquals(
-            settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES,
-            result);
+            settings.PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
 
         settings.Router.getInstance().navigateTo(settings.routes.PRIVACY);
         testMetricsBrowserProxy.reset();
@@ -65,16 +64,7 @@ cr.define('settings_privacy_page', function() {
         result = await testMetricsBrowserProxy.whenCalled(
             'recordSettingsPageHistogram');
         assertEquals(
-            settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD, result);
-
-        settings.Router.getInstance().navigateTo(settings.routes.PRIVACY);
-        testMetricsBrowserProxy.reset();
-
-        page.$$('#site-settings-subpage-trigger').click();
-        result = await testMetricsBrowserProxy.whenCalled(
-            'recordSettingsPageHistogram');
-        assertEquals(
-            settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS, result);
+            settings.PrivacyElementInteractions.PAYMENT_METHOD, result);
 
         settings.Router.getInstance().navigateTo(settings.routes.PRIVACY);
         testMetricsBrowserProxy.reset();
@@ -82,8 +72,7 @@ cr.define('settings_privacy_page', function() {
         page.$$('#safeBrowsingToggle').click();
         result = await testMetricsBrowserProxy.whenCalled(
             'recordSettingsPageHistogram');
-        assertEquals(
-            settings.SettingsPageInteractions.PRIVACY_SAFE_BROWSING, result);
+        assertEquals(settings.PrivacyElementInteractions.SAFE_BROWSING, result);
       });
 
       test('LogSafeBrowsingReportingToggleClick', function() {
@@ -91,8 +80,7 @@ cr.define('settings_privacy_page', function() {
         return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {
               assertEquals(
-                  settings.SettingsPageInteractions.PRIVACY_IMPROVE_SECURITY,
-                  result);
+                  settings.PrivacyElementInteractions.IMPROVE_SECURITY, result);
             });
       });
     });

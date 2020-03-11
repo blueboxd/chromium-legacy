@@ -6991,6 +6991,12 @@ the Bookmarks menu.">
       <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_DESCRIPTION" desc="Second line of text displayed in a Remote Copy notification.">
         Copied to your clipboard
       </message>
+      <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_PREPARING_DOWNLOAD" desc="Subtext shown in a Remote Copy notification while preparing the image download.">
+        Preparing download
+      </message>
+      <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_PROCESSING_IMAGE" desc="Subtext shown in a Remote Copy notification while processing the received image.">
+        Processing image
+      </message>
       <if expr="not use_titlecase">
         <message name="IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES" desc="The label of item for click to call in context menu when multiple devices are available.">
           Call from your device

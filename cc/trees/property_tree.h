@@ -408,7 +408,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   int currently_scrolling_node() const { return currently_scrolling_node_id_; }
   gfx::Transform ScreenSpaceTransform(int scroll_node_id) const;
 
-  gfx::Vector2dF ClampScrollToMaxScrollOffset(ScrollNode* node, LayerTreeImpl*);
+  gfx::Vector2dF ClampScrollToMaxScrollOffset(const ScrollNode& node,
+                                              LayerTreeImpl*);
 
   // Returns the current scroll offset. On the main thread this would return the
   // value for the LayerTree while on the impl thread this is the current value
@@ -463,7 +464,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   const gfx::ScrollOffset GetScrollOffsetDeltaForTesting(ElementId id) const;
   void CollectScrollDeltasForTesting();
 
-  gfx::Vector2dF ScrollBy(ScrollNode* scroll_node,
+  gfx::Vector2dF ScrollBy(const ScrollNode& scroll_node,
                           const gfx::Vector2dF& scroll,
                           LayerTreeImpl* layer_tree_impl);
   gfx::ScrollOffset ClampScrollOffsetToLimits(

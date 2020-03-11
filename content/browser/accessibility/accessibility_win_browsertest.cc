@@ -48,6 +48,7 @@
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/ax_event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -907,10 +908,42 @@ class WebContentsUIAParentNavigationInDestroyedWatcher
 
 }  // namespace
 
+//
 // Tests ----------------------------------------------------------------------
+//
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestAlwaysFireFocusEventAfterNavigationComplete) {
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+
+  // Users of Jaws or NVDA screen readers might not realize that the virtual
+  // buffer has been loaded, if focus hasn't been placed in the document after
+  // navigating to a new page. If a focus event is not received by the screen
+  // reader, it might "think" that focus is outside the web contents.
+  //
+  // We can't use "LoadInitialAccessibilityTreeFromHtml" because it waits for
+  // the "kLoadComplete" event, and the "kFocus" and "kLoadComplete" events are
+  // not guaranteed to be sent in the same order every time, neither do we need
+  // to enforce such an ordering. However, we do need to ensure that at the
+  // point when the "kFocus" event is sent, the document is fully loaded.
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ui::AXEventGenerator::Event::FOCUS_CHANGED);
+  GURL html_data_url("data:text/html,<p>Hello world.</p>");
+  ASSERT_TRUE(NavigateToURL(shell(), html_data_url));
+  waiter.WaitForNotification();
+
+  // Check that the page has indeed loaded.
+  AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
+  AccessibleChecker paragraph_checker(L"", L"P", IA2_ROLE_PARAGRAPH, L"");
+  document_checker.AppendExpectedChild(&paragraph_checker);
+  AccessibleChecker text_checker(L"Hello world.", ROLE_SYSTEM_STATICTEXT, L"");
+  paragraph_checker.AppendExpectedChild(&text_checker);
+  document_checker.CheckAccessible(GetRendererAccessible());
+}
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestBusyAccessibilityTree) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // The initial accessible returned should have state STATE_SYSTEM_BUSY while
   // the accessibility tree is being requested from the renderer.

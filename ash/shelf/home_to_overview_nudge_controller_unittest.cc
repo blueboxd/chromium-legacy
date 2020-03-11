@@ -4,6 +4,9 @@
 
 #include "ash/shelf/home_to_overview_nudge_controller.h"
 
+#include "ash/home_screen/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_screen_controller.h"
+#include "ash/home_screen/swipe_home_to_overview_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/contextual_nudge.h"
 #include "ash/shelf/contextual_tooltip.h"
@@ -487,6 +490,138 @@ TEST_F(HomeToOverviewNudgeControllerTest, NoCrashIfNudgeWidgetGetsClosed) {
       CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
+}
+
+// Tests that tapping on the nudge hides the nudge.
+TEST_F(HomeToOverviewNudgeControllerTest, TapOnTheNudgeClosedTheNudge) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  CreateUserSessions(1);
+  ScopedWindowList windows = CreateAndMinimizeWindows(2);
+
+  ASSERT_TRUE(GetNudgeController());
+  ASSERT_TRUE(GetNudgeController()->HasShowTimerForTesting());
+
+  GetNudgeController()->FireShowTimerForTesting();
+
+  ASSERT_TRUE(GetNudgeController()->nudge_for_testing());
+  views::Widget* nudge_widget = GetNudgeWidget();
+  WidgetCloseObserver widget_close_observer(nudge_widget);
+
+  GetEventGenerator()->GestureTapAt(
+      nudge_widget->GetWindowBoundsInScreen().CenterPoint());
+
+  EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
+  EXPECT_TRUE(widget_close_observer.WidgetClosed());
+
+  EXPECT_EQ(gfx::Transform(),
+            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+}
+
+// Tests that the nudge stops showing up if the user performs the gesture few
+// times.
+TEST_F(HomeToOverviewNudgeControllerTest, NoNudgeAfterSuccessfulGestures) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  CreateUserSessions(1);
+  ScopedWindowList windows = CreateAndMinimizeWindows(2);
+
+  EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
+
+  ASSERT_TRUE(GetNudgeController()->HasShowTimerForTesting());
+  GetNudgeController()->FireShowTimerForTesting();
+
+  // Perform home to overview gesture kSuccessLimitHomeToOverview times.
+  for (int i = 0; i < contextual_tooltip::kSuccessLimitHomeToOverview; ++i) {
+    SCOPED_TRACE(testing::Message() << "Attempt " << i);
+
+    // Perform home to overview gesture.
+    wm::ActivateWindow(windows[0].get());
+    WindowState::Get(windows[0].get())->Minimize();
+
+    // Simluate swipe up and hold gesture on the home screen (which should
+    // transition to overview).
+    const gfx::Point start = GetPrimaryShelf()
+                                 ->hotseat_widget()
+                                 ->GetWindowBoundsInScreen()
+                                 .CenterPoint();
+    GetEventGenerator()->GestureScrollSequenceWithCallback(
+        start, start + gfx::Vector2d(0, -100),
+        base::TimeDelta::FromMilliseconds(50),
+        /*num_steps = */ 12,
+        base::BindRepeating(
+            [](ui::EventType type, const gfx::Vector2dF& offset) {
+              if (type != ui::ET_GESTURE_SCROLL_UPDATE)
+                return;
+
+              // If the swipe home to overview controller started the timer to
+              // transition to overview (which happens after swipe moves far
+              // enough), run it to trigger transition to overview.
+              SwipeHomeToOverviewController* swipe_controller =
+                  Shell::Get()
+                      ->home_screen_controller()
+                      ->home_launcher_gesture_handler()
+                      ->swipe_home_to_overview_controller_for_testing();
+              ASSERT_TRUE(swipe_controller);
+
+              base::OneShotTimer* transition_timer =
+                  swipe_controller->overview_transition_timer_for_testing();
+              if (transition_timer->IsRunning())
+                transition_timer->FireNow();
+            }));
+
+    // No point oof continuing the test if transition to overview failed.
+    ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  }
+
+  // The nudge should not be shown next time the user transitions to home.
+  test_clock_.Advance(base::TimeDelta::FromHours(25));
+  ScopedWindowList extra_window = CreateAndMinimizeWindows(1);
+
+  EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
+  EXPECT_FALSE(GetNudgeController()->HasShowTimerForTesting());
+  EXPECT_EQ(gfx::Transform(),
+            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+}
+
+// Tests that swipe up and hold gesture that starts on top of contextual nudge
+// widget works - i.e. that home still transitions to overview.
+TEST_F(HomeToOverviewNudgeControllerTest, HomeToOverviewGestureFromNudge) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  CreateUserSessions(1);
+  ScopedWindowList windows = CreateAndMinimizeWindows(2);
+
+  EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
+
+  ASSERT_TRUE(GetNudgeController()->HasShowTimerForTesting());
+  GetNudgeController()->FireShowTimerForTesting();
+
+  // Simluate swipe up and hold gesture on home screen from the nudge widget.
+  const gfx::Point start =
+      GetNudgeWidget()->GetWindowBoundsInScreen().CenterPoint();
+  GetEventGenerator()->GestureScrollSequenceWithCallback(
+      start, start + gfx::Vector2d(0, -100),
+      base::TimeDelta::FromMilliseconds(50),
+      /*num_steps = */ 12,
+      base::BindRepeating([](ui::EventType type, const gfx::Vector2dF& offset) {
+        if (type != ui::ET_GESTURE_SCROLL_UPDATE)
+          return;
+
+        // If the swipe home to overview controller started the timer to
+        // transition to overview (which happens after swipe moves far
+        // enough), run it to trigger transition to overview.
+        SwipeHomeToOverviewController* swipe_controller =
+            Shell::Get()
+                ->home_screen_controller()
+                ->home_launcher_gesture_handler()
+                ->swipe_home_to_overview_controller_for_testing();
+        ASSERT_TRUE(swipe_controller);
+
+        base::OneShotTimer* transition_timer =
+            swipe_controller->overview_transition_timer_for_testing();
+        if (transition_timer->IsRunning())
+          transition_timer->FireNow();
+      }));
+
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
 }
 
 // Tests that nudge and hotseat get repositioned appropriatelly if the display

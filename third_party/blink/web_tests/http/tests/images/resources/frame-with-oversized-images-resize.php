@@ -10,17 +10,19 @@ header("Document-Policy: oversized-images;scale=2.0");
 
 <script>
 window.addEventListener('load', function() {
-  var images = document.getElementsByTagName('img');
-  for (var i = 0; i < images.length; i++) {
-    var image = images[i];
-    if (image.hasAttribute('width') || image.hasAttribute('height')) {
-      image.width = "150";
-      image.height = "150";
-    } else {
-      image.style.width = "150px";
-      image.style.height = "150px";
+  setTimeout(() => {
+    var images = document.getElementsByTagName('img');
+    for (var i = 0; i < images.length; i++) {
+      var image = images[i];
+      if (image.hasAttribute('width') || image.hasAttribute('height')) {
+        image.width = "150";
+        image.height = "150";
+      } else {
+        image.style.width = "150px";
+        image.style.height = "150px";
+      }
     }
-  }
+  }, 5);
 });
 </script>
 </body>

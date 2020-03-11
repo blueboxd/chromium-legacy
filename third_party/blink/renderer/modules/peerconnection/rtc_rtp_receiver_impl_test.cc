@@ -59,7 +59,8 @@ class RTCRtpReceiverImplTest : public ::testing::Test {
   }
 
   std::unique_ptr<RTCRtpReceiverImpl> CreateReceiver(
-      scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track) {
+      scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track,
+      bool force_encoded_video_insertable_streams = false) {
     std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
         track_ref;
     base::RunLoop run_loop;
@@ -76,8 +77,9 @@ class RTCRtpReceiverImplTest : public ::testing::Test {
         main_thread_, dependency_factory_->GetWebRtcSignalingTaskRunner(),
         mock_webrtc_receiver_.get(), std::move(track_ref), {});
     state.Initialize();
-    return std::make_unique<RTCRtpReceiverImpl>(peer_connection_.get(),
-                                                std::move(state));
+    return std::make_unique<RTCRtpReceiverImpl>(
+        peer_connection_.get(), std::move(state),
+        force_encoded_video_insertable_streams);
   }
 
   scoped_refptr<blink::TestWebRTCStatsReportObtainer> GetStats() {
@@ -117,6 +119,7 @@ TEST_F(RTCRtpReceiverImplTest, CreateReceiver) {
   EXPECT_FALSE(receiver_->Track().IsNull());
   EXPECT_EQ(receiver_->Track().Id().Utf8(), webrtc_track->id());
   EXPECT_EQ(receiver_->state().track_ref()->webrtc_track(), webrtc_track);
+  EXPECT_FALSE(receiver_->GetEncodedVideoStreamTransformer());
 }
 
 TEST_F(RTCRtpReceiverImplTest, ShallowCopy) {
@@ -163,6 +166,14 @@ TEST_F(RTCRtpReceiverImplTest, GetStats) {
   auto stats = report->GetStats(blink::WebString::FromUTF8("stats-id"));
   EXPECT_TRUE(stats);
   EXPECT_EQ(stats->Timestamp(), 1.234);
+}
+
+TEST_F(RTCRtpReceiverImplTest, CreateReceiverWithInsertableStream) {
+  scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
+      blink::MockWebRtcAudioTrack::Create("webrtc_track");
+  receiver_ = CreateReceiver(webrtc_track,
+                             /*force_encoded_video_insertable_streams=*/true);
+  EXPECT_TRUE(receiver_->GetEncodedVideoStreamTransformer());
 }
 
 }  // namespace blink

@@ -201,11 +201,17 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
   if (!presentation_context_ || presentation_context_->IsShowingOverlayUI())
     return;
 
-  // No presentation is necessary if there is no active reqeust or the context
-  // is unable to show it.
+  // No presentation is necessary if there is no active reqeust.
   OverlayRequest* request = GetActiveRequest();
-  if (!request || !presentation_context_->CanShowUIForRequest(request))
+  if (!request)
     return;
+
+  // Presentation cannot occur if the context is currently unable to show the UI
+  // for |request|.  Attempt to prepare the presentation context for |request|.
+  if (!presentation_context_->CanShowUIForRequest(request)) {
+    presentation_context_->PrepareToShowOverlayUI(request);
+    return;
+  }
 
   presenting_ = true;
   presented_request_ = request;
@@ -404,6 +410,14 @@ void OverlayPresenterImpl::
         OverlayPresentationContext* presentation_context) {
   DCHECK_EQ(presentation_context_, presentation_context);
   if (!presenting_)
+    PresentOverlayForActiveRequest();
+}
+
+void OverlayPresenterImpl::OverlayPresentationContextDidMoveToWindow(
+    OverlayPresentationContext* presentation_context,
+    UIWindow* window) {
+  DCHECK_EQ(presentation_context_, presentation_context);
+  if (!presenting_ && window)
     PresentOverlayForActiveRequest();
 }
 

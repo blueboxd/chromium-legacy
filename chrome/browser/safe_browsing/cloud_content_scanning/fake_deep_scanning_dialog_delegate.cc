@@ -137,20 +137,14 @@ void FakeDeepScanningDialogDelegate::Response(
   DeepScanningClientResponse response = status_callback_.is_null()
                                             ? DeepScanningClientResponse()
                                             : status_callback_.Run(path);
-  if (path.empty())
+  if (path.empty()) {
     StringRequestCallback(result_, response);
-  else
+  } else if (encryption_callback_.Run(path)) {
+    FileRequestCallback(path, BinaryUploadService::Result::FILE_ENCRYPTED,
+                        response);
+  } else {
     FileRequestCallback(path, result_, response);
-}
-
-void FakeDeepScanningDialogDelegate::PrepareFileRequest(
-    base::FilePath path,
-    AnalyzeCallback callback) {
-  safe_browsing::ArchiveAnalyzerResults results;
-  if (!encryption_callback_.is_null() && encryption_callback_.Run(path))
-    results.archived_binary.Add()->set_is_encrypted(true);
-
-  std::move(callback).Run(results);
+  }
 }
 
 void FakeDeepScanningDialogDelegate::UploadTextForDeepScanning(

@@ -134,7 +134,6 @@ public class WebApkInfo extends WebappInfo {
      * @param url                      URL that the WebAPK should navigate to when launched.
      * @param scope                    Scope for the WebAPK.
      * @param primaryIcon              Primary icon to show for the WebAPK.
-     * @param badgeIcon                Badge icon to use for notifications.
      * @param splashIcon               Splash icon to use for the splash screen.
      * @param name                     Name of the WebAPK.
      * @param shortName                The short name of the WebAPK.
@@ -165,21 +164,20 @@ public class WebApkInfo extends WebappInfo {
      * @param webApkVersionCode        WebAPK's version code.
      */
     public static WebApkInfo create(String url, String scope, WebappIcon primaryIcon,
-            WebappIcon badgeIcon, WebappIcon splashIcon, String name, String shortName,
-            @WebDisplayMode int displayMode, int orientation, int source, long themeColor,
-            long backgroundColor, int defaultBackgroundColor, boolean isPrimaryIconMaskable,
-            boolean isSplashIconMaskable, String webApkPackageName, int shellApkVersion,
-            String manifestUrl, String manifestStartUrl, @WebApkDistributor int distributor,
+            WebappIcon splashIcon, String name, String shortName, @WebDisplayMode int displayMode,
+            int orientation, int source, long themeColor, long backgroundColor,
+            int defaultBackgroundColor, boolean isPrimaryIconMaskable, boolean isSplashIconMaskable,
+            String webApkPackageName, int shellApkVersion, String manifestUrl,
+            String manifestStartUrl, @WebApkDistributor int distributor,
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
             boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData,
             List<ShortcutItem> shortcutItems, int webApkVersionCode) {
-        return create(WebApkIntentDataProviderFactory.create(url, scope, primaryIcon, badgeIcon,
-                splashIcon, name, shortName, displayMode, orientation, source, themeColor,
-                backgroundColor, defaultBackgroundColor, isPrimaryIconMaskable,
-                isSplashIconMaskable, webApkPackageName, shellApkVersion, manifestUrl,
-                manifestStartUrl, distributor, iconUrlToMurmur2HashMap, shareTarget,
-                forceNavigation, isSplashProvidedByWebApk, shareData, shortcutItems,
-                webApkVersionCode));
+        return create(WebApkIntentDataProviderFactory.create(url, scope, primaryIcon, splashIcon,
+                name, shortName, displayMode, orientation, source, themeColor, backgroundColor,
+                defaultBackgroundColor, isPrimaryIconMaskable, isSplashIconMaskable,
+                webApkPackageName, shellApkVersion, manifestUrl, manifestStartUrl, distributor,
+                iconUrlToMurmur2HashMap, shareTarget, forceNavigation, isSplashProvidedByWebApk,
+                shareData, shortcutItems, webApkVersionCode));
     }
 
     private static WebApkInfo create(@Nullable BrowserServicesIntentDataProvider provider) {
@@ -188,13 +186,6 @@ public class WebApkInfo extends WebappInfo {
 
     public WebApkInfo(@NonNull BrowserServicesIntentDataProvider provider) {
         super(provider);
-    }
-
-    /**
-     * Returns the badge icon in Bitmap form.
-     */
-    public WebappIcon badgeIcon() {
-        return getWebApkExtras().badgeIcon;
     }
 
     /**

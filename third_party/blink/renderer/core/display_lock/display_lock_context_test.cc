@@ -1700,6 +1700,10 @@ class DisplayLockContextRenderingTest : public RenderingTest,
   DisplayLockContextRenderingTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
         ScopedCSSSubtreeVisibilityHiddenMatchableForTest(true) {}
+
+  bool IsObservingLifecycle(DisplayLockContext* context) const {
+    return context->is_registered_for_lifecycle_notifications_;
+  }
 };
 
 TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
@@ -1821,4 +1825,282 @@ TEST_F(DisplayLockContextRenderingTest, ObjectsNeedingLayoutConsidersLocks) {
   EXPECT_EQ(total_count, 4u);
 }
 
+TEST_F(DisplayLockContextRenderingTest,
+       NestedLockDoesNotInvalidateOnHideOrShow) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .auto { subtree-visibility: auto; }
+      .hidden { subtree-visibility: hidden; }
+      .item { height: 10px; }
+      /* this is important to not invalidate layout when we hide the element! */
+      #outer { contain: style layout; }
+    </style>
+    <div id=outer>
+      <div id=unrelated>
+        <div id=inner class=auto>Content</div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* inner_element = GetDocument().getElementById("inner");
+  auto* unrelated_element = GetDocument().getElementById("unrelated");
+  auto* outer_element = GetDocument().getElementById("outer");
+
+  UpdateAllLifecyclePhasesForTest();
+  // Intersection observer notifications run as a task.
+  test::RunPendingTasks();
+
+  // The intersection observation will unlock inner, which will cause a dirty
+  // layout bit to be propagated.
+  EXPECT_TRUE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_TRUE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_TRUE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_TRUE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+
+  // Clear the layout.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+
+  // Verify lock state.
+  auto* inner_context = inner_element->GetDisplayLockContext();
+  ASSERT_TRUE(inner_context);
+  EXPECT_TRUE(inner_context->IsActivated());
+  EXPECT_FALSE(inner_context->IsLocked());
+
+  // Lock outer.
+  outer_element->setAttribute(html_names::kClassAttr, "hidden");
+  // Ensure the lock processes (but don't run intersection observation tasks
+  // yet).
+  UpdateAllLifecyclePhasesForTest();
+
+  // Verify the lock exists.
+  auto* outer_context = outer_element->GetDisplayLockContext();
+  ASSERT_TRUE(outer_context);
+  EXPECT_TRUE(outer_context->IsLocked());
+
+  // Everything should be layout clean.
+  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+
+  // Inner context should not be observing the lifecycle.
+  EXPECT_FALSE(IsObservingLifecycle(inner_context));
+
+  // Run intersection observer notifications.
+  test::RunPendingTasks();
+
+  // Run the following checks a few times since we should be observing
+  // lifecycle.
+  for (int i = 0; i < 3; ++i) {
+    // It shouldn't change the fact that we're layout clean.
+    EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+    EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+    EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+    EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+    EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+    EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+
+    // Because we skipped hiding the element, inner_context should be observing
+    // lifecycle.
+    EXPECT_TRUE(IsObservingLifecycle(inner_context));
+
+    UpdateAllLifecyclePhasesForTest();
+  }
+
+  // Unlock outer.
+  outer_element->setAttribute(html_names::kClassAttr, "");
+  // Ensure the lock processes (but don't run intersection observation tasks
+  // yet).
+  UpdateAllLifecyclePhasesForTest();
+
+  // Note that although we're not nested, we're still observing the lifecycle
+  // because we don't yet know whether we should or should not hide and we only
+  // make this decision _before_ the lifecycle actually unlocked outer.
+  EXPECT_TRUE(IsObservingLifecycle(inner_context));
+
+  // Verify the lock is gone.
+  EXPECT_FALSE(outer_context->IsLocked());
+
+  // Everything should be layout clean.
+  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+
+  // Run intersection observer notifications.
+  test::RunPendingTasks();
+
+  // We now should know we're visible and so we're not observing the lifecycle.
+  EXPECT_FALSE(IsObservingLifecycle(inner_context));
+
+  // Also we should still be activated and unlocked.
+  EXPECT_TRUE(inner_context->IsActivated());
+  EXPECT_FALSE(inner_context->IsLocked());
+
+  // Everything should be layout clean.
+  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+}
+
+TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .auto { subtree-visibility: auto; }
+      .hidden { subtree-visibility: hidden; }
+      .item { height: 10px; }
+      /* this is important to not invalidate layout when we hide the element! */
+      #outer { contain: style layout; }
+      .spacer { height: 10000px; }
+    </style>
+    <div id=future_spacer></div>
+    <div id=outer>
+      <div id=unrelated>
+        <div id=inner class=auto>Content</div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* inner_element = GetDocument().getElementById("inner");
+  auto* unrelated_element = GetDocument().getElementById("unrelated");
+  auto* outer_element = GetDocument().getElementById("outer");
+
+  UpdateAllLifecyclePhasesForTest();
+  // Intersection observer notifications run as a task.
+  test::RunPendingTasks();
+
+  // The intersection observation will unlock inner, which will cause a dirty
+  // layout bit to be propagated.
+  EXPECT_TRUE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_TRUE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_TRUE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_TRUE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+
+  // Clear the layout.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+
+  // Verify lock state.
+  auto* inner_context = inner_element->GetDisplayLockContext();
+  ASSERT_TRUE(inner_context);
+  EXPECT_TRUE(inner_context->IsActivated());
+  EXPECT_FALSE(inner_context->IsLocked());
+
+  // Lock outer.
+  outer_element->setAttribute(html_names::kClassAttr, "hidden");
+  // Ensure the lock processes (but don't run intersection observation tasks
+  // yet).
+  UpdateAllLifecyclePhasesForTest();
+
+  // Verify the lock exists.
+  auto* outer_context = outer_element->GetDisplayLockContext();
+  ASSERT_TRUE(outer_context);
+  EXPECT_TRUE(outer_context->IsLocked());
+
+  // Everything should be layout clean.
+  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+
+  // Inner context should not be observing the lifecycle.
+  EXPECT_FALSE(IsObservingLifecycle(inner_context));
+
+  // Run intersection observer notifications.
+  test::RunPendingTasks();
+
+  // It shouldn't change the fact that we're layout clean.
+  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+
+  // Let future spacer become a real spacer!
+  GetDocument()
+      .getElementById("future_spacer")
+      ->setAttribute(html_names::kClassAttr, "spacer");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  // Because we skipped hiding the element, inner_context should be observing
+  // lifecycle.
+  EXPECT_TRUE(IsObservingLifecycle(inner_context));
+
+  // Unlock outer.
+  outer_element->setAttribute(html_names::kClassAttr, "");
+  // Ensure the lock processes (but don't run intersection observation tasks
+  // yet).
+  UpdateAllLifecyclePhasesForTest();
+
+  // Note that although we're not nested, we're still observing the lifecycle
+  // because we don't yet know whether we should or should not hide and we only
+  // make this decision _before_ the lifecycle actually unlocked outer.
+  EXPECT_TRUE(IsObservingLifecycle(inner_context));
+
+  // Verify the lock is gone.
+  EXPECT_FALSE(outer_context->IsLocked());
+
+  // Everything should be layout clean.
+  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+
+  // Run intersection observer notifications.
+  test::RunPendingTasks();
+
+  // We're still invisible, and we don't know that we're not nested so we're
+  // still observing the lifecycle.
+  EXPECT_TRUE(IsObservingLifecycle(inner_context));
+
+  // We're unlocked for now.
+  EXPECT_TRUE(inner_context->IsActivated());
+  EXPECT_FALSE(inner_context->IsLocked());
+
+  // Everything should be layout clean.
+  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  // We figured out that we're actually invisible so no need to observe the
+  // lifecycle.
+  EXPECT_FALSE(IsObservingLifecycle(inner_context));
+
+  // We're locked.
+  EXPECT_FALSE(inner_context->IsActivated());
+  EXPECT_TRUE(inner_context->IsLocked());
+}
 }  // namespace blink

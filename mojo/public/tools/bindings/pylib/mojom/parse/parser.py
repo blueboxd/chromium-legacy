@@ -1,7 +1,6 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Generates a syntax tree from a Mojo IDL file."""
 
 import os.path
@@ -17,7 +16,6 @@ from ..error import Error
 from . import ast
 from .lexer import Lexer
 
-
 _MAX_ORDINAL_VALUE = 0xffffffff
 _MAX_ARRAY_SIZE = 0xffffffff
 
@@ -26,14 +24,17 @@ class ParseError(Error):
   """Class for errors from the parser."""
 
   def __init__(self, filename, message, lineno=None, snippet=None):
-    Error.__init__(self, filename, message, lineno=lineno,
-                   addenda=([snippet] if snippet else None))
+    Error.__init__(
+        self,
+        filename,
+        message,
+        lineno=lineno,
+        addenda=([snippet] if snippet else None))
 
 
 # We have methods which look like they could be functions:
 # pylint: disable=R0201
 class Parser(object):
-
   def __init__(self, lexer, source, filename):
     self.tokens = lexer.tokens
     self.source = source
@@ -65,23 +66,28 @@ class Parser(object):
   def p_root_2(self, p):
     """root : root module"""
     if p[1].module is not None:
-      raise ParseError(self.filename,
-                       "Multiple \"module\" statements not allowed:",
-                       p[2].lineno, snippet=self._GetSnippet(p[2].lineno))
+      raise ParseError(
+          self.filename,
+          "Multiple \"module\" statements not allowed:",
+          p[2].lineno,
+          snippet=self._GetSnippet(p[2].lineno))
     if p[1].import_list.items or p[1].definition_list:
       raise ParseError(
           self.filename,
           "\"module\" statements must precede imports and definitions:",
-          p[2].lineno, snippet=self._GetSnippet(p[2].lineno))
+          p[2].lineno,
+          snippet=self._GetSnippet(p[2].lineno))
     p[0] = p[1]
     p[0].module = p[2]
 
   def p_root_3(self, p):
     """root : root import"""
     if p[1].definition_list:
-      raise ParseError(self.filename,
-                       "\"import\" statements must precede definitions:",
-                       p[2].lineno, snippet=self._GetSnippet(p[2].lineno))
+      raise ParseError(
+          self.filename,
+          "\"import\" statements must precede definitions:",
+          p[2].lineno,
+          snippet=self._GetSnippet(p[2].lineno))
     p[0] = p[1]
     p[0].import_list.Append(p[2])
 
@@ -94,8 +100,8 @@ class Parser(object):
     """import : attribute_section IMPORT STRING_LITERAL SEMI"""
     # 'eval' the literal to strip the quotes.
     # TODO(vtl): This eval is dubious. We should unquote/unescape ourselves.
-    p[0] = ast.Import(p[1], eval(p[3]), filename=self.filename,
-                      lineno=p.lineno(2))
+    p[0] = ast.Import(
+        p[1], eval(p[3]), filename=self.filename, lineno=p.lineno(2))
 
   def p_module(self, p):
     """module : attribute_section MODULE identifier_wrapped SEMI"""
@@ -251,8 +257,8 @@ class Parser(object):
 
   def p_parameter(self, p):
     """parameter : attribute_section typename NAME ordinal"""
-    p[0] = ast.Parameter(p[3], p[1], p[4], p[2],
-                         filename=self.filename, lineno=p.lineno(3))
+    p[0] = ast.Parameter(
+        p[3], p[1], p[4], p[2], filename=self.filename, lineno=p.lineno(3))
 
   def p_typename(self, p):
     """typename : nonnullable_typename QSTN
@@ -307,16 +313,15 @@ class Parser(object):
     if len(p) == 2:
       p[0] = p[1]
     else:
-      if p[3] not in ('data_pipe_consumer',
-                      'data_pipe_producer',
-                      'message_pipe',
-                      'shared_buffer',
-                      'platform'):
+      if p[3] not in ('data_pipe_consumer', 'data_pipe_producer',
+                      'message_pipe', 'shared_buffer', 'platform'):
         # Note: We don't enable tracking of line numbers for everything, so we
         # can't use |p.lineno(3)|.
-        raise ParseError(self.filename, "Invalid handle type %r:" % p[3],
-                         lineno=p.lineno(1),
-                         snippet=self._GetSnippet(p.lineno(1)))
+        raise ParseError(
+            self.filename,
+            "Invalid handle type %r:" % p[3],
+            lineno=p.lineno(1),
+            snippet=self._GetSnippet(p.lineno(1)))
       p[0] = "handle<" + p[3] + ">"
 
   def p_array(self, p):
@@ -327,9 +332,11 @@ class Parser(object):
     """fixed_array : ARRAY LANGLE typename COMMA INT_CONST_DEC RANGLE"""
     value = int(p[5])
     if value == 0 or value > _MAX_ARRAY_SIZE:
-      raise ParseError(self.filename, "Fixed array size %d invalid:" % value,
-                       lineno=p.lineno(5),
-                       snippet=self._GetSnippet(p.lineno(5)))
+      raise ParseError(
+          self.filename,
+          "Fixed array size %d invalid:" % value,
+          lineno=p.lineno(5),
+          snippet=self._GetSnippet(p.lineno(5)))
     p[0] = p[3] + "[" + p[5] + "]"
 
   def p_associative_array(self, p):
@@ -352,9 +359,11 @@ class Parser(object):
     """ordinal : ORDINAL"""
     value = int(p[1][1:])
     if value > _MAX_ORDINAL_VALUE:
-      raise ParseError(self.filename, "Ordinal value %d too large:" % value,
-                       lineno=p.lineno(1),
-                       snippet=self._GetSnippet(p.lineno(1)))
+      raise ParseError(
+          self.filename,
+          "Ordinal value %d too large:" % value,
+          lineno=p.lineno(1),
+          snippet=self._GetSnippet(p.lineno(1)))
     p[0] = ast.Ordinal(value, filename=self.filename, lineno=p.lineno(1))
 
   def p_enum_1(self, p):
@@ -362,13 +371,13 @@ class Parser(object):
                   RBRACE SEMI
             | attribute_section ENUM NAME LBRACE nonempty_enum_value_list \
                   COMMA RBRACE SEMI"""
-    p[0] = ast.Enum(p[3], p[1], p[5], filename=self.filename,
-                    lineno=p.lineno(2))
+    p[0] = ast.Enum(
+        p[3], p[1], p[5], filename=self.filename, lineno=p.lineno(2))
 
   def p_enum_2(self, p):
     """enum : attribute_section ENUM NAME SEMI"""
-    p[0] = ast.Enum(p[3], p[1], None, filename=self.filename,
-                    lineno=p.lineno(2))
+    p[0] = ast.Enum(
+        p[3], p[1], None, filename=self.filename, lineno=p.lineno(2))
 
   def p_enum_value_list_1(self, p):
     """enum_value_list : """
@@ -391,8 +400,12 @@ class Parser(object):
     """enum_value : attribute_section NAME
                   | attribute_section NAME EQUALS int
                   | attribute_section NAME EQUALS identifier_wrapped"""
-    p[0] = ast.EnumValue(p[2], p[1], p[4] if len(p) == 5 else None,
-                         filename=self.filename, lineno=p.lineno(2))
+    p[0] = ast.EnumValue(
+        p[2],
+        p[1],
+        p[4] if len(p) == 5 else None,
+        filename=self.filename,
+        lineno=p.lineno(2))
 
   def p_const(self, p):
     """const : attribute_section CONST typename NAME EQUALS constant SEMI"""
@@ -446,8 +459,11 @@ class Parser(object):
       # TODO(vtl): Can we figure out what's missing?
       raise ParseError(self.filename, "Unexpected end of file")
 
-    raise ParseError(self.filename, "Unexpected %r:" % e.value, lineno=e.lineno,
-                     snippet=self._GetSnippet(e.lineno))
+    raise ParseError(
+        self.filename,
+        "Unexpected %r:" % e.value,
+        lineno=e.lineno,
+        snippet=self._GetSnippet(e.lineno))
 
   def _GetSnippet(self, lineno):
     return self.source.split('\n')[lineno - 1]

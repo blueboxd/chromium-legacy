@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.autofill_assistant.generic_ui.Assistan
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.widget.TextView;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -91,6 +92,15 @@ public class AssistantViewInteractions {
                                     : Double.NaN,
                 minDate.getDateTimes().get(0).getTimeInUtcMillis(),
                 maxDate.getDateTimes().get(0).getTimeInUtcMillis(), -1, null);
+        return true;
+    }
+
+    @CalledByNative
+    private static boolean setTextViewText(View view, String text) {
+        if (!(view instanceof TextView)) {
+            return false;
+        }
+        ((TextView) view).setText(text);
         return true;
     }
 }

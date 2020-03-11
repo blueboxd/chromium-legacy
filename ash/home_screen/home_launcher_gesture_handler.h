@@ -95,6 +95,11 @@ class ASH_EXPORT HomeLauncherGestureHandler
 
   Mode mode() const { return mode_; }
 
+  SwipeHomeToOverviewController*
+  swipe_home_to_overview_controller_for_testing() {
+    return swipe_home_to_overview_controller_.get();
+  }
+
  private:
   class ScopedWindowModifier;
 

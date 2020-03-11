@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "ui/views/widget/widget.h"
@@ -58,6 +59,9 @@ class ASH_EXPORT HomeToOverviewNudgeController : views::WidgetObserver {
   // Updates the nudge anchor bounds for the current hotseat and shelf bounds.
   void UpdateNudgeAnchorBounds();
 
+  // Passed to |nudge_| as its tap gesture handler.
+  void HandleNudgeTap();
+
   bool nudge_allowed_for_shelf_state_ = false;
 
   HotseatWidget* const hotseat_widget_;
@@ -69,6 +73,8 @@ class ASH_EXPORT HomeToOverviewNudgeController : views::WidgetObserver {
   // Observes hotseat widget to detect the hotseat bounds changes, and the
   // nudge widget to detect that the widget is being destroyed.
   ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
+
+  base::WeakPtrFactory<HomeToOverviewNudgeController> weak_factory_{this};
 };
 
 }  // namespace ash

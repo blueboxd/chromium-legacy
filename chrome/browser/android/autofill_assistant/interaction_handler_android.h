@@ -43,11 +43,11 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
 
   // Creates callbacks for each interaction in |proto| as well as the
   // corresponding view events in |views|. Returns false if |proto| is invalid.
+  // |views| must outlive this interaction handler.
   bool AddInteractionsFromProto(
       const InteractionsProto& proto,
       JNIEnv* env,
-      const std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>&
-          views,
+      std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
       base::android::ScopedJavaGlobalRef<jobject> jdelegate,
       UserModel* user_model,
       BasicInteractions* basic_interactions);

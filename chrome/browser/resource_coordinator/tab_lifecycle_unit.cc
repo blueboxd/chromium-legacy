@@ -16,7 +16,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
-#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
@@ -36,6 +36,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/performance_manager/public/decorators/page_live_state_decorator.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -219,9 +220,11 @@ void CheckIfTabCanCommunicateWithUserWhileInBackground(
 
   CheckFeatureUsage(reader.get(), details);
 
-  auto notif_permission = PermissionManager::Get(profile)->GetPermissionStatus(
-      ContentSettingsType::NOTIFICATIONS, web_contents->GetLastCommittedURL(),
-      web_contents->GetLastCommittedURL());
+  auto notif_permission =
+      PermissionManagerFactory::GetForProfile(profile)->GetPermissionStatus(
+          ContentSettingsType::NOTIFICATIONS,
+          web_contents->GetLastCommittedURL(),
+          web_contents->GetLastCommittedURL());
   if (notif_permission.content_setting == CONTENT_SETTING_ALLOW) {
     details->AddReason(
         DecisionFailureReason::LIVE_STATE_HAS_NOTIFICATIONS_PERMISSION);

@@ -75,6 +75,7 @@ public class PasswordAccessorySheetControllerTest {
 
     @Before
     public void setUp() {
+        setAutofillFeature(true);
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         mocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogramNatives);

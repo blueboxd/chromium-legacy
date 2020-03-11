@@ -71,6 +71,8 @@ ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
     const GURL& url,
     const GURL& scope,
     bool is_installed_version,
+    base::Optional<network::CrossOriginEmbedderPolicy>
+        cross_origin_embedder_policy,
     const base::UnguessableToken& devtools_worker_token)
     : DevToolsAgentHostImpl(devtools_worker_token.ToString()),
       state_(WORKER_NOT_READY),
@@ -83,7 +85,8 @@ ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
       url_(url),
       scope_(scope),
       version_installed_time_(is_installed_version ? base::Time::Now()
-                                                   : base::Time()) {
+                                                   : base::Time()),
+      cross_origin_embedder_policy_(std::move(cross_origin_embedder_policy)) {
   NotifyCreated();
 }
 
@@ -173,6 +176,11 @@ void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(
     UpdateIsAttached(true);
 }
 
+void ServiceWorkerDevToolsAgentHost::UpdateCrossOriginEmbedderPolicy(
+    network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
+  cross_origin_embedder_policy_ = std::move(cross_origin_embedder_policy);
+}
+
 void ServiceWorkerDevToolsAgentHost::WorkerRestarted(int worker_process_id,
                                                      int worker_route_id) {
   DCHECK_EQ(WORKER_TERMINATED, state_);
@@ -206,13 +214,20 @@ void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
     return;
   }
   const url::Origin origin = url::Origin::Create(url_);
-  // TODO(https://crbug.com/1039613): Get the COEP for the service worker
-  // and pass it to each factory bundle.
+
+  // Use the default CrossOriginEmbedderPolicy if
+  // |cross_origin_embedder_policy_| is nullopt. It's acceptable because the
+  // factory bundles are updated with correct COEP value before any subresource
+  // requests in that case.
   auto script_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-      rph, worker_route_id_, origin, network::CrossOriginEmbedderPolicy(),
+      rph, worker_route_id_, origin,
+      cross_origin_embedder_policy_ ? cross_origin_embedder_policy_.value()
+                                    : network::CrossOriginEmbedderPolicy(),
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript);
   auto subresource_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-      rph, worker_route_id_, origin, network::CrossOriginEmbedderPolicy(),
+      rph, worker_route_id_, origin,
+      cross_origin_embedder_policy_ ? cross_origin_embedder_policy_.value()
+                                    : network::CrossOriginEmbedderPolicy(),
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
 
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {

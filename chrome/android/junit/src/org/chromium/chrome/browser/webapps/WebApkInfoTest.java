@@ -249,7 +249,6 @@ public class WebApkInfoTest {
 
         Assert.assertEquals(PRIMARY_MASKABLE_ICON_ID, info.icon().resourceIdForTesting());
         Assert.assertEquals(true, info.isIconAdaptive());
-        Assert.assertEquals(null, info.badgeIcon().bitmap());
         Assert.assertEquals(null, info.splashIcon().bitmap());
 
         WebApkInfo.ShareTarget shareTarget = info.shareTarget();

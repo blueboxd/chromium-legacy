@@ -35,6 +35,7 @@ message CallbackProto {
     SetUserActionsProto set_user_actions = 5;
     EndActionProto end_action = 6;
     ShowCalendarPopupProto show_calendar_popup = 7;
+    SetTextProto set_text = 8;
   }
 }
 
@@ -81,6 +82,8 @@ message ComputeValueProto {
     BooleanOrProto boolean_or = 3;
     // Computes the logical NOT of the specified model identifiers.
     BooleanNotProto boolean_not = 4;
+    // Creates a string representation of the specified value.
+    ToStringProto to_string = 5;
   }
 
   // The model identifier to write the result to.
@@ -105,6 +108,21 @@ message BooleanOrProto {
 message BooleanNotProto {
   // The model identifier to logically invert. Must point to a boolean value.
   optional string model_identifier = 1;
+}
+
+// Creates a string representation of the specified value.
+message ToStringProto {
+  // The model identifier to stringify.
+  optional string model_identifier = 1;
+
+  // Optional format options.
+  oneof format_options { DateFormatProto date_format = 2; }
+}
+
+// A format string for a date, such as "EEE, MMM d". See
+// http://userguide.icu-project.org/formatparse/datetime for full specification.
+message DateFormatProto {
+  optional string date_format = 1;
 }
 
 // Displays a standard info popup.
@@ -168,4 +186,13 @@ message ShowCalendarPopupProto {
   // The model identifier for the minimum allowed date. Must point to a single
   // DateList.
   optional string max_date_model_identifier = 3;
+}
+
+// Modifies the displayed text of a text view.
+message SetTextProto {
+  // The model identifier containing the text to set. Must point to a single
+  // string.
+  optional string model_identifier = 1;
+  // The text view to modify. Must point to a text view.
+  optional string view_identifier = 2;
 }

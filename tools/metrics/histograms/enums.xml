@@ -7562,6 +7562,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Unresponsive"/>
 </enum>
 
+<enum name="BooleanUpdateReceived">
+  <int value="0" label="No update"/>
+  <int value="1" label="Received update"/>
+</enum>
+
 <enum name="BooleanUpload">
   <int value="0" label="Download"/>
   <int value="1" label="Upload"/>
@@ -26784,6 +26789,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3184" label="QuicTransport"/>
   <int value="3185" label="QuicTransportStreamApis"/>
   <int value="3186" label="QuicTransportDatagramApis"/>
+  <int value="3187" label="V8Document_GetAnimations_Method"/>
+  <int value="3188" label="V8ShadowRoot_GetAnimations_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -37841,6 +37848,7 @@ from previous Chrome versions.
   <int value="-1407769602" label="UsageStats:disabled"/>
   <int value="-1405349891" label="PictureInPictureAPI:enabled"/>
   <int value="-1405048637" label="OfflinePagesResourceBasedSnapshot:enabled"/>
+  <int value="-1404469375" label="RemoteCopyProgressNotification:enabled"/>
   <int value="-1399753480" label="disable-harfbuzz-rendertext"/>
   <int value="-1399419572" label="enable-app-list"/>
   <int value="-1398531606" label="AndroidSetupSearchEngine:disabled"/>
@@ -39449,6 +39457,7 @@ from previous Chrome versions.
   <int value="516603570" label="QuickAnswersRichUi:disabled"/>
   <int value="517429103" label="AutofillImportDynamicForms:enabled"/>
   <int value="517568645" label="AnimatedAppMenuIcon:disabled"/>
+  <int value="518419320" label="RemoteCopyProgressNotification:disabled"/>
   <int value="520982116" label="BuiltInModuleAll:enabled"/>
   <int value="530828403" label="AllowStartingServiceManagerOnly:disabled"/>
   <int value="533064367" label="WebRtcHideLocalIpsWithMdns:disabled"/>
@@ -58992,6 +59001,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SettingsPageInteractions">
+  <obsolete>
+    Removed 03/2020 because the only associated histogram was deprecated due to
+    too much overlap with WebUI.Settings.PathVisited.
+  </obsolete>
   <int value="0" label="PRIVACY_SYNC_AND_GOOGLE_SERVICES"/>
   <int value="1" label="PRIVACY_CHROME_SIGN_IN"/>
   <int value="2" label="PRIVACY_DO_NOT_TRACK"/>
@@ -59034,6 +59047,18 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="39" label="PRIVACY_SITE_SETTINGS_ALL"/>
   <int value="40" label="PRIVACY_SITE_SETTINGS_AR"/>
   <int value="41" label="PRIVACY_SITE_SETTINGS_VR"/>
+</enum>
+
+<enum name="SettingsPrivacyElementInteractions">
+  <int value="0" label="Sync control button"/>
+  <int value="1" label="Allow Chrome sign in toggle"/>
+  <int value="2" label="Do not track toggle"/>
+  <int value="3" label="Check payment methods toggle"/>
+  <int value="4" label="Network prediction toggle"/>
+  <int value="5" label="Manage certificates link row"/>
+  <int value="6" label="Safe browsing toggle"/>
+  <int value="7" label="Passwords leak detection toggle"/>
+  <int value="8" label="Safe browsing reporting toggle"/>
 </enum>
 
 <enum name="SettingsResetPromptConfigError">

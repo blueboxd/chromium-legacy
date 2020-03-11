@@ -214,6 +214,7 @@ source_set("browser_impl") {
     "//components/variations/field_trial_config",
     "//components/variations/service",
     "//components/version_info",
+    "//ios/chrome/app:tests_hook",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:browser_state_impl",
     "//ios/chrome/browser/component_updater",

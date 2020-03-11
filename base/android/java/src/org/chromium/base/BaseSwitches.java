@@ -30,6 +30,15 @@ public abstract class BaseSwitches {
     // Enables the reached code profiler.
     public static final String ENABLE_REACHED_CODE_PROFILER = "enable-reached-code-profiler";
 
+    // Comma-separated list of feature names to enable.
+    public static final String ENABLE_FEATURES = "enable-features";
+
+    // This option can be used to force field trials when testing changes locally.
+    public static final String FORCE_FIELD_TRIALS_SWITCH = "force-fieldtrials";
+
+    // The field trial parameters and their values when testing changes locally.
+    public static final String FORCE_FIELD_TRIAL_PARAMS_SWITCH = "force-fieldtrial-params";
+
     // Prevent instantiation.
     private BaseSwitches() {}
 }

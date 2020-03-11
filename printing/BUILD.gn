@@ -329,13 +329,10 @@ test("printing_unittests") {
     if (is_chromeos) {
       sources += [ "backend/cups_ipp_helper_unittest.cc" ]
     } else {
-      sources += [ "backend/cups_helper_unittest.cc" ]
-      if (is_linux) {
-        sources += [ "backend/print_backend_cups_linux_unittest.cc" ]
-      }
-      if (is_mac) {
-        sources += [ "backend/print_backend_cups_mac_unittest.cc" ]
-      }
+      sources += [
+        "backend/cups_helper_unittest.cc",
+        "backend/print_backend_cups_unittest.cc",
+      ]
     }
   }
 }

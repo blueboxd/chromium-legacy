@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
@@ -30,12 +31,12 @@ import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCo
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
-import org.chromium.chrome.browser.tab.TabViewAndroidDelegate;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 
 /**
  * Coordinator responsible for the Autofill Assistant bottom bar.
@@ -53,6 +54,7 @@ class AssistantBottomBarCoordinator
     private final AssistantRootViewContainer mRootViewContainer;
     @Nullable
     private WebContents mWebContents;
+    private ApplicationViewportInsetSupplier mWindowApplicationInsetSupplier;
 
     // Child coordinators.
     private final AssistantHeaderCoordinator mHeaderCoordinator;
@@ -60,6 +62,7 @@ class AssistantBottomBarCoordinator
     private final AssistantFormCoordinator mFormCoordinator;
     private final AssistantActionsCarouselCoordinator mActionsCoordinator;
     private final AssistantPeekHeightCoordinator mPeekHeightCoordinator;
+    private final ObservableSupplierImpl<Integer> mInsetSupplier = new ObservableSupplierImpl<>();
     private AssistantInfoBoxCoordinator mInfoBoxCoordinator;
     private AssistantCollectUserDataCoordinator mPaymentRequestCoordinator;
     private final AssistantGenericUiCoordinator mGenericUiCoordinator;
@@ -83,6 +86,10 @@ class AssistantBottomBarCoordinator
             BottomSheetController controller, TabObscuringHandler tabObscuringHandler) {
         mModel = model;
         mBottomSheetController = controller;
+
+        mWindowApplicationInsetSupplier =
+                activity.getWindowAndroid().getApplicationBottomInsetProvider();
+        mWindowApplicationInsetSupplier.addSupplier(mInsetSupplier);
 
         BottomSheetContent currentSheetContent = controller.getCurrentSheetContent();
         if (currentSheetContent instanceof AssistantBottomSheetContent) {
@@ -262,6 +269,7 @@ class AssistantBottomBarCoordinator
      */
     public void destroy() {
         resetVisualViewportHeight();
+        mWindowApplicationInsetSupplier.removeSupplier(mInsetSupplier);
 
         mInfoBoxCoordinator.destroy();
         mInfoBoxCoordinator = null;
@@ -396,10 +404,7 @@ class AssistantBottomBarCoordinator
         }
 
         mLastVisualViewportResizing = resizing;
-        TabViewAndroidDelegate chromeDelegate =
-                (TabViewAndroidDelegate) mWebContents.getViewAndroidDelegate();
-        assert chromeDelegate != null;
-        chromeDelegate.insetViewportBottom(resizing);
+        mInsetSupplier.set(resizing);
     }
 
     // Implementation of methods from AutofillAssistantSizeManager.

@@ -23,7 +23,6 @@ RemoteObjectGatewayImpl* RemoteObjectGatewayImpl::From(LocalFrame& frame) {
 
 void RemoteObjectGatewayImpl::InjectNamed(const WTF::String& object_name,
                                           int32_t object_id) {
-  // TODO(crbug.com/794320): implement this.
   ScriptState* script_state = ToScriptStateForMainWorld(GetSupplementable());
   ScriptState::Scope scope(script_state);
   v8::Isolate* isolate = script_state->GetIsolate();

@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/basic_interactions.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/icu_test_util.h"
 #include "base/test/mock_callback.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/interactions.pb.h"
@@ -11,6 +12,16 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
+
+namespace {
+DateProto CreateDateProto(int year, int month, int day) {
+  DateProto proto;
+  proto.set_year(year);
+  proto.set_month(month);
+  proto.set_day(day);
+  return proto;
+}
+}  // namespace
 
 class BasicInteractionsTest : public testing::Test {
  protected:
@@ -124,6 +135,64 @@ TEST_F(BasicInteractionsTest, ComputeValueBooleanNot) {
   multi_bool.mutable_booleans()->add_values(true);
   multi_bool.mutable_booleans()->add_values(false);
   user_model_.SetValue("value", multi_bool);
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+}
+
+TEST_F(BasicInteractionsTest, ComputeValueToString) {
+  ComputeValueProto proto;
+  proto.mutable_to_string()->set_model_identifier("value");
+  user_model_.SetValue("value", SimpleValue(1));
+
+  // Result model identifier not set.
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+
+  // Integer
+  proto.set_result_model_identifier("output");
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(*user_model_.GetValue("output"), SimpleValue(std::string("1")));
+
+  // Boolean
+  user_model_.SetValue("value", SimpleValue(true));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(*user_model_.GetValue("output"), SimpleValue(std::string("true")));
+
+  // String
+  user_model_.SetValue("value", SimpleValue(std::string("test asd")));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(*user_model_.GetValue("output"),
+            SimpleValue(std::string("test asd")));
+
+  // Date without format fails.
+  user_model_.SetValue("value", SimpleValue(CreateDateProto(2020, 10, 23)));
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+
+  // Date with format succeeds.
+  {
+    base::test::ScopedRestoreICUDefaultLocale locale(std::string("en_US"));
+    proto.mutable_to_string()->mutable_date_format()->set_date_format(
+        "EEE, MMM d y");
+    EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+    EXPECT_EQ(*user_model_.GetValue("output"),
+              SimpleValue(std::string("Fri, Oct 23, 2020")));
+  }
+
+  // Date in german locale.
+  {
+    base::test::ScopedRestoreICUDefaultLocale locale(std::string("de_DE"));
+    EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+    EXPECT_EQ(*user_model_.GetValue("output"),
+              SimpleValue(std::string("Fr., 23. Okt. 2020")));
+  }
+
+  // Empty value fails.
+  user_model_.SetValue("value", ValueProto());
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+
+  // Multi value fails.
+  ValueProto multi_value;
+  multi_value.mutable_booleans()->add_values(true);
+  multi_value.mutable_booleans()->add_values(false);
+  user_model_.SetValue("value", multi_value);
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
 }
 

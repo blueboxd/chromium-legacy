@@ -11,7 +11,7 @@
 cr.define('settings', function() {
   /**
    * @typedef{{
-   *   route: string,
+   *   route: !settings.Route,
    *   id: settings.ContentSettingsTypes,
    *   label: string,
    *   icon: (string|undefined),
@@ -42,7 +42,7 @@ cr.define('settings', function() {
     // these appear in the UI is determined elsewhere in this file.
     const categoryList = [
       {
-        route: 'SITE_SETTINGS_ADS',
+        route: settings.routes.SITE_SETTINGS_ADS,
         id: Id.ADS,
         label: 'siteSettingsAds',
         icon: 'settings:ads',
@@ -52,7 +52,7 @@ cr.define('settings', function() {
             loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter'),
       },
       {
-        route: 'SITE_SETTINGS_AR',
+        route: settings.routes.SITE_SETTINGS_AR,
         id: Id.AR,
         label: 'siteSettingsAr',
         icon: 'settings:vr-headset',
@@ -61,7 +61,7 @@ cr.define('settings', function() {
         shouldShow: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
       },
       {
-        route: 'SITE_SETTINGS_AUTOMATIC_DOWNLOADS',
+        route: settings.routes.SITE_SETTINGS_AUTOMATIC_DOWNLOADS,
         id: Id.AUTOMATIC_DOWNLOADS,
         label: 'siteSettingsAutomaticDownloads',
         icon: 'cr:file-download',
@@ -69,7 +69,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsAutoDownloadBlock',
       },
       {
-        route: 'SITE_SETTINGS_BACKGROUND_SYNC',
+        route: settings.routes.SITE_SETTINGS_BACKGROUND_SYNC,
         id: Id.BACKGROUND_SYNC,
         label: 'siteSettingsBackgroundSync',
         icon: 'cr:sync',
@@ -77,7 +77,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsBackgroundSyncBlocked',
       },
       {
-        route: 'SITE_SETTINGS_BLUETOOTH_DEVICES',
+        route: settings.routes.SITE_SETTINGS_BLUETOOTH_DEVICES,
         id: Id.BLUETOOTH_DEVICES,
         label: 'siteSettingsBluetoothDevices',
         icon: 'settings:bluetooth',
@@ -87,7 +87,7 @@ cr.define('settings', function() {
             loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
       },
       {
-        route: 'SITE_SETTINGS_BLUETOOTH_SCANNING',
+        route: settings.routes.SITE_SETTINGS_BLUETOOTH_SCANNING,
         id: Id.BLUETOOTH_SCANNING,
         label: 'siteSettingsBluetoothScanning',
         icon: 'settings:bluetooth-scanning',
@@ -97,7 +97,7 @@ cr.define('settings', function() {
             loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures'),
       },
       {
-        route: 'SITE_SETTINGS_CAMERA',
+        route: settings.routes.SITE_SETTINGS_CAMERA,
         id: Id.CAMERA,
         label: 'siteSettingsCamera',
         icon: 'cr:videocam',
@@ -105,7 +105,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: 'SITE_SETTINGS_CLIPBOARD',
+        route: settings.routes.SITE_SETTINGS_CLIPBOARD,
         id: Id.CLIPBOARD,
         label: 'siteSettingsClipboard',
         icon: 'settings:clipboard',
@@ -113,7 +113,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: 'SITE_SETTINGS_COOKIES',
+        route: settings.routes.SITE_SETTINGS_COOKIES,
         id: Id.COOKIES,
         label: 'siteSettingsCookies',
         icon: 'settings:cookie',
@@ -122,7 +122,7 @@ cr.define('settings', function() {
         otherLabel: 'deleteDataPostSession',
       },
       {
-        route: 'SITE_SETTINGS_LOCATION',
+        route: settings.routes.SITE_SETTINGS_LOCATION,
         id: Id.GEOLOCATION,
         label: 'siteSettingsLocation',
         icon: 'cr:location-on',
@@ -130,7 +130,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: 'SITE_SETTINGS_HID_DEVICES',
+        route: settings.routes.SITE_SETTINGS_HID_DEVICES,
         id: Id.HID_DEVICES,
         label: 'siteSettingsHidDevices',
         icon: 'settings:hid-device',
@@ -140,7 +140,7 @@ cr.define('settings', function() {
             loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures'),
       },
       {
-        route: 'SITE_SETTINGS_IMAGES',
+        route: settings.routes.SITE_SETTINGS_IMAGES,
         id: Id.IMAGES,
         label: 'siteSettingsImages',
         icon: 'settings:photo',
@@ -148,7 +148,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsDontShowImages',
       },
       {
-        route: 'SITE_SETTINGS_JAVASCRIPT',
+        route: settings.routes.SITE_SETTINGS_JAVASCRIPT,
         id: Id.JAVASCRIPT,
         label: 'siteSettingsJavascript',
         icon: 'settings:code',
@@ -156,7 +156,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: 'SITE_SETTINGS_MICROPHONE',
+        route: settings.routes.SITE_SETTINGS_MICROPHONE,
         id: Id.MIC,
         label: 'siteSettingsMic',
         icon: 'cr:mic',
@@ -164,7 +164,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: 'SITE_SETTINGS_MIDI_DEVICES',
+        route: settings.routes.SITE_SETTINGS_MIDI_DEVICES,
         id: Id.MIDI_DEVICES,
         label: 'siteSettingsMidiDevices',
         icon: 'settings:midi',
@@ -172,7 +172,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsMidiDevicesBlock',
       },
       {
-        route: 'SITE_SETTINGS_MIXEDSCRIPT',
+        route: settings.routes.SITE_SETTINGS_MIXEDSCRIPT,
         id: Id.MIXEDSCRIPT,
         label: 'siteSettingsInsecureContent',
         icon: 'settings:insecure-content',
@@ -181,7 +181,7 @@ cr.define('settings', function() {
             loadTimeData.getBoolean('enableInsecureContentContentSetting'),
       },
       {
-        route: 'SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE',
+        route: settings.routes.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE,
         id: Id.NATIVE_FILE_SYSTEM_WRITE,
         label: 'siteSettingsNativeFileSystemWrite',
         icon: 'settings:save-original',
@@ -191,7 +191,7 @@ cr.define('settings', function() {
             'enableNativeFileSystemWriteContentSetting'),
       },
       {
-        route: 'SITE_SETTINGS_NOTIFICATIONS',
+        route: settings.routes.SITE_SETTINGS_NOTIFICATIONS,
         id: Id.NOTIFICATIONS,
         label: 'siteSettingsNotifications',
         icon: 'settings:notifications',
@@ -199,7 +199,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: 'SITE_SETTINGS_PAYMENT_HANDLER',
+        route: settings.routes.SITE_SETTINGS_PAYMENT_HANDLER,
         id: Id.PAYMENT_HANDLER,
         label: 'siteSettingsPaymentHandler',
         icon: 'settings:payment-handler',
@@ -209,13 +209,13 @@ cr.define('settings', function() {
             loadTimeData.getBoolean('enablePaymentHandlerContentSetting'),
       },
       {
-        route: 'SITE_SETTINGS_PDF_DOCUMENTS',
+        route: settings.routes.SITE_SETTINGS_PDF_DOCUMENTS,
         id: 'pdfDocuments',
         label: 'siteSettingsPdfDocuments',
         icon: 'settings:pdf',
       },
       {
-        route: 'SITE_SETTINGS_FLASH',
+        route: settings.routes.SITE_SETTINGS_FLASH,
         id: Id.PLUGINS,
         label: 'siteSettingsFlash',
         icon: 'cr:extension',
@@ -223,7 +223,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsFlashBlock',
       },
       {
-        route: 'SITE_SETTINGS_POPUPS',
+        route: settings.routes.SITE_SETTINGS_POPUPS,
         id: Id.POPUPS,
         label: 'siteSettingsPopups',
         icon: 'cr:open-in-new',
@@ -232,14 +232,14 @@ cr.define('settings', function() {
       },
       // <if expr="chromeos">
       {
-        route: 'SITE_SETTINGS_PROTECTED_CONTENT',
+        route: settings.routes.SITE_SETTINGS_PROTECTED_CONTENT,
         id: Id.PROTECTED_CONTENT,
         label: 'siteSettingsProtectedContent',
         icon: 'settings:protected-content',
       },
       // </if>
       {
-        route: 'SITE_SETTINGS_HANDLERS',
+        route: settings.routes.SITE_SETTINGS_HANDLERS,
         id: Id.PROTOCOL_HANDLERS,
         label: 'siteSettingsHandlers',
         icon: 'settings:protocol-handler',
@@ -248,7 +248,7 @@ cr.define('settings', function() {
         shouldShow: () => !loadTimeData.getBoolean('isGuest'),
       },
       {
-        route: 'SITE_SETTINGS_SENSORS',
+        route: settings.routes.SITE_SETTINGS_SENSORS,
         id: Id.SENSORS,
         label: 'siteSettingsSensors',
         icon: 'settings:sensors',
@@ -256,7 +256,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsSensorsBlock',
       },
       {
-        route: 'SITE_SETTINGS_SERIAL_PORTS',
+        route: settings.routes.SITE_SETTINGS_SERIAL_PORTS,
         id: Id.SERIAL_PORTS,
         label: 'siteSettingsSerialPorts',
         icon: 'settings:serial-port',
@@ -264,7 +264,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsSerialPortsBlock',
       },
       {
-        route: 'SITE_SETTINGS_SOUND',
+        route: settings.routes.SITE_SETTINGS_SOUND,
         id: Id.SOUND,
         label: 'siteSettingsSound',
         icon: 'settings:volume-up',
@@ -272,7 +272,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsSoundBlock',
       },
       {
-        route: 'SITE_SETTINGS_UNSANDBOXED_PLUGINS',
+        route: settings.routes.SITE_SETTINGS_UNSANDBOXED_PLUGINS,
         id: Id.UNSANDBOXED_PLUGINS,
         label: 'siteSettingsUnsandboxedPlugins',
         icon: 'cr:extension',
@@ -280,7 +280,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsUnsandboxedPluginsBlock',
       },
       {
-        route: 'SITE_SETTINGS_USB_DEVICES',
+        route: settings.routes.SITE_SETTINGS_USB_DEVICES,
         id: Id.USB_DEVICES,
         label: 'siteSettingsUsbDevices',
         icon: 'settings:usb',
@@ -288,7 +288,7 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsUsbDevicesBlock',
       },
       {
-        route: 'SITE_SETTINGS_VR',
+        route: settings.routes.SITE_SETTINGS_VR,
         id: Id.VR,
         label: 'siteSettingsVr',
         icon: 'settings:vr-headset',
@@ -297,7 +297,7 @@ cr.define('settings', function() {
         shouldShow: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
       },
       {
-        route: 'SITE_SETTINGS_ZOOM_LEVELS',
+        route: settings.routes.SITE_SETTINGS_ZOOM_LEVELS,
         id: Id.ZOOM_LEVELS,
         label: 'siteSettingsZoomLevels',
         icon: 'settings:zoom-in',
@@ -465,16 +465,9 @@ cr.define('settings', function() {
     },
 
     /** @private */
-    onSiteSettingsAllClick_(event) {
-      this.navigateToRoute_('SITE_SETTINGS_ALL');
-    },
-
-    /**
-     * @param {!CustomEvent<string>} event
-     * @private
-     */
-    onSiteSettingsItemClick_(event) {
-      this.navigateToRoute_(event.detail);
+    onSiteSettingsAllClick_() {
+      settings.Router.getInstance().navigateTo(
+          settings.routes.SITE_SETTINGS_ALL);
     },
 
     /**
@@ -486,18 +479,6 @@ cr.define('settings', function() {
               !this.noRecentSitePermissions_) ?
           'hr' :
           '';
-    },
-
-    /**
-     * Navigate to the route specified in the event dataset.
-     * @param {string} routeName The name of the route to navigate to.
-     * @private
-     */
-    navigateToRoute_(routeName) {
-      settings.MetricsBrowserProxyImpl.getInstance()
-          .recordSettingsPageHistogram(
-              settings.SettingsPageInteractions['PRIVACY_' + routeName]);
-      settings.Router.getInstance().navigateTo(settings.routes[routeName]);
     },
   });
 

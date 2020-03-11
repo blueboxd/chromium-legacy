@@ -46,7 +46,7 @@ class WhitespaceAttacher;
 
 enum class ShadowRootType { V0, kOpen, kClosed, kUserAgent };
 
-enum class ShadowRootSlotting { kManual, kAuto };
+enum class SlotAssignmentMode { kManual, kAuto };
 
 class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   DEFINE_WRAPPERTYPEINFO();
@@ -146,9 +146,16 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   void SetDelegatesFocus(bool flag) { delegates_focus_ = flag; }
   bool delegatesFocus() const { return delegates_focus_; }
 
-  void SetSlotting(ShadowRootSlotting slotting);
-  bool IsManualSlotting() {
-    return slotting_ == static_cast<unsigned>(ShadowRootSlotting::kManual);
+  void SetSlotAssignmentMode(SlotAssignmentMode assignment);
+  bool IsManualSlotting() const {
+    return slot_assignment_mode_ ==
+           static_cast<unsigned>(SlotAssignmentMode::kManual);
+  }
+  SlotAssignmentMode GetSlotAssignmentMode() const {
+    return static_cast<SlotAssignmentMode>(slot_assignment_mode_);
+  }
+  String slotAssignment() const {
+    return IsManualSlotting() ? "manual" : "auto";
   }
 
   bool ContainsShadowRoots() const { return child_shadow_root_count_; }
@@ -181,7 +188,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   unsigned type_ : 2;
   unsigned registered_with_parent_shadow_root_ : 1;
   unsigned delegates_focus_ : 1;
-  unsigned slotting_ : 1;
+  unsigned slot_assignment_mode_ : 1;
   unsigned needs_distribution_recalc_ : 1;
   unsigned unused_ : 10;
 

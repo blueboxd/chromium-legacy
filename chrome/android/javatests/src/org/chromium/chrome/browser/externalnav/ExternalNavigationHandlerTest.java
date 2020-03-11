@@ -1548,8 +1548,7 @@ public class ExternalNavigationHandlerTest {
                 .withHasUserGesture(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
-        Assert.assertTrue(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(
-                mDelegate.startActivityIntent));
+        Assert.assertTrue(mDelegate.maybeSetUserGestureCalled);
         Assert.assertFalse(mDelegate.startIncognitoIntentCalled);
     }
 
@@ -1565,8 +1564,7 @@ public class ExternalNavigationHandlerTest {
                 .withIsIncognito(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
                         START_INCOGNITO | START_OTHER_ACTIVITY);
-        Assert.assertTrue(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(
-                mDelegate.startActivityIntent));
+        Assert.assertTrue(mDelegate.maybeSetUserGestureCalled);
         Assert.assertTrue(mDelegate.startIncognitoIntentCalled);
     }
 
@@ -1867,6 +1865,11 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
+        public void maybeSetUserGesture(Intent intent) {
+            maybeSetUserGestureCalled = true;
+        }
+
+        @Override
         public void maybeSetPendingIncognitoUrl(Intent intent) {}
 
         @Override
@@ -1991,6 +1994,7 @@ public class ExternalNavigationHandlerTest {
 
         public Intent startActivityIntent;
         public boolean startIncognitoIntentCalled;
+        public boolean maybeSetUserGestureCalled;
         public boolean startFileIntentCalled;
         public String defaultSmsPackageName;
 

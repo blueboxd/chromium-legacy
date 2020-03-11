@@ -63,6 +63,19 @@ base::Optional<double> AnimationTimeline::CurrentTimeSeconds() {
   return result ? base::make_optional(result->InSecondsF()) : base::nullopt;
 }
 
+String AnimationTimeline::phase() const {
+  switch (Phase()) {
+    case TimelinePhase::kInactive:
+      return "inactive";
+    case TimelinePhase::kBefore:
+      return "before";
+    case TimelinePhase::kActive:
+      return "active";
+    case TimelinePhase::kAfter:
+      return "after";
+  }
+}
+
 void AnimationTimeline::ClearOutdatedAnimation(Animation* animation) {
   DCHECK(!animation->Outdated());
   outdated_animation_count_--;

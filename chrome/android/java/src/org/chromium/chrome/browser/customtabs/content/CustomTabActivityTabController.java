@@ -276,10 +276,6 @@ public class CustomTabActivityTabController
         if (tab == null) return null;
 
         TabAssociatedApp.from(tab).setAppId(mConnection.getClientPackageNameForSession(mSession));
-        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
-            // Configures web preferences for viewing downloaded media.
-            if (tab.getWebContents() != null) tab.getWebContents().notifyRendererPreferenceUpdate();
-        }
         initializeTab(tab);
         return tab;
     }
@@ -377,10 +373,6 @@ public class CustomTabActivityTabController
         mConnection.setClientDataHeaderForNewTab(mSession, webContents);
 
         TabAssociatedApp.from(tab).setAppId(mConnection.getClientPackageNameForSession(mSession));
-
-        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
-            if (tab.getWebContents() != null) tab.getWebContents().notifyRendererPreferenceUpdate();
-        }
 
         initializeTab(tab);
 

@@ -6,12 +6,13 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/permissions/permission_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/url_constants.h"
@@ -19,14 +20,24 @@
 
 namespace {
 
+permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
+    Profile* profile) {
+  permissions::PermissionManager::PermissionContextMap permission_contexts;
+  permission_contexts[ContentSettingsType::GEOLOCATION] =
+      std::make_unique<GeolocationPermissionContext>(profile);
+  return permission_contexts;
+}
+
 // PermissionManager subclass that enables the test below to deterministically
 // wait until there is a permission status subscription from a service worker.
 // Deleting the off-the-record profile under these circumstances would
 // previously have resulted in a crash.
-class SubscriptionInterceptingPermissionManager : public PermissionManager {
+class SubscriptionInterceptingPermissionManager
+    : public permissions::PermissionManager {
  public:
   explicit SubscriptionInterceptingPermissionManager(Profile* profile)
-      : PermissionManager(profile) {}
+      : permissions::PermissionManager(profile,
+                                       CreatePermissionContexts(profile)) {}
 
   ~SubscriptionInterceptingPermissionManager() override = default;
 
@@ -40,8 +51,9 @@ class SubscriptionInterceptingPermissionManager : public PermissionManager {
       const GURL& requesting_origin,
       base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback)
       override {
-    int result = PermissionManager::SubscribePermissionStatusChange(
-        permission, render_frame_host, requesting_origin, callback);
+    int result =
+        permissions::PermissionManager::SubscribePermissionStatusChange(
+            permission, render_frame_host, requesting_origin, callback);
     std::move(callback_).Run();
 
     return result;
@@ -87,7 +99,7 @@ class PermissionManagerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(PermissionManagerBrowserTest,
                        ServiceWorkerPermissionQueryIncognitoClose) {
   base::RunLoop run_loop;
-  PermissionManager* pm =
+  permissions::PermissionManager* pm =
       PermissionManagerFactory::GetForProfile(incognito_browser()->profile());
   static_cast<SubscriptionInterceptingPermissionManager*>(pm)
       ->SetSubscribeCallback(run_loop.QuitClosure());

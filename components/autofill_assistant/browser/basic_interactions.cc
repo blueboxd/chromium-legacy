@@ -4,6 +4,9 @@
 
 #include "components/autofill_assistant/browser/basic_interactions.h"
 #include "base/bind_helpers.h"
+#include "base/i18n/time_formatting.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/user_model.h"
@@ -78,6 +81,74 @@ bool BooleanNot(UserModel* user_model,
   return true;
 }
 
+bool ValueToString(UserModel* user_model,
+                   const std::string& result_model_identifier,
+                   const ToStringProto& proto) {
+  auto value = user_model->GetValue(proto.model_identifier());
+  std::string result;
+
+  if (!value.has_value()) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": "
+             << proto.model_identifier() << " not found in model";
+    return false;
+  }
+  if (!AreAllValuesOfSize({*value}, 1)) {
+    DVLOG(2) << "Error evaluating " << __func__
+             << ": expected single value, but got a list instead";
+    return false;
+  }
+  if (AreAllValuesOfType({*value}, ValueProto::kUserActions)) {
+    DVLOG(2) << "Error evaluating " << __func__
+             << ": does not support stringifying user actions";
+    return false;
+  }
+  switch (value->kind_case()) {
+    case ValueProto::kStrings:
+      result = value->strings().values(0);
+      break;
+    case ValueProto::kBooleans:
+      result = value->booleans().values(0) ? "true" : "false";
+      break;
+    case ValueProto::kInts:
+      result = base::NumberToString(value->ints().values(0));
+      break;
+    case ValueProto::kUserActions:
+      NOTREACHED();
+      return false;
+    case ValueProto::kDates: {
+      if (proto.date_format().date_format().empty()) {
+        DVLOG(2) << "Error evaluating " << __func__ << ": date_format not set";
+        return false;
+      }
+      auto date = value->dates().values(0);
+      base::Time::Exploded exploded_time = {date.year(),
+                                            date.month(),
+                                            /* day_of_week = */ -1,
+                                            date.day(),
+                                            /* hour = */ 0,
+                                            /* minute = */ 0,
+                                            /* second = */ 0,
+                                            /* millisecond = */ 0};
+      base::Time time;
+      if (!base::Time::FromLocalExploded(exploded_time, &time)) {
+        DVLOG(2) << "Error evaluating " << __func__ << ": invalid date "
+                 << *value;
+        return false;
+      }
+
+      result = base::UTF16ToUTF8(base::TimeFormatWithPattern(
+          time, proto.date_format().date_format().c_str()));
+      break;
+    }
+    case ValueProto::KIND_NOT_SET:
+      DVLOG(2) << "Error evaluating " << __func__ << ": kind not set";
+      return false;
+  }
+
+  user_model->SetValue(result_model_identifier, SimpleValue(result));
+  return true;
+}
+
 }  // namespace
 
 base::WeakPtr<BasicInteractions> BasicInteractions::GetWeakPtr() {
@@ -129,6 +200,14 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
       }
       return BooleanNot(delegate_->GetUserModel(),
                         proto.result_model_identifier(), proto.boolean_not());
+    case ComputeValueProto::kToString:
+      if (proto.to_string().model_identifier().empty()) {
+        DVLOG(2) << "Error computing ComputeValue::ToString: "
+                    "model_identifier not specified";
+        return false;
+      }
+      return ValueToString(delegate_->GetUserModel(),
+                           proto.result_model_identifier(), proto.to_string());
     case ComputeValueProto::KIND_NOT_SET:
       DVLOG(2) << "Error computing value: kind not set";
       return false;

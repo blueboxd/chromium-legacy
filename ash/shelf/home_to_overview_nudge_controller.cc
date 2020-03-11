@@ -48,7 +48,7 @@ constexpr base::TimeDelta kNudgeTranformComponentDuration =
 // The baseline vertical offset from default kShown state bounds added to
 // hotseat position when the nudge is shown - this is the offset that the
 // hotseat will have once show throb animation completes.
-constexpr int kHotseatBaselineNudgeOffset = -20;
+constexpr int kHotseatBaselineNudgeOffset = -22;
 
 // The number of times the nudge should be moved up and down when the nudge is
 // shown.
@@ -167,7 +167,9 @@ void HomeToOverviewNudgeController::ShowNudge() {
       l10n_util::GetStringUTF16(IDS_ASH_HOME_TO_OVERVIEW_CONTEXTUAL_NUDGE),
       AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kTextPrimary,
-          AshColorProvider::AshColorMode::kDark));
+          AshColorProvider::AshColorMode::kDark),
+      base::BindRepeating(&HomeToOverviewNudgeController::HandleNudgeTap,
+                          weak_factory_.GetWeakPtr()));
 
   UpdateNudgeAnchorBounds();
 
@@ -291,6 +293,9 @@ void HomeToOverviewNudgeController::HideNudge() {
 
   widget_observer_.RemoveAll();
   nudge_ = nullptr;
+
+  // Invalidated nudge tap handler callbacks.
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void HomeToOverviewNudgeController::UpdateNudgeAnchorBounds() {
@@ -305,6 +310,10 @@ void HomeToOverviewNudgeController::UpdateNudgeAnchorBounds() {
   nudge_->UpdateAnchorRect(
       gfx::Rect(gfx::Point(shelf_bounds.x(), hotseat_bounds.y()),
                 gfx::Size(shelf_bounds.width(), hotseat_bounds.height())));
+}
+
+void HomeToOverviewNudgeController::HandleNudgeTap() {
+  HideNudge();
 }
 
 }  // namespace ash

@@ -294,7 +294,8 @@ void LayerImpl::GetContentsResourceId(viz::ResourceId* resource_id,
 gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
   ScrollTree& scroll_tree = GetScrollTree();
   ScrollNode* scroll_node = scroll_tree.Node(scroll_tree_index());
-  return scroll_tree.ScrollBy(scroll_node, scroll, layer_tree_impl());
+  DCHECK(scroll_node);
+  return scroll_tree.ScrollBy(*scroll_node, scroll, layer_tree_impl());
 }
 
 void LayerImpl::UpdateScrollable() {

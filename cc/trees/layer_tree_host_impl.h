@@ -753,8 +753,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   bool prepare_tiles_needed() const { return tile_priorities_dirty_; }
 
-  // TODO(bokan): Make |scroll_node| a const ref.
-  gfx::Vector2dF ScrollSingleNode(ScrollNode& scroll_node,
+  gfx::Vector2dF ScrollSingleNode(const ScrollNode& scroll_node,
                                   const gfx::Vector2dF& delta,
                                   const gfx::Point& viewport_point,
                                   bool is_direct_manipulation,
@@ -783,10 +782,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // Returns true if a scroll offset animation is created and false if we scroll
   // by the desired amount without an animation.
-  bool ScrollAnimationCreate(ScrollNode* scroll_node,
+  bool ScrollAnimationCreate(const ScrollNode& scroll_node,
                              const gfx::Vector2dF& scroll_amount,
                              base::TimeDelta delayed_by);
-  bool AutoScrollAnimationCreate(ScrollNode* scroll_node,
+  bool AutoScrollAnimationCreate(const ScrollNode& scroll_node,
                                  const gfx::Vector2dF& scroll_amount,
                                  float autoscroll_velocity);
 
@@ -895,11 +894,11 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       gfx::Vector2dF* out_local_scroll_delta,
       gfx::PointF* out_local_start_point = nullptr);
   gfx::Vector2dF ScrollNodeWithViewportSpaceDelta(
-      ScrollNode& scroll_node,
+      const ScrollNode& scroll_node,
       const gfx::PointF& viewport_point,
       const gfx::Vector2dF& viewport_delta,
       ScrollTree* scroll_tree);
-  bool ScrollAnimationCreateInternal(ScrollNode* scroll_node,
+  bool ScrollAnimationCreateInternal(const ScrollNode& scroll_node,
                                      const gfx::Vector2dF& delta,
                                      base::TimeDelta delayed_by,
                                      base::Optional<float> autoscroll_velocity);

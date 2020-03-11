@@ -190,6 +190,11 @@ $ sudo apt-get install qemu-system-common
 ```
 3. Add users to the "kvm" group, and have them login again, to pick-up the new
 group.
+```shell
+$ sudo adduser <user> kvm
+$ exit
+[log in again]
+```
 
 ### Running test suites
 

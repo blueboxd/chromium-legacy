@@ -77,6 +77,10 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
     // count will always be 1.
     int single_tap_repeat_interval;
 
+    // Whether a longpress should be generated immediately when a stylus button
+    // is pressed, given that the longpress timeout is still active.
+    bool stylus_button_accelerated_longpress_enabled;
+
     VelocityTracker::Strategy velocity_tracker_strategy;
   };
 
@@ -112,6 +116,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   void OnShowPressTimeout();
   void OnLongPressTimeout();
   void OnTapTimeout();
+  void OnStylusButtonPress(const MotionEvent& ev);
   void Cancel();
   void CancelTaps();
   bool IsRepeatedTap(const MotionEvent& first_down,
@@ -172,6 +177,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   float down_focus_x_;
   float down_focus_y_;
 
+  bool stylus_button_accelerated_longpress_enabled_;
   bool longpress_enabled_;
   bool showpress_enabled_;
   bool swipe_enabled_;

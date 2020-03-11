@@ -19,16 +19,25 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
+namespace webrtc {
+namespace video_coding {
+class EncodedFrame;
+}  // namespace video_coding
+}  // namespace webrtc
+
 namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
 class RTCDtlsTransport;
 class RTCDTMFSender;
+class RTCEncodedVideoUnderlyingSink;
+class RTCEncodedVideoUnderlyingSource;
 class RTCInsertableStreams;
 class RTCPeerConnection;
 class RTCRtpCapabilities;
 class RTCRtpTransceiver;
+class RTCInsertableStreams;
 
 webrtc::RtpEncodingParameters ToRtpEncodingParameters(
     const RTCRtpEncodingParameters*);
@@ -48,7 +57,8 @@ class RTCRtpSender final : public ScriptWrappable {
                std::unique_ptr<RTCRtpSenderPlatform>,
                String kind,
                MediaStreamTrack*,
-               MediaStreamVector streams);
+               MediaStreamVector streams,
+               bool force_encoded_video_insertable_streams);
 
   MediaStreamTrack* track();
   RTCDtlsTransport* transport();
@@ -79,6 +89,14 @@ class RTCRtpSender final : public ScriptWrappable {
   void Trace(Visitor*) override;
 
  private:
+  void RegisterEncodedVideoStreamCallback();
+  void UnregisterEncodedVideoStreamCallback();
+  void InitializeEncodedVideoStreams(ScriptState*);
+  void OnFrameFromEncoder(
+      std::unique_ptr<webrtc::video_coding::EncodedFrame> frame,
+      std::vector<uint8_t> additional_data,
+      uint32_t ssrc);
+
   Member<RTCPeerConnection> pc_;
   std::unique_ptr<RTCRtpSenderPlatform> sender_;
   // The spec says that "kind" should be looked up in transceiver, but keeping
@@ -90,6 +108,12 @@ class RTCRtpSender final : public ScriptWrappable {
   MediaStreamVector streams_;
   Member<RTCRtpSendParameters> last_returned_parameters_;
   Member<RTCRtpTransceiver> transceiver_;
+
+  // Insertable Streams support
+  bool force_encoded_video_insertable_streams_;
+  Member<RTCEncodedVideoUnderlyingSource> video_from_encoder_underlying_source_;
+  Member<RTCEncodedVideoUnderlyingSink> video_to_packetizer_underlying_sink_;
+  Member<RTCInsertableStreams> encoded_video_streams_;
 };
 
 }  // namespace blink

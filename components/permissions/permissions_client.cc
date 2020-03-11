@@ -78,6 +78,12 @@ bool PermissionsClient::CanBypassEmbeddingOriginCheck(
   return false;
 }
 
+base::Optional<GURL> PermissionsClient::OverrideCanonicalOrigin(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  return base::nullopt;
+}
+
 #if defined(OS_ANDROID)
 infobars::InfoBarManager* PermissionsClient::GetInfoBarManager(
     content::WebContents* web_contents) {

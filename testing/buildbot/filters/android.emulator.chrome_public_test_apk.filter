@@ -40,3 +40,6 @@
 -org.chromium.chrome.browser.autofill_assistant.AutofillAssistantBottomsheetTest.testNoResize
 -org.chromium.chrome.browser.autofill_assistant.AutofillAssistantBottomsheetTest.testResizeLayoutViewport
 -org.chromium.chrome.browser.autofill_assistant.AutofillAssistantBottomsheetTest.testResizeVisualViewport
+
+# crbug.com/1059046
+-org.chromium.chrome.browser.customtabs.CustomTabFromChromeExternalNavigationTest.testIntentWithRedirectToApp

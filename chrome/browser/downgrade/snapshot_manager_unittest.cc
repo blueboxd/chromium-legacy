@@ -37,6 +37,14 @@ constexpr base::FilePath::StringPieceType kUserDataFile =
     FILE_PATH_LITERAL("User Data File");
 constexpr base::FilePath::StringPieceType kProfileDataFile =
     FILE_PATH_LITERAL("Profile Data File");
+constexpr base::FilePath::StringPieceType kProfileDataJournalFile =
+    FILE_PATH_LITERAL("Profile Data File-journal");
+constexpr base::FilePath::StringPieceType kProfileDataExtFile =
+    FILE_PATH_LITERAL("Profile Data File.ext");
+constexpr base::FilePath::StringPieceType kProfileDataExtWalFile =
+    FILE_PATH_LITERAL("Profile Data File.ext-wal");
+constexpr base::FilePath::StringPieceType kProfileDataExtShmFile =
+    FILE_PATH_LITERAL("Profile Data File.ext-shm");
 
 constexpr std::array<base::FilePath::StringPieceType, 3>
     kProfileDirectoryBaseNames = {FILE_PATH_LITERAL("Default"),
@@ -120,6 +128,8 @@ class TestSnapshotManager : public SnapshotManager {
     return std::vector<SnapshotItemDetails>{
         SnapshotItemDetails(base::FilePath(kProfileDataFile),
                             SnapshotItemDetails::ItemType::kFile, 0),
+        SnapshotItemDetails(base::FilePath(kProfileDataExtFile),
+                            SnapshotItemDetails::ItemType::kFile, 0),
         SnapshotItemDetails(base::FilePath(kProfileDataFolder),
                             SnapshotItemDetails::ItemType::kDirectory, 0)};
   }
@@ -175,6 +185,15 @@ TEST_F(SnapshotManagerTest, TakeSnapshot) {
     // Files and folders at Profile Data level that should be snapshotted.
     base::File file(path.Append(kProfileDataFile),
                     base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    base::File file_ext(path.Append(kProfileDataExtFile),
+                        base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    base::File file_journal(path.Append(kProfileDataJournalFile),
+                            base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    base::File file_ext_wal(path.Append(kProfileDataExtWalFile),
+                            base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    base::File file_ext_shm(path.Append(kProfileDataExtShmFile),
+                            base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+
     ASSERT_NO_FATAL_FAILURE(TestFolderAndFiles::CreateFilesAndFolders(
         path.Append(kProfileDataFolder)));
 
@@ -196,6 +215,10 @@ TEST_F(SnapshotManagerTest, TakeSnapshot) {
 
   for (const auto& path : absolute_profile_paths) {
     EXPECT_TRUE(base::PathExists(path.Append(kProfileDataFile)));
+    EXPECT_TRUE(base::PathExists(path.Append(kProfileDataExtFile)));
+    EXPECT_TRUE(base::PathExists(path.Append(kProfileDataJournalFile)));
+    EXPECT_TRUE(base::PathExists(path.Append(kProfileDataExtWalFile)));
+    EXPECT_TRUE(base::PathExists(path.Append(kProfileDataExtShmFile)));
     EXPECT_TRUE(base::DirectoryExists(path.Append(kProfileDataFolder)));
     EXPECT_TRUE(TestFolderAndFiles::AllPathExists(path));
   }
@@ -203,6 +226,14 @@ TEST_F(SnapshotManagerTest, TakeSnapshot) {
   for (const auto& path : kProfileDirectoryBaseNames) {
     EXPECT_TRUE(
         base::PathExists(snapshot_dir.Append(path).Append(kProfileDataFile)));
+    EXPECT_TRUE(base::PathExists(
+        snapshot_dir.Append(path).Append(kProfileDataJournalFile)));
+    EXPECT_TRUE(base::PathExists(
+        snapshot_dir.Append(path).Append(kProfileDataExtFile)));
+    EXPECT_TRUE(base::PathExists(
+        snapshot_dir.Append(path).Append(kProfileDataExtWalFile)));
+    EXPECT_TRUE(base::PathExists(
+        snapshot_dir.Append(path).Append(kProfileDataExtShmFile)));
     EXPECT_TRUE(base::DirectoryExists(
         snapshot_dir.Append(path).Append(kProfileDataFolder)));
     EXPECT_TRUE(TestFolderAndFiles::NoPathExists(snapshot_dir.Append(path)));

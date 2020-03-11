@@ -109,7 +109,7 @@ Polymer({
   /** @private */
   onPasswordsLeakDetectionChange_() {
     this.metricsBrowserProxy_.recordSettingsPageHistogram(
-        settings.SettingsPageInteractions.PRIVACY_PASSWORD_CHECK);
+        settings.PrivacyElementInteractions.PASSWORD_CHECK);
     this.setPrefValue(
         'profile.password_manager_leak_detection',
         this.$.passwordsLeakDetectionCheckbox.checked);

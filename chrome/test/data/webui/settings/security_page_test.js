@@ -51,6 +51,15 @@ suite('CrSettingsSecurityPageTest', function() {
     });
   }
 
+  test('LogManageCerfificatesClick', function() {
+    page.$$('#manageCertificates').click();
+    return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        .then(result => {
+          assertEquals(
+              settings.PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
+        });
+  });
+
   test('safeBrowsingReportingToggle', function() {
     page.$$('#safeBrowsingStandard').click();
     const safeBrowsingReportingToggle = page.$.safeBrowsingReportingToggle;

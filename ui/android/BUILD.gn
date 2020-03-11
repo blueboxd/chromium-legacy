@@ -232,6 +232,7 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/base/ActivityWindowAndroid.java",
     "java/src/org/chromium/ui/base/AndroidPermissionDelegate.java",
     "java/src/org/chromium/ui/base/AndroidPermissionDelegateWithRequester.java",
+    "java/src/org/chromium/ui/base/ApplicationViewportInsetSupplier.java",
     "java/src/org/chromium/ui/base/Clipboard.java",
     "java/src/org/chromium/ui/base/DeviceFormFactor.java",
     "java/src/org/chromium/ui/base/EventForwarder.java",
@@ -377,6 +378,7 @@ junit_binary("ui_junit_tests") {
   sources = [
     "junit/src/org/chromium/ui/AsyncViewProviderTest.java",
     "junit/src/org/chromium/ui/AsyncViewStubTest.java",
+    "junit/src/org/chromium/ui/base/ApplicationViewportInsetSupplierTest.java",
     "junit/src/org/chromium/ui/base/ClipboardTest.java",
     "junit/src/org/chromium/ui/base/EventOffsetHandlerTest.java",
     "junit/src/org/chromium/ui/base/LocalizationUtilsTest.java",

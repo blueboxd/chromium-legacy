@@ -1,11 +1,11 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Resolves the values used for constants and enums."""
 
 from itertools import ifilter
 import mojom.generate.module as mojom
+
 
 def ResolveConstants(module, expression_to_text):
   in_progress = set()
@@ -14,8 +14,9 @@ def ResolveConstants(module, expression_to_text):
   def GetResolvedValue(named_value):
     assert isinstance(named_value, (mojom.EnumValue, mojom.ConstantValue))
     if isinstance(named_value, mojom.EnumValue):
-      field = next(ifilter(lambda field: field.name == named_value.name,
-                           named_value.enum.fields), None)
+      field = next(
+          ifilter(lambda field: field.name == named_value.name,
+                  named_value.enum.fields), None)
       if not field:
         raise RuntimeError(
             'Unable to get computed value for field %s of enum %s' %

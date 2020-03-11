@@ -1,6 +1,5 @@
 This is a testharness.js-based test.
-FAIL attachShadow can take slotAssignment parameter. assert_throws_js: others should throw exception function "() => {
-    tTree.host3.attachShadow({ mode: 'open', slotAssignment: 'exceptional' })}" did not throw
+PASS attachShadow can take slotAssignment parameter.
 FAIL Imperative slot API throws exception when not slotAssignment != 'manual'. assert_throws_dom: function "() => { tTree.s1.assign([]); }" did not throw
 FAIL Imperative slot API throws exception when slotable parentNode != slot's host. assert_throws_dom: function "() => { tTree.s2.assign([tTree.c1]); }" did not throw
 FAIL Imperative slot API can assign nodes in manual slot assignment. assert_equals: expected null but got Element node <slot id="s1"></slot>

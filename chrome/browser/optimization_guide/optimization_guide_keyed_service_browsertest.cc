@@ -197,7 +197,7 @@ class OptimizationGuideKeyedServiceBrowserTest
     OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
         ->RegisterOptimizationTypesAndTargets(
             {optimization_guide::proto::NOSCRIPT},
-            /*optimization_targets=*/{});
+            {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
     // Set up an OptimizationGuideKeyedService consumer.
     consumer_.reset(new OptimizationGuideConsumerWebContentsObserver(

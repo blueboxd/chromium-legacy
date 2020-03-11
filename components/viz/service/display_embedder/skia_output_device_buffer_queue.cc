@@ -407,6 +407,10 @@ void SkiaOutputDeviceBufferQueue::FreeAllSurfaces() {
   available_images_.clear();
 }
 
+bool SkiaOutputDeviceBufferQueue::IsPrimaryPlaneOverlay() const {
+  return true;
+}
+
 void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
     const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane) {
   // If the current_image_ is nullptr, it means there is no change on the

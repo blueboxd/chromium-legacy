@@ -14,6 +14,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 namespace content {
@@ -35,6 +36,8 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
       const GURL& url,
       const GURL& scope,
       bool is_installed_version,
+      base::Optional<network::CrossOriginEmbedderPolicy>
+          cross_origin_embedder_policy,
       const base::UnguessableToken& devtools_worker_token);
 
   // DevToolsAgentHost overrides.
@@ -50,6 +53,8 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   void WorkerReadyForInspection(
       mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
       mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> host_receiver);
+  void UpdateCrossOriginEmbedderPolicy(
+      network::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
   void WorkerDestroyed();
   void WorkerVersionInstalled();
   void WorkerVersionDoomed();
@@ -97,6 +102,8 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   GURL scope_;
   base::Time version_installed_time_;
   base::Time version_doomed_time_;
+  base::Optional<network::CrossOriginEmbedderPolicy>
+      cross_origin_embedder_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDevToolsAgentHost);
 };

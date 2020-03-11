@@ -35,6 +35,9 @@ enum SharedImageUsage : uint32_t {
   // TODO(crbug.com/969114): This usage is currently not supported in GL/Vulkan
   // interop cases.
   SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE = 1 << 9,
+  // Image will be used in a platform specific API that requires a native buffer
+  // allocation.
+  SHARED_IMAGE_USAGE_NATIVE_BUFFER = 1 << 10,
 };
 
 }  // namespace gpu

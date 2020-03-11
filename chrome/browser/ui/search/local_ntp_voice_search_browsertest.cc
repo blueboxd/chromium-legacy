@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
-#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
@@ -16,6 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_result.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
       permissions::PermissionRequestManager::FromWebContents(active_tab);
   permissions::MockPermissionPromptFactory prompt_factory(request_manager);
 
-  PermissionManager* permission_manager =
+  permissions::PermissionManager* permission_manager =
       PermissionManagerFactory::GetForProfile(browser()->profile());
 
   // Make sure microphone permission for the NTP isn't set yet.

@@ -29,8 +29,7 @@ suite('CrSettingsDoNotTrackToggleTest', function() {
     testElement.$.toggle.click();
     const result =
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK, result);
+    assertEquals(settings.PrivacyElementInteractions.DO_NOT_TRACK, result);
   });
 
   test('DialogAndToggleBehavior', function() {

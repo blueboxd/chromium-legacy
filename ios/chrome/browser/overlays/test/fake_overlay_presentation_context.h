@@ -48,6 +48,7 @@ class FakeOverlayPresentationContext : public OverlayPresentationContext {
       UIPresentationCapabilities capabilities) const override;
   bool CanShowUIForRequest(OverlayRequest* request) const override;
   bool IsShowingOverlayUI() const override;
+  void PrepareToShowOverlayUI(OverlayRequest* request) override;
   void ShowOverlayUI(OverlayRequest* request,
                      OverlayPresentationCallback presentation_callback,
                      OverlayDismissalCallback dismissal_callback) override;

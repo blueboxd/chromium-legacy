@@ -23,7 +23,6 @@ class ScrollableShelfView;
 class Shelf;
 class ShelfView;
 class HotseatTransitionAnimator;
-class HotseatWidgetBackgroundAnimationMetricsReporter;
 
 // The hotseat widget is part of the shelf and hosts app shortcuts.
 class ASH_EXPORT HotseatWidget : public ShelfComponent,
@@ -158,11 +157,6 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // on the non visible portion of the hotseat, or events that reach the hotseat
   // during an animation.
   std::unique_ptr<aura::ScopedWindowTargeter> hotseat_window_targeter_;
-
-  // Metrics reporter for animations of the traslucent background in the
-  // hotseat.
-  std::unique_ptr<HotseatWidgetBackgroundAnimationMetricsReporter>
-      traslucent_background_metrics_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(HotseatWidget);
 };

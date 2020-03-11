@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -28,6 +28,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_context.h"
@@ -104,7 +105,7 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
 
     GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
     ContentSetting content_setting =
-        PermissionManager::Get(
+        PermissionManagerFactory::GetForProfile(
             Profile::FromBrowserContext(web_contents->GetBrowserContext()))
             ->GetPermissionStatus(
                 ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,

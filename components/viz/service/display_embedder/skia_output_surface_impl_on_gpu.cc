@@ -990,6 +990,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
   scoped_output_device_paint_.reset();
 
   if (output_surface_plane_) {
+    DCHECK(output_device_->IsPrimaryPlaneOverlay());
     output_device_->SchedulePrimaryPlane(output_surface_plane_.value());
     output_surface_plane_.reset();
   }
@@ -1646,7 +1647,7 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseFenceSyncAndPushTextureUpdates(
 }
 
 bool SkiaOutputSurfaceImplOnGpu::IsDisplayedAsOverlay() {
-  return gl_surface_ ? gl_surface_->IsSurfaceless() : false;
+  return output_device_->IsPrimaryPlaneOverlay();
 }
 
 #if defined(OS_WIN)

@@ -1,17 +1,18 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Helpers for processing conditionally enabled features in a mojom."""
 
 from . import ast
 from ..error import Error
+
 
 class EnableIfError(Error):
   """ Class for errors from ."""
 
   def __init__(self, filename, message, lineno=None):
     Error.__init__(self, filename, message, lineno=lineno, addenda=None)
+
 
 def _IsEnabled(definition, enabled_features):
   """Returns true if a definition is enabled.
@@ -28,9 +29,10 @@ def _IsEnabled(definition, enabled_features):
   for a in definition.attribute_list:
     if a.key == 'EnableIf':
       if already_defined:
-        raise EnableIfError(definition.filename,
-          "EnableIf attribute may only be defined once per field.",
-          definition.lineno)
+        raise EnableIfError(
+            definition.filename,
+            "EnableIf attribute may only be defined once per field.",
+            definition.lineno)
       already_defined = True
 
   for attribute in definition.attribute_list:
@@ -69,12 +71,12 @@ def _FilterDefinition(definition, enabled_features):
 def RemoveDisabledDefinitions(mojom, enabled_features):
   """Removes conditionally disabled definitions from a Mojom node."""
   mojom.import_list = ast.ImportList([
-    imported_file for imported_file in mojom.import_list
+      imported_file for imported_file in mojom.import_list
       if _IsEnabled(imported_file, enabled_features)
   ])
   mojom.definition_list = [
       definition for definition in mojom.definition_list
-          if _IsEnabled(definition, enabled_features)
+      if _IsEnabled(definition, enabled_features)
   ]
   for definition in mojom.definition_list:
     _FilterDefinition(definition, enabled_features)

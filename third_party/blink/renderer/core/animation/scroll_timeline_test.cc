@@ -157,11 +157,74 @@ TEST_F(ScrollTimelineTest,
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
   bool current_time_is_null = false;
-  scrollable_area->SetScrollOffset(ScrollOffset(0, 50),
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
+  EXPECT_EQ(scroll_timeline->phase(), "before");
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_TRUE(current_time_is_null);
   EXPECT_TRUE(scroll_timeline->IsActive());
+
+  current_time_is_null = false;
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 60),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  EXPECT_EQ(scroll_timeline->phase(), "before");
+  scroll_timeline->currentTime(current_time_is_null);
+  EXPECT_TRUE(current_time_is_null);
+  EXPECT_TRUE(scroll_timeline->IsActive());
+
+  current_time_is_null = false;
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  EXPECT_EQ(scroll_timeline->phase(), "after");
+  scroll_timeline->currentTime(current_time_is_null);
+  EXPECT_TRUE(current_time_is_null);
+  EXPECT_TRUE(scroll_timeline->IsActive());
+}
+
+TEST_F(ScrollTimelineTest, PhasesAreCorrectWhenUsingOffsets) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 100px; height: 100px; }
+      #spacer { height: 1000px; }
+    </style>
+    <div id='scroller'>
+      <div id ='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  ASSERT_TRUE(scroller);
+  ASSERT_TRUE(scroller->HasOverflowClip());
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  ASSERT_TRUE(scrollable_area);
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(GetElementById("scroller"));
+  options->setStartScrollOffset("10px");
+  options->setEndScrollOffset("90px");
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+
+  EXPECT_EQ(scroll_timeline->phase(), "before");
+
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 10),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  EXPECT_EQ(scroll_timeline->phase(), "active");
+
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 50),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  EXPECT_EQ(scroll_timeline->phase(), "active");
+
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 90),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  EXPECT_EQ(scroll_timeline->phase(), "after");
+
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  EXPECT_EQ(scroll_timeline->phase(), "after");
 }
 
 TEST_F(ScrollTimelineTest,

@@ -149,7 +149,6 @@
         <meta-data android:name="org.chromium.webapk.shell_apk.iconUrlsAndIconMurmur2Hashes" android:value="{{{icon_urls_and_icon_murmur2_hashes}}}" />
 
         <meta-data android:name="org.chromium.webapk.shell_apk.webManifestUrl" android:value="{{{web_manifest_url}}}" />
-        {{#badge_icon_id}}<meta-data android:name="org.chromium.webapk.shell_apk.badgeIconId" android:resource="{{{badge_icon_id}}}" />{{/badge_icon_id}}
         <service
             android:name="org.chromium.webapk.shell_apk.WebApkServiceFactory"
             android:exported="true"

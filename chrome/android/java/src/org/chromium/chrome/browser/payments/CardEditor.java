@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel.EditorVa
 import org.chromium.chrome.browser.autofill.prefeditor.EditorModel;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.DropdownKeyValue;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -91,9 +92,6 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
     /** The dropdown key that triggers the address editor to add a new billing address. */
     private static final String BILLING_ADDRESS_ADD_NEW = "add";
-
-    /** The shared preference for the 'save card to device' checkbox status. */
-    private static final String CHECK_SAVE_CARD_TO_DEVICE = "check_save_card_to_device";
 
     /** The web contents where the web payments API is invoked. */
     private final WebContents mWebContents;
@@ -765,7 +763,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         if (mSaveCardCheckbox == null) {
             mSaveCardCheckbox = EditorFieldModel.createCheckbox(
                     mContext.getString(R.string.payments_save_card_to_device_checkbox),
-                    CHECK_SAVE_CARD_TO_DEVICE);
+                    ChromePreferenceKeys.PAYMENTS_CHECK_SAVE_CARD_TO_DEVICE);
         }
         editor.addField(mSaveCardCheckbox);
     }

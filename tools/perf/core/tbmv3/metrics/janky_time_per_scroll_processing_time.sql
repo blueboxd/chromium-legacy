@@ -289,7 +289,7 @@ CREATE TABLE janky_time_per_scroll_processing_time AS
       COALESCE(totalProcessingNanos, 0) / 1000000
     FROM JankyNanosPerScrollNanosMaybeNull) AS processingMillis,
     (SELECT
-      COALESCE(numJankyUpdates, 0) / 1000000
+      COALESCE(numJankyUpdates, 0)
     FROM JankyNanosPerScrollNanosMaybeNull) AS numJankyUpdates;
 
 -- Specify how to fill the metrics proto properly.

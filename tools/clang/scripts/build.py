@@ -475,8 +475,6 @@ def main():
       '-DCOMPILER_RT_USE_LIBCXX=NO',
       # Don't run Go bindings tests; PGO makes them confused.
       '-DLLVM_INCLUDE_GO_TESTS=OFF',
-      # TODO(b/148147812) Goma client doesn't handle in-process cc1.
-      '-DCLANG_SPAWN_CC1=ON',
   ]
 
   if args.gcc_toolchain:

@@ -18,7 +18,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
-#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
@@ -30,6 +30,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/permissions/chooser_context_base.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -605,8 +606,9 @@ ContentSetting GetContentSettingForOrigin(
       CONTENT_SETTING_DEFAULT,
       permissions::PermissionStatusSource::UNSPECIFIED);
   if (permissions::PermissionUtil::IsPermission(content_type)) {
-    result = PermissionManager::Get(profile)->GetPermissionStatus(
-        content_type, origin, origin);
+    result =
+        PermissionManagerFactory::GetForProfile(profile)->GetPermissionStatus(
+            content_type, origin, origin);
   } else {
     DCHECK(value.get());
     DCHECK_EQ(base::Value::Type::INTEGER, value->type());

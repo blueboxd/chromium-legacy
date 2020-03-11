@@ -25,6 +25,12 @@ int InterpolateSize(MinimumFlexSizeRule minimum_size_rule,
                     int minimum_size,
                     int preferred_size,
                     int available_size) {
+  // A view may (mistakenly) report a minimum size larger than its preferred
+  // size. While in principle this shouldn't happen, by the time we've gotten
+  // here it's better to simply make sure the minimum and preferred don't
+  // cross.
+  minimum_size = std::min(minimum_size, preferred_size);
+
   if (available_size < minimum_size) {
     switch (minimum_size_rule) {
       case MinimumFlexSizeRule::kScaleToZero:

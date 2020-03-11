@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -626,7 +627,7 @@ TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
           .GetFrame()
           ->GetEventHandler()
           .SelectCursor(location, result)
-          .GetCursor()
+          .value()
           .GetType(),
       ui::mojom::CursorType::kHand);  // A hand signals ability to navigate.
 }
@@ -649,7 +650,7 @@ TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
                 .GetFrame()
                 ->GetEventHandler()
                 .SelectCursor(location, result)
-                .GetCursor()
+                .value()
                 .GetType(),
             ui::mojom::CursorType::kIBeam);  // An I-beam signals editability.
 }
@@ -668,7 +669,7 @@ TEST_F(EventHandlerTest, CursorForVerticalResizableTextArea) {
                 .GetFrame()
                 ->GetEventHandler()
                 .SelectCursor(location, result)
-                .GetCursor()
+                .value()
                 .GetType(),
             // A north-south resize signals vertical resizability.
             ui::mojom::CursorType::kNorthSouthResize);
@@ -688,7 +689,7 @@ TEST_F(EventHandlerTest, CursorForHorizontalResizableTextArea) {
                 .GetFrame()
                 ->GetEventHandler()
                 .SelectCursor(location, result)
-                .GetCursor()
+                .value()
                 .GetType(),
             // An east-west resize signals horizontal resizability.
             ui::mojom::CursorType::kEastWestResize);
@@ -708,7 +709,7 @@ TEST_F(EventHandlerTest, CursorForResizableTextArea) {
                 .GetFrame()
                 ->GetEventHandler()
                 .SelectCursor(location, result)
-                .GetCursor()
+                .value()
                 .GetType(),
             // An south-east resize signals both horizontal and
             // vertical resizability.
@@ -730,7 +731,7 @@ TEST_F(EventHandlerTest, CursorForRtlResizableTextArea) {
                 .GetFrame()
                 ->GetEventHandler()
                 .SelectCursor(location, result)
-                .GetCursor()
+                .value()
                 .GetType(),
             // An south-west resize signals both horizontal and
             // vertical resizability when direction is RTL.
@@ -754,7 +755,7 @@ TEST_F(EventHandlerTest, CursorForInlineVerticalWritingMode) {
                 .GetFrame()
                 ->GetEventHandler()
                 .SelectCursor(location, result)
-                .GetCursor()
+                .value()
                 .GetType(),
             ui::mojom::CursorType::kSouthEastResize);
 }
@@ -776,7 +777,7 @@ TEST_F(EventHandlerTest, CursorForBlockVerticalWritingMode) {
                 .GetFrame()
                 ->GetEventHandler()
                 .SelectCursor(location, result)
-                .GetCursor()
+                .value()
                 .GetType(),
             ui::mojom::CursorType::kSouthEastResize);
 }

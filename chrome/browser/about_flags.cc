@@ -3830,6 +3830,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"remote-copy-receiver", flag_descriptions::kRemoteCopyReceiverName,
      flag_descriptions::kRemoteCopyReceiverDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(kRemoteCopyReceiver)},
+    {"remote-copy-progress-notification",
+     flag_descriptions::kRemoteCopyProgressNotificationName,
+     flag_descriptions::kRemoteCopyProgressNotificationDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(kRemoteCopyProgressNotification)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 

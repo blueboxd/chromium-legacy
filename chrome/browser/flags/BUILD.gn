@@ -10,6 +10,7 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/flags/CachedFeatureFlags.java",
     "android/java/src/org/chromium/chrome/browser/flags/CachedFieldTrialParameter.java",
     "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java",
+    "android/java/src/org/chromium/chrome/browser/flags/DoubleCachedFieldTrialParameter.java",
     "android/java/src/org/chromium/chrome/browser/flags/IntCachedFieldTrialParameter.java",
     "android/java/src/org/chromium/chrome/browser/flags/StringCachedFieldTrialParameter.java",
   ]

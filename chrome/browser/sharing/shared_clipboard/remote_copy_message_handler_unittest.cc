@@ -4,11 +4,15 @@
 
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_message_handler.h"
 
+#include <map>
+#include <string>
+
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/sharing/proto/remote_copy_message.pb.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
@@ -17,7 +21,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/protocol/sync_enums.pb.h"
+#include "content/public/test/url_loader_interceptor.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 namespace {
@@ -26,10 +35,14 @@ const char kText[] = "clipboard text";
 const char kEmptyDeviceName[] = "";
 const char kDeviceNameInMessage[] = "DeviceNameInMessage";
 const char kHistogramName[] = "Sharing.RemoteCopyHandleMessageResult";
+const char kTestImageUrl[] = "https://foo.com/image.png";
 
 class RemoteCopyMessageHandlerTest : public SharedClipboardTestBase {
  public:
-  RemoteCopyMessageHandlerTest() = default;
+  RemoteCopyMessageHandlerTest()
+      : url_loader_interceptor_(
+            base::BindRepeating(&RemoteCopyMessageHandlerTest::HandleRequest,
+                                base::Unretained(this))) {}
 
   ~RemoteCopyMessageHandlerTest() override = default;
 
@@ -38,12 +51,25 @@ class RemoteCopyMessageHandlerTest : public SharedClipboardTestBase {
     message_handler_ = std::make_unique<RemoteCopyMessageHandler>(&profile_);
   }
 
-  chrome_browser_sharing::SharingMessage CreateMessage(std::string guid,
-                                                       std::string device_name,
-                                                       std::string text) {
+  chrome_browser_sharing::SharingMessage CreateMessageWithText(
+      const std::string& guid,
+      const std::string& device_name,
+      const std::string& text) {
     chrome_browser_sharing::SharingMessage message =
         SharedClipboardTestBase::CreateMessage(guid, device_name);
     message.mutable_remote_copy_message()->set_text(text);
+    return message;
+  }
+
+  chrome_browser_sharing::SharingMessage CreateMessageWithImage(
+      const std::string& image_url) {
+    image_url_ = image_url;
+    image_ = CreateTestSkBitmap(/*w=*/10, /*h=*/20, SK_ColorRED);
+
+    chrome_browser_sharing::SharingMessage message =
+        SharedClipboardTestBase::CreateMessage(base::GenerateGUID(),
+                                               kDeviceNameInMessage);
+    message.mutable_remote_copy_message()->set_image_url(image_url);
     return message;
   }
 
@@ -56,8 +82,36 @@ class RemoteCopyMessageHandlerTest : public SharedClipboardTestBase {
   }
 
  protected:
+  // Intercepts network requests.
+  bool HandleRequest(content::URLLoaderInterceptor::RequestParams* params) {
+    if (!image_ || params->url_request.url != GURL(image_url_))
+      return false;
+
+    content::URLLoaderInterceptor::WriteResponse(
+        std::string(), SkBitmapToPNGString(*image_), params->client.get());
+    return true;
+  }
+
+  static SkBitmap CreateTestSkBitmap(int w, int h, SkColor color) {
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(w, h);
+    bitmap.eraseColor(color);
+    return bitmap;
+  }
+
+  static std::string SkBitmapToPNGString(const SkBitmap& bitmap) {
+    std::vector<unsigned char> png_data;
+    gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, /*discard_transparency=*/false,
+                                      &png_data);
+    return std::string(png_data.begin(), png_data.end());
+  }
+
   std::unique_ptr<RemoteCopyMessageHandler> message_handler_;
   base::HistogramTester histograms_;
+  content::URLLoaderInterceptor url_loader_interceptor_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
+  std::string image_url_;
+  base::Optional<SkBitmap> image_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCopyMessageHandlerTest);
 };
@@ -66,7 +120,7 @@ class RemoteCopyMessageHandlerTest : public SharedClipboardTestBase {
 
 TEST_F(RemoteCopyMessageHandlerTest, NotificationWithoutDeviceName) {
   message_handler_->OnMessage(
-      CreateMessage(base::GenerateGUID(), kEmptyDeviceName, kText),
+      CreateMessageWithText(base::GenerateGUID(), kEmptyDeviceName, kText),
       base::DoNothing());
   EXPECT_EQ(GetClipboardText(), kText);
   EXPECT_EQ(
@@ -79,7 +133,7 @@ TEST_F(RemoteCopyMessageHandlerTest, NotificationWithoutDeviceName) {
 
 TEST_F(RemoteCopyMessageHandlerTest, NotificationWithDeviceName) {
   message_handler_->OnMessage(
-      CreateMessage(base::GenerateGUID(), kDeviceNameInMessage, kText),
+      CreateMessageWithText(base::GenerateGUID(), kDeviceNameInMessage, kText),
       base::DoNothing());
   EXPECT_EQ(GetClipboardText(), kText);
   EXPECT_EQ(l10n_util::GetStringFUTF16(
@@ -107,4 +161,93 @@ TEST_F(RemoteCopyMessageHandlerTest, IsImageSourceAllowed) {
       IsImageSourceAllowed(image_url, "https://foo.com,https://bar.com"));
   EXPECT_TRUE(
       IsImageSourceAllowed(image_url, "https://bar.com,https://foo.com"));
+}
+
+TEST_F(RemoteCopyMessageHandlerTest,
+       NoProgressNotificationWithoutProgressFlag) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{kRemoteCopyReceiver,
+        {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}}},
+      {kRemoteCopyProgressNotification});
+
+  message_handler_->OnMessage(CreateMessageWithImage(kTestImageUrl),
+                              base::DoNothing());
+
+  EXPECT_FALSE(HasProgressNotification());
+}
+
+TEST_F(RemoteCopyMessageHandlerTest, ProgressNotificationWithProgressFlag) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},
+       {kRemoteCopyProgressNotification, {}}},
+      {});
+
+  message_handler_->OnMessage(CreateMessageWithImage(kTestImageUrl),
+                              base::DoNothing());
+
+  ASSERT_TRUE(HasProgressNotification());
+  auto notification = GetProgressNotification();
+
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_IMAGE_CONTENT,
+                base::ASCIIToUTF16(kDeviceNameInMessage)),
+            notification.title());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_SHARING_REMOTE_COPY_NOTIFICATION_PREPARING_DOWNLOAD),
+            notification.progress_status());
+  EXPECT_EQ(-1, notification.progress());
+}
+
+TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithoutProgressFlag) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{kRemoteCopyReceiver,
+        {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}}},
+      {kRemoteCopyProgressNotification});
+
+  message_handler_->OnMessage(CreateMessageWithImage(kTestImageUrl),
+                              base::DoNothing());
+
+  // There should not be a progress notification without the flag set.
+  EXPECT_FALSE(HasProgressNotification());
+
+  // Let tasks run until the image is decoded and written to the clipboard.
+  task_environment_.RunUntilIdle();
+
+  // Expect the image to be in the clipboard now.
+  SkBitmap image = GetClipboardImage();
+  EXPECT_TRUE(gfx::BitmapsAreEqual(*image_, image));
+
+  // Expect an image notification showing the image.
+  auto notification = GetImageNotification();
+  EXPECT_FALSE(notification.image().IsEmpty());
+}
+
+TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithProgressFlag) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},
+       {kRemoteCopyProgressNotification, {}}},
+      {});
+
+  message_handler_->OnMessage(CreateMessageWithImage(kTestImageUrl),
+                              base::DoNothing());
+
+  // There should be a progress notification with the flag set.
+  EXPECT_TRUE(HasProgressNotification());
+
+  // Let tasks run until the image is decoded and written to the clipboard.
+  // TODO(knollr): Test updates to the progress notitification during the
+  // download.
+  task_environment_.RunUntilIdle();
+
+  // Expect the image to be in the clipboard now.
+  SkBitmap image = GetClipboardImage();
+  EXPECT_TRUE(gfx::BitmapsAreEqual(*image_, image));
+
+  // Expect an image notification showing the image.
+  auto notification = GetImageNotification();
+  EXPECT_FALSE(notification.image().IsEmpty());
 }

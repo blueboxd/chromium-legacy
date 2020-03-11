@@ -104,7 +104,6 @@ display log messages to the `LogCat` pane.
 <classpathentry kind="src" path="content/shell/android/java/src"/>
 <classpathentry kind="src" path="content/shell/android/shell_apk/src"/>
 <classpathentry kind="src" path="content/shell/android/javatests/src"/>
-<classpathentry kind="src" path="content/shell/android/linker_test_apk/src"/>
 <classpathentry kind="lib" path="third_party/android_sdk/public/platforms/android-27/data/layoutlib.jar"/>
 <classpathentry kind="lib" path="third_party/android_sdk/public/platforms/android-27/android.jar"/>
 <classpathentry kind="output" path="out/bin"/>

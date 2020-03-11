@@ -163,8 +163,6 @@ jumbo_static_library("safe_browsing") {
         "download_protection/download_feedback.h",
         "download_protection/download_feedback_service.cc",
         "download_protection/download_feedback_service.h",
-        "download_protection/download_item_request.cc",
-        "download_protection/download_item_request.h",
         "download_protection/download_protection_service.cc",
         "download_protection/download_protection_service.h",
         "download_protection/download_protection_util.cc",

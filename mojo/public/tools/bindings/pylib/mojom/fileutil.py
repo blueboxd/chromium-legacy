@@ -5,6 +5,7 @@
 import errno
 import os.path
 
+
 def EnsureDirectoryExists(path, always_try_to_create=False):
   """A wrapper for os.makedirs that does not error if the directory already
   exists. A different process could be racing to create this directory."""

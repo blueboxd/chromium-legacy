@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <vector>
 
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace webrtc {
 namespace video_coding {
@@ -30,7 +30,7 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
  public:
   explicit RTCEncodedVideoFrame(
       std::unique_ptr<webrtc::video_coding::EncodedFrame> delegate,
-      std::vector<uint8_t> generic_descriptor);
+      Vector<uint8_t> generic_descriptor);
 
   // rtc_encoded_video_frame.idl implementation.
   String type() const;
@@ -51,7 +51,7 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
 
  private:
   std::unique_ptr<webrtc::video_coding::EncodedFrame> delegate_;
-  std::vector<uint8_t> additional_data_vector_;
+  Vector<uint8_t> additional_data_vector_;
   // Exposes encoded frame data from |delegate_|.
   mutable Member<DOMArrayBuffer> frame_data_;
   // Exposes data from |additional_data_vector_|.

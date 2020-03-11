@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/chrome_permissions_client.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -12,7 +13,9 @@
 #include "chrome/browser/permissions/contextual_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/url_constants.h"
+#include "components/permissions/features.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "extensions/common/constants.h"
 #include "url/origin.h"
@@ -135,6 +138,30 @@ bool ChromePermissionsClient::CanBypassEmbeddingOriginCheck(
   // embedded in non-secure contexts (https://crbug.com/530507).
   return embedding_origin == GURL(chrome::kChromeUINewTabURL).GetOrigin() ||
          requesting_origin.SchemeIs(extensions::kExtensionScheme);
+}
+
+base::Optional<GURL> ChromePermissionsClient::OverrideCanonicalOrigin(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  if (embedding_origin.GetOrigin() ==
+      GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
+    if (requesting_origin.GetOrigin() ==
+        GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin()) {
+      return GURL(UIThreadSearchTermsData().GoogleBaseURLValue()).GetOrigin();
+    }
+    return requesting_origin;
+  }
+
+  // Note that currently chrome extensions are allowed to use permissions even
+  // when in embedded in non-secure contexts. This is unfortunate and we
+  // should remove this at some point, but for now always use the requesting
+  // origin for embedded extensions. https://crbug.com/530507.
+  if (base::FeatureList::IsEnabled(
+          permissions::features::kPermissionDelegation) &&
+      requesting_origin.SchemeIs(extensions::kExtensionScheme)) {
+    return requesting_origin;
+  }
+  return base::nullopt;
 }
 
 #if defined(OS_ANDROID)

@@ -37,6 +37,14 @@ class SchemaOrgExtractorTest : public testing::Test {
 
   PropertyPtr CreateLongProperty(const std::string& name, const int64_t& value);
 
+  PropertyPtr CreateDoubleProperty(const std::string& name, double value);
+
+  PropertyPtr CreateDateTimeProperty(const std::string& name,
+                                     const base::Time& value);
+
+  PropertyPtr CreateTimeProperty(const std::string& name,
+                                 const base::TimeDelta& value);
+
   PropertyPtr CreateEntityProperty(const std::string& name, EntityPtr value);
 };
 
@@ -69,6 +77,36 @@ PropertyPtr SchemaOrgExtractorTest::CreateLongProperty(const std::string& name,
   return property;
 }
 
+PropertyPtr SchemaOrgExtractorTest::CreateDoubleProperty(
+    const std::string& name,
+    double value) {
+  PropertyPtr property = Property::New();
+  property->name = name;
+  property->values = Values::New();
+  property->values->double_values.push_back(value);
+  return property;
+}
+
+PropertyPtr SchemaOrgExtractorTest::CreateDateTimeProperty(
+    const std::string& name,
+    const base::Time& value) {
+  PropertyPtr property = Property::New();
+  property->name = name;
+  property->values = Values::New();
+  property->values->date_time_values.push_back(value);
+  return property;
+}
+
+PropertyPtr SchemaOrgExtractorTest::CreateTimeProperty(
+    const std::string& name,
+    const base::TimeDelta& value) {
+  PropertyPtr property = Property::New();
+  property->name = name;
+  property->values = Values::New();
+  property->values->time_values.push_back(value);
+  return property;
+}
+
 PropertyPtr SchemaOrgExtractorTest::CreateEntityProperty(
     const std::string& name,
     EntityPtr value) {
@@ -95,7 +133,7 @@ TEST_F(SchemaOrgExtractorTest, Basic) {
   EXPECT_EQ(expected, extracted);
 }
 
-TEST_F(SchemaOrgExtractorTest, booleanValue) {
+TEST_F(SchemaOrgExtractorTest, BooleanValue) {
   EntityPtr extracted =
       Extract("{\"@type\": \"VideoObject\", \"requiresSubscription\": true }");
   ASSERT_FALSE(extracted.is_null());
@@ -108,7 +146,7 @@ TEST_F(SchemaOrgExtractorTest, booleanValue) {
   EXPECT_EQ(expected, extracted);
 }
 
-TEST_F(SchemaOrgExtractorTest, longValue) {
+TEST_F(SchemaOrgExtractorTest, LongValue) {
   EntityPtr extracted =
       Extract("{\"@type\": \"VideoObject\", \"position\": 111 }");
   ASSERT_FALSE(extracted.is_null());
@@ -120,14 +158,75 @@ TEST_F(SchemaOrgExtractorTest, longValue) {
   EXPECT_EQ(expected, extracted);
 }
 
-TEST_F(SchemaOrgExtractorTest, doubleValue) {
+TEST_F(SchemaOrgExtractorTest, DoubleValue) {
   EntityPtr extracted =
-      Extract("{\"@type\": \"VideoObject\", \"width\": 111.5 }");
+      Extract("{\"@type\": \"VideoObject\", \"copyrightYear\": 1999.5 }");
   ASSERT_FALSE(extracted.is_null());
 
   EntityPtr expected = Entity::New();
   expected->type = "VideoObject";
-  expected->properties.push_back(CreateStringProperty("width", "111.5"));
+  expected->properties.push_back(CreateDoubleProperty("copyrightYear", 1999.5));
+
+  EXPECT_EQ(expected, extracted);
+}
+
+TEST_F(SchemaOrgExtractorTest, StringValueRepresentingDouble) {
+  EntityPtr extracted =
+      Extract("{\"@type\": \"VideoObject\",\"copyrightYear\": \"1999.5\"}");
+
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+  expected->properties.push_back(CreateDoubleProperty("copyrightYear", 1999.5));
+
+  EXPECT_EQ(expected, extracted);
+}
+
+TEST_F(SchemaOrgExtractorTest, StringValueRepresentingTime) {
+  EntityPtr extracted =
+      Extract("{\"@type\": \"VideoObject\",\"startTime\": \"05:30:00\"}");
+
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+  expected->properties.push_back(CreateTimeProperty(
+      "startTime", base::TimeDelta::FromMinutes(60 * 5 + 30)));
+
+  EXPECT_EQ(expected, extracted);
+}
+
+// startTime can be a DateTime or a Time. If it parses as DateTime successfully,
+// we should use that type.
+TEST_F(SchemaOrgExtractorTest, StringValueRepresentingDateTimeOrTime) {
+  EntityPtr extracted = Extract(
+      "{\"@type\": \"VideoObject\",\"startTime\": "
+      "\"2012-12-12T00:00:00 GMT\"}");
+
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+  expected->properties.push_back(CreateDateTimeProperty(
+      "startTime", base::Time::FromDeltaSinceWindowsEpoch(
+                       base::TimeDelta::FromMilliseconds(12999744000000))));
+
+  EXPECT_EQ(expected, extracted);
+}
+
+TEST_F(SchemaOrgExtractorTest, StringValueRepresentingDateTime) {
+  EntityPtr extracted = Extract(
+      "{\"@type\": \"VideoObject\",\"dateCreated\": "
+      "\"2012-12-12T00:00:00 GMT\"}");
+
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+  expected->properties.push_back(CreateDateTimeProperty(
+      "dateCreated", base::Time::FromDeltaSinceWindowsEpoch(
+                         base::TimeDelta::FromMilliseconds(12999744000000))));
 
   EXPECT_EQ(expected, extracted);
 }
@@ -279,27 +378,43 @@ TEST_F(SchemaOrgExtractorTest, TruncateTooManyValuesInField) {
   EXPECT_EQ(expected, extracted);
 }
 
-TEST_F(SchemaOrgExtractorTest, truncateTooManyFields) {
-  std::stringstream tooManyFields;
-  for (int i = 0; i < 26; ++i) {
-    tooManyFields << "\"" << i << "\": \"a\"";
-    if (i != 25) {
-      tooManyFields << ",";
-    }
-  }
-  EntityPtr extracted =
-      Extract("{\"@type\": \"VideoObject\"," + tooManyFields.str() + "}");
+TEST_F(SchemaOrgExtractorTest, TruncateTooManyProperties) {
+  // Create an entity with more than the supported number of properties. All the
+  // properties must be valid to be included. 26 properties below, should
+  // truncate to 25.
+  EntityPtr extracted = Extract(
+      "{\"@type\": \"VideoObject\","
+      "\"name\": \"a video!\","
+      "\"transcript\":\"a short movie\","
+      "\"videoFrameSize\":\"1200x800\","
+      "\"videoQuality\":\"high\","
+      "\"bitrate\":\"24mbps\","
+      "\"contentSize\":\"8MB\","
+      "\"encodingFormat\":\"H264\","
+      "\"accessMode\":\"visual\","
+      "\"accessibilitySummary\":\"short description\","
+      "\"alternativeHeadline\":\"OR other title\","
+      "\"award\":\"best picture\","
+      "\"educationalUse\":\"assignment\","
+      "\"headline\":\"headline\","
+      "\"interactivityType\":\"active\","
+      "\"keywords\":\"video\","
+      "\"learningResourceType\":\"presentation\","
+      "\"material\":\"film\","
+      "\"mentions\":\"other work\","
+      "\"schemaVersion\":\"http://schema.org/version/2.0/\","
+      "\"text\":\"a short work\","
+      "\"typicalAgeRange\":\"5-\","
+      "\"version\":\"5\","
+      "\"alternateName\":\"other title\","
+      "\"description\":\"a short description\","
+      "\"disambiguatingDescription\":\"clarifying point\","
+      "\"identifier\":\"ID12345\""
+      "}");
+
   ASSERT_FALSE(extracted.is_null());
 
-  EntityPtr expected = Entity::New();
-  expected->type = "VideoObject";
-
-  for (int i = 0; i < 25; ++i) {
-    expected->properties.push_back(
-        CreateStringProperty(base::NumberToString(i), "a"));
-  }
-
-  EXPECT_EQ(expected->properties.size(), extracted->properties.size());
+  EXPECT_EQ(25u, extracted->properties.size());
 }
 
 TEST_F(SchemaOrgExtractorTest, IgnorePropertyWithEmptyArray) {
@@ -326,12 +441,12 @@ TEST_F(SchemaOrgExtractorTest, IgnorePropertyWithNestedArray) {
 TEST_F(SchemaOrgExtractorTest, EnforceMaxNestingDepth) {
   EntityPtr extracted = Extract(
       "{\"@type\": \"VideoObject\", \"name\": \"a video!\","
-      "\"1\": {"
-      "  \"2\": {"
-      "    \"3\": {"
-      "      \"4\": {"
-      "        \"5\": {"
-      "          \"6\": 7"
+      "\"actor\": {"
+      "  \"address\": {"
+      "    \"addressCountry\": {"
+      "      \"containedInPlace\": {"
+      "        \"containedInPlace\": {"
+      "          \"name\": \"matroska\""
       "        }"
       "      }"
       "    }"
@@ -352,10 +467,14 @@ TEST_F(SchemaOrgExtractorTest, EnforceMaxNestingDepth) {
   EntityPtr entity4 = Entity::New();
   entity4->type = "Thing";
 
-  entity3->properties.push_back(CreateEntityProperty("4", std::move(entity4)));
-  entity2->properties.push_back(CreateEntityProperty("3", std::move(entity3)));
-  entity1->properties.push_back(CreateEntityProperty("2", std::move(entity2)));
-  expected->properties.push_back(CreateEntityProperty("1", std::move(entity1)));
+  entity3->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity4)));
+  entity2->properties.push_back(
+      CreateEntityProperty("addressCountry", std::move(entity3)));
+  entity1->properties.push_back(
+      CreateEntityProperty("address", std::move(entity2)));
+  expected->properties.push_back(
+      CreateEntityProperty("actor", std::move(entity1)));
   expected->properties.push_back(CreateStringProperty("name", "a video!"));
 
   EXPECT_EQ(expected, extracted);
@@ -364,11 +483,11 @@ TEST_F(SchemaOrgExtractorTest, EnforceMaxNestingDepth) {
 TEST_F(SchemaOrgExtractorTest, MaxNestingDepthWithTerminalProperty) {
   EntityPtr extracted = Extract(
       "{\"@type\": \"VideoObject\", \"name\": \"a video!\","
-      "\"1\": {"
-      "  \"2\": {"
-      "    \"3\": {"
-      "      \"4\": {"
-      "        \"5\": 6"
+      "\"actor\": {"
+      "  \"address\": {"
+      "    \"addressCountry\": {"
+      "      \"containedInPlace\": {"
+      "        \"name\": \"matroska\""
       "         }"
       "      }"
       "    }"
@@ -388,12 +507,16 @@ TEST_F(SchemaOrgExtractorTest, MaxNestingDepthWithTerminalProperty) {
   EntityPtr entity4 = Entity::New();
   entity4->type = "Thing";
 
-  entity4->properties.push_back(CreateLongProperty("5", 6));
-  entity3->properties.push_back(CreateEntityProperty("4", std::move(entity4)));
-  entity2->properties.push_back(CreateEntityProperty("3", std::move(entity3)));
-  entity1->properties.push_back(CreateEntityProperty("2", std::move(entity2)));
+  entity4->properties.push_back(CreateStringProperty("name", "matroska"));
+  entity3->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity4)));
+  entity2->properties.push_back(
+      CreateEntityProperty("addressCountry", std::move(entity3)));
+  entity1->properties.push_back(
+      CreateEntityProperty("address", std::move(entity2)));
 
-  expected->properties.push_back(CreateEntityProperty("1", std::move(entity1)));
+  expected->properties.push_back(
+      CreateEntityProperty("actor", std::move(entity1)));
   expected->properties.push_back(CreateStringProperty("name", "a video!"));
 
   EXPECT_EQ(expected, extracted);

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_video_stream_transformer.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
@@ -135,7 +136,8 @@ class RTCRtpReceiverImpl::RTCRtpReceiverInternal
  public:
   RTCRtpReceiverInternal(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-      RtpReceiverState state)
+      RtpReceiverState state,
+      bool force_encoded_video_insertable_streams)
       : native_peer_connection_(std::move(native_peer_connection)),
         main_task_runner_(state.main_task_runner()),
         signaling_task_runner_(state.signaling_task_runner()),
@@ -143,6 +145,12 @@ class RTCRtpReceiverImpl::RTCRtpReceiverInternal
         state_(std::move(state)) {
     DCHECK(native_peer_connection_);
     DCHECK(state_.is_initialized());
+    if (force_encoded_video_insertable_streams) {
+      transformer_ =
+          std::make_unique<RTCEncodedVideoStreamTransformer>(main_task_runner_);
+      webrtc_receiver_->SetDepacketizerToDecoderFrameTransformer(
+          transformer_->Delegate());
+    }
   }
 
   const RtpReceiverState& state() const {
@@ -189,6 +197,10 @@ class RTCRtpReceiverImpl::RTCRtpReceiverInternal
         blink::ToAbslOptional(delay_seconds));
   }
 
+  RTCEncodedVideoStreamTransformer* GetEncodedVideoStreamTransformer() const {
+    return transformer_.get();
+  }
+
  private:
   friend class WTF::ThreadSafeRefCounted<RTCRtpReceiverInternal,
                                          RTCRtpReceiverInternalTraits>;
@@ -214,6 +226,7 @@ class RTCRtpReceiverImpl::RTCRtpReceiverInternal
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner_;
   const scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver_;
+  std::unique_ptr<RTCEncodedVideoStreamTransformer> transformer_;
   RtpReceiverState state_;
 };
 
@@ -240,10 +253,12 @@ uintptr_t RTCRtpReceiverImpl::getId(
 
 RTCRtpReceiverImpl::RTCRtpReceiverImpl(
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-    RtpReceiverState state)
+    RtpReceiverState state,
+    bool force_encoded_video_insertable_streams)
     : internal_(base::MakeRefCounted<RTCRtpReceiverInternal>(
           std::move(native_peer_connection),
-          std::move(state))) {}
+          std::move(state),
+          force_encoded_video_insertable_streams)) {}
 
 RTCRtpReceiverImpl::RTCRtpReceiverImpl(const RTCRtpReceiverImpl& other)
     : internal_(other.internal_) {}
@@ -314,6 +329,11 @@ std::unique_ptr<webrtc::RtpParameters> RTCRtpReceiverImpl::GetParameters()
 void RTCRtpReceiverImpl::SetJitterBufferMinimumDelay(
     base::Optional<double> delay_seconds) {
   internal_->SetJitterBufferMinimumDelay(delay_seconds);
+}
+
+RTCEncodedVideoStreamTransformer*
+RTCRtpReceiverImpl::GetEncodedVideoStreamTransformer() const {
+  return internal_->GetEncodedVideoStreamTransformer();
 }
 
 RTCRtpReceiverOnlyTransceiver::RTCRtpReceiverOnlyTransceiver(

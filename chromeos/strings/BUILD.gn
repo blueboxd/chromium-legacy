@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//tools/grit/grit_rule.gni")
+import("//tools/grit/repack.gni")
 
 grit("strings") {
   source = "../chromeos_strings.grd"
@@ -63,4 +64,10 @@ grit("strings") {
     "chromeos_strings_zh-CN.pak",
     "chromeos_strings_zh-TW.pak",
   ]
+}
+
+repack("chromeos_test_strings") {
+  sources = [ "$root_gen_dir/chromeos/strings/chromeos_strings_en-US.pak" ]
+  output = "$root_out_dir/chromeos_test_strings.pak"
+  deps = [ ":strings" ]
 }

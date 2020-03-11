@@ -24,6 +24,8 @@
 
 namespace blink {
 
+class RTCEncodedVideoStreamTransformer;
+
 // This class represents the state of a receiver; a snapshot of what a
 // webrtc-layer receiver looked like when it was inspected on the signaling
 // thread such that this information can be moved to the main thread in a single
@@ -113,7 +115,8 @@ class MODULES_EXPORT RTCRtpReceiverImpl : public RTCRtpReceiverPlatform {
 
   RTCRtpReceiverImpl(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-      RtpReceiverState state);
+      RtpReceiverState state,
+      bool force_encoded_video_insertable_streams);
   RTCRtpReceiverImpl(const RTCRtpReceiverImpl& other);
   ~RTCRtpReceiverImpl() override;
 
@@ -135,6 +138,8 @@ class MODULES_EXPORT RTCRtpReceiverImpl : public RTCRtpReceiverPlatform {
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
   void SetJitterBufferMinimumDelay(
       base::Optional<double> delay_seconds) override;
+  RTCEncodedVideoStreamTransformer* GetEncodedVideoStreamTransformer()
+      const override;
 
  private:
   class RTCRtpReceiverInternal;

@@ -13,6 +13,26 @@ namespace ui {
 
 class AnimationMetricsReporter;
 
+// This is the interface to send animation smoothness numbers to a given
+// AnimationMetricsReporter.
+//
+// Classes that run animations (e.g. ui::LayerAnimationSequence,
+// views::CompositorAnimationRunner) should own one of these objects and pass
+// the values required to calculate animation smoothness when an animation
+// starts and ends.
+//
+// To use, when your animation starts:
+//   animation_metrics_recorder_->OnAnimationStart(frame, start_time,
+//       expected_duration);
+// and when it ends:
+//   animation metrics_recorder_->OnAnimationEnd(frame, refresh_rate);
+// and your attached AnimationMetricsReporter will report the calculated
+// smoothness. Note that if the animator is attached or detached during an
+// animation, this class will have to be notified.
+//
+// Unless implementing a complex custom animator, client code should just need
+// to supply an AnimationMetricsReporter to an animations class that already
+// owns an instance of this class.
 class COMPOSITOR_EXPORT AnimationMetricsRecorder {
  public:
   explicit AnimationMetricsRecorder(AnimationMetricsReporter* reporter);

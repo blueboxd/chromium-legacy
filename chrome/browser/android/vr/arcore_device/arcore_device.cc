@@ -19,9 +19,7 @@
 #include "chrome/browser/android/vr/arcore_device/arcore_java_utils.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_session_utils.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
-#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
-#include "components/permissions/permission_result.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/display/display.h"
 

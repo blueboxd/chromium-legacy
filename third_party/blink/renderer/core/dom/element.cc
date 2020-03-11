@@ -3710,7 +3710,7 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
   DCHECK(!shadow_root_init_dict->hasMode() || !GetShadowRoot());
   bool delegates_focus = shadow_root_init_dict->hasDelegatesFocus() &&
                          shadow_root_init_dict->delegatesFocus();
-  bool manual_slotting = shadow_root_init_dict->slotting() == "manual";
+  bool manual_slotting = shadow_root_init_dict->slotAssignment() == "manual";
   return &AttachShadowRootInternal(type, delegates_focus, manual_slotting);
 }
 
@@ -3740,8 +3740,9 @@ ShadowRoot& Element::AttachShadowRootInternal(ShadowRootType type,
   GetDocument().SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV1);
   ShadowRoot& shadow_root = CreateAndAttachShadowRoot(type);
   shadow_root.SetDelegatesFocus(delegates_focus);
-  shadow_root.SetSlotting(manual_slotting ? ShadowRootSlotting::kManual
-                                          : ShadowRootSlotting::kAuto);
+  shadow_root.SetSlotAssignmentMode(manual_slotting
+                                        ? SlotAssignmentMode::kManual
+                                        : SlotAssignmentMode::kAuto);
   return shadow_root;
 }
 

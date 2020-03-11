@@ -76,6 +76,16 @@ void NotifyWorkerReadyForInspectionOnUI(
       std::move(host_receiver));
 }
 
+void NotifyUpdateCrossOriginEmbedderPolicyOnUI(
+    int worker_process_id,
+    int worker_route_id,
+    network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ServiceWorkerDevToolsManager::GetInstance()->UpdateCrossOriginEmbedderPolicy(
+      worker_process_id, worker_route_id,
+      std::move(cross_origin_embedder_policy));
+}
+
 void NotifyWorkerDestroyedOnUI(int worker_process_id, int worker_route_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceWorkerDevToolsManager::GetInstance()->WorkerDestroyed(
@@ -197,8 +207,8 @@ void SetupOnUIThread(
   ServiceWorkerDevToolsManager::GetInstance()->WorkerCreated(
       process_id, routing_id, context, weak_context,
       params->service_worker_version_id, params->script_url, params->scope,
-      params->is_installed, &params->devtools_worker_token,
-      &params->wait_for_debugger);
+      params->is_installed, cross_origin_embedder_policy,
+      &params->devtools_worker_token, &params->wait_for_debugger);
   params->service_worker_route_id = routing_id;
   // Create DevToolsProxy here to ensure that the WorkerCreated() call is
   // balanced by DevToolsProxy's destructor calling WorkerDestroyed().
@@ -337,6 +347,21 @@ class EmbeddedWorkerInstance::DevToolsProxy {
           base::BindOnce(NotifyWorkerReadyForInspectionOnUI, process_id_,
                          agent_route_id_, std::move(agent_remote),
                          std::move(host_receiver)));
+    }
+  }
+
+  void NotifyUpdateCrossOriginEmbedderPolicy(
+      network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+      NotifyUpdateCrossOriginEmbedderPolicyOnUI(
+          process_id_, agent_route_id_,
+          std::move(cross_origin_embedder_policy));
+    } else {
+      ui_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(NotifyUpdateCrossOriginEmbedderPolicyOnUI,
+                                    process_id_, agent_route_id_,
+                                    std::move(cross_origin_embedder_policy)));
     }
   }
 
@@ -906,12 +931,18 @@ void EmbeddedWorkerInstance::OnScriptLoaded() {
   if (!inflight_start_task_)
     return;
 
+  // COEP could be nullopt if it's in unittests.
+  // TODO(shimazu): Set COEP in the failing unit tests.
+  if (devtools_proxy_ && owner_version_->cross_origin_embedder_policy()) {
+    devtools_proxy_->NotifyUpdateCrossOriginEmbedderPolicy(
+        owner_version_->cross_origin_embedder_policy().value());
+  }
+
   // Renderer side has started to launch the worker thread.
   starting_phase_ = SCRIPT_LOADED;
   owner_version_->OnMainScriptLoaded();
 
   BindCacheStorageInternal();
-  // |this| may be destroyed by the callback.
 }
 
 void EmbeddedWorkerInstance::OnWorkerVersionInstalled() {

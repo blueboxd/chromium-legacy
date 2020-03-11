@@ -12,6 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class MockSharingService;
 class NotificationDisplayServiceTester;
@@ -33,12 +34,18 @@ class SharedClipboardTestBase : public testing::Test {
 
   void TearDown() override;
 
-  chrome_browser_sharing::SharingMessage CreateMessage(std::string guid,
-                                                       std::string device_name);
+  chrome_browser_sharing::SharingMessage CreateMessage(
+      const std::string& guid,
+      const std::string& device_name);
 
   std::string GetClipboardText();
+  SkBitmap GetClipboardImage();
+
+  bool HasProgressNotification();
 
   message_center::Notification GetNotification();
+  message_center::Notification GetProgressNotification();
+  message_center::Notification GetImageNotification();
 
  protected:
   content::BrowserTaskEnvironment task_environment_;

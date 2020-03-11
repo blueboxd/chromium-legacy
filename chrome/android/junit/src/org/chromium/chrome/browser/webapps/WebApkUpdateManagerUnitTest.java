@@ -86,8 +86,6 @@ public class WebApkUpdateManagerUnitTest {
     private static final String SHORT_NAME = "Short Name";
     private static final String PRIMARY_ICON_URL = "/icon.png";
     private static final String PRIMARY_ICON_MURMUR2_HASH = "3";
-    private static final String BADGE_ICON_URL = "/badge.png";
-    private static final String BADGE_ICON_MURMUR2_HASH = "4";
     private static final @WebDisplayMode int DISPLAY_MODE = WebDisplayMode.UNDEFINED;
     private static final int ORIENTATION = ScreenOrientationValues.DEFAULT;
     private static final long THEME_COLOR = 1L;
@@ -131,8 +129,8 @@ public class WebApkUpdateManagerUnitTest {
         @Override
         public void storeWebApkUpdateRequestToFile(String updateRequestPath, String startUrl,
                 String scope, String name, String shortName, String primaryIconUrl,
-                Bitmap primaryIcon, boolean isPrimaryIconMaskable, String badgeIconUrl,
-                Bitmap badgeIcon, String[] iconUrls, String[] iconHashes,
+                Bitmap primaryIcon, boolean isPrimaryIconMaskable, String splashIconUrl,
+                Bitmap splashIcon, String[] iconUrls, String[] iconHashes,
                 @WebDisplayMode int displayMode, int orientation, long themeColor,
                 long backgroundColor, String shareTargetAction, String shareTargetParamTitle,
                 String shareTargetParamText, boolean shareTargetParamIsMethodPost,
@@ -207,7 +205,7 @@ public class WebApkUpdateManagerUnitTest {
 
         @Override
         protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebApkInfo info,
-                String primaryIconUrl, String badgeIconUrl, boolean isManifestStale,
+                String primaryIconUrl, String splashIconUrl, boolean isManifestStale,
                 @WebApkUpdateReason int updateReason, Callback<Boolean> callback) {
             mStoreUpdateRequestCallback = callback;
             mUpdateName = info.name();
@@ -229,8 +227,6 @@ public class WebApkUpdateManagerUnitTest {
         public Map<String, String> iconUrlToMurmur2HashMap;
         public String primaryIconUrl;
         public Bitmap primaryIcon;
-        public String badgeIconUrl;
-        public Bitmap badgeIcon;
         public @WebDisplayMode int displayMode;
         public int orientation;
         public long themeColor;
@@ -355,12 +351,9 @@ public class WebApkUpdateManagerUnitTest {
 
         manifestData.iconUrlToMurmur2HashMap = new HashMap<>();
         manifestData.iconUrlToMurmur2HashMap.put(PRIMARY_ICON_URL, PRIMARY_ICON_MURMUR2_HASH);
-        manifestData.iconUrlToMurmur2HashMap.put(BADGE_ICON_URL, BADGE_ICON_MURMUR2_HASH);
 
         manifestData.primaryIconUrl = PRIMARY_ICON_URL;
         manifestData.primaryIcon = createBitmap(Color.GREEN);
-        manifestData.badgeIconUrl = BADGE_ICON_URL;
-        manifestData.badgeIcon = createBitmap(Color.BLUE);
         manifestData.displayMode = DISPLAY_MODE;
         manifestData.orientation = ORIENTATION;
         manifestData.themeColor = THEME_COLOR;
@@ -383,9 +376,9 @@ public class WebApkUpdateManagerUnitTest {
 
         final String kPackageName = "org.random.webapk";
         return WebApkInfo.create("", manifestData.scopeUrl,
-                new WebappIcon(manifestData.primaryIcon), new WebappIcon(manifestData.badgeIcon),
-                null, manifestData.name, manifestData.shortName, manifestData.displayMode,
-                manifestData.orientation, -1, manifestData.themeColor, manifestData.backgroundColor,
+                new WebappIcon(manifestData.primaryIcon), null, manifestData.name,
+                manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
+                manifestData.themeColor, manifestData.backgroundColor,
                 manifestData.defaultBackgroundColor, false /* isPrimaryIconMaskable */,
                 false /* isSplashIconMaskable*/, kPackageName, -1, WEB_MANIFEST_URL,
                 manifestData.startUrl, WebApkDistributor.BROWSER,
@@ -443,9 +436,9 @@ public class WebApkUpdateManagerUnitTest {
     private static void onGotManifestData(
             WebApkUpdateManager updateManager, ManifestData fetchedManifestData) {
         String primaryIconUrl = randomIconUrl(fetchedManifestData);
-        String badgeIconUrl = randomIconUrl(fetchedManifestData);
+        String splashIconUrl = randomIconUrl(fetchedManifestData);
         updateManager.onGotManifestData(
-                infoFromManifestData(fetchedManifestData), primaryIconUrl, badgeIconUrl);
+                infoFromManifestData(fetchedManifestData), primaryIconUrl, splashIconUrl);
     }
 
     /**
@@ -501,7 +494,7 @@ public class WebApkUpdateManagerUnitTest {
         updateIfNeeded(WEBAPK_PACKAGE_NAME, updateManager, androidManifestData.shortcuts);
         assertTrue(updateManager.updateCheckStarted());
         updateManager.onGotManifestData(infoFromManifestData(fetchedManifestData),
-                fetchedManifestData.primaryIconUrl, fetchedManifestData.badgeIconUrl);
+                fetchedManifestData.primaryIconUrl, null);
         return updateManager.updateRequested();
     }
 
@@ -964,20 +957,6 @@ public class WebApkUpdateManagerUnitTest {
 
     /**
      * Test that an upgrade is requested when:
-     * - WebAPK was generated using icon at {@link BADGE_ICON_URL} from Web Manifest.
-     * - Bitmap at {@link BADGE_ICON_URL} has changed.
-     */
-    @Test
-    public void testBadgeIconChangeShouldUpgrade() {
-        ManifestData fetchedData = defaultManifestData();
-        fetchedData.iconUrlToMurmur2HashMap.put(
-                fetchedData.badgeIconUrl, BADGE_ICON_MURMUR2_HASH + "1");
-        fetchedData.badgeIcon = createBitmap(Color.GREEN);
-        assertTrue(checkUpdateNeededForFetchedManifest(defaultManifestData(), fetchedData));
-    }
-
-    /**
-     * Test that an upgrade is requested when:
      * - WebAPK is generated using icon at {@link PRIMARY_ICON_URL} from Web Manifest.
      * - A new icon URL is added to the Web Manifest. And InstallableManager selects the new icon as
      *   the primary icon.
@@ -987,20 +966,6 @@ public class WebApkUpdateManagerUnitTest {
         ManifestData fetchedData = defaultManifestData();
         fetchedData.iconUrlToMurmur2HashMap.put("/icon2.png", "22");
         fetchedData.primaryIconUrl = "/icon2.png";
-        assertTrue(checkUpdateNeededForFetchedManifest(defaultManifestData(), fetchedData));
-    }
-
-    /**
-     * Test that an upgrade is requested when:
-     * - WebAPK is generated using icon at {@link BADGE_ICON_URL} from Web Manifest.
-     * - A new icon URL is added to the Web Manifest. And InstallableManager selects the new icon as
-     *   the badge icon.
-     */
-    @Test
-    public void testBadgeIconUrlChangeShouldUpgrade() {
-        ManifestData fetchedData = defaultManifestData();
-        fetchedData.iconUrlToMurmur2HashMap.put("/badge2.png", "44");
-        fetchedData.badgeIconUrl = "/badge2.png";
         assertTrue(checkUpdateNeededForFetchedManifest(defaultManifestData(), fetchedData));
     }
 
@@ -1040,7 +1005,6 @@ public class WebApkUpdateManagerUnitTest {
 
         ManifestData androidManifestData = defaultManifestData();
         androidManifestData.primaryIconUrl = iconUrl1;
-        androidManifestData.badgeIconUrl = badgeUrl1;
         androidManifestData.iconUrlToMurmur2HashMap.clear();
         androidManifestData.iconUrlToMurmur2HashMap.put(iconUrl1, hash1);
         androidManifestData.iconUrlToMurmur2HashMap.put(iconUrl2, hash2);
@@ -1049,7 +1013,6 @@ public class WebApkUpdateManagerUnitTest {
 
         ManifestData fetchedManifestData = defaultManifestData();
         fetchedManifestData.primaryIconUrl = iconUrl2;
-        fetchedManifestData.badgeIconUrl = badgeUrl2;
         fetchedManifestData.iconUrlToMurmur2HashMap.clear();
         fetchedManifestData.iconUrlToMurmur2HashMap.put(iconUrl1, null);
         fetchedManifestData.iconUrlToMurmur2HashMap.put(iconUrl2, hash2);

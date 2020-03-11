@@ -255,6 +255,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitch("enable-spdy-proxy-auth");
     cmd->AppendSwitch(optimization_guide::switches::
                           kFetchModelsAndHostModelFeaturesOverrideTimer);
 

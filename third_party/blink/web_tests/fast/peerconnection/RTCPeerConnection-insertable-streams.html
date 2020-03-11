@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>RTCPeerConnection.getRemoteStreams</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../external/wpt/webrtc/RTCPeerConnection-helper.js">
+</script></head>
+<body>
+<script>
+// TODO(crbug.com/1058021): Move this test to external/wpt/webrtc/ once the
+// Insertable Streams spec is mature enough.
+
+function areArrayBuffersEqual(buffer1, buffer2)
+{
+    if (buffer1.byteLength != buffer2.byteLength)
+      return false;
+    let array1 = new Int8Array(buffer1);
+    var array2 = new Int8Array(buffer2);
+    for (let i = 0 ; i < buffer1.byteLength ; ++i) {
+      if (array1[i] != array2[i])
+        return false;
+    }
+    return true;
+}
+
+promise_test(async t => {
+  const caller = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  t.add_cleanup(() => caller.close());
+  const callee = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  t.add_cleanup(() => callee.close());
+
+  const stream = await navigator.mediaDevices.getUserMedia({video:true});
+  const videoTrack = stream.getVideoTracks()[0];
+  t.add_cleanup(() => videoTrack.stop());
+
+  const videoSender = caller.addTrack(videoTrack)
+  const senderStreams = videoSender.createEncodedVideoStreams();
+  const senderReader = senderStreams.readableStream.getReader();
+  const senderWriter = senderStreams.writableStream.getWriter();
+
+  const frames = [];
+  const numFramesPassthrough = 5;
+  const numFramesReplaceData = 5;
+  const numFramesModifyData = 5;
+  const numFramesToSend = numFramesPassthrough + numFramesReplaceData + numFramesModifyData;
+
+  const ontrackPromise = new Promise(resolve => {
+    callee.ontrack = t.step_func(() => {
+      const receivers = callee.getReceivers();
+      let videoReceiver = null;
+      for (const r of receivers) {
+        if (r.track.kind == 'video')
+          videoReceiver = r;
+      }
+      assert_true(videoReceiver !== undefined);
+
+      const receiverStreams =
+          videoReceiver.createEncodedVideoStreams();
+      const receiverReader = receiverStreams.readableStream.getReader();
+      const receiverWriter = receiverStreams.writableStream.getWriter();
+
+      // The WebRTC stack may occassionally deliver duplicate frames on the
+      // receiver side, therefore start twice as many read attempts as sent
+      // frames to account for this.
+      const maxFramesToReceive = numFramesToSend * 2;
+      let numVerifiedFrames = 0;
+      for (let i = 0; i < maxFramesToReceive; i++) {
+        receiverReader.read().then(t.step_func(result => {
+          if (frames[numVerifiedFrames] &&
+              areArrayBuffersEqual(result.value.data, frames[numVerifiedFrames])) {
+            numVerifiedFrames++;
+          } else if (frames[numVerifiedFrames-1] &&
+                     areArrayBuffersEqual(result.value.data, frames[numVerifiedFrames-1])) {
+            // Duplicate frame. It can happen occassionally. Ignore.
+          } else {
+            // Receiving unexpected (nonduplicate) frames is an indication that
+            // frames are not passed correctly between sender and receiver.
+            assert_unreached("Incorrect frame received");
+          }
+
+          if (numVerifiedFrames == numFramesToSend)
+            resolve();
+        }));
+      }
+    });
+  });
+
+  exchangeIceCandidates(caller, callee);
+  await doSignalingHandshake(caller, callee);
+  // Pass frames as they come from the encoder.
+  for (let i = 0; i < numFramesPassthrough; i++) {
+    const result = await senderReader.read()
+    frames.push(result.value.data);
+    senderWriter.write(result.value);
+  }
+
+  // Replace frame data with arbitrary buffers.
+  for (let i = 0; i < numFramesReplaceData; i++) {
+    const result = await senderReader.read()
+
+    const buffer = new ArrayBuffer(100);
+    const int8View = new Int8Array(buffer);
+    int8View.fill(i);
+
+    result.value.data = buffer;
+    frames.push(result.value.data);
+    senderWriter.write(result.value);
+  }
+
+  // Modify frame data.
+  for (let i = 0; i < numFramesReplaceData; i++) {
+    const result = await senderReader.read()
+    const int8View = new Int8Array(result.value.data);
+    int8View.fill(i);
+
+    frames.push(result.value.data);
+    senderWriter.write(result.value);
+  }
+}, 'Frames flow correctly using insertable streams');
+
+promise_test(async t => {
+  const caller = new RTCPeerConnection();
+  t.add_cleanup(() => caller.close());
+  const callee = new RTCPeerConnection();
+  t.add_cleanup(() => callee.close());
+  const stream = await navigator.mediaDevices.getUserMedia({video:true});
+  const videoTrack = stream.getVideoTracks()[0];
+  t.add_cleanup(() => videoTrack.stop());
+
+  await doSignalingHandshake(caller, callee);
+
+  const videoSender = caller.addTrack(videoTrack);
+  assert_throws_dom("InvalidStateError", () => videoSender.createEncodedVideoStreams());
+}, 'RTCRtpSender.createEncodedVideoStream() throws if not requested in PC configuration');
+
+promise_test(async t => {
+  const caller = new RTCPeerConnection();
+  t.add_cleanup(() => caller.close());
+  const callee = new RTCPeerConnection();
+  t.add_cleanup(() => callee.close());
+  const stream = await navigator.mediaDevices.getUserMedia({video:true});
+  const videoTrack = stream.getVideoTracks()[0];
+  t.add_cleanup(() => videoTrack.stop());
+
+  const videoSender = caller.addTrack(videoTrack);
+  const ontrackPromise = new Promise(resolve => {
+    callee.ontrack = t.step_func(() => {
+        let receivers = callee.getReceivers();
+        let videoReceiver = null;
+        for (const r of receivers) {
+          if (r.track.kind == 'video')
+            videoReceiver = r;
+        }
+        assert_true(videoReceiver !== undefined);
+        assert_throws_dom("InvalidStateError", () => videoReceiver.createEncodedVideoStreams());
+        resolve();
+    });
+  });
+
+  await doSignalingHandshake(caller, callee);
+  return ontrackPromise;
+}, 'RTCRtpReceiver.createEncodedVideoStream() throws if not requested in PC configuration');
+
+</script>
+</body>
+</html>

@@ -220,7 +220,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="content/shell/android/browsertests_apk/src"/>
     <classpathentry kind="src" path="content/shell/android/java/src"/>
     <classpathentry kind="src" path="content/shell/android/javatests/src"/>
-    <classpathentry kind="src" path="content/shell/android/linker_test_apk/src"/>
     <classpathentry kind="src" path="content/shell/android/shell_apk/src"/>
     <classpathentry kind="src" path="device/bluetooth/android/java/src"/>
     <classpathentry kind="src" path="device/bluetooth/test/android/java/src"/>

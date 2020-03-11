@@ -106,6 +106,8 @@ public class SiteSettingsCategory {
             permission = android.Manifest.permission.CAMERA;
         } else if (type == Type.MICROPHONE) {
             permission = android.Manifest.permission.RECORD_AUDIO;
+        } else if (type == Type.AUGMENTED_REALITY) {
+            permission = android.Manifest.permission.CAMERA;
         } else {
             permission = "";
         }

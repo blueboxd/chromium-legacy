@@ -389,10 +389,6 @@ group("gn_all") {
       ]
     }
 
-    if (target_cpu != "x64") {
-      deps += [ "//content/shell/android:chromium_linker_test_apk" ]
-    }
-
     if (enable_chrome_android_internal) {
       deps += [ "//clank" ]
     }

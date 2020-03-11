@@ -43,7 +43,7 @@ jumbo_source_set("browser") {
   deps = [
     "//base",
     "//base:base_static",
-    "//base:clang_coverage_buildflags",
+    "//base:clang_profiling_buildflags",
     "//base/third_party/dynamic_annotations",
     "//build:branding_buildflags",
     "//cc",

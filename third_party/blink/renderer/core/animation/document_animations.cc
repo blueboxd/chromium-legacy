@@ -121,7 +121,8 @@ void DocumentAnimations::UpdateAnimations(
     timeline->ScheduleNextService();
 }
 
-HeapVector<Member<Animation>> DocumentAnimations::getAnimations() {
+HeapVector<Member<Animation>> DocumentAnimations::getAnimations(
+    const TreeScope& tree_scope) {
   // This method implements the Document::getAnimations method defined in the
   // web-animations-1 spec.
   // https://drafts.csswg.org/web-animations-1/#dom-document-getanimations
@@ -130,9 +131,9 @@ HeapVector<Member<Animation>> DocumentAnimations::getAnimations() {
   document_->UpdateStyleAndLayoutTree();
   HeapVector<Member<Animation>> animations;
   if (document_->GetPage())
-    animations = document_->GetPage()->Animator().GetAnimations(document_);
+    animations = document_->GetPage()->Animator().GetAnimations(tree_scope);
   else
-    GetAnimationsTargetingDocument(document_, animations);
+    GetAnimationsTargetingTreeScope(animations, tree_scope);
 
   std::sort(animations.begin(), animations.end(), CompareAnimations);
   return animations;
@@ -143,9 +144,9 @@ void DocumentAnimations::Trace(Visitor* visitor) {
   visitor->Trace(timelines_);
 }
 
-void DocumentAnimations::GetAnimationsTargetingDocument(
-    Document* document_,
-    HeapVector<Member<Animation>>& animations) {
+void DocumentAnimations::GetAnimationsTargetingTreeScope(
+    HeapVector<Member<Animation>>& animations,
+    const TreeScope& tree_scope) {
   // This method follows the timelines in a given docmuent and append all the
   // animations to the reference animations.
   for (auto& timeline : timelines_) {
@@ -156,13 +157,12 @@ void DocumentAnimations::GetAnimationsTargetingDocument(
                                    !animation->effect()->IsInEffect())) {
         continue;
       }
-      if (auto* effect = DynamicTo<KeyframeEffect>(animation->effect())) {
-        Element* target = effect->target();
-        if (!target || !target->isConnected() ||
-            document_ != target->GetDocument()) {
-          continue;
-        }
-      }
+      auto* effect = DynamicTo<KeyframeEffect>(animation->effect());
+      Element* target = effect->target();
+      if (!target || !target->isConnected())
+        continue;
+      if (&tree_scope != &target->GetTreeScope())
+        continue;
       animations.push_back(animation);
     }
   }

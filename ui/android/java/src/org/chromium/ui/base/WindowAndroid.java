@@ -121,6 +121,10 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     // System accessibility service.
     private final AccessibilityManager mAccessibilityManager;
 
+    /** A mechanism for observing and updating the application window's bottom inset. */
+    private ApplicationViewportInsetSupplier mApplicationBottomInsetProvider =
+            new ApplicationViewportInsetSupplier();
+
     // Whether touch exploration is enabled.
     private boolean mIsTouchExplorationEnabled;
 
@@ -653,6 +657,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         }
 
         TouchlessEventHandler.removeCursorObserver(mCursorObserver);
+        mApplicationBottomInsetProvider.destroy();
     }
 
     /**
@@ -731,6 +736,11 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      */
     public KeyboardVisibilityDelegate getKeyboardDelegate() {
         return mKeyboardVisibilityDelegate;
+    }
+
+    /** @return A mechanism for updating and observing the bottom inset of the browser window. */
+    public ApplicationViewportInsetSupplier getApplicationBottomInsetProvider() {
+        return mApplicationBottomInsetProvider;
     }
 
     @VisibleForTesting

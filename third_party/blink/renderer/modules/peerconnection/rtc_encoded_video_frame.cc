@@ -13,7 +13,7 @@ namespace blink {
 
 RTCEncodedVideoFrame::RTCEncodedVideoFrame(
     std::unique_ptr<webrtc::video_coding::EncodedFrame> delegate,
-    std::vector<uint8_t> additional_data)
+    Vector<uint8_t> additional_data)
     : delegate_(std::move(delegate)),
       additional_data_vector_(std::move(additional_data)) {}
 

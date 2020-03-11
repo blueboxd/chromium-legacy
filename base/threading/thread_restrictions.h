@@ -303,11 +303,14 @@ class TaskTracker;
 
 class AdjustOOMScoreHelper;
 class FileDescriptorWatcher;
+class FilePath;
 class GetAppOutputScopedAllowBaseSyncPrimitives;
 class ScopedAllowThreadRecallForStackSamplingProfiler;
 class SimpleThread;
 class StackSamplingProfiler;
 class Thread;
+
+bool PathProviderWin(int, FilePath*);
 
 #if DCHECK_IS_ON()
 #define INLINE_IF_DCHECK_IS_OFF BASE_EXPORT
@@ -375,6 +378,8 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class weblayer::ProfileImpl;
   friend class content::RenderProcessHostImpl;
   friend class weblayer::WebLayerPathProvider;
+
+  friend bool PathProviderWin(int, FilePath*);
 
   ScopedAllowBlocking(const Location& from_here = Location::Current());
   ~ScopedAllowBlocking();

@@ -2912,7 +2912,7 @@
   },
 
   "ChromeVariations": {
-    "os": ["win", "linux", "mac", "chromeos"],
+    "os": ["win", "linux", "mac"],
     "policy_pref_mapping_test": [
       {
         "policies": {
@@ -4847,6 +4847,18 @@
     ]
   },
 
+  "DeviceChromeVariations": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DeviceChromeVariations": 1
+        },
+        "prefs": { "variations_restrictions_by_policy": { "local_state": true } }
+      }
+    ]
+  },
+
   "DeviceDisplayResolution": {
     "os": ["chromeos"],
     "can_be_recommended": false,
@@ -5005,8 +5017,6 @@
 
   "DeviceAllowRedeemChromeOsRegistrationOffers": {},
 
-  "DeviceLoginScreenChromeVariations": {},
-
   "DeviceStartUpFlags": {},
 
   "DeviceVariationsRestrictParameter": {},
@@ -5058,6 +5068,8 @@
   "DeviceLoginScreenInputMethods": {},
 
   "DeviceLoginScreenSystemInfoEnforced": {},
+	
+  "DeviceChromeVariations": {},
 
   "DeviceShowNumericKeyboardForPassword": {},
 

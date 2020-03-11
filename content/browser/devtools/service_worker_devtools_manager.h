@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/unguessable_token.h"
 #include "content/common/content_export.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "url/gurl.h"
@@ -66,6 +67,8 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
                      const GURL& url,
                      const GURL& scope,
                      bool is_installed_version,
+                     base::Optional<network::CrossOriginEmbedderPolicy>
+                         cross_origin_embedder_policy,
                      base::UnguessableToken* devtools_worker_token,
                      bool* pause_on_start);
   void WorkerReadyForInspection(
@@ -73,6 +76,10 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
       int worker_route_id,
       mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
       mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> host_receiver);
+  void UpdateCrossOriginEmbedderPolicy(
+      int worker_process_id,
+      int worker_route_id,
+      network::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
   void WorkerVersionInstalled(int worker_process_id, int worker_route_id);
   void WorkerVersionDoomed(int worker_process_id, int worker_route_id);
   void WorkerDestroyed(int worker_process_id, int worker_route_id);

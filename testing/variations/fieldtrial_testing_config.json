@@ -1010,7 +1010,7 @@
                         "rely_on_android_network_detection": "true"
                     },
                     "enable_features": [
-                        "RelyOnAndroidNetworkDetection"
+                        "BackgroundSync"
                     ]
                 }
             ]
@@ -5805,11 +5805,6 @@
     "UmaAndUkmDemographics": [
         {
             "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows",
                 "ios"
             ],
             "experiments": [

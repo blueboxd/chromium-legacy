@@ -271,27 +271,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   bool LongTapShouldInvokeContextMenu();
 
  private:
-  enum NoCursorChangeType { kNoCursorChange };
-
-  class OptionalCursor {
-    STACK_ALLOCATED();
-
-   public:
-    OptionalCursor(NoCursorChangeType) : is_cursor_change_(false) {}
-    OptionalCursor(const Cursor& cursor)
-        : is_cursor_change_(true), cursor_(cursor) {}
-
-    bool IsCursorChange() const { return is_cursor_change_; }
-    const Cursor& GetCursor() const {
-      DCHECK(is_cursor_change_);
-      return cursor_;
-    }
-
-   private:
-    bool is_cursor_change_;
-    Cursor cursor_;
-  };
-
   WebInputEventResult HandleMouseMoveOrLeaveEvent(
       const WebMouseEvent&,
       const Vector<WebMouseEvent>& coalesced_events,
@@ -316,11 +295,11 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   bool IsSelectingLink(const HitTestResult&);
   bool ShouldShowIBeamForNode(const Node*, const HitTestResult&);
   bool ShouldShowResizeForNode(const Node*, const HitTestLocation&);
-  OptionalCursor SelectCursor(const HitTestLocation& location,
-                              const HitTestResult&);
-  OptionalCursor SelectAutoCursor(const HitTestResult&,
-                                  Node*,
-                                  const Cursor& i_beam);
+  base::Optional<Cursor> SelectCursor(const HitTestLocation& location,
+                                      const HitTestResult&);
+  base::Optional<Cursor> SelectAutoCursor(const HitTestResult&,
+                                          Node*,
+                                          const Cursor& i_beam);
 
   void HoverTimerFired(TimerBase*);
   void CursorUpdateTimerFired(TimerBase*);

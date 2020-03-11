@@ -90,8 +90,12 @@ bool ShouldShowNudge(PrefService* prefs, TooltipType type) {
   if (!features::AreContextualNudgesEnabled())
     return false;
 
-  if (GetSuccessCount(prefs, type) >= kSuccessLimit)
+  const int success_count = GetSuccessCount(prefs, type);
+  if (success_count >= kSuccessLimit ||
+      (type == TooltipType::kHomeToOverview &&
+       success_count >= kSuccessLimitHomeToOverview)) {
     return false;
+  }
 
   const int shown_count = GetShownCount(prefs, type);
   if (shown_count >= kNotificationLimit)

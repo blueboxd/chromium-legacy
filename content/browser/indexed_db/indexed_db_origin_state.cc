@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
@@ -109,8 +110,16 @@ IndexedDBOriginState::IndexedDBOriginState(
 
 IndexedDBOriginState::~IndexedDBOriginState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (backing_store_ && backing_store_->IsBlobCleanupPending())
+  if (!backing_store_)
+    return;
+  if (backing_store_->IsBlobCleanupPending())
     backing_store_->ForceRunBlobCleanup();
+
+  base::WaitableEvent leveldb_destruct_event;
+  backing_store_->db()->leveldb_state()->RequestDestruction(
+      &leveldb_destruct_event);
+  backing_store_.reset();
+  leveldb_destruct_event.Wait();
 }
 
 void IndexedDBOriginState::AbortAllTransactions(bool compact) {

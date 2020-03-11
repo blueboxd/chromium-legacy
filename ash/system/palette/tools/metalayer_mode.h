@@ -62,6 +62,7 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
 
   // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // AssistantStateObserver:
   void OnAssistantStatusChanged(mojom::AssistantState state) override;

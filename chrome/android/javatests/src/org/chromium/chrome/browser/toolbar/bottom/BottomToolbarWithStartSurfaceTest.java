@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager.Variations;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.FieldTrials;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -42,6 +43,9 @@ public class BottomToolbarWithStartSurfaceTest {
 
     @Before
     public void setUp() {
+        // TODO(https://crbug.com/1060622): Removes this.
+        FieldTrials.getInstance().reset();
+
         CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, true);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
     }

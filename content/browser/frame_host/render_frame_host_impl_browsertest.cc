@@ -3928,24 +3928,70 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest,
 // TODO(crbug.com/794320): the code below is temporary and will be removed when
 // Java Bridge is mojofied.
 #if defined(OS_ANDROID)
-const int32_t kObjectId = 5;
-const char* const kMethods[] = {"b", "c", "d"};
 
-class MockObject : public blink::mojom::RemoteObject {
+struct ObjectData {
+  const int32_t id;
+  const std::vector<std::string> methods;
+};
+
+ObjectData kMainObject{5, {"getId", "getInnerObject", "readArray"}};
+ObjectData kInnerObject{10, {"getInnerId"}};
+
+class MockInnerObject : public blink::mojom::RemoteObject {
  public:
   void HasMethod(const std::string& name, HasMethodCallback callback) override {
-    // TODO(crbug.com/794320): implement this.
+    bool has_method =
+        std::find(kInnerObject.methods.begin(), kInnerObject.methods.end(),
+                  name) != kInnerObject.methods.end();
+    std::move(callback).Run(has_method);
   }
-
   void GetMethods(GetMethodsCallback callback) override {
-    std::move(callback).Run(
-        std::vector<std::string>(std::begin(kMethods), std::end(kMethods)));
+    std::move(callback).Run(kInnerObject.methods);
   }
   void InvokeMethod(
       const std::string& name,
       std::vector<blink::mojom::RemoteInvocationArgumentPtr> arguments,
       InvokeMethodCallback callback) override {
-    // TODO(crbug.com/794320): implement this.
+    EXPECT_EQ("getInnerId", name);
+    blink::mojom::RemoteInvocationResultPtr result =
+        blink::mojom::RemoteInvocationResult::New();
+    result->error = blink::mojom::RemoteInvocationError::OK;
+    result->value = blink::mojom::RemoteInvocationResultValue::NewNumberValue(
+        kInnerObject.id);
+    std::move(callback).Run(std::move(result));
+  }
+};
+
+class MockObject : public blink::mojom::RemoteObject {
+ public:
+  void HasMethod(const std::string& name, HasMethodCallback callback) override {
+    bool has_method =
+        std::find(kMainObject.methods.begin(), kMainObject.methods.end(),
+                  name) != kMainObject.methods.end();
+    std::move(callback).Run(has_method);
+  }
+
+  void GetMethods(GetMethodsCallback callback) override {
+    std::move(callback).Run(kMainObject.methods);
+  }
+  void InvokeMethod(
+      const std::string& name,
+      std::vector<blink::mojom::RemoteInvocationArgumentPtr> arguments,
+      InvokeMethodCallback callback) override {
+    blink::mojom::RemoteInvocationResultPtr result =
+        blink::mojom::RemoteInvocationResult::New();
+    result->error = blink::mojom::RemoteInvocationError::OK;
+    if (name == "getId") {
+      result->value = blink::mojom::RemoteInvocationResultValue::NewNumberValue(
+          kMainObject.id);
+    } else if (name == "readArray") {
+      result->value =
+          blink::mojom::RemoteInvocationResultValue::NewBooleanValue(true);
+    } else if (name == "getInnerObject") {
+      result->value = blink::mojom::RemoteInvocationResultValue::NewObjectId(
+          kInnerObject.id);
+    }
+    std::move(callback).Run(std::move(result));
   }
 };
 
@@ -3954,9 +4000,13 @@ class MockObjectHost : public blink::mojom::RemoteObjectHost {
   void GetObject(
       int32_t object_id,
       mojo::PendingReceiver<blink::mojom::RemoteObject> receiver) override {
-    EXPECT_EQ(kObjectId, object_id);
-    mojo::MakeSelfOwnedReceiver(std::make_unique<MockObject>(),
-                                std::move(receiver));
+    if (object_id == kMainObject.id) {
+      mojo::MakeSelfOwnedReceiver(std::make_unique<MockObject>(),
+                                  std::move(receiver));
+    } else if (object_id == kInnerObject.id) {
+      mojo::MakeSelfOwnedReceiver(std::make_unique<MockInnerObject>(),
+                                  std::move(receiver));
+    }
   }
 
   void ReleaseObject(int32_t) override {
@@ -3971,9 +4021,9 @@ class MockObjectHost : public blink::mojom::RemoteObjectHost {
   mojo::Receiver<blink::mojom::RemoteObjectHost> receiver_{this};
 };
 
-class RenderFrameHostObserver : public WebContentsObserver {
+class RemoteObjectInjector : public WebContentsObserver {
  public:
-  explicit RenderFrameHostObserver(WebContents* web_contents)
+  explicit RemoteObjectInjector(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
 
  private:
@@ -3985,13 +4035,27 @@ class RenderFrameHostObserver : public WebContentsObserver {
         ->GetInterface(factory.BindNewPipeAndPassReceiver());
     factory->CreateRemoteObjectGateway(host_.GetRemote(),
                                        gateway.BindNewPipeAndPassReceiver());
-    gateway->AddNamedObject("testObject", kObjectId);
+    gateway->AddNamedObject("testObject", kMainObject.id);
   }
 
   MockObjectHost host_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostObserver);
+  DISALLOW_COPY_AND_ASSIGN(RemoteObjectInjector);
 };
+
+namespace {
+void SetupRemoteObjectInvocation(Shell* shell, const GURL& url) {
+  WebContents* web_contents = shell->web_contents();
+
+  // The first load triggers RenderFrameCreated on a RenderFrameHostObserver
+  // instance, where the object injection happens.
+  shell->LoadURL(url);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
+  // Injected objects become visible only after reload.
+  web_contents->GetController().Reload(ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
+}
+}  // namespace
 
 // TODO(crbug.com/794320): Remove this when the new Java Bridge code is
 // integrated into WebView.
@@ -3999,34 +4063,87 @@ class RenderFrameHostObserver : public WebContentsObserver {
 // works as expected.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        RemoteObjectEnumerateProperties) {
-  GURL url1(embedded_test_server()->GetURL("/empty.html"));
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
 
   WebContents* web_contents = shell()->web_contents();
-  RenderFrameHostObserver rfh_observer(web_contents);
+  RemoteObjectInjector injector(web_contents);
+  SetupRemoteObjectInvocation(shell(), url);
 
-  {
-    // The first load triggers RenderFrameCreated on |rfh_observer|, where the
-    // object injection happens.
-    TestNavigationObserver observer(web_contents);
-    shell()->LoadURL(url1);
-    observer.Wait();
-  }
-
-  {
-    // Injected objects become visible only after reload
-    // (see JavaBridgeBasicsTest#testEnumerateMembers in
-    // JavaBridgeBasicsTest.java).
-    TestNavigationObserver observer(web_contents);
-    web_contents->GetController().Reload(ReloadType::NORMAL, false);
-    observer.Wait();
-  }
-
-  const std::string kScript = "Object.keys(testObject).join(' ');";
+  std::string kScript = "Object.keys(testObject).join(' ');";
   auto result = EvalJs(web_contents, kScript);
-  EXPECT_EQ(base::JoinString(std::vector<std::string>(std::begin(kMethods),
-                                                      std::end(kMethods)),
-                             " "),
+  EXPECT_EQ(base::JoinString(kMainObject.methods, " "),
             result.value.GetString());
 }
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       RemoteObjectInvokeNonexistentMethod) {
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RemoteObjectInjector injector(web_contents);
+  SetupRemoteObjectInvocation(shell(), url);
+
+  std::string kScript = "testObject.getInnerId();";
+  EXPECT_FALSE(EvalJs(web_contents, kScript).error.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       RemoteObjectInvokeMethodReturningNumber) {
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RemoteObjectInjector injector(web_contents);
+  SetupRemoteObjectInvocation(shell(), url);
+
+  std::string kScript = "testObject.getId();";
+  EXPECT_EQ(kMainObject.id, EvalJs(web_contents, kScript));
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       RemoteObjectInvokeMethodTakingArray) {
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RemoteObjectInjector injector(web_contents);
+  SetupRemoteObjectInvocation(shell(), url);
+
+  std::string kScript = "testObject.readArray([6, 8, 2]);";
+  EXPECT_TRUE(EvalJs(web_contents, kScript).error.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       RemoteObjectInvokeMethodReturningObject) {
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RemoteObjectInjector injector(web_contents);
+  SetupRemoteObjectInvocation(shell(), url);
+
+  std::string kScript = "testObject.getInnerObject().getInnerId();";
+  EXPECT_EQ(kInnerObject.id, EvalJs(web_contents, kScript));
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       RemoteObjectInvokeMethodException) {
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RemoteObjectInjector injector(web_contents);
+  SetupRemoteObjectInvocation(shell(), url);
+
+  std::string error_message = "hahaha";
+
+  std::string kScript = JsReplace(R"(
+      const array = [1, 2, 3];
+      Object.defineProperty(array, 0, {
+        get() { throw new Error($1); }
+      });
+      testObject.readArray(array);
+    )",
+                                  error_message);
+  auto error = EvalJs(web_contents, kScript).error;
+  EXPECT_NE(error.find(error_message), std::string::npos);
+}
+
 #endif  // OS_ANDROID
 }  // namespace content

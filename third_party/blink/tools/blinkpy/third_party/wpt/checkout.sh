@@ -21,9 +21,8 @@ function clone {
   echo "WPTHead: " `git rev-parse HEAD`
 
   # Apply local changes.
-  git apply $DIR/chromium.patch
-  # Chromium presubmit requires scripts with shebang to be executable.
-  chmod 755 tools/manifest/update.py
+  git cherry-pick 644a206e8ace488eac7e2b2a58a4b5354b02363a
+  git cherry-pick 7e52ecb9b61b73425093d39dbadceb9c6e10b754
 }
 
 function reduce {

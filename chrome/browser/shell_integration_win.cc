@@ -735,20 +735,6 @@ void MigrateTaskbarPins(base::OnceClosure completion_callback) {
   // This needs to happen (e.g. so that the appid is fixed and the
   // run-time Chrome icon is merged with the taskbar shortcut), but it is not an
   // urgent task.
-  base::FilePath taskbar_path;
-  if (!base::PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_path)) {
-    NOTREACHED();
-    return;
-  }
-
-  // Migrate any pinned shortcuts in ImplicitApps sub-directories.
-  base::FilePath implicit_apps_path;
-  if (!base::PathService::Get(base::DIR_IMPLICIT_APP_SHORTCUTS,
-                              &implicit_apps_path)) {
-    NOTREACHED();
-    return;
-  }
-
   // MigrateTaskbarPinsCallback just calls MigrateShortcutsInPathInternal
   // several times with different parameters.  Each call may or may not load
   // DLL's. Since the callback may take the loader lock several times, and this
@@ -761,10 +747,16 @@ void MigrateTaskbarPins(base::OnceClosure completion_callback) {
   base::ThreadPool::CreateCOMSTATaskRunner(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::ThreadPolicy::MUST_USE_FOREGROUND})
-      ->PostTaskAndReply(FROM_HERE,
-                         base::BindOnce(&MigrateTaskbarPinsCallback,
-                                        taskbar_path, implicit_apps_path),
-                         std::move(completion_callback));
+      ->PostTaskAndReply(
+          FROM_HERE, base::BindOnce([]() {
+            base::FilePath taskbar_path;
+            base::FilePath implicit_apps_path;
+            base::PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_path);
+            base::PathService::Get(base::DIR_IMPLICIT_APP_SHORTCUTS,
+                                   &implicit_apps_path);
+            MigrateTaskbarPinsCallback(taskbar_path, implicit_apps_path);
+          }),
+          std::move(completion_callback));
 }
 
 void MigrateTaskbarPinsCallback(const base::FilePath& taskbar_path,
@@ -775,8 +767,12 @@ void MigrateTaskbarPinsCallback(const base::FilePath& taskbar_path,
     return;
   base::FilePath chrome_proxy_path(web_app::GetChromeProxyPath());
 
-  MigrateChromeAndChromeProxyShortcuts(chrome_exe, chrome_proxy_path,
-                                       taskbar_path);
+  if (!taskbar_path.empty()) {
+    MigrateChromeAndChromeProxyShortcuts(chrome_exe, chrome_proxy_path,
+                                         taskbar_path);
+  }
+  if (implicit_apps_path.empty())
+    return;
   base::FileEnumerator directory_enum(implicit_apps_path, /*recursive=*/false,
                                       base::FileEnumerator::DIRECTORIES);
   for (base::FilePath implicit_app_sub_directory = directory_enum.Next();

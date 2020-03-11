@@ -9,6 +9,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -118,6 +119,8 @@ public class CachedFeatureFlags {
     private static Map<String, String> sStringValuesReturned = new HashMap<>();
     private static Map<String, Integer> sIntValuesReturned = new HashMap<>();
     private static Map<String, Double> sDoubleValuesReturned = new HashMap<>();
+    @CheckDiscard("Validation is performed in tests and in debug builds.")
+    private static Map<String, String> sOverridesTestFeatures;
     private static String sReachedCodeProfilerTrialGroup;
 
     /**
@@ -191,6 +194,7 @@ public class CachedFeatureFlags {
     @VisibleForTesting
     public static void setFeaturesForTesting(Map<String, Boolean> features) {
         assert features != null;
+        sOverridesTestFeatures = new HashMap<>();
 
         for (Map.Entry<String, Boolean> entry : features.entrySet()) {
             String key = entry.getKey();
@@ -201,6 +205,14 @@ public class CachedFeatureFlags {
 
             setForTesting(key, entry.getValue());
         }
+    }
+
+    @VisibleForTesting
+    public static void setFieldTrialsForTesting(
+            String featureName, String variationName, String variationValue) {
+        StringCachedFieldTrialParameter parameter =
+                new StringCachedFieldTrialParameter(featureName, variationName, variationValue);
+        sOverridesTestFeatures.put(parameter.getSharedPreferenceKey(), variationValue);
     }
 
     /**
@@ -275,6 +287,17 @@ public class CachedFeatureFlags {
     }
 
     /**
+     * TODO(crbug.com/1012975): Move this to DoubleCachedFieldTrialParameter when
+     * CachedFeatureFlags is in chrome/browser/flags.
+     *
+     * @return the value of the field trial parameter that should be used in this run.
+     */
+    public static double getValue(DoubleCachedFieldTrialParameter parameter) {
+        return getConsistentDoubleValue(
+                parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
+    }
+
+    /**
      * Cache whether warming up network service process is enabled, so that the value
      * can be made available immediately on next start up.
      */
@@ -320,6 +343,13 @@ public class CachedFeatureFlags {
     }
 
     static boolean getConsistentBooleanValue(String preferenceName, boolean defaultValue) {
+        if (sOverridesTestFeatures != null) {
+            String value = sOverridesTestFeatures.get(preferenceName);
+            if (value != null) {
+                return Boolean.valueOf(value);
+            }
+        }
+
         Boolean flag = sBoolValuesReturned.get(preferenceName);
         if (flag == null) {
             flag = SharedPreferencesManager.getInstance().readBoolean(preferenceName, defaultValue);
@@ -329,6 +359,13 @@ public class CachedFeatureFlags {
     }
 
     static String getConsistentStringValue(String preferenceName, String defaultValue) {
+        if (sOverridesTestFeatures != null) {
+            String stringValue = sOverridesTestFeatures.get(preferenceName);
+            if (stringValue != null) {
+                return stringValue;
+            }
+        }
+
         String value = sStringValuesReturned.get(preferenceName);
         if (value == null) {
             value = SharedPreferencesManager.getInstance().readString(preferenceName, defaultValue);
@@ -338,6 +375,13 @@ public class CachedFeatureFlags {
     }
 
     static int getConsistentIntValue(String preferenceName, int defaultValue) {
+        if (sOverridesTestFeatures != null) {
+            String stringValue = sOverridesTestFeatures.get(preferenceName);
+            if (stringValue != null) {
+                return Integer.valueOf(stringValue);
+            }
+        }
+
         Integer value = sIntValuesReturned.get(preferenceName);
         if (value == null) {
             value = SharedPreferencesManager.getInstance().readInt(preferenceName, defaultValue);
@@ -347,6 +391,13 @@ public class CachedFeatureFlags {
     }
 
     static double getConsistentDoubleValue(String preferenceName, double defaultValue) {
+        if (sOverridesTestFeatures != null) {
+            String stringValue = sOverridesTestFeatures.get(preferenceName);
+            if (stringValue != null) {
+                return Double.valueOf(stringValue);
+            }
+        }
+
         Double value = sDoubleValuesReturned.get(preferenceName);
         if (value == null) {
             value = SharedPreferencesManager.getInstance().readDouble(preferenceName, defaultValue);
@@ -370,6 +421,9 @@ public class CachedFeatureFlags {
         sStringValuesReturned.clear();
         sIntValuesReturned.clear();
         sDoubleValuesReturned.clear();
+        if (sOverridesTestFeatures != null) {
+            sOverridesTestFeatures.clear();
+        }
     }
 
     @VisibleForTesting

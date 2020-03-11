@@ -451,6 +451,9 @@ public final class ChromePreferenceKeys {
      */
     public static final String OFFLINE_INDICATOR_V2_ENABLED = "offline_indicator_v2_enabled";
 
+    /** The shared preference for the 'save card to device' checkbox status. */
+    public static final String PAYMENTS_CHECK_SAVE_CARD_TO_DEVICE = "check_save_card_to_device";
+
     /** Prefix of the preferences to persist use count of the payment instruments. */
     public static final KeyPrefix PAYMENTS_PAYMENT_INSTRUMENT_USE_COUNT =
             new KeyPrefix("payment_instrument_use_count_*");

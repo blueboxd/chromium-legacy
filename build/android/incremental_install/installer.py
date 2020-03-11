@@ -232,7 +232,7 @@ def Install(device, install_json, apk=None, enable_device_cache=False,
   def check_device_configured():
     target_sdk_version = int(apk.GetTargetSdkVersion())
     # Beta Q builds apply whitelist to targetSdk=28 as well.
-    if target_sdk_version >= 28 and device.build_version_sdk >= 29:
+    if target_sdk_version >= 28 and device.build_version_sdk >= 28:
       apis_allowed = ''.join(
           device.RunShellCommand(
               ['settings', 'get', 'global', 'hidden_api_policy'],

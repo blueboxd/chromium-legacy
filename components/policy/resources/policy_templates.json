@@ -11620,7 +11620,7 @@
           'caption': '''Disable all variations''',
         },
       ],
-      'supported_on': ['chrome.*:82-', 'chrome_os:82-'],
+      'supported_on': ['chrome.*:82-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -11640,7 +11640,7 @@
       Setting the <ph name="VARIATIONS_DISABLED_OPTION_NAME">VariationsDisabled</ph> (value 2), prevent all variations from being applied to the browser. Please note that this mode can potentially prevent the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> developers from providing criticial security fixes in a timely manner and is thus not recommended.'''
     },
     {
-      'name': 'DeviceLoginScreenChromeVariations',
+      'name': 'DeviceChromeVariations',
       'owners': ['pastarmovj@chromium.org', 'asvitkine@chromium.org', 'amraboelkher@chromium.org'],
       'type': 'int-enum',
       'schema': {
@@ -11652,38 +11652,37 @@
         {
           'name': 'VariationsEnabled',
           'value': 0,
-          'caption': '''Enable all variations on the login screen''',
+          'caption': '''Enable all variations''',
         },
         {
           'name': 'CriticalFixesOnly',
           'value': 1,
-          'caption': '''Enable variations concerning criticial fixes only on the login screen''',
+          'caption': '''Enable variations concerning criticial fixes only''',
         },
         {
           'name': 'VariationsDisabled',
           'value': 2,
-          'caption': '''Disable all variations on the login screen''',
+          'caption': '''Disable all variations''',
         },
       ],
-      'supported_on': ['chrome_os:81-'],
+      'supported_on': ['chrome_os:82-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'future': True,
       'example_value': 1,
       'id': 674,
-      'caption': '''Determine the availability of variations on the login screen''',
+      'caption': '''Determine the availability of variations on ChromeOS''',
       'tags': [],
-      'desc': '''Configuring this policy allows to specify which variations are allowed to be applied in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on the login screen.
+      'desc': '''Configuring this policy allows to specify which variations are allowed to be applied on an enterprise-managed <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device.
 
-      Variations provide a mean for offering modifications to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> without shipping a new version of the browser by selectively enabling or disabling already existing features.
+      Variations provide a mean for offering modifications to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> without shipping a new version  by selectively enabling or disabling already existing features.
 
-      Setting the <ph name="VARIATIONS_ENABLED_OPTION_NAME">VariationsEnabled</ph> (value 0), or leaving the policy not set allows all variations to be applied to the browser on the login screen.
+      Setting the <ph name="VARIATIONS_ENABLED_OPTION_NAME">VariationsEnabled</ph> (value 0), or leaving the policy not set allows all variations to be applied to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
 
-      Setting the <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME">CriticalFixesOnly</ph> (value 1), allows only variations considered critical security or stability fixes to be applied to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on the login screen.
+      Setting the <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME">CriticalFixesOnly</ph> (value 1), allows only variations considered critical security or stability fixes to be applied to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
 
-      Setting the <ph name="VARIATIONS_DISABLED_OPTION_NAME">VariationsDisabled</ph> (value 2), prevent all variations from being applied to the browser on the login screen. Please note that this mode can potentially prevent the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> developers from providing criticial security fixes in a timely manner and is thus not recommended.'''
+      Setting the <ph name="VARIATIONS_DISABLED_OPTION_NAME">VariationsDisabled</ph> (value 2), will prevent all variations from being applied to the browser on the login screen. Please note that this mode can potentially prevent the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> developers from providing criticial security fixes in a timely manner and is thus not recommended.'''
     },
     {
       'name': 'AttestationEnabledForDevice',
@@ -20617,7 +20616,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'NetworkThrottlingEnabled': 'network_throttling.upload_rate_kbits',
     'NetworkThrottlingEnabled': 'network_throttling.download_rate_kbits',
     'DeviceLoginScreenPowerManagement': 'login_screen_power_management.login_screen_power_management',
-    'DeviceLoginScreenChromeVariations': 'device_login_screen_chrome_variations_type.value',
+    'DeviceChromeVariations': 'device_chrome_variations_type.value',
     'DeviceDisplayResolution': 'device_display_resolution.device_display_resolution',
     'DeviceWallpaperImage': 'device_wallpaper_image.device_wallpaper_image',
     'DeviceNativePrinters': 'native_device_printers.external_policy',

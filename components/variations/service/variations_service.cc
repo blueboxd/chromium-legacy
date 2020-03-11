@@ -303,9 +303,31 @@ VariationsService::VariationsService(
       last_request_was_http_retry_(false) {
   DCHECK(client_);
   DCHECK(resource_request_allowed_notifier_);
+
+  // Watch for pref updates from policy.
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(policy_pref_service_);
+  pref_change_registrar_->Add(
+      prefs::kDeviceVariationsRestrictionsByPolicy,
+      base::BindRepeating(
+          &VariationsService::OnDeviceVariationsRestrictionsChange,
+          base::Unretained(this)));
+  OnDeviceVariationsRestrictionsChange();
 }
 
-VariationsService::~VariationsService() {
+VariationsService::~VariationsService() = default;
+
+void VariationsService::OnDeviceVariationsRestrictionsChange() {
+  DCHECK(policy_pref_service_);
+  const std::string& device_policy =
+      prefs::kDeviceVariationsRestrictionsByPolicy;
+  const std::string& user_policy = prefs::kVariationsRestrictionsByPolicy;
+  const int device_value = policy_pref_service_->GetInteger(device_policy);
+
+  if (policy_pref_service_->IsManagedPreference(device_policy))
+    policy_pref_service_->SetInteger(user_policy, device_value);
+  else
+    policy_pref_service_->ClearPref(user_policy);
 }
 
 void VariationsService::PerformPreMainMessageLoopStartup() {
@@ -480,6 +502,10 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   // allows the admin to restrict the set of variations applied.
   registry->RegisterIntegerPref(
       prefs::kVariationsRestrictionsByPolicy,
+      static_cast<int>(RestrictionPolicy::NO_RESTRICTIONS));
+
+  registry->RegisterIntegerPref(
+      prefs::kDeviceVariationsRestrictionsByPolicy,
       static_cast<int>(RestrictionPolicy::NO_RESTRICTIONS));
 }
 

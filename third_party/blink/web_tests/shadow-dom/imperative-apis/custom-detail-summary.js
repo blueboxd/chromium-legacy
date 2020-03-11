@@ -11,7 +11,7 @@ customElements.define("my-summary", MySummaryElement);
 customElements.define("my-detail", class extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: "open", slotting: "manual" });
+    this.attachShadow({ mode: "open", slotAssignment: "manual" });
   }
   connectedCallback() {
     const target = this;

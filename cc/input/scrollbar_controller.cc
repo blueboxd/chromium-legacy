@@ -557,7 +557,7 @@ void ScrollbarController::StartAutoScrollAnimation(
                                      : AutoScrollDirection::AUTOSCROLL_FORWARD;
 
   layer_tree_host_impl_->AutoScrollAnimationCreate(
-      scroll_node, target_offset_vector, std::abs(velocity));
+      *scroll_node, target_offset_vector, std::abs(velocity));
 }
 
 // Performs hit test and prepares scroll deltas that will be used by GSE.

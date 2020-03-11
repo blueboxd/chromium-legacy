@@ -1696,7 +1696,7 @@ message ChromeDeviceSettingsProto {
   optional BooleanPolicyProto login_screen_primary_mouse_button_switch = 96;
   optional StringPolicyProto minimum_chrome_version_enforced = 97;
   optional SystemProxySettingsProto system_proxy_settings = 98;
-  optional IntegerPolicyProto device_login_screen_chrome_variations_type = 99;
+  optional IntegerPolicyProto device_chrome_variations_type = 99;
   optional DeviceLoginScreenPrivacyScreenEnabledProto
       device_login_screen_privacy_screen_enabled = 100;
   optional RequiredClientCertificateForDeviceProto

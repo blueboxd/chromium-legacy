@@ -687,11 +687,7 @@ public class ExternalNavigationHandler {
                     AiaIntent.SERP, AiaIntent.NUM_ENTRIES);
         }
 
-        // The intent can be used to launch Chrome itself, record the user
-        // gesture here so that it can be used later.
-        if (params.hasUserGesture()) {
-            IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(targetIntent);
-        }
+        if (params.hasUserGesture()) mDelegate.maybeSetUserGesture(targetIntent);
     }
 
     private @OverrideUrlLoadingResult int handleExternalIncognitoIntent(Intent targetIntent,

@@ -1,7 +1,6 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Node classes for the AST for a Mojo IDL file."""
 
 # Note: For convenience of testing, you probably want to define __eq__() methods
@@ -393,7 +392,6 @@ class Union(Definition):
 
 
 class UnionField(Definition):
-
   def __init__(self, mojom_name, attribute_list, ordinal, typename, **kwargs):
     assert isinstance(mojom_name, str)
     assert attribute_list is None or isinstance(attribute_list, AttributeList)

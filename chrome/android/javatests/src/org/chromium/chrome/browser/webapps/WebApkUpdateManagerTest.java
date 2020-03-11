@@ -176,7 +176,7 @@ public class WebApkUpdateManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             WebappDataStorage storage =
                     WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
-            WebApkInfo info = WebApkInfo.create("", creationData.scope, null, null, null,
+            WebApkInfo info = WebApkInfo.create("", creationData.scope, null, null,
                     creationData.name, creationData.shortName, creationData.displayMode,
                     creationData.orientation, 0, creationData.themeColor,
                     creationData.backgroundColor, 0, creationData.isPrimaryIconMaskable,

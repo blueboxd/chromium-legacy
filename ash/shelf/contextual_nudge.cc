@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ui/aura/window.h"
@@ -41,15 +42,17 @@ ContextualNudge::ContextualNudge(views::View* anchor,
                                  Position position,
                                  const gfx::Insets& margins,
                                  const base::string16& text,
-                                 SkColor text_color)
+                                 SkColor text_color,
+                                 const base::RepeatingClosure& tap_callback)
     : views::BubbleDialogDelegateView(anchor,
                                       GetArrowForPosition(position),
-                                      views::BubbleBorder::NO_ASSETS) {
+                                      views::BubbleBorder::NO_ASSETS),
+      tap_callback_(tap_callback) {
   set_color(SK_ColorTRANSPARENT);
   set_margins(margins);
   set_close_on_deactivate(false);
+  set_accept_events(!tap_callback.is_null());
   SetCanActivate(false);
-  set_accept_events(false);
   set_adjust_if_offscreen(false);
   set_shadow(views::BubbleBorder::NO_ASSETS);
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
@@ -92,6 +95,28 @@ gfx::Size ContextualNudge::CalculatePreferredSize() const {
 
 ui::LayerType ContextualNudge::GetLayerType() const {
   return ui::LAYER_NOT_DRAWN;
+}
+
+void ContextualNudge::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP && tap_callback_) {
+    event->StopPropagation();
+    tap_callback_.Run();
+    return;
+  }
+
+  // Pass on non tap events to the shelf (so it can handle swipe gestures that
+  // start on top of the nudge). Convert event to screen coordinates, as this is
+  // what Shelf::ProcessGestureEvent() expects.
+  ui::GestureEvent event_in_screen(*event);
+  gfx::Point location_in_screen(event->location());
+  View::ConvertPointToScreen(this, &location_in_screen);
+  event_in_screen.set_location(location_in_screen);
+
+  Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
+  if (shelf->ProcessGestureEvent(event_in_screen))
+    event->StopPropagation();
+  else
+    views::BubbleDialogDelegateView::OnGestureEvent(event);
 }
 
 }  // namespace ash

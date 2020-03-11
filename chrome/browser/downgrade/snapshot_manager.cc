@@ -23,6 +23,13 @@ namespace downgrade {
 
 namespace {
 
+constexpr base::FilePath::StringPieceType kSQLiteJournalSuffix(
+    FILE_PATH_LITERAL("-journal"));
+constexpr base::FilePath::StringPieceType kSQLiteWalSuffix(
+    FILE_PATH_LITERAL("-wal"));
+constexpr base::FilePath::StringPieceType kSQLiteShmSuffix(
+    FILE_PATH_LITERAL("-shm"));
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class SnapshotOperationResult {
@@ -34,25 +41,45 @@ enum class SnapshotOperationResult {
 };
 
 // Copies the item at |user_data_dir|/|relative_path| to
-// |snapshot_dir|/|relative_path| if the item exists.
-// Returns |true| if the item was found at the source and successfully copied.
-// Returns |false| if the item was found at the source but not successfully
-// copied. Returns no value if the file was not at the source.
+// |snapshot_dir|/|relative_path| if the item exists. This also copies all files
+// related to items that are SQLite databases. Returns |true| if the item was
+// found at the source and successfully copied. Returns |false| if the item was
+// found at the source but not successfully copied. Returns no value if the file
+// was not at the source.
 base::Optional<bool> CopyItemToSnapshotDirectory(
     const base::FilePath& relative_path,
     const base::FilePath& user_data_dir,
     const base::FilePath& snapshot_dir,
     bool is_directory) {
-  auto source = user_data_dir.Append(relative_path);
-  auto destination = snapshot_dir.Append(relative_path);
+  const auto source = user_data_dir.Append(relative_path);
+  const auto destination = snapshot_dir.Append(relative_path);
 
   // If nothing exists to be moved, do not consider it a success or a failure.
   if (!base::PathExists(source))
     return base::nullopt;
 
-  return is_directory
-             ? base::CopyDirectory(source, destination, /*recursive=*/true)
-             : base::CopyFile(source, destination);
+  bool copy_success = is_directory ? base::CopyDirectory(source, destination,
+                                                         /*recursive=*/true)
+                                   : base::CopyFile(source, destination);
+
+  if (is_directory)
+    return copy_success;
+
+  // Copy SQLite journal, WAL and SHM files associated with the files that are
+  // snapshotted if they exist.
+  for (const auto& suffix :
+       {kSQLiteJournalSuffix, kSQLiteWalSuffix, kSQLiteShmSuffix}) {
+    const auto sqlite_file_path =
+        base::FilePath(source.value() + base::FilePath::StringType(suffix));
+    if (!base::PathExists(sqlite_file_path))
+      continue;
+
+    const auto destination_journal = base::FilePath(
+        destination.value() + base::FilePath::StringType(suffix));
+    copy_success &= base::CopyFile(sqlite_file_path, destination_journal);
+  }
+
+  return copy_success;
 }
 
 // Returns true if |base_name| matches a user profile directory's format. This

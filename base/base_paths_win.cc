@@ -9,9 +9,12 @@
 #include "base/base_paths.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/win/current_module.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
@@ -172,12 +175,19 @@ bool PathProviderWin(int key, FilePath* result) {
                 .Append(FILE_PATH_LITERAL("Internet Explorer"))
                 .Append(FILE_PATH_LITERAL("Quick Launch"));
       break;
-    case base::DIR_TASKBAR_PINS:
+    case base::DIR_TASKBAR_PINS: {
       if (!PathService::Get(base::DIR_USER_QUICK_LAUNCH, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("User Pinned"))
                 .Append(FILE_PATH_LITERAL("TaskBar"));
+      // Allow a blocking call here to check for existence of the directory. In
+      // practice, all uses of SHGetFolderPath in this function make a similar
+      // check, so this does not add new I/O that wasn't already happening.
+      ScopedAllowBlocking allow_blocking(FROM_HERE);
+      if (!DirectoryExists(cur))
+        return false;
       break;
+    }
     case base::DIR_IMPLICIT_APP_SHORTCUTS:
       if (!PathService::Get(base::DIR_USER_QUICK_LAUNCH, &cur))
         return false;

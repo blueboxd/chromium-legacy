@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/blacklist/opt_out_blacklist/sql/opt_out_store_sql.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/previews/content/previews_decider_impl.h"
@@ -197,7 +198,10 @@ void PreviewsService::Initialize(
   std::unique_ptr<previews::PreviewsOptimizationGuide> previews_opt_guide;
   OptimizationGuideKeyedService* optimization_guide_keyed_service =
       OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-  if (optimization_guide_keyed_service) {
+  if (optimization_guide_keyed_service &&
+      data_reduction_proxy::DataReductionProxySettings::
+          IsDataSaverEnabledByUser(profile->IsOffTheRecord(),
+                                   profile->GetPrefs())) {
     previews_opt_guide = std::make_unique<previews::PreviewsOptimizationGuide>(
         optimization_guide_keyed_service);
   }

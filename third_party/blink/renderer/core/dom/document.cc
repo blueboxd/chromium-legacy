@@ -8501,21 +8501,9 @@ void Document::ProcessDisplayLockActivationObservation(
     auto* context = entry->target()->GetDisplayLockContext();
     DCHECK(context);
     if (entry->isIntersecting()) {
-      if (!context->IsLocked())
-        continue;
-      DCHECK(context->ShouldCommitForActivation(
-          DisplayLockActivationReason::kViewportIntersection));
-      context->CommitForActivationWithSignal(
-          entry->target(), DisplayLockActivationReason::kViewportIntersection);
+      context->NotifyIsIntersectingViewport();
     } else {
-      // If we're not visible, but are observing viewport intersections, it
-      // means that we're either locked (in which case we should remain locked),
-      // or we've been activated (in which case we should relock).
-      DCHECK(context->IsLocked() || context->IsActivated());
-      if (context->IsLocked())
-        continue;
-      context->ClearActivated();
-      context->StartAcquire();
+      context->NotifyIsNotIntersectingViewport();
     }
   }
 }

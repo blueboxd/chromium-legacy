@@ -342,7 +342,12 @@ source_set("hooks") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [ "eg_tests_hook.mm" ]
-  deps = [ "//ios/chrome/app:tests_hook" ]
+  deps = [
+    "//base",
+    "//components/policy/core/common:test_support",
+    "//ios/chrome/app:tests_hook",
+    "//ios/chrome/browser/policy:test_support",
+  ]
 }
 
 source_set("eg_app_support+eg2") {
@@ -393,6 +398,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/passwords:eg_app_support+eg2",
+    "//ios/chrome/browser/policy:eg_app_support+eg2",
     "//ios/chrome/browser/translate:eg_app_support+eg2",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication:eg_app_support+eg2",

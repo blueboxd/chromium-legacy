@@ -16,6 +16,7 @@
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_handle_message_result.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -44,10 +45,18 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
  private:
   void HandleText(const std::string& text);
   void HandleImage(const std::string& image_url);
+  void OnImageResponseStarted(
+      const GURL& final_url,
+      const network::mojom::URLResponseHead& response_head);
+  void OnImageDownloadProgress(uint64_t current);
+  void UpdateProgressNotification(const base::string16& context);
+  void CancelProgressNotification();
   void OnURLLoadComplete(std::unique_ptr<std::string> content);
   void WriteImageAndShowNotification(const SkBitmap& original_image,
                                      const SkBitmap& resized_image);
-  void ShowNotification(const base::string16& title, const SkBitmap& image);
+  void ShowNotification(const base::string16& title,
+                        const SkBitmap& image,
+                        const std::string& notification_id);
   void DetectWrite(uint64_t old_sequence_number,
                    base::TimeTicks start_ticks,
                    bool is_image);
@@ -59,6 +68,10 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
   std::string device_name_;
   base::ElapsedTimer timer_;
   base::OneShotTimer write_detection_timer_;
+  int64_t image_content_length_ = -1;
+  int64_t image_content_progress_ = 0;
+  std::string image_notification_id_;
+  base::OneShotTimer image_download_update_progress_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCopyMessageHandler);
 };

@@ -34,7 +34,6 @@ public final class WebApkMetaDataKeys {
             "org.chromium.webapk.shell_apk.iconUrlsAndIconMurmur2Hashes";
     public static final String WEB_MANIFEST_URL = "org.chromium.webapk.shell_apk.webManifestUrl";
     public static final String DISTRIBUTOR = "org.chromium.webapk.shell_apk.distributor";
-    public static final String BADGE_ICON_ID = "org.chromium.webapk.shell_apk.badgeIconId";
     public static final String SHARE_ACTION = "org.chromium.webapk.shell_apk.shareAction";
     public static final String SHARE_METHOD = "org.chromium.webapk.shell_apk.shareMethod";
     public static final String SHARE_ENCTYPE = "org.chromium.webapk.shell_apk.shareEnctype";

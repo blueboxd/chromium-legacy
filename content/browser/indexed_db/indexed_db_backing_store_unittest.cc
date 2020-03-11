@@ -23,6 +23,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/synchronization/waitable_event_watcher.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
@@ -361,15 +363,29 @@ class IndexedDBBackingStoreTest : public testing::Test {
         base::RunLoop loop;
         IndexedDBOriginState* per_origin_factory =
             factory->GetOriginFactory(origin);
-        per_origin_factory->backing_store()
-            ->db()
-            ->leveldb_state()
-            ->RequestDestruction(loop.QuitClosure(),
-                                 base::SequencedTaskRunnerHandle::Get());
+
+        auto* leveldb_state =
+            per_origin_factory->backing_store()->db()->leveldb_state();
+
+        base::WaitableEvent leveldb_close_event;
+        base::WaitableEventWatcher event_watcher;
+        leveldb_state->RequestDestruction(&leveldb_close_event);
+        event_watcher.StartWatching(
+            &leveldb_close_event,
+            base::BindLambdaForTesting(
+                [&](base::WaitableEvent*) { loop.Quit(); }),
+            base::SequencedTaskRunnerHandle::Get());
+
         idb_context_->ForceCloseSync(
             origin,
             storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN);
         loop.Run();
+        // There is a possible race in |leveldb_close_event| where the signaling
+        // thread is still in the WaitableEvent::Signal() method. To ensure that
+        // the other thread exits their Signal method, any method on the
+        // WaitableEvent can be called to acquire the internal lock (which will
+        // subsequently wait for the other thread to exit the Signal method).
+        EXPECT_TRUE(leveldb_close_event.IsSignaled());
       }
       // All leveldb databases are closed, and they can be deleted.
       for (auto origin : idb_context_->GetAllOrigins()) {

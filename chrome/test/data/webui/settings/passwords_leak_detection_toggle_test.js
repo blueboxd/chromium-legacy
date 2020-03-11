@@ -51,7 +51,7 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
     return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
         .then(result => {
           assertEquals(
-              settings.SettingsPageInteractions.PRIVACY_PASSWORD_CHECK, result);
+              settings.PrivacyElementInteractions.PASSWORD_CHECK, result);
         });
   });
 

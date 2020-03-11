@@ -296,7 +296,6 @@ public class WebApkIntentDataProviderFactory {
         boolean isPrimaryIconMaskable =
                 primaryMaskableIconId != 0 && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O);
 
-        int badgeIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.BADGE_ICON_ID, 0);
         int splashIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.SPLASH_ID, 0);
 
         int isSplashIconMaskableBooleanId = IntentUtils.safeGetInt(
@@ -324,7 +323,6 @@ public class WebApkIntentDataProviderFactory {
         return create(url, scope,
                 new WebappIcon(webApkPackageName,
                         isPrimaryIconMaskable ? primaryMaskableIconId : primaryIconId),
-                new WebappIcon(webApkPackageName, badgeIconId),
                 new WebappIcon(webApkPackageName, splashIconId), name, shortName, displayMode,
                 orientation, source, themeColor, backgroundColor, defaultBackgroundColor,
                 isPrimaryIconMaskable, isSplashIconMaskable, webApkPackageName, shellApkVersion,
@@ -338,7 +336,6 @@ public class WebApkIntentDataProviderFactory {
      * @param url                      URL that the WebAPK should navigate to when launched.
      * @param scope                    Scope for the WebAPK.
      * @param primaryIcon              Primary icon to show for the WebAPK.
-     * @param badgeIcon                Badge icon to use for notifications.
      * @param splashIcon               Splash icon to use for the splash screen.
      * @param name                     Name of the WebAPK.
      * @param shortName                The short name of the WebAPK.
@@ -371,14 +368,14 @@ public class WebApkIntentDataProviderFactory {
      * @param webApkVersionCode        WebAPK's version code.
      */
     public static BrowserServicesIntentDataProvider create(String url, String scope,
-            WebappIcon primaryIcon, WebappIcon badgeIcon, WebappIcon splashIcon, String name,
-            String shortName, @WebDisplayMode int displayMode, int orientation, int source,
-            long themeColor, long backgroundColor, int defaultBackgroundColor,
-            boolean isPrimaryIconMaskable, boolean isSplashIconMaskable, String webApkPackageName,
-            int shellApkVersion, String manifestUrl, String manifestStartUrl,
-            @WebApkDistributor int distributor, Map<String, String> iconUrlToMurmur2HashMap,
-            ShareTarget shareTarget, boolean forceNavigation, boolean isSplashProvidedByWebApk,
-            ShareData shareData, List<ShortcutItem> shortcutItems, int webApkVersionCode) {
+            WebappIcon primaryIcon, WebappIcon splashIcon, String name, String shortName,
+            @WebDisplayMode int displayMode, int orientation, int source, long themeColor,
+            long backgroundColor, int defaultBackgroundColor, boolean isPrimaryIconMaskable,
+            boolean isSplashIconMaskable, String webApkPackageName, int shellApkVersion,
+            String manifestUrl, String manifestStartUrl, @WebApkDistributor int distributor,
+            Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
+            boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData,
+            List<ShortcutItem> shortcutItems, int webApkVersionCode) {
         if (manifestStartUrl == null || webApkPackageName == null) {
             Log.e(TAG, "Incomplete data provided: " + manifestStartUrl + ", " + webApkPackageName);
             return null;
@@ -399,10 +396,6 @@ public class WebApkIntentDataProviderFactory {
             primaryIcon = new WebappIcon();
         }
 
-        if (badgeIcon == null) {
-            badgeIcon = new WebappIcon();
-        }
-
         if (splashIcon == null) {
             splashIcon = new WebappIcon();
         }
@@ -416,7 +409,7 @@ public class WebApkIntentDataProviderFactory {
                 shortName, displayMode, orientation, source,
                 WebappIntentUtils.colorFromLongColor(backgroundColor), defaultBackgroundColor,
                 false /* isIconGenerated */, isPrimaryIconMaskable, forceNavigation);
-        WebApkExtras webApkExtras = new WebApkExtras(webApkPackageName, badgeIcon, splashIcon,
+        WebApkExtras webApkExtras = new WebApkExtras(webApkPackageName, splashIcon,
                 isSplashIconMaskable, shellApkVersion, manifestUrl, manifestStartUrl, distributor,
                 iconUrlToMurmur2HashMap, shareTarget, isSplashProvidedByWebApk, shortcutItems,
                 webApkVersionCode);

@@ -17,7 +17,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/clang_coverage_buildflags.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -56,8 +56,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 
-#if BUILDFLAG(CLANG_COVERAGE)
-#include "base/test/clang_coverage.h"
+#if BUILDFLAG(CLANG_PROFILING)
+#include "base/test/clang_profiling.h"
 #endif
 
 #if defined(USE_SYMBOLIZE)
@@ -324,8 +324,8 @@ void DebugBreak() {
 #endif
 
 void BreakDebugger() {
-#if BUILDFLAG(CLANG_COVERAGE)
-  WriteClangCoverageProfile();
+#if BUILDFLAG(CLANG_PROFILING)
+  WriteClangProfilingProfile();
 #endif
 
   // NOTE: This code MUST be async-signal safe (it's used by in-process

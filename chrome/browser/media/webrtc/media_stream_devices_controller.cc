@@ -18,10 +18,11 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
-#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
@@ -125,7 +126,8 @@ void MediaStreamDevicesController::RequestPermissions(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   std::vector<ContentSettingsType> content_settings_types;
 
-  PermissionManager* permission_manager = PermissionManager::Get(profile);
+  permissions::PermissionManager* permission_manager =
+      PermissionManagerFactory::GetForProfile(profile);
   bool will_prompt_for_audio = false;
   bool will_prompt_for_video = false;
 
@@ -515,7 +517,7 @@ void MediaStreamDevicesController::UpdateTabSpecificContentSettings(
   }
 
   content_settings_->OnMediaStreamPermissionSet(
-      PermissionManager::Get(profile_)->GetCanonicalOrigin(
+      PermissionManagerFactory::GetForProfile(profile_)->GetCanonicalOrigin(
           ContentSettingsType::MEDIASTREAM_CAMERA, request_.security_origin,
           web_contents_->GetLastCommittedURL()),
       microphone_camera_state, selected_audio_device, selected_video_device,
@@ -595,8 +597,9 @@ bool MediaStreamDevicesController::PermissionIsBlockedForReason(
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       request_.render_process_id, request_.render_frame_id);
   permissions::PermissionResult result =
-      PermissionManager::Get(profile_)->GetPermissionStatusForFrame(
-          content_type, rfh, request_.security_origin);
+      PermissionManagerFactory::GetForProfile(profile_)
+          ->GetPermissionStatusForFrame(content_type, rfh,
+                                        request_.security_origin);
   if (result.source == reason) {
     DCHECK_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
     return true;

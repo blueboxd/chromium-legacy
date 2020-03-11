@@ -22560,7 +22560,16 @@ should be able to be added at any place in this file.
   <owner>chrome-signin-team@google.com</owner>
   <description>
     The user selected to customize sync from
-    |chrome://settings/syncSetup/advanced|.
+    chrome://settings/syncSetup/advanced.
+  </description>
+</action>
+
+<action name="Sync_NavigateToSyncAdvancedPage">
+  <owner>msalama@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user has navigated to the sync advanced settings page
+    chrome://settings/syncSetup/advanced.
   </description>
 </action>
 
@@ -22568,8 +22577,8 @@ should be able to be added at any place in this file.
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <description>
-    The user has clicked on the history usage row in
-    |chrome://settings/syncSetup| to open Activity controls page.
+    The user has clicked on the history usage row in chrome://settings/syncSetup
+    to open Activity controls page.
   </description>
 </action>
 
@@ -22577,8 +22586,7 @@ should be able to be added at any place in this file.
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <description>
-    The user selected sync everything from
-    |chrome://settings/syncSetup/advanced|.
+    The user selected sync everything from chrome://settings/syncSetup/advanced.
   </description>
 </action>
 

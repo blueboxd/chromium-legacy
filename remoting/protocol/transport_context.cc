@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "remoting/base/logging.h"
 #include "remoting/base/url_request.h"
 #include "remoting/protocol/port_allocator_factory.h"
 #include "third_party/webrtc/rtc_base/socket_address.h"
@@ -30,6 +31,28 @@ namespace {
 // Ensure ICE config is correct at least one hour after session starts.
 constexpr base::TimeDelta kMinimumIceConfigLifetime =
     base::TimeDelta::FromHours(1);
+
+void PrintIceConfig(const IceConfig& ice_config) {
+  HOST_LOG << "Received IceConfig:";
+  HOST_LOG << "  STUN: [";
+  for (auto& stun_server : ice_config.stun_servers) {
+    HOST_LOG << "    " << stun_server.ToString() << ",";
+  }
+  HOST_LOG << "  ]";
+  HOST_LOG << "  TURN: [";
+  for (auto& turn_server : ice_config.turn_servers) {
+    HOST_LOG << "    {";
+    HOST_LOG << "      username: " << turn_server.credentials.username;
+    HOST_LOG << "      password: " << turn_server.credentials.password;
+    for (auto& port : turn_server.ports) {
+      HOST_LOG << "      port: " << port.address.ToString();
+    }
+    HOST_LOG << "    },";
+  }
+  HOST_LOG << "  ]";
+  HOST_LOG << "  expiration time: " << ice_config.expiration_time;
+  HOST_LOG << "  max_bitrate_kbps: " << ice_config.max_bitrate_kbps;
+}
 
 }  // namespace
 
@@ -81,6 +104,7 @@ void TransportContext::EnsureFreshIceConfig() {
   // Don't need to make ICE config request if both STUN and Relay are disabled.
   if ((network_settings_.flags & (NetworkSettings::NAT_TRAVERSAL_STUN |
                                   NetworkSettings::NAT_TRAVERSAL_RELAY)) == 0) {
+    HOST_LOG << "Skipping ICE Config request as STUN and RELAY are disabled";
     return;
   }
 
@@ -107,6 +131,8 @@ void TransportContext::OnIceConfig(RelayMode relay_mode,
                                    const IceConfig& ice_config) {
   ice_config_[relay_mode] = ice_config;
   ice_config_request_[relay_mode].reset();
+
+  PrintIceConfig(ice_config);
 
   auto& callback_list = pending_ice_config_callbacks_[relay_mode];
   while (!callback_list.empty()) {

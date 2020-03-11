@@ -1,7 +1,6 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Convert parse tree to AST.
 
 This module converts the parse tree to the AST we use for code generation. The
@@ -17,6 +16,7 @@ import re
 import mojom.generate.module as mojom
 from mojom.parse import ast
 
+
 def _DuplicateName(values):
   """Returns the 'mojom_name' of the first entry in |values| whose 'mojom_name'
   has already been encountered. If there are no duplicates, returns None."""
@@ -26,6 +26,7 @@ def _DuplicateName(values):
       return value.mojom_name
     names.add(value.mojom_name)
   return None
+
 
 def _ElemsOfType(elems, elem_type, scope):
   """Find all elements of the given type.
@@ -48,25 +49,28 @@ def _ElemsOfType(elems, elem_type, scope):
                     (duplicate_name, scope))
   return result
 
+
 def _MapKind(kind):
-  map_to_kind = {'bool': 'b',
-                 'int8': 'i8',
-                 'int16': 'i16',
-                 'int32': 'i32',
-                 'int64': 'i64',
-                 'uint8': 'u8',
-                 'uint16': 'u16',
-                 'uint32': 'u32',
-                 'uint64': 'u64',
-                 'float': 'f',
-                 'double': 'd',
-                 'string': 's',
-                 'handle': 'h',
-                 'handle<data_pipe_consumer>': 'h:d:c',
-                 'handle<data_pipe_producer>': 'h:d:p',
-                 'handle<message_pipe>': 'h:m',
-                 'handle<shared_buffer>': 'h:s',
-                 'handle<platform>': 'h:p'}
+  map_to_kind = {
+      'bool': 'b',
+      'int8': 'i8',
+      'int16': 'i16',
+      'int32': 'i32',
+      'int64': 'i64',
+      'uint8': 'u8',
+      'uint16': 'u16',
+      'uint32': 'u32',
+      'uint64': 'u64',
+      'float': 'f',
+      'double': 'd',
+      'string': 's',
+      'handle': 'h',
+      'handle<data_pipe_consumer>': 'h:d:c',
+      'handle<data_pipe_producer>': 'h:d:p',
+      'handle<message_pipe>': 'h:m',
+      'handle<shared_buffer>': 'h:s',
+      'handle<platform>': 'h:p'
+  }
   if kind.endswith('?'):
     base_kind = _MapKind(kind[0:-1])
     # NOTE: This doesn't rule out enum types. Those will be detected later, when
@@ -74,17 +78,16 @@ def _MapKind(kind):
     reference_kinds = ('m', 's', 'h', 'a', 'r', 'x', 'asso', 'rmt', 'rcv',
                        'rma', 'rca')
     if re.split('[^a-z]', base_kind, 1)[0] not in reference_kinds:
-      raise Exception(
-          'A type (spec "%s") cannot be made nullable' % base_kind)
+      raise Exception('A type (spec "%s") cannot be made nullable' % base_kind)
     return '?' + base_kind
   if kind.endswith('}'):
     lbracket = kind.rfind('{')
     value = kind[0:lbracket]
-    return 'm[' + _MapKind(kind[lbracket+1:-1]) + '][' + _MapKind(value) + ']'
+    return 'm[' + _MapKind(kind[lbracket + 1:-1]) + '][' + _MapKind(value) + ']'
   if kind.endswith(']'):
     lbracket = kind.rfind('[')
     typename = kind[0:lbracket]
-    return 'a' + kind[lbracket+1:-1] + ':' + _MapKind(typename)
+    return 'a' + kind[lbracket + 1:-1] + ':' + _MapKind(typename)
   if kind.endswith('&'):
     return 'r:' + _MapKind(kind[0:-1])
   if kind.startswith('asso<'):
@@ -106,24 +109,25 @@ def _MapKind(kind):
     return map_to_kind[kind]
   return 'x:' + kind
 
+
 def _AttributeListToDict(attribute_list):
   if attribute_list is None:
     return None
   assert isinstance(attribute_list, ast.AttributeList)
   # TODO(vtl): Check for duplicate keys here.
-  return dict([(attribute.key, attribute.value)
-                   for attribute in attribute_list])
+  return dict(
+      [(attribute.key, attribute.value) for attribute in attribute_list])
+
 
 builtin_values = frozenset([
-    "double.INFINITY",
-    "double.NEGATIVE_INFINITY",
-    "double.NAN",
-    "float.INFINITY",
-    "float.NEGATIVE_INFINITY",
-    "float.NAN"])
+    "double.INFINITY", "double.NEGATIVE_INFINITY", "double.NAN",
+    "float.INFINITY", "float.NEGATIVE_INFINITY", "float.NAN"
+])
+
 
 def _IsBuiltinValue(value):
   return value in builtin_values
+
 
 def _LookupKind(kinds, spec, scope):
   """Tries to find which Kind a spec refers to, given the scope in which its
@@ -148,6 +152,7 @@ def _LookupKind(kinds, spec, scope):
 
   return kinds.get(spec)
 
+
 def _LookupValue(values, mojom_name, scope, kind):
   """Like LookupKind, but for constant values."""
   # If the type is an enum, the value can be specified as a qualified name, in
@@ -167,6 +172,7 @@ def _LookupValue(values, mojom_name, scope, kind):
 
   return values.get(mojom_name)
 
+
 def _FixupExpression(module, value, scope, kind):
   """Translates an IDENTIFIER into a built-in value or structured NamedValue
      object."""
@@ -180,6 +186,7 @@ def _FixupExpression(module, value, scope, kind):
     if _IsBuiltinValue(value[1]):
       return mojom.BuiltinValue(value[1])
   return value
+
 
 def _Kind(kinds, spec, scope):
   """Convert a type name into a mojom.Kind object.
@@ -214,7 +221,7 @@ def _Kind(kinds, spec, scope):
   elif spec.startswith('a'):
     colon = spec.find(':')
     length = int(spec[1:colon])
-    kind = mojom.Array(_Kind(kinds, spec[colon+1:], scope), length)
+    kind = mojom.Array(_Kind(kinds, spec[colon + 1:], scope), length)
   elif spec.startswith('r:'):
     kind = mojom.InterfaceRequest(_Kind(kinds, spec[2:], scope))
   elif spec.startswith('rmt:'):
@@ -232,25 +239,26 @@ def _Kind(kinds, spec, scope):
     # inside the key type spec.
     key_end = spec.find(']')
     assert key_end != -1 and key_end < len(spec) - 1
-    assert spec[key_end+1] == '[' and spec[-1] == ']'
+    assert spec[key_end + 1] == '[' and spec[-1] == ']'
 
     first_kind = spec[2:key_end]
-    second_kind = spec[key_end+2:-1]
+    second_kind = spec[key_end + 2:-1]
 
-    kind = mojom.Map(_Kind(kinds, first_kind, scope),
-                     _Kind(kinds, second_kind, scope))
+    kind = mojom.Map(
+        _Kind(kinds, first_kind, scope), _Kind(kinds, second_kind, scope))
   else:
     kind = mojom.Kind(spec)
 
   kinds[spec] = kind
   return kind
 
+
 def _Import(module, import_module):
   # Copy the struct kinds from our imports into the current module.
   importable_kinds = (mojom.Struct, mojom.Union, mojom.Enum, mojom.Interface)
   for kind in import_module.kinds.values():
-    if (isinstance(kind, importable_kinds) and
-        kind.module.path == import_module.path):
+    if (isinstance(kind, importable_kinds)
+        and kind.module.path == import_module.path):
       module.kinds[kind.spec] = kind
   # Ditto for values.
   for value in import_module.values.values():
@@ -258,6 +266,7 @@ def _Import(module, import_module):
       module.values[value.GetSpec()] = value
 
   return import_module
+
 
 def _Struct(module, parsed_struct):
   """
@@ -287,8 +296,8 @@ def _Struct(module, parsed_struct):
         lambda constant: _Constant(module, constant, struct),
         _ElemsOfType(parsed_struct.body, ast.Const, parsed_struct.mojom_name))
     # Stash fields parsed_struct here temporarily.
-    struct.fields_data = _ElemsOfType(
-        parsed_struct.body, ast.StructField, parsed_struct.mojom_name)
+    struct.fields_data = _ElemsOfType(parsed_struct.body, ast.StructField,
+                                      parsed_struct.mojom_name)
   struct.attributes = _AttributeListToDict(parsed_struct.attribute_list)
 
   # Enforce that a [Native] attribute is set to make native-only struct
@@ -302,6 +311,7 @@ def _Struct(module, parsed_struct):
     struct.custom_serializer = True
 
   return struct
+
 
 def _Union(module, parsed_union):
   """
@@ -317,10 +327,11 @@ def _Union(module, parsed_union):
   union.spec = 'x:' + module.mojom_namespace + '.' + union.mojom_name
   module.kinds[union.spec] = union
   # Stash fields parsed_union here temporarily.
-  union.fields_data = _ElemsOfType(
-      parsed_union.body, ast.UnionField, parsed_union.mojom_name)
+  union.fields_data = _ElemsOfType(parsed_union.body, ast.UnionField,
+                                   parsed_union.mojom_name)
   union.attributes = _AttributeListToDict(parsed_union.attribute_list)
   return union
+
 
 def _StructField(module, parsed_field, struct):
   """
@@ -334,15 +345,15 @@ def _StructField(module, parsed_field, struct):
   """
   field = mojom.StructField()
   field.mojom_name = parsed_field.mojom_name
-  field.kind = _Kind(
-      module.kinds, _MapKind(parsed_field.typename),
-      (module.mojom_namespace, struct.mojom_name))
+  field.kind = _Kind(module.kinds, _MapKind(parsed_field.typename),
+                     (module.mojom_namespace, struct.mojom_name))
   field.ordinal = parsed_field.ordinal.value if parsed_field.ordinal else None
-  field.default = _FixupExpression(
-      module, parsed_field.default_value,
-      (module.mojom_namespace, struct.mojom_name), field.kind)
+  field.default = _FixupExpression(module, parsed_field.default_value,
+                                   (module.mojom_namespace, struct.mojom_name),
+                                   field.kind)
   field.attributes = _AttributeListToDict(parsed_field.attribute_list)
   return field
+
 
 def _UnionField(module, parsed_field, union):
   """
@@ -356,14 +367,14 @@ def _UnionField(module, parsed_field, union):
   """
   field = mojom.UnionField()
   field.mojom_name = parsed_field.mojom_name
-  field.kind = _Kind(
-      module.kinds, _MapKind(parsed_field.typename),
-      (module.mojom_namespace, union.mojom_name))
+  field.kind = _Kind(module.kinds, _MapKind(parsed_field.typename),
+                     (module.mojom_namespace, union.mojom_name))
   field.ordinal = parsed_field.ordinal.value if parsed_field.ordinal else None
   field.default = _FixupExpression(
       module, None, (module.mojom_namespace, union.mojom_name), field.kind)
   field.attributes = _AttributeListToDict(parsed_field.attribute_list)
   return field
+
 
 def _Parameter(module, parsed_param, interface):
   """
@@ -377,14 +388,14 @@ def _Parameter(module, parsed_param, interface):
   """
   parameter = mojom.Parameter()
   parameter.mojom_name = parsed_param.mojom_name
-  parameter.kind = _Kind(
-      module.kinds, _MapKind(parsed_param.typename),
-      (module.mojom_namespace, interface.mojom_name))
-  parameter.ordinal = (
-      parsed_param.ordinal.value if parsed_param.ordinal else None)
+  parameter.kind = _Kind(module.kinds, _MapKind(parsed_param.typename),
+                         (module.mojom_namespace, interface.mojom_name))
+  parameter.ordinal = (parsed_param.ordinal.value
+                       if parsed_param.ordinal else None)
   parameter.default = None  # TODO(tibell): We never have these. Remove field?
   parameter.attributes = _AttributeListToDict(parsed_param.attribute_list)
   return parameter
+
 
 def _Method(module, parsed_method, interface):
   """
@@ -397,7 +408,8 @@ def _Method(module, parsed_method, interface):
     {mojom.Method} AST method.
   """
   method = mojom.Method(
-      interface, parsed_method.mojom_name,
+      interface,
+      parsed_method.mojom_name,
       ordinal=parsed_method.ordinal.value if parsed_method.ordinal else None)
   method.parameters = list(
       map(lambda parameter: _Parameter(module, parameter, interface),
@@ -416,6 +428,7 @@ def _Method(module, parsed_method, interface):
                     "\"=> ()\".")
 
   return method
+
 
 def _Interface(module, parsed_iface):
   """
@@ -437,10 +450,11 @@ def _Interface(module, parsed_iface):
       lambda constant: _Constant(module, constant, interface),
       _ElemsOfType(parsed_iface.body, ast.Const, parsed_iface.mojom_name))
   # Stash methods parsed_iface here temporarily.
-  interface.methods_data = _ElemsOfType(
-      parsed_iface.body, ast.Method, parsed_iface.mojom_name)
+  interface.methods_data = _ElemsOfType(parsed_iface.body, ast.Method,
+                                        parsed_iface.mojom_name)
   interface.attributes = _AttributeListToDict(parsed_iface.attribute_list)
   return interface
+
 
 def _EnumField(module, enum, parsed_field, parent_kind):
   """
@@ -464,12 +478,13 @@ def _EnumField(module, enum, parsed_field, parent_kind):
         module, parsed_field.value,
         (module.mojom_namespace, parent_kind.mojom_name), enum)
   else:
-    field.value = _FixupExpression(
-        module, parsed_field.value, (module.mojom_namespace, ), enum)
+    field.value = _FixupExpression(module, parsed_field.value,
+                                   (module.mojom_namespace, ), enum)
   field.attributes = _AttributeListToDict(parsed_field.attribute_list)
   value = mojom.EnumValue(module, enum, field)
   module.values[value.GetSpec()] = value
   return field
+
 
 def _ResolveNumericEnumValues(enum_fields):
   """
@@ -510,6 +525,7 @@ def _ResolveNumericEnumValues(enum_fields):
 
   return min_value, max_value
 
+
 def _Enum(module, parsed_enum, parent_kind):
   """
   Args:
@@ -544,6 +560,7 @@ def _Enum(module, parsed_enum, parent_kind):
                       "Native attribute.")
 
   return enum
+
 
 def _Constant(module, parsed_const, parent_kind):
   """
@@ -584,21 +601,20 @@ def _CollectReferencedKinds(module, all_defined_kinds):
       return extract_referenced_user_kinds(kind.kind)
     if mojom.IsMapKind(kind):
       return (extract_referenced_user_kinds(kind.key_kind) +
-          extract_referenced_user_kinds(kind.value_kind))
+              extract_referenced_user_kinds(kind.value_kind))
     if mojom.IsInterfaceRequestKind(kind) or mojom.IsAssociatedKind(kind):
       return [kind.kind]
     if mojom.IsStructKind(kind):
       return [kind]
-    if (mojom.IsInterfaceKind(kind) or mojom.IsEnumKind(kind) or
-        mojom.IsUnionKind(kind)):
+    if (mojom.IsInterfaceKind(kind) or mojom.IsEnumKind(kind)
+        or mojom.IsUnionKind(kind)):
       return [kind]
     return []
 
   def sanitize_kind(kind):
     """Removes nullability from a kind"""
     if kind.spec.startswith('?'):
-      return _Kind(module.kinds, kind.spec[1:],
-                   (module.mojom_namespace, ''))
+      return _Kind(module.kinds, kind.spec[1:], (module.mojom_namespace, ''))
     return kind
 
   referenced_user_kinds = {}
@@ -614,9 +630,9 @@ def _CollectReferencedKinds(module, all_defined_kinds):
     for method in interface.methods:
       for param in itertools.chain(method.parameters or [],
                                    method.response_parameters or []):
-        if (mojom.IsStructKind(param.kind) or mojom.IsUnionKind(param.kind) or
-            mojom.IsEnumKind(param.kind) or
-            mojom.IsAnyInterfaceKind(param.kind)):
+        if (mojom.IsStructKind(param.kind) or mojom.IsUnionKind(param.kind)
+            or mojom.IsEnumKind(param.kind)
+            or mojom.IsAnyInterfaceKind(param.kind)):
           for referenced_kind in extract_referenced_user_kinds(param.kind):
             sanitized_kind = sanitize_kind(referenced_kind)
             referenced_user_kinds[sanitized_kind.spec] = sanitized_kind
@@ -646,8 +662,8 @@ def _Module(tree, path, imports):
   # Imports must come first, because they add to module.kinds which is used
   # by by the others.
   module.imports = [
-      _Import(module, imports[imp.import_filename])
-      for imp in tree.import_list]
+      _Import(module, imports[imp.import_filename]) for imp in tree.import_list
+  ]
   if tree.module and tree.module.attribute_list:
     assert isinstance(tree.module.attribute_list, ast.AttributeList)
     # TODO(vtl): Check for duplicate keys here.
@@ -703,10 +719,11 @@ def _Module(tree, path, imports):
                                                  all_defined_kinds.values())
   imported_kind_specs = set(all_referenced_kinds.keys()).difference(
       set(all_defined_kinds.keys()))
-  module.imported_kinds = dict((spec, all_referenced_kinds[spec])
-                               for spec in imported_kind_specs)
+  module.imported_kinds = dict(
+      (spec, all_referenced_kinds[spec]) for spec in imported_kind_specs)
 
   return module
+
 
 def OrderedModule(tree, path, imports):
   """Convert parse tree to AST module.

@@ -23,9 +23,6 @@ namespace blink {
 void TrustedTypesCheckForHTMLThrows(const String& string) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
-      network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
@@ -46,9 +43,6 @@ void TrustedTypesCheckForHTMLThrows(const String& string) {
 void TrustedTypesCheckForScriptThrows(const String& string) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
-      network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
@@ -71,9 +65,6 @@ void TrustedTypesCheckForScriptThrows(const String& string) {
 void TrustedTypesCheckForScriptURLThrows(const String& string) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
-      network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
@@ -98,9 +89,6 @@ void TrustedTypesCheckForScriptWorks(
     String expected) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
-  document.GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
-      network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   String s = TrustedTypesCheckForScript(

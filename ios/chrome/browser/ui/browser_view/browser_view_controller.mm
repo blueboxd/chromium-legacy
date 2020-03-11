@@ -2877,10 +2877,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [overlays addObject:childOverlayView];
   }
 
-  // The overlay container supports at most one overlay view, either by
-  // presentation or by containment.
-  DCHECK(!presentedOverlayView || !childOverlayView);
-
   return overlays;
 }
 

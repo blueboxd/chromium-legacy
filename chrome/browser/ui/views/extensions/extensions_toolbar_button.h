@@ -27,6 +27,7 @@ class ExtensionsToolbarButton : public ToolbarButton,
  private:
   // ToolbarButton:
   gfx::Size CalculatePreferredSize() const override;
+  gfx::Size GetMinimumSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   const char* GetClassName() const override;
 

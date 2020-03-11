@@ -74,8 +74,8 @@ class ViewportAnchor {
   void ResetViewportToAnchoredPosition() {
     DCHECK(outer_);
 
-    scroll_tree().ClampScrollToMaxScrollOffset(inner_, tree_impl_);
-    scroll_tree().ClampScrollToMaxScrollOffset(outer_, tree_impl_);
+    scroll_tree().ClampScrollToMaxScrollOffset(*inner_, tree_impl_);
+    scroll_tree().ClampScrollToMaxScrollOffset(*outer_, tree_impl_);
 
     gfx::ScrollOffset viewport_location =
         scroll_tree().current_scroll_offset(inner_->element_id) +
@@ -84,8 +84,8 @@ class ViewportAnchor {
     gfx::Vector2dF delta =
         viewport_in_content_coordinates_.DeltaFrom(viewport_location);
 
-    delta = scroll_tree().ScrollBy(inner_, delta, tree_impl_);
-    scroll_tree().ScrollBy(outer_, delta, tree_impl_);
+    delta = scroll_tree().ScrollBy(*inner_, delta, tree_impl_);
+    scroll_tree().ScrollBy(*outer_, delta, tree_impl_);
   }
 
  private:

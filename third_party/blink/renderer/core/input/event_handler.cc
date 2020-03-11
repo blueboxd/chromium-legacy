@@ -446,10 +446,10 @@ void EventHandler::UpdateCursor() {
   layout_view->HitTest(location, result);
 
   if (LocalFrame* frame = result.InnerNodeFrame()) {
-    EventHandler::OptionalCursor optional_cursor =
+    base::Optional<Cursor> optional_cursor =
         frame->GetEventHandler().SelectCursor(location, result);
-    if (optional_cursor.IsCursorChange()) {
-      view->SetCursor(optional_cursor.GetCursor());
+    if (optional_cursor.has_value()) {
+      view->SetCursor(optional_cursor.value());
     }
   }
 }
@@ -493,17 +493,17 @@ bool EventHandler::ShouldShowIBeamForNode(const Node* node,
   return HasEditableStyle(*node);
 }
 
-EventHandler::OptionalCursor EventHandler::SelectCursor(
+base::Optional<Cursor> EventHandler::SelectCursor(
     const HitTestLocation& location,
     const HitTestResult& result) {
   if (scroll_manager_->InResizeMode())
-    return kNoCursorChange;
+    return base::nullopt;
 
   Page* page = frame_->GetPage();
   if (!page)
-    return kNoCursorChange;
+    return base::nullopt;
   if (scroll_manager_->MiddleClickAutoscrollInProgress())
-    return kNoCursorChange;
+    return base::nullopt;
 
   if (result.GetScrollbar() && !result.GetScrollbar()->IsCustomScrollbar())
     return PointerCursor();
@@ -543,7 +543,7 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
       case kSetCursor:
         return override_cursor;
       case kDoNotSetCursor:
-        return kNoCursorChange;
+        return base::nullopt;
     }
   }
 
@@ -677,7 +677,7 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
   return PointerCursor();
 }
 
-EventHandler::OptionalCursor EventHandler::SelectAutoCursor(
+base::Optional<Cursor> EventHandler::SelectAutoCursor(
     const HitTestResult& result,
     Node* node,
     const Cursor& i_beam) {
@@ -1061,10 +1061,10 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     }
     LocalFrameView* view = frame_->View();
     if ((!is_remote_frame || is_portal) && view) {
-      EventHandler::OptionalCursor optional_cursor =
+      base::Optional<Cursor> optional_cursor =
           SelectCursor(mev.GetHitTestLocation(), mev.GetHitTestResult());
-      if (optional_cursor.IsCursorChange()) {
-        view->SetCursor(optional_cursor.GetCursor());
+      if (optional_cursor.has_value()) {
+        view->SetCursor(optional_cursor.value());
       }
     }
   }

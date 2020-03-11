@@ -311,6 +311,9 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
     EXPECT_EQ(expected, highlighter_showing());
     EXPECT_EQ(expected, metalayer_enabled());
     generator->ReleaseTouch();
+    // If the tool is not enabled, the gesture may open a context menu instead.
+    // Press escape to close the menu.
+    generator->PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
   }
 
   void WaitDragAndAssertMetalayer(const std::string& context,

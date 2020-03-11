@@ -27,10 +27,11 @@ Viewport::Viewport(LayerTreeHostImpl* host_impl)
 }
 
 void Viewport::Pan(const gfx::Vector2dF& delta) {
+  DCHECK(InnerScrollNode());
   gfx::Vector2dF pending_delta = delta;
   float page_scale = host_impl_->active_tree()->current_page_scale_factor();
   pending_delta.Scale(1 / page_scale);
-  scroll_tree().ScrollBy(InnerScrollNode(), pending_delta,
+  scroll_tree().ScrollBy(*InnerScrollNode(), pending_delta,
                          host_impl_->active_tree());
 }
 
@@ -86,12 +87,14 @@ bool Viewport::CanScroll(const ScrollNode& node,
 }
 
 void Viewport::ScrollByInnerFirst(const gfx::Vector2dF& delta) {
+  DCHECK(InnerScrollNode());
   gfx::Vector2dF unused_delta = scroll_tree().ScrollBy(
-      InnerScrollNode(), delta, host_impl_->active_tree());
+      *InnerScrollNode(), delta, host_impl_->active_tree());
 
   auto* outer_node = OuterScrollNode();
   if (!unused_delta.IsZero() && outer_node) {
-    scroll_tree().ScrollBy(outer_node, unused_delta, host_impl_->active_tree());
+    scroll_tree().ScrollBy(*outer_node, unused_delta,
+                           host_impl_->active_tree());
   }
 }
 
@@ -132,11 +135,11 @@ gfx::Vector2dF Viewport::ScrollAnimated(const gfx::Vector2dF& delta,
   // TODO(ymalik): Fix the visible jump seen by instant scrolling one of the
   // viewports.
   if (ShouldAnimateViewport(inner_delta, outer_delta)) {
-    scroll_tree().ScrollBy(outer_node, outer_delta, host_impl_->active_tree());
-    host_impl_->ScrollAnimationCreate(inner_node, inner_delta, delayed_by);
+    scroll_tree().ScrollBy(*outer_node, outer_delta, host_impl_->active_tree());
+    host_impl_->ScrollAnimationCreate(*inner_node, inner_delta, delayed_by);
   } else {
-    scroll_tree().ScrollBy(inner_node, inner_delta, host_impl_->active_tree());
-    host_impl_->ScrollAnimationCreate(outer_node, outer_delta, delayed_by);
+    scroll_tree().ScrollBy(*inner_node, inner_delta, host_impl_->active_tree());
+    host_impl_->ScrollAnimationCreate(*outer_node, outer_delta, delayed_by);
   }
 
   pending_delta = scaled_delta - inner_delta - outer_delta;
@@ -159,6 +162,7 @@ void Viewport::SnapPinchAnchorIfWithinMargin(const gfx::Point& anchor) {
 }
 
 void Viewport::PinchUpdate(float magnify_delta, const gfx::Point& anchor) {
+  DCHECK(InnerScrollNode());
   if (!pinch_zoom_active_) {
     // If this is the first pinch update and the pinch is within a margin-
     // length of the screen edge, offset all updates by the amount so that we
@@ -189,7 +193,7 @@ void Viewport::PinchUpdate(float magnify_delta, const gfx::Point& anchor) {
 
   // If clamping the inner viewport scroll offset causes a change, it should
   // be accounted for from the intended move.
-  move -= scroll_tree().ClampScrollToMaxScrollOffset(InnerScrollNode(),
+  move -= scroll_tree().ClampScrollToMaxScrollOffset(*InnerScrollNode(),
                                                      host_impl_->active_tree());
 
   Pan(move);

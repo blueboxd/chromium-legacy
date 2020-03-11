@@ -2346,8 +2346,12 @@
     },
 
     'ios_simulator': {
-      'mixins': ['ios'],
+      'mixins': ['ios', 'ios_use_goma_rbe' ],
       'gn_args': 'target_cpu="x64"',
+    },
+
+    'ios_use_goma_rbe': {
+      'gn_args': 'ios_use_goma_rbe=true'
     },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },

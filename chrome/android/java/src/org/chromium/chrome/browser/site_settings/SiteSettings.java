@@ -127,7 +127,8 @@ public class SiteSettings
             p.setOnPreferenceClickListener(this);
 
             if ((Type.CAMERA == prefCategory || Type.MICROPHONE == prefCategory
-                        || Type.NOTIFICATIONS == prefCategory)
+                        || Type.NOTIFICATIONS == prefCategory
+                        || Type.AUGMENTED_REALITY == prefCategory)
                     && SiteSettingsCategory.createFromType(prefCategory)
                                .showPermissionBlockedMessage(getActivity())) {
                 // Show 'disabled' message when permission is not granted in Android.

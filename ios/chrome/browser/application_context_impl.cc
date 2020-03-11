@@ -40,6 +40,7 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/update_query_params.h"
 #include "components/variations/service/variations_service.h"
+#include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager_impl.h"
@@ -423,6 +424,15 @@ BrowserPolicyConnectorIOS* ApplicationContextImpl::GetBrowserPolicyConnector() {
       DCHECK(ui::ResourceBundle::HasSharedInstance());
       browser_policy_connector_ = std::make_unique<BrowserPolicyConnectorIOS>(
           base::Bind(&BuildPolicyHandlerList));
+
+      // Install a mock platform policy provider, if running under EG2 and one
+      // is supplied.
+      policy::ConfigurationPolicyProvider* test_policy_provider =
+          tests_hook::GetOverriddenPlatformPolicyProvider();
+      if (test_policy_provider) {
+        browser_policy_connector_->SetPolicyProviderForTesting(
+            test_policy_provider);
+      }
     }
   }
   return browser_policy_connector_.get();

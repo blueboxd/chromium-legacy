@@ -21,8 +21,16 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_source.h"
 
+namespace webrtc {
+namespace video_coding {
+class EncodedFrame;
+}  // namespace video_coding
+}  // namespace webrtc
+
 namespace blink {
 class RTCDtlsTransport;
+class RTCEncodedVideoUnderlyingSource;
+class RTCEncodedVideoUnderlyingSink;
 class RTCInsertableStreams;
 class RTCPeerConnection;
 class RTCRtpCapabilities;
@@ -37,7 +45,8 @@ class RTCRtpReceiver final : public ScriptWrappable {
   RTCRtpReceiver(RTCPeerConnection*,
                  std::unique_ptr<RTCRtpReceiverPlatform>,
                  MediaStreamTrack*,
-                 MediaStreamVector);
+                 MediaStreamVector,
+                 bool force_encoded_video_insertable_streams);
 
   static RTCRtpCapabilities* getCapabilities(const String& kind);
 
@@ -65,9 +74,16 @@ class RTCRtpReceiver final : public ScriptWrappable {
   void Trace(Visitor*) override;
 
  private:
-  Member<RTCPeerConnection> pc_;
   void SetContributingSourcesNeedsUpdating();
+  void RegisterEncodedVideoStreamCallback();
+  void UnregisterEncodedVideoStreamCallback();
+  void InitializeEncodedVideoStreams(ScriptState*);
+  void OnFrameFromDepacketizer(
+      std::unique_ptr<webrtc::video_coding::EncodedFrame> frame,
+      std::vector<uint8_t> additional_data,
+      uint32_t ssrc);
 
+  Member<RTCPeerConnection> pc_;
   std::unique_ptr<RTCRtpReceiverPlatform> receiver_;
   Member<MediaStreamTrack> track_;
   Member<RTCDtlsTransport> transport_;
@@ -83,6 +99,13 @@ class RTCRtpReceiver final : public ScriptWrappable {
   // observed delay may differ depending on the congestion control. |nullopt|
   // means default value must be used.
   base::Optional<double> playout_delay_hint_;
+
+  // Insertable Streams support
+  bool force_encoded_video_insertable_streams_;
+  Member<RTCEncodedVideoUnderlyingSource>
+      video_from_depacketizer_underlying_source_;
+  Member<RTCEncodedVideoUnderlyingSink> video_to_decoder_underlying_sink_;
+  Member<RTCInsertableStreams> encoded_video_streams_;
 };
 
 }  // namespace blink

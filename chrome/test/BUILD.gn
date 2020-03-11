@@ -3285,11 +3285,11 @@ test("unit_tests") {
     "../browser/performance_manager/test_support/page_aggregator.h",
     "../browser/performance_monitor/metric_evaluator_helper_win_unittest.cc",
     "../browser/performance_monitor/system_monitor_unittest.cc",
+    "../browser/permissions/chrome_permission_manager_unittest.cc",
     "../browser/permissions/chrome_permission_request_manager_unittest.cc",
     "../browser/permissions/crowd_deny_preload_data_unittest.cc",
     "../browser/permissions/crowd_deny_safe_browsing_request_unittest.cc",
     "../browser/permissions/permission_context_base_feature_policy_unittest.cc",
-    "../browser/permissions/permission_manager_unittest.cc",
     "../browser/plugins/pdf_iframe_navigation_throttle_unittest.cc",
     "../browser/policy/browser_dm_token_storage_linux_unittest.cc",
     "../browser/policy/browser_dm_token_storage_mac_unittest.cc",
@@ -4968,7 +4968,6 @@ test("unit_tests") {
       "../browser/safe_browsing/download_protection/deep_scanning_request_unittest.cc",
       "../browser/safe_browsing/download_protection/download_feedback_service_unittest.cc",
       "../browser/safe_browsing/download_protection/download_feedback_unittest.cc",
-      "../browser/safe_browsing/download_protection/download_item_request_unittest.cc",
       "../browser/safe_browsing/download_protection/download_protection_service_unittest.cc",
       "../browser/safe_browsing/download_protection/file_analyzer_unittest.cc",
       "../browser/safe_browsing/download_protection/path_sanitizer_unittest.cc",
@@ -6283,6 +6282,7 @@ if (!is_fuchsia && !is_android) {
       "../browser/sync/test/integration/enable_disable_test.cc",
       "../browser/sync/test/integration/local_sync_test.cc",
       "../browser/sync/test/integration/migration_test.cc",
+      "../browser/sync/test/integration/password_manager_sync_test.cc",
       "../browser/sync/test/integration/single_client_app_settings_sync_test.cc",
       "../browser/sync/test/integration/single_client_apps_sync_test.cc",
       "../browser/sync/test/integration/single_client_autofill_profile_sync_test.cc",
@@ -6334,6 +6334,7 @@ if (!is_fuchsia && !is_android) {
     ]
 
     data = [
+      "//chrome/test/data/password/",
       "//chrome/test/data/sync/",
       "//net/tools/testserver/",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",

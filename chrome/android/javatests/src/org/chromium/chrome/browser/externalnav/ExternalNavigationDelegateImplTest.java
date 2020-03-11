@@ -336,6 +336,20 @@ import java.util.List;
 
     @Test
     @SmallTest
+    public void testMaybeSetUserGesture() {
+        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
+                mActivityTestRule.getActivity().getActivityTab());
+
+        String url = "http://www.example.com";
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+
+        delegate.maybeSetUserGesture(intent);
+        Assert.assertTrue(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent));
+    }
+
+    @Test
+    @SmallTest
     public void testMaybeSetPendingReferrer() {
         ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
                 mActivityTestRule.getActivity().getActivityTab());

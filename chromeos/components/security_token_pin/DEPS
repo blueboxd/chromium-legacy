@@ -2,3 +2,9 @@ include_rules = [
   "+chromeos/strings/grit/chromeos_strings.h",
   "+ui/base/l10n",
 ]
+
+specific_include_rules = {
+  ".*test\.cc": [
+    "+ui/base",
+  ],
+}

@@ -12,7 +12,7 @@ See https://crbug.com/869308
 <script>
 const host = document.querySelector("#host");
 const child1 = document.querySelector("#child1");
-const shadow_root = host.attachShadow({ mode: "open", slotting: "manual" });
+const shadow_root = host.attachShadow({ mode: "open", slotAssignment: "manual" });
 const slot1 = document.createElement("slot");
 const slot2 = document.createElement("slot");
 shadow_root.appendChild(slot1);

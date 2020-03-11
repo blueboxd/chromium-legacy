@@ -19,6 +19,8 @@ import android.text.style.CharacterStyle;
 import android.text.style.ParagraphStyle;
 import android.text.style.UpdateAppearance;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
@@ -150,16 +152,22 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      * @return an Uri if mime type is image type, or null if there is no Uri or no entries on the
      *         primary clip.
      */
-    public Uri getImageUri() {
-        ClipData clipData = mClipboardManager.getPrimaryClip();
-        if (clipData == null || clipData.getItemCount() == 0) return null;
+    public @Nullable Uri getImageUri() {
+        // getPrimaryClip() has been observed to throw unexpected exceptions for some devices (see
+        // crbug.com/654802).
+        try {
+            ClipData clipData = mClipboardManager.getPrimaryClip();
+            if (clipData == null || clipData.getItemCount() == 0) return null;
 
-        ClipDescription description = clipData.getDescription();
-        if (description == null || !description.hasMimeType("image/*")) {
+            ClipDescription description = clipData.getDescription();
+            if (description == null || !description.hasMimeType("image/*")) {
+                return null;
+            }
+
+            return clipData.getItemAt(0).getUri();
+        } catch (Exception e) {
             return null;
         }
-
-        return clipData.getItemAt(0).getUri();
     }
 
     /**

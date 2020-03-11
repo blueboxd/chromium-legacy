@@ -182,13 +182,13 @@ void PageAnimator::UpdateHitTestOcclusionData(LocalFrame& root_frame) {
   }
 }
 
-HeapVector<Member<Animation>> PageAnimator::GetAnimations(Document* document_) {
+HeapVector<Member<Animation>> PageAnimator::GetAnimations(
+    const TreeScope& tree_scope) {
   HeapVector<Member<Animation>> animations;
   DocumentsVector documents = GetAllDocuments(page_->MainFrame());
-
   for (auto& document : documents) {
-    document->GetDocumentAnimations().GetAnimationsTargetingDocument(
-        document_, animations);
+    document->GetDocumentAnimations().GetAnimationsTargetingTreeScope(
+        animations, tree_scope);
   }
   return animations;
 }

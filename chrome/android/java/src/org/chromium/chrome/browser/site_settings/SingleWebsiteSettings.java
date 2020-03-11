@@ -675,6 +675,8 @@ public class SingleWebsiteSettings extends PreferenceFragmentCompat
             return SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.NOTIFICATIONS);
         } else if (showWarningFor(SiteSettingsCategory.Type.NFC)) {
             return SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.NFC);
+        } else if (showWarningFor(SiteSettingsCategory.Type.AUGMENTED_REALITY)) {
+            return SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.AUGMENTED_REALITY);
         }
         return null;
     }

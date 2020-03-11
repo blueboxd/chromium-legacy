@@ -50,6 +50,15 @@ class OverlayPresentationContext {
   // Whether overlay UI is currently shown in the context.
   virtual bool IsShowingOverlayUI() const = 0;
 
+  // Instructs the presentation context to prepare itself to show the overlay UI
+  // for |request|.  If successful, updates the context's presentation
+  // capabilities to those required for |request|'s UI.  Has no effect if the
+  // context is incapable of supporting |request|.  For example, the context
+  // cannot support UIPresentationCapabilities::kPresented until it is added to
+  // a window (OverlayPresentationContextObserver can be used to detect window
+  // changes).
+  virtual void PrepareToShowOverlayUI(OverlayRequest* request) = 0;
+
   // Called to show the overlay UI for |request|. |presentation_callback| must
   // be called when the UI is finished being presented. |dismissal_callback|
   // must be stored and called whenever the UI is finished being dismissed for

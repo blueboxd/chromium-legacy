@@ -56,11 +56,6 @@ def run_script(argv, funcs):
   # behavior of the script.
   parser.add_argument('--args', type=parse_json, default=[])
 
-  parser.add_argument(
-      '--use-src-side-runtest-py', action='store_true',
-      help='Use the src-side copy of runtest.py, as opposed to the build-side '
-           'one')
-
   subparsers = parser.add_subparsers()
 
   run_parser = subparsers.add_parser('run')

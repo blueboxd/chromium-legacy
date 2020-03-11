@@ -105,7 +105,8 @@ HeapVector<Member<Animation>> Animatable::getAnimations(
     return animations;
 
   for (const auto& animation :
-       element->GetDocument().GetDocumentAnimations().getAnimations()) {
+       element->GetDocument().GetDocumentAnimations().getAnimations(
+           element->GetTreeScope())) {
     DCHECK(animation->effect());
     // TODO(gtsteel) make this use the idl properties
     Element* target = To<KeyframeEffect>(animation->effect())->EffectTarget();

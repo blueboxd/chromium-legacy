@@ -25,16 +25,18 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_context_base.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_id.h"
 #include "components/permissions/permission_request_manager.h"
@@ -255,8 +257,8 @@ void GeolocationPermissionContextTests::SetUp() {
 #endif
   TabSpecificContentSettings::CreateForWebContents(web_contents());
   geolocation_permission_context_ = static_cast<GeolocationPermissionContext*>(
-      PermissionManager::Get(profile())->GetPermissionContext(
-          ContentSettingsType::GEOLOCATION));
+      PermissionManagerFactory::GetForProfile(profile())
+          ->GetPermissionContextForTesting(ContentSettingsType::GEOLOCATION));
   SetupRequestManager(web_contents());
 
 #if defined(OS_ANDROID)
@@ -712,18 +714,20 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffPermissionStatus) {
                                                         DENIED);
 
   // The permission status should reflect that the LSD will be shown.
-  ASSERT_EQ(blink::mojom::PermissionStatus::ASK,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
+  ASSERT_EQ(
+      blink::mojom::PermissionStatus::ASK,
+      PermissionManagerFactory::GetForProfile(profile())->GetPermissionStatus(
+          content::PermissionType::GEOLOCATION, requesting_frame,
+          requesting_frame));
   EXPECT_TRUE(RequestPermissionIsLSDShown(requesting_frame));
 
   // Now that the LSD is in backoff, the permission status should reflect it.
   EXPECT_FALSE(RequestPermissionIsLSDShown(requesting_frame));
-  ASSERT_EQ(blink::mojom::PermissionStatus::DENIED,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
+  ASSERT_EQ(
+      blink::mojom::PermissionStatus::DENIED,
+      PermissionManagerFactory::GetForProfile(profile())->GetPermissionStatus(
+          content::PermissionType::GEOLOCATION, requesting_frame,
+          requesting_frame));
 }
 
 TEST_F(GeolocationPermissionContextTests, LSDBackOffAskPromptsDespiteBackOff) {
@@ -745,10 +749,11 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffAskPromptsDespiteBackOff) {
   // prompt, and the LSD prompt should now be shown.
   SetGeolocationContentSetting(requesting_frame, requesting_frame,
                                CONTENT_SETTING_ASK);
-  ASSERT_EQ(blink::mojom::PermissionStatus::ASK,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
+  ASSERT_EQ(
+      blink::mojom::PermissionStatus::ASK,
+      PermissionManagerFactory::GetForProfile(profile())->GetPermissionStatus(
+          content::PermissionType::GEOLOCATION, requesting_frame,
+          requesting_frame));
   EXPECT_TRUE(
       RequestPermissionIsLSDShownWithPermissionPrompt(requesting_frame));
 }
@@ -1075,7 +1080,7 @@ TEST_F(GeolocationPermissionContextTests, SearchGeolocationInIncognito) {
 
   // The DSE should be auto-granted geolocation.
   ASSERT_EQ(CONTENT_SETTING_ALLOW,
-            PermissionManager::Get(profile())
+            PermissionManagerFactory::GetForProfile(profile())
                 ->GetPermissionStatus(ContentSettingsType::GEOLOCATION,
                                       requesting_frame, requesting_frame)
                 .content_setting);
@@ -1084,7 +1089,7 @@ TEST_F(GeolocationPermissionContextTests, SearchGeolocationInIncognito) {
 
   // A DSE setting of ALLOW should not flow through to incognito.
   ASSERT_EQ(CONTENT_SETTING_ASK,
-            PermissionManager::Get(otr_profile)
+            PermissionManagerFactory::GetForProfile(otr_profile)
                 ->GetPermissionStatus(ContentSettingsType::GEOLOCATION,
                                       requesting_frame, requesting_frame)
                 .content_setting);
@@ -1099,28 +1104,31 @@ TEST_F(GeolocationPermissionContextTests, GeolocationStatusAndroidDisabled) {
                                CONTENT_SETTING_ALLOW);
   MockLocationSettings::SetLocationStatus(false /* android */,
                                           true /* system */);
-  ASSERT_EQ(blink::mojom::PermissionStatus::ASK,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
+  ASSERT_EQ(
+      blink::mojom::PermissionStatus::ASK,
+      PermissionManagerFactory::GetForProfile(profile())->GetPermissionStatus(
+          content::PermissionType::GEOLOCATION, requesting_frame,
+          requesting_frame));
 
   // With the Android permission off, and location blocked for a domain, the
   // permission status should still be BLOCK.
   SetGeolocationContentSetting(requesting_frame, requesting_frame,
                                CONTENT_SETTING_BLOCK);
-  ASSERT_EQ(blink::mojom::PermissionStatus::DENIED,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
+  ASSERT_EQ(
+      blink::mojom::PermissionStatus::DENIED,
+      PermissionManagerFactory::GetForProfile(profile())->GetPermissionStatus(
+          content::PermissionType::GEOLOCATION, requesting_frame,
+          requesting_frame));
 
   // With the Android permission off, and location prompt for a domain, the
   // permission status should still be ASK.
   SetGeolocationContentSetting(requesting_frame, requesting_frame,
                                CONTENT_SETTING_ASK);
-  ASSERT_EQ(blink::mojom::PermissionStatus::ASK,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
+  ASSERT_EQ(
+      blink::mojom::PermissionStatus::ASK,
+      PermissionManagerFactory::GetForProfile(profile())->GetPermissionStatus(
+          content::PermissionType::GEOLOCATION, requesting_frame,
+          requesting_frame));
 }
 
 TEST_F(GeolocationPermissionContextTests, GeolocationStatusSystemDisabled) {
@@ -1134,34 +1142,38 @@ TEST_F(GeolocationPermissionContextTests, GeolocationStatusSystemDisabled) {
                                           false /* system */);
   MockLocationSettings::SetLocationSettingsDialogStatus(true /* enabled */,
                                                         DENIED);
-  ASSERT_EQ(blink::mojom::PermissionStatus::ASK,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
+  ASSERT_EQ(
+      blink::mojom::PermissionStatus::ASK,
+      PermissionManagerFactory::GetForProfile(profile())->GetPermissionStatus(
+          content::PermissionType::GEOLOCATION, requesting_frame,
+          requesting_frame));
 
   MockLocationSettings::SetLocationSettingsDialogStatus(false /* enabled */,
                                                         GRANTED);
-  ASSERT_EQ(blink::mojom::PermissionStatus::DENIED,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
+  ASSERT_EQ(
+      blink::mojom::PermissionStatus::DENIED,
+      PermissionManagerFactory::GetForProfile(profile())->GetPermissionStatus(
+          content::PermissionType::GEOLOCATION, requesting_frame,
+          requesting_frame));
 
   // The result should be the same if the location permission is ASK.
   SetGeolocationContentSetting(requesting_frame, requesting_frame,
                                CONTENT_SETTING_ASK);
   MockLocationSettings::SetLocationSettingsDialogStatus(true /* enabled */,
                                                         GRANTED);
-  ASSERT_EQ(blink::mojom::PermissionStatus::ASK,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
+  ASSERT_EQ(
+      blink::mojom::PermissionStatus::ASK,
+      PermissionManagerFactory::GetForProfile(profile())->GetPermissionStatus(
+          content::PermissionType::GEOLOCATION, requesting_frame,
+          requesting_frame));
 
   MockLocationSettings::SetLocationSettingsDialogStatus(false /* enabled */,
                                                         GRANTED);
-  ASSERT_EQ(blink::mojom::PermissionStatus::DENIED,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
+  ASSERT_EQ(
+      blink::mojom::PermissionStatus::DENIED,
+      PermissionManagerFactory::GetForProfile(profile())->GetPermissionStatus(
+          content::PermissionType::GEOLOCATION, requesting_frame,
+          requesting_frame));
 
   // With the Android permission off, and location blocked for a domain, the
   // permission status should still be BLOCK.
@@ -1169,9 +1181,10 @@ TEST_F(GeolocationPermissionContextTests, GeolocationStatusSystemDisabled) {
                                CONTENT_SETTING_BLOCK);
   MockLocationSettings::SetLocationSettingsDialogStatus(true /* enabled */,
                                                         GRANTED);
-  ASSERT_EQ(blink::mojom::PermissionStatus::DENIED,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
+  ASSERT_EQ(
+      blink::mojom::PermissionStatus::DENIED,
+      PermissionManagerFactory::GetForProfile(profile())->GetPermissionStatus(
+          content::PermissionType::GEOLOCATION, requesting_frame,
+          requesting_frame));
 }
 #endif  // defined(OS_ANDROID)

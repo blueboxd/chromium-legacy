@@ -123,13 +123,13 @@ _COVERAGE_EXCLUSION_LIST_MAP = {
 
 # Map of force lists indexed by target OS.
 _COVERAGE_FORCE_LIST_MAP = {
-    # clang_coverage.cc refers to the symbol `__llvm_profile_dump` from the
+    # clang_profiling.cc refers to the symbol `__llvm_profile_dump` from the
     # profiling runtime. In a partial coverage build, it is possible for a
-    # binary to include clang_coverage.cc but have no instrumented files, thus
+    # binary to include clang_profiling.cc but have no instrumented files, thus
     # causing an unresolved symbol error because the profiling runtime will not
     # be linked in. Therefore we force coverage for this file to ensure that
     # any target that includes it will also get the profiling runtime.
-    'win': [r'..\..\base\test\clang_coverage.cc'],
+    'win': [r'..\..\base\test\clang_profiling.cc'],
 }
 
 

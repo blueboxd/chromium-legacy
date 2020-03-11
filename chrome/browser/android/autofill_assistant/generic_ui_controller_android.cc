@@ -233,7 +233,7 @@ GenericUiControllerAndroid::CreateFromProto(
   auto interaction_handler =
       std::make_unique<InteractionHandlerAndroid>(event_handler, jcontext);
   if (!interaction_handler->AddInteractionsFromProto(
-          proto.interactions(), env, *views, jdelegate, user_model,
+          proto.interactions(), env, views.get(), jdelegate, user_model,
           basic_interactions)) {
     return nullptr;
   }

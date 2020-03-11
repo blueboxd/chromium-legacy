@@ -177,7 +177,8 @@ void DragHandle::ShowDragHandleTooltip() {
       gfx::Insets(), l10n_util::GetStringUTF16(IDS_ASH_DRAG_HANDLE_NUDGE),
       AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kTextPrimary,
-          AshColorProvider::AshColorMode::kDark));
+          AshColorProvider::AshColorMode::kDark),
+      base::RepeatingClosure());
   drag_handle_nudge_->GetWidget()->Show();
   drag_handle_nudge_->label()->layer()->SetOpacity(0.0f);
 

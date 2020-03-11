@@ -6,7 +6,7 @@
 <script>
   const host = document.querySelector("#host");
   const child1 = document.querySelector("#child1");
-  const shadow_root = host.attachShadow({ mode: "open", slotting: "manual" });
+  const shadow_root = host.attachShadow({ mode: "open", slotAssignment: "manual" });
   window.onload = function() {
     PerfTestRunner.measureTime({
       description: "Measure performance of slot assignment in manual-slotting mode in shadow root.",

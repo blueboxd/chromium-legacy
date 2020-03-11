@@ -57,6 +57,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   std::vector<GrBackendSemaphore> TakeEndPaintSemaphores(void) override;
   bool supports_alpha() { return true; }
 
+  bool IsPrimaryPlaneOverlay() const override;
   void SchedulePrimaryPlane(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane)
       override;

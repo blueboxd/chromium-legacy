@@ -144,6 +144,11 @@ class CORE_EXPORT DisplayLockContext final
   // Clear the activated flag.
   void ClearActivated();
 
+  // Is called by the intersection observer callback to inform us of the
+  // intersection state.
+  void NotifyIsIntersectingViewport();
+  void NotifyIsNotIntersectingViewport();
+
   // Acquire the lock, should only be called when unlocked.
   void StartAcquire();
   // Initiate a commit.
@@ -282,10 +287,14 @@ class CORE_EXPORT DisplayLockContext final
   }
 
  private:
-  friend class DisplayLockContextTest;
+  // Test friends.
   friend class DisplayLockBudgetTest;
-  friend class DisplayLockSuspendedHandle;
+  friend class DisplayLockContextRenderingTest;
+  friend class DisplayLockContextTest;
+
+  // Production friends.
   friend class DisplayLockBudget;
+  friend class DisplayLockSuspendedHandle;
 
   class StateChangeHelper {
     DISALLOW_NEW();
@@ -342,7 +351,7 @@ class CORE_EXPORT DisplayLockContext final
   // Helper functions to resolve the update/commit promises.
   enum ResolverState { kResolve, kReject, kDetach };
   void MakeResolver(ScriptState*, Member<ScriptPromiseResolver>*);
-  bool HasResolver();
+  bool HasResolver() const;
   void FinishUpdateResolver(ResolverState, const char* reject_reason = nullptr);
   void FinishResolver(Member<ScriptPromiseResolver>*,
                       ResolverState,
@@ -380,6 +389,12 @@ class CORE_EXPORT DisplayLockContext final
   // This function is called from within a task to fire the activation event.
   // Scheduled by CommitForActivationWithSignal.
   void FireActivationEvent(Element* activated_element);
+
+  // Determines whether or not we need lifecycle notifications.
+  bool NeedsLifecycleNotifications() const;
+  // Updates the lifecycle notification registration based on whether we need
+  // the notifications.
+  void UpdateLifecycleNotificationRegistration();
 
   std::unique_ptr<DisplayLockBudget> update_budget_;
 
@@ -429,6 +444,17 @@ class CORE_EXPORT DisplayLockContext final
   // valid for CSS version of subtree-visibility.
   bool css_is_activated_ = false;
 
+  // Is set to true if we are registered for lifecycle notifications.
+  bool is_registered_for_lifecycle_notifications_ = false;
+
+  // This is set to true when we have delayed locking ourselves due to viewport
+  // intersection (or lack thereof) because we were nested in a locked subtree.
+  // In that case, we register for lifecycle notifications and check every time
+  // if we are still nested.
+  bool needs_intersection_lock_check_ = false;
+
+  // TODO(vmpstr): This is only needed while we're still sending activation
+  // events.
   base::WeakPtrFactory<DisplayLockContext> weak_factory_{this};
 };
 

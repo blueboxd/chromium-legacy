@@ -4,6 +4,9 @@
 
 #include "ios/chrome/app/tests_hook.h"
 
+#include "base/command_line.h"
+#include "ios/chrome/browser/policy/test_platform_policy_provider.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -32,6 +35,16 @@ bool DisableSigninRecallPromo() {
 
 bool DisableUpdateService() {
   return true;
+}
+
+policy::ConfigurationPolicyProvider* GetOverriddenPlatformPolicyProvider() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "com.apple.configuration.managed")) {
+    DVLOG(1) << "Policy data present in NSUserDefaults, not installing test "
+                "platform provider";
+    return nullptr;
+  }
+  return GetTestPlatformPolicyProvider();
 }
 
 void SetUpTestsIfPresent() {

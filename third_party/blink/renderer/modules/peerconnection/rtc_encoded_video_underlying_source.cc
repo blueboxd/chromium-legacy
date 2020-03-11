@@ -4,13 +4,14 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_underlying_source.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_with_script_scope.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame.h"
-#include "third_party/webrtc/api/video/encoded_frame.h"
-
-#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/webrtc/api/video/encoded_frame.h"
+
 namespace blink {
 
 // Frames should not be queued at all. We allow queuing a few frames to deal
@@ -58,9 +59,15 @@ void RTCEncodedVideoUnderlyingSource::OnFrameFromSource(
     return;
   }
 
+  Vector<uint8_t> wtf_additional_data;
+  wtf_additional_data.ReserveInitialCapacity(
+      static_cast<wtf_size_t>(additional_data.size()));
+  wtf_additional_data.AppendRange(additional_data.begin(),
+                                  additional_data.end());
+
   RTCEncodedVideoFrame* encoded_frame =
-      MakeGarbageCollected<RTCEncodedVideoFrame>(std::move(webrtc_frame),
-                                                 std::move(additional_data));
+      MakeGarbageCollected<RTCEncodedVideoFrame>(
+          std::move(webrtc_frame), std::move(wtf_additional_data));
   Controller()->Enqueue(encoded_frame);
 }
 

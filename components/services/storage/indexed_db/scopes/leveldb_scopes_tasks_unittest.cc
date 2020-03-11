@@ -139,8 +139,7 @@ TEST_F(LevelDBScopesTasksTest, CleanupAbortsOnDestructionRequested) {
                         CleanupScopeTask::CleanupMode::kExecuteCleanupTasks,
                         kWriteBatchSizeForTesting);
 
-  leveldb_->RequestDestruction(base::DoNothing(),
-                               base::SequencedTaskRunnerHandle::Get());
+  leveldb_->RequestDestruction(&leveldb_close_event_);
   leveldb::Status s = task.Run();
   ASSERT_TRUE(s.ok()) << s.ToString();
   EXPECT_TRUE(LoadAt(delete_range_start_key_).ok());

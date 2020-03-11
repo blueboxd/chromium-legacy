@@ -188,6 +188,21 @@ enum StoreAvailabilityResult {
   COUNT,
 };
 
+void RecordTimeSinceLastUpdateHistograms(const base::Time& last_response_time) {
+  bool response_received = !last_response_time.is_null();
+  UMA_HISTOGRAM_BOOLEAN(
+      "SafeBrowsing.V4LocalDatabaseManager.HasReceivedUpdateResponse",
+      response_received);
+
+  if (!response_received)
+    return;
+
+  base::TimeDelta time_since_update = base::Time::Now() - last_response_time;
+  UMA_HISTOGRAM_LONG_TIMES_100(
+      "SafeBrowsing.V4LocalDatabaseManager.TimeSinceLastUpdateResponse",
+      time_since_update);
+}
+
 }  // namespace
 
 V4LocalDatabaseManager::PendingCheck::PendingCheck(
@@ -335,6 +350,8 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url,
   bool safe_synchronously = HandleCheck(std::move(check));
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.CheckBrowseUrl.HasLocalMatch",
                         !safe_synchronously);
+  RecordTimeSinceLastUpdateHistograms(
+      v4_update_protocol_manager_->last_response_time());
   return safe_synchronously;
 }
 

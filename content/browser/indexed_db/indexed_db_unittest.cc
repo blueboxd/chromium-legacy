@@ -119,33 +119,20 @@ class IndexedDBTest : public testing::Test {
       // deletion of the leveldb state. Once the states are no longer around,
       // delete all of the databases on disk.
       auto open_factory_origins = factory->GetOpenOrigins();
-      base::RunLoop loop;
-      auto callback = base::BarrierClosure(
-          open_factory_origins.size(), base::BindLambdaForTesting([&]() {
-            // All leveldb databases are closed, and they can be deleted.
-            for (auto origin : context_->GetAllOrigins()) {
-              bool success = false;
-              storage::mojom::IndexedDBControlAsyncWaiter waiter(
-                  context_.get());
-              waiter.DeleteForOrigin(origin, &success);
-              EXPECT_TRUE(success);
-            }
-            loop.Quit();
-          }));
       for (auto origin : open_factory_origins) {
-        IndexedDBOriginState* per_origin_factory =
-            factory->GetOriginFactory(origin);
-        per_origin_factory->backing_store()
-            ->db()
-            ->leveldb_state()
-            ->RequestDestruction(callback,
-                                 base::SequencedTaskRunnerHandle::Get());
         context_->ForceCloseSync(
             origin,
             storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN);
       }
-      loop.Run();
+      // All leveldb databases are closed, and they can be deleted.
+      for (auto origin : context_->GetAllOrigins()) {
+        bool success = false;
+        storage::mojom::IndexedDBControlAsyncWaiter waiter(context_.get());
+        waiter.DeleteForOrigin(origin, &success);
+        EXPECT_TRUE(success);
+      }
     }
+
     if (temp_dir_.IsValid())
       ASSERT_TRUE(temp_dir_.Delete());
   }

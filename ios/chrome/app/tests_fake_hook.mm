@@ -28,6 +28,9 @@ bool DisableSigninRecallPromo() {
 bool DisableUpdateService() {
   return false;
 }
+policy::ConfigurationPolicyProvider* GetOverriddenPlatformPolicyProvider() {
+  return nullptr;
+}
 void SetUpTestsIfPresent() {}
 void RunTestsIfPresent() {}
 

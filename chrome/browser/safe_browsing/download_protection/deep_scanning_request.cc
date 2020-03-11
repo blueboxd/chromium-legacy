@@ -10,10 +10,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
+#include "chrome/browser/safe_browsing//cloud_content_scanning/file_source_request.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
-#include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -175,11 +175,9 @@ void DeepScanningRequest::Start() {
   // Indicate we're now scanning the file.
   callback_.Run(DownloadCheckResult::ASYNC_SCANNING);
 
-  auto request = std::make_unique<DownloadItemRequest>(
-      item_, /*read_immediately=*/true,
-      base::BindOnce(&DeepScanningRequest::OnScanComplete,
-                     weak_ptr_factory_.GetWeakPtr()));
-  request->set_filename(item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
+  auto request = std::make_unique<FileSourceRequest>(
+      item_->GetFullPath(), base::BindOnce(&DeepScanningRequest::OnScanComplete,
+                                           weak_ptr_factory_.GetWeakPtr()));
 
   std::string raw_digest_sha256 = item_->GetHash();
   request->set_digest(

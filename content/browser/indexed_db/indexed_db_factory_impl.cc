@@ -769,7 +769,7 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
   // Scopes must be single sequence to keep methods like ForceClose synchronous.
   // See https://crbug.com/980685
   s = backing_store->db()->scopes()->StartRecoveryAndCleanupTasks(
-      LevelDBScopes::TaskRunnerMode::kUseCurrentSequence);
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
 
   if (UNLIKELY(!s.ok())) {
     ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY,

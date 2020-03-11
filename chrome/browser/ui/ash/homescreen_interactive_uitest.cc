@@ -52,7 +52,8 @@ class HomescreenTest : public UIPerformanceTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(HomescreenTest, ShowHideLauncher) {
+// Disabled: crbug.com/1060648
+IN_PROC_BROWSER_TEST_F(HomescreenTest, DISABLED_ShowHideLauncher) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
 

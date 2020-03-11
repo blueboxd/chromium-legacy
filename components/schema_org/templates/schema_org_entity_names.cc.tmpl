@@ -6,6 +6,9 @@
 // Do not edit.
 
 #include "components/schema_org/{{ header_file }}.h"
+#include "base/containers/flat_set.h"
+#include "base/no_destructor.h"
+#include "base/strings/string_piece.h"
 
 namespace schema_org {
 namespace entity {
@@ -13,6 +16,16 @@ namespace entity {
 {% for entity in entities %}
 const char k{{entity[0]|upper}}{{entity[1:]}}[] = "{{entity}}";
 {% endfor %}
+
+bool IsValidEntityName(const std::string& entity_name) {
+  static const base::NoDestructor<base::flat_set<base::StringPiece>>
+    kValidEntityNames(base::flat_set<base::StringPiece>({
+      {%for entity in entities %}
+      k{{entity[0]|upper}}{{entity[1:]}},
+      {% endfor %}
+  }));
+  return kValidEntityNames->find(entity_name) != kValidEntityNames->end();
+}
 
 }  // entity
 }  // schema_org

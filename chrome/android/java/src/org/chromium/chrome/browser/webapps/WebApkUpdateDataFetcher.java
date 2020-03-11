@@ -141,10 +141,9 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
 
         int defaultBackgroundColor = SplashLayout.getDefaultBackgroundColor(appContext);
         WebApkInfo info = WebApkInfo.create(mOldInfo.url(), scopeUrl,
-                new WebappIcon(primaryIconBitmap), null /* badgeIcon*/,
-                new WebappIcon(splashIconBitmap), name, shortName, displayMode, orientation,
-                mOldInfo.source(), themeColor, backgroundColor, defaultBackgroundColor,
-                isPrimaryIconMaskable, false /* isSplashIconMaskable */,
+                new WebappIcon(primaryIconBitmap), new WebappIcon(splashIconBitmap), name,
+                shortName, displayMode, orientation, mOldInfo.source(), themeColor, backgroundColor,
+                defaultBackgroundColor, isPrimaryIconMaskable, false /* isSplashIconMaskable */,
                 mOldInfo.webApkPackageName(), mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(),
                 manifestStartUrl, WebApkDistributor.BROWSER, iconUrlToMurmur2HashMap, shareTarget,
                 mOldInfo.shouldForceNavigation(), mOldInfo.isSplashProvidedByWebApk(), null,

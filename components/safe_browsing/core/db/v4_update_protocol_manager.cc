@@ -449,4 +449,8 @@ void V4UpdateProtocolManager::CollectUpdateInfo(
   }
 }
 
+const base::Time& V4UpdateProtocolManager::last_response_time() const {
+  return last_response_time_;
+}
+
 }  // namespace safe_browsing

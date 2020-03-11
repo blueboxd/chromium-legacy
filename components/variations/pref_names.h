@@ -29,6 +29,7 @@ extern const char kVariationsSafeSeedSignature[];
 extern const char kVariationsSeedDate[];
 extern const char kVariationsSeedSignature[];
 extern const char kVariationsRestrictionsByPolicy[];
+extern const char kDeviceVariationsRestrictionsByPolicy[];
 
 }  // namespace prefs
 }  // namespace variations

@@ -6,27 +6,11 @@ See https://crbug.com/869308
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/shadow-dom.js"></script>
-<div id="test1">
-  <div id="host"></div>
-  <div id="host1"></div>
-  <div id="host2"></div>
-</div>
-<script>
-test(() => {
-  let n = createTestTree(test1);
-  assert_not_equals(n.host.attachShadow({ mode: 'open', slotting: 'manual' }),
-                    null, 'slotting manual should work');
-  assert_not_equals(n.host1.attachShadow({ mode: 'open', slotting: 'auto' }),
-                    null, 'slotting auto should work');
-  assert_throws_js(TypeError, () => {
-  n.host2.attachShadow({ mode: 'open', slotting: 'exceptional' })},
-                'others should throw exception');
-}, 'attachShadow can take slotting parameter');
 
 </script>
 <div id="test2">
   <div id="host">
-    <template id="shadow_root" data-mode="open" data-slotting="manual">
+    <template id="shadow_root" data-mode="open" data-slot-assignment="manual">
       <slot id="s1"></slot>
       <slot id="s2"></slot>
       <slot id="s3"></slot>
@@ -37,7 +21,7 @@ test(() => {
   </div>
   <div id="c4"></div>
   <div id="host4">
-    <template id="shadow_root1" data-mode="open" data-slotting="manual">
+    <template id="shadow_root1" data-mode="open" data-slot-assignment="manual">
       <slot id="s5" name="s5"></slot>
     </template>
   </div>

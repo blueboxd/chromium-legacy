@@ -599,6 +599,13 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
+    public void maybeSetUserGesture(Intent intent) {
+        // The intent can be used to launch Chrome itself, record the user
+        // gesture here so that it can be used later.
+        IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
+    }
+
+    @Override
     public void maybeSetPendingReferrer(Intent intent, String referrerUrl) {
         IntentHandler.setPendingReferrer(intent, referrerUrl);
     }

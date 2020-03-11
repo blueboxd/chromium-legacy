@@ -12,7 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/common/trace_event_common.h"
-#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/metrics/webxr_session_tracker.h"
@@ -20,6 +20,7 @@
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/permissions/permission_manager.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -448,8 +449,9 @@ void VRServiceImpl::ShowConsentPrompt(SessionRequestData request,
   }
 
   if (base::FeatureList::IsEnabled(features::kWebXrPermissionsApi)) {
-    PermissionManager* permission_manager = PermissionManager::Get(
-        Profile::FromBrowserContext(GetWebContents()->GetBrowserContext()));
+    permissions::PermissionManager* permission_manager =
+        PermissionManagerFactory::GetForProfile(
+            Profile::FromBrowserContext(GetWebContents()->GetBrowserContext()));
     DCHECK(permission_manager);
 
     // Need to calculate the permission before the call below, as otherwise

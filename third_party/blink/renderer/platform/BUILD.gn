@@ -1886,7 +1886,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "peerconnection/task_queue_factory_test.cc",
     "peerconnection/transmission_encoding_info_handler_test.cc",
     "peerconnection/two_keys_adapter_map_unittest.cc",
-    "peerconnection/webrtc_audio_sink_test.cc",
     "peerconnection/webrtc_video_track_source_test.cc",
     "text/bidi_resolver_test.cc",
     "text/bidi_test_harness.h",

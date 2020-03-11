@@ -8,7 +8,6 @@
 <link rel="import" href="../router.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../site_settings/constants.html">
-<link rel="import" href="../metrics_browser_proxy.html">
 <link rel="import" href="recent_site_permissions.html">
 <link rel="import" href="site_settings_list.html">
 
@@ -43,16 +42,14 @@
     <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
       <settings-site-settings-list
           category-list="[[lists_.all]]"
-          focus-config="[[focusConfig]]"
-          on-site-settings-item-click="onSiteSettingsItemClick_">
+          focus-config="[[focusConfig]]">
       </settings-site-settings-list>
     </template>
 
     <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
       <settings-site-settings-list
           category-list="[[lists_.permissionsBasic]]"
-          focus-config="[[focusConfig]]"
-          on-site-settings-item-click="onSiteSettingsItemClick_">
+          focus-config="[[focusConfig]]">
       </settings-site-settings-list>
       <cr-expand-button class="settings-box"
           expanded="{{permissionsExpanded_}}">
@@ -61,8 +58,7 @@
       <iron-collapse opened="[[permissionsExpanded_]]">
         <settings-site-settings-list
             category-list="[[lists_.permissionsAdvanced]]"
-            focus-config="[[focusConfig]]"
-            on-site-settings-item-click="onSiteSettingsItemClick_">
+            focus-config="[[focusConfig]]">
         </settings-site-settings-list>
       </iron-collapse>
 
@@ -71,8 +67,7 @@
       </div>
       <settings-site-settings-list
           category-list="[[lists_.contentBasic]]"
-          focus-config="[[focusConfig]]"
-          on-site-settings-item-click="onSiteSettingsItemClick_">
+          focus-config="[[focusConfig]]">
       </settings-site-settings-list>
       <cr-expand-button class="settings-box"
           expanded="{{contentExpanded_}}">
@@ -81,8 +76,7 @@
       <iron-collapse opened="[[contentExpanded_]]">
         <settings-site-settings-list
             category-list="[[lists_.contentAdvanced]]"
-            focus-config="[[focusConfig]]"
-            on-site-settings-item-click="onSiteSettingsItemClick_">
+            focus-config="[[focusConfig]]">
         </settings-site-settings-list>
       </iron-collapse>
     </template>

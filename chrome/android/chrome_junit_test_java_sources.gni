@@ -205,6 +205,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/tab/TabBrowserControlsConstraintsHelperTest.java",
   "junit/src/org/chromium/chrome/browser/tab/TabBrowserControlsOffsetHelperTest.java",
   "junit/src/org/chromium/chrome/browser/tab/TabUnitTest.java",
+  "junit/src/org/chromium/chrome/browser/tab/TabViewAndroidDelegateTest.java",
   "junit/src/org/chromium/chrome/browser/tabstate/TabStateUnitTest.java",
   "junit/src/org/chromium/chrome/browser/tasks/EngagementTimeUtilTest.java",
   "junit/src/org/chromium/chrome/browser/tasks/JourneyManagerTest.java",

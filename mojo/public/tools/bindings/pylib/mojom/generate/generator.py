@@ -1,7 +1,6 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Code shared by the various language-specific code generators."""
 
 from __future__ import print_function
@@ -35,6 +34,7 @@ def SplitCamelCase(identifier):
   identifier = re.sub('([a-z][0-9]*)(?=[A-Z])', r'\1_', identifier)
   return [x.lower() for x in identifier.split('_')]
 
+
 def ToCamel(identifier, lower_initial=False, dilimiter='_'):
   """Splits |identifier| using |dilimiter|, makes the first character of each
   word uppercased (but makes the first character of the first word lowercased
@@ -42,10 +42,11 @@ def ToCamel(identifier, lower_initial=False, dilimiter='_'):
   each word, all the characters except the first one are untouched.
   """
   result = ''.join(word[0].upper() + word[1:]
-      for word in identifier.split(dilimiter) if word)
+                   for word in identifier.split(dilimiter) if word)
   if lower_initial and result:
     result = result[0].lower() + result[1:]
   return result
+
 
 def ToConstantCase(identifier):
   """Splits camel-cased |identifier| into lower case words, removes the first
@@ -61,6 +62,7 @@ def ToConstantCase(identifier):
     words[0] = '_' + words[0]
 
   return '_'.join([word.upper() for word in words])
+
 
 class Stylizer(object):
   """Stylizers specify naming rules to map mojom names to names in generated
@@ -167,8 +169,11 @@ def AddComputedData(module):
                                      method.mojom_name)
     struct = mojom.Struct(params_class, module=method.interface.module)
     for param in method.parameters:
-      struct.AddField(param.mojom_name, param.kind, param.ordinal,
-                      attributes=param.attributes)
+      struct.AddField(
+          param.mojom_name,
+          param.kind,
+          param.ordinal,
+          attributes=param.attributes)
     _AddStructComputedData(False, struct)
     return struct
 
@@ -178,8 +183,11 @@ def AddComputedData(module):
                                              method.mojom_name)
     struct = mojom.Struct(params_class, module=method.interface.module)
     for param in method.response_parameters:
-      struct.AddField(param.mojom_name, param.kind, param.ordinal,
-                      attributes=param.attributes)
+      struct.AddField(
+          param.mojom_name,
+          param.kind,
+          param.ordinal,
+          attributes=param.attributes)
     _AddStructComputedData(False, struct)
     return struct
 
@@ -194,15 +202,24 @@ def AddComputedData(module):
 class Generator(object):
   # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all
   # files to stdout.
-  def __init__(self, module, output_dir=None, typemap=None, variant=None,
-               bytecode_path=None, for_blink=False,
+  def __init__(self,
+               module,
+               output_dir=None,
+               typemap=None,
+               variant=None,
+               bytecode_path=None,
+               for_blink=False,
                js_bindings_mode="new",
                js_generate_struct_deserializers=False,
                export_attribute=None,
-               export_header=None, generate_non_variant_code=False,
-               support_lazy_serialization=False, disallow_native_types=False,
-               disallow_interfaces=False, generate_message_ids=False,
-               generate_fuzzing=False, enable_kythe_annotations=False,
+               export_header=None,
+               generate_non_variant_code=False,
+               support_lazy_serialization=False,
+               disallow_native_types=False,
+               disallow_interfaces=False,
+               generate_message_ids=False,
+               generate_fuzzing=False,
+               enable_kythe_annotations=False,
                extra_cpp_template_paths=None):
     self.module = module
     self.output_dir = output_dir

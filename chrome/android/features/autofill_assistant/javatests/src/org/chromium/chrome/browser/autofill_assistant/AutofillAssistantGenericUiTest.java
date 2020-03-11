@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataResultProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ColorProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ComputeValueProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.DateFormatProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DateList;
 import org.chromium.chrome.browser.autofill_assistant.proto.DateProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DividerViewProto;
@@ -74,6 +75,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionStatusProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetModelValueProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.SetTextProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetUserActionsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShapeDrawableProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowCalendarPopupProto;
@@ -84,6 +86,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.StringList;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.TextViewProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ToStringProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserActionList;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueProto;
@@ -1047,10 +1050,36 @@ public class AutofillAssistantGenericUiTest {
                                                  .setMinDateModelIdentifier("min_date")
                                                  .setMaxDateModelIdentifier("max_date")))
                                  .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "date")))
+                        .addCallbacks(CallbackProto.newBuilder().setComputeValue(
+                                ComputeValueProto.newBuilder()
+                                        .setResultModelIdentifier("date_string")
+                                        .setToString(
+                                                ToStringProto.newBuilder()
+                                                        .setModelIdentifier("date")
+                                                        .setDateFormat(
+                                                                DateFormatProto.newBuilder()
+                                                                        .setDateFormat(
+                                                                                "EEE, MMM d y")))))
+                        .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "date_string")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetText(
+                                SetTextProto.newBuilder()
+                                        .setModelIdentifier("date_string")
+                                        .setViewIdentifier("text_view")))
+                        .build());
 
         GenericUserInterfaceProto genericUserInterface =
                 (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
-                        .setRootView(createTextView("Click me", "text_view"))
+                        .setRootView(createTextView("", "text_view"))
                         .setInteractions(
                                 InteractionsProto.newBuilder().addAllInteractions(interactions))
                         .setModel(ModelProto.newBuilder().addAllValues(modelValues))
@@ -1074,13 +1103,14 @@ public class AutofillAssistantGenericUiTest {
                 new AutofillAssistantTestService(Collections.singletonList(script));
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
-        waitUntilViewMatchesCondition(withText("Done"), isCompletelyDisplayed());
+        waitUntilViewMatchesCondition(withText("Wed, Apr 15, 2020"), isCompletelyDisplayed());
 
-        onView(withText("Click me")).perform(click());
+        onView(withText("Wed, Apr 15, 2020")).perform(click());
         onView(withClassName(equalTo(DatePicker.class.getName())))
                 .inRoot(isDialog())
                 .perform(setDate(2020, 7, 13));
         onView(withText(R.string.date_picker_dialog_set)).inRoot(isDialog()).perform(click());
+        waitUntilViewMatchesCondition(withText("Mon, Jul 13, 2020"), isCompletelyDisplayed());
 
         int numNextActionsCalled = testService.getNextActionsCounter();
         onView(withContentDescription("Done")).perform(click());

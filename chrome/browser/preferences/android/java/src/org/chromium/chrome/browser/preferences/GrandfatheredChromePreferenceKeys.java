@@ -125,6 +125,7 @@ public class GrandfatheredChromePreferenceKeys {
                 ChromePreferenceKeys.OFFLINE_AUTO_FETCH_SHOWING_IN_PROGRESS,
                 ChromePreferenceKeys.OFFLINE_AUTO_FETCH_USER_CANCEL_ACTION_IN_PROGRESS,
                 ChromePreferenceKeys.OFFLINE_INDICATOR_V2_ENABLED,
+                ChromePreferenceKeys.PAYMENTS_CHECK_SAVE_CARD_TO_DEVICE,
                 ChromePreferenceKeys.PAYMENTS_PAYMENT_COMPLETE_ONCE,
                 ChromePreferenceKeys.PREFETCH_HAS_NEW_PAGES,
                 ChromePreferenceKeys.PREFETCH_IGNORED_NOTIFICATION_COUNTER,

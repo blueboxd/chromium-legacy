@@ -47,6 +47,13 @@ gfx::Size ExtensionsToolbarButton::CalculatePreferredSize() const {
   return extensions_container_->GetToolbarActionSize();
 }
 
+gfx::Size ExtensionsToolbarButton::GetMinimumSize() const {
+  const int icon_size = GetIconSize();
+  gfx::Size min_size(icon_size, icon_size);
+  min_size.SetToMin(GetPreferredSize());
+  return min_size;
+}
+
 void ExtensionsToolbarButton::OnBoundsChanged(
     const gfx::Rect& previous_bounds) {
   // Because this button is in a container and doesn't necessarily take up the

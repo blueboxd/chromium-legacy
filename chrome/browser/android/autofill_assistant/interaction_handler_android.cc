@@ -206,19 +206,52 @@ void ShowCalendarPopup(base::WeakPtr<UserModel> user_model,
   }
 }
 
+void SetTextViewText(
+    base::WeakPtr<UserModel> user_model,
+    const SetTextProto& proto,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
+  if (!user_model) {
+    return;
+  }
+
+  auto text = user_model->GetValue(proto.model_identifier());
+  if (!text.has_value()) {
+    DVLOG(2) << "Failed to set text for " << proto.view_identifier() << ": "
+             << proto.model_identifier() << " not found in model";
+    return;
+  }
+  if (text->strings().values_size() != 1) {
+    DVLOG(2) << "Failed to set text for " << proto.view_identifier()
+             << ": expected " << proto.model_identifier()
+             << " to contain single string, but was instead " << *text;
+    return;
+  }
+
+  auto jview = views->find(proto.view_identifier());
+  if (jview == views->end()) {
+    DVLOG(2) << "Failed to set text for " << proto.view_identifier() << ": "
+             << " view not found";
+    return;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AssistantViewInteractions_setTextViewText(
+      env, jview->second,
+      base::android::ConvertUTF8ToJavaString(env, text->strings().values(0)));
+}
+
 base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
     const EventProto& proto,
     JNIEnv* env,
-    const std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>&
-        views,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
   switch (proto.kind_case()) {
     case EventProto::kOnValueChanged:
       return base::Optional<EventHandler::EventKey>(
           {proto.kind_case(), proto.on_value_changed().model_identifier()});
     case EventProto::kOnViewClicked: {
-      auto jview = views.find(proto.on_view_clicked().view_identifier());
-      if (jview == views.end()) {
+      auto jview = views->find(proto.on_view_clicked().view_identifier());
+      if (jview == views->end()) {
         VLOG(1) << "Invalid click event, no view with id='"
                 << proto.on_view_clicked().view_identifier() << "' found";
         return base::nullopt;
@@ -247,6 +280,7 @@ CreateInteractionCallbackFromProto(
     const CallbackProto& proto,
     UserModel* user_model,
     BasicInteractions* basic_interactions,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
     base::android::ScopedJavaGlobalRef<jobject> jcontext,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
   switch (proto.kind_case()) {
@@ -314,7 +348,20 @@ CreateInteractionCallbackFromProto(
           base::BindRepeating(&ShowCalendarPopup, user_model->GetWeakPtr(),
                               proto.show_calendar_popup(), jcontext,
                               jdelegate));
-      break;
+    case CallbackProto::kSetText:
+      if (proto.set_text().model_identifier().empty()) {
+        VLOG(1) << "Error creating SetText interaction: "
+                   "model_identifier not set";
+        return base::nullopt;
+      }
+      if (proto.set_text().view_identifier().empty()) {
+        VLOG(1) << "Error creating SetText interaction: "
+                   "view_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&SetTextViewText, user_model->GetWeakPtr(),
+                              proto.set_text(), views));
     case CallbackProto::KIND_NOT_SET:
       VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;
@@ -348,8 +395,7 @@ void InteractionHandlerAndroid::StopListening() {
 bool InteractionHandlerAndroid::AddInteractionsFromProto(
     const InteractionsProto& proto,
     JNIEnv* env,
-    const std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>&
-        views,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate,
     UserModel* user_model,
     BasicInteractions* basic_interactions) {
@@ -367,7 +413,8 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
 
     for (const auto& callback_proto : interaction_proto.callbacks()) {
       auto callback = CreateInteractionCallbackFromProto(
-          callback_proto, user_model, basic_interactions, jcontext_, jdelegate);
+          callback_proto, user_model, basic_interactions, views, jcontext_,
+          jdelegate);
       if (!callback) {
         VLOG(1) << "Invalid callback for interaction";
         return false;

@@ -2816,7 +2816,8 @@ TEST_F(DeviceStatusCollectorTest, TestCrashReportInfo_LegacyCSV) {
   // Create a test uploads.log file in the legacy CSV format. All such kind of
   // record will be ignored because the required source filed is not existing.
   base::Time timestamp = base::Time::Now() - base::TimeDelta::FromHours(1);
-  std::string test_entry = base::StringPrintf("%" PRId64, timestamp.ToTimeT());
+  std::string test_entry =
+      base::StringPrintf("%" PRId64, static_cast<int64_t>(timestamp.ToTimeT()));
   test_entry += ",";
   test_entry.append(kTestUploadId);
   test_entry += ",";

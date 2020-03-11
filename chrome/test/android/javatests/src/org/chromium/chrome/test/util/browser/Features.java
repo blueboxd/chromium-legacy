@@ -97,6 +97,7 @@ public class Features {
         mergeFeatureLists("enable-features", true);
         mergeFeatureLists("disable-features", false);
         CachedFeatureFlags.setFeaturesForTesting(mRegisteredState);
+        FieldTrials.getInstance().applyFieldTrials();
     }
 
     /**
@@ -127,6 +128,7 @@ public class Features {
         ChromeFeatureList.setTestFeatures(null);
         ChromeFeatureList.resetTestCanUseDefaultsForTesting();
         CachedFeatureFlags.resetFlagsForTesting();
+        FieldTrials.getInstance().reset();
     }
 
     /**
@@ -147,6 +149,12 @@ public class Features {
      * {@link CommandLine}.
      */
     public static class InstrumentationProcessor extends Processor {
+        @Override
+        protected void collectFeatures() {
+            super.collectFeatures();
+            FieldTrials.getInstance().collectFieldTrials();
+        }
+
         @Override
         protected void applyFeatures() {
             getInstance().applyForInstrumentation();
@@ -176,7 +184,7 @@ public class Features {
 
         protected abstract void applyFeatures();
 
-        private void collectFeatures() {
+        protected void collectFeatures() {
             for (Annotation annotation : getAnnotations()) {
                 if (annotation instanceof EnableFeatures) {
                     getInstance().enable(((EnableFeatures) annotation).value());

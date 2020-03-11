@@ -248,8 +248,7 @@ class DeepScanningDialogDelegate {
   // Prepares an upload request for the file at |path|.  If the file
   // cannot be uploaded it will have a failure verdict added to |result_|.
   // Virtual so that it can be overridden in tests.
-  virtual void PrepareFileRequest(base::FilePath path,
-                                  AnalyzeCallback callback);
+  virtual void PrepareFileRequest(base::FilePath path);
 
   // Prepares an upload request for the given file.
   void AnalyzerCallback(int index,

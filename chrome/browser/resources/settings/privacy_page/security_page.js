@@ -194,7 +194,7 @@ Polymer({
     this.browserProxy_.showManageSSLCertificates();
     // </if>
     this.metricsBrowserProxy_.recordSettingsPageHistogram(
-        settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES);
+        settings.PrivacyElementInteractions.MANAGE_CERTIFICATES);
   },
 
   /** @private */
@@ -205,8 +205,6 @@ Polymer({
   /** @private */
   onSecurityKeysClick_() {
     settings.Router.getInstance().navigateTo(settings.routes.SECURITY_KEYS);
-    this.metricsBrowserProxy_.recordSettingsPageHistogram(
-        settings.SettingsPageInteractions.PRIVACY_SECURITY_KEYS);
   },
 });
 })();

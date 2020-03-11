@@ -73,6 +73,10 @@ class V4UpdateProtocolManager {
   // Populates the UpdateInfo message.
   void CollectUpdateInfo(DatabaseManagerInfo::UpdateInfo* database_info);
 
+  // The time that a response was last received from the server. This will
+  // have a null value if no response has been received.
+  const base::Time& last_response_time() const;
+
  protected:
   // Constructs a V4UpdateProtocolManager that issues network requests using
   // |url_loader_factory|. It schedules updates to get the hash prefixes for

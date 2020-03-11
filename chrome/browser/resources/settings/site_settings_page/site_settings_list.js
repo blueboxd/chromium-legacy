@@ -53,8 +53,7 @@ cr.define('settings', function() {
       // element, with additional entries that correspond to subpage trigger
       // elements residing in this element's Shadow DOM.
       for (const item of this.categoryList) {
-        const route = settings.routes[item.route];
-        this.focusConfig.set(route.path, () => this.async(() => {
+        this.focusConfig.set(item.route.path, () => this.async(() => {
           cr.ui.focusWithoutInk(assert(this.$$(`#${item.id}`)));
         }));
       }
@@ -137,9 +136,8 @@ cr.define('settings', function() {
      * @private
      */
     onClick_(event) {
-      const dataSet =
-          /** @type {{route: string}} */ (event.currentTarget.dataset);
-      this.fire('site-settings-item-click', dataSet.route);
+      settings.Router.getInstance().navigateTo(
+          this.categoryList[event.model.index].route);
     },
   });
 

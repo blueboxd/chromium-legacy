@@ -251,6 +251,15 @@ class VariationsService
       metrics::MetricsStateManager* state_manager,
       const UIStringOverrider& ui_string_overrider);
 
+  // Observe the changes in
+  // prefs::kDeviceVariationsRestrictionsByPolicy, and saves and retrieve its
+  // local state value, then sets prefs::kVariationsRestrictParameter with that
+  // new value. That's to reflect the changes of chromeos policy into the user
+  // policy.
+  // TODO(crbug.com/1060224): Remove that workaround, and make a better long
+  // term solution.
+  void OnDeviceVariationsRestrictionsChange();
+
   // Sets the URL for querying the variations server. Used for testing.
   void set_variations_server_url(const GURL& url) {
     variations_server_url_ = url;
@@ -429,6 +438,9 @@ class VariationsService
   // When not empty, contains an override for the os name in the variations
   // server url.
   std::string osname_server_param_override_;
+
+  // Watch the changes of the variations prefs.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -10,11 +10,12 @@
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -199,7 +200,7 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
 
   Profile* profile = Profile::FromBrowserContext(
       web_view_guest()->browser_context());
-  PermissionManager::Get(profile)->RequestPermission(
+  PermissionManagerFactory::GetForProfile(profile)->RequestPermission(
       ContentSettingsType::GEOLOCATION, web_contents->GetMainFrame(),
       web_view_guest()
           ->embedder_web_contents()

@@ -9,9 +9,13 @@
 
 namespace ui {
 
+// Override this class and attach it to any class that supports recording
+// animation smoothness (e.g. ui::LayerAnimationSequence,
+// views::CompositorAnimationRunner). When an animation ends, |Report| will be
+// called with the animation smoothness as a percentage.
 class COMPOSITOR_EXPORT AnimationMetricsReporter {
  public:
-  virtual ~AnimationMetricsReporter() {}
+  virtual ~AnimationMetricsReporter() = default;
   // Called at the end of every animation sequence, if the duration and frames
   // passed meets certain criteria. |value| is the smoothness, measured in
   // percentage of the animation.

@@ -5,6 +5,10 @@
 #ifndef IOS_CHROME_APP_TESTS_HOOK_H_
 #define IOS_CHROME_APP_TESTS_HOOK_H_
 
+namespace policy {
+class ConfigurationPolicyProvider;
+}
+
 namespace tests_hook {
 
 // Returns true if app group access should be disabled as tests don't have the
@@ -31,6 +35,10 @@ bool DisableSigninRecallPromo();
 // Returns true if the update service should be disabled so that the update
 // infobar won't be shown during testing.
 bool DisableUpdateService();
+
+// Returns a policy provider that should be installed as the platform policy
+// provider when testing. May return nullptr.
+policy::ConfigurationPolicyProvider* GetOverriddenPlatformPolicyProvider();
 
 // Global integration tests setup.  This is not used by EarlGrey-based
 // integration tests.

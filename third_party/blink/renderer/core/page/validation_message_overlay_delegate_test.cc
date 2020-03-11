@@ -78,7 +78,8 @@ TEST_P(ValidationMessageOverlayDelegateTest,
       To<LocalFrame>(delegate_ptr->GetPageForTesting()->MainFrame())
           ->GetDocument();
   HeapVector<Member<Animation>> animations =
-      internal_document->GetDocumentAnimations().getAnimations();
+      internal_document->GetDocumentAnimations().getAnimations(
+          *internal_document);
   ASSERT_FALSE(animations.IsEmpty());
 
   for (const auto& animation : animations) {

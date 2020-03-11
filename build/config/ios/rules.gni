@@ -1204,10 +1204,6 @@ template("ios_framework_bundle") {
         get_label_info("$_target_name($default_toolchain)", "target_gen_dir")
 
     _framework_headers_target = _target_name + "_framework_headers"
-    _framework_headers_config = _target_name + "_framework_headers_config"
-    config(_framework_headers_config) {
-      framework_dirs = [ _default_toolchain_root_out_dir ]
-    }
 
     _headers_map_config = _target_name + "_headers_map"
     _header_map_filename =
@@ -1216,6 +1212,11 @@ template("ios_framework_bundle") {
       visibility = [ ":${_target_name}_signed_bundle" ]
       include_dirs = [ _header_map_filename ]
     }
+  }
+
+  _framework_headers_config = _target_name + "_framework_headers_config"
+  config(_framework_headers_config) {
+    framework_dirs = [ _default_toolchain_root_out_dir ]
   }
 
   _arch_shared_library_source = _target_name + "_arch_shared_library_sources"

@@ -5,7 +5,6 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ANIMATED_CONTAINER_VIEW_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ANIMATED_CONTAINER_VIEW_H_
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -106,7 +105,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
   //    - Return an ElementAnimator to animate the view. Note that it is
   //      permissible to return |nullptr| if no managed animation is desired.
   virtual std::unique_ptr<ElementAnimator> HandleSuggestion(
-      int id,
       const AssistantSuggestion* suggestion);
 
   AssistantViewDelegate* delegate() { return delegate_; }

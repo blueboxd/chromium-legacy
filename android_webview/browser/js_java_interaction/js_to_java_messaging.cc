@@ -22,10 +22,10 @@ JsToJavaMessaging::JsToJavaMessaging(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingAssociatedReceiver<mojom::JsToJavaMessaging> receiver,
     base::android::ScopedJavaGlobalRef<jobject> listener_ref,
-    const net::ProxyBypassRules& allowed_origin_rules)
+    const AwOriginMatcher& origin_matcher)
     : render_frame_host_(render_frame_host),
       listener_ref_(listener_ref),
-      allowed_origin_rules_(allowed_origin_rules) {
+      origin_matcher_(origin_matcher) {
   receiver_.Bind(std::move(receiver));
 }
 
@@ -47,7 +47,7 @@ void JsToJavaMessaging::PostMessage(
   // in sequence.
   url::Origin source_origin = render_frame_host_->GetLastCommittedOrigin();
 
-  if (!allowed_origin_rules_.Matches(source_origin.GetURL()))
+  if (!origin_matcher_.Matches(source_origin))
     return;
 
   std::vector<int> int_ports(ports.size(), MOJO_HANDLE_INVALID /* 0 */);

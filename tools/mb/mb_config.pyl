@@ -17,6 +17,7 @@
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-betty-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-betty-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk_include_unwind_tables',
       'chromeos-eve-chrome': 'cros_chrome_sdk_include_unwind_tables',
       'chromeos-kevin-chrome': 'cros_chrome_sdk_include_unwind_tables',

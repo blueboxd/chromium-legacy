@@ -267,7 +267,7 @@ void CSSParserContext::ReportLayoutAnimationsViolationIfNeeded(
     if (!LayoutAnimationsPolicy::AffectedCSSProperties().Contains(&property))
       continue;
     LayoutAnimationsPolicy::ReportViolation(property,
-                                            *document_->ToExecutionContext());
+                                            *document_->GetExecutionContext());
   }
 }
 

@@ -4,6 +4,8 @@
 
 #include "android_webview/renderer/js_java_interaction/js_java_configurator.h"
 
+#include "android_webview/common/aw_origin_matcher.h"
+#include "android_webview/common/aw_origin_matcher_mojom_traits.h"
 #include "android_webview/renderer/js_java_interaction/js_binding.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/renderer/render_frame.h"
@@ -16,7 +18,7 @@
 namespace android_webview {
 
 struct JsJavaConfigurator::JsObjectInfo {
-  net::ProxyBypassRules allowed_origin_rules;
+  AwOriginMatcher origin_matcher;
   mojo::AssociatedRemote<mojom::JsToJavaMessaging> js_to_java_messaging;
 };
 
@@ -36,7 +38,7 @@ void JsJavaConfigurator::SetJsObjects(
     const auto& js_object_info_pair = js_objects.insert(
         {js_object->js_object_name, std::make_unique<JsObjectInfo>()});
     JsObjectInfo* js_object_info = js_object_info_pair.first->second.get();
-    js_object_info->allowed_origin_rules = js_object->allowed_origin_rules;
+    js_object_info->origin_matcher = js_object->origin_matcher;
     js_object_info->js_to_java_messaging =
         mojo::AssociatedRemote<mojom::JsToJavaMessaging>(
             std::move(js_object->js_to_java_messaging));
@@ -55,7 +57,7 @@ void JsJavaConfigurator::DidClearWindowObject() {
   std::vector<std::unique_ptr<JsBinding>> js_bindings;
   js_bindings.reserve(js_objects_.size());
   for (const auto& js_object : js_objects_) {
-    if (!js_object.second->allowed_origin_rules.Matches(frame_origin.GetURL()))
+    if (!js_object.second->origin_matcher.Matches(frame_origin))
       continue;
     js_bindings.push_back(
         JsBinding::Install(render_frame(), js_object.first, this));

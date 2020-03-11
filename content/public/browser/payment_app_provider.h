@@ -45,7 +45,8 @@ class CONTENT_EXPORT PaymentAppProvider {
       base::OnceCallback<void(int64_t registration_id)>;
   using InvokePaymentAppCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerResponsePtr)>;
-  using PaymentEventResultCallback = base::OnceCallback<void(bool)>;
+  using CanMakePaymentCallback = base::OnceCallback<void(bool)>;
+  using AbortCallback = base::OnceCallback<void(bool)>;
 
   // Should be accessed only on the UI thread.
   virtual void GetAllPaymentApps(BrowserContext* browser_context,
@@ -74,12 +75,12 @@ class CONTENT_EXPORT PaymentAppProvider {
       const url::Origin& sw_origin,
       const std::string& payment_request_id,
       payments::mojom::CanMakePaymentEventDataPtr event_data,
-      PaymentEventResultCallback callback) = 0;
+      CanMakePaymentCallback callback) = 0;
   virtual void AbortPayment(BrowserContext* browser_context,
                             int64_t registration_id,
                             const url::Origin& sw_origin,
                             const std::string& payment_request_id,
-                            PaymentEventResultCallback callback) = 0;
+                            AbortCallback callback) = 0;
 
   // Set opened window for payment handler. Note that we maintain at most one
   // opened window for payment handler at any moment in a browser context. The
@@ -102,7 +103,7 @@ class CONTENT_EXPORT PaymentAppProvider {
                                             std::string* error_message) = 0;
 
  protected:
-  virtual ~PaymentAppProvider() {}
+  virtual ~PaymentAppProvider() = default;
 };
 
 }  // namespace content

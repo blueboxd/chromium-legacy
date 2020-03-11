@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Afati i ndryshimit të fjalëkalimit ka kaluar</translation>
 <translation id="2049639323467105390">Kjo pajisje menaxhohet nga <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Aktivizo "Bluetooth-in" për të zbuluar pajisjet në afërsi</translation>
+<translation id="2375079107209812402"><ph name="ATTEMPTS_LEFT" /> përpjekje të mbetura</translation>
 <translation id="2805756323405976993">Aplikacionet</translation>
 <translation id="2872961005593481000">Ndërprit punën</translation>
 <translation id="3008341117444806826">RIFRESKO</translation>
@@ -41,6 +42,7 @@
 <translation id="808894953321890993">Ndrysho fjalëkalimin</translation>
 <translation id="8208861521865154048">Avantazhet</translation>
 <translation id="8747900814994928677">Konfirmo ndryshimin</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> përpjekje të mbetura</translation>
 <translation id="910415269708673980">Rifresko biletën për <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Shkyç</translation>
 </translationbundle>

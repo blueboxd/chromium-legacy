@@ -33,6 +33,13 @@ const char kAllowHttpScreenCapture[] = "allow-http-screen-capture";
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 
+// Allows profiles to be created outside of the user data dir.
+// TODO(https://crbug.com/1060366): Various places in Chrome assume that all
+// profiles are within the user data dir. Some tests need to violate that
+// assumption. The switch should be removed after this workaround is no longer
+// needed.
+const char kAllowProfilesOutsideUserDir[] = "allow-profiles-outside-user-dir";
+
 // By default, an https page cannot run JavaScript, CSS or plugins from http
 // URLs. This provides an override to get the old insecure behavior.
 const char kAllowRunningInsecureContent[]   = "allow-running-insecure-content";
@@ -553,7 +560,7 @@ const char kSSLVersionTLSv11[] = "tls1.1";
 // TLS 1.2 mode for |kSSLVersionMax| and |kSSLVersionMin| switches.
 const char kSSLVersionTLSv12[] = "tls1.2";
 
-// TLS 1.2 mode for |kSSLVersionMax| and |kSSLVersionMin| switches.
+// TLS 1.3 mode for |kSSLVersionMax| and |kSSLVersionMin| switches.
 const char kSSLVersionTLSv13[] = "tls1.3";
 
 // Starts the browser maximized, regardless of any previous settings.

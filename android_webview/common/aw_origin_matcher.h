@@ -40,9 +40,12 @@ namespace android_webview {
 class AwOriginMatcher {
  public:
   AwOriginMatcher() = default;
-  // Don't allow copy and assign.
-  AwOriginMatcher(const AwOriginMatcher&) = delete;
-  AwOriginMatcher& operator=(const AwOriginMatcher&) = delete;
+  // Allow copy and assign.
+  AwOriginMatcher(const AwOriginMatcher& rhs);
+  AwOriginMatcher(AwOriginMatcher&&) = default;
+  AwOriginMatcher& operator=(const AwOriginMatcher& rhs);
+  AwOriginMatcher& operator=(AwOriginMatcher&&) = default;
+
   ~AwOriginMatcher() = default;
 
   // Adds a rule given by the string |raw|. Returns true if the rule was
@@ -54,6 +57,9 @@ class AwOriginMatcher {
 
   // Returns the current list of rules.
   const net::SchemeHostPortMatcher::RuleList& rules() const { return rules_; }
+
+  // Returns string representation of this origin matcher.
+  std::vector<std::string> Serialize() const;
 
  private:
   net::SchemeHostPortMatcher::RuleList rules_;

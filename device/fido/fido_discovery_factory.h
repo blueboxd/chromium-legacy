@@ -95,6 +95,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
         cable_pairing_callback_;
   };
 
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  std::unique_ptr<FidoDiscoveryBase> MaybeCreatePlatformDiscovery() const;
+#endif
+
   RequestState request_state_;
 #if defined(OS_MACOSX)
   base::Optional<fido::mac::AuthenticatorConfig> mac_touch_id_config_;

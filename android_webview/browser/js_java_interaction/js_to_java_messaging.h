@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "android_webview/browser/js_java_interaction/js_reply_proxy.h"
+#include "android_webview/common/aw_origin_matcher.h"
 #include "android_webview/common/js_java_interaction/interfaces.mojom.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/strings/string16.h"
@@ -16,7 +17,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "net/proxy_resolution/proxy_bypass_rules.h"
 
 namespace content {
 class RenderFrameHost;
@@ -32,7 +32,7 @@ class JsToJavaMessaging : public mojom::JsToJavaMessaging {
       content::RenderFrameHost* rfh,
       mojo::PendingAssociatedReceiver<mojom::JsToJavaMessaging> receiver,
       base::android::ScopedJavaGlobalRef<jobject> listener_ref,
-      const net::ProxyBypassRules& allowed_origin_rules);
+      const AwOriginMatcher& origin_matcher);
   ~JsToJavaMessaging() override;
 
   // mojom::JsToJavaMessaging implementation.
@@ -46,7 +46,7 @@ class JsToJavaMessaging : public mojom::JsToJavaMessaging {
   content::RenderFrameHost* render_frame_host_;
   std::unique_ptr<JsReplyProxy> reply_proxy_;
   base::android::ScopedJavaGlobalRef<jobject> listener_ref_;
-  net::ProxyBypassRules allowed_origin_rules_;
+  AwOriginMatcher origin_matcher_;
   mojo::AssociatedReceiver<mojom::JsToJavaMessaging> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JsToJavaMessaging);

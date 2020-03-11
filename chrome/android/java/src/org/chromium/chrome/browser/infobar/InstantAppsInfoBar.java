@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.instantapps.InstantAppsBannerData;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 import org.chromium.components.browser_ui.widget.DualControlLayout;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;

@@ -437,9 +437,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         getTabModelSelector(), getControlContainerHeightResource());
             }
 
-            ((BottomContainer) findViewById(R.id.bottom_container))
-                    .initialize(mFullscreenManager,
-                            mManualFillingComponent.getKeyboardExtensionViewResizer());
+            BottomContainer bottomContainer = (BottomContainer) findViewById(R.id.bottom_container);
+            bottomContainer.initialize(
+                    mFullscreenManager, getWindowAndroid().getApplicationBottomInsetProvider());
+            getLifecycleDispatcher().register(bottomContainer);
 
             // Should be called after TabModels are initialized.
             ShareDelegate shareDelegate =
@@ -1338,8 +1339,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mManualFillingComponent.initialize(getWindowAndroid(),
                 findViewById(R.id.keyboard_accessory_stub),
                 findViewById(R.id.keyboard_accessory_sheet_stub));
-        getCompositorViewHolder().addCompositorViewResizer(
-                mManualFillingComponent.getKeyboardExtensionViewResizer());
 
         if (EphemeralTabCoordinator.isSupported()) {
             mEphemeralTabCoordinator = new EphemeralTabCoordinator(this, getWindowAndroid(),

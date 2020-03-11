@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Ai depășit timpul limită pentru schimbarea parolei</translation>
 <translation id="2049639323467105390">Acest dispozitiv este gestionat de <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Pentru a descoperi dispozitivele din apropiere, activează Bluetooth</translation>
+<translation id="2375079107209812402"><ph name="ATTEMPTS_LEFT" /> încercări rămase</translation>
 <translation id="2805756323405976993">Aplicații</translation>
 <translation id="2872961005593481000">Închide</translation>
 <translation id="3008341117444806826">ACTUALIZEAZĂ</translation>
@@ -42,6 +43,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="808894953321890993">Schimbă parola</translation>
 <translation id="8208861521865154048">Avantaje</translation>
 <translation id="8747900814994928677">Confirmă schimbarea</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> încercări rămase</translation>
 <translation id="910415269708673980">Actualizează tichetul pentru <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Deblochează</translation>
 </translationbundle>

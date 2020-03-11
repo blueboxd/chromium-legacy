@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
-#include "content/public/common/context_menu_params.h"
+#include "content/public/browser/context_menu_params.h"
 
 class RenderViewContextMenu;
 

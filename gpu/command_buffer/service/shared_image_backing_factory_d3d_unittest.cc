@@ -500,6 +500,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, GL_SkiaGL) {
   // Set the clear color to green.
   api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
   api->glClearFn(GL_COLOR_BUFFER_BIT);
+  gl_representation->SetCleared();
+
   scoped_access.reset();
   gl_representation.reset();
 
@@ -555,7 +557,7 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
 
     auto scoped_access = dawn_representation->BeginScopedAccess(
         WGPUTextureUsage_OutputAttachment,
-        SharedImageRepresentation::AllowUnclearedAccess::kNo);
+        SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(scoped_access);
 
     wgpu::Texture texture = wgpu::Texture::Acquire(scoped_access->texture());

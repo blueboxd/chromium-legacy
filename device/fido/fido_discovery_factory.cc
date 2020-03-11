@@ -25,6 +25,10 @@
 #include "device/fido/mac/discovery.h"
 #endif  // defined(OSMACOSX)
 
+#if defined(OS_CHROMEOS)
+#include "device/fido/cros/discovery.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace device {
 
 namespace {
@@ -68,14 +72,11 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
       // TODO(https://crbug.com/825949): Add NFC support.
       return nullptr;
     case FidoTransportProtocol::kInternal:
-#if defined(OS_MACOSX)
-      return mac_touch_id_config_
-                 ? std::make_unique<fido::mac::FidoTouchIdDiscovery>(
-                       *mac_touch_id_config_)
-                 : nullptr;
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+      return MaybeCreatePlatformDiscovery();
 #else
       return nullptr;
-#endif  // defined(OS_MACOSX)
+#endif
   }
   NOTREACHED() << "Unhandled transport type";
   return nullptr;
@@ -116,6 +117,25 @@ FidoDiscoveryFactory::MaybeCreateWinWebAuthnApiDiscovery() {
              : nullptr;
 }
 #endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+std::unique_ptr<FidoDiscoveryBase>
+FidoDiscoveryFactory::MaybeCreatePlatformDiscovery() const {
+  return mac_touch_id_config_
+             ? std::make_unique<fido::mac::FidoTouchIdDiscovery>(
+                   *mac_touch_id_config_)
+             : nullptr;
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+std::unique_ptr<FidoDiscoveryBase>
+FidoDiscoveryFactory::MaybeCreatePlatformDiscovery() const {
+  return base::FeatureList::IsEnabled(kWebAuthCrosPlatformAuthenticator)
+             ? std::make_unique<FidoChromeOSDiscovery>()
+             : nullptr;
+}
+#endif
 
 FidoDiscoveryFactory::RequestState::RequestState() = default;
 FidoDiscoveryFactory::RequestState::~RequestState() = default;

@@ -4104,6 +4104,7 @@ AutotestPrivateGetScrollableShelfInfoForStateFunction::Run() {
   info.left_arrow_bounds = ToBoundsDictionary(fetched_info.left_arrow_bounds);
   info.right_arrow_bounds = ToBoundsDictionary(fetched_info.right_arrow_bounds);
   info.is_animating = fetched_info.is_animating;
+  info.is_overflow = fetched_info.is_overflow;
 
   if (params->state.scroll_distance) {
     info.target_main_axis_offset =
@@ -4147,6 +4148,7 @@ AutotestPrivateGetShelfUIInfoForStateFunction::Run() {
     scrollable_shelf_ui_info.right_arrow_bounds =
         ToBoundsDictionary(fetched_info.right_arrow_bounds);
     scrollable_shelf_ui_info.is_animating = fetched_info.is_animating;
+    scrollable_shelf_ui_info.is_overflow = fetched_info.is_overflow;
 
     if (state.scroll_distance) {
       scrollable_shelf_ui_info.target_main_axis_offset =

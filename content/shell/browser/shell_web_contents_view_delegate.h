@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view_delegate.h"
-#include "content/public/common/context_menu_params.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/models/simple_menu_model.h"    // nogncheck

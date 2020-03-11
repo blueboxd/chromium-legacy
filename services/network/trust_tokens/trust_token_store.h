@@ -120,12 +120,18 @@ class TrustTokenStore {
   WARN_UNUSED_RESULT virtual bool IsAssociated(const url::Origin& issuer,
                                                const url::Origin& top_level);
 
-  // Associates |issuer| with |top_level|. (It's the caller's responsibility to
-  // enforce any cap on the number of top levels per issuer.)
+  // If associating |issuer| with |top_level| would exceed the cap on the number
+  // of issuers allowed to be associated with a given top-level origin, returns
+  // false. Otherwise, associates |issuer| with |top_level| and returns true.
+  //
+  // TODO(crbug.com/1060716): As part of adding solid support for multiple
+  // issuers, it'd be good to make these associations expire after some
+  // reasonably long amount of time, so that top-level origins can change their
+  // minds about their associated issuers.
   //
   // |issuer| and |top_level| must not be opaque.
-  virtual void SetAssociation(const url::Origin& issuer,
-                              const url::Origin& top_level);
+  WARN_UNUSED_RESULT virtual bool SetAssociation(const url::Origin& issuer,
+                                                 const url::Origin& top_level);
 
   //// Methods related to reading and writing issuer values configured via key
   //// commitment queries, such as key commitments and batch sizes:
@@ -173,16 +179,24 @@ class TrustTokenStore {
 
   //// Methods related to reading and writing signed tokens:
 
-  // Associates to the given issuer additional signed
+  // If |issuer| does not have a stored key commitment corresponding to
+  // |issuing_key|, returns false.
+  //
+  // Otherwise, associates to the given issuer additional signed
   // trust tokens with:
   // - token bodies given by |token_bodies|
   // - signing keys given by |issuing_key|.
   //
-  // |issuer| must not be opaque and must have a stored
-  // key commitment corresponding to |issuing_key|.
-  virtual void AddTokens(const url::Origin& issuer,
-                         base::span<const std::string> token_bodies,
-                         base::StringPiece issuing_key);
+  // |issuer| must not be opaque.
+  WARN_UNUSED_RESULT virtual bool AddTokens(
+      const url::Origin& issuer,
+      base::span<const std::string> token_bodies,
+      base::StringPiece issuing_key);
+
+  // Returns the number of tokens stored for |issuer|.
+  //
+  // |issuer| must not be opaque.
+  WARN_UNUSED_RESULT virtual int CountTokens(const url::Origin& issuer);
 
   // Returns all signed tokens from |issuer| signed by keys matching
   // the given predicate.

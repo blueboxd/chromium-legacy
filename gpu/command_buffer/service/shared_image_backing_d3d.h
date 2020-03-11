@@ -32,7 +32,7 @@ struct Mailbox;
 // Implementation of SharedImageBacking that holds buffer (front buffer/back
 // buffer of swap chain) texture (as gles2::Texture/gles2::TexturePassthrough)
 // and a reference to created swap chain.
-class SharedImageBackingD3D : public SharedImageBacking {
+class SharedImageBackingD3D : public ClearTrackingSharedImageBacking {
  public:
   SharedImageBackingD3D(
       const Mailbox& mailbox,
@@ -49,10 +49,6 @@ class SharedImageBackingD3D : public SharedImageBacking {
       Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dxgi_keyed_mutex);
 
   ~SharedImageBackingD3D() override;
-
-  // Texture is cleared on initialization.
-  gfx::Rect ClearedRect() const override;
-  void SetClearedRect(const gfx::Rect& cleared_rect) override {}
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
 

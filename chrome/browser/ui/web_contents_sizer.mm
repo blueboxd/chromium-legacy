@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/geometry/size.h"
 
 void ResizeWebContents(content::WebContents* web_contents,
                        const gfx::Rect& new_bounds) {
@@ -21,4 +22,10 @@ void ResizeWebContents(content::WebContents* web_contents,
                  new_bounds.size().width(),
                  new_bounds.size().height());
   [view setFrame:new_wcv_frame];
+}
+
+gfx::Size GetWebContentsSize(content::WebContents* web_contents) {
+  NSView* view = web_contents->GetNativeView().GetNativeNSView();
+  NSRect frame = [view frame];
+  return gfx::Size(NSWidth(frame), NSHeight(frame));
 }

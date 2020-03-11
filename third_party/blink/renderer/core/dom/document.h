@@ -269,16 +269,11 @@ using ExplicitlySetAttrElementsMap =
 // of a tree of DOM nodes, generally resulting from the parsing of an markup
 // (typically, HTML) resource. It provides both the content to be displayed to
 // the user in a frame and an execution context for JavaScript code.
-// TODO(crbug.com/1029822): Virtual inheritance is used here temporarily to
-// enable moving ExecutionContext from Document to LocalDOMWindow. This allows
-// Document's inheritance of ExecutionContext to be hidden, while still allowing
-// Document to inherit from some of ExecutionContext's parent classes publicly.
 class CORE_EXPORT Document : public ContainerNode,
                              public TreeScope,
-                             public virtual ConsoleLogger,
-                             public virtual UseCounter,
-                             public virtual FeaturePolicyParserDelegate,
-                             private ExecutionContext,
+                             public ConsoleLogger,
+                             public UseCounter,
+                             public FeaturePolicyParserDelegate,
                              public Supplementable<Document> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Document);
@@ -309,13 +304,42 @@ class CORE_EXPORT Document : public ContainerNode,
 
   using TreeScope::getElementById;
 
-  // ExecutionContext overrides:
-  bool IsDocument() const final { return true; }
-  bool ShouldInstallV8Extensions() const final;
-  ContentSecurityPolicy* GetContentSecurityPolicyForWorld() override;
+  // TODO(crbug.com/1029822) Former ExecutionContext overrides. Most of these
+  // should move to LocalDOMWindow.
+  ContentSecurityPolicy* GetContentSecurityPolicyForWorld();
+  LocalDOMWindow* ExecutingWindow() const;
+  String UserAgent() const;
+  // TODO(https://crbug.com/880986): Implement Document's HTTPS state in more
+  // spec-conformant way.
+  HttpsState GetHttpsState() const {
+    return CalculateHttpsState(GetSecurityOrigin());
+  }
+  bool CanExecuteScripts(ReasonForCallingCanExecuteScripts);
+  String OutgoingReferrer() const;
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const;
+  CoreProbeSink* GetProbeSink();
+  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
+  FrameOrWorkerScheduler* GetScheduler();
+  void CountPotentialFeaturePolicyViolation(
+      mojom::blink::FeaturePolicyFeature) const;
+  void ReportFeaturePolicyViolation(
+      mojom::blink::FeaturePolicyFeature,
+      mojom::FeaturePolicyDisposition,
+      const String& message = g_empty_string,
+      // If source_file is set to empty string,
+      // current JS file would be used as source_file instead.
+      const String& source_file = g_empty_string) const;
 
-  SecurityContext& GetSecurityContext() final { return security_context_; }
-  const SecurityContext& GetSecurityContext() const final {
+  // FeaturePolicyParserDelegate override
+  // TODO(crbug.com/1029822) FeaturePolicyParserDelegate overrides, these
+  // should migrate to LocalDOMWindow.
+  bool FeatureEnabled(OriginTrialFeature) const override;
+  void CountFeaturePolicyUsage(mojom::WebFeature feature) override;
+  bool FeaturePolicyFeatureObserved(
+      mojom::blink::FeaturePolicyFeature feature) override;
+
+  SecurityContext& GetSecurityContext() { return security_context_; }
+  const SecurityContext& GetSecurityContext() const {
     return security_context_;
   }
 
@@ -325,22 +349,16 @@ class CORE_EXPORT Document : public ContainerNode,
   // inherited from Node, or domWindow().
   // Downcasts will cast to a LocalDOMWindow, then use
   // LocalDOMWindow::document() if the Document is what is actually needed.
-  ExecutionContext* ToExecutionContext() { return this; }
-  const ExecutionContext* ToExecutionContext() const { return this; }
+  ExecutionContext* ToExecutionContext();
+  const ExecutionContext* ToExecutionContext() const;
   static Document* From(ExecutionContext* context) {
     return context ? &From(*context) : nullptr;
   }
-  static Document& From(ExecutionContext& context) {
-    SECURITY_DCHECK(context.IsDocument());
-    return static_cast<Document&>(context);
-  }
+  static Document& From(ExecutionContext& context);
   static const Document* From(const ExecutionContext* context) {
     return context ? &From(*context) : nullptr;
   }
-  static const Document& From(const ExecutionContext& context) {
-    SECURITY_DCHECK(context.IsDocument());
-    return static_cast<const Document&>(context);
-  }
+  static const Document& From(const ExecutionContext& context);
   static Document* DynamicFrom(ExecutionContext* context) {
     return context && context->IsDocument() ? From(context) : nullptr;
   }
@@ -423,9 +441,6 @@ class CORE_EXPORT Document : public ContainerNode,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(visibilitychange, kVisibilitychange)
 
   ViewportData& GetViewportData() const { return *viewport_data_; }
-
-  String OutgoingReferrer() const override;
-  network::mojom::ReferrerPolicy GetReferrerPolicy() const override;
 
   void SetDoctype(DocumentType*);
   DocumentType* doctype() const { return doc_type_.Get(); }
@@ -585,7 +600,6 @@ class CORE_EXPORT Document : public ContainerNode,
     return saw_elements_in_known_namespaces_;
   }
 
-  bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) override;
   bool IsScriptExecutionReady() const {
     return HaveImportsLoaded() && HaveScriptBlockingStylesheetsLoaded();
   }
@@ -685,9 +699,7 @@ class CORE_EXPORT Document : public ContainerNode,
                                   int& margin_bottom,
                                   int& margin_left);
 
-  ResourceFetcher* Fetcher() const override { return fetcher_.Get(); }
-
-  using ExecutionContext::NotifyContextDestroyed;
+  ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
 
   void Initialize();
   virtual void Shutdown();
@@ -809,7 +821,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Return the document URL, or an empty URL if it's unavailable.
   // This is not an implementation of web-exposed Document.prototype.URL.
-  const KURL& Url() const final { return url_; }
+  const KURL& Url() const { return url_; }
   void SetURL(const KURL&);
 
   // Bind the url to document.url, if unavailable bind to about:blank.
@@ -820,7 +832,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Document base URL.
   // https://html.spec.whatwg.org/C/#document-base-url
-  const KURL& BaseURL() const final;
+  const KURL& BaseURL() const;
   void SetBaseURLOverride(const KURL&);
   const KURL& BaseURLOverride() const { return base_url_override_; }
   KURL ValidBaseElementURL() const;
@@ -834,7 +846,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // Creates URL based on passed relative url and this documents base URL.
   // Depending on base URL value it is possible that parent document
   // base URL will be used instead. Uses CompleteURLWithOverride internally.
-  KURL CompleteURL(const String&) const final;
+  KURL CompleteURL(const String&) const;
   // Creates URL based on passed relative url and passed base URL override.
   KURL CompleteURLWithOverride(const String&,
                                const KURL& base_url_override) const;
@@ -842,15 +854,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // Determines whether a new document should take on the same origin as that of
   // the document which created it.
   static bool ShouldInheritSecurityOriginFromOwner(const KURL&);
-
-  String UserAgent() const final;
-  void DisableEval(const String& error_message) final;
-
-  // TODO(https://crbug.com/880986): Implement Document's HTTPS state in more
-  // spec-conformant way.
-  HttpsState GetHttpsState() const final {
-    return CalculateHttpsState(GetSecurityOrigin());
-  }
 
   CSSStyleSheet& ElementSheet();
 
@@ -1301,9 +1304,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetContainsPlugins() { contains_plugins_ = true; }
   bool ContainsPlugins() const { return contains_plugins_; }
 
-  bool IsContextThread() const final;
-  bool IsJSExecutionForbidden() const final { return false; }
-
   void EnqueueResizeEvent();
   void EnqueueScrollEventForNode(Node*);
   void EnqueueScrollEndEventForNode(Node*);
@@ -1358,9 +1358,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void CancelIdleCallback(int id);
 
   ScriptedAnimationController& GetScriptedAnimationController();
-
-  EventTarget* ErrorEventTarget() final;
-  void ExceptionThrown(ErrorEvent*) final;
 
   void InitDNSPrefetch();
 
@@ -1439,17 +1436,13 @@ class CORE_EXPORT Document : public ContainerNode,
   void DidAssociateFormControl(Element*);
 
   void AddConsoleMessage(ConsoleMessage* message,
-                         bool discard_duplicates = false) {
-    AddConsoleMessageImpl(message, discard_duplicates);
-  }
-  void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
+                         bool discard_duplicates = false);
   void AddConsoleMessageImpl(mojom::ConsoleMessageSource,
                              mojom::ConsoleMessageLevel,
                              const String& message,
                              bool discard_duplicates) final;
   void AddInspectorIssue(InspectorIssue*);
 
-  LocalDOMWindow* ExecutingWindow() const final;
   LocalFrame* ExecutingFrame();
 
   DocumentLifecycle& Lifecycle() { return lifecycle_; }
@@ -1529,10 +1522,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // text field in a non-secure context.
   void MaybeQueueSendDidEditFieldInInsecureContext();
 
-  CoreProbeSink* GetProbeSink() final;
-
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
-
   // May return nullptr when PerformanceManager instrumentation is disabled.
   DocumentResourceCoordinator* GetResourceCoordinator();
 
@@ -1562,10 +1551,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // attempts (both successful and not successful) by the page.
   FontMatchingMetrics* GetFontMatchingMetrics();
 
-  // May return nullptr.
-  FrameOrWorkerScheduler* GetScheduler() override;
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType);
 
   void RecordUkmOutliveTimeAfterShutdown(int outlive_time_count);
 
@@ -1623,16 +1609,6 @@ class CORE_EXPORT Document : public ContainerNode,
   WindowAgentFactory* GetWindowAgentFactory() const {
     return window_agent_factory_;
   }
-
-  void CountPotentialFeaturePolicyViolation(
-      mojom::blink::FeaturePolicyFeature) const override;
-  void ReportFeaturePolicyViolation(
-      mojom::blink::FeaturePolicyFeature,
-      mojom::FeaturePolicyDisposition,
-      const String& message = g_empty_string,
-      // If source_file is set to empty string,
-      // current JS file would be used as source_file instead.
-      const String& source_file = g_empty_string) const override;
 
   void IncrementNumberOfCanvases();
 
@@ -1700,9 +1676,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // includes PluginDocument as well as an HTMLDocument which embeds a plugin
   // inside a cross-process frame (MimeHandlerView).
   void SetShowBeforeUnloadDialog(bool show_dialog);
-
-  TrustedTypePolicyFactory* GetTrustedTypes() const override;
-  bool RequireTrustedTypes() const override;
 
   void ColorSchemeChanged();
 
@@ -2306,6 +2279,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // its integrity against required_document_policy has already been done in
   // DocumentLoader.
   DocumentPolicy::FeatureState pending_dp_headers_;
+
+  // Tracks which feature policies have already been parsed, so as not to count
+  // them multiple times.
+  // The size of this vector is 0 until FeaturePolicyFeatureObserved is called.
+  Vector<bool> parsed_feature_policies_;
 
   AtomicString override_last_modified_;
 

@@ -5,20 +5,34 @@
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 
-generate_jni("jni") {
+generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/permissions/PermissionDialogController.java",
     "java/src/org/chromium/components/permissions/PermissionDialogDelegate.java",
     "java/src/org/chromium/components/permissions/PermissionUmaUtil.java",
     "java/src/org/chromium/components/permissions/PermissionUtil.java",
     "java/src/org/chromium/components/permissions/PermissionsClient.java",
+    "java/src/org/chromium/components/permissions/nfc/NfcSystemLevelSetting.java",
   ]
 }
 
 android_resources("java_resources") {
   resource_dirs = [ "res" ]
   custom_package = "org.chromium.components.permissions"
-  deps = [ ":permissions_strings_grd" ]
+  deps = [
+    ":permissions_strings_grd",
+    "//components/browser_ui/modaldialog/android:java_resources",
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
+  ]
+}
+
+java_strings_grd("permissions_strings_grd") {
+  grd_file = "permissions_android_strings.grd"
+  outputs =
+      [ "values/permissions_android_strings.xml" ] +
+      process_file_template(
+          android_bundle_locales_as_resources,
+          [ "values-{{source_name_part}}/permissions_android_strings.xml" ])
 }
 
 android_library("java") {
@@ -30,12 +44,15 @@ android_library("java") {
     "java/src/org/chromium/components/permissions/PermissionUmaUtil.java",
     "java/src/org/chromium/components/permissions/PermissionUtil.java",
     "java/src/org/chromium/components/permissions/PermissionsClient.java",
+    "java/src/org/chromium/components/permissions/nfc/NfcSystemLevelPrompt.java",
+    "java/src/org/chromium/components/permissions/nfc/NfcSystemLevelSetting.java",
   ]
   deps = [
     ":java_resources",
     "//base:base_java",
     "//base:jni_java",
     "//components/browser_ui/modaldialog/android:java",
+    "//content/public/android:content_java",
     "//third_party/android_deps:android_support_v4_java",
     "//ui/android:ui_java",
   ]
@@ -45,11 +62,37 @@ android_library("java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
-java_strings_grd("permissions_strings_grd") {
-  grd_file = "permissions_android_strings.grd"
-  outputs =
-      [ "values/permissions_android_strings.xml" ] +
-      process_file_template(
-          android_bundle_locales_as_resources,
-          [ "values-{{source_name_part}}/permissions_android_strings.xml" ])
+junit_binary("components_permissions_junit_tests") {
+  sources = [ "junit/src/org/chromium/components/permissions/nfc/NfcSystemLevelPromptTest.java" ]
+  deps = [
+    ":java",
+    "//base:base_java_test_support",
+    "//base:base_junit_test_support",
+    "//ui/android:ui_java",
+  ]
+}
+
+source_set("native") {
+  sources = [
+    "nfc/nfc_system_level_setting.h",
+    "nfc/nfc_system_level_setting_impl.cc",
+    "nfc/nfc_system_level_setting_impl.h",
+  ]
+  deps = [
+    ":jni_headers",
+    "//base",
+    "//content/public/browser",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "nfc/mock_nfc_system_level_setting.cc",
+    "nfc/mock_nfc_system_level_setting.h",
+  ]
+  deps = [
+    ":native",
+    "//base",
+  ]
 }

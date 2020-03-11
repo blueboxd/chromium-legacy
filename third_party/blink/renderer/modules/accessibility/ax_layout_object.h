@@ -73,8 +73,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   void Init() override;
   void Detach() override;
-  bool IsDetached() const override { return !layout_object_; }
-  bool IsAXLayoutObject() const override { return true; }
+  bool IsDetached() const override;
+  bool IsAXLayoutObject() const final;
 
   // Check object role or purpose.
   bool IsAutofillAvailable() const override;

@@ -522,9 +522,24 @@ void CryptAuthDeviceSyncerImpl::ProcessEncryptedDeviceMetadata() {
     const auto it =
         id_to_device_metadata_packet_map_.find(id_device_pair.first);
     DCHECK(it != id_to_device_metadata_packet_map_.end());
+
+    // Do not try to decrypt metadata that is not sent. This can happen if a
+    // device has not uploaded metadata encrypted with the correct group public
+    // key.
+    if (it->second.encrypted_metadata().empty())
+      continue;
+
     id_to_encrypted_metadata_map[id_device_pair.first] =
         CryptAuthEciesEncryptor::PayloadAndKey(it->second.encrypted_metadata(),
                                                group_key->private_key());
+  }
+
+  if (id_to_encrypted_metadata_map.empty()) {
+    PA_LOG(ERROR) << "No encrypted metadata sent by CryptAuth. We expect the "
+                  << "local device's encrypted metadata, at a minimum.";
+    did_non_fatal_error_occur_ = true;
+    AttemptNextStep();
+    return;
   }
 
   encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Create();
@@ -556,41 +571,42 @@ void CryptAuthDeviceSyncerImpl::AddDecryptedMetadataToNewDeviceRegistry(
   DCHECK(new_device_registry_map_);
 
   // Update the new device registry with BetterTogether device metadata.
-  for (auto& id_device_pair : *new_device_registry_map_) {
-    cryptauthv2::BetterTogetherDeviceMetadata decrypted_metadata;
-
-    const auto it = id_to_decrypted_metadata_map.find(id_device_pair.first);
-    DCHECK(it != id_to_decrypted_metadata_map.end());
-
-    bool was_metadata_decrypted = it->second.has_value();
+  for (const auto& id_metadata_pair : id_to_decrypted_metadata_map) {
+    bool was_metadata_decrypted = id_metadata_pair.second.has_value();
     base::UmaHistogramBoolean(
         "CryptAuth.DeviceSyncV2.DeviceSyncer.MetadataDecryptionSuccess",
         was_metadata_decrypted);
     if (!was_metadata_decrypted) {
-      PA_LOG(ERROR) << "Metadata for device with Instance ID " << it->first
+      PA_LOG(ERROR) << "Metadata for device with Instance ID "
+                    << id_metadata_pair.first
                     << " was not able to be decrypted.";
       did_non_fatal_error_occur_ = true;
       continue;
     }
 
-    bool was_metadata_parsed = decrypted_metadata.ParseFromString(*it->second);
+    cryptauthv2::BetterTogetherDeviceMetadata decrypted_metadata;
+    bool was_metadata_parsed =
+        decrypted_metadata.ParseFromString(*id_metadata_pair.second);
     base::UmaHistogramBoolean(
         "CryptAuth.DeviceSyncV2.DeviceSyncer.MetadataParsingSuccess",
         was_metadata_parsed);
     if (!was_metadata_parsed) {
-      PA_LOG(ERROR) << "Metadata for device with Instance ID " << it->first
-                    << " was not able to be parsed.";
+      PA_LOG(ERROR) << "Metadata for device with Instance ID "
+                    << id_metadata_pair.first << " was not able to be parsed.";
       did_non_fatal_error_occur_ = true;
       continue;
     }
 
+    auto it = new_device_registry_map_->find(id_metadata_pair.first);
+    DCHECK(it != new_device_registry_map_->end());
+
     // The local device should already have its metadata set. Verify consistency
     // with data from CryptAuth.
-    if (id_device_pair.first == request_context_.device_id()) {
-      DCHECK(id_device_pair.second.better_together_device_metadata);
+    if (id_metadata_pair.first == request_context_.device_id()) {
+      DCHECK(it->second.better_together_device_metadata);
       bool is_local_device_metadata_consistent =
-          *it->second == id_device_pair.second.better_together_device_metadata
-                             ->SerializeAsString();
+          id_metadata_pair.second ==
+          it->second.better_together_device_metadata->SerializeAsString();
       base::UmaHistogramBoolean(
           "CryptAuth.DeviceSyncV2.DeviceSyncer.IsLocalDeviceMetadataConsistent",
           is_local_device_metadata_consistent);
@@ -601,11 +617,10 @@ void CryptAuthDeviceSyncerImpl::AddDecryptedMetadataToNewDeviceRegistry(
                       << "response.";
         did_non_fatal_error_occur_ = true;
       }
-
       continue;
     }
 
-    id_device_pair.second.better_together_device_metadata = decrypted_metadata;
+    it->second.better_together_device_metadata = decrypted_metadata;
   }
 }
 

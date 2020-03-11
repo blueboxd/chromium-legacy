@@ -206,7 +206,6 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//chrome/test/data:web_ui_test_bindings",
     "//components/autofill/content/common/mojom",
     "//components/contextual_search/content/common/mojom",
-    "//components/data_reduction_proxy/core/common:interfaces",
     "//components/metrics/public/mojom:call_stack_mojo_bindings",
     "//components/page_load_metrics/common:page_load_metrics_mojom",
     "//components/safe_browsing/content/common:interfaces",

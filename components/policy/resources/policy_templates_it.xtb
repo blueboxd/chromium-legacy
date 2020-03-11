@@ -2443,14 +2443,6 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
           Se questa norma è impostata su "true", i tasti della fila superiore della tastiera riprodurranno i comandi dei tasti funzione per impostazione predefinita. Per ripristinare il comportamento dei tasti multimediali, è necessario premere il tasto per la ricerca.
 
           Se questa norma è impostata su "false" o non viene impostata, la tastiera riprodurrà i comandi dei tasti multimediali per impostazione predefinita e i comandi dei tasti funzione quando viene premuto il tasto per la ricerca.</translation>
-<translation id="4636613705027089602">Questo criterio controlla le richieste di installazione delle estensioni di <ph name="PRODUCT_NAME" /> consentendo agli utenti di inviare alla Console di amministrazione Google le richieste per l'approvazione.
-
-      Se il criterio non è impostato o è impostato su Disattivato, le richieste di installazione delle estensioni non vengono create né caricate.
-      Se il criterio è impostato su Attivato, le richieste di installazione delle estensioni vengono create e caricate sulla Console di amministrazione Google
-
-      Le richieste di installazione delle estensioni vengono create quando gli utenti tentano di installare un'estensione non autorizzata da <ph name="EXTENSION_INSTALL_WHITELIST" /> o <ph name="EXTENSION_SETTINGS" />.
-
-      Questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> e <ph name="CLOUD_REPORTING_ENABLED" /> è attivato.</translation>
 <translation id="4639407427807680016">Nomi degli host di messaggi nativi da escludere dalla lista nera.</translation>
 <translation id="4649395978608361979">Destinazioni stampanti locali</translation>
 <translation id="4650759511838826572">Disabilita schemi di protocollo dell'URL</translation>

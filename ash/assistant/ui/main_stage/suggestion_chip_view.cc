@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
@@ -22,6 +24,7 @@ namespace ash {
 
 namespace {
 
+// Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 constexpr SkColor kFocusColor = SkColorSetA(gfx::kGoogleGrey900, 0x14);
 constexpr SkColor kStrokeColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
@@ -34,23 +37,13 @@ constexpr int kPreferredHeightDip = 32;
 
 }  // namespace
 
-// Params ----------------------------------------------------------------------
-
-SuggestionChipView::Params::Params() = default;
-
-SuggestionChipView::Params::~Params() = default;
-
 // SuggestionChipView ----------------------------------------------------------
 
-SuggestionChipView::SuggestionChipView(const Params& params,
+SuggestionChipView::SuggestionChipView(AssistantViewDelegate* delegate,
+                                       const AssistantSuggestion* suggestion,
                                        views::ButtonListener* listener)
-    : Button(listener) {
-  // Configure focus. Note that we don't install the default focus ring as we
-  // use custom highlighting instead.
-  SetFocusBehavior(FocusBehavior::ALWAYS);
-  SetInstallFocusRingOnFocus(false);
-
-  InitLayout(params);
+    : Button(listener), delegate_(delegate), suggestion_(suggestion) {
+  InitLayout();
 }
 
 SuggestionChipView::~SuggestionChipView() = default;
@@ -75,9 +68,22 @@ void SuggestionChipView::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void SuggestionChipView::InitLayout(const Params& params) {
-  // Layout padding differs depending on icon visibility.
-  const int padding_left_dip = params.icon ? kIconMarginDip : kChipPaddingDip;
+void SuggestionChipView::InitLayout() {
+  const base::string16 text = base::UTF8ToUTF16(suggestion_->text);
+
+  // Accessibility.
+  SetAccessibleName(text);
+
+  // Focus.
+  // Note that we don't install the default focus ring as we use custom
+  // highlighting instead.
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+  SetInstallFocusRingOnFocus(false);
+
+  // Layout.
+  // Note that padding differs depending on icon visibility.
+  const int padding_left_dip =
+      suggestion_->icon_url.is_empty() ? kChipPaddingDip : kIconMarginDip;
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
@@ -91,10 +97,16 @@ void SuggestionChipView::InitLayout(const Params& params) {
   icon_view_->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
   icon_view_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
 
-  if (params.icon)
-    icon_view_->SetImage(params.icon.value());
-  else
+  // Download our icon if necessary. Note that we *don't* hide the associated
+  // view while an image is being downloaded. This prevents layout jank that
+  // would otherwise occur when the image is finally rendered.
+  if (suggestion_->icon_url.is_empty()) {
     icon_view_->SetVisible(false);
+  } else {
+    delegate_->DownloadImage(suggestion_->icon_url,
+                             base::BindOnce(&SuggestionChipView::SetIcon,
+                                            weak_factory_.GetWeakPtr()));
+  }
 
   // Text.
   text_view_ = AddChildView(std::make_unique<views::Label>());
@@ -103,7 +115,7 @@ void SuggestionChipView::InitLayout(const Params& params) {
   text_view_->SetSubpixelRenderingEnabled(false);
   text_view_->SetFontList(
       assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1));
-  SetText(params.text);
+  SetText(text);
 }
 
 void SuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
@@ -148,7 +160,7 @@ bool SuggestionChipView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
   icon_view_->SetImage(icon);
-  icon_view_->SetVisible(true);
+  icon_view_->SetVisible(!icon.isNull());
 }
 
 void SuggestionChipView::SetText(const base::string16& text) {

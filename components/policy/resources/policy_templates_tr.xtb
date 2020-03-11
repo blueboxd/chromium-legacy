@@ -323,6 +323,11 @@
 
       Politika ayarlanmadan bırakılırsa, varsayılan değer kurumsal olarak yönetilen kullanıcılar için "MultiProfileUserBehaviorMustBePrimary" ve yönetilmeyen kullanıcılar için "MultiProfileUserBehaviorUnrestricted" olur.</translation>
 <translation id="1465619815762735808">Tıklandığında oynat</translation>
+<translation id="1467633031685836974">Bu özellik, köprülerin ve adres çubuğu URL gezinmelerinin web sayfasındaki belirli bir metni hedeflemesine olanak tanıyarak, yüklenmesi tamamlandığında web sayfasını hedeflenen konuma kaydırır.
+
+Bu politikayı etkinleştirir veya yapılandırmazsanız web sayfasını URL yoluyla belirli metin parçalarına kaydırma etkinleştirilir.
+
+Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli metin parçalarına kaydırma devre dışı bırakılır.</translation>
 <translation id="1468707346106619889">Bu politika "doğru" seçeneğine ayarlanırsa Birleşik Masaüstü'ne varsayılan olarak
       izin verilir ve bu özellik etkinleştirilir. Bu şekilde, uygulamaların birden fazla
       ekrana yayılmasına olanak sağlanır.
@@ -2518,14 +2523,6 @@ politikayı geçersiz kılamaz.
           Bu politika true değerine ayarlanırsa klavyedeki tuşların en üst sırası, varsayılan ayara göre işlev tuşu komutları oluşturur. Bunların davranışını tekrar medya tuşlarına döndürmek için arama tuşuna basılması gerekir.
 
           Bu politika false değerine ayarlanırsa veya ayarlanmadan bırakılırsa, klavye varsayılan ayara göre medya tuşu komutları ve arama tuşu basılı tutulduğunda işlev tuşu komutları oluşturur.</translation>
-<translation id="4636613705027089602">Bu politika, <ph name="PRODUCT_NAME" /> uzantı yükleme isteklerini denetleyerek kullanıcıların onaylanması için istekleri Google Yönetici konsoluna göndermelerine olanak tanır.
-
-      Bu politika ayarlanmadan bırakılırsa veya devre dışı değerine ayarlanırsa uzantı yükleme istekleri oluşturulmaz veya yüklenmez.
-      Bu politika etkin olarak ayarlanırsa uzantı yükleme istekleri oluşturulur ve Google Yönetici konsoluna yüklenir.
-
-      Uzantı yükleme istekleri, kullanıcılar <ph name="EXTENSION_INSTALL_WHITELIST" /> veya <ph name="EXTENSION_SETTINGS" /> tarafından beyaz listeye alınmamış bir uzantıyı yüklemeye çalıştıklarında oluşturulur.
-
-      Bu politika yalnızca makinenin <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> kaydı yapıldığında ve <ph name="CLOUD_REPORTING_ENABLED" /> etkinleştirildiğinde geçerli olur.</translation>
 <translation id="4639407427807680016">Kara listeden muaf tutulacak yerel mesajlaşma ana makinelerinin adları</translation>
 <translation id="4649395978608361979">Yerel yazıcı hedefleri</translation>
 <translation id="4650759511838826572">URL protokol şemalarını devre dışı bırak</translation>
@@ -3484,6 +3481,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
           Politikanın değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma bekleme süresinden az olacak şekilde ayarlanır.</translation>
 <translation id="6097601282776163274">URL içeren veya URL'lerle ilişkili anonim veri toplamayı etkinleştir</translation>
 <translation id="6099853574908182288">Varsayılan renkli yazdırma modu</translation>
+<translation id="6102342563050263313">URL parçalarında belirtilen metne kaydırmayı etkinleştirme</translation>
 <translation id="6107642964266628393">Chrome OS güncellemelerinin nasıl ve ne zaman uygulanacağını kontrol eder.</translation>
 <translation id="6111936128861357925">Dinozor Paskalya Yumurtası Oyununa İzin Verme</translation>
 <translation id="6114416803310251055">onaylanmadı</translation>
@@ -4480,6 +4478,9 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7713608076604149344">İndirme kısıtlamaları</translation>
 <translation id="7715711044277116530">Sunum modunda ekranın kararma gecikmesinin ölçekleneceği yüzde</translation>
 <translation id="7717938661004793600"><ph name="PRODUCT_OS_NAME" /> erişilebilirlik özelliklerini yapılandır.</translation>
+<translation id="7724652568947700864">Bu politika ayarlanırsa belirtilen tüm veri türleri hem Google Sync senkronizasyonunun hem de dolaşım profili senkronizasyonunun dışında tutulur. Bu, dolaşım profilinin boyutunu küçültmeye veya Google Sync sunucularına yüklenen veri türlerini sınırlandırmaya yarayabilir.
+
+      Şu anda bu politika kapsamında bulunan veri türleri şunlardır: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfiguration". Bu adlar büyük/küçük harfe duyarlıdır.</translation>
 <translation id="7731026922044991970">Tüm sitelerde çerezler için eski <ph name="ATTRIBUTE_SAMESITE_NAME" /> davranışına geri dön</translation>
 <translation id="7747447585227954402">Cihazların <ph name="PRODUCT_OS_NAME" /> üzerinde bir <ph name="PLUGIN_VM_NAME" /> kullanmasına izin verir</translation>
 <translation id="7749024457938190837">Yazdırma işlerini chrome.printing API'si üzerinden gönderirken onay iletişim kutusunu atlamasına izin verilen uzantılar</translation>

@@ -79,6 +79,7 @@ cast_source_set("mixer") {
     "//chromecast/media/audio/mixer_service:redirected_audio_connection",
     "//chromecast/media/audio/mixer_service/receiver",
     "//chromecast/media/base",
+    "//chromecast/media/base:slew_volume",
     "//chromecast/media/cma/backend:cast_audio_json",
     "//chromecast/media/cma/backend:volume_map",
     "//chromecast/media/cma/backend/mixer/post_processors:post_processor_wrapper",

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "content/public/common/context_menu_params.h"
+#include "content/public/common/untrustworthy_context_menu_params.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/menu_item_builder.h"

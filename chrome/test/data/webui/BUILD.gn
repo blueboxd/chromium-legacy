@@ -24,7 +24,6 @@ js2gtest("interactive_ui_tests_js_webui") {
     "print_preview/print_preview_interactive_ui_tests.js",
     "settings/cr_settings_interactive_ui_tests.js",
     "settings/cr_settings_v3_interactive_ui_tests.js",
-    "settings/settings_ui_browsertest.js",
   ]
 
   gen_include_files = [
@@ -112,7 +111,6 @@ js2gtest("browser_tests_js_webui") {
     "a11y/accessibility_test.js",
     "polymer_browser_test_base.js",
     "settings/a11y/settings_accessibility_test.js",
-    "settings/settings_page_browsertest.js",
     "//third_party/axe-core/axe.js",
   ]
 

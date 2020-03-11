@@ -214,8 +214,14 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                     const net::IPEndPoint& endpoint);
 
   void HandleQueryPrintServer(const base::ListValue* args);
+
+  void QueryPrintServer(const std::string& callback_id,
+                        const GURL& server_url,
+                        bool should_fallback);
+
   void OnQueryPrintServerCompleted(
       const std::string& callback_id,
+      bool should_fallback,
       const ServerPrintersFetcher* sender,
       const GURL& server_url,
       std::vector<PrinterDetector::DetectedPrinter>&& returned_printers);

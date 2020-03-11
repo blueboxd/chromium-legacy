@@ -157,11 +157,10 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
   page_load_tracker_decorator_helper_.reset();
   page_live_state_data_helper_.reset();
 
-  // There may still be WebContents and RenderProcessHosts with attached user
-  // data, retaining PageNodes, FrameNodes and ProcessNodes. Tear down the
-  // registry to release these nodes. There is no convenient later call-out to
-  // destroy the performance manager after all WebContents and
-  // RenderProcessHosts have been destroyed.
+  // There may still be worker hosts, WebContents and RenderProcessHosts with
+  // attached user data, retaining WorkerNodes, PageNodes, FrameNodes and
+  // ProcessNodes. Tear down the registry to release these nodes. After this,
+  // there is no convenient call-out to destroy the performance manager.
   registry_->TearDown();
   registry_.reset();
 

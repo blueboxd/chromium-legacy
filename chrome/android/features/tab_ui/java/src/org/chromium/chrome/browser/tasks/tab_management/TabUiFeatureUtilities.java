@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -65,7 +64,7 @@ public class TabUiFeatureUtilities {
      * @return Tab UI related feature flags that should be cached.
      */
     public static List<String> getFeaturesToCache() {
-        if (!isEligibleForTabUiExperiments() || DeviceClassManager.enableAccessibilityLayout()) {
+        if (!isEligibleForTabUiExperiments()) {
             return Collections.emptyList();
         }
         return Arrays.asList(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
@@ -75,23 +74,18 @@ public class TabUiFeatureUtilities {
     }
 
     private static boolean isEligibleForTabUiExperiments() {
-        return (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
-                       || !SysUtils.isLowEndDevice())
-                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
-                        ContextUtils.getApplicationContext());
+        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
+                ContextUtils.getApplicationContext());
     }
 
     /**
      * @return Whether the Grid Tab Switcher UI is enabled and available for use.
      */
     public static boolean isGridTabSwitcherEnabled() {
-        // TODO(yusufo): AccessibilityLayout check should not be here and the flow should support
-        // changing that setting while Chrome is alive.
         // Having Tab Groups or Start implies Grid Tab Switcher.
-        return !(CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
-                       && SysUtils.isLowEndDevice())
-                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
-                && isTabManagementModuleSupported()
+        return (!DeviceClassManager.enableAccessibilityLayout()
+                       && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
+                       && isTabManagementModuleSupported())
                 || isTabGroupsAndroidEnabled() || StartSurfaceConfiguration.isStartSurfaceEnabled();
     }
 
@@ -99,7 +93,8 @@ public class TabUiFeatureUtilities {
      * @return Whether the tab group feature is enabled and available for use.
      */
     public static boolean isTabGroupsAndroidEnabled() {
-        return CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
+        return !DeviceClassManager.enableAccessibilityLayout()
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
                 && isTabManagementModuleSupported();
     }
 

@@ -7,16 +7,18 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "media/learning/common/learning_task_controller.h"
 #include "media/learning/common/value.h"
-#include "media/learning/mojo/public/mojom/learning_types.mojom.h"
+#include "media/learning/mojo/public/mojom/learning_types.mojom-shared.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<media::learning::mojom::LabelledExampleDataView,
-                    media::learning::LabelledExample> {
+struct COMPONENT_EXPORT(MEDIA_LEARNING_SHARED_TYPEMAP_TRAITS)
+    StructTraits<media::learning::mojom::LabelledExampleDataView,
+                 media::learning::LabelledExample> {
   static const std::vector<media::learning::FeatureValue>& features(
       const media::learning::LabelledExample& e) {
     return e.features;
@@ -31,9 +33,10 @@ struct StructTraits<media::learning::mojom::LabelledExampleDataView,
 };
 
 template <>
-struct StructTraits<media::learning::mojom::FeatureValueDataView,
-                    media::learning::FeatureValue> {
-  static int64_t value(const media::learning::FeatureValue& e) {
+struct COMPONENT_EXPORT(MEDIA_LEARNING_SHARED_TYPEMAP_TRAITS)
+    StructTraits<media::learning::mojom::FeatureValueDataView,
+                 media::learning::FeatureValue> {
+  static double value(const media::learning::FeatureValue& e) {
     return e.value();
   }
   static bool Read(media::learning::mojom::FeatureValueDataView data,
@@ -41,9 +44,10 @@ struct StructTraits<media::learning::mojom::FeatureValueDataView,
 };
 
 template <>
-struct StructTraits<media::learning::mojom::TargetValueDataView,
-                    media::learning::TargetValue> {
-  static int64_t value(const media::learning::TargetValue& e) {
+struct COMPONENT_EXPORT(MEDIA_LEARNING_SHARED_TYPEMAP_TRAITS)
+    StructTraits<media::learning::mojom::TargetValueDataView,
+                 media::learning::TargetValue> {
+  static double value(const media::learning::TargetValue& e) {
     return e.value();
   }
   static bool Read(media::learning::mojom::TargetValueDataView data,
@@ -51,8 +55,9 @@ struct StructTraits<media::learning::mojom::TargetValueDataView,
 };
 
 template <>
-struct StructTraits<media::learning::mojom::ObservationCompletionDataView,
-                    media::learning::ObservationCompletion> {
+struct COMPONENT_EXPORT(MEDIA_LEARNING_SHARED_TYPEMAP_TRAITS)
+    StructTraits<media::learning::mojom::ObservationCompletionDataView,
+                 media::learning::ObservationCompletion> {
   static media::learning::TargetValue target_value(
       const media::learning::ObservationCompletion& e) {
     return e.target_value;
@@ -67,11 +72,32 @@ struct StructTraits<media::learning::mojom::ObservationCompletionDataView,
 };
 
 template <>
-struct StructTraits<media::learning::mojom::TargetHistogramDataView,
-                    media::learning::TargetHistogram> {
-  static media::learning::TargetHistogram::CountMap counts(
+struct COMPONENT_EXPORT(MEDIA_LEARNING_SHARED_TYPEMAP_TRAITS)
+    StructTraits<media::learning::mojom::TargetHistogramPairDataView,
+                 media::learning::TargetHistogramPair> {
+  static media::learning::TargetValue target_value(
+      const media::learning::TargetHistogramPair& e) {
+    return e.target_value;
+  }
+  static double count(const media::learning::TargetHistogramPair& e) {
+    return e.count;
+  }
+  static bool Read(media::learning::mojom::TargetHistogramPairDataView data,
+                   media::learning::TargetHistogramPair* out_pair);
+};
+
+template <>
+struct COMPONENT_EXPORT(MEDIA_LEARNING_SHARED_TYPEMAP_TRAITS)
+    StructTraits<media::learning::mojom::TargetHistogramDataView,
+                 media::learning::TargetHistogram> {
+  static std::vector<media::learning::TargetHistogramPair> pairs(
       const media::learning::TargetHistogram& e) {
-    return e.counts();
+    std::vector<media::learning::TargetHistogramPair> pairs;
+    for (auto const& entry : e.counts_) {
+      pairs.push_back({entry.first, entry.second});
+    }
+
+    return pairs;
   }
 
   static bool Read(media::learning::mojom::TargetHistogramDataView data,

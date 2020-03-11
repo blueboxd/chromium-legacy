@@ -809,6 +809,7 @@
 <translation id="4466881336512663640">フォームの変更内容は破棄されます。続行してもよろしいですか？</translation>
 <translation id="4477350412780666475">次の曲</translation>
 <translation id="4482953324121162758">このサイトは翻訳されません。</translation>
+<translation id="4486757593530038591">オンにすると、サイトはあなたが別のサイトで閲覧した内容に基づいて広告をカスタマイズできなくなります。一部のサイトの機能は使用できなくなる可能性があります。</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">これらの機能はデフォルトで無効になっています。Chrome の今後のバージョンではご利用いただけません。</translation>
 <translation id="4493480324863638523">URL が無効です。標準のスキームを使用した URL を指定してください（例: http://example.com、https://example.com）。</translation>
@@ -1045,6 +1046,7 @@
 <translation id="549333378215107354">サイズ 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">管理対象のブックマーク</translation>
+<translation id="5510481203689988000">この設定は Cookie 設定で管理されています。</translation>
 <translation id="5510766032865166053">移動または削除された可能性があります。</translation>
 <translation id="5523118979700054094">ポリシー名</translation>
 <translation id="55293785478302737">端綴じ</translation>
@@ -1477,6 +1479,7 @@
 <translation id="7416351320495623771">パスワードを管理…</translation>
 <translation id="7419106976560586862">プロフィール パス</translation>
 <translation id="7437289804838430631">連絡先情報を追加</translation>
+<translation id="7438976808740265764">Flash Player のサポートは 2020 年 12 月で終了します。</translation>
 <translation id="7440140511386898319">オフラインで利用できるコンテンツ</translation>
 <translation id="7441627299479586546">ポリシーの対象が間違っています</translation>
 <translation id="7442725080345379071">ライトオレンジ</translation>

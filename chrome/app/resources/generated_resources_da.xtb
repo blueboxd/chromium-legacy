@@ -556,6 +556,7 @@
 <translation id="1745520510852184940">Gør altid dette</translation>
 <translation id="1750172676754093297">Din sikkerhedsnøgle kan ikke gemme fingeraftryk</translation>
 <translation id="175196451752279553">G&amp;enåbn lukket fane</translation>
+<translation id="1753067873202720523">Din Chromebook oplades muligvis ikke, når den er tændt.</translation>
 <translation id="1753905327828125965">Mest besøgte</translation>
 <translation id="1755601632425835748">Tekststørrelse</translation>
 <translation id="1756681705074952506">Indtastningsmetode</translation>
@@ -1201,6 +1202,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2610157865375787051">Dvale</translation>
 <translation id="2610260699262139870">Fa&amp;ktisk størrelse</translation>
 <translation id="2610780100389066815">Microsoft-signering af tillidslister</translation>
+<translation id="261226884343006626">Chrome kan ikke tjekke dine adgangskoder. Prøv igen i morgen.</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
 <translation id="2616366145935564096">Læse og redigere dine data på <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
@@ -1331,6 +1333,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2773288106548584039">Understøttelse af ældre browsere</translation>
 <translation id="2773802008104670137">Denne type fil kan skade din computer.</translation>
 <translation id="2775104091073479743">Rediger fingeraftryk</translation>
+<translation id="2775140325783767197">Chrome kan ikke tjekke dine adgangskoder. Prøv at tjekke din internetforbindelse.</translation>
 <translation id="2776441542064982094">Det ser ud til, at der ikke er registreret nogen tilgængelige enheder på netværket. Hvis din enhed er tændt og har forbindelse til internettet, kan du prøve at registrere den ved hjælp af vejledningen i manualen.</translation>
 <translation id="2780009105947267877">Konfigurerer Plugin VM...</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -2901,6 +2904,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4964455510556214366">Opstilling</translation>
 <translation id="4965808351167763748">Er du sikker på, at du vil konfigurere denne enhed til at køre Hangouts Meet?</translation>
 <translation id="496888482094675990">Appen Filer giver hurtig adgang til filer, som du har gemt i Google Drev, på et eksternt lager eller på din Chrome OS-enhed.</translation>
+<translation id="4969017548025688718"><ph name="COUNT" /> kompromitterede adgangskoder</translation>
 <translation id="4971412780836297815">Åbn, når den er fuldført</translation>
 <translation id="4972129977812092092">Rediger printer</translation>
 <translation id="4972164225939028131">Forkert adgangskode</translation>
@@ -3259,7 +3263,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5470735824776589490">Enheden skal genstartes, før den kan nulstilles med Powerwash. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Hej! Jeg er din stemme til oplæsning.</translation>
 <translation id="5473333559083690127">Angiv ny pinkode igen</translation>
-<translation id="548137908954174608">Aktivér Livetekstning</translation>
 <translation id="5481941284378890518">Tilføj printere i nærheden</translation>
 <translation id="5483785310822538350">Tilbagekald adgang til fil og enhed</translation>
 <translation id="5485080380723335835">Din <ph name="DEVICE_TYPE" /> er låst af sikkerhedshensyn. Angiv din adgangskode manuelt for at fortsætte.</translation>
@@ -4904,7 +4907,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7744047395460924128">Se din udskrivningshistorik</translation>
 <translation id="7744192722284567281">Blev fundet i et brud på datasikkerheden</translation>
-<translation id="7746457520633464754">Chrome sender webadresser på nogle sider, du besøger, begrænsede systemoplysninger og noget sideindhold til Google med henblik på at registrere farlige apps og websites.</translation>
 <translation id="7750228210027921155">Integreret billede</translation>
 <translation id="7751229152614300329">Beskyttet browsing er opdateret og beskytter dig mod skadelige websites og downloads</translation>
 <translation id="7751260505918304024">Vis alle</translation>
@@ -5418,7 +5420,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8391712576156218334">Billedet er ikke tilgængeligt. Prøv igen senere.</translation>
 <translation id="8392364544846746346">Spørg, når et website vil redigere filer eller mapper på din enhed</translation>
 <translation id="8392451568018454956">Menuen Indstillinger for <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8392630288038565643">Denne indstilling er deaktiveret i administrerede browsere.</translation>
 <translation id="8393511274964623038">Stop plugin</translation>
 <translation id="8393700583063109961">Send en besked</translation>
 <translation id="839736845446313156">Registrer</translation>
@@ -5502,7 +5503,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="851263357009351303">Tillad altid, at <ph name="HOST" /> viser billeder</translation>
 <translation id="8513108775083588393">Roter automatisk</translation>
 <translation id="8514746246728959655">Prøv med en anden sikkerhedsnøgle</translation>
-<translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> kan muligvis ikke oplades, mens den er tændt.</translation>
 <translation id="8521475323816527629">Gå hurtigt til dine apps</translation>
 <translation id="8523493869875972733">Behold ændringerne</translation>
 <translation id="8523849605371521713">Tilføjet af politik</translation>
@@ -5876,7 +5876,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8978154919215542464">Til – synkroniser alt</translation>
 <translation id="897939795688207351">På <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – gået ned</translation>
-<translation id="8983405057223076408">Denne indstilling er deaktiveret, fordi børnesikring er aktiveret.</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> kan redigere <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">Aktiv for <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dag siden</translation>
 <translation id="8986362086234534611">Glem</translation>

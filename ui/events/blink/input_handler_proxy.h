@@ -120,7 +120,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   void RequestAnimationForSnapFling() override;
 
   bool gesture_scroll_on_impl_thread_for_testing() const {
-    return gesture_scroll_on_impl_thread_;
+    return handling_gesture_on_impl_thread_;
   }
 
  protected:
@@ -149,6 +149,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   EventDisposition HandleTouchStart(const blink::WebTouchEvent& event);
   EventDisposition HandleTouchMove(const blink::WebTouchEvent& event);
   EventDisposition HandleTouchEnd(const blink::WebTouchEvent& event);
+
+  void InputHandlerScrollEnd();
 
   // Request a frame of animation from the InputHandler or
   // SynchronousInputHandler. They can provide that by calling Animate().
@@ -187,7 +189,10 @@ class InputHandlerProxy : public cc::InputHandlerClient,
 
   SynchronousInputHandler* synchronous_input_handler_;
 
-  bool gesture_scroll_on_impl_thread_;
+  // This should be true when a pinch is in progress. The sequence of events is
+  // as follows: GSB GPB GSU GPU ... GPE GSE.
+  bool handling_gesture_on_impl_thread_;
+
   bool gesture_pinch_in_progress_ = false;
   bool in_inertial_scrolling_ = false;
   bool scroll_sequence_ignored_;
@@ -211,7 +216,10 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   std::unique_ptr<DidOverscrollParams> current_overscroll_params_;
 
   std::unique_ptr<CompositorThreadEventQueue> compositor_event_queue_;
-  bool has_ongoing_compositor_scroll_or_pinch_;
+
+  // Set only when the compositor input handler is handling a gesture. Tells
+  // which source device is currently performing a gesture based scroll.
+  base::Optional<blink::WebGestureDevice> currently_active_gesture_device_;
 
   // Tracks whether the first scroll update gesture event has been seen after a
   // scroll begin. This is set/reset when scroll gestures are processed in

@@ -60,6 +60,8 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
         } else if (content_settings_type ==
                    ContentSettingsType::MEDIASTREAM_CAMERA) {
           message_id = IDS_INFOBAR_MISSING_CAMERA_PERMISSION_TEXT;
+        } else if (content_settings_type == ContentSettingsType::AR) {
+          message_id = IDS_INFOBAR_MISSING_CAMERA_PERMISSION_TEXT;
         } else {
           NOTREACHED();
         }

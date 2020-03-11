@@ -254,11 +254,14 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebSecurityOrigin& intended_target_origin,
       const WebDOMMessageEvent&) override;
   void UsageCountChromeLoadTimes(const WebString& metric) override;
-  void OnPortalActivated(const base::UnguessableToken& portal_token,
-                         mojo::ScopedInterfaceEndpointHandle portal_pipe,
-                         mojo::ScopedInterfaceEndpointHandle portal_client_pipe,
-                         TransferableMessage data,
-                         OnPortalActivatedCallback callback) override;
+  void OnPortalActivated(
+      const base::UnguessableToken& portal_token,
+      CrossVariantMojoAssociatedRemote<mojom::blink::PortalInterfaceBase>
+          portal,
+      CrossVariantMojoAssociatedReceiver<
+          mojom::blink::PortalClientInterfaceBase> portal_client,
+      TransferableMessage data,
+      OnPortalActivatedCallback callback) override;
   void ForwardMessageFromHost(
       TransferableMessage message,
       const WebSecurityOrigin& source_origin,

@@ -556,6 +556,7 @@
 <translation id="1745520510852184940">Gera þetta alltaf</translation>
 <translation id="1750172676754093297">Öryggislykillinn þinn getur ekki vistað fingraför</translation>
 <translation id="175196451752279553">&amp;Enduropna lokaðan flipa</translation>
+<translation id="1753067873202720523">Ekki er víst að Chromebook tölvan hlaðist á meðan kveikt er á henni.</translation>
 <translation id="1753905327828125965">Oftast heimsótt</translation>
 <translation id="1755601632425835748">Textastærð</translation>
 <translation id="1756681705074952506">Innsláttaraðferð</translation>
@@ -1201,6 +1202,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2610157865375787051">Hvíld</translation>
 <translation id="2610260699262139870">Raunstærð</translation>
 <translation id="2610780100389066815">Undirritun Microsoft-traustlista</translation>
+<translation id="261226884343006626">Chrome getur ekki athugað aðgangsorðin þín. Reyndu aftur á morgun.</translation>
 <translation id="2612676031748830579">Kortanúmer</translation>
 <translation id="2616366145935564096">Lesa og breyta gögnunum þínum á <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">SIM-kortið er læst</translation>
@@ -1331,6 +1333,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2773288106548584039">Stuðningur við eldri vafra</translation>
 <translation id="2773802008104670137">Þessi tegund af skrá gæti skaðað tölvuna þína.</translation>
 <translation id="2775104091073479743">Breyta fingraförum</translation>
+<translation id="2775140325783767197">Chrome getur ekki athugað aðgangsorðin þín. Athugaðu nettenginguna þína.</translation>
 <translation id="2776441542064982094">Það virðast engin tæki vera tiltæk til skráningar á netinu. Ef kveikt er á tækinu og það nettengt skaltu prófa að skrá það með því að fylgja leiðbeiningum í notendahandbók þess.</translation>
 <translation id="2780009105947267877">Setur upp VM-viðbót...</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -2901,6 +2904,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4964455510556214366">Fyrirkomulag</translation>
 <translation id="4965808351167763748">Ertu viss um að þú viljir setja upp keyrslu á Hangouts Meet í tækinu?</translation>
 <translation id="496888482094675990">Forritið Skrár býður upp á skjótan aðgang að skrám sem þú hefur vistað á Google Drive, í ytri geymslu eða á Chrome OS tæki.</translation>
+<translation id="4969017548025688718"><ph name="COUNT" /> aðgangsorð í hættu</translation>
 <translation id="4971412780836297815">Opna að þessu loknu</translation>
 <translation id="4972129977812092092">Breyta prentara</translation>
 <translation id="4972164225939028131">Rangt aðgangsorð</translation>
@@ -3259,7 +3263,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5470735824776589490">Endurræsa þarf tækið áður er hægt er að endurstilla það með djúphreinsun. <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Hæ! Ég er talgervilsröddin þín.</translation>
 <translation id="5473333559083690127">Sláðu nýtt PIN-númer inn aftur</translation>
-<translation id="548137908954174608">Virkja skjátexta í rauntíma</translation>
 <translation id="5481941284378890518">Bæta nálægum prenturum við</translation>
 <translation id="5483785310822538350">Afturkalla skráa- og tækjaaðgang</translation>
 <translation id="5485080380723335835"><ph name="DEVICE_TYPE" /> er læst af öryggisástæðum. Færðu inn aðgangsorðið þitt handvirkt til að halda áfram.</translation>
@@ -4902,7 +4905,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7740996059027112821">Venjulegt</translation>
 <translation id="7744047395460924128">Sjá prentferilinn þinn</translation>
 <translation id="7744192722284567281">Fannst í öryggisbroti</translation>
-<translation id="7746457520633464754">Til að greina hættuleg forrit og vefsvæði sendir Chrome vefslóðir einhverra síðna sem þú skoðar, kerfisupplýsingar og efni síðu til Google.</translation>
 <translation id="7750228210027921155">Mynd í mynd</translation>
 <translation id="7751229152614300329">Örugg vefskoðun hefur fengið allar nýjustu uppfærslur og ver þig gegn skaðlegum vefsvæðum og niðurhali</translation>
 <translation id="7751260505918304024">Sýna allt</translation>
@@ -5416,7 +5418,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8391712576156218334">Myndin er ekki tiltæk. Reyndu aftur síðar.</translation>
 <translation id="8392364544846746346">Spyrja þegar vefsvæði vill breyta skrám eða möppum á tækinu</translation>
 <translation id="8392451568018454956">Valmynd valkosta fyrir <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8392630288038565643">Slökkt er á þessari stillingu í stýrðum vöfrum.</translation>
 <translation id="8393511274964623038">Stöðva viðbót</translation>
 <translation id="8393700583063109961">Senda skilaboð</translation>
 <translation id="839736845446313156">Skrá</translation>
@@ -5500,7 +5501,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="851263357009351303">Leyfa <ph name="HOST" /> alltaf að sýna myndir</translation>
 <translation id="8513108775083588393">Sjálfvirkur snúningur</translation>
 <translation id="8514746246728959655">Prófaðu annan öryggislykil</translation>
-<translation id="8517041960877371778">Ekki er víst að <ph name="DEVICE_TYPE" /> hlaðist á meðan kveikt er á tölvunni.</translation>
 <translation id="8521475323816527629">Fáðu forrit með hraði</translation>
 <translation id="8523493869875972733">Halda breytingum</translation>
 <translation id="8523849605371521713">Bætt við af stefnu</translation>
@@ -5873,7 +5873,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8978154919215542464">Kveikt – samstilla allt</translation>
 <translation id="897939795688207351">Á <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – hrundi</translation>
-<translation id="8983405057223076408">Þar sem kveikt er á barnalæsingu er slökkt á þessari stillingu.</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> getur breytt <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">Virkt fyrir <ph name="DEVICE_LAST_ACTIVATED_TIME" /> degi</translation>
 <translation id="8986362086234534611">Gleyma</translation>

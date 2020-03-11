@@ -1658,8 +1658,8 @@ static_library("ash_shell_lib_with_content") {
 
   deps = [
     ":test_support",
-    "//ash/components/shortcut_viewer",
     "//ash/public/cpp",
+    "//ash/shortcut_viewer",
     "//base:i18n",
     "//chrome:packed_resources",
 
@@ -2102,7 +2102,6 @@ test("ash_unittests") {
     "//ash/assistant/ui",
     "//ash/assistant/ui:constants",
     "//ash/assistant/util",
-    "//ash/components/shortcut_viewer:unit_tests",
     "//ash/keyboard/arc",
     "//ash/keyboard/ui",
     "//ash/keyboard/ui:test_support",
@@ -2111,6 +2110,7 @@ test("ash_unittests") {
     "//ash/public/cpp:unit_tests",
     "//ash/public/cpp/vector_icons",
     "//ash/resources/vector_icons",
+    "//ash/shortcut_viewer:unit_tests",
     "//ash/strings",
     "//ash/system/machine_learning:user_settings_event_proto",
     "//ash/system/message_center/arc",
@@ -2299,7 +2299,7 @@ static_library("test_support") {
   testonly = true
   friend = [
     ":*",
-    "//ash/components/shortcut_viewer:*",
+    "//ash/shortcut_viewer:*",
     "//components/exo:*",
     "//components/exo/wayland:*",
   ]

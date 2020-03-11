@@ -82,12 +82,6 @@ Polymer({
     resolverOptions_: Array,
 
     /**
-     * Whether the privacy policy line should be displayed.
-     * @private
-     */
-    showPrivacyPolicyLine_: Boolean,
-
-    /**
      * String displaying the privacy policy of the resolver selected in the
      * dropdown menu.
      * @private
@@ -353,12 +347,14 @@ Polymer({
     // If the selected item is the custom provider option, hide the privacy
     // policy line.
     if (this.$.secureResolverSelect.value === 'custom') {
-      this.showPrivacyPolicyLine_ = false;
+      this.$.privacyPolicy.style.display = 'none';
+      this.$.secureDnsInput.style.display = 'block';
       return;
     }
 
     // Otherwise, display the corresponding privacy policy.
-    this.showPrivacyPolicyLine_ = true;
+    this.$.privacyPolicy.style.display = 'block';
+    this.$.secureDnsInput.style.display = 'none';
     const resolver = this.resolverOptions_.find(
         r => r.value === this.$.secureResolverSelect.value);
     if (!resolver) {

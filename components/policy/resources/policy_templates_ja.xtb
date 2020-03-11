@@ -331,6 +331,11 @@
 
       このポリシーを設定しないままにした場合、デフォルト値として企業の管理対象ユーザーには「MultiProfileUserBehaviorMustBePrimary」が適用され、管理対象外のユーザーには「MultiProfileUserBehaviorUnrestricted」が適用されます。</translation>
 <translation id="1465619815762735808">クリックして再生する</translation>
+<translation id="1467633031685836974">この機能は、ハイパーリンクやアドレスバーの URL からウェブページ内の特定のテキストに移動できるようにするものです。ウェブページの読み込みが完了したら、特定のテキストまで自動的にスクロールします。
+
+このポリシーを有効にした場合や未設定のままにした場合、URL によるウェブページの特定のテキスト フラグメントへのスクロールが有効になります。
+
+このポリシーを無効にした場合、URL によるウェブページの特定のテキスト フラグメントへのスクロールは無効になります。</translation>
 <translation id="1468707346106619889">このポリシーが true に設定されている場合、統合デスクトップは使用可能となり、
       既定で有効になります。この場合、複数のディスプレイをまたいで
       アプリケーションを表示することができます。ユーザーは個々のディスプレイで
@@ -2462,14 +2467,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーが true に設定されている場合、キーボードの最上段のキーを押すと、デフォルトでファンクション キーのコマンドが実行されます。キーの動作をメディア キーに戻すには、検索キーを押しながら操作する必要があります。
 
           このポリシーが false に設定されているか未設定の場合、最上段のキーを押すとデフォルトでメディア キーのコマンドが実行されます。検索キーを押しながら操作するとファンクション キーのコマンドが実行されます。</translation>
-<translation id="4636613705027089602">このポリシーでは、ユーザーが Google 管理コンソールに <ph name="PRODUCT_NAME" /> 拡張機能のインストールの承認リクエストを送信できるようにするかどうかを管理します。
-
-      このポリシーを設定しないか、無効に設定した場合、拡張機能のインストールのリクエストは作成およびアップロードされません。
-      このポリシーを有効に設定した場合、拡張機能のインストールのリクエストが作成され、Google 管理コンソールにアップロードされます。
-
-      拡張機能のインストールのリクエストは、<ph name="EXTENSION_INSTALL_WHITELIST" /> または <ph name="EXTENSION_SETTINGS" /> でホワイトリストに登録されていない拡張機能をユーザーがインストールしようとしたときに作成されます。
-
-      このポリシーは、パソコンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> で登録され、<ph name="CLOUD_REPORTING_ENABLED" /> が有効になっている場合のみ適用されます。</translation>
 <translation id="4639407427807680016">ブラックリストから除外するネイティブ メッセージング ホストの名前</translation>
 <translation id="4649395978608361979">ローカル プリンタの送信先</translation>
 <translation id="4650759511838826572">URL プロトコル スキームを無効にする</translation>
@@ -3403,6 +3400,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           ポリシーの値はミリ秒単位で指定してください。アイドル時間より長い値は指定できません。</translation>
 <translation id="6097601282776163274">URL キーによる匿名化データの収集を有効にする</translation>
 <translation id="6099853574908182288">デフォルトのカラー印刷モード</translation>
+<translation id="6102342563050263313">URL フラグメントで指定されたテキストへのスクロールを有効にする</translation>
 <translation id="6107642964266628393">Chrome OS の更新を適用する方法と時間を制御します。</translation>
 <translation id="6111936128861357925">恐竜のイースター エッグゲームを許可する</translation>
 <translation id="6114416803310251055">廃止予定</translation>
@@ -4377,6 +4375,9 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="7713608076604149344">ダウンロードの制限</translation>
 <translation id="7715711044277116530">プレゼンテーション モードで画面を暗くするまでの時間に掛ける倍率</translation>
 <translation id="7717938661004793600"><ph name="PRODUCT_OS_NAME" /> のユーザー補助機能を設定します。</translation>
+<translation id="7724652568947700864">このポリシーを設定した場合、指定したすべてのデータタイプが Google Sync とローミング プロファイルの同期から除外されます。これにより、ローミング プロファイルのサイズを抑えたり、Google Sync サーバーにアップロードされるデータのタイプを制限したりできます。
+
+      現在、このポリシーで指定できるデータタイプは次のとおりです。"bookmarks"、"preferences"、"passwords"、"autofill"、"themes"、"typedUrls"、"extensions"、"apps"、"tabs"、"wifiConfiguration"データタイプの名前では大文字と小文字が区別されます。</translation>
 <translation id="7731026922044991970">すべてのサイトの Cookie を以前の <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作に戻す</translation>
 <translation id="7747447585227954402">デバイスが <ph name="PRODUCT_OS_NAME" /> で <ph name="PLUGIN_VM_NAME" /> を使用できるようにする</translation>
 <translation id="7749024457938190837">chrome.printing API による印刷ジョブの送信時に確認ダイアログのスキップを許可する拡張機能です</translation>

@@ -501,16 +501,19 @@ public class JsJavaInteractionTest {
         Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("ftp://example.com", JS_OBJECT_NAME_2));
         Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl(null, JS_OBJECT_NAME_2));
 
-        // ftp scheme.
+        // WebView doesn't support ftp with loadUrl() but ftp scheme could happen with
+        // loadDataWithBaseUrl().
         final String jsObjectName3 = JS_OBJECT_NAME + "3";
         addWebMessageListenerOnUiThread(
-                mAwContents, jsObjectName3, new String[] {"ftp://example.com"}, mListener);
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("ftp://example.com", jsObjectName3));
+                mAwContents, jsObjectName3, new String[] {"ftp://"}, mListener);
+        // ftp is a standard scheme, so the origin will be "ftp://example.com", however we don't
+        // support host rule for ftp://, so it won't do the injection.
+        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("ftp://example.com", jsObjectName3));
 
         // file scheme.
         final String jsObjectName4 = JS_OBJECT_NAME + "4";
         addWebMessageListenerOnUiThread(
-                mAwContents, jsObjectName4, new String[] {"file://*"}, mListener);
+                mAwContents, jsObjectName4, new String[] {"file://"}, mListener);
         Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("file://etc", jsObjectName4));
 
         // Pass an URI instead of origin shouldn't work.

@@ -98,3 +98,26 @@ CrSettingsSecureDnsTest.prototype = {
 TEST_F('CrSettingsSecureDnsTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrSettingsInteractiveUITest}
+ */
+function SettingsUIInteractiveTest() {}
+
+SettingsUIInteractiveTest.prototype = {
+  __proto__: CrSettingsInteractiveUITest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/settings_ui/settings_ui.html',
+
+  /** @override */
+  extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    'settings_ui_tests.js',
+  ]),
+};
+
+TEST_F('SettingsUIInteractiveTest', 'All', function() {
+  mocha.run();
+});

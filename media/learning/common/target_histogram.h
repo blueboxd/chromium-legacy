@@ -23,6 +23,13 @@ namespace mojom {
 class TargetHistogramDataView;
 }
 
+// Intermediate type for mojom struct traits translation.
+// See learning_types.mojom.
+struct COMPONENT_EXPORT(LEARNING_COMMON) TargetHistogramPair {
+  TargetValue target_value;
+  double count;
+};
+
 // Histogram of target values that allows fractional counts.
 class COMPONENT_EXPORT(LEARNING_COMMON) TargetHistogram {
  public:

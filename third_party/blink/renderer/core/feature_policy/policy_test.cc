@@ -8,8 +8,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -25,18 +25,27 @@ using testing::UnorderedElementsAre;
 class PolicyTest : public testing::Test {
  public:
   void SetUp() override {
-    DocumentInit init =
-        DocumentInit::Create()
-            .WithOriginToCommit(SecurityOrigin::CreateFromString(kSelfOrigin))
-            .WithFeaturePolicyHeader(
-                "fullscreen *; payment 'self'; midi 'none'; camera 'self' "
-                "https://example.com https://example.net");
-    document_ = MakeGarbageCollected<Document>(init);
+    page_holder_ = std::make_unique<DummyPageHolder>();
+
+    auto origin = SecurityOrigin::CreateFromString(kSelfOrigin);
+    Vector<String> messages;
+    auto feature_policy = FeaturePolicy::CreateFromParentPolicy(
+        nullptr, ParsedFeaturePolicy(), origin->ToUrlOrigin());
+    auto header = FeaturePolicyParser::ParseHeader(
+        "fullscreen *; payment 'self'; midi 'none'; camera 'self' "
+        "https://example.com https://example.net",
+        origin.get(), &messages);
+    feature_policy->SetHeaderPolicy(header);
+
+    auto& security_context = page_holder_->GetDocument().GetSecurityContext();
+    security_context.SetSecurityOriginForTesting(origin);
+    security_context.SetFeaturePolicy(std::move(feature_policy));
   }
 
   DOMFeaturePolicy* GetPolicy() const { return policy_; }
 
  protected:
+  std::unique_ptr<DummyPageHolder> page_holder_;
   Persistent<Document> document_;
   Persistent<DOMFeaturePolicy> policy_;
 };
@@ -45,7 +54,8 @@ class DOMDocumentPolicyTest : public PolicyTest {
  public:
   void SetUp() override {
     PolicyTest::SetUp();
-    policy_ = MakeGarbageCollected<DOMDocumentPolicy>(document_);
+    policy_ =
+        MakeGarbageCollected<DOMDocumentPolicy>(&page_holder_->GetDocument());
   }
 };
 
@@ -54,7 +64,7 @@ class IFramePolicyTest : public PolicyTest {
   void SetUp() override {
     PolicyTest::SetUp();
     policy_ = MakeGarbageCollected<IFramePolicy>(
-        document_, ParsedFeaturePolicy(),
+        &page_holder_->GetDocument(), ParsedFeaturePolicy(),
         SecurityOrigin::CreateFromString(kSelfOrigin));
   }
 };

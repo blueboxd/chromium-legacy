@@ -15,6 +15,9 @@ import androidx.annotation.Nullable;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarInteractionHandler;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.ui.modelutil.PropertyModel;
 

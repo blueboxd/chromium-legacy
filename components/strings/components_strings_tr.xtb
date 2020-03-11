@@ -812,6 +812,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="4466881336512663640">Formda yaptığınız değişiklikler kaybolacak. Devam etmek istediğinizden emin misiniz?</translation>
 <translation id="4477350412780666475">Sonraki Parça</translation>
 <translation id="4482953324121162758">Bu site çevrilmeyecek.</translation>
+<translation id="4486757593530038591">Bu ayar açıkken, siteler reklamları kişiselleştirmek için farklı sitelerde gezinme etkinliğinizi kullanamaz Bazı sitelerdeki özellikler bozulabilir.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">Bu özellikler varsayılan olarak devre dışı bırakılmıştır. Chrome'un gelecek sürümlerinde kullanılamayacaktır.</translation>
 <translation id="4493480324863638523">Geçersiz URL. Standart şemaya sahip bir URL olmalıdır. Ör. http://example.com veya https://example.com.</translation>
@@ -1049,6 +1050,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="549333378215107354">Boyut 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Yönetilen yer işaretleri</translation>
+<translation id="5510481203689988000">Bu ayar, Çerez ayarlarında kontrol edilir.</translation>
 <translation id="5510766032865166053">Taşınmış veya silinmiş olabilir.</translation>
 <translation id="5523118979700054094">Politika adı</translation>
 <translation id="55293785478302737">Kenar dikişi</translation>
@@ -1481,6 +1483,7 @@ Ek ayrıntılar:
 <translation id="7416351320495623771">Şifreleri Yönet…</translation>
 <translation id="7419106976560586862">Profil Yolu</translation>
 <translation id="7437289804838430631">İletişim Bilgisi Ekle</translation>
+<translation id="7438976808740265764">Aralık 2020'den sonra Flash Player desteklenmeyecektir.</translation>
 <translation id="7440140511386898319">Çevrimdışıyken keşfetme</translation>
 <translation id="7441627299479586546">Politika konusu yanlış</translation>
 <translation id="7442725080345379071">Açık Turuncu</translation>

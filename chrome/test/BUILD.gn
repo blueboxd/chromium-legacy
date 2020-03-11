@@ -459,15 +459,6 @@ group("telemetry_gpu_integration_test") {
   }
 }
 
-group("telemetry_gpu_integration_test_scripts_only") {
-  testonly = true
-  deps = [
-    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test_without_chrome",
-  ]
-
-  data = [ "//content/test/gpu/" ]
-}
-
 if (is_win) {
   source_set("credential_provider_test_utils") {
     testonly = true
@@ -3851,7 +3842,6 @@ test("unit_tests") {
       "//chrome/android:native_j_unittests_jni_headers",
       "//chrome/android:native_java_unittests_java",
       "//chrome/android/features/media_router:java",
-      "//chrome/browser/nfc/android:test_support",
       "//chrome/browser/optimization_guide/android:native_j_unittests_jni_headers",
       "//chrome/browser/optimization_guide/android:native_java_unittests",
       "//chrome/browser/thumbnail:unit_tests",
@@ -3862,6 +3852,7 @@ test("unit_tests") {
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
       "//components/module_installer/android:module_installer_java",
+      "//components/permissions/android:test_support",
       "//content/public/android:content_java",
     ]
     if (use_v8_context_snapshot) {
@@ -4968,6 +4959,7 @@ test("unit_tests") {
       "../browser/safe_browsing/download_protection/deep_scanning_request_unittest.cc",
       "../browser/safe_browsing/download_protection/download_feedback_service_unittest.cc",
       "../browser/safe_browsing/download_protection/download_feedback_unittest.cc",
+      "../browser/safe_browsing/download_protection/download_item_request_unittest.cc",
       "../browser/safe_browsing/download_protection/download_protection_service_unittest.cc",
       "../browser/safe_browsing/download_protection/file_analyzer_unittest.cc",
       "../browser/safe_browsing/download_protection/path_sanitizer_unittest.cc",
@@ -5106,6 +5098,7 @@ test("unit_tests") {
         sources += [
           "../browser/ui/webui/print_preview/local_printer_handler_chromeos_unittest.cc",
           "../browser/ui/webui/settings/chromeos/cups_printers_handler_unittest.cc",
+          "../browser/ui/webui/settings/chromeos/server_printer_url_util_unittest.cc",
         ]
       }
     } else {

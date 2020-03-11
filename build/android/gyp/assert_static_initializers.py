@@ -138,7 +138,7 @@ def main():
   args = parser.parse_args()
 
   # TODO(crbug.com/838414): add support for files included via loadable_modules.
-  ignored_libs = ['libarcore_sdk_c.so']
+  ignored_libs = {'libarcore_sdk_c.so', 'libcrashpad_handler_trampoline.so'}
   # The chromium linker doesn't have static initializers, which makes the
   # regular check throw. It should not have any.
   no_initializers_libs = ['libchromium_android_linker.so']

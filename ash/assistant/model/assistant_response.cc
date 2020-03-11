@@ -10,6 +10,7 @@
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/unguessable_token.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 
@@ -165,41 +166,33 @@ AssistantResponse::GetUiElements() const {
   return ui_elements_;
 }
 
-// TODO(b/112034793): Migrate |id| into AssistantSuggestion.
 void AssistantResponse::AddSuggestions(
     std::vector<AssistantSuggestionPtr> suggestions) {
-  // A mapping of raw suggestion pointers to their respective ids. Note that we
-  // use the index of each suggestion within our backing vector to represent id.
-  std::map<int, const AssistantSuggestion*> ptrs;
+  std::vector<const AssistantSuggestion*> ptrs;
 
   for (AssistantSuggestionPtr& suggestion : suggestions) {
     suggestions_.push_back(std::move(suggestion));
-    ptrs.insert({suggestions_.size() - 1, suggestions_.back().get()});
+    ptrs.push_back(suggestions_.back().get());
   }
 
   NotifySuggestionsAdded(ptrs);
 }
 
-// TODO(b/112034793): Migrate |id| into AssistantSuggestion.
 const chromeos::assistant::mojom::AssistantSuggestion*
-AssistantResponse::GetSuggestionById(int id) const {
-  // We consider the index of a suggestion within our backing vector to be its
-  // unique identifier.
-  DCHECK_GE(id, 0);
-  DCHECK_LT(id, static_cast<int>(suggestions_.size()));
-  return suggestions_.at(id).get();
+AssistantResponse::GetSuggestionById(const base::UnguessableToken& id) const {
+  for (auto& suggestion : suggestions_) {
+    if (suggestion->id == id)
+      return suggestion.get();
+  }
+  return nullptr;
 }
 
-// TODO(b/112034793): Migrate |id| into AssistantSuggestion.
-std::map<int, const chromeos::assistant::mojom::AssistantSuggestion*>
+std::vector<const chromeos::assistant::mojom::AssistantSuggestion*>
 AssistantResponse::GetSuggestions() const {
-  // A mapping of raw suggestion pointers to their respective ids. Note that we
-  // use the index of each suggestion within our backing vector to represent id.
-  std::map<int, const AssistantSuggestion*> suggestions;
+  std::vector<const AssistantSuggestion*> suggestions;
 
-  int id = 0;
-  for (const AssistantSuggestionPtr& suggestion : suggestions_)
-    suggestions[id++] = suggestion.get();
+  for (auto& suggestion : suggestions_)
+    suggestions.push_back(suggestion.get());
 
   return suggestions;
 }
@@ -216,7 +209,7 @@ void AssistantResponse::NotifyUiElementAdded(
 }
 
 void AssistantResponse::NotifySuggestionsAdded(
-    const std::map<int, const AssistantSuggestion*>& suggestions) {
+    const std::vector<const AssistantSuggestion*>& suggestions) {
   for (auto& observer : observers_)
     observer.OnSuggestionsAdded(suggestions);
 }

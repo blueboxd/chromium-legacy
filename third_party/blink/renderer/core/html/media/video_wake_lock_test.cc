@@ -12,6 +12,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/html/media/html_media_test_helper.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -159,7 +160,9 @@ class VideoWakeLockTest : public PageTestBase {
         mojom::FrameLifecycleState::kRunning);
   }
 
-  void SimulateContextDestroyed() { GetDocument().NotifyContextDestroyed(); }
+  void SimulateContextDestroyed() {
+    GetFrame().DomWindow()->NotifyContextDestroyed();
+  }
 
   void SimulateNetworkState(HTMLMediaElement::NetworkState network_state) {
     video_->SetNetworkState(network_state);

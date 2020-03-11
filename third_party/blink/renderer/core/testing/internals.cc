@@ -3509,12 +3509,13 @@ void Internals::ResolveResourcePriority(ScriptPromiseResolver* resolver,
   resolver->Resolve(resource_load_priority);
 }
 
-String Internals::getDocumentAgentId(Document* document) {
+String Internals::getAgentId(DOMWindow* window) {
   // Sounds like there's no notion of "process ID" in Blink, but the main
   // thread's thread ID serves for that purpose.
   PlatformThreadId process_id = Thread::MainThread()->ThreadId();
 
-  uintptr_t agent_address = reinterpret_cast<uintptr_t>(document->GetAgent());
+  uintptr_t agent_address =
+      reinterpret_cast<uintptr_t>(To<LocalDOMWindow>(window)->GetAgent());
 
   // This serializes a pointer as a decimal number, which is a bit ugly, but
   // it works. Is there any utility to dump a number in a hexadecimal form?

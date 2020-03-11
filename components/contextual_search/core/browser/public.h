@@ -30,11 +30,19 @@ extern const int kContextualCardsTranslationsIntegration;
 
 // Development-level CoCa integration codes.
 
-// For both client and server-side debugging.
-extern const int kContextualCardsDebugIntegration;
 // Generates diagnostics on the client and uses the ENTRYPOINT_UNSPECIFIED for
 // CoCa to return unlimited cards with diagnostics enabled.
 extern const int kContextualCardsDiagnosticIntegration;
+
+// Mixin values. You must choose only one of the above, but any combination
+// of these mixin values.
+
+// Deprecated value that might be sent by an old client.
+extern const int kSimplifiedServerDeprecatedMixin;
+// Activates server-side debugging.
+extern const int kContextualCardsServerDebugMixin;
+// Indicates that the current request is for an exact search.
+extern const int kExactSearchMixin;
 
 // Longpress resolve variations:
 extern const char kLongpressResolveParamName[];

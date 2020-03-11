@@ -7404,6 +7404,13 @@
       },
       {
         "isolate_coverage_data": true,
+        "name": "components_permissions_junit_tests",
+        "swarming": {},
+        "test": "components_permissions_junit_tests",
+        "test_target": "//components/permissions/android:components_permissions_junit_tests"
+      },
+      {
+        "isolate_coverage_data": true,
         "name": "components_policy_junit_tests",
         "swarming": {},
         "test": "components_policy_junit_tests",
@@ -10099,7 +10106,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm"
+              "pool": "chromium.tests.cros.vm.template"
             }
           ],
           "hard_timeout": 3600,
@@ -10120,7 +10127,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm"
+              "pool": "chromium.tests.cros.vm.template"
             }
           ],
           "hard_timeout": 3600,
@@ -10153,7 +10160,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm"
+              "pool": "chromium.tests.cros.vm.template"
             }
           ],
           "hard_timeout": 3600,

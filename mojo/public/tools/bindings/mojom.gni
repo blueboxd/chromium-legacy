@@ -63,27 +63,28 @@ enable_scrambled_message_ids =
     (is_mac || is_win || (is_linux && !is_chromeos && !is_chromecast) ||
      ((enable_nacl || is_nacl || is_nacl_nonsfi) && target_os != "chromeos"))
 
-mojom_generator_root = "//mojo/public/tools/bindings"
-compile_typescript_script = "$mojom_generator_root/compile_typescript.py"
+_mojom_tools_root = "//mojo/public/tools"
+_mojom_library_root = "$_mojom_tools_root/mojom/mojom"
+mojom_generator_root = "$_mojom_tools_root/bindings"
 mojom_generator_script = "$mojom_generator_root/mojom_bindings_generator.py"
 mojom_generator_sources = [
+  "$_mojom_library_root/__init__.py",
+  "$_mojom_library_root/error.py",
+  "$_mojom_library_root/generate/__init__.py",
+  "$_mojom_library_root/generate/constant_resolver.py",
+  "$_mojom_library_root/generate/generator.py",
+  "$_mojom_library_root/generate/module.py",
+  "$_mojom_library_root/generate/pack.py",
+  "$_mojom_library_root/generate/template_expander.py",
+  "$_mojom_library_root/generate/translate.py",
+  "$_mojom_library_root/parse/__init__.py",
+  "$_mojom_library_root/parse/ast.py",
+  "$_mojom_library_root/parse/lexer.py",
+  "$_mojom_library_root/parse/parser.py",
   "$mojom_generator_root/generators/mojom_cpp_generator.py",
   "$mojom_generator_root/generators/mojom_java_generator.py",
   "$mojom_generator_root/generators/mojom_js_generator.py",
   "$mojom_generator_root/generators/mojom_ts_generator.py",
-  "$mojom_generator_root/pylib/mojom/__init__.py",
-  "$mojom_generator_root/pylib/mojom/error.py",
-  "$mojom_generator_root/pylib/mojom/generate/__init__.py",
-  "$mojom_generator_root/pylib/mojom/generate/constant_resolver.py",
-  "$mojom_generator_root/pylib/mojom/generate/generator.py",
-  "$mojom_generator_root/pylib/mojom/generate/module.py",
-  "$mojom_generator_root/pylib/mojom/generate/pack.py",
-  "$mojom_generator_root/pylib/mojom/generate/template_expander.py",
-  "$mojom_generator_root/pylib/mojom/generate/translate.py",
-  "$mojom_generator_root/pylib/mojom/parse/__init__.py",
-  "$mojom_generator_root/pylib/mojom/parse/ast.py",
-  "$mojom_generator_root/pylib/mojom/parse/lexer.py",
-  "$mojom_generator_root/pylib/mojom/parse/parser.py",
   "$mojom_generator_script",
 ]
 
@@ -1604,7 +1605,7 @@ template("mojom") {
 
     generator_js_target_name = "${target_name}_js__generator"
     action(generator_js_target_name) {
-      script = compile_typescript_script
+      script = "$mojom_generator_root/compile_typescript.py"
       sources = ts_outputs
       outputs = js_outputs
       public_deps = [ ":$generator_ts_target_name" ]

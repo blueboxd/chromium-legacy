@@ -1686,9 +1686,6 @@ void Browser::NavigationStateChanged(WebContents* source,
        content::INVALIDATE_TYPE_TAB))
     command_controller_->TabStateChanged();
 
-  if (changed_flags & content::INVALIDATE_TYPE_TAB)
-    UpdateToolbar(false);
-
   if (app_controller_)
     app_controller_->UpdateCustomTabBarVisibility(true);
 }

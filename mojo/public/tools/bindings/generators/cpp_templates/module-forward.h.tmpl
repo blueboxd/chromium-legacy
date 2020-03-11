@@ -85,6 +85,10 @@ using {{enum|get_name_for_kind(flatten_nested_kind=True)}} = mojo::NativeEnum;
 {%-   endif %}
 {%- endfor %}
 
+{%- for interface in interfaces %}
+class {{interface.name}}InterfaceBase;
+{%- endfor %}
+
 {%-   for namespace in namespaces_as_array %}
 }  // namespace {{namespace}}
 {%-   endfor %}
@@ -142,10 +146,16 @@ using {{enum|get_name_for_kind(flatten_nested_kind=True)}} = mojo::NativeEnum;
 
 {%- endif %}
 
-{#--- Enums #}
+{#--- Enum and interface base aliases #}
 {%- if variant %}
+{%-   if enum or interfaces %}
+// Aliases for definition in the parent namespace.
+{%-   endif %}
 {%-   for enum in enums %}
-using {{enum.name}} = {{enum.name}};  // Alias for definition in the parent namespace.
+using {{enum.name}} = {{enum.name}};
+{%-   endfor %}
+{%-   for interface in interfaces %}
+using {{interface.name}}InterfaceBase = {{interface.name}}InterfaceBase;
 {%-   endfor %}
 {%- endif %}
 

@@ -36,3 +36,6 @@ crbug.com/1043227 [ Win ] images/color-profile-svg-fill-text.html [ Skip ]
 
 # Viewport image is the wrong size.
 crbug.com/1009718 images/huge-image-viewport-scale.html [ Skip ]
+
+# Input or Playback flaky
+crbug.com/1060773 [ Win ] media/video-controls-visibility-multimodal-mouse-after-touch.html [ Skip ]

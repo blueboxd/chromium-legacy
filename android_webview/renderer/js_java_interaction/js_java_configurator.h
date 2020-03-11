@@ -12,7 +12,6 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "net/proxy_resolution/proxy_bypass_rules.h"
 
 namespace content {
 class RenderFrame;

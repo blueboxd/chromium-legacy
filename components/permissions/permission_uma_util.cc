@@ -25,7 +25,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
-#include "components/permissions/android/jni/PermissionUmaUtil_jni.h"
+#include "components/permissions/android/jni_headers/PermissionUmaUtil_jni.h"
 #endif
 
 namespace permissions {

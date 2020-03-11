@@ -1201,7 +1201,7 @@ std::unique_ptr<base::Value> WebViewImpl::GetCastIssueMessage() {
 }
 
 WebViewImplHolder::WebViewImplHolder(WebViewImpl* web_view)
-    : web_view_(web_view), was_locked_(web_view->Lock()) {}
+    : web_view_(web_view), was_locked_(web_view && web_view->Lock()) {}
 
 WebViewImplHolder::~WebViewImplHolder() {
   if (web_view_ != nullptr && !was_locked_) {

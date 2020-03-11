@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/webui/settings/chromeos/server_printer_url_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -265,40 +266,11 @@ Printer::PpdReference GetPpdReference(const base::Value* info) {
   return ret;
 }
 
-bool ConvertToGURL(const std::string& url, GURL* gurl) {
-  *gurl = GURL(url);
-  if (!gurl->is_valid()) {
-    // URL is not valid.
-    return false;
-  }
-  if (!gurl->SchemeIsHTTPOrHTTPS() && !gurl->SchemeIs("ipp") &&
-      !gurl->SchemeIs("ipps")) {
-    // URL has unsupported scheme; we support only: http, https, ipp, ipps.
-    return false;
-  }
-  // Replaces ipp/ipps by http/https. IPP standard describes protocol built
-  // on top of HTTP, so both types of addresses have the same meaning in the
-  // context of IPP interface. Moreover, the URL must have http/https scheme
-  // to pass IsStandard() test from GURL library (see "Validation of the URL
-  // address" below).
-  bool set_ipp_port = false;
-  if (gurl->SchemeIs("ipp")) {
-    set_ipp_port = (gurl->IntPort() == url::PORT_UNSPECIFIED);
-    *gurl = GURL("http" + url.substr(url.find_first_of(':')));
-  } else if (gurl->SchemeIs("ipps")) {
-    *gurl = GURL("https" + url.substr(url.find_first_of(':')));
-  }
-  // The default port for ipp is 631. If the schema ipp is replaced by http
-  // and the port is not explicitly defined in the url, we have to overwrite
-  // the default http port with the default ipp port. For ipps we do nothing
-  // because implementers use the same port for ipps and https.
-  if (set_ipp_port) {
-    GURL::Replacements replacement;
-    replacement.SetPortStr("631");
-    *gurl = gurl->ReplaceComponents(replacement);
-  }
-  // Validation of the URL address.
-  return gurl->IsStandard();
+GURL GenerateHttpCupsServerUrl(const GURL& server_url) {
+  GURL::Replacements replacement;
+  replacement.SetSchemeStr("http");
+  replacement.SetPortStr("631");
+  return server_url.ReplaceComponents(replacement);
 }
 
 }  // namespace
@@ -1284,27 +1256,45 @@ void CupsPrintersHandler::HandleQueryPrintServer(const base::ListValue* args) {
   CHECK(args->GetString(0, &callback_id));
   CHECK(args->GetString(1, &server_url));
 
-  GURL server_gurl;
-  if (!ConvertToGURL(server_url, &server_gurl)) {
+  base::Optional<GURL> converted_server_url =
+      GenerateServerPrinterUrlWithValidScheme(server_url);
+  if (!converted_server_url) {
     RejectJavascriptCallback(
         base::Value(callback_id),
         base::Value(PrintServerQueryResult::kIncorrectUrl));
     return;
   }
 
+  // Use fallback only if HasValidServerPrinterScheme is false.
+  QueryPrintServer(callback_id, converted_server_url.value(),
+                   !HasValidServerPrinterScheme(GURL(server_url)));
+}
+
+void CupsPrintersHandler::QueryPrintServer(const std::string& callback_id,
+                                           const GURL& server_url,
+                                           bool should_fallback) {
   server_printers_fetcher_ = std::make_unique<ServerPrintersFetcher>(
-      server_gurl, "(from user)",
+      server_url, "(from user)",
       base::BindRepeating(&CupsPrintersHandler::OnQueryPrintServerCompleted,
-                          weak_factory_.GetWeakPtr(), callback_id));
+                          weak_factory_.GetWeakPtr(), callback_id,
+                          should_fallback));
 }
 
 void CupsPrintersHandler::OnQueryPrintServerCompleted(
     const std::string& callback_id,
+    bool should_fallback,
     const ServerPrintersFetcher* sender,
     const GURL& server_url,
     std::vector<PrinterDetector::DetectedPrinter>&& returned_printers) {
   const PrintServerQueryResult result = sender->GetLastError();
   if (result != PrintServerQueryResult::kNoErrors) {
+    if (should_fallback) {
+      // Apply the fallback query.
+      QueryPrintServer(callback_id, GenerateHttpCupsServerUrl(server_url),
+                       /*should_fallback=*/false);
+      return;
+    }
+
     RejectJavascriptCallback(base::Value(callback_id), base::Value(result));
     return;
   }
@@ -1314,9 +1304,10 @@ void CupsPrintersHandler::OnQueryPrintServerCompleted(
       printers_manager_->GetPrinters(PrinterClass::kSaved);
   std::set<GURL> known_printers;
   for (const Printer& printer : saved_printers) {
-    GURL gurl;
-    if (ConvertToGURL(printer.uri(), &gurl))
-      known_printers.insert(gurl);
+    base::Optional<GURL> gurl =
+        GenerateServerPrinterUrlWithValidScheme(printer.uri());
+    if (gurl)
+      known_printers.insert(gurl.value());
   }
 
   // Built final list of printers and a list of current names. If "current name"
@@ -1326,11 +1317,10 @@ void CupsPrintersHandler::OnQueryPrintServerCompleted(
   printers.reserve(returned_printers.size());
   for (PrinterDetector::DetectedPrinter& printer : returned_printers) {
     printers.push_back(std::move(printer.printer));
-    GURL printer_gurl;
-    if (ConvertToGURL(printers.back().uri(), &printer_gurl)) {
-      if (known_printers.count(printer_gurl))
-        printers.pop_back();
-    }
+    base::Optional<GURL> printer_gurl =
+        GenerateServerPrinterUrlWithValidScheme(printers.back().uri());
+    if (printer_gurl && known_printers.count(printer_gurl.value()))
+      printers.pop_back();
   }
 
   // Delete fetcher object.

@@ -119,7 +119,7 @@
 <translation id="1161575384898972166">Accedi a <ph name="TOKEN_NAME" /> per esportare il certificato client.</translation>
 <translation id="1163931534039071049">&amp;Visualizza sorgente frame</translation>
 <translation id="1164674268730883318">Disattivare Smart Lock per <ph name="DEVICE_TYPE" />?</translation>
-<translation id="1164891049599601209">Accesso a un sito ingannevole</translation>
+<translation id="1164891049599601209">Inserita in un sito ingannevole</translation>
 <translation id="1164899421101904659">Inserisci il codice di sblocco PIN</translation>
 <translation id="1165039591588034296">Errore</translation>
 <translation id="1166212789817575481">Chiudi schede a destra</translation>
@@ -556,6 +556,7 @@
 <translation id="1745520510852184940">Traduci sempre</translation>
 <translation id="1750172676754093297">Questo token di sicurezza non supporta la memorizzazione di impronte</translation>
 <translation id="175196451752279553">R&amp;iapri scheda chiusa</translation>
+<translation id="1753067873202720523">Il Chromebook potrebbe non ricaricarsi mentre è acceso.</translation>
 <translation id="1753905327828125965">Più visitati</translation>
 <translation id="1755601632425835748">Dimensioni testo</translation>
 <translation id="1756681705074952506">Metodo di immissione</translation>
@@ -1200,6 +1201,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2610157865375787051">Sospensione</translation>
 <translation id="2610260699262139870">D&amp;imensioni effettive</translation>
 <translation id="2610780100389066815">Elenco firme attendibili Microsoft</translation>
+<translation id="261226884343006626">Chrome non può controllare le tue password. Riprova domani.</translation>
 <translation id="2612676031748830579">Numero carta</translation>
 <translation id="2616366145935564096">Leggere e modificare i tuoi dati su <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">La scheda SIM è bloccata</translation>
@@ -1330,6 +1332,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2773288106548584039">Supporto dei browser precedenti</translation>
 <translation id="2773802008104670137">Questo tipo di file potrebbe danneggiare il computer.</translation>
 <translation id="2775104091073479743">Modifica impronte digitali</translation>
+<translation id="2775140325783767197">Chrome non può controllare le tue password. Prova a controllare la connessione a Internet.</translation>
 <translation id="2776441542064982094">Sembra che non siano disponibili dispositivi da registrare sulla rete. Se il tuo dispositivo è acceso e connesso a Internet, prova a registrarlo utilizzando le istruzioni nel relativo manuale di istruzioni.</translation>
 <translation id="2780009105947267877">Impostazione di Plugin VM…</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -2900,6 +2903,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4964455510556214366">Disposizione</translation>
 <translation id="4965808351167763748">Vuoi configurare questo dispositivo in modo da poter eseguire Hangouts Meet?</translation>
 <translation id="496888482094675990">L'app File consente di accedere rapidamente ai file salvati in Google Drive, nella memoria esterna o sul tuo dispositivo Chrome OS.</translation>
+<translation id="4969017548025688718"><ph name="COUNT" /> password compromesse</translation>
 <translation id="4971412780836297815">Apri al termine</translation>
 <translation id="4972129977812092092">Modifica stampante</translation>
 <translation id="4972164225939028131">Password errata</translation>
@@ -3258,7 +3262,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5470735824776589490">È necessario riavviare prima che il dispositivo possa essere reimpostato con Powerwash. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Ciao! Sono la voce della sintesi locale.</translation>
 <translation id="5473333559083690127">Inserisci ancora il nuovo PIN</translation>
-<translation id="548137908954174608">Attiva Sottotitoli in tempo reale</translation>
 <translation id="5481941284378890518">Aggiungi stampanti nelle vicinanze</translation>
 <translation id="5483785310822538350">Revoca accesso a file e dispositivi</translation>
 <translation id="5485080380723335835">Il tuo dispositivo <ph name="DEVICE_TYPE" /> è bloccato per motivi di sicurezza. Inserisci manualmente la password per continuare.</translation>
@@ -4901,8 +4904,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7737238973539693982">Elimina Linux (beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7744047395460924128">Visualizzazione della cronologia di stampa</translation>
-<translation id="7744192722284567281">Violazione dei dati rilevata</translation>
-<translation id="7746457520633464754">Per rilevare app e siti pericolosi, Chrome invia a Google gli URL di alcune pagine che visiti, informazioni limitate sul sistema e i contenuti di alcune pagine</translation>
+<translation id="7744192722284567281">Rilevata in una violazione dei dati</translation>
 <translation id="7750228210027921155">Picture in picture</translation>
 <translation id="7751229152614300329">Navigazione sicura è aggiornata e ti protegge da siti e download pericolosi</translation>
 <translation id="7751260505918304024">Mostra tutto</translation>
@@ -5416,7 +5418,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8391712576156218334">Immagine non disponibile. Riprova più tardi.</translation>
 <translation id="8392364544846746346">Chiedi conferma quando un sito vuole modificare file o cartelle sul dispositivo</translation>
 <translation id="8392451568018454956">Menu Opzioni per <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8392630288038565643">Questa impostazione è disattivata sui browser gestiti.</translation>
 <translation id="8393511274964623038">Interrompi plug-in</translation>
 <translation id="8393700583063109961">Invia messaggio</translation>
 <translation id="839736845446313156">Registrati</translation>
@@ -5500,7 +5501,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="851263357009351303">Consenti sempre la visualizzazione di immagini in <ph name="HOST" /></translation>
 <translation id="8513108775083588393">Rotazione automatica</translation>
 <translation id="8514746246728959655">Prova a usare un altro token di sicurezza</translation>
-<translation id="8517041960877371778">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso.</translation>
 <translation id="8521475323816527629">Accedi velocemente alle tue app</translation>
 <translation id="8523493869875972733">Mantieni le modifiche</translation>
 <translation id="8523849605371521713">Aggiunta in base alle norme</translation>
@@ -5873,7 +5873,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8978154919215542464">On: sincronizza tutto</translation>
 <translation id="897939795688207351">Su <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Bloccata</translation>
-<translation id="8983405057223076408">Questa impostazione è disattivata perché il Controllo genitori è attivo.</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> può modificare il file <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">Attivo <ph name="DEVICE_LAST_ACTIVATED_TIME" /> giorno fa</translation>
 <translation id="8986362086234534611">Elimina</translation>

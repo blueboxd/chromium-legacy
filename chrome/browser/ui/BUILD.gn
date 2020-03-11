@@ -2016,6 +2016,8 @@ jumbo_static_library("ui") {
       "webui/settings/chromeos/search/search_concept.h",
       "webui/settings/chromeos/search/settings_user_action_tracker.cc",
       "webui/settings/chromeos/search/settings_user_action_tracker.h",
+      "webui/settings/chromeos/server_printer_url_util.cc",
+      "webui/settings/chromeos/server_printer_url_util.h",
       "webui/settings/chromeos/wallpaper_handler.cc",
       "webui/settings/chromeos/wallpaper_handler.h",
       "webui/settings/tts_handler.cc",
@@ -2033,11 +2035,11 @@ jumbo_static_library("ui") {
 
     deps += [
       "//ash",
-      "//ash/components/shortcut_viewer",
       "//ash/keyboard/ui",
       "//ash/public/cpp",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",
+      "//ash/shortcut_viewer",
       "//chrome/browser/chromeos",
       "//chrome/browser/chromeos:backdrop_wallpaper_proto",
       "//chrome/browser/resources/chromeos:camera_resources",

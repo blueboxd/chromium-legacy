@@ -12,7 +12,6 @@
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -38,10 +37,10 @@ class XScopedEventSelector;
 ////////////////////////////////////////////////////////////////////////////////
 // XWindow class
 //
-// Encapsulates a full featured Xlib-based X11 Window, intended mainly to be
-// used in Linux desktop. Abstracts away most of X11 API interaction and
-// communicates events (and ask some required information) through
-// |XWindow::Delegate| interface.
+// Base class that encapsulates a full featured Xlib-based X11 Window, meant
+// to be used mainly in Linux desktop. Abstracts away most of X11 API
+// interaction and assumes event handling and some required getters are
+// implemented in subclasses.
 //
 // |XWindow::Configuration| holds parameters used in window initialization.
 // Fields are equivalent and a sub-set of Widget::InitParams.
@@ -49,8 +48,6 @@ class XScopedEventSelector;
 // All bounds and size values are assumed to be expressed in pixels.
 class COMPONENT_EXPORT(UI_BASE_X) XWindow {
  public:
-  class Delegate;
-
   using NativeShapeRects = std::vector<gfx::Rect>;
 
   enum class WindowType {
@@ -91,6 +88,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   };
 
   XWindow();
+  XWindow(const XWindow&) = delete;
+  XWindow& operator=(const XWindow&) = delete;
   virtual ~XWindow();
 
   void Init(const Configuration& config);
@@ -378,8 +377,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   std::array<XID, 4> pointer_barriers_;
 
   base::WeakPtrFactory<XWindow> resize_weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(XWindow);
 };
 
 }  // namespace ui

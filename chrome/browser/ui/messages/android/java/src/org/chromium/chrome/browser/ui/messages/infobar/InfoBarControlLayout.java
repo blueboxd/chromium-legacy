@@ -480,9 +480,7 @@ public final class InfoBarControlLayout extends ViewGroup {
      * Adds a full-width control showing the main InfoBar message.  For other text, you should call
      * {@link InfoBarControlLayout#addDescription(CharSequence)} instead.
      */
-    // TODO(crbug/1056346): addMainMessage is made public to allow access from InfoBarLayout. Once
-    // InfoBarLayout is modularized, restore access to package private.
-    public TextView addMainMessage(CharSequence mainMessage) {
+    TextView addMainMessage(CharSequence mainMessage) {
         ControlLayoutParams params = new ControlLayoutParams();
         params.mMustBeFullWidth = true;
 

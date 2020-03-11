@@ -170,6 +170,7 @@
 <translation id="2175927920773552910">QR કોડ</translation>
 <translation id="2182457891543959921">કોઈ સાઇટને તમારી આજુબાજુનો 3D નકશો બનાવતા અથવા કૅમેરાની સ્થિતિને ટ્રૅક કરવાની મંજૂરી આપતા પહેલાં પૂછો (સુઝાવ આપીએ છીએ)</translation>
 <translation id="218608176142494674">શેરિંગ</translation>
+<translation id="2212565012507486665">કુકીને મંજૂરી આપો</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> તરીકે ચાલુ રાખો</translation>
 <translation id="2234876718134438132">સિંક અને Google સેવાઓ</translation>
 <translation id="2259659629660284697">બધા પાસવર્ડની નિકાસ કરો…</translation>
@@ -286,6 +287,7 @@
 <translation id="3058498974290601450">તમે કોઈ પણ સમયે સેટિંગમાં 'સિંક કરો' ચાલુ કરી શકો છો</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> બુકમાર્ક}one{<ph name="BOOKMARKS_COUNT_MANY" /> બુકમાર્ક}other{<ph name="BOOKMARKS_COUNT_MANY" /> બુકમાર્ક}}</translation>
 <translation id="3089395242580810162">છુપા ટેબમાં ખોલો</translation>
+<translation id="3114012059975132928">વીડિયો પ્લેયર</translation>
 <translation id="3123473560110926937">કેટલીક સાઇટ પર બ્લૉક કરેલ</translation>
 <translation id="3123734510202723619">ઘોષણાઓ</translation>
 <translation id="3137521801621304719">છુપા મોડને છોડો</translation>
@@ -352,6 +354,7 @@
 <translation id="3587482841069643663">બધા</translation>
 <translation id="358794129225322306">એકથી વધુ ફાઇલો ઑટોમૅટિક રીતે ડાઉનલોડ કરવાની મંજૂરી સાઇટને આપો.</translation>
 <translation id="3590487821116122040">Chrome ને મહત્વનું ન લાગતું સાઇટ સ્ટોરેજ (ઉદા., કોઇ સાચવેલ સેટિંગ્સ ન હોય તેવી અથવા વારંવાર મુલાકાત ન લેવાતી હોય તેવી સાઇટ્સ)</translation>
+<translation id="3594780231884063836">વીડિયોને મ્યૂટ કરો</translation>
 <translation id="3599863153486145794">બધા સાઇન ઇન કરેલ ડિવાઇસમાંથી ઇતિહાસ સાફ કરે છે. તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના બીજા સ્વરૂપો હોય શકે.</translation>
 <translation id="3600792891314830896">જે સાઇટ અવાજ ચલાવતી હોય તેઓનો અવાજ બંધ કરો</translation>
 <translation id="3616113530831147358">ઑડિઓ</translation>
@@ -605,6 +608,7 @@
 <translation id="5456381639095306749">પૃષ્ઠ ડાઉનલોડ કરો</translation>
 <translation id="548278423535722844">નકશા અ‍ૅપ્લિકેશનમાં ખોલો</translation>
 <translation id="5487521232677179737">ડેટા સાફ કરો</translation>
+<translation id="5489227211564503167"><ph name="TOTAL_TIME" />માંથી <ph name="ELAPSED_TIME" />નો સમય વીતી ગયો.</translation>
 <translation id="5494752089476963479">ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવતી સાઇટ પરથી જાહેરાતો બ્લૉક કરો</translation>
 <translation id="5500777121964041360">તમારા સ્થાનમાં ઉપલબ્ધ ન હોઈ શકે</translation>
 <translation id="5505264765875738116">સાઇટ તમને નોટિફિકેશન મોકલવા માટે પૂછી શકશે નહીં</translation>
@@ -665,6 +669,7 @@
 <translation id="5864419784173784555">બીજા ડાઉનલોડ માટે રાહ જોઈ રહ્યાં છે…</translation>
 <translation id="5865733239029070421">Googleને વપરાશના આંકડા અને ક્રૅશ રિપોર્ટ ઑટોમૅટિક રીતે મોકલે છે</translation>
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
+<translation id="5876056640971328065">વીડિયો થોભાવો</translation>
 <translation id="5884076754568147479">કામને પૂર્ણ કરવામાં તમારી સહાય માટે, Googleને તમે જેના પર આસિસ્ટંટનો ઉપયોગ કરો છો તે URLs અને સાઇટના કન્ટેન્ટ તેમજ તમે આસિસ્ટંટ મારફતે સબમિટ કરો છો તે માહિતી મળશે</translation>
 <translation id="5902828464777634901">કૂકીઝ સહિતનો આ વેબસાઇટ દ્વારા સ્ટોર કરેલો બધો સ્થાનિક ડેટા કાઢી નાખવામાં આવશે.</translation>
 <translation id="5919204609460789179">સમન્વયન પ્રારંભ કરવા માટે <ph name="PRODUCT_NAME" /> અપડેટ કરો</translation>
@@ -728,6 +733,7 @@
 <translation id="6381421346744604172">ડાર્કન વેબસાઇટ</translation>
 <translation id="6388207532828177975">સાફ કરો અને ફરીથી સેટ કરો</translation>
 <translation id="6395288395575013217">લિંક</translation>
+<translation id="6397616442223433927">પાછા ઑનલાઇન થયા</translation>
 <translation id="6404511346730675251">બુકમાર્કમાં ફેરફાર કરો</translation>
 <translation id="6406506848690869874">સમન્વયન</translation>
 <translation id="6410973561433500075"><ph name="DOMAIN" />માંથી ARમાં દાખલ થવું છે?</translation>
@@ -796,6 +802,7 @@
 <translation id="6846298663435243399">લોડ કરી રહ્યું છે...</translation>
 <translation id="6850409657436465440">તમારું ડાઉનલોડ હજી પણ પ્રક્રિયામાં છે</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ટેબ્સ બંધ કર્યા</translation>
+<translation id="6864395892908308021">આ ડિવાઇસ NFC વાંચી શકતું નથી</translation>
 <translation id="6864459304226931083">છબી ડાઉનલોડ કરો</translation>
 <translation id="6865313869410766144">સ્વતઃભરણ ફોર્મ ડેટા</translation>
 <translation id="6884306546558072722">ઑફલાઇન શોધખોળ કરવાનું ચાલુ રાખો</translation>
@@ -916,6 +923,7 @@
 <translation id="780301667611848630">નહીં, આભાર</translation>
 <translation id="7810647596859435254">આની સાથે ખોલો…</translation>
 <translation id="7821588508402923572">તમારી ડેટા બચત અહીં દેખાશે</translation>
+<translation id="783819812427904514">વીડિયોને અનમ્યૂટ કરો</translation>
 <translation id="784934925303690534">સમય શ્રેણી</translation>
 <translation id="7851858861565204677">અન્ય ઉપકરણો</translation>
 <translation id="7875915731392087153">ઇમેઇલ બનાવો</translation>

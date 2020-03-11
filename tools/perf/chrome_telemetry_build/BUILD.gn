@@ -25,6 +25,7 @@ group("telemetry_chrome_test") {
       ":telemetry_weblayer_apks",
       "//android_webview/test:webview_instrumentation_apk",
       "//chrome/android:chrome_public_apk",
+      "//chrome/android/webapk/shell_apk:maps_go_webapk",
     ]
 
     if (enable_chrome_android_internal) {
@@ -38,7 +39,7 @@ group("telemetry_chrome_test") {
         "//chrome/android:monochrome_public_bundle",
       ]
     }
-  } else {
+  } else if (!is_fuchsia) {
     data_deps += [ "//chrome" ]
   }
 
@@ -106,7 +107,8 @@ group("telemetry_chrome_test_without_chrome") {
     "//tools/metrics:metrics_python_tests",
   ]
 
-  if (!is_win) {
+  # Cr-Fuchsia doesn't support breakpad.
+  if (!is_win && !is_fuchsia) {
     data_deps += [
       # This is defined for Windows, but is unused by Telemetry on
       # Windows, and including it can have issues when cross-compiling
@@ -130,9 +132,8 @@ group("telemetry_chrome_test_without_chrome") {
     data_deps += [
       "//build/android:devil_chromium_py",
       "//build/android:stack_tools",
-      "//chrome/android/webapk/shell_apk:maps_go_webapk",
     ]
-  } else {
+  } else if (!is_fuchsia) {
     data_deps += [ "//third_party/catapult/telemetry:bitmaptools" ]
   }
 }

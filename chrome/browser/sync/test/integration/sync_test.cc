@@ -344,6 +344,12 @@ void SyncTest::AddTestSwitches(base::CommandLine* cl) {
   // should be removed.
   if (!cl->HasSwitch(switches::kSyncEnableGetUpdatesBeforeCommit))
     cl->AppendSwitch(switches::kSyncEnableGetUpdatesBeforeCommit);
+
+  // TODO(crbug.com/1060366): This is a temporary switch to allow having two
+  // profiles syncing the same account. Having a profile outside of the user
+  // directory isn't supported in Chrome.
+  if (!cl->HasSwitch(switches::kAllowProfilesOutsideUserDir))
+    cl->AppendSwitch(switches::kAllowProfilesOutsideUserDir);
 }
 
 void SyncTest::BeforeSetupClient(int index,

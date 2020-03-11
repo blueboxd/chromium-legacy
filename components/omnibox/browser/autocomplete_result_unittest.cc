@@ -145,6 +145,13 @@ class AutocompleteResultTest : public testing::Test {
                                  const TestData* expected,
                                  size_t expected_size);
 
+  void SortMatchesAndVerfiyOrder(
+      const std::string& input_text,
+      OmniboxEventProto::PageClassification page_classification,
+      const ACMatches& matches,
+      const std::vector<size_t>& expected_order,
+      const AutocompleteMatchTestData data[]);
+
   // Returns a (mock) AutocompleteProvider of given |provider_id|.
   MockAutocompleteProvider* GetProvider(int provider_id) {
     EXPECT_LT(provider_id, static_cast<int>(mock_provider_list_.size()));
@@ -229,6 +236,25 @@ void AutocompleteResultTest::RunTransferOldMatchesTest(const TestData* last,
                                     template_url_service_.get());
 
   AssertResultMatches(current_result, expected, expected_size);
+}
+
+void AutocompleteResultTest::SortMatchesAndVerfiyOrder(
+    const std::string& input_text,
+    OmniboxEventProto::PageClassification page_classification,
+    const ACMatches& matches,
+    const std::vector<size_t>& expected_order,
+    const AutocompleteMatchTestData data[]) {
+  AutocompleteInput input(base::ASCIIToUTF16(input_text), page_classification,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  ASSERT_EQ(expected_order.size(), result.size());
+  for (size_t i = 0; i < expected_order.size(); ++i) {
+    EXPECT_EQ(data[expected_order[i]].destination_url,
+              result.match_at(i)->destination_url.spec());
+  }
 }
 
 // Assertion testing for AutocompleteResult::Swap.
@@ -1040,75 +1066,37 @@ TEST_F(AutocompleteResultTest, DemoteByType) {
   base::FieldTrialList::CreateFieldTrial(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
-  {
-    AutocompleteInput input(base::ASCIIToUTF16("a"),
-                            OmniboxEventProto::HOME_PAGE,
-                            TestSchemeClassifier());
-    AutocompleteResult result;
-    result.AppendMatches(input, matches);
-    result.SortAndCull(input, template_url_service_.get());
+  // Because we want to ensure the highest naturally scoring
+  // allowed-to-be default suggestion is the default, make sure history-title
+  // is the default match despite demotion.
+  // Make sure history-URL is the last match due to the logic which groups
+  // searches and URLs together.
+  SortMatchesAndVerfiyOrder("a", OmniboxEventProto::HOME_PAGE, matches,
+                            {1, 2, 3, 0}, data);
 
-    // Because we want to ensure the highest naturally scoring
-    // allowed-to-be default suggestion is the default, make sure history-title
-    // is the default match despite demotion.
-    // Make sure history-URL is the last match due to the logic which groups
-    // searches and URLs together.
-    size_t expected_order[] = {1, 2, 3, 0};
+  // However, in the fakebox/realbox, we do want to use the demoted score when
+  // selecting the default match because we generally only expect it to be
+  // used for queries and we demote URLs strongly. So here we re-sort with a
+  // page classification of fakebox/realbox, and make sure history-title is now
+  // demoted. We also make sure history-URL is the last match due to the logic
+  // which groups searches and URLs together.
+  SortMatchesAndVerfiyOrder(
+      "a", OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
+      matches, {3, 2, 0, 1}, data);
+  SortMatchesAndVerfiyOrder("a", OmniboxEventProto::NTP_REALBOX, matches,
+                            {3, 2, 0, 1}, data);
 
-    ASSERT_EQ(base::size(expected_order), result.size());
-    for (size_t i = 0; i < base::size(expected_order); ++i) {
-      EXPECT_EQ(data[expected_order[i]].destination_url,
-                result.match_at(i)->destination_url.spec());
-    }
-  }
-
-  {
-    // However, in the fakebox, we do want to use the demoted score when
-    // selecting the default match because we generally only expect it to be
-    // used for queries and we demote URLs strongly. So here we re-sort with a
-    // page classification of fake-box, and make sure history-title is now
-    // demoted.
-    AutocompleteInput input(
-        base::ASCIIToUTF16("a"),
-        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
-        TestSchemeClassifier());
-    AutocompleteResult result;
-    result.AppendMatches(input, matches);
-    result.SortAndCull(input, template_url_service_.get());
-
-    // Make sure history-URL is the last match due to the logic which groups
-    // searches and URLs together.
-    size_t expected_order[] = {3, 2, 0, 1};
-
-    ASSERT_EQ(base::size(expected_order), result.size());
-    for (size_t i = 0; i < base::size(expected_order); ++i) {
-      EXPECT_EQ(data[expected_order[i]].destination_url,
-                result.match_at(i)->destination_url.spec());
-    }
-  }
-
-  {
-    // Unless, the user's input looks like a URL, in which case we want to use
-    // the natural scoring again to make sure the user gets a URL if they're
-    // clearly trying to navigate. So here we re-sort with a page classification
-    // of fake-box and an input that's a URL, and make sure history-title is
-    // once again the default match.
-    AutocompleteInput input(
-        base::ASCIIToUTF16("www.example.com"),
-        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
-        TestSchemeClassifier());
-    AutocompleteResult result;
-    result.AppendMatches(input, matches);
-    result.SortAndCull(input, template_url_service_.get());
-
-    size_t expected_order[] = {1, 2, 3, 0};
-
-    ASSERT_EQ(base::size(expected_order), result.size());
-    for (size_t i = 0; i < base::size(expected_order); ++i) {
-      EXPECT_EQ(data[expected_order[i]].destination_url,
-                result.match_at(i)->destination_url.spec());
-    }
-  }
+  // Unless, the user's input looks like a URL, in which case we want to use
+  // the natural scoring again to make sure the user gets a URL if they're
+  // clearly trying to navigate. So here we re-sort with a page classification
+  // of fakebox/realbox and an input that's a URL, and make sure history-title
+  // is once again the default match.
+  SortMatchesAndVerfiyOrder(
+      "www.example.com",
+      OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS, matches,
+      {1, 2, 3, 0}, data);
+  SortMatchesAndVerfiyOrder("www.example.com", OmniboxEventProto::NTP_REALBOX,
+                            matches, {1, 2, 3, 0}, data);
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {

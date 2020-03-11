@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Parol dəyişikliyinin gecikməsi</translation>
 <translation id="2049639323467105390">Bu cihaz <ph name="DOMAIN" /> tərəfindən idarə olunur.</translation>
 <translation id="2338501278241028356">Yaxınlıqdakı cihazları tapmaq üçün Bluetooth'u aktiv edin</translation>
+<translation id="2375079107209812402"><ph name="ATTEMPTS_LEFT" /> cəhd qalıb</translation>
 <translation id="2805756323405976993">Tətbiq</translation>
 <translation id="2872961005593481000">Qapadın</translation>
 <translation id="3008341117444806826">YENİLƏYİN</translation>
@@ -41,6 +42,7 @@
 <translation id="808894953321890993">Parolu dəyişin</translation>
 <translation id="8208861521865154048">İmtiyazlar</translation>
 <translation id="8747900814994928677">Dəyişikliyi təsdiqləyin</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> cəhd qalıb</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> üçün bileti yeniləyin</translation>
 <translation id="9111102763498581341">Kiliddən çıxarın</translation>
 </translationbundle>

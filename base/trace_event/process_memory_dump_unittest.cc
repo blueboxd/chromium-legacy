@@ -12,7 +12,7 @@
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/process/process_metrics.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
-#include "base/trace_event/memory_infra_background_whitelist.h"
+#include "base/trace_event/memory_infra_background_allowlist.h"
 #include "base/trace_event/trace_log.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
@@ -384,7 +384,7 @@ TEST(ProcessMemoryDumpTest, BackgroundModeTest) {
   std::unique_ptr<ProcessMemoryDump> pmd(
       new ProcessMemoryDump(background_args));
   ProcessMemoryDump::is_black_hole_non_fatal_for_testing_ = true;
-  SetAllocatorDumpNameWhitelistForTesting(kTestDumpNameWhitelist);
+  SetAllocatorDumpNameAllowlistForTesting(kTestDumpNameWhitelist);
   MemoryAllocatorDump* black_hole_mad = pmd->GetBlackHoleMad();
 
   // GetAllocatorDump works for uncreated dumps.
@@ -428,19 +428,19 @@ TEST(ProcessMemoryDumpTest, BackgroundModeTest) {
   EXPECT_NE(black_hole_mad, pmd->GetAllocatorDump("Whitelisted/TestName"));
 
   // Test whitelisted entries.
-  ASSERT_TRUE(IsMemoryAllocatorDumpNameWhitelisted("Whitelisted/TestName"));
+  ASSERT_TRUE(IsMemoryAllocatorDumpNameInAllowlist("Whitelisted/TestName"));
 
   // Global dumps should be whitelisted.
-  ASSERT_TRUE(IsMemoryAllocatorDumpNameWhitelisted("global/13456"));
+  ASSERT_TRUE(IsMemoryAllocatorDumpNameInAllowlist("global/13456"));
 
   // Global dumps with non-guids should not be.
-  ASSERT_FALSE(IsMemoryAllocatorDumpNameWhitelisted("global/random"));
+  ASSERT_FALSE(IsMemoryAllocatorDumpNameInAllowlist("global/random"));
 
   // Random names should not.
-  ASSERT_FALSE(IsMemoryAllocatorDumpNameWhitelisted("NotWhitelisted/TestName"));
+  ASSERT_FALSE(IsMemoryAllocatorDumpNameInAllowlist("NotWhitelisted/TestName"));
 
   // Check hex processing.
-  ASSERT_TRUE(IsMemoryAllocatorDumpNameWhitelisted("Whitelisted/0xA1b2"));
+  ASSERT_TRUE(IsMemoryAllocatorDumpNameInAllowlist("Whitelisted/0xA1b2"));
 }
 
 TEST(ProcessMemoryDumpTest, GuidsTest) {

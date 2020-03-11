@@ -2480,14 +2480,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
           Jika kebijakan ini disetel ke true, tombol baris teratas keyboard akan membuat perintah tombol fungsi per default. Tombol penelusuran harus ditekan untuk mengembalikan perilakunya ke tombol media.
 
           Jika kebijakan ini disetel ke false atau dibiarkan tidak disetel, keyboard akan membuat perintah tombol media per default dan perintah tombol fungsi saat tombol penelusuran ditahan.</translation>
-<translation id="4636613705027089602">Kebijakan ini mengontrol permintaan penginstalan ekstensi <ph name="PRODUCT_NAME" /> yang memungkinkan pengguna mengirim permintaan persetujuan ke konsol Google Admin.
-
-      Saat kebijakan ini tidak ditetapkan atau ditetapkan ke nonaktif, permintaan penginstalan ekstensi tidak akan dibuat atau diupload.
-      Saat kebijakan ini ditetapkan ke aktif, permintaan penginstalan ekstensi akan dibuat dan diupload ke konsol Google Admin.
-
-      Permintaan penginstalan ekstensi akan dibuat saat pengguna mencoba menginstal ekstensi yang tidak diizinkan oleh <ph name="EXTENSION_INSTALL_WHITELIST" /> atau <ph name="EXTENSION_SETTINGS" />.
-
-      Kebijakan ini hanya berlaku saat perangkat didaftarkan dengan <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> dan <ph name="CLOUD_REPORTING_ENABLED" /> diaktifkan.</translation>
 <translation id="4639407427807680016">Nama hosting perpesanan asli untuk dikeluarkan dari daftar hitam</translation>
 <translation id="4649395978608361979">Tujuan printer lokal</translation>
 <translation id="4650759511838826572">Nonaktifkan skema protokol URL</translation>

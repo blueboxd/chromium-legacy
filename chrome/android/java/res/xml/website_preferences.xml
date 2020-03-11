@@ -8,6 +8,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:title="@string/all_sites">
 
+    <!-- A text message describing cookie settings. -->
+    <org.chromium.chrome.browser.settings.TextMessagePreference
+        android:key="cookie_info_text"
+        android:summary="@string/website_settings_cookie_info"/>
+
     <!-- A common binary toggle, only shown for specific categories that allow
          turning default values for that category on/off.-->
     <org.chromium.chrome.browser.settings.ChromeSwitchPreference

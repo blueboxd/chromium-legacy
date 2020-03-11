@@ -314,6 +314,10 @@
 
       如果此政策未设置，则对于受企业管理的用户，将使用默认值“MultiProfileUserBehaviorMustBePrimary”；对于不受企业管理的用户，则使用“MultiProfileUserBehaviorUnrestricted”。</translation>
 <translation id="1465619815762735808">点击运行</translation>
+<translation id="1467633031685836974">此功能可让超链接和地址栏导航网址定位到网页中的特定文本。一旦网页加载完毕，系统即会自动将网页滚动至该文本的显示位置。
+
+如果您启用了或不配置此政策，系统就会根据网址将网页滚动至特定文本片段的显示位置。
+如果您停用了此政策，系统便不会根据网址将网页滚动至特定文本片段的显示位置。</translation>
 <translation id="1468707346106619889">此政策设为 true 时，用户将可以使用“统一桌面”功能，并且该功能在默认情况下处于启用状态（该功能处于启用状态时，应用可以跨多个显示屏进行显示）。
       用户可以为个别显示屏停用“统一桌面”功能，方法是在显示设置中取消选中相应显示屏。
 
@@ -2423,14 +2427,6 @@
           如果此政策设为“true”，默认情况下，按键盘的顶行按键将发出功能键命令。您必须按搜索键才能将其行为模式恢复为媒体键。
 
           如果此政策设为false或未设置，默认情况下，按键盘的顶行按键将发出媒体键命令；在按住搜索键的同时，按键盘的顶行按键将发出功能键命令。</translation>
-<translation id="4636613705027089602">此政策用于控制 <ph name="PRODUCT_NAME" /> 扩展程序安装请求；根据此政策，用户可将请求发送到 Google 管理控制台以寻求批准。
-
-      如果此政策未设置或设为“disabled”，系统将不会创建或上传扩展程序安装请求。
-      如果此政策设为“enabled”，系统将会创建扩展程序安装请求并将其上传到 Google 管理控制台。
-
-      当用户尝试安装未被 <ph name="EXTENSION_INSTALL_WHITELIST" /> 或 <ph name="EXTENSION_SETTINGS" /> 列入白名单的扩展程序时，系统将会创建扩展程序安装请求。
-
-      仅当已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 注册相应设备且已启用 <ph name="CLOUD_REPORTING_ENABLED" /> 后，此政策才有效。</translation>
 <translation id="4639407427807680016">免于列入黑名单的本地消息传递主机名</translation>
 <translation id="4649395978608361979">本地打印机目的地</translation>
 <translation id="4650759511838826572">停用网址协议架构</translation>
@@ -3351,6 +3347,7 @@
           此政策的值应以毫秒为单位，且必须小于闲置延迟时间。</translation>
 <translation id="6097601282776163274">启用以网址为键的匿名化数据收集功能</translation>
 <translation id="6099853574908182288">默认打印颜色模式</translation>
+<translation id="6102342563050263313">允许滚动至网址片段所指定文本的显示位置</translation>
 <translation id="6107642964266628393">控制何时以何种方式应用 Chrome 操作系统更新。</translation>
 <translation id="6111936128861357925">允许用户玩恐龙复活节彩蛋游戏</translation>
 <translation id="6114416803310251055">已弃用</translation>
@@ -4319,6 +4316,9 @@
 <translation id="7713608076604149344">下载限制</translation>
 <translation id="7715711044277116530">演示模式下屏幕变暗延迟时间的调整幅度（百分比）</translation>
 <translation id="7717938661004793600">配置 <ph name="PRODUCT_OS_NAME" />辅助功能。</translation>
+<translation id="7724652568947700864">如果设置了此政策，所有指定的数据类型都会被从同步操作（无论是 Google 同步还是漫游个人资料同步）中排除。这有助于缩减漫游个人资料的大小或限制向 Google 同步服务器上传的数据类型。
+
+      此政策当前可用的数据类型为：“bookmarks”、“preferences”、“passwords”、“autofill”、“themes”、“typedUrls”、“apps”、“tabs”、“wifiConfiguration”。这些名称区分大小写！</translation>
 <translation id="7731026922044991970">将所有网站上的 Cookie 都恢复为旧版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行为</translation>
 <translation id="7747447585227954402">允许设备在 <ph name="PRODUCT_OS_NAME" />上使用 <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749024457938190837">能够在通过 chrome.printing API 发送打印任务时跳过确认对话框的扩展程序</translation>

@@ -556,6 +556,7 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="1745520510852184940">Uvijek ovo uradi</translation>
 <translation id="1750172676754093297">Sigurnosni ključ ne može pohranjivati otiske prstiju</translation>
 <translation id="175196451752279553">P&amp;onovo otvori zatvorenu karticu</translation>
+<translation id="1753067873202720523">Chromebook se možda neće puniti dok je uključen.</translation>
 <translation id="1753905327828125965">Najposjećenije</translation>
 <translation id="1755601632425835748">Veličina teksta</translation>
 <translation id="1756681705074952506">Način unosa</translation>
@@ -1201,6 +1202,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2610157865375787051">Stanje mirovanja</translation>
 <translation id="2610260699262139870">A&amp;ctual Size (Stvarna veličina)</translation>
 <translation id="2610780100389066815">Potpisivanje Microsoftove liste pouzdanih stavki</translation>
+<translation id="261226884343006626">Chrome ne može provjeravati vaše lozinke. Pokušajte ponovo sutra.</translation>
 <translation id="2612676031748830579">Broj kartice</translation>
 <translation id="2616366145935564096">Čitati i mijenjati vaše podatke na web lokaciji <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">SIM kartica je zaključana</translation>
@@ -1331,6 +1333,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2773288106548584039">Podrška preglednika za starije web lokacije</translation>
 <translation id="2773802008104670137">Ova vrsta fajla može nanijeti štetu vašem računaru.</translation>
 <translation id="2775104091073479743">Uređivanje otisaka prsta</translation>
+<translation id="2775140325783767197">Chrome ne može provjeravati vaše lozinke. Predlažemo da provjerite internetsku vezu.</translation>
 <translation id="2776441542064982094">Izgleda da nema dostupnih uređaja za registriranje na mrežu. Ako je vaš uređaj uključen i povezan na internet, pokušajte ga registrirati koristeći upute iz ovog priručnika.</translation>
 <translation id="2780009105947267877">Postavljanje Plugin VM-a...</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -2901,6 +2904,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4964455510556214366">Uređivanje</translation>
 <translation id="4965808351167763748">Jeste li sigurni da želite postaviti ovaj uređaj da pokreće Hangouts Meet?</translation>
 <translation id="496888482094675990">Aplikacija Files pruža brzi pristup fajlovima sačuvanim na Google Disku, vanjskoj pohrani ili na Chrome OS uređaju.</translation>
+<translation id="4969017548025688718">Ugrožen je sljedeći broj lozinki: <ph name="COUNT" /></translation>
 <translation id="4971412780836297815">Otvori kada se završi preuzimanje</translation>
 <translation id="4972129977812092092">Uredi štampač</translation>
 <translation id="4972164225939028131">Pogrešna zaporka</translation>
@@ -3259,7 +3263,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5470735824776589490">Prije vraćanja na zadane vrijednosti pomoću Powerwasha potrebno je ponovo pokrenuti uređaj. <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Zdravo! Ja sam vaš glas za pretvaranje teksta u govor.</translation>
 <translation id="5473333559083690127">Ponovo unesite novi PIN</translation>
-<translation id="548137908954174608">Omogući Automatske titlove</translation>
 <translation id="5481941284378890518">Dodaj štampače u blizini</translation>
 <translation id="5483785310822538350">Opozovi pristup fajlu i uređaju</translation>
 <translation id="5485080380723335835">Vaš uređaj <ph name="DEVICE_TYPE" /> je zaključan iz sigurnosnih razloga. Ručno unesite lozinku da nastavite.</translation>
@@ -4903,7 +4906,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7740996059027112821">Standardno</translation>
 <translation id="7744047395460924128">Prikaz historije štampanja</translation>
 <translation id="7744192722284567281">Pronađeno u narušavanju podataka</translation>
-<translation id="7746457520633464754">Radi otkrivanja opasnih aplikacija i web-lokacija Chrome šalje Googleu URL-ove nekih stranica koje posjećujete, ograničene podatke o sustavu i dio sadržaja web-stranica</translation>
 <translation id="7750228210027921155">Slika u slici</translation>
 <translation id="7751229152614300329">Sigurno pregledanje je ažurirano i štiti vas od štetnih web lokacija i preuzimanja</translation>
 <translation id="7751260505918304024">Prikaži sve</translation>
@@ -5418,7 +5420,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8391712576156218334">Slika nije dostupna. Pokušajte ponovo kasnije.</translation>
 <translation id="8392364544846746346">Pitaj kada web lokacija želi urediti fajlove ili foldere na mom uređaju</translation>
 <translation id="8392451568018454956">Opcije menija za <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8392630288038565643">Ova postavka je onemogućena na upravljanim preglednicima.</translation>
 <translation id="8393511274964623038">Zaustavi dodatak</translation>
 <translation id="8393700583063109961">Pošalji poruku</translation>
 <translation id="839736845446313156">Registriraj</translation>
@@ -5502,7 +5503,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="851263357009351303">Uvijek dozvoli da <ph name="HOST" /> prikazuje slike</translation>
 <translation id="8513108775083588393">Automatsko rotiranje</translation>
 <translation id="8514746246728959655">Probajte drugi sigurnosni ključ</translation>
-<translation id="8517041960877371778">Moguće je da se vaš uređaj <ph name="DEVICE_TYPE" /> neće puniti dok je uključen.</translation>
 <translation id="8521475323816527629">Dođite brzo do svojih aplikacija</translation>
 <translation id="8523493869875972733">Zadrži izmjene</translation>
 <translation id="8523849605371521713">Dodano pravilom</translation>
@@ -5875,7 +5875,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8978154919215542464">Uključeno – sinkronizacija svega</translation>
 <translation id="897939795688207351">Na programu <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704">Došlo je do pada kartice <ph name="WINDOW_TITLE" /></translation>
-<translation id="8983405057223076408">Ova postavka je onemogućena jer je uključen roditeljski nadzor.</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> može uređivati fajl <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">Aktivan prije <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dana</translation>
 <translation id="8986362086234534611">Zaboravi</translation>

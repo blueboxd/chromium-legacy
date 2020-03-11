@@ -2191,9 +2191,9 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetched_AtSRP_ECT_4G) {
 
   hints_manager()->OnPredictionUpdated(prediction);
   histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1);
   histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 0);
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 1);
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
@@ -2422,7 +2422,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
-       HintsNotFetchedAtNavigationTime_ECT_4G) {
+       HintsNotFetchedAtNavigationTime_ECT_UNKNOWN) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
@@ -2431,7 +2431,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
   // Set ECT estimate so hint is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_without_hints());

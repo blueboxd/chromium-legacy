@@ -110,9 +110,9 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
     }
 
     /**
-     * Notifies that an infobar's View ({@link InfoBarUiItem#getView}) has changed. If
-     * the infobar is visible in the front of the stack, the infobar will fade out the old contents,
-     * resize, then fade in the new contents.
+     * Notifies that an infobar's View ({@link InfoBarUiItem#getView}) has changed. If the infobar
+     * is visible in the front of the stack, the infobar will fade out the old contents, resize,
+     * then fade in the new contents.
      */
     void notifyInfoBarViewChanged() {
         processPendingAnimations();

@@ -551,7 +551,9 @@ void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
                "profile_path",
                profile_path.AsUTF8Unsafe());
 
-  bool is_allowed_path = IsAllowedProfilePath(profile_path);
+  bool is_allowed_path = IsAllowedProfilePath(profile_path) ||
+                         base::CommandLine::ForCurrentProcess()->HasSwitch(
+                             switches::kAllowProfilesOutsideUserDir);
 
   // Make sure the path is correct and this profile is not pending deletion.
   if (!is_allowed_path || IsProfileDirectoryMarkedForDeletion(profile_path)) {
@@ -1415,7 +1417,9 @@ Profile* ProfileManager::CreateAndInitializeProfile(
     const base::FilePath& profile_dir) {
   TRACE_EVENT0("browser", "ProfileManager::CreateAndInitializeProfile");
 
-  if (!IsAllowedProfilePath(profile_dir)) {
+  if (!IsAllowedProfilePath(profile_dir) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowProfilesOutsideUserDir)) {
     LOG(ERROR) << "Cannot create profile at path "
                << profile_dir.AsUTF8Unsafe();
     return nullptr;

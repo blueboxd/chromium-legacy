@@ -6,6 +6,7 @@
 
 #include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
+#include "base/unguessable_token.h"
 
 namespace ash {
 
@@ -32,22 +33,21 @@ void AssistantSuggestionsModel::SetConversationStarters(
 }
 
 const chromeos::assistant::mojom::AssistantSuggestion*
-AssistantSuggestionsModel::GetConversationStarterById(int id) const {
-  // We consider the index of a conversation starter within our backing vector
-  // to be its unique id.
-  DCHECK_GE(id, 0);
-  DCHECK_LT(id, static_cast<int>(conversation_starters_.size()));
-  return conversation_starters_.at(id).get();
+AssistantSuggestionsModel::GetConversationStarterById(
+    const base::UnguessableToken& id) const {
+  for (auto& conversation_starter : conversation_starters_) {
+    if (conversation_starter->id == id)
+      return conversation_starter.get();
+  }
+  return nullptr;
 }
 
-std::map<int, const chromeos::assistant::mojom::AssistantSuggestion*>
+std::vector<const chromeos::assistant::mojom::AssistantSuggestion*>
 AssistantSuggestionsModel::GetConversationStarters() const {
-  std::map<int, const AssistantSuggestion*> conversation_starters;
+  std::vector<const AssistantSuggestion*> conversation_starters;
 
-  // We use index within our backing vector to represent unique id.
-  int id = 0;
-  for (const AssistantSuggestionPtr& starter : conversation_starters_)
-    conversation_starters[id++] = starter.get();
+  for (auto& conversation_starter : conversation_starters_)
+    conversation_starters.push_back(conversation_starter.get());
 
   return conversation_starters;
 }
@@ -70,7 +70,7 @@ AssistantSuggestionsModel::GetProactiveSuggestions() const {
 }
 
 void AssistantSuggestionsModel::NotifyConversationStartersChanged() {
-  const std::map<int, const AssistantSuggestion*> conversation_starters =
+  const std::vector<const AssistantSuggestion*> conversation_starters =
       GetConversationStarters();
 
   for (AssistantSuggestionsModelObserver& observer : observers_)

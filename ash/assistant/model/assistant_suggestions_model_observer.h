@@ -5,7 +5,7 @@
 #ifndef ASH_ASSISTANT_MODEL_ASSISTANT_SUGGESTIONS_MODEL_OBSERVER_H_
 #define ASH_ASSISTANT_MODEL_ASSISTANT_SUGGESTIONS_MODEL_OBSERVER_H_
 
-#include <map>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -25,7 +25,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModelObserver
 
   // Invoked when the cache of conversation starters has changed.
   virtual void OnConversationStartersChanged(
-      const std::map<int, const AssistantSuggestion*>& conversation_starters) {}
+      const std::vector<const AssistantSuggestion*>& conversation_starters) {}
 
   // Invoked when the cache of proactive suggestions has changed.
   virtual void OnProactiveSuggestionsChanged(

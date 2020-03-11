@@ -6344,7 +6344,6 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
                                       std::move(did_commit_callback));
 
   // Start the first navigation, which does not assign a site URL.
-  base::HistogramTester histograms;
   shell->LoadURL(siteless_url);
 
   // The navigation should stay in the initial empty SiteInstance, so there
@@ -6381,14 +6380,6 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // Ensure also that the foo.com process didn't change midway through the
   // navigation.
   EXPECT_EQ(foo_process, process2);
-
-  // Ensure we've logged the UMA for disallowing problematic process reuse.
-  // Since IsSuitableHost() is checked multiple times during a particular
-  // navigation, just make sure that this is logged at least once.
-  EXPECT_GE(histograms.GetBucketCount(
-                "SiteIsolation.PendingSitelessNavigationDisallowsProcessReuse",
-                1 /* has_disqualifying_pending_navigation */),
-            1);
 
   SetBrowserClientForTesting(old_client);
 }

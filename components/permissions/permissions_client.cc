@@ -10,7 +10,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "components/permissions/android/jni/PermissionsClient_jni.h"
+#include "components/permissions/android/jni_headers/PermissionsClient_jni.h"
 #else
 #include "ui/gfx/paint_vector_icon.h"
 #endif

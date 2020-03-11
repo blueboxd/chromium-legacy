@@ -285,11 +285,18 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
     contextual_cards_version =
         contextual_search::kContextualCardsTranslationsIntegration;
   }
-  // TODO(donnd): figure out if this is really needed or if the communication
-  // can be done automatically through a FieldTrial config setting.
+  // Mixin the debug setting.
   if (base::FeatureList::IsEnabled(chrome::android::kContextualSearchDebug)) {
-    contextual_cards_version =
-        contextual_search::kContextualCardsDebugIntegration;
+    contextual_cards_version +=
+        contextual_search::kContextualCardsServerDebugMixin;
+  }
+  // Mixin the exact-search setting.
+  // TODO(donnd): remove or merge-away this ugly implementation if we get
+  // approval for the additional parameter used below (in
+  // ContextualSearchParams). It would be better to only have to support
+  // one of these communication methods server-side.
+  if (context->GetExactResolve()) {
+    contextual_cards_version += contextual_search::kExactSearchMixin;
   }
   // Let the field-trial override.
   if (field_trial_->GetContextualCardsVersion() != 0) {

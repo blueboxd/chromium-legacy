@@ -5284,7 +5284,8 @@ crbug.com/855816 [ Win ] virtual/stable/http/tests/navigation/rename-subframe-go
 
 # User Activation
 crbug.com/736415 external/wpt/html/user-activation/activation-api-iframe.tenative.html [ Failure ]
-crbug.com/978620 external/wpt/html/user-activation/activation-hierarchy-parent-manual.sub.tentative.html [ Timeout ]
+crbug.com/978620 external/wpt/html/user-activation/activation-hierarchy-crossorigin-parent-manual.sub.html [ Timeout ]
+crbug.com/978620 external/wpt/html/user-activation/activation-hierarchy-sameorigin-parent-manual.html [ Timeout ]
 
 # Sheriff 2018-07-05
 crbug.com/860731 fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass ]

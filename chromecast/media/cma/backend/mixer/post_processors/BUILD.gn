@@ -41,6 +41,7 @@ cast_source_set("governor") {
     "//base",
     "//chromecast/base",
     "//chromecast/media/base",
+    "//chromecast/media/base:slew_volume",
     "//chromecast/public/media",
   ]
   public_configs = [ "//chromecast/public:public_config" ]
@@ -71,6 +72,7 @@ cast_source_set("saturated_gain") {
     "//base",
     "//chromecast/base",
     "//chromecast/media/base",
+    "//chromecast/media/base:slew_volume",
     "//chromecast/public/media",
   ]
   public_configs = [ "//chromecast/public:public_config" ]

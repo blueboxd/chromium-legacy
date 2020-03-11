@@ -139,7 +139,7 @@
 <translation id="2704781753052663061">Konektatu beste wifi-sare batzuetara</translation>
 <translation id="2718395828230677721">Gaueko argia</translation>
 <translation id="2727977024730340865">Energia gutxiko kargagailu bat entxufatu duzu. Agian bateria kargatzeko prozesua ez da fidagarria izango.</translation>
-<translation id="2792498699870441125">Alt+Bilaketa</translation>
+<translation id="2792498699870441125">Alt + Bilaketa</translation>
 <translation id="2819276065543622893">Saioa amaituko zaizu.</translation>
 <translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> pantailak ez du onartzen <ph name="SPECIFIED_RESOLUTION" /> bereizmena. <ph name="FALLBACK_RESOLUTION" /> ezarri da bereizmen gisa.</translation>
 <translation id="2825619548187458965">Apala</translation>
@@ -203,7 +203,7 @@
 <translation id="3454224730401036106">Sare seguruago batera konektatu zaude orain</translation>
 <translation id="3465223694362104965">Beste teklatu bat konektatu da gailu honetara saioa hasi zenuen azken alditik. Teklatua erabili aurretik, ziurtatu fidagarria dela.</translation>
 <translation id="3465356146291925647">Administratzaileak kudeatua</translation>
-<translation id="3477079411857374384">Kontrol+Maius+Zuriunea</translation>
+<translation id="3477079411857374384">Kontrol + Maius + zuriunea</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />. <ph name="CONNECTION_STATUS" />. Seinalearen indarra: <ph name="SIGNAL_STRENGTH" />.</translation>
 <translation id="3510164367642747937">Nabarmendu saguaren kurtsorea</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> kontuaren bidez kudeatzen da kontu hau</translation>
@@ -309,7 +309,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4849058404725798627">Nabarmendu teklatuaren fokua duen objektua</translation>
 <translation id="485592688953820832">Ekintzarik ez (pausatuta)</translation>
 <translation id="4868492592575313542">aktibatuta</translation>
-<translation id="4872237917498892622">Alt+Bilaketa edo Maius</translation>
+<translation id="4872237917498892622">Alt + Bilaketa edo Maius</translation>
 <translation id="4890187583552566966">Administratzaileak desgaitu egin du Google-ren Laguntzailea.</translation>
 <translation id="4895488851634969361">Bateria beteta dago.</translation>
 <translation id="490375751687810070">Bertikala</translation>
@@ -433,14 +433,14 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="6585808820553845416">Saioa <ph name="SESSION_TIME_REMAINING" /> barru amaituko da.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />. Seinalearen indarra: <ph name="SIGNAL_STRENGTH" />. Administratzaileak kudeatua.</translation>
 <translation id="6614169507485700968">Aktibatuta dago pribatutasun-pantaila</translation>
-<translation id="6627638273713273709">Bilatu+Maius+K</translation>
+<translation id="6627638273713273709">Bilatu + Maius + K</translation>
 <translation id="6637729079642709226">Aldatu ordua</translation>
 <translation id="6650933572246256093">Bluetooth bidezko "<ph name="DEVICE_NAME" />" gailuak parekatzeko baimena nahi du. Idatzi pasakode hau gailu horretan: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Pasahitza</translation>
 <translation id="6665545700722362599">Eman webgune, aplikazio eta luzapenei kokapen-zerbitzuak edota gailuaren mikrofonoa, kamera edo beste eginbide batzuk erabiltzeko baimena</translation>
 <translation id="6669268301501499730">Aktibatuta</translation>
 <translation id="6670153871843998651">3. lan-eremua</translation>
-<translation id="6691659475504239918">Bilatu+Maius+H</translation>
+<translation id="6691659475504239918">Bilatu + Maius + H</translation>
 <translation id="6696025732084565524">Bereiz daitekeen teklatuak ezinbesteko eguneratze bat behar du</translation>
 <translation id="6700713906295497288">IME menu-botoia</translation>
 <translation id="6713285437468012787">Bluetooth bidezko "<ph name="DEVICE_NAME" />" gailua parekatu egin da eta, beraz, erabiltzaile guztientzat erabilgarri dago. Parekatzea kentzeko, erabili Ezarpenak.</translation>
@@ -475,7 +475,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="7098389117866926363">USB-C gailua (ezkerraldeko atzeko ataka)</translation>
 <translation id="7131634465328662194">Automatikoki amaituko da saioa.</translation>
 <translation id="7143207342074048698">Konektatzen</translation>
-<translation id="7165278925115064263">Alt+Maius+K</translation>
+<translation id="7165278925115064263">Alt + Maius + K</translation>
 <translation id="7168224885072002358">Aurreko bereizmenera leheneratuko da <ph name="TIMEOUT_SECONDS" /> ondoren</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Chromebook hau berrabiarazi egin behar da eguneratzea aplikatzeko. Baliteke minutu bat behar izatea.</translation>
 <translation id="7256634071279256947">Atzeko mikrofonoa</translation>
@@ -574,7 +574,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="8454013096329229812">Wi-Fi konexioa aktibatuta dago.</translation>
 <translation id="847056008324733326">Bistaratu eskala-ezarpenak</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> erakundeak <ph name="FEATURE_STATE" /> dauka <ph name="FEATURE_NAME" />.</translation>
-<translation id="8477270416194247200">Bertan behera uzteko, sakatu Alt+Bilatu edo Maius.</translation>
+<translation id="8477270416194247200">Bertan behera uzteko, sakatu Alt + Bilatu edo Maius.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> pantailak ez du onartzen <ph name="SPECIFIED_RESOLUTION" /> bereizmena. <ph name="FALLBACK_RESOLUTION" /> ezarri da pantailaren bereizmen gisa. Sakatu "Berretsi" aldaketak gordetzeko. <ph name="TIMEOUT_SECONDS" /> barru leheneratuko dira aurreko ezarpenak.</translation>
 <translation id="8513108775083588393">Biratu automatikoki</translation>
 <translation id="8517041960877371778">Baliteke <ph name="DEVICE_TYPE" /> gailua ez kargatzea piztuta dagoen bitartean.</translation>
@@ -641,7 +641,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> bateria guztiz kargatu arte.</translation>
 <translation id="9215934040295798075">Ezarri horma-papera</translation>
 <translation id="921989828232331238">Guraso batek gailua blokeatu dizu gaurkoz</translation>
-<translation id="923686485342484400">Saioa amaitzeko, sakatu Kontrol+Maius+Q bi aldiz.</translation>
+<translation id="923686485342484400">Saioa amaitzeko, sakatu Kontrol + Maius + Q bi aldiz.</translation>
 <translation id="938963181863597773">Zer daukat egutegian?</translation>
 <translation id="945522503751344254">Bidali oharrak</translation>
 <translation id="98515147261107953">Horizontala</translation>

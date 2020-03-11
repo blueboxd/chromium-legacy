@@ -26,12 +26,12 @@ import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
@@ -85,8 +85,8 @@ class ManualFillingMediator extends EmptyTabObserver
     private PropertyModel mModel = ManualFillingProperties.createFillingModel();
     private WindowAndroid mWindowAndroid;
     private Supplier<InsetObserverView> mInsetObserverViewSupplier;
-    private final KeyboardExtensionViewResizer mKeyboardExtensionViewResizer =
-            new KeyboardExtensionViewResizer();
+    private final ObservableSupplierImpl<Integer> mViewportInsetSupplier =
+            new ObservableSupplierImpl<>();
     private final ManualFillingStateCache mStateCache = new ManualFillingStateCache();
     private final HashSet<Tab> mObservedTabs = new HashSet<>();
     private KeyboardAccessoryCoordinator mKeyboardAccessory;
@@ -137,11 +137,17 @@ class ManualFillingMediator extends EmptyTabObserver
         }
     };
 
+    /** Default constructor */
+    ManualFillingMediator() {
+        mViewportInsetSupplier.set(0);
+    }
+
     void initialize(KeyboardAccessoryCoordinator keyboardAccessory,
             AccessorySheetCoordinator accessorySheet, WindowAndroid windowAndroid) {
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
         assert mActivity != null;
         mWindowAndroid = windowAndroid;
+        mWindowAndroid.getApplicationBottomInsetProvider().addSupplier(mViewportInsetSupplier);
         mKeyboardAccessory = keyboardAccessory;
         mModel.set(PORTRAIT_ORIENTATION, hasPortraitOrientation());
         mModel.addObserver(this::onPropertyChanged);
@@ -243,6 +249,7 @@ class ManualFillingMediator extends EmptyTabObserver
     void destroy() {
         if (!isInitialized()) return;
         pause();
+        mWindowAndroid.getApplicationBottomInsetProvider().removeSupplier(mViewportInsetSupplier);
         mActivity.findViewById(android.R.id.content).removeOnLayoutChangeListener(this);
         mTabModelObserver.destroy();
         mStateCache.destroy();
@@ -320,14 +327,9 @@ class ManualFillingMediator extends EmptyTabObserver
         WebContents webContents = mActivity.getCurrentWebContents();
         if (webContents == null) return false;
         float height = webContents.getHeight(); // getHeight actually returns dip, not Px!
-        height += mKeyboardExtensionViewResizer.getHeight()
-                / mWindowAndroid.getDisplay().getDipScale();
+        height += mViewportInsetSupplier.get() / mWindowAndroid.getDisplay().getDipScale();
         return height >= MINIMAL_AVAILABLE_VERTICAL_SPACE
                 && webContents.getWidth() >= MINIMAL_AVAILABLE_HORIZONTAL_SPACE;
-    }
-
-    CompositorViewResizer getKeyboardExtensionViewResizer() {
-        return mKeyboardExtensionViewResizer;
     }
 
     private void onPropertyChanged(PropertyObservable<PropertyKey> source, PropertyKey property) {
@@ -514,7 +516,7 @@ class ManualFillingMediator extends EmptyTabObserver
             newControlsOffset += mAccessorySheet.getHeight();
         }
         mKeyboardAccessory.setBottomOffset(newControlsOffset);
-        mKeyboardExtensionViewResizer.setKeyboardExtensionHeight(newControlsHeight);
+        mViewportInsetSupplier.set(newControlsHeight);
         mActivity.getFullscreenManager().updateViewportSize();
     }
 
@@ -603,7 +605,7 @@ class ManualFillingMediator extends EmptyTabObserver
         float density = mWindowAndroid.getDisplay().getDipScale();
         // The maximal height for the sheet ensures a minimal amount of WebContents space.
         @Px
-        int maxHeight = mKeyboardExtensionViewResizer.getHeight();
+        int maxHeight = mViewportInsetSupplier.get();
         maxHeight += Math.round(density * webContents.getHeight());
         maxHeight -= Math.round(density * MINIMAL_AVAILABLE_VERTICAL_SPACE);
         if (mAccessorySheet.getHeight() <= maxHeight) return; // Sheet height needs no adjustment!

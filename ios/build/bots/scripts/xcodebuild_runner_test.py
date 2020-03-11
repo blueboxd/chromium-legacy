@@ -4,12 +4,14 @@
 
 """Unittests for xcodebuild_runner.py."""
 
+import logging
 import mock
 import os
+import shutil
+import unittest
 
 import iossim_util
 import plistlib
-import shutil
 import tempfile
 import test_apps
 import test_runner
@@ -40,6 +42,7 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
     self.tmpdir = tempfile.mkdtemp()
     self.mock(iossim_util, 'get_simulator_list',
               lambda: test_runner_test.SIMULATORS_LIST)
+    self.mock(test_apps, 'get_bundle_id', lambda _: "fake-bundle-id")
 
   def tearDown(self):
     shutil.rmtree(self.tmpdir, ignore_errors=True)
@@ -91,11 +94,10 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
         ]
         }
 
-    def the_fake(cmd, attempt_outdir):
+    def the_fake(cmd):
       index = attempt[0]
       attempt[0] += 1
-      self.assertEqual(os.path.join(self.tmpdir, 'attempt_%d' % index),
-                       attempt_outdir)
+      attempt_outdir = os.path.join(self.tmpdir, 'attempt_%d' % index)
       self.assertEqual(1, cmd.count(attempt_outdir))
       os.mkdir(attempt_outdir)
       with open(os.path.join(attempt_outdir, 'Info.plist'), 'w') as f:
@@ -140,8 +142,8 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
     filtered_tests = ['TestCase1/testMethod1', 'TestCase1/testMethod2',
                       'TestCase2/testMethod1', 'TestCase1/testMethod2']
     egtest_node = test_apps.EgtestsApp(
-        _EGTESTS_APP_PATH,
-        included_tests=filtered_tests).fill_xctestrun_node()['any_egtests_module']
+        _EGTESTS_APP_PATH, included_tests=filtered_tests).fill_xctestrun_node(
+        )['any_egtests_module']
     self.assertEqual(filtered_tests, egtest_node['OnlyTestIdentifiers'])
     self.assertNotIn('SkipTestIdentifiers', egtest_node)
 
@@ -149,8 +151,8 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
     skipped_tests = ['TestCase1/testMethod1', 'TestCase1/testMethod2',
                      'TestCase2/testMethod1', 'TestCase1/testMethod2']
     egtest_node = test_apps.EgtestsApp(
-        _EGTESTS_APP_PATH,
-        excluded_tests=skipped_tests).fill_xctestrun_node()['any_egtests_module']
+        _EGTESTS_APP_PATH, excluded_tests=skipped_tests).fill_xctestrun_node(
+        )['any_egtests_module']
     self.assertEqual(skipped_tests, egtest_node['SkipTestIdentifiers'])
     self.assertNotIn('OnlyTestIdentifiers', egtest_node)
 
@@ -171,7 +173,7 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
                                                      out_dir=self.tmpdir)
     self.fake_launch_attempt(launch_command, ['not_started', 'pass'])
     launch_command.launch()
-    self.assertEqual(2, len(launch_command.test_results))
+    self.assertEqual(1, len(launch_command.test_results))
 
   @mock.patch('test_runner.get_current_xcode_info', autospec=True)
   @mock.patch('xcode_log_parser.XcodeLogParser.collect_test_results')
@@ -190,4 +192,50 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
                                                      out_dir=self.tmpdir)
     self.fake_launch_attempt(launch_command, ['pass'])
     launch_command.launch()
-    self.assertEqual(2, len(launch_command.test_results))
+    self.assertEqual(1, len(launch_command.test_results['attempts']))
+
+
+class DeviceXcodeTestRunnerTest(test_runner_test.TestCase):
+  """Test case to test xcodebuild_runner.DeviceXcodeTestRunner."""
+
+  def setUp(self):
+    super(DeviceXcodeTestRunnerTest, self).setUp()
+    self.mock(os.path, 'exists', lambda _: True)
+    self.mock(test_runner, 'get_current_xcode_info', lambda: {
+        'version': 'test version', 'build': 'test build', 'path': 'test/path'})
+    self.mock(os.path, 'abspath', lambda path: '/abs/path/to/%s' % path)
+
+    self.mock(test_runner.subprocess, 'check_output', lambda _: 'fake-output')
+    self.mock(test_runner.subprocess, 'check_call', lambda _: 'fake-out')
+    self.mock(test_runner.TestRunner, 'set_sigterm_handler',
+              lambda self, handler: 0)
+    self.mock(os, 'listdir', lambda _: [])
+    self.mock(test_runner, 'is_iOS13_or_higher_device', lambda _: False)
+    self.mock(test_runner, 'print_process_output', lambda _: [])
+    self.mock(test_runner.TestRunner, 'start_proc', lambda self, cmd: 0)
+    self.mock(test_runner.DeviceTestRunner, 'get_installed_packages',
+              lambda self: [])
+    self.mock(test_runner.DeviceTestRunner, 'wipe_derived_data', lambda _: None)
+    self.mock(test_runner.TestRunner, 'retrieve_derived_data', lambda _: None)
+
+  def test_launch(self):
+    """Tests launch method in DeviceXcodeTestRunner"""
+    self.mock(xcodebuild_runner.pool.ThreadPool, 'imap_unordered',
+              lambda _1, _2, _3: [])
+    self.mock(xcodebuild_runner, 'get_all_tests', lambda _1, _2: [])
+    tr = xcodebuild_runner.DeviceXcodeTestRunner(
+        "fake-app-path", "fake-host-app-path", "fake-out-dir")
+    self.assertTrue(tr.launch())
+
+  def test_tear_down(self):
+    tr = xcodebuild_runner.DeviceXcodeTestRunner(
+        "fake-app-path", "fake-host-app-path", "fake-out-dir")
+    tr.tear_down()
+
+
+if __name__ == '__main__':
+  logging.basicConfig(
+      format='[%(asctime)s:%(levelname)s] %(message)s',
+      level=logging.DEBUG,
+      datefmt='%I:%M:%S')
+  unittest.main()

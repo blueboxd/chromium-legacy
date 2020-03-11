@@ -4,7 +4,7 @@
 
 #include "base/callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 
@@ -13,6 +13,21 @@ namespace blink {
 class WriteBarrierPerfTest : public TestSupportingGC {};
 
 namespace {
+
+constexpr char kMetricPrefixWriteBarrier[] = "WriteBarrier.";
+constexpr char kMetricWritesDuringGcRunsPerS[] = "writes_during_gc";
+constexpr char kMetricWritesOutsideGcRunsPerS[] = "writes_outside_gc";
+constexpr char kMetricRelativeSpeedDifferenceUnitless[] =
+    "relative_speed_difference";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixWriteBarrier, story_name);
+  reporter.RegisterImportantMetric(kMetricWritesDuringGcRunsPerS, "runs/s");
+  reporter.RegisterImportantMetric(kMetricWritesOutsideGcRunsPerS, "runs/s");
+  reporter.RegisterImportantMetric(kMetricRelativeSpeedDifferenceUnitless,
+                                   "unitless");
+  return reporter;
+}
 
 class PerfDummyObject : public GarbageCollected<PerfDummyObject> {
  public:
@@ -61,19 +76,16 @@ TEST_F(WriteBarrierPerfTest, MemberWritePerformance) {
   PreciselyCollectGarbage();
 
   // Reporting.
-  perf_test::PrintResult(
-      "WriteBarrierPerfTest", " writes during GC", "",
-      static_cast<double>(kNumElements) / during_gc_duration.InMillisecondsF(),
-      "writes/ms", true);
-  perf_test::PrintResult(
-      "WriteBarrierPerfTest", " writes outside GC", "",
-      static_cast<double>(kNumElements) / outside_gc_duration.InMillisecondsF(),
-      "writes/ms", true);
-  perf_test::PrintResult("WriteBarrierPerfTest", " relative speed difference",
-                         "",
-                         during_gc_duration.InMillisecondsF() /
-                             outside_gc_duration.InMillisecondsF(),
-                         "times", true);
+  auto reporter = SetUpReporter("member_write_performance");
+  reporter.AddResult(
+      kMetricWritesDuringGcRunsPerS,
+      static_cast<double>(kNumElements) / during_gc_duration.InSecondsF());
+  reporter.AddResult(
+      kMetricWritesOutsideGcRunsPerS,
+      static_cast<double>(kNumElements) / outside_gc_duration.InSecondsF());
+  reporter.AddResult(
+      kMetricRelativeSpeedDifferenceUnitless,
+      during_gc_duration.InSecondsF() / outside_gc_duration.InSecondsF());
 }
 
 }  // namespace blink

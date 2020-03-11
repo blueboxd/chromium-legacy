@@ -30,7 +30,9 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
  private:
   const NGConstraintSpace CreateConstraintSpaceForLegend(
       NGBlockNode legend,
-      LogicalSize available_size);
+      LogicalSize available_size,
+      LogicalSize percentage_size,
+      LayoutUnit block_offset);
   const NGConstraintSpace CreateConstraintSpaceForFieldsetContent(
       NGBlockNode fieldset_content,
       LogicalSize padding_box_size,

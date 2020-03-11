@@ -76,23 +76,53 @@ int ListenOnIPv6(net::ServerSocket* socket, uint16_t port, bool allow_remote) {
   return socket->ListenWithAddressAndPort(binding_ip, port, 5);
 }
 
-bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info) {
+bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info,
+                          bool allow_remote,
+                          const std::vector<net::IPAddress>& whitelisted_ips) {
   // To guard against browser-originating cross-site requests, when host header
-  // and/or origin header are present, serve only those coming from localhost.
-  std::string host_header = info.GetHeaderValue("host");
-  if (!host_header.empty()) {
-    GURL url = GURL("http://" + host_header);
-    if (!net::IsLocalhost(url)) {
-      LOG(ERROR) << "Rejecting request with host: " << host_header;
-      return false;
-    }
-  }
+  // and/or origin header are present, serve only those coming from localhost
+  // or from an explicitly whitelisted ip.
   std::string origin_header = info.GetHeaderValue("origin");
+  bool local_origin = false;
   if (!origin_header.empty()) {
     GURL url = GURL(origin_header);
-    if (!net::IsLocalhost(url)) {
-      LOG(ERROR) << "Rejecting request with origin: " << origin_header;
-      return false;
+    local_origin = net::IsLocalhost(url);
+    if (!local_origin) {
+      if (!allow_remote) {
+        LOG(ERROR)
+            << "Remote connections not allowed; rejecting request with origin: "
+            << origin_header;
+        return false;
+      }
+      if (!whitelisted_ips.empty()) {
+        net::IPAddress address = net::IPAddress();
+        if (!ParseURLHostnameToAddress(origin_header, &address)) {
+          LOG(ERROR) << "Unable to parse origin to IPAddress: "
+                     << origin_header;
+          return false;
+        }
+        if (!base::Contains(whitelisted_ips, address)) {
+          LOG(ERROR) << "Rejecting request with origin: " << origin_header;
+          return false;
+        }
+      }
+    }
+  }
+  // TODO https://crbug.com/chromedriver/3389
+  //  When remote access is allowed and origin is not specified,
+  // we should confirm that host is current machines ip or hostname
+
+  if (local_origin || !allow_remote) {
+    // when origin is localhost host must be localhost
+    // when origin is not set, and no remote access, host must be localhost
+    std::string host_header = info.GetHeaderValue("host");
+    if (!host_header.empty()) {
+      GURL url = GURL("http://" + host_header);
+      if (!net::IsLocalhost(url)) {
+        LOG(ERROR) << "Rejecting request with host: " << host_header
+                   << ". origin is " << origin_header;
+        return false;
+      }
     }
   }
   return true;
@@ -122,17 +152,19 @@ void EnsureSharedMemory(base::CommandLine* cmd_line) {
 class HttpServer : public net::HttpServer::Delegate {
  public:
   explicit HttpServer(const std::string& url_base,
+                      const std::vector<net::IPAddress>& whitelisted_ips,
                       const HttpRequestHandlerFunc& handle_request_func)
       : url_base_(url_base),
         handle_request_func_(handle_request_func),
-        allow_remote_(false) {}
+        allow_remote_(false),
+        whitelisted_ips_(whitelisted_ips) {}
 
-  ~HttpServer() override {}
+  ~HttpServer() override = default;
 
   int Start(uint16_t port, bool allow_remote, bool use_ipv4) {
     allow_remote_ = allow_remote;
     std::unique_ptr<net::ServerSocket> server_socket(
-        new net::TCPServerSocket(NULL, net::NetLogSource()));
+        new net::TCPServerSocket(nullptr, net::NetLogSource()));
     int status = use_ipv4
                      ? ListenOnIPv4(server_socket.get(), port, allow_remote)
                      : ListenOnIPv6(server_socket.get(), port, allow_remote);
@@ -154,11 +186,11 @@ class HttpServer : public net::HttpServer::Delegate {
 
   void OnHttpRequest(int connection_id,
                      const net::HttpServerRequestInfo& info) override {
-    if (!allow_remote_ && !RequestIsSafeToServe(info)) {
-      server_->Send500(
-          connection_id,
-          "Host header or origin header is specified and is not localhost.",
-          TRAFFIC_ANNOTATION_FOR_TESTS);
+    if (!RequestIsSafeToServe(info, allow_remote_, whitelisted_ips_)) {
+      server_->Send500(connection_id,
+                       "Host header or origin header is specified and is not "
+                       "whitelisted or localhost.",
+                       TRAFFIC_ANNOTATION_FOR_TESTS);
       return;
     }
     handle_request_func_.Run(
@@ -248,6 +280,7 @@ class HttpServer : public net::HttpServer::Delegate {
   std::unique_ptr<net::HttpServer> server_;
   std::map<int, std::string> connection_to_session_map;
   bool allow_remote_;
+  const std::vector<net::IPAddress> whitelisted_ips_;
   base::WeakPtrFactory<HttpServer> weak_factory_{this};  // Should be last.
 };
 
@@ -310,6 +343,7 @@ void StopServerOnIOThread() {
 void StartServerOnIOThread(uint16_t port,
                            bool allow_remote,
                            const std::string& url_base,
+                           const std::vector<net::IPAddress>& whitelisted_ips,
                            const HttpRequestHandlerFunc& handle_request_func) {
   std::unique_ptr<HttpServer> temp_server;
 
@@ -325,7 +359,8 @@ void StartServerOnIOThread(uint16_t port,
 // ensures that we successfully listen to both IPv4 and IPv6.
 
 #if defined(OS_MACOSX)
-  temp_server.reset(new HttpServer(url_base, handle_request_func));
+  temp_server.reset(
+      new HttpServer(url_base, whitelisted_ips, handle_request_func));
   int ipv4_status = temp_server->Start(port, allow_remote, true);
   if (ipv4_status == net::OK) {
     lazy_tls_server_ipv4.Pointer()->Set(temp_server.release());
@@ -341,7 +376,8 @@ void StartServerOnIOThread(uint16_t port,
   }
 #endif
 
-  temp_server.reset(new HttpServer(url_base, handle_request_func));
+  temp_server.reset(
+      new HttpServer(url_base, whitelisted_ips, handle_request_func));
   int ipv6_status = temp_server->Start(port, allow_remote, false);
   if (ipv6_status == net::OK) {
     lazy_tls_server_ipv6.Pointer()->Set(temp_server.release());
@@ -391,7 +427,8 @@ void StartServerOnIOThread(uint16_t port,
   if (need_ipv4 == NeedIPv4::NOT_NEEDED) {
     ipv4_status = ipv6_status;
   } else {
-    temp_server.reset(new HttpServer(url_base, handle_request_func));
+    temp_server.reset(
+        new HttpServer(url_base, whitelisted_ips, handle_request_func));
     ipv4_status = temp_server->Start(port, allow_remote, true);
     if (ipv4_status == net::OK) {
       lazy_tls_server_ipv4.Pointer()->Set(temp_server.release());
@@ -432,7 +469,7 @@ void RunServer(uint16_t port,
   io_thread.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &StartServerOnIOThread, port, allow_remote, url_base,
+          &StartServerOnIOThread, port, allow_remote, url_base, whitelisted_ips,
           base::Bind(&HandleRequestOnIOThread, main_task_executor.task_runner(),
                      handle_request_func)));
   // Run the command loop. This loop is quit after the response for a shutdown

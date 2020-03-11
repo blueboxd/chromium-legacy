@@ -6,7 +6,6 @@
 #define ASH_ASSISTANT_MODEL_ASSISTANT_RESPONSE_H_
 
 #include <deque>
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -16,6 +15,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
+
+namespace base {
+class UnguessableToken;
+}  // namespace base
 
 namespace ash {
 
@@ -59,10 +62,11 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   void AddSuggestions(std::vector<AssistantSuggestionPtr> suggestions);
 
   // Returns the suggestion uniquely identified by |id|.
-  const AssistantSuggestion* GetSuggestionById(int id) const;
+  const AssistantSuggestion* GetSuggestionById(
+      const base::UnguessableToken& id) const;
 
-  // Returns all suggestions belongs to the response, mapped to a unique id.
-  std::map<int, const AssistantSuggestion*> GetSuggestions() const;
+  // Returns all suggestions belongs to the response.
+  std::vector<const AssistantSuggestion*> GetSuggestions() const;
 
   // Gets/sets the processing state for the response.
   ProcessingState processing_state() const { return processing_state_; }
@@ -82,7 +86,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
 
  private:
   void NotifyUiElementAdded(const AssistantUiElement* ui_element);
-  void NotifySuggestionsAdded(const std::map<int, const AssistantSuggestion*>&);
+  void NotifySuggestionsAdded(const std::vector<const AssistantSuggestion*>&);
 
   struct PendingUiElement;
   class Processor;

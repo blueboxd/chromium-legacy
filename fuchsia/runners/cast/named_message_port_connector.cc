@@ -51,8 +51,12 @@ NamedMessagePortConnector::NamedMessagePortConnector(fuchsia::web::Frame* frame)
 }
 
 NamedMessagePortConnector::~NamedMessagePortConnector() {
-  frame_->RemoveBeforeLoadJavaScript(static_cast<uint64_t>(
-      CastPlatformBindingsId::NAMED_MESSAGE_PORT_CONNECTOR));
+  if (frame_) {
+    // Don't attempt to remove before-load JavaScript when being deleted because
+    // the Frame has disconnected.
+    frame_->RemoveBeforeLoadJavaScript(static_cast<uint64_t>(
+        CastPlatformBindingsId::NAMED_MESSAGE_PORT_CONNECTOR));
+  }
 }
 
 void NamedMessagePortConnector::Register(DefaultPortConnectedCallback handler) {

@@ -478,6 +478,7 @@ public class PrefetchFeedFlowTest {
     @Test
     @MediumTest
     @Feature({"OfflinePrefetchFeed"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1060685
     public void testPrefetchPageReadyLater_FullBrowser() throws Throwable {
         doSetUp(/*isReducedMode=*/false);
         doTestPrefetchPageReadyLater();

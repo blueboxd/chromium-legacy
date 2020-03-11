@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Uběhl termín pro změnu hesla</translation>
 <translation id="2049639323467105390">Zařízení je spravováno doménou <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Chcete-li objevit okolní zařízení, zapněte Bluetooth</translation>
+<translation id="2375079107209812402">Zbývající pokusy: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="2805756323405976993">Aplikace</translation>
 <translation id="2872961005593481000">Vypnout</translation>
 <translation id="3008341117444806826">OBNOVIT</translation>
@@ -42,6 +43,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="808894953321890993">Změnit heslo</translation>
 <translation id="8208861521865154048">Výhody</translation>
 <translation id="8747900814994928677">Potvrdit změnu</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Zbývající pokusy: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Obnovte lístek pro <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Odemknout</translation>
 </translationbundle>

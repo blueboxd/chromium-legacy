@@ -53,6 +53,7 @@ void XRHitTestSource::Update(
     last_frame_results_.push_back(*result);
   }
 }
+
 void XRHitTestSource::Trace(Visitor* visitor) {
   visitor->Trace(xr_session_);
   ScriptWrappable::Trace(visitor);

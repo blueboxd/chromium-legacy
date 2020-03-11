@@ -11,6 +11,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout.InfoBarArrayAdapter;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 
 /**
  * The Update Password infobar offers the user the ability to update a password for the site.

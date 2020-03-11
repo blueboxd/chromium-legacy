@@ -101,7 +101,7 @@
         android:order="18"
         android:title="Developer options"/>
     <Preference
-        android:fragment="org.chromium.chrome.browser.settings.about.AboutChromeSettings"
+        android:fragment="org.chromium.chrome.browser.about_settings.AboutChromeSettings"
         android:key="about_chrome"
         android:order="19"
         android:title="@string/prefs_about_chrome"/>

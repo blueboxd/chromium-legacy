@@ -18,6 +18,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
 import org.chromium.components.browser_ui.widget.text.AccessibleTextView;
 
 /**
@@ -66,7 +67,7 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
         iconView.setOnClickListener(this);
         iconView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
         final int messagePadding =
-                res.getDimensionPixelOffset(R.dimen.reader_mode_infobar_text_padding);
+                res.getDimensionPixelOffset(R.dimen.infobar_compact_message_vertical_padding);
         prompt.setPadding(0, messagePadding, 0, messagePadding);
         layout.addContent(prompt, 1f);
     }

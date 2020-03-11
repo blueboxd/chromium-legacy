@@ -182,6 +182,14 @@
       <message name="IDS_INFOBAR_UPDATE_PERMISSIONS_BUTTON_TEXT" desc="Button text shown when Chrome does not have the necessary permission required to complete the requested tasks (e.g. a website has request location information, but Chrome is missing that Android permission)." formatter_data="android_java">
         Continue
       </message>
+
+      <!-- NFC prompt -->
+      <message name="IDS_NFC_DISABLED_ON_DEVICE_MESSAGE" desc="Text shown in a prompt to turn on NFC after user granted NFC permission to a website.">
+        To continue, turn on NFC in Android settings
+      </message>
+      <message name="IDS_NFC_PROMPT_TURN_ON" desc="Text on the positive button of the nfc prompt">
+        Turn on
+      </message>
     </messages>
   </release>
 </grit>

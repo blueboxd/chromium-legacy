@@ -190,7 +190,7 @@ class MODULES_EXPORT DeferredTaskHandler final
     return &active_source_handlers_;
   }
 
-  Vector<AudioHandler*>* GetFinishedSourceHandlers() {
+  Vector<scoped_refptr<AudioHandler>>* GetFinishedSourceHandlers() {
     return &finished_source_handlers_;
   }
 
@@ -259,7 +259,7 @@ class MODULES_EXPORT DeferredTaskHandler final
   // connection and elements here are removed from |active_source_handlers_|.
   //
   // This must be accessed only from the audio thread.
-  Vector<AudioHandler*> finished_source_handlers_;
+  Vector<scoped_refptr<AudioHandler>> finished_source_handlers_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

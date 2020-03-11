@@ -2467,14 +2467,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
           Se esta política for definida como "true", por padrão, as teclas superiores do teclado funcionarão como teclas de função. A tecla de pesquisa deve estar pressionada para revertê-las novamente para teclas de mídia.
 
           Se esta política for definida como "false", ou se não for definida, o teclado, por padrão, funcionará com comandos de tecla de mídia e comandos de tecla de função, quando a tecla de pesquisa estiver pressionada.</translation>
-<translation id="4636613705027089602">Esta política controla as solicitações de instalação de extensões do <ph name="PRODUCT_NAME" /> que permitem que os usuários enviem as solicitações ao Google Admin Console para aprovação.
-
-      Quando a política não é definida ou é desativada, as solicitações de instalação de extensões não são criadas nem enviadas.
-      Quando esta política é ativada, as solicitações de instalação de extensões são criadas e enviadas ao Google Admin Console.
-
-      Essas solicitações são criadas quando os usuários tentam instalar uma extensão que não foi autorizada na <ph name="EXTENSION_INSTALL_WHITELIST" /> nem nas <ph name="EXTENSION_SETTINGS" />.
-
-      Esta política só é eficaz quando a máquina está inscrita no <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> e se <ph name="CLOUD_REPORTING_ENABLED" /> está ativado.</translation>
 <translation id="4639407427807680016">Nomes dos hosts de mensagens nativas a serem mantidos fora da lista de proibições</translation>
 <translation id="4649395978608361979">Destinos de impressoras locais</translation>
 <translation id="4650759511838826572">Desativar esquemas do protocolo de URL</translation>

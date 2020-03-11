@@ -812,6 +812,7 @@
 <translation id="4466881336512663640">फ़ॉर्म में किए गए बदलाव हटा दिए जाएँगे. क्या आप वाकई जारी रखना चाहते हैं?</translation>
 <translation id="4477350412780666475">अगला ट्रैक</translation>
 <translation id="4482953324121162758">इस साइट का अनुवाद नहीं किया जाएगा.</translation>
+<translation id="4486757593530038591">जब यह चालू होगा, तब साइटें अलग-अलग साइटों पर की गई आपकी ब्राउज़िंग गतिविधि का इस्तेमाल दर्शकों की पसंद को ध्यान में रखकर विज्ञापन दिखाने के लिए नहीं कर पाएंगी. शायद कुछ साइटों पर सुविधाएं ठीक से काम न करें.</translation>
 <translation id="4490717597759821841">ए7</translation>
 <translation id="4492519888999857993">ये सुविधाएं डिफ़ॉल्ट रूप से बंद कर दी गई हैं. Chrome के आने वाले वर्शन पर ये सुविधाएं उपलब्ध नहीं होंगी.</translation>
 <translation id="4493480324863638523">यूआरएल गलत है. यूआरएल में सामान्य स्कीम, जैसे कि, http://example.com या https://example.com.ज़रूर होनी चाहिए.</translation>
@@ -1049,6 +1050,7 @@
 <translation id="549333378215107354">आकार 3</translation>
 <translation id="5509762909502811065">बी0</translation>
 <translation id="5509780412636533143">प्रबंधित बुकमार्क</translation>
+<translation id="5510481203689988000">इस सेटिंग को कुकी की सेटिंग में कंट्रोल किया जाता है.</translation>
 <translation id="5510766032865166053">हो सकता है कि उसे ले जाया गया हो या हटा दिया गया हो.</translation>
 <translation id="5523118979700054094">नीति का नाम</translation>
 <translation id="55293785478302737">एज़ स्टिच</translation>
@@ -1481,6 +1483,7 @@
 <translation id="7416351320495623771">पासवर्ड प्रबंधित करें…</translation>
 <translation id="7419106976560586862">प्रोफ़ाइल पाथ</translation>
 <translation id="7437289804838430631">संपर्क जानकारी जोड़ें</translation>
+<translation id="7438976808740265764">दिसंबर, 2020 के बाद Flash Player बंद कर दिया जाएगा.</translation>
 <translation id="7440140511386898319">ऑफ़लाइन होने पर खोजें</translation>
 <translation id="7441627299479586546">गलत नीति विषय</translation>
 <translation id="7442725080345379071">हल्का नारंगी</translation>

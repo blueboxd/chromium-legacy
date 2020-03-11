@@ -121,6 +121,8 @@ jumbo_source_set("browser_sources") {
     "content_index_context.h",
     "content_index_provider.cc",
     "content_index_provider.h",
+    "context_menu_params.cc",
+    "context_menu_params.h",
     "cookie_store_factory.h",
     "cors_exempt_headers.cc",
     "cors_exempt_headers.h",

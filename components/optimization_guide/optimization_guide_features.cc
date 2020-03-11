@@ -178,7 +178,7 @@ GetMaxEffectiveConnectionTypeForNavigationHintsFetch() {
 
   // Use a default value.
   if (param_value.empty())
-    return net::EFFECTIVE_CONNECTION_TYPE_3G;
+    return net::EFFECTIVE_CONNECTION_TYPE_4G;
 
   return net::GetEffectiveConnectionTypeForName(param_value);
 }

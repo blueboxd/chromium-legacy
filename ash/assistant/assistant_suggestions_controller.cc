@@ -20,6 +20,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/unguessable_token.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -56,6 +57,7 @@ bool IsAllowed(const ConversationStarter& conversation_starter) {
 AssistantSuggestionPtr ToAssistantSuggestionPtr(
     const ConversationStarter& conversation_starter) {
   AssistantSuggestionPtr ptr = AssistantSuggestion::New();
+  ptr->id = base::UnguessableToken::Create();
   ptr->type = AssistantSuggestionType::kConversationStarter;
   ptr->text = conversation_starter.label();
 
@@ -227,6 +229,7 @@ void AssistantSuggestionsController::ProvideConversationStarters() {
   auto AddConversationStarter = [&conversation_starters](
                                     int message_id, GURL action_url = GURL()) {
     AssistantSuggestionPtr starter = AssistantSuggestion::New();
+    starter->id = base::UnguessableToken::Create();
     starter->type = AssistantSuggestionType::kConversationStarter;
     starter->text = l10n_util::GetStringUTF8(message_id);
     starter->action_url = action_url;

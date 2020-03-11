@@ -815,6 +815,7 @@
 <translation id="4466881336512663640">Ձևում արված բոլոր փոփոխությունները կկորեն: Շարունակե՞լ։</translation>
 <translation id="4477350412780666475">Հաջորդ կատարումը</translation>
 <translation id="4482953324121162758">Այս կայքը չի թարգմանվի:</translation>
+<translation id="4486757593530038591">Երբ այս կարգավորումը միացված է, կայքերը չեն կարող օգտագործել ձեր այցելությունների պատմությունը՝ գովազդն անհատականացնելու նպատակով։ Որոշ կայքերում գործառույթները կարող են չաշխատել։</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">Այս գործառույթներն ըստ կանխադրման անջատված են և հասանելի չեն լինի Chrome-ի հետագա տարբերակներում:</translation>
 <translation id="4493480324863638523">URL-ն անվավեր է: Պետք է լինի ստանդարտ սխեմայով URL, օր.՝ http://example.com կամ https://example.com։</translation>
@@ -1052,6 +1053,7 @@
 <translation id="549333378215107354">Չափ 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Կառավարվող էջանիշներ</translation>
+<translation id="5510481203689988000">Այս պարամետրը կարող եք կառավարել քուքիների կարգավորումներում։</translation>
 <translation id="5510766032865166053">Հնարավոր է, որ այն տեղափոխվել կամ ջնջվել է:</translation>
 <translation id="5523118979700054094">Կանոնի անունը</translation>
 <translation id="55293785478302737">Եզրակար</translation>
@@ -1484,6 +1486,7 @@
 <translation id="7416351320495623771">Գաղտնաբառերի կառավարում…</translation>
 <translation id="7419106976560586862">Պրոֆիլի ուղի</translation>
 <translation id="7437289804838430631">Ավելացնել կոնտակտային տվյալներ</translation>
+<translation id="7438976808740265764">Flash Player-ը 2020 թ․-ի դեկտեմբերից այլևս չի աջակցվի։</translation>
 <translation id="7440140511386898319">Կարդալ անցանց ռեժիմում</translation>
 <translation id="7441627299479586546">Քաղաքականության սուբյեկտը սխալ է</translation>
 <translation id="7442725080345379071">Բաց նարնջագույն</translation>

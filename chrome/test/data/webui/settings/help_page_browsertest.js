@@ -4,19 +4,26 @@
 
 /** @fileoverview Material Help page tests. */
 
-GEN_INCLUDE(['settings_page_browsertest.js']);
+// Polymer BrowserTest fixture.
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 /**
  * @constructor
- * @extends {SettingsPageBrowserTest}
+ * @extends {PolymerTest}
  */
 function SettingsHelpPageBrowserTest() {}
 
 SettingsHelpPageBrowserTest.prototype = {
-  __proto__: SettingsPageBrowserTest.prototype,
+  __proto__: PolymerTest.prototype,
 
   /** @override */
   browsePreload: 'chrome://help/',
+
+  /** @override */
+  extraLibraries: [
+    ...PolymerTest.prototype.extraLibraries,
+    'settings_page_test_util.js',
+  ],
 
   /** @override */
   setUp: function() {
@@ -26,15 +33,11 @@ SettingsHelpPageBrowserTest.prototype = {
 };
 
 TEST_F('SettingsHelpPageBrowserTest', 'Load', function() {
-  // Assign |self| to |this| instead of binding since 'this' in suite()
-  // and test() will be a Mocha 'Suite' or 'Test' instance.
-  const self = this;
-
   // Register mocha tests.
   suite('Help page', function() {
     test('about section', function() {
-      return self.getPage('about').then(function(page) {
-        expectTrue(!!self.getSection(page, 'about'));
+      return settings_page_test_util.getPage('about').then(function(page) {
+        expectTrue(!!settings_page_test_util.getSection(page, 'about'));
       });
     });
   });

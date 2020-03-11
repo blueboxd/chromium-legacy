@@ -3129,6 +3129,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkServiceInProcessDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kNetworkServiceInProcess)},
 
+    {"cors-for-content-scripts", flag_descriptions::kCorsForContentScriptsName,
+     flag_descriptions::kCorsForContentScriptsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(network::features::kCorbAllowlistAlsoAppliesToOorCors)},
+
     {"cross-origin-isolation", flag_descriptions::kCrossOriginIsolationName,
      flag_descriptions::kCrossOriginIsolationDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kCrossOriginIsolation)},

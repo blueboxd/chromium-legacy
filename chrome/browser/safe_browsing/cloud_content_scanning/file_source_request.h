@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_FILE_SOURCE_REQUEST_H_
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
-#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 
 namespace safe_browsing {
 
@@ -29,13 +28,7 @@ class FileSourceRequest : public BinaryUploadService::Request {
       DataCallback callback,
       std::pair<BinaryUploadService::Result, Data> result_and_data);
 
-  void OnArchiveAnalysisComplete(
-      DataCallback callback,
-      std::pair<BinaryUploadService::Result, Data> result_and_data,
-      const ArchiveAnalyzerResults& results);
-
   bool has_cached_result_;
-  bool contains_encrypted_parts_;
   BinaryUploadService::Result cached_result_;
   Data cached_data_;
 

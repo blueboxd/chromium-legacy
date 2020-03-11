@@ -41,6 +41,21 @@ constexpr char kTrustTokenKeyCommitmentWellKnownPath[] =
 // A value of 4 MiB should be ample for initial experimentation and can be
 // revisited if necessary.
 constexpr size_t kTrustTokenKeyCommitmentRegistryMaxSizeBytes = 1 << 22;
+
+// The maximum number of (signed, unblinded) trust tokens allowed to be stored
+// concurrently, scoped per token issuer.
+//
+// 500 is chosen as a high-but-not-excessive value for initial experimentation.
+constexpr int kTrustTokenPerIssuerTokenCapacity = 500;
+
+// The maximum number of trust token issuers allowed to be associated with a
+// given top-level origin.
+//
+// This value is quite low because registering additional issuers with an origin
+// has a number of privacy risks (for instance, whether or not a user has any
+// tokens issued by a given issuer reveals one bit of identifying information).
+constexpr int kTrustTokenPerToplevelMaxNumberOfAssociatedIssuers = 2;
+
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_PARAMETERIZATION_H_

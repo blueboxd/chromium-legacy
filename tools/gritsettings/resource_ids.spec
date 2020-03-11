@@ -466,7 +466,7 @@
   "ash/ash_strings.grd": {
     "messages": [3060],
   },
-  "ash/components/ash_components_strings.grd": {
+  "ash/shortcut_viewer/ash_components_strings.grd": {
     "messages": [3080],
   },
   "ash/keyboard/ui/keyboard_resources.grd": {

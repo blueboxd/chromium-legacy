@@ -28,7 +28,7 @@
 #include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_scheduler.h"
-#include "base/trace_event/memory_infra_background_whitelist.h"
+#include "base/trace_event/memory_infra_background_allowlist.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -180,14 +180,13 @@ void MemoryDumpManager::RegisterDumpProviderInternal(
     return;
 
   // Only a handful of MDPs are required to compute the memory metrics. These
-  // have small enough performance overhead that it is resonable to run them
+  // have small enough performance overhead that it is reasonable to run them
   // in the background while the user is doing other things. Those MDPs are
-  // 'whitelisted for background mode'.
-  bool whitelisted_for_background_mode = IsMemoryDumpProviderWhitelisted(name);
+  // 'allowed in background mode'.
+  bool allowed_in_background_mode = IsMemoryDumpProviderInAllowlist(name);
 
-  scoped_refptr<MemoryDumpProviderInfo> mdpinfo =
-      new MemoryDumpProviderInfo(mdp, name, std::move(task_runner), options,
-                                 whitelisted_for_background_mode);
+  scoped_refptr<MemoryDumpProviderInfo> mdpinfo = new MemoryDumpProviderInfo(
+      mdp, name, std::move(task_runner), options, allowed_in_background_mode);
 
   {
     AutoLock lock(lock_);
@@ -348,7 +347,7 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
     // providers. Ignore other providers and continue.
     if (pmd_async_state->req_args.level_of_detail ==
             MemoryDumpLevelOfDetail::BACKGROUND &&
-        !mdpinfo->whitelisted_for_background_mode) {
+        !mdpinfo->allowed_in_background_mode) {
       pmd_async_state->pending_dump_providers.pop_back();
       continue;
     }

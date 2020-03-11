@@ -13,8 +13,6 @@
 #include "device/fido/fido_discovery_base.h"
 
 namespace device {
-namespace fido {
-namespace cros {
 
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoChromeOSDiscovery
     : public FidoDiscoveryBase {
@@ -32,8 +30,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoChromeOSDiscovery
   base::WeakPtrFactory<FidoChromeOSDiscovery> weak_factory_;
 };
 
-}  // namespace cros
-}  // namespace fido
 }  // namespace device
 
 #endif  // DEVICE_FIDO_CROS_DISCOVERY_H_

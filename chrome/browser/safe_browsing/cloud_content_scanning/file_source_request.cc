@@ -6,11 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/file_util_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
-#include "chrome/common/safe_browsing/archive_analyzer_results.h"
-#include "chrome/services/file_util/public/cpp/sandboxed_rar_analyzer.h"
-#include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 
@@ -113,52 +109,14 @@ void FileSourceRequest::GetRequestData(DataCallback callback) {
                      weakptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void FileSourceRequest::OnArchiveAnalysisComplete(
-    DataCallback callback,
-    std::pair<BinaryUploadService::Result, Data> result_and_data,
-    const ArchiveAnalyzerResults& results) {
-  has_cached_result_ = true;
-  set_digest(result_and_data.second.hash);
-  contains_encrypted_parts_ = std::any_of(
-      results.archived_binary.begin(), results.archived_binary.end(),
-      [](const auto& binary) { return binary.is_encrypted(); });
-
-  if (contains_encrypted_parts_)
-    cached_result_ = BinaryUploadService::Result::FILE_ENCRYPTED;
-  else
-    cached_result_ = result_and_data.first;
-
-  cached_data_ = result_and_data.second;
-  std::move(callback).Run(cached_result_, cached_data_);
-}
-
 void FileSourceRequest::OnGotFileData(
     DataCallback callback,
     std::pair<BinaryUploadService::Result, Data> result_and_data) {
-  if (result_and_data.first != BinaryUploadService::Result::SUCCESS) {
-    OnArchiveAnalysisComplete(std::move(callback), std::move(result_and_data),
-                              ArchiveAnalyzerResults());
-    return;
-  }
-
-  base::OnceCallback<void(const ArchiveAnalyzerResults& results)>
-      analysis_callback =
-          base::BindOnce(&FileSourceRequest::OnArchiveAnalysisComplete,
-                         weakptr_factory_.GetWeakPtr(), std::move(callback),
-                         std::move(result_and_data));
-  base::FilePath::StringType ext(path_.FinalExtension());
-  std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
-  if (ext == FILE_PATH_LITERAL(".zip")) {
-    auto analyzer = base::MakeRefCounted<SandboxedZipAnalyzer>(
-        path_, std::move(analysis_callback), LaunchFileUtilService());
-    analyzer->Start();
-  } else if (ext == FILE_PATH_LITERAL(".rar")) {
-    auto analyzer = base::MakeRefCounted<SandboxedRarAnalyzer>(
-        path_, std::move(analysis_callback), LaunchFileUtilService());
-    analyzer->Start();
-  } else {
-    std::move(analysis_callback).Run(ArchiveAnalyzerResults());
-  }
+  set_digest(result_and_data.second.hash);
+  has_cached_result_ = true;
+  cached_result_ = result_and_data.first;
+  cached_data_ = result_and_data.second;
+  std::move(callback).Run(result_and_data.first, result_and_data.second);
 }
 
 }  // namespace safe_browsing

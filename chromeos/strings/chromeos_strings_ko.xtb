@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">비밀번호 변경 기한 지남</translation>
 <translation id="2049639323467105390">기기는 <ph name="DOMAIN" />에서 관리합니다.</translation>
 <translation id="2338501278241028356">블루투스를 사용 설정하여 근처 기기 탐색</translation>
+<translation id="2375079107209812402">남은 시도 <ph name="ATTEMPTS_LEFT" />회</translation>
 <translation id="2805756323405976993">앱</translation>
 <translation id="2872961005593481000">종료</translation>
 <translation id="3008341117444806826">새로고침</translation>
@@ -42,6 +43,7 @@
 <translation id="808894953321890993">비밀번호 변경</translation>
 <translation id="8208861521865154048">혜택</translation>
 <translation id="8747900814994928677">변경사항 확인</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> 남은 시도 <ph name="ATTEMPTS_LEFT" />회</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> 티켓을 새로고침하세요.</translation>
 <translation id="9111102763498581341">잠금 해제</translation>
 </translationbundle>

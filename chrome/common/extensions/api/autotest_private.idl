@@ -457,6 +457,7 @@ namespace autotestPrivate {
     Bounds leftArrowBounds;
     Bounds rightArrowBounds;
     boolean isAnimating;
+    boolean isOverflow;
   };
 
   // Mapped to HotseatSwipeDescriptor in ash/public/cpp/shelf_ui_info.h.

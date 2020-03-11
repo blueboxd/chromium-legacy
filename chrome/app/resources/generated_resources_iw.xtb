@@ -497,7 +497,7 @@
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">לצאת?</translation>
 <translation id="167983332380191032">‏שירות הניהול שלח שגיאת HTTP.</translation>
-<translation id="1680841347983561661">‏אפשר לנסות להפעיל שוב את Google Play בעוד כמה דקות.</translation>
+<translation id="1680841347983561661">‏אפשר לנסות שוב להפעיל את Google Play בעוד כמה דקות.</translation>
 <translation id="1680849702532889074">‏קרתה שגיאה במהלך ההתקנה של אפליקציית Linux.</translation>
 <translation id="16815041330799488">אין להתיר לאתרים לגשת לטקסט ותמונות שהועתקו ללוח</translation>
 <translation id="1682548588986054654">חלון נסתר חדש</translation>
@@ -553,6 +553,7 @@
 <translation id="1745520510852184940">עשה זאת תמיד</translation>
 <translation id="1750172676754093297">אי אפשר לשמור טביעות אצבעות במפתח האבטחה שלך</translation>
 <translation id="175196451752279553">פ&amp;תח מחדש את הכרטיסייה הסגורה</translation>
+<translation id="1753067873202720523">‏ייתכן שמכשיר Chromebook שלך לא ייטען בזמן שהוא מופעל.</translation>
 <translation id="1753905327828125965">עם המבקרים הרבים ביותר</translation>
 <translation id="1755601632425835748">גודל טקסט</translation>
 <translation id="1756681705074952506">שיטת קלט</translation>
@@ -906,7 +907,7 @@
 <translation id="2220572644011485463">‏PIN או סיסמה</translation>
 <translation id="2224444042887712269">ההגדרה הזו שייכת ל-<ph name="OWNER_EMAIL" />.</translation>
 <translation id="2224551243087462610">ערוך את שם התיקייה</translation>
-<translation id="2225864335125757863">כדי להגן על החשבון, מומלץ לשנות את הסיסמאות באופן מיידי:</translation>
+<translation id="2225864335125757863">כדי להגן על החשבון, יש לשנות את הסיסמאות הבאות באופן מיידי:</translation>
 <translation id="2226449515541314767">‏האפשרות לשלוט שליטה מלאה על מכשירי MIDI נחסמה עבור אתר זה.</translation>
 <translation id="222704500187107962">החריגה הזו תוסר באופן אוטומטי אחרי היציאה מסשן המצב האנונימי</translation>
 <translation id="2227179592712503583">הסרת ההצעה</translation>
@@ -1198,6 +1199,7 @@
 <translation id="2610157865375787051">שינה</translation>
 <translation id="2610260699262139870">גודל ממ&amp;שי</translation>
 <translation id="2610780100389066815">‏חתימת רשימת יחסי אמון של Microsoft</translation>
+<translation id="261226884343006626">‏Chrome לא יכול לבדוק את הסיסמאות שלך. אפשר לנסות שוב מחר.</translation>
 <translation id="2612676031748830579">מספר הכרטיס</translation>
 <translation id="2616366145935564096">לקרוא ולשנות את הנתונים שלך ב-<ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">‏כרטיס ה-SIM נעול</translation>
@@ -1328,6 +1330,7 @@
 <translation id="2773288106548584039">תמיכה בדפדפן מדור קודם</translation>
 <translation id="2773802008104670137">קובץ מהסוג הזה עלול לגרום נזק למחשב שלך.</translation>
 <translation id="2775104091073479743">עריכת טביעות האצבעות</translation>
+<translation id="2775140325783767197">‏Chrome לא יכול לבדוק את הסיסמאות שלך. יש לבדוק את החיבור לאינטרנט.</translation>
 <translation id="2776441542064982094">נראה שאין מכשירים זמינים לרישום ברשת. אם המכשיר שלך מחובר לאינטרנט, נסה לרשום אותו מחדש באמצעות ההוראות המפורטות במדריך למשתמש שלו.</translation>
 <translation id="2780009105947267877">‏המערכת מגדירה את Plugin VM…</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -1573,7 +1576,7 @@
 <translation id="3115580024857770654">כיווץ הכול</translation>
 <translation id="3117362587799608430">אביזר העגינה אינו תואם באופן מלא</translation>
 <translation id="3118319026408854581">עזרה של <ph name="PRODUCT_NAME" /></translation>
-<translation id="3118654181216384296">‏אפשר לנסות להפעיל שוב את Linux בעוד כמה רגעים.</translation>
+<translation id="3118654181216384296">‏אפשר לנסות שוב להפעיל את Linux בעוד כמה רגעים.</translation>
 <translation id="3120430004221004537">ההצפנה לא מספיקה לפעולה נתונה במכשיר: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3121793941267913344">אפס את מכשיר <ph name="IDS_SHORT_PRODUCT_NAME" /> זה</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -2898,6 +2901,7 @@
 <translation id="4964455510556214366">סידור</translation>
 <translation id="4965808351167763748">‏בחרת להגדיר שהמכשיר הזה יפעיל את Hangouts Meet. להמשיך?</translation>
 <translation id="496888482094675990">‏היישום 'קבצים' מספק גישה מהירה לקבצים ששמרת ב-Google Drive, באחסון חיצוני או במכשיר שלך עם מערכת הפעלה של Chrome.</translation>
+<translation id="4969017548025688718"><ph name="COUNT" /> סיסמאות שנחשפו</translation>
 <translation id="4971412780836297815">פתח בסיום</translation>
 <translation id="4972129977812092092">עריכת מדפסת</translation>
 <translation id="4972164225939028131">סיסמה שגויה</translation>
@@ -2992,7 +2996,7 @@
 <translation id="5097002363526479830">ההתחברות לרשת נכשלה '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="5101042277149003567">פתח את כל הסימניות</translation>
 <translation id="5101839224773798795">קליק אוטומטי כשהסמן עוצר</translation>
-<translation id="5107443654503185812">תוסף כלשהו כיבה את הגלישה הבטוחה</translation>
+<translation id="5107443654503185812">תוסף כיבה את הגלישה הבטוחה</translation>
 <translation id="5108967062857032718">‏הגדרות - הסר אפליקציות Android</translation>
 <translation id="5109044022078737958">מיה</translation>
 <translation id="5111646998522066203">יציאה ממצב גלישה בסתר</translation>
@@ -3256,7 +3260,6 @@
 <translation id="5470735824776589490">‏כדי לבצע איפוס באמצעות Powerwash, יש להפעיל תחילה את המכשיר מחדש. <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">שלום. זהו הקול של המרת טקסט לדיבור.</translation>
 <translation id="5473333559083690127">‏הזן שוב את מספר ה-PIN החדש</translation>
-<translation id="548137908954174608">הפעלה של כתוביות מיידיות</translation>
 <translation id="5481941284378890518">הוסף מדפסות קרובות</translation>
 <translation id="5483785310822538350">בטל גישה לקבצים ולמכשירים</translation>
 <translation id="5485080380723335835">ה-<ph name="DEVICE_TYPE" /> נעול מטעמי אבטחה. כדי להמשיך, עליך להזין את הסיסמה שלך.</translation>
@@ -4899,8 +4902,7 @@
 <translation id="7737238973539693982">‏מחיקת Linux (בטא)</translation>
 <translation id="7740996059027112821">רגילה</translation>
 <translation id="7744047395460924128">הצגת היסטוריית ההדפסות שלך</translation>
-<translation id="7744192722284567281">נמצאה בפרצה שאירעה באבטחת מידע</translation>
-<translation id="7746457520633464754">‏כדי לזהות אפליקציות ואתרים מסוכנים, Chrome שולח אל Google כתובות URL של חלק מהדפים שאליהם נכנסת, מידע מוגבל לגבי המערכת וחלק מתוכן הדפים</translation>
+<translation id="7744192722284567281">נמצאה בפרצה באבטחת מידע</translation>
 <translation id="7750228210027921155">תמונה בתוך תמונה</translation>
 <translation id="7751229152614300329">הגלישה הבטוחה מעודכנת. היא מגינה עליך מפני אתרים והורדות שעלולים לגרום נזק.</translation>
 <translation id="7751260505918304024">הצג הכל</translation>
@@ -5416,7 +5418,6 @@
 <translation id="8391712576156218334">התמונה לא זמינה. צריך לנסות שוב מאוחר יותר.</translation>
 <translation id="8392364544846746346">תוצג שאלה כשאתר ירצה לערוך קבצים או תיקיות במכשיר שלך</translation>
 <translation id="8392451568018454956">תפריט אפשרויות עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8392630288038565643">ההגדרה הזו מושבתת בדפדפנים מנוהלים.</translation>
 <translation id="8393511274964623038">הפסק את הפלאגין</translation>
 <translation id="8393700583063109961">שלח הודעה</translation>
 <translation id="839736845446313156">הירשם</translation>
@@ -5500,7 +5501,6 @@
 <translation id="851263357009351303">אפשר ל-<ph name="HOST" /> להציג תמונות תמיד</translation>
 <translation id="8513108775083588393">סיבוב אוטומטי</translation>
 <translation id="8514746246728959655">יש לנסות מפתח אבטחה שונה</translation>
-<translation id="8517041960877371778">ייתכן שה-<ph name="DEVICE_TYPE" /> לא ייטען כשהוא פועל.</translation>
 <translation id="8521475323816527629">גישה מהירה לאפליקציות</translation>
 <translation id="8523493869875972733">שמור את השינויים</translation>
 <translation id="8523849605371521713">נוסף על-ידי מדיניות</translation>
@@ -5873,7 +5873,6 @@
 <translation id="8978154919215542464">פועל - סנכרון הכול</translation>
 <translation id="897939795688207351">ב-<ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - קרס</translation>
-<translation id="8983405057223076408">ההגדרה הזו מושבתת מאחר שבקרת ההורים מופעלת.</translation>
 <translation id="8983632908660087688">ל-<ph name="ORIGIN" /> יש הרשאה לערוך את <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">שימוש אחרון: לפני יום אחד (<ph name="DEVICE_LAST_ACTIVATED_TIME" />)</translation>
 <translation id="8986362086234534611">שכח</translation>

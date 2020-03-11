@@ -538,11 +538,15 @@ bool DeepScanningDialogDelegate::UploadData() {
   }
 
   // Create a file request for each file.
-  for (const base::FilePath& path : data_.paths) {
-    if (FileTypeSupported(data_.do_malware_scan, data_.do_dlp_scan, path)) {
-      PrepareFileRequest(path);
+  for (size_t i = 0; i < data_.paths.size(); ++i) {
+    if (FileTypeSupported(data_.do_malware_scan, data_.do_dlp_scan,
+                          data_.paths[i])) {
+      PrepareFileRequest(
+          data_.paths[i],
+          base::BindOnce(&DeepScanningDialogDelegate::AnalyzerCallback,
+                         weak_ptr_factory_.GetWeakPtr(), i));
     } else {
-      FileRequestCallback(path,
+      FileRequestCallback(data_.paths[i],
                           BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE,
                           DeepScanningClientResponse());
     }
@@ -551,15 +555,48 @@ bool DeepScanningDialogDelegate::UploadData() {
   return !text_request_complete_ || file_result_count_ != data_.paths.size();
 }
 
-void DeepScanningDialogDelegate::PrepareFileRequest(base::FilePath path) {
+void DeepScanningDialogDelegate::PrepareFileRequest(base::FilePath path,
+                                                    AnalyzeCallback callback) {
+  base::FilePath::StringType ext(path.FinalExtension());
+  std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
+  if (ext == FILE_PATH_LITERAL(".zip")) {
+    auto analyzer = base::MakeRefCounted<SandboxedZipAnalyzer>(
+        path, std::move(callback), LaunchFileUtilService());
+    analyzer->Start();
+  } else if (ext == FILE_PATH_LITERAL(".rar")) {
+    auto analyzer = base::MakeRefCounted<SandboxedRarAnalyzer>(
+        path, std::move(callback), LaunchFileUtilService());
+    analyzer->Start();
+  } else {
+    std::move(callback).Run(safe_browsing::ArchiveAnalyzerResults());
+  }
+}
+
+void DeepScanningDialogDelegate::AnalyzerCallback(
+    int index,
+    const safe_browsing::ArchiveAnalyzerResults& results) {
+  bool contains_encrypted_parts = std::any_of(
+      results.archived_binary.begin(), results.archived_binary.end(),
+      [](const auto& binary) { return binary.is_encrypted(); });
+
+  // If the file contains encrypted parts and the user is not allowed to use
+  // them, fail the request.
+  if (contains_encrypted_parts) {
+    FileRequestCallback(data_.paths[index],
+                        BinaryUploadService::Result::FILE_ENCRYPTED,
+                        DeepScanningClientResponse());
+    return;
+  }
+
   auto request = std::make_unique<FileSourceRequest>(
-      path, base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
-                           weak_ptr_factory_.GetWeakPtr(), path));
+      data_.paths[index],
+      base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
+                     weak_ptr_factory_.GetWeakPtr(), data_.paths[index]));
 
   FileSourceRequest* request_raw = request.get();
-  request_raw->GetRequestData(
-      base::BindOnce(&DeepScanningDialogDelegate::OnGotFileInfo,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(request), path));
+  request_raw->GetRequestData(base::BindOnce(
+      &DeepScanningDialogDelegate::OnGotFileInfo,
+      weak_ptr_factory_.GetWeakPtr(), std::move(request), data_.paths[index]));
 }
 
 void DeepScanningDialogDelegate::PrepareRequest(

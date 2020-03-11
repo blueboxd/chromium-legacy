@@ -805,6 +805,7 @@
 <translation id="4466881336512663640">对表单所做的更改将会丢失。确定要继续吗？</translation>
 <translation id="4477350412780666475">下一曲</translation>
 <translation id="4482953324121162758">系统不会翻译此网站。</translation>
+<translation id="4486757593530038591">当此设置处于开启状态时，网站无法根据您在各个不同网站上的浏览活动为您展示个性化广告。某些网站上的功能可能会无法正常运作。</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">这些功能默认处于停用状态。后续版本的 Chrome 将不再提供这些功能。</translation>
 <translation id="4493480324863638523">网址无效。必须是采用标准架构的网址，例如“http://example.com”或“https://example.com”。</translation>
@@ -1041,6 +1042,7 @@
 <translation id="549333378215107354">大小：3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">受管理的书签</translation>
+<translation id="5510481203689988000">您可在“Cookie”设置中控制此设置。</translation>
 <translation id="5510766032865166053">该文件可能已被移至别处或遭到删除。</translation>
 <translation id="5523118979700054094">政策名</translation>
 <translation id="55293785478302737">边缘装订</translation>
@@ -1472,6 +1474,7 @@
 <translation id="7416351320495623771">管理密码…</translation>
 <translation id="7419106976560586862">个人资料路径</translation>
 <translation id="7437289804838430631">添加联系信息</translation>
+<translation id="7438976808740265764">自 2020 年 12 月开始，Flash Player 将不再受支持。</translation>
 <translation id="7440140511386898319">离线浏览</translation>
 <translation id="7441627299479586546">策略主题有误</translation>
 <translation id="7442725080345379071">浅橙色</translation>

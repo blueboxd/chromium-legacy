@@ -27,6 +27,7 @@
 #include "third_party/blink/public/mojom/portal/portal.mojom-shared.h"
 #include "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -588,8 +589,9 @@ class WebLocalFrame : public WebFrame {
       base::OnceCallback<void(mojom::PortalActivateResult)>;
   virtual void OnPortalActivated(
       const base::UnguessableToken& portal_token,
-      mojo::ScopedInterfaceEndpointHandle portal_pipe,
-      mojo::ScopedInterfaceEndpointHandle portal_client_pipe,
+      CrossVariantMojoAssociatedRemote<mojom::PortalInterfaceBase> portal,
+      CrossVariantMojoAssociatedReceiver<mojom::PortalClientInterfaceBase>
+          portal_client,
       TransferableMessage data,
       OnPortalActivatedCallback callback) = 0;
 

@@ -556,6 +556,7 @@
 <translation id="1745520510852184940">Секогаш прави го ова</translation>
 <translation id="1750172676754093297">Вашиот безбедносен клуч не може да складира отпечатоци</translation>
 <translation id="175196451752279553">П&amp;овторно отвори затворена картичка</translation>
+<translation id="1753067873202720523">Chromebook може да не се полни додека е вклучен.</translation>
 <translation id="1753905327828125965">Најпосетени</translation>
 <translation id="1755601632425835748">Големина на текст</translation>
 <translation id="1756681705074952506">Метод на внесување</translation>
@@ -1031,7 +1032,7 @@
 <translation id="2387052489799050037">Оди на почетен екран</translation>
 <translation id="2387458720915042159">Тип на врска прокси</translation>
 <translation id="2391419135980381625">Стандарден фонт</translation>
-<translation id="2392163307141705938">Го достигнавте временското ограничување што вашиот родител го поставил за <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
+<translation id="2392163307141705938">Го достигна временското ограничување што твојот родител го поставил за <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2392369802118427583">Активирај</translation>
 <translation id="2394566832561516196">Поставките ќе се исчистат со следното повторно вчитување.</translation>
 <translation id="2395616325548404795">Вашиот <ph name="DEVICE_TYPE" /> е успешно запишан за управување на компанијата, но не успеа да ги прати информациите за своите средства и локацијата. Внесете ги овие информации рачно од администраторската конзола за уредов.</translation>
@@ -1201,6 +1202,7 @@
 <translation id="2610157865375787051">Режим во мирување</translation>
 <translation id="2610260699262139870">В&amp;истинска големина</translation>
 <translation id="2610780100389066815">Запишување во список за доверба на Microsoft</translation>
+<translation id="261226884343006626">Chrome не може да ги провери вашите лозинки. Обидете се повторно утре.</translation>
 <translation id="2612676031748830579">Број на картичка</translation>
 <translation id="2616366145935564096">Прочитајте ги и променете ги вашите податоци на <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">SIM-картичката е заклучена</translation>
@@ -1321,7 +1323,7 @@
 <translation id="275662540872599901">екранот е исклучен</translation>
 <translation id="2762441749940182211">Камерата е блокирана</translation>
 <translation id="2765217105034171413">Мало</translation>
-<translation id="2766161002040448006">Прашајте родител</translation>
+<translation id="2766161002040448006">Прашај родител</translation>
 <translation id="276969039800130567">Најавени сте како <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Отстрани од список</translation>
 <translation id="2770690685823456775">Извезете ги лозинките во друга папка</translation>
@@ -1331,6 +1333,7 @@
 <translation id="2773288106548584039">Поддршка за застарени прелистувачи</translation>
 <translation id="2773802008104670137">Овој тип на датотека може да му наштети на компјутерот.</translation>
 <translation id="2775104091073479743">Уредување отпечатоци</translation>
+<translation id="2775140325783767197">Chrome не може да ги провери вашите лозинки. Проверете ја интернет-врската.</translation>
 <translation id="2776441542064982094">Се чини дека нема достапни уреди за регистрирање на мрежата. Ако вашиот уред е вклучен и поврзан на интернет, обидете се да го регистрирате користејќи ги инструкциите во неговото упатство за користење.</translation>
 <translation id="2780009105947267877">Се поставува Plugin VM…</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -2813,7 +2816,7 @@
 <translation id="4850669014075537160">Лизгање</translation>
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="4853020600495124913">Отвори во &amp;нов прозорец</translation>
-<translation id="4854317507773910281">Изберете сметка на родител за одобрување</translation>
+<translation id="4854317507773910281">Избери сметка на родител за одобрување</translation>
 <translation id="485480310608090163">Повеќе лозинки и дозволи</translation>
 <translation id="4856478137399998590">Услугата со мобилни податоци е активирана и подготвена за користење</translation>
 <translation id="4856855265648545577">Прикажувај ги копчињата „Стартер“, „Назад“ и „Преглед“ во „Полицата“ во режим на таблет. Вклучено кога е овозможен ChromeVox (говорни повратни информации) или „Пристап со прекинувачи“.</translation>
@@ -2901,6 +2904,7 @@
 <translation id="4964455510556214366">Распоред</translation>
 <translation id="4965808351167763748">Дали сигурно сакате да поставите уредов да извршува Hangouts Meet?</translation>
 <translation id="496888482094675990">Апликацијата Датотеки овозможува брз пристап до датотеки што сте ги зачувале на Google Drive, надворешен склад или уред со Chrome OS.</translation>
+<translation id="4969017548025688718"><ph name="COUNT" /> компромитирани лозинки</translation>
 <translation id="4971412780836297815">Отвори кога ќе заврши</translation>
 <translation id="4972129977812092092">Изменете ги информациите за печатачот</translation>
 <translation id="4972164225939028131">Погрешна лозинка</translation>
@@ -2957,7 +2961,7 @@
 <translation id="504561833207953641">Се отвора во постојната сесија на прелистувачот.</translation>
 <translation id="5047421709274785093">Блокирај го користењето сензори за движење и светлина на сајтовите</translation>
 <translation id="5050042263972837708">Име на групата</translation>
-<translation id="5051073330196664891">Универзални услови на користење на Google (uToS)</translation>
+<translation id="5051073330196664891">Универзални услови за користење на Google (uToS)</translation>
 <translation id="5051836348807686060">Проверката на правопис не е поддржана за јазиците што ги избравте</translation>
 <translation id="5052499409147950210">Изменете го сајтот</translation>
 <translation id="5053604404986157245">Случајно генерираната ТПМ-лозинка не е достапна. Тоа е нормално по фабричко ресетирање.</translation>
@@ -3259,7 +3263,6 @@
 <translation id="5470735824776589490">Треба да го рестартирате уредот за да може да го ресетирате со Powerwash. <ph name="LINK_BEGIN" />Дознајте повеќе<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Здраво! Јас сум вашиот глас за функцијата „Од текст до говор“.</translation>
 <translation id="5473333559083690127">Внесете го новиот PIN повторно</translation>
-<translation id="548137908954174608">Овозможете „Автоматски титлови“</translation>
 <translation id="5481941284378890518">Додај печатачи во близина</translation>
 <translation id="5483785310822538350">Отповикај го пристапот до датотеката и уредот</translation>
 <translation id="5485080380723335835">Вашиот <ph name="DEVICE_TYPE" /> е заклучен за безбедност. Рачно внесете ја лозинката за да продолжите.</translation>
@@ -4902,7 +4905,6 @@
 <translation id="7740996059027112821">Стандарден</translation>
 <translation id="7744047395460924128">Видете ја историјата на печатење</translation>
 <translation id="7744192722284567281">Откриена при упад во податоци</translation>
-<translation id="7746457520633464754">За да открие опасни апликации и сајтови, Chrome испраќа URL-адреси од некои страници што ги посетувате, ограничени информации за системот и некои содржини од страниците до Google</translation>
 <translation id="7750228210027921155">Слика во слика</translation>
 <translation id="7751229152614300329">„Безбедно прелистување“ е ажурирано и ве заштитува од штетни сајтови и преземања</translation>
 <translation id="7751260505918304024">Прикажи ги сите</translation>
@@ -5419,7 +5421,6 @@
 <translation id="8391712576156218334">Сликата е недостапна. Обидете се повторно подоцна.</translation>
 <translation id="8392364544846746346">Прашувај кога некој сајт сака да изменува датотеки или папки на уредот</translation>
 <translation id="8392451568018454956">Мени со опции за <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8392630288038565643">Поставкава е оневозможена на управувани прелистувачи.</translation>
 <translation id="8393511274964623038">Запри приклучок</translation>
 <translation id="8393700583063109961">Испрати порака</translation>
 <translation id="839736845446313156">Регистрирај</translation>
@@ -5503,7 +5504,6 @@
 <translation id="851263357009351303">Секогаш дозволи <ph name="HOST" /> да прикажува слики</translation>
 <translation id="8513108775083588393">Автоматско ротирање</translation>
 <translation id="8514746246728959655">Обидете се со друг безбедносен клуч</translation>
-<translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> може да не се полни додека е вклучен.</translation>
 <translation id="8521475323816527629">Стигнете брзо до апликациите</translation>
 <translation id="8523493869875972733">Откажи</translation>
 <translation id="8523849605371521713">Додадено од правилото</translation>
@@ -5743,7 +5743,7 @@
 <translation id="8809147117840417135">Светла синозелена</translation>
 <translation id="8813698869395535039">Не може да се најави на <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">лист хартија</translation>
-<translation id="8813872945700551674">Повикајте родител за да ја одобри „<ph name="EXTENSION_NAME" />“</translation>
+<translation id="8813872945700551674">Повикај родител за да ја одобри „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="8813969267212093033">Системскиот текст се прикажува на овој јазик</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814687660896548945">Почекајте, архивата се скенира…</translation>
@@ -5876,7 +5876,6 @@
 <translation id="8978154919215542464">Вклучено - синхронизирај сѐ</translation>
 <translation id="897939795688207351">На <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - падна</translation>
-<translation id="8983405057223076408">Поставкава е оневозможена бидејќи се вклучени родителските контроли.</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> може да ја изменува <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">Активен пред <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ден</translation>
 <translation id="8986362086234534611">Заборави</translation>

@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.device;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -63,7 +66,6 @@ public class DeviceClassManager {
 
         // Flag based configurations.
         CommandLine commandLine = CommandLine.getInstance();
-        assert commandLine.isNativeImplementation();
         mEnableAccessibilityLayout |= commandLine
                 .hasSwitch(ChromeSwitches.ENABLE_ACCESSIBILITY_TAB_SWITCHER);
         mEnableFullscreen =
@@ -87,11 +89,8 @@ public class DeviceClassManager {
      */
     public static boolean enableAccessibilityLayout() {
         if (isPhone()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
-                && (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
-                        || (!SysUtils.isLowEndDevice()
-                                && ChromeFeatureList.isEnabled(
-                                        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)))) {
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)) {
             return false;
         }
 
@@ -135,5 +134,13 @@ public class DeviceClassManager {
     private static boolean isPhone() {
         return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                 ContextUtils.getApplicationContext());
+    }
+
+    /**
+     * Reset the instance for testing.
+     */
+    @VisibleForTesting
+    public static void resetForTesting() {
+        sInstance = null;
     }
 }

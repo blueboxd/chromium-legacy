@@ -186,9 +186,10 @@ suite('SettingsSecureDnsInteractive', function() {
     Polymer.dom.flush();
     assertEquals(settings.SecureDnsMode.SECURE, secureDnsRadioGroup.selected);
     assertEquals(0, testElement.$$('#secureResolverSelect').selectedIndex);
-    assertTrue(testElement.$$('#privacyPolicy').hasAttribute('hidden'));
-    assertFalse(testElement.$$('#secureDnsInput').hasAttribute('hidden'));
-    assertFalse(testElement.$$('#secureDnsInput').matches(':focus-within'));
+    assertEquals(
+        'none', getComputedStyle(testElement.$$('#privacyPolicy')).display);
+    assertEquals(
+        'block', getComputedStyle(testElement.$$('#secureDnsInput')).display);
     assertEquals('custom', testElement.$$('#secureDnsInput').value);
   });
 
@@ -206,7 +207,8 @@ suite('SettingsSecureDnsInteractive', function() {
     const secureDnsInput = testElement.$$('#secureDnsInput');
 
     assertEquals(1, dropdownMenu.selectedIndex);
-    assertFalse(privacyPolicyLine.hasAttribute('hidden'));
+    assertEquals(
+        'block', getComputedStyle(testElement.$$('#privacyPolicy')).display);
     assertEquals(
         resolverList[1].policy, privacyPolicyLine.querySelector('a').href);
 
@@ -214,7 +216,8 @@ suite('SettingsSecureDnsInteractive', function() {
     dropdownMenu.value = resolverList[2].value;
     dropdownMenu.dispatchEvent(new Event('change'));
     assertEquals(2, dropdownMenu.selectedIndex);
-    assertFalse(privacyPolicyLine.hasAttribute('hidden'));
+    assertEquals(
+        'block', getComputedStyle(testElement.$$('#privacyPolicy')).display);
     assertEquals(
         resolverList[2].policy, privacyPolicyLine.querySelector('a').href);
     assertEquals(
@@ -225,7 +228,8 @@ suite('SettingsSecureDnsInteractive', function() {
     dropdownMenu.value = 'custom';
     dropdownMenu.dispatchEvent(new Event('change'));
     assertEquals(0, dropdownMenu.selectedIndex);
-    assertTrue(privacyPolicyLine.hasAttribute('hidden'));
+    assertEquals(
+        'none', getComputedStyle(testElement.$$('#privacyPolicy')).display);
     assertTrue(secureDnsInput.matches(':focus-within'));
     assertFalse(secureDnsInput.isInvalid());
     assertEquals(settings.SecureDnsMode.SECURE, secureDnsRadioGroup.selected);
@@ -271,7 +275,8 @@ suite('SettingsSecureDnsInteractive', function() {
     dropdownMenu.value = resolverList[3].value;
     dropdownMenu.dispatchEvent(new Event('change'));
     assertEquals(3, dropdownMenu.selectedIndex);
-    assertFalse(privacyPolicyLine.hasAttribute('hidden'));
+    assertEquals(
+        'block', getComputedStyle(testElement.$$('#privacyPolicy')).display);
     assertEquals(
         resolverList[3].policy, privacyPolicyLine.querySelector('a').href);
     assertEquals(
@@ -294,7 +299,8 @@ suite('SettingsSecureDnsInteractive', function() {
     Polymer.dom.flush();
     assertFalse(secureDnsRadioGroup.hidden);
     assertEquals(3, dropdownMenu.selectedIndex);
-    assertFalse(privacyPolicyLine.hasAttribute('hidden'));
+    assertEquals(
+        'block', getComputedStyle(testElement.$$('#privacyPolicy')).display);
     assertEquals(
         resolverList[3].policy, privacyPolicyLine.querySelector('a').href);
 
@@ -303,7 +309,8 @@ suite('SettingsSecureDnsInteractive', function() {
     assertFalse(secureDnsRadioGroup.hidden);
     assertEquals(settings.SecureDnsMode.SECURE, secureDnsRadioGroup.selected);
     assertEquals(3, dropdownMenu.selectedIndex);
-    assertFalse(privacyPolicyLine.hasAttribute('hidden'));
+    assertEquals(
+        'block', getComputedStyle(testElement.$$('#privacyPolicy')).display);
     assertEquals(
         resolverList[3].policy, privacyPolicyLine.querySelector('a').href);
     assertEquals(
@@ -323,7 +330,7 @@ suite('SettingsSecureDnsInteractive', function() {
     Polymer.dom.flush();
     const secureDnsRadioGroup = testElement.$$('#secureDnsRadioGroup');
     const secureDnsInput = testElement.$$('#secureDnsInput');
-    assertFalse(secureDnsInput.hasAttribute('hidden'));
+    assertEquals('block', getComputedStyle(secureDnsInput).display);
     assertFalse(secureDnsInput.matches(':focus-within'));
     assertFalse(secureDnsInput.isInvalid());
     assertEquals('https://dns.example/dns-query', secureDnsInput.value);
@@ -353,7 +360,7 @@ suite('SettingsSecureDnsInteractive', function() {
       managementMode: settings.SecureDnsUiManagementMode.NO_OVERRIDE,
     });
     Polymer.dom.flush();
-    assertFalse(secureDnsInput.hasAttribute('hidden'));
+    assertEquals('block', getComputedStyle(secureDnsInput).display);
     assertFalse(secureDnsInput.matches(':focus-within'));
     assertTrue(secureDnsInput.isInvalid());
     assertEquals(invalidEntry, secureDnsInput.value);
@@ -411,7 +418,7 @@ suite('SettingsSecureDnsInteractive', function() {
       managementMode: settings.SecureDnsUiManagementMode.NO_OVERRIDE,
     });
     Polymer.dom.flush();
-    assertFalse(secureDnsInput.hasAttribute('hidden'));
+    assertEquals('block', getComputedStyle(secureDnsInput).display);
     assertFalse(secureDnsInput.matches(':focus-within'));
     assertFalse(secureDnsInput.isInvalid());
     assertEquals(

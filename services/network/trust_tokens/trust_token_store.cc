@@ -11,6 +11,7 @@
 #include "services/network/trust_tokens/in_memory_trust_token_persister.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/types.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
@@ -127,7 +128,7 @@ bool TrustTokenStore::IsAssociated(const url::Origin& issuer,
   return base::Contains(config->associated_issuers(), issuer.Serialize());
 }
 
-void TrustTokenStore::SetAssociation(const url::Origin& issuer,
+bool TrustTokenStore::SetAssociation(const url::Origin& issuer,
                                      const url::Origin& top_level) {
   DCHECK(!issuer.opaque());
   DCHECK(!top_level.opaque());
@@ -136,10 +137,19 @@ void TrustTokenStore::SetAssociation(const url::Origin& issuer,
   if (!config)
     config = std::make_unique<TrustTokenToplevelConfig>();
   auto string_issuer = issuer.Serialize();
-  if (!base::Contains(config->associated_issuers(), string_issuer)) {
-    config->add_associated_issuers(std::move(string_issuer));
-    persister_->SetToplevelConfig(top_level, std::move(config));
+
+  if (base::Contains(config->associated_issuers(), string_issuer))
+    return true;
+
+  if (config->associated_issuers_size() >=
+      kTrustTokenPerToplevelMaxNumberOfAssociatedIssuers) {
+    return false;
   }
+
+  config->add_associated_issuers(std::move(string_issuer));
+  persister_->SetToplevelConfig(top_level, std::move(config));
+
+  return true;
 }
 
 std::vector<TrustTokenKeyCommitment> TrustTokenStore::KeyCommitments(
@@ -225,24 +235,45 @@ base::Optional<int> TrustTokenStore::BatchSize(const url::Origin& issuer) {
   return config->batch_size();
 }
 
-void TrustTokenStore::AddTokens(const url::Origin& issuer,
+bool TrustTokenStore::AddTokens(const url::Origin& issuer,
                                 base::span<const std::string> token_bodies,
                                 base::StringPiece issuing_key) {
   DCHECK(!issuer.opaque());
   auto config = persister_->GetIssuerConfig(issuer);
-  DCHECK(config &&
-         std::any_of(config->keys().begin(), config->keys().end(),
-                     [issuing_key](const TrustTokenKeyCommitment& commitment) {
-                       return commitment.key() == issuing_key;
-                     }));
+  if (!config)
+    return false;
 
-  for (const auto& token_body : token_bodies) {
+  // Only allow storing tokens with an issuing key that is currently present in
+  // this token store (i.e., the token's issuer provided this key in a
+  // previous key commitment, and the key has not yet expired).
+  bool key_is_present =
+      std::any_of(config->keys().begin(), config->keys().end(),
+                  [issuing_key](const TrustTokenKeyCommitment& commitment) {
+                    return commitment.key() == issuing_key;
+                  });
+  if (!key_is_present)
+    return false;
+
+  for (auto it = token_bodies.begin();
+       it != token_bodies.end() &&
+       config->tokens_size() < kTrustTokenPerIssuerTokenCapacity;
+       ++it) {
     TrustToken* entry = config->add_tokens();
-    entry->set_body(token_body);
+    entry->set_body(*it);
     entry->set_signing_key(std::string(issuing_key));
   }
 
   persister_->SetIssuerConfig(issuer, std::move(config));
+
+  return true;
+}
+
+int TrustTokenStore::CountTokens(const url::Origin& issuer) {
+  DCHECK(!issuer.opaque());
+  auto config = persister_->GetIssuerConfig(issuer);
+  if (!config)
+    return 0;
+  return config->tokens_size();
 }
 
 std::vector<TrustToken> TrustTokenStore::RetrieveMatchingTokens(

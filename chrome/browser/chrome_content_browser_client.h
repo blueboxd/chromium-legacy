@@ -53,7 +53,6 @@ class QuotaPermissionContext;
 
 namespace data_reduction_proxy {
 class DataReductionProxyData;
-class DataReductionProxyThrottleManager;
 }  // namespace data_reduction_proxy
 
 namespace previews {
@@ -709,9 +708,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
   scoped_refptr<safe_browsing::UrlCheckerDelegate>
       safe_browsing_url_checker_delegate_;
-
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyThrottleManager>
-      data_reduction_proxy_throttle_manager_;
 
   std::unique_ptr<service_manager::BinderRegistry> frame_interfaces_;
   std::unique_ptr<

@@ -1,6 +1,6 @@
 Name: Android SDK bundletool
 Short Name:  bundletool
-Version: 0.12.0
+Version: 0.13.3
 License: Apache Version 2.0
 License File: NOT_SHIPPED
 Security Critical: No
@@ -13,3 +13,8 @@ It is distributed here as a CIPD package. See cipd.yaml for details.
 Local Modifications:
 None
 
+Update Instructions:
+1. Download the latest .jar from the GitHub Release page.
+  E.g.: https://github.com/google/bundletool/releases
+2. Look at previous commit to //third_party/android_build_tools/bundletools to
+  see what other files need updating.

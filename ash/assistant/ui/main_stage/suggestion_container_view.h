@@ -5,7 +5,6 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_SUGGESTION_CONTAINER_VIEW_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_SUGGESTION_CONTAINER_VIEW_H_
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -51,7 +50,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
 
   // AssistantSuggestionsModelObserver:
   void OnConversationStartersChanged(
-      const std::map<int, const AssistantSuggestion*>& conversation_starters)
+      const std::vector<const AssistantSuggestion*>& conversation_starters)
       override;
 
   // AssistantUiModelObserver:
@@ -64,8 +63,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // The suggestion chip that was pressed by the user, or nullptr if no chip was
-  // pressed.
+  // The suggestion chip that was pressed by the user. May be |nullptr|.
   const SuggestionChipView* selected_chip() const { return selected_chip_; }
 
  private:
@@ -73,33 +71,19 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
 
   // AnimatedContainerView:
   std::unique_ptr<ElementAnimator> HandleSuggestion(
-      int id,
       const AssistantSuggestion* suggestion) override;
   void OnAllViewsRemoved() override;
 
   std::unique_ptr<ElementAnimator> AddSuggestionChip(
-      int id,
       const AssistantSuggestion* suggestion);
-
-  // Invoked on suggestion chip icon downloaded event.
-  void OnSuggestionChipIconDownloaded(int id, const gfx::ImageSkia& icon);
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
 
-  // Cache of suggestion chip views owned by the view hierarchy. The key for the
-  // map is the unique identifier by which the Assistant interaction model
-  // identifies the view's underlying suggestion.
-  std::map<int, SuggestionChipView*> suggestion_chip_views_;
-
-  // True if we have received a query response during this Assistant UI session,
-  // false otherwise.
+  // Whether or not we have received a response during this Assistant session.
   bool has_received_response_ = false;
 
+  // The suggestion chip that was pressed by the user. May be |nullptr|.
   const SuggestionChipView* selected_chip_ = nullptr;
-
-  // Weak pointer factory used for image downloading requests.
-  base::WeakPtrFactory<SuggestionContainerView> download_request_weak_factory_{
-      this};
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionContainerView);
 };

@@ -69,24 +69,6 @@
 
 namespace {
 
-void AddDataReductionProxyReceiver(
-    int render_process_id,
-    mojo::PendingReceiver<data_reduction_proxy::mojom::DataReductionProxy>
-        receiver) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* rph = content::RenderProcessHost::FromID(render_process_id);
-  if (!rph)
-    return;
-
-  auto* drp_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          rph->GetBrowserContext());
-  if (!drp_settings)
-    return;
-
-  drp_settings->data_reduction_proxy_service()->Clone(std::move(receiver));
-}
-
 // Helper method for ExposeInterfacesToRenderer() that checks the latest
 // SafeBrowsing pref value on the UI thread before hopping over to the IO
 // thread.
@@ -163,12 +145,6 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
         ui_task_runner);
   }
 #endif
-
-  if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    registry->AddInterface(base::BindRepeating(&AddDataReductionProxyReceiver,
-                                               render_process_host->GetID()),
-                           ui_task_runner);
-  }
 
 #if defined(OS_WIN)
   // Add the ModuleEventSink interface. This is the interface used by renderer

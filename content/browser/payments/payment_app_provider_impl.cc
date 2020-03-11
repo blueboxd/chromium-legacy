@@ -120,16 +120,20 @@ class InvokePaymentAppCallbackRepository {
 
 // Note that one and only one of the callbacks from this class must/should be
 // called.
+// TODO(crbug.com/1060298): Split RespondWithCallbacks into three classes with
+// one callback each.
 class RespondWithCallbacks : public PaymentHandlerResponseCallback {
  public:
   static RespondWithCallbacks* CreateForCanMakePayment(
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
-      PaymentAppProvider::PaymentEventResultCallback callback) {
+      PaymentAppProvider::CanMakePaymentCallback callback) {
     RespondWithCallbacks* callbacks = new RespondWithCallbacks(
         browser_context, ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT,
-        service_worker_version, PaymentAppProvider::InvokePaymentAppCallback(),
-        /*event_callback=*/std::move(callback));
+        service_worker_version,
+        /*can_make_payment_callback=*/std::move(callback),
+        PaymentAppProvider::InvokePaymentAppCallback(),
+        PaymentAppProvider::AbortCallback());
     return callbacks;
   }
 
@@ -139,9 +143,9 @@ class RespondWithCallbacks : public PaymentHandlerResponseCallback {
       PaymentAppProvider::InvokePaymentAppCallback callback) {
     RespondWithCallbacks* callbacks = new RespondWithCallbacks(
         browser_context, ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
-        service_worker_version,
+        service_worker_version, PaymentAppProvider::CanMakePaymentCallback(),
         /*invoke_callback=*/std::move(callback),
-        PaymentAppProvider::PaymentEventResultCallback());
+        PaymentAppProvider::AbortCallback());
     InvokePaymentAppCallbackRepository::GetInstance()->SetCallback(
         browser_context, callbacks);
     return callbacks;
@@ -150,11 +154,12 @@ class RespondWithCallbacks : public PaymentHandlerResponseCallback {
   static RespondWithCallbacks* CreateForAbort(
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
-      PaymentAppProvider::PaymentEventResultCallback callback) {
+      PaymentAppProvider::AbortCallback callback) {
     RespondWithCallbacks* callbacks = new RespondWithCallbacks(
         browser_context, ServiceWorkerMetrics::EventType::ABORT_PAYMENT,
-        service_worker_version, PaymentAppProvider::InvokePaymentAppCallback(),
-        /*event_callback=*/std::move(callback));
+        service_worker_version, PaymentAppProvider::CanMakePaymentCallback(),
+        PaymentAppProvider::InvokePaymentAppCallback(),
+        /*abort_callback=*/std::move(callback));
     return callbacks;
   }
 
@@ -179,13 +184,15 @@ class RespondWithCallbacks : public PaymentHandlerResponseCallback {
       BrowserContext* browser_context,
       ServiceWorkerMetrics::EventType event_type,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
+      PaymentAppProvider::CanMakePaymentCallback can_make_payment_callback,
       PaymentAppProvider::InvokePaymentAppCallback invoke_callback,
-      PaymentAppProvider::PaymentEventResultCallback event_callback)
+      PaymentAppProvider::AbortCallback abort_callback)
       : browser_context_(browser_context),
         event_type_(event_type),
         service_worker_version_(service_worker_version),
+        can_make_payment_callback_(std::move(can_make_payment_callback)),
         invoke_payment_app_callback_(std::move(invoke_callback)),
-        payment_event_result_callback_(std::move(event_callback)) {
+        abort_callback_(std::move(abort_callback)) {
     request_id_ = service_worker_version->StartRequest(
         event_type, base::BindOnce(&RespondWithCallbacks::OnErrorStatus,
                                    weak_ptr_factory_.GetWeakPtr()));
@@ -210,10 +217,9 @@ class RespondWithCallbacks : public PaymentHandlerResponseCallback {
       CanMakePaymentResponsePtr response) override {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     service_worker_version_->FinishRequest(request_id_, false);
-    RunOrPostTaskOnThread(
-        FROM_HERE, BrowserThread::UI,
-        base::BindOnce(std::move(payment_event_result_callback_),
-                       response->can_make_payment));
+    RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                          base::BindOnce(std::move(can_make_payment_callback_),
+                                         response->can_make_payment));
     delete this;
   }
 
@@ -222,8 +228,7 @@ class RespondWithCallbacks : public PaymentHandlerResponseCallback {
     service_worker_version_->FinishRequest(request_id_, false);
     RunOrPostTaskOnThread(
         FROM_HERE, BrowserThread::UI,
-        base::BindOnce(std::move(payment_event_result_callback_),
-                       payment_aborted));
+        base::BindOnce(std::move(abort_callback_), payment_aborted));
 
     ClearCallbackRepositoryAndCloseWindow();
     delete this;
@@ -232,17 +237,19 @@ class RespondWithCallbacks : public PaymentHandlerResponseCallback {
   void RespondWithErrorAndDeleteSelf(PaymentEventResponseType response_type) {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-    if (event_type_ == ServiceWorkerMetrics::EventType::PAYMENT_REQUEST) {
+    if (event_type_ == ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT) {
+      RunOrPostTaskOnThread(
+          FROM_HERE, BrowserThread::UI,
+          base::BindOnce(std::move(can_make_payment_callback_), false));
+    } else if (event_type_ ==
+               ServiceWorkerMetrics::EventType::PAYMENT_REQUEST) {
       RunOrPostTaskOnThread(
           FROM_HERE, BrowserThread::UI,
           base::BindOnce(std::move(invoke_payment_app_callback_),
                          CreateBlankPaymentHandlerResponse(response_type)));
-    } else if (event_type_ ==
-                   ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT ||
-               event_type_ == ServiceWorkerMetrics::EventType::ABORT_PAYMENT) {
-      RunOrPostTaskOnThread(
-          FROM_HERE, BrowserThread::UI,
-          base::BindOnce(std::move(payment_event_result_callback_), false));
+    } else if (event_type_ == ServiceWorkerMetrics::EventType::ABORT_PAYMENT) {
+      RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                            base::BindOnce(std::move(abort_callback_), false));
     }
 
     if (event_type_ == ServiceWorkerMetrics::EventType::PAYMENT_REQUEST ||
@@ -291,8 +298,9 @@ class RespondWithCallbacks : public PaymentHandlerResponseCallback {
   BrowserContext* browser_context_;
   ServiceWorkerMetrics::EventType event_type_;
   scoped_refptr<ServiceWorkerVersion> service_worker_version_;
+  PaymentAppProvider::CanMakePaymentCallback can_make_payment_callback_;
   PaymentAppProvider::InvokePaymentAppCallback invoke_payment_app_callback_;
-  PaymentAppProvider::PaymentEventResultCallback payment_event_result_callback_;
+  PaymentAppProvider::AbortCallback abort_callback_;
   mojo::Receiver<PaymentHandlerResponseCallback> receiver_{this};
 
   base::WeakPtrFactory<RespondWithCallbacks> weak_ptr_factory_{this};
@@ -316,7 +324,7 @@ void GetAllPaymentAppsOnCoreThread(
 
 void DispatchAbortPaymentEvent(
     BrowserContext* browser_context,
-    PaymentAppProvider::PaymentEventResultCallback callback,
+    PaymentAppProvider::AbortCallback callback,
     scoped_refptr<ServiceWorkerVersion> active_version,
     blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -346,7 +354,7 @@ void DispatchAbortPaymentEvent(
 void DispatchCanMakePaymentEvent(
     BrowserContext* browser_context,
     CanMakePaymentEventDataPtr event_data,
-    PaymentAppProvider::PaymentEventResultCallback callback,
+    PaymentAppProvider::CanMakePaymentCallback callback,
     scoped_refptr<ServiceWorkerVersion> active_version,
     blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -565,7 +573,7 @@ void OnResponseForCanMakePaymentOnUiThread(
     int64_t registration_id,
     const url::Origin& sw_origin,
     const std::string& payment_request_id,
-    PaymentAppProvider::PaymentEventResultCallback callback,
+    PaymentAppProvider::CanMakePaymentCallback callback,
     bool can_make_payment) {
   auto* dev_tools = GetDevToolsForInstanceGroup(instance_group, sw_origin);
   if (dev_tools) {
@@ -584,7 +592,7 @@ void OnResponseForAbortPaymentOnUiThread(
     int64_t registration_id,
     const url::Origin& sw_origin,
     const std::string& payment_request_id,
-    PaymentAppProvider::PaymentEventResultCallback callback,
+    PaymentAppProvider::AbortCallback callback,
     bool payment_aborted) {
   auto* dev_tools = GetDevToolsForInstanceGroup(instance_group, sw_origin);
   if (dev_tools) {
@@ -740,7 +748,7 @@ void PaymentAppProviderImpl::CanMakePayment(
     const url::Origin& sw_origin,
     const std::string& payment_request_id,
     CanMakePaymentEventDataPtr event_data,
-    PaymentEventResultCallback callback) {
+    CanMakePaymentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto* dev_tools = GetDevTools(browser_context, sw_origin);
@@ -776,7 +784,7 @@ void PaymentAppProviderImpl::AbortPayment(BrowserContext* browser_context,
                                           int64_t registration_id,
                                           const url::Origin& sw_origin,
                                           const std::string& payment_request_id,
-                                          PaymentEventResultCallback callback) {
+                                          AbortCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto* dev_tools = GetDevTools(browser_context, sw_origin);

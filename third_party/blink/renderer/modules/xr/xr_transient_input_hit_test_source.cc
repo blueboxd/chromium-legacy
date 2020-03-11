@@ -60,9 +60,12 @@ void XRTransientInputHitTestSource::Update(
     if (!input_source)
       continue;
 
-    current_frame_results_.push_back(
-        MakeGarbageCollected<XRTransientInputHitTestResult>(
-            input_source, source_id_and_results.value));
+    // If the input source is not visible, ignore it.
+    if (input_source->IsVisible()) {
+      current_frame_results_.push_back(
+          MakeGarbageCollected<XRTransientInputHitTestResult>(
+              input_source, source_id_and_results.value));
+    }
   }
 }
 

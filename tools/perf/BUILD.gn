@@ -83,8 +83,13 @@ group("perf_without_chrome") {
     "//build/android/pylib/",
   ]
 
+  data_deps = []
+
   # Runs a script which generates the ad tagging ruleset.
   if (!is_ios) {
-    data_deps = [ "//components/subresource_filter/tools:index_ruleset" ]
+    data_deps += [ "//components/subresource_filter/tools:index_ruleset" ]
+  }
+  if (is_android) {
+    data_deps += [ "//chrome/android/webapk/shell_apk:maps_go_webapk" ]
   }
 }

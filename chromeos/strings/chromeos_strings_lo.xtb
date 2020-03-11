@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">ກາຍກຳນົດປ່ຽນລະຫັດຜ່ານແລ້ວ</translation>
 <translation id="2049639323467105390">ອຸປະກອນນີ້ຖືກຈັດການໂດຍ <ph name="DOMAIN" /></translation>
 <translation id="2338501278241028356">ເປີດ Bluetooth ເພື່ອຊອກຫາອຸປະກອນທີ່ຢູ່ໃກ້ຄຽງ</translation>
+<translation id="2375079107209812402">ຍັງລອງໄດ້ອີກ <ph name="ATTEMPTS_LEFT" /> ຄັ້ງ</translation>
 <translation id="2805756323405976993">ແອັບ</translation>
 <translation id="2872961005593481000">ມອດ</translation>
 <translation id="3008341117444806826">ໂຫຼດຂໍ້ມູນໃໝ່</translation>
@@ -42,6 +43,7 @@
 <translation id="808894953321890993">ປ່ຽນລະຫັດຜ່ານ</translation>
 <translation id="8208861521865154048">ສິດທິປະໂຫຍດຕ່າງໆ</translation>
 <translation id="8747900814994928677">ຢືນຢັນການປ່ຽນແປງ</translation>
+<translation id="89415009803968170">ຍັງເຫຼືອຄວາມພະຍາຍາມອີກ <ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> ຄັ້ງ</translation>
 <translation id="910415269708673980">ໂຫຼດຂໍ້ມູນປີ້ສຳລັບ <ph name="PRINCIPAL_NAME" /> ໃໝ່</translation>
 <translation id="9111102763498581341">ປົດລັອກ</translation>
 </translationbundle>

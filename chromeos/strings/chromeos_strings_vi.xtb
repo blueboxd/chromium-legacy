@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Đã quá hạn thay đổi mật khẩu</translation>
 <translation id="2049639323467105390">Thiết bị này được <ph name="DOMAIN" /> quản lý.</translation>
 <translation id="2338501278241028356">Bật Bluetooth để khám phá các thiết bị lân cận</translation>
+<translation id="2375079107209812402">Còn <ph name="ATTEMPTS_LEFT" /> lần thử</translation>
 <translation id="2805756323405976993">Ứng dụng</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="3008341117444806826">LÀM MỚI</translation>
@@ -42,6 +43,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="808894953321890993">Đổi mật khẩu</translation>
 <translation id="8208861521865154048">Đặc quyền</translation>
 <translation id="8747900814994928677">Xác nhận thay đổi</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Bạn còn <ph name="ATTEMPTS_LEFT" /> lần thử</translation>
 <translation id="910415269708673980">Làm mới phiếu cho <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Mở khóa</translation>
 </translationbundle>

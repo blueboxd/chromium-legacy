@@ -125,6 +125,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'chrome_junit_tests',
   'components_background_task_scheduler_junit_tests',
   'components_gcm_driver_junit_tests',
+  'components_permissions_junit_tests',
   'components_policy_junit_tests',
   'components_variations_junit_tests',
   'content_junit_tests',

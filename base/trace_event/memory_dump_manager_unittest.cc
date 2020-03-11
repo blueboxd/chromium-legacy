@@ -30,7 +30,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/memory_dump_scheduler.h"
-#include "base/trace_event/memory_infra_background_whitelist.h"
+#include "base/trace_event/memory_infra_background_allowlist.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -752,7 +752,7 @@ TEST_F(MemoryDumpManagerTest, TriggerDumpWithoutTracing) {
 }
 
 TEST_F(MemoryDumpManagerTest, BackgroundWhitelisting) {
-  SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
+  SetDumpProviderAllowlistForTesting(kTestMDPWhitelist);
 
   // Standard provider with default options (create dump for current process).
   MockMemoryDumpProvider backgroundMdp;
@@ -857,7 +857,7 @@ class SimpleMockMemoryDumpProvider : public MemoryDumpProvider {
 };
 
 TEST_F(MemoryDumpManagerTest, NoStackOverflowWithTooManyMDPs) {
-  SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
+  SetDumpProviderAllowlistForTesting(kTestMDPWhitelist);
 
   int kMDPCount = 1000;
   std::vector<std::unique_ptr<SimpleMockMemoryDumpProvider>> mdps;

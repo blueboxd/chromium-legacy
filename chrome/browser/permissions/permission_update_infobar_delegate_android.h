@@ -44,8 +44,9 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
   //
   // This function can only be called with one of
   // ContentSettingsType::MEDIASTREAM_MIC,
-  // ContentSettingsType::MEDIASTREAM_CAMERA or
-  // ContentSettingsType::GEOLOCATION, or with both
+  // ContentSettingsType::MEDIASTREAM_CAMERA,
+  // ContentSettingsType::GEOLOCATION, or
+  // ContentSettingsType::AR or with both
   // ContentSettingsType::MEDIASTREAM_MIC and
   // ContentSettingsType::MEDIASTREAM_CAMERA.
   //

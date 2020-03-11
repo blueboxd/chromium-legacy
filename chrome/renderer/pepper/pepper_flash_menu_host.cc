@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/common/context_menu_params.h"
+#include "content/public/common/untrustworthy_context_menu_params.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ipc/ipc_message.h"

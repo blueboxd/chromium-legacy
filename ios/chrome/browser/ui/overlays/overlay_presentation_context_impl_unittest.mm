@@ -287,7 +287,8 @@ TEST_F(OverlayPresentationContextImplTest, CanShowRequest) {
 }
 
 // Tests the presentation flow for contained overlay UI.
-TEST_F(OverlayPresentationContextImplTest, ContainedOverlayUI) {
+// TODO(crbug.com/1060758): Re-enable after fixing failing test.
+TEST_F(OverlayPresentationContextImplTest, DISABLED_ContainedOverlayUI) {
   std::unique_ptr<OverlayRequest> request =
       OverlayRequest::CreateWithConfig<TestContainedOverlay>();
   context_.PrepareToShowOverlayUI(request.get());

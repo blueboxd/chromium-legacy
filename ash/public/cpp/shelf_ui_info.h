@@ -30,6 +30,9 @@ struct ASH_PUBLIC_EXPORT ScrollableShelfInfo {
 
   // Indicates whether scrollable shelf is animating.
   bool is_animating = false;
+
+  // Indicates whether scrollable shelf is in overflow mode.
+  bool is_overflow = false;
 };
 
 struct ASH_PUBLIC_EXPORT ShelfState {

@@ -816,6 +816,7 @@
 <translation id="4466881336512663640">ফর্মে করা পরিবর্তনগুলি সেভ হবে না। আপনি কি চালিয়ে যেতে চান?</translation>
 <translation id="4477350412780666475">পরের ট্র্যাক চালান</translation>
 <translation id="4482953324121162758">এই সাইটটি অনুবাদ করা হবে না।</translation>
+<translation id="4486757593530038591">এটি চালু করা থাকলে, আপনার পছন্দমতো বিজ্ঞাপন দেখানোর জন্য কোনও সাইট আপনার অন্যান্য সাইটে করা ব্রাউজিং অ্যাক্টিভিটি ট্র্যাক করতে পারবে না। কিছু কিছু সাইটের ফিচারগুলি কাজ নাও করতে পারে।</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">এই ফিচারগুলি ডিফল্ট হিসেবেই বন্ধ থাকে। Chrome-এর পরবর্তী ভার্সনে এই ফিচারগুলি আর থাকবে না।</translation>
 <translation id="4493480324863638523">ইউআরএলটি সঠিক নয়। অবশ্যই স্ট্যান্ডার্ড স্কিম সহ ইউআরএল হতে হবে, যেমন http://example.com বা https://example.com.</translation>
@@ -1053,6 +1054,7 @@
 <translation id="549333378215107354">সাইজ ৩</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">পরিচালিত বুকমার্কগুলি</translation>
+<translation id="5510481203689988000">কুকি সেটিংস থেকে এই সেটিংস নিয়ন্ত্রণ করা যায়।</translation>
 <translation id="5510766032865166053">এটি হয়ত সরানো বা মুছে ফেলা হয়েছে।</translation>
 <translation id="5523118979700054094">নীতি নাম</translation>
 <translation id="55293785478302737">ধারের দিকে সেলাই</translation>
@@ -1484,6 +1486,7 @@
 <translation id="7416351320495623771">পাসওয়ার্ডগুলি পরিচালনা করুন…</translation>
 <translation id="7419106976560586862">প্রোফাইল পাথ</translation>
 <translation id="7437289804838430631">পরিচিতির তথ্য যোগ করুন</translation>
+<translation id="7438976808740265764">Flash Player ২০২০ সালের ডিসেম্বরের পরে আর ব্যবহার করা যাবে না।</translation>
 <translation id="7440140511386898319">অফলাইন থাকা অবস্থায় দেখুন</translation>
 <translation id="7441627299479586546">ভুল বিষয় বিশিষ্ট নীতি</translation>
 <translation id="7442725080345379071">হালকা কমলা</translation>

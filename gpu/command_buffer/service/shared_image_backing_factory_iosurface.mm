@@ -303,14 +303,6 @@ class SharedImageRepresentationDawnIOSurface
       // Keep a reference to the texture so that it stays valid (its content
       // might be destroyed).
       dawn_procs_.textureReference(texture_);
-
-      // Assume that the user of this representation will write to the texture
-      // so set the cleared flag so that other representations don't overwrite
-      // the result.
-      // TODO(cwallez@chromium.org): This is incorrect and allows reading
-      // uninitialized data. When !IsCleared we should tell dawn_native to
-      // consider the texture lazy-cleared. crbug.com/1036080
-      SetCleared();
     }
 
     return texture_;
@@ -320,8 +312,10 @@ class SharedImageRepresentationDawnIOSurface
     if (!texture_) {
       return;
     }
-    // TODO(cwallez@chromium.org): query dawn_native to know if the texture was
-    // cleared and set IsCleared appropriately.
+
+    if (dawn_native::IsTextureSubresourceInitialized(texture_, 0, 1, 0, 1)) {
+      SetCleared();
+    }
 
     // All further operations on the textures are errors (they would be racy
     // with other backings).

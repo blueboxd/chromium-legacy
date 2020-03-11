@@ -492,10 +492,8 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   }
 
   void HandleMouseEvent(WebInputEvent::Type type, int x = 0, int y = 0) {
-    WebMouseEvent mouse_event(
-        type, WebInputEvent::kNoModifiers,
-        WebInputEvent::GetStaticTimeStampForTests(),
-        static_cast<int>(blink::WebGestureDevice::kUninitialized));
+    WebMouseEvent mouse_event(type, WebInputEvent::kNoModifiers,
+                              WebInputEvent::GetStaticTimeStampForTests());
 
     mouse_event.SetPositionInWidget(gfx::PointF(x, y));
     mouse_event.button = blink::WebMouseEvent::Button::kLeft;
@@ -558,6 +556,61 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
   base::WeakPtrFactory<InputHandlerProxyEventQueueTest> weak_ptr_factory_{this};
 };
+
+// Tests that changing source devices mid gesture scroll is handled gracefully.
+// For example, when a touch scroll is in progress and the user initiates a
+// scrollbar scroll before the touch scroll has had a chance to dispatch a GSE.
+TEST_P(InputHandlerProxyTest, NestedGestureBasedScrolls) {
+  // Touchpad initiates a scroll.
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+
+  gesture_.SetType(WebInputEvent::kGestureScrollBegin);
+  gesture_.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
+  EXPECT_EQ(InputHandlerProxy::DID_HANDLE,
+            HandleInputEventAndFlushEventQueue(mock_input_handler_,
+                                               input_handler_.get(), gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Before ScrollEnd for touchpad is fired, user starts a thumb drag. This is
+  // expected to immediately end the touchpad scroll.
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(true)).Times(1);
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(1);
+  EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+      .WillOnce(testing::Return(false));
+  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+                            WebInputEvent::kNoModifiers,
+                            WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.SetPositionInWidget(gfx::PointF(0, 20));
+  mouse_event.button = blink::WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(InputHandlerProxy::DID_NOT_HANDLE,
+            HandleInputEventAndFlushEventQueue(
+                mock_input_handler_, input_handler_.get(), mouse_event));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Touchpad GSE comes in while a scrollbar drag is in progress. This is
+  // expected to be dropped because a scrollbar scroll is currently active.
+  gesture_.SetType(WebInputEvent::kGestureScrollEnd);
+  gesture_.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
+  gesture_.data.scroll_update.delta_y = 0;
+  EXPECT_EQ(InputHandlerProxy::DROP_EVENT,
+            HandleInputEventAndFlushEventQueue(mock_input_handler_,
+                                               input_handler_.get(), gesture_));
+
+  // The GSE from the scrollbar needs to be handled.
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(true)).Times(1);
+  mouse_event.SetType(WebInputEvent::kMouseUp);
+  EXPECT_EQ(InputHandlerProxy::DID_NOT_HANDLE,
+            HandleInputEventAndFlushEventQueue(
+                mock_input_handler_, input_handler_.get(), mouse_event));
+
+  VERIFY_AND_RESET_MOCKS();
+}
 
 TEST_P(InputHandlerProxyTest, MouseWheelNoListener) {
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
@@ -678,7 +731,8 @@ void InputHandlerProxyTest::GestureScrollStarted() {
 
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
   EXPECT_EQ(expected_disposition_,
-            HandleInputEventWithLatencyInfo(input_handler_.get(), gesture_));
+            HandleInputEventAndFlushEventQueue(mock_input_handler_,
+                                               input_handler_.get(), gesture_));
 
   // The event should not be marked as handled if scrolling is not possible.
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
@@ -695,7 +749,8 @@ void InputHandlerProxyTest::GestureScrollStarted() {
   EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
       .WillOnce(testing::Return(false));
   EXPECT_EQ(expected_disposition_,
-            HandleInputEventWithLatencyInfo(input_handler_.get(), gesture_));
+            HandleInputEventAndFlushEventQueue(mock_input_handler_,
+                                               input_handler_.get(), gesture_));
 
   // Mark the event as handled if scroll happens.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
@@ -712,7 +767,8 @@ void InputHandlerProxyTest::GestureScrollStarted() {
                    _))
       .WillOnce(testing::Return(scroll_result_did_scroll_));
   EXPECT_EQ(expected_disposition_,
-            HandleInputEventWithLatencyInfo(input_handler_.get(), gesture_));
+            HandleInputEventAndFlushEventQueue(mock_input_handler_,
+                                               input_handler_.get(), gesture_));
 
   VERIFY_AND_RESET_MOCKS();
 
@@ -720,7 +776,8 @@ void InputHandlerProxyTest::GestureScrollStarted() {
   gesture_.data.scroll_update.delta_y = 0;
   EXPECT_CALL(mock_input_handler_, ScrollEnd(true));
   EXPECT_EQ(expected_disposition_,
-            HandleInputEventWithLatencyInfo(input_handler_.get(), gesture_));
+            HandleInputEventAndFlushEventQueue(mock_input_handler_,
+                                               input_handler_.get(), gesture_));
 
   VERIFY_AND_RESET_MOCKS();
 }
@@ -874,7 +931,8 @@ TEST_P(InputHandlerProxyTest, SnapFlingIgnoresFollowingGSUAndGSE) {
       .Times(0);
   EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(0);
   EXPECT_EQ(expected_disposition_,
-            HandleInputEventWithLatencyInfo(input_handler_.get(), gesture_));
+            HandleInputEventAndFlushEventQueue(mock_input_handler_,
+                                               input_handler_.get(), gesture_));
   VERIFY_AND_RESET_MOCKS();
 
   // The GestureScrollEnd should also be ignored.
@@ -884,7 +942,8 @@ TEST_P(InputHandlerProxyTest, SnapFlingIgnoresFollowingGSUAndGSE) {
       blink::WebGestureEvent::InertialPhaseState::kMomentum;
   EXPECT_CALL(mock_input_handler_, ScrollEnd(_)).Times(0);
   EXPECT_EQ(expected_disposition_,
-            HandleInputEventWithLatencyInfo(input_handler_.get(), gesture_));
+            HandleInputEventAndFlushEventQueue(mock_input_handler_,
+                                               input_handler_.get(), gesture_));
   VERIFY_AND_RESET_MOCKS();
 }
 
@@ -1067,7 +1126,8 @@ void InputHandlerProxyTest::ScrollHandlingSwitchedToMainThread() {
 
   gesture_.SetType(WebInputEvent::kGestureScrollEnd);
   EXPECT_EQ(expected_disposition_,
-            HandleInputEventWithLatencyInfo(input_handler_.get(), gesture_));
+            HandleInputEventAndFlushEventQueue(mock_input_handler_,
+                                               input_handler_.get(), gesture_));
 
   VERIFY_AND_RESET_MOCKS();
 }

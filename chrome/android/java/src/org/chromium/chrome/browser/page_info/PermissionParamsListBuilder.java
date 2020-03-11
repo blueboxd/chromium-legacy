@@ -20,7 +20,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.nfc.NfcSystemLevelSetting;
 import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.site_settings.ContentSettingsResources;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge;
@@ -29,6 +28,7 @@ import org.chromium.components.location.LocationUtils;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
 import org.chromium.components.permissions.PermissionUtil;
+import org.chromium.components.permissions.nfc.NfcSystemLevelSetting;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
 

@@ -335,6 +335,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       정책을 설정하지 않은 상태로 두면 엔터프라이즈 관리 사용자의 경우 'MultiProfileUserBehaviorMustBePrimary' 기본값이 적용되며 비관리 사용자에게는 'MultiProfileUserBehaviorUnrestricted'가 사용됩니다.</translation>
 <translation id="1465619815762735808">클릭하여 재생</translation>
+<translation id="1467633031685836974">이 기능을 사용하면 하이퍼링크 및 주소 표시줄 URL 이동 기능에서 웹페이지 내 특정 텍스트를 지정하여 웹페이지가 로드를 마치면 지정한 텍스트로 스크롤합니다.
+
+이 정책을 사용 설정하거나 구성하지 않으면 웹페이지에서 URL을 통해 특정 텍스트 프래그먼트로 스크롤하는 기능이 사용됩니다.
+
+이 정책을 사용 중지하면 웹페이지에서 URL을 통해 특정 텍스트 프래그먼트로 스크롤하는 기능이 사용 중지됩니다.</translation>
 <translation id="1468707346106619889">이 정책을 true로 설정하면 통합 바탕화면이 기본적으로 허용되고
       사용 설정되어 애플리케이션이 여러 디스플레이로 확장될 수 있습니다.
       사용자는 디스플레이 설정에서 개별 디스플레이에 대한 통합 바탕화면을 선택 해제하여
@@ -2526,14 +2531,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           이 정책을 true로 설정하면 키보드의 맨 윗줄에 있는 키가 기본적으로 기본 키 명령어를 생성합니다. 다시 미디어 키 명령어를 생성하도록 되돌리려면 검색 키를 눌러야 합니다.
 
           이 정책을 false로 설정하거나 설정하지 않으면 키보드가 기본적으로 미디어 키 명령어를 생성하며 검색 키를 누르면 기능 키 명령어를 생성합니다.</translation>
-<translation id="4636613705027089602">이 정책은 사용자가 Google 관리 콘솔에 승인 요청을 보낼 수 있도록 허용하는 <ph name="PRODUCT_NAME" /> 확장 프로그램 설치 요청을 제어합니다.
-
-      이 정책이 설정되지 않거나 사용 중지되면 확장 프로그램 설치 요청은 생성 또는 업로드되지 않습니다.
-      이 정책이 사용 설정되면 확장 프로그램 설치 요청이 생성되고 Google 관리 콘솔에 업로드됩니다.
-
-      사용자가 <ph name="EXTENSION_INSTALL_WHITELIST" /> 또는 <ph name="EXTENSION_SETTINGS" />에서 허용되지 않은 확장 프로그램을 설치하려고 하면 확장 프로그램 설치 요청이 생성됩니다.
-
-      이 정책은 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />에 등록되어 있고 <ph name="CLOUD_REPORTING_ENABLED" />가 사용 설정된 경우에만 적용됩니다.</translation>
 <translation id="4639407427807680016">차단 목록에 적용되지 않는 기본 메시지 호스트의 이름</translation>
 <translation id="4649395978608361979">로컬 프린터 목적지</translation>
 <translation id="4650759511838826572">URL 프로토콜 스키마 사용 중지</translation>
@@ -3501,6 +3498,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           정책 값은 밀리초 단위로 지정해야 하며, 유휴 지연 시간보다 적도록 값이 잘립니다.</translation>
 <translation id="6097601282776163274">URL로 입력되며 익명으로 처리되는 데이터 수집 사용 설정</translation>
 <translation id="6099853574908182288">기본 컬러 인쇄 모드</translation>
+<translation id="6102342563050263313">URL 프래그먼트에서 지정한 텍스트로 스크롤 사용 설정</translation>
 <translation id="6107642964266628393">Chrome OS 업데이트가 적용되는 방식과 시기를 제어합니다.</translation>
 <translation id="6111936128861357925">공룡 부활절 달걀 게임 허용</translation>
 <translation id="6114416803310251055">사용중단됨</translation>
@@ -4515,6 +4513,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="7713608076604149344">다운로드 제한</translation>
 <translation id="7715711044277116530">프레젠테이션 모드에서 화면 어둡게 하기 지연 시간이 조정되는 비율</translation>
 <translation id="7717938661004793600"><ph name="PRODUCT_OS_NAME" /> 접근성 기능을 구성합니다.</translation>
+<translation id="7724652568947700864">정책이 설정되면 지정된 모든 데이터 유형이 Google 동기화와 로밍 프로필 동기화 모두에서 제외됩니다. 이렇게 하면 로밍 프로필의 크기를 줄이거나 Google 동기화 서버에 업로드되는 데이터의 유형을 제한하는 데 도움이 될 수 있습니다.
+
+      이 정책의 현재 데이터 유형은 'bookmarks', 'preferences', 'passwords', 'autofill', 'themes', 'typedUrls', 'extensions', 'apps', 'tabs', 'wifiConfiguration'입니다. 이름은 대소문자를 구분합니다.</translation>
 <translation id="7731026922044991970">모든 사이트에서 쿠키의 레거시 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌리기</translation>
 <translation id="7747447585227954402">기기가 <ph name="PRODUCT_OS_NAME" />에서 <ph name="PLUGIN_VM_NAME" />을(를) 사용하도록 허용합니다.</translation>
 <translation id="7749024457938190837">chrome.printing API를 통해 인쇄 작업을 전송할 때 확장 프로그램이 확인 대화상자를 건너뛸 수 있음</translation>

@@ -2442,8 +2442,9 @@ bool WebLocalFrameImpl::ShouldSuppressKeyboardForFocusedElement() {
 
 void WebLocalFrameImpl::OnPortalActivated(
     const base::UnguessableToken& portal_token,
-    mojo::ScopedInterfaceEndpointHandle portal_pipe,
-    mojo::ScopedInterfaceEndpointHandle portal_client_pipe,
+    CrossVariantMojoAssociatedRemote<mojom::blink::PortalInterfaceBase> portal,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::PortalClientInterfaceBase>
+        portal_client,
     TransferableMessage data,
     OnPortalActivatedCallback callback) {
   LocalDOMWindow* window = GetFrame()->DomWindow();
@@ -2459,11 +2460,7 @@ void WebLocalFrameImpl::OnPortalActivated(
       *window->document()->ToExecutionContext(), std::move(blink_data.ports));
 
   PortalActivateEvent* event = PortalActivateEvent::Create(
-      frame_.Get(), portal_token,
-      mojo::PendingAssociatedRemote<mojom::blink::Portal>(
-          std::move(portal_pipe), mojom::blink::Portal::Version_),
-      mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>(
-          std::move(portal_client_pipe)),
+      frame_.Get(), portal_token, std::move(portal), std::move(portal_client),
       std::move(blink_data.message), ports, std::move(callback));
 
   ThreadDebugger* debugger = MainThreadDebugger::Instance();

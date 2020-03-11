@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChange
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
 import org.chromium.components.browser_ui.widget.text.AccessibleTextView;
 
 /**
@@ -74,7 +75,7 @@ public class ReaderModeInfoBar extends InfoBar {
         iconView.setOnClickListener(mNavigateListener);
         iconView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
         final int messagePadding = getContext().getResources().getDimensionPixelOffset(
-                R.dimen.reader_mode_infobar_text_padding);
+                R.dimen.infobar_compact_message_vertical_padding);
         prompt.setPadding(0, messagePadding, 0, messagePadding);
         layout.addContent(prompt, 1f);
     }

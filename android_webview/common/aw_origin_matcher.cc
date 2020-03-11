@@ -123,6 +123,18 @@ inline bool CanHaveHostPort(const std::string& scheme) {
 
 }  // namespace
 
+AwOriginMatcher::AwOriginMatcher(const AwOriginMatcher& rhs) {
+  *this = rhs;
+}
+
+AwOriginMatcher& AwOriginMatcher::operator=(const AwOriginMatcher& rhs) {
+  rules_.clear();
+  for (const auto& rule : rhs.Serialize()) {
+    AddRuleFromString(rule);
+  }
+  return *this;
+}
+
 bool AwOriginMatcher::AddRuleFromString(const std::string& raw_untrimmed) {
   std::string raw;
   base::TrimWhitespaceASCII(raw_untrimmed, base::TRIM_ALL, &raw);
@@ -199,6 +211,15 @@ bool AwOriginMatcher::Matches(const url::Origin& origin) const {
       return true;
   }
   return false;
+}
+
+std::vector<std::string> AwOriginMatcher::Serialize() const {
+  std::vector<std::string> result;
+  result.reserve(rules_.size());
+  for (const auto& rule : rules_) {
+    result.push_back(rule->ToString());
+  }
+  return result;
 }
 
 }  // namespace android_webview

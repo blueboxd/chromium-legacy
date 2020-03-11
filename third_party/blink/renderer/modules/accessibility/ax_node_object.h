@@ -89,8 +89,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   void Init() override;
   void Detach() override;
-  bool IsDetached() const override { return !node_; }
-  bool IsAXNodeObject() const final { return true; }
+  bool IsDetached() const override;
+  bool IsAXNodeObject() const final;
 
   // Check object role or purpose.
   bool IsAnchor() const final;

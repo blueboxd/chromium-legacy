@@ -197,6 +197,8 @@ class CORE_EXPORT SecurityContext {
     secure_context_mode_ = mode;
   }
 
+  bool BindCSPImmediately() const { return bind_csp_immediately_; }
+
  protected:
   mojom::blink::WebSandboxFlags sandbox_flags_;
   scoped_refptr<SecurityOrigin> security_origin_;
@@ -216,6 +218,7 @@ class CORE_EXPORT SecurityContext {
   Member<Agent> agent_;
   SecureContextMode secure_context_mode_;
   Member<OriginTrialContext> origin_trial_context_;
+  bool bind_csp_immediately_ = false;
   DISALLOW_COPY_AND_ASSIGN(SecurityContext);
 };
 

@@ -74,6 +74,8 @@ ScrollableShelfInfo ShelfTestApi::GetScrollableShelfInfoForState(
   info.right_arrow_bounds =
       scrollable_shelf_view->right_arrow()->GetBoundsInScreen();
   info.is_animating = scrollable_shelf_view->during_scroll_animation_;
+  info.is_overflow = (scrollable_shelf_view->layout_strategy_ !=
+                      ScrollableShelfView::kNotShowArrowButtons);
 
   // Calculates the target offset only when |scroll_distance| is specified.
   if (state.scroll_distance != 0.f) {

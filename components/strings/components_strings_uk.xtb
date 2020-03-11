@@ -809,6 +809,7 @@
 <translation id="4466881336512663640">Зміни форми не буде збережено. Продовжити?</translation>
 <translation id="4477350412780666475">Наступна композиція</translation>
 <translation id="4482953324121162758">Цей сайт не перекладатиметься.</translation>
+<translation id="4486757593530038591">Якщо цей параметр увімкнено, сайти не можуть використовувати дані про ваші дії у веб-переглядачі, щоб персоналізувати рекламу. Функції на деяких сайтах можуть не працювати.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">Ці функції вимкнено за умовчанням. Вони будуть недоступні в майбутніх версіях Chrome.</translation>
 <translation id="4493480324863638523">Недійсна URL-адреса. Потрібно вказати URL-адресу зі стандартною схемою, як-от http://example.com або https://example.com.</translation>
@@ -1045,6 +1046,7 @@
 <translation id="549333378215107354">Розмір 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Закладки, якими керує адміністратор</translation>
+<translation id="5510481203689988000">Цим параметром можна керувати в налаштуваннях файлів cookie.</translation>
 <translation id="5510766032865166053">Можливо, його переміщено або видалено.</translation>
 <translation id="5523118979700054094">Назва правила</translation>
 <translation id="55293785478302737">Зшити вздовж краю</translation>
@@ -1477,6 +1479,7 @@
 <translation id="7416351320495623771">Керувати паролями…</translation>
 <translation id="7419106976560586862">Шлях до профілю</translation>
 <translation id="7437289804838430631">Додати контактну інформацію</translation>
+<translation id="7438976808740265764">З грудня 2020 року програвач Flash Player не підтримуватиметься.</translation>
 <translation id="7440140511386898319">Перегляд у режимі офлайн</translation>
 <translation id="7441627299479586546">Неправильна тема правила</translation>
 <translation id="7442725080345379071">Світло-оранжевий</translation>

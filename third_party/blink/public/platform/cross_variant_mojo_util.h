@@ -47,11 +47,16 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace blink {
+
+// Non-associated helpers
 
 template <typename Interface>
 class CrossVariantMojoReceiver {
@@ -76,13 +81,6 @@ class CrossVariantMojoReceiver {
 
  private:
   friend struct mojo::PendingReceiverConverter<CrossVariantMojoReceiver>;
-
-  // Constructs a valid CrossVariantMojoReceiver from a valid raw message pipe
-  // handle.
-  explicit CrossVariantMojoReceiver(mojo::ScopedMessagePipeHandle pipe)
-      : pipe_(std::move(pipe)) {
-    DCHECK(pipe_.is_valid());
-  }
 
   mojo::ScopedMessagePipeHandle pipe_;
 };
@@ -110,19 +108,78 @@ class CrossVariantMojoRemote {
  private:
   friend struct mojo::PendingRemoteConverter<CrossVariantMojoRemote>;
 
-  // Constructs a valid CrossVariantMojoRemote from a valid raw message pipe
-  // handle.
-  explicit CrossVariantMojoRemote(mojo::ScopedMessagePipeHandle pipe,
-                                  uint32_t version)
-      : pipe_(std::move(pipe)), version_(version) {
-    DCHECK(pipe_.is_valid());
-  }
-
   // Subtle: |version_| is ordered before |pipe_| so it can be initialized first
   // in the move conversion constructor. |PendingRemote::PassPipe()| invalidates
   // all other state on PendingRemote so it must be called last.
   uint32_t version_;
   mojo::ScopedMessagePipeHandle pipe_;
+};
+
+// Associated helpers
+
+template <typename Interface>
+class CrossVariantMojoAssociatedReceiver {
+ public:
+  CrossVariantMojoAssociatedReceiver() = default;
+  ~CrossVariantMojoAssociatedReceiver() = default;
+
+  CrossVariantMojoAssociatedReceiver(
+      CrossVariantMojoAssociatedReceiver&&) noexcept = default;
+  CrossVariantMojoAssociatedReceiver& operator=(
+      CrossVariantMojoAssociatedReceiver&&) noexcept = default;
+
+  CrossVariantMojoAssociatedReceiver(
+      const CrossVariantMojoAssociatedReceiver&) = delete;
+  CrossVariantMojoAssociatedReceiver& operator=(
+      const CrossVariantMojoAssociatedReceiver&) = default;
+
+  template <typename VariantInterface,
+            typename CrossVariantBase = typename VariantInterface::Base_,
+            std::enable_if_t<
+                std::is_same<CrossVariantBase, Interface>::value>* = nullptr>
+  CrossVariantMojoAssociatedReceiver(
+      mojo::PendingAssociatedReceiver<VariantInterface> receiver)
+      : handle_(receiver.PassHandle()) {}
+
+ private:
+  friend struct mojo::PendingAssociatedReceiverConverter<
+      CrossVariantMojoAssociatedReceiver>;
+
+  mojo::ScopedInterfaceEndpointHandle handle_;
+};
+
+template <typename Interface>
+class CrossVariantMojoAssociatedRemote {
+ public:
+  CrossVariantMojoAssociatedRemote() = default;
+  ~CrossVariantMojoAssociatedRemote() = default;
+
+  CrossVariantMojoAssociatedRemote(
+      CrossVariantMojoAssociatedRemote&&) noexcept = default;
+  CrossVariantMojoAssociatedRemote& operator=(
+      CrossVariantMojoAssociatedRemote&&) noexcept = default;
+
+  CrossVariantMojoAssociatedRemote(const CrossVariantMojoAssociatedRemote&) =
+      delete;
+  CrossVariantMojoAssociatedRemote& operator=(
+      const CrossVariantMojoAssociatedRemote&) = default;
+
+  template <typename VariantInterface,
+            typename CrossVariantBase = typename VariantInterface::Base_,
+            std::enable_if_t<
+                std::is_same<CrossVariantBase, Interface>::value>* = nullptr>
+  CrossVariantMojoAssociatedRemote(
+      mojo::PendingAssociatedRemote<VariantInterface> remote)
+      : version_(remote.version()), handle_(remote.PassHandle()) {}
+
+ private:
+  friend struct mojo::PendingAssociatedRemoteConverter<
+      CrossVariantMojoAssociatedRemote>;
+
+  // Note: unlike CrossVariantMojoRemote, there's no initialization ordering
+  // dependency here but keep the same ordering anyway to be consistent.
+  uint32_t version_;
+  mojo::ScopedInterfaceEndpointHandle handle_;
 };
 
 }  // namespace blink
@@ -149,6 +206,30 @@ struct PendingRemoteConverter<blink::CrossVariantMojoRemote<CrossVariantBase>> {
     return in.pipe_.is_valid()
                ? PendingRemote<VariantBase>(std::move(in.pipe_), in.version_)
                : PendingRemote<VariantBase>();
+  }
+};
+
+template <typename CrossVariantBase>
+struct PendingAssociatedReceiverConverter<
+    blink::CrossVariantMojoAssociatedReceiver<CrossVariantBase>> {
+  template <typename VariantBase>
+  static PendingAssociatedReceiver<VariantBase> To(
+      blink::CrossVariantMojoAssociatedReceiver<CrossVariantBase>&& in) {
+    return in.handle_.is_valid()
+               ? PendingAssociatedReceiver<VariantBase>(std::move(in.handle_))
+               : PendingAssociatedReceiver<VariantBase>();
+  }
+};
+
+template <typename CrossVariantBase>
+struct PendingAssociatedRemoteConverter<
+    blink::CrossVariantMojoAssociatedRemote<CrossVariantBase>> {
+  template <typename VariantBase>
+  static PendingAssociatedRemote<VariantBase> To(
+      blink::CrossVariantMojoAssociatedRemote<CrossVariantBase>&& in) {
+    return in.handle_.is_valid() ? PendingAssociatedRemote<VariantBase>(
+                                       std::move(in.handle_), in.version_)
+                                 : PendingAssociatedRemote<VariantBase>();
   }
 };
 

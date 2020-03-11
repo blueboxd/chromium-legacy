@@ -30,7 +30,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/context_menu_params.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/load_states.h"
 #include "net/http/http_request_headers.h"

@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Mot de passe à modifier</translation>
 <translation id="2049639323467105390">Cet appareil est géré par <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Activer le Bluetooth pour découvrir les appareils à proximité</translation>
+<translation id="2375079107209812402"><ph name="ATTEMPTS_LEFT" /> tentatives restantes</translation>
 <translation id="2805756323405976993">Applications</translation>
 <translation id="2872961005593481000">Éteindre</translation>
 <translation id="3008341117444806826">ACTUALISER</translation>
@@ -42,6 +43,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="808894953321890993">Modifier le mot de passe</translation>
 <translation id="8208861521865154048">Avantages</translation>
 <translation id="8747900814994928677">Confirmer la modification</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> tentatives restantes</translation>
 <translation id="910415269708673980">Actualiser le ticket associé à <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Déverrouiller</translation>
 </translationbundle>

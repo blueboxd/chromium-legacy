@@ -595,7 +595,7 @@ class Internals final : public ScriptWrappable {
 
   void setDeviceEmulationScale(float scale, ExceptionState&);
 
-  String getDocumentAgentId(Document*);
+  String getAgentId(DOMWindow*);
 
   void useMockOverlayScrollbars();
   bool overlayScrollbarsEnabled() const;

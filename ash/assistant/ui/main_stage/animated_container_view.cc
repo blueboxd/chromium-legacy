@@ -107,7 +107,6 @@ std::unique_ptr<ElementAnimator> AnimatedContainerView::HandleUiElement(
 }
 
 std::unique_ptr<ElementAnimator> AnimatedContainerView::HandleSuggestion(
-    int id,
     const AssistantSuggestion* suggestion) {
   return nullptr;
 }
@@ -203,9 +202,8 @@ void AnimatedContainerView::AddResponse(
   std::vector<std::unique_ptr<ElementAnimator>> animators;
 
   // Create views (and animators) for the suggestions belonging to the response.
-  for (const auto& pair : response_->GetSuggestions()) {
-    auto animator =
-        HandleSuggestion(/*id=*/pair.first, /*suggestion=*/pair.second);
+  for (const auto* suggestion : response_->GetSuggestions()) {
+    auto animator = HandleSuggestion(suggestion);
     if (animator)
       animators.push_back(std::move(animator));
   }

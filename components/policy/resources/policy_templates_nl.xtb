@@ -2515,14 +2515,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           Als dit beleid wordt ingesteld op 'True', voeren de toetsen op de bovenste rij van het toetsenbord standaard opdrachten van functietoetsen uit. De zoektoets moet worden ingedrukt om het gedrag terug te zetten naar mediatoetsen.
 
           Als dit beleid wordt ingesteld op 'False' of niet wordt ingesteld, voert het toetsenbord standaard opdrachten uit van mediatoetsen, en voert het opdrachten uit van functietoetsen wanneer de zoektoets ingedrukt wordt gehouden.</translation>
-<translation id="4636613705027089602">Met dit beleid worden installatieverzoeken voor <ph name="PRODUCT_NAME" />-extensies beheerd waarmee gebruikers de verzoeken ter goedkeuring naar de Google Beheerdersconsole kunnen sturen.
-
-      Als dit beleid niet is ingesteld of is uitgeschakeld, worden er geen installatieverzoeken voor extensies gemaakt of geüpload.
-      Als dit beleid is ingeschakeld, worden installatieverzoeken voor extensies gemaakt en geüpload naar de Google Beheerdersconsole.
-
-      Er worden installatieverzoeken voor extensies gemaakt als gebruikers proberen een extensie te installeren die niet op de witte lijst van <ph name="EXTENSION_INSTALL_WHITELIST" /> of <ph name="EXTENSION_SETTINGS" /> staat.
-
-      Dit beleid is alleen effectief als de machine is ingeschreven bij <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> en <ph name="CLOUD_REPORTING_ENABLED" /> is ingeschakeld.</translation>
 <translation id="4639407427807680016">Namen van de hosts voor systeemeigen berichten die moeten worden vrijgesteld van de zwarte lijst</translation>
 <translation id="4649395978608361979">Lokale printerbestemmingen</translation>
 <translation id="4650759511838826572">URL-protocolschema's uitschakelen</translation>

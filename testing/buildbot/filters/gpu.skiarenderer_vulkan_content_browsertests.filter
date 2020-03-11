@@ -1,4 +1,1 @@
-# FeatureList Flakes. https://crbug.com/1012372
--NavigationBrowserTest.HistoryBackCancelPendingNavigationUserGesture/1
--SitePerProcessBrowserTest.*
--TextFragmentAnchorBrowserTest.DisabledOnScriptNavigation/0
+# TODO(jonross): Remove once Finch completes.

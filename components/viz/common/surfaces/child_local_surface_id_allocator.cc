@@ -72,10 +72,13 @@ bool ChildLocalSurfaceIdAllocator::UpdateFromParent(
         parent_local_surface_id_allocation.allocation_time();
   }
 
+  // If embed token has changed, accept all fields from the parent
+  // including child sequence number.
   if (current_local_surface_id.embed_token() !=
       parent_allocated_local_surface_id.embed_token()) {
     current_local_surface_id_allocation_.local_surface_id_
-        .child_sequence_number_ = 1;
+        .child_sequence_number_ =
+        parent_allocated_local_surface_id.child_sequence_number_;
   }
 
   current_local_surface_id_allocation_.local_surface_id_

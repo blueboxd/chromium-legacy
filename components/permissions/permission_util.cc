@@ -10,7 +10,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_array.h"
-#include "components/permissions/android/jni/PermissionUtil_jni.h"
+#include "components/permissions/android/jni_headers/PermissionUtil_jni.h"
 #endif
 
 using content::PermissionType;

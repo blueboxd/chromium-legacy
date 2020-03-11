@@ -199,13 +199,11 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/error_page_switches.h"
@@ -4231,31 +4229,6 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 
   ChromeNavigationUIData* chrome_navigation_ui_data =
       static_cast<ChromeNavigationUIData*>(navigation_ui_data);
-
-  auto* drp_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          browser_context);
-  if (chrome_navigation_ui_data && !profile->IsIncognitoProfile() &&
-      data_reduction_proxy::params::IsEnabledWithNetworkService() &&
-      drp_settings) {
-    if (!data_reduction_proxy_throttle_manager_) {
-      data_reduction_proxy_throttle_manager_ = std::make_unique<
-          data_reduction_proxy::DataReductionProxyThrottleManager>(
-          drp_settings->data_reduction_proxy_service(),
-          data_reduction_proxy::DataReductionProxyThrottleManager::CreateConfig(
-              drp_settings->data_reduction_proxy_service()
-                  ->config()
-                  ->GetProxiesForHttp()));
-    }
-    net::HttpRequestHeaders headers;
-    data_reduction_proxy::DataReductionProxyRequestOptions::
-        AddPageIDRequestHeader(
-            &headers,
-            chrome_navigation_ui_data->data_reduction_proxy_page_id());
-    result.push_back(std::make_unique<
-                     data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
-        headers, data_reduction_proxy_throttle_manager_.get()));
-  }
 
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(

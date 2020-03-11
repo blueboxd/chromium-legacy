@@ -397,6 +397,9 @@ extern const char kEnableNetworkLoggingToFileDescription[];
 extern const char kEnableNetworkServiceInProcessName[];
 extern const char kEnableNetworkServiceInProcessDescription[];
 
+extern const char kCorsForContentScriptsName[];
+extern const char kCorsForContentScriptsDescription[];
+
 extern const char kCrossOriginIsolationName[];
 extern const char kCrossOriginIsolationDescription[];
 

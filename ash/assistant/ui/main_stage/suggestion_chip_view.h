@@ -7,7 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/views/controls/button/button.h"
 
 namespace views {
@@ -18,22 +18,16 @@ class Label;
 
 namespace ash {
 
-// TODO(dmblack): Move to /ash/assistant/ui/base/.
+class AssistantViewDelegate;
+
 // View representing a suggestion chip.
 class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionChipView : public views::Button {
  public:
-  // Initialization parameters.
-  struct Params {
-    Params();
-    ~Params();
+  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
 
-    // Display text.
-    base::string16 text;
-    // Optional icon.
-    base::Optional<gfx::ImageSkia> icon;
-  };
-
-  SuggestionChipView(const Params& params, views::ButtonListener* listener);
+  SuggestionChipView(AssistantViewDelegate* delegate,
+                     const AssistantSuggestion* suggestion,
+                     views::ButtonListener* listener);
   ~SuggestionChipView() override;
 
   // views::View:
@@ -50,13 +44,19 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionChipView : public views::Button {
   void SetText(const base::string16& text);
   const base::string16& GetText() const;
 
- private:
-  void InitLayout(const Params& params);
+  const AssistantSuggestion* suggestion() const { return suggestion_; }
 
-  views::ImageView* icon_view_;  // Owned by view hierarchy.
-  views::Label* text_view_;      // Owned by view hierarchy.
+ private:
+  void InitLayout();
+
+  AssistantViewDelegate* const delegate_;
+  const AssistantSuggestion* const suggestion_;
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
+  views::ImageView* icon_view_;       // Owned by view hierarchy.
+  views::Label* text_view_;           // Owned by view hierarchy.
+
+  base::WeakPtrFactory<SuggestionChipView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionChipView);
 };

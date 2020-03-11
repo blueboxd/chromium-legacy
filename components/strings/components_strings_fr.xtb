@@ -809,6 +809,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="4466881336512663640">Les modifications apportées au formulaire seront perdues. Voulez-vous vraiment continuer ?</translation>
 <translation id="4477350412780666475">Titre suivant</translation>
 <translation id="4482953324121162758">Ce site ne sera pas traduit.</translation>
+<translation id="4486757593530038591">Lorsque cette option est activée, les sites ne peuvent pas utiliser votre activité de navigation sur d'autres sites pour personnaliser les annonces. Les fonctionnalités de certains sites peuvent être bloquées.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">Ces fonctionnalités sont désactivées par défaut. Elles ne seront plus disponibles dans les prochaines versions de Chrome.</translation>
 <translation id="4493480324863638523">URL non valide : vous devez saisir une URL avec un schéma standard, comme http://example.com ou https://example.com.</translation>
@@ -1045,6 +1046,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="549333378215107354">Taille 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Favoris gérés</translation>
+<translation id="5510481203689988000">Cette option est gérée dans les paramètres des cookies.</translation>
 <translation id="5510766032865166053">Il a peut-être été déplacé ou supprimé.</translation>
 <translation id="5523118979700054094">Nom de la règle</translation>
 <translation id="55293785478302737">Agrafage par le bord</translation>
@@ -1477,6 +1479,7 @@ Informations supplémentaires :
 <translation id="7416351320495623771">Gérer les mots de passe…</translation>
 <translation id="7419106976560586862">Chemin d'accès au profil</translation>
 <translation id="7437289804838430631">Ajouter des coordonnées</translation>
+<translation id="7438976808740265764">Flash Player ne sera plus accepté après décembre 2020.</translation>
 <translation id="7440140511386898319">Parcourir hors connexion</translation>
 <translation id="7441627299479586546">Objet de la règle incorrect.</translation>
 <translation id="7442725080345379071">Orange clair</translation>

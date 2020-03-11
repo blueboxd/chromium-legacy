@@ -14,7 +14,7 @@ include_rules = [
     "+base/task_runner.h",
     "+base/task/post_job.h",
     "+base/template_util.h",
-    "+testing/perf/perf_test.h",
+    "+testing/perf/perf_result_reporter.h",
 
     "+third_party/blink/renderer/platform/bindings",
     "+third_party/blink/renderer/platform/instrumentation/histogram.h",

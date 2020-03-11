@@ -1305,7 +1305,7 @@ android_aar_prebuilt("google_play_services_cast_framework_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_fido_java") {
-  aar_path = "libs/com_google_android_gms_play_services_fido/play-services-fido-17.0.0.aar"
+  aar_path = "libs/com_google_android_gms_play_services_fido/play-services-fido-18.1.0.aar"
   info_path = "libs/com_google_android_gms_play_services_fido/com_google_android_gms_play_services_fido.info"
   deps = [
     ":google_play_services_base_java",

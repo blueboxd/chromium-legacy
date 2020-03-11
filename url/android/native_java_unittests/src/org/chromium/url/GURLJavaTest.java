@@ -116,10 +116,10 @@ public class GURLJavaTest {
         GURL url2 = new GURL("javascript:window.alert(\"hello,world\");");
         URI uri = new URI("filesystem:http://user:pass@google.com:21/blah#baz");
 
-        Assert.assertEquals(url1.getOrigin().getSpec(), kExpectedOrigin1);
-        Assert.assertEquals(url2.getOrigin().getSpec(), kExpectedOrigin2);
+        Assert.assertEquals(kExpectedOrigin1, url1.getOrigin().getSpec());
+        Assert.assertEquals(kExpectedOrigin2, url2.getOrigin().getSpec());
         URI origin = uri.getOrigin();
-        Assert.assertEquals(origin.getSpec(), kExpectedOrigin1);
+        Assert.assertEquals(kExpectedOrigin1, origin.getSpec());
     }
 
     @CalledByNativeJavaTest

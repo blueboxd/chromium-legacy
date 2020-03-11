@@ -397,6 +397,7 @@ crbug.com/965594 [ linux amd opengl passthrough ] conformance/more/conformance/q
 crbug.com/965594 [ linux amd opengl passthrough ] conformance/more/conformance/webGLArrays.html [ RetryOnFailure ]
 crbug.com/1028639 [ linux amd opengl passthrough ] conformance/ogles/GL/mat/mat_009_to_016.html [ Failure ]
 crbug.com/1028639 [ linux amd opengl passthrough ] conformance/ogles/GL/log2/log2_009_to_012.html [ Failure ]
+crbug.com/1060632 [ linux amd opengl passthrough ] conformance/more/functions/bindBuffer.html [ RetryOnFailure ]
 
 
 ####################

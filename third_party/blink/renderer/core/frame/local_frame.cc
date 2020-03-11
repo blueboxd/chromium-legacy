@@ -455,6 +455,7 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   // frames, and those event handlers might start a new subresource load in this
   // frame which should be stopped by Detach.
   loader_.Detach();
+  DomWindow()->FrameDestroyed();
   GetDocument()->Shutdown();
 
   if (content_capture_manager_) {
@@ -499,8 +500,6 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   SetView(nullptr);
 
   GetEventHandlerRegistry().DidRemoveAllEventHandlers(*DomWindow());
-
-  DomWindow()->FrameDestroyed();
 
   probe::FrameDetachedFromParent(this);
 
@@ -604,11 +603,10 @@ LocalDOMWindow* LocalFrame::DomWindow() const {
 }
 
 void LocalFrame::SetDOMWindow(LocalDOMWindow* dom_window) {
-  if (dom_window)
-    GetScriptController().ClearWindowProxy();
-
+  DCHECK(dom_window);
   if (this->DomWindow())
     this->DomWindow()->Reset();
+  GetScriptController().ClearWindowProxy();
   dom_window_ = dom_window;
 }
 
@@ -1785,7 +1783,7 @@ void LocalFrame::PaintFrameColorOverlay(GraphicsContext& context) {
 }
 
 void LocalFrame::ForciblyPurgeV8Memory() {
-  GetDocument()->NotifyContextDestroyed();
+  DomWindow()->NotifyContextDestroyed();
 
   WindowProxyManager* window_proxy_manager = GetWindowProxyManager();
   window_proxy_manager->ClearForV8MemoryPurge();

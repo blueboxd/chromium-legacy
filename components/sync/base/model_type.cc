@@ -194,8 +194,8 @@ static_assert(41 == syncer::ModelType::NUM_ENTRIES,
               "and suffix SyncModelType in histograms.xml.");
 
 static_assert(41 == syncer::ModelType::NUM_ENTRIES,
-              "When adding a new type, update kAllocatorDumpNameWhitelist in "
-              "base/trace_event/memory_infra_background_whitelist.cc.");
+              "When adding a new type, update kAllocatorDumpNameAllowlist in "
+              "base/trace_event/memory_infra_background_allowlist.cc.");
 
 void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
   switch (type) {

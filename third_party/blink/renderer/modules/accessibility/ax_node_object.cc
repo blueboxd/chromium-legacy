@@ -1080,6 +1080,14 @@ void AXNodeObject::Detach() {
   node_ = nullptr;
 }
 
+bool AXNodeObject::IsDetached() const {
+  return !node_ || AXObject::IsDetached();
+}
+
+bool AXNodeObject::IsAXNodeObject() const {
+  return true;
+}
+
 bool AXNodeObject::IsAnchor() const {
   return !IsNativeImage() && IsLink();
 }

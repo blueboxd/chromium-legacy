@@ -31,7 +31,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 #include "components/prefs/pref_service.h"
@@ -213,7 +212,6 @@ void DataReductionProxyService::OnEffectiveConnectionTypeChanged(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   effective_connection_type_ = type;
-  UpdateCustomProxyConfig();
 }
 
 void DataReductionProxyService::OnRTTOrThroughputEstimatesComputed(
@@ -318,7 +316,6 @@ void DataReductionProxyService::UpdateProxyRequestHeaders(
     const net::HttpRequestHeaders& headers) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   settings_->SetProxyRequestHeaders(headers);
-  UpdateCustomProxyConfig();
 }
 
 void DataReductionProxyService::UpdatePrefetchProxyHosts(
@@ -329,8 +326,6 @@ void DataReductionProxyService::UpdatePrefetchProxyHosts(
 
 void DataReductionProxyService::OnProxyConfigUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UpdateCustomProxyConfig();
-  UpdateThrottleConfig();
 }
 
 void DataReductionProxyService::SetIgnoreLongTermBlackListRules(
@@ -342,7 +337,6 @@ void DataReductionProxyService::SetIgnoreLongTermBlackListRules(
 void DataReductionProxyService::AddCustomProxyConfigClient(
     mojo::Remote<network::mojom::CustomProxyConfigClient> config_client) {
   proxy_config_clients_.Add(std::move(config_client));
-  UpdateCustomProxyConfig();
 }
 
 void DataReductionProxyService::LoadHistoricalDataUsage(
@@ -420,78 +414,6 @@ void DataReductionProxyService::OnServicesDataUse(int32_t service_hash_code,
         std::string(), false, data_use_measurement::DataUseUserData::OTHER,
         service_hash_code);
   }
-}
-
-void DataReductionProxyService::MarkProxiesAsBad(
-    base::TimeDelta bypass_duration,
-    const net::ProxyList& bad_proxies,
-    MarkProxiesAsBadCallback callback) {
-  // Sanity check the inputs, as this data may originate from a lower-privilege
-  // process (renderer).
-
-  if (bypass_duration < base::TimeDelta()) {
-    std::move(callback).Run();
-    return;
-  }
-
-  // Limit maximum bypass duration to a day.
-  if (bypass_duration > base::TimeDelta::FromDays(1))
-    bypass_duration = base::TimeDelta::FromDays(1);
-
-  // |bad_proxies| should be DRP servers or this API allows marking arbitrary
-  // proxies as bad. It is possible that proxies from an older config are
-  // received (FindConfiguredDataReductionProxy() searches recent proxies too).
-  for (const auto& proxy : bad_proxies.GetAll()) {
-    if (!config_->FindConfiguredDataReductionProxy(proxy)) {
-      std::move(callback).Run();
-      return;
-    }
-  }
-
-  for (auto& client : proxy_config_clients_)
-    client->MarkProxiesAsBad(bypass_duration, bad_proxies, std::move(callback));
-}
-
-void DataReductionProxyService::AddThrottleConfigObserver(
-    mojo::PendingRemote<mojom::DataReductionProxyThrottleConfigObserver>
-        observer) {
-  mojo::Remote<mojom::DataReductionProxyThrottleConfigObserver> observer_remote(
-      std::move(observer));
-  observer_remote->OnThrottleConfigChanged(CreateThrottleConfig());
-  drp_throttle_config_observers_.Add(std::move(observer_remote));
-}
-
-void DataReductionProxyService::Clone(
-    mojo::PendingReceiver<mojom::DataReductionProxy> receiver) {
-  drp_receivers_.Add(this, std::move(receiver));
-}
-
-void DataReductionProxyService::UpdateCustomProxyConfig() {
-  if (params::IsIncludedInHoldbackFieldTrial())
-    return;
-
-  network::mojom::CustomProxyConfigPtr config = CreateCustomProxyConfig(
-      !base::FeatureList::IsEnabled(
-          features::kDataReductionProxyDisableProxyFailedWarmup),
-      config_->GetProxiesForHttp());
-  for (auto& client : proxy_config_clients_)
-    client->OnCustomProxyConfigUpdated(config->Clone());
-}
-
-void DataReductionProxyService::UpdateThrottleConfig() {
-  if (drp_throttle_config_observers_.empty())
-    return;
-
-  auto config = CreateThrottleConfig();
-
-  for (auto& it : drp_throttle_config_observers_)
-    it->OnThrottleConfigChanged(config->Clone());
-}
-
-mojom::DataReductionProxyThrottleConfigPtr
-DataReductionProxyService::CreateThrottleConfig() const {
-  return DataReductionProxyThrottleManager::CreateConfig(
-      config_->GetProxiesForHttp());
 }
 
 network::mojom::CustomProxyConfigPtr

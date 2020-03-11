@@ -8,8 +8,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 
 namespace device {
-namespace fido {
-namespace cros {
 
 FidoChromeOSDiscovery::FidoChromeOSDiscovery()
     : FidoDiscoveryBase(FidoTransportProtocol::kInternal),
@@ -37,6 +35,4 @@ void FidoChromeOSDiscovery::AddAuthenticator() {
   observer()->DiscoveryStarted(this, /*success=*/true, {authenticator_.get()});
 }
 
-}  // namespace cros
-}  // namespace fido
 }  // namespace device

@@ -1703,7 +1703,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionResponseWithAttestedCredentialData) {
 }
 
 #if defined(OS_WIN)
-TEST_F(AuthenticatorImplTest, WinIsUVPAA) {
+TEST_F(AuthenticatorImplTest, IsUVPAA) {
   device::FakeWinWebAuthnApi win_webauthn_api;
   auto discovery_factory =
       std::make_unique<device::test::FakeFidoDiscoveryFactory>();
@@ -1733,6 +1733,24 @@ TEST_F(AuthenticatorImplTest, WinIsUVPAA) {
   }
 }
 #endif  // defined(OS_WIN)
+
+#if defined(OS_CHROMEOS)
+TEST_F(AuthenticatorImplTest, IsUVPAA) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  for (const bool flag_enabled : {false, true}) {
+    SCOPED_TRACE(::testing::Message() << "flag_enabled=" << flag_enabled);
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatureState(
+        device::kWebAuthCrosPlatformAuthenticator, flag_enabled);
+    mojo::Remote<blink::mojom::Authenticator> authenticator =
+        ConnectToAuthenticator();
+    TestIsUvpaaCallback cb;
+    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+    cb.WaitForCallback();
+    EXPECT_EQ(flag_enabled, cb.value());
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 class OverrideRPIDAuthenticatorRequestDelegate
     : public AuthenticatorRequestClientDelegate {

@@ -19,9 +19,6 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
-#include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "components/safe_browsing/content/renderer/renderer_url_loader_throttle.h"
 #include "components/safe_browsing/core/features.h"
 #include "content/public/common/content_features.h"
@@ -98,10 +95,6 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
       chrome_content_renderer_client_(chrome_content_renderer_client) {
   DETACH_FROM_THREAD(thread_checker_);
   broker->GetInterface(safe_browsing_remote_.InitWithNewPipeAndPassReceiver());
-  if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    broker->GetInterface(
-        data_reduction_proxy_remote_.InitWithNewPipeAndPassReceiver());
-  }
 }
 
 URLLoaderThrottleProviderImpl::~URLLoaderThrottleProviderImpl() {
@@ -117,10 +110,6 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
     other.safe_browsing_->Clone(
         safe_browsing_remote_.InitWithNewPipeAndPassReceiver());
   }
-  if (other.data_reduction_proxy_) {
-    other.data_reduction_proxy_->Clone(
-        data_reduction_proxy_remote_.InitWithNewPipeAndPassReceiver());
-  }
   // An ad_delay_factory_ is created, rather than cloning the existing one.
 }
 
@@ -129,8 +118,6 @@ URLLoaderThrottleProviderImpl::Clone() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (safe_browsing_remote_)
     safe_browsing_.Bind(std::move(safe_browsing_remote_));
-  if (data_reduction_proxy_remote_)
-    data_reduction_proxy_.Bind(std::move(data_reduction_proxy_remote_));
   return base::WrapUnique(new URLLoaderThrottleProviderImpl(*this));
 }
 
@@ -152,21 +139,6 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
 
   DCHECK(!is_frame_resource ||
          type_ == content::URLLoaderThrottleProviderType::kFrame);
-
-  if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    if (data_reduction_proxy_remote_)
-      data_reduction_proxy_.Bind(std::move(data_reduction_proxy_remote_));
-    if (!data_reduction_proxy_manager_) {
-      data_reduction_proxy_manager_ = std::make_unique<
-          data_reduction_proxy::DataReductionProxyThrottleManager>(
-          data_reduction_proxy_.get(),
-          data_reduction_proxy::mojom::DataReductionProxyThrottleConfigPtr());
-    }
-    throttles.push_back(
-        std::make_unique<
-            data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
-            net::HttpRequestHeaders(), data_reduction_proxy_manager_.get()));
-  }
 
   if (!is_frame_resource) {
     if (safe_browsing_remote_)

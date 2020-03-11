@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '6dc0f63a509cc111cbda2a419cc835bd65272bb0',
+  'skia_revision': 'dafbf121a8b185b9a68f363badd21e44e52275ef',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '83b2817d8edb5b18f82a57b2500f76e4b6e43849',
+  'v8_revision': '506142ad90f3a4d686c6367f4a720f53eeae38af',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -191,7 +191,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'ce25c2d434cfba5c7edee5b82078e033bc0057f2',
+  'swiftshader_revision': '710f8c3e8de2a237b0cb0151316695e657a92c6b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '7004f998c7ba0e88c27d6f294666dd67b0916ec8',
+  'catapult_revision': '71d8ec3637944bd19f3c9ebad4349cb3210d27e4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -716,7 +716,7 @@ deps = {
       'packages': [
           {
                'package': 'chromium/third_party/android_tools_bundletool',
-               'version': 'P0-ZY8wc-hAu5TZYFH7bId8H9Ucy7mNGCg1IPzXuZpEC',
+               'version': 'Yyhy8FicC3R0ATRzWqGNh4ffsCLz_0nu_BjmNPAdhvIC',
           },
       ],
       'condition': 'checkout_android',
@@ -899,7 +899,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '96c9784d1a3d4406b02d886f2fdbab7fd25efe73',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd52eddaad2fbc9b7630d742715d184f50362253f',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -924,7 +924,7 @@ deps = {
   },
 
   'src/third_party/ffmpeg':
-    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '545152f30278da1d978284226a5fa510a9c92031',
+    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'd2350e1645b5dea766056e15dbf20004e141840d',
 
   'src/third_party/flac':
     Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'af862024c8c8fa0ae07ced05e89013d881b00596',
@@ -1108,7 +1108,7 @@ deps = {
 
   # Userspace interface to kernel DRM services.
   'src/third_party/libdrm/src': {
-      'url': Var('chromium_git') + '/chromiumos/third_party/libdrm.git' + '@' + '0061b1f244574e615c415479725046ab2951f09a',
+      'url': Var('chromium_git') + '/chromiumos/third_party/libdrm.git' + '@' + '0190f49a139e7069d7cad6a6890832831da1aa8b',
       'condition': 'checkout_linux',
   },
 
@@ -1182,7 +1182,7 @@ deps = {
 
   # Graphics buffer allocator for Chrome OS.
   'src/third_party/minigbm/src': {
-      'url': Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + '3d856025f8f057d29361e753ef712993d218d6e9',
+      'url': Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + 'c5352e6b363e47e2f3ad6765ad95c94d4e9c7923',
       'condition': 'checkout_linux',
   },
 
@@ -1233,7 +1233,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '6f26bce0b1c4e8ce0e13332f7c0083788def5fdf',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'cbf7f5178da67099ecc2ead3a88101188a3292f0',
+    Var('chromium_git') + '/openscreen' + '@' + '066e6a62edccd732ebb7b7a727097e5a861d2e01',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1454,7 +1454,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '84ee597cdeae08bb26e578fc66a35bcf35f633f4',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '8f47b27268ea52848fe30447a716573299e574ca',
+    Var('webrtc_git') + '/src.git' + '@' + '6c08e4b57d48f498f61409b58b6bf9493fec74ce',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1529,7 +1529,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@72abb04e33faa6156bc5a447aee3f76c7dbeec3c',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f5c744d6f172016555599591969365908ae1b2c3',
     'condition': 'checkout_src_internal',
   },
 
@@ -2765,7 +2765,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_fido',
-              'version': 'version:17.0.0-cr0',
+              'version': 'version:18.1.0-cr0',
           },
       ],
       'condition': 'checkout_android',

@@ -556,6 +556,7 @@
 <translation id="1745520510852184940">Dit altijd doen</translation>
 <translation id="1750172676754093297">Op deze beveiligingssleutel kunnen geen vingerafdrukken worden opgeslagen</translation>
 <translation id="175196451752279553">Gesloten tabblad opni&amp;euw openen</translation>
+<translation id="1753067873202720523">Je Chromebook wordt mogelijk niet opgeladen wanneer deze is ingeschakeld.</translation>
 <translation id="1753905327828125965">Meest bezocht</translation>
 <translation id="1755601632425835748">Tekstgrootte</translation>
 <translation id="1756681705074952506">Invoermethode</translation>
@@ -1201,6 +1202,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2610157865375787051">Slaapstand</translation>
 <translation id="2610260699262139870">We&amp;rkelijke grootte</translation>
 <translation id="2610780100389066815">Microsoft-vertrouwenslijsthandtekening</translation>
+<translation id="261226884343006626">Chrome kan je wachtwoorden niet checken. Probeer het morgen opnieuw.</translation>
 <translation id="2612676031748830579">Kaartnummer</translation>
 <translation id="2616366145935564096">Je gegevens lezen en wijzigen op <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">Simkaart is vergrendeld</translation>
@@ -1331,6 +1333,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2773288106548584039">Ondersteuning voor oudere browsers</translation>
 <translation id="2773802008104670137">Dit type bestand kan je computer beschadigen.</translation>
 <translation id="2775104091073479743">Vingerafdrukken bewerken</translation>
+<translation id="2775140325783767197">Chrome kan je wachtwoorden niet checken. Check de internetverbinding.</translation>
 <translation id="2776441542064982094">Het lijkt erop dat er geen apparaten beschikbaar zijn om te registreren via het netwerk. Als je apparaat aan staat en verbinding heeft met internet, kun je proberen het te registreren met de instructies in de handleiding van het apparaat.</translation>
 <translation id="2780009105947267877">Plugin VM instellen…</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -2901,6 +2904,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4964455510556214366">Indeling</translation>
 <translation id="4965808351167763748">Weet je zeker dat je dit apparaat wilt instellen voor Hangouts Meet?</translation>
 <translation id="496888482094675990">De app Bestanden biedt snelle toegang tot bestanden die je op Google Drive, externe opslag of je Chrome OS-apparaat hebt opgeslagen.</translation>
+<translation id="4969017548025688718"><ph name="COUNT" /> gehackte wachtwoorden</translation>
 <translation id="4971412780836297815">Openen wanneer gereed</translation>
 <translation id="4972129977812092092">Printer bewerken</translation>
 <translation id="4972164225939028131">Onjuist wachtwoord</translation>
@@ -3259,7 +3263,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5470735824776589490">Opnieuw starten is vereist voordat je apparaat opnieuw kan worden ingesteld met Powerwash. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Hallo. Ik ben je stem voor tekst-naar-spraak.</translation>
 <translation id="5473333559083690127">Pincode opnieuw opgeven</translation>
-<translation id="548137908954174608">'Live ondertiteling' inschakelen</translation>
 <translation id="5481941284378890518">Printers in de buurt toevoegen</translation>
 <translation id="5483785310822538350">Toegang tot bestand en apparaat intrekken</translation>
 <translation id="5485080380723335835">Je <ph name="DEVICE_TYPE" /> is vergrendeld uit beveiligingsoverwegingen. Geef je wachtwoord handmatig op om door te gaan.</translation>
@@ -4903,7 +4906,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7740996059027112821">Standaard</translation>
 <translation id="7744047395460924128">Je afdrukgeschiedenis weergeven</translation>
 <translation id="7744192722284567281">Gevonden in een gegevenslek</translation>
-<translation id="7746457520633464754">Chrome verzendt de URL's van sommige pagina's die je bezoekt, beperkte systeemgegevens en bepaalde paginacontent naar Google om gevaarlijke apps en sites te detecteren</translation>
 <translation id="7750228210027921155">Scherm-in-scherm</translation>
 <translation id="7751229152614300329">Safe Browsing is up-to-date en beschermt je tegen schadelijke sites en downloads</translation>
 <translation id="7751260505918304024">Alles weergeven</translation>
@@ -5417,7 +5419,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8391712576156218334">De afbeelding is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="8392364544846746346">Vragen wanneer een site bestanden of mappen op je apparaat wil bewerken</translation>
 <translation id="8392451568018454956">Optiemenu voor <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8392630288038565643">Deze instelling is uitgeschakeld op beheerde browsers.</translation>
 <translation id="8393511274964623038">Plug-in stoppen</translation>
 <translation id="8393700583063109961">Bericht verzenden</translation>
 <translation id="839736845446313156">Registreren</translation>
@@ -5501,7 +5502,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="851263357009351303"><ph name="HOST" /> altijd toestaan afbeeldingen weer te geven</translation>
 <translation id="8513108775083588393">Automatisch draaien</translation>
 <translation id="8514746246728959655">Probeer een andere beveiligingssleutel</translation>
-<translation id="8517041960877371778">Je <ph name="DEVICE_TYPE" /> wordt mogelijk niet opgeladen terwijl deze is ingeschakeld.</translation>
 <translation id="8521475323816527629">Snel naar je apps gaan</translation>
 <translation id="8523493869875972733">Wijzigingen behouden</translation>
 <translation id="8523849605371521713">Toegevoegd door beleid</translation>
@@ -5875,7 +5875,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8978154919215542464">Aan: alles synchroniseren</translation>
 <translation id="897939795688207351">Op <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" />: gecrasht</translation>
-<translation id="8983405057223076408">Deze instelling is uitgeschakeld omdat ouderlijk toezicht is ingeschakeld.</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> kan <ph name="FILENAME" /> bewerken</translation>
 <translation id="8985264973231822211"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> dag geleden actief</translation>
 <translation id="8986362086234534611">Vergeten</translation>

@@ -373,13 +373,12 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
 
 cc::PaintCanvas* Canvas2DLayerBridge::GetPaintCanvas() {
   DCHECK(resource_host_);
-  // We avoid using GetOrCreateResourceProvider() here to skip the
+  // We avoid only using GetOrCreateResourceProvider() here to skip the
   // IsValid/ContextLost checks since this is in hot code paths. The context
   // does not need to be valid here since only the recording canvas is used.
-  CanvasResourceProvider* resource_provider = ResourceProvider();
-  if (!resource_provider)
-    resource_provider = GetOrCreateResourceProvider();
-  return resource_provider->Canvas();
+  if (!ResourceProvider() && !GetOrCreateResourceProvider())
+    return nullptr;
+  return ResourceProvider()->Canvas();
 }
 
 void Canvas2DLayerBridge::UpdateFilterQuality() {

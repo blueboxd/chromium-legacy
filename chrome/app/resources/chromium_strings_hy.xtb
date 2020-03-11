@@ -24,7 +24,7 @@
 <translation id="1966382378801805537">Chromium-ը չի կարողանում որոշել կամ սահմանել կանխադրված դիտարկիչը</translation>
 <translation id="2008474315282236005">1 տարր կջնջվի այս սարքից: Հետագայում ձեր տվյալներն առբերելու համար մուտք գործեք Chromium <ph name="USER_EMAIL" /> հաշվով:</translation>
 <translation id="2147976119693222405">Chromium OS-ը չկարողացավ համաժամացնել ձեր տվյալները։ Շտկել խնդիրը։</translation>
-<translation id="2185166961232948079">Chromium․ ցանցի մուտքի էջ – <ph name="PAGE_TITLE" /></translation>
+<translation id="2185166961232948079">Chromium – Ցանցի մուտք – <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">Եթե ձեզնից բացի որևէ այլ մեկն օգտվում է այս համակարգչից, օրինակ ձեր ընկերները կամ հարազատները, ապա նրանք կարող են առանձին աշխատել և կարգավորել Chromium-ն իրենց ուզած ձևով:</translation>
 <translation id="2347108572062610441">Այս ընդլայնումը փոխել է Chromium-ի մեկնարկի ժամանակ ցուցադրվող էջը:</translation>
 <translation id="2396765026452590966">«<ph name="EXTENSION_NAME" />» ընդլայնումը փոխել է Chromium-ի մեկնարկի ժամանակ ցուցադրվող էջը:</translation>
@@ -77,7 +77,7 @@
 <translation id="3945058413678539331">Chromium-ը փորձում է պատճենել գաղտնաբառերը: Թույլատրելու համար մուտքագրեք Windows-ի ձեր գաղտնաբառը:</translation>
 <translation id="4036079820698952681">Օգնեք կատարելագործել Chromium-ը՝ հաղորդելով <ph name="BEGIN_LINK" />ընթացիկ կարգավորումների<ph name="END_LINK" /> մասին</translation>
 <translation id="4050175100176540509">Վերջին տարբերակում առկա են անվտանգության կարևոր բարելավումներ և նոր գործառույթներ:</translation>
-<translation id="419998258129752635"><ph name="PAGE_TITLE" /> – ցանցի մուտքի էջ․ Chromium</translation>
+<translation id="419998258129752635"><ph name="PAGE_TITLE" /> – Ցանցի մուտքի էջ – Chromium</translation>
 <translation id="421369550622382712">Հավելվածների, խաղերի, ընդլայնումների և թեմաների լայն ընտրանի Chromium-ի համար:</translation>
 <translation id="4216212958613226427">Այս լեզուն օգտագործվում է որպես Chromium-ի միջերեսի լեզու</translation>
 <translation id="4230135487732243613">Կապել Chromium-ի տվյալներն այս հաշվի հետ:</translation>
@@ -94,6 +94,7 @@
 <translation id="4708774505295300557">Ինչ-որ մեկն այս համակարգչում <ph name="ACCOUNT_EMAIL_LAST" /> հասցեով մուտք է գործել Chromium: Ստեղծեք Chromium-ի նոր պրոֆիլ` ձեր տվյալներն առանձին պահելու համար:</translation>
 <translation id="4746050847053251315">Փակե՞լ Chromium-ը։</translation>
 <translation id="4748217263233248895">Chromium-ի անվտանգության կարգավորումները հենց նոր թարմացվել են: Վերագործարկեք Chrome-ը, և ձեր ներդիրները կվերականգնվեն:</translation>
+<translation id="4750035648288509542">Գրեթե պատրաստ է։ Թարմացումն ավարտելու համար վերագործարկեք Chromium-ը։ Ինկոգնիտո պատուհանները նորից չեն բացվի։</translation>
 <translation id="479167709087336770">Օգտագործվում է միևնույն ուղղագրիչը, ինչ Google Որոնման մեջ: Դիտարկիչում մուտքագրված տեքստերն ուղարկվում են Google-ին: Սա կարող եք փոխել կարգավորումներում։</translation>
 <translation id="4888717733111232871">Թույլատրել Chromium-ում տվյալների մուտքային հոսքի փոխանցումը mDNS հաղորդակարգով:</translation>
 <translation id="4943838377383847465">Chromium-ն աշխատում է ֆոնային ռեժիմում:</translation>
@@ -119,7 +120,7 @@
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Բարի գալուստ Chromium</translation>
 <translation id="5895138241574237353">Վերագործարկել</translation>
-<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – ցանցի մուտքի էջ</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Ցանցի մուտք</translation>
 <translation id="5987687638152509985">Թարմացրեք Chromium-ը՝ համաժամացումը սկսելու համար</translation>
 <translation id="6013050204643758987">Chromium OS-ը ստեղծվել է <ph name="BEGIN_LINK_CROS_OSS" />բաց կոդով ծրագրակազմի<ph name="END_LINK_CROS_OSS" /> շնորհիվ, ինչպիսին է <ph name="BEGIN_LINK_LINUX_OSS" />Լինուքսը (բետա)<ph name="END_LINK_LINUX_OSS" />:</translation>
 <translation id="6055895534982063517">Մատչելի է Chromium-ի նոր տարբերակ, որը շատ ավելի արագ է:</translation>

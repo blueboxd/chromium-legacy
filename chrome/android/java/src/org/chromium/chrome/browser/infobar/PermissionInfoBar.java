@@ -12,6 +12,8 @@ import org.chromium.chrome.browser.permissions.ChromePermissionsClient;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
 import org.chromium.chrome.browser.site_settings.SiteSettingsCategory;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 import org.chromium.components.permissions.AndroidPermissionRequester;
 import org.chromium.ui.base.WindowAndroid;
 

@@ -332,6 +332,11 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 
       Si no se establece la política, el valor predeterminado MultiProfileUserBehaviorMustBePrimary se aplicará a usuarios administrados por empresas y MultiProfileUserBehaviorUnrestricted se utilizará para usuarios no administrados.</translation>
 <translation id="1465619815762735808">Hacer clic para ejecutar</translation>
+<translation id="1467633031685836974">Esta función permite que la navegación a través de los hiperenlaces y las URL de la barra de direcciones se centre en un texto específico dentro de una página web, al cual se desplazará una vez que esta se haya cargado por completo.
+
+Si habilitas esta política o no la configuras, se habilitará el desplazamiento de una página web a un texto específico a través de la URL.
+
+Si inhabilitas esta política, se inhabilitará el desplazamiento de una página web a un texto específico a través de la URL.</translation>
 <translation id="1468707346106619889">Si esta política está establecida en "true", el escritorio unificado está permitido y habilitado de forma predeterminada, lo que permite que las aplicaciones ocupen varias pantallas.
 El usuario puede inhabilitar el escritorio unificado para pantallas individuales desactivando la opción en los ajustes de la pantalla.
 
@@ -2533,14 +2538,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si esta política se establece en True, las teclas de la fila superior del teclado realizarán comandos de teclas de funciones de forma predeterminada. debes pulsar la tecla de búsqueda para que las teclas multimedia vuelvan a su comportamiento original.
 
           Si esta política se establece en False o no se establece, el teclado realizará comandos de teclas multimedia de forma predeterminada y comandos de teclas de funciones al pulsar la tecla de búsqueda.</translation>
-<translation id="4636613705027089602">Esta política controla las solicitudes de instalación de extensiones de <ph name="PRODUCT_NAME" /> que permiten que los usuarios puedan enviar las solicitudes a la consola de administración de Google para su aprobación.
-
-      Si no se le asigna ningún valor o se inhabilita, las solicitudes de instalación de extensiones no se crean ni se suben.
-      Si se habilita, la solicitudes de instalación de extensiones se crean y se suben a la consola de administración de Google.
-
-      Las solicitudes de instalación de extensiones se crean cuando los usuarios intenta instalar una extensión que no está incluida en la lista blanca de <ph name="EXTENSION_INSTALL_WHITELIST" /> o <ph name="EXTENSION_SETTINGS" />.
-
-      Esta política solo es efectiva cuando el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> y <ph name="CLOUD_REPORTING_ENABLED" /> está habilitado.</translation>
 <translation id="4639407427807680016">Nombres de hosts de mensajes nativos que se deben excluir de la lista negra</translation>
 <translation id="4649395978608361979">Destinos en impresoras locales</translation>
 <translation id="4650759511838826572">Inhabilitar esquemas de protocolo de URL</translation>
@@ -3505,6 +3502,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores al retraso de inactividad.</translation>
 <translation id="6097601282776163274">Habilitar la recogida de datos anónima con clave de URL</translation>
 <translation id="6099853574908182288">Modo predeterminado de impresión en color</translation>
+<translation id="6102342563050263313">Habilitar el desplazamiento a texto especificado en fragmentos de URL</translation>
 <translation id="6107642964266628393">Controla cómo y cuándo se aplican las actualizaciones de Chrome OS.</translation>
 <translation id="6111936128861357925">Permitir el juego del huevo de pascua de dinosaurio</translation>
 <translation id="6114416803310251055">obsoleto</translation>
@@ -4517,6 +4515,9 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7713608076604149344">Restricciones de descarga</translation>
 <translation id="7715711044277116530">Porcentaje que permite ajustar el retraso de inactividad de la pantalla en el modo de presentación</translation>
 <translation id="7717938661004793600">Permite configurar funciones de accesibilidad de <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="7724652568947700864">Si se establece esta política, todos los tipos de datos especificados se excluirán de la sincronización de Google Sync y de la sincronización del perfil de itinerancia. Esto puede ser útil para reducir el tamaño del perfil de itinerancia o para limitar el tipo de datos que se suben a los servidores de Google Sync.
+
+      Los tipos de datos actuales para esta política son los siguientes: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" y "wifiConfiguration". Estos nombres distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="7731026922044991970">Volver a la configuración antigua de comportamiento de cookies de <ph name="ATTRIBUTE_SAMESITE_NAME" /> en todos los sitios web</translation>
 <translation id="7747447585227954402">Permite a los dispositivos usar <ph name="PLUGIN_VM_NAME" /> en <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749024457938190837">Extensiones que pueden saltarse el cuadro de diálogo de confirmación al enviar trabajos de impresión a través de la API chrome.printing</translation>

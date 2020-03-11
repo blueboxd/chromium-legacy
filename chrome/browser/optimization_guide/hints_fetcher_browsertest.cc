@@ -1135,19 +1135,19 @@ IN_PROC_BROWSER_TEST_F(
         true, 1);
   }
 
-  // Change ECT to a high value. Hints should not be fetched at the time of
-  // navigation as the ECT fast so the fetcher should not race.
+  // Change ECT to unknown. Hints should not be fetched at the time of
+  // navigation as the ECT is unknown so the fetcher should not race.
   {
     g_browser_process->network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
-            net::EFFECTIVE_CONNECTION_TYPE_4G);
+            net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 
-    base::flat_set<std::string> expected_request_4g;
-    std::string host_4g("https://unseenhost_4g.com/");
-    expected_request_4g.insert((GURL(host_4g).host()));
-    expected_request_4g.insert((GURL(host_4g).spec()));
-    SetExpectedHintsRequestForHostsAndUrls(expected_request_4g);
-    ui_test_utils::NavigateToURL(browser(), GURL(host_4g));
+    base::flat_set<std::string> expected_request_unknown;
+    std::string host_unknown_ect("https://unseenhost_unknown_ect.com/");
+    expected_request_unknown.insert((GURL(host_unknown_ect).host()));
+    expected_request_unknown.insert((GURL(host_unknown_ect).spec()));
+    SetExpectedHintsRequestForHostsAndUrls(expected_request_unknown);
+    ui_test_utils::NavigateToURL(browser(), GURL(host_unknown_ect));
 
     EXPECT_EQ(2u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(

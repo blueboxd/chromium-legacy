@@ -4,8 +4,6 @@
 
 static_library("common") {
   sources = [
-    "data_reduction_proxy_url_loader_throttle.cc",
-    "data_reduction_proxy_url_loader_throttle.h",
     "header_util.cc",
     "header_util.h",
   ]
@@ -21,10 +19,7 @@ static_library("common") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "data_reduction_proxy_url_loader_throttle_unittest.cc",
-    "header_util_unittest.cc",
-  ]
+  sources = [ "header_util_unittest.cc" ]
 
   deps = [
     ":common",

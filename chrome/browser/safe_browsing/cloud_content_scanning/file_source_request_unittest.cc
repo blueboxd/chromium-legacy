@@ -6,15 +6,11 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
-#include "chrome/common/chrome_paths.h"
-#include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
@@ -251,39 +247,6 @@ TEST(FileSourceRequestTest, CachesResults) {
   EXPECT_EQ(sync_data.contents, async_data.contents);
   EXPECT_EQ(sync_data.size, async_data.size);
   EXPECT_EQ(sync_data.hash, async_data.hash);
-}
-
-TEST(FileSourceRequestTest, DetectsEncryption) {
-  content::BrowserTaskEnvironment browser_task_environment;
-  content::InProcessUtilityThreadHelper in_process_utility_thread_helper;
-
-  base::FilePath test_zip;
-  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
-  test_zip = test_zip.AppendASCII("safe_browsing")
-                 .AppendASCII("download_protection")
-                 .AppendASCII("encrypted.zip");
-
-  FileSourceRequest request(test_zip, base::DoNothing());
-
-  BinaryUploadService::Result out_result;
-  BinaryUploadService::Request::Data out_data;
-
-  base::RunLoop run_loop;
-  request.GetRequestData(base::BindLambdaForTesting(
-      [&run_loop, &out_result, &out_data](
-          BinaryUploadService::Result result,
-          const BinaryUploadService::Request::Data& data) {
-        out_result = result;
-        out_data = data;
-        run_loop.Quit();
-      }));
-  run_loop.Run();
-
-  EXPECT_EQ(out_result, BinaryUploadService::Result::FILE_ENCRYPTED);
-  // sha256sum chrome/test/data/safe_browsing/download_protection/encrypted.zip
-  // | tr "[:lower:]" "[:upper:]"
-  EXPECT_EQ(out_data.hash,
-            "701FCEA8B2112FFAB257A8A8DFD3382ABCF047689AB028D42903E3B3AA488D9A");
 }
 
 }  // namespace safe_browsing

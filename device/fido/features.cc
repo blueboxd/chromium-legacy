@@ -28,4 +28,10 @@ const base::Feature kWebAuthCableLowLatency{"WebAuthenticationCableLowLatency",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
+#if defined(OS_CHROMEOS)
+const base::Feature kWebAuthCrosPlatformAuthenticator{
+    "WebAuthenticationCrosPlatformAuthenticator",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace device

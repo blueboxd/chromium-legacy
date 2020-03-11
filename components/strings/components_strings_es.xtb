@@ -815,6 +815,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="4466881336512663640">Se perderán los cambios realizados en el formulario. ¿Seguro que quieres continuar?</translation>
 <translation id="4477350412780666475">Pista siguiente</translation>
 <translation id="4482953324121162758">Este sitio web no se traducirá.</translation>
+<translation id="4486757593530038591">Si activas esta opción, los sitios web no podrán utilizar tu actividad de navegación en otros sitios web para personalizar anuncios. Es posible que las funciones de algunos sitios web no funcionen correctamente.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">Estas funciones están inhabilitadas de forma predeterminada. No estarán disponibles en futuras versiones de Chrome.</translation>
 <translation id="4493480324863638523">La URL no es válida. Debe ser una URL con una estructura estándar, como "http://example.com" o "https://example.com".</translation>
@@ -1052,6 +1053,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="549333378215107354">Tamaño 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Marcadores administrados</translation>
+<translation id="5510481203689988000">Este ajuste se controla en la configuración de cookies.</translation>
 <translation id="5510766032865166053">Es posible que se haya movido o eliminado.</translation>
 <translation id="5523118979700054094">Nombre de la política</translation>
 <translation id="55293785478302737">Grapado en el borde</translation>
@@ -1484,6 +1486,7 @@ Más información:
 <translation id="7416351320495623771">Gestionar contraseñas…</translation>
 <translation id="7419106976560586862">Ruta del perfil</translation>
 <translation id="7437289804838430631">Añade la información de contacto</translation>
+<translation id="7438976808740265764">Flash Player dejará de ser compatible a partir de diciembre del 2020.</translation>
 <translation id="7440140511386898319">Contenido sin conexión</translation>
 <translation id="7441627299479586546">Asunto de política incorrecto</translation>
 <translation id="7442725080345379071">Naranja claro</translation>

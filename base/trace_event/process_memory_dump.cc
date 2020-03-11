@@ -12,7 +12,7 @@
 #include "base/memory/shared_memory_tracker.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
-#include "base/trace_event/memory_infra_background_whitelist.h"
+#include "base/trace_event/memory_infra_background_allowlist.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/trace_event/traced_value.h"
 #include "base/unguessable_token.h"
@@ -256,7 +256,7 @@ MemoryAllocatorDump* ProcessMemoryDump::AddAllocatorDumpInternal(
   // In background mode return the black hole dump, if invalid dump name is
   // given.
   if (dump_args_.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND &&
-      !IsMemoryAllocatorDumpNameWhitelisted(mad->absolute_name())) {
+      !IsMemoryAllocatorDumpNameInAllowlist(mad->absolute_name())) {
     return GetBlackHoleMad();
   }
 

@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "components/optimization_guide/proto/performance_hints_metadata.pb.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/context_menu_params.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
 namespace content {

@@ -2451,14 +2451,6 @@
           如果將這項政策設為 True，鍵盤最上方一排按鍵預設會產生功能鍵指令。如要恢復使用媒體鍵指令，請按下搜尋鍵。
 
           如果將這項政策設為 False 或未設定，鍵盤預設會產生媒體鍵指令，必須按住搜尋鍵才能使用功能鍵指令。</translation>
-<translation id="4636613705027089602">這項政策控管 <ph name="PRODUCT_NAME" /> 擴充功能安裝要求，能讓使用者傳送要求至 Google 管理控制台以取得核准。
-
-      如果不設定這項政策或設為停用，系統就不會建立或上傳擴充功能安裝要求。
-      如果啟用這項政策，系統會建立擴充功能安裝要求，並上傳至 Google 管理控制台。
-
-      當使用者嘗試安裝並未透過 <ph name="EXTENSION_INSTALL_WHITELIST" /> 或 <ph name="EXTENSION_SETTINGS" /> 加入許可清單的擴充功能時，系統就會建立擴充功能安裝要求。
-
-      只有在已啟用 <ph name="CLOUD_REPORTING_ENABLED" /> 且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="4639407427807680016">要從黑名單中排除的內建訊息傳遞主機名稱</translation>
 <translation id="4649395978608361979">本機印表機目的地</translation>
 <translation id="4650759511838826572">停用網址通訊協定機制</translation>

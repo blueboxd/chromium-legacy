@@ -808,6 +808,7 @@
 <translation id="4466881336512663640">Внесенные в форму изменения не сохранятся. Продолжить?</translation>
 <translation id="4477350412780666475">Следующий трек</translation>
 <translation id="4482953324121162758">Этот сайт не будет переводиться автоматически.</translation>
+<translation id="4486757593530038591">Когда эта настройка включена, сайты не могут отслеживать ваши действия в браузере для показа персонализированной рекламы. Из-за этого некоторые функции на сайтах могут работать некорректно.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">Эти функции отключены по умолчанию. В новых версиях Chrome они станут недоступны.</translation>
 <translation id="4493480324863638523">Недопустимый URL. Укажите URL в стандартном виде, например http://example.com или https://example.com.</translation>
@@ -1044,6 +1045,7 @@
 <translation id="549333378215107354">Размер: 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Управляемые закладки</translation>
+<translation id="5510481203689988000">Этот параметр можно задать в настройках файлов cookie</translation>
 <translation id="5510766032865166053">Возможно, он был перемещен или удален.</translation>
 <translation id="5523118979700054094">Название правила</translation>
 <translation id="55293785478302737">Скобы по краю</translation>
@@ -1476,6 +1478,7 @@
 <translation id="7416351320495623771">Управление паролями</translation>
 <translation id="7419106976560586862">Путь к профилю</translation>
 <translation id="7437289804838430631">Добавить контактные данные</translation>
+<translation id="7438976808740265764">Поддержка Flash Player будет прекращена в декабре 2020 года.</translation>
 <translation id="7440140511386898319">Почитать офлайн</translation>
 <translation id="7441627299479586546">Неверный субъект политики</translation>
 <translation id="7442725080345379071">Светло-оранжевый</translation>

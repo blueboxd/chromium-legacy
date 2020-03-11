@@ -20,8 +20,6 @@
 #include "device/fido/fido_transport_protocol.h"
 
 namespace device {
-namespace fido {
-namespace cros {
 
 class COMPONENT_EXPORT(DEVICE_FIDO) ChromeOSAuthenticator
     : public FidoAuthenticator {
@@ -64,8 +62,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ChromeOSAuthenticator
   base::WeakPtrFactory<ChromeOSAuthenticator> weak_factory_;
 };
 
-}  // namespace cros
-}  // namespace fido
 }  // namespace device
 
 #endif  // DEVICE_FIDO_CROS_AUTHENTICATOR_H_

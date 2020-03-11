@@ -82,6 +82,7 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -119,6 +120,8 @@ public class ManualFillingControllerTest {
     private CompositorViewHolder mMockCompositorViewHolder;
     @Mock
     private BottomSheetController mMockBottomSheetController;
+    @Mock
+    private ApplicationViewportInsetSupplier mApplicationViewportInsetSupplier;
 
     @Rule
     public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
@@ -285,6 +288,8 @@ public class ManualFillingControllerTest {
         when(mMockActivity.getBottomSheetController()).thenReturn(mMockBottomSheetController);
         when(mMockWindow.getKeyboardDelegate()).thenReturn(mMockKeyboard);
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
+        when(mMockWindow.getApplicationBottomInsetProvider())
+                .thenReturn(mApplicationViewportInsetSupplier);
         when(mMockKeyboard.calculateKeyboardHeight(any())).thenReturn(0);
         when(mMockActivity.getTabModelSelector()).thenReturn(mMockTabModelSelector);
         when(mMockActivity.getActivityTabProvider()).thenReturn(mActivityTabProvider);

@@ -52,6 +52,7 @@
 <translation id="2309047409763057870">ਇਹ Google Chrome ਦੀ ਇੱਕ ਸੈਕੰਡਰੀ ਸਥਾਪਨਾ ਹੈ, ਅਤੇ ਇਸਨੂੰ ਤੁਹਾਡਾ ਪੂਰਵ-ਨਿਰਧਾਰਤ ਬ੍ਰਾਊਜ਼ਰ ਨਹੀਂ ਬਣਾਇਆ ਜਾ ਸਕਦਾ ਹੈ।</translation>
 <translation id="2341767445688917208">Chrome OS ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਦਾ ਸਮਕਾਲੀਕਰਨ ਨਹੀਂ ਕਰ ਸਕਿਆ। ਹੁਣੇ ਠੀਕ ਕਰੋ।</translation>
 <translation id="2348335408836342058">Chrome ਨੂੰ ਇਸ ਸਾਈਟ ਵਾਸਤੇ ਤੁਹਾਡੇ ਕੈਮਰੇ ਅਤੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਲਈ ਇਜਾਜ਼ਤ ਦੀ ਲੋੜ ਹੈ</translation>
+<translation id="234869673307233423">Chrome ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਨਹੀਂ ਕਰ ਸਕਦਾ। ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="2429317896000329049">Google Chrome ਤੁਹਾਡਾ ਡਾਟਾ ਸਮਕਾਲੀਕਰਨ ਨਹੀਂ ਕਰ ਸਕਿਆ ਕਿਉਂਕਿ ਸਮਕਾਲੀਕਰਨ ਤੁਹਾਡੀ ਡੋਮੇਨ ਲਈ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।</translation>
 <translation id="2467438592969358367">Google Chrome ਤੁਹਾਡੇ ਪਾਸਵਰਡ ਨਿਰਯਾਤ ਕਰਨਾ ਚਾਹੁੰਦਾ ਹੈ। ਇਹ ਕਰਨ ਦੇਣ ਲਈ ਆਪਣਾ Windows ਪਾਸਵਰਡ ਟਾਈਪ ਕਰੋ।</translation>
 <translation id="2485422356828889247">ਅਣਸਥਾਪਤ ਕਰੋ</translation>
@@ -72,6 +73,8 @@
 <translation id="2857540653560290388">Chrome ਲਾਂਚ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
 <translation id="2871893339301912279">ਤੁਸੀਂ Chrome 'ਤੇ ਸਾਈਨ-ਇਨ ਕੀਤਾ ਹੈ!</translation>
 <translation id="2888126860611144412">Chrome ਬਾਰੇ</translation>
+<translation id="2929907241665500097">Chrome ਅੱਪਡੇਟ ਨਹੀਂ ਹੋਇਆ, ਕੋਈ ਗੜਬੜ ਹੋ ਗਈ। <ph name="BEGIN_LINK" />Chrome ਅੱਪਡੇਟ ਦੀਆਂ ਸਮੱਸਿਆਵਾਂ ਅਤੇ ਅਸਫਲ ਹੋਈਆਂ ਅੱਪਡੇਟਾਂ ਨੂੰ ਠੀਕ ਕਰੋ।<ph name="END_LINK" /></translation>
+<translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - ਨੈੱਟਵਰਕ ਸਾਈਨ-ਇਨ - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome ਬੈਕਗ੍ਰਾਊਂਡ ਮੋਡ ਵਿੱਚ ਹੈ।</translation>
 <translation id="3065168410429928842">Chrome ਟੈਬ</translation>
 <translation id="3080151273017101988">Google Chrome ਬੰਦ ਹੋਣ 'ਤੇ ਵੀ ਬੈਕਗ੍ਰਾਊਂਡ ਐਪਾਂ ਨੂੰ ਚਲਦੇ ਰਹਿਣ ਦਿਓ</translation>
@@ -110,7 +113,9 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4335235004908507846">ਡਾਟਾ ਉਲੰਘਣਾਵਾਂ, ਮਾੜੀਆਂ ਐਕਸਟੈਂਸ਼ਨਾਂ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਤੋਂ ਸੁਰੱਖਿਅਤ ਰਹਿਣ ਵਿੱਚ Chrome ਤੁਹਾਡੀ ਮਦਦ ਕਰ ਸਕਦਾ ਹੈ</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> ਨੂੰ Chrome ਵਿੱਚ ਸ਼ਾਮਲ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ</translation>
+<translation id="4384570495110188418">Chrome ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਨਹੀਂ ਕਰ ਸਕਦਾ ਕਿਉਂਕਿ ਤੁਸੀਂ ਸਾਈਨ-ਇਨ ਨਹੀਂ ਕੀਤਾ ਹੈ</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
+<translation id="4450664632294415862">Chrome - ਨੈੱਟਵਰਕ ਸਾਈਨ-ਇਨ - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome 'ਤੇ ਕੋਈ ਹੋਰ ਚੱਲ ਰਹੀ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="4480040274068703980">Chrome OS ਸਾਈਨ-ਇਨ ਕਰਨ ਵੇਲੇ ਇੱਕ ਗੜਬੜ ਹੋਣ ਕਾਰਨ ਤੁਹਾਡਾ ਡਾਟਾ ਸਿੰਕ ਨਹੀਂ ਹੋ ਸਕਿਆ।</translation>
 <translation id="4561051373932531560">Google Chrome ਵੈੱਬ 'ਤੇ ਕਿਸੇ ਫ਼ੋਨ ਨੰਬਰ 'ਤੇ ਕਲਿੱਕ ਕਰਨ ਅਤੇ ਇਸ 'ਤੇ Skype ਨਾਲ ਕਾਲ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿੰਦਾ ਹੈ!</translation>
@@ -120,6 +125,7 @@
 <translation id="4600710005438004015">Chrome ਨਵੀਨਤਮ ਵਰਜਨ 'ਤੇ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ, ਇਸ ਲਈ ਤੁਹਾਨੂੰ ਨਵੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਤੇ ਸੁਰੱਖਿਆ ਸਥਿਰ ਨਹੀਂ ਮਿਲ ਰਹੇ ਹਨ।</translation>
 <translation id="4631713731678262610">Chrome ਮੀਨੂ ਵਿੱਚ ਲੁਕਾਓ</translation>
 <translation id="4633000520311261472">Chrome ਨੂੰ ਵੱਧ ਸੁਰੱਖਿਅਤ ਬਣਾਉਣ ਲਈ, ਅਸੀਂ ਕੁਝ ਐਕਸਟੈਂਸ਼ਨਾਂ ਨੂੰ ਬੰਦ ਕੀਤਾ ਹੈ, ਜੋ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ਵਿੱਚ ਸੂਚੀਬੱਧ ਨਹੀਂ ਹਨ ਅਤੇ ਤੁਹਾਡੀ ਜਾਣਕਾਰੀ ਤੋਂ ਬਿਨਾਂ ਸ਼ਾਮਲ ਕੀਤੀਆਂ ਗਈਆਂ ਹੋ ਸਕਦੀਆਂ ਹਨ।</translation>
+<translation id="4653397506175047429">Chrome ਤੁਹਾਡੇ ਸਾਰੇ ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਨਹੀਂ ਕਰ ਸਕਦਾ। 24 ਘੰਟਿਆਂ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="4728575227883772061">ਅਨਿਸ਼ਚਿਤ ਗੜਬੜ ਕਾਰਨ ਸਥਾਪਨਾ ਅਸਫਲ ਹੋ ਗਈ। ਜੇਕਰ ਇਸ ਵੇਲੇ Google Chrome ਚੱਲ ਰਿਹਾ ਹੈ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਇਸਨੂੰ ਬੰਦ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> ਨੂੰ ਚਾਲੂ ਕਰਨ ਲਈ Chrome ਨੂੰ ਮੁੜ-ਸ਼ੁਰੂ ਕਰੋ</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -157,6 +163,7 @@ Google Chrome ਤੁਹਾਡੀਆਂ ਸੈਟਿੰਗਾਂ ਮੁੜ-ਹਾ
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome ਨੂੰ ਲਾਂਚ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="5895138241574237353">ਰੀਸਟਾਰਟ ਕਰੋ</translation>
+<translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - ਨੈੱਟਵਰਕ ਸਾਈਨ-ਇਨ</translation>
 <translation id="5940385492829620908">ਤੁਹਾਡੀ ਵੈੱਬ, ਬੁੱਕਮਾਰਕ ਅਤੇ ਹੋਰ Chrome ਸਮੱਗਰੀ ਇੱਥੇ ਲਾਈਵ ਹੈ।</translation>
 <translation id="5941830788786076944">Google Chrome ਨੂੰ ਪੂਰਵ-ਨਿਰਧਾਰਤ ਬ੍ਰਾਊਜ਼ਰ ਬਣਾਓ</translation>
 <translation id="6070348360322141662">ਬਿਹਤਰ ਸੁਰੱਖਿਆ ਲਈ, Google Chrome ਤੁਹਾਡੇ ਡਾਟੇ ਨੂੰ ਇਨਕ੍ਰਿਪਟ ਕਰੇਗਾ</translation>
@@ -212,6 +219,7 @@ Google Chrome ਤੁਹਾਡੀਆਂ ਸੈਟਿੰਗਾਂ ਮੁੜ-ਹਾ
 <translation id="7855730255114109580">Google Chrome ਅੱਪ ਟੂ ਡੇਟ ਹੈ</translation>
 <translation id="7890208801193284374">ਜੇਕਰ ਤੁਸੀਂ ਕੋਈ ਕੰਪਿਊਟਰ ਸਾਂਝਾ ਕਰਦੇ ਹੋ, ਤਾਂ ਦੋਸਤ ਅਤੇ ਪਰਿਵਾਰ ਵੱਖਰੇ ਤੌਰ 'ਤੇ ਬ੍ਰਾਊਜ਼ ਕਰ ਸਕਦੇ ਹਨ ਅਤੇ ਆਪਣੇ ਤਰੀਕੇ ਨਾਲ Chrome ਦਾ ਸੈੱਟ ਅੱਪ ਕਰ ਸਕਦੇ ਹਨ।</translation>
 <translation id="7896673875602241923">ਕਿਸੇ ਵਿਅਕਤੀ ਨੇ ਪਹਿਲਾਂ ਹੀ <ph name="ACCOUNT_EMAIL_LAST" /> ਵਜੋਂ ਇਸ ਕੰਪਿਊਟਰ 'ਤੇ Chrome 'ਤੇ ਸਾਈਨ-ਇਨ ਕੀਤਾ ਹੋਇਆ ਹੈ। ਆਪਣੀ ਜਾਣਕਾਰੀ ਵੱਖਰੀ ਰੱਖਣ ਲਈ ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਨਵਾਂ Chrome ਵਰਤੋਂਕਾਰ ਬਣਾਓ।</translation>
+<translation id="7905891027772979035">Chrome ਤੁਹਾਡੀਆਂ ਐਕਸਟੈਂਸ਼ਨਾਂ ਦੀ ਜਾਂਚ ਨਹੀਂ ਕਰ ਸਕਦਾ। ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="7916016681687251387">Chrome OS ਤੁਹਾਡੇ ਡਾਟੇ ਦਾ ਸਮਕਾਲੀਕਰਨ ਨਹੀਂ ਕਰ ਸਕਿਆ। ਹੁਣੇ ਠੀਕ ਕਰੋ।</translation>
 <translation id="7930071585467473040">Google Chrome ਪਾਸਵਰਡਾਂ ਨੂੰ ਕਾਪੀ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰ ਰਿਹਾ ਹੈ।</translation>
 <translation id="7962410387636238736">ਹੁਣ Windows XP ਅਤੇ Windows Vista ਸਮਰਥਿਤ ਨਾ ਹੋਣ ਕਰਕੇ ਇਸ ਕੰਪਿਊਟਰ ਨੂੰ Google Chrome ਅੱਪਡੇਟ ਪ੍ਰਾਪਤ ਨਹੀਂ ਹੋਣਗੇ</translation>

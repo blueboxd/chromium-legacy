@@ -4013,13 +4013,8 @@ bool RenderProcessHostImpl::IsSuitableHost(
     SiteProcessCountTracker* pending_tracker =
         static_cast<SiteProcessCountTracker*>(
             browser_context->GetUserData(kPendingSiteProcessCountTrackerKey));
-    bool has_disqualifying_pending_navigation =
-        pending_tracker &&
-        pending_tracker->ContainsNonReusableSiteForHost(host);
-    UMA_HISTOGRAM_BOOLEAN(
-        "SiteIsolation.PendingSitelessNavigationDisallowsProcessReuse",
-        has_disqualifying_pending_navigation);
-    if (has_disqualifying_pending_navigation)
+    if (pending_tracker &&
+        pending_tracker->ContainsNonReusableSiteForHost(host))
       return false;
   }
 

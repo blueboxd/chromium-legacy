@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.keyboard_accessory;
 import android.view.View;
 import android.view.ViewStub;
 
-import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.components.autofill.AutofillDelegate;
@@ -107,14 +106,6 @@ public interface ManualFillingComponent {
      * Notifies the component that the activity it's living in was paused.
      */
     void onPause();
-
-    /**
-     * Returns a {@link CompositorViewResizer} that allows to access the combined height of
-     * KeyboardAccessoryCoordinator and AccessorySheetCoordinator, and to be
-     * notified when it changes.
-     * @return A {@link CompositorViewResizer}.
-     */
-    CompositorViewResizer getKeyboardExtensionViewResizer();
 
     /**
      * Returns whether the Keyboard is replaced by an accessory sheet or is about to do so.

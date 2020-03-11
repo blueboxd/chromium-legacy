@@ -581,6 +581,28 @@ jumbo_static_library("test_support") {
   }
 }
 
+# Fuchsia gpu integration tests use web_engine and a browser like shell
+# instead of an actual browser, so Fuchsia needs a separate target.
+if (is_fuchsia) {
+  group("fuchsia_telemetry_gpu_integration_test") {
+    testonly = true
+    deps = [
+      "//fuchsia/engine:web_engine_runner",
+      "//fuchsia/engine:web_engine_shell",
+      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test_without_chrome",
+    ]
+  }
+}
+
+group("telemetry_gpu_integration_test_scripts_only") {
+  testonly = true
+  deps = [
+    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test_without_chrome",
+  ]
+
+  data = [ "//content/test/gpu/" ]
+}
+
 # browsertest_support can be used by targets that run content_shell based
 # browser tests.
 jumbo_static_library("browsertest_support") {

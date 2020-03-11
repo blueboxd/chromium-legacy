@@ -5,6 +5,7 @@
 #include "content/shell/browser/shell_web_contents_view_delegate.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/common/shell_switches.h"

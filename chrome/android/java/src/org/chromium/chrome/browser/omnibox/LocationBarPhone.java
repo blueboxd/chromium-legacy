@@ -68,6 +68,8 @@ public class LocationBarPhone extends LocationBarLayout {
                 getToolbarDataProvider().isIncognito());
 
         // This branch will be hit if the search engine logo experiment is enabled.
+        // This value can never revert back to false, so it's safe to initialize mStatusView here
+        // without a corresponding else that nulls it out.
         if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             // Setup the padding once we're loaded, the focused padding changes will happen with
             // post-layout positioning via setTranslation. This is a byproduct of the way we do the
@@ -80,12 +82,12 @@ public class LocationBarPhone extends LocationBarLayout {
                     R.dimen.sei_location_bar_lateral_padding);
             setPaddingRelative(lateralPadding, getPaddingTop(), lateralPadding, getPaddingBottom());
             updateUrlBarPaddingForSearchEngineIcon();
+            mStatusView = findViewById(R.id.location_bar_status);
         }
 
         // This branch will be hit if the search engine logo experiment is enabled and we should
         // show the logo.
         if (shouldShowSearchEngineLogo) {
-            mStatusView = findViewById(R.id.location_bar_status);
             mStatusView.updateSearchEngineStatusIcon(
                     shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
             mFirstVisibleFocusedView = mStatusView;

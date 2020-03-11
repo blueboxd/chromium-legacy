@@ -56,6 +56,15 @@ class CompositorTimingHistory::UMAReporter {
 
 namespace {
 
+// Used to generate a unique id when emitting the "Long Draw Interval" trace
+// event.
+int g_num_long_draw_intervals = 0;
+
+// The threshold to emit a trace event is the 99th percentile
+// of the histogram on Windows Stable as of Feb 26th, 2020.
+constexpr base::TimeDelta kDrawIntervalTraceThreshold =
+    base::TimeDelta::FromMicroseconds(34478);
+
 // Using the 90th percentile will disable latency recovery
 // if we are missing the deadline approximately ~6 times per
 // second.
@@ -880,6 +889,17 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
   if (!draw_end_time_prev_.is_null()) {
     base::TimeDelta draw_interval = draw_end_time - draw_end_time_prev_;
     uma_reporter_->AddDrawInterval(draw_interval);
+    // Emit a trace event to highlight a long time lapse between the draw times
+    // of back-to-back BeginImplFrames.
+    if (draw_interval > kDrawIntervalTraceThreshold) {
+      TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(
+          "latency", "Long Draw Interval",
+          TRACE_ID_LOCAL(g_num_long_draw_intervals), draw_start_time_);
+      TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+          "latency", "Long Draw Interval",
+          TRACE_ID_LOCAL(g_num_long_draw_intervals), draw_end_time);
+      g_num_long_draw_intervals++;
+    }
     if (composited_animations_count > 0 &&
         previous_frame_had_composited_animations_)
       uma_reporter_->AddDrawIntervalWithCompositedAnimations(draw_interval);

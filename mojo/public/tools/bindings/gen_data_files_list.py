@@ -21,10 +21,12 @@ import sys
 from cStringIO import StringIO
 from optparse import OptionParser
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "pylib"))
+sys.path.insert(
+    0,
+    os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mojom"))
 
-from mojom.generate.generator import  WriteFile
+from mojom.generate.generator import WriteFile
 
 
 def main():

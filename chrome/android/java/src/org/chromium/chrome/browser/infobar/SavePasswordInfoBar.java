@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 
 /**
  * The Save Password infobar asks the user whether they want to save the password for the site.

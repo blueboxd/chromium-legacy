@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 
 import java.util.ArrayList;
 import java.util.List;

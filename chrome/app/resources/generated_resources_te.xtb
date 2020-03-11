@@ -549,6 +549,7 @@
 <translation id="1745520510852184940">ఎల్లప్పుడూ దీన్ని చేయి</translation>
 <translation id="1750172676754093297">మీ సెక్యూరిటీ కీ, వేలిముద్రలను నిల్వ చేయలేదు</translation>
 <translation id="175196451752279553">మూసివేయబడిన ట్యాబ్‌ను మళ్లీ తె&amp;రవండి</translation>
+<translation id="1753067873202720523">మీ Chromebook ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="1753905327828125965">అధికంగా సందర్శించేది</translation>
 <translation id="1755601632425835748">వచన పరిమాణం</translation>
 <translation id="1756681705074952506">ఇన్‌పుట్ విధానం</translation>
@@ -3204,7 +3205,6 @@
 <translation id="5470735824776589490">మీ పరికరాన్ని పవర్‌వాష్‌తో రీసెట్ చేయడానికి ముందు రీస్టార్ట్ చేయడం అవసరం. <ph name="LINK_BEGIN" />మరింత తెలుసుకోండి<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">హలో! నేను మీ వచనం నుండి ప్రసంగం వాయిస్‌ని.</translation>
 <translation id="5473333559083690127">కొత్త PINని మళ్లీ నమోదు చేయండి</translation>
-<translation id="548137908954174608">లైవ్ క్యాప్షన్‌ను ఎనేబుల్ చేయి</translation>
 <translation id="5481941284378890518">సమీప ప్రింటర్‌లను జోడించు</translation>
 <translation id="5483785310822538350">ఫైల్ మరియు పరికర యాక్సెస్‌ను ఉపసంహరించు</translation>
 <translation id="5485080380723335835">భద్రత కోసం మీ <ph name="DEVICE_TYPE" /> లాక్ అయింది. కొనసాగించడానికి మీ పాస్‌వర్డ్‌‌ను మాన్యువల్‌గా నమోదు చేయండి.</translation>
@@ -4828,7 +4828,6 @@
 <translation id="7737238973539693982">Linux (బీటా)ని తొలగించండి</translation>
 <translation id="7740996059027112821">ప్రామాణికం</translation>
 <translation id="7744047395460924128">మీ ప్రింటింగ్ చరిత్రను చూడండి</translation>
-<translation id="7746457520633464754">Chrome ప్రమాదకరమైన యాప్‌లు, సైట్‌లను గుర్తించడానికి, మీరు సందర్శించే కొన్ని పేజీల URLలు, పరిమిత సిస్టమ్ సమాచారం, కొంత పేజీ కంటెంట్‌ను Googleకు పంపుతుంది</translation>
 <translation id="7750228210027921155">చిత్రంలో చిత్రం</translation>
 <translation id="7751260505918304024">అన్నీ చూపించు</translation>
 <translation id="7754704193130578113">ప్రతి ఫైల్‌ను డౌన్‌లోడ్ చేసే ముందు ఎక్కడ సేవ్ చేయాలో అడుగు</translation>
@@ -5412,7 +5411,6 @@
 <translation id="851263357009351303">చిత్రాలను చూపించడానికి ఎల్లప్పుడూ <ph name="HOST" />ను అనుమతించు</translation>
 <translation id="8513108775083588393">ఆటో-రొటేట్‌లో ఉంది</translation>
 <translation id="8514746246728959655">వేరొక సెక్యూరిటీ కీని ప్రయత్నించండి</translation>
-<translation id="8517041960877371778">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="8521475323816527629">మీ యాప్‌లను వేగంగా పొందండి</translation>
 <translation id="8523493869875972733">మార్పులను అలాగే ఉంచు</translation>
 <translation id="8523849605371521713">విధానం ద్వారా జోడించబడింది</translation>

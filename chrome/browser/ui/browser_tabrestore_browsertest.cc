@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/browser_tabrestore.h"
+
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -14,6 +16,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -80,12 +83,17 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
   Browser* browser = active_browser_list->get(0);
   RecentTabsSubMenuModel menu(nullptr, browser);
   menu.ExecuteCommand(RecentTabsSubMenuModel::GetFirstRecentTabsCommandId(), 0);
+  // There should be 3 restored tabs in the new browser. The active tab should
+  // be loading.
+  EXPECT_EQ(2u, active_browser_list->size());
+  Browser* restored_browser = active_browser_list->get(1);
+  EXPECT_EQ(3, restored_browser->tab_strip_model()->count());
+  EXPECT_TRUE(restored_browser->tab_strip_model()
+                  ->GetActiveWebContents()
+                  ->GetController()
+                  .GetPendingEntry());
   AwaitTabsReady(&queue, 2);
 
-  // There should be 3 restored tabs in the new browser.
-  EXPECT_EQ(2u, active_browser_list->size());
-  browser = active_browser_list->get(1);
-  EXPECT_EQ(3, browser->tab_strip_model()->count());
   // For the two test tabs we've just received "READY" DOM message.
   // But there won't be such message from the "about:blank" tab.
   // And it is possible that TabLoader hasn't loaded it yet.
@@ -93,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
   // CheckVisbility on "about:blank".
   {
     content::WebContents* about_blank_contents =
-        browser->tab_strip_model()->GetWebContentsAt(0);
+        restored_browser->tab_strip_model()->GetWebContentsAt(0);
     EXPECT_EQ("about:blank", about_blank_contents->GetURL().spec());
     if (about_blank_contents->IsLoading() ||
         about_blank_contents->GetController().NeedsReload()) {
@@ -106,7 +114,53 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
   }
 
   // The middle tab only should have visible disposition.
-  CheckVisbility(browser->tab_strip_model(), 1);
+  CheckVisbility(restored_browser->tab_strip_model(), 1);
+}
+
+// Expect a selected restored tab to start loading synchronously.
+//
+// Previously, on Mac, a selected restored tab only started loading when a
+// native message indicated that the window was visible. On other platforms,
+// it started loading synchronously. https://crbug.com/1022492
+IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest,
+                       SelectedRestoredTabStartsLoading) {
+  sessions::SerializedNavigationEntry navigation_entry;
+  navigation_entry.set_index(0);
+  navigation_entry.set_virtual_url(GURL(url::kAboutBlankURL));
+
+  std::vector<sessions::SerializedNavigationEntry> navigations;
+  navigations.push_back(navigation_entry);
+
+  content::WebContents* web_contents = chrome::AddRestoredTab(
+      browser(), navigations, /* tab_index=*/1, /* selected_navigation=*/0,
+      /* extension_app_id=*/std::string(), /* raw_group_id=*/base::nullopt,
+      /* select=*/true, /* pin=*/false, /* from_last_session=*/true,
+      /* last_active_time=*/base::TimeTicks::Now(),
+      /* storage_namespace=*/nullptr,
+      /* user_agent_override=*/std::string(), /* from_session_restore=*/true);
+
+  EXPECT_TRUE(web_contents->GetController().GetPendingEntry());
+}
+
+// Expect a *non* selected restored tab to *not* start loading synchronously.
+IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest,
+                       NonSelectedRestoredTabDoesNotStartsLoading) {
+  sessions::SerializedNavigationEntry navigation_entry;
+  navigation_entry.set_index(0);
+  navigation_entry.set_virtual_url(GURL(url::kAboutBlankURL));
+
+  std::vector<sessions::SerializedNavigationEntry> navigations;
+  navigations.push_back(navigation_entry);
+
+  content::WebContents* web_contents = chrome::AddRestoredTab(
+      browser(), navigations, /* tab_index=*/1, /* selected_navigation=*/0,
+      /* extension_app_id=*/std::string(), /* raw_group_id=*/base::nullopt,
+      /* select=*/false, /* pin=*/false, /* from_last_session=*/true,
+      /* last_active_time=*/base::TimeTicks::Now(),
+      /* storage_namespace=*/nullptr,
+      /* user_agent_override=*/std::string(), /* from_session_restore=*/true);
+
+  EXPECT_FALSE(web_contents->GetController().GetPendingEntry());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {

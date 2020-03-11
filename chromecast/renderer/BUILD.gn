@@ -66,6 +66,7 @@ cast_source_set("renderer") {
     "//chromecast/common/media",
     "//chromecast/common/mojom",
     "//chromecast/media",
+    "//chromecast/media/base:media_codec_support",
     "//components/network_hints/renderer",
     "//content/public/common",
     "//content/public/renderer",

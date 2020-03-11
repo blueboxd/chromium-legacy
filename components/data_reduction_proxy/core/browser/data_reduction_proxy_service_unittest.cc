@@ -168,12 +168,7 @@ TEST_F(DataReductionProxyServiceTest, TestCustomProxyConfigClient) {
       client_remote.BindNewPipeAndPassReceiver());
   service->AddCustomProxyConfigClient(std::move(client_remote));
   base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(client.config->rules.proxies_for_http.Get(), proxy_server);
-  EXPECT_TRUE(
-      client.config->post_cache_headers.HasHeader(chrome_proxy_header()));
-  EXPECT_TRUE(
-      client.config->pre_cache_headers.HasHeader(chrome_proxy_ect_header()));
+  ASSERT_FALSE(client.config);
 }
 
 TEST_F(DataReductionProxyServiceTest, TestCustomProxyConfigUpdatedOnECTChange) {
@@ -191,18 +186,7 @@ TEST_F(DataReductionProxyServiceTest, TestCustomProxyConfigUpdatedOnECTChange) {
       std::move(client_remote));
   base::RunLoop().RunUntilIdle();
 
-  std::string value;
-  EXPECT_TRUE(client.config->pre_cache_headers.GetHeader(
-      chrome_proxy_ect_header(), &value));
-  EXPECT_EQ(value, "4G");
-
-  drp_test_context->test_network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_2G);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(client.config->pre_cache_headers.GetHeader(
-      chrome_proxy_ect_header(), &value));
-  EXPECT_EQ(value, "2G");
+  ASSERT_FALSE(client.config);
 }
 
 TEST_F(DataReductionProxyServiceTest,
@@ -220,15 +204,7 @@ TEST_F(DataReductionProxyServiceTest,
   base::RunLoop().RunUntilIdle();
 
   std::string value;
-  EXPECT_TRUE(client.config->post_cache_headers.GetHeader(chrome_proxy_header(),
-                                                          &value));
-
-  service->request_options()->SetSecureSession("session_value");
-  base::RunLoop().RunUntilIdle();
-  std::string changed_value;
-  EXPECT_TRUE(client.config->post_cache_headers.GetHeader(chrome_proxy_header(),
-                                                          &changed_value));
-  EXPECT_NE(value, changed_value);
+  ASSERT_FALSE(client.config);
 }
 
 TEST_F(DataReductionProxyServiceTest,
@@ -255,15 +231,7 @@ TEST_F(DataReductionProxyServiceTest,
   service->AddCustomProxyConfigClient(std::move(client_remote));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(client.config->rules.proxies_for_http.Get(), proxy_server1);
-
-  auto proxy_server2 = net::ProxyServer::FromPacString("PROXY bar");
-  service->config_client()->SetRemoteConfigAppliedForTesting(false);
-  service->config_client()->ApplySerializedConfig(
-      CreateEncodedConfig({DataReductionProxyServer(proxy_server2)}));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(client.config->rules.proxies_for_http.Get(), proxy_server2);
+  ASSERT_FALSE(client.config);
 }
 
 TEST_F(DataReductionProxyServiceTest,
@@ -291,13 +259,7 @@ TEST_F(DataReductionProxyServiceTest,
   service->AddCustomProxyConfigClient(std::move(client_remote));
   base::RunLoop().RunUntilIdle();
 
-  net::ProxyConfig::ProxyRules expected_rules;
-  expected_rules.type =
-      net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
-  expected_rules.proxies_for_http.AddProxyServer(core_proxy_server);
-  expected_rules.proxies_for_http.AddProxyServer(second_proxy_server);
-  expected_rules.proxies_for_http.AddProxyServer(net::ProxyServer::Direct());
-  EXPECT_TRUE(client.config->rules.Equals(expected_rules));
+  ASSERT_FALSE(client.config);
 }
 
 TEST_F(DataReductionProxyServiceTest, TestCustomProxyConfigProperties) {
@@ -317,9 +279,7 @@ TEST_F(DataReductionProxyServiceTest, TestCustomProxyConfigProperties) {
       client_remote.BindNewPipeAndPassReceiver());
   service->AddCustomProxyConfigClient(std::move(client_remote));
   base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(client.config->assume_https_proxies_support_quic);
-  EXPECT_FALSE(client.config->can_use_proxy_on_http_url_redirect_cycles);
+  ASSERT_FALSE(client.config);
 }
 
 }  // namespace data_reduction_proxy

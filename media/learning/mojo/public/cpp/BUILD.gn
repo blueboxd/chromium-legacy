@@ -23,6 +23,26 @@ component("cpp") {
   ]
 }
 
+# Normally typemap traits sources should be build directly into mojom targets
+# via the typemap file. This target is for typemapped mojo_base types whose
+# traits are shared between chromium and blink variants.
+component("shared_typemap_traits") {
+  output_name = "media_learning_shared_typemap_traits"
+
+  defines = [ "IS_MEDIA_LEARNING_SHARED_TYPEMAP_TRAITS_IMPL" ]
+
+  sources = [
+    "//media/learning/mojo/public/cpp/learning_mojom_traits.cc",
+    "//media/learning/mojo/public/cpp/learning_mojom_traits.h",
+  ]
+
+  deps = [
+    "//base",
+    "//media/learning/common",
+    "//media/learning/mojo/public/mojom:mojom_shared",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 

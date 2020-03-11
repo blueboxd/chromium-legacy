@@ -335,6 +335,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si la règle n'est pas définie, la valeur par défaut "MultiProfileUserBehaviorMustBePrimary'' s'applique aux utilisateurs gérés par l'entreprise et la valeur "MultiProfileUserBehaviorUnrestricted" est utilisée pour les utilisateurs non gérés.</translation>
 <translation id="1465619815762735808">Cliquer pour lire</translation>
+<translation id="1467633031685836974">Cette fonctionnalité autorise les liens hypertexte et les navigations d'URL de barre d'adresse de cibler du texte spécifique dans une page Web. Une fois le chargement de la page Web effectué, ce texte fait l'objet d'un défilement.
+
+Si vous activez cette règle ou ne la configurez pas, le défilement de page Web vers des fragments de texte spécifique via URL sera activé.
+
+Si vous désactivez cette règle, le défilement de page Web vers des fragments de texte spécifique via URL sera désactivé.</translation>
 <translation id="1468707346106619889">Si cette règle est définie sur "True", le bureau unifié est autorisé et activé
       par défaut, ce qui permet aux applications de couvrir plusieurs affichages.
       L'utilisateur peut désactiver le bureau unifié pour certains affichages
@@ -2535,14 +2540,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
           Si cette règle est définie sur la valeur "true", les touches de la première rangée du clavier deviennent par défaut des touches de fonction. Le comportement d'origine des touches multimédias est rétabli en appuyant sur la touche de recherche.
 
           Si cette règle est définie sur la valeur "false" ou si elle n'est pas définie, les touches sont des touches multimédias par défaut et deviennent des touches de fonction lorsque la touche de recherche est maintenue enfoncée.</translation>
-<translation id="4636613705027089602">Cette règle contrôle les demandes d'installation d'extension de <ph name="PRODUCT_NAME" /> et permet aux utilisateurs d'envoyer les demandes à la Console d'administration Google pour approbation.
-
-      Si cette règle n'est pas définie ou si elle est désactivée, les demandes d'installation d'extension ne sont ni créées, ni importées.
-      Si cette règle est activée, les demandes d'installation d'extension sont créées et importées dans la Console d'administration Google.
-
-      Les demandes d'installation d'extension sont créées lorsque les utilisateurs tentent d'installer une extension qui ne figure pas sur la liste blanche <ph name="EXTENSION_INSTALL_WHITELIST" /> ou <ph name="EXTENSION_SETTINGS" />.
-
-      Cette règle n'est effective que si l'ordinateur est enregistré auprès de <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> et si la règle <ph name="CLOUD_REPORTING_ENABLED" /> est activée.</translation>
 <translation id="4639407427807680016">Noms des hôtes de messagerie native à exclure de la liste noire</translation>
 <translation id="4649395978608361979">Destinations des imprimantes locales</translation>
 <translation id="4650759511838826572">Désactiver les schémas de protocole d'URL</translation>
@@ -3503,6 +3500,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
           La valeur de la règle doit être définie en millisecondes. Les valeurs ne peuvent pas être supérieures au délai d'inactivité.</translation>
 <translation id="6097601282776163274">Activer la collecte des données anonymes incluant les URL</translation>
 <translation id="6099853574908182288">Mode d'impression par défaut couleur</translation>
+<translation id="6102342563050263313">Activer le défilement jusqu'au texte spécifié dans des fragments d'URL</translation>
 <translation id="6107642964266628393">Contrôle comment et quand les mises à jour de Chrome OS sont appliquées.</translation>
 <translation id="6111936128861357925">Autoriser le jeu Easter Egg du dinosaure</translation>
 <translation id="6114416803310251055">obsolète</translation>
@@ -4508,6 +4506,9 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7713608076604149344">Restrictions de téléchargement</translation>
 <translation id="7715711044277116530">Pourcentage d'adaptation du délai d'assombrissement de l'écran en mode Présentation</translation>
 <translation id="7717938661004793600">Permet de configurer les fonctionnalités d'accessibilité de <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="7724652568947700864">Si cette règle est configurée, tous les types de données spécifiés seront exclus de la synchronisation Google Sync et de la synchronisation du profil itinérant. Cela peut permettre de réduire la taille du profil itinérant ou de limiter les types de données importés sur les serveurs Google Sync.
+
+      Les types de données actuels pour cette règle sont : "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" et "wifiConfiguration". Ces noms sont sensibles à la casse.</translation>
 <translation id="7731026922044991970">Rétablir l'ancien comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> pour les cookies sur tous les sites</translation>
 <translation id="7747447585227954402">Autoriser les appareils à utiliser un <ph name="PLUGIN_VM_NAME" /> pour <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749024457938190837">Extensions autorisées à ignorer la boîte de dialogue de confirmation lors de l'envoi de tâches d'impression via l'API chrome.printing</translation>

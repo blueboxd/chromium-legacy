@@ -23,7 +23,11 @@ const int kContextualCardsDefinitionsIntegration = 4;
 const int kContextualCardsTranslationsIntegration = 5;
 
 // For development.
-const int kContextualCardsDebugIntegration = 98;
 const int kContextualCardsDiagnosticIntegration = 99;
+
+// Mixin values. These are a bit mask * 100:
+const int kSimplifiedServerDeprecatedMixin = 100;
+const int kContextualCardsServerDebugMixin = 200;
+const int kExactSearchMixin = 400;
 
 }  // namespace contextual_search

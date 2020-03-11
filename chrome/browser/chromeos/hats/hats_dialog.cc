@@ -35,8 +35,11 @@ namespace {
 const int kDefaultWidth = 400;
 const int kDefaultHeight = 420;
 // Site ID for HaTS survey.
-constexpr char kSiteID[] = "cs5lsagwwbho7l5cbbdniso22e";
+constexpr char kRegularSiteID[] = "cs5lsagwwbho7l5cbbdniso22e";
 constexpr char kGooglerSiteID[] = "z56p2hjy7pegxh3gmmur4qlwha";
+// This version of the HaTS survey for supervised users doesn't have freeform
+// text input for privacy reasons.
+constexpr char kSupervisedUserSiteID[] = "dpqb5rzdxtsl3can53vaxlrvn4";
 
 constexpr char kScriptSrcReplacementToken[] = "$SCRIPT_SRC";
 constexpr char kDoneButtonLabelReplacementToken[] = "$DONE_BUTTON_LABEL";
@@ -116,6 +119,18 @@ std::string GetFormattedSiteContext(const std::string& user_locale,
   return base::JoinString(pairs, join_keyword);
 }
 
+// Determine which HaTS survey to show the user.
+const std::string GetSiteID(bool is_google_account) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  if (profile->IsChild()) {
+    return kSupervisedUserSiteID;
+  } else if (is_google_account) {
+    return kGooglerSiteID;
+  } else {
+    return kRegularSiteID;
+  }
+}
+
 }  // namespace
 
 // static
@@ -141,15 +156,18 @@ void HatsDialog::Show(bool is_google_account, const std::string& site_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Load and set the html data that needs to be displayed in the dialog.
-  std::string site_id = is_google_account ? kGooglerSiteID : kSiteID;
+  std::string site_id = GetSiteID(is_google_account);
   std::string html_data = LoadLocalHtmlAsString(site_id, site_context);
 
   // Self deleting.
   auto* hats_dialog = new HatsDialog(html_data);
 
-  chrome::ShowWebDialog(
-      nullptr, ProfileManager::GetActiveUserProfile()->GetOffTheRecordProfile(),
-      hats_dialog);
+  // Supervised users don't have off the record profiles.
+  Profile* active_profile = ProfileManager::GetActiveUserProfile();
+  Profile* profile_to_show = active_profile->IsChild()
+                                 ? active_profile
+                                 : active_profile->GetOffTheRecordProfile();
+  chrome::ShowWebDialog(nullptr, profile_to_show, hats_dialog);
 }
 
 HatsDialog::HatsDialog(const std::string& html_data) : html_data_(html_data) {
@@ -189,6 +207,9 @@ std::string HatsDialog::GetDialogArgs() const {
 
 void HatsDialog::OnDialogClosed(const std::string& json_retval) {
   delete this;
+  // TODO(crbug/1055644): Since supervised users can't use incognito mode, we
+  // need to manually delete the HaTS cookie so that these users can see the
+  // survey more than once.
 }
 
 void HatsDialog::OnCloseContents(WebContents* source, bool* out_close_dialog) {

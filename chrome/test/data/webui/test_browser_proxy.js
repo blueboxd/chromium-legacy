@@ -99,7 +99,7 @@ let MethodData;
   /**
    * Get number of times method is called.
    * @param {string} methodName
-   * @return {!boolean}
+   * @return {number}
    */
   getCallCount(methodName) {
     return this.getMethodData_(methodName).callCount;

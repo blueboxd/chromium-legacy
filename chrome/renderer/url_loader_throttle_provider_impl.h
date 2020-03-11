@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/threading/thread_checker.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "extensions/buildflags/buildflags.h"
@@ -20,10 +19,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/renderer/extension_throttle_manager.h"
 #endif
-
-namespace data_reduction_proxy {
-class DataReductionProxyThrottleManager;
-}
 
 class ChromeContentRendererClient;
 
@@ -56,13 +51,6 @@ class URLLoaderThrottleProviderImpl
 
   mojo::PendingRemote<safe_browsing::mojom::SafeBrowsing> safe_browsing_remote_;
   mojo::Remote<safe_browsing::mojom::SafeBrowsing> safe_browsing_;
-
-  mojo::PendingRemote<data_reduction_proxy::mojom::DataReductionProxy>
-      data_reduction_proxy_remote_;
-  mojo::Remote<data_reduction_proxy::mojom::DataReductionProxy>
-      data_reduction_proxy_;
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyThrottleManager>
-      data_reduction_proxy_manager_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionThrottleManager>

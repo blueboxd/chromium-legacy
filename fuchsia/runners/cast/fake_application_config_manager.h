@@ -21,25 +21,17 @@ class FakeApplicationConfigManager
   FakeApplicationConfigManager();
   ~FakeApplicationConfigManager() override;
 
-  // Associates a Cast application |id| with a url, to be served from the
-  // EmbeddedTestServer.
-  void AddAppMapping(const std::string& id,
-                     const GURL& url,
-                     bool enable_remote_debugging);
+  // Creates a config for a dummy application with the specified |id| and |url|.
+  // Callers should updated the returned config as necessary and then register
+  // the app by calling AddAppConfig().
+  static chromium::cast::ApplicationConfig CreateConfig(const std::string& id,
+                                                        const GURL& url);
 
-  // Associates a Cast application |id| with a url and an agent that handles
-  // its bindings, to be served from the EmbeddedTestServer.
-  void AddAppMappingWithAgent(const std::string& id,
-                              const GURL& url,
-                              bool enable_remote_debugging,
-                              const std::string& agent_url);
+  // Adds |app_config| to the list of apps.
+  void AddAppConfig(chromium::cast::ApplicationConfig app_config);
 
-  // Associates a Cast application |id| with a url and a set of content
-  // directories, to be served from the EmbeddedTestServer.
-  void AddAppMappingWithContentDirectories(
-      const std::string& id,
-      const GURL& url,
-      std::vector<fuchsia::web::ContentDirectoryProvider> directories);
+  // Associates a Cast application |id| with the |url|.
+  void AddApp(const std::string& id, const GURL& url);
 
   // chromium::cast::ApplicationConfigManager interface.
   void GetConfig(std::string id, GetConfigCallback config_callback) override;

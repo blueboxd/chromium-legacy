@@ -7,15 +7,15 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/nfc/android/nfc_system_level_setting_impl.h"
+#include "components/permissions/android/nfc/nfc_system_level_setting_impl.h"
 #include "components/permissions/permission_request_id.h"
 #include "content/public/browser/web_contents.h"
 
 NfcPermissionContextAndroid::NfcPermissionContextAndroid(
     content::BrowserContext* browser_context)
     : NfcPermissionContext(browser_context),
-      nfc_system_level_setting_(std::make_unique<NfcSystemLevelSettingImpl>()) {
-}
+      nfc_system_level_setting_(
+          std::make_unique<permissions::NfcSystemLevelSettingImpl>()) {}
 
 NfcPermissionContextAndroid::~NfcPermissionContextAndroid() = default;
 

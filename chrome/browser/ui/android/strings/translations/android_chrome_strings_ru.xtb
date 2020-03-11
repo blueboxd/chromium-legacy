@@ -170,6 +170,7 @@
 <translation id="2175927920773552910">QR-код</translation>
 <translation id="2182457891543959921">Запрашивать для сайтов разрешение на создание 3D-карты места, в котором вы находитесь, и отслеживание положения камеры (рекомендуется)</translation>
 <translation id="218608176142494674">Совместный доступ</translation>
+<translation id="2212565012507486665">Разрешить файлы cookie</translation>
 <translation id="2227444325776770048">Продолжить как <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Синхронизация сервисов Google</translation>
 <translation id="2259659629660284697">Экспорт паролей…</translation>
@@ -801,7 +802,7 @@
 <translation id="6846298663435243399">Загрузка…</translation>
 <translation id="6850409657436465440">Выполняется скачивание</translation>
 <translation id="6850830437481525139">Закрыто вкладок: <ph name="TAB_COUNT" /></translation>
-<translation id="6864395892908308021">Это устройство не поддерживает NFC</translation>
+<translation id="6864395892908308021">Это устройство не поддерживает NFC.</translation>
 <translation id="6864459304226931083">Скачать изображение</translation>
 <translation id="6865313869410766144">Данные для автозаполнения</translation>
 <translation id="6884306546558072722">Доступ к контенту в офлайн-режиме</translation>

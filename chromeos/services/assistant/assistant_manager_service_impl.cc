@@ -672,6 +672,7 @@ void AssistantManagerServiceImpl::OnShowSuggestions(
   std::vector<mojom::AssistantSuggestionPtr> ptrs;
   for (const action::Suggestion& suggestion : suggestions) {
     mojom::AssistantSuggestionPtr ptr = mojom::AssistantSuggestion::New();
+    ptr->id = base::UnguessableToken::Create();
     ptr->text = suggestion.text;
     ptr->icon_url = GURL(suggestion.icon_url);
     ptr->action_url = GURL(suggestion.action_url);

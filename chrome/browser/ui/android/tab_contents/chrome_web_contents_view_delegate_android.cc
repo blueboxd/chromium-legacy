@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view_delegate.h"
-#include "content/public/common/context_menu_params.h"
 
 ChromeWebContentsViewDelegateAndroid::ChromeWebContentsViewDelegateAndroid(
     content::WebContents* web_contents)

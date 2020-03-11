@@ -316,7 +316,7 @@
 <translation id="1430915738399379752">列印</translation>
 <translation id="1431188203598586230">最後一次軟體更新</translation>
 <translation id="1432581352905426595">管理搜尋引擎</translation>
-<translation id="1433811987160647649">存取前詢問我</translation>
+<translation id="1433811987160647649">使用前詢問我</translation>
 <translation id="1434696352799406980">這項功能會重設您的起始網頁、新分頁、搜尋引擎和固定分頁，同時停用所有擴充功能並清除 Cookie 等暫存資料，但不會清除您的書籤、歷史記錄和已儲存的密碼。</translation>
 <translation id="1434886155212424586">首頁是新分頁</translation>
 <translation id="1436390408194692385">有效期間：<ph name="TICKET_TIME_LEFT" /></translation>
@@ -556,6 +556,7 @@
 <translation id="1745520510852184940">一律採取這種處理方式</translation>
 <translation id="1750172676754093297">你的安全金鑰無法儲存指紋</translation>
 <translation id="175196451752279553">重新開啟已關閉分頁(&amp;E)</translation>
+<translation id="1753067873202720523">你的 Chromebook 可能無法在開啟時充電。</translation>
 <translation id="1753905327828125965">最常造訪</translation>
 <translation id="1755601632425835748">文字大小</translation>
 <translation id="1756681705074952506">輸入法</translation>
@@ -1200,6 +1201,7 @@
 <translation id="2610157865375787051">休眠</translation>
 <translation id="2610260699262139870">實際大小(&amp;C)</translation>
 <translation id="2610780100389066815">Microsoft 信任清單簽署</translation>
+<translation id="261226884343006626">Chrome 無法檢查你的密碼，請明天再試。</translation>
 <translation id="2612676031748830579">卡號</translation>
 <translation id="2616366145935564096">讀取以及變更你在 <ph name="WEBSITE_1" /> 網站上的資料</translation>
 <translation id="2617342710774726426">SIM 卡已鎖定</translation>
@@ -1330,6 +1332,7 @@
 <translation id="2773288106548584039">舊版瀏覽器支援</translation>
 <translation id="2773802008104670137">這類檔案可能會損害你的電腦。</translation>
 <translation id="2775104091073479743">編輯指紋</translation>
+<translation id="2775140325783767197">Chrome 無法檢查你的密碼，請查看你的網際網路連線狀態。</translation>
 <translation id="2776441542064982094">網路上沒有可註冊的裝置，如果你的裝置已開啟並連上網際網路，請依照操作說明手冊中的指示進行註冊。</translation>
 <translation id="2780009105947267877">正在設定 Plugin VM...</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -2899,6 +2902,7 @@
 <translation id="4964455510556214366">排列</translation>
 <translation id="4965808351167763748">你確定要設定這個裝置以執行 Hangouts Meet 嗎？</translation>
 <translation id="496888482094675990">「檔案」應用程式可供快速存取你存放在 Google 雲端硬碟、外部儲存空間或 Chrome 作業系統裝置中的檔案。</translation>
+<translation id="4969017548025688718">有 <ph name="COUNT" /> 個密碼遭外洩</translation>
 <translation id="4971412780836297815">完成後開啟</translation>
 <translation id="4972129977812092092">編輯印表機資訊</translation>
 <translation id="4972164225939028131">密碼錯誤</translation>
@@ -3257,7 +3261,6 @@
 <translation id="5470735824776589490">你必須先重新啟動裝置，才能透過 Powerwash 重設裝置。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">你好！這是文字轉語音的語音。</translation>
 <translation id="5473333559083690127">再次輸入新的 PIN 碼</translation>
-<translation id="548137908954174608">啟用即時字幕</translation>
 <translation id="5481941284378890518">新增附近的印表機</translation>
 <translation id="5483785310822538350">撤銷檔案和裝置存取權</translation>
 <translation id="5485080380723335835">你的 <ph name="DEVICE_TYPE" /> 因安全考量而進入鎖定狀態。如要繼續操作，請手動輸入你的密碼。</translation>
@@ -4901,7 +4904,6 @@
 <translation id="7740996059027112821">標準</translation>
 <translation id="7744047395460924128">查看你的列印歷史記錄</translation>
 <translation id="7744192722284567281">發生資料侵害事件</translation>
-<translation id="7746457520633464754">為了偵測危險的應用程式和網站，Chrome 會將你造訪的部分網頁網址、部分系統資訊以及部分網頁內容傳送給 Google</translation>
 <translation id="7750228210027921155">子母畫面</translation>
 <translation id="7751229152614300329">安全瀏覽功能為最新版本，可封鎖有害的網站和下載內容</translation>
 <translation id="7751260505918304024">全部顯示</translation>
@@ -5415,7 +5417,6 @@
 <translation id="8391712576156218334">目前無法存取圖片，請稍後再試。</translation>
 <translation id="8392364544846746346">網站必須先詢問你，才能編輯裝置上的檔案或資料夾</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的選項選單</translation>
-<translation id="8392630288038565643">受管理的瀏覽器已停用這項設定。</translation>
 <translation id="8393511274964623038">停止外掛程式</translation>
 <translation id="8393700583063109961">傳送訊息</translation>
 <translation id="839736845446313156">註冊</translation>
@@ -5499,7 +5500,6 @@
 <translation id="851263357009351303">永遠允許 <ph name="HOST" /> 顯示圖片</translation>
 <translation id="8513108775083588393">自動旋轉</translation>
 <translation id="8514746246728959655">請改用其他安全金鑰</translation>
-<translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> 在開啟時可能無法充電。</translation>
 <translation id="8521475323816527629">快速存取應用程式</translation>
 <translation id="8523493869875972733">保留變更</translation>
 <translation id="8523849605371521713">依政策新增</translation>
@@ -5872,7 +5872,6 @@
 <translation id="8978154919215542464">開啟 - 同步處理所有資料</translation>
 <translation id="897939795688207351">在 <ph name="ORIGIN" /> 上</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - 已當機</translation>
-<translation id="8983405057223076408">已啟用家長監護功能，因此這項設定已停用。</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> 可以編輯「<ph name="FILENAME" />」</translation>
 <translation id="8985264973231822211">上次使用時間：<ph name="DEVICE_LAST_ACTIVATED_TIME" /> 天前</translation>
 <translation id="8986362086234534611">清除</translation>

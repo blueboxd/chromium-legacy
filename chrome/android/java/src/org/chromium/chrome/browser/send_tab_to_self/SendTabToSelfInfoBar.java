@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.send_tab_to_self;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
-import org.chromium.chrome.browser.infobar.InfoBarCompactLayout;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
 
 /**
  * This infobar is shown to let users know they have a shared tab from another

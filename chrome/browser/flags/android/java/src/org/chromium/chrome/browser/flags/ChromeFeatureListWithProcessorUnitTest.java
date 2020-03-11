@@ -21,7 +21,7 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import java.util.Collections;
 
 /**
- * Shows the behavior of {@link ChromeFeatureList} in Robolectric unit tests when the rule
+ * Tests the behavior of {@link ChromeFeatureList} in Robolectric unit tests when the rule
  * Features.JUnitProcessor is present.
  */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -59,9 +59,9 @@ public class ChromeFeatureListWithProcessorUnitTest {
      * In unit tests, flags may have their value specified by the DisableFeatures annotation.
      */
     @Test
-    @DisableFeatures(ChromeFeatureList.TEST_DEFAULT_DISABLED)
+    @DisableFeatures(ChromeFeatureList.TEST_DEFAULT_ENABLED)
     public void testAnnotationDisabled_returnsDisabled() {
-        assertFalse(ChromeFeatureList.isEnabled(ChromeFeatureList.TEST_DEFAULT_DISABLED));
+        assertFalse(ChromeFeatureList.isEnabled(ChromeFeatureList.TEST_DEFAULT_ENABLED));
     }
 
     /**
@@ -83,8 +83,8 @@ public class ChromeFeatureListWithProcessorUnitTest {
     @Test
     public void testSetTestFeaturesDisabled_returnsDisabled() {
         ChromeFeatureList.setTestFeatures(
-                Collections.singletonMap(ChromeFeatureList.TEST_DEFAULT_DISABLED, false));
-        assertFalse(ChromeFeatureList.isEnabled(ChromeFeatureList.TEST_DEFAULT_DISABLED));
+                Collections.singletonMap(ChromeFeatureList.TEST_DEFAULT_ENABLED, false));
+        assertFalse(ChromeFeatureList.isEnabled(ChromeFeatureList.TEST_DEFAULT_ENABLED));
         ChromeFeatureList.setTestFeatures(null);
     }
 }

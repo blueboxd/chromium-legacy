@@ -134,6 +134,7 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
     public static final String NOTIFICATIONS_QUIET_UI_TOGGLE_KEY = "notifications_quiet_ui";
     public static final String EXPLAIN_PROTECTED_MEDIA_KEY = "protected_content_learn_more";
     private static final String ADD_EXCEPTION_KEY = "add_exception";
+    public static final String COOKIE_INFO_TEXT_KEY = "cookie_info_text";
 
     // Keys for Allowed/Blocked preference groups/headers.
     private static final String ALLOWED_GROUP = "allowed_group";
@@ -857,6 +858,11 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
 
         if (permissionBlockedByOs) {
             maybeShowOsWarning(screen);
+        }
+
+        if (!(mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
+                    && ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS))) {
+            screen.removePreference(screen.findPreference(COOKIE_INFO_TEXT_KEY));
         }
 
         if (hideSecondaryToggles) {

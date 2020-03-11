@@ -9,7 +9,6 @@ import android.view.ViewStub;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
@@ -118,11 +117,6 @@ class ManualFillingCoordinator implements ManualFillingComponent {
     @Override
     public void onPause() {
         mMediator.pause();
-    }
-
-    @Override
-    public CompositorViewResizer getKeyboardExtensionViewResizer() {
-        return mMediator.getKeyboardExtensionViewResizer();
     }
 
     @Override

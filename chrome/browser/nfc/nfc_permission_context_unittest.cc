@@ -17,8 +17,10 @@
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/nfc/android/mock_nfc_system_level_setting.h"
 #include "chrome/browser/nfc/nfc_permission_context_android.h"
+#include "components/permissions/android/nfc/mock_nfc_system_level_setting.h"
+
+using permissions::MockNfcSystemLevelSetting;
 #endif
 
 using content::MockRenderProcessHost;
@@ -121,7 +123,7 @@ void NfcPermissionContextTests::SetUp() {
 #if defined(OS_ANDROID)
   static_cast<NfcPermissionContextAndroid*>(nfc_permission_context_)
       ->set_nfc_system_level_setting_for_testing(
-          std::unique_ptr<NfcSystemLevelSetting>(
+          std::unique_ptr<permissions::NfcSystemLevelSetting>(
               new MockNfcSystemLevelSetting()));
   MockNfcSystemLevelSetting::SetNfcSystemLevelSettingEnabled(true);
   MockNfcSystemLevelSetting::SetNfcAccessIsPossible(true);

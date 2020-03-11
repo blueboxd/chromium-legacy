@@ -556,6 +556,7 @@
 <translation id="1745520510852184940">Vždy prekladať</translation>
 <translation id="1750172676754093297">Váš bezpečnostný kľúč nedokáže ukladať odtlačky prstov</translation>
 <translation id="175196451752279553">Znovu o&amp;tvoriť zatvorenú kartu</translation>
+<translation id="1753067873202720523">Keď bude Chromebook zapnutý, možno sa nedobije.</translation>
 <translation id="1753905327828125965">Najviac navšt.</translation>
 <translation id="1755601632425835748">Veľkosť textu</translation>
 <translation id="1756681705074952506">Metóda vstupu</translation>
@@ -1200,6 +1201,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2610157865375787051">Spánok</translation>
 <translation id="2610260699262139870">S&amp;kutočná veľkosť</translation>
 <translation id="2610780100389066815">Podpisovanie zoznamu dôveryhodných inštitúcií spoločnosti Microsoft</translation>
+<translation id="261226884343006626">Chrome nemôže skontrolovať heslá. Skúste to znova zajtra.</translation>
 <translation id="2612676031748830579">Číslo karty</translation>
 <translation id="2616366145935564096">Čítať a meniť údaje pre <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">SIM karta je uzamknutá</translation>
@@ -1330,6 +1332,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2773288106548584039">Podpora starších prehliadačov</translation>
 <translation id="2773802008104670137">Tento typ súboru môže poškodiť váš počítač.</translation>
 <translation id="2775104091073479743">Upraviť odtlačky prstov</translation>
+<translation id="2775140325783767197">Chrome nemôže skontrolovať heslá. Skontrolujte internetové pripojenie.</translation>
 <translation id="2776441542064982094">Zdá sa, že v sieti nie sú žiadne zariadenia dostupné na registráciu. Ak je zariadenie zapnuté a pripojené k internetu, skúste ho zaregistrovať podľa pokynov v tejto príručke.</translation>
 <translation id="2780009105947267877">Nastavuje sa doplnok Plugin VM…</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -2900,6 +2903,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4964455510556214366">Usporiadanie</translation>
 <translation id="4965808351167763748">Naozaj chcete v tomto zariadení nastaviť službu Hangouts Meet?</translation>
 <translation id="496888482094675990">Aplikácia Súbory poskytuje rýchly prístup k súborom, ktoré ste uložili na Disk Google, do externého úložiska alebo do zariadenia so systémom OS Chrome.</translation>
+<translation id="4969017548025688718">Počet prelomených hesiel: <ph name="COUNT" /></translation>
 <translation id="4971412780836297815">Otvoriť po stiahnutí</translation>
 <translation id="4972129977812092092">Úprava tlačiarne</translation>
 <translation id="4972164225939028131">Nesprávne heslo</translation>
@@ -3258,7 +3262,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5470735824776589490">Pred resetovaním zariadenia pomocou funkcie Powerwash sa vyžaduje jeho reštart. <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Dobrý deň, som hlas prevodu textu na reč.</translation>
 <translation id="5473333559083690127">Opätovné zadanie nového kódu PIN</translation>
-<translation id="548137908954174608">Aktivovať živý prepis</translation>
 <translation id="5481941284378890518">Pridať tlačiarne v okolí</translation>
 <translation id="5483785310822538350">Odvolať prístup k súborom a zariadeniam</translation>
 <translation id="5485080380723335835">Zariadenie <ph name="DEVICE_TYPE" /> je z bezpečnostných dôvodov uzamknuté. Ak chcete pokračovať, ručne zadajte heslo.</translation>
@@ -3741,7 +3744,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6104311680260824317">Zariadenie sa nepodarilo pripojiť k doméne. Server nepodporuje stanovené typy šifrovania Kerberos. Skontrolujte nastavenia šifrovania v časti Ďalšie možnosti.</translation>
 <translation id="6104641575223043670">Organizácia <ph name="ORGANIZATION_NAME" /> požaduje, aby ste toto zariadenie okamžite aktualizovali</translation>
 <translation id="6106186653986077033">Doplnok VM vyžaduje licenciu</translation>
-<translation id="6107047744202598802">Povoľte webom zapamätať si vašu návštevu a sledovať vás na internete</translation>
+<translation id="6107047744202598802">Povoliť webom zapamätať si vašu návštevu a sledovať vás na internete</translation>
 <translation id="6112294629795967147">Klepnutím zmeníte veľkosť</translation>
 <translation id="6112727384379533756">Pridať ticket</translation>
 <translation id="6112931163620622315">Skontrolujte telefón</translation>
@@ -4902,7 +4905,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="7740996059027112821">Štandardne</translation>
 <translation id="7744047395460924128">Zobraziť históriu tlače</translation>
 <translation id="7744192722284567281">Nájdené v rámci porušenia ochrany údajov</translation>
-<translation id="7746457520633464754">Chrome odosiela Googlu webové adresy niektorých navštívených stránok, obmedzené informácie o systéme a obsah niektorých stránok na účely rozpoznávania nebezpečných aplikácií a webov.</translation>
 <translation id="7750228210027921155">Obraz v obraze</translation>
 <translation id="7751229152614300329">Bezpečné prihlásenie je aktuálne a chráni vás pred škodlivými webmi a stiahnutými súbormi</translation>
 <translation id="7751260505918304024">Zobraziť všetky</translation>
@@ -5416,7 +5418,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8391712576156218334">Obrázok nie je k dispozícii. Skúste to znova neskôr.</translation>
 <translation id="8392364544846746346">Pýtať sa, keď chce nejaký web upraviť súbory alebo priečinky vo vašom zariadení</translation>
 <translation id="8392451568018454956">Ponuka možností pre používateľa <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8392630288038565643">Toto nastavenie je v spravovaných prehliadačoch zakázané.</translation>
 <translation id="8393511274964623038">Ukončiť doplnok</translation>
 <translation id="8393700583063109961">Odoslať správu</translation>
 <translation id="839736845446313156">Registrovať sa</translation>
@@ -5500,7 +5501,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="851263357009351303">Vždy povoliť stránkam <ph name="HOST" /> zobrazovať obrázky</translation>
 <translation id="8513108775083588393">Automatické otáčanie</translation>
 <translation id="8514746246728959655">Vyskúšajte iný bezpečnostný kľúč</translation>
-<translation id="8517041960877371778">Vaše zariadenie <ph name="DEVICE_TYPE" /> sa nemusí nabíjať, keď je zapnuté.</translation>
 <translation id="8521475323816527629">Rýchlo získajte svoje aplikácie</translation>
 <translation id="8523493869875972733">Zachovať zmeny</translation>
 <translation id="8523849605371521713">Pridané pravidlom</translation>
@@ -5873,7 +5873,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8978154919215542464">Zapnuté – synchronizovať všetko</translation>
 <translation id="897939795688207351">Na <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – Zlyhanie</translation>
-<translation id="8983405057223076408">Toto nastavenie je zakázané, pretože je zapnutá rodičovská kontrola.</translation>
 <translation id="8983632908660087688">Web <ph name="ORIGIN" /> môže upravovať súbor <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">Aktívne pred <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dňami</translation>
 <translation id="8986362086234534611">Odstrániť</translation>

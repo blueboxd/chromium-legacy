@@ -581,6 +581,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "cors-for-content-scripts",
+    "owners": [ "lukasza" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "credit-card-scanner",
     "owners": [ "gambard", "javierrobles" ],
     "expiry_milestone": 86

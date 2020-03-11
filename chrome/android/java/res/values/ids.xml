@@ -23,8 +23,6 @@
     <item type="id" name="share_tab_group" />
 
     <!-- InfoBar constants -->
-    <item type="id" name="infobar_icon" />
-    <item type="id" name="infobar_close_button" />
     <item type="id" name="infobar_extra_check" />
     <item type="id" name="infobar_message" />
     <item type="id" name="permission_infobar_persist_toggle" />

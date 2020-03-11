@@ -352,9 +352,10 @@ class CandidateFormat {
   bool SatisfiesFrameRateConstraint(const DoubleConstraint& constraint) {
     double constraint_min =
         ConstraintHasMin(constraint) ? ConstraintMin(constraint) : -1.0;
-    double constraint_max = ConstraintHasMax(constraint)
-                                ? ConstraintMax(constraint)
-                                : media::limits::kMaxFramesPerSecond;
+    double constraint_max =
+        ConstraintHasMax(constraint)
+            ? ConstraintMax(constraint)
+            : static_cast<double>(media::limits::kMaxFramesPerSecond);
     bool constraint_min_out_of_range =
         ((constraint_min > NativeFrameRate()) ||
          (constraint_min > MaxFrameRateConstraint().value_or(

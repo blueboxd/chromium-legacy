@@ -6,7 +6,7 @@
 #define COMPONENTS_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_H_
 
 #include "base/macros.h"
-#include "content/public/common/context_menu_params.h"
+#include "content/public/browser/context_menu_params.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace content {

@@ -1655,3 +1655,14 @@ fuzzer_test("feature_policy_value_fuzzer") {
   dict = "//third_party/blink/renderer/core/feature_policy/feature_policy_value.dict"
   seed_corpus = "//third_party/blink/renderer/core/feature_policy/feature_policy_value_corpus"
 }
+
+fuzzer_test("document_policy_fuzzer") {
+  sources = [ "feature_policy/document_policy_fuzzer.cc" ]
+  deps = [
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+    "//third_party/icu",
+  ]
+  dict = "//third_party/blink/renderer/core/feature_policy/document_policy.dict"
+  seed_corpus =
+      "//third_party/blink/renderer/core/feature_policy/document_policy_corpus"
+}

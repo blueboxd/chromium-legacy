@@ -13,6 +13,7 @@ import "chromeos/services/assistant/public/mojom/settings.mojom";
 import "chromeos/services/network_config/public/mojom/cros_network_config.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/audio/public/mojom/stream_factory.mojom";
 import "services/device/public/mojom/battery_monitor.mojom";
 import "services/device/public/mojom/wake_lock_provider.mojom";
@@ -388,6 +389,11 @@ enum AssistantSuggestionType {
 
 // Models an Assistant suggestion.
 struct AssistantSuggestion {
+  // Uniquely identifies a given suggestion.
+  mojo_base.mojom.UnguessableToken id;
+
+  // Allows us to differentiate between a typical Assistant suggestion and an
+  // Assistant suggestion of another type (e.g. a conversation starter).
   AssistantSuggestionType type = kUnspecified;
 
   // Display text. e.g. "Cancel".

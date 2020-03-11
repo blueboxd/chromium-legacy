@@ -20,8 +20,8 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/context_menu_params.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 

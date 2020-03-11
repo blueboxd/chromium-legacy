@@ -311,6 +311,7 @@ void DataReductionProxySettings::UpdatePrefetchProxyHosts(
   prefetch_proxies_ = prefetch_proxies;
   for (auto& observer : observers_)
     observer.OnPrefetchProxyHostsChanged(prefetch_proxies);
+  LOCAL_HISTOGRAM_BOOLEAN("DataReductionProxy.Settings.ConfigReceived", true);
 }
 
 bool DataReductionProxySettings::IsConfiguredDataReductionProxy(

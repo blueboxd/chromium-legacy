@@ -58,7 +58,7 @@ source_set("permissions") {
     ]
     deps += [
       "//components/infobars/core",
-      "//components/permissions/android:jni",
+      "//components/permissions/android:jni_headers",
       "//ui/android",
     ]
   }

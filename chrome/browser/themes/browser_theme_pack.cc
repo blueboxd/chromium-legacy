@@ -117,7 +117,7 @@ struct PersistingImagesTable {
 
 // IDR_* resource names change whenever new resources are added; use persistent
 // IDs when storing to a cached pack.
-const PersistingImagesTable kPersistingImages[] = {
+constexpr PersistingImagesTable kPersistingImages[] = {
     {PRS_THEME_FRAME, IDR_THEME_FRAME, "theme_frame"},
     {PRS_THEME_FRAME_INACTIVE, IDR_THEME_FRAME_INACTIVE,
      "theme_frame_inactive"},
@@ -183,16 +183,13 @@ int GetPersistentIDByIDR(int idr) {
 }
 
 // Returns the maximum persistent id.
-int GetMaxPersistentId() {
-  static int max_prs_id = -1;
-  if (max_prs_id == -1) {
-    for (size_t i = 0; i < kPersistingImagesLength; ++i) {
-      if (kPersistingImages[i].persistent_id > max_prs_id)
-        max_prs_id = kPersistingImages[i].persistent_id;
-    }
-  }
+constexpr int GetMaxPersistentId() {
+  int max_prs_id = -1;
+  for (const auto& image : kPersistingImages)
+    max_prs_id = std::max(max_prs_id, image.persistent_id);
   return max_prs_id;
 }
+constexpr int kMaxPersistentId = GetMaxPersistentId();
 
 // Returns true if the scales in |input| match those in |expected|.
 // The order must match as the index is used in determining the raw id.
@@ -1865,7 +1862,7 @@ int BrowserThemePack::GetRawIDByPersistentID(
 
   for (size_t i = 0; i < scale_factors_.size(); ++i) {
     if (scale_factors_[i] == scale_factor)
-      return ((GetMaxPersistentId() + 1) * i) + prs_id;
+      return ((kMaxPersistentId + 1) * i) + prs_id;
   }
   return -1;
 }

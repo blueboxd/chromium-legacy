@@ -10,11 +10,15 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
+
+template <typename T>
+struct PendingAssociatedRemoteConverter;
 
 // PendingAssociatedRemote represents an unbound associated interface endpoint
 // that will be used to send messages. An AssociatedRemote can consume this
@@ -33,6 +37,22 @@ class PendingAssociatedRemote {
   // implicit constructor.
   PendingAssociatedRemote(AssociatedInterfacePtrInfo<Interface>&& ptr_info)
       : PendingAssociatedRemote(ptr_info.PassHandle(), ptr_info.version()) {}
+
+  // Disabled on NaCl since it crashes old version of clang.
+#if !defined(OS_NACL)
+  // Move conversion operator for custom remote types. Only participates in
+  // overload resolution if a typesafe conversion is supported.
+  template <typename T,
+            std::enable_if_t<std::is_same<
+                PendingAssociatedRemote<Interface>,
+                std::result_of_t<decltype (&PendingAssociatedRemoteConverter<
+                                           T>::template To<Interface>)(T&&)>>::
+                                 value>* = nullptr>
+  PendingAssociatedRemote(T&& other)
+      : PendingAssociatedRemote(
+            PendingAssociatedRemoteConverter<T>::template To<Interface>(
+                std::move(other))) {}
+#endif  // !defined(OS_NACL)
 
   ~PendingAssociatedRemote() = default;
 

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/public/common/context_menu_params.h"
+#include "content/public/browser/context_menu_params.h"
 
 class ContextMenuContentType;
 

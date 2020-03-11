@@ -82,6 +82,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     private final ProfileManager mProfileManager = new ProfileManager();
 
     private boolean mInited;
+    // Whether WebView is running in process. Set in init().
+    private boolean mIsWebViewCompatMode;
 
     private static class FileProviderHelper implements ContentUriUtils.FileProviderUtil {
         // Keep this variable in sync with the value defined in AndroidManifest.xml.
@@ -152,6 +154,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         // This issues JNI calls which require native code to be loaded.
         MetricsServiceClient.init();
+
+        assert mInited;
+        WebLayerImplJni.get().setIsWebViewCompatMode(mIsWebViewCompatMode);
     }
 
     // Configure NetworkChangeNotifier to auto detect changes in network
@@ -177,9 +182,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         // loader from remoteContext will actually never be used, since
         // ClassLoaderContextWrapperFactory will override the class loader, and all contexts used in
         // WebLayer should come from ClassLoaderContextWrapperFactory.
-        boolean isWebViewCompatMode = remoteContext != null
+        mIsWebViewCompatMode = remoteContext != null
                 && !remoteContext.getClassLoader().equals(WebLayerImpl.class.getClassLoader());
-        if (isWebViewCompatMode && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+        if (mIsWebViewCompatMode && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
             // We need to change the library name for Android M and below, otherwise the system will
             // load the version loaded for WebView.
             LibraryLoader.getInstance().setLibrarySuffix("-weblayer");
@@ -456,5 +461,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     interface Natives {
         void setRemoteDebuggingEnabled(boolean enabled);
         boolean isRemoteDebuggingEnabled();
+        void setIsWebViewCompatMode(boolean value);
     }
 }

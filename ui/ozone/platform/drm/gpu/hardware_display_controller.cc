@@ -29,6 +29,12 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 
+// Vendor ID for downstream, interim ChromeOS specific modifiers.
+#define DRM_FORMAT_MOD_VENDOR_CHROMEOS 0xf0
+// TODO(gurchetansingh) Remove once DRM_FORMAT_MOD_ARM_AFBC is used by all
+// kernels and allocators.
+#define DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC fourcc_mod_code(CHROMEOS, 1)
+
 namespace ui {
 
 namespace {

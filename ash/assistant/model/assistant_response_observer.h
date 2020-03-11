@@ -5,7 +5,7 @@
 #ifndef ASH_ASSISTANT_MODEL_ASSISTANT_RESPONSE_OBSERVER_H_
 #define ASH_ASSISTANT_MODEL_ASSISTANT_RESPONSE_OBSERVER_H_
 
-#include <map>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
@@ -25,9 +25,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponseObserver
   virtual void OnUiElementAdded(const AssistantUiElement* ui_element) {}
 
   // Invoked when the specified |suggestions| are added to the response.
-  // Note that the provided map is keyed by id.
   virtual void OnSuggestionsAdded(
-      const std::map<int, const AssistantSuggestion*>& suggestions) {}
+      const std::vector<const AssistantSuggestion*>& suggestions) {}
 
  protected:
   AssistantResponseObserver() = default;

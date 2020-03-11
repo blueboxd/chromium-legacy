@@ -346,22 +346,23 @@ void AppListItemView::SetUIState(UIState ui_state) {
   if (ui_state_ == ui_state)
     return;
 
-  ui_state_ = ui_state;
-
-  switch (ui_state_) {
+  switch (ui_state) {
     case UI_STATE_NORMAL:
       title_->SetVisible(!is_installing_);
       progress_bar_->SetVisible(is_installing_);
-      ScaleAppIcon(false);
+      if (ui_state_ == UI_STATE_DRAGGING)
+        ScaleAppIcon(false);
       break;
     case UI_STATE_DRAGGING:
       title_->SetVisible(false);
       progress_bar_->SetVisible(false);
-      ScaleAppIcon(true);
+      if (ui_state_ == UI_STATE_NORMAL)
+        ScaleAppIcon(true);
       break;
     case UI_STATE_DROPPING_IN_FOLDER:
       break;
   }
+  ui_state_ = ui_state;
 
   SchedulePaint();
 }

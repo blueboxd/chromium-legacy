@@ -815,6 +815,7 @@
 <translation id="4466881336512663640">سيتم فقدان تغييرات النموذج. هل تريد فعلاً المتابعة؟</translation>
 <translation id="4477350412780666475">المقطع الصوتي التالي</translation>
 <translation id="4482953324121162758">لن تتم ترجمة هذا الموقع.</translation>
+<translation id="4486757593530038591">عند تفعيل هذا الخيار، لا يمكن للمواقع الإلكترونية استخدام نشاط التصفّح على المواقع الإلكترونية المختلفة لتخصيص الإعلانات. وقد تتوقف الميزات على بعض المواقع الإلكترونية.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">‏يتم إيقاف هذه الميزات تلقائيًا. لن تكون الميزات متاحة في الإصدارات المستقبلية من Chrome.</translation>
 <translation id="4493480324863638523">‏عنوان URL غير صحيح. يجب أن يحتوي عنوان URL على نظام عادي، مثل http://example.com أو https://example.com.</translation>
@@ -1052,6 +1053,7 @@
 <translation id="549333378215107354">الحجم 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">الإشارات المرجعية المُدارة</translation>
+<translation id="5510481203689988000">تتم إدارة هذا الإعداد في إعدادات ملفات تعريف الارتباط.</translation>
 <translation id="5510766032865166053">ربما يكون تم نقله أو حذفه.</translation>
 <translation id="5523118979700054094">اسم السياسة</translation>
 <translation id="55293785478302737">خزم الحواف</translation>
@@ -1484,6 +1486,7 @@
 <translation id="7416351320495623771">إدارة كلمات المرور…</translation>
 <translation id="7419106976560586862">مسار الملف الشخصي</translation>
 <translation id="7437289804838430631">إضافة معلومات الاتصال</translation>
+<translation id="7438976808740265764">‏لن يتوفَّر برنامج Adobe Flash Player بعد كانون الأول (ديسمبر) 2020.</translation>
 <translation id="7440140511386898319">الاستكشاف أثناء عدم الاتصال بالإنترنت</translation>
 <translation id="7441627299479586546">موضوع السياسة غير صحيح</translation>
 <translation id="7442725080345379071">برتقالي فاتح</translation>

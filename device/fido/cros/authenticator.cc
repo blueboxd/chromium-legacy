@@ -21,8 +21,6 @@
 #include "third_party/cros_system_api/dbus/u2f/dbus-constants.h"
 
 namespace device {
-namespace fido {
-namespace cros {
 
 ChromeOSAuthenticator::ChromeOSAuthenticator() : weak_factory_(this) {}
 
@@ -269,6 +267,4 @@ base::WeakPtr<FidoAuthenticator> ChromeOSAuthenticator::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-}  // namespace cros
-}  // namespace fido
 }  // namespace device

@@ -556,6 +556,7 @@
 <translation id="1745520510852184940">Doen dit altyd</translation>
 <translation id="1750172676754093297">Jou sekuriteitsleutel kan nie vingerafdrukke berg nie</translation>
 <translation id="175196451752279553">Maak geslote oortjie weer oop</translation>
+<translation id="1753067873202720523">Jou Chromebook laai dalk nie terwyl dit aangeskakel is nie.</translation>
 <translation id="1753905327828125965">Meeste besoek</translation>
 <translation id="1755601632425835748">Teksgrootte</translation>
 <translation id="1756681705074952506">Invoermetode</translation>
@@ -1201,6 +1202,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2610157865375787051">Slaap</translation>
 <translation id="2610260699262139870">Ware grootte</translation>
 <translation id="2610780100389066815">Microsoft-vertrouelys-ondertekening</translation>
+<translation id="261226884343006626">Chrome kan nie jou wagwoorde nagaan nie. Probeer weer môre.</translation>
 <translation id="2612676031748830579">Kaartnommer</translation>
 <translation id="2616366145935564096">Lees en verander jou data op <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">SIM-kaart is gesluit</translation>
@@ -1331,6 +1333,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2773288106548584039">Steun vir vorige blaaiers</translation>
 <translation id="2773802008104670137">Hierdie soort lêer kan jou rekenaar beskadig.</translation>
 <translation id="2775104091073479743">Wysig vingerafdrukke</translation>
+<translation id="2775140325783767197">Chrome kan nie jou wagwoorde nagaan nie. Probeer om jou internetverbinding na te gaan.</translation>
 <translation id="2776441542064982094">Dit lyk asof daar geen toestelle beskikbaar is om op die netwerk te registreer nie. As jou toestel aan is en aan die internet gekoppel is, probeer om dit met behulp van instruksies in die handleiding te registreer.</translation>
 <translation id="2780009105947267877">Stel tans Plugin VM op …</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -2901,6 +2904,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4964455510556214366">Rangskikking</translation>
 <translation id="4965808351167763748">Is jy seker jy wil hierdie toestel opstel om Hangouts Ontmoeting te laat loop?</translation>
 <translation id="496888482094675990">Die Lêers-program bied vinnige toegang tot lêers wat jy op Google Drive, eksterne berging of jou Chrome-bedryfstelseltoestel gestoor het.</translation>
+<translation id="4969017548025688718"><ph name="COUNT" /> gekompromitteerde wagwoorde</translation>
 <translation id="4971412780836297815">Maak oop wanneer dit klaar is</translation>
 <translation id="4972129977812092092">Wysig drukker</translation>
 <translation id="4972164225939028131">Verkeerde wagwoord</translation>
@@ -3259,7 +3263,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5470735824776589490">'n Herbegin word vereis voordat jou toestel met Powerwash teruggestel kan word. <ph name="LINK_BEGIN" />Kom meer te wete<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Hallo daar! Ek is jou teks-na-spraak-stem.</translation>
 <translation id="5473333559083690127">Voer nuwe PIN weer in</translation>
-<translation id="548137908954174608">Aktiveer Intydse Onderskrifte</translation>
 <translation id="5481941284378890518">Voeg nabygeleë drukkers by</translation>
 <translation id="5483785310822538350">Herroep lêer- en toesteltoegang</translation>
 <translation id="5485080380723335835">Jou <ph name="DEVICE_TYPE" /> is vir sekuriteit gesluit. Voer jou wagwoord handmatig in om voort te gaan.</translation>
@@ -4903,7 +4906,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7740996059027112821">Standaard</translation>
 <translation id="7744047395460924128">Sien jou drukgeskiedenis</translation>
 <translation id="7744192722284567281">Bevind dat dit data skend</translation>
-<translation id="7746457520633464754">Chrome stuur URL'e van sommige bladsye wat jy besoek, beperkte stelselinligting en sekere bladinhoud aan Google om gevaarlike programme en werwe te bespeur</translation>
 <translation id="7750228210027921155">Prent-in-prent</translation>
 <translation id="7751229152614300329">Veiligblaai is op datum en beskerm jou teen skadelike werwe en aflaaie</translation>
 <translation id="7751260505918304024">Wys alles</translation>
@@ -5417,7 +5419,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8391712576156218334">Prent is nie beskikbaar nie. Probeer later weer.</translation>
 <translation id="8392364544846746346">Vra wanneer 'n werf lêers of vouers op jou toestel wil wysig</translation>
 <translation id="8392451568018454956">Opsieskieslys vir <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8392630288038565643">Hierdie instelling is op bestuurde blaaiers gedeaktiveer.</translation>
 <translation id="8393511274964623038">Stop inprop</translation>
 <translation id="8393700583063109961">Stuur boodskap</translation>
 <translation id="839736845446313156">Registreer</translation>
@@ -5501,7 +5502,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="851263357009351303">Laat <ph name="HOST" /> altyd toe om prente te wys</translation>
 <translation id="8513108775083588393">Outodraai</translation>
 <translation id="8514746246728959655">Probeer 'n ander sekuriteitsleutel</translation>
-<translation id="8517041960877371778">Jou <ph name="DEVICE_TYPE" /> mag nie laai terwyl dit aangeskakel is nie.</translation>
 <translation id="8521475323816527629">Kom vinnig by jou programme uit</translation>
 <translation id="8523493869875972733">Hou veranderings</translation>
 <translation id="8523849605371521713">Bygevoeg volgens beleid</translation>
@@ -5874,7 +5874,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8978154919215542464">Aan – sinkroniseer alles</translation>
 <translation id="897939795688207351">Op <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – Omgeval</translation>
-<translation id="8983405057223076408">Hierdie instelling is gedeaktiveer omdat ouerkontroles aan is.</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> kan <ph name="FILENAME" /> wysig</translation>
 <translation id="8985264973231822211"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> dag gelede aktief</translation>
 <translation id="8986362086234534611">Vergeet</translation>

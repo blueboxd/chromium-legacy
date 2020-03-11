@@ -535,22 +535,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest,
   EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kEnabled);
 }
 
-// Tests that both installing a PWA and creating a shortcut app are disabled
-// when page crashes.
-IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ShortcutMenuOptionsForCrashedTab) {
-  ASSERT_TRUE(https_server()->Start());
-
-  EXPECT_TRUE(
-      NavigateAndAwaitInstallabilityCheck(browser(), GetInstallableAppURL()));
-  content::WebContents* tab_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  tab_contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
-  ASSERT_TRUE(tab_contents->IsCrashed());
-
-  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kDisabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kDisabled);
-}
-
 // Tests that an installed PWA is not used when out of scope by one path level.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, MenuOptionsOutsideInstalledPwaScope) {
   ASSERT_TRUE(https_server()->Start());

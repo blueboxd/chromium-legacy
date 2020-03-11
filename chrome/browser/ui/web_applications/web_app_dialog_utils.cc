@@ -69,22 +69,22 @@ void OnWebAppInstalled(WebAppInstalledCallback callback,
 bool CanCreateWebApp(const Browser* browser) {
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  if (!WebAppProvider::Get(browser->profile()))
-    return false;
-  if (web_contents->IsCrashed())
+  if (!WebAppProvider::GetForWebContents(web_contents))
     return false;
   content::NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();
-  if (entry && entry->GetPageType() == content::PAGE_TYPE_ERROR)
-    return false;
+  bool is_error_page =
+      entry && entry->GetPageType() == content::PAGE_TYPE_ERROR;
+  Profile* web_contents_profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   banners::AppBannerManager* app_banner_manager =
       banners::AppBannerManager::FromWebContents(web_contents);
   bool externally_installed =
       app_banner_manager && app_banner_manager->IsExternallyInstalledWebApp();
 
-  return AreWebAppsUserInstallable(browser->profile()) &&
+  return AreWebAppsUserInstallable(web_contents_profile) &&
          IsValidWebAppUrl(web_contents->GetLastCommittedURL()) &&
-         !externally_installed;
+         !is_error_page && !externally_installed;
 }
 
 bool CanPopOutWebApp(Profile* profile) {

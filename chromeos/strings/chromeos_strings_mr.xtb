@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">पासवर्ड बदलण्याची मुदत संपली आहे</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN" /> याद्वारे हे डिव्हाइस व्यवस्‍थापित केले जाते.</translation>
 <translation id="2338501278241028356">जवळपासचे डिव्हाइस शोधण्यासाठी ब्लूटूथ सुरू करा</translation>
+<translation id="2375079107209812402"><ph name="ATTEMPTS_LEFT" /> प्रयत्न शिल्लक</translation>
 <translation id="2805756323405976993">ॲप्लिकेशन</translation>
 <translation id="2872961005593481000">बंद करा</translation>
 <translation id="3008341117444806826">रिफ्रेश करा</translation>
@@ -42,6 +43,7 @@
 <translation id="808894953321890993">पासवर्ड बदला</translation>
 <translation id="8208861521865154048">लाभ</translation>
 <translation id="8747900814994928677">बदलाची खात्री करा</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> प्रयत्न शिल्लक</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> चे तिकीट रिफ्रेश करा</translation>
 <translation id="9111102763498581341">अनलॉक करा</translation>
 </translationbundle>

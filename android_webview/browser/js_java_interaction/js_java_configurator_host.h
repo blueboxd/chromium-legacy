@@ -9,8 +9,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "net/proxy_resolution/proxy_bypass_rules.h"
-#include "services/network/public/mojom/proxy_config.mojom.h"
 
 namespace content {
 class RenderFrameHost;

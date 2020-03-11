@@ -556,6 +556,7 @@
 <translation id="1745520510852184940">Gör alltid detta</translation>
 <translation id="1750172676754093297">Det går inte att lagra fingeravtryck på säkerhetsnyckeln</translation>
 <translation id="175196451752279553">Ö&amp;ppna en stängd flik igen</translation>
+<translation id="1753067873202720523">Din Chromebook kanske inte laddas medan den är på.</translation>
 <translation id="1753905327828125965">Mest besökta</translation>
 <translation id="1755601632425835748">Textstorlek</translation>
 <translation id="1756681705074952506">Inmatningsmetod</translation>
@@ -1201,6 +1202,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2610157865375787051">Viloläge</translation>
 <translation id="2610260699262139870">V&amp;erklig storlek</translation>
 <translation id="2610780100389066815">Microsofts Signering av lista över betrodda certifikat</translation>
+<translation id="261226884343006626">Chrome kan inte kontrollera dina lösenord. Försök igen i morgon.</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
 <translation id="2616366145935564096">Läs och ändra dina uppgifter på <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">SIM-kortet är låst</translation>
@@ -1331,6 +1333,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2773288106548584039">Stöd för äldre webbläsare</translation>
 <translation id="2773802008104670137">Den här filtypen kan skada din dator.</translation>
 <translation id="2775104091073479743">Redigera fingeravtryck</translation>
+<translation id="2775140325783767197">Chrome kan inte kontrollera dina lösenord. Testa att kontrollera internetanslutningen.</translation>
 <translation id="2776441542064982094">Det verkar som om det inte finns några enheter att registrera i nätverket. Om enheten är på och ansluten till internet kan du prova att registrera den med anvisningarna i handboken för enheten.</translation>
 <translation id="2780009105947267877">Plugin VM konfigureras …</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -2901,6 +2904,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4964455510556214366">Ordning</translation>
 <translation id="4965808351167763748">Vill du konfigurera den här enheten för Hangouts Meet?</translation>
 <translation id="496888482094675990">Med appen Filer kommer du snabbt åt filer som du har sparat på Google Drive, externa lagringsenheter eller din Chrome OS-enhet.</translation>
+<translation id="4969017548025688718"><ph name="COUNT" /> utsatta lösenord</translation>
 <translation id="4971412780836297815">Öppna när nedladdningen är klar</translation>
 <translation id="4972129977812092092">Redigera skrivare</translation>
 <translation id="4972164225939028131">Fel lösenord</translation>
@@ -3259,7 +3263,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5470735824776589490">En omstart krävs innan enheten kan återställas med Powerwash. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Hejsan! Nu används min röst för text till tal.</translation>
 <translation id="5473333559083690127">Ange ny pinkod igen</translation>
-<translation id="548137908954174608">Aktivera Live Caption</translation>
 <translation id="5481941284378890518">Lägg till skrivare i närheten</translation>
 <translation id="5483785310822538350">Återkalla åtkomst till enheten och filer</translation>
 <translation id="5485080380723335835">Din <ph name="DEVICE_TYPE" /> är låst. Du måste ange lösenordet manuellt innan du fortsätter.</translation>
@@ -4903,7 +4906,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7744047395460924128">Visa utskriftshistoriken</translation>
 <translation id="7744192722284567281">Upptäckt i ett dataintrång</translation>
-<translation id="7746457520633464754">För att kunna upptäcka farliga appar och webbplatser skickar Chrome webbadresser till vissa sidor som du besöker, vissa systemuppgifter och visst sidinnehåll till Google</translation>
 <translation id="7750228210027921155">Bild-i-bild</translation>
 <translation id="7751229152614300329">Säker webbsökning är uppdaterad och skyddar dig från skadliga webbplatser och nedladdningar</translation>
 <translation id="7751260505918304024">Visa alla</translation>
@@ -5418,7 +5420,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8391712576156218334">Bilden är inte tillgänglig. Försök igen senare.</translation>
 <translation id="8392364544846746346">Fråga när en webbplats vill kunna redigera filer eller mappar på enheten</translation>
 <translation id="8392451568018454956">Alternativmenyn för <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8392630288038565643">Inställningen är inaktiverad på hanterade webbläsare.</translation>
 <translation id="8393511274964623038">Stoppa pluginprogram</translation>
 <translation id="8393700583063109961">Skicka meddelande</translation>
 <translation id="839736845446313156">Registrera</translation>
@@ -5502,7 +5503,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="851263357009351303">Tillåt alltid att <ph name="HOST" /> visar bilder</translation>
 <translation id="8513108775083588393">Rotera automatiskt</translation>
 <translation id="8514746246728959655">Testa med en annan säkerhetsnyckel</translation>
-<translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> laddas eventuellt inte så länge den är på.</translation>
 <translation id="8521475323816527629">Öppna appar snabbt</translation>
 <translation id="8523493869875972733">Behåll ändringarna</translation>
 <translation id="8523849605371521713">Har lagts till av en policy</translation>
@@ -5875,7 +5875,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8978154919215542464">På – synkronisera allt</translation>
 <translation id="897939795688207351">På <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – kraschat</translation>
-<translation id="8983405057223076408">Inställningen är inaktiverad eftersom föräldrakontroller används.</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> har redigeringsbehörighet till <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">Aktiv för <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dag sedan</translation>
 <translation id="8986362086234534611">Glöm</translation>

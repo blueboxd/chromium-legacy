@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">পাসওয়ার্ড পরিবর্তন করার সময় পেরিয়ে গেছে</translation>
 <translation id="2049639323467105390">এই ডিভাইস <ph name="DOMAIN" /> দ্বারা পরিচালিত হয়৷</translation>
 <translation id="2338501278241028356">আশেপাশের ডিভাইস খুঁজে পেতে ব্লুটুথ চালু করুন</translation>
+<translation id="2375079107209812402">আর <ph name="ATTEMPTS_LEFT" /> বার চেষ্টা করতে পারবেন</translation>
 <translation id="2805756323405976993">অ্যাপ্স</translation>
 <translation id="2872961005593481000">বন্ধ করুন</translation>
 <translation id="3008341117444806826">রিফ্রেশ করুন</translation>
@@ -41,6 +42,7 @@
 <translation id="808894953321890993">পাসওয়ার্ড পরিবর্তন করুন</translation>
 <translation id="8208861521865154048">বিশেষ সুবিধা</translation>
 <translation id="8747900814994928677">পরিবর্তন কনফার্ম করুন</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> আর <ph name="ATTEMPTS_LEFT" /> বার চেষ্টা করতে পারবেন</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" />-এর টিকিট রিফ্রেশ করুন</translation>
 <translation id="9111102763498581341">আনলক</translation>
 </translationbundle>

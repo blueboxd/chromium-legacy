@@ -472,6 +472,12 @@ bool IsUserVerifyingPlatformAuthenticatorAvailableImpl(
          device::WinWebAuthnApiAuthenticator::
              IsUserVerifyingPlatformAuthenticatorAvailable(
                  discovery_factory->win_webauthn_api());
+#elif defined(OS_CHROMEOS)
+  if (browser_context->IsOffTheRecord()) {
+    return false;
+  }
+  return base::FeatureList::IsEnabled(
+      device::kWebAuthCrosPlatformAuthenticator);
 #else
   return false;
 #endif

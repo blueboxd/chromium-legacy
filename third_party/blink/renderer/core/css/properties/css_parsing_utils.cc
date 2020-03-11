@@ -2617,14 +2617,14 @@ CSSValue* ConsumeTransitionProperty(CSSParserTokenRange& range,
     return nullptr;
   if (token.Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
-  const Document* document = context.GetDocument();
+  const auto* execution_context = context.GetExecutionContext();
   CSSPropertyID unresolved_property =
-      token.ParseAsUnresolvedCSSPropertyID(document->ToExecutionContext());
+      token.ParseAsUnresolvedCSSPropertyID(execution_context);
   if (unresolved_property != CSSPropertyID::kInvalid &&
       unresolved_property != CSSPropertyID::kVariable) {
 #if DCHECK_IS_ON()
     DCHECK(CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
-               .IsWebExposed(document->ToExecutionContext()));
+               .IsWebExposed(execution_context));
 #endif
     range.ConsumeIncludingWhitespace();
     return MakeGarbageCollected<CSSCustomIdentValue>(unresolved_property);

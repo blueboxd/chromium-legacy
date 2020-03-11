@@ -8,21 +8,25 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
-import org.chromium.chrome.browser.compositor.CompositorViewResizer;
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 
 /**
  * The container that holds both infobars and snackbars. It will be translated up and down when the
  * bottom controls' offset changes.
  */
-public class BottomContainer
-        extends FrameLayout implements FullscreenListener, CompositorViewResizer.Observer {
+public class BottomContainer extends FrameLayout implements Destroyable, FullscreenListener {
+    /** An observer of the viewport insets to change this container's position. */
+    private final Callback<Integer> mViewportInsetObserver;
+
     /** The {@link ChromeFullscreenManager} to listen for controls offset changes. */
     private ChromeFullscreenManager mFullscreenManager;
 
-    /** A {@link CompositorViewResizer} to listen to for keyboard extension size changes. */
-    private CompositorViewResizer mKeyboardExtensionSizeManager;
+    /** A {@link ApplicationViewportInsetSupplier} to listen for viewport-shrinking features. */
+    private ApplicationViewportInsetSupplier mViewportInsetSupplier;
 
     /** The desired Y offset if unaffected by other UI. */
     private float mBaseYOffset;
@@ -32,23 +36,18 @@ public class BottomContainer
      */
     public BottomContainer(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mViewportInsetObserver = (inset) -> setTranslationY(mBaseYOffset);
     }
 
     /**
      * Initializes this container.
      */
     public void initialize(ChromeFullscreenManager fullscreenManager,
-            CompositorViewResizer keyboardExtensionSizeManager) {
+            ApplicationViewportInsetSupplier viewportInsetSupplier) {
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
-        mKeyboardExtensionSizeManager = keyboardExtensionSizeManager;
-        mKeyboardExtensionSizeManager.addObserver(this);
-        setTranslationY(mBaseYOffset);
-    }
-
-    // CompositorViewResizer methods
-    @Override
-    public void onHeightChanged(int keyboardHeight) {
+        mViewportInsetSupplier = viewportInsetSupplier;
+        mViewportInsetSupplier.addObserver(mViewportInsetObserver);
         setTranslationY(mBaseYOffset);
     }
 
@@ -65,7 +64,7 @@ public class BottomContainer
 
         float offsetFromControls = mFullscreenManager.getBottomControlOffset()
                 - mFullscreenManager.getBottomControlsHeight();
-        offsetFromControls -= mKeyboardExtensionSizeManager.getHeight();
+        offsetFromControls -= mViewportInsetSupplier.get();
 
         // Sit on top of either the bottom sheet or the bottom toolbar depending on which is larger
         // (offsets are negative).
@@ -80,4 +79,10 @@ public class BottomContainer
 
     @Override
     public void onContentOffsetChanged(int offset) {}
+
+    @Override
+    public void destroy() {
+        mFullscreenManager.removeListener(this);
+        mViewportInsetSupplier.removeObserver(mViewportInsetObserver);
+    }
 }

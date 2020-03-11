@@ -48,13 +48,13 @@ SharedImageBackingD3D::SharedImageBackingD3D(
     Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
     base::win::ScopedHandle shared_handle,
     Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dxgi_keyed_mutex)
-    : SharedImageBacking(mailbox,
-                         format,
-                         size,
-                         color_space,
-                         usage,
-                         texture->estimated_size(),
-                         false /* is_thread_safe */),
+    : ClearTrackingSharedImageBacking(mailbox,
+                                      format,
+                                      size,
+                                      color_space,
+                                      usage,
+                                      texture->estimated_size(),
+                                      false /* is_thread_safe */),
       swap_chain_(std::move(swap_chain)),
       texture_(std::move(texture)),
       image_(std::move(image)),
@@ -76,11 +76,6 @@ SharedImageBackingD3D::~SharedImageBackingD3D() {
   keyed_mutex_acquire_key_ = 0;
   keyed_mutex_acquired_ = false;
   shared_handle_.Close();
-}
-
-// Texture is cleared on initialization.
-gfx::Rect SharedImageBackingD3D::ClearedRect() const {
-  return gfx::Rect(size());
 }
 
 void SharedImageBackingD3D::Update(std::unique_ptr<gfx::GpuFence> in_fence) {

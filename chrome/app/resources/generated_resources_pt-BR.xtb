@@ -556,6 +556,7 @@
 <translation id="1745520510852184940">Sempre fazer isso</translation>
 <translation id="1750172676754093297">Não é possível armazenar impressões digitais na sua chave de segurança</translation>
 <translation id="175196451752279553">R&amp;eabrir guia fechada</translation>
+<translation id="1753067873202720523">Seu Chromebook não pode ser carregado enquanto está ligado.</translation>
 <translation id="1753905327828125965">Mais visitados</translation>
 <translation id="1755601632425835748">Tamanho do texto</translation>
 <translation id="1756681705074952506">Método de entrada</translation>
@@ -1201,6 +1202,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2610157865375787051">Suspender</translation>
 <translation id="2610260699262139870">&amp;Tamanho real</translation>
 <translation id="2610780100389066815">Assinatura da lista de confiabilidade da Microsoft</translation>
+<translation id="261226884343006626">O Chrome não pode verificar suas senhas. Tente novamente amanhã.</translation>
 <translation id="2612676031748830579">Número do cartão</translation>
 <translation id="2616366145935564096">Ler e alterar seus dados em <ph name="WEBSITE_1" /></translation>
 <translation id="2617342710774726426">O chip está bloqueado</translation>
@@ -1331,6 +1333,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2773288106548584039">Suporte a navegadores legados</translation>
 <translation id="2773802008104670137">Esse tipo de arquivo pode danificar seu computador.</translation>
 <translation id="2775104091073479743">Editar impressões digitais</translation>
+<translation id="2775140325783767197">O Chrome não pode verificar suas senhas. Verifique sua conexão com a Internet.</translation>
 <translation id="2776441542064982094">Parece que não há dispositivos disponíveis para registrar na rede. Se seu dispositivo estiver ligado e conectado à Internet, tente registrá-lo usando as instruções do seu manual.</translation>
 <translation id="2780009105947267877">Configurando a Plugin VM...</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -2901,6 +2904,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4964455510556214366">Organização</translation>
 <translation id="4965808351167763748">Você quer mesmo configurar este dispositivo para executar o Hangouts Meet?</translation>
 <translation id="496888482094675990">O aplicativo Arquivos fornece acesso rápido a arquivos que foram salvos no Google Drive, em armazenamento externo ou no seu dispositivo Chrome OS.</translation>
+<translation id="4969017548025688718"><ph name="COUNT" /> senhas comprometidas</translation>
 <translation id="4971412780836297815">Abrir quando estiver concluído</translation>
 <translation id="4972129977812092092">Editar impressora</translation>
 <translation id="4972164225939028131">Senha incorreta</translation>
@@ -3259,7 +3263,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5470735824776589490">Para que seu dispositivo possa ser redefinido com o Powerwash, é necessário reiniciá-lo. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Olá! Eu sou sua voz para conversão de texto em voz.</translation>
 <translation id="5473333559083690127">Digite o novo PIN novamente</translation>
-<translation id="548137908954174608">Ativar "Legendas em tempo real"</translation>
 <translation id="5481941284378890518">Adicionar impressoras próximas</translation>
 <translation id="5483785310822538350">Revogar acesso ao arquivo e ao dispositivo</translation>
 <translation id="5485080380723335835">Seu <ph name="DEVICE_TYPE" /> está bloqueado por segurança. Digite sua senha para continuar.</translation>
@@ -4905,7 +4908,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7740996059027112821">Padrão</translation>
 <translation id="7744047395460924128">Ver seu histórico de impressão</translation>
 <translation id="7744192722284567281">Encontrada em uma violação de dados</translation>
-<translation id="7746457520633464754">Para detectar apps e sites perigosos, o Chrome envia para o Google URLs de algumas páginas visitadas, informações limitadas do sistema e um pouco do conteúdo da página</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7751229152614300329">O "Navegação segura" está atualizado e continua a proteger você de sites e downloads nocivos</translation>
 <translation id="7751260505918304024">Exibir todos</translation>
@@ -5420,7 +5422,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8391712576156218334">Imagem indisponível. Tente novamente mais tarde.</translation>
 <translation id="8392364544846746346">Perguntar quando um site quiser editar arquivos ou pastas do dispositivo</translation>
 <translation id="8392451568018454956">Menu de opções para <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8392630288038565643">Esta configuração está desativada em navegadores gerenciados.</translation>
 <translation id="8393511274964623038">Parar plug-in</translation>
 <translation id="8393700583063109961">Enviar mensagem</translation>
 <translation id="839736845446313156">Inscrição</translation>
@@ -5504,7 +5505,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="851263357009351303">Sempre permitir que <ph name="HOST" /> mostre imagens</translation>
 <translation id="8513108775083588393">Girar automaticamente</translation>
 <translation id="8514746246728959655">Tente usar uma chave de segurança diferente</translation>
-<translation id="8517041960877371778">Seu <ph name="DEVICE_TYPE" /> pode não ser carregado enquanto estiver ligado.</translation>
 <translation id="8521475323816527629">Acessar seus apps rapidamente</translation>
 <translation id="8523493869875972733">Manter alterações</translation>
 <translation id="8523849605371521713">Adicionada por uma política</translation>
@@ -5877,7 +5877,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8978154919215542464">Ativado - sincronizar tudo</translation>
 <translation id="897939795688207351">Em <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Falhou</translation>
-<translation id="8983405057223076408">Esta configuração está desativada porque o controle dos pais está ativado.</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> pode editar <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">Ativado há <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dia</translation>
 <translation id="8986362086234534611">Esquecer</translation>

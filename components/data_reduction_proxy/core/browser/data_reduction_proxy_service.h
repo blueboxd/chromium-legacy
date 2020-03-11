@@ -20,7 +20,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -41,7 +40,6 @@ class TimeDelta;
 
 namespace net {
 class HttpRequestHeaders;
-class ProxyList;
 }  // namespace net
 
 namespace data_reduction_proxy {
@@ -61,8 +59,7 @@ class DataReductionProxyService
     : public data_use_measurement::DataUseMeasurement::ServicesDataUseObserver,
       public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
       public network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver,
-      public network::NetworkConnectionTracker::NetworkConnectionObserver,
-      public mojom::DataReductionProxy {
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // The caller must ensure that |settings|, |prefs|, |request_context|, and
   // |io_task_runner| remain alive for the lifetime of the
@@ -158,16 +155,6 @@ class DataReductionProxyService
   void AddCustomProxyConfigClient(
       mojo::Remote<network::mojom::CustomProxyConfigClient> config_client);
 
-  // mojom::DataReductionProxy implementation:
-  void MarkProxiesAsBad(base::TimeDelta bypass_duration,
-                        const net::ProxyList& bad_proxies,
-                        MarkProxiesAsBadCallback callback) override;
-  void AddThrottleConfigObserver(
-      mojo::PendingRemote<mojom::DataReductionProxyThrottleConfigObserver>
-          observer) override;
-  void Clone(
-      mojo::PendingReceiver<mojom::DataReductionProxy> receiver) override;
-
   // Returns the percentage of data savings estimate provided by save-data for
   // an origin.
   double GetSaveDataSavingsPercentEstimate(const std::string& origin) const;
@@ -241,17 +228,6 @@ class DataReductionProxyService
   // Called when the list of proxies changes.
   void OnProxyConfigUpdated();
 
-  // Should be called whenever there is a possible change to the custom proxy
-  // config.
-  void UpdateCustomProxyConfig();
-
-  // Should be called whenever there is a possible change to the throttle
-  // config.
-  void UpdateThrottleConfig();
-
-  // Creates a config that can be sent to the DataReductionProxyThrottleManager.
-  mojom::DataReductionProxyThrottleConfigPtr CreateThrottleConfig() const;
-
   // Creates a config using |proxies_for_http| that can be sent to the
   // NetworkContext.
   network::mojom::CustomProxyConfigPtr CreateCustomProxyConfig(
@@ -323,11 +299,6 @@ class DataReductionProxyService
   // The set of clients that will get updates about changes to the proxy config.
   mojo::RemoteSet<network::mojom::CustomProxyConfigClient>
       proxy_config_clients_;
-
-  mojo::ReceiverSet<mojom::DataReductionProxy> drp_receivers_;
-
-  mojo::RemoteSet<mojom::DataReductionProxyThrottleConfigObserver>
-      drp_throttle_config_observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

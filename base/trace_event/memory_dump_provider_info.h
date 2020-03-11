@@ -58,7 +58,7 @@ struct BASE_EXPORT MemoryDumpProviderInfo
                          const char* name,
                          scoped_refptr<SequencedTaskRunner> task_runner,
                          const MemoryDumpProvider::Options& options,
-                         bool whitelisted_for_background_mode);
+                         bool allowed_in_background_mode);
 
   // It is safe to access the const fields below from any thread as they are
   // never mutated.
@@ -78,7 +78,7 @@ struct BASE_EXPORT MemoryDumpProviderInfo
   const scoped_refptr<SequencedTaskRunner> task_runner;
 
   // True if the dump provider is whitelisted for background mode.
-  const bool whitelisted_for_background_mode;
+  const bool allowed_in_background_mode;
 
   // These fields below, instead, are not thread safe and can be mutated only:
   // - On the |task_runner|, when not null (i.e. for thread-bound MDPS).

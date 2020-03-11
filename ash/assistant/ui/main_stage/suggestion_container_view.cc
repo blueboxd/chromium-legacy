@@ -17,7 +17,6 @@
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "base/bind.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/views/layout/box_layout.h"
@@ -174,7 +173,7 @@ void SuggestionContainerView::InitLayout() {
 }
 
 void SuggestionContainerView::OnConversationStartersChanged(
-    const std::map<int, const AssistantSuggestion*>& conversation_starters) {
+    const std::vector<const AssistantSuggestion*>& conversation_starters) {
   // If we've received a response we should ignore changes to the cache of
   // conversation starters as we are past the state in which they should be
   // presented. To present them now would incorrectly associate the conversation
@@ -185,9 +184,8 @@ void SuggestionContainerView::OnConversationStartersChanged(
   RemoveAllViews();
 
   std::vector<std::unique_ptr<ElementAnimator>> animators;
-  for (const auto& pair : conversation_starters) {
-    auto animator =
-        AddSuggestionChip(/*id=*/pair.first, /*suggestion=*/pair.second);
+  for (const auto* conversation_starter : conversation_starters) {
+    auto animator = AddSuggestionChip(conversation_starter);
     if (animator)
       AddElementAnimator(std::move(animator));
   }
@@ -196,7 +194,6 @@ void SuggestionContainerView::OnConversationStartersChanged(
 }
 
 std::unique_ptr<ElementAnimator> SuggestionContainerView::HandleSuggestion(
-    int id,
     const AssistantSuggestion* suggestion) {
   has_received_response_ = true;
 
@@ -204,16 +201,10 @@ std::unique_ptr<ElementAnimator> SuggestionContainerView::HandleSuggestion(
   layout_manager_->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kStart);
 
-  return AddSuggestionChip(id, suggestion);
+  return AddSuggestionChip(suggestion);
 }
 
 void SuggestionContainerView::OnAllViewsRemoved() {
-  // Abort any download requests in progress.
-  download_request_weak_factory_.InvalidateWeakPtrs();
-
-  // Clear our view cache.
-  suggestion_chip_views_.clear();
-
   // Clear the selected button.
   selected_chip_ = nullptr;
 
@@ -223,74 +214,24 @@ void SuggestionContainerView::OnAllViewsRemoved() {
 }
 
 std::unique_ptr<ElementAnimator> SuggestionContainerView::AddSuggestionChip(
-    int id,
     const AssistantSuggestion* suggestion) {
-  SuggestionChipView::Params params;
-  params.text = base::UTF8ToUTF16(suggestion->text);
-
-  if (!suggestion->icon_url.is_empty()) {
-    // Initiate a request to download the image for the suggestion chip icon.
-    // Note that the request is identified by the suggestion id.
-    delegate()->DownloadImage(
-        suggestion->icon_url,
-        base::BindOnce(&SuggestionContainerView::OnSuggestionChipIconDownloaded,
-                       download_request_weak_factory_.GetWeakPtr(), id));
-
-    // To reserve layout space until the actual icon can be downloaded, we
-    // supply an empty placeholder image to the suggestion chip view.
-    params.icon = gfx::ImageSkia();
-  }
-
-  auto suggestion_chip_view =
-      std::make_unique<SuggestionChipView>(params, /*listener=*/this);
-
-  suggestion_chip_view->SetAccessibleName(params.text);
-
-  // Given a suggestion chip view, we need to be able to look up the id of
-  // the underlying suggestion. This is used for handling press events.
-  suggestion_chip_view->SetID(id);
+  auto suggestion_chip_view = std::make_unique<SuggestionChipView>(
+      delegate(), suggestion, /*listener=*/this);
 
   // The chip will be animated on its own layer.
   suggestion_chip_view->SetPaintToLayer();
   suggestion_chip_view->layer()->SetFillsBoundsOpaquely(false);
 
-  // Given an id, we also want to be able to look up the corresponding
-  // suggestion chip view. This is used for handling icon download events.
-  suggestion_chip_views_[id] =
-      content_view()->AddChildView(std::move(suggestion_chip_view));
-
-  // Return the animator for the suggestion chip.
-  return std::make_unique<SuggestionChipAnimator>(suggestion_chip_views_[id],
-                                                  this);
-}
-
-void SuggestionContainerView::OnSuggestionChipIconDownloaded(
-    int id,
-    const gfx::ImageSkia& icon) {
-  if (!icon.isNull())
-    suggestion_chip_views_[id]->SetIcon(icon);
+  // Add to the view hierarchy and return the animator for the suggestion chip.
+  return std::make_unique<SuggestionChipAnimator>(
+      contents()->AddChildView(std::move(suggestion_chip_view)), this);
 }
 
 void SuggestionContainerView::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
   // Remember which chip was selected, so we can give it a special animation.
-  selected_chip_ = suggestion_chip_views_[sender->GetID()];
-
-  const AssistantSuggestion* suggestion = nullptr;
-
-  // If we haven't yet received a query response, the suggestion chip that was
-  // pressed was a conversation starter.
-  if (!has_received_response_) {
-    suggestion = delegate()->GetSuggestionsModel()->GetConversationStarterById(
-        sender->GetID());
-  } else {
-    // Otherwise, the suggestion chip belonged to the interaction response.
-    suggestion =
-        delegate()->GetInteractionModel()->response()->GetSuggestionById(
-            sender->GetID());
-  }
-
-  delegate()->OnSuggestionChipPressed(suggestion);
+  selected_chip_ = static_cast<SuggestionChipView*>(sender);
+  delegate()->OnSuggestionChipPressed(selected_chip_->suggestion());
 }
 
 void SuggestionContainerView::OnUiVisibilityChanged(

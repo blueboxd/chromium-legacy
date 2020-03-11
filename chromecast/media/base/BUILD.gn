@@ -41,8 +41,6 @@ cast_source_set("base") {
     "decrypt_context_impl.h",
     "media_caps.cc",
     "media_caps.h",
-    "slew_volume.cc",
-    "slew_volume.h",
     "supported_codec_profile_levels_memo.cc",
     "supported_codec_profile_levels_memo.h",
     "video_mode_switcher.cc",
@@ -58,17 +56,16 @@ cast_source_set("base") {
 
   public_deps = [
     ":key_systems",
-    ":media_codec_support",
     "//chromecast/public/media",
   ]
 
   deps = [
     "//base",
     "//chromecast/base",
-    "//media",
-    "//media:shared_memory_support",
     "//ui/gfx/geometry",
   ]
+
+  assert_no_deps = [ "//media" ]
 }
 
 cast_source_set("media_resource_tracker") {
@@ -91,6 +88,18 @@ cast_source_set("media_codec_support") {
   ]
 
   public_deps = [ "//chromecast/public/media" ]
+
+  deps = [
+    "//base",
+    "//media",
+  ]
+}
+
+cast_source_set("slew_volume") {
+  sources = [
+    "slew_volume.cc",
+    "slew_volume.h",
+  ]
 
   deps = [
     "//base",

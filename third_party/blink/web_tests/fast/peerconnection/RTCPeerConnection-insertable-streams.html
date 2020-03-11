@@ -47,12 +47,7 @@ promise_test(async t => {
 
   const ontrackPromise = new Promise(resolve => {
     callee.ontrack = t.step_func(() => {
-      const receivers = callee.getReceivers();
-      let videoReceiver = null;
-      for (const r of receivers) {
-        if (r.track.kind == 'video')
-          videoReceiver = r;
-      }
+      const videoReceiver = callee.getReceivers().find(r => r.track.kind === 'video');
       assert_true(videoReceiver !== undefined);
 
       const receiverStreams =
@@ -128,6 +123,7 @@ promise_test(async t => {
   const videoTrack = stream.getVideoTracks()[0];
   t.add_cleanup(() => videoTrack.stop());
 
+  exchangeIceCandidates(caller, callee);
   await doSignalingHandshake(caller, callee);
 
   const videoSender = caller.addTrack(videoTrack);
@@ -146,18 +142,14 @@ promise_test(async t => {
   const videoSender = caller.addTrack(videoTrack);
   const ontrackPromise = new Promise(resolve => {
     callee.ontrack = t.step_func(() => {
-        let receivers = callee.getReceivers();
-        let videoReceiver = null;
-        for (const r of receivers) {
-          if (r.track.kind == 'video')
-            videoReceiver = r;
-        }
-        assert_true(videoReceiver !== undefined);
-        assert_throws_dom("InvalidStateError", () => videoReceiver.createEncodedVideoStreams());
-        resolve();
+      const videoReceiver = callee.getReceivers().find(r => r.track.kind === 'video');
+      assert_true(videoReceiver !== undefined);
+      assert_throws_dom("InvalidStateError", () => videoReceiver.createEncodedVideoStreams());
+      resolve();
     });
   });
 
+  exchangeIceCandidates(caller, callee);
   await doSignalingHandshake(caller, callee);
   return ontrackPromise;
 }, 'RTCRtpReceiver.createEncodedVideoStream() throws if not requested in PC configuration');

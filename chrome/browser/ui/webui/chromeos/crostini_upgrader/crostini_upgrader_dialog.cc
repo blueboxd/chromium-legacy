@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_dialog.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_ui.h"
 #include "chrome/common/webui_url_constants.h"
@@ -31,6 +33,8 @@ void CrostiniUpgraderDialog::Show(base::OnceClosure launch_closure) {
 
   instance = new CrostiniUpgraderDialog(std::move(launch_closure));
   instance->ShowSystemDialog();
+  base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
+                                crostini::UpgradeDialogEvent::kDialogShown);
 }
 
 CrostiniUpgraderDialog::CrostiniUpgraderDialog(base::OnceClosure launch_closure)

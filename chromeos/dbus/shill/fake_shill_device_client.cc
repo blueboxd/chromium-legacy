@@ -658,14 +658,15 @@ bool FakeShillDeviceClient::SimTryPuk(const std::string& device_path,
 void FakeShillDeviceClient::PassStubDeviceProperties(
     const dbus::ObjectPath& device_path,
     DictionaryValueCallback callback) const {
-  const base::DictionaryValue* device_properties = nullptr;
-  if (!stub_devices_.GetDictionaryWithoutPathExpansion(device_path.value(),
-                                                       &device_properties)) {
+  const base::Value* device_properties =
+      stub_devices_.FindDictKey(device_path.value());
+  if (!device_properties) {
     base::DictionaryValue empty_dictionary;
     std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, empty_dictionary);
     return;
   }
-  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, *device_properties);
+  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS,
+                          base::Value::AsDictionaryValue(*device_properties));
 }
 
 // Posts a task to run a void callback with status code |status|.

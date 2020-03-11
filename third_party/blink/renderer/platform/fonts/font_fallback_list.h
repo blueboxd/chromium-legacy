@@ -92,8 +92,6 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   }
   const FontData* FontDataAt(const FontDescription&, unsigned index);
 
-  FallbackListCompositeKey CompositeKey(const FontDescription&) const;
-
   bool CanShapeWordByWord(const FontDescription&);
 
   void SetCanShapeWordByWordForTesting(bool b) {
@@ -107,6 +105,8 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   scoped_refptr<FontData> GetFontData(const FontDescription&, int& family_index) const;
 
   const SimpleFontData* DeterminePrimarySimpleFontData(const FontDescription&);
+
+  FallbackListCompositeKey CompositeKey(const FontDescription&) const;
 
   void ReleaseFontData();
   bool ComputeCanShapeWordByWord(const FontDescription&);

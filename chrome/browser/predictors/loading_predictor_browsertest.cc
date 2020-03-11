@@ -1585,8 +1585,10 @@ INSTANTIATE_TEST_SUITE_P(UseLocalPrediction,
                          LoadingPredictorBrowserTestWithOptimizationGuide,
                          ::testing::Bool());
 
-IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
-                       NavigationHasLocalPredictionNoOptimizationHint) {
+// Disabled test due to consistent failure. crbug.com/1060426
+IN_PROC_BROWSER_TEST_P(
+    LoadingPredictorBrowserTestWithOptimizationGuide,
+    DISABLED_NavigationHasLocalPredictionNoOptimizationHint) {
   // Navigate the first time to fill the predictor's database and the HTTP
   // cache.
   GURL url = embedded_test_server()->GetURL(

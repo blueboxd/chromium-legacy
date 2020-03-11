@@ -137,13 +137,13 @@ void OnDictionaryValueMethod(
   }
   dbus::MessageReader reader(response);
   std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
-  base::DictionaryValue* result = NULL;
-  if (!value.get() || !value->GetAsDictionary(&result)) {
+  if (!value.get() || !value->is_dict()) {
     base::DictionaryValue result;
     std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, result);
     return;
   }
-  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, *result);
+  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS,
+                          base::Value::AsDictionaryValue(*value));
 }
 
 // Handles responses for methods without results.
@@ -162,13 +162,12 @@ void OnDictionaryValueMethodWithErrorCallback(
     dbus::Response* response) {
   dbus::MessageReader reader(response);
   std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
-  base::DictionaryValue* result = NULL;
-  if (!value.get() || !value->GetAsDictionary(&result)) {
+  if (!value.get() || !value->is_dict()) {
     std::move(error_callback)
         .Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
-  std::move(callback).Run(*result);
+  std::move(callback).Run(base::Value::AsDictionaryValue(*value));
 }
 
 // Handles responses for methods with ListValue results.

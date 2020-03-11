@@ -4,7 +4,7 @@
 
 #include "base/process/process.h"
 
-#include "base/clang_profiling_buildflags.h"
+#include "base/clang_coverage_buildflags.h"
 #include "base/debug/activity_tracker.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
@@ -13,8 +13,8 @@
 
 #include <windows.h>
 
-#if BUILDFLAG(CLANG_PROFILING)
-#include "base/test/clang_profiling.h"
+#if BUILDFLAG(CLANG_COVERAGE)
+#include "base/test/clang_coverage.h"
 #endif
 
 namespace {
@@ -90,8 +90,8 @@ bool Process::CanBackgroundProcesses() {
 
 // static
 void Process::TerminateCurrentProcessImmediately(int exit_code) {
-#if BUILDFLAG(CLANG_PROFILING)
-  WriteClangProfilingProfile();
+#if BUILDFLAG(CLANG_COVERAGE)
+  WriteClangCoverageProfile();
 #endif
   ::TerminateProcess(GetCurrentProcess(), exit_code);
   // There is some ambiguity over whether the call above can return. Rather than

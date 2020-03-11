@@ -14,7 +14,7 @@ CustomContextMenuContext::CustomContextMenuContext()
       render_widget_id(kCurrentRenderWidget) {
 }
 
-ContextMenuParams::ContextMenuParams()
+UntrustworthyContextMenuParams::UntrustworthyContextMenuParams()
     : media_type(blink::ContextMenuDataMediaType::kNone),
       x(0),
       y(0),
@@ -34,9 +34,17 @@ ContextMenuParams::ContextMenuParams()
       input_field_type(blink::ContextMenuDataInputFieldType::kNone),
       selection_start_offset(0) {}
 
-ContextMenuParams::ContextMenuParams(const ContextMenuParams& other) = default;
+UntrustworthyContextMenuParams::UntrustworthyContextMenuParams(
+    const UntrustworthyContextMenuParams& other) = default;
 
-ContextMenuParams::~ContextMenuParams() {
-}
+UntrustworthyContextMenuParams::~UntrustworthyContextMenuParams() = default;
+
+ContextMenuParams::ContextMenuParams() = default;
+ContextMenuParams::ContextMenuParams(const ContextMenuParams& other) = default;
+ContextMenuParams::~ContextMenuParams() = default;
+
+ContextMenuParams::ContextMenuParams(
+    const UntrustworthyContextMenuParams& other)
+    : UntrustworthyContextMenuParams(other) {}
 
 }  // namespace content

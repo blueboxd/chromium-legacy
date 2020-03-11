@@ -26,8 +26,10 @@
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/enum_table.h"
+#include "components/mirroring/mojom/session_parameters.mojom-forward.h"
 #include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_address.h"
 #include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
@@ -43,6 +45,15 @@ using mirroring::mojom::SessionType;
 namespace media_router {
 
 namespace {
+
+constexpr char kHistogramSessionLaunch[] =
+    "MediaRouter.CastStreaming.Session.Launch";
+constexpr char kHistogramSessionLength[] =
+    "MediaRouter.CastStreaming.Session.Length";
+constexpr char kHistogramStartFailureNative[] =
+    "MediaRouter.CastStreaming.Start.Failure.Native";
+constexpr char kHistogramStartSuccess[] =
+    "MediaRouter.CastStreaming.Start.Success";
 
 using MirroringType = MirroringActivityRecord::MirroringType;
 
@@ -108,12 +119,6 @@ MirroringActivityRecord::MirroringActivityRecord(
       NOTREACHED();
   }
 
-  // Bind Mojo receivers for the interfaces this object implements.
-  mojo::PendingRemote<mirroring::mojom::SessionObserver> observer_remote;
-  observer_receiver_.Bind(observer_remote.InitWithNewPipeAndPassReceiver());
-  mojo::PendingRemote<mirroring::mojom::CastMessageChannel> channel_remote;
-  channel_receiver_.Bind(channel_remote.InitWithNewPipeAndPassReceiver());
-
   // Derive session type from capabilities.
   const bool has_audio = (cast_data.capabilities &
                           static_cast<uint8_t>(cast_channel::AUDIO_OUT)) != 0;
@@ -127,29 +132,45 @@ MirroringActivityRecord::MirroringActivityRecord(
 
   // Arrange to start mirroring once the session is set.
   on_session_set_ = base::BindOnce(
-      &mirroring::mojom::MirroringServiceHost::Start,
-      base::Unretained(host_.get()),
+      &MirroringActivityRecord::StartMirroring, base::Unretained(this),
       SessionParameters::New(session_type, cast_data.ip_endpoint.address(),
                              cast_data.model_name),
-      std::move(observer_remote), std::move(channel_remote),
       channel_to_service_.BindNewPipeAndPassReceiver());
 }
 
-MirroringActivityRecord::~MirroringActivityRecord() = default;
+MirroringActivityRecord::~MirroringActivityRecord() {
+  if (did_start_mirroring_timestamp_) {
+    base::UmaHistogramLongTimes(
+        kHistogramSessionLength,
+        base::Time::Now() - *did_start_mirroring_timestamp_);
+  }
+}
 
 void MirroringActivityRecord::OnError(SessionError error) {
-  DLOG(ERROR) << "Mirroring session error: " << error;
+  if (will_start_mirroring_timestamp_) {
+    // An error was encountered while attempting to start mirroring.
+    base::UmaHistogramEnumeration(kHistogramStartFailureNative, error);
+    will_start_mirroring_timestamp_.reset();
+  }
+  // Metrics for general errors are captured by the mirroring service in
+  // MediaRouter.MirroringService.SessionError.
   StopMirroring();
 }
 
 void MirroringActivityRecord::DidStart() {
-  base::UmaHistogramEnumeration("MediaRouter.CastStreaming.Start.Success",
-                                mirroring_type_);
+  if (!will_start_mirroring_timestamp_) {
+    // DidStart() was called unexpectedly.
+    return;
+  }
+  did_start_mirroring_timestamp_ = base::Time::Now();
+  base::UmaHistogramTimes(
+      kHistogramSessionLaunch,
+      *did_start_mirroring_timestamp_ - *will_start_mirroring_timestamp_);
+  base::UmaHistogramEnumeration(kHistogramStartSuccess, mirroring_type_);
+  will_start_mirroring_timestamp_.reset();
 }
 
 void MirroringActivityRecord::DidStop() {
-  base::RecordAction(
-      base::UserMetricsAction("MediaRouter.CastStreaming.Session.End"));
   StopMirroring();
 }
 
@@ -227,6 +248,21 @@ void MirroringActivityRecord::HandleParseJsonResult(
       message_namespace, std::move(*result.value),
       message_handler_->sender_id(), session->transport_id());
   message_handler_->SendCastMessage(channel_id_, cast_message);
+}
+
+void MirroringActivityRecord::StartMirroring(
+    mirroring::mojom::SessionParametersPtr session_params,
+    mojo::PendingReceiver<CastMessageChannel> channel_to_service) {
+  will_start_mirroring_timestamp_ = base::Time::Now();
+
+  // Bind Mojo receivers for the interfaces this object implements.
+  mojo::PendingRemote<mirroring::mojom::SessionObserver> observer_remote;
+  observer_receiver_.Bind(observer_remote.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<mirroring::mojom::CastMessageChannel> channel_remote;
+  channel_receiver_.Bind(channel_remote.InitWithNewPipeAndPassReceiver());
+
+  host_->Start(std::move(session_params), std::move(observer_remote),
+               std::move(channel_remote), std::move(channel_to_service));
 }
 
 void MirroringActivityRecord::StopMirroring() {

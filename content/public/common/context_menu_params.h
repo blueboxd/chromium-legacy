@@ -23,6 +23,8 @@
 
 namespace content {
 
+class RenderFrameHostImpl;
+
 struct CONTENT_EXPORT CustomContextMenuContext {
   static const int32_t kCurrentRenderWidget;
 
@@ -42,15 +44,14 @@ struct CONTENT_EXPORT CustomContextMenuContext {
   GURL link_followed;
 };
 
-// FIXME(beng): This would be more useful in the future and more efficient
-//              if the parameters here weren't so literally mapped to what
-//              they contain for the ContextMenu task. It might be better
-//              to make the string fields more generic so that this object
-//              could be used for more contextual actions.
-struct CONTENT_EXPORT ContextMenuParams {
-  ContextMenuParams();
-  ContextMenuParams(const ContextMenuParams& other);
-  ~ContextMenuParams();
+// SECURITY NOTE: Data in this struct is untrustworthy, because it is sent in an
+// IPC from a renderer process.  The browser process should use
+// ContextMenuParams, after validating UntrustworthyContextMenuParams in an IPC
+// handling routine.
+struct CONTENT_EXPORT UntrustworthyContextMenuParams {
+  UntrustworthyContextMenuParams();
+  UntrustworthyContextMenuParams(const UntrustworthyContextMenuParams& other);
+  ~UntrustworthyContextMenuParams();
 
   // This is the type of Context Node that the context menu was invoked on.
   blink::ContextMenuDataMediaType media_type;
@@ -81,13 +82,6 @@ struct CONTENT_EXPORT ContextMenuParams {
   // This is true if the context menu was invoked on an image which has
   // non-empty contents.
   bool has_image_contents;
-
-  // This is the URL of the top level page that the context menu was invoked
-  // on.
-  GURL page_url;
-
-  // This is the URL of the subframe that the context menu was invoked on.
-  GURL frame_url;
 
   // These are the parameters for the media element that the context menu
   // was invoked on.
@@ -156,6 +150,38 @@ struct CONTENT_EXPORT ContextMenuParams {
 
   // Start position of the selection text.
   int selection_start_offset;
+};
+
+// FIXME(beng): This would be more useful in the future and more efficient
+//              if the parameters here weren't so literally mapped to what
+//              they contain for the ContextMenu task. It might be better
+//              to make the string fields more generic so that this object
+//              could be used for more contextual actions.
+//
+// SECURITY NOTE: This struct should be populated by the browser process,
+// after validating the IPC payload from UntrustworthyContextMenuParams.
+// Note that the fields declared in ContextMenuParams can be populated based on
+// the trustworthy, browser-side data (i.e. don't need to be sent over IPC and
+// therefore don't need to be covered by UntrustworthyContextMenuParams).
+struct CONTENT_EXPORT ContextMenuParams
+    : public UntrustworthyContextMenuParams {
+  ContextMenuParams();
+  ContextMenuParams(const ContextMenuParams& other);
+  ~ContextMenuParams();
+
+  // This is the URL of the top level page that the context menu was invoked
+  // on.
+  GURL page_url;
+
+  // This is the URL of the subframe that the context menu was invoked on.
+  GURL frame_url;
+
+ private:
+  // RenderFrameHostImpl is responsible for validating and sanitizing
+  // UntrustworthyContextMenuParams into ContextMenuParams and therefore is a
+  // friend.
+  friend class RenderFrameHostImpl;
+  explicit ContextMenuParams(const UntrustworthyContextMenuParams& other);
 };
 
 }  // namespace content

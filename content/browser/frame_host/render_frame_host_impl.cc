@@ -2911,17 +2911,20 @@ void RenderFrameHostImpl::SetSubframeUnloadTimeoutForTesting(
   subframe_unload_timeout_ = timeout;
 }
 
-void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
+void RenderFrameHostImpl::OnContextMenu(
+    const UntrustworthyContextMenuParams& params) {
   if (!is_active())
     return;
 
   // Validate the URLs in |params|.  If the renderer can't request the URLs
   // directly, don't show them in the context menu.
   ContextMenuParams validated_params(params);
-  RenderProcessHost* process = GetProcess();
+  validated_params.frame_url = GetLastCommittedURL();
+  validated_params.page_url = GetMainFrame()->GetLastCommittedURL();
 
   // We don't validate |unfiltered_link_url| so that this field can be used
   // when users want to copy the original link URL.
+  RenderProcessHost* process = GetProcess();
   process->FilterURL(true, &validated_params.link_url);
   process->FilterURL(true, &validated_params.src_url);
   process->FilterURL(false, &validated_params.page_url);
@@ -3106,8 +3109,8 @@ void RenderFrameHostImpl::RunBeforeUnloadConfirm(
 
 void RenderFrameHostImpl::Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) {
   bool blocked = GpuDataManagerImpl::GetInstance()->Are3DAPIsBlocked(
-      frame_tree_node_->frame_tree()->GetMainFrame()->GetLastCommittedURL(),
-      GetProcess()->GetID(), GetRoutingID(), THREE_D_API_TYPE_WEBGL);
+      GetMainFrame()->GetLastCommittedURL(), GetProcess()->GetID(),
+      GetRoutingID(), THREE_D_API_TYPE_WEBGL);
   std::move(callback).Run(blocked);
 }
 
@@ -3759,10 +3762,7 @@ RenderWidgetHostViewBase* RenderFrameHostImpl::GetViewForAccessibility() {
   return static_cast<RenderWidgetHostViewBase*>(
       frame_tree_node_->IsMainFrame()
           ? render_view_host_->GetWidget()->GetView()
-          : frame_tree_node_->frame_tree()
-                ->GetMainFrame()
-                ->render_view_host_->GetWidget()
-                ->GetView());
+          : GetMainFrame()->render_view_host_->GetWidget()->GetView());
 }
 
 void RenderFrameHostImpl::OnAccessibilityEvents(
@@ -4435,8 +4435,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   bool can_create_window =
       IsCurrent() && render_frame_created_ &&
       GetContentClient()->browser()->CanCreateWindow(
-          this, GetLastCommittedURL(),
-          frame_tree_node_->frame_tree()->GetMainFrame()->GetLastCommittedURL(),
+          this, GetLastCommittedURL(), GetMainFrame()->GetLastCommittedURL(),
           last_committed_origin_, params->window_container_type,
           params->target_url, params->referrer.To<Referrer>(),
           params->frame_name, params->disposition, *params->features,
@@ -4488,10 +4487,7 @@ void RenderFrameHostImpl::CreateNewWindow(
     // are same origin, then the popup's initial empty document inherits its
     // COOP policy from the opener's top-level document. See
     // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#model
-    RenderFrameHostImpl* top_level_opener = this;
-    while (top_level_opener->GetParent()) {
-      top_level_opener = top_level_opener->GetParent();
-    }
+    RenderFrameHostImpl* top_level_opener = GetMainFrame();
     // Verify that they are same origin.
     if (top_level_opener->GetLastCommittedOrigin().IsSameOriginWith(
             GetLastCommittedOrigin())) {
@@ -4849,8 +4845,7 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   // (e.g. "http://localhost"). In such cases, don't verify the URL, but require
   // the URL to commit in the process of the main frame.
   if (!frame_tree_node()->IsMainFrame()) {
-    RenderFrameHostImpl* main_frame =
-        frame_tree_node()->frame_tree()->GetMainFrame();
+    RenderFrameHostImpl* main_frame = GetMainFrame();
     if (main_frame->is_mhtml_document()) {
       if (IsSameSiteInstance(main_frame))
         return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
@@ -5289,8 +5284,7 @@ void RenderFrameHostImpl::CommitNavigation(
   // All children of MHTML documents must be MHTML documents.
   // As a defensive measure, crash the browser if something went wrong.
   if (!frame_tree_node()->IsMainFrame()) {
-    RenderFrameHostImpl* root =
-        frame_tree_node()->frame_tree()->root()->current_frame_host();
+    RenderFrameHostImpl* root = GetMainFrame();
     if (root->is_mhtml_document_ &&
         !common_params->url.SchemeIs(url::kDataScheme)) {
       bool loaded_from_outside_the_archive =
@@ -6209,6 +6203,17 @@ bool RenderFrameHostImpl::HasSelection() {
   return has_selection_;
 }
 
+RenderFrameHostImpl* RenderFrameHostImpl::GetMainFrame() {
+  // Iteration over the GetParent() chain is used below, because returning
+  // |frame_tree_node()->frame_tree()->root()->current_frame_host()| might
+  // give an incorrect result after |this| has been detached from the frame
+  // tree.
+  RenderFrameHostImpl* main_frame = this;
+  while (main_frame->GetParent())
+    main_frame = main_frame->GetParent();
+  return main_frame;
+}
+
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
 
@@ -6834,10 +6839,8 @@ void RenderFrameHostImpl::BindInputInjectorReceiver(
 
 void RenderFrameHostImpl::BindSmsReceiverReceiver(
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver) {
-  if (GetParent() && !WebContents::FromRenderFrameHost(this)
-                          ->GetMainFrame()
-                          ->GetLastCommittedOrigin()
-                          .IsSameOriginWith(GetLastCommittedOrigin())) {
+  if (GetParent() && !GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(
+                         GetLastCommittedOrigin())) {
     mojo::ReportBadMessage("Must have the same origin as the top-level frame.");
     return;
   }

@@ -18,7 +18,6 @@
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 class Value;
 }
 
@@ -84,7 +83,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
                                  const base::DictionaryValue& properties);
 
   // Requests properties for each entry in |devices|.
-  void UpdateDevices(const base::ListValue* devices);
+  void UpdateDevices(const base::Value& devices);
 
   // Callback to handle the device properties for |device_path|.
   // A NetworkSmsDeviceHandler will be instantiated for each cellular device.

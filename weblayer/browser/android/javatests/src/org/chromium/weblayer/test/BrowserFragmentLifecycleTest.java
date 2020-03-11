@@ -94,11 +94,11 @@ public class BrowserFragmentLifecycleTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // It's possible the NavigationController hasn't loaded yet, handle either scenario.
             NavigationController navigationController = tab.getNavigationController();
-            if (navigationController.getNavigationListSize() == 1
-                    && navigationController.getNavigationEntryDisplayUri(0).equals(
-                            Uri.parse(url))) {
-                latch.countDown();
-                return;
+            for (int i = 0; i < navigationController.getNavigationListSize(); ++i) {
+                if (navigationController.getNavigationEntryDisplayUri(i).equals(Uri.parse(url))) {
+                    latch.countDown();
+                    return;
+                }
             }
             navigationController.registerNavigationCallback(new NavigationCallback() {
                 @Override

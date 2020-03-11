@@ -75,15 +75,3 @@ crbug.com/958524 http/tests/inspector-protocol/network/xhr-post-replay-cors.js [
 # Added by https://chromium-review.googlesource.com/c/chromium/src/+/2054468 and
 # Blink CORS does not support.
 crbug.com/941297 http/tests/inspector-protocol/network/xhr-cors-preflight-redirect-failure.js [ Timeout ]
-
-# Started failing for unknown reasons. Bisect is needed before the next branch-cut.
-crbug.com/1059776 external/wpt/xhr/event-upload-progress-crossorigin.any.html [ Failure ]
-crbug.com/1059776 external/wpt/xhr/event-upload-progress-crossorigin.any.worker.html [ Failure ]
-crbug.com/1059776 external/wpt/xhr/event-upload-progress.any.html [ Failure ]
-crbug.com/1059776 external/wpt/xhr/event-upload-progress.any.worker.html [ Failure ]
-crbug.com/1059776 external/wpt/xhr/send-redirect-to-cors.htm [ Failure ]
-crbug.com/1059776 virtual/omt-worker-fetch/external/wpt/xhr/event-upload-progress-crossorigin.any.html [ Failure ]
-crbug.com/1059776 virtual/omt-worker-fetch/external/wpt/xhr/event-upload-progress-crossorigin.any.worker.html [ Failure ]
-crbug.com/1059776 virtual/omt-worker-fetch/external/wpt/xhr/event-upload-progress.any.html [ Failure ]
-crbug.com/1059776 virtual/omt-worker-fetch/external/wpt/xhr/event-upload-progress.any.worker.html [ Failure ]
-crbug.com/1059776 virtual/omt-worker-fetch/external/wpt/xhr/send-redirect-to-cors.htm [ Failure ]

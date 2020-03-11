@@ -62,12 +62,6 @@ struct WebContextMenuData {
   // Whether the image in context is a null.
   bool has_image_contents;
 
-  // The absolute URL of the page in context.
-  WebURL page_url;
-
-  // The absolute URL of the subframe in context.
-  WebURL frame_url;
-
   // The encoding for the frame in context.
   WebString frame_encoding;
 

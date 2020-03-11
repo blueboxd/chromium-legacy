@@ -128,16 +128,6 @@ Node* ContextMenuController::ContextMenuNodeForFrame(LocalFrame* frame) {
              : nullptr;
 }
 
-// Figure out the URL of a page or subframe.
-static KURL UrlFromFrame(LocalFrame* frame) {
-  if (frame) {
-    DocumentLoader* document_loader = frame->Loader().GetDocumentLoader();
-    if (document_loader)
-      return document_loader->UrlForHistory();
-  }
-  return KURL();
-}
-
 static int ComputeEditFlags(Document& selected_document, Editor& editor) {
   int edit_flags = ContextMenuDataEditFlags::kCanDoNone;
   if (editor.CanUndo())
@@ -379,25 +369,6 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   // show a selection menu or a more generic page menu.
   if (selected_frame->GetDocument()->Loader())
     data.frame_encoding = selected_frame->GetDocument()->EncodingName();
-
-  // Send the frame and page URLs in any case.
-  auto* main_local_frame = DynamicTo<LocalFrame>(page_->MainFrame());
-  if (!main_local_frame) {
-    // TODO(kenrb): This works around the problem of URLs not being
-    // available for top-level frames that are in a different process.
-    // It mostly works to convert the security origin to a URL, but
-    // extensions accessing that property will not get the correct value
-    // in that case. See https://crbug.com/534561
-    const SecurityOrigin* origin =
-        page_->MainFrame()->GetSecurityContext()->GetSecurityOrigin();
-    if (origin)
-      data.page_url = KURL(origin->ToString());
-  } else {
-    data.page_url = WebURL(UrlFromFrame(main_local_frame));
-  }
-
-  if (selected_frame != page_->MainFrame())
-    data.frame_url = WebURL(UrlFromFrame(selected_frame));
 
   data.selection_start_offset = 0;
   // HitTestResult::isSelected() ensures clean layout by performing a hit test.

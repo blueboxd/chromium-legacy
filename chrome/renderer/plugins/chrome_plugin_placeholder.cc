@@ -281,7 +281,7 @@ void ChromePluginPlaceholder::ShowContextMenu(
   if (!render_frame())
     return;
 
-  content::ContextMenuParams params;
+  content::UntrustworthyContextMenuParams params;
 
   if (!title_.empty()) {
     content::MenuItem name_item;

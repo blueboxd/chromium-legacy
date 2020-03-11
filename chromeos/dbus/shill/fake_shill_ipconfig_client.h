@@ -46,10 +46,6 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillIPConfigClient
                    const base::DictionaryValue& properties) override;
 
  private:
-  // Runs callback with |values|.
-  void PassProperties(const base::DictionaryValue* values,
-                      DictionaryValueCallback callback) const;
-
   // Dictionary of <ipconfig_path, property dictionaries>
   base::DictionaryValue ipconfigs_;
 

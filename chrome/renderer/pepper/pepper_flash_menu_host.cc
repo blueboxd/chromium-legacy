@@ -149,7 +149,7 @@ int32_t PepperFlashMenuHost::OnHostMsgShow(
   content::RenderFrame* render_frame =
       renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance());
 
-  content::ContextMenuParams params;
+  content::UntrustworthyContextMenuParams params;
   params.x = location.x;
   params.y = location.y;
   params.custom_context.is_pepper_menu = true;

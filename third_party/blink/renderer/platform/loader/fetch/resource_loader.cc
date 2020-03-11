@@ -471,6 +471,8 @@ void ResourceLoader::Start() {
         request.IsolatedWorldOrigin().get(),
         GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
   }
+  if (!RuntimeEnabledFeatures::OutOfBlinkCorsEnabled())
+    request_body_for_reidirect_ = request.HttpBody();
 
   if (request.IsAutomaticUpgrade()) {
     mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> pending_recorder;
@@ -698,8 +700,12 @@ bool ResourceLoader::WillFollowRedirect(
       resource_->LastResourceRequest().CreateRedirectRequest(
           new_url, new_method, new_site_for_cookies, new_referrer,
           new_referrer_policy,
-
           !passed_redirect_response.WasFetchedViaServiceWorker());
+  if (!RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
+      (new_request->HttpMethod() != http_names::kGET &&
+       new_request->HttpMethod() != http_names::kHEAD)) {
+    new_request->SetHttpBody(request_body_for_reidirect_);
+  }
 
   ResourceType resource_type = resource_->GetType();
 
@@ -816,7 +822,8 @@ bool ResourceLoader::WillFollowRedirect(
   // TODO(yoichio): Have PrepareRequest use ResourceRequestHead.
   Context().PrepareRequest(*new_request, resource_->Options().initiator_info,
                            unused_virtual_time_pauser, resource_->GetType());
-  DCHECK(!new_request->HttpBody());
+  if (RuntimeEnabledFeatures::OutOfBlinkCorsEnabled())
+    DCHECK(!new_request->HttpBody());
   if (auto* observer = fetcher_->GetResourceLoadObserver()) {
     observer->WillSendRequest(resource_->InspectorId(), *new_request,
                               redirect_response_to_pass, resource_->GetType(),

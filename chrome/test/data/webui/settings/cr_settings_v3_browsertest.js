@@ -29,7 +29,7 @@ var CrSettingsV3BrowserTest = class extends PolymerTest {
 
   /** @override */
   get featureList() {
-    return {enabled: ['network::features::kOutOfBlinkCors']};
+    return {enabled: ['network::features::kOutOfBlinkCors'], disabled: []};
   }
 };
 
@@ -517,7 +517,9 @@ var CrSettingsAutofillSectionCompanyEnabledV3Test =
 
   /** @override */
   get featureList() {
-    return {enabled: ['autofill::features::kAutofillEnableCompanyName']};
+    const list = super.featureList;
+    list.enabled.push('autofill::features::kAutofillEnableCompanyName');
+    return list;
   }
 };
 
@@ -539,7 +541,9 @@ var CrSettingsAutofillSectionCompanyDisabledV3Test =
 
   /** @override */
   get featureList() {
-    return {disabled: ['autofill::features::kAutofillEnableCompanyName']};
+    const list = super.featureList;
+    list.disabled.push('autofill::features::kAutofillEnableCompanyName');
+    return list;
   }
 };
 

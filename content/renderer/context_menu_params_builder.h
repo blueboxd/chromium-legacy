@@ -10,11 +10,12 @@ struct WebContextMenuData;
 }
 
 namespace content {
-struct ContextMenuParams;
+struct UntrustworthyContextMenuParams;
 
 class ContextMenuParamsBuilder {
  public:
-  static ContextMenuParams Build(const blink::WebContextMenuData& data);
+  static UntrustworthyContextMenuParams Build(
+      const blink::WebContextMenuData& data);
 };
 
 }  // namespace content

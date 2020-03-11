@@ -1675,9 +1675,9 @@ void VerifyStaleContentOnFrameEviction(
 
 #endif  // defined(USE_AURA)
 
-// This class filters for FrameHostMsg_ContextMenu messages coming in
-// from a renderer process, and allows observing the ContextMenuParams
-// as sent by the renderer.
+// This class filters for FrameHostMsg_ContextMenu messages coming in from a
+// renderer process, and allows observing the UntrustworthyContextMenuParams as
+// sent by the renderer.
 class ContextMenuFilter : public content::BrowserMessageFilter {
  public:
   ContextMenuFilter();
@@ -1685,16 +1685,16 @@ class ContextMenuFilter : public content::BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
   void Wait();
 
-  content::ContextMenuParams get_params() { return last_params_; }
+  content::UntrustworthyContextMenuParams get_params() { return last_params_; }
 
  private:
   ~ContextMenuFilter() override;
 
-  void OnContextMenu(const content::ContextMenuParams& params);
+  void OnContextMenu(const content::UntrustworthyContextMenuParams& params);
 
   std::unique_ptr<base::RunLoop> run_loop_;
   base::OnceClosure quit_closure_;
-  content::ContextMenuParams last_params_;
+  content::UntrustworthyContextMenuParams last_params_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuFilter);
 };

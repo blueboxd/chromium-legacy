@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3e192165cb65d24ee9b59b115dfce8e7a52c61bc',
+  'skia_revision': 'c2fe5ee2b3a1f8ee7e5b09311ad19c615428b590',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '1003942d85ac1ace40dac7aecf518c4f108d4273',
+  'v8_revision': 'fd848c18b2e9c7ab078205f90782f9aa02ee005d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -1454,7 +1454,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '430e4a09e0ca66a9680cd9884a90ca5b4346bcd7',
+    Var('webrtc_git') + '/src.git' + '@' + 'ed678386b4ace885eecf7578c74663b641db5da2',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

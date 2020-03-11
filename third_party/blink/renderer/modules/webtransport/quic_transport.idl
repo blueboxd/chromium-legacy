@@ -8,7 +8,7 @@
     Exposed=(Window,Worker),
     RuntimeEnabled=QuicTransport
 ] interface QuicTransport {
-  [CallWith=ScriptState, RaisesException] constructor(USVString url);
+  [CallWith=ScriptState, RaisesException, MeasureAs=QuicTransport] constructor(USVString url);
   // QuicTransport is the first, and at this moment only, transport which is
   // implemented. In the (draft) spec there are many mix-in interfaces which
   // QuicTransport includes, but we define all their methods/attributes here
@@ -17,12 +17,12 @@
   // From UnidirectionalStreamsTransport
   // TODO(ricea): Change this to Promise<SendStream> once the IDL compiler is
   // fixed. See https://crbug.com/1047113.
-  [CallWith=ScriptState, RaisesException] Promise<SendStream>
+  [CallWith=ScriptState, RaisesException, MeasureAs=QuicTransportStreamApis] Promise<SendStream>
       createSendStream();
 
   // From DatagramTransport mixin
-  WritableStream sendDatagrams();
-  ReadableStream receiveDatagrams();
+  [MeasureAs=QuicTransportDatagramApis] WritableStream sendDatagrams();
+  [MeasureAs=QuicTransportDatagramApis] ReadableStream receiveDatagrams();
 
   // From WebTransport mixin
   void close(optional WebTransportCloseInfo closeInfo = {});

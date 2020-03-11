@@ -439,7 +439,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebLocalFrame* GetWebFrame() override;
   const WebPreferences& GetWebkitPreferences() override;
   int ShowContextMenu(ContextMenuClient* client,
-                      const ContextMenuParams& params) override;
+                      const UntrustworthyContextMenuParams& params) override;
   void CancelContextMenu(int request_id) override;
   void ShowVirtualKeyboard() override;
   blink::WebPlugin* CreatePlugin(
@@ -1177,7 +1177,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void BindWidget(mojo::PendingReceiver<mojom::Widget> receiver);
 
-  void ShowDeferredContextMenu(const ContextMenuParams& params);
+  void ShowDeferredContextMenu(const UntrustworthyContextMenuParams& params);
 
   // Build DidCommitProvisionalLoad_Params based on the frame internal state.
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

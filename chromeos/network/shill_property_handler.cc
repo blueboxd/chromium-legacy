@@ -309,9 +309,8 @@ void ShillPropertyHandler::ManagerPropertiesCallback(
     return;
   }
   NET_LOG(EVENT) << "ManagerPropertiesCallback: Success";
-  for (base::DictionaryValue::Iterator iter(properties); !iter.IsAtEnd();
-       iter.Advance()) {
-    ManagerPropertyChanged(iter.key(), iter.value());
+  for (const auto& item : properties.DictItems()) {
+    ManagerPropertyChanged(item.first, item.second);
   }
 
   CheckPendingStateListUpdates("");
@@ -543,13 +542,13 @@ void ShillPropertyHandler::GetPropertiesCallback(
 
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     // Request IPConfig properties.
-    const base::Value* value;
-    if (properties.GetWithoutPathExpansion(shill::kIPConfigProperty, &value))
+    const base::Value* value = properties.FindKey(shill::kIPConfigProperty);
+    if (value)
       RequestIPConfig(type, path, *value);
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     // Clear and request IPConfig properties for each entry in IPConfigs.
-    const base::Value* value;
-    if (properties.GetWithoutPathExpansion(shill::kIPConfigsProperty, &value))
+    const base::Value* value = properties.FindKey(shill::kIPConfigsProperty);
+    if (value)
       RequestIPConfigsList(type, path, *value);
   }
 

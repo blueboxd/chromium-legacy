@@ -2595,6 +2595,10 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kEnableEncryptionMigration,
          chromeos::switches::kDisableEncryptionMigration)},
+    {"enable-cros-ime-assist-autocorrect",
+     flag_descriptions::kImeAssistAutocorrectName,
+     flag_descriptions::kImeAssistAutocorrectDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kAssistPersonalInfo)},
     {"enable-cros-ime-assist-personal-info",
      flag_descriptions::kImeAssistPersonalInfoName,
      flag_descriptions::kImeAssistPersonalInfoDescription, kOsCrOS,
@@ -4163,6 +4167,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNeuralStylusPalmRejectionName,
      flag_descriptions::kEnableNeuralStylusPalmRejectionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnableNeuralPalmDetectionFilter)},
+
+    {"enable-palm-max-touch-major",
+     flag_descriptions::kEnablePalmOnMaxTouchMajorName,
+     flag_descriptions::kEnablePalmOnMaxTouchMajorDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ui::kEnablePalmOnMaxTouchMajor)},
+
+    {"enable-palm-tool-type-palm",
+     flag_descriptions::kEnablePalmOnToolTypePalmName,
+     flag_descriptions::kEnablePalmOnToolTypePalmName, kOsCrOS,
+     FEATURE_VALUE_TYPE(ui::kEnablePalmOnToolTypePalm)},
 
     {"enable-heuristic-stylus-palm-rejection",
      flag_descriptions::kEnableHeuristicStylusPalmRejectionName,

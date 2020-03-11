@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "base/atomic_sequence_num.h"
-#include "base/clang_profiling_buildflags.h"
+#include "base/clang_coverage_buildflags.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -42,8 +42,8 @@
 #include "content/common/mac_helpers.h"
 #endif  // OS_LINUX
 
-#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
-#include "content/common/profiling_utils.h"
+#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
+#include "content/common/coverage_utils.h"
 #endif
 
 namespace {
@@ -207,8 +207,8 @@ bool ChildProcessHostImpl::InitChannel() {
   child_process_->SetIPCLoggingEnabled(enabled);
 #endif
 
-#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
-  child_process_->SetProfilingFile(OpenProfilingFile());
+#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
+  child_process_->SetCoverageFile(OpenCoverageFile());
 #endif
 
   opening_channel_ = true;

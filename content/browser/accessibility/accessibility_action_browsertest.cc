@@ -516,7 +516,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ShowContextMenu) {
   target_node->AccessibilityPerformAction(context_menu_action);
   context_menu_filter->Wait();
 
-  ContextMenuParams context_menu_params = context_menu_filter->get_params();
+  UntrustworthyContextMenuParams context_menu_params =
+      context_menu_filter->get_params();
   EXPECT_EQ(base::ASCIIToUTF16("2"), context_menu_params.link_text);
   EXPECT_EQ(ui::MenuSourceType::MENU_SOURCE_NONE,
             context_menu_params.source_type);

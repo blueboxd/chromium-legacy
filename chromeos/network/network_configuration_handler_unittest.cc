@@ -193,7 +193,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   void GetPropertiesCallback(const std::string& service_path,
                              const base::DictionaryValue& dictionary) {
     get_properties_path_ = service_path;
-    get_properties_ = dictionary.CreateDeepCopy();
+    get_properties_ = dictionary.Clone();
   }
 
   void ManagerGetPropertiesCallback(const std::string& success_callback_name,
@@ -201,7 +201,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
                                     const base::DictionaryValue& result) {
     if (call_status == chromeos::DBUS_METHOD_CALL_SUCCESS)
       success_callback_name_ = success_callback_name;
-    manager_get_properties_ = result.CreateDeepCopy();
+    manager_get_properties_ = result.Clone();
   }
 
   void CreateConfigurationCallback(const std::string& service_path,
@@ -288,10 +288,10 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   bool GetReceivedStringProperty(const std::string& service_path,
                                  const std::string& key,
                                  std::string* result) {
-    if (get_properties_path_ != service_path || !get_properties_)
+    if (get_properties_path_ != service_path || get_properties_.is_none())
       return false;
     const base::Value* value =
-        get_properties_->FindKeyOfType(key, base::Value::Type::STRING);
+        get_properties_.FindKeyOfType(key, base::Value::Type::STRING);
     if (!value)
       return false;
     *result = value->GetString();
@@ -300,10 +300,10 @@ class NetworkConfigurationHandlerTest : public testing::Test {
 
   bool GetReceivedStringManagerProperty(const std::string& key,
                                         std::string* result) {
-    if (!manager_get_properties_)
+    if (manager_get_properties_.is_none())
       return false;
     const base::Value* value =
-        manager_get_properties_->FindKeyOfType(key, base::Value::Type::STRING);
+        manager_get_properties_.FindKeyOfType(key, base::Value::Type::STRING);
     if (!value)
       return false;
     *result = value->GetString();
@@ -326,8 +326,8 @@ class NetworkConfigurationHandlerTest : public testing::Test {
       base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   std::string success_callback_name_;
   std::string get_properties_path_;
-  std::unique_ptr<base::DictionaryValue> get_properties_;
-  std::unique_ptr<base::DictionaryValue> manager_get_properties_;
+  base::Value get_properties_;
+  base::Value manager_get_properties_;
   std::string create_service_path_;
 };
 

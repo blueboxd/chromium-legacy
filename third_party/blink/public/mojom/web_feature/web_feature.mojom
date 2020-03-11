@@ -2522,6 +2522,9 @@ enum WebFeature {
   kV8RTCRtpSender_CreateEncodedVideoStreams_Method = 3181,
   kV8RTCRtpReceiver_CreateEncodedAudioStreams_Method = 3182,
   kV8RTCRtpReceiver_CreateEncodedVideoStreams_Method = 3183,
+  kQuicTransport = 3184,
+  kQuicTransportStreamApis = 3185,
+  kQuicTransportDatagramApis = 3186,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

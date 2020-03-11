@@ -30,16 +30,6 @@ struct FakeShillProfileClient::ProfileProperties {
   base::DictionaryValue properties;  // Dictionary of Profile properties
 };
 
-namespace {
-
-void PassDictionary(
-    ShillProfileClient::DictionaryValueCallbackWithoutStatus callback,
-    const base::DictionaryValue* dictionary) {
-  std::move(callback).Run(*dictionary);
-}
-
-}  // namespace
-
 FakeShillProfileClient::FakeShillProfileClient() = default;
 
 FakeShillProfileClient::~FakeShillProfileClient() = default;
@@ -62,20 +52,17 @@ void FakeShillProfileClient::GetProperties(
     return;
   }
 
-  auto entry_paths = std::make_unique<base::ListValue>();
-  for (base::DictionaryValue::Iterator it(profile->entries); !it.IsAtEnd();
-       it.Advance()) {
-    entry_paths->AppendString(it.key());
+  base::Value entry_paths(base::Value::Type::LIST);
+  for (const auto& it : profile->entries.DictItems()) {
+    entry_paths.Append(it.first);
   }
 
   std::unique_ptr<base::DictionaryValue> properties =
       profile->properties.CreateDeepCopy();
-  properties->SetWithoutPathExpansion(shill::kEntriesProperty,
-                                      std::move(entry_paths));
+  properties->SetKey(shill::kEntriesProperty, std::move(entry_paths));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&PassDictionary, std::move(callback),
-                                base::Owned(properties.release())));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(*properties)));
 }
 
 void FakeShillProfileClient::GetEntry(
@@ -89,17 +76,17 @@ void FakeShillProfileClient::GetEntry(
     return;
   }
 
-  base::DictionaryValue* entry = nullptr;
-  profile->entries.GetDictionaryWithoutPathExpansion(entry_path, &entry);
+  const base::Value* entry = profile->entries.FindDictKey(entry_path);
   if (!entry) {
     std::move(error_callback)
         .Run("Error.InvalidProfileEntry", "Invalid profile entry");
     return;
   }
 
+  std::unique_ptr<base::DictionaryValue> entry_copy =
+      base::DictionaryValue::From(entry->CreateDeepCopy());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&PassDictionary, std::move(callback),
-                                base::Owned(entry->DeepCopy())));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(*entry_copy)));
 }
 
 void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,

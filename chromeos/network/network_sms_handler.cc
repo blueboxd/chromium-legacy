@@ -250,12 +250,9 @@ void NetworkSmsHandler::RemoveObserver(Observer* observer) {
 
 void NetworkSmsHandler::OnPropertyChanged(const std::string& name,
                                           const base::Value& value) {
-  if (name != shill::kDevicesProperty)
+  if (name != shill::kDevicesProperty || !value.is_list())
     return;
-  const base::ListValue* devices = NULL;
-  if (!value.GetAsList(&devices) || !devices)
-    return;
-  UpdateDevices(devices);
+  UpdateDevices(value);
 }
 
 // Private methods
@@ -285,22 +282,21 @@ void NetworkSmsHandler::ManagerPropertiesCallback(
     LOG(ERROR) << "NetworkSmsHandler: Failed to get manager properties.";
     return;
   }
-  const base::Value* value;
-  if (!properties.GetWithoutPathExpansion(shill::kDevicesProperty, &value) ||
-      !value->is_list()) {
+  const base::Value* value = properties.FindListKey(shill::kDevicesProperty);
+  if (!value) {
     LOG(ERROR) << "NetworkSmsHandler: No list value for: "
                << shill::kDevicesProperty;
     return;
   }
-  const base::ListValue* devices = static_cast<const base::ListValue*>(value);
-  UpdateDevices(devices);
+  UpdateDevices(*value);
 }
 
-void NetworkSmsHandler::UpdateDevices(const base::ListValue* devices) {
-  for (base::ListValue::const_iterator iter = devices->begin();
-       iter != devices->end(); ++iter) {
-    std::string device_path;
-    iter->GetAsString(&device_path);
+void NetworkSmsHandler::UpdateDevices(const base::Value& devices) {
+  for (const auto& item : devices.GetList()) {
+    if (!item.is_string())
+      continue;
+
+    std::string device_path = item.GetString();
     if (!device_path.empty()) {
       // Request device properties.
       VLOG(1) << "GetDeviceProperties: " << device_path;
@@ -322,33 +318,33 @@ void NetworkSmsHandler::DevicePropertiesCallback(
     return;
   }
 
-  std::string device_type;
-  if (!properties.GetStringWithoutPathExpansion(
-          shill::kTypeProperty, &device_type)) {
+  const std::string* device_type =
+      properties.FindStringKey(shill::kTypeProperty);
+  if (!device_type) {
     LOG(ERROR) << "NetworkSmsHandler: No type for: " << device_path;
     return;
   }
-  if (device_type != shill::kTypeCellular)
+  if (*device_type != shill::kTypeCellular)
     return;
 
-  std::string service_name;
-  if (!properties.GetStringWithoutPathExpansion(
-          shill::kDBusServiceProperty, &service_name)) {
+  const std::string* service_name =
+      properties.FindStringKey(shill::kDBusServiceProperty);
+  if (!service_name) {
     LOG(ERROR) << "Device has no DBusService Property: " << device_path;
     return;
   }
 
-  std::string object_path_string;
-  if (!properties.GetStringWithoutPathExpansion(
-          shill::kDBusObjectProperty, &object_path_string)) {
+  const std::string* object_path_string =
+      properties.FindStringKey(shill::kDBusObjectProperty);
+  if (!object_path_string) {
     LOG(ERROR) << "Device has no DBusObject Property: " << device_path;
     return;
   }
-  dbus::ObjectPath object_path(object_path_string);
-  if (service_name == modemmanager::kModemManager1ServiceName) {
+  dbus::ObjectPath object_path(*object_path_string);
+  if (*service_name == modemmanager::kModemManager1ServiceName) {
     device_handlers_.push_back(
         std::make_unique<ModemManager1NetworkSmsDeviceHandler>(
-            this, service_name, object_path));
+            this, *service_name, object_path));
   }
 }
 

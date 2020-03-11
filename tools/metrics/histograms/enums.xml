@@ -12999,6 +12999,20 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2" label="UnsupportedIME"/>
 </enum>
 
+<enum name="CrostiniUpgradeDialogEvent">
+  <int value="0" label="Dialog Shown"/>
+  <int value="1" label="Upgrade Succeeded"/>
+  <int value="2" label="Upgrade Canceled"/>
+  <int value="3" label="Upgrade Failed"/>
+  <int value="4" label="Upgrade Not Started"/>
+  <int value="5" label="Backup Started"/>
+  <int value="6" label="Backup Succeeded"/>
+  <int value="7" label="Backup Failed"/>
+  <int value="8" label="Restore Started"/>
+  <int value="9" label="Restore Succeeded"/>
+  <int value="10" label="Restore Failed"/>
+</enum>
+
 <enum name="CrosTPMDictionaryAttackResetStatusEnum">
   <int value="0" label="Reset not necessary"/>
   <int value="1" label="Reset attempt succeeded"/>
@@ -23458,7 +23472,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 </enum>
 
 <enum name="FeatureObserver">
-<!-- Generated from third_party/blink/public/mojom/web_feature/web_feature.mojom.-->
+<!-- Generated from third_party/blink/public/mojom/web_feature/web_feature.mojom.
+Called by update_use_counter_feature_enum.py.-->
 
   <int value="0" label="OBSOLETE_PageDestruction"/>
   <int value="1" label="LegacyNotifications"/>
@@ -26762,6 +26777,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3181" label="V8RTCRtpSender_CreateEncodedVideoStreams_Method"/>
   <int value="3182" label="V8RTCRtpReceiver_CreateEncodedAudioStreams_Method"/>
   <int value="3183" label="V8RTCRtpReceiver_CreateEncodedVideoStreams_Method"/>
+  <int value="3184" label="QuicTransport"/>
+  <int value="3185" label="QuicTransportStreamApis"/>
+  <int value="3186" label="QuicTransportDatagramApis"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -37889,6 +37907,7 @@ from previous Chrome versions.
   <int value="-1327676774" label="disable-accelerated-mjpeg-decode"/>
   <int value="-1326463296" label="SSLCommittedInterstitials:disabled"/>
   <int value="-1325887476" label="NewPrintPreview:enabled"/>
+  <int value="-1324634193" label="EnablePalmOnMaxTouchMajor:disabled"/>
   <int value="-1324029365" label="EnableTLS13EarlyData:enabled"/>
   <int value="-1322882747" label="disable-datasaver-prompt"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
@@ -38240,6 +38259,7 @@ from previous Chrome versions.
       label="ProcessSharingWithDefaultSiteInstances:enabled"/>
   <int value="-929944930"
       label="AutofillRationalizeRepeatedServerPredictions:disabled"/>
+  <int value="-929047480" label="ImeAssistAutocorrect:enabled"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>
   <int value="-926422468" label="disable-embedded-shared-worker"/>
   <int value="-926236394" label="SendTabToSelfHistory:enabled"/>
@@ -39400,6 +39420,7 @@ from previous Chrome versions.
   <int value="480677983" label="WebXRARDOMOverlay:disabled"/>
   <int value="481506759" label="ServiceWorkerScriptStreaming:enabled"/>
   <int value="482232604" label="PercentBasedScrolling:enabled"/>
+  <int value="487810392" label="EnablePalmOnToolTypePalm:enabled"/>
   <int value="492113129" label="ExperimentalAppBanners:enabled"/>
   <int value="492985975" label="use-monitor-color-space"/>
   <int value="493903641" label="disable-appcontainer"/>
@@ -39578,6 +39599,7 @@ from previous Chrome versions.
   <int value="701766325" label="PerNavigationMojoInterface:enabled"/>
   <int value="703469777" label="AndroidNightModeTabReparenting:enabled"/>
   <int value="705407202" label="AutofillSaveCardImprovedUserConsent:disabled"/>
+  <int value="705712478" label="EnablePalmOnToolTypePalm:disabled"/>
   <int value="705713283" label="EasyUnlockPromotions:disabled"/>
   <int value="709850261" label="disable-touch-editing"/>
   <int value="710700286" label="ImmersiveFullscreen:disabled"/>
@@ -40270,11 +40292,13 @@ from previous Chrome versions.
   <int value="1540395380" label="WebContentsOcclusion:enabled"/>
   <int value="1540487070" label="ContextualSearchDebug:enabled"/>
   <int value="1541723759" label="ServiceWorkerNavigationPreload:disabled"/>
+  <int value="1542548035" label="ImeAssistAutocorrect:disabled"/>
   <int value="1543027970" label="EnableDisplayZoomSetting:disabled"/>
   <int value="1544552792" label="InterestFeedContentSuggestions:enabled"/>
   <int value="1548776701" label="AllBookmarks:disabled"/>
   <int value="1548942246" label="PassiveDocumentEventListeners:disabled"/>
   <int value="1552753678" label="DnsHttpssvc:disabled"/>
+  <int value="1553422694" label="EnablePalmOnMaxTouchMajor:enabled"/>
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
   <int value="1561781431" label="VirtualKeyboardBorderedKey:enabled"/>
@@ -43522,6 +43546,19 @@ Called by update_use_counter_css.py.-->
   </int>
 </enum>
 
+<enum name="MirrorFailureType">
+  <int value="0" label="Capture Tab failed due to empty stream"/>
+  <int value="1" label="Capture Desktop failed due to timeout"/>
+  <int value="2" label="Capture Tab timed out"/>
+  <int value="3" label="Capture Desktop failed due to user cancel"/>
+  <int value="4" label="Answer not received"/>
+  <int value="5" label="Capture Tab failed due to timeout"/>
+  <int value="6" label="ICE connection closed"/>
+  <int value="7" label="Tab Media Stream Failure"/>
+  <int value="8" label="Desktop Media Stream Failure"/>
+  <int value="9" label="Unknown"/>
+</enum>
+
 <enum name="MirroringServiceErrorType">
   <int value="0" label="ANSWER_TIME_OUT"/>
   <int value="1" label="ANSWER_NOT_OK"/>
@@ -43536,6 +43573,12 @@ Called by update_use_counter_css.py.-->
   <int value="10" label="RTP_STREAM_ERROR"/>
   <int value="11" label="ENCODING_ERROR"/>
   <int value="12" label="CAST_TRANSPORT_ERROR"/>
+</enum>
+
+<enum name="MirrorType">
+  <int value="0" label="Tab"/>
+  <int value="1" label="Desktop"/>
+  <int value="2" label="Offscreen Tab"/>
 </enum>
 
 <enum name="MissingStartType">

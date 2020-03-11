@@ -135,11 +135,12 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
       return;
     }
 
-    for (base::DictionaryValue::Iterator iter(profile_entries); !iter.IsAtEnd();
-         iter.Advance()) {
-      std::string profile_path = StripQuotations(iter.key());
+    for (const auto& iter : profile_entries.DictItems()) {
+      std::string profile_path = StripQuotations(iter.first);
       std::string entry_path;
-      iter.value().GetAsString(&entry_path);
+      if (iter.second.is_string()) {
+        entry_path = iter.second.GetString();
+      }
       if (profile_path.empty() || entry_path.empty()) {
         NET_LOG(ERROR) << "Failed to parse Profile Entry: " << profile_path
                        << ": " << entry_path;
@@ -579,25 +580,25 @@ void NetworkConfigurationHandler::GetPropertiesCallback(
     return;
 
   // Get the correct name from WifiHex if necessary.
-  std::unique_ptr<base::DictionaryValue> properties_copy(properties.DeepCopy());
+  base::Value properties_copy = properties.Clone();
   std::string name =
       shill_property_util::GetNameFromProperties(service_path, properties);
   if (!name.empty())
-    properties_copy->SetKey(shill::kNameProperty, base::Value(name));
+    properties_copy.SetKey(shill::kNameProperty, base::Value(name));
 
   // Get the GUID property from NetworkState if it is not set in Shill.
-  std::string guid;
-  properties.GetStringWithoutPathExpansion(::onc::network_config::kGUID, &guid);
-  if (guid.empty()) {
+  const std::string* guid =
+      properties.FindStringKey(::onc::network_config::kGUID);
+  if (!guid) {
     const NetworkState* network_state =
         network_state_handler_->GetNetworkState(service_path);
     if (network_state) {
-      properties_copy->SetKey(::onc::network_config::kGUID,
-                              base::Value(network_state->guid()));
+      properties_copy.SetKey(::onc::network_config::kGUID,
+                             base::Value(network_state->guid()));
     }
   }
 
-  callback.Run(service_path, *properties_copy.get());
+  callback.Run(service_path, base::Value::AsDictionaryValue(properties_copy));
 }
 
 void NetworkConfigurationHandler::SetPropertiesSuccessCallback(

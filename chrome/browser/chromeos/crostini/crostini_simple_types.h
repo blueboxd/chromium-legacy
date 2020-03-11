@@ -203,6 +203,23 @@ enum class DialogType {
   REMOVER,
 };
 
+constexpr char kUpgradeDialogEventHistogram[] = "Crostini.UpgradeDialogEvent";
+
+enum class UpgradeDialogEvent {
+  kDialogShown = 0,
+  kUpgradeSuccess = 1,
+  kUpgradeCanceled = 2,
+  kUpgradeFailed = 3,
+  kNotStarted = 4,
+  kDidBackup = 5,
+  kBackupSucceeded = 6,
+  kBackupFailed = 7,
+  kDidRestore = 8,
+  kRestoreSucceeded = 9,
+  kRestoreFailed = 10,
+  kMaxValue = kRestoreFailed,
+};
+
 }  // namespace crostini
 
 enum class ContainerOsVersion {

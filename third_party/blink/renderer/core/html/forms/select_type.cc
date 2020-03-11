@@ -615,9 +615,13 @@ class ListBoxSelectType final : public SelectType {
   HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
                                                   SkipDirection) const;
   void ToggleSelection(HTMLOptionElement& option);
+  enum class SelectionMode {
+    kDeselectOthers,
+    kRange,
+    kNotChangeOthers,
+  };
   void UpdateSelectedState(HTMLOptionElement* clicked_option,
-                           bool multi,
-                           bool shift);
+                           SelectionMode mode);
 
   bool is_in_non_contiguous_selection_ = false;
 };
@@ -635,7 +639,9 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
     // Convert to coords relative to the list box if needed.
     if (HTMLOptionElement* option = EventTargetOption(*gesture_event)) {
       if (!select_->IsDisabledFormControl()) {
-        UpdateSelectedState(option, true, gesture_event->shiftKey());
+        UpdateSelectedState(option, gesture_event->shiftKey()
+                                        ? SelectionMode::kRange
+                                        : SelectionMode::kNotChangeOthers);
         select_->ListBoxOnChange();
       }
       return true;
@@ -657,12 +663,15 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
     if (HTMLOptionElement* option = EventTargetOption(*mouse_event)) {
       if (!option->IsDisabledFormControl()) {
 #if defined(OS_MACOSX)
-        UpdateSelectedState(option, mouse_event->metaKey(),
-                            mouse_event->shiftKey());
+        const bool meta_or_ctrl = mouse_event->metaKey();
 #else
-        UpdateSelectedState(option, mouse_event->ctrlKey(),
-                            mouse_event->shiftKey());
+        const bool meta_or_ctrl = mouse_event->ctrlKey();
 #endif
+        UpdateSelectedState(option, mouse_event->shiftKey()
+                                        ? SelectionMode::kRange
+                                        : meta_or_ctrl
+                                              ? SelectionMode::kNotChangeOthers
+                                              : SelectionMode::kDeselectOthers);
       }
       if (LocalFrame* frame = select_->GetDocument().GetFrame())
         frame->GetEventHandler().SetMouseDownMayStartAutoscroll();
@@ -930,13 +939,12 @@ HTMLOptionElement* ListBoxSelectType::NextSelectableOptionPageAway(
 
 void ListBoxSelectType::ToggleSelection(HTMLOptionElement& option) {
   select_->active_selection_state_ = !select_->active_selection_state_;
-  UpdateSelectedState(&option, true /*multi*/, false /*shift*/);
+  UpdateSelectedState(&option, SelectionMode::kNotChangeOthers);
   select_->ListBoxOnChange();
 }
 
 void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
-                                            bool multi,
-                                            bool shift) {
+                                            SelectionMode mode) {
   DCHECK(clicked_option);
   // Save the selection so it can be compared to the new selection when
   // dispatching change events during mouseup, or after autoscroll finishes.
@@ -944,43 +952,43 @@ void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
 
   select_->active_selection_state_ = true;
 
-  bool shift_select = select_->is_multiple_ && shift;
-  bool multi_select = select_->is_multiple_ && multi && !shift;
+  if (!select_->is_multiple_)
+    mode = SelectionMode::kDeselectOthers;
 
   // Keep track of whether an active selection (like during drag selection),
   // should select or deselect.
-  if (clicked_option->Selected() && multi_select) {
+  if (clicked_option->Selected() && mode == SelectionMode::kNotChangeOthers) {
     select_->active_selection_state_ = false;
     clicked_option->SetSelectedState(false);
     clicked_option->SetDirty(true);
   }
 
   // If we're not in any special multiple selection mode, then deselect all
-  // other items, excluding the clicked option. If no option was clicked, then
+  // other items, excluding the clicked OPTION. If no option was clicked, then
   // this will deselect all items in the list.
-  if (!shift_select && !multi_select)
+  if (mode == SelectionMode::kDeselectOthers)
     select_->DeselectItemsWithoutValidation(clicked_option);
 
-  // If the anchor hasn't been set, and we're doing a single selection or a
-  // shift selection, then initialize the anchor to the first selected index.
-  if (!select_->active_selection_anchor_ && !multi_select)
+  // If the anchor hasn't been set, and we're doing kDeselectOthers or kRange,
+  // then initialize the anchor to the first selected OPTION.
+  if (!select_->active_selection_anchor_ &&
+      mode != SelectionMode::kNotChangeOthers)
     select_->SetActiveSelectionAnchor(select_->SelectedOption());
 
-  // Set the selection state of the clicked option.
+  // Set the selection state of the clicked OPTION.
   if (!clicked_option->IsDisabledFormControl()) {
     clicked_option->SetSelectedState(true);
     clicked_option->SetDirty(true);
   }
 
-  // If there was no selectedIndex() for the previous initialization, or If
-  // we're doing a single selection, or a multiple selection (using cmd or
-  // ctrl), then initialize the anchor index to the listIndex that just got
-  // clicked.
-  if (!select_->active_selection_anchor_ || !shift_select)
+  // If there was no selectedIndex() for the previous initialization, or if
+  // we're doing kDeselectOthers, or kNotChangeOthers (using cmd or ctrl),
+  // then initialize the anchor OPTION to the clicked OPTION.
+  if (!select_->active_selection_anchor_ || mode != SelectionMode::kRange)
     select_->SetActiveSelectionAnchor(clicked_option);
 
   select_->SetActiveSelectionEnd(clicked_option);
-  select_->UpdateListBoxSelection(!multi_select);
+  select_->UpdateListBoxSelection(mode != SelectionMode::kNotChangeOthers);
 }
 
 // ============================================================================

@@ -77,8 +77,7 @@ void NetworkProfileHandler::GetManagerPropertiesCallback(
     return;
   }
 
-  const base::Value* profiles = NULL;
-  properties.GetWithoutPathExpansion(shill::kProfilesProperty, &profiles);
+  const base::Value* profiles = properties.FindKey(shill::kProfilesProperty);
   if (!profiles) {
     LOG(ERROR) << "Manager properties returned from Shill don't contain "
                << "the field " << shill::kProfilesProperty;
@@ -146,10 +145,10 @@ void NetworkProfileHandler::GetProfilePropertiesCallback(
     VLOG(1) << "Ignore received properties, profile is already created.";
     return;
   }
-  std::string userhash;
-  properties.GetStringWithoutPathExpansion(shill::kUserHashProperty, &userhash);
+  const std::string* userhash =
+      properties.FindStringKey(shill::kUserHashProperty);
 
-  AddProfile(NetworkProfile(profile_path, userhash));
+  AddProfile(NetworkProfile(profile_path, userhash ? *userhash : ""));
 }
 
 void NetworkProfileHandler::AddProfile(const NetworkProfile& profile) {

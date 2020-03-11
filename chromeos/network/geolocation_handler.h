@@ -17,6 +17,7 @@
 
 namespace base {
 class DictionaryValue;
+class Value;
 }
 
 namespace chromeos {
@@ -86,8 +87,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) GeolocationHandler
   bool cellular_enabled_;
   bool wifi_enabled_;
 
-  void AddCellTowerFromDict(const base::DictionaryValue* entry);
-  void AddAccessPointFromDict(const base::DictionaryValue* entry);
+  void AddCellTowerFromDict(const base::Value& entry);
+  void AddAccessPointFromDict(const base::Value& entry);
 
   // Cached netork information and update time
   WifiAccessPointVector wifi_access_points_;

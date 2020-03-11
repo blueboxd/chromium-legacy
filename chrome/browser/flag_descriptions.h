@@ -1889,6 +1889,12 @@ extern const char kEnableHeuristicStylusPalmRejectionDescription[];
 extern const char kEnableNeuralStylusPalmRejectionName[];
 extern const char kEnableNeuralStylusPalmRejectionDescription[];
 
+extern const char kEnablePalmOnMaxTouchMajorName[];
+extern const char kEnablePalmOnMaxTouchMajorDescription[];
+
+extern const char kEnablePalmOnToolTypePalmName[];
+extern const char kEnablePalmOnToolTypePalmDescription[];
+
 extern const char kEnableParentalControlsSettingsName[];
 extern const char kEnableParentalControlsSettingsDescription[];
 
@@ -1969,6 +1975,9 @@ extern const char kHelpAppDescription[];
 
 extern const char kHideArcMediaNotificationsName[];
 extern const char kHideArcMediaNotificationsDescription[];
+
+extern const char kImeAssistAutocorrectName[];
+extern const char kImeAssistAutocorrectDescription[];
 
 extern const char kImeAssistPersonalInfoName[];
 extern const char kImeAssistPersonalInfoDescription[];

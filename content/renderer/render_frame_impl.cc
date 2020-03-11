@@ -2818,10 +2818,11 @@ RenderFrameImpl::GetRendererPreferences() const {
   return render_view_->renderer_preferences();
 }
 
-int RenderFrameImpl::ShowContextMenu(ContextMenuClient* client,
-                                     const ContextMenuParams& params) {
+int RenderFrameImpl::ShowContextMenu(
+    ContextMenuClient* client,
+    const UntrustworthyContextMenuParams& params) {
   DCHECK(client);  // A null client means "internal" when we issue callbacks.
-  ContextMenuParams our_params(params);
+  UntrustworthyContextMenuParams our_params(params);
 
   blink::WebRect position_in_window(params.x, params.y, 0, 0);
   GetLocalRootRenderWidget()->ConvertViewportToWindow(&position_in_window);
@@ -4632,7 +4633,7 @@ bool RenderFrameImpl::HandleCurrentKeyboardEvent() {
 }
 
 void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
-  ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
+  UntrustworthyContextMenuParams params = ContextMenuParamsBuilder::Build(data);
   if (GetLocalRootRenderWidget()->has_host_context_menu_location()) {
     // If the context menu request came from the browser, it came with a
     // position that was stored on RenderWidget and is relative to the
@@ -4675,7 +4676,8 @@ void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
 #endif
 }
 
-void RenderFrameImpl::ShowDeferredContextMenu(const ContextMenuParams& params) {
+void RenderFrameImpl::ShowDeferredContextMenu(
+    const UntrustworthyContextMenuParams& params) {
   Send(new FrameHostMsg_ContextMenu(routing_id_, params));
 }
 

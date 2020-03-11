@@ -37,34 +37,35 @@ class WebLocalFrame;
 class WebPlugin;
 struct WebPluginParams;
 struct WebRect;
-}
+}  // namespace blink
 
 namespace gfx {
 class Range;
 class RectF;
 class Size;
-}
+}  // namespace gfx
 
 namespace network {
 class SharedURLLoaderFactory;
-}
+}  // namespace network
 
 namespace service_manager {
 class InterfaceProvider;
-}
+}  // namespace service_manager
 
 namespace url {
 class Origin;
-}
+}  // namespace url
 
 namespace content {
+
 class ContextMenuClient;
 class PluginInstanceThrottler;
 class RenderAccessibility;
 struct RenderFrameMediaPlaybackOptions;
 class RenderFrameVisitor;
 class RenderView;
-struct ContextMenuParams;
+struct UntrustworthyContextMenuParams;
 struct WebPluginInfo;
 struct WebPreferences;
 
@@ -156,7 +157,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Note: if you end up having clients outliving the RenderFrame, we should add
   // a CancelContextMenuCallback function that takes a request id.
   virtual int ShowContextMenu(ContextMenuClient* client,
-                              const ContextMenuParams& params) = 0;
+                              const UntrustworthyContextMenuParams& params) = 0;
 
   // Cancels a context menu in the event that the client is destroyed before the
   // menu is closed.

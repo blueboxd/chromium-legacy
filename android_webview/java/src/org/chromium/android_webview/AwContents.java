@@ -1342,7 +1342,7 @@ public class AwContents implements SmartClipProvider {
         }
 
         setNewAwContents(popupNativeAwContents);
-        // We defer loading any URL on the popup until it has been properly intialized (through
+        // We defer loading any URL on the popup until it has been properly initialized (through
         // setNewAwContents). We resume the load here.
         AwContentsJni.get().resumeLoadingCreatedPopupWebContents(
                 mNativeAwContents, AwContents.this);

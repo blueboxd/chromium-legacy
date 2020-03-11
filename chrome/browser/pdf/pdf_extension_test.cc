@@ -2140,13 +2140,15 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, ContextMenuCoordinates) {
 
   // We expect the IPC, received from the renderer, to be using local coords.
   context_menu_filter->Wait();
-  content::ContextMenuParams params = context_menu_filter->get_params();
+  content::UntrustworthyContextMenuParams params =
+      context_menu_filter->get_params();
   EXPECT_EQ(local_context_menu_position.x(), params.x);
   EXPECT_EQ(local_context_menu_position.y(), params.y);
 
-  // TODO(wjmaclean): If it ever becomes possible to filter outgoing IPCs
-  // from the RenderProcessHost, we should verify the blink.mojom.PluginActionAt
-  // message is sent with the same coordinates as in the ContextMenuParams.
+  // TODO(wjmaclean): If it ever becomes possible to filter outgoing IPCs from
+  // the RenderProcessHost, we should verify the blink.mojom.PluginActionAt
+  // message is sent with the same coordinates as in the
+  // UntrustworthyContextMenuParams.
 }
 
 // The plugin document and the mime handler should both use the same background

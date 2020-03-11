@@ -94,9 +94,9 @@ void PolicyApplicator::GetProfilePropertiesCallback(
     const base::DictionaryValue& profile_properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(2) << "Received properties for profile " << profile_.ToDebugString();
-  const base::ListValue* entries = nullptr;
-  if (!profile_properties.GetListWithoutPathExpansion(
-           shill::kEntriesProperty, &entries)) {
+  const base::Value* entries =
+      profile_properties.FindListKey(shill::kEntriesProperty);
+  if (!entries) {
     LOG(ERROR) << "Profile " << profile_.ToDebugString()
                << " doesn't contain the property "
                << shill::kEntriesProperty;
@@ -104,10 +104,11 @@ void PolicyApplicator::GetProfilePropertiesCallback(
     return;
   }
 
-  for (base::ListValue::const_iterator it = entries->begin();
-       it != entries->end(); ++it) {
-    std::string entry;
-    it->GetAsString(&entry);
+  for (const auto& it : entries->GetList()) {
+    if (!it.is_string())
+      continue;
+
+    std::string entry = it.GetString();
 
     // Skip "ethernet_any", as this is used by shill internally to persist
     // ethernet settings and the policy application logic should not mess with

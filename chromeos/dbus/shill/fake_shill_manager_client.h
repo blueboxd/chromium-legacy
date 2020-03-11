@@ -109,8 +109,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
   void SetTechnologyEnabled(const std::string& type,
                             base::OnceClosure callback,
                             bool enabled);
-  std::unique_ptr<base::ListValue> GetEnabledServiceList(
-      const std::string& property) const;
+  base::Value GetEnabledServiceList(const std::string& property) const;
   void ScanCompleted(const std::string& device_path);
 
   // Parses the command line for Shill stub switches and sets initial states.

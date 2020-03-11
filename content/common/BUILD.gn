@@ -411,10 +411,10 @@ source_set("common") {
     deps += [ "//third_party/fuchsia-sdk/sdk/pkg/fdio" ]
   }
 
-  if (use_clang_profiling_inside_sandbox) {
+  if (use_clang_coverage_inside_sandbox) {
     sources += [
-      "profiling_utils.cc",
-      "profiling_utils.h",
+      "coverage_utils.cc",
+      "coverage_utils.h",
     ]
   }
 }
@@ -476,8 +476,8 @@ mojom("mojo_bindings") {
   if (is_linux || is_chromeos) {
     enabled_features += [ "supports_thread_priorities" ]
   }
-  if (use_clang_profiling_inside_sandbox) {
-    enabled_features += [ "clang_profiling_inside_sandbox" ]
+  if (use_clang_coverage_inside_sandbox) {
+    enabled_features += [ "clang_coverage_inside_sandbox" ]
   }
 
   import_dirs = [ "//mojo/services" ]

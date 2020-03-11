@@ -1197,6 +1197,11 @@
     "expiry_milestone": 84
   },
   {
+    "name": "enable-cros-ime-assist-autocorrect",
+    "owners": [ "jopalmer", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-cros-ime-assist-personal-info",
     "owners": [ "jiwan", "essential-inputs-team@google.com" ],
     "expiry_milestone": 90
@@ -1664,6 +1669,20 @@
     "name": "enable-paint-holding",
     "owners": [ "schenney", "paint-dev" ],
     "expiry_milestone": 86
+  },
+  {
+    "name": "enable-palm-max-touch-major",
+    "owners": ["robsc", "napper", "adlr"],
+    // Added feature to possibly disable/enable this functionality, combined
+    //  with neural net palm detection.
+    "expiry_milestone": 90
+  },
+  {
+    "name": "enable-palm-tool-type-palm",
+    "owners": ["robsc", "napper", "adlr"],
+    // Added feature to possibly disable/enable this functionality, combined
+    //  with neural net palm detection.
+    "expiry_milestone": 90
   },
   {
     "name": "enable-parallel-downloading",

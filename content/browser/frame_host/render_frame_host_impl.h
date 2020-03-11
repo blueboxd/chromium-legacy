@@ -208,7 +208,7 @@ class TimeoutMonitor;
 class WebAuthRequestSecurityChecker;
 class WebBluetoothServiceImpl;
 class WebBundleHandle;
-struct ContextMenuParams;
+struct UntrustworthyContextMenuParams;
 struct PendingNavigation;
 struct ResourceTimingInfo;
 struct SubresourceLoaderParams;
@@ -1584,7 +1584,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnUpdateState(const PageState& state);
   void OnUnloadACK();
-  void OnContextMenu(const ContextMenuParams& params);
+  void OnContextMenu(const UntrustworthyContextMenuParams& params);
   void OnVisualStateResponse(uint64_t id);
   void OnDidChangeOpener(int32_t opener_routing_id);
 
@@ -2105,6 +2105,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // See |SetIsXrOverlaySetup()|
   bool HasSeenRecentXrOverlaySetup();
+
+  // Follows the GetParent() chain to find and return the main frame.
+  RenderFrameHostImpl* GetMainFrame();
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

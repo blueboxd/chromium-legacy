@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.browser_ui.widget.FadingShadow;
 import org.chromium.components.browser_ui.widget.FadingShadowView;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
@@ -33,6 +34,7 @@ import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.url.GURL;
 
 /**
@@ -56,6 +58,7 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     private FadingShadowView mShadow;
     private Drawable mCurrentFavicon;
     private ImageView mFaviconView;
+    private ModalDialogManager mModalDialogManager;
 
     /**
      * Constructor.
@@ -99,8 +102,12 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
      * bottom sheet.
      */
     private void createThinWebView(int maxSheetHeight) {
-        mThinWebView = ThinWebViewFactory.create(
-                mContext, new ActivityWindowAndroid(mContext), new ThinWebViewConstraints());
+        mThinWebView = ThinWebViewFactory.create(mContext, new ActivityWindowAndroid(mContext) {
+            @Override
+            public @Nullable ModalDialogManager getModalDialogManager() {
+                return EphemeralTabSheetContent.this.getModalDialogManager();
+            }
+        }, new ThinWebViewConstraints());
 
         mSheetContentView = new FrameLayout(mContext);
         mThinWebView.getView().setLayoutParams(new FrameLayout.LayoutParams(
@@ -108,6 +115,14 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
         mSheetContentView.addView(mThinWebView.getView());
 
         mSheetContentView.setPadding(0, mToolbarHeightPx, 0, 0);
+    }
+
+    private ModalDialogManager getModalDialogManager() {
+        if (mModalDialogManager == null) {
+            mModalDialogManager = new ModalDialogManager(
+                    new AppModalPresenter(mContext), ModalDialogManager.ModalDialogType.APP);
+        }
+        return mModalDialogManager;
     }
 
     private void createToolbarView() {
@@ -231,6 +246,10 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     @Override
     public void destroy() {
         mThinWebView.destroy();
+        if (mModalDialogManager != null) {
+            mModalDialogManager.destroy();
+            mModalDialogManager = null;
+        }
     }
 
     @Override

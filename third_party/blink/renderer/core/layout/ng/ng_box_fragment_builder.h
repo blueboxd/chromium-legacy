@@ -255,6 +255,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     is_inline_formatting_context_ = is_inline_formatting_context;
   }
 
+  void SetIsMathMLFraction() { is_math_fraction_ = true; }
+
   bool DidBreak() const { return did_break_; }
 
   void SetBorderEdges(NGBorderEdges border_edges) {
@@ -346,6 +348,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool is_new_fc_ = false;
   bool subtree_modified_margin_strut_ = false;
   bool has_seen_all_children_ = false;
+  bool is_math_fraction_ = false;
   LayoutUnit consumed_block_size_;
   unsigned sequence_number_ = 0;
 

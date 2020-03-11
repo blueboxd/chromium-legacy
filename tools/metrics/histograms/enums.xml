@@ -22494,7 +22494,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1448" label="AUTOFILLPRIVATE_GETUPIIDLIST"/>
   <int value="1449" label="WEBCAMPRIVATE_RESTORE_CAMERA_PRESET"/>
   <int value="1450" label="WEBCAMPRIVATE_SET_CAMERA_PRESET"/>
-  <int value="1451" label="PASSWORDSPRIVATE_GETCOMPROMISEDCREDENTIALSINFO"/>
+  <int value="1451" label="PASSWORDSPRIVATE_GETCOMPROMISEDCREDENTIALS"/>
   <int value="1452" label="INPUTMETHODPRIVATE_HIDEINPUTVIEW"/>
   <int value="1453" label="PASSWORDSPRIVATE_GETPLAINTEXTCOMPROMISEDPASSWORD"/>
   <int value="1454" label="PASSWORDSPRIVATE_CHANGECOMPROMISEDCREDENTIAL"/>
@@ -44423,7 +44423,8 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="No Credentials."/>
   <int value="1" label="Username only."/>
   <int value="2" label="Username and password."/>
-  <int value="3" label="SSO kerberos."/>
+  <int value="3" label="SSO Kerberos AD."/>
+  <int value="4" label="SSO Kerberos Gaia."/>
 </enum>
 
 <enum name="NativeSmbFileShare_MountResult">

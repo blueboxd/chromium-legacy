@@ -25,17 +25,14 @@ class LOCKABLE BASE_EXPORT Lock {
   Lock() : lock_() {}
   ~Lock() {}
 
-  // TODO(lukasza): https://crbug.com/831825: Add EXCLUSIVE_LOCK_FUNCTION
-  // annotation to Acquire method and similar annotations to Release and Try
-  // methods (here and in the #else branch).
-  void Acquire() { lock_.Lock(); }
-  void Release() { lock_.Unlock(); }
+  void Acquire() EXCLUSIVE_LOCK_FUNCTION() { lock_.Lock(); }
+  void Release() UNLOCK_FUNCTION() { lock_.Unlock(); }
 
   // If the lock is not held, take it and return true. If the lock is already
   // held by another thread, immediately return false. This must not be called
   // by a thread already holding the lock (what happens is undefined and an
   // assertion may fail).
-  bool Try() { return lock_.Try(); }
+  bool Try() EXCLUSIVE_TRYLOCK_FUNCTION(true) { return lock_.Try(); }
 
   // Null implementation if not debug.
   void AssertAcquired() const ASSERT_EXCLUSIVE_LOCK() {}
@@ -46,16 +43,16 @@ class LOCKABLE BASE_EXPORT Lock {
   // NOTE: We do not permit recursive locks and will commonly fire a DCHECK() if
   // a thread attempts to acquire the lock a second time (while already holding
   // it).
-  void Acquire() {
+  void Acquire() EXCLUSIVE_LOCK_FUNCTION() {
     lock_.Lock();
     CheckUnheldAndMark();
   }
-  void Release() {
+  void Release() UNLOCK_FUNCTION() {
     CheckHeldAndUnmark();
     lock_.Unlock();
   }
 
-  bool Try() {
+  bool Try() EXCLUSIVE_TRYLOCK_FUNCTION(true) {
     bool rv = lock_.Try();
     if (rv) {
       CheckUnheldAndMark();

@@ -11,6 +11,7 @@
     "depth",
     "encoding",
     "height",
+    "linethickness",
     "mathbackground",
     "mathcolor",
     "mathsize",

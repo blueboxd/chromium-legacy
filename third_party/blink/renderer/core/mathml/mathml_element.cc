@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 
@@ -80,6 +81,22 @@ void MathMLElement::ParseAttribute(const AttributeModificationParams& param) {
   }
 
   Element::ParseAttribute(param);
+}
+
+base::Optional<Length> MathMLElement::AddMathLengthToComputedStyle(
+    ComputedStyle& style,
+    const CSSToLengthConversionData& conversion_data,
+    const QualifiedName& attr_name) {
+  if (!FastHasAttribute(attr_name))
+    return base::nullopt;
+  auto string = FastGetAttribute(attr_name);
+  const CSSValue* parsed = CSSParser::ParseSingleValue(
+      CSSPropertyID::kHeight, string,
+      StrictCSSParserContext(GetDocument().GetSecureContextMode()));
+  const auto* new_value = DynamicTo<CSSPrimitiveValue>(parsed);
+  if (!new_value || !new_value->IsLength())
+    return base::nullopt;
+  return new_value->ConvertToLength(conversion_data);
 }
 
 }  // namespace blink

@@ -13,6 +13,8 @@
 #include <queue>
 #include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -169,7 +171,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   // Send an IPC message over the GPU channel. This is private to fully
   // encapsulate the channel; all callers of this function must explicitly
   // verify that the context has not been lost.
-  bool Send(IPC::Message* msg);
+  bool Send(IPC::Message* msg) EXCLUSIVE_LOCKS_REQUIRED(last_state_lock_);
 
   std::pair<base::UnsafeSharedMemoryRegion, base::WritableSharedMemoryMapping>
   AllocateAndMapSharedMemory(size_t size);
@@ -189,33 +191,38 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
 
   // Try to read an updated copy of the state from shared memory, and calls
   // OnGpuStateError() if the new state has an error.
-  void TryUpdateState();
+  void TryUpdateState() EXCLUSIVE_LOCKS_REQUIRED(last_state_lock_);
   // Like above but calls the error handler and disconnects channel by posting
   // a task.
-  void TryUpdateStateThreadSafe();
+  void TryUpdateStateThreadSafe() EXCLUSIVE_LOCKS_REQUIRED(last_state_lock_);
   // Like the above but does not call the error event handler if the new state
   // has an error.
-  void TryUpdateStateDontReportError();
+  void TryUpdateStateDontReportError()
+      EXCLUSIVE_LOCKS_REQUIRED(last_state_lock_);
   // Sets the state, and calls OnGpuStateError() if the new state has an error.
-  void SetStateFromMessageReply(const CommandBuffer::State& state);
+  void SetStateFromMessageReply(const CommandBuffer::State& state)
+      EXCLUSIVE_LOCKS_REQUIRED(last_state_lock_);
 
   // Loses the context after we received an invalid reply from the GPU
   // process.
-  void OnGpuSyncReplyError();
+  void OnGpuSyncReplyError() EXCLUSIVE_LOCKS_REQUIRED(last_state_lock_);
 
   // Loses the context when receiving a message from the GPU process.
   void OnGpuAsyncMessageError(gpu::error::ContextLostReason reason,
-                              gpu::error::Error error);
+                              gpu::error::Error error)
+      EXCLUSIVE_LOCKS_REQUIRED(last_state_lock_);
 
   // Loses the context after we receive an error state from the GPU process.
-  void OnGpuStateError();
+  void OnGpuStateError() EXCLUSIVE_LOCKS_REQUIRED(last_state_lock_);
 
   // Sets an error on the last_state_ and loses the context due to client-side
   // errors.
-  void OnClientError(gpu::error::Error error);
+  void OnClientError(gpu::error::Error error)
+      EXCLUSIVE_LOCKS_REQUIRED(last_state_lock_);
 
   // Helper methods, don't call these directly.
-  void DisconnectChannelInFreshCallStack();
+  void DisconnectChannelInFreshCallStack()
+      EXCLUSIVE_LOCKS_REQUIRED(last_state_lock_);
   void LockAndDisconnectChannel();
   void DisconnectChannel();
 

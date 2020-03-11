@@ -49,6 +49,8 @@ bool operator==(const ValueProto& value_a, const ValueProto& value_b) {
       return value_a.ints().values() == value_b.ints().values();
     case ValueProto::kUserActions:
       return value_a.user_actions().values() == value_b.user_actions().values();
+    case ValueProto::kDates:
+      return value_a.dates().values() == value_b.dates().values();
     case ValueProto::KIND_NOT_SET:
       return true;
   }
@@ -89,6 +91,12 @@ bool operator==(const UserActionProto& value_a,
          value_a.identifier() == value_b.identifier();
 }
 
+// Compares two |DateProto| instances and returns true if they exactly match.
+bool operator==(const DateProto& value_a, const DateProto& value_b) {
+  return value_a.year() == value_b.year() &&
+         value_a.month() == value_b.month() && value_a.day() == value_b.day();
+}
+
 // Intended for debugging. Writes a string representation of |values| to |out|.
 template <typename T>
 std::ostream& WriteRepeatedField(std::ostream& out, const T& values) {
@@ -122,6 +130,12 @@ std::ostream& operator<<(std::ostream& out, const UserActionProto& value) {
   return out;
 }
 
+// Intended for debugging. '<<' operator specialization for DateProto.
+std::ostream& operator<<(std::ostream& out, const DateProto& value) {
+  out << value.year() << "-" << value.month() << "-" << value.day();
+  return out;
+}
+
 // Intended for debugging.  Writes a string representation of |value| to |out|.
 std::ostream& operator<<(std::ostream& out, const ValueProto& value) {
   switch (value.kind_case()) {
@@ -136,6 +150,9 @@ std::ostream& operator<<(std::ostream& out, const ValueProto& value) {
       break;
     case ValueProto::kUserActions:
       out << value.user_actions().values();
+      break;
+    case ValueProto::kDates:
+      out << value.dates().values();
       break;
     case ValueProto::KIND_NOT_SET:
       break;
@@ -166,6 +183,15 @@ ValueProto SimpleValue(const std::string& s) {
 ValueProto SimpleValue(int i) {
   ValueProto value;
   value.mutable_ints()->add_values(i);
+  return value;
+}
+
+ValueProto SimpleValue(const DateProto& proto) {
+  ValueProto value;
+  auto* date = value.mutable_dates()->add_values();
+  date->set_year(proto.year());
+  date->set_month(proto.month());
+  date->set_day(proto.day());
   return value;
 }
 
@@ -211,6 +237,10 @@ bool AreAllValuesOfSize(const std::vector<ValueProto>& values,
         break;
       case ValueProto::kUserActions:
         if (value.user_actions().values_size() != target_size)
+          return false;
+        break;
+      case ValueProto::kDates:
+        if (value.dates().values_size() != target_size)
           return false;
         break;
       case ValueProto::KIND_NOT_SET:
@@ -259,6 +289,12 @@ base::Optional<ValueProto> CombineValues(
                       value.user_actions().values().end(),
                       [&](const auto& action) {
                         *result.mutable_user_actions()->add_values() = action;
+                      });
+        break;
+      case ValueProto::kDates:
+        std::for_each(value.dates().values().begin(),
+                      value.dates().values().end(), [&](const auto& date) {
+                        *result.mutable_dates()->add_values() = date;
                       });
         break;
       case ValueProto::KIND_NOT_SET:

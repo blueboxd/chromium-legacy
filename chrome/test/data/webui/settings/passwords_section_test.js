@@ -6,7 +6,7 @@
 
 // clang-format off
 // #import {getToastManager, PasswordManagerImpl} from 'chrome://settings/settings.js';
-// #import {PasswordSectionElementFactory, createExceptionEntry, createPasswordEntry, makeCompromisedCredentialsInfo} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+// #import {PasswordSectionElementFactory, createExceptionEntry, createPasswordEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {runStartExportTest, runExportFlowFastTest, runExportFlowErrorTest, runExportFlowErrorRetryTest, runExportFlowSlowTest, runCancelExportTest, runFireCloseEventAfterExportCompleteTest} from 'chrome://test/settings/passwords_export_test.m.js';
 // #import {eventToPromise} from 'chrome://test/test_util.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -811,33 +811,31 @@ cr.define('settings_passwords_section', function() {
 
     test('showPasswordCheckBannerWhenNotCheckedBefore', function() {
       assertEquals(
-          passwordManager.data.leakedCredentials.elapsedTimeSinceLastCheck,
+          passwordManager.data.checkStatus.elapsedTimeSinceLastCheck,
           undefined);
       const passwordsSection =
           elementFactory.createPasswordsSection(passwordManager, [], []);
-      return passwordManager.whenCalled('getCompromisedCredentialsInfo')
-          .then(() => {
-            Polymer.dom.flush();
-            assertFalse(
-                passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
-            assertFalse(passwordsSection.$$('#checkPasswordsButton').hidden);
-            assertTrue(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
-          });
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        assertFalse(
+            passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
+        assertFalse(passwordsSection.$$('#checkPasswordsButton').hidden);
+        assertTrue(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+      });
     });
 
     test('hidePasswordCheckBannerWhenCheckedBefore', function() {
-      passwordManager.data.leakedCredentials =
-          autofill_test_util.makeCompromisedCredentialsInfo([], '5 mins ago');
+      passwordManager.data.checkStatus.elapsedTimeSinceLastCheck =
+          '5 minutes ago';
       const passwordsSection =
           elementFactory.createPasswordsSection(passwordManager, [], []);
-      return passwordManager.whenCalled('getCompromisedCredentialsInfo')
-          .then(() => {
-            Polymer.dom.flush();
-            assertTrue(
-                passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
-            assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
-            assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
-          });
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        assertTrue(
+            passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
+        assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+        assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+      });
     });
   });
   // #cr_define_end

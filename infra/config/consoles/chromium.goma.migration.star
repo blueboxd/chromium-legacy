@@ -1164,5 +1164,59 @@ luci.console_view(
             category = 'ios|week1a',
             short_name = 'sim',
         ),
+        luci.console_view_entry(
+            builder = 'ci/ios-device',
+            category = 'ios|week1b',
+            short_name = 'dev',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios-simulator',
+            category = 'ios|week1b|sim',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios-simulator-full-configs',
+            category = 'ios|week1b|sim',
+            short_name = 'fullconf',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios-simulator-noncq',
+            category = 'ios|week1b|sim',
+            short_name = 'noncq',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios-simulator-code-coverage',
+            category = 'ios|week1b|sim',
+            short_name = 'code',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios-webkit-tot',
+            category = 'ios|week1b',
+            short_name = 'webkit',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios13-beta-simulator',
+            category = 'ios|week1b|ios13|beta',
+            short_name = 'sim',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios13-sdk-device',
+            category = 'ios|week1b|ios13|sdk',
+            short_name = 'dev',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios13-sdk-simulator',
+            category = 'ios|week1b|ios13|sdk',
+            short_name = 'sim',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/ios-simulator',
+            category = 'ios|week1b|beta',
+            short_name = 'sim',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-stable/ios-simulator',
+            category = 'ios|week1b|stable',
+            short_name = 'sim',
+        ),
     ],
 )

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_fieldset_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_mathml_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
@@ -435,10 +436,13 @@ void NGBoxFragmentPainter::PaintObject(
     return;
   }
 
-  if (paint_phase == PaintPhase::kForeground &&
-      paint_info.ShouldAddUrlMetadata()) {
-    NGFragmentPainter(box_fragment_, GetDisplayItemClient())
-        .AddURLRectIfNeeded(paint_info, paint_offset);
+  if (paint_phase == PaintPhase::kForeground) {
+    if (paint_info.ShouldAddUrlMetadata()) {
+      NGFragmentPainter(box_fragment_, GetDisplayItemClient())
+          .AddURLRectIfNeeded(paint_info, paint_offset);
+    }
+    if (is_visible && box_fragment_.IsMathMLFraction())
+      NGMathMLPainter(box_fragment_).PaintFractionBar(paint_info, paint_offset);
   }
 
   if (paint_phase != PaintPhase::kSelfOutlineOnly &&

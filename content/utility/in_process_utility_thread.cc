@@ -37,7 +37,8 @@ void InProcessUtilityThread::Init() {
                                 base::Unretained(this)));
 }
 
-void InProcessUtilityThread::CleanUp() {
+void InProcessUtilityThread::CleanUp()
+    UNLOCK_FUNCTION(g_one_utility_thread_lock.Get()) {
   child_process_.reset();
 
   // See comment in RendererMainThread.
@@ -45,7 +46,8 @@ void InProcessUtilityThread::CleanUp() {
   g_one_utility_thread_lock.Get().Release();
 }
 
-void InProcessUtilityThread::InitInternal() {
+void InProcessUtilityThread::InitInternal()
+    EXCLUSIVE_LOCK_FUNCTION(g_one_utility_thread_lock.Get()) {
   g_one_utility_thread_lock.Get().Acquire();
   child_process_.reset(new ChildProcess());
   child_process_->set_main_thread(new UtilityThreadImpl(params_));

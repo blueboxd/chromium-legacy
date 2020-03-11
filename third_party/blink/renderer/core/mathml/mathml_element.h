@@ -5,12 +5,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MATHML_MATHML_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_MATHML_MATHML_ELEMENT_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
+
+class CSSToLengthConversionData;
+class QualifiedName;
 
 class CORE_EXPORT MathMLElement : public Element {
   DEFINE_WRAPPERTYPEINFO();
@@ -31,6 +36,11 @@ class CORE_EXPORT MathMLElement : public Element {
       const QualifiedName&,
       const AtomicString&,
       MutableCSSPropertyValueSet*) override;
+
+  base::Optional<Length> AddMathLengthToComputedStyle(
+      ComputedStyle&,
+      const CSSToLengthConversionData&,
+      const QualifiedName&);
 
  private:
   void ParseAttribute(const AttributeModificationParams&) final;

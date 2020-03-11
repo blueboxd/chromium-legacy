@@ -14,6 +14,7 @@
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -207,6 +208,15 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest,
                        WhiteThemeForSystemAppPopup) {
   InstallAndLaunchMockPopup();
   EXPECT_FALSE(app_browser_->app_controller()->GetThemeColor().has_value());
+}
+
+IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest,
+                       ReuseBrowserForSystemAppPopup) {
+  InstallAndLaunchMockPopup();
+  // We should have the original browser for this BrowserTest, plus new popup.
+  EXPECT_EQ(BrowserList::GetInstance()->size(), 2u);
+  InstallAndLaunchMockPopup();
+  EXPECT_EQ(BrowserList::GetInstance()->size(), 2u);
 }
 
 class AppBrowserControllerChromeUntrustedBrowserTest

@@ -23,6 +23,24 @@ mojom("video_capture") {
   export_header_blink = "third_party/blink/public/platform/web_common.h"
 }
 
+component("video_capture_mojom_support") {
+  sources = [
+    "video_capture_types_mojom_traits.cc",
+    "video_capture_types_mojom_traits.h",
+  ]
+  public_deps = [
+    ":video_capture_shared_cpp_sources",
+    "//media/base/ipc",
+    "//media/capture:capture_base",
+  ]
+  deps = [
+    "//media",
+    "//media/mojo/mojom",
+    "//ui/gfx/geometry/mojom:mojom_traits",
+  ]
+  defines = [ "IS_MEDIA_CAPTURE_MOJOM_TRAITS_IMPL" ]
+}
+
 mojom("image_capture") {
   sources = [ "image_capture.mojom" ]
 

@@ -6,7 +6,7 @@
 
 // clang-format off
 // #import {PasswordManagerImpl} from 'chrome://settings/settings.js';
-// #import {makeCompromisedCredentials, makeCompromisedCredentialsInfo, makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+// #import {makeCompromisedCredential,  makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
@@ -233,17 +233,14 @@ cr.define('settings_passwords_check', function() {
     // Test verifies that compromised credentials are displayed in a proper way
     test('testSomeCompromisedCredentials', function() {
       const leakedPasswords = [
-        autofill_test_util.makeCompromisedCredentials(
+        autofill_test_util.makeCompromisedCredential(
             'one.com', 'test4', 'LEAKED'),
-        autofill_test_util.makeCompromisedCredentials(
+        autofill_test_util.makeCompromisedCredential(
             'two.com', 'test3', 'PHISHED'),
       ];
-      const leakedPasswordsInfo =
-          autofill_test_util.makeCompromisedCredentialsInfo(
-              leakedPasswords, '5 min ago');
-      passwordManager.data.leakedCredentials = leakedPasswordsInfo;
+      passwordManager.data.leakedCredentials = leakedPasswords;
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getCompromisedCredentialsInfo')
+      return passwordManager.whenCalled('getCompromisedCredentials')
           .then(() => {
             Polymer.dom.flush();
             assertFalse(checkPasswordSection.$.passwordCheckBody.hidden);
@@ -254,7 +251,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that credentials from mobile app shown correctly
     test('testSomeCompromisedCredentials', function() {
-      const password = autofill_test_util.makeCompromisedCredentials(
+      const password = autofill_test_util.makeCompromisedCredential(
           'one.com', 'test4', 'LEAKED');
       password.changePasswordUrl = null;
 
@@ -266,16 +263,13 @@ cr.define('settings_passwords_check', function() {
     // Verify that the More Actions menu opens when the button is clicked.
     test('testMoreActionsMenu', function() {
       const leakedPasswords = [
-        autofill_test_util.makeCompromisedCredentials(
+        autofill_test_util.makeCompromisedCredential(
             'google.com', 'jdoerrie', 'LEAKED'),
       ];
-      const leakedPasswordsInfo =
-          autofill_test_util.makeCompromisedCredentialsInfo(
-              leakedPasswords, '5 min ago');
-      passwordManager.data.leakedCredentials = leakedPasswordsInfo;
+      passwordManager.data.leakedCredentials = leakedPasswords;
       const checkPasswordSection = createCheckPasswordSection();
 
-      return passwordManager.whenCalled('getCompromisedCredentialsInfo')
+      return passwordManager.whenCalled('getCompromisedCredentials')
           .then(() => {
             Polymer.dom.flush();
             assertFalse(checkPasswordSection.$.passwordCheckBody.hidden);
@@ -326,7 +320,7 @@ cr.define('settings_passwords_check', function() {
     test('testQueriesCheckedStatusImmediately', function() {
       const data = passwordManager.data;
       assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
-      assertEquals(0, data.leakedCredentials.compromisedCredentials.length);
+      assertEquals(0, data.leakedCredentials.length);
 
       const checkPasswordSection = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -340,7 +334,7 @@ cr.define('settings_passwords_check', function() {
     test('testShowsCheckmarkIconWhenFinishedWithoutLeaks', function() {
       const data = passwordManager.data;
       assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
-      assertEquals(0, data.leakedCredentials.compromisedCredentials.length);
+      assertEquals(0, data.leakedCredentials.length);
 
       const checkPasswordSection = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -358,13 +352,10 @@ cr.define('settings_passwords_check', function() {
     test('testShowsTriangleIconWhenFinishedWithLeaks', function() {
       const data = passwordManager.data;
       assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
-      data.leakedCredentials =
-          autofill_test_util.makeCompromisedCredentialsInfo(
-              [
-                autofill_test_util.makeCompromisedCredentials(
-                    'one.com', 'test4', 'LEAKED'),
-              ],
-              'just now');
+      data.leakedCredentials = [
+        autofill_test_util.makeCompromisedCredential(
+            'one.com', 'test4', 'LEAKED'),
+      ];
 
       const checkPasswordSection = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -423,8 +414,6 @@ cr.define('settings_passwords_check', function() {
               /*state=*/ PasswordCheckState.RUNNING,
               /*checked=*/ 1,
               /*remaining=*/ 3);
-      passwordManager.data.leakedCredentials =
-          autofill_test_util.makeCompromisedCredentialsInfo([], 'just now');
 
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -444,13 +433,10 @@ cr.define('settings_passwords_check', function() {
           /*state=*/ PasswordCheckState.RUNNING,
           /*checked=*/ 2,
           /*remaining=*/ 3);
-      data.leakedCredentials =
-          autofill_test_util.makeCompromisedCredentialsInfo(
-              [
-                autofill_test_util.makeCompromisedCredentials(
-                    'one.com', 'test4', 'LEAKED'),
-              ],
-              'just now');
+      data.leakedCredentials = [
+        autofill_test_util.makeCompromisedCredential(
+            'one.com', 'test4', 'LEAKED'),
+      ];
 
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -472,13 +458,10 @@ cr.define('settings_passwords_check', function() {
           /*state=*/ PasswordCheckState.CANCELED,
           /*checked=*/ 2,
           /*remaining=*/ 3);
-      data.leakedCredentials =
-          autofill_test_util.makeCompromisedCredentialsInfo(
-              [
-                autofill_test_util.makeCompromisedCredentials(
-                    'one.com', 'test4', 'LEAKED'),
-              ],
-              'just now');
+      data.leakedCredentials = [
+        autofill_test_util.makeCompromisedCredential(
+            'one.com', 'test4', 'LEAKED'),
+      ];
 
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -492,19 +475,30 @@ cr.define('settings_passwords_check', function() {
     });
 
     // After running, show confirmation, timestamp and number of leaks.
-    test('testShowLeakCountWhenIdle', function() {
+    test('testDontShowTimeStampIfNotRun', function() {
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        const subtitle = section.$.subtitle;
+        assertTrue(isElementVisible(title));
+        assertTrue(isElementVisible(subtitle));
+        expectEquals(section.i18n('checkPasswords'), title.innerText);
+      });
+    });
+
+    // After running, show confirmation, timestamp and number of leaks.
+    test('testShowLeakCountAndTimeStampWhenIdle', function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.IDLE,
           /*checked=*/ 4,
-          /*remaining=*/ 0);
-      data.leakedCredentials =
-          autofill_test_util.makeCompromisedCredentialsInfo(
-              [
-                autofill_test_util.makeCompromisedCredentials(
-                    'one.com', 'test4', 'LEAKED'),
-              ],
-              'just now');
+          /*remaining=*/ 0,
+          /*lastCheck=*/ 'Just now');
+      data.leakedCredentials = [
+        autofill_test_util.makeCompromisedCredential(
+            'one.com', 'test4', 'LEAKED'),
+      ];
 
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -514,7 +508,7 @@ cr.define('settings_passwords_check', function() {
         assertTrue(isElementVisible(title));
         assertTrue(isElementVisible(subtitle));
         expectEquals(
-            section.i18n('checkPasswords') + ' • just now', title.innerText);
+            section.i18n('checkPasswords') + ' • Just now', title.innerText);
       });
     });
 

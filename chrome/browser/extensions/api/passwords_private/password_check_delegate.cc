@@ -31,6 +31,7 @@
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -151,7 +152,7 @@ PasswordCheckDelegate::PasswordCheckDelegate(Profile* profile)
   // Instructs the presenter and provider to initialize and built their caches.
   // This will soon after invoke OnCompromisedCredentialsChanged(), which then
   // initializes |credentials_to_forms_| as well. Calls to
-  // GetCompromisedCredentialsInfo() that might happen until then will return an
+  // GetCompromisedCredentials() that might happen until then will return an
   // empty list.
   saved_passwords_presenter_.Init();
   compromised_credentials_provider_.Init();
@@ -159,8 +160,8 @@ PasswordCheckDelegate::PasswordCheckDelegate(Profile* profile)
 
 PasswordCheckDelegate::~PasswordCheckDelegate() = default;
 
-api::passwords_private::CompromisedCredentialsInfo
-PasswordCheckDelegate::GetCompromisedCredentialsInfo() {
+std::vector<api::passwords_private::CompromisedCredential>
+PasswordCheckDelegate::GetCompromisedCredentials() {
   CompromisedCredentialsView compromised_credentials_view =
       compromised_credentials_provider_.GetCompromisedCredentials();
   std::vector<CredentialWithPassword> ordered_compromised_credentials(
@@ -173,32 +174,36 @@ PasswordCheckDelegate::GetCompromisedCredentialsInfo() {
                std::tie(rhs.compromise_type, rhs.create_time);
       });
 
-  api::passwords_private::CompromisedCredentialsInfo credentials_info;
-  credentials_info.compromised_credentials.reserve(
-      ordered_compromised_credentials.size());
+  std::vector<api::passwords_private::CompromisedCredential>
+      compromised_credentials;
+  compromised_credentials.reserve(ordered_compromised_credentials.size());
   for (const auto& credential : ordered_compromised_credentials) {
     api::passwords_private::CompromisedCredential api_credential;
     auto facet = password_manager::FacetURI::FromPotentiallyInvalidSpec(
         credential.signon_realm);
     if (facet.IsValidAndroidFacetURI()) {
-      // |formatted_orgin| and |change_password_url| need special handling for
-      // Android. Here we use affiliation information instead of the
-      // signon_realm.
+      api_credential.is_android_credential = true;
+      // |formatted_orgin|, |detailed_origin| and |change_password_url| need
+      // special handling for Android. Here we use affiliation information
+      // instead of the signon_realm.
       const PasswordForm& android_form =
           credentials_to_forms_.at(credential).at(0);
-      api_credential.formatted_origin = android_form.app_display_name;
-      api_credential.change_password_url =
-          std::make_unique<std::string>(android_form.affiliated_web_realm);
-
-      // In case no affiliation information could be obtained show the formatted
-      // package name to the user. An empty change_password_url will be handled
-      // by the frontend, by not including a link in this case.
-      if (api_credential.formatted_origin.empty()) {
+      if (!android_form.app_display_name.empty()) {
+        api_credential.formatted_origin = android_form.app_display_name;
+        api_credential.detailed_origin = android_form.app_display_name;
+        api_credential.change_password_url =
+            std::make_unique<std::string>(android_form.affiliated_web_realm);
+      } else {
+        // In case no affiliation information could be obtained show the
+        // formatted package name to the user. An empty change_password_url will
+        // be handled by the frontend, by not including a link in this case.
         api_credential.formatted_origin = l10n_util::GetStringFUTF8(
             IDS_SETTINGS_PASSWORDS_ANDROID_APP,
             base::UTF8ToUTF16(facet.android_package_name()));
+        api_credential.detailed_origin = facet.android_package_name();
       }
     } else {
+      api_credential.is_android_credential = false;
       api_credential.formatted_origin =
           base::UTF16ToUTF8(url_formatter::FormatUrl(
               GURL(credential.signon_realm),
@@ -207,6 +212,9 @@ PasswordCheckDelegate::GetCompromisedCredentialsInfo() {
                   url_formatter::kFormatUrlOmitTrivialSubdomains |
                   url_formatter::kFormatUrlTrimAfterHost,
               net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+      api_credential.detailed_origin =
+          base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
+              GURL(credential.signon_realm)));
       api_credential.change_password_url =
           std::make_unique<std::string>(credential.signon_realm);
     }
@@ -221,23 +229,10 @@ PasswordCheckDelegate::GetCompromisedCredentialsInfo() {
         ConvertCompromiseType(credential.compromise_type);
     api_credential.elapsed_time_since_compromise =
         FormatElapsedTime(credential.create_time);
-    credentials_info.compromised_credentials.push_back(
-        std::move(api_credential));
+    compromised_credentials.push_back(std::move(api_credential));
   }
 
-  // Obtain the timestamp of the last completed check. This is 0.0 in case the
-  // check never completely ran before.
-  // TODO(https://crbug.com/1047726): Expose elapsed_time_since_last_check on
-  // PasswordCheckStatus rather than CompromisedCredentialsInfo.
-  const double last_check_completed = profile_->GetPrefs()->GetDouble(
-      password_manager::prefs::kLastTimePasswordCheckCompleted);
-  if (last_check_completed) {
-    credentials_info.elapsed_time_since_last_check =
-        std::make_unique<std::string>(
-            FormatElapsedTime(base::Time::FromDoubleT(last_check_completed)));
-  }
-
-  return credentials_info;
+  return compromised_credentials;
 }
 
 base::Optional<api::passwords_private::CompromisedCredential>
@@ -318,6 +313,15 @@ PasswordCheckDelegate::GetPasswordCheckStatus() const {
   // TODO(crbug.com/1047726): Add support for QUOTA_LIMIT state.
   api::passwords_private::PasswordCheckStatus result;
 
+  // Obtain the timestamp of the last completed check. This is 0.0 in case the
+  // check never completely ran before.
+  const double last_check_completed = profile_->GetPrefs()->GetDouble(
+      password_manager::prefs::kLastTimePasswordCheckCompleted);
+  if (last_check_completed) {
+    result.elapsed_time_since_last_check = std::make_unique<std::string>(
+        FormatElapsedTime(base::Time::FromDoubleT(last_check_completed)));
+  }
+
   BulkLeakCheckService::State state =
       bulk_leak_check_service_adapter_.GetBulkLeakCheckState();
   SavedPasswordsView saved_passwords =
@@ -363,8 +367,7 @@ void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
       credentials, saved_passwords_presenter_.GetSavedPasswords());
   if (auto* event_router =
           PasswordsPrivateEventRouterFactory::GetForProfile(profile_)) {
-    event_router->OnCompromisedCredentialsInfoChanged(
-        GetCompromisedCredentialsInfo());
+    event_router->OnCompromisedCredentialsChanged(GetCompromisedCredentials());
   }
 }
 

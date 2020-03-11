@@ -149,13 +149,15 @@ void SynchronizedRunLoopObserver::RemoveFromCurrentRunLoop(
 
 void SynchronizedRunLoopObserver::RunLoopObserverCallBack(
     CFRunLoopObserverRef observer,
-    CFRunLoopActivity activity) {
+    CFRunLoopActivity activity) NO_THREAD_SAFETY_ANALYSIS {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Acquire the lock when a source has been signaled and going to be fired.
   // In the context of the proxy resolver that happens when the proxy for a
   // given URL has been resolved and the callback function that handles the
   // result is going to be fired.
   // Release the lock when all source events have been handled.
+  //
+  // NO_THREAD_SAFETY_ANALYSIS: Runtime dependent locking.
   switch (activity) {
     case kCFRunLoopBeforeSources:
       if (!lock_acquired_) {

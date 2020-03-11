@@ -105,6 +105,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       builder->space_ && builder->space_->IsPaintedAtomically();
   border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
   is_inline_formatting_context_ = builder->is_inline_formatting_context_;
+  is_generated_text_or_math_fraction_ = builder->is_math_fraction_;
 
   bool has_layout_containment = layout_object_->ShouldApplyLayoutContainment();
   if (builder->baseline_.has_value() && !has_layout_containment) {

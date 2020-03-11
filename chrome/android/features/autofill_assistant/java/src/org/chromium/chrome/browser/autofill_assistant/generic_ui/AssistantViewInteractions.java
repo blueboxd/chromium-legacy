@@ -4,16 +4,22 @@
 
 package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 
+import static org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue.isDateSingleton;
+
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.view.View;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateTime;
 import org.chromium.content.browser.input.PopupItemType;
 import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupItem;
+import org.chromium.content.browser.picker.InputDialogContainer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /** JNI bridge between {@code interaction_handler_android} and Java. */
@@ -41,5 +47,42 @@ public class AssistantViewInteractions {
                                 identifier, new AssistantValue(indices)),
                 popupItems, multiple, selectedItems);
         dialog.show();
+    }
+
+    @CalledByNative
+    private static boolean showCalendarPopup(Context context, @Nullable AssistantValue initialDate,
+            AssistantValue minDate, AssistantValue maxDate, String outputIdentifier,
+            AssistantGenericUiDelegate delegate) {
+        if ((initialDate != null && !isDateSingleton(initialDate)) || !isDateSingleton(minDate)
+                || !isDateSingleton(maxDate)) {
+            return false;
+        }
+
+        InputDialogContainer inputDialogContainer =
+                new InputDialogContainer(context, new InputDialogContainer.InputActionDelegate() {
+                    @Override
+                    public void cancelDateTimeDialog() {
+                        // Do nothing.
+                    }
+
+                    @Override
+                    public void replaceDateTime(double value) {
+                        // User tapped the 'clear' button.
+                        if (Double.isNaN(value)) {
+                            delegate.onCalendarPopupDateChanged(outputIdentifier, null);
+                        } else {
+                            delegate.onCalendarPopupDateChanged(outputIdentifier,
+                                    AssistantValue.createForDateTimes(Collections.singletonList(
+                                            new AssistantDateTime((long) value))));
+                        }
+                    }
+                });
+
+        inputDialogContainer.showDialog(org.chromium.ui.base.ime.TextInputType.DATE,
+                initialDate != null ? initialDate.getDateTimes().get(0).getTimeInUtcMillis()
+                                    : Double.NaN,
+                minDate.getDateTimes().get(0).getTimeInUtcMillis(),
+                maxDate.getDateTimes().get(0).getTimeInUtcMillis(), -1, null);
+        return true;
     }
 }

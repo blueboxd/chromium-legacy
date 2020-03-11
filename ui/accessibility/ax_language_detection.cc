@@ -21,18 +21,21 @@ namespace ui {
 namespace {
 // This is the maximum number of languages we assign per page, so only the top
 // 3 languages on the top will be assigned to any node.
-const auto kMaxDetectedLanguagesPerPage = 3;
+const int kMaxDetectedLanguagesPerPage = 3;
 
 // This is the maximum number of languages that cld3 will detect for each
 // input we give it, 3 was recommended to us by the ML team as a good
 // starting point.
-const auto kMaxDetectedLanguagesPerSpan = 3;
+const int kMaxDetectedLanguagesPerSpan = 3;
 
-const auto kShortTextIdentifierMinByteLength = 1;
-// TODO(https://bugs.chromium.org/p/chromium/issues/detail?id=971360):
-// Determine appropriate value for kShortTextIdentifierMaxByteLength.
-const auto kShortTextIdentifierMaxByteLength = 1000;
+const int kShortTextIdentifierMinByteLength = 1;
+// TODO(https://crbug.com/971360): Determine appropriate value for
+// |kShortTextIdentifierMaxByteLength|.
+const int kShortTextIdentifierMaxByteLength = 1000;
 }  // namespace
+
+using Result = chrome_lang_id::NNetLanguageIdentifier::Result;
+using SpanInfo = chrome_lang_id::NNetLanguageIdentifier::SpanInfo;
 
 AXLanguageInfo::AXLanguageInfo() = default;
 AXLanguageInfo::~AXLanguageInfo() = default;
@@ -54,7 +57,7 @@ void AXLanguageInfoStats::Add(const std::vector<std::string>& languages) {
 
   // Assign languages with higher probability a higher score.
   // TODO(chrishall): consider more complex scoring
-  size_t score = kMaxDetectedLanguagesPerSpan;
+  unsigned int score = kMaxDetectedLanguagesPerSpan;
   for (const auto& lang : languages) {
     lang_counts_[lang] += score;
 
@@ -260,17 +263,18 @@ void AXLanguageDetectionManager::DetectLanguagesForNode(AXNode* node) {
   // concatenation and bubbling up results.
   auto text = node->GetStringAttribute(ax::mojom::StringAttribute::kName);
 
-  // FindTopNMostFreqLangs will pad the results with
-  // NNetLanguageIdentifier::kUnknown in order to reach the requested number
+  // FindTopNMostFreqLangs() will pad the results with
+  // |NNetLanguageIdentifier::kUnknown| in order to reach the requested number
   // of languages, this means we cannot rely on the results' length and we
   // have to filter the results.
-  const auto results = language_identifier_.FindTopNMostFreqLangs(
-      text, kMaxDetectedLanguagesPerSpan);
+  const std::vector<Result> results =
+      language_identifier_.FindTopNMostFreqLangs(text,
+                                                 kMaxDetectedLanguagesPerSpan);
 
   std::vector<std::string> reliable_results;
 
   for (const auto& res : results) {
-    // The output of FindTopNMostFreqLangs is already sorted by byte count,
+    // The output of FindTopNMostFreqLangs() is already sorted by byte count,
     // this seems good enough for now.
     // Only consider results which are 'reliable', this will also remove
     // 'unknown'.
@@ -405,13 +409,12 @@ AXLanguageDetectionManager::GetLanguageAnnotationForStringAttribute(
   // Calculate top 3 languages.
   // TODO(akihiroota): What's a reasonable number of languages to have
   // cld_3 find? Should vary.
-  std::vector<chrome_lang_id::NNetLanguageIdentifier::Result> top_languages =
+  std::vector<Result> top_languages =
       short_text_language_identifier_.FindTopNMostFreqLangs(
           attr_value, kMaxDetectedLanguagesPerPage);
   // Create vector of AXLanguageSpans.
   for (const auto& result : top_languages) {
-    std::vector<chrome_lang_id::NNetLanguageIdentifier::SpanInfo> ranges =
-        result.byte_ranges;
+    std::vector<SpanInfo> ranges = result.byte_ranges;
     for (const auto& span_info : ranges) {
       language_annotation.push_back(
           AXLanguageSpan{span_info.start_index, span_info.end_index,

@@ -447,8 +447,8 @@ TEST_F(PasswordsPrivateDelegateImplTest,
   store_->AddCompromisedCredentials(compromised_credentials);
   base::RunLoop().RunUntilIdle();
 
-  api::passwords_private::CompromisedCredential credential = std::move(
-      delegate.GetCompromisedCredentialsInfo().compromised_credentials.at(0));
+  api::passwords_private::CompromisedCredential credential =
+      std::move(delegate.GetCompromisedCredentials().at(0));
 
   MockReauthCallback reauth_callback;
   delegate.set_os_reauth_call(reauth_callback.Get());

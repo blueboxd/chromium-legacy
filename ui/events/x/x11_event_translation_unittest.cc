@@ -4,7 +4,6 @@
 
 #include "ui/events/x/x11_event_translation.h"
 
-#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
@@ -15,6 +14,7 @@
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/test/keyboard_layout.h"
+#include "ui/events/test/scoped_event_test_tick_clock.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/x/x11.h"
 
@@ -92,8 +92,7 @@ TEST(XEventTranslationTest, BogusTimestampCorrection) {
   scoped_xev.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_NONE);
   XEvent* xev = scoped_xev;
 
-  base::SimpleTestTickClock test_clock;
-  ui::SetEventTickClockForTesting(&test_clock);
+  test::ScopedEventTestTickClock test_clock;
   test_clock.Advance(TimeDelta::FromSeconds(1));
 
   // Set initial time as 1000ms

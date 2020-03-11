@@ -111,9 +111,6 @@ void FontPreloadManager::WillBeginRendering() {
 
   state_ = State::kUnblocked;
   finish_observers_.clear();
-
-  // TODO(xiaochengh): Mark all 'font-display: optional' fonts that are still
-  // loading as failure.
 }
 
 void FontPreloadManager::FontPreloadingDelaysRenderingTimerFired(TimerBase*) {

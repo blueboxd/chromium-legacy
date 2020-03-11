@@ -57,6 +57,26 @@ void AssistantGenericUiDelegate::OnListPopupSelectionChanged(
   ui_controller_->OnValueChanged(identifier, value);
 }
 
+// TODO(b/145043394): refactor delegate methods into a single SetValue() where
+// possible.
+void AssistantGenericUiDelegate::OnCalendarPopupDateChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jstring>& jmodel_identifier,
+    const base::android::JavaParamRef<jobject>& jvalue) {
+  std::string identifier;
+  if (jmodel_identifier) {
+    base::android::ConvertJavaStringToUTF8(env, jmodel_identifier, &identifier);
+  }
+
+  ValueProto value;
+  if (jvalue) {
+    value = ui_controller_android_utils::ToNativeValue(env, jvalue);
+  }
+
+  ui_controller_->OnValueChanged(identifier, value);
+}
+
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantGenericUiDelegate::GetJavaObject() {
   return java_assistant_generic_ui_delegate_;

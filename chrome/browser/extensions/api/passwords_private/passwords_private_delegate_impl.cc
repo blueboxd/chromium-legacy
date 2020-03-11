@@ -401,9 +401,9 @@ bool PasswordsPrivateDelegateImpl::IsOptedInForAccountStorage() {
       profile_->GetPrefs(), ProfileSyncServiceFactory::GetForProfile(profile_));
 }
 
-api::passwords_private::CompromisedCredentialsInfo
-PasswordsPrivateDelegateImpl::GetCompromisedCredentialsInfo() {
-  return password_check_delegate_.GetCompromisedCredentialsInfo();
+std::vector<api::passwords_private::CompromisedCredential>
+PasswordsPrivateDelegateImpl::GetCompromisedCredentials() {
+  return password_check_delegate_.GetCompromisedCredentials();
 }
 
 void PasswordsPrivateDelegateImpl::GetPlaintextCompromisedPassword(

@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/platform/webrtc/peer_connection_remote_audio_source.h"
 
+#include <string>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -161,7 +164,8 @@ void PeerConnectionRemoteAudioSource::OnData(const void* audio_data,
   MediaStreamAudioSource::DeliverDataToTracks(*audio_bus_, playout_time);
 
 #ifndef NDEBUG
-  single_audio_thread_guard_.Release();
+  if (is_only_thread_here)
+    single_audio_thread_guard_.Release();
 #endif
 }
 

@@ -23,9 +23,6 @@ Polymer({
           'https://passwords.google.com/checkup/start?utm_source=chrome&utm_medium=desktop&utm_campaign=leak_dialog&hideExplanation=true',
     },
 
-    /** @private */
-    lastCompletedCheck_: String,
-
     /**
      * The number of compromised passwords as a formatted string.
      * @private
@@ -64,7 +61,7 @@ Polymer({
   statusChangedListener_: null,
 
   /**
-   * @type {?function(!PasswordManagerProxy.CompromisedCredentialsInfo):void}
+   * @type {?function(!PasswordManagerProxy.CompromisedCredentials):void}
    * @private
    */
   leakedCredentialsListener_: null,
@@ -87,9 +84,8 @@ Polymer({
     this.passwordManager_ = PasswordManagerImpl.getInstance();
 
     const statusChangeListener = status => this.status_ = status;
-    const setLeakedCredentialsListener = info => {
-      this.leakedPasswords = info.compromisedCredentials;
-      this.lastCompletedCheck_ = info.elapsedTimeSinceLastCheck;
+    const setLeakedCredentialsListener = compromisedCredentials => {
+      this.leakedPasswords = compromisedCredentials;
 
       settings.PluralStringProxyImpl.getInstance()
           .getPluralString('compromisedPasswords', this.leakedPasswords.length)
@@ -104,7 +100,7 @@ Polymer({
     // Request initial data.
     this.passwordManager_.getPasswordCheckStatus().then(
         this.statusChangedListener_);
-    this.passwordManager_.getCompromisedCredentialsInfo().then(
+    this.passwordManager_.getCompromisedCredentials().then(
         this.leakedCredentialsListener_);
 
     // Listen for changes.
@@ -273,7 +269,8 @@ Polymer({
    * @private
    */
   showsTimestamp_(status) {
-    return status.state == CheckState.IDLE;
+    return status.state == CheckState.IDLE &&
+        !!status.elapsedTimeSinceLastCheck;
   },
 
   /**

@@ -209,37 +209,37 @@ var availableTests = [
     chrome.passwordsPrivate.isOptedInForAccountStorage(callback);
   },
 
-  function getCompromisedCredentialsInfo() {
-    var callback = function(compromisedCredentialsInfo) {
-      chrome.test.assertEq(
-          '5 mins ago', compromisedCredentialsInfo.elapsedTimeSinceLastCheck);
-      chrome.test.assertEq(
-          1, compromisedCredentialsInfo.compromisedCredentials.length);
+  function getCompromisedCredentials() {
+    chrome.passwordsPrivate.getCompromisedCredentials(
+        compromisedCredentials => {
+          chrome.test.assertEq(1, compromisedCredentials.length);
 
-      var compromisedCredential =
-          compromisedCredentialsInfo.compromisedCredentials[0];
-      chrome.test.assertEq(
-          'example.com', compromisedCredential.formattedOrigin);
-      chrome.test.assertEq(
-          'https://example.com/change-password',
-          compromisedCredential.changePasswordUrl);
-      chrome.test.assertEq('alice', compromisedCredential.username);
-      const compromiseTime = new Date(compromisedCredential.compromiseTime);
-      chrome.test.assertEq(
-          'Tue, 03 Mar 2020 12:00:00 GMT', compromiseTime.toUTCString());
-      chrome.test.assertEq(
-          '3 days ago', compromisedCredential.elapsedTimeSinceCompromise);
-      chrome.test.assertEq('LEAKED', compromisedCredential.compromiseType);
-      chrome.test.succeed();
-    };
-
-    chrome.passwordsPrivate.getCompromisedCredentialsInfo(callback);
+          var compromisedCredential = compromisedCredentials[0];
+          chrome.test.assertEq(
+              'example.com', compromisedCredential.formattedOrigin);
+          chrome.test.assertEq(
+              'https://example.com', compromisedCredential.detailedOrigin);
+          chrome.test.assertFalse(compromisedCredential.isAndroidCredential);
+          chrome.test.assertEq(
+              'https://example.com/change-password',
+              compromisedCredential.changePasswordUrl);
+          chrome.test.assertEq('alice', compromisedCredential.username);
+          const compromiseTime = new Date(compromisedCredential.compromiseTime);
+          chrome.test.assertEq(
+              'Tue, 03 Mar 2020 12:00:00 GMT', compromiseTime.toUTCString());
+          chrome.test.assertEq(
+              '3 days ago', compromisedCredential.elapsedTimeSinceCompromise);
+          chrome.test.assertEq('LEAKED', compromisedCredential.compromiseType);
+          chrome.test.succeed();
+        });
   },
 
   function getPlaintextCompromisedPassword() {
     var compromisedCredential = {
       id: 0,
       formattedOrigin: 'example.com',
+      detailedOrigin: 'https://example.com',
+      isAndroidCredential: false,
       signonRealm: 'https://example.com',
       username: 'alice',
       compromiseTime: COMPROMISE_TIME,
@@ -259,6 +259,8 @@ var availableTests = [
     var compromisedCredential = {
       id: 0,
       formattedOrigin: 'example.com',
+      detailedOrigin: 'https://example.com',
+      isAndroidCredential: false,
       signonRealm: 'https://example.com',
       username: 'alice',
       compromiseTime: COMPROMISE_TIME,
@@ -282,6 +284,8 @@ var availableTests = [
         {
           id: 0,
           formattedOrigin: 'example.com',
+          detailedOrigin: 'https://example.com',
+          isAndroidCredential: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromiseTime: COMPROMISE_TIME,
@@ -301,6 +305,8 @@ var availableTests = [
         {
           id: 0,
           formattedOrigin: 'example.com',
+          detailedOrigin: 'https://example.com',
+          isAndroidCredential: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromiseTime: COMPROMISE_TIME,
@@ -318,6 +324,8 @@ var availableTests = [
         {
           id: 0,
           formattedOrigin: 'example.com',
+          detailedOrigin: 'https://example.com',
+          isAndroidCredential: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromiseTime: COMPROMISE_TIME,
@@ -338,6 +346,8 @@ var availableTests = [
         {
           id: 0,
           formattedOrigin: 'example.com',
+          detailedOrigin: 'https://example.com',
+          isAndroidCredential: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromiseTime: COMPROMISE_TIME,
@@ -377,6 +387,7 @@ var availableTests = [
       chrome.test.assertEq('RUNNING', status.state);
       chrome.test.assertEq(5, status.alreadyProcessed);
       chrome.test.assertEq(10, status.remainingInQueue);
+      chrome.test.assertEq('5 mins ago', status.elapsedTimeSinceLastCheck);
       chrome.test.succeed();
     });
   },

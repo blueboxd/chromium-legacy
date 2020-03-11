@@ -19,14 +19,16 @@ Directory* BaseTransaction::directory() const {
   return directory_;
 }
 
-void BaseTransaction::Lock() {
+void BaseTransaction::Lock()
+    EXCLUSIVE_LOCK_FUNCTION(directory_->kernel()->transaction_mutex) {
   TRACE_EVENT2("sync_lock_contention", "AcquireLock", "src_file",
                from_here_.file_name(), "src_func", from_here_.function_name());
 
   directory_->kernel()->transaction_mutex.Acquire();
 }
 
-void BaseTransaction::Unlock() {
+void BaseTransaction::Unlock()
+    UNLOCK_FUNCTION(directory_->kernel()->transaction_mutex) {
   directory_->kernel()->transaction_mutex.Release();
 }
 

@@ -114,8 +114,8 @@ class PasswordsPrivateDelegate : public KeyedService {
   // Obtains information about compromised credentials. This includes the last
   // time a check was run, as well as all compromised credentials that are
   // present in the password store.
-  virtual api::passwords_private::CompromisedCredentialsInfo
-  GetCompromisedCredentialsInfo() = 0;
+  virtual std::vector<api::passwords_private::CompromisedCredential>
+  GetCompromisedCredentials() = 0;
 
   // Requests the plaintext password for |credential| due to |reason|. If
   // successful, |callback| gets invoked with the same |credential|, whose

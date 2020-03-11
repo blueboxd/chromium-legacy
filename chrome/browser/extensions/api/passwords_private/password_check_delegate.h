@@ -48,8 +48,8 @@ class PasswordCheckDelegate
   // Obtains information about compromised credentials. This includes the last
   // time a check was run, as well as all compromised credentials that are
   // present in the password store.
-  api::passwords_private::CompromisedCredentialsInfo
-  GetCompromisedCredentialsInfo();
+  std::vector<api::passwords_private::CompromisedCredential>
+  GetCompromisedCredentials();
 
   // Requests the plaintext password for |credential|. If successful, this
   // returns |credential| with its |password| member set. This can fail if no
@@ -85,7 +85,7 @@ class PasswordCheckDelegate
       override;
 
   // password_manager::CompromisedCredentialsProvider::Observer:
-  // Invokes PasswordsPrivateEventRouter::OnCompromisedCredentialsInfoChanged if
+  // Invokes PasswordsPrivateEventRouter::OnCompromisedCredentialsChanged if
   // a valid pointer can be obtained.
   void OnCompromisedCredentialsChanged(
       password_manager::CompromisedCredentialsProvider::CredentialsView

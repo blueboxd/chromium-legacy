@@ -35,7 +35,8 @@ base::Lock* ProxyLock::Get() {
 // locking).
 
 // static
-void ProxyLock::Acquire() {
+void ProxyLock::Acquire() NO_THREAD_SAFETY_ANALYSIS {
+  // NO_THREAD_SAFETY_ANALYSIS: Runtime dependent locking.
   base::Lock* lock = Get();
   if (lock) {
     // This thread does not already hold the lock.
@@ -48,7 +49,8 @@ void ProxyLock::Acquire() {
 }
 
 // static
-void ProxyLock::Release() {
+void ProxyLock::Release() NO_THREAD_SAFETY_ANALYSIS {
+  // NO_THREAD_SAFETY_ANALYSIS: Runtime dependent locking.
   base::Lock* lock = Get();
   if (lock) {
     // This thread currently holds the lock.

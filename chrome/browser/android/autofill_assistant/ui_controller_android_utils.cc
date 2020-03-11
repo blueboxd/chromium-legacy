@@ -6,6 +6,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantColor_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantDateTime_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDialogButton_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDimension_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoPopup_jni.h"
@@ -126,6 +127,17 @@ base::android::ScopedJavaLocalRef<jobject> ToJavaValue(
       NOTREACHED();
       return nullptr;
     }
+    case ValueProto::kDates: {
+      auto jlist = Java_AssistantValue_createDateTimeList(env);
+      for (const auto& value : proto.dates().values()) {
+        Java_AssistantValue_addDateTimeToList(
+            env, jlist,
+            Java_AssistantDateTime_Constructor(
+                env, static_cast<int>(value.year()), value.month(), value.day(),
+                0, 0, 0));
+      }
+      return Java_AssistantValue_createForDateTimes(env, jlist);
+    }
     case ValueProto::KIND_NOT_SET:
       return Java_AssistantValue_create(env);
   }
@@ -136,33 +148,47 @@ ValueProto ToNativeValue(JNIEnv* env,
   ValueProto proto;
   auto jints = Java_AssistantValue_getIntegers(env, jvalue);
   if (jints) {
+    auto* mutable_ints = proto.mutable_ints();
     std::vector<int> ints;
     base::android::JavaIntArrayToIntVector(env, jints, &ints);
-    proto.mutable_ints();
     for (int i : ints) {
-      proto.mutable_ints()->add_values(i);
+      mutable_ints->add_values(i);
     }
     return proto;
   }
 
   auto jbooleans = Java_AssistantValue_getBooleans(env, jvalue);
   if (jbooleans) {
+    auto* mutable_booleans = proto.mutable_booleans();
     std::vector<bool> booleans;
     base::android::JavaBooleanArrayToBoolVector(env, jbooleans, &booleans);
-    proto.mutable_booleans();
     for (auto b : booleans) {
-      proto.mutable_booleans()->add_values(b);
+      mutable_booleans->add_values(b);
     }
     return proto;
   }
 
   auto jstrings = Java_AssistantValue_getStrings(env, jvalue);
   if (jstrings) {
+    auto* mutable_strings = proto.mutable_strings();
     std::vector<std::string> strings;
     base::android::AppendJavaStringArrayToStringVector(env, jstrings, &strings);
-    proto.mutable_strings();
     for (const auto& string : strings) {
-      proto.mutable_strings()->add_values(string);
+      mutable_strings->add_values(string);
+    }
+    return proto;
+  }
+
+  auto jdatetimes = Java_AssistantValue_getDateTimes(env, jvalue);
+  if (jdatetimes) {
+    auto* mutable_dates = proto.mutable_dates();
+    for (int i = 0; i < Java_AssistantValue_getListSize(env, jdatetimes); ++i) {
+      auto jvalue = Java_AssistantValue_getListAt(env, jdatetimes, i);
+      DateProto date;
+      date.set_year(Java_AssistantDateTime_getYear(env, jvalue));
+      date.set_month(Java_AssistantDateTime_getMonth(env, jvalue));
+      date.set_day(Java_AssistantDateTime_getDay(env, jvalue));
+      *mutable_dates->add_values() = date;
     }
     return proto;
   }

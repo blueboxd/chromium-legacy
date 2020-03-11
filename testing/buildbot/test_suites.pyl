@@ -3209,9 +3209,9 @@
       },
     },
 
-    'ozone_linux_gtests': {
+    'ozone_linux_gtests_headless': {
       'events_unittests': {
-	'experiment_percentage': 100,
+        'experiment_percentage': 100,
       },
       'headless_content_unittests': {
         'args': [
@@ -3220,32 +3220,21 @@
         'test': 'content_unittests',
       },
       'ozone_unittests': {},
-      'ozone_x11_unittests': {},
       'services_unittests': {},
-      'x11_content_unittests': {
+    },
+
+    'ozone_linux_gtests_wayland': {
+      'wayland_views_unittests': {
         'args': [
-          '--ozone-platform=x11',
-        ],
-        'test': 'content_unittests',
-      },
-      'x11_views_unittests': {
-        'args': [
-          '--ozone-platform=x11',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_views_unittests.filter',
         ],
         'test': 'views_unittests',
       }
     },
 
-    'ozone_linux_gtests_wayland': {
-      # TODO(crbug.com/1029241): Add tests once third_party weston is added.
-    },
-
     'ozone_linux_gtests_x11': {
       'content_unittests': {},
-      'ozone_unittests': {},
       'ozone_x11_unittests': {},
-      'services_unittests': {},
       'views_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter',

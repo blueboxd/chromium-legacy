@@ -14,7 +14,7 @@ namespace chromeos {
 
 namespace nearby {
 
-// Concrete location::nearby::Lock implementation.
+// Concrete location::nearby::Lock implementation. Recursive lock.
 class LockImpl : public LockBase {
  public:
   LockImpl();

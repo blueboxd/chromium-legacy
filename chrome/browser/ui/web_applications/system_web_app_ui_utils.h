@@ -9,11 +9,11 @@
 
 #include "base/optional.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "url/gurl.h"
 
-class Browser;
 class Profile;
 
 namespace web_app {
@@ -46,9 +46,12 @@ Browser* LaunchSystemWebApp(Profile* profile,
                             const apps::AppLaunchParams& params,
                             bool* did_create = nullptr);
 
-// Returns a browser that is hosting the given system app type, or nullptr if
-// not found.
-Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type);
+// Returns a browser that is hosting the given system app type and browser type,
+// or nullptr if not found.
+Browser* FindSystemWebAppBrowser(
+    Profile* profile,
+    SystemAppType app_type,
+    Browser::Type browser_type = Browser::TYPE_APP);
 
 // Returns true if the |browser| is a system web app.
 bool IsSystemWebApp(Browser* browser);

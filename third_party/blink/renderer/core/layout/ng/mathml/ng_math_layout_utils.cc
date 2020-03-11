@@ -4,10 +4,12 @@
 
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_layout_utils.h"
 
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
+#include "third_party/blink/renderer/core/mathml/mathml_fraction_element.h"
 
 namespace blink {
 
@@ -37,6 +39,59 @@ NGConstraintSpace CreateConstraintSpaceForMathChild(
   // TODO(rbuis): add ink baselines?
   space_builder.SetNeedsBaseline(true);
   return space_builder.ToConstraintSpace();
+}
+
+NGLayoutInputNode FirstChildInFlow(const NGBlockNode& node) {
+  NGLayoutInputNode child = node.FirstChild();
+  while (child && child.IsOutOfFlowPositioned())
+    child = child.NextSibling();
+  return child;
+}
+
+NGLayoutInputNode NextSiblingInFlow(const NGBlockNode& node) {
+  NGLayoutInputNode sibling = node.NextSibling();
+  while (sibling && sibling.IsOutOfFlowPositioned())
+    sibling = sibling.NextSibling();
+  return sibling;
+}
+
+inline bool InFlowChildCountIs(const NGBlockNode& node, unsigned count) {
+  DCHECK(count == 2 || count == 3);
+  auto child = To<NGBlockNode>(FirstChildInFlow(node));
+  while (count && child) {
+    child = To<NGBlockNode>(NextSiblingInFlow(child));
+    count--;
+  }
+  return !count && !child;
+}
+
+bool IsValidMathMLFraction(const NGBlockNode& node) {
+  return InFlowChildCountIs(node, 2);
+}
+
+namespace {
+
+inline LayoutUnit DefaultFractionLineThickness(const ComputedStyle& style) {
+  return LayoutUnit(
+      MathConstant(style,
+                   OpenTypeMathSupport::MathConstants::kFractionRuleThickness)
+          .value_or(RuleThicknessFallback(style)));
+}
+
+}  // namespace
+
+LayoutUnit MathAxisHeight(const ComputedStyle& style) {
+  return LayoutUnit(
+      MathConstant(style, OpenTypeMathSupport::MathConstants::kAxisHeight)
+          .value_or(style.GetFont().PrimaryFont()->GetFontMetrics().XHeight() /
+                    2));
+}
+
+LayoutUnit FractionLineThickness(const ComputedStyle& style) {
+  return std::max<LayoutUnit>(
+      ValueForLength(style.GetMathFractionBarThickness(),
+                     DefaultFractionLineThickness(style)),
+      LayoutUnit());
 }
 
 }  // namespace blink

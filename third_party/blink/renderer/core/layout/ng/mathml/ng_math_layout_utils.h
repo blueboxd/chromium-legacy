@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_MATHML_NG_MATH_LAYOUT_UTILS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_MATHML_NG_MATH_LAYOUT_UTILS_H_
 
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_math_support.h"
+
 namespace blink {
 
 struct LogicalSize;
@@ -18,6 +21,29 @@ NGConstraintSpace CreateConstraintSpaceForMathChild(
     const LogicalSize& child_available_size,
     const NGConstraintSpace& parent_constraint_space,
     const NGLayoutInputNode&);
+
+NGLayoutInputNode FirstChildInFlow(const NGBlockNode&);
+NGLayoutInputNode NextSiblingInFlow(const NGBlockNode&);
+
+bool IsValidMathMLFraction(const NGBlockNode&);
+
+inline float RuleThicknessFallback(const ComputedStyle& style) {
+  // This function returns a value for the default rule thickness (TeX's
+  // \xi_8) to be used as a fallback when we lack a MATH table.
+  return 0.05f * style.FontSize();
+}
+
+LayoutUnit MathAxisHeight(const ComputedStyle& style);
+
+inline base::Optional<float> MathConstant(
+    const ComputedStyle& style,
+    OpenTypeMathSupport::MathConstants constant) {
+  return OpenTypeMathSupport::MathConstant(
+      style.GetFont().PrimaryFont()->PlatformData().GetHarfBuzzFace(),
+      constant);
+}
+
+LayoutUnit FractionLineThickness(const ComputedStyle& style);
 
 }  // namespace blink
 

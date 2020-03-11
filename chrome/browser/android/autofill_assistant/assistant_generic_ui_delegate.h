@@ -32,6 +32,16 @@ class AssistantGenericUiDelegate {
       const base::android::JavaParamRef<jstring>& jmodel_identifier,
       const base::android::JavaParamRef<jobject>& jvalue);
 
+  // The date in a calendar popup has changed. |jmodel_identifier| is the model
+  // identifier that the new date should be written to. |jvalue| is a Java
+  // AssistantValue containing a single AssistantDateTime with the new date, or
+  // nullptr if the date was cleared.
+  void OnCalendarPopupDateChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jstring>& jmodel_identifier,
+      const base::android::JavaParamRef<jobject>& jvalue);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 
  private:

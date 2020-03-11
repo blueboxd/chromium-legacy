@@ -154,6 +154,54 @@ void ShowListPopup(base::WeakPtr<UserModel> user_model,
       proto.allow_multiselect(), jidentifier, jdelegate);
 }
 
+void ShowCalendarPopup(base::WeakPtr<UserModel> user_model,
+                       const ShowCalendarPopupProto& proto,
+                       base::android::ScopedJavaGlobalRef<jobject> jcontext,
+                       base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
+  if (!user_model) {
+    return;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  auto initial_date = user_model->GetValue(proto.date_model_identifier());
+  if (initial_date.has_value() && initial_date->dates().values_size() != 1) {
+    DVLOG(2) << "Failed to show calendar popup: date_model_identifier must be "
+                "empty or contain single date, but was "
+             << *initial_date;
+    return;
+  }
+
+  auto min_date = user_model->GetValue(proto.min_date_model_identifier());
+  if (!min_date.has_value() || min_date->dates().values_size() != 1) {
+    DVLOG(2) << "Failed to show calendar popup: min_date not found or invalid "
+                "in user model at "
+             << proto.min_date_model_identifier();
+    return;
+  }
+
+  auto max_date = user_model->GetValue(proto.max_date_model_identifier());
+  if (!max_date.has_value() || max_date->dates().values_size() != 1) {
+    DVLOG(2) << "Failed to show calendar popup: max_date not found or invalid "
+                "in user model at "
+             << proto.max_date_model_identifier();
+    return;
+  }
+
+  jboolean jsuccess = Java_AssistantViewInteractions_showCalendarPopup(
+      env, jcontext,
+      initial_date.has_value()
+          ? ui_controller_android_utils::ToJavaValue(env, *initial_date)
+          : nullptr,
+      ui_controller_android_utils::ToJavaValue(env, *min_date),
+      ui_controller_android_utils::ToJavaValue(env, *max_date),
+      base::android::ConvertUTF8ToJavaString(env,
+                                             proto.date_model_identifier()),
+      jdelegate);
+  if (!jsuccess) {
+    DVLOG(2) << "Failed to show calendar popup: JNI call failed";
+  }
+}
+
 base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
     const EventProto& proto,
     JNIEnv* env,
@@ -252,6 +300,17 @@ CreateInteractionCallbackFromProto(
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
           base::BindRepeating(&TryEndAction, basic_interactions->GetWeakPtr(),
                               proto.end_action()));
+    case CallbackProto::kShowCalendarPopup:
+      if (proto.show_calendar_popup().date_model_identifier().empty()) {
+        VLOG(1) << "Error creating ShowCalendarPopup interaction: "
+                   "date_model_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&ShowCalendarPopup, user_model->GetWeakPtr(),
+                              proto.show_calendar_popup(), jcontext,
+                              jdelegate));
+      break;
     case CallbackProto::KIND_NOT_SET:
       VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;

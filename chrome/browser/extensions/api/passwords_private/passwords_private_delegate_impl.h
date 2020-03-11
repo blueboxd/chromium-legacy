@@ -66,8 +66,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   api::passwords_private::ExportProgressStatus GetExportProgressStatus()
       override;
   bool IsOptedInForAccountStorage() override;
-  api::passwords_private::CompromisedCredentialsInfo
-  GetCompromisedCredentialsInfo() override;
+  std::vector<api::passwords_private::CompromisedCredential>
+  GetCompromisedCredentials() override;
   void GetPlaintextCompromisedPassword(
       api::passwords_private::CompromisedCredential credential,
       api::passwords_private::PlaintextReason reason,

@@ -9,38 +9,48 @@ namespace autofill_assistant {
 
 namespace value_util {
 
+namespace {
+ValueProto CreateStringValue() {
+  ValueProto value;
+  value.mutable_strings()->add_values("Aurea prima");
+  value.mutable_strings()->add_values("sata est,");
+  value.mutable_strings()->add_values("aetas quae");
+  value.mutable_strings()->add_values("vindice nullo");
+  value.mutable_strings()->add_values("ü万𠜎");
+  return value;
+}
+
+ValueProto CreateIntValue() {
+  ValueProto value;
+  value.mutable_ints()->add_values(1);
+  value.mutable_ints()->add_values(123);
+  value.mutable_ints()->add_values(5);
+  value.mutable_ints()->add_values(-132);
+  return value;
+}
+
+ValueProto CreateBoolValue() {
+  ValueProto value;
+  value.mutable_booleans()->add_values(true);
+  value.mutable_booleans()->add_values(false);
+  value.mutable_booleans()->add_values(true);
+  value.mutable_booleans()->add_values(true);
+  return value;
+}
+
+DateProto CreateDateProto(int year, int month, int day) {
+  DateProto proto;
+  proto.set_year(year);
+  proto.set_month(month);
+  proto.set_day(day);
+  return proto;
+}
+}  // namespace
+
 class ValueUtilTest : public testing::Test {
  public:
   ValueUtilTest() = default;
   ~ValueUtilTest() override {}
-
-  ValueProto CreateStringValue() const {
-    ValueProto value;
-    value.mutable_strings()->add_values("Aurea prima");
-    value.mutable_strings()->add_values("sata est,");
-    value.mutable_strings()->add_values("aetas quae");
-    value.mutable_strings()->add_values("vindice nullo");
-    value.mutable_strings()->add_values("ü万𠜎");
-    return value;
-  }
-
-  ValueProto CreateIntValue() const {
-    ValueProto value;
-    value.mutable_ints()->add_values(1);
-    value.mutable_ints()->add_values(123);
-    value.mutable_ints()->add_values(5);
-    value.mutable_ints()->add_values(-132);
-    return value;
-  }
-
-  ValueProto CreateBoolValue() const {
-    ValueProto value;
-    value.mutable_booleans()->add_values(true);
-    value.mutable_booleans()->add_values(false);
-    value.mutable_booleans()->add_values(true);
-    value.mutable_booleans()->add_values(true);
-    return value;
-  }
 };
 
 TEST_F(ValueUtilTest, DifferentTypesComparison) {
@@ -48,18 +58,24 @@ TEST_F(ValueUtilTest, DifferentTypesComparison) {
   ValueProto value_b = CreateStringValue();
   ValueProto value_c = CreateIntValue();
   ValueProto value_d = CreateBoolValue();
+  ValueProto value_e = SimpleValue(CreateDateProto(2020, 8, 30));
 
   EXPECT_FALSE(value_a == value_b);
   EXPECT_FALSE(value_a == value_c);
   EXPECT_FALSE(value_a == value_d);
+  EXPECT_FALSE(value_a == value_e);
   EXPECT_FALSE(value_b == value_c);
   EXPECT_FALSE(value_b == value_d);
+  EXPECT_FALSE(value_b == value_e);
   EXPECT_FALSE(value_c == value_d);
+  EXPECT_FALSE(value_c == value_e);
+  EXPECT_FALSE(value_d == value_e);
 
   EXPECT_TRUE(value_a == value_a);
   EXPECT_TRUE(value_b == value_b);
   EXPECT_TRUE(value_c == value_c);
   EXPECT_TRUE(value_d == value_d);
+  EXPECT_TRUE(value_e == value_e);
 }
 
 TEST_F(ValueUtilTest, EmptyValueComparison) {
@@ -117,6 +133,19 @@ TEST_F(ValueUtilTest, BoolComparison) {
 
   value_a.mutable_booleans()->set_values(value_a.booleans().values_size() - 1,
                                          false);
+  EXPECT_TRUE(value_a == value_b);
+}
+
+TEST_F(ValueUtilTest, DateComparison) {
+  ValueProto value_a = SimpleValue(CreateDateProto(2020, 4, 18));
+  ValueProto value_b = value_a;
+  EXPECT_TRUE(value_a == value_b);
+
+  *value_a.mutable_dates()->add_values() = CreateDateProto(2020, 6, 14);
+  *value_b.mutable_dates()->add_values() = CreateDateProto(2020, 6, 15);
+  EXPECT_FALSE(value_a == value_b);
+
+  *value_b.mutable_dates()->mutable_values(1) = CreateDateProto(2020, 6, 14);
   EXPECT_TRUE(value_a == value_b);
 }
 

@@ -61,7 +61,8 @@ void WaitableEvent::Reset() {
   PeekPort(receive_right_->Name(), true);
 }
 
-void WaitableEvent::Signal() {
+// NO_THREAD_SAFETY_ANALYSIS: Runtime dependent locking.
+void WaitableEvent::Signal() NO_THREAD_SAFETY_ANALYSIS {
   // If using the slow watch-list, copy the watchers to a local. After
   // mach_msg(), the event object may be deleted by an awoken thread.
   const bool use_slow_path = UseSlowWatchList(policy_);

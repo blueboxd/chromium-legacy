@@ -32,8 +32,8 @@ class BASE_EXPORT CheckedLockImpl {
 
   static void AssertNoLockHeldOnCurrentThread();
 
-  void Acquire();
-  void Release();
+  void Acquire() EXCLUSIVE_LOCK_FUNCTION(lock_);
+  void Release() UNLOCK_FUNCTION(lock_);
 
   void AssertAcquired() const;
 

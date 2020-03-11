@@ -243,8 +243,8 @@ Polymer({
     this.passwordManager_.getSavedPasswordList(setSavedPasswordsListener);
     this.passwordManager_.getExceptionList(setPasswordExceptionsListener);
 
-    this.passwordManager_.getCompromisedCredentialsInfo().then(info => {
-      this.haveCheckedPasswordsBefore_ = !!info.elapsedTimeSinceLastCheck;
+    this.passwordManager_.getPasswordCheckStatus().then(status => {
+      this.haveCheckedPasswordsBefore_ = !!status.elapsedTimeSinceLastCheck;
     });
 
     // Listen for changes.

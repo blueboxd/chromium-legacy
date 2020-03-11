@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
 
-#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -16,18 +15,9 @@ MathMLSpaceElement::MathMLSpaceElement(Document& doc)
 void MathMLSpaceElement::AddMathBaselineIfNeeded(
     ComputedStyle& style,
     const CSSToLengthConversionData& conversion_data) {
-  if (!FastHasAttribute(mathml_names::kHeightAttr))
-    return;
-  auto string = FastGetAttribute(mathml_names::kHeightAttr);
-  const CSSValue* parsed = CSSParser::ParseSingleValue(
-      CSSPropertyID::kHeight, string,
-      StrictCSSParserContext(GetDocument().GetSecureContextMode()));
-  const auto* new_value = DynamicTo<CSSPrimitiveValue>(parsed);
-  if (!new_value || !new_value->IsLength())
-    return;
-  Length length_or_percentage_value =
-      new_value->ConvertToLength(conversion_data);
-  style.SetMathBaseline(std::move(length_or_percentage_value));
+  if (auto length_or_percentage_value = AddMathLengthToComputedStyle(
+          style, conversion_data, mathml_names::kHeightAttr))
+    style.SetMathBaseline(std::move(*length_or_percentage_value));
 }
 
 bool MathMLSpaceElement::IsPresentationAttribute(

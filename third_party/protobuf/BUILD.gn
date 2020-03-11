@@ -221,10 +221,6 @@ static_library("protobuf_full") {
     # Not included in production code.
     "//chrome/test:usage_time_limit_unittests",
 
-    # Catapult converts protos to JSON. Only used in tests.
-    "//third_party/catapult/tracing/tracing:histogram",
-    "//third_party/catapult/tracing/tracing:proto_test_driver",
-
     # The protobuf-based SQLite and GPU fuzzers need protobuf_full and are not
     # included in Chrome.
     "//third_party/sqlite:sqlite3_lpm_corpus_gen",

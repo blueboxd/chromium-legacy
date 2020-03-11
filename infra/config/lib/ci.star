@@ -205,7 +205,7 @@ def fyi_ios_builder(
       caches = [builders.xcode_cache.x11c29],
       cores = None,
       executable = executable,
-      goma_backend = None,
+      goma_backend = builders.goma.backend.RBE_PROD,
       os = builders.os.MAC_ANY,
       **kwargs
   )
@@ -358,7 +358,7 @@ def mac_ios_builder(*, name, **kwargs):
       name = name,
       caches = [builders.xcode_cache.x11c29],
       executable = 'recipe:ios/unified_builder_tester',
-      goma_backend = None,
+      goma_backend = builders.goma.backend.RBE_PROD,
       os = builders.os.MAC_ANY,
       **kwargs
   )

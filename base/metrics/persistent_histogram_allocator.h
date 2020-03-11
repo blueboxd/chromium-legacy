@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_METRICS_HISTOGRAM_PERSISTENCE_H_
-#define BASE_METRICS_HISTOGRAM_PERSISTENCE_H_
+#ifndef BASE_METRICS_PERSISTENT_HISTOGRAM_ALLOCATOR_H_
+#define BASE_METRICS_PERSISTENT_HISTOGRAM_ALLOCATOR_H_
 
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/atomicops.h"
 #include "base/base_export.h"
@@ -64,9 +66,9 @@ class BASE_EXPORT PersistentSparseHistogramDataManager {
  private:
   friend class PersistentSampleMapRecords;
 
-  // Gets the object holding records for a given sample-map id when |lock_|
-  // has already been acquired.
-  PersistentSampleMapRecords* GetSampleMapRecordsWhileLocked(uint64_t id);
+  // Gets the object holding records for a given sample-map id.
+  PersistentSampleMapRecords* GetSampleMapRecordsWhileLocked(uint64_t id)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Loads sample-map records looking for those belonging to the specified
   // |load_id|. Records found for other sample-maps are held for later use
@@ -80,13 +82,12 @@ class BASE_EXPORT PersistentSparseHistogramDataManager {
   PersistentMemoryAllocator* allocator_;
 
   // Iterator within the allocator for finding sample records.
-  PersistentMemoryAllocator::Iterator record_iterator_;
+  PersistentMemoryAllocator::Iterator record_iterator_ GUARDED_BY(lock_);
 
   // Mapping of sample-map IDs to their sample records.
   std::map<uint64_t, std::unique_ptr<PersistentSampleMapRecords>>
-      sample_records_;
+      sample_records_ GUARDED_BY(lock_);
 
-  // A lock used for synchronizing changes to sample_records_.
   base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(PersistentSparseHistogramDataManager);
@@ -503,4 +504,4 @@ class BASE_EXPORT GlobalHistogramAllocator
 
 }  // namespace base
 
-#endif  // BASE_METRICS_HISTOGRAM_PERSISTENCE_H_
+#endif  // BASE_METRICS_PERSISTENT_HISTOGRAM_ALLOCATOR_H__

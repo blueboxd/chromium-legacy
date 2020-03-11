@@ -125,7 +125,7 @@ cr.define('autofill_test_util', function() {
    * @return {chrome.passwordsPrivate.CompromisedCredential}
    * @private
    */
-  /* #export */ function makeCompromisedCredentials(url, username, type) {
+  /* #export */ function makeCompromisedCredential(url, username, type) {
     return {
       formattedOrigin: url,
       changePasswordUrl: 'http://${url}/',
@@ -137,31 +137,20 @@ cr.define('autofill_test_util', function() {
   }
 
   /**
-   * Creates a new compromised credential info.
-   * @param {!Array<!chrome.passwordsPrivate.CompromisedCredential>} list
-   * @param {string=} lastCheck
-   * @return {chrome.passwordsPrivate.CompromisedCredentialsInfo}
-   * @private
-   */
-  /* #export */ function makeCompromisedCredentialsInfo(list, lastCheck) {
-    return {
-      compromisedCredentials: list,
-      elapsedTimeSinceLastCheck: lastCheck,
-    };
-  }
-
-  /**
    * Creates a new password check status.
    * @param {!chrome.passwordsPrivate.PasswordCheckState} state
    * @param {!number|undefined} checked
    * @param {!number|undefined} remaining
+   * @param {string=} lastCheck
    * @return {!chrome.passwordsPrivate.PasswordCheckStatus}
    */
-  /* #export */ function makePasswordCheckStatus(state, checked, remaining) {
+  /* #export */ function makePasswordCheckStatus(
+      state, checked, remaining, lastCheck) {
     return {
       state: state || chrome.passwordsPrivate.PasswordCheckState.IDLE,
       alreadyProcessed: checked,
-      remainingInQueue: remaining
+      remainingInQueue: remaining,
+      elapsedTimeSinceLastCheck: lastCheck,
     };
   }
 
@@ -425,8 +414,7 @@ cr.define('autofill_test_util', function() {
     createAddressEntry: createAddressEntry,
     createEmptyCreditCardEntry: createEmptyCreditCardEntry,
     createCreditCardEntry: createCreditCardEntry,
-    makeCompromisedCredentials: makeCompromisedCredentials,
-    makeCompromisedCredentialsInfo: makeCompromisedCredentialsInfo,
+    makeCompromisedCredential: makeCompromisedCredential,
     makePasswordCheckStatus: makePasswordCheckStatus,
     TestPaymentsManager: TestPaymentsManager,
     PaymentsManagerExpectations: PaymentsManagerExpectations,

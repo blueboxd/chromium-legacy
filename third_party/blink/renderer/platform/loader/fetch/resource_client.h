@@ -64,6 +64,9 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
 
   Resource* GetResource() const { return resource_; }
 
+  bool FinishedFromMemoryCache() const { return finished_from_memory_cache_; }
+  void SetHasFinishedFromMemoryCache() { finished_from_memory_cache_ = true; }
+
   // Name for debugging, e.g. shown in memory-infra.
   virtual String DebugName() const = 0;
 
@@ -86,6 +89,10 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
                    base::SingleThreadTaskRunner* task_runner);
 
   Member<Resource> resource_;
+
+  // If true, the Resource was already available from the memory cache when this
+  // ResourceClient was setup, so that the request finished immediately.
+  bool finished_from_memory_cache_ = false;
 };
 
 }  // namespace blink

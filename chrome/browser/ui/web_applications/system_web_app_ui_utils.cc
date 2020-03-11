@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -124,10 +123,16 @@ Browser* LaunchSystemWebApp(Profile* profile,
 
   DCHECK_EQ(params.app_id, *GetAppIdForSystemWebApp(profile, app_type));
 
-  // Make sure we have a browser for app.
+  // Make sure we have a browser for app.  Always reuse an existing browser for
+  // popups, otherwise check app type whether we should use a single window.
+  // TODO(crbug.com/1060423): Allow apps to control whether popups are single.
   Browser* browser = nullptr;
-  if (provider->system_web_app_manager().IsSingleWindow(app_type)) {
-    browser = FindSystemWebAppBrowser(profile, app_type);
+  Browser::Type browser_type = Browser::TYPE_APP;
+  if (params.disposition == WindowOpenDisposition::NEW_POPUP)
+    browser_type = Browser::TYPE_APP_POPUP;
+  if (browser_type == Browser::TYPE_APP_POPUP ||
+      provider->system_web_app_manager().IsSingleWindow(app_type)) {
+    browser = FindSystemWebAppBrowser(profile, app_type, browser_type);
   }
 
   // We create the app window if no existing browser found.
@@ -177,7 +182,9 @@ Browser* LaunchSystemWebApp(Profile* profile,
   return browser;
 }
 
-Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type) {
+Browser* FindSystemWebAppBrowser(Profile* profile,
+                                 SystemAppType app_type,
+                                 Browser::Type browser_type) {
   // TODO(calamity): Determine whether, during startup, we need to wait for
   // app install and then provide a valid answer here.
   base::Optional<AppId> app_id = GetAppIdForSystemWebApp(profile, app_type);
@@ -191,7 +198,7 @@ Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type) {
     return nullptr;
 
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile() != profile || !browser->deprecated_is_app())
+    if (browser->profile() != profile || browser->type() != browser_type)
       continue;
 
     if (GetAppIdFromApplicationName(browser->app_name()) == app_id.value())

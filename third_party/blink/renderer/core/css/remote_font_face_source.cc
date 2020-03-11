@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/remote_font_face_source.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
@@ -27,57 +28,70 @@
 
 namespace blink {
 
-namespace {
-
-RemoteFontFaceSource::DisplayPeriod ComputePeriod(
-    FontDisplay displayValue,
-    RemoteFontFaceSource::Phase phase,
-    bool is_intervention_triggered) {
-  switch (displayValue) {
+RemoteFontFaceSource::DisplayPeriod RemoteFontFaceSource::ComputePeriod()
+    const {
+  switch (display_) {
     case kFontDisplayAuto:
-      if (is_intervention_triggered)
-        return RemoteFontFaceSource::kSwapPeriod;
+      if (is_intervention_triggered_)
+        return kSwapPeriod;
       FALLTHROUGH;
     case kFontDisplayBlock:
-      switch (phase) {
-        case RemoteFontFaceSource::kNoLimitExceeded:
-        case RemoteFontFaceSource::kShortLimitExceeded:
-          return RemoteFontFaceSource::kBlockPeriod;
-        case RemoteFontFaceSource::kLongLimitExceeded:
-          return RemoteFontFaceSource::kSwapPeriod;
+      switch (phase_) {
+        case kNoLimitExceeded:
+        case kShortLimitExceeded:
+          return kBlockPeriod;
+        case kLongLimitExceeded:
+          return kSwapPeriod;
       }
 
     case kFontDisplaySwap:
-      return RemoteFontFaceSource::kSwapPeriod;
+      return kSwapPeriod;
 
     case kFontDisplayFallback:
-      switch (phase) {
-        case RemoteFontFaceSource::kNoLimitExceeded:
-          return RemoteFontFaceSource::kBlockPeriod;
-        case RemoteFontFaceSource::kShortLimitExceeded:
-          return RemoteFontFaceSource::kSwapPeriod;
-        case RemoteFontFaceSource::kLongLimitExceeded:
-          return RemoteFontFaceSource::kFailurePeriod;
+      switch (phase_) {
+        case kNoLimitExceeded:
+          return kBlockPeriod;
+        case kShortLimitExceeded:
+          return kSwapPeriod;
+        case kLongLimitExceeded:
+          return kFailurePeriod;
       }
 
-    case kFontDisplayOptional:
-      switch (phase) {
-        case RemoteFontFaceSource::kNoLimitExceeded:
-          return RemoteFontFaceSource::kBlockPeriod;
-        case RemoteFontFaceSource::kShortLimitExceeded:
-        case RemoteFontFaceSource::kLongLimitExceeded:
-          return RemoteFontFaceSource::kFailurePeriod;
+    case kFontDisplayOptional: {
+      const bool use_phase_value =
+          !base::FeatureList::IsEnabled(
+              features::kFontPreloadingDelaysRendering) ||
+          !GetDocument();
+
+      if (use_phase_value) {
+        switch (phase_) {
+          case kNoLimitExceeded:
+            return kBlockPeriod;
+          case kShortLimitExceeded:
+          case kLongLimitExceeded:
+            return kFailurePeriod;
+        }
       }
 
+      // We simply skip the block period, as we should never render invisible
+      // fallback for 'font-display: optional'.
+
+      if (GetDocument()->GetFontPreloadManager().RenderingHasBegun()) {
+        if (FinishedFromMemoryCache() ||
+            finished_before_document_rendering_begin_)
+          return kSwapPeriod;
+        return kFailurePeriod;
+      }
+
+      return kSwapPeriod;
+    }
     case kFontDisplayEnumMax:
       NOTREACHED();
       break;
   }
   NOTREACHED();
-  return RemoteFontFaceSource::kSwapPeriod;
+  return kSwapPeriod;
 }
-
-}  // namespace
 
 RemoteFontFaceSource::RemoteFontFaceSource(CSSFontFace* css_font_face,
                                            FontSelector* font_selector,
@@ -90,12 +104,17 @@ RemoteFontFaceSource::RemoteFontFaceSource(CSSFontFace* css_font_face,
                                                font_selector,
                                                ReportOptions::kDoNotReport)),
       phase_(kNoLimitExceeded),
-      is_intervention_triggered_(ShouldTriggerWebFontsIntervention()) {
+      is_intervention_triggered_(ShouldTriggerWebFontsIntervention()),
+      finished_before_document_rendering_begin_(false) {
   DCHECK(face_);
-  period_ = ComputePeriod(display_, phase_, is_intervention_triggered_);
+  period_ = ComputePeriod();
 }
 
 RemoteFontFaceSource::~RemoteFontFaceSource() = default;
+
+Document* RemoteFontFaceSource::GetDocument() const {
+  return Document::DynamicFrom(font_selector_->GetExecutionContext());
+}
 
 void RemoteFontFaceSource::Dispose() {
   ClearResource();
@@ -147,6 +166,17 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
   ClearResource();
 
   PruneTable();
+
+  if (GetDocument() &&
+      !GetDocument()->GetFontPreloadManager().RenderingHasBegun()) {
+    finished_before_document_rendering_begin_ = true;
+  }
+
+  if (FinishedFromMemoryCache())
+    period_ = kNotApplicablePeriod;
+  else
+    UpdatePeriod();
+
   if (face_->FontLoaded(this)) {
     font_selector_->FontFaceInvalidated();
 
@@ -187,8 +217,7 @@ void RemoteFontFaceSource::SetDisplay(FontDisplay display) {
 }
 
 void RemoteFontFaceSource::UpdatePeriod() {
-  DisplayPeriod new_period =
-      ComputePeriod(display_, phase_, is_intervention_triggered_);
+  DisplayPeriod new_period = ComputePeriod();
 
   // Fallback font is invisible iff the font is loading and in the block period.
   // Invalidate the font if its fallback visibility has changed.

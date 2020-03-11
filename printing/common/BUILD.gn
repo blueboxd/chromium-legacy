@@ -10,6 +10,7 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//printing/buildflags",
     "//skia",
     "//ui/accessibility",
   ]

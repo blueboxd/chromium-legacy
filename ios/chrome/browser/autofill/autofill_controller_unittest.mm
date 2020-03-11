@@ -601,7 +601,7 @@ TEST_F(AutofillControllerTest, KeyValueFocusChange) {
   // Focus the dummy field and confirm no suggestions are presented.
   ExecuteJavaScript(@"document.forms[0].dummy.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
-  EXPECT_EQ(0U, [suggestion_controller() suggestions].count);
+  ASSERT_EQ(0U, [suggestion_controller() suggestions].count);
 
   // Enter 'B' in the dummy field and confirm no suggestions are presented.
   ExecuteJavaScript(@"event = document.createEvent('TextEvent');");
@@ -609,7 +609,7 @@ TEST_F(AutofillControllerTest, KeyValueFocusChange) {
       @"event.initTextEvent('textInput', true, true, window, 'B');");
   ExecuteJavaScript(@"document.forms[0].dummy.dispatchEvent(event);");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
-  EXPECT_EQ(0U, [suggestion_controller() suggestions].count);
+  ASSERT_EQ(0U, [suggestion_controller() suggestions].count);
 
   // Enter 'B' in the greeting field and confirm that one suggestion ("Bonjour")
   // is presented.
@@ -620,7 +620,7 @@ TEST_F(AutofillControllerTest, KeyValueFocusChange) {
       @"event.initTextEvent('textInput', true, true, window, 'B');");
   ExecuteJavaScript(@"document.forms[0].greeting.dispatchEvent(event);");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
-  EXPECT_EQ(1U, [suggestion_controller() suggestions].count);
+  ASSERT_EQ(1U, [suggestion_controller() suggestions].count);
   FormSuggestion* suggestion = [suggestion_controller() suggestions][0];
   EXPECT_NSEQ(@"Bonjour", suggestion.value);
 }

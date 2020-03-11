@@ -220,14 +220,14 @@ ResponseAction PasswordsPrivateIsOptedInForAccountStorageFunction::Run() {
       GetDelegate(browser_context())->IsOptedInForAccountStorage())));
 }
 
-// PasswordsPrivateGetCompromisedCredentialsInfoFunction:
-PasswordsPrivateGetCompromisedCredentialsInfoFunction::
-    ~PasswordsPrivateGetCompromisedCredentialsInfoFunction() = default;
+// PasswordsPrivateGetCompromisedCredentialsFunction:
+PasswordsPrivateGetCompromisedCredentialsFunction::
+    ~PasswordsPrivateGetCompromisedCredentialsFunction() = default;
 
-ResponseAction PasswordsPrivateGetCompromisedCredentialsInfoFunction::Run() {
+ResponseAction PasswordsPrivateGetCompromisedCredentialsFunction::Run() {
   return RespondNow(ArgumentList(
-      api::passwords_private::GetCompromisedCredentialsInfo::Results::Create(
-          GetDelegate(browser_context())->GetCompromisedCredentialsInfo())));
+      api::passwords_private::GetCompromisedCredentials::Results::Create(
+          GetDelegate(browser_context())->GetCompromisedCredentials())));
 }
 
 // PasswordsPrivateGetPlaintextCompromisedPasswordFunction:

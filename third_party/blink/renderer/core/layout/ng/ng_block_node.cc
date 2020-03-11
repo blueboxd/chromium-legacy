@@ -28,6 +28,8 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_fraction_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_row_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_space_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
@@ -50,6 +52,7 @@
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
+#include "third_party/blink/renderer/core/mathml/mathml_fraction_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -92,6 +95,9 @@ NOINLINE void DetermineMathMLAlgorithmAndRun(
   DCHECK(element);
   if (IsA<MathMLSpaceElement>(element))
     CreateAlgorithmAndRun<NGMathSpaceLayoutAlgorithm>(params, callback);
+  else if (IsA<MathMLFractionElement>(element) &&
+           IsValidMathMLFraction(params.node))
+    CreateAlgorithmAndRun<NGMathFractionLayoutAlgorithm>(params, callback);
   else
     CreateAlgorithmAndRun<NGMathRowLayoutAlgorithm>(params, callback);
 }

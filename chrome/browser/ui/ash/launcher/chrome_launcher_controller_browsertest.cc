@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -110,9 +111,10 @@
 #include "ui/events/types/event_type.h"
 
 using ash::Shelf;
+using content::WebContents;
 using extensions::AppWindow;
 using extensions::Extension;
-using content::WebContents;
+using web_app::WebAppProviderBase;
 
 namespace {
 
@@ -428,9 +430,10 @@ class ShelfWebAppBrowserTest
     ASSERT_TRUE(https_server()->Start());
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 
-    web_app::WebAppProviderBase::GetProviderBase(browser()->profile())
-        ->shortcut_manager()
-        .SuppressShortcutsForTesting();
+    WebAppProviderBase* provider =
+        WebAppProviderBase::GetProviderBase(browser()->profile());
+    DCHECK(provider);
+    provider->shortcut_manager().SuppressShortcutsForTesting();
   }
 
  private:
@@ -2142,8 +2145,11 @@ IN_PROC_BROWSER_TEST_P(ShelfWebAppBrowserTest, WindowedHostedAndWebApps) {
   // Set both apps to open in windows.
   extensions::SetLaunchType(browser()->profile(), hosted_app->id(),
                             extensions::LAUNCH_TYPE_WINDOW);
-  extensions::SetLaunchType(browser()->profile(), web_app_id,
-                            extensions::LAUNCH_TYPE_WINDOW);
+  WebAppProviderBase* provider =
+      WebAppProviderBase::GetProviderBase(browser()->profile());
+  DCHECK(provider);
+  provider->registry_controller().SetAppUserDisplayMode(
+      web_app_id, web_app::DisplayMode::kStandalone);
 
   // The apps should be closed.
   EXPECT_EQ(ash::STATUS_CLOSED,

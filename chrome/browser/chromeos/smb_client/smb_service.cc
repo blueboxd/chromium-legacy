@@ -86,8 +86,9 @@ enum class AuthMethod {
   kNoCredentials = 0,
   kUsernameOnly = 1,
   kUsernameAndPassword = 2,
-  kSSOKerberos = 3,
-  kMaxValue = kSSOKerberos,
+  kSSOKerberosAD = 3,
+  kSSOKerberosGaia = 4,
+  kMaxValue = kSSOKerberosGaia,
 };
 
 void RecordMountResult(SmbMountResult result) {
@@ -277,9 +278,12 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
   DCHECK(user);
 
   if (use_kerberos) {
-    // TODO(crbug.com/1041022): Differentiate between AD and KerberosEnabled via
-    // policy in metrics.
-    RecordAuthenticationMethod(AuthMethod::kSSOKerberos);
+    // Differentiate between AD and KerberosEnabled via policy in metrics.
+    if (IsKerberosEnabledViaPolicy()) {
+      RecordAuthenticationMethod(AuthMethod::kSSOKerberosGaia);
+    } else {
+      RecordAuthenticationMethod(AuthMethod::kSSOKerberosAD);
+    }
 
     // Get the user's username and workgroup from their email address to be used
     // for Kerberos authentication.

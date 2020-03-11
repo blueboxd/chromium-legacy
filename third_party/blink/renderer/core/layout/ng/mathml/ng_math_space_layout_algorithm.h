@@ -15,7 +15,7 @@ class CORE_EXPORT NGMathSpaceLayoutAlgorithm
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGMathSpaceLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
+  explicit NGMathSpaceLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
  private:
   scoped_refptr<const NGLayoutResult> Layout() final;

@@ -5,6 +5,7 @@
 #include "base/debug/activity_tracker.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -302,6 +303,7 @@ TEST_F(ActivityTrackerTest, LockTest) {
   // Check no activity when only "trying" a lock.
   EXPECT_TRUE(lock.Try());
   EXPECT_EQ(pre_version, tracker->GetDataVersionForTesting());
+  lock.AssertAcquired();
   lock.Release();
   EXPECT_EQ(pre_version, tracker->GetDataVersionForTesting());
 

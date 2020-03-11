@@ -150,8 +150,10 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
 // Tests that the XClientData header is sent when navigating to
 // https://google.com through the omnibox.
-// TODO(crbug.com/1036225): Test very flaky on all config.
-- (void)DISABLED_testXClientData {
+- (void)testXClientData {
+#if defined(CHROME_EARL_GREY_1)
+  EARL_GREY_TEST_DISABLED(@"Flaky on EG1.");
+#endif
   // Rewrite the google URL to localhost URL.
   [OmniboxAppInterface rewriteGoogleURLToLocalhost];
 

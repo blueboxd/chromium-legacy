@@ -566,6 +566,12 @@ const char kExpectedStructTreeJSON[] = R"({
             } ]
          } ]
       } ]
+   }, {
+      "type": "Div",
+      "~children": [ {
+         "alt": "Car at the beach",
+         "type": "Figure"
+      } ]
    } ]
 }
 )";

@@ -555,7 +555,8 @@ base::Lock& GetLockForBlockingDefaultFileTaskRunner() {
 
 // Ensures the default HTML filesystem API blocking task runner is blocked for a
 // test.
-void BlockFileTaskRunner(Profile* profile) {
+void BlockFileTaskRunner(Profile* profile)
+    EXCLUSIVE_LOCK_FUNCTION(GetLockForBlockingDefaultFileTaskRunner()) {
   GetLockForBlockingDefaultFileTaskRunner().Acquire();
 
   content::BrowserContext::GetDefaultStoragePartition(profile)
@@ -567,7 +568,8 @@ void BlockFileTaskRunner(Profile* profile) {
 }
 
 // Undo the effects of |BlockFileTaskRunner()|.
-void UnblockFileTaskRunner() {
+void UnblockFileTaskRunner()
+    UNLOCK_FUNCTION(GetLockForBlockingDefaultFileTaskRunner()) {
   GetLockForBlockingDefaultFileTaskRunner().Release();
 }
 
@@ -1633,9 +1635,12 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
   }
 }
 
+// NO_THREAD_SAFETY_ANALYSIS: Locking depends on runtime commands, the static
+// checker cannot assess it.
 void FileManagerBrowserTestBase::OnCommand(const std::string& name,
                                            const base::DictionaryValue& value,
-                                           std::string* output) {
+                                           std::string* output)
+    NO_THREAD_SAFETY_ANALYSIS {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   if (name == "isInGuestMode") {

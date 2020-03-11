@@ -46,6 +46,8 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -286,6 +288,20 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
         fragment->PaintOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
     if (rects.size() > 1)
       use_rounded_rects = false;
+
+    // TODO(yosin): We should remove following if-statement once we release
+    // NGFragmentItem to renderer rounded rect even if nested inline, e.g.
+    // <a>ABC<b>DEF</b>GHI</a>.
+    // See gesture-tapHighlight-simple-nested.html
+    if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled() &&
+        use_rounded_rects && object->IsLayoutInline()) {
+      NGInlineCursor cursor;
+      cursor.MoveTo(*object);
+      // When |LayoutInline| has more than one children, we render square
+      // rectangle as |NGPaintFragment|.
+      if (cursor && cursor.CurrentItem()->DescendantsCount() > 2)
+        use_rounded_rects = false;
+    }
 
     Path new_path;
     for (auto& rect : rects) {

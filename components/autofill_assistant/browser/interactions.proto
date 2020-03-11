@@ -34,6 +34,7 @@ message CallbackProto {
     ComputeValueProto compute_value = 4;
     SetUserActionsProto set_user_actions = 5;
     EndActionProto end_action = 6;
+    ShowCalendarPopupProto show_calendar_popup = 7;
   }
 }
 
@@ -151,4 +152,17 @@ message SetUserActionsProto {
 message EndActionProto {
   // The status to report to the backend.
   optional ProcessedActionStatusProto status = 1;
+}
+
+// Displays a calendar popup that lets the user select a date.
+message ShowCalendarPopupProto {
+  // The date model identifier (both input and output). Must point to a single
+  // DateList. If not set, the calendar will default to the current date.
+  optional string date_model_identifier = 1;
+  // The model identifier for the minimum allowed date. Must point to a single
+  // DateList.
+  optional string min_date_model_identifier = 2;
+  // The model identifier for the minimum allowed date. Must point to a single
+  // DateList.
+  optional string max_date_model_identifier = 3;
 }

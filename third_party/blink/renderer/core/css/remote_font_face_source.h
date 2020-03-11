@@ -13,6 +13,7 @@
 namespace blink {
 
 class CSSFontFace;
+class Document;
 class FontSelector;
 class FontCustomPlatformData;
 
@@ -23,9 +24,6 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
 
  public:
   enum Phase { kNoLimitExceeded, kShortLimitExceeded, kLongLimitExceeded };
-  // Periods of the Font Display Timeline.
-  // https://drafts.csswg.org/css-fonts-4/#font-display-timeline
-  enum DisplayPeriod { kBlockPeriod, kSwapPeriod, kFailurePeriod };
 
   RemoteFontFaceSource(CSSFontFace*, FontSelector*, FontDisplay);
   ~RemoteFontFaceSource() override;
@@ -60,6 +58,19 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
       const FontDescription&);
 
  private:
+  // Periods of the Font Display Timeline.
+  // https://drafts.csswg.org/css-fonts-4/#font-display-timeline
+  // Note that kNotApplicablePeriod is an implementation detail indicating that
+  // the font is loaded from memory cache synchronously, and hence, made
+  // immediately available. As we never need to use a fallback for it, using
+  // other DisplayPeriod values seem artificial. So we use a special value.
+  enum DisplayPeriod {
+    kBlockPeriod,
+    kSwapPeriod,
+    kFailurePeriod,
+    kNotApplicablePeriod
+  };
+
   class FontLoadHistograms {
     DISALLOW_NEW();
 
@@ -113,6 +124,9 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
     DataSource data_source_;
   };
 
+  Document* GetDocument() const;
+
+  DisplayPeriod ComputePeriod() const;
   void UpdatePeriod();
   bool ShouldTriggerWebFontsIntervention();
   bool IsLowPriorityLoadingAllowedForRemoteFont() const override;
@@ -132,6 +146,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   DisplayPeriod period_;
   FontLoadHistograms histograms_;
   bool is_intervention_triggered_;
+  bool finished_before_document_rendering_begin_;
 };
 
 }  // namespace blink

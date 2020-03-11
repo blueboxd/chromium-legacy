@@ -163,9 +163,9 @@
 
   /**
    * Requests the latest information about compromised credentials.
-   * @return {!Promise<(PasswordManagerProxy.CompromisedCredentialsInfo)>}
+   * @return {!Promise<(PasswordManagerProxy.CompromisedCredentials)>}
    */
-  getCompromisedCredentialsInfo() {}
+  getCompromisedCredentials() {}
 
   /**
    * Returns the current status of the check via |callback|.
@@ -175,14 +175,14 @@
 
   /**
    * Add an observer to the compromised passwords change.
-   * @param {function(!PasswordManagerProxy.CompromisedCredentialsInfo):void}
+   * @param {function(!PasswordManagerProxy.CompromisedCredentials):void}
    *      listener
    */
   addCompromisedCredentialsListener(listener) {}
 
   /**
    * Remove an observer to the compromised passwords change.
-   * @param {function(!PasswordManagerProxy.CompromisedCredentialsInfo):void}
+   * @param {function(!PasswordManagerProxy.CompromisedCredentials):void}
    *     listener
    */
   removeCompromisedCredentialsListener(listener) {}
@@ -220,8 +220,8 @@ PasswordManagerProxy.ExportProgressStatus;
 /** @typedef {chrome.passwordsPrivate.CompromisedCredential} */
 PasswordManagerProxy.CompromisedCredential;
 
-/** @typedef {chrome.passwordsPrivate.CompromisedCredentialsInfo} */
-PasswordManagerProxy.CompromisedCredentialsInfo;
+/** @typedef {Array<!chrome.passwordsPrivate.CompromisedCredential>} */
+PasswordManagerProxy.CompromisedCredentials;
 
 /** @typedef {chrome.passwordsPrivate.PasswordCheckStatus} */
 PasswordManagerProxy.PasswordCheckStatus;
@@ -367,21 +367,21 @@ PasswordManagerProxy.PasswordCheckStatus;
   }
 
   /** @override */
-  getCompromisedCredentialsInfo() {
+  getCompromisedCredentials() {
     return new Promise(resolve => {
-      chrome.passwordsPrivate.getCompromisedCredentialsInfo(resolve);
+      chrome.passwordsPrivate.getCompromisedCredentials(resolve);
     });
   }
 
   /** @override */
   addCompromisedCredentialsListener(listener) {
-    chrome.passwordsPrivate.onCompromisedCredentialsInfoChanged.addListener(
+    chrome.passwordsPrivate.onCompromisedCredentialsChanged.addListener(
         listener);
   }
 
   /** @override */
   removeCompromisedCredentialsListener(listener) {
-    chrome.passwordsPrivate.onCompromisedCredentialsInfoChanged.removeListener(
+    chrome.passwordsPrivate.onCompromisedCredentialsChanged.removeListener(
         listener);
   }
 

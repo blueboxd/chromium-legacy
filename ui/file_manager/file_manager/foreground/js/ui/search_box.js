@@ -79,6 +79,9 @@ class SearchBox extends cr.EventTarget {
     this.autocompleteList.handleEnterKeydown = dispatchItemSelect;
     this.autocompleteList.addEventListener('mousedown', dispatchItemSelect);
 
+    this.searchWrapper.addEventListener(
+        'focusout', this.onFocusOut_.bind(this));
+
     // Append dynamically created element.
     element.parentNode.appendChild(this.autocompleteList);
   }
@@ -98,6 +101,21 @@ class SearchBox extends cr.EventTarget {
   setHidden(hidden) {
     this.element.hidden = hidden;
     this.searchButton.hidden = hidden;
+  }
+
+  /**
+   * Focus out event handler.
+   * @private
+   */
+  onFocusOut_() {
+    window.requestAnimationFrame(() => {
+      // If the focus is still within the search box don't hide the input.
+      if (document.activeElement &&
+          this.searchWrapper.contains(document.activeElement)) {
+        return;
+      }
+      this.removeHidePending();
+    });
   }
 
   /**
@@ -142,22 +160,11 @@ class SearchBox extends cr.EventTarget {
 
   /**
    * Handles delayed hiding of the search box (until click).
-   * @param {Event} event
    */
-  removeHidePending(event) {
-    if (this.element.classList.contains('hide-pending')) {
-      // If the search box was waiting to hide, but we clicked on it, don't.
-      if (event.target === this.inputElement) {
-        this.element.classList.toggle('hide-pending', false);
-        this.searchWrapper.classList.toggle('hide-pending', false);
-        this.onFocus_();
-      } else {
-        // When input has any text we keep it displayed with current search.
-        this.inputElement.disabled = this.inputElement.value.length == 0;
-        this.element.classList.toggle('hide-pending', false);
-        this.searchWrapper.classList.toggle('hide-pending', false);
-      }
-    }
+  removeHidePending() {
+    this.inputElement.disabled = this.inputElement.value.length == 0;
+    this.element.classList.toggle('hide-pending', false);
+    this.searchWrapper.classList.toggle('hide-pending', false);
   }
 
   /**

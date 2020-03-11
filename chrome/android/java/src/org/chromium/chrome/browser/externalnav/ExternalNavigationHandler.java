@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalIntentsSwitches;
+import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.components.external_intents.RedirectHandler;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.PageTransition;
@@ -357,6 +358,13 @@ public class ExternalNavigationHandler {
         return false;
     }
 
+    /** Wrapper of check against the feature to support overriding for testing. */
+    @VisibleForTesting
+    boolean blockExternalFormRedirectsWithoutGesture() {
+        return ChromeFeatureList.isEnabled(
+                ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE);
+    }
+
     /**
      * http://crbug.com/149218: We want to show the intent picker for ordinary links, providing
      * the link is not an incoming intent from another application, unless it's a redirect.
@@ -382,8 +390,7 @@ public class ExternalNavigationHandler {
         // TODO(tedchoc): Remove the ChromeFeatureList check once we verify this change does
         //                not break the world.
         if (isRedirectFromFormSubmit && !incomingIntentRedirect && !params.hasUserGesture()
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE)) {
+                && blockExternalFormRedirectsWithoutGesture()) {
             if (DEBUG) {
                 Log.i(TAG,
                         "Incoming form intent attempting to redirect without "

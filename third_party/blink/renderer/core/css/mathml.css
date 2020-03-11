@@ -46,7 +46,7 @@ math[display="block"] {
     outline: auto 1px -webkit-focus-ring-color;
 }
 
-maction, merror, mphantom, mrow, mspace, mstyle
+maction, merror, mfrac, mphantom, mrow, mspace, mstyle
 {
     display: math;
 }
@@ -62,4 +62,9 @@ merror {
 
 mspace {
     overflow: hidden !important;
+}
+
+mfrac {
+  padding-inline-start: 1px;
+  padding-inline-end: 1px;
 }

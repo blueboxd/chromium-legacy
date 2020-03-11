@@ -4,7 +4,8 @@
 
 #include "base/metrics/persistent_histogram_allocator.h"
 
-#include <memory>
+#include <limits>
+#include <utility>
 
 #include "base/atomicops.h"
 #include "base/files/file_path.h"
@@ -118,8 +119,6 @@ PersistentSparseHistogramDataManager::UseSampleMapRecords(uint64_t id,
 PersistentSampleMapRecords*
 PersistentSparseHistogramDataManager::GetSampleMapRecordsWhileLocked(
     uint64_t id) {
-  lock_.AssertAcquired();
-
   auto found = sample_records_.find(id);
   if (found != sample_records_.end())
     return found->second.get();

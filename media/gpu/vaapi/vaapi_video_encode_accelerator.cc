@@ -39,7 +39,6 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/h264_encoder.h"
 #include "media/gpu/vaapi/vaapi_common.h"
-#include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vp8_encoder.h"
 #include "media/gpu/vaapi/vp9_encoder.h"
 #include "media/gpu/vp8_reference_frame_vector.h"
@@ -391,6 +390,11 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
 
   output_buffer_byte_size_ = encoder_->GetBitstreamBufferSize();
 
+  va_surface_release_cb_ = BindToCurrentLoop(base::BindRepeating(
+      &VaapiVideoEncodeAccelerator::RecycleVASurfaceID, encoder_weak_this_));
+  vpp_va_surface_release_cb_ = BindToCurrentLoop(base::BindRepeating(
+      &VaapiVideoEncodeAccelerator::RecycleVPPVASurfaceID, encoder_weak_this_));
+
   visible_rect_ = gfx::Rect(config.input_visible_size);
   expected_input_coded_size_ = VideoFrame::DetermineAlignedSize(
       config.input_format, config.input_visible_size);
@@ -425,19 +429,13 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
 
   // The surface size for the reconstructed surface (and input surface in non
   // native input mode) is the coded size.
-  std::vector<VASurfaceID> surface_ids;
   if (!vaapi_wrapper_->CreateContextAndSurfaces(
           kVaSurfaceFormat, encoder_->GetCodedSize(),
           VaapiWrapper::SurfaceUsageHint::kVideoEncoder,
           (num_frames_in_flight_ + 1) * va_surfaces_per_video_frame_,
-          &surface_ids)) {
+          &available_va_surface_ids_)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed creating VASurfaces");
     return;
-  }
-  for (const VASurfaceID surface_id : surface_ids) {
-    available_va_surfaces_.emplace_back(std::make_unique<ScopedVASurfaceID>(
-        surface_id,
-        base::BindOnce(&VaapiWrapper::DestroySurface, vaapi_wrapper_)));
   }
 
   child_task_runner_->PostTask(
@@ -463,24 +461,20 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
 }
 
 void VaapiVideoEncodeAccelerator::RecycleVASurfaceID(
-    std::unique_ptr<ScopedVASurfaceID> scoped_va_surface_id,
-    VASurfaceID /* va_surface_id */) {
-  DCHECK(scoped_va_surface_id);
-  DVLOGF(4) << "va_surface_id: " << scoped_va_surface_id->id();
+    VASurfaceID va_surface_id) {
+  DVLOGF(4) << "va_surface_id: " << va_surface_id;
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
 
-  available_va_surfaces_.push_back(std::move(scoped_va_surface_id));
+  available_va_surface_ids_.push_back(va_surface_id);
   EncodePendingInputs();
 }
 
 void VaapiVideoEncodeAccelerator::RecycleVPPVASurfaceID(
-    std::unique_ptr<ScopedVASurfaceID> scoped_va_surface_id,
-    VASurfaceID /* va_surface_id */) {
-  DCHECK(scoped_va_surface_id);
-  DVLOGF(4) << "va_surface_id: " << scoped_va_surface_id->id();
+    VASurfaceID va_surface_id) {
+  DVLOGF(4) << "va_surface_id: " << va_surface_id;
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
 
-  available_vpp_va_surfaces_.push_back(std::move(scoped_va_surface_id));
+  available_vpp_va_surface_ids_.push_back(va_surface_id);
   EncodePendingInputs();
 }
 
@@ -621,8 +615,8 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
     return nullptr;
   }
 
-  if (available_va_surfaces_.size() < va_surfaces_per_video_frame_ ||
-      (vpp_vaapi_wrapper_ && available_vpp_va_surfaces_.empty())) {
+  if (available_va_surface_ids_.size() < va_surfaces_per_video_frame_ ||
+      (vpp_vaapi_wrapper_ && available_vpp_va_surface_ids_.empty())) {
     DVLOGF(4) << "Not enough surfaces available";
     return nullptr;
   }
@@ -669,14 +663,10 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
                        << ", but got: " << frame->visible_rect().ToString());
       return nullptr;
     }
-
-    const VASurfaceID input_surface_id = available_va_surfaces_.back()->id();
-    input_surface = new VASurface(
-        input_surface_id, encoder_->GetCodedSize(), kVaSurfaceFormat,
-        base::BindOnce(&VaapiVideoEncodeAccelerator::RecycleVASurfaceID,
-                       encoder_weak_this_,
-                       std::move(available_va_surfaces_.back())));
-    available_va_surfaces_.pop_back();
+    input_surface = new VASurface(available_va_surface_ids_.back(),
+                                  encoder_->GetCodedSize(), kVaSurfaceFormat,
+                                  base::BindOnce(va_surface_release_cb_));
+    available_va_surface_ids_.pop_back();
   }
 
   if (visible_rect_ != frame->visible_rect()) {
@@ -694,32 +684,20 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
       }
 
       // Allocate the same number of surfaces as reconstructed surfaces.
-      std::vector<VASurfaceID> surface_ids;
       if (!vpp_vaapi_wrapper_->CreateContextAndSurfaces(
               kVaSurfaceFormat, aligned_va_surface_size_,
               VaapiWrapper::SurfaceUsageHint::kVideoProcessWrite,
-              num_frames_in_flight_ + 1, &surface_ids)) {
+              num_frames_in_flight_ + 1, &available_vpp_va_surface_ids_)) {
         NOTIFY_ERROR(kPlatformFailureError,
                      "Failed creating VASurfaces for scaling");
         vpp_vaapi_wrapper_ = nullptr;
         return nullptr;
-      }
-      for (const VASurfaceID surface_id : surface_ids) {
-        available_vpp_va_surfaces_.push_back(
-            std::make_unique<ScopedVASurfaceID>(
-                surface_id, base::BindOnce(&VaapiWrapper::DestroySurface,
-                                           vpp_vaapi_wrapper_)));
-      }
+      };
     }
-
-    const VASurfaceID blit_surface_id = available_vpp_va_surfaces_.back()->id();
     scoped_refptr<VASurface> blit_surface = new VASurface(
-        blit_surface_id, aligned_va_surface_size_, kVaSurfaceFormat,
-        base::BindOnce(&VaapiVideoEncodeAccelerator::RecycleVPPVASurfaceID,
-                       encoder_weak_this_,
-                       std::move(available_vpp_va_surfaces_.back())));
-    available_vpp_va_surfaces_.pop_back();
-
+        available_vpp_va_surface_ids_.back(), aligned_va_surface_size_,
+        kVaSurfaceFormat, base::BindOnce(vpp_va_surface_release_cb_));
+    available_vpp_va_surface_ids_.pop_back();
     // Crop/Scale the visible area of |frame->visible_rect()| ->
     // |visible_rect_|.
     if (!vpp_vaapi_wrapper_->BlitSurface(*input_surface, *blit_surface,
@@ -742,14 +720,10 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
   // Here, the surface size contained in |input_surface| is
   // |aligned_va_surface_size_| regardless of scaling in zero-copy mode, and
   // encoder_->GetCodedSize().
-  const VASurfaceID reconstructed_surface_id =
-      available_va_surfaces_.back()->id();
-  scoped_refptr<VASurface> reconstructed_surface = new VASurface(
-      reconstructed_surface_id, encoder_->GetCodedSize(), kVaSurfaceFormat,
-      base::BindOnce(&VaapiVideoEncodeAccelerator::RecycleVASurfaceID,
-                     encoder_weak_this_,
-                     std::move(available_va_surfaces_.back())));
-  available_va_surfaces_.pop_back();
+  scoped_refptr<VASurface> reconstructed_surface =
+      new VASurface(available_va_surface_ids_.back(), encoder_->GetCodedSize(),
+                    kVaSurfaceFormat, base::BindOnce(va_surface_release_cb_));
+  available_va_surface_ids_.pop_back();
 
   auto job = std::make_unique<VaapiEncodeJob>(
       frame, force_keyframe,
@@ -920,34 +894,33 @@ void VaapiVideoEncodeAccelerator::DestroyTask() {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
 
+  encoder_weak_this_factory_.InvalidateWeakPtrs();
+
   if (flush_callback_) {
     child_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(flush_callback_), false));
   }
 
   // Clean up members that are to be accessed on the encoder thread only.
-  available_bitstream_buffers_ = {};
-  input_queue_ = {};
-
-  // Release input and reconstructed surfaces held by
-  // |submitted_encode_jobs_|.
-  submitted_encode_jobs_ = {};
-
-  // Release reconstructed surfaces held by |encoder_| as reference pictures.
-  encoder_ = nullptr;
-
-  // Invalidate |encoder_weak_this_| so that the above clean up can let surfaces
-  // be back to |available_va_surfaces_ids_| and
-  // |available_vpp_va_surfaces_ids_|.
-  encoder_weak_this_factory_.InvalidateWeakPtrs();
-
   if (vaapi_wrapper_)
-    vaapi_wrapper_->DestroyContext();
-  if (vpp_vaapi_wrapper_)
-    vpp_vaapi_wrapper_->DestroyContext();
+    vaapi_wrapper_->DestroyContextAndSurfaces(available_va_surface_ids_);
+  if (vpp_vaapi_wrapper_) {
+    vpp_vaapi_wrapper_->DestroyContextAndSurfaces(
+        available_vpp_va_surface_ids_);
+  }
 
-  available_va_surfaces_.clear();
-  available_vpp_va_surfaces_.clear();
+  available_va_buffer_ids_.clear();
+
+  while (!available_bitstream_buffers_.empty())
+    available_bitstream_buffers_.pop();
+
+  while (!input_queue_.empty())
+    input_queue_.pop();
+
+  while (!submitted_encode_jobs_.empty())
+    submitted_encode_jobs_.pop();
+
+  encoder_ = nullptr;
 
   delete this;
 }

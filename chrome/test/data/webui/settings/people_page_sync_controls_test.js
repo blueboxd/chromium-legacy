@@ -7,6 +7,12 @@ cr.define('settings_people_page_sync_controls', function() {
     let syncControls = null;
     let browserProxy = null;
 
+    suiteSetup(function() {
+      loadTimeData.overrideValues({
+        syncSetupFriendlySettings: false,
+      });
+    });
+
     setup(function() {
       sync_test_util.setupRouterWithSyncRoutes();
       browserProxy = new TestSyncBrowserProxy();

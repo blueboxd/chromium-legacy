@@ -96,14 +96,14 @@ void PasswordsPrivateEventRouter::OnAccountStorageOptInStateChanged(
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 
-void PasswordsPrivateEventRouter::OnCompromisedCredentialsInfoChanged(
-    api::passwords_private::CompromisedCredentialsInfo
-        compromised_credentials_info) {
+void PasswordsPrivateEventRouter::OnCompromisedCredentialsChanged(
+    std::vector<api::passwords_private::CompromisedCredential>
+        compromised_credentials) {
   auto extension_event = std::make_unique<Event>(
       events::PASSWORDS_PRIVATE_ON_COMPROMISED_CREDENTIALS_INFO_CHANGED,
-      api::passwords_private::OnCompromisedCredentialsInfoChanged::kEventName,
-      api::passwords_private::OnCompromisedCredentialsInfoChanged::Create(
-          compromised_credentials_info));
+      api::passwords_private::OnCompromisedCredentialsChanged::kEventName,
+      api::passwords_private::OnCompromisedCredentialsChanged::Create(
+          compromised_credentials));
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 

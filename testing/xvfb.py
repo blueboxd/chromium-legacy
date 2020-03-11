@@ -3,10 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs tests with Xvfb and Openbox on Linux and normally on other platforms."""
+"""Runs tests with Xvfb and Openbox or Weston on Linux and normally on other
+   platforms."""
 
 import os
 import os.path
+import psutil
 import random
 import re
 import signal
@@ -19,6 +21,11 @@ import test_env
 
 class _XvfbProcessError(Exception):
   """Exception raised when Xvfb cannot start."""
+  pass
+
+
+class _WestonProcessError(Exception):
+  """Exception raised when Weston cannot start."""
   pass
 
 
@@ -78,7 +85,8 @@ def launch_dbus(env):
 # TODO(crbug.com/949194): Encourage setting flags to False.
 def run_executable(
     cmd, env, stdoutfile=None, use_openbox=True, use_xcompmgr=True):
-  """Runs an executable within Xvfb on Linux or normally on other platforms.
+  """Runs an executable within Weston or Xvfb on Linux or normally on other
+     platforms.
 
   The method sets SIGUSR1 handler for Xvfb to return SIGUSR1
   when it is ready for connections.
@@ -87,7 +95,8 @@ def run_executable(
   Args:
     cmd: Command to be executed.
     env: A copy of environment variables, "DISPLAY" and
-      "_CHROMIUM_INSIDE_XVFB" will be set if Xvfb is used.
+      "_CHROMIUM_INSIDE_XVFB" will be set if Xvfb is used. "WAYLAND_DISPLAY"
+      will be set if Weston is used.
     stdoutfile: If provided, symbolization via script is disabled and stdout
       is written to this file as well as to stdout.
     use_openbox: A flag to use openbox process.
@@ -110,95 +119,180 @@ def run_executable(
     cmd.remove('--no-xvfb')
 
   # Tests that run on Linux platforms with Ozone/Wayland backend require
-  # a Weston instance. However, there is no solution to run pure headless
-  # Wayland at the moment. Instead, the Weston compositor runs on top of
-  # X Server, which is ok, because Weston does all the communication job
-  # internally and clients are using Wayland protocols normally and unaware
-  # of the X.
+  # a Weston instance. However, it is also required to disable xvfb so
+  # that Weston can run in a pure headless environment.
   use_weston = False
   if '--use-weston' in cmd:
-    if not use_xvfb:
-      print >> sys.stderr, 'Unable to use Weston without xvfb'
+    if use_xvfb:
+      print >> sys.stderr, 'Unable to use Weston with xvfb.'
       return 1
     use_weston = True
     cmd.remove('--use-weston')
 
   if sys.platform == 'linux2' and use_xvfb:
-    env['_CHROMIUM_INSIDE_XVFB'] = '1'
-    openbox_proc = None
-    xcompmgr_proc = None
-    weston_proc = None
-    xvfb_proc = None
-    xvfb_ready = MutableBoolean()
-    def set_xvfb_ready(*_):
-      xvfb_ready.setvalue(True)
-
-    try:
-      signal.signal(signal.SIGTERM, raise_xvfb_error)
-      signal.signal(signal.SIGINT, raise_xvfb_error)
-
-      # Due to race condition for display number, Xvfb might fail to run.
-      # If it does fail, try again up to 10 times, similarly to xvfb-run.
-      for _ in range(10):
-        xvfb_ready.setvalue(False)
-        display = find_display()
-
-        # Sets SIGUSR1 to ignore for Xvfb to signal current process
-        # when it is ready. Due to race condition, USR1 signal could be sent
-        # before the process resets the signal handler, we cannot rely on
-        # signal handler to change on time.
-        signal.signal(signal.SIGUSR1, signal.SIG_IGN)
-        xvfb_proc = subprocess.Popen(
-            ['Xvfb', display, '-screen', '0', '1280x800x24', '-ac',
-             '-nolisten', 'tcp', '-dpi', '96', '+extension', 'RANDR'],
-            stderr=subprocess.STDOUT, env=env)
-        signal.signal(signal.SIGUSR1, set_xvfb_ready)
-        for _ in range(10):
-          time.sleep(.1)  # gives Xvfb time to start or fail.
-          if xvfb_ready.getvalue() or xvfb_proc.poll() is not None:
-            break  # xvfb sent ready signal, or already failed and stopped.
-
-        if xvfb_proc.poll() is None:
-          break  # xvfb is running, can proceed.
-      if xvfb_proc.poll() is not None:
-        raise _XvfbProcessError('Failed to start after 10 tries')
-
-      env['DISPLAY'] = display
-
-      dbus_pid = launch_dbus(env)
-
-      if use_openbox:
-        openbox_proc = subprocess.Popen(
-            'openbox', stderr=subprocess.STDOUT, env=env)
-
-      if use_xcompmgr:
-        xcompmgr_proc = subprocess.Popen(
-            'xcompmgr', stderr=subprocess.STDOUT, env=env)
-
-      if use_weston:
-        weston_proc = subprocess.Popen(
-            'weston', stderr=subprocess.STDOUT, env=env)
-
-      return test_env.run_executable(cmd, env, stdoutfile)
-    except OSError as e:
-      print >> sys.stderr, 'Failed to start Xvfb or Openbox: %s' % str(e)
-      return 1
-    except _XvfbProcessError as e:
-      print >> sys.stderr, 'Xvfb fail: %s' % str(e)
-      return 1
-    finally:
-      kill(openbox_proc, 'openbox')
-      kill(xcompmgr_proc, 'xcompmgr')
-      kill(weston_proc, 'weston')
-      kill(xvfb_proc, 'Xvfb')
-
-      # dbus-daemon is not a subprocess, so we can't SIGTERM+waitpid() on it.
-      # To ensure it exits, use SIGKILL which should be safe since all other
-      # processes that it would have been servicing have exited.
-      if dbus_pid:
-        os.kill(dbus_pid, signal.SIGKILL)
+    return _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr)
+  elif use_weston:
+    return _run_with_weston(cmd, env, stdoutfile)
   else:
     return test_env.run_executable(cmd, env, stdoutfile)
+
+
+def _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr):
+  env['_CHROMIUM_INSIDE_XVFB'] = '1'
+  openbox_proc = None
+  xcompmgr_proc = None
+  xvfb_proc = None
+  xvfb_ready = MutableBoolean()
+  def set_xvfb_ready(*_):
+    xvfb_ready.setvalue(True)
+
+  try:
+    signal.signal(signal.SIGTERM, raise_xvfb_error)
+    signal.signal(signal.SIGINT, raise_xvfb_error)
+
+    # Due to race condition for display number, Xvfb might fail to run.
+    # If it does fail, try again up to 10 times, similarly to xvfb-run.
+    for _ in range(10):
+      xvfb_ready.setvalue(False)
+      display = find_display()
+
+      # Sets SIGUSR1 to ignore for Xvfb to signal current process
+      # when it is ready. Due to race condition, USR1 signal could be sent
+      # before the process resets the signal handler, we cannot rely on
+      # signal handler to change on time.
+      signal.signal(signal.SIGUSR1, signal.SIG_IGN)
+      xvfb_proc = subprocess.Popen(
+          ['Xvfb', display, '-screen', '0', '1280x800x24', '-ac',
+           '-nolisten', 'tcp', '-dpi', '96', '+extension', 'RANDR'],
+          stderr=subprocess.STDOUT, env=env)
+      signal.signal(signal.SIGUSR1, set_xvfb_ready)
+      for _ in range(10):
+        time.sleep(.1)  # gives Xvfb time to start or fail.
+        if xvfb_ready.getvalue() or xvfb_proc.poll() is not None:
+          break  # xvfb sent ready signal, or already failed and stopped.
+
+      if xvfb_proc.poll() is None:
+        break  # xvfb is running, can proceed.
+    if xvfb_proc.poll() is not None:
+      raise _XvfbProcessError('Failed to start after 10 tries')
+
+    env['DISPLAY'] = display
+
+    dbus_pid = launch_dbus(env)
+
+    if use_openbox:
+      openbox_proc = subprocess.Popen(
+          'openbox', stderr=subprocess.STDOUT, env=env)
+
+    if use_xcompmgr:
+      xcompmgr_proc = subprocess.Popen(
+          'xcompmgr', stderr=subprocess.STDOUT, env=env)
+
+    return test_env.run_executable(cmd, env, stdoutfile)
+  except OSError as e:
+    print >> sys.stderr, 'Failed to start Xvfb or Openbox: %s' % str(e)
+    return 1
+  except _XvfbProcessError as e:
+    print >> sys.stderr, 'Xvfb fail: %s' % str(e)
+    return 1
+  finally:
+    kill(openbox_proc, 'openbox')
+    kill(xcompmgr_proc, 'xcompmgr')
+    kill(xvfb_proc, 'Xvfb')
+
+    # dbus-daemon is not a subprocess, so we can't SIGTERM+waitpid() on it.
+    # To ensure it exits, use SIGKILL which should be safe since all other
+    # processes that it would have been servicing have exited.
+    if dbus_pid:
+      os.kill(dbus_pid, signal.SIGKILL)
+
+
+# TODO(https://crbug.com/1060466): Write tests.
+def _run_with_weston(cmd, env, stdoutfile):
+  weston_proc = None
+
+  try:
+    signal.signal(signal.SIGTERM, raise_weston_error)
+    signal.signal(signal.SIGINT, raise_weston_error)
+
+    # Set $XDG_RUNTIME_DIR if it is not set.
+    _set_xdg_runtime_dir(env)
+
+    weston_proc_display = None
+    for _ in range(10):
+      # Weston is compiled along with the Ozone/Wayland platform, and is
+      # fetched as data deps. Thus, run it from the current directory.
+      weston_proc = subprocess.Popen(
+         ('./weston', '--backend=headless-backend.so'),
+         stderr=subprocess.STDOUT, env=env)
+
+      # Get the $WAYLAND_DISPLAY set by Weston and pass it to the test launcher.
+      # Please note that this env variable is local for the process. That's the
+      # reason we have to read it from Weston separately.
+      weston_proc_display = _get_display_from_weston(weston_proc.pid)
+      if weston_proc_display is not None:
+        break # Weston could launch and we found the display.
+
+    # If we couldn't find the display after 10 tries, raise an exception.
+    if weston_proc_display is None:
+      raise _WestonProcessError('Failed to start Weston.')
+    env['WAYLAND_DISPLAY'] = weston_proc_display
+    return test_env.run_executable(cmd, env, stdoutfile)
+  except OSError as e:
+    print >> sys.stderr, 'Failed to start Weston: %s' % str(e)
+    return 1
+  except _WestonProcessError as e:
+    print >> sys.stderr, 'Weston fail: %s' % str(e)
+    return 1
+  finally:
+    kill(weston_proc, 'weston')
+
+
+def _get_display_from_weston(weston_proc_pid):
+  """Retrieves $WAYLAND_DISPLAY set by Weston.
+
+  Searches for the child "weston-desktop-shell" process, takes its
+  environmental variables, and returns $WAYLAND_DISPLAY variable set
+  by that process. If the variable is not set, tries up to 10 times
+  and then gives up.
+
+  Args:
+    weston_proc_pid: The process of id of the main Weston process.
+
+  Returns:
+    the display set by Wayland, which clients can use to connect to.
+
+  TODO(https://crbug.com/1060469): This is potentially error prone
+  function. See the bug for further details.
+  """
+
+  # Try 10 times as it is not known when Weston spawn child desktop shell
+  # process.
+  for _ in range(10):
+    # gives weston time to start or fail.
+    time.sleep(.05)
+    # Take the parent process.
+    parent = psutil.Process(weston_proc_pid)
+    if parent is None:
+      break # The process is not found. Give up.
+    weston_proc_display = parent.environ().get('WAYLAND_DISPLAY')
+    # If display is set, Weston could start successfully and we can use
+    # that display for Wayland connection in Chromium.
+    if weston_proc_display is not None:
+      return weston_proc_display
+
+    # Traverse through all the children processes and find the
+    # "weston-desktop-shell" process that sets local to process env variables
+    # including the $WAYLAND_DISPLAY.
+    children = parent.children(recursive=True)
+    for process in children:
+      if process.name() == "weston-desktop-shell":
+        weston_proc_display = process.environ().get('WAYLAND_DISPLAY')
+        # If display is set, Weston could start successfully and we can use
+        # that display for Wayland connection in Chromium.
+        if weston_proc_display is not None:
+          return weston_proc_display
+  return None
 
 
 class MutableBoolean(object):
@@ -217,6 +311,10 @@ class MutableBoolean(object):
 
 def raise_xvfb_error(*_):
   raise _XvfbProcessError('Terminated')
+
+
+def raise_weston_error(*_):
+  raise _WestonProcessError('Terminated')
 
 
 def find_display():
@@ -239,6 +337,16 @@ def find_display():
   if available_displays:
     return ':{}'.format(random.choice(available_displays))
   raise _XvfbProcessError('Failed to find display number')
+
+
+def _set_xdg_runtime_dir(env):
+  """Sets the $XDG_RUNTIME_DIR variable if it hasn't been set before."""
+  runtime_dir = env.get('XDG_RUNTIME_DIR')
+  if not runtime_dir:
+    runtime_dir = '/tmp/xdg-tmp-dir/'
+    if not os.path.exists(runtime_dir):
+      os.makedirs(runtime_dir, 0700)
+    env['XDG_RUNTIME_DIR'] = runtime_dir
 
 
 def main():

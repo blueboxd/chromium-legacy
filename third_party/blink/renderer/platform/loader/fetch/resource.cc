@@ -567,22 +567,23 @@ String Resource::ReasonNotDeletable() const {
   return builder.ToString();
 }
 
-void Resource::DidAddClient(ResourceClient* c) {
+void Resource::DidAddClient(ResourceClient* client) {
   if (scoped_refptr<SharedBuffer> data = Data()) {
     for (const auto& span : *data) {
-      c->DataReceived(this, span.data(), span.size());
+      client->DataReceived(this, span.data(), span.size());
       // Stop pushing data if the client removed itself.
-      if (!HasClient(c))
+      if (!HasClient(client))
         break;
     }
   }
-  if (!HasClient(c))
+  if (!HasClient(client))
     return;
   if (IsFinishedInternal()) {
-    c->NotifyFinished(this);
-    if (clients_.Contains(c)) {
-      finished_clients_.insert(c);
-      clients_.erase(c);
+    client->SetHasFinishedFromMemoryCache();
+    client->NotifyFinished(this);
+    if (clients_.Contains(client)) {
+      finished_clients_.insert(client);
+      clients_.erase(client);
     }
   }
 }

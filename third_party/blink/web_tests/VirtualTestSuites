@@ -86,8 +86,7 @@
   },
   {
     "prefix": "stable",
-    "bases": ["external/wpt/html/cross-origin-embedder-policy",
-              "fast/css3-text/css3-text-decoration/stable",
+    "bases": ["fast/css3-text/css3-text-decoration/stable",
               "fast/dom/Window",
               "http/tests/streams/transferable/enabled",
               "http/tests/navigation",

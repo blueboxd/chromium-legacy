@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
+import org.chromium.components.external_intents.ExternalNavigationParams;
 
 import java.util.List;
 

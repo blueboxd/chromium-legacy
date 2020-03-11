@@ -6,7 +6,7 @@
 
 // clang-format off
 // #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-// #import {makeCompromisedCredentialsInfo, makePasswordCheckStatus, PasswordManagerExpectations} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+// #import {makePasswordCheckStatus, PasswordManagerExpectations} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // clang-format on
 
 /**
@@ -20,7 +20,7 @@
       'requestPlaintextPassword',
       'startBulkPasswordCheck',
       'stopBulkPasswordCheck',
-      'getCompromisedCredentialsInfo',
+      'getCompromisedCredentials',
       'getPasswordCheckStatus',
     ]);
 
@@ -30,7 +30,7 @@
     this.data = {
       passwords: [],
       exceptions: [],
-      leakedCredentials: autofill_test_util.makeCompromisedCredentialsInfo([]),
+      leakedCredentials: [],
       checkStatus: autofill_test_util.makePasswordCheckStatus(),
     };
 
@@ -164,8 +164,8 @@
   }
 
   /** @override */
-  getCompromisedCredentialsInfo() {
-    this.methodCalled('getCompromisedCredentialsInfo');
+  getCompromisedCredentials() {
+    this.methodCalled('getCompromisedCredentials');
     return Promise.resolve(this.data.leakedCredentials);
   }
 

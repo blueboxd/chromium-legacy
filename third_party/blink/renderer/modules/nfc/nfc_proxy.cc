@@ -175,14 +175,15 @@ void NFCProxy::EnsureMojoConnection() {
   if (nfc_remote_)
     return;
 
-  GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
-      nfc_remote_.BindNewPipeAndPassReceiver());
-  nfc_remote_.set_disconnect_handler(
-      WTF::Bind(&NFCProxy::OnMojoConnectionError, WrapWeakPersistent(this)));
-
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner =
       GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+
+  GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
+      nfc_remote_.BindNewPipeAndPassReceiver(task_runner));
+  nfc_remote_.set_disconnect_handler(
+      WTF::Bind(&NFCProxy::OnMojoConnectionError, WrapWeakPersistent(this)));
+
   // Set client for OnWatch event.
   nfc_remote_->SetClient(
       client_receiver_.BindNewPipeAndPassRemote(task_runner));

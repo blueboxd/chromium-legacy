@@ -37,6 +37,8 @@ namespace extensions {
 
 namespace {
 
+using ui::TimeFormat;
+
 static const size_t kNumMocks = 3;
 static const int kNumCharactersInPassword = 10;
 static const char kPlaintextPassword[] = "plaintext";
@@ -172,12 +174,13 @@ class TestDelegate : public PasswordsPrivateDelegate {
     return is_opted_in_for_account_storage_;
   }
 
-  api::passwords_private::CompromisedCredentialsInfo
-  GetCompromisedCredentialsInfo() override {
-    using ui::TimeFormat;
+  std::vector<api::passwords_private::CompromisedCredential>
+  GetCompromisedCredentials() override {
     api::passwords_private::CompromisedCredential credential;
     credential.username = "alice";
     credential.formatted_origin = "example.com";
+    credential.detailed_origin = "https://example.com";
+    credential.is_android_credential = false;
     credential.change_password_url =
         std::make_unique<std::string>("https://example.com/change-password");
     credential.compromise_type = api::passwords_private::COMPROMISE_TYPE_LEAKED;
@@ -185,13 +188,10 @@ class TestDelegate : public PasswordsPrivateDelegate {
     credential.elapsed_time_since_compromise = base::UTF16ToUTF8(
         TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_LONG,
                            base::TimeDelta::FromDays(3)));
-    api::passwords_private::CompromisedCredentialsInfo info;
-    info.compromised_credentials.push_back(std::move(credential));
-    info.elapsed_time_since_last_check =
-        std::make_unique<std::string>(base::UTF16ToUTF8(TimeFormat::Simple(
-            TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT,
-            base::TimeDelta::FromMinutes(5))));
-    return info;
+
+    std::vector<api::passwords_private::CompromisedCredential> credentials;
+    credentials.push_back(std::move(credential));
+    return credentials;
   }
 
   void GetPlaintextCompromisedPassword(
@@ -246,6 +246,10 @@ class TestDelegate : public PasswordsPrivateDelegate {
     status.state = api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
     status.already_processed = std::make_unique<int>(5);
     status.remaining_in_queue = std::make_unique<int>(10);
+    status.elapsed_time_since_last_check =
+        std::make_unique<std::string>(base::UTF16ToUTF8(TimeFormat::Simple(
+            TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT,
+            base::TimeDelta::FromMinutes(5))));
     return status;
   }
 
@@ -456,8 +460,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, IsOptedInForAccountStorage) {
   EXPECT_TRUE(RunPasswordsSubtest("isOptedInForAccountStorage")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetCompromisedCredentialsInfo) {
-  EXPECT_TRUE(RunPasswordsSubtest("getCompromisedCredentialsInfo")) << message_;
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetCompromisedCredentials) {
+  EXPECT_TRUE(RunPasswordsSubtest("getCompromisedCredentials")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,

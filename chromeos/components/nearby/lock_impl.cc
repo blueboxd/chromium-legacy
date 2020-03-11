@@ -18,7 +18,9 @@ LockImpl::~LockImpl() {
 #endif
 }
 
-void LockImpl::lock() {
+// NO_THREAD_SAFETY_ANALYSIS: Whether this locks or not depends on rumtime
+// properties.
+void LockImpl::lock() NO_THREAD_SAFETY_ANALYSIS {
   {
     base::AutoLock al(bookkeeping_lock_);
     if (num_acquisitions_ > 0u &&
@@ -46,7 +48,9 @@ void LockImpl::lock() {
   }
 }
 
-void LockImpl::unlock() {
+// NO_THREAD_SAFETY_ANALYSIS: Whether this unlocks or not depends on rumtime
+// properties.
+void LockImpl::unlock() NO_THREAD_SAFETY_ANALYSIS {
   base::AutoLock al(bookkeeping_lock_);
   CHECK_GT(num_acquisitions_, 0u);
   DCHECK_EQ(base::PlatformThread::CurrentId(), owning_thread_id_);

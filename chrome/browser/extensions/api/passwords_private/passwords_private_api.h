@@ -195,14 +195,14 @@ class PasswordsPrivateIsOptedInForAccountStorageFunction
   ResponseAction Run() override;
 };
 
-class PasswordsPrivateGetCompromisedCredentialsInfoFunction
+class PasswordsPrivateGetCompromisedCredentialsFunction
     : public ExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getCompromisedCredentialsInfo",
-                             PASSWORDSPRIVATE_GETCOMPROMISEDCREDENTIALSINFO)
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getCompromisedCredentials",
+                             PASSWORDSPRIVATE_GETCOMPROMISEDCREDENTIALS)
 
  protected:
-  ~PasswordsPrivateGetCompromisedCredentialsInfoFunction() override;
+  ~PasswordsPrivateGetCompromisedCredentialsFunction() override;
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;

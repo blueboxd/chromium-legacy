@@ -31,6 +31,7 @@ class CORE_EXPORT FontPreloadManager final {
 
   bool HasPendingRenderBlockingFonts() const;
   void WillBeginRendering();
+  bool RenderingHasBegun() const { return state_ == State::kUnblocked; }
 
   void FontPreloadingStarted(FontResource*);
   void FontPreloadingFinished(FontResource*, ResourceFinishObserver*);

@@ -2513,7 +2513,31 @@
     ]
   },
   "Linux Ozone Tester (Wayland)": {
-    "gtest_tests": []
+    "gtest_tests": [
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_views_unittests.filter",
+          "--no-xvfb",
+          "--use-weston",
+          "--ozone-platform=wayland"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "wayland_views_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "views_unittests",
+        "test_target": "//ui/views:views_unittests"
+      }
+    ]
   },
   "Linux Ozone Tester (X11)": {
     "gtest_tests": [
@@ -2552,46 +2576,8 @@
             }
           ]
         },
-        "test": "ozone_unittests",
-        "test_target": "//ui/ozone:ozone_unittests"
-      },
-      {
-        "args": [
-          "--ozone-platform=x11"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
         "test": "ozone_x11_unittests",
         "test_target": "//ui/ozone:ozone_x11_unittests"
-      },
-      {
-        "args": [
-          "--ozone-platform=x11"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "services_unittests",
-        "test_target": "//services:services_unittests"
       },
       {
         "args": [
@@ -6215,26 +6201,6 @@
         "test_target": "//content/test:content_unittests"
       },
       {
-        "args": [
-          "--ozone-platform=x11"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "x11_content_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
-      },
-      {
         "experiment_percentage": 100,
         "merge": {
           "args": [],
@@ -6280,45 +6246,8 @@
             }
           ]
         },
-        "test": "ozone_x11_unittests",
-        "test_target": "//ui/ozone:ozone_x11_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
-      },
-      {
-        "args": [
-          "--ozone-platform=x11",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "x11_views_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "views_unittests",
-        "test_target": "//ui/views:views_unittests"
       }
     ]
   },

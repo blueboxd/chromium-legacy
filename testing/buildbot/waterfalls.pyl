@@ -3657,7 +3657,11 @@
         ]
       },
       'Linux Ozone Tester (Wayland)': {
-        'args': [ '--ozone-platform=wayland' ],
+        'args': [
+          '--no-xvfb',
+          '--use-weston',
+          '--ozone-platform=wayland'
+        ],
         'mixins': [
           'linux-xenial',
          ],
@@ -3731,7 +3735,7 @@
           'chrome',
         ],
         'test_suites': {
-          'gtest_tests': 'ozone_linux_gtests',
+          'gtest_tests': 'ozone_linux_gtests_headless',
         },
       },
       'linux-trusty-rel': {

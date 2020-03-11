@@ -32,6 +32,10 @@
       interfaceName: "MathMLRowElement",
     },
     {
+      name: "mfrac",
+      interfaceName: "MathMLFractionElement",
+    },
+    {
       name: "mglyph",
       interfaceName: "MathMLElement",
     },

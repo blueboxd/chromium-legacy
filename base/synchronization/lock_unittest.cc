@@ -97,8 +97,11 @@ class TryLockTestThread : public PlatformThread::Delegate {
   explicit TryLockTestThread(Lock* lock) : lock_(lock), got_lock_(false) {}
 
   void ThreadMain() override {
-    got_lock_ = lock_->Try();
-    if (got_lock_)
+    // The local variable is required for the static analyzer to see that the
+    // lock is properly released.
+    bool got_lock = lock_->Try();
+    got_lock_ = got_lock;
+    if (got_lock)
       lock_->Release();
   }
 
@@ -115,7 +118,7 @@ TEST(LockTest, TryLock) {
   Lock lock;
 
   ASSERT_TRUE(lock.Try());
-  // We now have the lock....
+  lock.AssertAcquired();
 
   // This thread will not be able to get the lock.
   {
@@ -143,6 +146,7 @@ TEST(LockTest, TryLock) {
     ASSERT_TRUE(thread.got_lock());
     // But it released it....
     ASSERT_TRUE(lock.Try());
+    lock.AssertAcquired();
   }
 
   lock.Release();
@@ -155,7 +159,7 @@ TEST(LockTest, TryTrackedLock) {
   Lock lock;
 
   ASSERT_TRUE(lock.Try());
-  // We now have the lock....
+  lock.AssertAcquired();
 
   // This thread will not be able to get the lock.
   {
@@ -183,6 +187,7 @@ TEST(LockTest, TryTrackedLock) {
     ASSERT_TRUE(thread.got_lock());
     // But it released it....
     ASSERT_TRUE(lock.Try());
+    lock.AssertAcquired();
   }
 
   lock.Release();

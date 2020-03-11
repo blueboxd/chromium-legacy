@@ -21,7 +21,7 @@ const breadCrumbTemplate = `
       white-space: nowrap;
     }
 
-    span.caret {
+    span[caret] {
       -webkit-mask-image: url(../../images/files/ui/arrow_right.svg);
       -webkit-mask-position: center;
       -webkit-mask-repeat: no-repeat;
@@ -32,7 +32,7 @@ const breadCrumbTemplate = `
       width: 20px;
     }
 
-    :host-context(html[dir='rtl']) span.caret {
+    :host-context(html[dir='rtl']) span[caret] {
       transform: scaleX(-1);
     }
 
@@ -141,16 +141,16 @@ const breadCrumbTemplate = `
   </style>
 
   <button id='first'></button>
-  <span class='caret' hidden></span>
+  <span caret hidden></span>
   <button elider aria-haspopup='menu' aria-expanded='false'
       aria-label='$i18n{LOCATION_BREADCRUMB_ELIDER_BUTTON_LABEL}'>
     <span elider></span>
   </button>
-  <span class='caret' hidden></span>
+  <span caret hidden></span>
   <button id='second'></button>
-  <span class='caret' hidden></span>
+  <span caret hidden></span>
   <button id='third'></button>
-  <span class='caret' hidden></span>
+  <span caret hidden></span>
   <button id='fourth'></button>
   <cr-action-menu id='elider-menu'></cr-menu-item>
 `;
@@ -239,7 +239,7 @@ class BreadCrumb extends HTMLElement {
 
     function setButton(i, text) {
       const previousSibling = buttons[i].previousElementSibling;
-      if (previousSibling.classList.contains('caret')) {
+      if (previousSibling.hasAttribute('caret')) {
         previousSibling.hidden = !text;
       }
 

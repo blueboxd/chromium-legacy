@@ -31,16 +31,21 @@ bool operator==(const DirectActionProto& value_a,
 // Custom comparison operator for |UserActionProto|.
 bool operator==(const UserActionProto& value_a, const UserActionProto& value_b);
 
+// Custom comparison operator for |DateProto|.
+bool operator==(const DateProto& value_a, const DateProto& value_b);
+
 // Intended for debugging.
 std::ostream& operator<<(std::ostream& out, const ValueProto& value);
 std::ostream& operator<<(std::ostream& out,
                          const ModelProto::ModelValue& value);
 std::ostream& operator<<(std::ostream& out, const UserActionProto& value);
+std::ostream& operator<<(std::ostream& out, const DateProto& value);
 
 // Convenience constructors.
 ValueProto SimpleValue(bool value);
 ValueProto SimpleValue(const std::string& value);
 ValueProto SimpleValue(int value);
+ValueProto SimpleValue(const DateProto& value);
 ModelProto::ModelValue SimpleModelValue(const std::string& identifier,
                                         const ValueProto& value);
 

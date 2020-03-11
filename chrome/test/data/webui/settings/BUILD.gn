@@ -81,7 +81,7 @@ js_modulizer("modulize") {
                          "autofill_test_util.TestAutofillManager|TestAutofillManager",
                          "autofill_test_util.TestPaymentsManager|TestPaymentsManager",
                          "autofill_test_util.create|create",
-                         "autofill_test_util.makeCompromisedCredentials|makeCompromisedCredentials",
+                         "autofill_test_util.makeCompromisedCredential|makeCompromisedCredential",
                          "autofill_test_util.makePasswordCheckStatus|makePasswordCheckStatus",
                          "export_passwords_tests.run|run",
                          "reset_page.TestResetBrowserProxy|TestResetBrowserProxy",

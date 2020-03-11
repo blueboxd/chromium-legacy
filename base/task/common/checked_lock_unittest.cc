@@ -121,7 +121,10 @@ TEST(CheckedLockTest, AcquirePredecessor) {
   predecessor.Release();
 }
 
-TEST(CheckedLockTest, AcquirePredecessorWrongOrder) {
+// Here and below, disable thread safety analysis, otherwise our death tests do
+// not compile (the issues are caught at compile time).
+TEST(CheckedLockTest, AcquirePredecessorWrongOrder)
+NO_THREAD_SAFETY_ANALYSIS {
   CheckedLock predecessor;
   CheckedLock lock(&predecessor);
   EXPECT_DCHECK_DEATH({
@@ -130,7 +133,7 @@ TEST(CheckedLockTest, AcquirePredecessorWrongOrder) {
   });
 }
 
-TEST(CheckedLockTest, AcquireNonPredecessor) {
+TEST(CheckedLockTest, AcquireNonPredecessor) NO_THREAD_SAFETY_ANALYSIS {
   CheckedLock lock1;
   CheckedLock lock2;
   EXPECT_DCHECK_DEATH({
@@ -161,7 +164,8 @@ TEST(CheckedLockTest, AcquireMultipleLocksInTheMiddleOfAChain) {
   lock2.Release();
 }
 
-TEST(CheckedLockTest, AcquireMultipleLocksNoTransitivity) {
+TEST(CheckedLockTest, AcquireMultipleLocksNoTransitivity)
+NO_THREAD_SAFETY_ANALYSIS {
   CheckedLock lock1;
   CheckedLock lock2(&lock1);
   CheckedLock lock3(&lock2);
@@ -299,7 +303,8 @@ TEST(CheckedLockTest, AcquireLockAfterUniversalPredecessor) {
   universal_predecessor.Release();
 }
 
-TEST(CheckedLockTest, AcquireMultipleLocksAfterUniversalPredecessor) {
+TEST(CheckedLockTest, AcquireMultipleLocksAfterUniversalPredecessor)
+NO_THREAD_SAFETY_ANALYSIS {
   // Acquisition of a universal-predecessor lock does not affect acquisition
   // rules for locks beyond the one acquired directly after it.
   CheckedLock universal_predecessor((UniversalPredecessor()));
@@ -321,7 +326,8 @@ TEST(CheckedLockTest, AcquireMultipleLocksAfterUniversalPredecessor) {
   });
 }
 
-TEST(CheckedLockTest, AcquireUniversalPredecessorAfterLock) {
+TEST(CheckedLockTest, AcquireUniversalPredecessorAfterLock)
+NO_THREAD_SAFETY_ANALYSIS {
   // A universal-predecessor lock may not be acquired after any other lock.
   CheckedLock universal_predecessor((UniversalPredecessor()));
   CheckedLock lock;
@@ -332,7 +338,8 @@ TEST(CheckedLockTest, AcquireUniversalPredecessorAfterLock) {
   });
 }
 
-TEST(CheckedLockTest, AcquireUniversalPredecessorAfterUniversalPredecessor) {
+TEST(CheckedLockTest, AcquireUniversalPredecessorAfterUniversalPredecessor)
+NO_THREAD_SAFETY_ANALYSIS {
   // A universal-predecessor lock may not be acquired after any other lock, not
   // even another universal predecessor.
   CheckedLock universal_predecessor((UniversalPredecessor()));

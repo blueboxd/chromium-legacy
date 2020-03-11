@@ -5,6 +5,7 @@
 #include "components/viz/common/gpu/context_cache_controller.h"
 
 #include <chrono>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -161,7 +162,8 @@ void ContextCacheController::InvalidatePendingIdleCallbacks() {
   ++current_idle_generation_;
 }
 
-void ContextCacheController::OnIdle(uint32_t idle_generation) {
+void ContextCacheController::OnIdle(uint32_t idle_generation)
+    NO_THREAD_SAFETY_ANALYSIS {
   // First check if we should run our idle callback at all. If we have become
   // busy since scheduling, just schedule another idle callback and return.
   {
@@ -175,6 +177,8 @@ void ContextCacheController::OnIdle(uint32_t idle_generation) {
   // Try to acquire the context lock - if we can't acquire it then we've become
   // busy since checking |current_idle_generation_| above. In this case, just
   // re-post our idle callback and return.
+  //
+  // NO_THREAD_SAFETY_ANALYSIS: Locking depends on runtime properties.
   if (context_lock_ && !context_lock_->Try()) {
     base::AutoLock hold(current_idle_generation_lock_);
     PostIdleCallback(current_idle_generation_);

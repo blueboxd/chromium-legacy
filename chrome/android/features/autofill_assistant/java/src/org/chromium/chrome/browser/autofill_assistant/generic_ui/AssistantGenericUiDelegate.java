@@ -35,6 +35,13 @@ public class AssistantGenericUiDelegate {
                 value);
     }
 
+    void onCalendarPopupDateChanged(String identifier, AssistantValue value) {
+        assert mNativeAssistantGenericUiDelegate != 0;
+        AssistantGenericUiDelegateJni.get().onCalendarPopupDateChanged(
+                mNativeAssistantGenericUiDelegate, AssistantGenericUiDelegate.this, identifier,
+                value);
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantGenericUiDelegate = 0;
@@ -45,6 +52,8 @@ public class AssistantGenericUiDelegate {
         void onViewClicked(long nativeAssistantGenericUiDelegate, AssistantGenericUiDelegate caller,
                 String identifier);
         void onListPopupSelectionChanged(long nativeAssistantGenericUiDelegate,
+                AssistantGenericUiDelegate caller, String identifier, AssistantValue value);
+        void onCalendarPopupDateChanged(long nativeAssistantGenericUiDelegate,
                 AssistantGenericUiDelegate caller, String identifier, AssistantValue value);
     }
 }

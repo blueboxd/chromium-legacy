@@ -244,6 +244,12 @@ POLICY_EXPORT extern const char
 POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistration[];
 POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistrationFcm[];
 
+POLICY_EXPORT extern const char kMetricUserRemoteCommandInvalidations[];
+POLICY_EXPORT extern const char kMetricDeviceRemoteCommandInvalidations[];
+
+POLICY_EXPORT extern const char
+    kMetricRemoteCommandInvalidationsRegistrationResult[];
+
 }  // namespace policy
 
 #endif  // COMPONENTS_POLICY_CORE_COMMON_CLOUD_ENTERPRISE_METRICS_H_

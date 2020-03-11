@@ -160,6 +160,13 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Passes along the device scale factor to the WebView.
   void SetDeviceScaleFactor(bool use_zoom_for_dsf, float device_scale_factor);
 
+  // Passes along the visible viewport size to the WebView, for child local
+  // roots when there is no local main frame present. When a local main frame
+  // exists in this renderer's frame tree, its value should persist and this
+  // method does nothing.
+  void SetVisibleViewportSizeForChildLocalRoot(
+      const gfx::Size& visible_viewport_size);
+
   // Passes along the page zoom to the WebView to set it on a newly attached
   // LocalFrame.
   void PropagatePageZoomToNewlyAttachedFrame(bool use_zoom_for_dsf,
@@ -374,12 +381,11 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void DidCompletePageScaleAnimationForWidget() override;
   void ResizeWebWidgetForWidget(
       const gfx::Size& widget_size,
+      const gfx::Size& visible_viewport_size,
       cc::BrowserControlsParams browser_controls_params) override;
   void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;
-  void ResizeVisualViewportForWidget(
-      const gfx::Size& scaled_viewport_size) override;
 
   // Old WebLocalFrameClient implementations
   // ----------------------------------------
@@ -417,8 +423,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // Page message handlers -----------------------------------------------------
   void OnPageVisibilityChanged(PageVisibilityState visibility_state);
-  void OnUpdateScreenInfo(const ScreenInfo& screen_info);
-  void OnUpdatePageVisualProperties(const gfx::Size& visible_viewport_size);
   void SetPageFrozen(bool frozen);
   void PutPageIntoBackForwardCache();
   void RestorePageFromBackForwardCache(base::TimeTicks navigation_start);

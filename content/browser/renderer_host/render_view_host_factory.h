@@ -27,9 +27,7 @@ class RenderViewHostFactory {
   static RenderViewHost* Create(SiteInstance* instance,
                                 RenderViewHostDelegate* delegate,
                                 RenderWidgetHostDelegate* widget_delegate,
-                                int32_t routing_id,
                                 int32_t main_frame_routing_id,
-                                int32_t widget_routing_id,
                                 bool swapped_out);
 
   // Returns true if there is currently a globally-registered factory.

@@ -423,7 +423,10 @@ static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
       content::WebContents::FromJavaWebContents(jweb_contents);
 
   payments::ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
-      url::Origin::FromJavaObject(jorigin), web_contents,
+      url::Origin::FromJavaObject(jorigin),
+      // TODO(crbug.com/1055360): plumb the RenderFrameHost from Java side.
+      nullptr, /* initiator_render_frame_host */
+      web_contents,
       WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),
           ServiceAccessType::EXPLICIT_ACCESS),

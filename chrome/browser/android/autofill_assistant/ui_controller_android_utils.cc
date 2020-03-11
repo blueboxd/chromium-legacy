@@ -146,6 +146,9 @@ base::android::ScopedJavaLocalRef<jobject> ToJavaValue(
 ValueProto ToNativeValue(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& jvalue) {
   ValueProto proto;
+  if (!jvalue) {
+    return proto;
+  }
   auto jints = Java_AssistantValue_getIntegers(env, jvalue);
   if (jints) {
     auto* mutable_ints = proto.mutable_ints();
@@ -259,6 +262,16 @@ void ShowJavaInfoPopup(JNIEnv* env,
                        base::android::ScopedJavaLocalRef<jobject> jinfo_popup,
                        base::android::ScopedJavaLocalRef<jobject> jcontext) {
   Java_AssistantInfoPopup_show(env, jinfo_popup, jcontext);
+}
+
+std::string SafeConvertJavaStringToNative(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& jstring) {
+  std::string native_string;
+  if (jstring) {
+    base::android::ConvertJavaStringToUTF8(env, jstring, &native_string);
+  }
+  return native_string;
 }
 
 }  // namespace ui_controller_android_utils

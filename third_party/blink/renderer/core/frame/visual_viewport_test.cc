@@ -238,7 +238,9 @@ INSTANTIATE_PAINT_TEST_SUITE_P(VisualViewportTest);
 // WebView resizes the VisualViewport.
 TEST_P(VisualViewportTest, TestResize) {
   InitializeWithDesktopSettings();
-  WebView()->MainFrameWidget()->Resize(IntSize(320, 240));
+  WebView()->ResizeWithBrowserControls(
+      IntSize(320, 240), IntSize(320, 240),
+      WebView()->GetBrowserControls().Params());
 
   NavigateTo("about:blank");
   ForceFullCompositingUpdate();
@@ -252,7 +254,8 @@ TEST_P(VisualViewportTest, TestResize) {
 
   // Resizing the WebView should change the VisualViewport.
   web_view_size = IntSize(640, 480);
-  WebView()->MainFrameWidget()->Resize(web_view_size);
+  WebView()->ResizeWithBrowserControls(
+      web_view_size, web_view_size, WebView()->GetBrowserControls().Params());
   EXPECT_EQ(web_view_size, IntSize(WebView()->MainFrameWidget()->Size()));
   EXPECT_EQ(web_view_size, visual_viewport.Size());
 
@@ -276,7 +279,8 @@ TEST_P(VisualViewportTest, TestVisibleContentRect) {
   // Vertical scrollbar width and horizontal scrollbar height.
   IntSize scrollbar_size = IntSize(15, 15);
 
-  WebView()->MainFrameWidget()->Resize(size);
+  WebView()->ResizeWithBrowserControls(
+      size, size, WebView()->GetBrowserControls().Params());
 
   // Scroll layout viewport and verify visibleContentRect.
   WebView()->MainFrameImpl()->SetScrollOffset(WebSize(0, 50));
@@ -306,7 +310,9 @@ TEST_P(VisualViewportTest, TestVisibleContentRect) {
 // make it appear to stay still). This caused bugs like crbug.com/453859.
 TEST_P(VisualViewportTest, TestResizeAtFullyScrolledPreservesViewportLocation) {
   InitializeWithDesktopSettings();
-  WebView()->MainFrameWidget()->Resize(IntSize(800, 600));
+  WebView()->ResizeWithBrowserControls(
+      IntSize(800, 600), IntSize(800, 600),
+      WebView()->GetBrowserControls().Params());
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
@@ -332,12 +338,16 @@ TEST_P(VisualViewportTest, TestResizeAtFullyScrolledPreservesViewportLocation) {
   // Shrink the WebView, this should cause both viewports to shrink and
   // WebView should do whatever it needs to do to preserve the visible
   // location.
-  WebView()->MainFrameWidget()->Resize(IntSize(700, 550));
+  WebView()->ResizeWithBrowserControls(
+      IntSize(700, 550), IntSize(800, 600),
+      WebView()->GetBrowserControls().Params());
 
   EXPECT_EQ(expected_location,
             frame_view.GetScrollableArea()->VisibleContentRect().Location());
 
-  WebView()->MainFrameWidget()->Resize(IntSize(800, 600));
+  WebView()->ResizeWithBrowserControls(
+      IntSize(800, 600), IntSize(800, 600),
+      WebView()->GetBrowserControls().Params());
 
   EXPECT_EQ(expected_location,
             frame_view.GetScrollableArea()->VisibleContentRect().Location());
@@ -1450,9 +1460,15 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
   InitializeWithAndroidSettings();
 
   // Initialize with browser controls showing and shrinking the Blink size.
+  cc::BrowserControlsParams controls;
+  controls.top_controls_height = browser_controls_height;
+  controls.browser_controls_shrink_blink_size = true;
+  // TODO(danakj): The browser (RenderWidgetHostImpl) doesn't shrink the widget
+  // size by the browser controls, only the visible_viewport_size, but this test
+  // shrinks and grows both.
   WebView()->ResizeWithBrowserControls(
-      WebSize(500, visual_viewport_height - browser_controls_height), 20, 0,
-      true);
+      WebSize(500, visual_viewport_height - browser_controls_height),
+      WebSize(500, visual_viewport_height - browser_controls_height), controls);
   WebView()->GetBrowserControls().SetShownRatio(1, 0);
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
@@ -1493,19 +1509,26 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
 
   ScrollOffset total_expected = visual_viewport_expected + frame_view_expected;
 
-  // Resize the widget to match the browser controls adjustment. Ensure that the
-  // total offset (i.e. what the user sees) doesn't change because of clamping
-  // the offsets to valid values.
-  WebView()->ResizeWithBrowserControls(WebSize(500, visual_viewport_height), 20,
-                                       0, false);
+  // Resize the widget and visible viewport to match the browser controls
+  // adjustment. Ensure that the total offset (i.e. what the user sees) doesn't
+  // change because of clamping the offsets to valid values.
+  controls.browser_controls_shrink_blink_size = false;
+  WebView()->ResizeWithBrowserControls(WebSize(500, visual_viewport_height),
+                                       WebSize(500, visual_viewport_height),
+                                       controls);
 
   EXPECT_EQ(IntSize(500, visual_viewport_height), visual_viewport.Size());
   EXPECT_EQ(FloatSize(250, visual_viewport_height / page_scale),
             visual_viewport.VisibleRect().Size());
   EXPECT_EQ(IntSize(1000, layout_viewport_height),
             frame_view.FrameRect().Size());
+
   EXPECT_EQ(total_expected, visual_viewport.GetScrollOffset() +
                                 frame_view.LayoutViewport()->GetScrollOffset());
+
+  EXPECT_EQ(visual_viewport_expected, visual_viewport.GetScrollOffset());
+  EXPECT_EQ(frame_view_expected,
+            frame_view.LayoutViewport()->GetScrollOffset());
 }
 
 // Tests that a scroll all the way to the bottom while showing the browser

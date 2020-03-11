@@ -311,7 +311,13 @@ void ServiceWorkerRegistry::StoreRegistration(
   data->script_response_time = version->GetInfo().script_response_time;
   for (const blink::mojom::WebFeature feature : version->used_features())
     data->used_features.push_back(feature);
-  data->cross_origin_embedder_policy = version->cross_origin_embedder_policy();
+
+  // The ServiceWorkerVersion's COEP might be null if it is stored before
+  // loading the main script. This happens in many unittests.
+  if (version->cross_origin_embedder_policy()) {
+    data->cross_origin_embedder_policy =
+        version->cross_origin_embedder_policy().value();
+  }
 
   auto resources = std::make_unique<ResourceList>();
   version->script_cache_map()->GetResources(resources.get());

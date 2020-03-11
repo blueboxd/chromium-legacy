@@ -53,14 +53,6 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // once the invalidation service starts up.
   static const int kInvalidationGracePeriod;
 
-  // Time, in seconds, for which unknown version invalidations are ignored after
-  // fetching a policy.
-  static const int kUnknownVersionIgnorePeriod;
-
-  // The max tolerated discrepancy, in seconds, between policy timestamps and
-  // invalidation timestamps when determining if an invalidation is expired.
-  static const int kMaxInvalidationTimeDelta;
-
   // Returns a name of a refresh metric associated with the given scope.
   static const char* GetPolicyRefreshMetricName(PolicyInvalidationScope scope);
   // Returns a name of a FCM refresh metric associated with the given scope.
@@ -169,10 +161,6 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // Determines if the given policy is different from the policy passed in the
   // previous call.
   bool IsPolicyChanged(const enterprise_management::PolicyData* policy);
-
-  // Determine if an invalidation has expired.
-  // |version| is the version of the invalidation, or zero for unknown.
-  bool IsInvalidationExpired(int64_t version);
 
   // Determine if invalidations have been enabled longer than the grace period.
   bool GetInvalidationsEnabled();

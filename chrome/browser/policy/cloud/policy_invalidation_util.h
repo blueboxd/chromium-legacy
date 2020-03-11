@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_POLICY_CLOUD_POLICY_INVALIDATION_UTIL_H_
 #define CHROME_BROWSER_POLICY_CLOUD_POLICY_INVALIDATION_UTIL_H_
 
+#include "base/time/time.h"
 #include "components/invalidation/public/invalidation_util.h"
+#include "components/policy/core/common/cloud/enterprise_metrics.h"
 
 namespace enterprise_management {
 
@@ -13,7 +15,28 @@ class PolicyData;
 
 }  // namespace enterprise_management
 
+namespace syncer {
+
+class Invalidation;
+
+}  // namespace syncer
+
 namespace policy {
+
+namespace invalidation_timeouts {
+
+// Time for which unknown version invalidations are ignored after
+// fetching a policy or command.
+constexpr base::TimeDelta kUnknownVersionIgnorePeriod =
+    base::TimeDelta::FromSeconds(30);
+
+// The max tolerated discrepancy between policy or remote commands
+// timestamps and invalidation timestamps when determining if an invalidation
+// is expired.
+constexpr base::TimeDelta kMaxInvalidationTimeDelta =
+    base::TimeDelta::FromSeconds(300);
+
+}  // namespace invalidation_timeouts
 
 // Returns true if |topic| is a public topic. Topic can be either public or
 // private. Private topic is keyed by GAIA ID, while public isn't, so many
@@ -37,6 +60,15 @@ bool GetCloudPolicyTopicFromPolicy(
 bool GetRemoteCommandTopicFromPolicy(
     const enterprise_management::PolicyData& policy,
     syncer::Topic* topic);
+
+// Determines if an invalidation is expired.
+bool IsInvalidationExpired(const syncer::Invalidation& invalidation,
+                           const base::Time& last_fetch_time,
+                           const base::Time& current_time);
+
+// Returns a metric type depended on invalidation's state.
+PolicyInvalidationType GetInvalidationMetric(bool is_missing_payload,
+                                             bool is_expired);
 
 }  // namespace policy
 

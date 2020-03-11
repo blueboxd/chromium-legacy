@@ -76,7 +76,7 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   bool RemoveSuggestion(int index) override;
   void SetSelectedLine(base::Optional<int> selected_line) override;
   base::Optional<int> selected_line() const override;
-  const AutofillPopupLayoutModel& layout_model() const override;
+  PopupType GetPopupType() const override;
 
   void Hide(PopupHidingReason reason) override;
   void ViewDestroyed() override;

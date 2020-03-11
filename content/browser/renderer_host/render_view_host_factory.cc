@@ -25,27 +25,10 @@ RenderViewHost* RenderViewHostFactory::Create(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
     RenderWidgetHostDelegate* widget_delegate,
-    int32_t routing_id,
     int32_t main_frame_routing_id,
-    int32_t widget_routing_id,
     bool swapped_out) {
-  // RenderViewHost creation can be either browser-driven (by the user opening a
-  // new tab) or renderer-driven (by script calling window.open, etc).
-  //
-  // In the browser-driven case, the routing ID of the view is lazily assigned:
-  // this is signified by passing MSG_ROUTING_NONE for |routing_id|.
-  if (routing_id == MSG_ROUTING_NONE) {
-    DCHECK_EQ(widget_routing_id, MSG_ROUTING_NONE);
-    routing_id = instance->GetProcess()->GetNextRoutingID();
-    widget_routing_id = instance->GetProcess()->GetNextRoutingID();
-  } else {
-    // Otherwise, in the renderer-driven case, the routing ID of the view is
-    // already set. This is due to the fact that a sync render->browser IPC is
-    // involved. In order to quickly reply to the sync IPC, the routing IDs are
-    // assigned as early as possible. The IO thread immediately sends a reply to
-    // the sync IPC, while deferring the creation of the actual Host objects to
-    // the UI thread.
-  }
+  int32_t routing_id = instance->GetProcess()->GetNextRoutingID();
+  int32_t widget_routing_id = instance->GetProcess()->GetNextRoutingID();
   if (factory_) {
     return factory_->CreateRenderViewHost(instance, delegate, widget_delegate,
                                           routing_id, main_frame_routing_id,

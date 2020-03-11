@@ -2069,8 +2069,7 @@ Cross-Origin-Embedder-Policy: none
   scoped_refptr<ServiceWorkerRegistration> registration =
       update_helper_->SetupInitialRegistration(kNewVersionOrigin);
   ASSERT_TRUE(registration.get());
-  EXPECT_EQ(CrossOriginEmbedderPolicyNone(),
-            registration->active_version()->cross_origin_embedder_policy());
+  EXPECT_FALSE(registration->active_version()->cross_origin_embedder_policy());
 
   registration->AddListener(update_helper_);
 

@@ -12,7 +12,6 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
-#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -71,9 +70,7 @@ class MockAutofillPopupController
   MOCK_METHOD1(RemoveSuggestion, bool(int index));
   MOCK_METHOD1(SetSelectedLine, void(base::Optional<int> selected_line));
   MOCK_CONST_METHOD0(selected_line, base::Optional<int>());
-  const autofill::AutofillPopupLayoutModel& layout_model() const override {
-    return *layout_model_;
-  }
+  MOCK_CONST_METHOD0(GetPopupType, PopupType());
 
   void set_suggestions(const std::vector<int>& ids) {
     for (const auto& id : ids)
@@ -85,7 +82,6 @@ class MockAutofillPopupController
   }
 
  private:
-  std::unique_ptr<autofill::AutofillPopupLayoutModel> layout_model_;
   std::vector<autofill::Suggestion> suggestions_;
 
   base::WeakPtrFactory<MockAutofillPopupController> weak_ptr_factory_{this};

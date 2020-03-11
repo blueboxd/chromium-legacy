@@ -45,6 +45,26 @@ void CrossOriginEmbedderPolicyReporter::QueueCorpViolationReport(
       std::move(body));
 }
 
+void CrossOriginEmbedderPolicyReporter::QueueNavigationReport(
+    const GURL& blocked_url,
+    bool report_only) {
+  const base::Optional<std::string>& endpoint =
+      report_only ? report_only_endpoint_ : endpoint_;
+  if (!endpoint) {
+    return;
+  }
+  url::Replacements<char> replacements;
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+  base::DictionaryValue body;
+  body.SetString("type", "navigation");
+  body.SetString("blocked-url",
+                 blocked_url.ReplaceComponents(replacements).spec());
+  storage_partition_->GetNetworkContext()->QueueReport(
+      "coep", *endpoint, context_url_, /*user_agent=*/base::nullopt,
+      std::move(body));
+}
+
 void CrossOriginEmbedderPolicyReporter::Clone(
     mojo::PendingReceiver<network::mojom::CrossOriginEmbedderPolicyReporter>
         receiver) {

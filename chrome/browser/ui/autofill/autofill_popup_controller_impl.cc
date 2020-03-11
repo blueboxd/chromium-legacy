@@ -79,7 +79,6 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     base::i18n::TextDirection text_direction)
     : controller_common_(element_bounds, text_direction, container_view),
       web_contents_(web_contents),
-      layout_model_(delegate->GetPopupType() == PopupType::kCreditCards),
       delegate_(delegate) {
   ClearState();
   delegate->RegisterDeletionCallback(base::BindOnce(
@@ -360,9 +359,8 @@ base::Optional<int> AutofillPopupControllerImpl::selected_line() const {
   return selected_line_;
 }
 
-const AutofillPopupLayoutModel& AutofillPopupControllerImpl::layout_model()
-    const {
-  return layout_model_;
+PopupType AutofillPopupControllerImpl::GetPopupType() const {
+  return delegate_->GetPopupType();
 }
 
 void AutofillPopupControllerImpl::SetSelectedLine(

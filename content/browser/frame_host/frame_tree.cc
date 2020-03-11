@@ -384,14 +384,12 @@ void FrameTree::SetFrameRemoveListener(
 
 scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
     SiteInstance* site_instance,
-    int32_t routing_id,
     int32_t main_frame_routing_id,
-    int32_t widget_routing_id,
     bool swapped_out) {
   RenderViewHostImpl* rvh =
       static_cast<RenderViewHostImpl*>(RenderViewHostFactory::Create(
           site_instance, render_view_delegate_, render_widget_delegate_,
-          routing_id, main_frame_routing_id, widget_routing_id, swapped_out));
+          main_frame_routing_id, swapped_out));
   RegisterRenderViewHost(rvh);
   return base::WrapRefCounted(rvh);
 }

@@ -12,7 +12,9 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
+#include "components/password_manager/core/browser/leak_detection_delegate.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
+#include "components/prefs/pref_service.h"
 
 namespace password_manager {
 
@@ -41,10 +43,12 @@ bool operator<(const CanonicalizedCredential& lhs,
 
 BulkLeakCheckServiceAdapter::BulkLeakCheckServiceAdapter(
     SavedPasswordsPresenter* presenter,
-    BulkLeakCheckService* service)
-    : presenter_(presenter), service_(service) {
+    BulkLeakCheckService* service,
+    PrefService* prefs)
+    : presenter_(presenter), service_(service), prefs_(prefs) {
   DCHECK(presenter_);
   DCHECK(service_);
+  DCHECK(prefs_);
   presenter_->AddObserver(this);
 }
 
@@ -91,11 +95,13 @@ size_t BulkLeakCheckServiceAdapter::GetPendingChecksCount() const {
 }
 
 void BulkLeakCheckServiceAdapter::OnEdited(const PasswordForm& form) {
-  // Here no extra canonicalization is needed, as there are no other forms we
-  // could de-dupe before we pass it on to the service.
-  std::vector<LeakCheckCredential> credentials;
-  credentials.emplace_back(form.username_value, form.password_value);
-  service_->CheckUsernamePasswordPairs(std::move(credentials));
+  if (CanStartLeakCheck(*prefs_)) {
+    // Here no extra canonicalization is needed, as there are no other forms we
+    // could de-dupe before we pass it on to the service.
+    std::vector<LeakCheckCredential> credentials;
+    credentials.emplace_back(form.username_value, form.password_value);
+    service_->CheckUsernamePasswordPairs(std::move(credentials));
+  }
 }
 
 }  // namespace password_manager

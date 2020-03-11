@@ -134,6 +134,9 @@ message ShowListPopupProto {
   optional string selected_item_indices_model_identifier = 3;
   // Whether to allow the selection of multiple items or not.
   optional bool allow_multiselect = 4;
+  // Optional output model identifier to store the names of the selected items
+  // in a StringList.
+  optional string selected_item_names_model_identifier = 5;
 }
 
 // Sets the list of available user actions. User actions are either direct

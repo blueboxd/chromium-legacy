@@ -23,16 +23,16 @@ enum class HistoryUiFaviconRequestOrigin {
 };
 
 // Keyed service for handling favicon requests made by a history UI, forwarding
-// them to local storage, sync or Google server accordingly. This service should
+// them to local storage or Google server accordingly. This service should
 // only be used by the UIs listed in the HistoryUiFaviconRequestOrigin enum.
 // Requests must be made by page url, as opposed to icon url.
 class HistoryUiFaviconRequestHandler : public KeyedService {
  public:
   // Requests favicon bitmap at |page_url| of size |desired_size_in_pixel|.
-  // Tries to fetch the icon from local storage and falls back to sync, or the
-  // Google favicon server if user settings allow to query it using history
-  // data. If a non-empty |icon_url_for_uma| (optional) is passed, it will
-  // be used to record UMA about the grouping of requests to the favicon server.
+  // Tries to fetch the icon from local storage and falls back to the Google
+  // favicon server if user settings allow to query it using history data.
+  // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
+  // record UMA about the grouping of requests to the favicon server.
   virtual void GetRawFaviconForPageURL(
       const GURL& page_url,
       int desired_size_in_pixel,
@@ -40,12 +40,8 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
       HistoryUiFaviconRequestOrigin request_origin_for_uma,
       const GURL& icon_url_for_uma) = 0;
 
-  // Requests favicon image at |page_url|.
-  // Tries to fetch the icon from local storage and falls back to sync, or the
-  // Google favicon server if user settings allow to query it using history
-  // data.
-  // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
-  // record UMA about the grouping of requests to the favicon server.
+  // Requests favicon image at |page_url|. The same fallback considerations for
+  // GetRawFaviconForPageURL apply.
   // This method is only called by desktop code.
   virtual void GetFaviconImageForPageURL(
       const GURL& page_url,

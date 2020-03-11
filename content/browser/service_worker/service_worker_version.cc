@@ -212,7 +212,8 @@ void CreateFactoryBundleForSubresourceOnUI(
     int process_id,
     int routing_id,
     const url::Origin& origin,
-    network::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+    base::Optional<network::CrossOriginEmbedderPolicy>
+        cross_origin_embedder_policy,
     CreateFactoryBundleForSubresourceOnUICallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* rph = RenderProcessHost::FromID(process_id);
@@ -1688,6 +1689,14 @@ void ServiceWorkerVersion::CountFeature(blink::mojom::WebFeature feature) {
     container_host_by_uuid.second->CountFeature(feature);
 }
 
+void ServiceWorkerVersion::set_cross_origin_embedder_policy(
+    network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
+  // Once it is set, the CrossOriginEmbedderPolicy is immutable.
+  DCHECK(!cross_origin_embedder_policy_ ||
+         cross_origin_embedder_policy_ == cross_origin_embedder_policy);
+  cross_origin_embedder_policy_ = std::move(cross_origin_embedder_policy);
+}
+
 // static
 bool ServiceWorkerVersion::IsInstalled(ServiceWorkerVersion::Status status) {
   switch (status) {
@@ -2330,7 +2339,7 @@ void ServiceWorkerVersion::PrepareForUpdate(
     network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   compared_script_info_map_ = std::move(compared_script_info_map);
   updated_script_url_ = updated_script_url;
-  cross_origin_embedder_policy_ = cross_origin_embedder_policy;
+  set_cross_origin_embedder_policy(cross_origin_embedder_policy);
 }
 
 const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&

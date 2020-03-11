@@ -26,9 +26,9 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.external_intents.ExternalIntentsFeatureList;
 import org.chromium.components.external_intents.ExternalIntentsSwitches;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.components.external_intents.RedirectHandler;
@@ -361,8 +361,8 @@ public class ExternalNavigationHandler {
     /** Wrapper of check against the feature to support overriding for testing. */
     @VisibleForTesting
     boolean blockExternalFormRedirectsWithoutGesture() {
-        return ChromeFeatureList.isEnabled(
-                ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE);
+        return ExternalIntentsFeatureList.isEnabled(
+                ExternalIntentsFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE);
     }
 
     /**

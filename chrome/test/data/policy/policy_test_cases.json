@@ -1,5 +1,6 @@
 {
   "-- Template --": {
+    "intro": "This file is interpreted by chrome/browser/policy/policy_prefs_browsertest.cc",
     "intro": "Tests that policies map to prefs properly and whether the corresponding Chrome settings UI behaves properly, e.g. if a policy is managed, the UI should be readonly and an icon with a properly worded tooltip should show up.",
     "intro": "Top-level entries map a policy name to its test parameters, described below. The name of the top level entry should be of the form <policy name>[.suffix]. The optional suffix is used for defining multiple test cases for a single policy.",
     "intro": "To run tests from this file use 'browser_tests --gtest_filter=*PolicyPrefsTest*' command.",
@@ -18,6 +19,10 @@
     "policy_pref_mapping_tests": [
       {
         "policies": "A policy dictionary that should affect |prefs| when set as mandatory or recommended policy.",
+        "required_preprocessor_macros": [
+          "List of preprocessor macros that must be defined for the test to make sense. Macros are mapped into strings by PreprocessorMacroChecker in policy_prefs_browsertest.cc. If a test depends on a new macro, please add it there and to this list. Currently supported macros:",
+          "USE_CUPS"
+        ],
         "prefs": {
             "${pref}": {
               "value": "The value that |pref| should take on.",
@@ -340,8 +345,11 @@
   "PrinterTypeDenyList": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PrinterTypeDenyList": ["privet", "extension"] },
-    "pref_mappings": [
-      { "pref": "printing.printer_type_deny_list" }
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "PrinterTypeDenyList": [ "value1" ]},
+        "prefs": { "printing.printer_type_deny_list": {} }
+      }
     ]
   },
 
@@ -477,8 +485,12 @@
 
   "PrintingAPIExtensionsWhitelist": {
     "os": ["chromeos"],
-    "pref_mappings": [
-      { "pref": "printing.printing_api_extensions_whitelist" }
+    "policy_pref_mapping_test": [
+      {
+        "required_preprocessor_macros": [ "USE_CUPS" ],
+        "policies": { "PrintingAPIExtensionsWhitelist": [ "value1" ]},
+        "prefs": { "printing.printing_api_extensions_whitelist": {} }
+      }
     ]
   },
 
@@ -4011,11 +4023,12 @@
 
   "PrimaryMouseButtonSwitch": {
     "os": ["chromeos"],
-    "test_policy": { "PrimaryMouseButtonSwitch": true },
-    "pref_mappings": [
-      { "pref": "settings.mouse.primary_right",
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "PrimaryMouseButtonSwitch": true },
+        "prefs": { "settings.mouse.primary_right": {} },
         "indicator_tests": [
-          { "policy": { "PrimaryMouseButtonSwitch": true } }
+          { "pref": "settings" }
         ]
       }
     ]
@@ -6217,29 +6230,34 @@
 
   "PerAppTimeLimitsWhitelist" : {
     "os": ["chromeos"],
-    "test_policy": { "PerAppTimeLimitsWhitelist": {
-      "scheme_list": [
-        "chrome",
-        "files"
-      ],
-      "domain_list": [
-        "support.google.com",
-        "policies.google.com"
-      ],
-      "app_list": [
-       {
-        "app_id": "pjkljhegncpnkpknbcohdijeoejaedia",
-        "app_type": "EXTENSION"
-       },
-       {
-         "app_id": "iniodglblcgmngkgdipeiclkdjjpnlbn",
-         "app_type": "BUILT-IN"
-       }
-      ]
-    }
-    },
     "can_be_recommended": false,
-    "pref_mappings": [{"pref": "child_user.per_app_time_limits.whitelist"}]
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "PerAppTimeLimitsWhitelist": {
+            "scheme_list": [
+              "chrome",
+              "files"
+            ],
+            "domain_list": [
+              "support.google.com",
+              "policies.google.com"
+            ],
+            "app_list": [
+             {
+              "app_id": "pjkljhegncpnkpknbcohdijeoejaedia",
+              "app_type": "EXTENSION"
+             },
+             {
+               "app_id": "iniodglblcgmngkgdipeiclkdjjpnlbn",
+               "app_type": "BUILT-IN"
+             }
+            ]
+          }
+        },
+        "prefs": { "child_user.per_app_time_limits.whitelist": {} }
+      }
+    ]
   },
 
   "DeviceLoginScreenPrivacyScreenEnabled": {

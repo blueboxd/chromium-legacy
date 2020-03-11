@@ -34,18 +34,26 @@ public class AssistantViewInteractions {
     @CalledByNative
     private static void showListPopup(Context context, String[] itemNames,
             @PopupItemType int[] itemTypes, int[] selectedItems, boolean multiple,
-            String identifier, AssistantGenericUiDelegate delegate) {
+            String selectedIndicesIdentifier, @Nullable String selectedNamesIdentifier,
+            AssistantGenericUiDelegate delegate) {
         assert (itemNames.length == itemTypes.length);
         List<SelectPopupItem> popupItems = new ArrayList<>();
         for (int i = 0; i < itemNames.length; i++) {
             popupItems.add(new SelectPopupItem(itemNames[i], itemTypes[i]));
         }
 
-        SelectPopupDialog dialog = new SelectPopupDialog(context,
-                (indices)
-                        -> delegate.onListPopupSelectionChanged(
-                                identifier, new AssistantValue(indices)),
-                popupItems, multiple, selectedItems);
+        SelectPopupDialog dialog = new SelectPopupDialog(context, (indices) -> {
+            AssistantValue selectedNamesValue = null;
+            if (selectedNamesIdentifier != null) {
+                String[] selectedNames = new String[indices != null ? indices.length : 0];
+                for (int i = 0; i < selectedNames.length; ++i) {
+                    selectedNames[i] = itemNames[indices[i]];
+                }
+                selectedNamesValue = new AssistantValue(selectedNames);
+            }
+            delegate.onListPopupSelectionChanged(selectedIndicesIdentifier,
+                    new AssistantValue(indices), selectedNamesIdentifier, selectedNamesValue);
+        }, popupItems, multiple, selectedItems);
         dialog.show();
     }
 

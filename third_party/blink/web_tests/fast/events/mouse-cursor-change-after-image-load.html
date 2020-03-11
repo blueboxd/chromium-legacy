@@ -18,7 +18,7 @@ var cursorTest = async_test('Test cursor update after image loaded');
 cursorTest.step(function() {
     assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.');
 
-    assert_equals(internals.getCurrentCursorInfo(), "type=Pointer hotSpot=0,0");
+    assert_equals(internals.getCurrentCursorInfo(), "type=Pointer");
 
     var target = document.getElementById('target');
     var rect = target.getBoundingClientRect();

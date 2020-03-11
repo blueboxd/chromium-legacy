@@ -80,10 +80,6 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
 
   RenderProcessHost* GetProcessHost() { return worker_process_host_; }
   const url::Origin& GetWorkerOrigin() { return worker_origin_; }
-  const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy()
-      const {
-    return cross_origin_embedder_policy_;
-  }
 
   void CreateIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
@@ -97,6 +93,8 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);
   void CreateQuicTransportConnector(
       mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
+  void BindCacheStorage(
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
 
 #if !defined(OS_ANDROID)
   void BindSerialService(

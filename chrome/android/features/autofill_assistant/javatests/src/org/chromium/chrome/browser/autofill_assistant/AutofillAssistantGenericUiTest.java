@@ -641,36 +641,54 @@ public class AutofillAssistantGenericUiTest {
     @MediumTest
     @DisableIf.Build(sdk_is_less_than = 21)
     public void testListPopup() {
-        ViewProto clickableView = (ViewProto) ViewProto.newBuilder()
-                                          .setTextView(TextViewProto.newBuilder().setText(
-                                                  "Shows a list popup when clicked"))
-                                          .setIdentifier("clickableView")
-                                          .build();
-
-        ViewProto rootView =
-                (ViewProto) ViewProto.newBuilder()
-                        .setViewContainer(
-                                ViewContainerProto.newBuilder()
-                                        .setLinearLayout(
-                                                LinearLayoutProto.newBuilder().setOrientation(
-                                                        LinearLayoutProto.Orientation.VERTICAL))
-                                        .addViews(clickableView))
-                        .build();
-
         List<InteractionProto> interactions = new ArrayList<>();
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "chips")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
+                                SetUserActionsProto.newBuilder().setModelIdentifier("chips")))
+                        .build());
         interactions.add((InteractionProto) InteractionProto.newBuilder()
-                                 .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
-                                         OnViewClickedEventProto.newBuilder().setViewIdentifier(
-                                                 "clickableView")))
-                                 .addCallbacks(CallbackProto.newBuilder().setShowListPopup(
-                                         ShowListPopupProto.newBuilder()
-                                                 .setItemNamesModelIdentifier("items")
-                                                 .setSelectedItemIndicesModelIdentifier(
-                                                         "selected_items_indices")
-                                                 .setAllowMultiselect(false)))
+                                 .setTriggerEvent(EventProto.newBuilder().setOnUserActionCalled(
+                                         OnUserActionCalled.newBuilder().setUserActionIdentifier(
+                                                 "done_chip")))
+                                 .addCallbacks(CallbackProto.newBuilder().setEndAction(
+                                         EndActionProto.newBuilder().setStatus(
+                                                 ProcessedActionStatusProto.ACTION_APPLIED)))
                                  .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "clickableView")))
+                        .addCallbacks(CallbackProto.newBuilder().setShowListPopup(
+                                ShowListPopupProto.newBuilder()
+                                        .setItemNamesModelIdentifier("items")
+                                        .setSelectedItemIndicesModelIdentifier(
+                                                "selected_items_indices")
+                                        .setSelectedItemNamesModelIdentifier("selected_item_names")
+                                        .setAllowMultiselect(false)))
+                        .build());
 
         List<ModelProto.ModelValue> modelValues = new ArrayList<>();
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("value_a")
+                                .setValue(ValueProto.newBuilder().setInts(
+                                        IntList.newBuilder().addValues(1)))
+                                .build());
+        modelValues.add(
+                (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                        .setIdentifier("chips")
+                        .setValue(ValueProto.newBuilder().setUserActions(
+                                UserActionList.newBuilder().addValues(
+                                        UserActionProto.newBuilder()
+                                                .setChip(ChipProto.newBuilder()
+                                                                 .setText("Done")
+                                                                 .setType(ChipType.NORMAL_ACTION))
+                                                .setIdentifier("done_chip"))))
+                        .build());
         modelValues.add(
                 (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
                         .setIdentifier("items")
@@ -681,22 +699,28 @@ public class AutofillAssistantGenericUiTest {
         modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
                                 .setIdentifier("selected_items_indices")
                                 .build());
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("selected_item_names")
+                                .build());
+
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(ViewProto.newBuilder()
+                                             .setTextView(TextViewProto.newBuilder().setText(
+                                                     "Shows a list popup when clicked"))
+                                             .setIdentifier("clickableView"))
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactions))
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValues))
+                        .build();
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
-                         .setCollectUserData(
-                                 CollectUserDataProto.newBuilder()
-                                         .setGenericUserInterfacePrepended(
-                                                 GenericUserInterfaceProto.newBuilder()
-                                                         .setRootView(rootView)
-                                                         .setInteractions(
-                                                                 InteractionsProto.newBuilder()
-                                                                         .addAllInteractions(
-                                                                                 interactions))
-                                                         .setModel(ModelProto.newBuilder()
-                                                                           .addAllValues(
-                                                                                   modelValues)))
-                                         .setRequestTermsAndConditions(false))
+                         .setShowGenericUi(
+                                 ShowGenericUiProto.newBuilder()
+                                         .setGenericUserInterface(genericUserInterface)
+                                         .addAllOutputModelIdentifiers(Arrays.asList(
+                                                 "selected_items_indices", "selected_item_names")))
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
@@ -710,39 +734,32 @@ public class AutofillAssistantGenericUiTest {
                 new AutofillAssistantTestService(Collections.singletonList(script));
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
-        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        waitUntilViewMatchesCondition(withText("Done"), isCompletelyDisplayed());
 
         onView(withText("Shows a list popup when clicked")).perform(click());
         onView(withText("09:30 AM")).inRoot(isDialog()).perform(click());
 
-        // Finish action, wait for response and prepare next set of actions.
-        List<ActionProto> nextActions = new ArrayList<>();
-        nextActions.add(
-                (ActionProto) ActionProto.newBuilder()
-                        .setPrompt(PromptProto.newBuilder()
-                                           .setMessage("Finished")
-                                           .addChoices(PromptProto.Choice.newBuilder().setChip(
-                                                   ChipProto.newBuilder()
-                                                           .setType(ChipType.DONE_ACTION)
-                                                           .setText("End"))))
-                        .build());
-        testService.setNextActions(nextActions);
-        waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
         int numNextActionsCalled = testService.getNextActionsCounter();
-        onView(withText("Continue")).perform(click());
+        onView(withContentDescription("Done")).perform(click());
         testService.waitUntilGetNextActions(numNextActionsCalled + 1);
 
         List<ProcessedActionProto> processedActions = testService.getProcessedActions();
         assertThat(processedActions, iterableWithSize(1));
         assertThat(
                 processedActions.get(0).getStatus(), is(ProcessedActionStatusProto.ACTION_APPLIED));
-        CollectUserDataResultProto result = processedActions.get(0).getCollectUserDataResult();
+        ShowGenericUiProto.Result result = processedActions.get(0).getShowGenericUiResult();
         List<ModelProto.ModelValue> resultModelValues = result.getModel().getValuesList();
         assertThat(resultModelValues, iterableWithSize(2));
         assertThat((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
                            .setIdentifier("selected_items_indices")
                            .setValue(ValueProto.newBuilder().setInts(
                                    IntList.newBuilder().addValues(3)))
+                           .build(),
+                isIn(resultModelValues));
+        assertThat((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                           .setIdentifier("selected_item_names")
+                           .setValue(ValueProto.newBuilder().setStrings(
+                                   StringList.newBuilder().addValues("09:30 AM")))
                            .build(),
                 isIn(resultModelValues));
     }

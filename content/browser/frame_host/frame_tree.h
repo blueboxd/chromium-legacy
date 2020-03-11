@@ -207,9 +207,7 @@ class CONTENT_EXPORT FrameTree {
   // of this object.
   scoped_refptr<RenderViewHostImpl> CreateRenderViewHost(
       SiteInstance* site_instance,
-      int32_t routing_id,
       int32_t main_frame_routing_id,
-      int32_t widget_routing_id,
       bool swapped_out);
 
   // Returns the existing RenderViewHost for a new RenderFrameHost.

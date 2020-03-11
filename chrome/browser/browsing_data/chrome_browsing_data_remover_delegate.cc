@@ -819,6 +819,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           filter, delete_begin_, delete_end_,
           base::AdaptCallbackForRepeating(
               CreateTaskCompletionClosure(TracingDataType::kPasswords)));
+      password_store->RemoveCompromisedCredentialsByUrlAndTime(
+          nullable_filter, delete_begin_, delete_end_,
+          CreateTaskCompletionClosure(
+              TracingDataType::kCompromisedCredentials));
     }
 
     BrowserContext::GetDefaultStoragePartition(profile_)
@@ -858,13 +862,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           nullable_filter, delete_begin_, delete_end_,
           base::AdaptCallbackForRepeating(CreateTaskCompletionClosure(
               TracingDataType::kPasswordsStatistics)));
-      if (base::FeatureList::IsEnabled(
-              password_manager::features::kPasswordCheck)) {
-        password_store->RemoveCompromisedCredentialsByUrlAndTime(
-            nullable_filter, delete_begin_, delete_end_,
-            CreateTaskCompletionClosure(
-                TracingDataType::kCompromisedCredentials));
-      }
       password_store->RemoveFieldInfoByTime(
           delete_begin_, delete_end_,
           CreateTaskCompletionClosure(TracingDataType::kFieldInfo));

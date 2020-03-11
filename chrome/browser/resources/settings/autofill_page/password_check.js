@@ -189,7 +189,7 @@ Polymer({
    * @param {!PasswordManagerProxy.PasswordCheckStatus} status
    * @param {!Array<!PasswordManagerProxy.CompromisedCredential>}
    *     leakedPasswords
-   * @return {!string}
+   * @return {string}
    * @private
    */
   getStatusIcon_(status, leakedPasswords) {
@@ -207,7 +207,7 @@ Polymer({
    * @param {!PasswordManagerProxy.PasswordCheckStatus} status
    * @param {!Array<!PasswordManagerProxy.CompromisedCredential>}
    *     leakedPasswords
-   * @return {!string}
+   * @return {string}
    * @private
    */
   getStatusIconClass_(status, leakedPasswords) {
@@ -330,6 +330,31 @@ Polymer({
    */
   hasTooManyPasswords_(status) {
     return status.state == CheckState.TOO_MANY_PASSWORDS;
+  },
+
+  /**
+   * Returns the chrome:// address where the banner image is located.
+   * @param {boolean} isDarkMode
+   * @return {string}
+   * @private
+   */
+  bannerImageSrc_(isDarkMode) {
+    const type = this.status_.state == CheckState.IDLE ? 'positive' : 'neutral';
+    const suffix = isDarkMode ? '_dark' : '';
+    return `chrome://settings/images/password_check_${type}${suffix}.svg`;
+  },
+
+  /**
+   * Returns true iff the banner should be shown.
+   * @return {boolean}
+   * @private
+   */
+  shouldShowBanner_() {
+    if (this.hasLeakedCredentials_(this.leakedPasswords)) {
+      return false;
+    }
+    return this.status_.state == CheckState.CANCELED ||
+        !this.hasLeaksOrErrors_(this.status_, this.leakedPasswords);
   },
 
   /**

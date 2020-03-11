@@ -207,6 +207,7 @@ TEST_F(LeakDetectionDelegateTest, StartCheckWithStandardProtection) {
   delegate().StartLeakCheck(form);
 
   EXPECT_TRUE(delegate().leak_check());
+  EXPECT_TRUE(CanStartLeakCheck(*pref_service()));
 }
 
 TEST_F(LeakDetectionDelegateTest, StartCheckWithEnhancedProtection) {
@@ -225,6 +226,7 @@ TEST_F(LeakDetectionDelegateTest, StartCheckWithEnhancedProtection) {
   delegate().StartLeakCheck(form);
 
   EXPECT_TRUE(delegate().leak_check());
+  EXPECT_TRUE(CanStartLeakCheck(*pref_service()));
 }
 
 TEST_F(LeakDetectionDelegateTest, DoNotStartCheckWithoutSafeBrowsing) {
@@ -237,6 +239,7 @@ TEST_F(LeakDetectionDelegateTest, DoNotStartCheckWithoutSafeBrowsing) {
   delegate().StartLeakCheck(form);
 
   EXPECT_FALSE(delegate().leak_check());
+  EXPECT_FALSE(CanStartLeakCheck(*pref_service()));
 }
 
 TEST_F(LeakDetectionDelegateTest, DoNotStartLeakCheckIfLeakCheckIsOff) {
@@ -249,6 +252,7 @@ TEST_F(LeakDetectionDelegateTest, DoNotStartLeakCheckIfLeakCheckIsOff) {
   delegate().StartLeakCheck(form);
 
   EXPECT_FALSE(delegate().leak_check());
+  EXPECT_FALSE(CanStartLeakCheck(*pref_service()));
 }
 #endif
 

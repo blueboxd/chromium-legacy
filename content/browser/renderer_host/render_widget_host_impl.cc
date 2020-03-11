@@ -779,21 +779,86 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   visual_properties.min_size_for_auto_resize = min_size_for_auto_resize_;
   visual_properties.max_size_for_auto_resize = max_size_for_auto_resize_;
 
-  visual_properties.page_scale_factor = page_scale_factor_;
-  visual_properties.is_pinch_gesture_active = is_pinch_gesture_active_;
-
   visual_properties.new_size = view_->GetRequestedRendererSize();
+
+  // This widget is for a frame that is the main frame of the outermost frame
+  // tree. That makes it the top-most frame. OR this is a non-frame widget.
+  const bool is_top_most_widget = !view_->IsRenderWidgetHostViewChildFrame();
+  // This widget is for a frame, but not the main frame of its frame tree.
+  const bool is_child_frame_widget =
+      view_->IsRenderWidgetHostViewChildFrame() && !owner_delegate_;
+
+  // These properties come from the main frame RenderWidget and flow down the
+  // tree of RenderWidgets. Some properties are global across all nested
+  // WebContents/frame trees. Some properties are global only within their
+  // WebContents/frame tree.
+  //
+  // Each child frame RenderWidgetHost that inherits values gets them from their
+  // parent RenderWidget in the renderer process. It then passes them along to
+  // its own RenderWidget, and the process repeats down the tree.
+  //
+  // The plumbing goes:
+  // 1. Browser:    parent RenderWidgetHost
+  // 2. IPC           -> WidgetMsg_UpdateVisualProperties
+  // 3. Renderer A: parent RenderWidget
+  //                  (sometimes blink involved)
+  // 4. Renderer A: child  RenderFrameProxy
+  // 5. IPC           -> FrameHostMsg_SynchronizeVisualProperties
+  // 6. Browser:    child  CrossProcessFrameConnector
+  // 7. Browser:    parent RenderWidgetHost (We're here if |is_child_frame|.)
+  // 8. IPC           -> WidgetMsg_UpdateVisualProperties
+  // 9. Renderer B: child  RenderWidget
+
+  // This property comes from the top-level main frame.
+  if (is_top_most_widget) {
+    visual_properties.compositor_viewport_pixel_rect =
+        gfx::Rect(view_->GetCompositorViewportPixelSize());
+  } else {
+    visual_properties.compositor_viewport_pixel_rect =
+        properties_from_parent_local_root_.compositor_viewport;
+    if (!IsUseZoomForDSFEnabled()) {
+      // If UseZoomForDSF is not used, the coordinates were not scaled by DSF
+      // when coming from the renderer.
+      visual_properties.compositor_viewport_pixel_rect =
+          gfx::ScaleToEnclosingRect(
+              visual_properties.compositor_viewport_pixel_rect,
+              visual_properties.screen_info.device_scale_factor);
+    }
+  }
+
+  // These properties come from the top-level main frame's renderer. The
+  // top-level main frame in the browser doesn't specify a value.
+  if (!is_top_most_widget) {
+    visual_properties.page_scale_factor =
+        properties_from_parent_local_root_.page_scale_factor;
+    visual_properties.is_pinch_gesture_active =
+        properties_from_parent_local_root_.is_pinch_gesture_active;
+  }
+
+  // The |visible_viewport_size| is affected by auto-resize which is magical and
+  // tricky.
+  //
+  // For the top-level main frame, auto resize ends up asynchronously resizing
+  // the widget's RenderWidgetHostView and the size will show up there, so
+  // nothing needs to be written in here.
+  //
+  // For nested main frames, auto resize happens in the renderer so we need to
+  // store the size on this class and use that. When auto-resize is not enabled
+  // we use the size of the nested main frame's RenderWidgetHostView.
+  //
+  // For child frames, we always use the value provided from the parent.
+  //
+  // For non-frame widgets, there is no auto-resize and we behave like the top-
+  // level main frame.
+  gfx::Size viewport;
+  if (is_child_frame_widget)
+    viewport = properties_from_parent_local_root_.visible_viewport_size;
+  else
+    viewport = view_->GetVisibleViewportSize();
+  visual_properties.visible_viewport_size = viewport;
+
   visual_properties.capture_sequence_number = view_->GetCaptureSequenceNumber();
-  // For OOPIFs, use the compositor viewport received from the FrameConnector.
-  visual_properties.compositor_viewport_pixel_rect =
-      view_->IsRenderWidgetHostViewChildFrame()
-          ? gfx::ScaleToEnclosingRect(
-                compositor_viewport_,
-                IsUseZoomForDSFEnabled()
-                    ? 1.f
-                    : visual_properties.screen_info.device_scale_factor)
-          : gfx::Rect(view_->GetCompositorViewportPixelSize());
-  visual_properties.visible_viewport_size = view_->GetVisibleViewportSize();
+
   // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
   // scale factor of the surface. Fix this.
   viz::LocalSurfaceIdAllocation local_surface_id_allocation =
@@ -869,21 +934,7 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   visual_properties->scroll_focused_node_into_view =
       scroll_focused_node_into_view;
 
-  bool visible_viewport_size_changed =
-      !old_visual_properties_ ||
-      old_visual_properties_->visible_viewport_size !=
-          visual_properties->visible_viewport_size;
-
   Send(new WidgetMsg_UpdateVisualProperties(routing_id_, *visual_properties));
-
-  // TODO(danakj): All visual properties should go through
-  // WidgetMsg_UpdateVisualProperties in order to be synchronized by the
-  // LocalSurfaceIdAllocation which synchronizes in the display compositor for
-  // a global atomic screen update across all frame widgets. This should move.
-  if (delegate() && visible_viewport_size_changed) {
-    delegate()->NotifyVisibleViewportSizeChanged(
-        visual_properties->visible_viewport_size);
-  }
 
   bool width_changed =
       !old_visual_properties_ || old_visual_properties_->new_size.width() !=
@@ -1984,23 +2035,25 @@ bool RenderWidgetHostImpl::IsMouseLocked() const {
   return view_ ? view_->IsMouseLocked() : false;
 }
 
+void RenderWidgetHostImpl::SetVisualPropertiesFromParentFrame(
+    float page_scale_factor,
+    bool is_pinch_gesture_active,
+    const gfx::Size& visible_viewport_size,
+    const gfx::Rect& compositor_viewport) {
+  properties_from_parent_local_root_.page_scale_factor = page_scale_factor;
+  properties_from_parent_local_root_.is_pinch_gesture_active =
+      is_pinch_gesture_active;
+  properties_from_parent_local_root_.visible_viewport_size =
+      visible_viewport_size;
+  properties_from_parent_local_root_.compositor_viewport = compositor_viewport;
+}
+
 void RenderWidgetHostImpl::SetAutoResize(bool enable,
                                          const gfx::Size& min_size,
                                          const gfx::Size& max_size) {
   auto_resize_enabled_ = enable;
   min_size_for_auto_resize_ = min_size;
   max_size_for_auto_resize_ = max_size;
-}
-
-void RenderWidgetHostImpl::SetPageScaleState(float page_scale_factor,
-                                             bool is_pinch_gesture_active) {
-  page_scale_factor_ = page_scale_factor;
-  is_pinch_gesture_active_ = is_pinch_gesture_active;
-}
-
-void RenderWidgetHostImpl::SetCompositorViewport(
-    const gfx::Rect& compositor_viewport) {
-  compositor_viewport_ = compositor_viewport;
 }
 
 void RenderWidgetHostImpl::Destroy(bool also_delete) {

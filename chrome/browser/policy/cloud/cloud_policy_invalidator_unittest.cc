@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/policy/cloud/policy_invalidation_util.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/invalidator_registrar_with_memory.h"
@@ -1055,8 +1056,8 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, ExpiredInvalidations) {
 
   // Invalidations fired before the last fetch time (adjusted by max time delta)
   // should be ignored.
-  base::Time time = Now() - base::TimeDelta::FromSeconds(
-      CloudPolicyInvalidator::kMaxInvalidationTimeDelta + 300);
+  base::Time time = Now() - (invalidation_timeouts::kMaxInvalidationTimeDelta +
+                             base::TimeDelta::FromSeconds(300));
   syncer::Invalidation inv =
       FireInvalidation(POLICY_OBJECT_A, GetVersion(time), "test");
   ASSERT_TRUE(IsInvalidationAcknowledged(inv));
@@ -1089,8 +1090,8 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, ExpiredInvalidations) {
   ASSERT_TRUE(IsInvalidationAcknowledged(inv));
   ASSERT_TRUE(CheckPolicyNotRefreshed());
 
-  AdvanceClock(base::TimeDelta::FromSeconds(
-      CloudPolicyInvalidator::kUnknownVersionIgnorePeriod - 1));
+  AdvanceClock(invalidation_timeouts::kUnknownVersionIgnorePeriod -
+               base::TimeDelta::FromSeconds(1));
   inv = FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   ASSERT_TRUE(IsInvalidationAcknowledged(inv));
   ASSERT_TRUE(CheckPolicyNotRefreshed());

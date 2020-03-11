@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
-#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 
@@ -113,6 +112,11 @@ const base::string16& AutofillKeyboardAccessoryAdapter::GetSuggestionLabelAt(
   return labels_[OffsetIndexFor(row)];
 }
 
+PopupType AutofillKeyboardAccessoryAdapter::GetPopupType() const {
+  DCHECK(controller_) << "Call GetPopupType only from its owner!";
+  return controller_->GetPopupType();
+}
+
 bool AutofillKeyboardAccessoryAdapter::GetRemovalConfirmationText(
     int index,
     base::string16* title,
@@ -154,12 +158,6 @@ base::Optional<int> AutofillKeyboardAccessoryAdapter::selected_line() const {
     }
   }
   return base::nullopt;
-}
-
-const AutofillPopupLayoutModel& AutofillKeyboardAccessoryAdapter::layout_model()
-    const {
-  DCHECK(controller_) << "Call OnSuggestionsChanged only from its owner!";
-  return controller_->layout_model();
 }
 
 // AutofillPopupViewDelegate implementation

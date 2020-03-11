@@ -185,7 +185,8 @@ class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
 
     base::RunLoop run_loop;
     ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
-        url::Origin::Create(GURL("https://chromium.org")), web_contents,
+        url::Origin::Create(GURL("https://chromium.org")),
+        web_contents->GetMainFrame(), web_contents,
         WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
             Profile::FromBrowserContext(context),
             ServiceAccessType::EXPLICIT_ACCESS),

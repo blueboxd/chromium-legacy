@@ -106,7 +106,6 @@ using SetupProcessCallback = base::OnceCallback<void(
     ,
     std::unique_ptr<
         blink::PendingURLLoaderFactoryBundle> /* factory_bundle_for_renderer */,
-    mojo::PendingRemote<blink::mojom::CacheStorage>,
     const base::Optional<base::TimeDelta>& thread_hop_time,
     const base::Optional<base::Time>& ui_post_time)>;
 
@@ -124,7 +123,8 @@ void SetupOnUIThread(
     int embedded_worker_id,
     base::WeakPtr<ServiceWorkerProcessManager> process_manager,
     bool can_use_existing_process,
-    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+    const base::Optional<network::CrossOriginEmbedderPolicy>&
+        cross_origin_embedder_policy,
     blink::mojom::EmbeddedWorkerStartParamsPtr params,
     mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver,
     ServiceWorkerContextCore* context,
@@ -156,7 +156,6 @@ void SetupOnUIThread(
                                   std::move(devtools_proxy),
                                   std::move(factory_bundle_for_new_scripts),
                                   std::move(factory_bundle_for_renderer),
-                                  mojo::NullRemote() /* cache_storage */,
                                   thread_hop_time, ui_post_time));
     return;
   }
@@ -176,8 +175,7 @@ void SetupOnUIThread(
         base::BindOnce(std::move(callback), status, std::move(params),
                        std::move(process_info), std::move(devtools_proxy),
                        std::move(factory_bundle_for_new_scripts),
-                       std::move(factory_bundle_for_renderer),
-                       mojo::NullRemote() /* cache_storage */, thread_hop_time,
+                       std::move(factory_bundle_for_renderer), thread_hop_time,
                        ui_post_time));
     return;
   }
@@ -187,18 +185,6 @@ void SetupOnUIThread(
   // crash reports agree. Consider also checking for
   // rph->IsInitializedAndNotDead().
   CHECK(rph);
-
-  // Create cache storage now as an optimization, so the service worker can use
-  // the Cache Storage API immediately on startup.
-  mojo::PendingRemote<blink::mojom::CacheStorage> cache_storage;
-  if (base::FeatureList::IsEnabled(
-          blink::features::kEagerCacheStorageSetupForServiceWorkers)) {
-    // TODO(https://crbug.com/1031542): Add support enforcing CORP in
-    // cache.match() for ServiceWorker.
-    rph->BindCacheStorage(network::CrossOriginEmbedderPolicy(),
-                          url::Origin::Create(params->script_url),
-                          cache_storage.InitWithNewPipeAndPassReceiver());
-  }
 
   // Bind |receiver|, which is attached to |EmbeddedWorkerInstance::client_|, to
   // the process. If the process dies, |client_|'s connection error callback
@@ -267,8 +253,8 @@ void SetupOnUIThread(
       base::BindOnce(std::move(callback), status, std::move(params),
                      std::move(process_info), std::move(devtools_proxy),
                      std::move(factory_bundle_for_new_scripts),
-                     std::move(factory_bundle_for_renderer),
-                     std::move(cache_storage), thread_hop_time, ui_post_time));
+                     std::move(factory_bundle_for_renderer), thread_hop_time,
+                     ui_post_time));
 }
 
 bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
@@ -299,6 +285,20 @@ void NotifyForegroundServiceWorkerOnUIThread(bool added, int process_id) {
     rph->OnForegroundServiceWorkerAdded();
   else
     rph->OnForegroundServiceWorkerRemoved();
+}
+
+void BindCacheStorageOnUIThread(
+    int process_id,
+    url::Origin origin,
+    network::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* rph = RenderProcessHost::FromID(process_id);
+  if (!rph)
+    return;
+
+  rph->BindCacheStorage(cross_origin_embedder_policy, origin,
+                        std::move(receiver));
 }
 
 }  // namespace
@@ -528,10 +528,10 @@ class EmbeddedWorkerInstance::StartTask {
     return skip_recording_startup_time_;
   }
 
-  void Start(
-      blink::mojom::EmbeddedWorkerStartParamsPtr params,
-      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
-      StatusCallback sent_start_callback) {
+  void Start(blink::mojom::EmbeddedWorkerStartParamsPtr params,
+             const base::Optional<network::CrossOriginEmbedderPolicy>&
+                 cross_origin_embedder_policy,
+             StatusCallback sent_start_callback) {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     DCHECK(instance_->context_);
     TRACE_EVENT_WITH_FLOW0(
@@ -559,7 +559,7 @@ class EmbeddedWorkerInstance::StartTask {
     if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       SetupOnUIThread(
           instance_->embedded_worker_id(), process_manager,
-          can_use_existing_process, std::move(cross_origin_embedder_policy),
+          can_use_existing_process, cross_origin_embedder_policy,
           std::move(params), std::move(receiver_), context.get(), context,
           base::nullopt,
           base::BindOnce(&StartTask::OnSetupCompleted,
@@ -570,7 +570,7 @@ class EmbeddedWorkerInstance::StartTask {
           base::BindOnce(
               &SetupOnUIThread, instance_->embedded_worker_id(),
               process_manager, can_use_existing_process,
-              std::move(cross_origin_embedder_policy), std::move(params),
+              cross_origin_embedder_policy, std::move(params),
               std::move(receiver_), context.get(), context,
               base::make_optional<base::Time>(base::Time::Now()),
               base::BindOnce(&StartTask::OnSetupCompleted,
@@ -592,7 +592,6 @@ class EmbeddedWorkerInstance::StartTask {
           factory_bundle_for_new_scripts,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           factory_bundle_for_renderer,
-      mojo::PendingRemote<blink::mojom::CacheStorage> cache_storage,
       const base::Optional<base::TimeDelta>& thread_hop_time,
       const base::Optional<base::Time>& ui_post_time) {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -665,7 +664,13 @@ class EmbeddedWorkerInstance::StartTask {
               std::move(factory_bundle_for_new_scripts));
     }
 
-    params->provider_info->cache_storage = std::move(cache_storage);
+    // Create cache storage now as an optimization, so the service worker can
+    // use the Cache Storage API immediately on startup.
+    if (base::FeatureList::IsEnabled(
+            blink::features::kEagerCacheStorageSetupForServiceWorkers)) {
+      instance_->BindCacheStorage(params->provider_info->cache_storage
+                                      .InitWithNewPipeAndPassReceiver());
+    }
 
     instance_->SendStartWorker(std::move(params));
     std::move(sent_start_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
@@ -904,6 +909,8 @@ void EmbeddedWorkerInstance::OnScriptLoaded() {
   // Renderer side has started to launch the worker thread.
   starting_phase_ = SCRIPT_LOADED;
   owner_version_->OnMainScriptLoaded();
+
+  BindCacheStorageInternal();
   // |this| may be destroyed by the callback.
 }
 
@@ -1026,6 +1033,13 @@ void EmbeddedWorkerInstance::UpdateLoaderFactories(
   }
 }
 
+void EmbeddedWorkerInstance::BindCacheStorage(
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  pending_cache_storage_receivers_.push_back(std::move(receiver));
+  BindCacheStorageInternal();
+}
+
 base::WeakPtr<EmbeddedWorkerInstance> EmbeddedWorkerInstance::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -1040,7 +1054,8 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
     RenderProcessHost* rph,
     int routing_id,
     const url::Origin& origin,
-    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+    const base::Optional<network::CrossOriginEmbedderPolicy>&
+        cross_origin_embedder_policy,
     ContentBrowserClient::URLLoaderFactoryType factory_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto factory_bundle =
@@ -1070,8 +1085,14 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
 
   factory_params->client_security_state =
       network::mojom::ClientSecurityState::New();
+
+  // Without PlzServiceWorker, the COEP header might no be known initially for
+  // new ServiceWorker. The default COEP header is used instead here. Later, the
+  // subresource loader factories will be updated with the correct COEP header.
+  // See: https://chromium-review.googlesource.com/c/chromium/src/+/2029403
   factory_params->client_security_state->cross_origin_embedder_policy =
-      std::move(cross_origin_embedder_policy);
+      cross_origin_embedder_policy ? cross_origin_embedder_policy.value()
+                                   : network::CrossOriginEmbedderPolicy();
 
   rph->CreateURLLoaderFactory(std::move(default_factory_receiver),
                               std::move(factory_params));
@@ -1289,6 +1310,25 @@ EmbeddedWorkerInstance::MakeScriptLoaderFactoryRemote(
       script_loader_factory_remote.InitWithNewPipeAndPassReceiver());
 
   return script_loader_factory_remote;
+}
+
+void EmbeddedWorkerInstance::BindCacheStorageInternal() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  // Without PlzServiceWorker, the COEP header might not be known initially.
+  // The in-flight CacheStorage requests are kept until the main script has
+  // loaded the headers and the COEP one is known.
+  if (!owner_version_->cross_origin_embedder_policy())
+    return;
+
+  for (auto& receiver : pending_cache_storage_receivers_) {
+    RunOrPostTaskOnThread(
+        FROM_HERE, BrowserThread::UI,
+        base::BindOnce(content::BindCacheStorageOnUIThread, process_id(),
+                       owner_version_->script_origin(),
+                       owner_version_->cross_origin_embedder_policy().value(),
+                       std::move(receiver)));
+  }
+  pending_cache_storage_receivers_.clear();
 }
 
 }  // namespace content

@@ -2788,11 +2788,13 @@ String Internals::getCurrentCursorInfo() {
   StringBuilder result;
   result.Append("type=");
   result.Append(CursorTypeToString(cursor.GetType()));
-  result.Append(" hotSpot=");
-  result.AppendNumber(cursor.HotSpot().X());
-  result.Append(',');
-  result.AppendNumber(cursor.HotSpot().Y());
-  if (cursor.GetImage()) {
+  if (cursor.GetType() == ui::mojom::CursorType::kCustom) {
+    result.Append(" hotSpot=");
+    result.AppendNumber(cursor.HotSpot().X());
+    result.Append(',');
+    result.AppendNumber(cursor.HotSpot().Y());
+
+    DCHECK(cursor.GetImage());
     IntSize size = cursor.GetImage()->Size();
     result.Append(" image=");
     result.AppendNumber(size.Width());

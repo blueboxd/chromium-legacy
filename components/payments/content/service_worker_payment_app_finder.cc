@@ -24,6 +24,7 @@
 #include "components/payments/core/payment_manifest_downloader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/browser/web_contents.h"
@@ -99,6 +100,7 @@ class SelfDeletingServiceWorkerPaymentAppFinder {
   // until |finished_using_resources_callback| has run.
   void GetAllPaymentApps(
       const url::Origin& merchant_origin,
+      content::RenderFrameHost* initiator_render_frame_host,
       content::WebContents* web_contents,
       std::unique_ptr<PaymentManifestDownloader> downloader,
       scoped_refptr<PaymentManifestWebDataService> cache,
@@ -120,8 +122,8 @@ class SelfDeletingServiceWorkerPaymentAppFinder {
             features::kWebPaymentsJustInTimePaymentApp)) {
       // Construct crawler in constructor to allow it observe the web_contents.
       crawler_ = std::make_unique<InstallablePaymentAppCrawler>(
-          merchant_origin, web_contents, downloader_.get(), parser_.get(),
-          cache_.get());
+          merchant_origin, initiator_render_frame_host, web_contents,
+          downloader_.get(), parser_.get(), cache_.get());
       if (ignore_port_in_origin_comparison_for_testing_)
         crawler_->IgnorePortInOriginComparisonForTesting();
     }
@@ -284,6 +286,7 @@ ServiceWorkerPaymentAppFinder* ServiceWorkerPaymentAppFinder::GetInstance() {
 
 void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
     const url::Origin& merchant_origin,
+    content::RenderFrameHost* initiator_render_frame_host,
     content::WebContents* web_contents,
     scoped_refptr<PaymentManifestWebDataService> cache,
     const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
@@ -306,9 +309,9 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
   }
 
   self_delete_factory->GetAllPaymentApps(
-      merchant_origin, web_contents, std::move(downloader), cache,
-      requested_method_data, may_crawl_for_installable_payment_apps,
-      std::move(callback),
+      merchant_origin, initiator_render_frame_host, web_contents,
+      std::move(downloader), cache, requested_method_data,
+      may_crawl_for_installable_payment_apps, std::move(callback),
       std::move(finished_writing_cache_callback_for_testing));
 }
 

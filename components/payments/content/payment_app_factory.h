@@ -21,6 +21,7 @@ class AutofillProfile;
 }  // namespace autofill
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
@@ -46,6 +47,7 @@ class PaymentAppFactory {
     virtual const GURL& GetTopOrigin() = 0;
     virtual const GURL& GetFrameOrigin() = 0;
     virtual const url::Origin& GetFrameSecurityOrigin() = 0;
+    virtual content::RenderFrameHost* GetInitiatorRenderFrameHost() const = 0;
     virtual const std::vector<autofill::AutofillProfile*>&
     GetBillingProfiles() = 0;
     virtual bool IsRequestedAutofillDataAvailable() = 0;

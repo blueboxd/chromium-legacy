@@ -8,8 +8,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
-#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller_utils.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/grit/components_scaled_resources.h"
 #import "ui/base/cocoa/touch_bar_util.h"
@@ -57,13 +58,14 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
     (autofill::AutofillPopupController*)controller {
   if ((self = [super init])) {
     _controller = controller;
+    _is_credit_card_popup =
+        (_controller->GetPopupType() == autofill::PopupType::kCreditCards);
   }
   return self;
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (!_controller->GetLineCount() ||
-      !_controller->layout_model().is_credit_card_popup()) {
+  if (!_controller->GetLineCount() || !_is_credit_card_popup) {
     return nil;
   }
 
@@ -124,8 +126,8 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 
   // Create the button.
   const autofill::Suggestion& suggestion = _controller->GetSuggestionAt(row);
-  NSImage* cardIconImage = GetCreditCardTouchBarImage(
-      _controller->layout_model().GetIconResourceID(suggestion.icon));
+  NSImage* cardIconImage =
+      GetCreditCardTouchBarImage(autofill::GetIconResourceID(suggestion.icon));
   NSButton* button = nil;
   if (cardIconImage) {
     button = [NSButton buttonWithTitle:buttonTitle
@@ -171,6 +173,10 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 - (void)acceptCreditCard:(id)sender {
   ui::LogTouchBarUMA(ui::TouchBarAction::CREDIT_CARD_AUTOFILL);
   _controller->AcceptSuggestion([sender tag]);
+}
+
+- (void)setIsCreditCardPopup:(bool)is_credit_card_popup {
+  _is_credit_card_popup = is_credit_card_popup;
 }
 
 @end

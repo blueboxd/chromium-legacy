@@ -337,6 +337,17 @@ void SharedWorkerHost::CreateQuicTransportConnector(
                               std::move(receiver));
 }
 
+void SharedWorkerHost::BindCacheStorage(
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(https://crbug.com/1031542): Add support enforcing CORP in
+  // cache.match() for SharedWorker by providing the correct value here.
+  network::CrossOriginEmbedderPolicy cross_origin_embedder_policy;
+  const url::Origin origin = url::Origin::Create(instance().url());
+  worker_process_host_->BindCacheStorage(cross_origin_embedder_policy, origin,
+                                         std::move(receiver));
+}
+
 void SharedWorkerHost::Destruct() {
   // Ask the service to destroy |this| which will terminate the worker.
   service_->DestroyHost(this);

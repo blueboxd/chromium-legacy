@@ -127,21 +127,18 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
-  // Out-of-process child frames receive a signal from RenderWidget when the
-  // ScreenInfo has changed.
+  // Propagate VisualProperties updates from a local root RenderWidget to the
+  // child RenderWidget represented by this proxy, which is hosted in another
+  // renderer frame tree.
+  // TODO(danakj): These should all be grouped into a single method, then we
+  // would only get one update per UpdateVisualProperties IPC received in the
+  // RenderWidget, and we would only need to send one update to the browser as
+  // a result.
   void OnScreenInfoChanged(const ScreenInfo& screen_info);
-
-  // Out-of-process child frames receive a signal from RenderWidget when the
-  // zoom level has changed.
   void OnZoomLevelChanged(double zoom_level);
-
-  // Out-of-process child frames receive a signal from RenderWidget when the
-  // page scale factor has changed, and/or a pinch-zoom gesture starts/ends.
   void OnPageScaleFactorChanged(float page_scale_factor,
                                 bool is_pinch_gesture_active);
-
-  // Invoked by RenderWidget when a new capture sequence number was set,
-  // indicating that surfaces should be synchronized.
+  void OnVisibleViewportSizeChanged(const gfx::Size& visible_viewport_size);
   void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);
 
   // Pass replicated information, such as security origin, to this

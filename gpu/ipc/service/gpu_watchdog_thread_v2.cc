@@ -741,6 +741,10 @@ void GpuWatchdogThreadImplV2::WatchedThreadNeedsMoreThreadTimeHistogram(
       // number to calculate the number of users who had already quit.
       RecordNumOfUsersWaitingWithExtraThreadTimeHistogram(
           count_of_more_gpu_thread_time_allowed_);
+
+      // Used by GPU.WatchdogThread.WaitTime later
+      time_in_wait_for_full_thread_time_ =
+          count_of_more_gpu_thread_time_allowed_ * watchdog_timeout_;
     }
   }
 }
@@ -761,6 +765,23 @@ void GpuWatchdogThreadImplV2::WatchedThreadGetsExtraTimeoutHistogram(
       GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kProgressAfterWait);
       base::UmaHistogramExactLinear(
           "GPU.WatchdogThread.WaitTime.ProgressAfterWait", count, kMax);
+
+#if defined(OS_WIN)
+      // Add the time the GPU thread was given for the full thread time up to 60
+      // seconds. GPU.WatchdogThread.WaitTime is essentially equal to
+      // GPU.WatchdogThread.WaitTime.ProgressAfterWait on non-Windows systems.
+      base::TimeDelta wait_time = base::TimeDelta::FromSeconds(count);
+      wait_time += time_in_wait_for_full_thread_time_;
+
+      constexpr base::TimeDelta kMinTime = base::TimeDelta::FromSeconds(1);
+      constexpr base::TimeDelta kMaxTime = base::TimeDelta::FromSeconds(150);
+      constexpr int kBuckets = 50;
+
+      // The time the GPU main thread takes to finish a task after a "hang" is
+      // dectedted.
+      base::UmaHistogramCustomTimes("GPU.WatchdogThread.WaitTime", wait_time,
+                                    kMinTime, kMaxTime, kBuckets);
+#endif
     }
   }
 }

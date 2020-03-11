@@ -177,6 +177,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
+#include "components/external_intents/android/external_intents_feature_list.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
 #endif  // OS_ANDROID
@@ -4861,7 +4862,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIntentBlockExternalFormRedirectsNoGestureDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(
-         chrome::android::kIntentBlockExternalFormRedirectsNoGesture)},
+         external_intents::kIntentBlockExternalFormRedirectsNoGesture)},
     {"recover-from-never-save-android",
      flag_descriptions::kRecoverFromNeverSaveAndroidName,
      flag_descriptions::kRecoverFromNeverSaveAndroidDescription, kOsAndroid,

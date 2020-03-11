@@ -15,6 +15,10 @@ namespace invalidation {
 class InvalidationService;
 }  // namespace invalidation
 
+namespace syncer {
+class Invalidation;
+}  // namespace syncer
+
 namespace policy {
 
 // This class provides basic intefaces for an invalidator for remote commands
@@ -65,7 +69,8 @@ class RemoteCommandsInvalidator : public syncer::InvalidationHandler {
 
   // Subclasses must override this method to implement the actual remote
   // commands fetch.
-  virtual void DoRemoteCommandsFetch() = 0;
+  virtual void DoRemoteCommandsFetch(
+      const syncer::Invalidation& invalidation) = 0;
 
   // Subclasses must call this function to set the topic for remote command
   // invalidations.

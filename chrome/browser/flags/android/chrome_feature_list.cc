@@ -157,7 +157,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kHorizontalTabSwitcherAndroid,
     &kImmersiveUiMode,
     &kInlineUpdateFlow,
-    &kIntentBlockExternalFormRedirectsNoGesture,
     &kKitKatSupported,
     &kNewPhotoPicker,
     &kNotificationSuspender,
@@ -457,10 +456,6 @@ const base::Feature kImmersiveUiMode{"ImmersiveUiMode",
 
 const base::Feature kInlineUpdateFlow{"InlineUpdateFlow",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kIntentBlockExternalFormRedirectsNoGesture{
-    "IntentBlockExternalFormRedirectsNoGesture",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kKitKatSupported{"KitKatSupported",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

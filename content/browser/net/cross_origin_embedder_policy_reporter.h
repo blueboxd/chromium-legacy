@@ -48,6 +48,10 @@ class CONTENT_EXPORT CrossOriginEmbedderPolicyReporter final
       mojo::PendingReceiver<network::mojom::CrossOriginEmbedderPolicyReporter>
           receiver) override;
 
+  // https://mikewest.github.io/corpp/#abstract-opdef-queue-coep-navigation-violation
+  // Queue a violation report for COEP mismatch for nested frame navigation.
+  void QueueNavigationReport(const GURL& blocked_url, bool report_only);
+
  private:
   // See the class comment.
   StoragePartition* const storage_partition_;

@@ -147,8 +147,6 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
                                     nullptr,
                                     element_bounds,
                                     base::i18n::UNKNOWN_DIRECTION) {
-    LayoutModelForTesting().SetUpForTesting(
-        std::make_unique<MockPopupViewCommonForUnitTesting>());
   }
   ~TestAutofillPopupController() override = default;
 

@@ -10,11 +10,14 @@
 #include "base/values.h"
 #include "content/public/test/test_storage_partition.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 namespace {
+
+using network::CrossOriginEmbedderPolicy;
 
 class TestNetworkContext : public network::TestNetworkContext {
  public:
@@ -55,9 +58,16 @@ class CrossOriginEmbedderPolicyReporterTest : public testing::Test {
   StoragePartition* storage_partition() { return &storage_partition_; }
   const TestNetworkContext& network_context() const { return network_context_; }
 
-  base::Value CreateBody(base::StringPiece s) {
+  base::Value CreateBodyForCorp(base::StringPiece s) {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetKey("type", base::Value("corp"));
+    dict.SetKey("blocked-url", base::Value(s));
+    return dict;
+  }
+
+  base::Value CreateBodyForNavigation(base::StringPiece s) {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetKey("type", base::Value("navigation"));
     dict.SetKey("blocked-url", base::Value(s));
     return dict;
   }
@@ -68,7 +78,7 @@ class CrossOriginEmbedderPolicyReporterTest : public testing::Test {
   TestStoragePartition storage_partition_;
 };
 
-TEST_F(CrossOriginEmbedderPolicyReporterTest, NullEndpoints) {
+TEST_F(CrossOriginEmbedderPolicyReporterTest, NullEndpointsForCorp) {
   const GURL kContextUrl("https://example.com/path");
   CrossOriginEmbedderPolicyReporter reporter(storage_partition(), kContextUrl,
                                              base::nullopt, base::nullopt);
@@ -81,7 +91,7 @@ TEST_F(CrossOriginEmbedderPolicyReporterTest, NullEndpoints) {
   EXPECT_TRUE(network_context().reports().empty());
 }
 
-TEST_F(CrossOriginEmbedderPolicyReporterTest, Basic) {
+TEST_F(CrossOriginEmbedderPolicyReporterTest, BasicCorp) {
   const GURL kContextUrl("https://example.com/path");
   CrossOriginEmbedderPolicyReporter reporter(storage_partition(), kContextUrl,
                                              "e1", "e2");
@@ -99,14 +109,15 @@ TEST_F(CrossOriginEmbedderPolicyReporterTest, Basic) {
   EXPECT_EQ(r1.type, "coep");
   EXPECT_EQ(r1.group, "e1");
   EXPECT_EQ(r1.url, kContextUrl);
-  EXPECT_EQ(r1.body, CreateBody("https://www1.example.com/x#foo?bar=baz"));
+  EXPECT_EQ(r1.body,
+            CreateBodyForCorp("https://www1.example.com/x#foo?bar=baz"));
   EXPECT_EQ(r2.type, "coep");
   EXPECT_EQ(r2.group, "e2");
   EXPECT_EQ(r2.url, kContextUrl);
-  EXPECT_EQ(r2.body, CreateBody("http://www2.example.com:41/y"));
+  EXPECT_EQ(r2.body, CreateBodyForCorp("http://www2.example.com:41/y"));
 }
 
-TEST_F(CrossOriginEmbedderPolicyReporterTest, UserAndPass) {
+TEST_F(CrossOriginEmbedderPolicyReporterTest, UserAndPassForCorp) {
   const GURL kContextUrl("https://example.com/path");
   CrossOriginEmbedderPolicyReporter reporter(storage_partition(), kContextUrl,
                                              "e1", "e2");
@@ -123,11 +134,11 @@ TEST_F(CrossOriginEmbedderPolicyReporterTest, UserAndPass) {
   EXPECT_EQ(r1.type, "coep");
   EXPECT_EQ(r1.group, "e1");
   EXPECT_EQ(r1.url, kContextUrl);
-  EXPECT_EQ(r1.body, CreateBody("https://www1.example.com/x"));
+  EXPECT_EQ(r1.body, CreateBodyForCorp("https://www1.example.com/x"));
   EXPECT_EQ(r2.type, "coep");
   EXPECT_EQ(r2.group, "e2");
   EXPECT_EQ(r2.url, kContextUrl);
-  EXPECT_EQ(r2.body, CreateBody("https://www2.example.com/y"));
+  EXPECT_EQ(r2.body, CreateBodyForCorp("https://www2.example.com/y"));
 }
 
 TEST_F(CrossOriginEmbedderPolicyReporterTest, Clone) {
@@ -152,11 +163,75 @@ TEST_F(CrossOriginEmbedderPolicyReporterTest, Clone) {
   EXPECT_EQ(r1.type, "coep");
   EXPECT_EQ(r1.group, "e1");
   EXPECT_EQ(r1.url, kContextUrl);
-  EXPECT_EQ(r1.body, CreateBody("https://www1.example.com/x"));
+  EXPECT_EQ(r1.body, CreateBodyForCorp("https://www1.example.com/x"));
   EXPECT_EQ(r2.type, "coep");
   EXPECT_EQ(r2.group, "e2");
   EXPECT_EQ(r2.url, kContextUrl);
-  EXPECT_EQ(r2.body, CreateBody("https://www2.example.com/y"));
+  EXPECT_EQ(r2.body, CreateBodyForCorp("https://www2.example.com/y"));
+}
+
+TEST_F(CrossOriginEmbedderPolicyReporterTest, NullEndpointsForNavigation) {
+  const GURL kContextUrl("https://example.com/path");
+  CrossOriginEmbedderPolicyReporter reporter(storage_partition(), kContextUrl,
+                                             base::nullopt, base::nullopt);
+
+  reporter.QueueNavigationReport(GURL("https://www1.example.com/y"),
+                                 /*report_only=*/false);
+  reporter.QueueNavigationReport(GURL("https://www2.example.com/x"),
+                                 /*report_only=*/true);
+
+  EXPECT_TRUE(network_context().reports().empty());
+}
+
+TEST_F(CrossOriginEmbedderPolicyReporterTest, BasicNavigation) {
+  const GURL kContextUrl("https://example.com/path");
+  CrossOriginEmbedderPolicyReporter reporter(storage_partition(), kContextUrl,
+                                             "e1", "e2");
+  CrossOriginEmbedderPolicy child_coep;
+  child_coep.report_only_value =
+      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+
+  reporter.QueueNavigationReport(GURL("https://www1.example.com/x#foo?bar=baz"),
+                                 /*report_only=*/false);
+  reporter.QueueNavigationReport(GURL("http://www2.example.com:41/y"),
+                                 /*report_only=*/true);
+
+  ASSERT_EQ(2u, network_context().reports().size());
+  const Report& r1 = network_context().reports()[0];
+  const Report& r2 = network_context().reports()[1];
+
+  EXPECT_EQ(r1.type, "coep");
+  EXPECT_EQ(r1.group, "e1");
+  EXPECT_EQ(r1.url, kContextUrl);
+  EXPECT_EQ(r1.body,
+            CreateBodyForNavigation("https://www1.example.com/x#foo?bar=baz"));
+  EXPECT_EQ(r2.type, "coep");
+  EXPECT_EQ(r2.group, "e2");
+  EXPECT_EQ(r2.url, kContextUrl);
+  EXPECT_EQ(r2.body, CreateBodyForNavigation("http://www2.example.com:41/y"));
+}
+
+TEST_F(CrossOriginEmbedderPolicyReporterTest, UserAndPassForNavigation) {
+  const GURL kContextUrl("https://example.com/path");
+  CrossOriginEmbedderPolicyReporter reporter(storage_partition(), kContextUrl,
+                                             "e1", "e2");
+  reporter.QueueNavigationReport(GURL("https://u:p@www1.example.com/x"),
+                                 /*report_only=*/false);
+  reporter.QueueNavigationReport(GURL("https://u:p@www2.example.com/y"),
+                                 /*report_only=*/true);
+
+  ASSERT_EQ(2u, network_context().reports().size());
+  const Report& r1 = network_context().reports()[0];
+  const Report& r2 = network_context().reports()[1];
+
+  EXPECT_EQ(r1.type, "coep");
+  EXPECT_EQ(r1.group, "e1");
+  EXPECT_EQ(r1.url, kContextUrl);
+  EXPECT_EQ(r1.body, CreateBodyForNavigation("https://www1.example.com/x"));
+  EXPECT_EQ(r2.type, "coep");
+  EXPECT_EQ(r2.group, "e2");
+  EXPECT_EQ(r2.url, kContextUrl);
+  EXPECT_EQ(r2.body, CreateBodyForNavigation("https://www2.example.com/y"));
 }
 
 }  // namespace

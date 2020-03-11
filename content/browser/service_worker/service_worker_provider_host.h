@@ -70,6 +70,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost {
 
   void CreateQuicTransportConnector(
       mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
+  // Used only when EagerCacheStorageSetupForServiceWorkers is disabled.
+  void BindCacheStorage(
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
 
   content::ServiceWorkerContainerHost* container_host() {
     return container_host_.get();

@@ -163,4 +163,52 @@
         await remoteCall.waitForElement(appId, ['#search-box cr-input']);
     chrome.test.assertEq('false', textInputElement.attributes['aria-disabled']);
   };
+
+  /**
+   * Tests that the search box collapses when empty and Tab out of the box.
+   */
+  testcase.searchHidingViaTab = async () => {
+    const entry = ENTRIES.hello;
+
+    // Open Files app on Downloads.
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
+
+    // Measure the width of the search box when it's collapsed.
+    const collapsedSearchBox = await remoteCall.waitForElementStyles(
+        appId, '#search-wrapper', ['width']);
+
+    // Click the toolbar search button.
+    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+        'fakeEvent', appId, ['#search-button', 'click']));
+
+    // Wait search box to be expanded.
+    const caller = getCaller();
+    await repeatUntil(async () => {
+      const element = await remoteCall.waitForElementStyles(
+          appId, '#search-wrapper', ['width']);
+      if (collapsedSearchBox.renderedWidth > element.renderedWidth) {
+        return pending(caller, 'Waiting search box to expand');
+      }
+    });
+
+    // Verify the search input has focus.
+    const input =
+        await remoteCall.callRemoteTestUtil('deepGetActiveElement', appId, []);
+    chrome.test.assertEq(input.attributes['id'], 'input');
+    chrome.test.assertEq(input.attributes['aria-label'], 'Search');
+
+    // Send Tab key to focus the next element.
+    const result = await sendTestMessage({name: 'dispatchTabKey'});
+    chrome.test.assertEq(
+        result, 'tabKeyDispatched', 'Tab key dispatch failure');
+
+    // Check: the search box should collapse.
+    await repeatUntil(async () => {
+      const element = await remoteCall.waitForElementStyles(
+          appId, '#search-wrapper', ['width']);
+      if (collapsedSearchBox.renderedWidth < element.renderedWidth) {
+        return pending(caller, 'Waiting search box to collapse');
+      }
+    });
+  };
 })();

@@ -14,7 +14,7 @@
           .pointerMove(20, 20, {origin: portal});
       actions.send();
       await new Promise(r => portal.onpointermove = r);
-      assert_equals('type=Hand hotSpot=0,0', internals.getCurrentCursorInfo());
+      assert_equals('type=Hand', internals.getCurrentCursorInfo());
     }, 'test that cursor is updated over portal');
   </script>
 </body>

@@ -43,4 +43,36 @@ bool GetRemoteCommandTopicFromPolicy(
   return true;
 }
 
+bool IsInvalidationExpired(const syncer::Invalidation& invalidation,
+                           const base::Time& last_fetch_time,
+                           const base::Time& current_time) {
+  // If the version is unknown, consider the invalidation invalid if the
+  // fetch was very recently.
+  if (invalidation.is_unknown_version()) {
+    base::TimeDelta elapsed = current_time - last_fetch_time;
+    return elapsed < invalidation_timeouts::kUnknownVersionIgnorePeriod;
+  }
+
+  // The invalidation version is the timestamp in microseconds. If the
+  // invalidation occurred before the last fetch, then the invalidation
+  // is expired.
+  base::Time invalidation_time =
+      base::Time::UnixEpoch() +
+      base::TimeDelta::FromMicroseconds(invalidation.version()) +
+      invalidation_timeouts::kMaxInvalidationTimeDelta;
+  return invalidation_time < last_fetch_time;
+}
+
+PolicyInvalidationType GetInvalidationMetric(bool is_missing_payload,
+                                             bool is_expired) {
+  if (is_expired) {
+    if (is_missing_payload)
+      return POLICY_INVALIDATION_TYPE_NO_PAYLOAD_EXPIRED;
+    return POLICY_INVALIDATION_TYPE_EXPIRED;
+  }
+  if (is_missing_payload)
+    return POLICY_INVALIDATION_TYPE_NO_PAYLOAD;
+  return POLICY_INVALIDATION_TYPE_NORMAL;
+}
+
 }  // namespace policy

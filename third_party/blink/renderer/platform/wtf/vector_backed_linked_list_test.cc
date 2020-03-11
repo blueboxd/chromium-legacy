@@ -4,7 +4,11 @@
 
 #include "third_party/blink/renderer/platform/wtf/vector_backed_linked_list.h"
 
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_test_helper.h"
 
 namespace WTF {
 
@@ -19,9 +23,14 @@ TEST(VectorBackedLinkedListTest, Insert) {
   list.insert(list.end(), 2);
 
   List::iterator it = list.begin();
+  EXPECT_EQ(*it, -2);
   ++it;
+  EXPECT_EQ(*it, 1);
+  ++it;
+  EXPECT_EQ(*it, 2);
+
+  it = list.insert(++list.begin(), 0);
   list.insert(it, -1);
-  list.insert(it, 0);
 
   EXPECT_EQ(list.front(), -2);
   EXPECT_EQ(list.back(), 2);
@@ -322,6 +331,178 @@ TEST(VectorBackedLinkedList, ConstIterator) {
   EXPECT_TRUE(crit == list.crend());
   --crit;
   EXPECT_EQ(*crit, 1);
+}
+
+TEST(VectorBackedLinkedList, String) {
+  using List = VectorBackedLinkedList<String>;
+  List list;
+
+  EXPECT_TRUE(list.empty());
+
+  list.push_back("b");
+  list.push_front("a");
+  list.push_back("c");
+
+  EXPECT_EQ(list.front(), "a");
+  EXPECT_EQ(list.back(), "c");
+  EXPECT_EQ(list.size(), 3u);
+
+  List::iterator it = list.begin();
+  EXPECT_EQ(*it, "a");
+  ++it;
+  EXPECT_EQ(*it, "b");
+  List::iterator target = it;
+  ++it;
+  EXPECT_EQ(*it, "c");
+  ++it;
+  EXPECT_TRUE(it == list.end());
+  --it;
+  EXPECT_EQ(*it, "c");
+  --it;
+  --it;
+  EXPECT_TRUE(it == list.begin());
+
+  list.erase(target);
+  it = list.begin();
+  EXPECT_EQ(*it, "a");
+  ++it;
+  EXPECT_EQ(*it, "c");
+  ++it;
+  EXPECT_TRUE(it == list.end());
+
+  list.pop_back();
+  EXPECT_EQ(list.front(), "a");
+  EXPECT_EQ(list.back(), "a");
+  EXPECT_EQ(list.size(), 1u);
+
+  list.push_front("c");
+  it = list.begin();
+  EXPECT_EQ(*it, "c");
+  ++it;
+  EXPECT_EQ(*it, "a");
+  ++it;
+  EXPECT_TRUE(it == list.end());
+
+  list.clear();
+  EXPECT_TRUE(list.empty());
+  EXPECT_TRUE(list.begin() == list.end());
+
+  list.push_front("a");
+  EXPECT_EQ(list.size(), 1u);
+  EXPECT_EQ(list.front(), "a");
+  list.pop_back();
+  EXPECT_TRUE(list.empty());
+}
+
+TEST(VectorBackedLinkedList, UniquePtr) {
+  using List = VectorBackedLinkedList<std::unique_ptr<Dummy>>;
+  List list;
+
+  bool deleted1 = false, deleted2 = false, deleted3 = false;
+  std::unique_ptr<Dummy> ptr1 = std::make_unique<Dummy>(deleted1);
+  std::unique_ptr<Dummy> ptr2 = std::make_unique<Dummy>(deleted2);
+  std::unique_ptr<Dummy> ptr3 = std::make_unique<Dummy>(deleted3);
+
+  Dummy* raw_ptr1 = ptr1.get();
+  Dummy* raw_ptr2 = ptr2.get();
+  Dummy* raw_ptr3 = ptr3.get();
+
+  list.push_front(std::move(ptr1));
+  list.push_back(std::move(ptr3));
+  List::iterator it = list.begin();
+  ++it;
+  it = list.insert(it, std::move(ptr2));
+  EXPECT_EQ(it->get(), raw_ptr2);
+
+  EXPECT_EQ(list.size(), 3u);
+  EXPECT_EQ((list.front()).get(), raw_ptr1);
+  EXPECT_EQ((list.back()).get(), raw_ptr3);
+
+  it = list.begin();
+  EXPECT_EQ(it->get(), raw_ptr1);
+  ++it;
+  EXPECT_EQ(it->get(), raw_ptr2);
+  List::iterator target = it;
+  ++it;
+  EXPECT_EQ(it->get(), raw_ptr3);
+  ++it;
+  EXPECT_TRUE(it == list.end());
+  --it;
+  EXPECT_EQ(it->get(), raw_ptr3);
+  --it;
+  --it;
+  EXPECT_TRUE(it == list.begin());
+
+  list.erase(target);
+  EXPECT_FALSE(deleted1);
+  EXPECT_TRUE(deleted2);
+  EXPECT_FALSE(deleted3);
+  EXPECT_EQ(list.size(), 2u);
+  it = list.begin();
+  EXPECT_EQ(it->get(), raw_ptr1);
+  ++it;
+  EXPECT_EQ(it->get(), raw_ptr3);
+  ++it;
+  EXPECT_TRUE(it == list.end());
+
+  list.pop_front();
+  EXPECT_TRUE(deleted1);
+  EXPECT_TRUE(deleted2);
+  EXPECT_FALSE(deleted3);
+  EXPECT_EQ(list.size(), 1u);
+  it = list.begin();
+  EXPECT_EQ(it->get(), raw_ptr3);
+  ++it;
+  EXPECT_TRUE(it == list.end());
+
+  list.pop_back();
+  EXPECT_TRUE(deleted1);
+  EXPECT_TRUE(deleted2);
+  EXPECT_TRUE(deleted3);
+  EXPECT_TRUE(list.empty());
+
+  bool deleted4 = false, deleted5 = false, deleted6 = false;
+  std::unique_ptr<Dummy> ptr4 = std::make_unique<Dummy>(deleted4);
+  std::unique_ptr<Dummy> ptr5 = std::make_unique<Dummy>(deleted5);
+  std::unique_ptr<Dummy> ptr6 = std::make_unique<Dummy>(deleted6);
+
+  Dummy* raw_ptr4 = ptr4.get();
+  Dummy* raw_ptr5 = ptr5.get();
+  Dummy* raw_ptr6 = ptr6.get();
+
+  list.push_back(std::move(ptr4));
+  list.push_back(std::move(ptr5));
+  list.push_back(std::move(ptr6));
+
+  it = list.end();
+  --it;
+  list.MoveTo(list.begin(), it);
+  it = list.begin();
+  EXPECT_EQ(it->get(), raw_ptr5);
+  ++it;
+  EXPECT_EQ(it->get(), raw_ptr4);
+  ++it;
+  EXPECT_EQ(it->get(), raw_ptr6);
+
+  list.MoveTo(list.begin(), list.begin());
+  it = list.begin();
+  EXPECT_EQ(it->get(), raw_ptr5);
+  ++it;
+  EXPECT_EQ(it->get(), raw_ptr4);
+  ++it;
+  EXPECT_EQ(it->get(), raw_ptr6);
+
+  EXPECT_FALSE(deleted4);
+  EXPECT_FALSE(deleted5);
+  EXPECT_FALSE(deleted6);
+
+  list.clear();
+  EXPECT_TRUE(list.empty());
+  EXPECT_EQ(list.size(), 0u);
+
+  EXPECT_TRUE(deleted4);
+  EXPECT_TRUE(deleted5);
+  EXPECT_TRUE(deleted6);
 }
 
 }  // namespace WTF

@@ -207,7 +207,8 @@ void BrowserPolicyConnectorChromeOS::Init(
     device_remote_commands_invalidator_ =
         std::make_unique<AffiliatedRemoteCommandsInvalidator>(
             device_cloud_policy_manager_->core(),
-            affiliated_invalidation_service_provider_.get());
+            affiliated_invalidation_service_provider_.get(),
+            PolicyInvalidationScope::kDevice);
   }
 
   SetTimezoneIfPolicyAvailable();

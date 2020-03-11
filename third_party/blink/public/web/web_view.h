@@ -238,13 +238,6 @@ class WebView {
   // Get the visual viewport's size in CSS pixels.
   virtual gfx::SizeF VisualViewportSize() const = 0;
 
-  // Resizes the unscaled (page scale = 1.0) visual viewport. Normally the
-  // unscaled visual viewport is the same size as the main frame. The passed
-  // size becomes the size of the viewport when page scale = 1. This
-  // is used to shrink the visible viewport to allow things like the ChromeOS
-  // virtual keyboard to overlay over content but allow scrolling it into view.
-  virtual void ResizeVisualViewport(const WebSize&) = 0;
-
   // Sets the default minimum, and maximum page scale. These will be overridden
   // by the page or by the overrides below if they are set.
   virtual void SetDefaultPageScaleLimits(float min_scale, float max_scale) = 0;
@@ -301,19 +294,28 @@ class WebView {
 
   virtual float ZoomFactorForDeviceScaleFactor() = 0;
 
+  // This method is used for testing.
   // Resize the view at the same time as changing the state of the top
   // controls. If |browser_controls_shrink_layout| is true, the embedder shrunk
   // the WebView size by the browser controls height.
   virtual void ResizeWithBrowserControls(
-      const WebSize&,
+      const WebSize& main_frame_widget_size,
       float top_controls_height,
       float bottom_controls_height,
       bool browser_controls_shrink_layout) = 0;
+  // This method is used for testing.
+  // Resizes the unscaled (page scale = 1.0) visual viewport. Normally the
+  // unscaled visual viewport is the same size as the main frame. The passed
+  // size becomes the size of the viewport when page scale = 1. This
+  // is used to shrink the visible viewport to allow things like the ChromeOS
+  // virtual keyboard to overlay over content but allow scrolling it into view.
+  virtual void ResizeVisualViewport(const WebSize&) = 0;
 
   // Same as ResizeWithBrowserControls(const WebSize&,float,float,bool), but
   // includes all browser controls params such as the min heights.
   virtual void ResizeWithBrowserControls(
-      const WebSize&,
+      const WebSize& main_frame_widget_size,
+      const WebSize& visible_viewport_size,
       cc::BrowserControlsParams browser_controls_params) = 0;
 
   // Same as ResizeWithBrowserControls, but keeps the same BrowserControl

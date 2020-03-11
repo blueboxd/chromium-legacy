@@ -13,7 +13,7 @@
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
-#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller_utils.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
@@ -68,7 +68,7 @@ void AutofillKeyboardAccessoryView::Show() {
     int android_icon_id = 0;
     if (!suggestion.icon.empty()) {
       android_icon_id = ResourceMapper::MapToJavaDrawableId(
-          controller_->layout_model().GetIconResourceID(suggestion.icon));
+          GetIconResourceID(suggestion.icon));
     }
 
     Java_AutofillKeyboardAccessoryViewBridge_addToAutofillSuggestionArray(

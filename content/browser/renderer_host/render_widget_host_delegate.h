@@ -313,19 +313,8 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // not a WebContents, returns nullptr.
   virtual WebContents* GetAsWebContents();
 
-  // Gets the size set by a top-level frame with auto-resize enabled.
-  virtual gfx::Size GetAutoResizeSize();
-
-  // Reset the auto-size value, to indicate that auto-size is no longer active.
-  virtual void ResetAutoResizeSize() {}
-
   // Returns true if there is context menu shown on page.
   virtual bool IsShowingContextMenuOnPage() const;
-
-  // Notifies all renderers in a page about changes to the size of the visible
-  // viewport.
-  virtual void NotifyVisibleViewportSizeChanged(
-      const gfx::Size& visible_viewport_size) {}
 
   // Returns the focused frame across all delegates, or nullptr if none.
   virtual RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate();

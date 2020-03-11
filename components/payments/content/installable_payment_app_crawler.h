@@ -26,6 +26,7 @@
 class GURL;
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -40,18 +41,21 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
       std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>,
       const std::string& error_message)>;
 
-  // |merchant_origin| should be the origin of the iframe that created the
+  // |merchant_origin| is the origin of the iframe that created the
   // PaymentRequest object. It is used by security features like
   // 'Sec-Fetch-Site' and 'Cross-Origin-Resource-Policy'.
+  // |initiator_render_frame_host| is the iframe for |merchant_origin|.
   //
   // The owner of InstallablePaymentAppCrawler owns |downloader|, |parser| and
   // |cache|. They should live until |finished_using_resources| parameter to
   // Start() method is called.
-  InstallablePaymentAppCrawler(const url::Origin& merchant_origin,
-                               content::WebContents* web_contents,
-                               PaymentManifestDownloader* downloader,
-                               PaymentManifestParser* parser,
-                               PaymentManifestWebDataService* cache);
+  InstallablePaymentAppCrawler(
+      const url::Origin& merchant_origin,
+      content::RenderFrameHost* initiator_render_frame_host,
+      content::WebContents* web_contents,
+      PaymentManifestDownloader* downloader,
+      PaymentManifestParser* parser,
+      PaymentManifestWebDataService* cache);
   ~InstallablePaymentAppCrawler() override;
 
   // Starts the crawling process. All the url based payment methods in
@@ -107,6 +111,7 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
 
   DeveloperConsoleLogger log_;
   const url::Origin merchant_origin_;
+  content::RenderFrameHost* initiator_render_frame_host_;
   PaymentManifestDownloader* downloader_;
   PaymentManifestParser* parser_;
   FinishedCrawlingCallback callback_;

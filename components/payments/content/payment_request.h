@@ -184,6 +184,7 @@ class PaymentRequest : public mojom::PaymentRequest,
                                            bool warn_localhost_or_file);
 
   content::WebContents* web_contents_;
+  content::RenderFrameHost* initiator_render_frame_host_;
   DeveloperConsoleLogger log_;
   std::unique_ptr<ContentPaymentRequestDelegate> delegate_;
   // |manager_| owns this PaymentRequest.

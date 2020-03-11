@@ -41,8 +41,7 @@ AtomicString CreateVisionDeficiencyFilterUrl(
           "0.000 0.000 0.000 1.000 0.000 "
           "\"/>");
     case VisionDeficiency::kBlurredVision:
-      return CreateFilterDataUrl(
-          "<feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2\"/>");
+      return CreateFilterDataUrl("<feGaussianBlur stdDeviation=\"2\"/>");
     case VisionDeficiency::kDeuteranomaly:
       return CreateFilterDataUrl(
           "<feColorMatrix values=\""

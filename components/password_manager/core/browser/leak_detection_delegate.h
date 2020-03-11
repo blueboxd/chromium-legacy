@@ -17,6 +17,8 @@ namespace autofill {
 struct PasswordForm;
 }  // namespace autofill
 
+class PrefService;
+
 namespace password_manager {
 
 class LeakDetectionCheck;
@@ -76,6 +78,11 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
   // credentials.
   std::unique_ptr<LeakDetectionDelegateHelper> helper_;
 };
+
+// Determines whether the leak check can be started depending on |prefs|. Will
+// use |client| for logging if non-null.
+bool CanStartLeakCheck(const PrefService& prefs,
+                       const PasswordManagerClient* client = nullptr);
 
 }  // namespace password_manager
 

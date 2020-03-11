@@ -51,7 +51,8 @@ int GetPixelSizeOrDefault(
 base::android::ScopedJavaLocalRef<jobject> ToJavaValue(JNIEnv* env,
                                                        const ValueProto& proto);
 
-// Returns the native equivalent of |jvalue|.
+// Returns the native equivalent of |jvalue|. Returns an empty ValueProto if
+// |jvalue| is null.
 ValueProto ToNativeValue(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& jvalue);
 
@@ -64,6 +65,11 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaInfoPopup(
 void ShowJavaInfoPopup(JNIEnv* env,
                        base::android::ScopedJavaLocalRef<jobject> jinfo_popup,
                        base::android::ScopedJavaLocalRef<jobject> jcontext);
+
+// Converts a java string to native. Returns an empty string if input is null.
+std::string SafeConvertJavaStringToNative(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& jstring);
 
 }  // namespace ui_controller_android_utils
 

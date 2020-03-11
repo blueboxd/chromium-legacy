@@ -41,4 +41,12 @@ const char kMetricPolicyInvalidationRegistration[] =
 const char kMetricPolicyInvalidationRegistrationFcm[] =
     "Enterprise.FCMInvalidationService.PolicyInvalidationsRegistrationResult";
 
+const char kMetricUserRemoteCommandInvalidations[] =
+    "Enterprise.UserRemoteCommandInvalidations";
+const char kMetricDeviceRemoteCommandInvalidations[] =
+    "Enterprise.DeviceRemoteCommandInvalidations";
+
+const char kMetricRemoteCommandInvalidationsRegistrationResult[] =
+    "Enterprise.RemoteCommandInvalidationsRegistrationResult";
+
 }  // namespace policy

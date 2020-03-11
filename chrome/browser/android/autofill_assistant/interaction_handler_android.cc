@@ -129,9 +129,6 @@ void ShowListPopup(base::WeakPtr<UserModel> user_model,
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  auto jidentifier = base::android::ConvertUTF8ToJavaString(
-      env, proto.selected_item_indices_model_identifier());
-
   std::vector<std::string> item_names_vec;
   std::copy(item_names->strings().values().begin(),
             item_names->strings().values().end(),
@@ -151,7 +148,14 @@ void ShowListPopup(base::WeakPtr<UserModel> user_model,
       env, jcontext, base::android::ToJavaArrayOfStrings(env, item_names_vec),
       base::android::ToJavaIntArray(env, item_types_vec),
       base::android::ToJavaIntArray(env, selected_indices_vec),
-      proto.allow_multiselect(), jidentifier, jdelegate);
+      proto.allow_multiselect(),
+      base::android::ConvertUTF8ToJavaString(
+          env, proto.selected_item_indices_model_identifier()),
+      proto.selected_item_names_model_identifier().empty()
+          ? nullptr
+          : base::android::ConvertUTF8ToJavaString(
+                env, proto.selected_item_names_model_identifier()),
+      jdelegate);
 }
 
 void ShowCalendarPopup(base::WeakPtr<UserModel> user_model,

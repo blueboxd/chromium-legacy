@@ -944,6 +944,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("searchDownloadsWithNoResults"),
                       TestCase("searchDownloadsClearSearchKeyDown"),
                       TestCase("searchDownloadsClearSearch"),
+                      TestCase("searchHidingViaTab"),
                       TestCase("searchHidingTextEntryField")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

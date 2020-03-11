@@ -27,6 +27,7 @@ struct DefaultSingletonTraits;
 }  // namespace base
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
@@ -70,6 +71,7 @@ class ServiceWorkerPaymentAppFinder {
   // The method should be called on the UI thread.
   void GetAllPaymentApps(
       const url::Origin& merchant_origin,
+      content::RenderFrameHost* initiator_render_frame_host,
       content::WebContents* web_contents,
       scoped_refptr<PaymentManifestWebDataService> cache,
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,

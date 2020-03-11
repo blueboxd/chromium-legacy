@@ -3449,7 +3449,6 @@ test("unit_tests") {
     "../browser/translate/translate_service_unittest.cc",
     "../browser/ui/android/tab_model/tab_model_list_unittest.cc",
     "../browser/ui/android/toolbar/location_bar_model_android_unittest.cc",
-    "../browser/ui/autofill/autofill_popup_layout_model_unittest.cc",
     "../browser/ui/autofill/popup_view_common_unittest.cc",
     "../browser/ui/autofill/popup_view_test_helpers.cc",
     "../browser/ui/autofill/popup_view_test_helpers.h",

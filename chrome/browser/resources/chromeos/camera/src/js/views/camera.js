@@ -263,7 +263,8 @@ export class Camera extends View {
         console.error(e);
       } finally {
         this.take_ = null;
-        state.set(state.State.TAKING, false, {hasError});
+        state.set(
+            state.State.TAKING, false, {hasError, facing: this.facingMode_});
         this.focus();  // Refocus the visible shutter button for ChromeVox.
       }
     })();
@@ -406,7 +407,8 @@ export class Camera extends View {
           await this.preview_.start(stream);
           this.facingMode_ = await this.options_.updateValues(stream);
           await this.modes_.updateModeSelectionUI(deviceId);
-          await this.modes_.updateMode(mode, stream, deviceId, captureR);
+          await this.modes_.updateMode(
+              mode, stream, this.facingMode_, deviceId, captureR);
           nav.close(ViewName.WARNING, 'no-camera');
           return true;
         } catch (e) {

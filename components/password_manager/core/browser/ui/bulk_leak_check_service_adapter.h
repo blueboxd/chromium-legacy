@@ -13,6 +13,8 @@ namespace autofill {
 struct PasswordForm;
 }
 
+class PrefService;
+
 namespace password_manager {
 
 // This class serves as an apdater for the BulkLeakCheckService and exposes an
@@ -20,7 +22,8 @@ namespace password_manager {
 class BulkLeakCheckServiceAdapter : public SavedPasswordsPresenter::Observer {
  public:
   BulkLeakCheckServiceAdapter(SavedPasswordsPresenter* presenter,
-                              BulkLeakCheckService* service);
+                              BulkLeakCheckService* service,
+                              PrefService* prefs);
   ~BulkLeakCheckServiceAdapter() override;
 
   // Instructs the adapter to start a check. This is a no-op in case a check is
@@ -47,6 +50,8 @@ class BulkLeakCheckServiceAdapter : public SavedPasswordsPresenter::Observer {
   // null and must outlive the adapter.
   SavedPasswordsPresenter* presenter_ = nullptr;
   BulkLeakCheckService* service_ = nullptr;
+
+  PrefService* prefs_ = nullptr;
 };
 
 }  // namespace password_manager

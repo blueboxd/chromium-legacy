@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -28,11 +30,13 @@ public class AssistantGenericUiDelegate {
                 mNativeAssistantGenericUiDelegate, AssistantGenericUiDelegate.this, identifier);
     }
 
-    void onListPopupSelectionChanged(String identifier, AssistantValue value) {
+    void onListPopupSelectionChanged(String selectedIndicesIdentifier,
+            AssistantValue selectedIndices, @Nullable String selectedNamesIdentifier,
+            @Nullable AssistantValue selectedNames) {
         assert mNativeAssistantGenericUiDelegate != 0;
         AssistantGenericUiDelegateJni.get().onListPopupSelectionChanged(
-                mNativeAssistantGenericUiDelegate, AssistantGenericUiDelegate.this, identifier,
-                value);
+                mNativeAssistantGenericUiDelegate, AssistantGenericUiDelegate.this,
+                selectedIndicesIdentifier, selectedIndices, selectedNamesIdentifier, selectedNames);
     }
 
     void onCalendarPopupDateChanged(String identifier, AssistantValue value) {
@@ -52,7 +56,9 @@ public class AssistantGenericUiDelegate {
         void onViewClicked(long nativeAssistantGenericUiDelegate, AssistantGenericUiDelegate caller,
                 String identifier);
         void onListPopupSelectionChanged(long nativeAssistantGenericUiDelegate,
-                AssistantGenericUiDelegate caller, String identifier, AssistantValue value);
+                AssistantGenericUiDelegate caller, String selectedIndicesIdentifier,
+                AssistantValue selectedIndices, @Nullable String selectedNamesIdentifier,
+                @Nullable AssistantValue selectedNames);
         void onCalendarPopupDateChanged(long nativeAssistantGenericUiDelegate,
                 AssistantGenericUiDelegate caller, String identifier, AssistantValue value);
     }

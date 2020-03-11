@@ -531,10 +531,6 @@ void RenderWidgetHostViewBase::EnableAutoResize(const gfx::Size& min_size,
 void RenderWidgetHostViewBase::DisableAutoResize(const gfx::Size& new_size) {
   if (!new_size.IsEmpty())
     SetSize(new_size);
-  // This clears the cached value in the WebContents, so that OOPIFs will
-  // stop using it.
-  if (host()->delegate())
-    host()->delegate()->ResetAutoResizeSize();
   host()->SetAutoResize(false, gfx::Size(), gfx::Size());
   host()->SynchronizeVisualProperties();
 }

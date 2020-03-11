@@ -6,7 +6,7 @@
 #define MEDIA_CAPTURE_MOJOM_VIDEO_CAPTURE_TYPES_MOJOM_TRAITS_H_
 
 #include "media/base/video_facing.h"
-#include "media/capture/mojom/video_capture_types.mojom-shared.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "media/capture/video_capture_types.h"
@@ -14,9 +14,8 @@
 namespace mojo {
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    EnumTraits<media::mojom::ResolutionChangePolicy,
-               media::ResolutionChangePolicy> {
+struct EnumTraits<media::mojom::ResolutionChangePolicy,
+                  media::ResolutionChangePolicy> {
   static media::mojom::ResolutionChangePolicy ToMojom(
       media::ResolutionChangePolicy policy);
 
@@ -25,8 +24,7 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    EnumTraits<media::mojom::PowerLineFrequency, media::PowerLineFrequency> {
+struct EnumTraits<media::mojom::PowerLineFrequency, media::PowerLineFrequency> {
   static media::mojom::PowerLineFrequency ToMojom(
       media::PowerLineFrequency frequency);
 
@@ -35,8 +33,8 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    EnumTraits<media::mojom::VideoCapturePixelFormat, media::VideoPixelFormat> {
+struct EnumTraits<media::mojom::VideoCapturePixelFormat,
+                  media::VideoPixelFormat> {
   static media::mojom::VideoCapturePixelFormat ToMojom(
       media::VideoPixelFormat input);
   static bool FromMojom(media::mojom::VideoCapturePixelFormat input,
@@ -44,9 +42,8 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    EnumTraits<media::mojom::VideoCaptureBufferType,
-               media::VideoCaptureBufferType> {
+struct EnumTraits<media::mojom::VideoCaptureBufferType,
+                  media::VideoCaptureBufferType> {
   static media::mojom::VideoCaptureBufferType ToMojom(
       media::VideoCaptureBufferType buffer_type);
 
@@ -55,8 +52,7 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError> {
+struct EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError> {
   static media::mojom::VideoCaptureError ToMojom(
       media::VideoCaptureError buffer_type);
 
@@ -65,9 +61,8 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    EnumTraits<media::mojom::VideoCaptureFrameDropReason,
-               media::VideoCaptureFrameDropReason> {
+struct EnumTraits<media::mojom::VideoCaptureFrameDropReason,
+                  media::VideoCaptureFrameDropReason> {
   static media::mojom::VideoCaptureFrameDropReason ToMojom(
       media::VideoCaptureFrameDropReason buffer_type);
 
@@ -76,25 +71,22 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    EnumTraits<media::mojom::VideoFacingMode, media::VideoFacingMode> {
+struct EnumTraits<media::mojom::VideoFacingMode, media::VideoFacingMode> {
   static media::mojom::VideoFacingMode ToMojom(media::VideoFacingMode input);
   static bool FromMojom(media::mojom::VideoFacingMode input,
                         media::VideoFacingMode* output);
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi> {
+struct EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi> {
   static media::mojom::VideoCaptureApi ToMojom(media::VideoCaptureApi input);
   static bool FromMojom(media::mojom::VideoCaptureApi input,
                         media::VideoCaptureApi* output);
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    EnumTraits<media::mojom::VideoCaptureTransportType,
-               media::VideoCaptureTransportType> {
+struct EnumTraits<media::mojom::VideoCaptureTransportType,
+                  media::VideoCaptureTransportType> {
   static media::mojom::VideoCaptureTransportType ToMojom(
       media::VideoCaptureTransportType input);
   static bool FromMojom(media::mojom::VideoCaptureTransportType input,
@@ -102,9 +94,8 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    StructTraits<media::mojom::VideoCaptureFormatDataView,
-                 media::VideoCaptureFormat> {
+struct StructTraits<media::mojom::VideoCaptureFormatDataView,
+                    media::VideoCaptureFormat> {
   static const gfx::Size& frame_size(const media::VideoCaptureFormat& format) {
     return format.frame_size;
   }
@@ -123,9 +114,8 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    StructTraits<media::mojom::VideoCaptureParamsDataView,
-                 media::VideoCaptureParams> {
+struct StructTraits<media::mojom::VideoCaptureParamsDataView,
+                    media::VideoCaptureParams> {
   static media::VideoCaptureFormat requested_format(
       const media::VideoCaptureParams& params) {
     return params.requested_format;
@@ -156,9 +146,8 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
-                 media::VideoCaptureDeviceDescriptor> {
+struct StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
+                    media::VideoCaptureDeviceDescriptor> {
   static const std::string& display_name(
       const media::VideoCaptureDeviceDescriptor& input) {
     return input.display_name();
@@ -194,9 +183,8 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
 };
 
 template <>
-struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
-    StructTraits<media::mojom::VideoCaptureDeviceInfoDataView,
-                 media::VideoCaptureDeviceInfo> {
+struct StructTraits<media::mojom::VideoCaptureDeviceInfoDataView,
+                    media::VideoCaptureDeviceInfo> {
   static const media::VideoCaptureDeviceDescriptor& descriptor(
       const media::VideoCaptureDeviceInfo& input) {
     return input.descriptor;

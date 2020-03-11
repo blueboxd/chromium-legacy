@@ -8838,6 +8838,10 @@ histogram as enum -->
   <int value="32" label="AnnotateStrokeDeviceMouse"/>
   <int value="33" label="AnnotateStrokeDevicePenFirst"/>
   <int value="34" label="AnnotateStrokeDevicePen"/>
+  <int value="35" label="TwoUpViewEnableFirst"/>
+  <int value="36" label="TwoUpViewEnable"/>
+  <int value="37" label="TwoUpViewDisableFirst"/>
+  <int value="38" label="TwoUpViewDisable"/>
 </enum>
 
 <enum name="ChromePDFViewerAnnotationType">

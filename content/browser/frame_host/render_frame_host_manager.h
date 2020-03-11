@@ -183,9 +183,7 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // For arguments, see WebContentsImpl constructor.
   void Init(SiteInstance* site_instance,
-            int32_t view_routing_id,
             int32_t frame_routing_id,
-            int32_t widget_routing_id,
             bool renderer_initiated_creation);
 
   // Returns the currently active RenderFrameHost.
@@ -695,9 +693,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
   std::unique_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
       SiteInstance* instance,
-      int32_t view_routing_id,
       int32_t frame_routing_id,
-      int32_t widget_routing_id,
       bool renderer_initiated_creation);
 
   // Create and initialize a speculative RenderFrameHost for an ongoing

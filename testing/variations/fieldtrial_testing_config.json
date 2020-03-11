@@ -5337,6 +5337,24 @@
             ]
         }
     ],
+    "SyncSetupFriendlySettings": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncSetupFriendlySettings"
+                    ]
+                }
+            ]
+        }
+    ],
     "SyncUSSNigori": [
         {
             "platforms": [

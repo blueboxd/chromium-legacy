@@ -2999,6 +2999,7 @@ jumbo_static_library("browser") {
       "//components/crash/android:crash_android",
       "//components/embedder_support/android:util",
       "//components/embedder_support/android:web_contents_delegate",
+      "//components/external_intents/android",
       "//components/feed:buildflags",
       "//components/feed:feature_list",
       "//components/invalidation/impl:feature_list",

@@ -97,6 +97,7 @@ PaymentRequest::PaymentRequest(
     mojo::PendingReceiver<mojom::PaymentRequest> receiver,
     ObserverForTest* observer_for_testing)
     : web_contents_(web_contents),
+      initiator_render_frame_host_(render_frame_host),
       log_(web_contents_),
       delegate_(std::move(delegate)),
       manager_(manager),
@@ -186,8 +187,8 @@ void PaymentRequest::Init(
       std::move(options), std::move(details), std::move(method_data),
       /*observer=*/this, delegate_->GetApplicationLocale());
   state_ = std::make_unique<PaymentRequestState>(
-      web_contents_, top_level_origin_, frame_origin_, frame_security_origin_,
-      spec_.get(),
+      web_contents_, initiator_render_frame_host_, top_level_origin_,
+      frame_origin_, frame_security_origin_, spec_.get(),
       /*delegate=*/this, delegate_->GetApplicationLocale(),
       delegate_->GetPersonalDataManager(), delegate_.get(),
       base::BindRepeating(&PaymentRequest::SetInvokedServiceWorkerIdentity,

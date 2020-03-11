@@ -1821,30 +1821,45 @@ void NavigationRequest::OnResponseStarted(
   auto cross_origin_embedder_policy =
       response_head_->cross_origin_embedder_policy;
   if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
-    // https://mikewest.github.io/corpp/#integration-html
+    // https://mikewest.github.io/corpp/#process-navigation-response
     if (auto* const parent_frame = GetParentFrame()) {
       const auto& parent_coep = parent_frame->cross_origin_embedder_policy();
       const auto& url = common_params_->url;
-      if (parent_coep.value ==
-          network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp) {
-        if (url.SchemeIsBlob() || url.SchemeIs(url::kDataScheme)) {
-          // Some special URLs not loaded using the network are inheriting the
-          // Cross-Origin-Embedder-Policy header from their parent.
-          cross_origin_embedder_policy.value =
-              network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+      constexpr auto kRequireCorp =
+          network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+      constexpr auto kNone =
+          network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+
+      // Some special URLs not loaded using the network are inheriting the
+      // Cross-Origin-Embedder-Policy header from their parent.
+      const bool has_allowed_scheme =
+          url.SchemeIsBlob() || url.SchemeIs(url::kDataScheme);
+      if (parent_coep.value == kRequireCorp && has_allowed_scheme) {
+        cross_origin_embedder_policy.value = kRequireCorp;
+      }
+
+      auto* const coep_reporter = parent_frame->coep_reporter();
+      if (parent_coep.report_only_value == kRequireCorp &&
+          !has_allowed_scheme && cross_origin_embedder_policy.value == kNone &&
+          coep_reporter) {
+        coep_reporter->QueueNavigationReport(redirect_chain_[0],
+                                             /*report_only=*/true);
+      }
+      if (parent_coep.value == kRequireCorp &&
+          cross_origin_embedder_policy.value == kNone) {
+        if (coep_reporter) {
+          coep_reporter->QueueNavigationReport(redirect_chain_[0],
+                                               /*report_only=*/false);
         }
-        if (cross_origin_embedder_policy.value ==
-            network::mojom::CrossOriginEmbedderPolicyValue::kNone) {
-          OnRequestFailedInternal(network::URLLoaderCompletionStatus(
-                                      network::BlockedByResponseReason::
-                                          kCoepFrameResourceNeedsCoepHeader),
-                                  false /* skip_throttles */,
-                                  base::nullopt /* error_page_content */,
-                                  false /* collapse_frame */);
-          // DO NOT ADD CODE after this. The previous call to
-          // OnRequestFailedInternal has destroyed the NavigationRequest.
-          return;
-        }
+        OnRequestFailedInternal(network::URLLoaderCompletionStatus(
+                                    network::BlockedByResponseReason::
+                                        kCoepFrameResourceNeedsCoepHeader),
+                                false /* skip_throttles */,
+                                base::nullopt /* error_page_content */,
+                                false /* collapse_frame */);
+        // DO NOT ADD CODE after this. The previous call to
+        // OnRequestFailedInternal has destroyed the NavigationRequest.
+        return;
       }
     }
 

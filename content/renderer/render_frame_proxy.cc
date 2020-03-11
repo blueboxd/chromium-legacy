@@ -304,6 +304,14 @@ void RenderFrameProxy::OnPageScaleFactorChanged(float page_scale_factor,
   SynchronizeVisualProperties();
 }
 
+void RenderFrameProxy::OnVisibleViewportSizeChanged(
+    const gfx::Size& visible_viewport_size) {
+  DCHECK(ancestor_render_widget_);
+
+  pending_visual_properties_.visible_viewport_size = visible_viewport_size;
+  SynchronizeVisualProperties();
+}
+
 void RenderFrameProxy::UpdateCaptureSequenceNumber(
     uint32_t capture_sequence_number) {
   DCHECK(ancestor_render_widget_);
@@ -509,6 +517,8 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
           pending_visual_properties_.page_scale_factor ||
       sent_visual_properties_->is_pinch_gesture_active !=
           pending_visual_properties_.is_pinch_gesture_active ||
+      sent_visual_properties_->visible_viewport_size !=
+          pending_visual_properties_.visible_viewport_size ||
       sent_visual_properties_->compositor_viewport !=
           pending_visual_properties_.compositor_viewport ||
       capture_sequence_number_changed;

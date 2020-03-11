@@ -56,7 +56,7 @@ if (is_mac) {
     target_cpu,
   ]
 
-  if (!public_android_sdk) {
+  if (defined(public_android_sdk) && !public_android_sdk) {
     _script_arguments += [ "--next" ]
   }
 }

@@ -265,38 +265,15 @@ gfx::Rect RenderWidgetHostViewChildFrame::GetViewBounds() {
 }
 
 gfx::Size RenderWidgetHostViewChildFrame::GetVisibleViewportSize() {
-  // For subframes, the visual viewport corresponds to the main frame size, so
-  // this bubbles up to the parent until it hits the main frame's
-  // RenderWidgetHostView.
-  //
-  // Currently this excludes webview guests, since they expect the visual
-  // viewport to return the guest's size rather than the page's; one reason why
-  // is that Blink ends up using the visual viewport to calculate things like
-  // window.innerWidth/innerHeight for main frames, and a guest is considered
-  // to be a main frame.  This should be cleaned up eventually.
-  bool is_guest = BrowserPluginGuest::IsGuest(RenderViewHostImpl::From(host()));
-  if (frame_connector_ && !is_guest) {
-    // An auto-resize set by the top-level frame overrides what would be
-    // reported by embedding RenderWidgetHostViews.
-    if (host()->delegate() &&
-        !host()->delegate()->GetAutoResizeSize().IsEmpty())
-      return host()->delegate()->GetAutoResizeSize();
+  // For subframes, the visual viewport corresponds to the main frame size so
+  // this method would not even be called, the main frame's value should be
+  // used instead. However a nested WebContents will have a ChildFrame view used
+  // for the main frame.
+  DCHECK(host()->owner_delegate());
 
-    RenderWidgetHostView* parent_view =
-        frame_connector_->GetParentRenderWidgetHostView();
-    // The parent_view can be null in unit tests when using a TestWebContents.
-    if (parent_view)
-      return parent_view->GetVisibleViewportSize();
-  }
-
-  gfx::Rect bounds = GetViewBounds();
-
-  // It doesn't make sense to set insets on an OOP iframe. The only time this
-  // should happen is when the virtual keyboard comes up on a <webview>.
-  if (is_guest)
-    bounds.Inset(insets_);
-
-  return bounds.size();
+  gfx::Rect requested_rect(GetRequestedRendererSize());
+  requested_rect.Inset(insets_);
+  return requested_rect.size();
 }
 
 void RenderWidgetHostViewChildFrame::SetInsets(const gfx::Insets& insets) {

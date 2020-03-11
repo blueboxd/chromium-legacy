@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
@@ -37,7 +38,6 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
@@ -92,14 +92,12 @@ public class AssistantOnboardingCoordinatorTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/991938): re-enable
     public void testAcceptOnboarding() throws Exception {
         testOnboarding(R.id.button_init_ok, true);
     }
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testRejectOnboarding() throws Exception {
         testOnboarding(R.id.button_init_not_ok, false);
     }
@@ -112,17 +110,15 @@ public class AssistantOnboardingCoordinatorTest {
 
         assertTrue(TestThreadUtils.runOnUiThreadBlocking(coordinator::isInProgress));
         onView(is(mActivity.getScrim())).check(matches(isDisplayed()));
-        onView(withId(buttonToClick)).perform(click());
+        onView(withId(buttonToClick)).perform(scrollTo(), click());
 
         verify(mCallback).onResult(expectAccept);
-
         assertFalse(TestThreadUtils.runOnUiThreadBlocking(coordinator::isInProgress));
         assertEquals(expectAccept, AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted());
     }
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testOnboardingWithNoTabs() {
         AssistantOnboardingCoordinator coordinator = createCoordinator(/* tab= */ null);
         showOnboardingAndWait(coordinator, mCallback);
@@ -134,7 +130,6 @@ public class AssistantOnboardingCoordinatorTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testTransferControls() throws Exception {
         AssistantOnboardingCoordinator coordinator = createCoordinator(mTab);
 
@@ -161,7 +156,6 @@ public class AssistantOnboardingCoordinatorTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/991938): re-enable
     public void testShownFlag() throws Exception {
         AssistantOnboardingCoordinator coordinator = createCoordinator(/* tab= */ null);
         assertFalse(coordinator.getOnboardingShown());

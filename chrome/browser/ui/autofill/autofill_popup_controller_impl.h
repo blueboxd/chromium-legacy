@@ -17,7 +17,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
-#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "ui/gfx/geometry/rect.h"
@@ -110,7 +109,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   bool RemoveSuggestion(int list_index) override;
   void SetSelectedLine(base::Optional<int> selected_line) override;
   base::Optional<int> selected_line() const override;
-  const AutofillPopupLayoutModel& layout_model() const override;
+  PopupType GetPopupType() const override;
 
   // Increase the selected line by 1, properly handling wrapping.
   void SelectNextLine();
@@ -134,8 +133,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   AutofillPopupView* view() { return view_; }
 
   base::WeakPtr<AutofillPopupControllerImpl> GetWeakPtr();
-
-  AutofillPopupLayoutModel& LayoutModelForTesting() { return layout_model_; }
 
   // Raise an accessibility event to indicate the controls relation of the
   // form control of the popup and popup itself has changed based on the popup's
@@ -165,7 +162,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   PopupControllerCommon controller_common_;
   content::WebContents* web_contents_;
   AutofillPopupView* view_ = nullptr;  // Weak reference.
-  AutofillPopupLayoutModel layout_model_;
   base::WeakPtr<AutofillPopupDelegate> delegate_;
 
   // If set to true, the popup will not be hidden because of stale data or if

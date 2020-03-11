@@ -28,6 +28,7 @@
 #include "third_party/webrtc/api/rtp_packet_infos.h"
 #include "third_party/webrtc/api/video/color_space.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
+#include "third_party/webrtc/system_wrappers/include/clock.h"
 #include "ui/gfx/color_space.h"
 
 namespace blink {
@@ -327,6 +328,11 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
       kProcessingFinish - webrtc::TimeDelta::Millis(1.0e3 * kProcessingTime);
   const webrtc::Timestamp kCaptureTime =
       kProcessingStart - webrtc::TimeDelta::Millis(20.0);
+  webrtc::Clock* clock = webrtc::Clock::GetRealTimeClock();
+  const int64_t ntp_offset =
+      clock->CurrentNtpInMilliseconds() - clock->TimeInMilliseconds();
+  const webrtc::Timestamp kCaptureTimeNtp =
+      kCaptureTime + webrtc::TimeDelta::Millis(ntp_offset);
   // Expected capture time in Chromium epoch.
   base::TimeTicks kExpectedCaptureTime =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(kCaptureTime.ms()) +
@@ -348,7 +354,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
       webrtc::VideoFrame::Builder()
           .set_video_frame_buffer(buffer)
           .set_timestamp_rtp(kRtpTimestamp)
-          .set_ntp_time_ms(kCaptureTime.ms())
+          .set_ntp_time_ms(kCaptureTimeNtp.ms())
           .set_packet_infos(webrtc::RtpPacketInfos(packet_infos))
           .build();
 

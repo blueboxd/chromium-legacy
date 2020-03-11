@@ -22,6 +22,10 @@ ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph,
 
 ProcessNodeImpl::~ProcessNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Crash if this process node is destroyed while still hosting a worker node.
+  // TODO(https://crbug.com/1058705): Turn this into a DCHECK once the issue is
+  //                                  resolved.
+  CHECK(worker_nodes_.empty());
 }
 
 void ProcessNodeImpl::Bind(

@@ -142,14 +142,6 @@ class WebContents : public PageNavigator,
     // (e.g., for blocked popups).
     bool created_with_opener;
 
-    // The routing ids of the RenderView, main RenderFrame, and the widget for
-    // the main RenderFrame. Either all routing IDs must be provided or all must
-    // be MSG_ROUTING_NONE to have WebContents make the assignment. If provided,
-    // these routing IDs are associated with |site_instance->GetProcess()|.
-    int32_t routing_id;
-    int32_t main_frame_routing_id;
-    int32_t main_frame_widget_routing_id;
-
     // The name of the top-level frame of the new window. It is non-empty
     // when creating a named window (e.g. <a target="foo"> or
     // window.open('', 'bar')).

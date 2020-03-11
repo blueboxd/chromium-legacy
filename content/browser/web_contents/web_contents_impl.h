@@ -826,10 +826,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                               bool width_changed) override;
   void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
                              const gfx::Size& new_size) override;
-  gfx::Size GetAutoResizeSize() override;
-  void ResetAutoResizeSize() override;
-  void NotifyVisibleViewportSizeChanged(
-      const gfx::Size& visible_viewport_size) override;
   RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate() override;
   void OnVerticalScrollDirectionChanged(
       viz::VerticalScrollDirection scroll_direction) override;
@@ -1805,10 +1801,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // The preferred size for content screen capture.  When |capturer_count_| > 0,
   // this overrides |preferred_size_|.
   gfx::Size preferred_size_for_capture_;
-
-  // Size set by a top-level frame with auto-resize enabled. This is needed by
-  // out-of-process iframes for their visible viewport size.
-  gfx::Size auto_resize_size_;
 
   // When device emulation is enabled, override the size of current and newly
   // created render views/widgets.

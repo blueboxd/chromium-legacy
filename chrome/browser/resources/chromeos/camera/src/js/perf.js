@@ -12,6 +12,7 @@ import {PerfInformation} from './type.js';
  */
 export const PerfEvent = {
   PHOTO_TAKING: 'photo-taking',
+  PHOTO_CAPTURE_SHUTTER: 'photo-capture-shutter',
   PHOTO_CAPTURE_POST_PROCESSING: 'photo-capture-post-processing',
   VIDEO_CAPTURE_POST_PROCESSING: 'video-capture-post-processing',
   PORTRAIT_MODE_CAPTURE_POST_PROCESSING:

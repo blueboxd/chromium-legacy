@@ -394,6 +394,13 @@ void DedicatedWorkerHost::CreateQuicTransportConnector(
                               std::move(receiver));
 }
 
+void DedicatedWorkerHost::BindCacheStorage(
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  worker_process_host_->BindCacheStorage(cross_origin_embedder_policy_,
+                                         worker_origin_, std::move(receiver));
+}
+
 void DedicatedWorkerHost::CreateNestedDedicatedWorker(
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

@@ -873,6 +873,13 @@ class CONTENT_EXPORT RenderWidget
   // The size of the visible viewport in pixels.
   gfx::Size visible_viewport_size_;
 
+  // Stores the zoom level to propagate to new child RenderWidgets. Initialized
+  // to 0 to match the value in RenderViewImpl, but this will be the value being
+  // propagated down the RenderWidget tree, whereas the value in RenderViewImpl
+  // is derived from these as RenderWidgets update their corresponding
+  // RenderViewImpls.
+  double zoom_level_ = 0;
+
   // Whether the WebWidget is in auto resize mode, which is used for example
   // by extension popups.
   bool auto_resize_mode_ = false;
@@ -976,8 +983,12 @@ class CONTENT_EXPORT RenderWidget
 
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
-  // Lists of RenderFrameProxy objects that need to be notified of
-  // compositing-related events (e.g. DidCommitCompositorFrame).
+  // Lists of RenderFrameProxy objects for which this RenderWidget is their
+  // local root. Each of these represents a child local root RenderWidget in
+  // another RenderView frame tree. For values that are propagated from
+  // a parent RenderWidget to its children, they are plumbed through the
+  // RenderFrameProxys in this list, which bounce those values through the
+  // browser to the child RenderWidget in the correct process.
   base::ObserverList<RenderFrameProxy>::Unchecked render_frame_proxies_;
 
   // A list of RenderFrames associated with this RenderWidget. Notifications

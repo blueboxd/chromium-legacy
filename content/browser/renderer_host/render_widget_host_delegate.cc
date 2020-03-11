@@ -146,10 +146,6 @@ ukm::SourceId RenderWidgetHostDelegate::GetUkmSourceIdForLastCommittedSource()
   return ukm::kInvalidSourceId;
 }
 
-gfx::Size RenderWidgetHostDelegate::GetAutoResizeSize() {
-  return gfx::Size();
-}
-
 WebContents* RenderWidgetHostDelegate::GetAsWebContents() {
   return nullptr;
 }

@@ -1258,7 +1258,8 @@ void WebViewImpl::ResizeVisualViewport(const WebSize& new_size) {
   GetPage()->GetVisualViewport().ClampToBoundaries();
 }
 
-void WebViewImpl::UpdateICBAndResizeViewport() {
+void WebViewImpl::UpdateICBAndResizeViewport(
+    const IntSize& visible_viewport_size) {
   // We'll keep the initial containing block size from changing when the top
   // controls hide so that the ICB will always be the same size as the
   // viewport with the browser controls shown.
@@ -1278,13 +1279,18 @@ void WebViewImpl::UpdateICBAndResizeViewport() {
                                            .GetViewportDescription());
   UpdateMainFrameLayoutSize();
 
-  GetPage()->GetVisualViewport().SetSize(size_);
+  GetPage()->GetVisualViewport().SetSize(visible_viewport_size);
 
   if (MainFrameImpl()->GetFrameView()) {
     MainFrameImpl()->GetFrameView()->SetInitialViewportSize(icb_size);
     if (!MainFrameImpl()->GetFrameView()->NeedsLayout())
       resize_viewport_anchor_->ResizeFrameView(MainFrameSize());
   }
+
+  // The boundaries are not properly established until after the frame view is
+  // also resized, as demonstrated by
+  // VisualViewportTest.TestBrowserControlsAdjustmentAndResize.
+  GetPage()->GetVisualViewport().ClampToBoundaries();
 }
 
 void WebViewImpl::UpdateBrowserControlsConstraint(
@@ -1303,7 +1309,7 @@ void WebViewImpl::UpdateBrowserControlsConstraint(
        constraint == cc::BrowserControlsState::kBoth) ||
       (old_permitted_state == cc::BrowserControlsState::kBoth &&
        constraint == cc::BrowserControlsState::kHidden)) {
-    UpdateICBAndResizeViewport();
+    UpdateICBAndResizeViewport(GetPage()->GetVisualViewport().Size());
   }
 }
 
@@ -1349,7 +1355,9 @@ BrowserControls& WebViewImpl::GetBrowserControls() {
   return GetPage()->GetBrowserControls();
 }
 
-void WebViewImpl::ResizeViewWhileAnchored(cc::BrowserControlsParams params) {
+void WebViewImpl::ResizeViewWhileAnchored(
+    cc::BrowserControlsParams params,
+    const IntSize& visible_viewport_size) {
   DCHECK(MainFrameImpl());
 
   GetBrowserControls().SetParams(params);
@@ -1360,7 +1368,7 @@ void WebViewImpl::ResizeViewWhileAnchored(cc::BrowserControlsParams params) {
     TextAutosizer::DeferUpdatePageInfo defer_update_page_info(GetPage());
     LocalFrameView* frame_view = MainFrameImpl()->GetFrameView();
     IntSize old_size = frame_view->Size();
-    UpdateICBAndResizeViewport();
+    UpdateICBAndResizeViewport(visible_viewport_size);
     IntSize new_size = frame_view->Size();
     frame_view->MarkViewportConstrainedObjectsForLayout(
         old_size.Width() != new_size.Width(),
@@ -1382,28 +1390,35 @@ void WebViewImpl::ResizeWithBrowserControls(
     float bottom_controls_height,
     bool browser_controls_shrink_layout) {
   ResizeWithBrowserControls(
-      new_size, {top_controls_height, GetBrowserControls().TopMinHeight(),
-                 bottom_controls_height, GetBrowserControls().BottomMinHeight(),
-                 GetBrowserControls().AnimateHeightChanges(),
-                 browser_controls_shrink_layout});
+      new_size, new_size,
+      {top_controls_height, GetBrowserControls().TopMinHeight(),
+       bottom_controls_height, GetBrowserControls().BottomMinHeight(),
+       GetBrowserControls().AnimateHeightChanges(),
+       browser_controls_shrink_layout});
 }
 
 void WebViewImpl::ResizeWithBrowserControls(
-    const WebSize& new_size,
+    const WebSize& main_frame_widget_size,
+    const WebSize& visible_viewport_size,
     cc::BrowserControlsParams browser_controls_params) {
-  if (should_auto_resize_)
+  if (should_auto_resize_) {
+    // When auto-resizing only the viewport size comes from the browser, while
+    // the widget size is determined in the renderer.
+    ResizeVisualViewport(visible_viewport_size);
     return;
+  }
 
-  if (size_ == new_size &&
+  if (size_ == main_frame_widget_size &&
+      GetPage()->GetVisualViewport().Size() == IntSize(visible_viewport_size) &&
       GetBrowserControls().Params() == browser_controls_params)
     return;
 
   if (GetPage()->MainFrame() && !GetPage()->MainFrame()->IsLocalFrame()) {
     // Viewport resize for a remote main frame does not require any
     // particular action, but the state needs to reflect the correct size
-    // so that it can be used for initalization if the main frame gets
+    // so that it can be used for initialization if the main frame gets
     // swapped to a LocalFrame at a later time.
-    size_ = new_size;
+    size_ = main_frame_widget_size;
     GetPageScaleConstraintsSet().DidChangeInitialContainingBlockSize(size_);
     GetPage()->GetVisualViewport().SetSize(size_);
     GetPage()->GetBrowserControls().SetParams(browser_controls_params);
@@ -1422,19 +1437,20 @@ void WebViewImpl::ResizeWithBrowserControls(
 
   bool is_rotation =
       GetPage()->GetSettings().GetMainFrameResizesAreOrientationChanges() &&
-      size_.width && ContentsSize().Width() && new_size.width != size_.width &&
+      size_.width && ContentsSize().Width() &&
+      main_frame_widget_size.width != size_.width &&
       !fullscreen_controller_->IsFullscreenOrTransitioning();
-  size_ = new_size;
+  size_ = main_frame_widget_size;
 
   FloatSize viewport_anchor_coords(viewportAnchorCoordX, viewportAnchorCoordY);
   if (is_rotation) {
     RotationViewportAnchor anchor(*view, visual_viewport,
                                   viewport_anchor_coords,
                                   GetPageScaleConstraintsSet());
-    ResizeViewWhileAnchored(browser_controls_params);
+    ResizeViewWhileAnchored(browser_controls_params, visible_viewport_size);
   } else {
     ResizeViewportAnchor::ResizeScope resize_scope(*resize_viewport_anchor_);
-    ResizeViewWhileAnchored(browser_controls_params);
+    ResizeViewWhileAnchored(browser_controls_params, visible_viewport_size);
   }
   SendResizeEventForMainFrame();
 }

@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/common/password_form.h"
@@ -85,6 +86,30 @@ TEST_F(SavedPasswordsPresenterTest, NotifyObservers) {
   store().AddLogin(form);
   RunUntilIdle();
   EXPECT_FALSE(store().IsEmpty());
+}
+
+// Tests whether adding and removing an observer works as expected.
+TEST_F(SavedPasswordsPresenterTest, IgnoredCredentials) {
+  PasswordForm federated_form;
+  federated_form.federation_origin =
+      url::Origin::Create(GURL("https://example.com"));
+
+  StrictMockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+
+  // Adding a credential should notify observers. However, since federated
+  // credentials should be ignored it should not be passed a long.
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(IsEmpty()));
+  store().AddLogin(federated_form);
+  RunUntilIdle();
+
+  PasswordForm blacklisted_form;
+  blacklisted_form.blacklisted_by_user = true;
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(IsEmpty()));
+  store().AddLogin(blacklisted_form);
+  RunUntilIdle();
+
+  presenter().RemoveObserver(&observer);
 }
 
 // Tests whether editing a password works and results in the right

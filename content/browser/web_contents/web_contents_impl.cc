@@ -1634,29 +1634,6 @@ void WebContentsImpl::NotifyNavigationStateChanged(
     GetOuterWebContents()->NotifyNavigationStateChanged(changed_flags);
 }
 
-void WebContentsImpl::NotifyVisibleViewportSizeChanged(
-    const gfx::Size& visible_viewport_size) {
-  // This viewport size is in screen coordinates, but will be handed to blink
-  // which expects coordinates including the device scale factor when
-  // UseZoomForDSF is enabled.
-  // TODO(danakj): This scaling should be done in the renderer where emulation
-  // may override the device scale factor.
-  gfx::Size visible_viewport_size_for_blink = visible_viewport_size;
-  if (IsUseZoomForDSFEnabled()) {
-    ScreenInfo info;
-    GetMainFrame()->GetRenderWidgetHost()->GetScreenInfo(&info);
-
-    visible_viewport_size_for_blink =
-        gfx::ScaleToCeiledSize(visible_viewport_size, info.device_scale_factor);
-  }
-
-  // TODO(danakj): This should be part of VisualProperties and walk down the
-  // RenderWidget tree like other VisualProperties do, in order to set the
-  // value in each WebView holds a part of the local frame tree.
-  SendPageMessage(new PageMsg_UpdatePageVisualProperties(
-      MSG_ROUTING_NONE, visible_viewport_size_for_blink));
-}
-
 RenderFrameHostImpl* WebContentsImpl::GetFocusedFrameFromFocusedDelegate() {
   FrameTreeNode* focused_node =
       GetFocusedWebContents()->frame_tree_.GetFocusedFrame();
@@ -2070,14 +2047,6 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   if (!params.last_active_time.is_null())
     last_active_time_ = params.last_active_time;
 
-  // The routing ids must either all be set or all be unset.
-  DCHECK((params.routing_id == MSG_ROUTING_NONE &&
-          params.main_frame_routing_id == MSG_ROUTING_NONE &&
-          params.main_frame_widget_routing_id == MSG_ROUTING_NONE) ||
-         (params.routing_id != MSG_ROUTING_NONE &&
-          params.main_frame_routing_id != MSG_ROUTING_NONE &&
-          params.main_frame_widget_routing_id != MSG_ROUTING_NONE));
-
   scoped_refptr<SiteInstance> site_instance = params.site_instance;
   if (!site_instance)
     site_instance = SiteInstance::Create(params.browser_context);
@@ -2086,24 +2055,9 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
         ->PreventAssociationWithSpareProcess();
   }
 
-  // A main RenderFrameHost always has a RenderWidgetHost, since it is always a
-  // local root by definition.
-  // TODO(avi): Once RenderViewHostImpl has-a RenderWidgetHostImpl, it will no
-  // longer be necessary to eagerly grab a routing ID for the view.
-  // https://crbug.com/545684
-  int32_t view_routing_id = params.routing_id;
-  int32_t main_frame_widget_routing_id = params.main_frame_widget_routing_id;
-  if (main_frame_widget_routing_id == MSG_ROUTING_NONE) {
-    view_routing_id = site_instance->GetProcess()->GetNextRoutingID();
-    main_frame_widget_routing_id =
-        site_instance->GetProcess()->GetNextRoutingID();
-  }
-
-  DCHECK_NE(view_routing_id, main_frame_widget_routing_id);
-
-  GetRenderManager()->Init(
-      site_instance.get(), view_routing_id, params.main_frame_routing_id,
-      main_frame_widget_routing_id, params.renderer_initiated_creation);
+  GetRenderManager()->Init(site_instance.get(),
+                           /*frame_routing_id=*/MSG_ROUTING_NONE,
+                           params.renderer_initiated_creation);
 
   // blink::FrameTree::setName always keeps |unique_name| empty in case of a
   // main frame - let's do the same thing here.
@@ -2938,22 +2892,6 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
   // objects.
   create_params.renderer_initiated_creation = !is_new_browsing_instance;
 
-  // If |is_new_browsing_instance| is true, defer routing_id allocation
-  // to the WebContentsImpl::Create() call. This is required because with
-  // a new browsing instance, WebContentsImpl::Create() may elect a different
-  // SiteInstance from |site_instance| (which happens if |site_instance| is
-  // nullptr for example).
-  //
-  // TODO(ajwong): This routing id allocation should be pushed down further
-  // into WebContentsImpl::Create().
-  if (!is_new_browsing_instance) {
-    create_params.routing_id = opener->GetProcess()->GetNextRoutingID();
-    create_params.main_frame_routing_id =
-        opener->GetProcess()->GetNextRoutingID();
-    create_params.main_frame_widget_routing_id =
-        opener->GetProcess()->GetNextRoutingID();
-  }
-
   std::unique_ptr<WebContentsImpl> new_contents;
   if (!is_guest) {
     create_params.context = view_->GetNativeView();
@@ -2996,9 +2934,10 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
     // TODO(ajwong): This should be keyed off the RenderFrame routing id or the
     // FrameTreeNode id instead of the routing id of the Widget for the main
     // frame.  https://crbug.com/545684
-    DCHECK_NE(MSG_ROUTING_NONE, create_params.main_frame_routing_id);
-    GlobalRoutingID id(render_process_id,
-                       create_params.main_frame_widget_routing_id);
+    int32_t main_frame_routing_id = new_contents_impl->GetMainFrame()
+                                        ->GetRenderWidgetHost()
+                                        ->GetRoutingID();
+    GlobalRoutingID id(render_process_id, main_frame_routing_id);
     pending_contents_[id] = std::move(new_contents);
     AddDestructionObserver(new_contents_impl);
   }
@@ -3568,30 +3507,8 @@ void WebContentsImpl::ResizeDueToAutoResize(
   if (render_widget_host != GetRenderViewHost()->GetWidget())
     return;
 
-  auto_resize_size_ = new_size;
-
-  // Out-of-process iframe visible viewport sizes usually come from the
-  // top-level RenderWidgetHostView, but when auto-resize is enabled on the
-  // top frame then that size is used instead.
-  for (FrameTreeNode* node : frame_tree_.Nodes()) {
-    if (node->current_frame_host()->is_local_root()) {
-      RenderWidgetHostImpl* host =
-          node->current_frame_host()->GetRenderWidgetHost();
-      if (host != render_widget_host)
-        host->SynchronizeVisualProperties();
-    }
-  }
-
   if (delegate_)
     delegate_->ResizeDueToAutoResize(this, new_size);
-}
-
-gfx::Size WebContentsImpl::GetAutoResizeSize() {
-  return auto_resize_size_;
-}
-
-void WebContentsImpl::ResetAutoResizeSize() {
-  auto_resize_size_ = gfx::Size();
 }
 
 WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {

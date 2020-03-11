@@ -5,6 +5,8 @@
 import {browserProxy} from './browser_proxy/browser_proxy.js';
 // eslint-disable-next-line no-unused-vars
 import {Intent} from './intent.js';
+// eslint-disable-next-line no-unused-vars
+import {PerfEvent} from './perf.js';
 import * as state from './state.js';
 // eslint-disable-next-line no-unused-vars
 import {Facing} from './type.js';
@@ -141,15 +143,16 @@ function captureType(facingMode, length, resolution, intentResult) {
 
 /**
  * Returns event builder for the metrics type: perf.
- * @param {string} event The target event type.
+ * @param {PerfEvent} event The target event type.
  * @param {number} duration The duration of the event in ms.
  * @param {Object=} extras Optional information for the event.
  * @return {!analytics.EventBuilder}
  */
 function perfType(event, duration, extras = {}) {
-  const {resolution = ''} = extras;
+  const {resolution = '', facing = ''} = extras;
   return base.category('perf')
       .action(event)
+      .label(facing)
       // Round the duration here since GA expects that the value is an integer.
       // Reference: https://support.google.com/analytics/answer/1033068
       .value(Math.round(duration))

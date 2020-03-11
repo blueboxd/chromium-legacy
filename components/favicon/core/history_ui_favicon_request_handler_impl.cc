@@ -97,13 +97,11 @@ GURL GetGroupIdentifier(const GURL& page_url, const GURL& icon_url) {
 }  // namespace
 
 HistoryUiFaviconRequestHandlerImpl::HistoryUiFaviconRequestHandlerImpl(
-    const SyncedFaviconGetter& synced_favicon_getter,
     const CanSendHistoryDataGetter& can_send_history_data_getter,
     FaviconService* favicon_service,
     LargeIconService* large_icon_service)
     : favicon_service_(favicon_service),
       large_icon_service_(large_icon_service),
-      synced_favicon_getter_(synced_favicon_getter),
       can_send_history_data_getter_(can_send_history_data_getter) {
   DCHECK(favicon_service);
   DCHECK(large_icon_service);
@@ -186,19 +184,7 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
     return;
   }
 
-  favicon_base::FaviconRawBitmapResult sync_bitmap_result =
-      synced_favicon_getter_.Run(page_url);
-  if (sync_bitmap_result.is_valid()) {
-    // If request to sync succeeds, resize bitmap to desired size and send.
-    RecordFaviconAvailabilityAndLatencyMetric(
-        origin_for_uma, request_start_time_for_uma, FaviconAvailability::kSync);
-    std::move(response_callback)
-        .Run(favicon_base::ResizeFaviconBitmapResult({sync_bitmap_result},
-                                                     desired_size_in_pixel));
-    return;
-  }
-
-  // If sync does not have the favicon, send empty response.
+  // Send empty response.
   RecordFaviconAvailabilityAndLatencyMetric(origin_for_uma,
                                             request_start_time_for_uma,
                                             FaviconAvailability::kNotAvailable);
@@ -246,21 +232,7 @@ void HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable(
     return;
   }
 
-  favicon_base::FaviconRawBitmapResult sync_bitmap_result =
-      synced_favicon_getter_.Run(page_url);
-  if (sync_bitmap_result.is_valid()) {
-    // If request to sync succeeds, convert the retrieved bitmap to image and
-    // send.
-    RecordFaviconAvailabilityAndLatencyMetric(
-        origin_for_uma, request_start_time_for_uma, FaviconAvailability::kSync);
-    favicon_base::FaviconImageResult sync_image_result;
-    sync_image_result.image =
-        gfx::Image::CreateFrom1xPNGBytes(sync_bitmap_result.bitmap_data.get());
-    std::move(response_callback).Run(sync_image_result);
-    return;
-  }
-
-  // If sync does not have the favicon, send empty response.
+  // Send empty response.
   RecordFaviconAvailabilityAndLatencyMetric(origin_for_uma,
                                             request_start_time_for_uma,
                                             FaviconAvailability::kNotAvailable);

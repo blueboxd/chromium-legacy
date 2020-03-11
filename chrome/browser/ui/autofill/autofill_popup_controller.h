@@ -19,7 +19,6 @@
 
 namespace autofill {
 
-class AutofillPopupLayoutModel;
 struct Suggestion;
 
 // This interface provides data to an AutofillPopupView.
@@ -63,10 +62,11 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   // hovered or has keyboard focus.
   virtual base::Optional<int> selected_line() const = 0;
 
-  virtual const AutofillPopupLayoutModel& layout_model() const = 0;
+  // Returns the popup type corresponding to the controller.
+  virtual PopupType GetPopupType() const = 0;
 
  protected:
-  ~AutofillPopupController() override {}
+  ~AutofillPopupController() override = default;
 };
 
 }  // namespace autofill

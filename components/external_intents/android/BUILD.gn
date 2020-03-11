@@ -6,8 +6,31 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/components/external_intents/ExternalIntentsFeatureList.java",
     "java/src/org/chromium/components/external_intents/ExternalIntentsSwitches.java",
     "java/src/org/chromium/components/external_intents/ExternalNavigationParams.java",
     "java/src/org/chromium/components/external_intents/RedirectHandler.java",
+  ]
+
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  deps = [
+    "//base:base_java",
+    "//base:jni_java",
+  ]
+}
+
+generate_jni("jni_headers") {
+  sources = [ "java/src/org/chromium/components/external_intents/ExternalIntentsFeatureList.java" ]
+}
+
+static_library("android") {
+  sources = [
+    "external_intents_feature_list.cc",
+    "external_intents_feature_list.h",
+  ]
+
+  deps = [
+    ":jni_headers",
+    "//base",
   ]
 }

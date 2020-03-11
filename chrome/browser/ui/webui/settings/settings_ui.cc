@@ -336,6 +336,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath(
       "images/password_check_neutral_dark.svg",
       IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_DARK_SVG);
+  html_source->AddResourcePath("images/password_check_positive.svg",
+                               IDR_SETTINGS_IMAGES_PASSWORD_CHECK_POSITIVE_SVG);
+  html_source->AddResourcePath(
+      "images/password_check_positive_dark.svg",
+      IDR_SETTINGS_IMAGES_PASSWORD_CHECK_POSITIVE_DARK_SVG);
 
   // Only used in Polymer 3, see https://crbug.com/1026426.
   html_source->AddResourcePath("settings.js", IDR_SETTINGS_SETTINGS_ROLLUP_JS);

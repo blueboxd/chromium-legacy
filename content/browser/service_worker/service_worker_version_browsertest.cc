@@ -1655,8 +1655,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerVersionCoepTest,
   RunOnCoreThread(base::BindOnce(
       &ServiceWorkerVersionBrowserTest::SetUpRegistrationOnCoreThread,
       base::Unretained(this), "/service_worker/generated"));
-  EXPECT_EQ(CrossOriginEmbedderPolicyNone(),
-            version_->cross_origin_embedder_policy());
+  EXPECT_FALSE(version_->cross_origin_embedder_policy());
 
   // Once it's started, the worker script is read from the network and the COEP
   // value is set to the version.

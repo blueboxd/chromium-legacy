@@ -22,8 +22,9 @@ class LargeIconService;
 enum class FaviconAvailability {
   // Icon recovered from local storage (but may originally come from server).
   kLocal = 0,
+  // DEPRECATED: No icon is retrieved using sync in this layer anymore.
   // Icon recovered using sync.
-  kSync = 1,
+  kDeprecatedSync = 1,
   // Icon not found.
   kNotAvailable = 2,
   kMaxValue = kNotAvailable,
@@ -33,18 +34,12 @@ enum class FaviconAvailability {
 class HistoryUiFaviconRequestHandlerImpl
     : public HistoryUiFaviconRequestHandler {
  public:
-  // Callback that requests the synced bitmap for a page url.
-  using SyncedFaviconGetter =
-      base::RepeatingCallback<favicon_base::FaviconRawBitmapResult(
-          const GURL&)>;
-
   // Callback that checks whether user settings allow to query the favicon
   // server using history data (in particular it must check that history sync is
   // enabled and no custom passphrase is set).
   using CanSendHistoryDataGetter = base::RepeatingCallback<bool()>;
 
   HistoryUiFaviconRequestHandlerImpl(
-      const SyncedFaviconGetter& synced_favicon_getter,
       const CanSendHistoryDataGetter& can_send_history_data_getter,
       FaviconService* favicon_service,
       LargeIconService* large_icon_service);
@@ -65,9 +60,9 @@ class HistoryUiFaviconRequestHandlerImpl
 
  private:
   // Called after the first attempt to retrieve the icon bitmap from local
-  // storage. If request succeeded, sends the result. Otherwise attempts to
-  // retrieve from sync or the Google favicon server depending on the result
-  // given by |can_send_history_data_getter_|.
+  // storage. If request succeeded, sends the result. Otherwise, if allowed by
+  // user settings, (i.e. if |can_send_history_data_getter_| returns true),
+  // attempts to retrieve from the Google favicon server.
   void OnBitmapLocalDataAvailable(
       const GURL& page_url,
       int desired_size_in_pixel,
@@ -78,9 +73,9 @@ class HistoryUiFaviconRequestHandlerImpl
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Called after the first attempt to retrieve the icon image from local
-  // storage. If request succeeded, sends the result. Otherwise attempts to
-  // retrieve from sync or the Google favicon server depending on the result
-  // given by |can_send_history_data_getter_|.
+  // storage. If request succeeded, sends the result. Otherwise, if allowed by
+  // user settings, (i.e. if |can_send_history_data_getter_| returns true),
+  // attempts to retrieve from the Google favicon server.
   void OnImageLocalDataAvailable(
       const GURL& page_url,
       favicon_base::FaviconImageCallback response_callback,
@@ -116,8 +111,6 @@ class HistoryUiFaviconRequestHandlerImpl
   FaviconService* const favicon_service_;
 
   LargeIconService* const large_icon_service_;
-
-  SyncedFaviconGetter const synced_favicon_getter_;
 
   CanSendHistoryDataGetter const can_send_history_data_getter_;
 

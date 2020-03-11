@@ -22,6 +22,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
@@ -108,6 +109,15 @@ void ServiceWorkerProviderHost::CreateQuicTransportConnector(
       base::BindOnce(&CreateQuicTransportConnectorImpl, worker_process_id_,
                      running_hosted_version_->script_origin(),
                      std::move(receiver)));
+}
+
+void ServiceWorkerProviderHost::BindCacheStorage(
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(!base::FeatureList::IsEnabled(
+      blink::features::kEagerCacheStorageSetupForServiceWorkers));
+  running_hosted_version_->embedded_worker()->BindCacheStorage(
+      std::move(receiver));
 }
 
 base::WeakPtr<ServiceWorkerProviderHost>

@@ -3109,6 +3109,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "open-downloads-in-files.app",
+    "owners": [ "ewannpv", "gambard" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "overlay-new-layout",
     "owners": [ "donnd", "jinsukkim", "contextual-search-eng" ],
     "expiry_milestone": 81

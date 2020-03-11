@@ -39,7 +39,8 @@ cr.define('settings_passwords_check', function() {
   }
 
   function isElementVisible(element) {
-    return !!element && !element.hidden && element.style.display != 'none';
+    return !!element && !element.hidden && element.style.display != 'none' &&
+        element.offsetParent !== null;  // Considers parents hiding |element|.
   }
 
   /**
@@ -640,6 +641,121 @@ cr.define('settings_passwords_check', function() {
         expectEquals(
             section.i18n('checkPasswordsStop'),
             section.$.controlPasswordCheckButton.innerText);
+      });
+    });
+
+    // Test that the banner is in a state that shows the positive confirmation
+    // after a leak check finished.
+    test('testShowsPositiveBannerWhenIdle', function() {
+      const data = passwordManager.data;
+      assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
+      assertEquals(0, data.leakedCredentials.compromisedCredentials.length);
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+        expectEquals(
+            'chrome://settings/images/password_check_positive.svg',
+            checkPasswordSection.$$('#bannerImage').src);
+      });
+    });
+
+    // Test that the banner is in a state that shows that the leak check is
+    // in progress but hasn't found anything yet.
+    test('testShowsNeutralBannerWhenRunning', function() {
+      const data = passwordManager.data;
+      assertEquals(0, data.leakedCredentials.compromisedCredentials.length);
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.RUNNING, /*checked=*/ 1,
+          /*remaining=*/ 5);
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+        expectEquals(
+            'chrome://settings/images/password_check_neutral.svg',
+            checkPasswordSection.$$('#bannerImage').src);
+      });
+    });
+
+    // Test that the banner is in a state that shows that the leak check is
+    // in progress but hasn't found anything yet.
+    test('testShowsNeutralBannerWhenCanceled', function() {
+      const data = passwordManager.data;
+      assertEquals(0, data.leakedCredentials.compromisedCredentials.length);
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.CANCELED);
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+        expectEquals(
+            'chrome://settings/images/password_check_neutral.svg',
+            checkPasswordSection.$$('#bannerImage').src);
+      });
+    });
+
+    // Test that the banner isn't visible as soon as the first leak is detected.
+    test('testLeaksHideBannerWhenRunning', function() {
+      const data = passwordManager.data;
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.RUNNING, /*checked=*/ 1,
+          /*remaining=*/ 5);
+      data.leakedCredentials =
+          autofill_test_util.makeCompromisedCredentialsInfo(
+              [
+                autofill_test_util.makeCompromisedCredentials(
+                    'one.com', 'test4', 'LEAKED'),
+              ],
+              'just now');
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+      });
+    });
+
+    // Test that the banner isn't visible if a leak is detected after a check.
+    test('testLeaksHideBannerWhenIdle', function() {
+      const data = passwordManager.data;
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.IDLE);
+      data.leakedCredentials =
+          autofill_test_util.makeCompromisedCredentialsInfo(
+              [
+                autofill_test_util.makeCompromisedCredentials(
+                    'one.com', 'test4', 'LEAKED'),
+              ],
+              'Just now');
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+      });
+    });
+
+    // Test that the banner isn't visible if a leak is detected after canceling.
+    test('testLeaksHideBannerWhenCanceled', function() {
+      const data = passwordManager.data;
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.CANCELED);
+      data.leakedCredentials =
+          autofill_test_util.makeCompromisedCredentialsInfo(
+              [
+                autofill_test_util.makeCompromisedCredentials(
+                    'one.com', 'test4', 'LEAKED'),
+              ],
+              'Just now');
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
       });
     });
   });

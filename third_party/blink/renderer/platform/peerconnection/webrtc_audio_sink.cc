@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -98,6 +99,16 @@ void WebRtcAudioSink::OnData(const media::AudioBus& audio_bus,
                              base::TimeTicks estimated_capture_time) {
   // No thread check: OnData might be called on different threads (but not
   // concurrently).
+
+  // TODO(crbug.com/1054769): Better to let |fifo_| handle the estimated capture
+  // time and let it return a corrected interpolated capture time to
+  // DeliverRebufferedAudio(). Current, similar treatment is used at different
+  // places where |AudioPushFifo| is applied. So a update to |AudioPushFifo|
+  // will be a joint effort, and should be carefully carried out.
+  last_estimated_capture_time_ = estimated_capture_time;
+
+  adapter_->UpdateTimestampAligner(estimated_capture_time);
+
   // The following will result in zero, one, or multiple synchronous calls to
   // DeliverRebufferedAudio().
   fifo_.Push(audio_bus);
@@ -130,9 +141,14 @@ void WebRtcAudioSink::DeliverRebufferedAudio(const media::AudioBus& audio_bus,
                 "ToInterleaved expects 2 bytes.");
   audio_bus.ToInterleaved<media::SignedInt16SampleTypeTraits>(
       audio_bus.frames(), interleaved_data_.get());
+
+  const base::TimeTicks estimated_capture_time =
+      last_estimated_capture_time_ + media::AudioTimestampHelper::FramesToTime(
+                                         frame_delay, params_.sample_rate());
+
   adapter_->DeliverPCMToWebRtcSinks(interleaved_data_.get(),
                                     params_.sample_rate(), audio_bus.channels(),
-                                    audio_bus.frames());
+                                    audio_bus.frames(), estimated_capture_time);
 }
 
 namespace {
@@ -171,11 +187,20 @@ void WebRtcAudioSink::Adapter::DeliverPCMToWebRtcSinks(
     const int16_t* audio_data,
     int sample_rate,
     size_t number_of_channels,
-    size_t number_of_frames) {
+    size_t number_of_frames,
+    base::TimeTicks estimated_capture_time) {
   base::AutoLock auto_lock(lock_);
+
+  // This use |timestamp_aligner_| to transform |estimated_capture_timestamp| to
+  // rtc::TimeMicros(). See the comment at UpdateTimestampAligner() for more
+  // details.
+  const int64_t capture_timestamp_us = timestamp_aligner_.TranslateTimestamp(
+      estimated_capture_time.since_origin().InMicroseconds());
+
   for (webrtc::AudioTrackSinkInterface* sink : sinks_) {
     sink->OnData(audio_data, sizeof(int16_t) * 8, sample_rate,
-                 number_of_channels, number_of_frames);
+                 number_of_channels, number_of_frames,
+                 capture_timestamp_us / rtc::kNumMicrosecsPerMillisec);
   }
 }
 
@@ -247,6 +272,18 @@ webrtc::AudioSourceInterface* WebRtcAudioSink::Adapter::GetSource() const {
   DCHECK(!signaling_task_runner_ ||
          signaling_task_runner_->RunsTasksInCurrentSequence());
   return source_.get();
+}
+
+void WebRtcAudioSink::Adapter::UpdateTimestampAligner(
+    base::TimeTicks capture_time) {
+  // The |timestamp_aligner_| stamps an audio frame as if it is captured 'now',
+  // taking rtc::TimeMicros as the reference clock. It does not provide the time
+  // that the frame was originally captured, Using |timestamp_aligner_| rather
+  // than calling rtc::TimeMicros is to take the advantage that it aligns its
+  // output timestamps such that the time spacing in the |capture_time| is
+  // maintained.
+  timestamp_aligner_.TranslateTimestamp(
+      capture_time.since_origin().InMicroseconds(), rtc::TimeMicros());
 }
 
 }  // namespace blink

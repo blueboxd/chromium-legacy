@@ -21,6 +21,14 @@ namespace em = enterprise_management;
 using ::testing::Mock;
 using ::testing::StrictMock;
 
+namespace {
+
+MATCHER_P(InvalidationsEqual, expected_invalidation, "") {
+  return arg.Equals(expected_invalidation);
+}
+
+}  // namespace
+
 namespace policy {
 
 class MockRemoteCommandInvalidator : public RemoteCommandsInvalidator {
@@ -31,7 +39,7 @@ class MockRemoteCommandInvalidator : public RemoteCommandsInvalidator {
   MOCK_METHOD0(OnShutdown, void());
   MOCK_METHOD0(OnStart, void());
   MOCK_METHOD0(OnStop, void());
-  MOCK_METHOD0(DoRemoteCommandsFetch, void());
+  MOCK_METHOD1(DoRemoteCommandsFetch, void(const syncer::Invalidation&));
 
   void SetInvalidationTopic(const syncer::Topic& topic) {
     em::PolicyData policy_data;
@@ -62,9 +70,12 @@ class RemoteCommandsInvalidatorTest : public testing::Test {
         syncer::TRANSIENT_INVALIDATION_ERROR);
   }
 
+  syncer::Invalidation CreateInvalidation(const syncer::Topic& topic) {
+    return syncer::Invalidation::InitUnknownVersion(topic);
+  }
+
   syncer::Invalidation FireInvalidation(const syncer::Topic& topic) {
-    const syncer::Invalidation invalidation =
-        syncer::Invalidation::InitUnknownVersion(topic);
+    const syncer::Invalidation invalidation = CreateInvalidation(topic);
     invalidation_service_.EmitInvalidationForTest(invalidation);
     return invalidation;
   }
@@ -122,7 +133,10 @@ class RemoteCommandsInvalidatorTest : public testing::Test {
   void VerifyInvalidationEnabled(const syncer::Topic& topic) {
     EXPECT_TRUE(invalidator_.invalidations_enabled());
 
-    EXPECT_CALL(invalidator_, DoRemoteCommandsFetch()).Times(1);
+    EXPECT_CALL(
+        invalidator_,
+        DoRemoteCommandsFetch(InvalidationsEqual(CreateInvalidation(topic))))
+        .Times(1);
     const syncer::Invalidation invalidation = FireInvalidation(topic);
 
     base::RunLoop().RunUntilIdle();
@@ -168,7 +182,9 @@ TEST_F(RemoteCommandsInvalidatorTest, FiredInvalidation) {
 
   // Fire the invalidation, it should be acknowledged and trigger a remote
   // commands fetch.
-  EXPECT_CALL(invalidator_, DoRemoteCommandsFetch()).Times(1);
+  EXPECT_CALL(invalidator_, DoRemoteCommandsFetch(InvalidationsEqual(
+                                CreateInvalidation(kTestingTopic1))))
+      .Times(1);
   const syncer::Invalidation invalidation2 = FireInvalidation(kTestingTopic1);
 
   base::RunLoop().RunUntilIdle();

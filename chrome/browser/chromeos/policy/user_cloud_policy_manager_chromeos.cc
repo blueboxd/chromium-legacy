@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -794,7 +795,9 @@ void UserCloudPolicyManagerChromeOS::OnProfileAdded(Profile* profile) {
 
   core()->StartRemoteCommandsService(
       std::make_unique<UserCommandsFactoryChromeOS>(profile_));
-  invalidator_ = std::make_unique<RemoteCommandsInvalidatorImpl>(core());
+  invalidator_ = std::make_unique<RemoteCommandsInvalidatorImpl>(
+      core(), base::DefaultClock::GetInstance(),
+      PolicyInvalidationScope::kUser);
 
   invalidator_->Initialize(
       invalidation_provider->GetInvalidationServiceForCustomSender(

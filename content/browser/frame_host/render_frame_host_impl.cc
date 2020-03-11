@@ -2297,9 +2297,7 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
   // Initialize the RenderFrameHost for the new node.  We always create child
   // frames in the same SiteInstance as the current frame, and they can swap to
   // a different one if they navigate away.
-  child->render_manager()->Init(GetSiteInstance(),
-                                render_view_host()->GetRoutingID(),
-                                frame_routing_id, MSG_ROUTING_NONE, false);
+  child->render_manager()->Init(GetSiteInstance(), frame_routing_id, false);
 
   // Other renderer processes in this BrowsingInstance may need to find out
   // about the new frame.  Create a proxy for the child frame in all

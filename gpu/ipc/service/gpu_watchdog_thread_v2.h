@@ -168,6 +168,10 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // continue due to not enough thread time.
   int count_of_more_gpu_thread_time_allowed_ = 0;
 
+  // The total timeout, up to 60 seconds, the watchdog thread waits for the GPU
+  // main thread to get full thread time.
+  base::TimeDelta time_in_wait_for_full_thread_time_;
+
   // After detecting GPU hang and continuing running through
   // OnGpuWatchdogTimeout for the max cycles, the GPU main thread still cannot
   // get the full thread time.

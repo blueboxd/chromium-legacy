@@ -33,6 +33,10 @@ class PersonalDataManager;
 class RegionDataLoader;
 }  // namespace autofill
 
+namespace content {
+class RenderFrameHost;
+}  // namespace content
+
 namespace payments {
 
 class ContentPaymentRequestDelegate;
@@ -112,6 +116,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
 
   PaymentRequestState(
       content::WebContents* web_contents,
+      content::RenderFrameHost* initiator_render_frame_host,
       const GURL& top_level_origin,
       const GURL& frame_origin,
       const url::Origin& frame_security_origin,
@@ -131,6 +136,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   const GURL& GetTopOrigin() override;
   const GURL& GetFrameOrigin() override;
   const url::Origin& GetFrameSecurityOrigin() override;
+  content::RenderFrameHost* GetInitiatorRenderFrameHost() const override;
   const std::vector<autofill::AutofillProfile*>& GetBillingProfiles() override;
   bool IsRequestedAutofillDataAvailable() override;
   bool MayCrawlForInstallablePaymentApps() override;
@@ -336,6 +342,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
                                 SectionSelectionStatus selection_status);
 
   content::WebContents* web_contents_;
+  content::RenderFrameHost* initiator_render_frame_host_;
   const GURL top_origin_;
   const GURL frame_origin_;
   const url::Origin frame_security_origin_;

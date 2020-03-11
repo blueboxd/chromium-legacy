@@ -20,19 +20,6 @@
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 
-namespace {
-// Converts a java string to native. Returns an empty string if input is null.
-std::string SafeConvertJavaStringToNative(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& jstring) {
-  std::string native_string;
-  if (jstring) {
-    base::android::ConvertJavaStringToUTF8(env, jstring, &native_string);
-  }
-  return native_string;
-}
-}  // namespace
-
 namespace autofill_assistant {
 
 AssistantCollectUserDataDelegate::AssistantCollectUserDataDelegate(
@@ -59,9 +46,14 @@ void AssistantCollectUserDataDelegate::OnContactInfoChanged(
     return;
   }
 
-  std::string name = SafeConvertJavaStringToNative(env, jpayer_name);
-  std::string phone = SafeConvertJavaStringToNative(env, jpayer_phone);
-  std::string email = SafeConvertJavaStringToNative(env, jpayer_email);
+  std::string name = ui_controller_android_utils::SafeConvertJavaStringToNative(
+      env, jpayer_name);
+  std::string phone =
+      ui_controller_android_utils::SafeConvertJavaStringToNative(env,
+                                                                 jpayer_phone);
+  std::string email =
+      ui_controller_android_utils::SafeConvertJavaStringToNative(env,
+                                                                 jpayer_email);
 
   auto contact_profile = std::make_unique<autofill::AutofillProfile>();
   contact_profile->SetRawInfo(autofill::ServerFieldType::NAME_FULL,
@@ -139,7 +131,9 @@ void AssistantCollectUserDataDelegate::OnLoginChoiceChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jidentifier) {
-  std::string identifier = SafeConvertJavaStringToNative(env, jidentifier);
+  std::string identifier =
+      ui_controller_android_utils::SafeConvertJavaStringToNative(env,
+                                                                 jidentifier);
   ui_controller_->OnLoginChoiceChanged(identifier);
 }
 
@@ -205,7 +199,7 @@ void AssistantCollectUserDataDelegate::OnKeyValueChanged(
     const base::android::JavaParamRef<jstring>& jkey,
     const base::android::JavaParamRef<jobject>& jvalue) {
   ui_controller_->OnKeyValueChanged(
-      SafeConvertJavaStringToNative(env, jkey),
+      ui_controller_android_utils::SafeConvertJavaStringToNative(env, jkey),
       ui_controller_android_utils::ToNativeValue(env, jvalue));
 }
 

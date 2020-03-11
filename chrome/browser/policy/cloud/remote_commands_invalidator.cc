@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/policy/cloud/policy_invalidation_util.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -14,6 +15,7 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/single_object_invalidation_set.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
+#include "components/policy/core/common/cloud/enterprise_metrics.h"
 
 namespace policy {
 
@@ -94,7 +96,7 @@ void RemoteCommandsInvalidator::OnIncomingInvalidation(
   for (const auto& it : list)
     it.Acknowledge();
 
-  DoRemoteCommandsFetch();
+  DoRemoteCommandsFetch(list.back());
 }
 
 std::string RemoteCommandsInvalidator::GetOwnerName() const {
@@ -139,8 +141,11 @@ void RemoteCommandsInvalidator::Register(const syncer::Topic& topic) {
   UpdateInvalidationsEnabled();
 
   // Update subscription with the invalidation service.
-  CHECK(
-      invalidation_service_->UpdateInterestedTopics(this, /*topics=*/{topic}));
+  const bool success =
+      invalidation_service_->UpdateInterestedTopics(this, /*topics=*/{topic});
+  base::UmaHistogramBoolean(kMetricRemoteCommandInvalidationsRegistrationResult,
+                            success);
+  CHECK(success);
 }
 
 void RemoteCommandsInvalidator::Unregister() {

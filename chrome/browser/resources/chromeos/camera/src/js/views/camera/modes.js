@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 import {assert, assertInstanceof} from '../../chrome_util.js';
-import {CaptureCandidate,           // eslint-disable-line no-unused-vars
-        ConstraintsPreferrer,       // eslint-disable-line no-unused-vars
-        PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
-        VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+import {
+  CaptureCandidate,           // eslint-disable-line no-unused-vars
+  ConstraintsPreferrer,       // eslint-disable-line no-unused-vars
+  PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+  VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
 } from '../../device/constraints_preferrer.js';
 import {Filenamer} from '../../models/filenamer.js';
 import * as filesystem from '../../models/filesystem.js';
@@ -18,10 +19,14 @@ import {PerfEvent} from '../../perf.js';
 import * as sound from '../../sound.js';
 import * as state from '../../state.js';
 import * as toast from '../../toast.js';
-import {Resolution,
-        ResolutionList,  // eslint-disable-line no-unused-vars
+import {
+  Resolution,
+  ResolutionList,  // eslint-disable-line no-unused-vars
 } from '../../type.js';
-import {Mode} from '../../type.js';
+import {
+  Facing,  // eslint-disable-line no-unused-vars
+  Mode,
+} from '../../type.js';
 import * as util from '../../util.js';
 import {RecordTime} from './recordtime.js';
 
@@ -176,6 +181,13 @@ export class Modes {
     this.stream_ = null;
 
     /**
+     * Camera facing of current mode.
+     * @type {!Facing}
+     * @private
+     */
+    this.facing_ = Facing.UNKNOWN;
+
+    /**
      * @type {!HTMLElement}
      * @private
      */
@@ -231,8 +243,8 @@ export class Modes {
     this.allModes_ = {
       [Mode.VIDEO]: {
         captureFactory: () => new Video(
-            assertInstanceof(this.stream_, MediaStream), createVideoSaver,
-            doSaveVideo),
+            assertInstanceof(this.stream_, MediaStream), this.facing_,
+            createVideoSaver, doSaveVideo),
         isSupported: async () => true,
         constraintsPreferrer: videoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, true),
@@ -241,8 +253,8 @@ export class Modes {
       },
       [Mode.PHOTO]: {
         captureFactory: () => new Photo(
-            assertInstanceof(this.stream_, MediaStream), doSavePhoto,
-            this.captureResolution_, playShutterEffect),
+            assertInstanceof(this.stream_, MediaStream), this.facing_,
+            doSavePhoto, this.captureResolution_, playShutterEffect),
         isSupported: async () => true,
         constraintsPreferrer: photoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, false),
@@ -251,8 +263,8 @@ export class Modes {
       },
       [Mode.SQUARE]: {
         captureFactory: () => new Square(
-            assertInstanceof(this.stream_, MediaStream), doSavePhoto,
-            this.captureResolution_, playShutterEffect),
+            assertInstanceof(this.stream_, MediaStream), this.facing_,
+            doSavePhoto, this.captureResolution_, playShutterEffect),
         isSupported: async () => true,
         constraintsPreferrer: photoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, false),
@@ -261,8 +273,8 @@ export class Modes {
       },
       [Mode.PORTRAIT]: {
         captureFactory: () => new Portrait(
-            assertInstanceof(this.stream_, MediaStream), doSavePhoto,
-            this.captureResolution_, playShutterEffect),
+            assertInstanceof(this.stream_, MediaStream), this.facing_,
+            doSavePhoto, this.captureResolution_, playShutterEffect),
         isSupported: async (deviceId) => {
           if (deviceId === null) {
             return false;
@@ -430,17 +442,19 @@ export class Modes {
    * Creates and updates new current mode object.
    * @param {!Mode} mode Classname of mode to be updated.
    * @param {!MediaStream} stream Stream of the new switching mode.
+   * @param {!Facing} facing Camera facing of the current mode.
    * @param {?string} deviceId Device id of currently working video device.
    * @param {?Resolution} captureResolution Capturing resolution width and
    *     height.
    * @return {!Promise}
    */
-  async updateMode(mode, stream, deviceId, captureResolution) {
+  async updateMode(mode, stream, facing, deviceId, captureResolution) {
     if (this.current !== null) {
       await this.current.stopCapture();
     }
     this.updateModeUI_(mode);
     this.stream_ = stream;
+    this.facing_ = facing;
     this.captureResolution_ = captureResolution;
     this.current = this.allModes_[mode].captureFactory();
     if (deviceId && this.captureResolution_) {
@@ -493,16 +507,24 @@ export class Modes {
 class ModeBase {
   /**
    * @param {!MediaStream} stream
+   * @param {!Facing} facing
    * @param {?Resolution} captureResolution Capturing resolution width and
    *     height.
    */
-  constructor(stream, captureResolution) {
+  constructor(stream, facing, captureResolution) {
     /**
      * Stream of current mode.
      * @type {!MediaStream}
      * @protected
      */
     this.stream_ = stream;
+
+    /**
+     * Camera facing of current mode.
+     * @type {!Facing}
+     * @protected
+     */
+    this.facing_ = facing;
 
     /**
      * Capture resolution. May be null on device not support of setting
@@ -579,11 +601,12 @@ const VIDEO_MIMETYPE = 'video/x-matroska;codecs=avc1';
 class Video extends ModeBase {
   /**
    * @param {!MediaStream} stream
+   * @param {!Facing} facing
    * @param {!CreateVideoSaver} createVideoSaver
    * @param {!DoSaveVideo} doSaveVideo
    */
-  constructor(stream, createVideoSaver, doSaveVideo) {
-    super(stream, null);
+  constructor(stream, facing, createVideoSaver, doSaveVideo) {
+    super(stream, facing, null);
 
     /**
      * @type {!CreateVideoSaver}
@@ -662,7 +685,9 @@ class Video extends ModeBase {
     try {
       await this.doSaveVideo_(
           {resolution, duration, videoSaver}, (new Filenamer()).newVideoName());
-      state.set(PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false, {resolution});
+      state.set(
+          PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false,
+          {resolution, facing: this.facing_});
     } catch (e) {
       state.set(
           PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false, {hasError: true});
@@ -725,12 +750,14 @@ class Video extends ModeBase {
 class Photo extends ModeBase {
   /**
    * @param {!MediaStream} stream
+   * @param {!Facing} facing
    * @param {!DoSavePhoto} doSavePhoto
    * @param {?Resolution} captureResolution
    * @param {!PlayShutterEffect} playShutterEffect
    */
-  constructor(stream, doSavePhoto, captureResolution, playShutterEffect) {
-    super(stream, captureResolution);
+  constructor(
+      stream, facing, doSavePhoto, captureResolution, playShutterEffect) {
+    super(stream, facing, captureResolution);
 
     /**
      * Callback for saving picture.
@@ -805,8 +832,11 @@ class Photo extends ModeBase {
       });
     }
 
+    state.set(PerfEvent.PHOTO_CAPTURE_SHUTTER, true);
     try {
       const results = await this.crosImageCapture_.takePhoto(photoSettings);
+
+      state.set(PerfEvent.PHOTO_CAPTURE_SHUTTER, false, {facing: this.facing_});
       this.playShutterEffect_();
 
       state.set(PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, true);
@@ -814,8 +844,11 @@ class Photo extends ModeBase {
       const image = await util.blobToImage(blob);
       const resolution = new Resolution(image.width, image.height);
       await this.doSavePhoto_({resolution, blob}, imageName);
-      state.set(PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, false, {resolution});
+      state.set(
+          PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, false,
+          {resolution, facing: this.facing_});
     } catch (e) {
+      state.set(PerfEvent.PHOTO_CAPTURE_SHUTTER, false, {hasError: true});
       state.set(
           PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, false, {hasError: true});
       toast.show('error_msg_take_photo_failed');
@@ -901,12 +934,14 @@ class Photo extends ModeBase {
 class Square extends Photo {
   /**
    * @param {!MediaStream} stream
+   * @param {!Facing} facing
    * @param {!DoSavePhoto} doSavePhoto
    * @param {?Resolution} captureResolution
    * @param {!PlayShutterEffect} playShutterEffect
    */
-  constructor(stream, doSavePhoto, captureResolution, playShutterEffect) {
-    super(stream, doSavePhoto, captureResolution, playShutterEffect);
+  constructor(
+      stream, facing, doSavePhoto, captureResolution, playShutterEffect) {
+    super(stream, facing, doSavePhoto, captureResolution, playShutterEffect);
 
     this.doSavePhoto_ = async (result, ...args) => {
       // Since the image blob after square cut will lose its EXIF including
@@ -948,12 +983,14 @@ class Square extends Photo {
 class Portrait extends Photo {
   /**
    * @param {!MediaStream} stream
+   * @param {!Facing} facing
    * @param {!DoSavePhoto} doSavePhoto
    * @param {?Resolution} captureResolution
    * @param {!PlayShutterEffect} playShutterEffect
    */
-  constructor(stream, doSavePhoto, captureResolution, playShutterEffect) {
-    super(stream, doSavePhoto, captureResolution, playShutterEffect);
+  constructor(
+      stream, facing, doSavePhoto, captureResolution, playShutterEffect) {
+    super(stream, facing, doSavePhoto, captureResolution, playShutterEffect);
   }
 
   /**
@@ -1036,6 +1073,7 @@ class Portrait extends Photo {
     }
     await refSave;
     state.set(
-        PerfEvent.PORTRAIT_MODE_CAPTURE_POST_PROCESSING, false, {hasError});
+        PerfEvent.PORTRAIT_MODE_CAPTURE_POST_PROCESSING, false,
+        {hasError, facing: this.facing_});
   }
 }

@@ -673,6 +673,12 @@
       <structure name="IDR_SETTINGS_IMAGES_PASSWORD_CHECK_NEUTRAL_DARK_SVG"
                  file="images/password_check_neutral_dark.svg"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_IMAGES_PASSWORD_CHECK_POSITIVE_SVG"
+                 file="images/password_check_positive.svg"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_IMAGES_PASSWORD_CHECK_POSITIVE_DARK_SVG"
+                 file="images/password_check_positive_dark.svg"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PASSWORDS_SECTION_HTML"
                  file="autofill_page/passwords_section.html"
                  type="chrome_html"

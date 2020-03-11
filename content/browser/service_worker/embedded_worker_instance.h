@@ -220,6 +220,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_bundle);
 
+  void BindCacheStorage(
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
+
   base::WeakPtr<EmbeddedWorkerInstance> AsWeakPtr();
 
   // The below can only be called on the UI thread. The returned factory may be
@@ -229,7 +232,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
       RenderProcessHost* rph,
       int routing_id,
       const url::Origin& origin,
-      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      const base::Optional<network::CrossOriginEmbedderPolicy>&
+          cross_origin_embedder_policy,
       ContentBrowserClient::URLLoaderFactoryType factory_type);
 
  private:
@@ -304,6 +308,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   MakeScriptLoaderFactoryRemote(
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle);
 
+  void BindCacheStorageInternal();
+
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerVersion* owner_version_;
 
@@ -361,6 +367,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // subresource loader factories in the service worker.
   mojo::Remote<blink::mojom::SubresourceLoaderUpdater>
       subresource_loader_updater_;
+
+  // Hold in-flight CacheStorage requests. They will be bound when the
+  // ServiceWorker COEP header will be known.
+  std::vector<mojo::PendingReceiver<blink::mojom::CacheStorage>>
+      pending_cache_storage_receivers_;
 
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_{this};
 

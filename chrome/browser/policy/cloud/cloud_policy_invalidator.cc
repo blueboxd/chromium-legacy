@@ -89,8 +89,6 @@ const int CloudPolicyInvalidator::kMaxFetchDelayDefault = 10000;
 const int CloudPolicyInvalidator::kMaxFetchDelayMin = 1000;
 const int CloudPolicyInvalidator::kMaxFetchDelayMax = 300000;
 const int CloudPolicyInvalidator::kInvalidationGracePeriod = 10;
-const int CloudPolicyInvalidator::kUnknownVersionIgnorePeriod = 30;
-const int CloudPolicyInvalidator::kMaxInvalidationTimeDelta = 300;
 
 // static
 const char* CloudPolicyInvalidator::GetPolicyRefreshMetricName(
@@ -334,7 +332,11 @@ void CloudPolicyInvalidator::HandleInvalidation(
   }
 
   // Ignore the invalidation if it is expired.
-  const bool is_expired = IsInvalidationExpired(version);
+  const auto last_fetch_time =
+      base::Time::FromJavaTime(core_->store()->policy()->timestamp());
+  const auto current_time = clock_->Now();
+  const bool is_expired =
+      IsInvalidationExpired(invalidation, last_fetch_time, current_time);
   const bool is_missing_payload = payload.empty();
 
   RecordPolicyInvalidationMetric(scope_, is_expired, is_missing_payload);
@@ -492,27 +494,6 @@ bool CloudPolicyInvalidator::IsPolicyChanged(
   bool changed = new_hash_value != policy_hash_value_;
   policy_hash_value_ = new_hash_value;
   return changed;
-}
-
-bool CloudPolicyInvalidator::IsInvalidationExpired(int64_t version) {
-  base::Time last_fetch_time =
-      base::Time::FromJavaTime(core_->store()->policy()->timestamp());
-
-  // If the version is unknown, consider the invalidation invalid if the
-  // policy was fetched very recently.
-  if (version < 0) {
-    base::TimeDelta elapsed = clock_->Now() - last_fetch_time;
-    return elapsed.InSeconds() < kUnknownVersionIgnorePeriod;
-  }
-
-  // The invalidation version is the timestamp in microseconds. If the
-  // invalidation occurred before the last policy fetch, then the invalidation
-  // is expired. Time is added to the invalidation to err on the side of not
-  // expired.
-  base::Time invalidation_time = base::Time::UnixEpoch() +
-      base::TimeDelta::FromMicroseconds(version) +
-      base::TimeDelta::FromSeconds(kMaxInvalidationTimeDelta);
-  return invalidation_time < last_fetch_time;
 }
 
 bool CloudPolicyInvalidator::GetInvalidationsEnabled() {

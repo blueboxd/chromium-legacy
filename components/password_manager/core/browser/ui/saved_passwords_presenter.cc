@@ -5,9 +5,11 @@
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/password_form.h"
 
@@ -74,6 +76,11 @@ void SavedPasswordsPresenter::OnLoginsChanged(
 
 void SavedPasswordsPresenter::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  // Ignore blacklisted or federated credentials.
+  base::EraseIf(results, [](const auto& form) {
+    return form->blacklisted_by_user || form->IsFederatedCredential();
+  });
+
   passwords_.resize(results.size());
   std::transform(results.begin(), results.end(), passwords_.begin(),
                  [](auto& result) { return std::move(*result); });

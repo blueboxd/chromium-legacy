@@ -285,13 +285,10 @@ RenderFrameHostManager::~RenderFrameHostManager() {
 }
 
 void RenderFrameHostManager::Init(SiteInstance* site_instance,
-                                  int32_t view_routing_id,
                                   int32_t frame_routing_id,
-                                  int32_t widget_routing_id,
                                   bool renderer_initiated_creation) {
   DCHECK(site_instance);
-  SetRenderFrameHost(CreateRenderFrameHost(site_instance, view_routing_id,
-                                           frame_routing_id, widget_routing_id,
+  SetRenderFrameHost(CreateRenderFrameHost(site_instance, frame_routing_id,
                                            renderer_initiated_creation));
 
   // Notify the delegate of the creation of the current RenderFrameHost.
@@ -2044,9 +2041,7 @@ void RenderFrameHostManager::CreateProxiesForNewNamedFrame() {
 std::unique_ptr<RenderFrameHostImpl>
 RenderFrameHostManager::CreateRenderFrameHost(
     SiteInstance* site_instance,
-    int32_t view_routing_id,
     int32_t frame_routing_id,
-    int32_t widget_routing_id,
     bool renderer_initiated_creation) {
   if (frame_routing_id == MSG_ROUTING_NONE)
     frame_routing_id = site_instance->GetProcess()->GetNextRoutingID();
@@ -2058,24 +2053,9 @@ RenderFrameHostManager::CreateRenderFrameHost(
 
   if (frame_tree_node_->IsMainFrame()) {
     if (!render_view_host) {
-      render_view_host = frame_tree->CreateRenderViewHost(
-          site_instance, view_routing_id, frame_routing_id, widget_routing_id,
-          /*swapped_out=*/false);
-    }
-    // TODO(avi): It's a bit bizarre that this logic lives here instead of in
-    // CreateRenderFrame(). It turns out that FrameTree::CreateRenderViewHost
-    // doesn't /always/ create a new RenderViewHost. It first tries to find an
-    // already existing one to reuse by a SiteInstance lookup. If it finds one,
-    // then the supplied routing IDs are completely ignored.
-    // CreateRenderFrame() could do this lookup too, but it seems redundant to
-    // do this lookup in two places. This is a good yak shave to clean up, or,
-    // if just ignored, should be an easy cleanup once RenderViewHostImpl has-a
-    // RenderWidgetHostImpl. https://crbug.com/545684
-    if (view_routing_id == MSG_ROUTING_NONE) {
-      widget_routing_id = render_view_host->GetWidget()->GetRoutingID();
-    } else {
-      DCHECK_NE(view_routing_id, widget_routing_id);
-      DCHECK_EQ(view_routing_id, render_view_host->GetRoutingID());
+      render_view_host =
+          frame_tree->CreateRenderViewHost(site_instance, frame_routing_id,
+                                           /*swapped_out=*/false);
     }
   }
   CHECK(render_view_host);
@@ -2144,8 +2124,8 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
          render_frame_host_->must_be_replaced() || IsRenderDocumentEnabled());
 
   std::unique_ptr<RenderFrameHostImpl> new_render_frame_host =
-      CreateRenderFrameHost(instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-                            MSG_ROUTING_NONE, false);
+      CreateRenderFrameHost(instance, MSG_ROUTING_NONE,
+                            /*renderer_initiated_creation=*/false);
   DCHECK_EQ(new_render_frame_host->GetSiteInstance(), instance);
 
   // Prevent the process from exiting while we're trying to navigate in it.
@@ -2236,7 +2216,7 @@ void RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
       // Before creating a new RenderFrameProxyHost, ensure a RenderViewHost
       // exists for |instance|, as it creates the page level structure in Blink.
       render_view_host = frame_tree_node_->frame_tree()->CreateRenderViewHost(
-          instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+          instance, /*frame_routing_id=*/MSG_ROUTING_NONE,
           /*swapped_out=*/true);
     }
     proxy = CreateRenderFrameProxyHost(instance, std::move(render_view_host));

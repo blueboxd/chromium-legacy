@@ -126,7 +126,8 @@ void ServiceWorkerPaymentAppFactory::Create(base::WeakPtr<Delegate> delegate) {
   ServiceWorkerPaymentAppCreator* creator_raw_pointer = creator.get();
   creators_[creator_raw_pointer] = std::move(creator);
   ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
-      delegate->GetFrameSecurityOrigin(), delegate->GetWebContents(),
+      delegate->GetFrameSecurityOrigin(),
+      delegate->GetInitiatorRenderFrameHost(), delegate->GetWebContents(),
       delegate->GetPaymentRequestDelegate()->GetPaymentManifestWebDataService(),
       delegate->GetSpec()->method_data(),
       delegate->MayCrawlForInstallablePaymentApps(),

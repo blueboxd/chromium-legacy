@@ -15,10 +15,13 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -33,6 +36,7 @@ namespace payments {
 // TODO(crbug.com/782270): Add integration tests for this class.
 InstallablePaymentAppCrawler::InstallablePaymentAppCrawler(
     const url::Origin& merchant_origin,
+    content::RenderFrameHost* initiator_render_frame_host,
     content::WebContents* web_contents,
     PaymentManifestDownloader* downloader,
     PaymentManifestParser* parser,
@@ -40,6 +44,7 @@ InstallablePaymentAppCrawler::InstallablePaymentAppCrawler(
     : WebContentsObserver(web_contents),
       log_(web_contents),
       merchant_origin_(merchant_origin),
+      initiator_render_frame_host_(initiator_render_frame_host),
       downloader_(downloader),
       parser_(parser),
       number_of_payment_method_manifest_to_download_(0),
@@ -401,6 +406,13 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
   }
 
   number_of_web_app_icons_to_download_and_decode_++;
+
+  content::GlobalFrameRoutingId frame_routing_id;
+  if (initiator_render_frame_host_) {
+    frame_routing_id = content::GlobalFrameRoutingId(
+        initiator_render_frame_host_->GetProcess()->GetID(),
+        initiator_render_frame_host_->GetRoutingID());
+  }
   bool can_download_icon = content::ManifestIconDownloader::Download(
       web_contents(), downloader_->FindTestServerURL(best_icon_url),
       IconSizeCalculator::IdealIconHeight(native_view),
@@ -409,7 +421,8 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
           &InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded,
           weak_ptr_factory_.GetWeakPtr(), method_manifest_url,
           web_app_manifest_url),
-      false /* square_only */);
+      false, /* square_only */
+      frame_routing_id);
   DCHECK(can_download_icon);
 }
 

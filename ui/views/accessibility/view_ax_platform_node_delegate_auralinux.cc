@@ -104,6 +104,8 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
 
   void OnWidgetDestroying(Widget* widget) override {
     auto iter = std::find(widgets_.begin(), widgets_.end(), widget);
+    // Since |widget| is about to be destroyed, there is no point in removing
+    // |this| from its list of observers.
     if (iter != widgets_.end())
       widgets_.erase(iter);
   }

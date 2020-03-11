@@ -474,12 +474,12 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   void DidReceiveSetFocusEventForWidget() override {}
   void DidCommitCompositorFrameForWidget() override {}
   void DidCompletePageScaleAnimationForWidget() override {}
-  void ResizeWebWidgetForWidget(const gfx::Size& size,
+  void ResizeWebWidgetForWidget(const gfx::Size& main_frame_widget_size,
+                                const gfx::Size& visible_viewport_size,
                                 cc::BrowserControlsParams) override {}
   void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override {}
-  void ResizeVisualViewportForWidget(const gfx::Size& viewport_size) override {}
 };
 
 // Tests that the value of VisualProperties::is_pinch_gesture_active is

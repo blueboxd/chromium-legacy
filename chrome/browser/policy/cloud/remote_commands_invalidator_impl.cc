@@ -5,13 +5,37 @@
 #include "chrome/browser/policy/cloud/remote_commands_invalidator_impl.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/time/clock.h"
+#include "chrome/browser/policy/cloud/policy_invalidation_util.h"
+#include "components/invalidation/public/invalidation.h"
+#include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
 
 namespace policy {
 
+namespace {
+
+const char* GetInvalidationMetricName(PolicyInvalidationScope scope) {
+  switch (scope) {
+    case PolicyInvalidationScope::kUser:
+      return kMetricUserRemoteCommandInvalidations;
+    case PolicyInvalidationScope::kDevice:
+      return kMetricDeviceRemoteCommandInvalidations;
+    case PolicyInvalidationScope::kDeviceLocalAccount:
+      NOTREACHED() << "Unexpected instance of remote commands invalidator with "
+                      "device local account scope.";
+      return "";
+  }
+}
+
+}  // namespace
+
 RemoteCommandsInvalidatorImpl::RemoteCommandsInvalidatorImpl(
-    CloudPolicyCore* core)
-    : core_(core) {
+    CloudPolicyCore* core,
+    base::Clock* clock,
+    PolicyInvalidationScope scope)
+    : core_(core), clock_(clock), scope_(scope) {
   DCHECK(core_);
 }
 
@@ -34,8 +58,12 @@ void RemoteCommandsInvalidatorImpl::OnStop() {
   core_->store()->RemoveObserver(this);
 }
 
-void RemoteCommandsInvalidatorImpl::DoRemoteCommandsFetch() {
+void RemoteCommandsInvalidatorImpl::DoRemoteCommandsFetch(
+    const syncer::Invalidation& invalidation) {
   DCHECK(core_->remote_commands_service());
+
+  RecordInvalidationMetric(invalidation);
+
   core_->remote_commands_service()->FetchRemoteCommands();
 }
 
@@ -60,6 +88,22 @@ void RemoteCommandsInvalidatorImpl::OnStoreLoaded(CloudPolicyStore* core) {
 }
 
 void RemoteCommandsInvalidatorImpl::OnStoreError(CloudPolicyStore* core) {
+}
+
+void RemoteCommandsInvalidatorImpl::RecordInvalidationMetric(
+    const syncer::Invalidation& invalidation) const {
+  const auto last_fetch_time =
+      base::Time::FromJavaTime(core_->store()->policy()->timestamp());
+  const auto current_time = clock_->Now();
+  const bool is_expired =
+      IsInvalidationExpired(invalidation, last_fetch_time, current_time);
+  const bool is_missing_payload =
+      invalidation.is_unknown_version() || invalidation.payload().empty();
+
+  base::UmaHistogramEnumeration(
+      GetInvalidationMetricName(scope_),
+      GetInvalidationMetric(is_missing_payload, is_expired),
+      POLICY_INVALIDATION_TYPE_SIZE);
 }
 
 }  // namespace policy

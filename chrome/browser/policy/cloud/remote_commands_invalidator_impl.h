@@ -9,6 +9,11 @@
 #include "chrome/browser/policy/cloud/remote_commands_invalidator.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/policy_invalidation_scope.h"
+
+namespace base {
+class Clock;
+}
 
 namespace policy {
 
@@ -19,14 +24,16 @@ class RemoteCommandsInvalidatorImpl : public RemoteCommandsInvalidator,
                                       public CloudPolicyCore::Observer,
                                       public CloudPolicyStore::Observer {
  public:
-  explicit RemoteCommandsInvalidatorImpl(CloudPolicyCore* core);
+  RemoteCommandsInvalidatorImpl(CloudPolicyCore* core,
+                                base::Clock* clock,
+                                PolicyInvalidationScope scope);
 
   // RemoteCommandsInvalidator:
   void OnInitialize() override;
   void OnShutdown() override;
   void OnStart() override;
   void OnStop() override;
-  void DoRemoteCommandsFetch() override;
+  void DoRemoteCommandsFetch(const syncer::Invalidation& invalidation) override;
 
   // CloudPolicyCore::Observer:
   void OnCoreConnected(CloudPolicyCore* core) override;
@@ -39,7 +46,13 @@ class RemoteCommandsInvalidatorImpl : public RemoteCommandsInvalidator,
   void OnStoreError(CloudPolicyStore* store) override;
 
  private:
+  void RecordInvalidationMetric(const syncer::Invalidation& invalidation) const;
+
   CloudPolicyCore* const core_;
+
+  const base::Clock* const clock_;
+
+  const PolicyInvalidationScope scope_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCommandsInvalidatorImpl);
 };

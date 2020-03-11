@@ -20,6 +20,10 @@
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/model/syncable_service.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
@@ -95,6 +99,11 @@ class BulkLeakCheckServiceAdapterTest : public ::testing::Test {
     service_.set_leak_factory(std::move(factory));
     store_->Init(syncer::SyncableService::StartSyncFlare(),
                  /*prefs=*/nullptr);
+    prefs_.registry()->RegisterBooleanPref(prefs::kPasswordLeakDetectionEnabled,
+                                           true);
+    prefs_.registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled, true);
+    prefs_.registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnhanced,
+                                           false);
   }
 
   ~BulkLeakCheckServiceAdapterTest() override {
@@ -105,6 +114,7 @@ class BulkLeakCheckServiceAdapterTest : public ::testing::Test {
   TestPasswordStore& store() { return *store_; }
   SavedPasswordsPresenter& presenter() { return presenter_; }
   MockLeakDetectionCheckFactory& factory() { return *factory_; }
+  PrefService& prefs() { return prefs_; }
   BulkLeakCheckServiceAdapter& adapter() { return adapter_; }
 
   void RunUntilIdle() { task_env_.RunUntilIdle(); }
@@ -119,7 +129,8 @@ class BulkLeakCheckServiceAdapterTest : public ::testing::Test {
       identity_test_env_.identity_manager(),
       base::MakeRefCounted<network::TestSharedURLLoaderFactory>()};
   MockLeakDetectionCheckFactory* factory_ = nullptr;
-  BulkLeakCheckServiceAdapter adapter_{&presenter_, &service_};
+  TestingPrefServiceSimple prefs_;
+  BulkLeakCheckServiceAdapter adapter_{&presenter_, &service_, &prefs_};
 };
 
 }  // namespace
@@ -216,9 +227,26 @@ TEST_F(BulkLeakCheckServiceAdapterTest, StopBulkLeakCheck) {
             adapter().GetBulkLeakCheckState());
 }
 
+// Tests that editing a password through the presenter does not result in
+// another call to CheckCredentials with a corresponding change to the checked
+// password if the corresponding prefs are not set.
+TEST_F(BulkLeakCheckServiceAdapterTest, OnEditedNoPrefs) {
+  prefs().SetBoolean(prefs::kPasswordLeakDetectionEnabled, false);
+  prefs().SetBoolean(::prefs::kSafeBrowsingEnabled, false);
+
+  PasswordForm password =
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
+  store().AddLogin(password);
+  RunUntilIdle();
+
+  EXPECT_CALL(factory(), TryCreateBulkLeakCheck).Times(0);
+  presenter().EditPassword(password, base::ASCIIToUTF16(kPassword2));
+}
+
 // Tests that editing a password through the presenter will result in another
-// call to CheckCredentials with a corresponding change to the checked password.
-TEST_F(BulkLeakCheckServiceAdapterTest, OnEdited) {
+// call to CheckCredentials with a corresponding change to the checked password
+// if the corresponding prefs are set.
+TEST_F(BulkLeakCheckServiceAdapterTest, OnEditedWithPrefs) {
   PasswordForm password =
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
   store().AddLogin(password);

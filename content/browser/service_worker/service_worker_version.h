@@ -521,10 +521,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   void set_cross_origin_embedder_policy(
-      network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
-    cross_origin_embedder_policy_ = cross_origin_embedder_policy;
-  }
-  network::CrossOriginEmbedderPolicy cross_origin_embedder_policy() const {
+      network::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
+  const base::Optional<network::CrossOriginEmbedderPolicy>&
+  cross_origin_embedder_policy() const {
     return cross_origin_embedder_policy_;
   }
 
@@ -901,9 +900,17 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerMetrics::Site site_for_uma_;
 
   // Cross-Origin-Embedder-Policy for the service worker script. This persists
-  // in the disk. kNone is set if this is a brand-new service worker whose main
-  // script is not loaded yet.
-  network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
+  // in the disk.
+  //
+  // On brand new service workers, the COEP value is not known initially. It
+  // will be set in PrepareForUpdate(), after the main script has been processed
+  // by the renderer process.
+  //
+  // PlzServiceWorker(https://crbug.com/996511):
+  // Once landed, there is no more need to use an base::Optional here. The COEP
+  // header is going to be known from the beginning and can be mark as 'const'.
+  base::Optional<network::CrossOriginEmbedderPolicy>
+      cross_origin_embedder_policy_;
 
   Status status_ = NEW;
   std::unique_ptr<EmbeddedWorkerInstance> embedded_worker_;

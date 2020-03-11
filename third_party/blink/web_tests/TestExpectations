@@ -2389,6 +2389,9 @@ crbug.com/1032016 virtual/threaded/http/tests/devtools/tracing/timeline-js/timel
 crbug.com/1032016 http/tests/devtools/bindings/inline-styles-binding.js [ Pass Failure ]
 crbug.com/1032016 http/tests/devtools/bindings/livelocation-main-frame-navigated.js [ Pass Failure ]
 
+# Temporarily disabled so we can land a frontend change that removes side-effect handling in the frontend.
+crbug.com/1031243 http/tests/devtools/console-cd-completions.js [ Pass Failure ]
+
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api/* [ Skip ]
 # These tests *only* run in stable, to verify that these features are unsupported and throw exceptions.

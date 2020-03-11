@@ -33,6 +33,7 @@
 #include "components/payments/core/payment_app.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_experimental_features.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
 
 namespace payments {
@@ -56,6 +57,7 @@ void PostStatusCallback(PaymentRequestState::StatusCallback callback,
 
 PaymentRequestState::PaymentRequestState(
     content::WebContents* web_contents,
+    content::RenderFrameHost* initiator_render_frame_host,
     const GURL& top_level_origin,
     const GURL& frame_origin,
     const url::Origin& frame_security_origin,
@@ -67,6 +69,7 @@ PaymentRequestState::PaymentRequestState(
     const ServiceWorkerPaymentApp::IdentityCallback& sw_identity_callback,
     JourneyLogger* journey_logger)
     : web_contents_(web_contents),
+      initiator_render_frame_host_(initiator_render_frame_host),
       top_origin_(top_level_origin),
       frame_origin_(frame_origin),
       frame_security_origin_(frame_security_origin),
@@ -116,6 +119,11 @@ const GURL& PaymentRequestState::GetFrameOrigin() {
 
 const url::Origin& PaymentRequestState::GetFrameSecurityOrigin() {
   return frame_security_origin_;
+}
+
+content::RenderFrameHost* PaymentRequestState::GetInitiatorRenderFrameHost()
+    const {
+  return initiator_render_frame_host_;
 }
 
 const std::vector<autofill::AutofillProfile*>&

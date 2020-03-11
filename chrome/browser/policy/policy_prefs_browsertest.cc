@@ -182,6 +182,12 @@ class PolicyPrefMappingTest {
         prefs_.push_back(std::make_unique<PrefTestCase>(pref_setting.first,
                                                         pref_setting.second));
     }
+    const base::Value* required_preprocessor_macros_value =
+        mapping.FindListKey("required_preprocessor_macros");
+    if (required_preprocessor_macros_value) {
+      for (const auto& macro : required_preprocessor_macros_value->GetList())
+        required_preprocessor_macros_.push_back(macro.GetString());
+    }
   }
   ~PolicyPrefMappingTest() {}
 
@@ -191,12 +197,52 @@ class PolicyPrefMappingTest {
     return prefs_;
   }
 
+  const std::vector<std::string>& required_preprocessor_macros() const {
+    return required_preprocessor_macros_;
+  }
+
  private:
   const std::string pref_;
   base::Value policies_;
   std::vector<std::unique_ptr<PrefTestCase>> prefs_;
+  std::vector<std::string> required_preprocessor_macros_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyPrefMappingTest);
+};
+
+// Populates preprocessor macros as strings that policy pref mapping test cases
+// can depend on and implements a check if such a test case should run according
+// to the preprocessor macros.
+class PreprocessorMacrosChecker {
+ public:
+  PreprocessorMacrosChecker() {
+    // If you are adding a macro mapping here, please also add it to the
+    // documentation of 'required_preprocessor_macros' in
+    // policy_test_cases.json.
+#if defined(USE_CUPS)
+    enabled_preprocessor_macros.insert("USE_CUPS");
+#endif
+  }
+  ~PreprocessorMacrosChecker() = default;
+  PreprocessorMacrosChecker(const PreprocessorMacrosChecker& other) = delete;
+  PreprocessorMacrosChecker& operator=(const PreprocessorMacrosChecker& other) =
+      delete;
+
+  // Returns true if |test| may be executed based on its reuquired preprocessor
+  // macros.
+  bool SupportsTest(const PolicyPrefMappingTest* test) const {
+    for (const std::string& required_macro :
+         test->required_preprocessor_macros()) {
+      if (enabled_preprocessor_macros.find(required_macro) ==
+          enabled_preprocessor_macros.end()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+ private:
+  std::set<std::string> enabled_preprocessor_macros;
 };
 
 // Contains the testing details for a single policy. This is part of the data
@@ -424,6 +470,7 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
   PrefService* local_state = g_browser_process->local_state();
   PrefService* user_prefs = browser()->profile()->GetPrefs();
 
+  const PreprocessorMacrosChecker preprocessor_macros_checker;
   const PolicyTestCases test_cases;
   for (const auto& policy : test_cases) {
     for (const auto& test_case : policy.second) {
@@ -452,6 +499,12 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
       LOG(INFO) << "Testing policy: " << policy.first;
 
       for (const auto& pref_mapping : pref_mappings) {
+        if (!preprocessor_macros_checker.SupportsTest(pref_mapping.get())) {
+          LOG(INFO) << " Skipping policy_pref_mapping_test because of "
+                    << "preprocessor macros";
+          continue;
+        }
+
         for (const auto& pref_case : pref_mapping->prefs()) {
           // Skip Chrome OS preferences that use a different backend and cannot
           // be retrieved through the prefs mechanism.

@@ -11,15 +11,13 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/material_design/material_design_controller_observer.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/events/event.h"
 
 class AvatarToolbarButtonDelegate;
 class Browser;
 
 class AvatarToolbarButton : public ToolbarButton,
-                            public ui::MaterialDesignControllerObserver,
                             ToolbarIconContainerView::Observer {
  public:
   // States of the button ordered in priority of getting displayed.
@@ -72,9 +70,6 @@ class AvatarToolbarButton : public ToolbarButton,
   void OnBlur() override;
   void OnThemeChanged() override;
 
-  // ui::MaterialDesignControllerObserver:
-  void OnTouchUiChanged() override;
-
   // ToolbarIconContainerView::Observer:
   void OnHighlightChanged() override;
 
@@ -84,14 +79,17 @@ class AvatarToolbarButton : public ToolbarButton,
 
   void SetInsets();
 
+  void OnTouchUiChanged();
+
   std::unique_ptr<AvatarToolbarButtonDelegate> delegate_;
 
   Browser* const browser_;
   ToolbarIconContainerView* const parent_;
 
-  ScopedObserver<ui::MaterialDesignController,
-                 ui::MaterialDesignControllerObserver>
-      md_observer_{this};
+  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+      ui::TouchUiController::Get()->RegisterCallback(
+          base::BindRepeating(&AvatarToolbarButton::SetInsets,
+                              base::Unretained(this)));
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

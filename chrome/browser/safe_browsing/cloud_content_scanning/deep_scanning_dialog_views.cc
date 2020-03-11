@@ -105,7 +105,10 @@ class DeepScanningTopImageView : public DeepScanningBaseView,
   void Update() { SetImage(dialog()->GetTopImage()); }
 
  protected:
-  void OnThemeChanged() override { Update(); }
+  void OnThemeChanged() override {
+    views::ImageView::OnThemeChanged();
+    Update();
+  }
 };
 
 class DeepScanningSideIconImageView : public DeepScanningBaseView,
@@ -123,7 +126,10 @@ class DeepScanningSideIconImageView : public DeepScanningBaseView,
   }
 
  protected:
-  void OnThemeChanged() override { Update(); }
+  void OnThemeChanged() override {
+    views::ImageView::OnThemeChanged();
+    Update();
+  }
 };
 
 class DeepScanningSideIconSpinnerView : public DeepScanningBaseView,
@@ -139,7 +145,10 @@ class DeepScanningSideIconSpinnerView : public DeepScanningBaseView,
   }
 
  protected:
-  void OnThemeChanged() override { Update(); }
+  void OnThemeChanged() override {
+    views::Throbber::OnThemeChanged();
+    Update();
+  }
 };
 
 class DeepScanningMessageView : public DeepScanningBaseView,
@@ -153,7 +162,10 @@ class DeepScanningMessageView : public DeepScanningBaseView,
   }
 
  protected:
-  void OnThemeChanged() override { Update(); }
+  void OnThemeChanged() override {
+    views::Label::OnThemeChanged();
+    Update();
+  }
 };
 
 // static

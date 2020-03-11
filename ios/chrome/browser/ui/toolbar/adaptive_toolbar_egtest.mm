@@ -48,7 +48,6 @@ const char kPageURL[] = "/test-page.html";
 const char kPageURL2[] = "/test-page-2.html";
 const char kPageURL3[] = "/test-page-3.html";
 const char kLinkID[] = "linkID";
-const char kTextID[] = "textID";
 const char kPageLoadedString[] = "Page loaded!";
 
 // The title of the test infobar.
@@ -70,18 +69,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   http_response->set_content(
       "<html><body><p>" + std::string(kPageLoadedString) + "</p><a href=\"" +
       kPageURL3 + "\" id=\"" + kLinkID + "\">link!</a></body></html>");
-  return std::move(http_response);
-}
-
-// Provides response for a very tall page.
-std::unique_ptr<net::test_server::HttpResponse> TallPageResponse(
-    const net::test_server::HttpRequest& request) {
-  std::unique_ptr<net::test_server::BasicHttpResponse> http_response =
-      std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_code(net::HTTP_OK);
-  http_response->set_content(
-      "<html><body><p style=\"height:2000pt\"></p><p id=\"" +
-      std::string(kTextID) + "\">" + kPageLoadedString + "</p></body></html>");
   return std::move(http_response);
 }
 
@@ -539,100 +526,6 @@ UIViewController* TopPresentedViewController() {
   // Check the visiblity after a size class change. This should let the trait
   // collection change come into effect.
   CheckToolbarButtonVisibility(originalTraitCollection, YES);
-}
-
-// Tests the interactions between the infobars and the bottom toolbar during
-// fullscreen.
-- (void)testInfobarFullscreen {
-  if (![ChromeEarlGrey isSplitToolbarMode]) {
-    // The interaction between the infobar and fullscreen only happens in split
-    // toolbar mode.
-    return;
-  }
-
-  // Setup the server.
-  self.testServer->RegisterRequestHandler(
-      base::BindRepeating(&TallPageResponse));
-  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
-
-  // Navigate to a page.
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
-
-  GREYAssert(
-      [AdaptiveToolbarAppInterface addInfobarWithTitle:kTestInfoBarTitle],
-      @"Fail to create infobar.");
-
-  GREYAssert(
-      [[GREYCondition
-          conditionWithName:@"Waiting for infobar to show"
-                      block:^BOOL {
-                        NSError* error = nil;
-                        [[EarlGrey selectElementWithMatcher:
-                                       chrome_test_util::
-                                           StaticTextWithAccessibilityLabel(
-                                               kTestInfoBarTitle)]
-                            assertWithMatcher:grey_sufficientlyVisible()
-                                        error:&error];
-                        return error == nil;
-                      }] waitWithTimeout:4],
-      @"Infobar did not show.");
-
-  // Check that the button is visible.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-#if defined(CHROME_EARL_GREY_1)
-  UIWindow* window = [[UIApplication sharedApplication] keyWindow];
-#else
-  UIWindow* window =
-      [[GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication] keyWindow];
-#endif
-
-  GREYElementMatcherBlock* positionMatcher = [GREYElementMatcherBlock
-      matcherWithMatchesBlock:^BOOL(UIView* element) {
-        UILayoutGuide* guide =
-            [ChromeEarlGreyAppInterface guideWithName:kSecondaryToolbarGuide
-                                                 view:element];
-
-        CGFloat toolbarTopPoint = CGRectGetMinY(
-            [window convertRect:guide.layoutFrame fromView:guide.owningView]);
-        CGFloat buttonBottomPoint = CGRectGetMaxY(
-            [window convertRect:element.frame fromView:element.superview]);
-
-        CGFloat bottomSafeArea = CGFLOAT_MAX;
-        bottomSafeArea = CGRectGetMaxY(window.safeAreaLayoutGuide.layoutFrame);
-        CGFloat infobarContentBottomPoint =
-            MIN(bottomSafeArea, toolbarTopPoint);
-        BOOL buttonIsAbove = buttonBottomPoint < infobarContentBottomPoint - 10;
-        BOOL buttonIsNear = buttonBottomPoint > infobarContentBottomPoint - 30;
-        return buttonIsAbove && buttonIsNear;
-      }
-      descriptionBlock:^void(id<GREYDescription> description) {
-        [description
-            appendText:@"Infobar is position on top of the bottom toolbar."];
-      }];
-
-  // Check that the button is positionned above the bottom toolbar.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
-      assertWithMatcher:positionMatcher];
-
-  // Scroll down
-  [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
-      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
-
-  // Check that the button is visible.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Check that the secondary toolbar is not visible.
-  [[EarlGrey
-      selectElementWithMatcher:grey_kindOfClassName(@"SecondaryToolbarView")]
-      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-
-  // Check that the button is positionned above the bottom toolbar (i.e. at the
-  // bottom).
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
-      assertWithMatcher:positionMatcher];
 }
 
 // Verifies that the back/forward buttons are working and are correctly enabled

@@ -40,22 +40,37 @@ class CORE_EXPORT CSSAnimation : public Animation {
   // conditionally sticky and override the animation-play-state style.
   void pause(ExceptionState& = ASSERT_NO_EXCEPTION) override;
   void play(ExceptionState& = ASSERT_NO_EXCEPTION) override;
+  void reverse(ExceptionState& = ASSERT_NO_EXCEPTION) override;
+  void setStartTime(double,
+                    bool is_null,
+                    ExceptionState& = ASSERT_NO_EXCEPTION) override;
 
-  // When set, the override takes precedence over animation-play-state.
+  // When set, subsequent changes to animation-play-state no longer affect the
+  // play state.
   // https://drafts.csswg.org/css-animations-2/#interaction-between-animation-play-state-and-web-animations-API
-  AnimationPlayState getWebAnimationOverriddenPlayState() {
-    return sticky_play_state_;
-  }
-  void ResetWebAnimationOverriddenPlayState() { sticky_play_state_ = kUnset; }
+  bool getIgnoreCSSPlayState() { return ignore_css_play_state_; }
+  void resetIgnoreCSSPlayState() { ignore_css_play_state_ = false; }
 
  private:
   void FlushStyles() const;
+
+  class PlayStateTransitionScope {
+    STACK_ALLOCATED();
+
+   public:
+    explicit PlayStateTransitionScope(CSSAnimation& animation);
+    ~PlayStateTransitionScope();
+
+   private:
+    CSSAnimation& animation_;
+    bool was_paused_;
+  };
 
   String animation_name_;
 
   // When set, the web-animation API is overruling the animation-play-state
   // style.
-  AnimationPlayState sticky_play_state_;
+  bool ignore_css_play_state_;
 };
 
 template <>

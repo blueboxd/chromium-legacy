@@ -264,10 +264,10 @@ void CrasAudioHandler::MediaSessionMetadataChanged(
     return;
 
   const std::map<std::string, std::string> metadata_map = {
-      {"title", base::UTF16ToASCII(metadata->title)},
-      {"artist", base::UTF16ToASCII(metadata->artist)},
-      {"album", base::UTF16ToASCII(metadata->album)}};
-  const std::string source_title = base::UTF16ToASCII(metadata->source_title);
+      {"title", base::UTF16ToUTF8(metadata->title)},
+      {"artist", base::UTF16ToUTF8(metadata->artist)},
+      {"album", base::UTF16ToUTF8(metadata->album)}};
+  const std::string source_title = base::UTF16ToUTF8(metadata->source_title);
 
   // Assume media duration/length should always change with new metadata.
   fetch_media_session_duration_ = true;

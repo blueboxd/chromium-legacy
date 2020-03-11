@@ -221,6 +221,7 @@ gfx::Size MenuScrollViewContainer::CalculatePreferredSize() const {
 }
 
 void MenuScrollViewContainer::OnThemeChanged() {
+  View::OnThemeChanged();
   if (!HasBubbleBorder())
     CreateDefaultBorder();
 }

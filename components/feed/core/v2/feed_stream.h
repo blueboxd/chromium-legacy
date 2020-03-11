@@ -35,6 +35,7 @@ class FeedStream : public FeedStreamApi,
  public:
   class Delegate {
    public:
+    virtual ~Delegate() = default;
     // Returns true if Chrome's EULA has been accepted.
     virtual bool IsEulaAccepted() = 0;
     // Returns true if the device is offline.
@@ -55,8 +56,8 @@ class FeedStream : public FeedStreamApi,
              Delegate* delegate,
              PrefService* profile_prefs,
              FeedNetwork* feed_network,
-             base::Clock* clock,
-             base::TickClock* tick_clock,
+             const base::Clock* clock,
+             const base::TickClock* tick_clock,
              scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   ~FeedStream() override;
 
@@ -131,8 +132,8 @@ class FeedStream : public FeedStreamApi,
   Delegate* delegate_;
   PrefService* profile_prefs_;
   FeedNetwork* feed_network_;
-  base::Clock* clock_;
-  base::TickClock* tick_clock_;
+  const base::Clock* clock_;
+  const base::TickClock* tick_clock_;
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   // Owned, but should only be accessed with |background_task_runner_|.

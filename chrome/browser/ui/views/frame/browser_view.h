@@ -42,9 +42,8 @@
 #include "chrome/common/buildflags.h"
 #include "components/infobars/core/infobar_container.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
@@ -107,7 +106,6 @@ class BrowserView : public BrowserWindow,
                     public ExclusiveAccessBubbleViewsContext,
                     public extensions::ExtensionKeybindingRegistry::Delegate,
                     public ImmersiveModeController::Observer,
-                    public ui::MaterialDesignControllerObserver,
                     public banners::AppBannerManager::Observer {
  public:
   // The browser view's class name.
@@ -542,9 +540,6 @@ class BrowserView : public BrowserWindow,
   void OnImmersiveFullscreenExited() override;
   void OnImmersiveModeControllerDestroyed() override;
 
-  // ui::MaterialDesignControllerObserver:
-  void OnTouchUiChanged() override;
-
   // banners::AppBannerManager::Observer:
   void OnAppBannerManagerChangedForTesting(
       banners::AppBannerManager* new_manager) override;
@@ -861,9 +856,10 @@ class BrowserView : public BrowserWindow,
 
   std::unique_ptr<ImmersiveModeController> immersive_mode_controller_;
 
-  ScopedObserver<ui::MaterialDesignController,
-                 ui::MaterialDesignControllerObserver>
-      md_observer_{this};
+  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+      ui::TouchUiController::Get()->RegisterCallback(
+          base::BindRepeating(&BrowserView::MaybeInitializeWebUITabStrip,
+                              base::Unretained(this)));
 
   std::unique_ptr<WebContentsCloseHandler> web_contents_close_handler_;
 

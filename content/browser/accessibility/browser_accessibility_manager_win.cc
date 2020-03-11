@@ -577,13 +577,9 @@ void BrowserAccessibilityManagerWin::FireUiaTextContainerEvent(
 }
 
 bool BrowserAccessibilityManagerWin::CanFireEvents() const {
-  if (!BrowserAccessibilityManager::CanFireEvents())
-    return false;
-  BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
-  if (!root_delegate)
-    return false;
-  HWND hwnd = root_delegate->AccessibilityGetAcceleratedWidget();
-  return hwnd != nullptr;
+  return BrowserAccessibilityManager::CanFireEvents() &&
+         GetDelegateFromRootManager() &&
+         GetDelegateFromRootManager()->AccessibilityGetAcceleratedWidget();
 }
 
 gfx::Rect BrowserAccessibilityManagerWin::GetViewBounds() {

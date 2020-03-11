@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FittingType} from './constants.js';
+import {FittingType, TwoUpViewAction} from './constants.js';
 
 /**
  * Handles events specific to the PDF viewer and logs the corresponding metrics.
@@ -21,6 +21,18 @@ export class PDFMetrics {
     }
     // There is no user action to do a fit-to-height, this only happens with
     // the open param "view=FitV".
+  }
+
+  /**
+   * Records when the two up view mode is enabled or disabled.
+   *
+   * @param {TwoUpViewAction} twoUpViewAction the new TwoUpViewAction.
+   */
+  static recordTwoUpView(twoUpViewAction) {
+    PDFMetrics.record(
+        twoUpViewAction === TwoUpViewAction.TWO_UP_VIEW_ENABLE ?
+            PDFMetrics.UserAction.TWO_UP_VIEW_ENABLE :
+            PDFMetrics.UserAction.TWO_UP_VIEW_DISABLE);
   }
 
   /**
@@ -149,7 +161,15 @@ PDFMetrics.UserAction = {
   ANNOTATE_STROKE_DEVICE_PEN_FIRST: 33,
   ANNOTATE_STROKE_DEVICE_PEN: 34,
 
-  NUMBER_OF_ACTIONS: 35,
+  /** Recorded when two-up view mode is enabled. */
+  TWO_UP_VIEW_ENABLE_FIRST: 35,
+  TWO_UP_VIEW_ENABLE: 36,
+
+  /** Recorded when two-up view mode is disabled. */
+  TWO_UP_VIEW_DISABLE_FIRST: 37,
+  TWO_UP_VIEW_DISABLE: 38,
+
+  NUMBER_OF_ACTIONS: 39,
 };
 
 // Map from UserAction to the 'FIRST' action. These metrics are recorded
@@ -223,5 +243,13 @@ PDFMetrics.firstMap_ = new Map([
   [
     PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_PEN,
     PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_PEN_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.TWO_UP_VIEW_ENABLE,
+    PDFMetrics.UserAction.TWO_UP_VIEW_ENABLE_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.TWO_UP_VIEW_DISABLE,
+    PDFMetrics.UserAction.TWO_UP_VIEW_DISABLE_FIRST,
   ],
 ]);

@@ -116,10 +116,10 @@ SessionService* SessionServiceTestHelper::ReleaseService() {
 
 void SessionServiceTestHelper::RunTaskOnBackendThread(
     const base::Location& from_here,
-    const base::Closure& task) {
+    base::OnceClosure task) {
   sessions::CommandStorageManagerTestHelper test_helper(
       service_->GetCommandStorageManagerForTest());
-  test_helper.RunTaskOnBackendThread(from_here, task);
+  test_helper.RunTaskOnBackendThread(from_here, std::move(task));
 }
 
 void SessionServiceTestHelper::SetAvailableRange(

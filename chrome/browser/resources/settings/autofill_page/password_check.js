@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 (function() {
-'use strict';
 
 const CheckState = chrome.passwordsPrivate.PasswordCheckState;
 

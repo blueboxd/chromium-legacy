@@ -88,7 +88,7 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -159,7 +159,7 @@ class TopChromeMdParamTest : public BaseTest,
   ~TopChromeMdParamTest() override = default;
 
  private:
-  ui::MaterialDesignController::TouchUiScoperForTesting touch_ui_scoper_;
+  ui::TouchUiController::TouchUiScoperForTesting touch_ui_scoper_;
 };
 
 // Template to be used when a test does not work with the webUI tabstrip.

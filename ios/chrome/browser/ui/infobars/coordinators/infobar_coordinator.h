@@ -17,6 +17,7 @@ class ChromeBrowserState;
 @protocol ApplicationCommands;
 @protocol InfobarBadgeUIDelegate;
 @protocol InfobarContainer;
+@protocol InfobarBannerContained;
 
 @class InfobarBannerTransitionDriver;
 @class InfobarBannerViewController;
@@ -76,7 +77,8 @@ enum class InfobarBannerPresentationState;
 @property(nonatomic, assign) BOOL started;
 
 // BannerViewController owned by this Coordinator. Can be nil.
-@property(nonatomic, strong, readonly) UIViewController* bannerViewController;
+@property(nonatomic, strong, readonly)
+    UIViewController<InfobarBannerContained>* bannerViewController;
 
 // ModalViewController owned by this Coordinator. Can be nil.
 @property(nonatomic, strong, readonly) UIViewController* modalViewController;

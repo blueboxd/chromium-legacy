@@ -121,12 +121,14 @@ source_set("eg_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/infobars/core:feature_flags",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser:browser",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/download:test_support",
     "//ios/chrome/browser/ui/browser_view",
+    "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test:eg_test_support",
     "//ios/chrome/test:test_support",
@@ -160,10 +162,12 @@ source_set("eg2_tests") {
   ]
 
   deps = [
+    "//components/infobars/core:feature_flags",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/download:mime_types",
     "//ios/chrome/browser/download:test_support",
+    "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/test:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing:embedded_test_server_support",

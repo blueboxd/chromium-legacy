@@ -13,6 +13,7 @@
  */
 const Message = {
   LOAD_FILE: 'load-file',
+  OPEN_FEEDBACK_DIALOG: 'open-feedback-dialog',
   OVERWRITE_FILE: 'overwrite-file',
 };
 

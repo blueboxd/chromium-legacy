@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_COVERAGE_UTILS_H_
-#define CONTENT_COMMON_COVERAGE_UTILS_H_
+#ifndef CONTENT_COMMON_PROFILING_UTILS_H_
+#define CONTENT_COMMON_PROFILING_UTILS_H_
 
 #include <string>
 
@@ -11,8 +11,8 @@
 
 namespace content {
 
-base::File OpenCoverageFile();
+base::File OpenProfilingFile();
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_COVERAGE_UTILS_H_
+#endif  // CONTENT_COMMON_PROFILING_UTILS_H_

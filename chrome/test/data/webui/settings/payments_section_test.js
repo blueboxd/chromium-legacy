@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {PaymentsManagerImpl} from 'chrome://settings/settings.js';
+// #import {TestPaymentsManager, createCreditCardEntry, createEmptyCreditCardEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {eventToPromise, whenAttributeIs} from 'chrome://test/test_util.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// clang-format-on
+
 cr.define('settings_payments_section', function() {
   suite('PaymentSectionUiTest', function() {
     test('testAutofillExtensionIndicator', function() {
@@ -552,8 +560,8 @@ cr.define('settings_payments_section', function() {
           /*creditCards=*/[], /*upiIds=*/[], /*prefValues=*/ {});
 
       const paymentsList = section.$$('#paymentsList');
-      const upiRows = Polymer.dom(paymentsList.shadowRoot)
-                          .querySelectorAll('settings-upi-id-list-entry');
+      const upiRows = paymentsList.shadowRoot.querySelectorAll(
+          'settings-upi-id-list-entry');
 
       assertEquals(0, upiRows.length);
     });
@@ -566,8 +574,8 @@ cr.define('settings_payments_section', function() {
           /*creditCards=*/[], upiIds, /*prefValues=*/ {});
 
       const paymentsList = section.$$('#paymentsList');
-      const upiRows = Polymer.dom(paymentsList.shadowRoot)
-                          .querySelectorAll('settings-upi-id-list-entry');
+      const upiRows = paymentsList.shadowRoot.querySelectorAll(
+          'settings-upi-id-list-entry');
 
       assertEquals(upiIds.length, upiRows.length);
     });
@@ -581,10 +589,11 @@ cr.define('settings_payments_section', function() {
           /*creditCards=*/[], upiIds, /*prefValues=*/ {});
 
       const paymentsList = section.$$('#paymentsList');
-      const upiRows = Polymer.dom(paymentsList.shadowRoot)
-                          .querySelectorAll('settings-upi-id-list-entry');
+      const upiRows = paymentsList.shadowRoot.querySelectorAll(
+          'settings-upi-id-list-entry');
 
       assertEquals(0, upiRows.length);
     });
   });
+  // #cr_define_end
 });

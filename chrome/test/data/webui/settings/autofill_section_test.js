@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {AutofillManagerImpl, CountryDetailManagerImpl} from 'chrome://settings/settings.js';
+// #import {createAddressEntry, createEmptyAddressEntry, TestAutofillManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// clang-format-on
+
 cr.define('settings_autofill_section', function() {
   /**
    * Test implementation.
@@ -58,9 +66,9 @@ cr.define('settings_autofill_section', function() {
    */
   function createAutofillSection(addresses, prefValues) {
     // Override the AutofillManagerImpl for testing.
-    this.autofillManager = new autofill_test_util.TestAutofillManager();
-    this.autofillManager.data.addresses = addresses;
-    settings.AutofillManagerImpl.instance_ = this.autofillManager;
+    const autofillManager = new autofill_test_util.TestAutofillManager();
+    autofillManager.data.addresses = addresses;
+    settings.AutofillManagerImpl.instance_ = autofillManager;
 
     const section = document.createElement('settings-autofill-section');
     section.prefs = {autofill: prefValues};
@@ -665,12 +673,13 @@ cr.define('settings_autofill_section', function() {
               return expectEvent(
                   dialog, 'on-update-address-wrapper', function() {
                     // IL:
-                    rows = dialog.$.dialog.querySelectorAll('.address-row');
+                    const rows =
+                        dialog.$.dialog.querySelectorAll('.address-row');
                     assertEquals(company_enabled ? 6 : 5, rows.length);
 
                     // City, Postal code
-                    row = rows[company_enabled ? 3 : 2];
-                    cols = row.querySelectorAll('.address-column');
+                    const row = rows[company_enabled ? 3 : 2];
+                    const cols = row.querySelectorAll('.address-column');
                     assertEquals(2, cols.length);
                     assertEquals(city, cols[0].value);
                     assertEquals(zip, cols[1].value);
@@ -685,8 +694,8 @@ cr.define('settings_autofill_section', function() {
               assertEquals(company_enabled ? 6 : 5, rows.length);
 
               // City, State, ZIP code
-              row = rows[company_enabled ? 3 : 2];
-              cols = row.querySelectorAll('.address-column');
+              const row = rows[company_enabled ? 3 : 2];
+              const cols = row.querySelectorAll('.address-column');
               assertEquals(3, cols.length);
               assertEquals(city, cols[0].value);
               assertEquals(state, cols[1].value);
@@ -695,4 +704,5 @@ cr.define('settings_autofill_section', function() {
       });
     });
   });
+  // #cr_define_end
 });

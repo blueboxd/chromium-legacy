@@ -14714,7 +14714,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2" label="Desk-switch keyboard shortcut"/>
   <int value="3" label="Mini_view button press"/>
   <int value="4" label="Window on desk activated"/>
-  <int value="5" label="Desk-switch 3-finger touchpad swipe"/>
+  <int value="5" label="Desk-switch 4-finger touchpad swipe"/>
   <int value="6" label="User switch in a multi-profile session"/>
 </enum>
 
@@ -22490,6 +22490,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1458" label="PASSWORDSPRIVATE_STARTPASSWORDCHECK"/>
   <int value="1459" label="PASSWORDSPRIVATE_STOPPASSWORDCHECK"/>
   <int value="1460" label="PASSWORDSPRIVATE_GETPASSWORDCHECKSTATUS"/>
+  <int value="1461" label="TERMINALPRIVATE_OPENVMSHELLPROCESS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -43708,6 +43709,14 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Presented"/>
   <int value="1" label="Accepted"/>
   <int value="2" label="Dismissed"/>
+</enum>
+
+<enum name="MobileMessagesInfobarType">
+  <int value="0" label="Confirm"/>
+  <int value="1" label="Save Password"/>
+  <int value="2" label="Update Password"/>
+  <int value="3" label="Save Card"/>
+  <int value="4" label="Translate"/>
 </enum>
 
 <enum name="MobileMessagesModalEvent">
@@ -66077,6 +66086,7 @@ Full version information for the fingerprint enum values:
   <int value="1746181704" label="proxy_resolver.mojom.ProxyResolverFactory"/>
   <int value="1803540096" label="tap_visualizer_app"/>
   <int value="1882216268" label="patch.mojom.FilePatcher"/>
+  <int value="1893208764" label="chrome.mojom.UtilWin"/>
   <int value="1937572987" label="shortcut_viewer_app"/>
   <int value="1967189975" label="util_win"/>
   <int value="1968783712" label="quick_launch_app"/>
@@ -68508,11 +68518,13 @@ Full version information for the fingerprint enum values:
   <int value="-1569772500" label="/manageAccessibility/tts"/>
   <int value="-1555301506" label="/content/notifications"/>
   <int value="-1484929503" label="/manageAccessibility/switchAccess"/>
+  <int value="-1381133263" label="/passwords/check"/>
   <int value="-1312744606" label="/knownNetworks"/>
   <int value="-1299234352" label="/pluginVm/details"/>
   <int value="-1297176639" label="/fonts"/>
   <int value="-1283080115" label="/content/backgroundSync"/>
   <int value="-1279337432" label="/power"/>
+  <int value="-1231761426" label="/content/ar"/>
   <int value="-1227595649" label="/all"/>
   <int value="-1204780990" label="/dateTime/timeZone"/>
   <int value="-1167413307" label="/inputMethods"/>
@@ -68557,16 +68569,20 @@ Full version information for the fingerprint enum values:
   <int value="-146134264" label="/content/protectedContent"/>
   <int value="-59332819" label="/accountManager"/>
   <int value="-44267040" label="/bluetoothDevices"/>
+  <int value="-23311755" label="/content/vr"/>
   <int value="-14666765" label="/accounts"/>
   <int value="8030578" label="/crostini/sharedUsbDevices"/>
   <int value="8530592" label="/syncSetup/advanced"/>
   <int value="16287984" label="/languages/details"/>
   <int value="60238454" label="/content/ads"/>
+  <int value="104900992" label="/content/insecureContent"/>
   <int value="223791833" label="/help/about"/>
+  <int value="254445609" label="/content/filesystem"/>
   <int value="273561147" label="/autofill"/>
   <int value="297583680" label="/device"/>
   <int value="334469894" label="/people"/>
   <int value="338873252" label="/passwords"/>
+  <int value="350639838" label="/cookies"/>
   <int value="408074355" label="/onStartup"/>
   <int value="463749620" label="/content/flash"/>
   <int value="537677705" label="/cookies/detail"/>
@@ -68576,6 +68592,8 @@ Full version information for the fingerprint enum values:
   <int value="682420978" label="/content/bluetoothScanning"/>
   <int value="683177973" label="/cupsPrinters"/>
   <int value="754547746" label="/help/details"/>
+  <int value="805959528" label="/security"/>
+  <int value="838443004" label="/safetyCheck"/>
   <int value="856943564" label="/content/siteDetails"/>
   <int value="868952532" label="/pointer-overlay"/>
   <int value="872535792" label="/parentalControls"/>

@@ -1546,7 +1546,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // allows individual Views to do special cleanup and processing (such as
   // dropping resource caches). To dispatch a theme changed notification, call
   // Widget::ThemeChanged().
-  virtual void OnThemeChanged() {}
+  virtual void OnThemeChanged();
 
   // Tooltips ------------------------------------------------------------------
 
@@ -2036,6 +2036,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Input  --------------------------------------------------------------------
 
   std::unique_ptr<ViewTargeter> targeter_;
+
+  // System events -------------------------------------------------------------
+
+#if DCHECK_IS_ON()
+  bool on_theme_changed_called_ = false;
+#endif
 
   // Accessibility -------------------------------------------------------------
 

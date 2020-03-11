@@ -39,7 +39,7 @@ std::string DecryptingDemuxerStream::GetDisplayName() const {
 
 void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
                                          CdmContext* cdm_context,
-                                         const PipelineStatusCB& status_cb) {
+                                         PipelineStatusCallback status_cb) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kUninitialized) << state_;
@@ -49,7 +49,7 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
 
   weak_this_ = weak_factory_.GetWeakPtr();
   demuxer_stream_ = stream;
-  init_cb_ = BindToCurrentLoop(status_cb);
+  init_cb_ = BindToCurrentLoop(std::move(status_cb));
 
   InitializeDecoderConfig();
 

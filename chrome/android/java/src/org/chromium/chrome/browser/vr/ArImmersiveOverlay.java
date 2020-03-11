@@ -40,7 +40,7 @@ import java.util.Map;
 public class ArImmersiveOverlay
         implements SurfaceHolder.Callback2, View.OnTouchListener, ScreenOrientationDelegate {
     private static final String TAG = "ArImmersiveOverlay";
-    private static final boolean DEBUG_LOGS = true;
+    private static final boolean DEBUG_LOGS = false;
 
     private ArCoreJavaUtils mArCoreJavaUtils;
     private ChromeActivity mActivity;

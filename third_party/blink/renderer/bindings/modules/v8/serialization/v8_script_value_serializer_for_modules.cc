@@ -53,13 +53,15 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     return true;
   }
   if (wrapper_type_info == V8FileSystemFileHandle::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::CloneableNativeFileSystemHandlesEnabled()) {
+      RuntimeEnabledFeatures::CloneableNativeFileSystemHandlesEnabled(
+          ExecutionContext::From(GetScriptState()))) {
     return WriteNativeFileSystemHandle(
         kNativeFileSystemFileHandleTag,
         wrappable->ToImpl<NativeFileSystemHandle>());
   }
   if (wrapper_type_info == V8FileSystemDirectoryHandle::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::CloneableNativeFileSystemHandlesEnabled()) {
+      RuntimeEnabledFeatures::CloneableNativeFileSystemHandlesEnabled(
+          ExecutionContext::From(GetScriptState()))) {
     return WriteNativeFileSystemHandle(
         kNativeFileSystemDirectoryHandleTag,
         wrappable->ToImpl<NativeFileSystemHandle>());

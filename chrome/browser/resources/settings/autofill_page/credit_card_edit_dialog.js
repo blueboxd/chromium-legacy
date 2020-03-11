@@ -8,7 +8,6 @@
  */
 
 (function() {
-'use strict';
 
 Polymer({
   is: 'settings-credit-card-edit-dialog',

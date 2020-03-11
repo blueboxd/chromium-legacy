@@ -14,11 +14,6 @@ TEST(GenerateSchemaOrgTest, EntityName) {
   EXPECT_STREQ(entity::kAboutPage, "AboutPage");
 }
 
-TEST(GenerateSchemaOrgTest, IsValidEntityName) {
-  EXPECT_TRUE(entity::IsValidEntityName(entity::kAboutPage));
-  EXPECT_FALSE(entity::IsValidEntityName("a made up name"));
-}
-
 TEST(GenerateSchemaOrgTest, PropertyName) {
   EXPECT_STREQ(property::kAcceptedAnswer, "acceptedAnswer");
 }

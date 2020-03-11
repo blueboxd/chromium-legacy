@@ -25,9 +25,9 @@ CommandStorageManagerTestHelper::CommandStorageManagerTestHelper(
 
 void CommandStorageManagerTestHelper::RunTaskOnBackendThread(
     const base::Location& from_here,
-    const base::Closure& task) {
-  command_storage_manager_->backend_task_runner_->PostNonNestableTask(from_here,
-                                                                      task);
+    base::OnceClosure task) {
+  command_storage_manager_->backend_task_runner_->PostNonNestableTask(
+      from_here, std::move(task));
 }
 
 bool CommandStorageManagerTestHelper::ProcessedAnyCommands() {

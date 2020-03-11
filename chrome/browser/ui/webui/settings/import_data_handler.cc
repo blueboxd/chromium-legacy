@@ -191,6 +191,7 @@ void ImportDataHandler::SendBrowserProfileData(const std::string& callback_id) {
         new base::DictionaryValue());
     browser_profile->SetString("name", source_profile.importer_name);
     browser_profile->SetInteger("index", i);
+    browser_profile->SetString("profileName", source_profile.profile);
     browser_profile->SetBoolean("history",
                                 (browser_services & importer::HISTORY) != 0);
     browser_profile->SetBoolean("favorites",

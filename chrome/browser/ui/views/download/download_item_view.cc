@@ -666,6 +666,7 @@ void DownloadItemView::AddedToWidget() {
 }
 
 void DownloadItemView::OnThemeChanged() {
+  views::View::OnThemeChanged();
   UpdateColorsFromTheme();
   SchedulePaint();
   UpdateDropdownButton();

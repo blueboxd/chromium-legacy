@@ -446,6 +446,7 @@ const char* FindBarView::GetClassName() const {
 }
 
 void FindBarView::OnThemeChanged() {
+  views::View::OnThemeChanged();
   ui::NativeTheme* theme = GetNativeTheme();
   SkColor bg_color =
       SkColorSetA(theme->GetSystemColor(

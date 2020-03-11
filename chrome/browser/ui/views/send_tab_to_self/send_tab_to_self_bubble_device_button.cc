@@ -37,6 +37,7 @@ class IconView : public views::ImageView {
 
   // views::View:
   void OnThemeChanged() override {
+    views::ImageView::OnThemeChanged();
     const SkColor icon_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DefaultIconColor);
     SetImage(

@@ -64,8 +64,7 @@ void ReadFile(const std::string& relative_path,
              "fill='red'/></svg>"},
             {"html/terminal.html", "<script src='/js/terminal.js'></script>"},
             {"js/terminal.js",
-             "chrome.terminalPrivate.openTerminalProcess("
-             "'vmshell', [], () => {})"},
+             "chrome.terminalPrivate.openVmshellProcess([], () => {})"},
         });
     auto it = kTestFiles->find(relative_path);
     if (it != kTestFiles->end()) {

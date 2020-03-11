@@ -211,9 +211,9 @@ class SearchBox extends cr.EventTarget {
     this.element.classList.toggle('has-text', hasText);
     const hasFocusOnInput = this.element.classList.contains('has-cursor');
 
-    // See go/filesapp-tabindex for tabindexes.
-    this.inputElement.tabIndex = (hasText || hasFocusOnInput) ? 14 : -1;
-    this.searchButton.tabIndex = (hasText || hasFocusOnInput) ? -1 : 13;
+    // Focus either the search button or the input.
+    this.inputElement.tabIndex = (hasText || hasFocusOnInput) ? 0 : -1;
+    this.searchButton.tabIndex = (hasText || hasFocusOnInput) ? -1 : 0;
   }
 
   /**

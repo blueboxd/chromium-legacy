@@ -8,7 +8,6 @@
  */
 
 (function() {
-'use strict';
 
 /**
  * The states of the export passwords dialog.
@@ -71,7 +70,7 @@ Polymer({
    */
   passwordManager_: null,
 
-  /** @private {function(!PasswordManagerProxy.PasswordExportProgress):void} */
+  /** @private {?function(!PasswordManagerProxy.PasswordExportProgress):void} */
   onPasswordsFileExportProgressListener_: null,
 
   /**
@@ -173,7 +172,11 @@ Polymer({
     this.progressTaskToken_ = null;
     this.delayedCompletionToken_ = null;
     this.passwordManager_.removePasswordsFileExportProgressListener(
-        this.onPasswordsFileExportProgressListener_);
+        /**
+         * @type {function(!PasswordManagerProxy.PasswordExportProgress):
+         *             void}
+         */
+        (this.onPasswordsFileExportProgressListener_));
     this.showStartDialog_ = false;
     this.showProgressDialog_ = false;
     this.showErrorDialog_ = false;
@@ -225,8 +228,9 @@ Polymer({
       return;
     }
     if (progress.status == ProgressStatus.FAILED_WRITE_FAILED) {
-      this.exportErrorMessage =
-          this.i18n('exportPasswordsFailTitle', progress.folderName);
+      this.exportErrorMessage = this.i18n(
+          'exportPasswordsFailTitle',
+          /** @type {string} */ (progress.folderName));
       this.switchToDialog_(States.ERROR);
       return;
     }

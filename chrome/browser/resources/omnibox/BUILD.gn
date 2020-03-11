@@ -47,6 +47,7 @@ js_library("omnibox_output") {
 js_library("omnibox_popup") {
   deps = [
     "//chrome/browser/ui/webui/omnibox:mojo_bindings_js_library_for_compile",
+    "//ui/webui/resources/cr_components/omnibox:cr_autocomplete_match_list",
   ]
 }
 

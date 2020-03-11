@@ -91,7 +91,8 @@ class BrowserImpl : public Browser {
 
   // Used by tests to specify a callback to listen to changes to visible
   // security state.
-  void SetVisibleSecurityStateChangedCallback(base::OnceClosure closure) {
+  void set_visible_security_state_callback_for_tests(
+      base::OnceClosure closure) {
     visible_security_state_changed_callback_for_tests_ = std::move(closure);
   }
 

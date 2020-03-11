@@ -330,6 +330,7 @@ CrSettingsPasswordsSectionTest.prototype = {
     '../mock_timer.js',
     '../test_browser_proxy.js',
     'passwords_and_autofill_fake_data.js',
+    'passwords_export_test.js',
     'passwords_section_test.js',
     'sync_test_util.js',
     'test_password_manager_proxy.js',
@@ -386,7 +387,10 @@ CrSettingsPasswordsSectionTest_Cros.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../mock_timer.js',
+    '../test_util.js',
     '../test_browser_proxy.js',
+    'passwords_export_test.js',
     'passwords_and_autofill_fake_data.js',
     'passwords_section_test_cros.js',
     'test_password_manager_proxy.js',
@@ -394,7 +398,7 @@ CrSettingsPasswordsSectionTest_Cros.prototype = {
 };
 
 
-TEST_F('CrSettingsPasswordsSectionTest_Cros', 'DISABLED_All', function() {
+TEST_F('CrSettingsPasswordsSectionTest_Cros', 'All', function() {
   mocha.run();
 });
 GEN('#endif  // defined(OS_CHROMEOS)');
@@ -978,7 +982,8 @@ TEST_F(
       mocha.run();
     });
 
-TEST_F('CrSettingsPrivacyPageTest', 'UMALoggingTests', function() {
+// TODO(sauski): Privacy page UMA changing, tests need updating/removal.
+TEST_F('CrSettingsPrivacyPageTest', 'DISABLED_UMALoggingTests', function() {
   settings_privacy_page.registerUMALoggingTests();
   mocha.run();
 });
@@ -1995,7 +2000,6 @@ CrCollapseRadioButtonTest.prototype = {
   browsePreload: 'chrome://settings/privacy_page/collapse_radio_button.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    '../test_util.js',
     'collapse_radio_button_tests.js',
   ]),
 };

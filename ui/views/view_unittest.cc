@@ -5070,6 +5070,7 @@ TEST_F(ViewTest, FocusableAssertions) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void TestView::OnThemeChanged() {
+  View::OnThemeChanged();
   native_theme_ = GetNativeTheme();
 }
 
@@ -5183,6 +5184,7 @@ class ViewThatAddsViewInOnThemeChanged : public View {
 
   // View:
   void OnThemeChanged() override {
+    View::OnThemeChanged();
     on_native_theme_changed_called_ = true;
     GetWidget()->GetRootView()->AddChildView(std::make_unique<View>());
   }

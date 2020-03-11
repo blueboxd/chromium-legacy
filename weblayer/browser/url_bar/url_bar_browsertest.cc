@@ -38,7 +38,8 @@ class UrlBarBrowserTest : public WebLayerBrowserTest {
   GURL abort_url() { return embedded_test_server()->GetURL("/nocontent"); }
 
   void SetVisibleSecurityStateChangedCallback(base::OnceClosure closure) {
-    browser_impl()->SetVisibleSecurityStateChangedCallback(std::move(closure));
+    browser_impl()->set_visible_security_state_callback_for_tests(
+        std::move(closure));
   }
 
  protected:

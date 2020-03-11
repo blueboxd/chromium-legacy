@@ -35,6 +35,7 @@
  *   CAPTIONS: !settings.Route,
  *   CERTIFICATES: !settings.Route,
  *   CHANGE_PICTURE: !settings.Route,
+ *   CHECK_PASSWORDS: !settings.Route,
  *   CHROME_CLEANUP: !settings.Route,
  *   CLEAR_BROWSER_DATA: !settings.Route,
  *   CLOUD_PRINTERS: !settings.Route,

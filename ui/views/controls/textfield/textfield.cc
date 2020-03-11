@@ -1192,6 +1192,7 @@ gfx::Point Textfield::GetKeyboardContextMenuLocation() {
 }
 
 void Textfield::OnThemeChanged() {
+  View::OnThemeChanged();
   gfx::RenderText* render_text = GetRenderText();
   SetColor(GetTextColor());
   UpdateBackgroundColor();

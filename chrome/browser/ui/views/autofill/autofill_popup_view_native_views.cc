@@ -954,6 +954,7 @@ void AutofillPopupRowView::SetSelected(bool is_selected) {
 }
 
 void AutofillPopupRowView::OnThemeChanged() {
+  views::View::OnThemeChanged();
   RefreshStyle();
 }
 
@@ -1027,6 +1028,7 @@ void AutofillPopupViewNativeViews::VisibilityChanged(View* starting_from,
 }
 
 void AutofillPopupViewNativeViews::OnThemeChanged() {
+  AutofillPopupBaseView::OnThemeChanged();
   SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
   // |scroll_view_| and |footer_container_| will be null if there is no body
   // or footer content, respectively.

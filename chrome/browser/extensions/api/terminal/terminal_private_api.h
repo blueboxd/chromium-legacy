@@ -53,6 +53,11 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
 
   ExtensionFunction::ResponseAction Run() override;
 
+  // Open the specified |process_name| with supplied |args|.
+  ExtensionFunction::ResponseAction OpenProcess(
+      const std::string& process_name,
+      std::unique_ptr<std::vector<std::string>> args);
+
  private:
   // Callback for when starting crostini is complete.
   void OnCrostiniRestarted(
@@ -77,6 +82,19 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
                                 const std::vector<std::string>& arguments,
                                 const std::string& user_id_hash);
   void RespondOnUIThread(bool success, const std::string& terminal_id);
+};
+
+// Opens new vmshell process. Returns the new terminal id.
+class TerminalPrivateOpenVmshellProcessFunction
+    : public TerminalPrivateOpenTerminalProcessFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.openVmshellProcess",
+                             TERMINALPRIVATE_OPENVMSHELLPROCESS)
+
+ protected:
+  ~TerminalPrivateOpenVmshellProcessFunction() override;
+
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 // Send input to the terminal process specified by the terminal ID, which is set

@@ -141,7 +141,8 @@ double GetRateForEstimateHoursBetweenEvents(double estimate_hours,
 
 }  // namespace
 
-UserClassifier::UserClassifier(PrefService* pref_service, base::Clock* clock)
+UserClassifier::UserClassifier(PrefService* pref_service,
+                               const base::Clock* clock)
     : pref_service_(pref_service), clock_(clock) {
   // The pref_service_ can be null in tests.
   if (!pref_service_) {

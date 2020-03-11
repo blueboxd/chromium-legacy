@@ -143,6 +143,12 @@ TEST(VectorBackedLinkedList, Erase) {
   list.push_back(5);
   EXPECT_EQ(list.size(), 5u);
 
+  int i = 1;
+  for (auto element : list) {
+    EXPECT_EQ(element, i);
+    i++;
+  }
+
   List::iterator target = list.begin();
   ++target;
   it = list.erase(target);  // list = {1, 3, 4, 5}
@@ -162,6 +168,10 @@ TEST(VectorBackedLinkedList, Erase) {
   EXPECT_EQ(*it, 5);
   ++it;
   EXPECT_TRUE(it == list.end());
+
+  list.push_back(6);
+  EXPECT_EQ(list.front(), 3);
+  EXPECT_EQ(list.back(), 6);
 }
 
 TEST(VectorBackedLinkedList, PopFront) {

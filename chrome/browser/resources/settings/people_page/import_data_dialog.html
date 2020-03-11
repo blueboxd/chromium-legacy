@@ -64,7 +64,12 @@
               aria-label="$i18n{importFromLabel}"
               on-change="onBrowserProfileSelectionChange_">
             <template is="dom-repeat" items="[[browserProfiles_]]">
-              <option value="[[item.index]]">[[item.name]]</option>
+              <option value="[[item.index]]">
+                [[item.name]]
+                <span hidden$="[[!item.profileName]]">
+                  - [[item.profileName]]
+                </span>
+              </option>
             </template>
           </select>
           <div class="description">$i18n{importDescription}</div>

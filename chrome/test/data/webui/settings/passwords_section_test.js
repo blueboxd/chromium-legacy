@@ -4,22 +4,36 @@
 
 /** @fileoverview Runs the Polymer Password Settings tests. */
 
+// clang-format off
+// #import {getToastManager, PasswordManagerImpl} from 'chrome://settings/settings.js';
+// #import {PasswordSectionElementFactory, createExceptionEntry, createPasswordEntry, makeCompromisedCredentialsInfo} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+// #import {runStartExportTest, runExportFlowFastTest, runExportFlowErrorTest, runExportFlowErrorRetryTest, runExportFlowSlowTest, runCancelExportTest, runFireCloseEventAfterExportCompleteTest} from 'chrome://test/settings/passwords_export_test.m.js';
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
+// #import {getSyncAllPrefs, simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// clang-format-on
 
 cr.define('settings_passwords_section', function() {
   /**
    * Helper method that validates a that elements in the password list match
    * the expected data.
-   * @param {!Element} listElement The iron-list element that will be checked.
+   * @param {!Element} passwordsSection The passwords section element that will
+   *     be checked.
    * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList The
    *     expected data.
    * @private
    */
-  function validatePasswordList(listElement, passwordList) {
+  function validatePasswordList(passwordsSection, passwordList) {
+    const listElement = passwordsSection.$.passwordList;
     assertEquals(passwordList.length, listElement.items.length);
     for (let index = 0; index < passwordList.length; ++index) {
-      // The first child is a template, skip and get the real 'first child'.
-      const node = Polymer.dom(listElement).children[index + 1];
-      assert(node);
+      const listItems = passwordsSection.shadowRoot.querySelectorAll(
+          'password-list-item');
+      const node = listItems[index];
+      assertTrue(!!node);
       const passwordInfo = passwordList[index];
       assertEquals(
           passwordInfo.urls.shown, node.$$('#originUrl').textContent.trim());
@@ -71,7 +85,7 @@ cr.define('settings_passwords_section', function() {
    */
   function getFirstPasswordListItem(passwordsSection) {
     // The first child is a template, skip and get the real 'first child'.
-    return Polymer.dom(passwordsSection.$.passwordList).children[1];
+    return passwordsSection.$$('password-list-item');
   }
 
   /**
@@ -141,7 +155,7 @@ cr.define('settings_passwords_section', function() {
       const passwordsSection =
           elementFactory.createPasswordsSection(passwordManager, [], []);
 
-      validatePasswordList(passwordsSection.$.passwordList, []);
+      validatePasswordList(passwordsSection, []);
 
       assertFalse(passwordsSection.$.noPasswordsLabel.hidden);
       assertTrue(passwordsSection.$.savedPasswordsHeaders.hidden);
@@ -166,7 +180,7 @@ cr.define('settings_passwords_section', function() {
           passwordList,
           passwordsSection.$.passwordList.items.map(entry => entry.entry));
 
-      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+      validatePasswordList(passwordsSection, passwordList);
 
       assertTrue(passwordsSection.$.noPasswordsLabel.hidden);
       assertFalse(passwordsSection.$.savedPasswordsHeaders.hidden);
@@ -185,7 +199,7 @@ cr.define('settings_passwords_section', function() {
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, passwordList, []);
 
-      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+      validatePasswordList(passwordsSection, passwordList);
       // Simulate 'longwebsite.com' being removed from the list.
       passwordList.splice(1, 1);
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
@@ -197,7 +211,7 @@ cr.define('settings_passwords_section', function() {
           'longwebsite.com'));
       assertFalse(listContainsUrl(passwordList, 'longwebsite.com'));
 
-      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+      validatePasswordList(passwordsSection, passwordList);
     });
 
     // Test verifies that adding a password will update the elements.
@@ -212,7 +226,7 @@ cr.define('settings_passwords_section', function() {
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, passwordList, []);
 
-      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+      validatePasswordList(passwordsSection, passwordList);
       // Simulate 'website.com' being added to the list.
       passwordList.unshift(autofill_test_util.createPasswordEntry(
           'website.com', 'mario', 70, 2));
@@ -220,7 +234,7 @@ cr.define('settings_passwords_section', function() {
           passwordList);
       Polymer.dom.flush();
 
-      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+      validatePasswordList(passwordsSection, passwordList);
     });
 
     // Test verifies that removing one out of two passwords for the same website
@@ -238,21 +252,21 @@ cr.define('settings_passwords_section', function() {
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
           passwordList);
       Polymer.dom.flush();
-      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+      validatePasswordList(passwordsSection, passwordList);
 
       // Simulate '(website.com, mario)' being removed from the list.
       passwordList.shift();
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
           passwordList);
       Polymer.dom.flush();
-      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+      validatePasswordList(passwordsSection, passwordList);
 
       // Simulate '(website.com, luigi)' being removed from the list as well.
       passwordList = [];
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
           passwordList);
       Polymer.dom.flush();
-      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+      validatePasswordList(passwordsSection, passwordList);
     });
 
     // Test verifies that pressing the 'remove' button will trigger a remove
@@ -271,7 +285,7 @@ cr.define('settings_passwords_section', function() {
           passwordManager, passwordList, []);
 
       const firstNode = getFirstPasswordListItem(passwordsSection);
-      assert(firstNode);
+      assertTrue(!!firstNode);
       const firstPassword = passwordList[0];
 
       passwordManager.onRemoveSavedPassword = function(id) {
@@ -341,7 +355,7 @@ cr.define('settings_passwords_section', function() {
         autofill_test_util.createPasswordEntry('six-show.com', 'one', 6),
       ];
 
-      validatePasswordList(passwordsSection.$.passwordList, expectedList);
+      validatePasswordList(passwordsSection, expectedList);
     });
 
     test('verifyFilterPasswordsWithRemoval', function() {
@@ -366,7 +380,7 @@ cr.define('settings_passwords_section', function() {
         autofill_test_util.createPasswordEntry('six-show.com', 'one', 6, 5),
       ];
 
-      validatePasswordList(passwordsSection.$.passwordList, expectedList);
+      validatePasswordList(passwordsSection, expectedList);
 
       // Simulate removal of three.com/show
       passwordList.splice(2, 1);
@@ -380,7 +394,7 @@ cr.define('settings_passwords_section', function() {
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
           passwordList);
       Polymer.dom.flush();
-      validatePasswordList(passwordsSection.$.passwordList, expectedList);
+      validatePasswordList(passwordsSection, expectedList);
     });
 
     test('verifyFilterPasswordExceptions', function() {
@@ -647,7 +661,7 @@ cr.define('settings_passwords_section', function() {
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, passwordList, []);
 
-      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+      validatePasswordList(passwordsSection, passwordList);
       assertFalse(passwordsSection.$.menuExportPassword.hidden);
       done();
     });
@@ -659,7 +673,7 @@ cr.define('settings_passwords_section', function() {
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, passwordList, []);
 
-      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+      validatePasswordList(passwordsSection, passwordList);
       assertTrue(passwordsSection.$.menuExportPassword.hidden);
       done();
     });
@@ -682,197 +696,65 @@ cr.define('settings_passwords_section', function() {
       passwordsSection.$.menuExportPassword.click();
     });
 
-    // Test that tapping "Export passwords..." notifies the browser.
-    test('startExport', function(done) {
-      const exportDialog =
-          elementFactory.createExportPasswordsDialog(passwordManager);
-
-      passwordManager.exportPasswords = (callback) => {
-        callback();
-        done();
-      };
-
-      exportDialog.$$('#exportPasswordsButton').click();
-    });
-
-    // Test the export flow. If exporting is fast, we should skip the
-    // in-progress view altogether.
-    test('exportFlowFast', function(done) {
-      const exportDialog =
-          elementFactory.createExportPasswordsDialog(passwordManager);
-      const progressCallback = passwordManager.progressCallback;
-
-      // Use this to freeze the delayed progress bar and avoid flakiness.
-      const mockTimer = new MockTimer();
-      mockTimer.install();
-
-      assertTrue(exportDialog.$$('#dialog_start').open);
-      exportDialog.$$('#exportPasswordsButton').click();
-      assertTrue(exportDialog.$$('#dialog_start').open);
-      progressCallback(
-          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
-      progressCallback(
-          {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
-
-      Polymer.dom.flush();
-      // When we are done, the export dialog closes completely.
-      assertFalse(!!exportDialog.$$('#dialog_start'));
-      assertFalse(!!exportDialog.$$('#dialog_error'));
-      assertFalse(!!exportDialog.$$('#dialog_progress'));
-      done();
-
-      mockTimer.uninstall();
-    });
-
-    // The error view is shown when an error occurs.
-    test('exportFlowError', function(done) {
-      const exportDialog =
-          elementFactory.createExportPasswordsDialog(passwordManager);
-      const progressCallback = passwordManager.progressCallback;
-
-      // Use this to freeze the delayed progress bar and avoid flakiness.
-      const mockTimer = new MockTimer();
-      mockTimer.install();
-
-      assertTrue(exportDialog.$$('#dialog_start').open);
-      exportDialog.$$('#exportPasswordsButton').click();
-      assertTrue(exportDialog.$$('#dialog_start').open);
-      progressCallback(
-          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
-      progressCallback({
-        status:
-            chrome.passwordsPrivate.ExportProgressStatus.FAILED_WRITE_FAILED,
-        folderName: 'tmp',
+    if (!cr.isChromeOS) {
+      // Test that tapping "Export passwords..." notifies the browser.
+      test('startExport', function(done) {
+        const exportDialog =
+            elementFactory.createExportPasswordsDialog(passwordManager);
+        export_passwords_tests.runStartExportTest(
+            exportDialog, passwordManager, done);
       });
 
-      Polymer.dom.flush();
-      // Test that the error dialog is shown.
-      assertTrue(exportDialog.$$('#dialog_error').open);
-      // Test that the error dialog can be dismissed.
-      exportDialog.$$('#cancelErrorButton').click();
-      Polymer.dom.flush();
-      assertFalse(!!exportDialog.$$('#dialog_error'));
-      done();
-
-      mockTimer.uninstall();
-    });
-
-    // The error view allows to retry.
-    test('exportFlowErrorRetry', function(done) {
-      const exportDialog =
-          elementFactory.createExportPasswordsDialog(passwordManager);
-      const progressCallback = passwordManager.progressCallback;
-      // Use this to freeze the delayed progress bar and avoid flakiness.
-      const mockTimer = new MockTimer();
-
-      new Promise(resolve => {
-        mockTimer.install();
-
-        passwordManager.exportPasswords = resolve;
-        exportDialog.$$('#exportPasswordsButton').click();
-      }).then(() => {
-        // This wait allows the BlockingRequestManager to process the click if
-        // the test is running in ChromeOS.
-        progressCallback(
-            {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
-        progressCallback({
-          status:
-              chrome.passwordsPrivate.ExportProgressStatus.FAILED_WRITE_FAILED,
-          folderName: 'tmp',
-        });
-
-        Polymer.dom.flush();
-        // Test that the error dialog is shown.
-        assertTrue(exportDialog.$$('#dialog_error').open);
-        // Test that clicking retry will start a new export.
-        passwordManager.exportPasswords = (callback) => {
-          callback();
-          done();
-        };
-        exportDialog.$$('#tryAgainButton').click();
-
-        mockTimer.uninstall();
+      // Test the export flow. If exporting is fast, we should skip the
+      // in-progress view altogether.
+      test('exportFlowFast', function(done) {
+        const exportDialog =
+            elementFactory.createExportPasswordsDialog(passwordManager);
+        export_passwords_tests.runExportFlowFastTest(
+            exportDialog, passwordManager, done);
       });
-    });
 
-    // Test the export flow. If exporting is slow, Chrome should show the
-    // in-progress dialog for at least 1000ms.
-    test('exportFlowSlow', function(done) {
-      const exportDialog =
-          elementFactory.createExportPasswordsDialog(passwordManager);
-      const progressCallback = passwordManager.progressCallback;
+      // The error view is shown when an error occurs.
+      test('exportFlowError', function(done) {
+        const exportDialog =
+            elementFactory.createExportPasswordsDialog(passwordManager);
+        export_passwords_tests.runExportFlowErrorTest(
+            exportDialog, passwordManager, done);
+      });
 
-      const mockTimer = new MockTimer();
-      mockTimer.install();
+      // The error view allows to retry.
+      test('exportFlowErrorRetry', function(done) {
+        const exportDialog =
+            elementFactory.createExportPasswordsDialog(passwordManager);
+        export_passwords_tests.runExportFlowErrorRetryTest(
+            exportDialog, passwordManager, done);
+      });
 
-      // The initial dialog remains open for 100ms after export enters the
-      // in-progress state.
-      assertTrue(exportDialog.$$('#dialog_start').open);
-      exportDialog.$$('#exportPasswordsButton').click();
-      assertTrue(exportDialog.$$('#dialog_start').open);
-      progressCallback(
-          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
-      assertTrue(exportDialog.$$('#dialog_start').open);
+      // Test the export flow. If exporting is slow, Chrome should show the
+      // in-progress dialog for at least 1000ms.
+      test('exportFlowSlow', function(done) {
+        const exportDialog =
+            elementFactory.createExportPasswordsDialog(passwordManager);
+        export_passwords_tests.runExportFlowSlowTest(
+            exportDialog, passwordManager, done);
+      });
 
-      // After 100ms of not having completed, the dialog switches to the
-      // progress bar. Chrome will continue to show the progress bar for 1000ms,
-      // despite a completion event.
-      mockTimer.tick(99);
-      assertTrue(exportDialog.$$('#dialog_start').open);
-      mockTimer.tick(1);
-      Polymer.dom.flush();
-      assertTrue(exportDialog.$$('#dialog_progress').open);
-      progressCallback(
-          {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
-      assertTrue(exportDialog.$$('#dialog_progress').open);
+      // Test that canceling the dialog while exporting will also cancel the
+      // export on the browser.
+      test('cancelExport', function(done) {
+        const exportDialog =
+            elementFactory.createExportPasswordsDialog(passwordManager);
+        export_passwords_tests.runCancelExportTest(
+            exportDialog, passwordManager, done);
+      });
 
-      // After 1000ms, Chrome will display the completion event.
-      mockTimer.tick(999);
-      assertTrue(exportDialog.$$('#dialog_progress').open);
-      mockTimer.tick(1);
-      Polymer.dom.flush();
-      // On SUCCEEDED the dialog closes completely.
-      assertFalse(!!exportDialog.$$('#dialog_progress'));
-      assertFalse(!!exportDialog.$$('#dialog_start'));
-      assertFalse(!!exportDialog.$$('#dialog_error'));
-      done();
-
-      mockTimer.uninstall();
-    });
-
-    // Test that canceling the dialog while exporting will also cancel the
-    // export on the browser.
-    test('cancelExport', function(done) {
-      const exportDialog =
-          elementFactory.createExportPasswordsDialog(passwordManager);
-      const progressCallback = passwordManager.progressCallback;
-
-      passwordManager.cancelExportPasswords = () => {
-        done();
-      };
-
-      const mockTimer = new MockTimer();
-      mockTimer.install();
-
-      // The initial dialog remains open for 100ms after export enters the
-      // in-progress state.
-      exportDialog.$$('#exportPasswordsButton').click();
-      progressCallback(
-          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
-      // The progress bar only appears after 100ms.
-      mockTimer.tick(100);
-      Polymer.dom.flush();
-      assertTrue(exportDialog.$$('#dialog_progress').open);
-      exportDialog.$$('#cancel_progress_button').click();
-
-      Polymer.dom.flush();
-      // The dialog should be dismissed entirely.
-      assertFalse(!!exportDialog.$$('#dialog_progress'));
-      assertFalse(!!exportDialog.$$('#dialog_start'));
-      assertFalse(!!exportDialog.$$('#dialog_error'));
-
-      mockTimer.uninstall();
-    });
+      test('fires close event after export complete', () => {
+        const exportDialog =
+            elementFactory.createExportPasswordsDialog(passwordManager);
+        return export_passwords_tests.runFireCloseEventAfterExportCompleteTest(
+            exportDialog, passwordManager);
+      });
+    }
 
     // The export dialog is dismissable.
     test('exportDismissable', function(done) {
@@ -893,19 +775,6 @@ cr.define('settings_passwords_section', function() {
       const wait = test_util.eventToPromise(
           'passwords-export-dialog-close', exportDialog);
       exportDialog.$$('#cancelButton').click();
-      return wait;
-    });
-
-    test('fires close event after export complete', () => {
-      const exportDialog =
-          elementFactory.createExportPasswordsDialog(passwordManager);
-      const wait = test_util.eventToPromise(
-          'passwords-export-dialog-close', exportDialog);
-      exportDialog.$$('#exportPasswordsButton').click();
-      passwordManager.progressCallback(
-          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
-      passwordManager.progressCallback(
-          {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
       return wait;
     });
 
@@ -971,4 +840,5 @@ cr.define('settings_passwords_section', function() {
           });
     });
   });
+  // #cr_define_end
 });

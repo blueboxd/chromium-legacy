@@ -717,33 +717,49 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("sortColumns"),
                       TestCase("sortColumns").InGuestMode()));
 
-// TODO(adanilo): Enable tabindex for FilesNg tests when breadcrumbs focus is
-// sorted.
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     TabIndex, /* tab_index.js: */
     FilesAppBrowserTest,
     ::testing::Values(
+        TestCase("tabindexSearchBoxFocus").FilesNg(),
         TestCase("tabindexSearchBoxFocus").DisableFilesNg(),
         TestCase("tabindexFocusBody").DisableFilesNg(),
         TestCase("tabindexFocusBody").FilesNg(),
         TestCase("tabindexFocus").DisableFilesNg(),
+        TestCase("tabindexFocusDownloads").FilesNg(),
         TestCase("tabindexFocusDownloads").DisableFilesNg(),
+        TestCase("tabindexFocusDownloads").InGuestMode().FilesNg(),
         TestCase("tabindexFocusDownloads").InGuestMode().DisableFilesNg(),
+        // TestCase("tabindexFocusBreadcrumbBackground").FilesNg(),
         TestCase("tabindexFocusBreadcrumbBackground").DisableFilesNg(),
+        TestCase("tabindexFocusDirectorySelected").FilesNg(),
         TestCase("tabindexFocusDirectorySelected").DisableFilesNg(),
+        TestCase("tabindexOpenDialogDownloadsFilesNg").WithBrowser().FilesNg(),
         TestCase("tabindexOpenDialogDownloads").WithBrowser().DisableFilesNg(),
         TestCase("tabindexOpenDialogDownloads")
             .WithBrowser()
             .InGuestMode()
             .DisableFilesNg(),
+        TestCase("tabindexOpenDialogDownloadsFilesNg")
+            .WithBrowser()
+            .InGuestMode()
+            .FilesNg(),
+        TestCase("tabindexSaveFileDialogDriveFilesNg").WithBrowser().FilesNg(),
         TestCase("tabindexSaveFileDialogDrive").WithBrowser().DisableFilesNg(),
+        TestCase("tabindexSaveFileDialogDownloadsFilesNg")
+            .WithBrowser()
+            .FilesNg(),
         TestCase("tabindexSaveFileDialogDownloads")
             .WithBrowser()
             .DisableFilesNg(),
         TestCase("tabindexSaveFileDialogDownloads")
             .WithBrowser()
             .InGuestMode()
-            .DisableFilesNg()));
+            .DisableFilesNg(),
+        TestCase("tabindexSaveFileDialogDownloadsFilesNg")
+            .WithBrowser()
+            .InGuestMode()
+            .FilesNg()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FileDialog, /* file_dialog.js */

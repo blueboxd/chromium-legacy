@@ -17,6 +17,7 @@ source_set("banners") {
     "//base",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/colors",
     "//ui/base",
@@ -28,6 +29,7 @@ source_set("public") {
   sources = [
     "infobar_banner_constants.h",
     "infobar_banner_constants.mm",
+    "infobar_banner_container.h",
     "infobar_banner_interaction_delegate.h",
     "infobar_banner_presentation_state.h",
   ]

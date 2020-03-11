@@ -10,7 +10,7 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 
-#include "base/clang_coverage_buildflags.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/debug/activity_tracker.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -23,8 +23,8 @@
 #include <sys/event.h>
 #endif
 
-#if BUILDFLAG(CLANG_COVERAGE)
-#include "base/test/clang_coverage.h"
+#if BUILDFLAG(CLANG_PROFILING)
+#include "base/test/clang_profiling.h"
 #endif
 
 namespace {
@@ -276,8 +276,8 @@ bool Process::CanBackgroundProcesses() {
 
 // static
 void Process::TerminateCurrentProcessImmediately(int exit_code) {
-#if BUILDFLAG(CLANG_COVERAGE)
-  WriteClangCoverageProfile();
+#if BUILDFLAG(CLANG_PROFILING)
+  WriteClangProfilingProfile();
 #endif
   _exit(exit_code);
 }

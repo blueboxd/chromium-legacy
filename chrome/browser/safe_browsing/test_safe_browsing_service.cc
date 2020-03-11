@@ -89,9 +89,11 @@ void TestSafeBrowsingService::SetV4ProtocolConfig(
 bool TestSafeBrowsingService::CanCreateDatabaseManager() {
   return !use_v4_local_db_manager_;
 }
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 bool TestSafeBrowsingService::CanCreateDownloadProtectionService() {
   return false;
 }
+#endif
 bool TestSafeBrowsingService::CanCreateIncidentReportingService() {
   return true;
 }
@@ -112,11 +114,13 @@ SafeBrowsingDatabaseManager* TestSafeBrowsingService::CreateDatabaseManager() {
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)
 }
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 DownloadProtectionService*
 TestSafeBrowsingService::CreateDownloadProtectionService() {
   NOTIMPLEMENTED();
   return nullptr;
 }
+#endif
 IncidentReportingService*
 TestSafeBrowsingService::CreateIncidentReportingService() {
 #if BUILDFLAG(FULL_SAFE_BROWSING)

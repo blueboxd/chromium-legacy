@@ -184,6 +184,7 @@ void DialogClientView::ViewHierarchyChanged(
 }
 
 void DialogClientView::OnThemeChanged() {
+  ClientView::OnThemeChanged();
   // The old dialog style needs an explicit background color, while the new
   // dialog style simply inherits the bubble's frame view color.
   const DialogDelegate* dialog = GetDialogDelegate();

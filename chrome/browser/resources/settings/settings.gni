@@ -6,12 +6,16 @@
 # targets in Settings.
 settings_namespace_rewrites = [
   "cr_slider.SliderTick|SliderTick",
+  "settings.address.CountryDetailManager|CountryDetailManager",
   "settings.AboutPageBrowserProxy|AboutPageBrowserProxy",
   "settings.AppearanceBrowserProxy|AppearanceBrowserProxy",
+  "settings.AutofillManager|AutofillManager",
+  "settings.BlockingRequestManager|BlockingRequestManager",
   "settings.CaptionsBrowserProxy|CaptionsBrowserProxy",
   "settings.ChromeCleanupProxy|ChromeCleanupProxy",
   "settings.ChromeCleanupRemovalListItem|ChromeCleanupRemovalListItem",
   "settings.ClearBrowsingDataBrowserProxy|ClearBrowsingDataBrowserProxy",
+  "settings.CreditCardEntry|CreditCardEntry",
   "settings.DefaultBrowserBrowserProxy|DefaultBrowserBrowserProxy",
   "settings.DownloadsBrowserProxy|DownloadsBrowserProxy",
   "settings.EDIT_STARTUP_URL_EVENT|EDIT_STARTUP_URL_EVENT",
@@ -26,8 +30,11 @@ settings_namespace_rewrites = [
   "settings.MainPageBehavior|MainPageBehavior",
   "settings.MinimumRoutes|MinimumRoutes",
   "settings.OnStartupBrowserProxy|OnStartupBrowserProxy",
+  "settings.OpenWindowProxy|OpenWindowProxy",
   "settings.PageStatus|PageStatus",
+  "settings.PaymentsManager|PaymentsManager",
   "settings.pageVisibility|pageVisibility",
+  "settings.PluralStringProxy|PluralStringProxy",
   "Settings.PrefUtil.prefToString|prefToString",
   "Settings.PrefUtil.stringToPrefValue|stringToPrefValue",
   "settings.PrintingBrowserProxy|PrintingBrowserProxy",
@@ -40,6 +47,7 @@ settings_namespace_rewrites = [
   "settings.StartupUrlsPageBrowserProxy|StartupUrlsPageBrowserProxy",
   "settings.StatusAction|StatusAction",
   "settings.SyncBrowserProxy|SyncBrowserProxy",
+  "settings.SyncPrefs|SyncPrefs",
   "settings.SyncStatus|SyncStatus",
   "settings.SystemPageBrowserProxy|SystemPageBrowserProxy",
   "settings.RouteObserverBehavior|RouteObserverBehavior",
@@ -50,6 +58,9 @@ settings_namespace_rewrites = [
 ]
 
 settings_auto_imports = [
+  "chrome/browser/resources/settings/autofill_page/blocking_request_manager.html|BlockingRequestManager",
+  "chrome/browser/resources/settings/autofill_page/credit_card_list_entry.html|CreditCardEntry",
+  "chrome/browser/resources/settings/autofill_page/show_password_behavior.html|ShowPasswordBehavior",
   "chrome/browser/resources/settings/controls/pref_control_behavior.html|PrefControlBehavior",
   "chrome/browser/resources/settings/controls/settings_boolean_control_behavior.html|SettingsBooleanControlBehavior",
   "chrome/browser/resources/settings/downloads_page/downloads_browser_proxy.html|DownloadsBrowserProxy,DownloadsBrowserProxyImpl",

@@ -113,12 +113,13 @@ base::TimeDelta GetTabLoadTimeout(const base::TimeDelta& default_timeout) {
 
 int GetNumOldestTabsToScoreWithTabRanker() {
   return base::GetFieldTrialParamByFeatureAsInt(
-      features::kTabRanker, "number_of_oldest_tabs_to_score_with_TabRanker", 0);
+      features::kTabRanker, "number_of_oldest_tabs_to_score_with_TabRanker",
+      50);
 }
 
 int GetProcessTypeToScoreWithTabRanker() {
   return base::GetFieldTrialParamByFeatureAsInt(
-      features::kTabRanker, "process_type_of_tabs_to_score_with_TabRanker", 4);
+      features::kTabRanker, "process_type_of_tabs_to_score_with_TabRanker", 3);
 }
 
 int GetNumOldestTabsToLogWithTabRanker() {

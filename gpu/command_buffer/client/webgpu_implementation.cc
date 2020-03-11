@@ -603,6 +603,42 @@ bool WebGPUImplementation::RequestDeviceAsync(
 #endif
 }
 
+void WebGPUImplementation::AssociateMailbox(GLuint64 device_client_id,
+                                            GLuint device_generation,
+                                            GLuint id,
+                                            GLuint generation,
+                                            GLuint usage,
+                                            const GLbyte* mailbox) {
+#if BUILDFLAG(USE_DAWN)
+  // Flush previous Dawn commands as they may manipulate texture object IDs
+  // and need to be resolved prior to the AssociateMailbox command. Otherwise
+  // the service side might not know, for example that the previous texture
+  // using that ID has been released.
+  WebGPUCommandSerializer* command_serializer =
+      GetCommandSerializerWithDeviceClientID(device_client_id);
+  DCHECK(command_serializer);
+  command_serializer->Flush();
+
+  helper_->AssociateMailboxImmediate(device_client_id, device_generation, id,
+                                     generation, usage, mailbox);
+#endif
+}
+
+void WebGPUImplementation::DissociateMailbox(GLuint64 device_client_id,
+                                             GLuint texture_id,
+                                             GLuint texture_generation) {
+#if BUILDFLAG(USE_DAWN)
+  // Flush previous Dawn commands that might be rendering to the texture, prior
+  // to Dissociating the shared image from that texture.
+  WebGPUCommandSerializer* command_serializer =
+      GetCommandSerializerWithDeviceClientID(device_client_id);
+  DCHECK(command_serializer);
+  command_serializer->Flush();
+
+  helper_->DissociateMailbox(device_client_id, texture_id, texture_generation);
+#endif
+}
+
 void WebGPUImplementation::RemoveDevice(DawnDeviceClientID device_client_id) {
 #if BUILDFLAG(USE_DAWN)
   auto it = command_serializers_.find(device_client_id);

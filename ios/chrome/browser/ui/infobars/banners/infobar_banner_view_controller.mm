@@ -9,7 +9,9 @@
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_container.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -94,6 +96,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 @end
 
 @implementation InfobarBannerViewController
+// Synthesized from InfobarBannerContained.
+@synthesize infobarBannerContainer = _infobarBannerContainer;
+// Synthesized from InfobarBannerInteractable.
 @synthesize interactionDelegate = _interactionDelegate;
 
 - (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate
@@ -315,7 +320,14 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 
 - (void)viewDidDisappear:(BOOL)animated {
   [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Dismissed];
-  [self.delegate infobarBannerWasDismissed];
+  // If the delegate exists at the time of dismissal it should handle the
+  // dismissal cleanup. Otherwise the BannerContainer needs to be informed that
+  // this banner was dismissed in case it needs to present a queued one.
+  if (self.delegate) {
+    [self.delegate infobarBannerWasDismissed];
+  } else {
+    [self.infobarBannerContainer infobarBannerFinishedPresenting];
+  }
   [super viewDidDisappear:animated];
 }
 
@@ -368,6 +380,15 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   _presentsModal = presentsModal;
   self.openModalButton.hidden = !presentsModal;
   self.view.accessibilityCustomActions = [self accessibilityActions];
+}
+
+- (void)setInfobarBannerContainer:
+    (id<InfobarBannerContainer>)infobarBannerContainer {
+  _infobarBannerContainer = infobarBannerContainer;
+  // infobarBannerContainer should only be set when the banner by the
+  // InfobarContainerCoordinator and not Overlays. Once we migrate to Overlays
+  // InfobarBannerContainer shouldn't be necessary.
+  DCHECK(!IsInfobarOverlayUIEnabled());
 }
 
 #pragma mark - Private Methods

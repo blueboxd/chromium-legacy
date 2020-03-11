@@ -1,0 +1,219 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// clang-format off
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {MockTimer} from 'chrome://test/mock_timer.m.js';
+// clang-format on
+
+cr.define('export_passwords_tests', function() {
+  // Test that tapping "Export passwords..." notifies the browser.
+  /* #export */ function runStartExportTest(
+      exportDialog, passwordManager, done) {
+    passwordManager.exportPasswords = (callback) => {
+      callback();
+      done();
+    };
+
+    exportDialog.$$('#exportPasswordsButton').click();
+  }
+
+  // Test the export flow. If exporting is fast, we should skip the
+  // in-progress view altogether.
+  /* #export */ function runExportFlowFastTest(
+      exportDialog, passwordManager, done) {
+    const progressCallback = passwordManager.progressCallback;
+
+    // Use this to freeze the delayed progress bar and avoid flakiness.
+    const mockTimer = new MockTimer();
+    mockTimer.install();
+
+    assertTrue(exportDialog.$$('#dialog_start').open);
+    exportDialog.$$('#exportPasswordsButton').click();
+    assertTrue(exportDialog.$$('#dialog_start').open);
+    progressCallback(
+        {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+    progressCallback(
+        {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
+
+    Polymer.dom.flush();
+    // When we are done, the export dialog closes completely.
+    assertFalse(!!exportDialog.$$('#dialog_start'));
+    assertFalse(!!exportDialog.$$('#dialog_error'));
+    assertFalse(!!exportDialog.$$('#dialog_progress'));
+    done();
+
+    mockTimer.uninstall();
+  }
+
+  // The error view is shown when an error occurs.
+  /* #export */ function runExportFlowErrorTest(
+      exportDialog, passwordManager, done) {
+    const progressCallback = passwordManager.progressCallback;
+
+    // Use this to freeze the delayed progress bar and avoid flakiness.
+    const mockTimer = new MockTimer();
+    mockTimer.install();
+
+    assertTrue(exportDialog.$$('#dialog_start').open);
+    exportDialog.$$('#exportPasswordsButton').click();
+    assertTrue(exportDialog.$$('#dialog_start').open);
+    progressCallback(
+        {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+    progressCallback({
+      status: chrome.passwordsPrivate.ExportProgressStatus.FAILED_WRITE_FAILED,
+      folderName: 'tmp',
+    });
+
+    Polymer.dom.flush();
+    // Test that the error dialog is shown.
+    assertTrue(exportDialog.$$('#dialog_error').open);
+    // Test that the error dialog can be dismissed.
+    exportDialog.$$('#cancelErrorButton').click();
+    Polymer.dom.flush();
+    assertFalse(!!exportDialog.$$('#dialog_error'));
+    done();
+
+    mockTimer.uninstall();
+  }
+
+  // The error view allows to retry.
+  /* #export */ function runExportFlowErrorRetryTest(
+      exportDialog, passwordManager, done) {
+    const progressCallback = passwordManager.progressCallback;
+    // Use this to freeze the delayed progress bar and avoid flakiness.
+    const mockTimer = new MockTimer();
+
+    new Promise(resolve => {
+      mockTimer.install();
+
+      passwordManager.exportPasswords = resolve;
+      exportDialog.$$('#exportPasswordsButton').click();
+    }).then(() => {
+      // This wait allows the BlockingRequestManager to process the click if
+      // the test is running in ChromeOS.
+      progressCallback(
+          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+      progressCallback({
+        status:
+            chrome.passwordsPrivate.ExportProgressStatus.FAILED_WRITE_FAILED,
+        folderName: 'tmp',
+      });
+
+      Polymer.dom.flush();
+      // Test that the error dialog is shown.
+      assertTrue(exportDialog.$$('#dialog_error').open);
+      // Test that clicking retry will start a new export.
+      passwordManager.exportPasswords = (callback) => {
+        callback();
+        done();
+      };
+      exportDialog.$$('#tryAgainButton').click();
+
+      mockTimer.uninstall();
+    });
+  }
+
+  // Test the export flow. If exporting is slow, Chrome should show the
+  // in-progress dialog for at least 1000ms.
+  /* #export */ function runExportFlowSlowTest(
+      exportDialog, passwordManager, done) {
+    const progressCallback = passwordManager.progressCallback;
+
+    const mockTimer = new MockTimer();
+    mockTimer.install();
+
+    // The initial dialog remains open for 100ms after export enters the
+    // in-progress state.
+    assertTrue(exportDialog.$$('#dialog_start').open);
+    exportDialog.$$('#exportPasswordsButton').click();
+    assertTrue(exportDialog.$$('#dialog_start').open);
+    progressCallback(
+        {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+    assertTrue(exportDialog.$$('#dialog_start').open);
+
+    // After 100ms of not having completed, the dialog switches to the
+    // progress bar. Chrome will continue to show the progress bar for 1000ms,
+    // despite a completion event.
+    mockTimer.tick(99);
+    assertTrue(exportDialog.$$('#dialog_start').open);
+    mockTimer.tick(1);
+    Polymer.dom.flush();
+    assertTrue(exportDialog.$$('#dialog_progress').open);
+    progressCallback(
+        {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
+    assertTrue(exportDialog.$$('#dialog_progress').open);
+
+    // After 1000ms, Chrome will display the completion event.
+    mockTimer.tick(999);
+    assertTrue(exportDialog.$$('#dialog_progress').open);
+    mockTimer.tick(1);
+    Polymer.dom.flush();
+    // On SUCCEEDED the dialog closes completely.
+    assertFalse(!!exportDialog.$$('#dialog_progress'));
+    assertFalse(!!exportDialog.$$('#dialog_start'));
+    assertFalse(!!exportDialog.$$('#dialog_error'));
+    done();
+
+    mockTimer.uninstall();
+  }
+
+  // Test that canceling the dialog while exporting will also cancel the
+  // export on the browser.
+  /* #export */ function runCancelExportTest(
+      exportDialog, passwordManager, done) {
+    const progressCallback = passwordManager.progressCallback;
+
+    passwordManager.cancelExportPasswords = () => {
+      done();
+    };
+
+    const mockTimer = new MockTimer();
+    mockTimer.install();
+
+    // The initial dialog remains open for 100ms after export enters the
+    // in-progress state.
+    exportDialog.$$('#exportPasswordsButton').click();
+    progressCallback(
+        {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+    // The progress bar only appears after 100ms.
+    mockTimer.tick(100);
+    Polymer.dom.flush();
+    assertTrue(exportDialog.$$('#dialog_progress').open);
+    exportDialog.$$('#cancel_progress_button').click();
+
+    Polymer.dom.flush();
+    // The dialog should be dismissed entirely.
+    assertFalse(!!exportDialog.$$('#dialog_progress'));
+    assertFalse(!!exportDialog.$$('#dialog_start'));
+    assertFalse(!!exportDialog.$$('#dialog_error'));
+
+    mockTimer.uninstall();
+  }
+
+  /* #export */ function runFireCloseEventAfterExportCompleteTest(
+      exportDialog, passwordManager) {
+    const wait =
+        test_util.eventToPromise('passwords-export-dialog-close', exportDialog);
+    exportDialog.$$('#exportPasswordsButton').click();
+    passwordManager.progressCallback(
+        {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+    passwordManager.progressCallback(
+        {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
+    return wait;
+  }
+
+  // #cr_define_end
+  return {
+    runStartExportTest: runStartExportTest,
+    runExportFlowFastTest: runExportFlowFastTest,
+    runExportFlowErrorTest: runExportFlowErrorTest,
+    runExportFlowErrorRetryTest: runExportFlowErrorRetryTest,
+    runExportFlowSlowTest: runExportFlowSlowTest,
+    runCancelExportTest: runCancelExportTest,
+    runFireCloseEventAfterExportCompleteTest:
+        runFireCloseEventAfterExportCompleteTest,
+  };
+});

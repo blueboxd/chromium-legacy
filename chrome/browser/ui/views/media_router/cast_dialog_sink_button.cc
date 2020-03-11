@@ -47,6 +47,7 @@ class SinkIssueIconView : public views::ImageView {
 
   // views::ImageView:
   void OnThemeChanged() override {
+    views::ImageView::OnThemeChanged();
     const SkColor icon_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DefaultIconColor);
     SetImage(gfx::CreateVectorIcon(::vector_icons::kInfoOutlineIcon,

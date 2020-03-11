@@ -24,8 +24,8 @@ FeedStream::FeedStream(
     Delegate* delegate,
     PrefService* profile_prefs,
     FeedNetwork* feed_network,
-    base::Clock* clock,
-    base::TickClock* tick_clock,
+    const base::Clock* clock,
+    const base::TickClock* tick_clock,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : refresh_task_scheduler_(refresh_task_scheduler),
       stream_event_observer_(stream_event_observer),

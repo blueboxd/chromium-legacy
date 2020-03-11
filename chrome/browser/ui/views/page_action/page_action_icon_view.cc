@@ -175,9 +175,7 @@ const gfx::VectorIcon& PageActionIconView::GetVectorIconBadge() const {
 void PageActionIconView::OnTouchUiChanged() {
   icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   UpdateIconImage();
-  UpdateBorder();
-  if (GetVisible())
-    PreferredSizeChanged();
+  IconLabelBubbleView::OnTouchUiChanged();
 }
 
 const char* PageActionIconView::GetClassName() const {

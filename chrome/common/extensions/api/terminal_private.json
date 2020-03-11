@@ -53,9 +53,38 @@
         ]
       },
       {
+        "name": "openVmshellProcess",
+        "type": "function",
+        "description": "Starts new vmshell process.",
+        "parameters": [
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "name": "args",
+            "optional": true,
+            "description": "Command line arguments to pass to vmshell."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": false,
+            "description": "Returns id of the launched vmshell process. If no process was launched returns -1.",
+            "parameters": [
+              {
+                "name": "id",
+                "description": "Id of the launched vmshell process.",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "closeTerminalProcess",
         "type": "function",
-        "description": "Closes previously opened process.",
+        "description": "Closes previously opened process from either openTerminalProcess or openVmshellProcess.",
         "parameters": [
           {
             "name": "id",

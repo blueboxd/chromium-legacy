@@ -332,6 +332,7 @@ void DownloadShelfView::AddedToWidget() {
 }
 
 void DownloadShelfView::OnThemeChanged() {
+  views::AccessiblePaneView::OnThemeChanged();
   UpdateColorsFromTheme();
 }
 

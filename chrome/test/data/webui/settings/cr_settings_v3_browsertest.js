@@ -9,6 +9,7 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "services/network/public/cpp/features.h"');
 
 GEN('#include "build/branding_buildflags.h"');
+GEN('#include "components/autofill/core/common/autofill_features.h"');
 
 /** Test fixture for shared Polymer 3 elements. */
 // eslint-disable-next-line no-var
@@ -491,5 +492,112 @@ GEN('#else');
 GEN('#define MAYBE_MainPageV3 MainPageV3');
 GEN('#endif');
 TEST_F('CrSettingsMainPageV3Test', 'MAYBE_MainPageV3', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsAutofillPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/autofill_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsAutofillPageV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsAutofillSectionCompanyEnabledV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/autofill_section_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['autofill::features::kAutofillEnableCompanyName']};
+  }
+};
+
+TEST_F('CrSettingsAutofillSectionCompanyEnabledV3Test', 'All', function() {
+  // Use 'EnableCompanyName' to inform tests that the feature is enabled.
+  const loadTimeDataOverride = {};
+  loadTimeDataOverride['EnableCompanyName'] = true;
+  loadTimeData.overrideValues(loadTimeDataOverride);
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsAutofillSectionCompanyDisabledV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/autofill_section_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {disabled: ['autofill::features::kAutofillEnableCompanyName']};
+  }
+};
+
+TEST_F('CrSettingsAutofillSectionCompanyDisabledV3Test', 'All', function() {
+  // Use 'EnableCompanyName' to inform tests that the feature is enabled.
+  const loadTimeDataOverride = {};
+  loadTimeDataOverride['EnableCompanyName'] = false;
+  loadTimeData.overrideValues(loadTimeDataOverride);
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsPasswordsSectionV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/passwords_section_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsPasswordsSectionV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsPasswordsCheckV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/password_check_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsPasswordsCheckV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#if defined(OS_CHROMEOS)');
+// eslint-disable-next-line no-var
+var CrSettingsPasswordsSectionV3Test_Cros =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/passwords_section_test_cros.m.js';
+  }
+};
+
+TEST_F('CrSettingsPasswordsSectionV3Test_Cros', 'All', function() {
+  mocha.run();
+});
+GEN('#endif');
+
+// eslint-disable-next-line no-var
+var CrSettingsPaymentsSectionV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/payments_section_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsPaymentsSectionV3Test', 'All', function() {
   mocha.run();
 });

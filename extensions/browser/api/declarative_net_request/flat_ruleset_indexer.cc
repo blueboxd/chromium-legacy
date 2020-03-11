@@ -280,6 +280,7 @@ FlatRulesetIndexer::GetBuilders(const IndexedRule& indexed_rule) {
       return {index_builders_[flat::IndexType_allow_all_requests].get()};
     case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
       return GetRemoveHeaderBuilders(indexed_rule.remove_headers_set);
+    case dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS:
     case dnr_api::RULE_ACTION_TYPE_NONE:
       break;
   }

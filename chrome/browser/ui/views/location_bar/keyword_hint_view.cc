@@ -185,6 +185,7 @@ const char* KeywordHintView::GetClassName() const {
 }
 
 void KeywordHintView::OnThemeChanged() {
+  views::Button::OnThemeChanged();
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
 
   const SkColor leading_label_text_color =

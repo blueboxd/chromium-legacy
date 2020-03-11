@@ -503,8 +503,14 @@ class RemoteCallFilesApp extends RemoteCall {
 
     const caller = getCaller();
     return repeatUntil(async () => {
-      const element =
+      let element =
           await this.callRemoteTestUtil('getActiveElement', appId, []);
+      if (element && element.attributes['id'] === elementId) {
+        return true;
+      }
+      // Try to check the shadow root.
+      element =
+          await this.callRemoteTestUtil('deepGetActiveElement', appId, []);
       if (element && element.attributes['id'] === elementId) {
         return true;
       }

@@ -152,12 +152,13 @@ HeapHashMap<Member<const Frame>, size_t> GroupByFrame(
   return per_frame;
 }
 
-MeasureMemoryBreakdown* CreateMeasureMemoryBreakdown(size_t bytes,
-                                                     const Vector<String>& type,
-                                                     const String& url) {
+MeasureMemoryBreakdown* CreateMeasureMemoryBreakdown(
+    size_t bytes,
+    const Vector<String>& types,
+    const String& url) {
   MeasureMemoryBreakdown* result = MeasureMemoryBreakdown::Create();
   result->setBytes(bytes);
-  result->setUserAgentSpecificType(type);
+  result->setUserAgentSpecificTypes(types);
   result->setAttribution(url.length() ? Vector<String>{url} : Vector<String>());
   return result;
 }

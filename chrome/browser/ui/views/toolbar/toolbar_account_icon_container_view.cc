@@ -103,6 +103,7 @@ gfx::Insets ToolbarAccountIconContainerView::GetPageActionIconInsets(
 }
 
 void ToolbarAccountIconContainerView::OnThemeChanged() {
+  ToolbarIconContainerView::OnThemeChanged();
   // Update icon color.
   UpdateAllIcons();
 }

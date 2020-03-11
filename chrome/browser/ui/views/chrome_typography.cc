@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/default_style.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/platform_font.h"
 
@@ -57,8 +57,7 @@ void ApplyCommonFontStyles(int context,
                            gfx::Font::Weight* weight) {
   switch (context) {
     case CONTEXT_TOOLBAR_BUTTON: {
-      int height =
-          ui::MaterialDesignController::GetInstance()->touch_ui() ? 22 : 17;
+      int height = ui::TouchUiController::Get()->touch_ui() ? 22 : 17;
       // We only want the font size to be constrained by available height, and
       // don't actually have a target font size, so we just need to supply any
       // sufficiently-large value for the second argument here. |height| will
@@ -73,11 +72,10 @@ void ApplyCommonFontStyles(int context,
     }
     case CONTEXT_OMNIBOX_PRIMARY:
     case CONTEXT_OMNIBOX_DEEMPHASIZED: {
-      using MD = ui::MaterialDesignController;
       const int omnibox_primary_delta =
           GetFontSizeDeltaBoundedByAvailableHeight(
               LocationBarView::GetAvailableTextHeight(),
-              MD::GetInstance()->touch_ui() ? 15 : 14);
+              ui::TouchUiController::Get()->touch_ui() ? 15 : 14);
       *size_delta = omnibox_primary_delta;
       if (context == CONTEXT_OMNIBOX_DEEMPHASIZED) {
         (*size_delta)--;

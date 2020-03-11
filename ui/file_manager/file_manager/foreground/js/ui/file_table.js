@@ -16,7 +16,7 @@ class FileTableColumnModel extends cr.ui.table.TableColumnModel {
     this.snapshot_ = null;
 
     if (util.isFilesNg()) {
-      FileTableColumnModel.MIN_WIDTH_ = 24;
+      FileTableColumnModel.MIN_WIDTH_ = 40;
     }
   }
 

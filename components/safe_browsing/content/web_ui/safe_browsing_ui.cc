@@ -32,7 +32,9 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
+#endif
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 #include "components/strings/grit/components_strings.h"
@@ -247,6 +249,7 @@ void WebUIInfoSingleton::ClearReportingEvents() {
   std::vector<base::Value>().swap(reporting_events_);
 }
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 int WebUIInfoSingleton::AddToDeepScanRequests(
     const DeepScanningClientRequest& request) {
   if (!HasListener())
@@ -278,7 +281,7 @@ void WebUIInfoSingleton::ClearDeepScans() {
   std::map<std::string, std::pair<std::string, DeepScanningClientResponse>>()
       .swap(deep_scan_responses_);
 }
-
+#endif
 void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   webui_instances_.push_back(webui);
 }
@@ -326,8 +329,11 @@ void WebUIInfoSingleton::MaybeClearData() {
     ClearPGPings();
     ClearRTLookupPings();
     ClearLogMessages();
-    ClearDeepScans();
     ClearReportingEvents();
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+    ClearDeepScans();
+#endif
   }
 }
 
@@ -1283,6 +1289,7 @@ base::Value SerializeReportingEvent(const base::Value& event) {
   return std::move(result);
 }
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 std::string SerializeDeepScanningRequest(
     const DeepScanningClientRequest& request) {
   base::DictionaryValue request_dict;
@@ -1436,7 +1443,7 @@ std::string SerializeDeepScanningResponse(
   serializer.Serialize(response_dict);
   return response_serialized;
 }
-
+#endif
 }  // namespace
 
 SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
@@ -1814,6 +1821,7 @@ void SafeBrowsingUIHandler::GetLogMessages(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id), messages_received);
 }
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 void SafeBrowsingUIHandler::GetDeepScanRequests(const base::ListValue* args) {
   const std::vector<DeepScanningClientRequest>& requests =
       WebUIInfoSingleton::GetInstance()->deep_scan_requests();
@@ -1858,7 +1866,7 @@ void SafeBrowsingUIHandler::GetDeepScanResponses(const base::ListValue* args) {
   args->GetString(0, &callback_id);
   ResolveJavascriptCallback(base::Value(callback_id), responses_sent);
 }
-
+#endif
 void SafeBrowsingUIHandler::NotifyClientDownloadRequestJsListener(
     ClientDownloadRequest* client_download_request) {
   AllowJavascript();
@@ -1951,6 +1959,7 @@ void SafeBrowsingUIHandler::NotifyReportingEventJsListener(
   FireWebUIListener("reporting-events-update", SerializeReportingEvent(event));
 }
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 void SafeBrowsingUIHandler::NotifyDeepScanRequestJsListener(
     const DeepScanningClientRequest& request) {
   base::ListValue request_list;
@@ -1973,6 +1982,7 @@ void SafeBrowsingUIHandler::NotifyDeepScanResponseJsListener(
   AllowJavascript();
   FireWebUIListener("deep-scan-response-update", response_list);
 }
+#endif
 
 void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -2044,6 +2054,7 @@ void SafeBrowsingUIHandler::RegisterMessages() {
       "getReportingEvents",
       base::BindRepeating(&SafeBrowsingUIHandler::GetReportingEvents,
                           base::Unretained(this)));
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   web_ui()->RegisterMessageCallback(
       "getDeepScanRequests",
       base::BindRepeating(&SafeBrowsingUIHandler::GetDeepScanRequests,
@@ -2052,6 +2063,7 @@ void SafeBrowsingUIHandler::RegisterMessages() {
       "getDeepScanResponses",
       base::BindRepeating(&SafeBrowsingUIHandler::GetDeepScanResponses,
                           base::Unretained(this)));
+#endif
 }
 
 void SafeBrowsingUIHandler::SetWebUIForTesting(content::WebUI* web_ui) {

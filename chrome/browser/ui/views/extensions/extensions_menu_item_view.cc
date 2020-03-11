@@ -108,6 +108,7 @@ const char* ExtensionsMenuItemView::GetClassName() const {
 }
 
 void ExtensionsMenuItemView::OnThemeChanged() {
+  views::View::OnThemeChanged();
   const SkColor icon_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DefaultIconColor);
   pin_button_->set_ink_drop_base_color(icon_color);

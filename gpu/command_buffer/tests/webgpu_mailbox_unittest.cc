@@ -126,8 +126,6 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commands);
 
-    // Dissociate the mailbox, flushing previous commands first
-    webgpu()->FlushCommands();
     webgpu()->DissociateMailbox(device_client_id, reservation.id,
                                 reservation.generation);
   }
@@ -137,10 +135,6 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     // Register the shared image as a Dawn texture in the wire.
     gpu::webgpu::ReservedTexture reservation =
         webgpu()->ReserveTexture(device_client_id);
-
-    // Make sure previous Dawn wire commands are sent so that the texture IDs
-    // are validated correctly.
-    webgpu()->FlushCommands();
 
     webgpu()->AssociateMailbox(device_client_id, 0, reservation.id,
                                reservation.generation, WGPUTextureUsage_CopySrc,
@@ -174,8 +168,6 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commands);
 
-    // Dissociate the mailbox, flushing previous commands first
-    webgpu()->FlushCommands();
     webgpu()->DissociateMailbox(device_client_id, reservation.id,
                                 reservation.generation);
 

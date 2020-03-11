@@ -408,14 +408,10 @@ typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::insert(
     IncomingValueType&& value) {
   wtf_size_t position_index = position.GetIndex();
   wtf_size_t prev_index = nodes_[position_index].prev_index_;
-  Node& prev = nodes_[prev_index];
-  Node& next = nodes_[position_index];
 
   wtf_size_t new_entry_index;
   if (IsFreeListEmpty()) {
     new_entry_index = nodes_.size();
-    prev.next_index_ = new_entry_index;
-    next.prev_index_ = new_entry_index;
     nodes_.push_back(Node(prev_index, position_index,
                           std::forward<IncomingValueType>(value)));
   } else {
@@ -425,6 +421,8 @@ typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::insert(
     free_head = Node(prev_index, position_index,
                      std::forward<IncomingValueType>(value));
   }
+  nodes_[prev_index].next_index_ = new_entry_index;
+  nodes_[position_index].prev_index_ = new_entry_index;
   size_++;
   return iterator(new_entry_index, this);
 }

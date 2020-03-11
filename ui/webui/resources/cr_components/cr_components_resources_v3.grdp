@@ -6,6 +6,11 @@
          type="BINDATA"
          preprocess="true"
          compress="gzip" />
+  <include name="IDR_WEBUI_CR_COMPONENTS_OMNIBOX_CR_AUTOCOMPLETE_MATCH_LIST_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_components/omnibox/cr_autocomplete_match_list.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <if expr="chromeos">
     <include name="IDR_WEBUI_CHROMEOS_SMB_SHARES_ADD_SMB_SHARE_DIALOG_M_JS"
            file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/smb_shares/add_smb_share_dialog.m.js"

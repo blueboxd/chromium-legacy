@@ -54,12 +54,14 @@ _FUNCTION_INFO = {
     },
   },
   'AssociateMailbox': {
+    'impl_func': False,
+    'client_test': False,
     'type': 'PUT',
     'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
-    'trace_level': 1,
   },
   'DissociateMailbox': {
-    'trace_level': 1,
+    'impl_func': False,
+    'client_test': False,
   },
   'RequestAdapter': {
     'impl_func': False,

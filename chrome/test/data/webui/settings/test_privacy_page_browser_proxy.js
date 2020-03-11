@@ -14,6 +14,7 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
       'getSecureDnsResolverList',
       'getSecureDnsSetting',
       'validateCustomDnsEntry',
+      'probeCustomDnsTemplate',
     ]);
 
     /** @type {!MetricsReporting} */
@@ -94,15 +95,29 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
 
   /**
    * Sets the return value for the next validateCustomDnsEntry call.
-   * @param {boolean} isEntryValid
+   * @param {string} validEntry
    */
-  setIsEntryValid(isEntryValid) {
-    this.isEntryValid_ = isEntryValid;
+  setValidEntry(validEntry) {
+    this.validEntry_ = validEntry;
   }
 
   /** @override */
-  validateCustomDnsEntry() {
-    this.methodCalled('validateCustomDnsEntry');
-    return Promise.resolve(this.isEntryValid_);
+  validateCustomDnsEntry(entry) {
+    this.methodCalled('validateCustomDnsEntry', entry);
+    return Promise.resolve(this.validEntry_);
+  }
+
+  /**
+   * Sets the return value for the next probeCustomDnsTemplate call.
+   * @param {boolean} success
+   */
+  setProbeSuccess(success) {
+    this.probeSuccess_ = success;
+  }
+
+  /** @override */
+  probeCustomDnsTemplate(template) {
+    this.methodCalled('probeCustomDnsTemplate', template);
+    return Promise.resolve(this.probeSuccess_);
   }
 }

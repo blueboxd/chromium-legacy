@@ -112,6 +112,7 @@ void NonClientFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void NonClientFrameView::OnThemeChanged() {
+  View::OnThemeChanged();
   SchedulePaint();
 }
 

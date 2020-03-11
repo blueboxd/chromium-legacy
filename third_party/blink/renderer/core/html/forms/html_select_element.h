@@ -254,7 +254,6 @@ class CORE_EXPORT HTMLSelectElement final
       HTMLOptionElement* element_to_exclude = nullptr);
   void ParseMultipleAttribute(const AtomicString&);
   HTMLOptionElement* LastSelectedOption() const;
-  void UpdateSelectedState(HTMLOptionElement*, bool multi, bool shift);
   wtf_size_t SearchOptionsForValue(const String&,
                                    wtf_size_t list_index_start,
                                    wtf_size_t list_index_end) const;

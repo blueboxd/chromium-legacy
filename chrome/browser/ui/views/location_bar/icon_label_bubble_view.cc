@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
@@ -32,8 +32,6 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
-
-using MD = ui::MaterialDesignController;
 
 namespace {
 
@@ -78,6 +76,7 @@ void IconLabelBubbleView::SeparatorView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void IconLabelBubbleView::SeparatorView::OnThemeChanged() {
+  views::View::OnThemeChanged();
   SchedulePaint();
 }
 
@@ -161,8 +160,6 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
   alert_view->GetCustomData().role = ax::mojom::Role::kAlert;
   alert_virtual_view_ = alert_view.get();
   GetViewAccessibility().AddVirtualChildView(std::move(alert_view));
-
-  md_observer_.Add(MD::GetInstance());
 }
 
 IconLabelBubbleView::~IconLabelBubbleView() {}
@@ -246,6 +243,15 @@ bool IconLabelBubbleView::ShowBubble(const ui::Event& event) {
 
 bool IconLabelBubbleView::IsBubbleShowing() const {
   return false;
+}
+
+void IconLabelBubbleView::OnTouchUiChanged() {
+  UpdateBorder();
+
+  // PreferredSizeChanged() incurs an expensive layout of the location bar, so
+  // only call it when this view is showing.
+  if (GetVisible())
+    PreferredSizeChanged();
 }
 
 gfx::Size IconLabelBubbleView::CalculatePreferredSize() const {
@@ -388,15 +394,6 @@ void IconLabelBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetNameExplicitlyEmpty();
 }
 
-void IconLabelBubbleView::OnTouchUiChanged() {
-  UpdateBorder();
-
-  // PreferredSizeChanged() incurs an expensive layout of the location bar, so
-  // only call it when this view is showing.
-  if (GetVisible())
-    PreferredSizeChanged();
-}
-
 void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   DCHECK(!image_skia.isNull());
   LabelButton::SetImage(STATE_NORMAL, image_skia);
@@ -426,7 +423,8 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
 int IconLabelBubbleView::GetInternalSpacing() const {
   if (image()->GetPreferredSize().IsEmpty())
     return 0;
-  return (MD::GetInstance()->touch_ui() ? 10 : 8) + GetExtraInternalSpacing();
+  return (ui::TouchUiController::Get()->touch_ui() ? 10 : 8) +
+         GetExtraInternalSpacing();
 }
 
 int IconLabelBubbleView::GetExtraInternalSpacing() const {

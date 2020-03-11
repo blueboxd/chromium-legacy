@@ -6,6 +6,9 @@ import './a11y_page/a11y_page.m.js';
 import './about_page/about_page.m.js';
 import './appearance_page/appearance_page.m.js';
 import './appearance_page/appearance_fonts_page.m.js';
+import './autofill_page/autofill_page.m.js';
+import './autofill_page/password_check.m.js';
+import './autofill_page/passwords_section.m.js';
 import './basic_page/basic_page.m.js';
 import './clear_browsing_data_dialog/clear_browsing_data_dialog.m.js';
 import './controls/controlled_button.m.js';
@@ -47,6 +50,8 @@ import './system_page/system_page.m.js';
 import './languages_page/edit_dictionary_page.m.js';
 // </if>
 
+export {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+
 // <if expr="_google_chrome and is_win">
 export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW} from './chrome_cleanup_page/items_to_remove_list.m.js';
 export {ChromeCleanupIdleReason} from './chrome_cleanup_page/chrome_cleanup_page.m.js';
@@ -59,9 +64,15 @@ export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_bro
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.m.js';
 // </if>
 
+// <if expr="chromeos">
+export {BlockingRequestManager} from './autofill_page/blocking_request_manager.m.js';
+// </if>
+
 export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus} from './about_page/about_page_browser_proxy.m.js';
 export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.m.js';
+export {AutofillManagerImpl} from './autofill_page/autofill_section.m.js';
 export {ClearBrowsingDataBrowserProxyImpl} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.m.js';
+export {CountryDetailManagerImpl} from './autofill_page/address_edit_dialog.m.js';
 export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.m.js';
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
@@ -73,8 +84,11 @@ export {LifetimeBrowserProxyImpl} from './lifetime_browser_proxy.m.js';
 export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.m.js';
 export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.m.js';
 export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.m.js';
+export {OpenWindowProxyImpl} from './open_window_proxy.m.js';
 export {PageStatus, StatusAction, SyncBrowserProxyImpl} from './people_page/sync_browser_proxy.m.js';
 export {pageVisibility} from './page_visibility.m.js';
+export {PasswordManagerImpl} from './autofill_page/password_manager_proxy.m.js';
+export {PaymentsManagerImpl} from './autofill_page/payments_section.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
 export {routes} from './route.m.js';
 export {ResetBrowserProxyImpl} from './reset_page/reset_browser_proxy.m.js';

@@ -47,6 +47,8 @@ class CORE_EXPORT V8ScriptValueSerializer
   // DataCloneError message will be used.
   virtual bool WriteDOMObject(ScriptWrappable*, ExceptionState&);
 
+  ScriptState* GetScriptState() const { return script_state_; }
+
   void WriteTag(SerializationTag tag) {
     uint8_t tag_byte = tag;
     serializer_.WriteRawBytes(&tag_byte, 1);

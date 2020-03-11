@@ -650,6 +650,7 @@ void Label::OnPaint(gfx::Canvas* canvas) {
 }
 
 void Label::OnThemeChanged() {
+  View::OnThemeChanged();
   UpdateColorsFromTheme();
 }
 

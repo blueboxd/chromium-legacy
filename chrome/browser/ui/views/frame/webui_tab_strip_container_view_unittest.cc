@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "content/public/common/drop_data.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 
 class WebUITabStripContainerViewTest : public TestWithBrowserView {
  public:
@@ -28,7 +28,7 @@ class WebUITabStripContainerViewTest : public TestWithBrowserView {
 
  private:
   base::test::ScopedFeatureList feature_override_;
-  ui::MaterialDesignController::TouchUiScoperForTesting touch_ui_scoper_{true};
+  ui::TouchUiController::TouchUiScoperForTesting touch_ui_scoper_{true};
 };
 
 TEST_F(WebUITabStripContainerViewTest, TabStripStartsClosed) {
@@ -42,14 +42,12 @@ TEST_F(WebUITabStripContainerViewTest, TouchModeTransition) {
   EXPECT_NE(nullptr, browser_view()->webui_tab_strip());
   EXPECT_FALSE(browser_view()->IsTabStripVisible());
 
-  ui::MaterialDesignController::TouchUiScoperForTesting disable_touch_mode(
-      false);
+  ui::TouchUiController::TouchUiScoperForTesting disable_touch_mode(false);
   browser_view()->Layout();
   EXPECT_FALSE(WebUITabStripContainerView::UseTouchableTabStrip());
   EXPECT_TRUE(browser_view()->IsTabStripVisible());
 
-  ui::MaterialDesignController::TouchUiScoperForTesting reenable_touch_mode(
-      true);
+  ui::TouchUiController::TouchUiScoperForTesting reenable_touch_mode(true);
   browser_view()->Layout();
   EXPECT_TRUE(WebUITabStripContainerView::UseTouchableTabStrip());
   EXPECT_FALSE(browser_view()->IsTabStripVisible());
@@ -141,9 +139,7 @@ class WebUITabStripDevToolsTest : public WebUITabStripContainerViewTest {
 TEST_F(WebUITabStripDevToolsTest, DevToolsWindowHasNoTabStrip) {
   EXPECT_EQ(nullptr, browser_view()->webui_tab_strip());
 
-  ui::MaterialDesignController::TouchUiScoperForTesting disable_touch_mode(
-      false);
-  ui::MaterialDesignController::TouchUiScoperForTesting reenable_touch_mode(
-      true);
+  ui::TouchUiController::TouchUiScoperForTesting disable_touch_mode(false);
+  ui::TouchUiController::TouchUiScoperForTesting reenable_touch_mode(true);
   EXPECT_EQ(nullptr, browser_view()->webui_tab_strip());
 }

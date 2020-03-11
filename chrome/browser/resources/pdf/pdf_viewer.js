@@ -746,7 +746,7 @@ export class PDFViewer {
     this.toolbar_.annotationAvailable =
         (e.detail !== TwoUpViewAction.TWO_UP_VIEW_ENABLE);
 
-    // TODO(crbug.com/51472): Record to metrics.
+    PDFMetrics.recordTwoUpView(e.detail);
   }
 
   /**

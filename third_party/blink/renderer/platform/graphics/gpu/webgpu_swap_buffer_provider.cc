@@ -101,10 +101,6 @@ WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(const IntSize& size) {
   current_swap_buffer_ = base::AdoptRef(new SwapBuffer(
       this, mailbox, creation_token, static_cast<gfx::Size>(size)));
 
-  // Make sure previous Dawn wire commands are sent so that for example the ID
-  // is freed before we associate the SharedImage.
-  webgpu->FlushCommands();
-
   // Ensure the shared image is allocated service-side before working with it
   webgpu->WaitSyncTokenCHROMIUM(
       current_swap_buffer_->access_finished_token.GetConstData());

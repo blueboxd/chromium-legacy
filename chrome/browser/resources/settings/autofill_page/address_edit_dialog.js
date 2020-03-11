@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'password-edit-dialog' is the dialog that allows showing a
- * saved password.
+ * @fileoverview 'address-edit-dialog' is the dialog that allows editing a saved
+ * address.
  */
 cr.define('settings.address', function() {
   Polymer({
@@ -318,7 +318,7 @@ cr.define('settings.address', function() {
    * Default implementation. Override for testing.
    * @implements {settings.address.CountryDetailManager}
    */
-  class CountryDetailManagerImpl {
+  /* #export */ class CountryDetailManagerImpl {
     /** @override */
     getCountryList() {
       return new Promise(function(callback) {

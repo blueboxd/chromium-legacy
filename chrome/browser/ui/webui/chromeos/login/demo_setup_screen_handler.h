@@ -36,7 +36,7 @@ class DemoSetupScreenView {
       const DemoSetupController::DemoSetupError& error) = 0;
 };
 
-// WebUI implementation of DemoSetupScreenView. It controlls UI, receives UI
+// WebUI implementation of DemoSetupScreenView. It controls UI, receives UI
 // events and notifies the Delegate.
 class DemoSetupScreenHandler : public BaseScreenHandler,
                                public DemoSetupScreenView {

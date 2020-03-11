@@ -32,7 +32,7 @@ let currentlyWritableFileHandle = null;
 /** A pipe through which we can send messages to the guest frame. */
 const guestMessagePipe = new MessagePipe('chrome://media-app-guest');
 
-guestMessagePipe.registerHandler('openFeedbackDialog', () => {
+guestMessagePipe.registerHandler(Message.OPEN_FEEDBACK_DIALOG, () => {
   let response = media_app.handler.openFeedbackDialog();
   if (response === null) {
     response = {errorMessage: 'Null response received'};

@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// <if expr="chromeos">
+// #import {BlockingRequestManager} from './blocking_request_manager.m.js';
+// </if>
+// #import {PasswordManagerImpl} from './password_manager_proxy.m.js';
+
 /**
  * This behavior bundles functionality required to show a password to the user.
  * It is used by both <password-list-item> and <password-edit-dialog>.
  *
  * @polymerBehavior
  */
-const ShowPasswordBehavior = {
+/* #export */ const ShowPasswordBehavior = {
 
   properties: {
     /**

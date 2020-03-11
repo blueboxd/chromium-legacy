@@ -18,8 +18,7 @@ namespace feed {
 // |RefreshThrottler| a private implementation detail of this class.
 class MasterRefreshThrottler {
  public:
-  MasterRefreshThrottler(PrefService* profile_prefs, base::Clock* clock);
-
+  MasterRefreshThrottler(PrefService* profile_prefs, const base::Clock* clock);
   MasterRefreshThrottler(const MasterRefreshThrottler&) = delete;
   MasterRefreshThrottler& operator=(const MasterRefreshThrottler&) = delete;
 

@@ -437,6 +437,7 @@ gfx::Size BubbleDialogDelegateView::GetMaximumSize() const {
 }
 
 void BubbleDialogDelegateView::OnThemeChanged() {
+  DialogDelegateView::OnThemeChanged();
   UpdateColorsFromTheme();
 }
 

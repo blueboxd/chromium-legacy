@@ -13023,6 +13023,18 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileMessagesOverflowBadgeShown" not_user_triggered="true">
+  <owner>sczs@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>An Infobar Message overflow badge is shown.</description>
+</action>
+
+<action name="MobileMessagesOverflowBadgeTapped">
+  <owner>sczs@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>User tapped on an Infobar Message overflow badge.</description>
+</action>
+
 <action name="MobileMWSession">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

@@ -43,7 +43,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   // |stream| must be encrypted and |cdm_context| must be non-null.
   void Initialize(DemuxerStream* stream,
                   CdmContext* cdm_context,
-                  const PipelineStatusCB& status_cb);
+                  PipelineStatusCallback status_cb);
 
   // Cancels all pending operations and fires all pending callbacks. If in
   // kPendingDemuxerRead or kPendingDecrypt state, waits for the pending
@@ -149,7 +149,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
 
   State state_ = kUninitialized;
 
-  PipelineStatusCB init_cb_;
+  PipelineStatusCallback init_cb_;
   ReadCB read_cb_;
   base::OnceClosure reset_cb_;
 

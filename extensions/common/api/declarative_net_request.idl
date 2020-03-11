@@ -40,6 +40,13 @@ namespace declarativeNetRequest {
     setCookie
   };
 
+  // This describes the possible opeations for a "modifyHeaders" rule.
+  // TODO(crbug.com/947591): Add documentation once implementation is complete.
+  [nodoc]
+  enum HeaderOperation {
+    remove
+  };
+
   // Describes the kind of action to take if a given RuleCondition matches.
   enum RuleActionType {
     // Block the network request.
@@ -54,6 +61,11 @@ namespace declarativeNetRequest {
     upgradeScheme,
     // Remove request/response headers from the network request.
     removeHeaders,
+    // Modify request/response headers from the network request.
+    // TODO(crbug.com/947591): Add documentation once implementation is
+    // complete.
+    [nodoc]
+    modifyHeaders,
     // Allow all requests within a frame hierarchy, including the frame request
     // itself.
     allowAllRequests
@@ -213,6 +225,13 @@ namespace declarativeNetRequest {
     DomainType? domainType;
   };
 
+  // TODO(crbug.com/947591): Add documentation once implementation is complete.
+  [nodoc]
+  dictionary ModifyHeaderInfo {
+    DOMString header;
+    HeaderOperation operation;
+  };
+
   dictionary RuleAction {
     // The type of action to perform.
     RuleActionType type;
@@ -224,6 +243,20 @@ namespace declarativeNetRequest {
     // The headers to remove from the request. Only valid if RuleActionType is
     // "removeHeaders".
     RemoveHeaderType[]? removeHeadersList;
+
+    // The request headers to modify for the request. Only valid if
+    // RuleActionType is "modifyHeaders".
+    // TODO(crbug.com/947591): Add documentation once implementation is
+    // complete.
+    [nodoc]
+    ModifyHeaderInfo[]? requestHeaders;
+
+    // The response headers to modify for the request. Only valid if
+    // RuleActionType is "modifyHeaders".
+    // TODO(crbug.com/947591): Add documentation once implementation is
+    // complete.
+    [nodoc]
+    ModifyHeaderInfo[]? responseHeaders;
   };
 
   dictionary Rule {

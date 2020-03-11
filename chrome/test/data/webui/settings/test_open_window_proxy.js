@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
 /** @implements {settings.OpenWindowProxy} */
-class TestOpenWindowProxy extends TestBrowserProxy {
+/* #export */ class TestOpenWindowProxy extends TestBrowserProxy {
   constructor() {
     super([
       'openURL',

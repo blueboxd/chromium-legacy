@@ -97,7 +97,7 @@ void DemoResources::EnsureLoaded(base::OnceClosure load_callback) {
   // CrOSComponentManager.
   DCHECK(cros_component_manager);
 
-  g_browser_process->platform_part()->cros_component_manager()->Load(
+  cros_component_manager->Load(
       kDemoModeResourcesComponentName,
       component_updater::CrOSComponentManager::MountPolicy::kMount,
       component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,

@@ -3697,21 +3697,6 @@
             ]
         }
     ],
-    "OzoneDrmMojo": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "OzoneDrmMojo",
-                    "enable_features": [
-                        "OzoneDrmMojo"
-                    ]
-                }
-            ]
-        }
-    ],
     "PaintHolding": [
         {
             "platforms": [

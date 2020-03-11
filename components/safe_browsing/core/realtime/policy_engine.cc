@@ -56,7 +56,9 @@ bool RealTimePolicyEngine::IsUrlLookupEnabled() {
 // static
 bool RealTimePolicyEngine::IsUserOptedIn(PrefService* pref_service) {
   return pref_service->GetBoolean(
-      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
+             unified_consent::prefs::
+                 kUrlKeyedAnonymizedDataCollectionEnabled) ||
+         IsEnhancedProtectionEnabled(*pref_service);
 }
 
 // static
@@ -90,6 +92,9 @@ bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
     return false;
   }
 
+  if (IsEnhancedProtectionEnabled(*pref_service)) {
+    return true;
+  }
   // |sync_service| can be null in Incognito, and also be set to null by a
   // cmdline param.
   if (!sync_service) {

@@ -415,6 +415,7 @@ void PasswordSaveUpdateView::AddedToWidget() {
 }
 
 void PasswordSaveUpdateView::OnThemeChanged() {
+  PasswordBubbleViewBase::OnThemeChanged();
   if (int id = controller_.GetTopIllustration(
           color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor()))) {
     GetBubbleFrameView()->SetHeaderView(CreateHeaderImage(id));

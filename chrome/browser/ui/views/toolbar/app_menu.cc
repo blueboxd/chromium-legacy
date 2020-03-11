@@ -272,6 +272,7 @@ class InMenuButton : public LabelButton {
 
   // views::LabelButton
   void OnThemeChanged() override {
+    LabelButton::OnThemeChanged();
     ui::NativeTheme* theme = GetNativeTheme();
     if (theme) {
       SetTextColor(

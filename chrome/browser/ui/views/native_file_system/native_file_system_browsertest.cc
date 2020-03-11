@@ -23,6 +23,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/permissions/permission_util.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -313,6 +314,7 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, FullscreenOpenFile) {
   EXPECT_FALSE(IsFullscreen());
 }
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, SafeBrowsing) {
   const base::FilePath test_file = temp_dir_.GetPath().AppendASCII("test.exe");
 
@@ -376,6 +378,7 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, SafeBrowsing) {
 
   EXPECT_TRUE(invoked_safe_browsing);
 }
+#endif
 
 IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest,
                        OpenFileWithContentSettingAllow) {

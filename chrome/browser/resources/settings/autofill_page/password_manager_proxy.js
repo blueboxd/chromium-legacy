@@ -7,11 +7,13 @@
  * chrome.passwordsPrivate which facilitates testing.
  */
 
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+
 /**
  * Interface for all callbacks to the password API.
  * @interface
  */
-class PasswordManagerProxy {
+/* #export */ class PasswordManagerProxy {
   /**
    * Add an observer to the list of saved passwords.
    * @param {function(!Array<!PasswordManagerProxy.PasswordUiEntry>):void}
@@ -228,7 +230,7 @@ PasswordManagerProxy.PasswordCheckStatus;
  * Implementation that accesses the private API.
  * @implements {PasswordManagerProxy}
  */
-class PasswordManagerImpl {
+/* #export */ class PasswordManagerImpl {
   /** @override */
   addSavedPasswordListChangedListener(listener) {
     chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(listener);

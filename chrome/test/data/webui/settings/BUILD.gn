@@ -11,6 +11,8 @@ js_modulizer("modulize") {
     "about_page_tests.js",
     "appearance_fonts_page_test.js",
     "appearance_page_test.js",
+    "autofill_page_test.js",
+    "autofill_section_test.js",
     "basic_page_test.js",
     "checkbox_tests.js",
     "clear_browsing_data_test.js",
@@ -28,6 +30,11 @@ js_modulizer("modulize") {
     "languages_page_tests.js",
     "languages_tests.js",
     "on_startup_page_tests.js",
+    "passwords_and_autofill_fake_data.js",
+    "passwords_export_test.js",
+    "password_check_test.js",
+    "passwords_section_test.js",
+    "payments_section_test.js",
     "prefs_test_cases.js",
     "prefs_tests.js",
     "pref_util_tests.js",
@@ -44,11 +51,14 @@ js_modulizer("modulize") {
     "settings_toggle_button_tests.js",
     "site_favicon_test.js",
     "startup_urls_page_test.js",
+    "sync_test_util.js",
     "test_about_page_browser_proxy.js",
     "system_page_tests.js",
     "test_extension_control_browser_proxy.js",
     "test_languages_browser_proxy.js",
     "test_lifetime_browser_proxy.js",
+    "test_open_window_proxy.js",
+    "test_password_manager_proxy.js",
     "test_reset_browser_proxy.js",
     "test_search_engines_browser_proxy.js",
     "test_sync_browser_proxy.js",
@@ -60,7 +70,20 @@ js_modulizer("modulize") {
       "incompatible_applications_page_test.js",
     ]
   }
+  if (is_chromeos) {
+    input_files += [ "passwords_section_test_cros.js" ]
+  }
   namespace_rewrites = settings_namespace_rewrites + test_namespace_rewrites + [
+                         "autofill_test_util.PasswordSectionElementFactory|PasswordSectionElementFactory",
+                         "autofill_test_util.PasswordManagerExpectations|PasswordManagerExpectations",
+                         "autofill_test_util.AutofillManagerExpectations|AutofillManagerExpectations",
+                         "autofill_test_util.PaymentsManagerExpectations|PaymentsManagerExpectations",
+                         "autofill_test_util.TestAutofillManager|TestAutofillManager",
+                         "autofill_test_util.TestPaymentsManager|TestPaymentsManager",
+                         "autofill_test_util.create|create",
+                         "autofill_test_util.makeCompromisedCredentials|makeCompromisedCredentials",
+                         "autofill_test_util.makePasswordCheckStatus|makePasswordCheckStatus",
+                         "export_passwords_tests.run|run",
                          "reset_page.TestResetBrowserProxy|TestResetBrowserProxy",
                          "settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW",
                          "settings.ChromeCleanupIdleReason|ChromeCleanupIdleReason",
@@ -75,6 +98,8 @@ js_modulizer("modulize") {
                          "settings.TestLifetimeBrowserProxy|TestLifetimeBrowserProxy",
                          "settings_search.createSampleSearchEngine|createSampleSearchEngine",
                          "settings_search.TestSearchEnginesBrowserProxy|TestSearchEnginesBrowserProxy",
+                         "sync_test_util.getSyncAllPrefs|getSyncAllPrefs",
+                         "sync_test_util.simulateSyncStatus|simulateSyncStatus",
                          "test_util.setupPopstateListener|setupPopstateListener",
                        ]
 }

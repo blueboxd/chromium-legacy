@@ -82,7 +82,7 @@ class SessionServiceTestHelper {
   SessionService* service() { return service_.get(); }
 
   void RunTaskOnBackendThread(const base::Location& from_here,
-                              const base::Closure& task);
+                              base::OnceClosure task);
 
   void SetAvailableRange(const SessionID& tab_id,
                          const std::pair<int, int>& range);

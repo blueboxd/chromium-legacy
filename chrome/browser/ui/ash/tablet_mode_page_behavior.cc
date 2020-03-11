@@ -18,7 +18,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 
 TabletModePageBehavior::TabletModePageBehavior() {
   ash::TabletMode::Get()->AddObserver(this);
@@ -32,7 +32,7 @@ TabletModePageBehavior::~TabletModePageBehavior() {
 
 void TabletModePageBehavior::OnTabletModeToggled(bool enabled) {
   SetMobileLikeBehaviorEnabled(enabled);
-  ui::MaterialDesignController::GetInstance()->OnTabletModeToggled(enabled);
+  ui::TouchUiController::Get()->OnTabletModeToggled(enabled);
 }
 
 void TabletModePageBehavior::OnTabletModeStarting() {

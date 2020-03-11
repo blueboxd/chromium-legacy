@@ -9,7 +9,7 @@
 namespace feed {
 
 MasterRefreshThrottler::MasterRefreshThrottler(PrefService* profile_prefs,
-                                               base::Clock* clock)
+                                               const base::Clock* clock)
     : rare_throttler_(UserClass::kRareSuggestionsViewer, profile_prefs, clock),
       active_viewer_throttler_(UserClass::kActiveSuggestionsViewer,
                                profile_prefs,

@@ -27,8 +27,11 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
         document.createElement('settings-passwords-leak-detection-toggle');
     testElement.prefs = {
       profile: {password_manager_leak_detection: {value: true}},
-      safebrowsing:
-          {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+      safebrowsing: {
+        enabled: {value: true},
+        scout_reporting_enabled: {value: true},
+        enhanced: {value: false}
+      },
     };
     document.body.appendChild(testElement);
     Polymer.dom.flush();

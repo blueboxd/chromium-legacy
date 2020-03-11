@@ -57,8 +57,8 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/list_selection_model.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/clip_recorder.h"
@@ -89,8 +89,6 @@
 #endif
 
 using base::UserMetricsAction;
-using MD = ui::MaterialDesignController;
-
 namespace {
 
 // When a non-pinned tab becomes a pinned tab the width of the tab animates. If
@@ -362,7 +360,7 @@ void Tab::Layout() {
     if (showing_close_button_) {
       right = close_x;
       if (extra_alert_indicator_padding_)
-        right -= MD::GetInstance()->touch_ui() ? 8 : 6;
+        right -= ui::TouchUiController::Get()->touch_ui() ? 8 : 6;
     }
     const gfx::Size image_size = alert_indicator_->GetPreferredSize();
     gfx::Rect bounds(
@@ -721,6 +719,7 @@ void Tab::OnBlur() {
 }
 
 void Tab::OnThemeChanged() {
+  TabSlotView::OnThemeChanged();
   UpdateForegroundColors();
 }
 
@@ -948,7 +947,7 @@ void Tab::UpdateIconVisibility() {
 
   int available_width = GetContentsBounds().width();
 
-  const bool touch_ui = MD::GetInstance()->touch_ui();
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   const int favicon_width = gfx::kFaviconSize;
   const int alert_icon_width = alert_indicator_->GetPreferredSize().width();
   // In case of touch optimized UI, the close button has an extra padding on the

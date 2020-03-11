@@ -222,7 +222,6 @@ class CommandBufferClientImpl;
 class CommandBufferLocal;
 class DrmThreadProxy;
 class GpuState;
-class MaterialDesignController;
 }
 namespace weblayer {
 class WebLayerPathProvider;
@@ -371,7 +370,6 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class mojo::CoreLibraryInitializer;
   friend class printing::PrintJobWorker;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
-  friend class ui::MaterialDesignController;
   friend class web::WebSubThread;
   friend class StackSamplingProfiler;
   friend class weblayer::ProfileImpl;

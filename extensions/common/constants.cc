@@ -133,7 +133,7 @@ const char kHighlightsAltAppId[] = "gjeelkjnolfmhphfhhjokaijbicopfln";
 const char kScreensaverAppId[] = "mnoijifedipmbjaoekhadjcijipaijjc";
 const char kScreensaverEveAppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
 const char kScreensaverNocturneAppId[] = "lminefdanffajachfahfpmphfkhahcnj";
-const char kScreensaverAltAppId[] = "bnabjkecnachpogjlfilfcnlpcmacglh";
+const char kScreensaverAtlasAppId[] = "bnabjkecnachpogjlfilfcnlpcmacglh";
 const char kScreensaverKukuiAppId[] = "fafhbhdboeiciklpkminlncemohljlkj";
 
 bool IsSystemUIApp(base::StringPiece extension_id) {
@@ -149,7 +149,7 @@ bool IsSystemUIApp(base::StringPiece extension_id) {
       kHighlightsAppId,
       kScreensaverEveAppId,
       kScreensaverNocturneAppId,
-      kScreensaverAltAppId,
+      kScreensaverAtlasAppId,
       kScreensaverAppId,
       // clang-format on
   };

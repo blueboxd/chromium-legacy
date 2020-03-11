@@ -14,12 +14,21 @@ suite('SettingsSecureDnsInput', function() {
   /** @type {SecureDnsInputElement} */
   let testElement;
 
+  /** @type {CrInputElement} */
+  let crInput;
+
   // Possible error messages
   const invalidFormat = 'invalid format description';
+  const probeFail = 'probe fail description';
+
+  const invalidEntry = 'invalid_entry';
+  const validFailEntry = 'https://example.server/dns-query';
+  const validSuccessEntry = 'https://example.server.another/dns-query';
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
       secureDnsCustomFormatError: invalidFormat,
+      secureDnsCustomConnectionError: probeFail,
     });
   });
 
@@ -30,37 +39,66 @@ suite('SettingsSecureDnsInput', function() {
     testElement = document.createElement('secure-dns-input');
     document.body.appendChild(testElement);
     Polymer.dom.flush();
+    crInput = testElement.$$('#input');
+    assertFalse(crInput.invalid);
+    assertEquals('', testElement.value);
   });
 
   teardown(function() {
     testElement.remove();
   });
 
-  test('SecureDnsInputError', async function() {
-    const crInput = testElement.$$('#input');
-    assertFalse(crInput.invalid);
-    assertEquals('', testElement.value);
-
+  test('SecureDnsInputEmpty', async function() {
     // Trigger validation on an empty input.
-    testBrowserProxy.setIsEntryValid(false);
+    testBrowserProxy.setValidEntry('');
     testElement.validate();
-    await testBrowserProxy.whenCalled('validateCustomDnsEntry');
+    assertEquals(
+        '', await testBrowserProxy.whenCalled('validateCustomDnsEntry'));
     assertFalse(crInput.invalid);
     assertFalse(testElement.isInvalid());
+  });
 
-    // Enter a valid input and trigger validation.
-    testElement.value = 'https://example.server/dns-query';
-    testBrowserProxy.setIsEntryValid(true);
+  test('SecureDnsInputValidFormatAndProbeFail', async function() {
+    // Enter two valid servers but make the first one fail the test query.
+    testElement.value = `${validFailEntry} ${validSuccessEntry}`;
+    testBrowserProxy.setValidEntry(validFailEntry);
+    testBrowserProxy.setProbeSuccess(false);
     testElement.validate();
-    await testBrowserProxy.whenCalled('validateCustomDnsEntry');
+    assertEquals(
+        `${validFailEntry} ${validSuccessEntry}`,
+        await testBrowserProxy.whenCalled('validateCustomDnsEntry'));
+    assertEquals(
+        validFailEntry,
+        await testBrowserProxy.whenCalled('probeCustomDnsTemplate'));
+    assertTrue(crInput.invalid);
+    assertTrue(testElement.isInvalid());
+    assertEquals(probeFail, crInput.errorMessage);
+  });
+
+  test('SecureDnsInputValidFormatAndProbeSuccess', async function() {
+    // Enter a valid input and make the test query succeed.
+    testElement.value = validSuccessEntry;
+    testBrowserProxy.setValidEntry(validSuccessEntry);
+    testBrowserProxy.setProbeSuccess(true);
+    testElement.validate();
+    assertEquals(
+        validSuccessEntry,
+        await testBrowserProxy.whenCalled('validateCustomDnsEntry'));
+    assertEquals(
+        validSuccessEntry,
+        await testBrowserProxy.whenCalled('probeCustomDnsTemplate'));
     assertFalse(crInput.invalid);
     assertFalse(testElement.isInvalid());
+  });
 
+  test('SecureDnsInputInvalid', async function() {
     // Enter an invalid input and trigger validation.
-    testElement.value = 'invalid_template';
-    testBrowserProxy.setIsEntryValid(false);
+    testElement.value = invalidEntry;
+    testBrowserProxy.setValidEntry('');
     testElement.validate();
-    await testBrowserProxy.whenCalled('validateCustomDnsEntry');
+    assertEquals(
+        invalidEntry,
+        await testBrowserProxy.whenCalled('validateCustomDnsEntry'));
     assertTrue(crInput.invalid);
     assertTrue(testElement.isInvalid());
     assertEquals(invalidFormat, crInput.errorMessage);
@@ -69,7 +107,7 @@ suite('SettingsSecureDnsInput', function() {
     crInput.fire('input');
     assertFalse(crInput.invalid);
     assertFalse(testElement.isInvalid());
-    assertEquals('invalid_template', testElement.value);
+    assertEquals(invalidEntry, testElement.value);
   });
 });
 

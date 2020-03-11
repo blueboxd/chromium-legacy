@@ -91,7 +91,8 @@ interface ChildProcess {
   // depends on the process type and potentially on the Content embedder.
   BindReceiver(mojo_base.mojom.GenericPendingReceiver receiver);
 
-  // Sets the coverage file for the child process.
-  [EnableIf=clang_coverage_inside_sandbox]
-  SetCoverageFile(mojo_base.mojom.File file);
+  // Sets the profiling file for the child process.
+  // Used for the coverage builds.
+  [EnableIf=clang_profiling_inside_sandbox]
+  SetProfilingFile(mojo_base.mojom.File file);
 };

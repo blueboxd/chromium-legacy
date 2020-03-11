@@ -2,25 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 
 #include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
-#include "base/observer_list.h"
-#include "build/buildflag.h"
-#include "ui/base/buildflags.h"
-#include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "ui/base/win/hidden_window.h"
 #include "ui/gfx/win/singleton_hwnd.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 #endif
@@ -38,20 +32,20 @@ bool IsTabletMode() {
 }  // namespace
 #endif  // defined(OS_WIN)
 
-MaterialDesignController::TouchUiScoperForTesting::TouchUiScoperForTesting(
+TouchUiController::TouchUiScoperForTesting::TouchUiScoperForTesting(
     bool enabled,
-    MaterialDesignController* controller)
+    TouchUiController* controller)
     : controller_(controller),
       old_state_(controller_->SetTouchUiState(
           enabled ? TouchUiState::kEnabled : TouchUiState::kDisabled)) {}
 
-MaterialDesignController::TouchUiScoperForTesting::~TouchUiScoperForTesting() {
+TouchUiController::TouchUiScoperForTesting::~TouchUiScoperForTesting() {
   controller_->SetTouchUiState(old_state_);
 }
 
 // static
-MaterialDesignController* MaterialDesignController::GetInstance() {
-  static base::NoDestructor<MaterialDesignController> instance([] {
+TouchUiController* TouchUiController::Get() {
+  static base::NoDestructor<TouchUiController> instance([] {
     const std::string switch_value =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kTopChromeTouchUi);
@@ -63,7 +57,7 @@ MaterialDesignController* MaterialDesignController::GetInstance() {
   return instance.get();
 }
 
-MaterialDesignController::MaterialDesignController(TouchUiState touch_ui_state)
+TouchUiController::TouchUiController(TouchUiState touch_ui_state)
     : touch_ui_state_(touch_ui_state) {
 #if defined(OS_WIN)
   if (base::MessageLoopCurrentForUI::IsSet() &&
@@ -72,44 +66,34 @@ MaterialDesignController::MaterialDesignController(TouchUiState touch_ui_state)
         std::make_unique<gfx::SingletonHwndObserver>(base::BindRepeating(
             [](HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
               if (message == WM_SETTINGCHANGE)
-                GetInstance()->OnTabletModeToggled(IsTabletMode());
+                Get()->OnTabletModeToggled(IsTabletMode());
             }));
     tablet_mode_ = IsTabletMode();
   }
 #endif
 }
 
-MaterialDesignController::~MaterialDesignController() = default;
+TouchUiController::~TouchUiController() = default;
 
-void MaterialDesignController::OnTabletModeToggled(bool enabled) {
+void TouchUiController::OnTabletModeToggled(bool enabled) {
   const bool was_touch_ui = touch_ui();
   tablet_mode_ = enabled;
   if (touch_ui() != was_touch_ui)
-    NotifyObservers();
+    callback_list_.Notify();
 }
 
-void MaterialDesignController::AddObserver(
-    MaterialDesignControllerObserver* observer) {
-  observers_.AddObserver(observer);
+std::unique_ptr<TouchUiController::Subscription>
+TouchUiController::RegisterCallback(const base::RepeatingClosure& closure) {
+  return callback_list_.Add(closure);
 }
 
-void MaterialDesignController::RemoveObserver(
-    MaterialDesignControllerObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-MaterialDesignController::TouchUiState
-MaterialDesignController::SetTouchUiState(TouchUiState touch_ui_state) {
+TouchUiController::TouchUiState TouchUiController::SetTouchUiState(
+    TouchUiState touch_ui_state) {
   const bool was_touch_ui = touch_ui();
   const TouchUiState old_state = std::exchange(touch_ui_state_, touch_ui_state);
   if (touch_ui() != was_touch_ui)
-    NotifyObservers();
+    callback_list_.Notify();
   return old_state;
-}
-
-void MaterialDesignController::NotifyObservers() const {
-  for (auto& observer : observers_)
-    observer.OnTouchUiChanged();
 }
 
 }  // namespace ui

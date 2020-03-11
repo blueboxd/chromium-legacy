@@ -184,6 +184,10 @@ source_set("eg_tests") {
   deps = [
     ":eg_test_support",
     "//base",
+    "//base/test:test_support",
+    "//components/infobars/core:feature_flags",
+    "//ios/chrome/browser/ui/infobars:constants",
+    "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/web/public/test/http_server",

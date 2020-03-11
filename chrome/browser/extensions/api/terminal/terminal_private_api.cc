@@ -49,6 +49,8 @@ namespace OnTerminalResize =
     extensions::api::terminal_private::OnTerminalResize;
 namespace OpenTerminalProcess =
     extensions::api::terminal_private::OpenTerminalProcess;
+namespace OpenVmshellProcess =
+    extensions::api::terminal_private::OpenVmshellProcess;
 namespace CloseTerminalProcess =
     extensions::api::terminal_private::CloseTerminalProcess;
 namespace SendInput = extensions::api::terminal_private::SendInput;
@@ -184,6 +186,13 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
       OpenTerminalProcess::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  return OpenProcess(params->process_name, std::move(params->args));
+}
+
+ExtensionFunction::ResponseAction
+TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
+    const std::string& process_name,
+    std::unique_ptr<std::vector<std::string>> args) {
   const std::string& user_id_hash =
       extensions::ExtensionsBrowserClient::Get()->GetUserIdHashFromContext(
           browser_context());
@@ -211,7 +220,7 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
     OpenProcess(user_id_hash, tab_id,
                 {command_line->GetSwitchValueASCII(switches::kCroshCommand)});
 
-  } else if (params->process_name == kCroshName) {
+  } else if (process_name == kCroshName) {
     // command=crosh: use '/usr/bin/crosh' on a device, 'cat' otherwise.
     if (base::SysInfo::IsRunningOnChromeOS()) {
       OpenProcess(user_id_hash, tab_id, {kCroshCommand});
@@ -219,7 +228,7 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
       OpenProcess(user_id_hash, tab_id, {kStubbedCroshCommand});
     }
 
-  } else if (params->process_name == kVmShellName) {
+  } else if (process_name == kVmShellName) {
     // Ensure crostini is allowed before starting terminal.
     Profile* profile = Profile::FromBrowserContext(browser_context());
     if (!crostini::CrostiniFeatures::Get()->IsAllowed(profile))
@@ -228,10 +237,10 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
     // command=vmshell: ensure --owner_id, --vm_name, and --target_container are
     // set and the specified vm/container is running.
     base::CommandLine vmshell_cmd({kVmShellCommand});
-    std::vector<std::string> args = {kVmShellCommand};
-    if (params->args)
-      args.insert(args.end(), params->args->begin(), params->args->end());
-    base::CommandLine params_args(args);
+    if (!args)
+      args = std::make_unique<std::vector<std::string>>();
+    args->insert(args->begin(), kVmShellCommand);
+    base::CommandLine params_args(*args);
     std::string owner_id =
         GetSwitch(&params_args, &vmshell_cmd, kSwitchOwnerId, user_id_hash);
     std::string vm_name = GetSwitch(&params_args, &vmshell_cmd, kSwitchVmName,
@@ -264,7 +273,7 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
         observer_ptr);
   } else {
     // command=[unrecognized].
-    return RespondNow(Error("Invalid process name: " + params->process_name));
+    return RespondNow(Error("Invalid process name: " + process_name));
   }
   return RespondLater();
 }
@@ -326,6 +335,19 @@ void TerminalPrivateOpenTerminalProcessFunction::OpenOnRegistryTaskRunner(
 
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(callback, success, terminal_id));
+}
+
+TerminalPrivateOpenVmshellProcessFunction::
+    ~TerminalPrivateOpenVmshellProcessFunction() = default;
+
+ExtensionFunction::ResponseAction
+TerminalPrivateOpenVmshellProcessFunction::Run() {
+  std::unique_ptr<OpenVmshellProcess::Params> params(
+      OpenVmshellProcess::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // Only opens 'vmshell'.
+  return OpenProcess(kVmShellName, std::move(params->args));
 }
 
 TerminalPrivateSendInputFunction::~TerminalPrivateSendInputFunction() = default;

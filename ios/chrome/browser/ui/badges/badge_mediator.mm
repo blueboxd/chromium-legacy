@@ -34,6 +34,13 @@ namespace {
 // The minimum number of non-Fullscreen badges to display the overflow popup
 // menu.
 const int kMinimumNonFullScreenBadgesForOverflow = 2;
+// Historgram name for when an overflow badge was tapped.
+const char kInfobarOverflowBadgeTappedUserAction[] =
+    "MobileMessagesOverflowBadgeTapped";
+// Histogram name for when the overflow badge is shown
+const char kInfobarOverflowBadgeShownUserAction[] =
+    "MobileMessagesOverflowBadgeShown";
+
 }  // namespace
 
 @interface BadgeMediator () <InfobarBadgeTabHelperDelegate,
@@ -230,6 +237,9 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
       [popupMenuBadges addObject:item];
     }
   }
+  // Log overflow badge tap.
+  base::RecordAction(
+      base::UserMetricsAction(kInfobarOverflowBadgeTappedUserAction));
   [self.dispatcher displayPopupMenuWithBadgeItems:popupMenuBadges];
   [self updateConsumerReadStatus];
   // TODO(crbug.com/976901): Add metric for this action.
@@ -401,6 +411,11 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
     // Since there is only one non-fullscreen badge, it will be fixed as the
     // displayed badge, so mark it as read.
     displayedBadge.badgeState |= BadgeStateRead;
+  }
+  if (displayedBadge.badgeType == BadgeType::kBadgeTypeOverflow) {
+    // Log that the overflow badge is being shown.
+    base::RecordAction(
+        base::UserMetricsAction(kInfobarOverflowBadgeShownUserAction));
   }
   [self.consumer updateDisplayedBadge:displayedBadge
                       fullScreenBadge:self.offTheRecordBadge];

@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "extensions/common/extension_builder.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 
 class ScopedTestingLocalState;
 class ToolbarActionsBar;
@@ -90,7 +90,7 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest,
   // The overflow container's ExtensionActionTestHelper.
   std::unique_ptr<ExtensionActionTestHelper> overflow_browser_action_test_util_;
 
-  ui::MaterialDesignController::TouchUiScoperForTesting touch_ui_scoper_;
+  ui::TouchUiController::TouchUiScoperForTesting touch_ui_scoper_;
 
   // Local state for the browser process.
   std::unique_ptr<ScopedTestingLocalState> local_state_;

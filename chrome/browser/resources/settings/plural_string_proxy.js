@@ -6,6 +6,10 @@
  * @fileoverview A helper object used to get a pluralized string.
  */
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /** @interface */
   class PluralStringProxy {
@@ -20,7 +24,7 @@ cr.define('settings', function() {
   }
 
   /** @implements {settings.PluralStringProxy} */
-  class PluralStringProxyImpl {
+  /* #export */ class PluralStringProxyImpl {
     /** @override */
     getPluralString(messageName, itemCount) {
       return cr.sendWithPromise('getPluralString', messageName, itemCount);

@@ -49,7 +49,7 @@ std::pair<std::string, int> GetThrottlerParams(UserClass user_class) {
 
 RefreshThrottler::RefreshThrottler(UserClass user_class,
                                    PrefService* pref_service,
-                                   base::Clock* clock)
+                                   const base::Clock* clock)
     : pref_service_(pref_service), clock_(clock) {
   DCHECK(pref_service);
   DCHECK(clock);

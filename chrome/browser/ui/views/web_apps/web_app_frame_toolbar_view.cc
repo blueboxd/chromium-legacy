@@ -46,8 +46,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/material_design/material_design_controller_observer.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -253,8 +252,7 @@ WebAppFrameToolbarView::ContentSettingsContainer::ContentSettingsContainer(
 class WebAppFrameToolbarView::NavigationButtonContainer
     : public views::View,
       public CommandObserver,
-      public views::ButtonListener,
-      public ui::MaterialDesignControllerObserver {
+      public views::ButtonListener {
  public:
   explicit NavigationButtonContainer(BrowserView* browser_view);
   ~NavigationButtonContainer() override;
@@ -272,8 +270,7 @@ class WebAppFrameToolbarView::NavigationButtonContainer
     const SkColor disabled_color =
         SkColorSetA(icon_color_, gfx::kDisabledControlAlpha);
 
-    const bool touch_ui =
-        ui::MaterialDesignController::GetInstance()->touch_ui();
+    const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
     const gfx::VectorIcon& back_image = GetBackImage(touch_ui);
     back_button_->SetImage(views::Button::STATE_NORMAL,
                            gfx::CreateVectorIcon(back_image, icon_color_));
@@ -305,21 +302,16 @@ class WebAppFrameToolbarView::NavigationButtonContainer
         ui::DispositionFromEventFlags(event.flags()));
   }
 
-  // ui::MaterialDesignControllerObserver:
-  void OnTouchUiChanged() override {
-    GenerateMinimalUIButtonImages();
-    SchedulePaint();
-  }
-
  private:
   // The containing browser view.
   BrowserView* const browser_view_;
 
   SkColor icon_color_ = gfx::kPlaceholderColor;
 
-  ScopedObserver<ui::MaterialDesignController,
-                 ui::MaterialDesignControllerObserver>
-      md_observer_{this};
+  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+      ui::TouchUiController::Get()->RegisterCallback(base::BindRepeating(
+          &NavigationButtonContainer::GenerateMinimalUIButtonImages,
+          base::Unretained(this)));
 
   // These members are owned by the views hierarchy.
   ToolbarButton* back_button_ = nullptr;
@@ -352,7 +344,6 @@ WebAppFrameToolbarView::NavigationButtonContainer::NavigationButtonContainer(
 
   chrome::AddCommandObserver(browser_view_->browser(), IDC_BACK, this);
   chrome::AddCommandObserver(browser_view_->browser(), IDC_RELOAD, this);
-  md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
 WebAppFrameToolbarView::NavigationButtonContainer::
@@ -930,6 +921,7 @@ void WebAppFrameToolbarView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void WebAppFrameToolbarView::OnThemeChanged() {
+  views::AccessiblePaneView::OnThemeChanged();
   UpdateCaptionColors();
 }
 

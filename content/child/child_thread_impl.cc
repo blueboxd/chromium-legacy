@@ -10,7 +10,7 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
-#include "base/clang_coverage_buildflags.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -84,7 +84,7 @@
 #include "base/mac/mach_port_rendezvous.h"
 #endif
 
-#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
 #include <stdio.h>
 #if defined(OS_WIN)
 #include <io.h>
@@ -372,8 +372,8 @@ class ChildThreadImpl::IOThreadState
                                   weak_main_thread_, std::move(receiver)));
   }
 
-#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
-  void SetCoverageFile(base::File file) override {
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  void SetProfilingFile(base::File file) override {
     // TODO(crbug.com/985574) Remove Android check when possible.
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
     // Take the file descriptor so that |file| does not close it.

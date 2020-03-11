@@ -12,7 +12,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -86,7 +86,7 @@ void ExtensionsToolbarButton::ButtonPressed(views::Button* sender,
 }
 
 int ExtensionsToolbarButton::GetIconSize() const {
-  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   return (touch_ui && !browser_->app_controller()) ? kDefaultTouchableIconSize
                                                    : kDefaultIconSize;
 }

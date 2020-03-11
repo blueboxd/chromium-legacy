@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
 #include "components/safe_browsing/content/password_protection/password_protection_service.h"
@@ -35,7 +36,9 @@ namespace safe_browsing {
 
 class BinaryUploadService;
 class ClientSideDetectionService;
+#if !defined(OS_ANDROID)
 class DownloadProtectionService;
+#endif
 class IncidentReportingService;
 class PasswordProtectionService;
 class ResourceRequestDetector;
@@ -59,7 +62,9 @@ class ServicesDelegate {
   class ServicesCreator {
    public:
     virtual bool CanCreateDatabaseManager() = 0;
+#if !defined(OS_ANDROID)
     virtual bool CanCreateDownloadProtectionService() = 0;
+#endif
     virtual bool CanCreateIncidentReportingService() = 0;
     virtual bool CanCreateResourceRequestDetector() = 0;
     virtual bool CanCreateBinaryUploadService() = 0;
@@ -67,7 +72,9 @@ class ServicesDelegate {
     // Caller takes ownership of the returned object. Cannot use std::unique_ptr
     // because services may not be implemented for some build configs.
     virtual SafeBrowsingDatabaseManager* CreateDatabaseManager() = 0;
+#if !defined(OS_ANDROID)
     virtual DownloadProtectionService* CreateDownloadProtectionService() = 0;
+#endif
     virtual IncidentReportingService* CreateIncidentReportingService() = 0;
     virtual ResourceRequestDetector* CreateResourceRequestDetector() = 0;
     virtual BinaryUploadService* CreateBinaryUploadService() = 0;
@@ -117,8 +124,9 @@ class ServicesDelegate {
 
   // Returns nullptr for any service that is not available.
   virtual ClientSideDetectionService* GetCsdService() = 0;
+#if !defined(OS_ANDROID)
   virtual DownloadProtectionService* GetDownloadService() = 0;
-
+#endif
   virtual void StartOnIOThread(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& v4_config) = 0;

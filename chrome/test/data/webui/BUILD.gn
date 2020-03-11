@@ -214,6 +214,8 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/about_page_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/appearance_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/appearance_fonts_page_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/autofill_page_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/autofill_section_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/basic_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/checkbox_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/clear_browsing_data_test.m.js",
@@ -231,6 +233,11 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/languages_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/languages_page_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/on_startup_page_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/password_check_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/passwords_and_autofill_fake_data.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/passwords_export_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/passwords_section_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/payments_section_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/pref_util_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/prefs_test_cases.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/prefs_tests.m.js",
@@ -247,10 +254,13 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/site_favicon_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/startup_urls_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_about_page_browser_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/sync_test_util.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/system_page_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_extension_control_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_languages_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_lifetime_browser_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/test_open_window_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/test_password_manager_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_reset_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_search_engines_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_sync_browser_proxy.m.js",
@@ -266,7 +276,10 @@ js2gtest("browser_tests_js_webui") {
     ]
   }
   if (is_chromeos) {
-    data += [ "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js" ]
+    data += [
+      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/passwords_section_test_cros.m.js",
+    ]
   }
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 

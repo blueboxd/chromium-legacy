@@ -1137,11 +1137,9 @@ def check(path, contents):
     path = path.replace('\\', '/')
     basename, ext = os.path.splitext(path)
     # Only check code. Ignore tests and fuzzers.
-    # TODO(tkent): Remove 'Test' after the great mv.
     if (ext not in ('.cc', '.cpp', '.h', '.mm')
             or path.find('/testing/') >= 0
             or path.find('/tests/') >= 0
-            or basename.endswith('Test')
             or basename.endswith('_test')
             or basename.endswith('_test_helpers')
             or basename.endswith('_unittest')

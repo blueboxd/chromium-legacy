@@ -7,44 +7,53 @@
  * the settings page.
  */
 
-Polymer({
-  is: 'settings-credit-card-list-entry',
+cr.define('settings', function() {
+  /** @typedef {chrome.autofillPrivate.CreditCardEntry} */
+  /* #export */ let CreditCardEntry;
 
-  behaviors: [
-    I18nBehavior,
-  ],
+  Polymer({
+    is: 'settings-credit-card-list-entry',
 
-  properties: {
+    behaviors: [
+      I18nBehavior,
+    ],
+
+    properties: {
+      /**
+       * A saved credit card.
+       * @type {!settings.CreditCardEntry}
+       */
+      creditCard: Object,
+    },
+
     /**
-     * A saved credit card.
-     * @type {!settings.PaymentsManager.CreditCardEntry}
+     * Opens the credit card action menu.
+     * @private
      */
-    creditCard: Object,
-  },
+    onDotsMenuClick_() {
+      this.fire('dots-card-menu-click', {
+        creditCard: this.creditCard,
+        anchorElement: this.$$('#creditCardMenu'),
+      });
+    },
 
-  /**
-   * Opens the credit card action menu.
-   * @private
-   */
-  onDotsMenuClick_() {
-    this.fire('dots-card-menu-click', {
-      creditCard: this.creditCard,
-      anchorElement: this.$$('#creditCardMenu'),
-    });
-  },
+    /** @private */
+    onRemoteEditClick_() {
+      this.fire('remote-card-menu-click');
+    },
 
-  /** @private */
-  onRemoteEditClick_() {
-    this.fire('remote-card-menu-click');
-  },
+    /**
+     * The 3-dot menu should not be shown if the card is entirely remote.
+     * @return {boolean}
+     * @private
+     */
+    showDots_() {
+      return !!(
+          this.creditCard.metadata.isLocal ||
+          this.creditCard.metadata.isCached);
+    },
+  });
 
-  /**
-   * The 3-dot menu should not be shown if the card is entirely remote.
-   * @return {boolean}
-   * @private
-   */
-  showDots_() {
-    return !!(
-        this.creditCard.metadata.isLocal || this.creditCard.metadata.isCached);
-  },
+  // #cr_define_end
+  return {CreditCardEntry: CreditCardEntry};
 });

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -67,6 +67,7 @@ class OmniboxResultsContentsView : public views::View {
   ~OmniboxResultsContentsView() override = default;
 
   void OnThemeChanged() override {
+    views::View::OnThemeChanged();
     const SkColor background_color =
         GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_BACKGROUND);
     SetBackground(views::CreateSolidBackground(background_color));
@@ -81,6 +82,7 @@ class TopBackgroundView : public views::View {
       : location_bar_(location_bar) {}
 
   void OnThemeChanged() override {
+    views::View::OnThemeChanged();
     const SkColor background_color =
         GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_BACKGROUND);
 
@@ -204,9 +206,8 @@ int RoundedOmniboxResultsFrame::GetNonResultSectionHeight() {
 
 // static
 gfx::Insets RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets() {
-  return ui::MaterialDesignController::GetInstance()->touch_ui()
-             ? gfx::Insets(6, 1, 5, 1)
-             : gfx::Insets(4, 6);
+  return ui::TouchUiController::Get()->touch_ui() ? gfx::Insets(6, 1, 5, 1)
+                                                  : gfx::Insets(4, 6);
 }
 
 // static
@@ -271,6 +272,7 @@ void RoundedOmniboxResultsFrame::OnMouseEvent(ui::MouseEvent* event) {
 #endif  // !USE_AURA
 
 void RoundedOmniboxResultsFrame::OnThemeChanged() {
+  views::View::OnThemeChanged();
   const SkColor background_color =
       GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_BACKGROUND);
 

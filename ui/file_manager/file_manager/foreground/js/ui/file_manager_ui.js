@@ -173,7 +173,7 @@ class FileManagerUI {
     // Add a listener to the dialog container for hiding the search box.
     this.dialogContainer.addEventListener('click', (event) => {
       this.searchBox.removeHidePending(event);
-    });
+    }, true);
 
     /**
      * Empty folder UI.

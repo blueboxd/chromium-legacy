@@ -758,9 +758,12 @@
     ],
     "platforms": ["chromeos"]
   }],
+  // chrome.terminalPrivate allowed for crosh/nassh extensions,
+  // and chrome-untrusted://terminal.
   "terminalPrivate": [{
     "dependencies": ["permission:terminalPrivate"],
     "contexts": ["blessed_extension"],
+    "default_parent": true,
     "platforms": ["chromeos"]
   }, {
     "channel": "stable",
@@ -770,6 +773,11 @@
     ],
     "platforms": ["chromeos"]
   }],
+  // terminalPrivate.openTerminalProcess only allowed for
+  // crosh/nassh extensions.
+  "terminalPrivate.openTerminalProcess": {
+    "contexts": ["blessed_extension"]
+  },
   "topSites": {
     "dependencies": ["permission:topSites"],
     "contexts": ["blessed_extension"]

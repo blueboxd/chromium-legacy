@@ -196,6 +196,7 @@ void TabIcon::OnPaint(gfx::Canvas* canvas) {
 }
 
 void TabIcon::OnThemeChanged() {
+  views::View::OnThemeChanged();
   crashed_icon_ = gfx::ImageSkia();  // Force recomputation if crashed.
   if (!themed_favicon_.isNull())
     themed_favicon_ = ThemeImage(favicon_);

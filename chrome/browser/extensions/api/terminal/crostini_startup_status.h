@@ -38,12 +38,14 @@ class CrostiniStartupStatus
   void OnContainerDownloading(int32_t download_percent) override;
 
   void Print(const std::string& output);
+  void InitializeProgress();
   void PrintProgress();
   void PrintStage(const char* color, const std::string& output);
   void PrintAfterStage(const char* color, const std::string& output);
 
   base::RepeatingCallback<void(const std::string& output)> print_;
   const bool verbose_;
+  bool progress_initialized_ = false;
   int spinner_index_ = 0;
   int stage_index_ = 0;
   int end_of_line_index_ = 0;

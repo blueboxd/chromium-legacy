@@ -316,6 +316,7 @@ bool StatusBubbleViews::StatusView::IsDestroyPopupTimerRunning() const {
 }
 
 void StatusBubbleViews::StatusView::OnThemeChanged() {
+  views::View::OnThemeChanged();
   SetTextLabelColors(text_);
 }
 

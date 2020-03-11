@@ -152,6 +152,15 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledUserOptin) {
 }
 
 TEST_F(RealTimePolicyEngineTest,
+       TestCanPerformFullURLLookup_EnhancedProtection) {
+  base::test::ScopedFeatureList feature_list;
+  pref_service_.SetBoolean(prefs::kSafeBrowsingEnhanced, true);
+  ASSERT_FALSE(IsUserOptedIn());
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
+  ASSERT_TRUE(IsUserOptedIn());
+}
+
+TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookupWithToken_SyncControlled) {
   base::test::ScopedFeatureList feature_list;
 #if defined(OS_ANDROID)
@@ -182,11 +191,6 @@ TEST_F(RealTimePolicyEngineTest,
   EXPECT_FALSE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
                                                 &sync_service));
 
-  // Sync is enabled.
-  sync_service.SetDisableReasons({});
-  sync_service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  EXPECT_TRUE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
-                                               &sync_service));
 
   // History sync is disabled.
   sync_service.GetUserSettings()->SetSelectedTypes(
@@ -200,6 +204,43 @@ TEST_F(RealTimePolicyEngineTest,
   sync_service.SetIsUsingSecondaryPassphrase(true);
   EXPECT_FALSE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
                                                 &sync_service));
+}
+
+TEST_F(RealTimePolicyEngineTest,
+       TestCanPerformFullURLLookupWithToken_EnhancedProtection) {
+  base::test::ScopedFeatureList feature_list;
+#if defined(OS_ANDROID)
+  int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
+  int memory_size_lower_threshold = system_memory_size - 1;
+  feature_list.InitWithFeaturesAndParameters(
+      /* enabled_features */ {{kRealTimeUrlLookupEnabled,
+                               {{kRealTimeUrlLookupMemoryLowerThresholdMb,
+                                 base::NumberToString(
+                                     memory_size_lower_threshold)}}},
+                              {kRealTimeUrlLookupEnabledWithToken, {}},
+                              {kEnhancedProtection, {}}},
+      /* disabled_features */ {});
+#else
+  feature_list.InitWithFeatures(
+      /* enabled_features */ {kRealTimeUrlLookupEnabled,
+                              kRealTimeUrlLookupEnabledWithToken,
+                              kEnhancedProtection},
+      /* disabled_features */ {});
+#endif
+  syncer::TestSyncService sync_service;
+  // Only enhanced protection is on.
+  pref_service_.SetBoolean(prefs::kSafeBrowsingEnhanced, true);
+  EXPECT_TRUE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
+                                               &sync_service));
+
+  // Sync and history sync is disabled but enhanced protection is enabled.
+  sync_service.SetDisableReasons(
+      {syncer::SyncService::DISABLE_REASON_USER_CHOICE});
+  sync_service.SetTransportState(syncer::SyncService::TransportState::DISABLED);
+  sync_service.GetUserSettings()->SetSelectedTypes(
+      /* sync_everything */ false, {});
+  EXPECT_TRUE(CanPerformFullURLLookupWithToken(/*is_off_the_record=*/false,
+                                               &sync_service));
 }
 
 TEST_F(RealTimePolicyEngineTest,

@@ -18,7 +18,7 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "extensions/common/image_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -155,7 +155,7 @@ OmniboxMatchCellView::~OmniboxMatchCellView() = default;
 
 // static
 int OmniboxMatchCellView::GetTextIndent() {
-  return ui::MaterialDesignController::GetInstance()->touch_ui() ? 51 : 47;
+  return ui::TouchUiController::Get()->touch_ui() ? 51 : 47;
 }
 
 void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,

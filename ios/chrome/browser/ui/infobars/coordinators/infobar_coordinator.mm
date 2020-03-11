@@ -128,24 +128,27 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
   }
 
   self.infobarBannerState = InfobarBannerPresentationState::IsAnimating;
-  __weak __typeof(self) weakSelf = self;
   [self.baseViewController
       presentViewController:self.bannerViewController
                    animated:animated
                  completion:^{
-                   [weakSelf
-                       configureAccessibilityForBannerInViewController:
-                           weakSelf.baseViewController
-                                                            presenting:YES];
-                   weakSelf.bannerWasPresented = YES;
+                   // Capture self in order to make sure the animation dismisses
+                   // correctly in case the Coordinator gets stopped mid
+                   // presentation. This will also make sure some cleanup tasks
+                   // like configuring accessibility for the presenter VC are
+                   // performed successfully.
+                   [self configureAccessibilityForBannerInViewController:
+                             self.baseViewController
+                                                              presenting:YES];
+                   self.bannerWasPresented = YES;
                    // Set to NO for each Banner this coordinator might present.
-                   weakSelf.bannerIsBeingDismissed = NO;
-                   weakSelf.infobarBannerState =
+                   self.bannerIsBeingDismissed = NO;
+                   self.infobarBannerState =
                        InfobarBannerPresentationState::Presented;
-                   [weakSelf.badgeDelegate
-                       infobarBannerWasPresented:weakSelf.infobarType
-                                     forWebState:weakSelf.webState];
-                   [weakSelf infobarBannerWasPresented];
+                   [self.badgeDelegate
+                       infobarBannerWasPresented:self.infobarType
+                                     forWebState:self.webState];
+                   [self infobarBannerWasPresented];
                    if (completion)
                      completion();
                  }];
@@ -222,6 +225,9 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
 #pragma mark InfobarBannerDelegate
 
 - (void)bannerInfobarButtonWasPressed:(id)sender {
+  if (!self.infobarDelegate)
+    return;
+
   [self performInfobarAction];
   // The Infobar action might be async, and the badge should not change until
   // the Infobar has been accepted.
@@ -256,6 +262,8 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
 }
 
 - (void)infobarBannerWasDismissed {
+  DCHECK(self.infobarBannerState == InfobarBannerPresentationState::Presented);
+
   self.infobarBannerState = InfobarBannerPresentationState::NotPresented;
   [self configureAccessibilityForBannerInViewController:self.baseViewController
                                              presenting:NO];

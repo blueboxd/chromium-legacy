@@ -4,13 +4,21 @@
 
 /** @fileoverview Runs the Polymer Check Password tests. */
 
+// clang-format off
+// #import {PasswordManagerImpl} from 'chrome://settings/settings.js';
+// #import {makeCompromisedCredentials, makeCompromisedCredentialsInfo, makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
+// clang-format-on
+
 cr.define('settings_passwords_check', function() {
   const PasswordCheckState = chrome.passwordsPrivate.PasswordCheckState;
 
   function createCheckPasswordSection() {
     // Create a passwords-section to use for testing.
     const passwordsSection =
-        this.document.createElement('settings-password-check');
+        document.createElement('settings-password-check');
     document.body.appendChild(passwordsSection);
     Polymer.dom.flush();
     return passwordsSection;
@@ -23,7 +31,7 @@ cr.define('settings_passwords_check', function() {
    */
   function createLeakedPasswordItem(entry) {
     const leakedPasswordItem =
-        this.document.createElement('password-check-list-item');
+        document.createElement('password-check-list-item');
     leakedPasswordItem.item = entry;
     document.body.appendChild(leakedPasswordItem);
     Polymer.dom.flush();
@@ -37,17 +45,21 @@ cr.define('settings_passwords_check', function() {
   /**
    * Helper method that validates a that elements in the compromised credentials
    * list match the expected data.
-   * @param {!Element} listElements The iron-list element that will be checked.
+   * @param {!Element} checkPasswordSection The section element that will be
+   *     checked.
    * @param {!Array<!chrome.passwordsPrivate.CompromisedCredential>}
    * passwordList The expected data.
    * @private
    */
-  function validateLeakedPasswordsList(listElements, compromisedCredentials) {
+  function validateLeakedPasswordsList(checkPasswordSection,
+      compromisedCredentials) {
+    const listElements = checkPasswordSection.$.leakedPasswordList;
     assertEquals(listElements.items.length, compromisedCredentials.length);
+    const nodes = checkPasswordSection.shadowRoot.querySelectorAll(
+        'password-check-list-item');
     for (let index = 0; index < compromisedCredentials.length; ++index) {
-      // The first child is a template, skip and get the real 'first child'.
-      const node = Polymer.dom(listElements).children[index + 1];
-      assert(node);
+      const node = nodes[index];
+      assertTrue(!!node);
       assertEquals(
           node.$.elapsedTime.textContent.trim(),
           compromisedCredentials[index].elapsedTimeSinceCompromise);
@@ -83,7 +95,7 @@ cr.define('settings_passwords_check', function() {
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus')
           .then(() => {
-            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
             expectEquals(
                 section.i18n('checkPasswordsAgain'),
                 section.$.controlPasswordCheckButton.innerText);
@@ -103,7 +115,7 @@ cr.define('settings_passwords_check', function() {
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus')
           .then(() => {
-            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
             expectEquals(
                 section.i18n('checkPasswordsStop'),
                 section.$.controlPasswordCheckButton.innerText);
@@ -145,7 +157,7 @@ cr.define('settings_passwords_check', function() {
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus')
           .then(() => {
-            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
             expectEquals(
                 section.i18n('checkPasswordsAgainAfterError'),
                 section.$.controlPasswordCheckButton.innerText);
@@ -163,7 +175,7 @@ cr.define('settings_passwords_check', function() {
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus')
           .then(() => {
-            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
             expectEquals(
                 section.i18n('checkPasswordsAgainAfterError'),
                 section.$.controlPasswordCheckButton.innerText);
@@ -181,7 +193,7 @@ cr.define('settings_passwords_check', function() {
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus')
           .then(() => {
-            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
             expectEquals(
                 section.i18n('checkPasswordsAgainAfterError'),
                 section.$.controlPasswordCheckButton.innerText);
@@ -199,7 +211,7 @@ cr.define('settings_passwords_check', function() {
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus')
           .then(() => {
-            assert(isElementVisible(section.$.controlPasswordCheckButton));
+            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
             expectEquals(
                 section.i18n('checkPasswordsAgainAfterError'),
                 section.$.controlPasswordCheckButton.innerText);
@@ -215,8 +227,7 @@ cr.define('settings_passwords_check', function() {
       const checkPasswordSection = createCheckPasswordSection();
       assertTrue(checkPasswordSection.$.passwordCheckBody.hidden);
       assertFalse(checkPasswordSection.$.noCompromisedCredentials.hidden);
-      validateLeakedPasswordsList(
-          checkPasswordSection.$.leakedPasswordList, []);
+      validateLeakedPasswordsList(checkPasswordSection, []);
     });
 
     // Test verifies that compromised credentials are displayed in a proper way
@@ -237,8 +248,7 @@ cr.define('settings_passwords_check', function() {
             Polymer.dom.flush();
             assertFalse(checkPasswordSection.$.passwordCheckBody.hidden);
             assertTrue(checkPasswordSection.$.noCompromisedCredentials.hidden);
-            validateLeakedPasswordsList(
-                checkPasswordSection.$.leakedPasswordList, leakedPasswords);
+            validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
           });
     });
 
@@ -250,7 +260,7 @@ cr.define('settings_passwords_check', function() {
 
       const checkPasswordSection = createLeakedPasswordItem(password);
       assertEquals(checkPasswordSection.$$('changePasswordUrl'), null);
-      assert(checkPasswordSection.$$('#changePasswordInApp'));
+      assertTrue(!!checkPasswordSection.$$('#changePasswordInApp'));
     });
 
     // Verify that the More Actions menu opens when the button is clicked.
@@ -269,12 +279,12 @@ cr.define('settings_passwords_check', function() {
           .then(() => {
             Polymer.dom.flush();
             assertFalse(checkPasswordSection.$.passwordCheckBody.hidden);
-            const listElements = checkPasswordSection.$.leakedPasswordList;
-            const node = Polymer.dom(listElements).children[1];
+            const listElement =
+                checkPasswordSection.$$('password-check-list-item');
             const menu = checkPasswordSection.$.moreActionsMenu;
 
             assertFalse(menu.open);
-            node.$.more.click();
+            listElement.$.more.click();
             assertTrue(menu.open);
           });
     });
@@ -290,13 +300,14 @@ cr.define('settings_passwords_check', function() {
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
-        assert(isElementVisible(section.$.title));
+        assertTrue(isElementVisible(section.$.title));
         expectEquals(
             section.i18n('checkPasswordsProgress', 1, 2),
             section.$.title.innerText);
 
         // Change status from running to IDLE.
-        assert(!!passwordManager.lastCallback.addPasswordCheckStatusListener);
+        assertTrue(
+            !!passwordManager.lastCallback.addPasswordCheckStatusListener);
         passwordManager.lastCallback.addPasswordCheckStatusListener(
             autofill_test_util.makePasswordCheckStatus(
                 /*state=*/ PasswordCheckState.RUNNING,
@@ -304,7 +315,7 @@ cr.define('settings_passwords_check', function() {
                 /*remaining=*/ 0));
 
         Polymer.dom.flush();
-        assert(isElementVisible(section.$.title));
+        assertTrue(isElementVisible(section.$.title));
         expectEquals(
             section.i18n('checkPasswordsProgress', 2, 2),
             section.$.title.innerText);
@@ -322,7 +333,7 @@ cr.define('settings_passwords_check', function() {
         Polymer.dom.flush();
         expectEquals(
             PasswordCheckState.IDLE, checkPasswordSection.status_.state);
-      }, () => assert(false));
+      }, () => assertTrue(false));
     });
 
     // Tests that the spinner is replaced with a checkmark on successful runs.
@@ -337,7 +348,7 @@ cr.define('settings_passwords_check', function() {
         const icon = checkPasswordSection.$$('iron-icon');
         const spinner = checkPasswordSection.$$('paper-spinner-lite');
         expectFalse(isElementVisible(spinner));
-        assert(isElementVisible(icon));
+        assertTrue(isElementVisible(icon));
         expectFalse(icon.classList.contains('has-leaks'));
         expectTrue(icon.classList.contains('no-leaks'));
       });
@@ -361,7 +372,7 @@ cr.define('settings_passwords_check', function() {
         const icon = checkPasswordSection.$$('iron-icon');
         const spinner = checkPasswordSection.$$('paper-spinner-lite');
         expectFalse(isElementVisible(spinner));
-        assert(isElementVisible(icon));
+        assertTrue(isElementVisible(icon));
         expectTrue(icon.classList.contains('has-leaks'));
         expectFalse(icon.classList.contains('no-leaks'));
       });
@@ -381,7 +392,7 @@ cr.define('settings_passwords_check', function() {
         const icon = checkPasswordSection.$$('iron-icon');
         const spinner = checkPasswordSection.$$('paper-spinner-lite');
         expectFalse(isElementVisible(spinner));
-        assert(isElementVisible(icon));
+        assertTrue(isElementVisible(icon));
         expectFalse(icon.classList.contains('has-leaks'));
         expectFalse(icon.classList.contains('no-leaks'));
       });
@@ -415,11 +426,11 @@ cr.define('settings_passwords_check', function() {
       passwordManager.data.leakedCredentials =
           autofill_test_util.makeCompromisedCredentialsInfo([], 'just now');
 
-      section = createCheckPasswordSection();
+      const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         const title = section.$.title;
-        assert(isElementVisible(title));
+        assertTrue(isElementVisible(title));
         expectEquals(
             section.i18n('checkPasswordsProgress', 1, 4), title.innerText);
         expectFalse(isElementVisible(section.$.subtitle));
@@ -446,8 +457,8 @@ cr.define('settings_passwords_check', function() {
         Polymer.dom.flush();
         const title = section.$.title;
         const subtitle = section.$.subtitle;
-        assert(isElementVisible(title));
-        assert(isElementVisible(subtitle));
+        assertTrue(isElementVisible(title));
+        assertTrue(isElementVisible(subtitle));
         expectEquals(
             section.i18n('checkPasswordsProgress', 2, 5), title.innerText);
       });
@@ -474,8 +485,8 @@ cr.define('settings_passwords_check', function() {
         Polymer.dom.flush();
         const title = section.$.title;
         const subtitle = section.$.subtitle;
-        assert(isElementVisible(title));
-        assert(isElementVisible(subtitle));
+        assertTrue(isElementVisible(title));
+        assertTrue(isElementVisible(subtitle));
         expectEquals(section.i18n('checkPasswordsCanceled'), title.innerText);
       });
     });
@@ -500,8 +511,8 @@ cr.define('settings_passwords_check', function() {
         Polymer.dom.flush();
         const title = section.$.title;
         const subtitle = section.$.subtitle;
-        assert(isElementVisible(title));
-        assert(isElementVisible(subtitle));
+        assertTrue(isElementVisible(title));
+        assertTrue(isElementVisible(subtitle));
         expectEquals(
             section.i18n('checkPasswords') + ' • just now', title.innerText);
       });
@@ -517,7 +528,7 @@ cr.define('settings_passwords_check', function() {
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         const title = section.$.title;
-        assert(isElementVisible(title));
+        assertTrue(isElementVisible(title));
         expectEquals(
             section.i18n('checkPasswordsErrorOffline'), title.innerText);
         expectFalse(isElementVisible(section.$.subtitle));
@@ -534,7 +545,7 @@ cr.define('settings_passwords_check', function() {
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         const title = section.$.title;
-        assert(isElementVisible(title));
+        assertTrue(isElementVisible(title));
         expectEquals(
             section.i18n('checkPasswordsErrorSignedOut'), title.innerText);
         expectFalse(isElementVisible(section.$.subtitle));
@@ -551,7 +562,7 @@ cr.define('settings_passwords_check', function() {
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         const title = section.$.title;
-        assert(isElementVisible(title));
+        assertTrue(isElementVisible(title));
         expectEquals(
             section.i18n('checkPasswordsErrorNoPasswords'), title.innerText);
         expectFalse(isElementVisible(section.$.subtitle));
@@ -568,7 +579,7 @@ cr.define('settings_passwords_check', function() {
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         const title = section.$.title;
-        assert(isElementVisible(title));
+        assertTrue(isElementVisible(title));
         // TODO(crbug.com/1047726): Check for account redirection.
         expectEquals(
             section.i18n('checkPasswordsErrorTooManyPasswords') + ' ' +
@@ -588,7 +599,7 @@ cr.define('settings_passwords_check', function() {
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         const title = section.$.title;
-        assert(isElementVisible(title));
+        assertTrue(isElementVisible(title));
         expectEquals(section.i18n('checkPasswordsErrorQuota'), title.innerText);
         expectFalse(isElementVisible(section.$.subtitle));
       });
@@ -604,7 +615,7 @@ cr.define('settings_passwords_check', function() {
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         const title = section.$.title;
-        assert(isElementVisible(title));
+        assertTrue(isElementVisible(title));
         expectEquals(
             section.i18n('checkPasswordsErrorGeneric'), title.innerText);
         expectFalse(isElementVisible(section.$.subtitle));
@@ -618,24 +629,25 @@ cr.define('settings_passwords_check', function() {
 
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        assert(isElementVisible(section.$.controlPasswordCheckButton));
+        assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
         expectEquals(
             section.i18n('checkPasswordsAgain'),
             section.$.controlPasswordCheckButton.innerText);
 
         // Change status from running to IDLE.
-        assert(!!passwordManager.lastCallback.addPasswordCheckStatusListener);
+        assertTrue(
+            !!passwordManager.lastCallback.addPasswordCheckStatusListener);
         passwordManager.lastCallback.addPasswordCheckStatusListener(
             autofill_test_util.makePasswordCheckStatus(
                 /*state=*/ PasswordCheckState.RUNNING,
                 /*checked=*/ 0,
                 /*remaining=*/ 2));
-
-        assert(isElementVisible(section.$.controlPasswordCheckButton));
+        assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
         expectEquals(
             section.i18n('checkPasswordsStop'),
             section.$.controlPasswordCheckButton.innerText);
       });
     });
   });
+  // #cr_define_end
 });

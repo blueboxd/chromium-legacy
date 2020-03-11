@@ -260,6 +260,7 @@ flat::ActionType ConvertToFlatActionType(dnr_api::RuleActionType action_type) {
       return flat::ActionType_upgrade_scheme;
     case dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS:
       return flat::ActionType_allow_all_requests;
+    case dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS:
     case dnr_api::RULE_ACTION_TYPE_NONE:
       break;
   }

@@ -72,7 +72,7 @@
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/layer.h"
@@ -152,7 +152,6 @@ ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
   chrome::AddCommandObserver(browser_, IDC_SHOW_AVATAR_MENU, this);
 
   UpgradeDetector::GetInstance()->AddObserver(this);
-  md_observer_.Add(ui::MaterialDesignController::GetInstance());
 
   if (display_mode_ == DisplayMode::NORMAL)
     SetBackground(std::make_unique<TopContainerBackground>(browser_view));
@@ -627,6 +626,7 @@ void ToolbarView::Layout() {
 }
 
 void ToolbarView::OnThemeChanged() {
+  views::AccessiblePaneView::OnThemeChanged();
   if (!initialized_)
     return;
 
@@ -670,28 +670,6 @@ bool ToolbarView::SetPaneFocusAndFocusDefault() {
     return false;
   browser_->window()->RotatePaneFocus(true);
   return true;
-}
-
-// ui::MaterialDesignControllerObserver:
-void ToolbarView::OnTouchUiChanged() {
-  if (display_mode_ == DisplayMode::NORMAL) {
-    // Update the internal margins for touch layout.
-    // TODO(dfried): I think we can do better than this by making the touch UI
-    // code cleaner.
-    const int default_margin = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
-    const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
-    layout_manager_->SetDefault(views::kMarginsKey,
-                                gfx::Insets(0, default_margin));
-    location_bar_->SetProperty(views::kMarginsKey,
-                               gfx::Insets(0, location_bar_margin));
-    if (browser_actions_) {
-      browser_actions_->SetProperty(views::kInternalPaddingKey,
-                                    gfx::Insets(0, location_bar_margin));
-    }
-
-    LoadImages();
-    PreferredSizeChanged();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -921,7 +899,7 @@ void ToolbarView::LoadImages() {
         ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
   }
 
-  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
 
   const gfx::VectorIcon& back_image =
       touch_ui ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
@@ -982,4 +960,25 @@ void ToolbarView::UpdateHomeButtonVisibility() {
   const bool show_home_button =
       show_home_button_.GetValue() || browser_->deprecated_is_app();
   home_->SetVisible(show_home_button);
+}
+
+void ToolbarView::OnTouchUiChanged() {
+  if (display_mode_ == DisplayMode::NORMAL) {
+    // Update the internal margins for touch layout.
+    // TODO(dfried): I think we can do better than this by making the touch UI
+    // code cleaner.
+    const int default_margin = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+    const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
+    layout_manager_->SetDefault(views::kMarginsKey,
+                                gfx::Insets(0, default_margin));
+    location_bar_->SetProperty(views::kMarginsKey,
+                               gfx::Insets(0, location_bar_margin));
+    if (browser_actions_) {
+      browser_actions_->SetProperty(views::kInternalPaddingKey,
+                                    gfx::Insets(0, location_bar_margin));
+    }
+
+    LoadImages();
+    PreferredSizeChanged();
+  }
 }

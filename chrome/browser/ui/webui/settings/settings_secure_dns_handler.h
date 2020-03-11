@@ -9,12 +9,18 @@
 #include "base/values.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/public/doh_provider_list.h"
+#include "services/network/public/cpp/resolve_host_client_base.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace settings {
 
 // Handler for the Secure DNS setting.
-class SecureDnsHandler : public SettingsPageUIHandler {
+class SecureDnsHandler : public SettingsPageUIHandler,
+                         network::ResolveHostClientBase {
  public:
   SecureDnsHandler();
   ~SecureDnsHandler() override;
@@ -32,6 +38,9 @@ class SecureDnsHandler : public SettingsPageUIHandler {
       int country_id,
       const std::vector<net::DohProviderEntry>& providers);
 
+  void SetNetworkContextForTesting(
+      network::mojom::NetworkContext* network_context);
+
  protected:
   // Retrieves all pre-approved secure resolvers and returns them to WebUI.
   void HandleGetSecureDnsResolverList(const base::ListValue* args);
@@ -42,11 +51,26 @@ class SecureDnsHandler : public SettingsPageUIHandler {
   // Returns whether or not a custom entry is valid.
   void HandleValidateCustomDnsEntry(const base::ListValue* args);
 
+  // Returns whether or not a test query to the resolver succeeds.
+  void HandleProbeCustomDnsTemplate(const base::ListValue* args);
+
   // Retrieves the current host resolver configuration, computes the
   // corresponding UI representation, and sends it to javascript.
   void SendSecureDnsSettingUpdatesToJavascript();
 
  private:
+  // network::ResolveHostClientBase impl:
+  void OnComplete(
+      int result,
+      const net::ResolveErrorInfo& resolve_error_info,
+      const base::Optional<net::AddressList>& resolved_addresses) override;
+
+  void OnMojoConnectionError();
+
+  network::mojom::NetworkContext* network_context_for_testing_ = nullptr;
+  mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
+  mojo::Remote<network::mojom::HostResolver> host_resolver_;
+  std::string probe_callback_id_;
   PrefChangeRegistrar pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SecureDnsHandler);

@@ -8,7 +8,6 @@
  */
 
 (function() {
-'use strict';
 
 Polymer({
   is: 'password-edit-dialog',

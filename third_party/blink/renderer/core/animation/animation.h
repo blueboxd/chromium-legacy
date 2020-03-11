@@ -165,7 +165,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   virtual void pause(ExceptionState& = ASSERT_NO_EXCEPTION);
   virtual void play(ExceptionState& = ASSERT_NO_EXCEPTION);
-  void reverse(ExceptionState& = ASSERT_NO_EXCEPTION);
+  virtual void reverse(ExceptionState& = ASSERT_NO_EXCEPTION);
   void finish(ExceptionState& = ASSERT_NO_EXCEPTION);
   void updatePlaybackRate(double playback_rate,
                           ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -202,9 +202,9 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   double startTime(bool& is_null) const;
   base::Optional<double> startTime() const;
   base::Optional<double> StartTimeInternal() const { return start_time_; }
-  void setStartTime(double,
-                    bool is_null,
-                    ExceptionState& = ASSERT_NO_EXCEPTION);
+  virtual void setStartTime(double,
+                            bool is_null,
+                            ExceptionState& = ASSERT_NO_EXCEPTION);
 
   const AnimationEffect* effect() const { return content_.Get(); }
   AnimationEffect* effect() { return content_.Get(); }

@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_container.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
@@ -28,7 +29,8 @@
 #endif
 
 @interface InfobarContainerCoordinator () <InfobarContainer,
-                                           InfobarContainerConsumer>
+                                           InfobarContainerConsumer,
+                                           InfobarBannerContainer>
 
 // ViewController of the Infobar currently being presented, can be nil.
 @property(nonatomic, weak) UIViewController* infobarViewController;
@@ -215,6 +217,7 @@
   infobarCoordinator.webState =
       self.browser->GetWebStateList()->GetActiveWebState();
   infobarCoordinator.baseViewController = self.baseViewController;
+  infobarCoordinator.bannerViewController.infobarBannerContainer = self;
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   infobarCoordinator.dispatcher = static_cast<id<ApplicationCommands>>(
@@ -242,10 +245,7 @@
 
 - (void)childCoordinatorBannerFinishedPresented:
     (InfobarCoordinator*)infobarCoordinator {
-  InfobarCoordinator* coordinator =
-      [self.infobarCoordinatorsToPresent firstObject];
-  if (coordinator)
-    [self presentBannerForInfobarCoordinator:coordinator];
+  [self presentNextBannerInQueue];
 }
 
 - (void)childCoordinatorStopped:(InfobarCoordinator*)infobarCoordinator {
@@ -253,6 +253,12 @@
   // Also remove it from |infobarCoordinatorsToPresent| in case it was queued
   // for a presentation.
   [self.infobarCoordinatorsToPresent removeObject:infobarCoordinator];
+}
+
+#pragma mark InfobarBannerContainerDelegate
+
+- (void)infobarBannerFinishedPresenting {
+  [self presentNextBannerInQueue];
 }
 
 #pragma mark InfobarCommands
@@ -266,6 +272,14 @@
 }
 
 #pragma mark - Private
+
+// Presents the Banner for the next InfobarCoordinator in queue, if any.
+- (void)presentNextBannerInQueue {
+  InfobarCoordinator* coordinator =
+      [self.infobarCoordinatorsToPresent firstObject];
+  if (coordinator)
+    [self presentBannerForInfobarCoordinator:coordinator];
+}
 
 // Presents the infobarBanner for |infobarCoordinator| if possible, if not it
 // queues the banner in self.infobarCoordinatorsToPresent for future

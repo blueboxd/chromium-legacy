@@ -34,10 +34,6 @@ const char kColor5Purple[] = "\x1b[35m";
 const char kEraseInLine[] = "\x1b[K";
 const char kSpinner[] = "|/-\\";
 const int kMaxStage = 9;
-const char kErrorSymbol[] = "☠️";
-const base::NoDestructor<std::vector<std::string>> kSuccessSymbol({"😺", "🐹",
-                                                                   "🐼", "🐸",
-                                                                   "🐶", "🐬"});
 
 std::string MoveForward(int i) {
   return base::StringPrintf("\x1b[%dC", i);
@@ -49,9 +45,6 @@ CrostiniStartupStatus::CrostiniStartupStatus(
     base::RepeatingCallback<void(const std::string&)> print,
     bool verbose)
     : print_(std::move(print)), verbose_(verbose) {
-  // Initialize Progress
-  Print(base::StringPrintf("%s%s[%s] ", kCursorHide, kColor5Purple,
-                           std::string(kMaxStage, ' ').c_str()));
 }
 
 CrostiniStartupStatus::~CrostiniStartupStatus() = default;
@@ -61,13 +54,11 @@ void CrostiniStartupStatus::OnCrostiniRestarted(
   if (result != crostini::CrostiniResult::SUCCESS) {
     PrintAfterStage(
         kColor1RedBright,
-        base::StringPrintf("Error starting penguin container: %d %s\r\n",
-                           result, kErrorSymbol));
+        base::StringPrintf("Error starting penguin container: %d\r\n", result));
   } else {
     if (verbose_) {
       stage_index_ = kMaxStage + 1;  // done.
-      PrintStage(kColor2GreenBright, "done");
-      Print((*kSuccessSymbol)[rand() % kSuccessSymbol->size()] + "\r\n");
+      PrintStage(kColor2GreenBright, "done\r\n");
     }
   }
   Print(
@@ -77,8 +68,11 @@ void CrostiniStartupStatus::OnCrostiniRestarted(
 void CrostiniStartupStatus::ShowProgressAtInterval() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // Wait one interval before showing progress.
+  if (spinner_index_ > 0) {
+    PrintProgress();
+  }
   ++spinner_index_;
-  PrintProgress();
   base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&CrostiniStartupStatus::ShowProgressAtInterval,
@@ -98,11 +92,13 @@ void CrostiniStartupStatus::OnStageStarted(InstallerState stage) {
       kStartStrings({
           {InstallerState::kStart, "Initializing"},
           {InstallerState::kInstallImageLoader,
-           "Checking cros-termina component"},
+           "Checking cros-termina component installed"},
           {InstallerState::kStartConcierge, "Starting VM controller"},
-          {InstallerState::kCreateDiskImage, "Creating termina VM image"},
+          {InstallerState::kCreateDiskImage,
+           "Checking termina VM image installed"},
           {InstallerState::kStartTerminaVm, "Starting termina VM"},
-          {InstallerState::kCreateContainer, "Creating penguin container"},
+          {InstallerState::kCreateContainer,
+           "Checking penguin container installed"},
           {InstallerState::kSetupContainer, "Checking penguin container setup"},
           {InstallerState::kStartContainer, "Starting penguin container"},
           {InstallerState::kFetchSshKeys,
@@ -123,7 +119,17 @@ void CrostiniStartupStatus::Print(const std::string& output) {
   print_.Run(output);
 }
 
+void CrostiniStartupStatus::InitializeProgress() {
+  if (progress_initialized_) {
+    return;
+  }
+  progress_initialized_ = true;
+  Print(base::StringPrintf("%s%s[%s] ", kCursorHide, kColor5Purple,
+                           std::string(kMaxStage, ' ').c_str()));
+}
+
 void CrostiniStartupStatus::PrintProgress() {
+  InitializeProgress();
   Print(base::StringPrintf("\r%s%s%c", MoveForward(stage_index_).c_str(),
                            kColor5Purple, kSpinner[spinner_index_ & 0x3]));
 }
@@ -131,6 +137,7 @@ void CrostiniStartupStatus::PrintProgress() {
 void CrostiniStartupStatus::PrintStage(const char* color,
                                        const std::string& output) {
   DCHECK_GE(stage_index_, 1);
+  InitializeProgress();
   std::string progress(stage_index_ - 1, '=');
   Print(base::StringPrintf("\r%s[%s%s%s%s%s ", kColor5Purple, progress.c_str(),
                            MoveForward(3 + (kMaxStage - stage_index_)).c_str(),
@@ -140,6 +147,7 @@ void CrostiniStartupStatus::PrintStage(const char* color,
 
 void CrostiniStartupStatus::PrintAfterStage(const char* color,
                                             const std::string& output) {
+  InitializeProgress();
   Print(base::StringPrintf("\r%s%s%s", MoveForward(end_of_line_index_).c_str(),
                            color, output.c_str()));
   end_of_line_index_ += output.size();

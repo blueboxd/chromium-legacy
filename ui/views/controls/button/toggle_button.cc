@@ -252,6 +252,7 @@ void ToggleButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void ToggleButton::OnThemeChanged() {
+  Button::OnThemeChanged();
   SchedulePaint();
 }
 

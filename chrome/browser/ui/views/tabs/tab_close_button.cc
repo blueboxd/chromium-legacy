@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -82,9 +82,8 @@ TabCloseButton::~TabCloseButton() {}
 
 // static
 int TabCloseButton::GetWidth() {
-  return ui::MaterialDesignController::GetInstance()->touch_ui()
-             ? kTouchGlyphWidth
-             : kGlyphWidth;
+  return ui::TouchUiController::Get()->touch_ui() ? kTouchGlyphWidth
+                                                  : kGlyphWidth;
 }
 
 void TabCloseButton::SetIconColors(SkColor foreground_color,

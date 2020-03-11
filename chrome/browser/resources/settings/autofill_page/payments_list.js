@@ -13,7 +13,7 @@ Polymer({
   properties: {
     /**
      * An array of all saved credit cards.
-     * @type {!Array<!settings.PaymentsManager.CreditCardEntry>}
+     * @type {!Array<!settings.CreditCardEntry>}
      */
     creditCards: Array,
 

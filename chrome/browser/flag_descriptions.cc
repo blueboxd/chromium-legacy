@@ -992,7 +992,9 @@ const char kGooglePasswordManagerDescription[] =
 
 const char kHandwritingGestureName[] = "Handwriting Gestures";
 const char kHandwritingGestureDescription[] =
-    "Enables handwriting gestures within the virtual keyboard";
+    "Enables handwriting gestures within the virtual keyboard. This will send "
+    "handwriting you write inside the virtual keyboard to Google servers for "
+    "recognition but will not be associated with your Google account.";
 
 const char kHardwareMediaKeyHandling[] = "Hardware Media Key Handling";
 const char kHardwareMediaKeyHandlingDescription[] =

@@ -410,6 +410,7 @@ void EditableCombobox::Layout() {
 }
 
 void EditableCombobox::OnThemeChanged() {
+  View::OnThemeChanged();
   textfield_->OnThemeChanged();
 }
 

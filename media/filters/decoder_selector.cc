@@ -198,7 +198,7 @@ void DecoderSelector<StreamType>::InitializeDecryptingDemuxerStream() {
 
   decrypting_demuxer_stream_->Initialize(
       stream_, cdm_context_,
-      base::BindRepeating(
+      base::BindOnce(
           &DecoderSelector<StreamType>::OnDecryptingDemuxerStreamInitializeDone,
           weak_this_factory_.GetWeakPtr()));
 }

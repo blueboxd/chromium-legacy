@@ -153,6 +153,7 @@ class CircularImageButton : public views::ImageButton {
 
   // views::ImageButton:
   void OnThemeChanged() override {
+    views::ImageButton::OnThemeChanged();
     constexpr int kImageSize = 28;
     constexpr float kShortcutIconToImageRatio = 9.0f / 16.0f;
     const int kBorderThickness = show_border_ ? 1 : 0;
@@ -186,6 +187,7 @@ class FeatureButtonIconView : public views::ImageView {
 
   // views::ImageView:
   void OnThemeChanged() override {
+    views::ImageView::OnThemeChanged();
     constexpr int kIconSize = 16;
     const SkColor icon_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DefaultIconColor);
@@ -207,6 +209,7 @@ class ProfileManagementIconView : public views::ImageView {
 
   // views::ImageView:
   void OnThemeChanged() override {
+    views::ImageView::OnThemeChanged();
     constexpr float kIconToImageRatio = 0.75f;
     constexpr int kIconSize = 20;
     const SkColor icon_color = GetNativeTheme()->GetSystemColor(

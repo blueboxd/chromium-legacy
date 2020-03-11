@@ -18,7 +18,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
@@ -139,7 +139,7 @@ void MediaToolbarButtonView::UpdateIcon() {
   if (!GetWidget())
     return;
 
-  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   const gfx::VectorIcon& icon =
       touch_ui ? kMediaToolbarButtonTouchIcon : kMediaToolbarButtonIcon;
   UpdateIconsWithStandardColors(icon);

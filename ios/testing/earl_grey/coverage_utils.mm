@@ -4,15 +4,15 @@
 
 #import "ios/testing/earl_grey/coverage_utils.h"
 
-#include "base/clang_coverage_buildflags.h"
+#include "base/clang_profiling_buildflags.h"
 #import "testing/coverage_util_ios.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-#if BUILDFLAG(CLANG_COVERAGE)
-#include "base/test/clang_coverage.h"
+#if BUILDFLAG(CLANG_PROFILING)
+#include "base/test/profiling_utils.h"
 extern "C" void __llvm_profile_reset_counters(void);
 #endif
 
@@ -23,17 +23,17 @@ extern "C" void __llvm_profile_reset_counters(void);
 }
 
 + (void)resetCoverageProfileCounters {
-#if BUILDFLAG(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_PROFILING)
   // In this call, the already-dump flag is also reset, so that the same file
   // can be dumped to again.
   __llvm_profile_reset_counters();
-#endif  // BUILDFLAG(CLANG_COVERAGE)
+#endif  // BUILDFLAG(CLANG_PROFILING)
 }
 
 + (void)writeClangCoverageProfile {
-#if BUILDFLAG(CLANG_COVERAGE)
-  base::WriteClangCoverageProfile();
-#endif  // BUILDFLAG(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_PROFILING)
+  base::WriteClangProfilingProfile();
+#endif  // BUILDFLAG(CLANG_PROFILING)
 }
 
 @end

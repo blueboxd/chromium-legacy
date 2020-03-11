@@ -391,6 +391,7 @@ bool DoesActionSupportPriority(dnr_api::RuleActionType type) {
       return true;
     case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
       return false;
+    case dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS:
     case dnr_api::RULE_ACTION_TYPE_NONE:
       break;
   }
@@ -412,6 +413,7 @@ uint8_t GetActionTypePriority(dnr_api::RuleActionType action_type) {
       return 1;
     case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
       return 0;
+    case dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS:
     case dnr_api::RULE_ACTION_TYPE_NONE:
       break;
   }

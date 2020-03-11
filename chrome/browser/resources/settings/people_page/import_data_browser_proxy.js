@@ -9,6 +9,7 @@ cr.define('settings', function() {
    * @typedef {{
    *   name: string,
    *   index: number,
+   *   profileName: string,
    *   history: boolean,
    *   favorites: boolean,
    *   passwords: boolean,

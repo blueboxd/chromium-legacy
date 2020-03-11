@@ -16,20 +16,20 @@ cr.define('settings', function() {
     /**
      * Add an observer to the list of personal data.
      * @param {function(!Array<!settings.AutofillManager.AddressEntry>,
-     *   !Array<!settings.PaymentsManager.CreditCardEntry>):void} listener
+     *   !Array<!settings.CreditCardEntry>):void} listener
      */
     setPersonalDataManagerListener(listener) {}
 
     /**
      * Remove an observer from the list of personal data.
      * @param {function(!Array<!settings.AutofillManager.AddressEntry>,
-     *     !Array<!settings.PaymentsManager.CreditCardEntry>):void} listener
+     *     !Array<!settings.CreditCardEntry>):void} listener
      */
     removePersonalDataManagerListener(listener) {}
 
     /**
      * Request the list of credit cards.
-     * @param {function(!Array<!settings.PaymentsManager.CreditCardEntry>):void}
+     * @param {function(!Array<!settings.CreditCardEntry>):void}
      *     callback
      */
     getCreditCardList(callback) {}
@@ -44,7 +44,7 @@ cr.define('settings', function() {
 
     /**
      * Saves the given credit card.
-     * @param {!settings.PaymentsManager.CreditCardEntry} creditCard
+     * @param {!settings.CreditCardEntry} creditCard
      */
     saveCreditCard(creditCard) {}
 
@@ -70,14 +70,11 @@ cr.define('settings', function() {
     getUpiIdList(callback) {}
   }
 
-  /** @typedef {chrome.autofillPrivate.CreditCardEntry} */
-  PaymentsManager.CreditCardEntry;
-
   /**
    * Implementation that accesses the private API.
    * @implements {settings.PaymentsManager}
    */
-  class PaymentsManagerImpl {
+  /* #export */ class PaymentsManagerImpl {
     /** @override */
     setPersonalDataManagerListener(listener) {
       chrome.autofillPrivate.onPersonalDataChanged.addListener(listener);
@@ -142,7 +139,7 @@ cr.define('settings', function() {
     properties: {
       /**
        * An array of all saved credit cards.
-       * @type {!Array<!settings.PaymentsManager.CreditCardEntry>}
+       * @type {!Array<!settings.CreditCardEntry>}
        */
       creditCards: {
         type: Array,
@@ -216,7 +213,7 @@ cr.define('settings', function() {
 
     /**
      * @type {?function(!Array<!settings.AutofillManager.AddressEntry>,
-     *     !Array<!settings.PaymentsManager.CreditCardEntry>)}
+     *     !Array<!settings.CreditCardEntry>)}
      * @private
      */
     setPersonalDataListener_: null,
@@ -224,7 +221,7 @@ cr.define('settings', function() {
     /** @override */
     attached() {
       // Create listener function.
-      /** @type {function(!Array<!settings.PaymentsManager.CreditCardEntry>)} */
+      /** @type {function(!Array<!settings.CreditCardEntry>)} */
       const setCreditCardsListener = cardList => {
         this.creditCards = cardList;
       };
@@ -241,7 +238,7 @@ cr.define('settings', function() {
 
       /**
        * @type {function(!Array<!settings.AutofillManager.AddressEntry>,
-       *     !Array<!settings.PaymentsManager.CreditCardEntry>)}
+       *     !Array<!settings.CreditCardEntry>)}
        */
       const setPersonalDataListener = (addressList, cardList) => {
         this.creditCards = cardList;
@@ -275,7 +272,7 @@ cr.define('settings', function() {
       this.paymentsManager_.removePersonalDataManagerListener(
           /**
              @type {function(!Array<!settings.AutofillManager.AddressEntry>,
-                 !Array<!settings.PaymentsManager.CreditCardEntry>)}
+                 !Array<!settings.CreditCardEntry>)}
            */
           (this.setPersonalDataListener_));
     },
@@ -310,7 +307,8 @@ cr.define('settings', function() {
         expirationYear: date.getFullYear().toString(),
       };
       this.showCreditCardDialog_ = true;
-      this.activeDialogAnchor_ = this.$.addCreditCard;
+      this.activeDialogAnchor_ =
+          /** @type {HTMLElement} */ (this.$.addCreditCard);
     },
 
     /** @private */
@@ -404,7 +402,7 @@ cr.define('settings', function() {
     },
 
     /**
-     * @param {!Array<!settings.PaymentsManager.CreditCardEntry>} creditCards
+     * @param {!Array<!settings.CreditCardEntry>} creditCards
      * @param {boolean} creditCardEnabled
      * @return {boolean} Whether to show the migration button.
      * @private

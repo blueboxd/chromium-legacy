@@ -1993,6 +1993,14 @@ void View::Blur() {
   }
 }
 
+// System events ---------------------------------------------------------------
+
+void View::OnThemeChanged() {
+#if DCHECK_IS_ON()
+  on_theme_changed_called_ = true;
+#endif
+}
+
 // Tooltips --------------------------------------------------------------------
 
 void View::TooltipTextChanged() {
@@ -2881,6 +2889,15 @@ void View::PropagateThemeChanged() {
       child->PropagateThemeChanged();
   }
   OnThemeChanged();
+#if DCHECK_IS_ON()
+  DCHECK(on_theme_changed_called_)
+      << "views::View::OnThemeChanged() has not been called. This means that "
+         "some class in the hierarchy is not calling their direct parent's "
+         "OnThemeChanged(). Please fix this by adding the missing call. Do not "
+         "call views::View::OnThemeChanged() directly unless views::View is "
+         "the direct parent class.";
+  on_theme_changed_called_ = false;
+#endif
   for (ViewObserver& observer : observers_)
     observer.OnViewThemeChanged(this);
 }

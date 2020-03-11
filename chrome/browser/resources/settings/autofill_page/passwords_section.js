@@ -15,7 +15,6 @@ let PasswordUiEntryEvent;
 let ExceptionEntryEntryEvent;
 
 (function() {
-'use strict';
 
 /**
  * Checks if an HTML element is an editable. An editable is either a text
@@ -427,7 +426,7 @@ Polymer({
     const activeElement = getDeepActiveElement();
     if (!activeElement || !isEditable(activeElement)) {
       this.passwordManager_.undoRemoveSavedPasswordOrException();
-      cr.toastManager.getInstance().hide();
+      cr.toastManager.getToastManager().hide();
       // Preventing the default is necessary to not conflict with a possible
       // search action.
       event.preventDefault();

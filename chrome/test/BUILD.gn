@@ -1871,6 +1871,7 @@ if (!is_android) {
           "../browser/accessibility/accessibility_extension_api_browsertest.cc",
           "../browser/apps/platform_apps/api/arc_apps_private/arc_apps_private_apitest.cc",
           "../browser/extensions/api/system_display/system_display_chromeos_apitest.cc",
+          "../browser/extensions/api/terminal/terminal_private_browsertest.cc",
           "../browser/extensions/clipboard_extension_apitest_chromeos.cc",
         ]
       }

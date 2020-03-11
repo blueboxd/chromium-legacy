@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {AutofillManagerImpl, CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, PaymentsManagerImpl, Router, routes} from 'chrome://settings/settings.js';
+// #import {createAddressEntry, createCreditCardEntry, createExceptionEntry, createPasswordEntry, AutofillManagerExpectations, PasswordManagerExpectations, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+// #import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
+// #import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.m.js';
+// clang-format-on
+
 suite('PasswordsAndForms', function() {
   /**
    * Creates a new passwords and forms element.
@@ -119,7 +128,7 @@ suite('PasswordsAndForms', function() {
 
   setup(async function() {
     PolymerTest.clearBody();
-    await settings.forceLazyLoaded();
+    /* #ignore */ await settings.forceLazyLoaded();
 
     // Override the PasswordManagerImpl for testing.
     passwordManager = new TestPasswordManagerProxy();

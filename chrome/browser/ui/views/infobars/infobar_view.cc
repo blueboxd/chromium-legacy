@@ -226,6 +226,7 @@ void InfoBarView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void InfoBarView::OnThemeChanged() {
+  views::View::OnThemeChanged();
   const SkColor background_color = GetColor(kInfoBarLabelBackgroundColor);
   SetBackground(views::CreateSolidBackground(background_color));
 

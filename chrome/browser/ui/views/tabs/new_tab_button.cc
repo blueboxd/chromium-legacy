@@ -20,7 +20,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/variations/variations_associated_data.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -282,8 +282,7 @@ void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas) const {
   constexpr int kStrokeWidth = 2;
   flags.setStrokeWidth(kStrokeWidth);
 
-  const int radius =
-      ui::MaterialDesignController::GetInstance()->touch_ui() ? 7 : 6;
+  const int radius = ui::TouchUiController::Get()->touch_ui() ? 7 : 6;
   const int offset = GetCornerRadius() - radius;
   // The cap will be added outside the end of the stroke; inset to compensate.
   constexpr int kCapRadius = kStrokeWidth / 2;

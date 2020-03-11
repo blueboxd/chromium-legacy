@@ -25,6 +25,7 @@ double LoadingBarView::GetDisplayedLoadingProgress() const {
 }
 
 void LoadingBarView::OnThemeChanged() {
+  views::View::OnThemeChanged();
   SchedulePaint();
 }
 

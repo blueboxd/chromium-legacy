@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/security_state/core/security_state.h"
-#include "ui/base/material_design/material_design_controller_observer.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
@@ -73,8 +73,7 @@ class LocationBarView : public LocationBar,
                         public IconLabelBubbleView::Delegate,
                         public LocationIconView::Delegate,
                         public ContentSettingImageView::Delegate,
-                        public PageActionIconView::Delegate,
-                        public ui::MaterialDesignControllerObserver {
+                        public PageActionIconView::Delegate {
  public:
   class Delegate {
    public:
@@ -325,8 +324,7 @@ class LocationBarView : public LocationBar,
   // DropdownBarHostDelegate:
   void FocusAndSelectAll() override;
 
-  // ui::MaterialDesignControllerObserver:
-  void OnTouchUiChanged() override;
+  void OnTouchUiChanged();
 
   // Called with an async fetched for the keyword view.
   void OnKeywordFaviconFetched(const gfx::Image& icon);
@@ -394,9 +392,10 @@ class LocationBarView : public LocationBar,
 
   bool is_initialized_ = false;
 
-  ScopedObserver<ui::MaterialDesignController,
-                 ui::MaterialDesignControllerObserver>
-      md_observer_{this};
+  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+      ui::TouchUiController::Get()->RegisterCallback(
+          base::BindRepeating(&LocationBarView::OnTouchUiChanged,
+                              base::Unretained(this)));
 
   base::WeakPtrFactory<LocationBarView> weak_factory_{this};
 

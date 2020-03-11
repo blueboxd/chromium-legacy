@@ -15,8 +15,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -191,8 +191,8 @@ void CastToolbarButton::UpdateIcon() {
                         GetIconColor(views::Button::STATE_DISABLED, &icon));
   // This icon is smaller than the touchable-UI expected 24dp, so we need to pad
   // the insets to match.
-  SetLayoutInsetDelta(gfx::Insets(
-      ui::MaterialDesignController::GetInstance()->touch_ui() ? 4 : 0));
+  SetLayoutInsetDelta(
+      gfx::Insets(ui::TouchUiController::Get()->touch_ui() ? 4 : 0));
 }
 
 MediaRouterActionController* CastToolbarButton::GetActionController() const {

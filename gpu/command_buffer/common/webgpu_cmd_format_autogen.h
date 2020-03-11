@@ -69,7 +69,7 @@ struct AssociateMailboxImmediate {
   typedef AssociateMailboxImmediate ValueType;
   static const CommandId kCmdId = kAssociateMailboxImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeDataSize() {
     return static_cast<uint32_t>(sizeof(GLbyte) * 16);
@@ -149,7 +149,7 @@ struct DissociateMailbox {
   typedef DissociateMailbox ValueType;
   static const CommandId kCmdId = kDissociateMailbox;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/coverage_utils.h"
+#include "content/common/profiling_utils.h"
 
 #include <memory>
 
@@ -23,7 +23,7 @@
 
 namespace content {
 
-base::File OpenCoverageFile() {
+base::File OpenProfilingFile() {
   base::ScopedAllowBlockingForTesting allows_blocking;
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string prof_template;
@@ -41,6 +41,8 @@ base::File OpenCoverageFile() {
 
   // sajjadm@ and liaoyuke@ experimentally determined that a size 4 pool works
   // well for the coverage builder.
+  // TODO(https://crbug.com/1059335): Check if this is an appropriate value for
+  // the PGO builds.
   int pool_index = base::RandInt(0, 3);
   std::string filename = base::StrCat(
       {"child_pool-", base::NumberToString(pool_index), ".profraw"});

@@ -46,6 +46,7 @@ source_set("feed_core_v2") {
     "//components/signin/public/identity_manager",
     "//components/variations",
     "//components/variations/net",
+    "//components/web_resource:web_resource",
     "//net",
     "//services/network/public/cpp",
     "//services/network/public/mojom",

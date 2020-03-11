@@ -15,7 +15,7 @@ CSSAnimation::CSSAnimation(ExecutionContext* execution_context,
                            const String& animation_name)
     : Animation(execution_context, timeline, content),
       animation_name_(animation_name),
-      sticky_play_state_(Animation::kUnset) {}
+      ignore_css_play_state_(false) {}
 
 String CSSAnimation::playState() const {
   FlushStyles();
@@ -28,13 +28,29 @@ bool CSSAnimation::pending() const {
 }
 
 void CSSAnimation::pause(ExceptionState& exception_state) {
-  sticky_play_state_ = kPaused;
   Animation::pause(exception_state);
+  if (exception_state.HadException())
+    return;
+  ignore_css_play_state_ = true;
 }
 
 void CSSAnimation::play(ExceptionState& exception_state) {
-  sticky_play_state_ = kRunning;
   Animation::play(exception_state);
+  if (exception_state.HadException())
+    return;
+  ignore_css_play_state_ = true;
+}
+
+void CSSAnimation::reverse(ExceptionState& exception_state) {
+  PlayStateTransitionScope scope(*this);
+  Animation::reverse(exception_state);
+}
+
+void CSSAnimation::setStartTime(double start_time,
+                                bool is_null,
+                                ExceptionState& exception_state) {
+  PlayStateTransitionScope scope(*this);
+  Animation::setStartTime(start_time, is_null, exception_state);
 }
 
 void CSSAnimation::FlushStyles() const {
@@ -42,6 +58,18 @@ void CSSAnimation::FlushStyles() const {
   // disassociated from its owning element.
   if (GetDocument())
     GetDocument()->UpdateStyleAndLayoutTree();
+}
+
+CSSAnimation::PlayStateTransitionScope::PlayStateTransitionScope(
+    CSSAnimation& animation)
+    : animation_(animation) {
+  was_paused_ = animation_.Paused();
+}
+
+CSSAnimation::PlayStateTransitionScope::~PlayStateTransitionScope() {
+  bool is_paused = animation_.Paused();
+  if (was_paused_ != is_paused)
+    animation_.ignore_css_play_state_ = true;
 }
 
 }  // namespace blink

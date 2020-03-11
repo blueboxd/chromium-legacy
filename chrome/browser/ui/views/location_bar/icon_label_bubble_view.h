@@ -13,8 +13,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/material_design/material_design_controller_observer.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_host_view.h"
@@ -41,8 +40,7 @@ class ImageView;
 // base for the classes that handle the location icon (including the EV bubble),
 // tab-to-search UI, and content settings.
 class IconLabelBubbleView : public views::InkDropObserver,
-                            public views::LabelButton,
-                            public ui::MaterialDesignControllerObserver {
+                            public views::LabelButton {
  public:
   static constexpr int kTrailingPaddingPreMd = 2;
 
@@ -122,6 +120,8 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // prevent the bubble from reshowing on a mouse release.
   virtual bool IsBubbleShowing() const;
 
+  virtual void OnTouchUiChanged();
+
   // views::LabelButton:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
@@ -138,9 +138,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-
-  // ui::MaterialDesignControllerObserver:
-  void OnTouchUiChanged() override;
 
   const gfx::FontList& font_list() const { return label()->font_list(); }
 
@@ -268,9 +265,10 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // virtual child of this view.
   views::AXVirtualView* alert_virtual_view_;
 
-  ScopedObserver<ui::MaterialDesignController,
-                 ui::MaterialDesignControllerObserver>
-      md_observer_{this};
+  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+      ui::TouchUiController::Get()->RegisterCallback(
+          base::BindRepeating(&IconLabelBubbleView::OnTouchUiChanged,
+                              base::Unretained(this)));
 
   DISALLOW_COPY_AND_ASSIGN(IconLabelBubbleView);
 };

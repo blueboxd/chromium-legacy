@@ -62,7 +62,7 @@ class RealTimePolicyEngine {
   // Is the feature to perform real-time URL lookup enabled?
   static bool IsUrlLookupEnabled();
 
-  // Is user opted-in to the feature?
+  // Whether the user has opted-in to MBB or Enhanced Protection.
   static bool IsUserOptedIn(PrefService* pref_service);
 
   // Is the feature enabled due to enterprise policy?

@@ -344,7 +344,7 @@
         <span id="read-only-label">$i18n{READ_ONLY_LABEL}</span>
       </div>
       <div id="cancel-selection-button-wrapper">
-        <cr-button id="cancel-selection-button" class="menu-button" tabindex="8"
+        <cr-button id="cancel-selection-button" class="menu-button" tabindex="0"
               aria-label="$i18n{CANCEL_SELECTION_BUTTON_LABEL}" has-tooltip>
           <span class="icon-arrow-back"></span>
           <span id="cancel-selection-label">$i18n{CANCEL_SELECTION_BUTTON_LABEL}</span>
@@ -354,10 +354,10 @@
       <div class="spacer"></div>
       <div id="action-bar">
         <cr-button id="tasks" class="combobutton menu-button" menu="#tasks-menu"
-                tabindex="10" hidden
+                tabindex="0" hidden
                 aria-label="$i18n{TASKS_BUTTON_LABEL}">
         </cr-button>
-        <cr-button id="share-menu-button" class="icon-button menu-button" tabindex="11" hidden
+        <cr-button id="share-menu-button" class="icon-button menu-button" tabindex="0" hidden
                 menu="#share-menu"
                 aria-label="$i18n{SHARE_BUTTON_TOOLTIP}"
                 aria-activedescendant="share-menu"
@@ -365,7 +365,7 @@
           <files-toggle-ripple></files-toggle-ripple>
           <div class="icon"></div>
         </cr-button>
-        <cr-button id="delete-button" class="icon-button menu-button" tabindex="12" hidden
+        <cr-button id="delete-button" class="icon-button menu-button" tabindex="0" hidden
                 aria-label="$i18n{DELETE_BUTTON_LABEL}"
                 visibleif="full-page"
                 has-tooltip>
@@ -373,23 +373,23 @@
           <div class="icon"></div>
         </cr-button>
         <div id="search-wrapper">
-          <cr-button id="search-button" class="icon-button menu-button" tabindex="13"
+          <cr-button id="search-button" class="icon-button menu-button" tabindex="0"
                   aria-label="$i18n{SEARCH_TEXT_LABEL}"
                   has-tooltip>
             <files-toggle-ripple></files-toggle-ripple>
             <div class="icon"></div>
           </cr-button>
           <div id="search-box">
-            <cr-input type="search" tabindex="14" disabled
+            <cr-input type="search" tabindex="0" disabled
                 aria-label="$i18n{SEARCH_TEXT_LABEL}" placeholder="$i18n{SEARCH_TEXT_LABEL}">
-              <cr-button class="clear" slot="suffix" tabindex="14"
+              <cr-button class="clear" slot="suffix" tabindex="0"
                 aria-label="$i18n{SEARCH_CLEAR_LABEL}" has-tooltip>
                 <div class="icon"></div>
               </cr-button>
             </cr-input>
           </div>
         </div>
-        <cr-button id="refresh-button" class="icon-button menu-button" tabindex="15" hidden
+        <cr-button id="refresh-button" class="icon-button menu-button" tabindex="0" hidden
                 aria-label="$i18n{REFRESH_BUTTON_LABEL}"
                 command="#refresh" has-tooltip>
           <files-ripple></files-ripple>
@@ -401,14 +401,14 @@
           <div class="buttons">
             <cr-button id="cloud-import-button"
                     class="icon-button menu-button"
-                    tabindex="16"
+                    tabindex="0"
                     aria-label="$i18n{CLOUD_IMPORT_COMMAND}"
                     has-tooltip>
               <iron-icon icon="files:cloud-queue"></iron-icon>
             </cr-button>
             <cr-button id="cloud-import-details-button"
                     class="icon-button menu-button"
-                    tabindex="16"
+                    tabindex="0"
                     aria-label="$i18n{CLOUD_IMPORT_SHOW_DETAILS}"
                     has-tooltip>
               <iron-icon icon="files:arrow-drop-down"></iron-icon>
@@ -419,13 +419,13 @@
             <files-toggle-ripple></files-toggle-ripple>
           </div>
         </div>
-        <cr-button id="view-button" class="icon-button menu-button" tabindex="17"
+        <cr-button id="view-button" class="icon-button menu-button" tabindex="0"
                 aria-label="$i18n{CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL}"
                 has-tooltip>
           <files-ripple></files-ripple>
           <div class="icon"></div>
         </cr-button>
-        <cr-button id="sort-button" class="icon-button menu-button" tabindex="18"
+        <cr-button id="sort-button" class="icon-button menu-button" tabindex="0"
                 menu="#sort-menu"
                 aria-haspopup="true"
                 aria-label="$i18n{SORT_BUTTON_TOOLTIP}"
@@ -434,7 +434,7 @@
           <files-toggle-ripple></files-toggle-ripple>
           <div class="icon"></div>
         </cr-button>
-        <cr-button id="gear-button" class="icon-button menu-button" tabindex="19"
+        <cr-button id="gear-button" class="icon-button menu-button" tabindex="0"
                 menu="#gear-menu"
                 aria-label="$i18n{GEAR_BUTTON_TOOLTIP}"
                 aria-haspopup="true"
@@ -443,7 +443,7 @@
           <files-toggle-ripple></files-toggle-ripple>
           <div class="icon"></div>
         </cr-button>
-        <cr-button id="selection-menu-button" class="icon-button menu-button" tabindex="19"
+        <cr-button id="selection-menu-button" class="icon-button menu-button" tabindex="0"
                 menu="#file-context-menu"
                 aria-label="$i18n{SELECTION_MENU_BUTTON_TOOLTIP}"
                 aria-activedescendant="file-context-menu"
@@ -465,10 +465,10 @@
           <div class="content"></div>
         </div>
         <div class="progress"><div class="value"></div></div>
-        <cr-button class="import" tabindex="16">
+        <cr-button class="import" tabindex="0">
           <span>$i18n{CLOUD_IMPORT_COMMAND}</span>
         </cr-button>
-        <cr-button class="cancel" tabindex="16">
+        <cr-button class="cancel" tabindex="0">
           <span>$i18n{CLOUD_IMPORT_CANCEL_COMMAND}</span>
         </cr-button>
       </div>
@@ -477,7 +477,7 @@
     <div class="dialog-container">
       <div class="dialog-navigation-list">
         <div class="dialog-navigation-list-contents" role="navigation">
-          <tree id="directory-tree" role="tree" tabindex="21" files-ng></tree>
+          <tree id="directory-tree" role="tree" tabindex="0" files-ng></tree>
         </div>
         <div class="dialog-navigation-list-footer" hidden>
           <div id="progress-center" hidden>
@@ -527,9 +527,9 @@
                   <div class="image"></div>
                   <span id="empty-folder-label" class="label">$i18n{EMPTY_FOLDER}</span>
                 </div>
-                <div class="detail-table" id="detail-table" tabindex="1">
+                <div class="detail-table" id="detail-table" tabindex="0">
                 </div>
-                <grid class="thumbnail-grid" tabindex="2" hidden></grid>
+                <grid class="thumbnail-grid" tabindex="0" hidden></grid>
                 <paper-progress class="loading-indicator" indeterminate hidden></paper-progress>
                 <div class="drive-welcome page"></div>
               </div>
@@ -553,13 +553,13 @@
       <div class="left">
         <!-- TODO(fukino): Turn this button into paper-button when the CommandButton supports paper-button. -->
         <button id="new-folder-button" class="primary"
-                visibleif="saveas-file folder" tabindex="3" disabled>
+                visibleif="saveas-file folder" tabindex="0" disabled>
           <paper-ripple fit></paper-ripple>
           <span>$i18n{NEW_FOLDER_BUTTON_LABEL}</span>
         </button>
-        <select class="file-type" hidden tabindex="4"></select>
+        <select class="file-type" hidden tabindex="0"></select>
         <div id="filename-input-box" visibleif="saveas-file">
-          <cr-input id="filename-input-textbox" tabindex="5" class="entry-name"
+          <cr-input id="filename-input-textbox" tabindex="0" class="entry-name"
               type="text" spellcheck="false"
               placeholder="$i18n{FILENAME_LABEL}"></cr-input>
         </div>
@@ -567,11 +567,11 @@
         <div class="progress-bar"><div class="progress-track"></div></div>
       </div>
       <div class="right buttonbar">
-        <button id="cancel-button" class="cancel secondary" tabindex="6">
+        <button id="cancel-button" class="cancel secondary" tabindex="0">
           <paper-ripple fit></paper-ripple>
           <span>$i18n{CANCEL_LABEL}</span>
         </button>
-        <button id="ok-button" class="ok primary" disabled tabindex="7">
+        <button id="ok-button" class="ok primary" disabled tabindex="0">
           <paper-ripple fit></paper-ripple>
           <span></span>
         </button>

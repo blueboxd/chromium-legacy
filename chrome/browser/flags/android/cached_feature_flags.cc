@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/cached_feature_flags.h"
+#include "chrome/browser/flags/android/cached_feature_flags.h"
 
-#include "chrome/android/chrome_jni_headers/CachedFeatureFlags_jni.h"
+#include "chrome/browser/flags/jni_headers/CachedFeatureFlags_jni.h"
 
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"

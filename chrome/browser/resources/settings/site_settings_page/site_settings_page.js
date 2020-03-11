@@ -118,7 +118,7 @@ cr.define('settings', function() {
         label: 'siteSettingsCookies',
         icon: 'settings:cookie',
         enabledLabel: 'siteSettingsCookiesAllowed',
-        disabledLabel: 'siteSettingsCookiesAllowed',
+        disabledLabel: 'siteSettingsBlocked',
         otherLabel: 'deleteDataPostSession',
       },
       {

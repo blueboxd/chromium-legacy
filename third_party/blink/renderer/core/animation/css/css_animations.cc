@@ -399,17 +399,12 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
         // play state via the animation-play-state style. Ensure that the new
         // play state based on animation-play-state differs from the current
         // play state and that the change is not blocked by a sticky state.
-        Animation::AnimationPlayState sticky_override =
-            animation->getWebAnimationOverriddenPlayState();
         bool toggle_pause_state = false;
-        if (is_paused != was_paused) {
-          if (animation->Paused() && sticky_override != Animation::kPaused &&
-              !is_paused) {
+        if (is_paused != was_paused && !animation->getIgnoreCSSPlayState()) {
+          if (animation->Paused() && !is_paused)
             toggle_pause_state = true;
-          } else if (animation->Playing() &&
-                     sticky_override != Animation::kRunning && is_paused) {
+          else if (animation->Playing() && is_paused)
             toggle_pause_state = true;
-          }
         }
 
         if (keyframes_rule != existing_animation->style_rule ||
@@ -504,10 +499,10 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
 
     if (animation->Paused()) {
       animation->Unpause();
-      animation->ResetWebAnimationOverriddenPlayState();
+      animation->resetIgnoreCSSPlayState();
     } else {
       animation->pause();
-      animation->ResetWebAnimationOverriddenPlayState();
+      animation->resetIgnoreCSSPlayState();
     }
     if (animation->Outdated())
       animation->Update(kTimingUpdateOnDemand);
@@ -552,7 +547,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     animation->play();
     if (inert_animation->Paused())
       animation->pause();
-    animation->ResetWebAnimationOverriddenPlayState();
+    animation->resetIgnoreCSSPlayState();
     animation->Update(kTimingUpdateOnDemand);
 
     running_animations_.push_back(

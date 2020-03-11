@@ -468,6 +468,7 @@ void LabelButton::OnBlur() {
 }
 
 void LabelButton::OnThemeChanged() {
+  Button::OnThemeChanged();
   ResetColorsFromNativeTheme();
   UpdateThemedBorder();
   ResetLabelEnabledColor();

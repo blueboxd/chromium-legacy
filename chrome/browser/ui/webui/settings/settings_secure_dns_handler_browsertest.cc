@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/dns_probe_test_util.h"
 #include "chrome/browser/net/dns_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -16,6 +17,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_web_ui.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,6 +35,7 @@ namespace {
 
 constexpr char kGetSecureDnsResolverList[] = "getSecureDnsResolverList";
 constexpr char kValidateCustomDnsEntry[] = "validateCustomDnsEntry";
+constexpr char kProbeCustomDnsTemplate[] = "probeCustomDnsTemplate";
 constexpr char kWebUiFunctionName[] = "webUiCallbackName";
 
 const std::vector<DohProviderEntry>& GetDohProviderListForTesting() {
@@ -454,7 +457,8 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateValid) {
   // The request should be successful.
   ASSERT_TRUE(call_data.arg2()->GetBool());
   // The template should be valid.
-  ASSERT_TRUE(call_data.arg3()->GetBool());
+  ASSERT_EQ("https://example.template/dns-query",
+            call_data.arg3()->GetString());
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateInvalid) {
@@ -469,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateInvalid) {
   // The request should be successful.
   ASSERT_TRUE(call_data.arg2()->GetBool());
   // The template should be invalid.
-  ASSERT_FALSE(call_data.arg3()->GetBool());
+  ASSERT_EQ(std::string(), call_data.arg3()->GetString());
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
@@ -484,8 +488,9 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
   EXPECT_EQ(kWebUiFunctionName, call_data_valid.arg1()->GetString());
   // The request should be successful.
   ASSERT_TRUE(call_data_valid.arg2()->GetBool());
-  // The entry should be valid.
-  ASSERT_TRUE(call_data_valid.arg3()->GetBool());
+  // The second template should be valid.
+  ASSERT_EQ("https://example.template/dns-query",
+            call_data_valid.arg3()->GetString());
 
   base::ListValue args_invalid;
   args_invalid.AppendString(kWebUiFunctionName);
@@ -498,7 +503,62 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
   // The request should be successful.
   ASSERT_TRUE(call_data_invalid.arg2()->GetBool());
   // The entry should be invalid.
-  ASSERT_FALSE(call_data_invalid.arg3()->GetBool());
+  ASSERT_EQ(std::string(), call_data_invalid.arg3()->GetString());
+}
+
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeSuccess) {
+  auto network_context_ =
+      std::make_unique<chrome_browser_net::FakeHostResolverNetworkContext>(
+          std::vector<chrome_browser_net::FakeHostResolver::SingleResult>(
+              {chrome_browser_net::FakeHostResolver::SingleResult(
+                  net::OK, net::ResolveErrorInfo(net::OK),
+                  chrome_browser_net::FakeHostResolver::
+                      kOneAddressResponse)}) /* current_config_result_list */,
+          std::vector<chrome_browser_net::FakeHostResolver::
+                          SingleResult>() /* google_config_result_list */);
+  handler_->SetNetworkContextForTesting(network_context_.get());
+  base::ListValue args_valid;
+  args_valid.AppendString(kWebUiFunctionName);
+  args_valid.AppendString("https://example.template/dns-query");
+  web_ui_.HandleReceivedMessage(kProbeCustomDnsTemplate, &args_valid);
+  base::RunLoop().RunUntilIdle();
+
+  const content::TestWebUI::CallData& call_data_valid =
+      *web_ui_.call_data().back();
+  EXPECT_EQ("cr.webUIResponse", call_data_valid.function_name());
+  EXPECT_EQ(kWebUiFunctionName, call_data_valid.arg1()->GetString());
+  // The request should be successful.
+  ASSERT_TRUE(call_data_valid.arg2()->GetBool());
+  // The probe query should have succeeded.
+  ASSERT_TRUE(call_data_valid.arg3()->GetBool());
+}
+
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeFailure) {
+  auto network_context_ =
+      std::make_unique<chrome_browser_net::FakeHostResolverNetworkContext>(
+          std::vector<chrome_browser_net::FakeHostResolver::SingleResult>(
+              {chrome_browser_net::FakeHostResolver::SingleResult(
+                  net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_MALFORMED_RESPONSE),
+                  chrome_browser_net::FakeHostResolver::
+                      kNoResponse)}) /* current_config_result_list */,
+          std::vector<chrome_browser_net::FakeHostResolver::
+                          SingleResult>() /* google_config_result_list */);
+  handler_->SetNetworkContextForTesting(network_context_.get());
+  base::ListValue args_valid;
+  args_valid.AppendString(kWebUiFunctionName);
+  args_valid.AppendString("https://example.template/dns-query");
+  web_ui_.HandleReceivedMessage(kProbeCustomDnsTemplate, &args_valid);
+  base::RunLoop().RunUntilIdle();
+
+  const content::TestWebUI::CallData& call_data_valid =
+      *web_ui_.call_data().back();
+  EXPECT_EQ("cr.webUIResponse", call_data_valid.function_name());
+  EXPECT_EQ(kWebUiFunctionName, call_data_valid.arg1()->GetString());
+  // The request should be successful.
+  ASSERT_TRUE(call_data_valid.arg2()->GetBool());
+  // The probe query should have failed.
+  ASSERT_FALSE(call_data_valid.arg3()->GetBool());
 }
 
 }  // namespace settings

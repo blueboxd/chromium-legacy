@@ -413,6 +413,7 @@ void BubbleFrameView::Layout() {
 }
 
 void BubbleFrameView::OnThemeChanged() {
+  NonClientFrameView::OnThemeChanged();
   UpdateWindowTitle();
   ResetWindowControls();
   UpdateWindowIcon();

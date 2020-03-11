@@ -237,6 +237,7 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
 }
 
 void PasswordGenerationPopupViewViews::OnThemeChanged() {
+  autofill::AutofillPopupBaseView::OnThemeChanged();
   SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
   password_view_->UpdateBackground(controller_->password_selected()
                                        ? GetSelectedBackgroundColor()

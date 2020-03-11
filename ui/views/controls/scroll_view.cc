@@ -633,6 +633,7 @@ void ScrollView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void ScrollView::OnThemeChanged() {
+  View::OnThemeChanged();
   UpdateBorder();
   if (background_color_id_)
     UpdateBackground();

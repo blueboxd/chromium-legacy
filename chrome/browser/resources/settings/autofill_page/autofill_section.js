@@ -12,18 +12,18 @@ cr.define('settings', function() {
    * Interface for all callbacks to the autofill API.
    * @interface
    */
-  class AutofillManager {
+  /* #export */ class AutofillManager {
     /**
      * Add an observer to the list of personal data.
      * @param {function(!Array<!settings.AutofillManager.AddressEntry>,
-     *     !Array<!settings.PaymentsManager.CreditCardEntry>):void} listener
+     *     !Array<!settings.CreditCardEntry>):void} listener
      */
     setPersonalDataManagerListener(listener) {}
 
     /**
      * Remove an observer from the list of personal data.
      * @param {function(!Array<!settings.AutofillManager.AddressEntry>,
-     *     !Array<!settings.PaymentsManager.CreditCardEntry>):void} listener
+     *     !Array<!settings.CreditCardEntry>):void} listener
      */
     removePersonalDataManagerListener(listener) {}
 
@@ -51,7 +51,7 @@ cr.define('settings', function() {
    * Implementation that accesses the private API.
    * @implements {settings.AutofillManager}
    */
-  class AutofillManagerImpl {
+  /* #export */ class AutofillManagerImpl {
     /** @override */
     setPersonalDataManagerListener(listener) {
       chrome.autofillPrivate.onPersonalDataChanged.addListener(listener);
@@ -119,7 +119,7 @@ cr.define('settings', function() {
 
     /**
      * @type {?function(!Array<!settings.AutofillManager.AddressEntry>,
-     *     !Array<!settings.PaymentsManager.CreditCardEntry>)}
+     *     !Array<!settings.CreditCardEntry>)}
      * @private
      */
     setPersonalDataListener_: null,
@@ -134,7 +134,7 @@ cr.define('settings', function() {
 
       /**
        * @type {function(!Array<!settings.AutofillManager.AddressEntry>,
-       *     !Array<!settings.PaymentsManager.CreditCardEntry>)}
+       *     !Array<!settings.CreditCardEntry>)}
        */
       const setPersonalDataListener = (addressList, cardList) => {
         this.addresses = addressList;
@@ -162,7 +162,7 @@ cr.define('settings', function() {
       this.autofillManager_.removePersonalDataManagerListener(
           /**
              @type {function(!Array<!settings.AutofillManager.AddressEntry>,
-                 !Array<!settings.PaymentsManager.CreditCardEntry>)}
+                 !Array<!settings.CreditCardEntry>)}
            */
           (this.setPersonalDataListener_));
     },
@@ -195,7 +195,7 @@ cr.define('settings', function() {
       e.preventDefault();
       this.activeAddress = {};
       this.showAddressDialog_ = true;
-      this.activeDialogAnchor_ = this.$.addAddress;
+      this.activeDialogAnchor_ = /** @type {HTMLElement} */ (this.$.addAddress);
     },
 
     /** @private */

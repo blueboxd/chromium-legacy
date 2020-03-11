@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -114,8 +115,9 @@ public class FlagsActivity extends Activity {
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             String flagName = mFlag.getName();
             int oldState = booleanToState(mOverriddenFlags.get(flagName));
+            int newState = position;
 
-            switch (sFlagStates[position]) {
+            switch (sFlagStates[newState]) {
                 case STATE_DEFAULT:
                     mOverriddenFlags.remove(flagName);
                     break;
@@ -127,12 +129,16 @@ public class FlagsActivity extends Activity {
                     break;
             }
 
-            // Only communicate with the service if the map actually updated. This optimizes the
-            // number of IPCs we make, but this also allows for atomic batch updates by updating
-            // mOverriddenFlags prior to updating the Spinner state.
-            int newState = booleanToState(mOverriddenFlags.get(flagName));
+            // Update UI and Service. Only communicate with the service if the map actually updated.
+            // This optimizes the number of IPCs we make, but this also allows for atomic batch
+            // updates by updating mOverriddenFlags prior to updating the Spinner state.
             if (oldState != newState) {
                 sendFlagsToService();
+
+                ViewParent grandparent = parent.getParent();
+                if (grandparent instanceof View) {
+                    formatListEntry((View) grandparent, newState);
+                }
             }
         }
 
@@ -173,12 +179,32 @@ public class FlagsActivity extends Activity {
             adapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
             flagToggle.setAdapter(adapter);
 
-            // Populate spinner state from map.
+            // Populate spinner state from map and update indicators.
             int state = booleanToState(mOverriddenFlags.get(flag.getName()));
             flagToggle.setSelection(state);
             flagToggle.setOnItemSelectedListener(new FlagStateSpinnerSelectedListener(flag));
+            formatListEntry(view, state);
 
             return view;
+        }
+    }
+
+    /**
+     * Formats a flag list entry. {@code toggleableFlag} should be the View which holds the {@link
+     * Spinner}, flag title, flag description, etc. as children.
+     *
+     * @param toggleableFlag a View representing an entire flag entry.
+     * @param state the state of the flag.
+     */
+    private void formatListEntry(View toggleableFlag, int state) {
+        // View stateIndicator = toggleableFlag.findViewById(R.id.flag_state_indicator);
+        TextView flagName = toggleableFlag.findViewById(R.id.flag_name);
+        if (state == /* STATE_DEFAULT */ 0) {
+            // Unset the compound drawable.
+            flagName.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+        } else { // STATE_ENABLED or STATE_DISABLED
+            // Draws a blue circle to the left of the text.
+            flagName.setCompoundDrawablesWithIntrinsicBounds(R.drawable.blue_circle, 0, 0, 0);
         }
     }
 

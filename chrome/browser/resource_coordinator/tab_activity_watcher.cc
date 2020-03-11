@@ -561,6 +561,9 @@ void TabActivityWatcher::LogAndMaybeSortLifecycleUnitWithTabRanker(
   // Set query_id so that all TabFeatures logged in this query can be joined.
   tab_metrics_logger_->set_query_id(NewInt64ForLabelIdOrQueryId());
 
+  const bool should_sort_tabs =
+      base::FeatureList::IsEnabled(features::kTabRanker);
+
   std::map<int32_t, base::Optional<TabFeatures>> tab_features;
   for (auto* lifecycle_unit : *tabs) {
     auto* lifecycle_unit_external =
@@ -583,12 +586,16 @@ void TabActivityWatcher::LogAndMaybeSortLifecycleUnitWithTabRanker(
     }
 
     const base::Optional<TabFeatures> tab = web_contents_data->GetTabFeatures();
-    tab_features[lifecycle_unit->GetID()] = tab;
     web_contents_data->LogCurrentTabFeatures(tab);
+
+    // No reason to store TabFeatures if TabRanker is disabled.
+    if (should_sort_tabs) {
+      tab_features[lifecycle_unit->GetID()] = tab;
+    }
   }
 
-  // Directly return if TabRanker is not enabled.
-  if (!base::FeatureList::IsEnabled(features::kTabRanker))
+  // Directly return if TabRanker is disabled.
+  if (!should_sort_tabs)
     return;
 
   const std::map<int32_t, float> reactivation_scores =

@@ -25,7 +25,7 @@ class CommandStorageManagerTestHelper {
   // This posts the task to the SequencedWorkerPool, or run immediately
   // if the SequencedWorkerPool has been shutdown.
   void RunTaskOnBackendThread(const base::Location& from_here,
-                              const base::Closure& task);
+                              base::OnceClosure task);
 
   // Returns true if any commands got processed yet - saved or queued.
   bool ProcessedAnyCommands();

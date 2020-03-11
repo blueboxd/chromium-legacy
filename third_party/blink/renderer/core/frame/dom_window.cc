@@ -336,7 +336,7 @@ void DOMWindow::Close(LocalDOMWindow* incumbent_window) {
         MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kJavaScript,
             mojom::ConsoleMessageLevel::kWarning,
-            "Scripts may close only the windows that were opened by it."));
+            "Scripts may close only the windows that were opened by them."));
     return;
   }
 

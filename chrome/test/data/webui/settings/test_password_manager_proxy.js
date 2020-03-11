@@ -4,12 +4,17 @@
 
 /** @fileoverview Test implementation of PasswordManagerProxy. */
 
+// clang-format off
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// #import {makeCompromisedCredentialsInfo, makePasswordCheckStatus, PasswordManagerExpectations} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+// clang-format on
+
 /**
  * Test implementation
  * @implements {PasswordManagerProxy}
  * @constructor
  */
-class TestPasswordManagerProxy extends TestBrowserProxy {
+/* #export */ class TestPasswordManagerProxy extends TestBrowserProxy {
   constructor() {
     super([
       'requestPlaintextPassword',

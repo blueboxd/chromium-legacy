@@ -15,6 +15,7 @@ namespace feed {
 class RefreshTaskScheduler {
  public:
   RefreshTaskScheduler() = default;
+  virtual ~RefreshTaskScheduler() = default;
 
   // Schedules the task if it is not yet scheduled, or if the scheduling
   // period changes.

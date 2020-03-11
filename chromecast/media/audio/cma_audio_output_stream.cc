@@ -193,9 +193,9 @@ void CmaAudioOutputStream::Close(base::OnceClosure closure) {
   source_callback_ = nullptr;
   cma_backend_state_ = CmaBackendState::kPendingClose;
 
-  cma_backend_task_runner_.reset();
-  cma_backend_.reset();
   audio_bus_.reset();
+  cma_backend_.reset();
+  cma_backend_task_runner_.reset();
 
   std::move(closure).Run();
 }

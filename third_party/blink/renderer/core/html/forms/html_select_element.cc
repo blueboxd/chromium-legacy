@@ -1193,56 +1193,6 @@ bool HTMLSelectElement::PopupIsVisible() const {
   return select_type_->PopupIsVisible();
 }
 
-void HTMLSelectElement::UpdateSelectedState(HTMLOptionElement* clicked_option,
-                                            bool multi,
-                                            bool shift) {
-  DCHECK(!UsesMenuList());
-  DCHECK(clicked_option);
-  // Save the selection so it can be compared to the new selection when
-  // dispatching change events during mouseup, or after autoscroll finishes.
-  SaveLastSelection();
-
-  active_selection_state_ = true;
-
-  bool shift_select = is_multiple_ && shift;
-  bool multi_select = is_multiple_ && multi && !shift;
-
-  // Keep track of whether an active selection (like during drag selection),
-  // should select or deselect.
-  if (clicked_option->Selected() && multi_select) {
-    active_selection_state_ = false;
-    clicked_option->SetSelectedState(false);
-    clicked_option->SetDirty(true);
-  }
-
-  // If we're not in any special multiple selection mode, then deselect all
-  // other items, excluding the clicked option. If no option was clicked, then
-  // this will deselect all items in the list.
-  if (!shift_select && !multi_select)
-    DeselectItemsWithoutValidation(clicked_option);
-
-  // If the anchor hasn't been set, and we're doing a single selection or a
-  // shift selection, then initialize the anchor to the first selected index.
-  if (!active_selection_anchor_ && !multi_select)
-    SetActiveSelectionAnchor(SelectedOption());
-
-  // Set the selection state of the clicked option.
-  if (!clicked_option->IsDisabledFormControl()) {
-    clicked_option->SetSelectedState(true);
-    clicked_option->SetDirty(true);
-  }
-
-  // If there was no selectedIndex() for the previous initialization, or If
-  // we're doing a single selection, or a multiple selection (using cmd or
-  // ctrl), then initialize the anchor index to the listIndex that just got
-  // clicked.
-  if (!active_selection_anchor_ || !shift_select)
-    SetActiveSelectionAnchor(clicked_option);
-
-  SetActiveSelectionEnd(clicked_option);
-  UpdateListBoxSelection(!multi_select);
-}
-
 int HTMLSelectElement::ListIndexForOption(const HTMLOptionElement& option) {
   const ListItems& items = GetListItems();
   wtf_size_t length = items.size();

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/views/controls/webview/webview.h"
 
 class WebUITabStripInteractiveTest : public InProcessBrowserTest {
@@ -26,7 +26,7 @@ class WebUITabStripInteractiveTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList feature_override_;
-  ui::MaterialDesignController::TouchUiScoperForTesting touch_ui_scoper_{true};
+  ui::TouchUiController::TouchUiScoperForTesting touch_ui_scoper_{true};
 };
 
 // Regression test for crbug.com/1027375.

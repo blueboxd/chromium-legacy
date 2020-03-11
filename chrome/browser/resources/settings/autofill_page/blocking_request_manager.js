@@ -7,7 +7,7 @@
  * elsewhere in the DOM.
  */
 cr.define('settings', function() {
-  class BlockingRequestManager {
+  /* #export */ class BlockingRequestManager {
     /**
      * @param {Function=} makeRequest Function to initiate flow for request. If
      *     no function is provided, it defaults to this.resolve, i.e. it

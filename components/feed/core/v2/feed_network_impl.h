@@ -32,6 +32,7 @@ class FeedNetworkImpl : public FeedNetwork {
   struct RawResponse;
   class Delegate {
    public:
+    virtual ~Delegate() = default;
     // Returns a string which represents the top locale and region of the
     // device.
     // TODO(harringtond): Implement this. See

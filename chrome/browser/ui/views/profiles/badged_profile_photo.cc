@@ -62,6 +62,7 @@ class BadgeView : public ::views::ImageView {
 
   // views::View
   void OnThemeChanged() override {
+    ::views::ImageView::OnThemeChanged();
     switch (badge_type_) {
       case BadgedProfilePhoto::BADGE_TYPE_SUPERVISOR:
         SetImage(gfx::CreateVectorIcon(

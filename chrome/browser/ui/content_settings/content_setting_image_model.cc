@@ -38,7 +38,7 @@
 #include "content/public/browser/web_contents.h"
 #include "services/device/public/cpp/device_features.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
@@ -461,7 +461,7 @@ bool ContentSettingBlockedImageModel::UpdateAndGetVisibility(
   const gfx::VectorIcon* icon = &image_details->icon;
   // Touch mode uses a different tab audio icon.
   if (image_details->content_type == ContentSettingsType::SOUND &&
-      ui::MaterialDesignController::GetInstance()->touch_ui()) {
+      ui::TouchUiController::Get()->touch_ui()) {
     icon = &kTabAudioRoundedIcon;
   }
   set_icon(*icon, *badge_id);

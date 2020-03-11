@@ -49,20 +49,31 @@ Polymer({
 
   /**
    * When the custom input field loses focus, validate the current value and
-   * trigger an event with the result. Show an error message if the validated
-   * value is still the most recent value, is invalid, and is non-empty.
+   * trigger an event with the result. If the value is valid, also attempt a
+   * test query. Show an error message if the tested value is still the most
+   * recent value, is non-empty, and was either invalid or failed the test
+   * query.
+   * @private
    */
-  validate: function() {
+  validate: async function() {
+    this.showError_ = false;
     const valueToValidate = this.value;
-    this.browserProxy_.validateCustomDnsEntry(valueToValidate).then(valid => {
-      this.showError_ =
-          valueToValidate === this.value && !valid && valueToValidate !== '';
-      if (this.showError_) {
-        this.errorText_ = loadTimeData.getString('secureDnsCustomFormatError');
-      }
-
-      this.fire('value-update', {isValid: valid, text: valueToValidate});
-    });
+    const validTemplate =
+        await this.browserProxy_.validateCustomDnsEntry(valueToValidate);
+    const successfulProbe = validTemplate &&
+        await this.browserProxy_.probeCustomDnsTemplate(validTemplate);
+    // If there was no valid template or a valid template doesn't successfully
+    // answer a probe query, show an error as long as the input field value
+    // hasn't changed and is non-empty.
+    if (valueToValidate === this.value && this.value !== '' &&
+        !successfulProbe) {
+      this.errorText_ = loadTimeData.getString(
+          validTemplate ? 'secureDnsCustomConnectionError' :
+                          'secureDnsCustomFormatError');
+      this.showError_ = true;
+    }
+    this.fire(
+        'value-update', {isValid: !!validTemplate, text: valueToValidate});
   },
 
   /**

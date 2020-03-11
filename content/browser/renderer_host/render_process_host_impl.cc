@@ -19,7 +19,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/clang_coverage_buildflags.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/debug/alias.h"
@@ -293,8 +293,8 @@
 #include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
-#include "content/common/coverage_utils.h"
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+#include "content/common/profiling_utils.h"
 #endif
 
 namespace content {
@@ -3580,8 +3580,8 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   child_process_->SetIPCLoggingEnabled(IPC::Logging::GetInstance()->Enabled());
 #endif
 
-#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
-  child_process_->SetCoverageFile(OpenCoverageFile());
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  child_process_->SetProfilingFile(OpenProfilingFile());
 #endif
 }
 

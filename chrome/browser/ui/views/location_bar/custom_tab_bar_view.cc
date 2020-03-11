@@ -287,6 +287,7 @@ void CustomTabBarView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void CustomTabBarView::OnThemeChanged() {
+  views::AccessiblePaneView::OnThemeChanged();
   base::Optional<SkColor> optional_theme_color = GetThemeColor();
 
   title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());

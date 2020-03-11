@@ -5,6 +5,7 @@
 #include "base/build_time.h"
 #include "base/generated_build_date.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,7 +32,14 @@ TEST(BuildTime, DateLooksValid) {
 #endif
 }
 
-TEST(BuildTime, InThePast) {
+#if defined(OS_FUCHSIA)
+// TODO(https://crbug.com/1060357): Enable when RTC flake is fixed.
+#define MAYBE_InThePast DISABLED_InThePast
+#else
+#define MAYBE_InThePast InThePast
+#endif
+
+TEST(BuildTime, MAYBE_InThePast) {
   EXPECT_LT(base::GetBuildTime(), base::Time::Now());
   EXPECT_LT(base::GetBuildTime(), base::Time::NowFromSystemTime());
 }

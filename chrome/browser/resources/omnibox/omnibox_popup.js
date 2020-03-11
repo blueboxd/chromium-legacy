@@ -5,6 +5,8 @@
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import './chrome/browser/ui/webui/omnibox/omnibox.mojom-lite.js';
 
+import {AutocompleteMatchListElement} from 'chrome://resources/cr_components/omnibox/cr_autocomplete_match_list.js';
+
 /**
  * Javascript proof-of-concept for omnibox_popup.html, served from
  * chrome://omnibox/omnibox_popup.html. This is used for the experimental
@@ -21,15 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
       (response, isPageController) => {
         // Ignore debug controller and empty results.
         if (!isPageController && response.combinedResults.length > 0) {
-          const ol = document.querySelector('#omnibox-results');
-          while (ol.firstChild) {
-            ol.firstChild.remove();
-          }
-          response.combinedResults.forEach(result => {
-            const li = document.createElement('li');
-            li.textContent = `${result.contents} - ${result.description}`;
-            ol.appendChild(li);
-          });
+          /** @private {!AutocompleteMatchListElement} */
+          const popup = /** @type {!AutocompleteMatchListElement} */ (
+              document.querySelector('cr-autocomplete-match-list'));
+
+          popup.updateMatches(response.combinedResults);
         }
       });
 

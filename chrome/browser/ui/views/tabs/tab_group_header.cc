@@ -168,6 +168,7 @@ void TabGroupHeader::OnMouseEntered(const ui::MouseEvent& event) {
 }
 
 void TabGroupHeader::OnThemeChanged() {
+  TabSlotView::OnThemeChanged();
   VisualsChanged();
 }
 

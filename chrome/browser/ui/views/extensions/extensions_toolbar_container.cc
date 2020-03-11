@@ -236,17 +236,24 @@ ToolbarActionViewController* ExtensionsToolbarContainer::GetPoppedOutAction()
 
 void ExtensionsToolbarContainer::OnContextMenuShown(
     ToolbarActionViewController* extension) {
-  extension_with_open_context_menu_id_ = extension->GetId();
-  UpdateIconVisibility(extension_with_open_context_menu_id_.value());
+  // Only update the extension's toolbar visibility if the context menu is being
+  // shown from an extension visible in the toolbar.
+  if (!ExtensionsMenuView::IsShowing()) {
+    extension_with_open_context_menu_id_ = extension->GetId();
+    UpdateIconVisibility(extension_with_open_context_menu_id_.value());
+  }
 }
 
 void ExtensionsToolbarContainer::OnContextMenuClosed(
     ToolbarActionViewController* extension) {
-  DCHECK(extension_with_open_context_menu_id_.has_value());
-  base::Optional<extensions::ExtensionId> const
-      extension_with_open_context_menu = extension_with_open_context_menu_id_;
-  extension_with_open_context_menu_id_.reset();
-  UpdateIconVisibility(extension_with_open_context_menu.value());
+  // |extension_with_open_context_menu_id_| does not have a value when a context
+  // menu is being shown from within the extensions menu.
+  if (extension_with_open_context_menu_id_.has_value()) {
+    base::Optional<extensions::ExtensionId> const
+        extension_with_open_context_menu = extension_with_open_context_menu_id_;
+    extension_with_open_context_menu_id_.reset();
+    UpdateIconVisibility(extension_with_open_context_menu.value());
+  }
 }
 
 bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(

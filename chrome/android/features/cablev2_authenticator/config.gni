@@ -5,6 +5,5 @@
 import("//build/config/android/channel.gni")
 
 declare_args() {
-  enable_android_cablev2_authenticator =
-      android_channel == "default" || android_channel == "canary"
+  enable_android_cablev2_authenticator = false
 }

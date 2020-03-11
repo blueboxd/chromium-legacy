@@ -100,8 +100,6 @@
 #include "ui/aura/window.h"
 #endif
 
-using MD = ui::MaterialDesignController;
-
 namespace {
 
 // Distance from the next/previous stacked before before we consider the tab
@@ -268,7 +266,7 @@ TabDragController::EventSource EventSourceFromEvent(
 
 int GetStackableTabWidth() {
   return TabStyle::GetTabOverlap() +
-         (MD::GetInstance()->touch_ui() ? 136 : 102);
+         (ui::TouchUiController::Get()->touch_ui() ? 136 : 102);
 }
 
 }  // namespace
@@ -936,7 +934,6 @@ TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
       drag_context_(std::make_unique<TabDragContextImpl>(this)) {
   Init();
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
-  md_observer_.Add(MD::GetInstance());
 }
 
 TabStrip::~TabStrip() {
@@ -2243,6 +2240,7 @@ views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
 }
 
 void TabStrip::OnThemeChanged() {
+  views::AccessiblePaneView::OnThemeChanged();
   FrameColorsChanged();
 }
 

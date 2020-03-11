@@ -6,19 +6,68 @@
 #define COMPONENTS_FEED_CORE_V2_PUBLIC_FEED_SERVICE_H_
 
 #include <memory>
+#include <string>
+
+#include "base/memory/scoped_refptr.h"
 #include "components/feed/core/v2/public/feed_stream_api.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/web_resource/eula_accepted_notifier.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
+namespace network {
+class SharedURLLoaderFactory;
+}
+namespace signin {
+class IdentityManager;
+}
 
 namespace feed {
+class RefreshTaskScheduler;
+class FeedNetwork;
 
 class FeedService : public KeyedService {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    // Returns a string which represents the top locale and region of the
+    // device.
+    virtual std::string GetLanguageTag() = 0;
+  };
+
+  // Construct a FeedService given an already constructed FeedStreamApi.
+  // Used for testing only.
   explicit FeedService(std::unique_ptr<FeedStreamApi> stream);
+
+  // Construct a new FeedStreamApi along with FeedService.
+  FeedService(std::unique_ptr<Delegate> delegate,
+              std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler,
+              PrefService* profile_prefs,
+              PrefService* local_state,
+              signin::IdentityManager* identity_manager,
+              scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+              scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+              const std::string& api_key);
   ~FeedService() override;
+  FeedService(const FeedService&) = delete;
+  FeedService& operator=(const FeedService&) = delete;
 
   FeedStreamApi* GetStream() { return stream_.get(); }
 
  private:
+  class StreamDelegateImpl;
+  class NetworkDelegateImpl;
+
+  // These components are owned for construction of |FeedStreamApi|. These will
+  // be null if |FeedStreamApi| is created externally.
+  std::unique_ptr<Delegate> delegate_;
+  std::unique_ptr<StreamDelegateImpl> stream_delegate_;
+  std::unique_ptr<NetworkDelegateImpl> network_delegate_;
+  std::unique_ptr<FeedNetwork> feed_network_;
+  std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler_;
+
   std::unique_ptr<FeedStreamApi> stream_;
 };
 

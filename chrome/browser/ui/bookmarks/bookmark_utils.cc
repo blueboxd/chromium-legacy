@@ -25,7 +25,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -331,7 +331,7 @@ gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
                 .GetNativeImageNamed(resource_id)
                 .ToImageSkia();
 #else
-  folder = GetFolderIcon(ui::MaterialDesignController::GetInstance()->touch_ui()
+  folder = GetFolderIcon(ui::TouchUiController::Get()->touch_ui()
                              ? vector_icons::kFolderTouchIcon
                              : vector_icons::kFolderIcon,
                          text_color);
@@ -352,7 +352,7 @@ gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
                 .GetNativeImageNamed(resource_id)
                 .ToImageSkia();
 #else
-  folder = GetFolderIcon(ui::MaterialDesignController::GetInstance()->touch_ui()
+  folder = GetFolderIcon(ui::TouchUiController::Get()->touch_ui()
                              ? vector_icons::kFolderManagedTouchIcon
                              : vector_icons::kFolderManagedIcon,
                          text_color);

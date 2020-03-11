@@ -13,6 +13,7 @@
     android:layout_marginTop="15dp"
     android:orientation="vertical">
 
+    <!-- A compound drawable will be populated at runtime, but it's OK to configure drawablePadding now. -->
     <TextView
         android:id="@+id/flag_name"
         android:layout_width="match_parent"
@@ -20,6 +21,7 @@
         android:textIsSelectable="true"
         android:textStyle="bold"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:drawablePadding="4dp"
         android:paddingBottom="2dp"
         android:paddingTop="2dp" />
 

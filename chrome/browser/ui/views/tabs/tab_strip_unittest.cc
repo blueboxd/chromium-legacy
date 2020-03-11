@@ -29,7 +29,7 @@
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/canvas.h"
@@ -267,7 +267,7 @@ class TabStripTest : public ChromeViewsTestBase,
                                                0);
 
  private:
-  ui::MaterialDesignController::TouchUiScoperForTesting touch_ui_scoper_;
+  ui::TouchUiController::TouchUiScoperForTesting touch_ui_scoper_;
   std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
       animation_mode_reset_;
 
@@ -524,7 +524,7 @@ TEST_P(TabStripTest, TabForEventWhenStacked) {
 // the tabstrip is in stacked tab mode.
 TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   // Touch-optimized UI requires a larger width for tabs to show close buttons.
-  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   tab_strip_->SetBounds(0, 0, touch_ui ? 442 : 346, 20);
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
@@ -596,7 +596,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   // Set the tab strip width to be wide enough for three tabs to show all
   // three icons, but not enough for five tabs to show all three icons.
   // Touch-optimized UI requires a larger width for tabs to show close buttons.
-  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   tab_strip_->SetBounds(0, 0, touch_ui ? 442 : 346, 20);
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
@@ -1291,8 +1291,7 @@ TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {
   Tab* tab = tab_strip_->tab_at(0);
   const int initial_height = tab->height();
 
-  ui::MaterialDesignController::TouchUiScoperForTesting other_layout(
-      !GetParam());
+  ui::TouchUiController::TouchUiScoperForTesting other_layout(!GetParam());
 
   CompleteAnimationAndLayout();
   if (GetParam()) {

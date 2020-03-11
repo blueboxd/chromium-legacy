@@ -35,11 +35,6 @@ inline constexpr InsecureRequestPolicy operator~(InsecureRequestPolicy flags) {
   return static_cast<InsecureRequestPolicy>(~static_cast<int>(flags));
 }
 
-inline std::ostream& operator<<(std::ostream& out,
-                                InsecureRequestPolicy flags) {
-  return out << std::bitset<sizeof(int) * 8>(static_cast<int>(flags));
-}
-
 }  // namespace mojom
 }  // namespace blink
 

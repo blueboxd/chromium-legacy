@@ -146,6 +146,7 @@ bool CredentialLeakDialogView::ShouldShowCloseButton() const {
 }
 
 void CredentialLeakDialogView::OnThemeChanged() {
+  views::DialogDelegateView::OnThemeChanged();
   GetBubbleFrameView()->SetHeaderView(
       CreateIllustration(GetNativeTheme()->ShouldUseDarkColors()));
 }

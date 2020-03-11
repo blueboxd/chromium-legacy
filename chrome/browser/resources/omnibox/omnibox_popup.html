@@ -6,9 +6,11 @@
   <title>Omnibox Popup</title>
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <script type="module" src="omnibox_popup.js"></script>
+  <script type="module" src="chrome://resources/cr_components/omnibox/cr_autocomplete_match_list.js">
+  </script>
 </head>
 
 <body>
-  <ol id="omnibox-results"></ol>
+  <cr-autocomplete-match-list></cr-autocomplete-match-list>
 </body>
 </html>

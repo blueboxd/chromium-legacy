@@ -74,7 +74,8 @@ parentMessagePipe.registerHandler(Message.LOAD_FILE, (message) => {
 class Delegate {
   /** @override */
   async openFeedbackDialog() {
-    let response = await parentMessagePipe.sendMessage('openFeedbackDialog');
+    const response = await parentMessagePipe.sendMessage(
+      Message.OPEN_FEEDBACK_DIALOG);
     return /** @type {?string} */ (response['errorMessage']);
   }
 };

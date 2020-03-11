@@ -89,7 +89,7 @@ cr.define('settings', function() {
    *   typedUrlsSynced: boolean,
    * }}
    */
-  let SyncPrefs;
+  /* #export */ let SyncPrefs;
 
   /** @enum {string} */
   /* #export */ const PageStatus = {

@@ -30,7 +30,7 @@ class RefreshThrottler {
  public:
   RefreshThrottler(UserClass user_class,
                    PrefService* pref_service,
-                   base::Clock* clock);
+                   const base::Clock* clock);
 
   // Returns whether quota is available for another request, persists the usage
   // of said quota, and reports this information to UMA.
@@ -51,7 +51,7 @@ class RefreshThrottler {
   PrefService* pref_service_;
 
   // Used to access current time, injected for testing.
-  base::Clock* clock_;
+  const base::Clock* clock_;
 
   // The name used by this throttler, based off UserClass, which will be used as
   // a suffix when constructing histogram or finch param names.

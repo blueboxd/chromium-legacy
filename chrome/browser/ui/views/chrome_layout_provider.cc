@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/shadow_value.h"
 
 namespace {
@@ -51,15 +51,14 @@ ChromeLayoutProvider::CreateLayoutProvider() {
 
 gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
   DCHECK_LT(metric, views::VIEWS_INSETS_MAX);
-  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   switch (metric) {
     case views::INSETS_DIALOG:
     case views::INSETS_DIALOG_SUBSECTION:
       return gfx::Insets(kHarmonyLayoutUnit);
     case views::INSETS_CHECKBOX_RADIO_BUTTON: {
       gfx::Insets insets = LayoutProvider::GetInsetsMetric(metric);
-      // Material Design requires that checkboxes and radio buttons are aligned
-      // flush to the left edge.
+      // Checkboxes and radio buttons should be aligned flush to the left edge.
       return gfx::Insets(insets.top(), 0, insets.bottom(), insets.right());
     }
     case views::INSETS_VECTOR_IMAGE_BUTTON:

@@ -168,6 +168,7 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
 
   // views::View
   void OnThemeChanged() override {
+    views::View::OnThemeChanged();
     const SkColor icon_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DefaultIconColor);
     views::SetImageFromVectorIconWithColor(

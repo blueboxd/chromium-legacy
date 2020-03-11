@@ -324,6 +324,7 @@ void WebUITabCounterButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
 }
 
 void WebUITabCounterButton::OnThemeChanged() {
+  views::Button::OnThemeChanged();
   UpdateColors();
   ConfigureInkDropForToolbar(this);
 }

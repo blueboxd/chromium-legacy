@@ -49,6 +49,7 @@ void ContentsWebView::ViewHierarchyChanged(
 }
 
 void ContentsWebView::OnThemeChanged() {
+  views::WebView::OnThemeChanged();
   UpdateBackgroundColor();
 }
 

@@ -305,6 +305,7 @@ void Combobox::SetInvalid(bool invalid) {
 }
 
 void Combobox::OnThemeChanged() {
+  View::OnThemeChanged();
   SetBackground(
       CreateBackgroundFromPainter(Painter::CreateSolidRoundRectPainter(
           GetNativeTheme()->GetSystemColor(

@@ -9,6 +9,7 @@
 
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 
 namespace safe_browsing {
@@ -71,12 +72,16 @@ class TestSafeBrowsingService : public SafeBrowsingService,
 
   // ServicesDelegate::ServicesCreator:
   bool CanCreateDatabaseManager() override;
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   bool CanCreateDownloadProtectionService() override;
+#endif
   bool CanCreateIncidentReportingService() override;
   bool CanCreateResourceRequestDetector() override;
   bool CanCreateBinaryUploadService() override;
   SafeBrowsingDatabaseManager* CreateDatabaseManager() override;
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   DownloadProtectionService* CreateDownloadProtectionService() override;
+#endif
   IncidentReportingService* CreateIncidentReportingService() override;
   ResourceRequestDetector* CreateResourceRequestDetector() override;
   BinaryUploadService* CreateBinaryUploadService() override;

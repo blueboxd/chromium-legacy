@@ -206,6 +206,7 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
 }
 
 void AuthenticatorRequestSheetView::OnThemeChanged() {
+  views::View::OnThemeChanged();
   UpdateIconImageFromModel();
 }
 

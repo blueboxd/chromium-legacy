@@ -37,6 +37,9 @@ import org.chromium.android_webview.ProductConfig;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
 import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.CommandLineUtil;
+import org.chromium.android_webview.common.DeveloperModeUtils;
+import org.chromium.android_webview.common.FlagOverrideHelper;
+import org.chromium.android_webview.common.ProductionSupportedFlagList;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -57,6 +60,7 @@ import org.chromium.content_public.browser.LGEmailActionModeWorkaround;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
@@ -307,6 +311,29 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             if (isAppDebuggable || isOsDebuggable) {
                 CommandLine cl = CommandLine.getInstance();
                 cl.appendSwitch(AwSwitches.WEBVIEW_LOG_JS_CONSOLE_MESSAGES);
+            }
+
+            String webViewPackageName = AwBrowserProcess.getWebViewPackageName();
+            boolean isDeveloperModeEnabled =
+                    DeveloperModeUtils.isDeveloperModeEnabled(webViewPackageName);
+            RecordHistogram.recordBooleanHistogram(
+                    "Android.WebView.DevUi.DeveloperModeEnabled", isDeveloperModeEnabled);
+            if (isDeveloperModeEnabled) {
+                long start = SystemClock.elapsedRealtime();
+                try {
+                    FlagOverrideHelper helper =
+                            new FlagOverrideHelper(ProductionSupportedFlagList.sFlagList);
+                    Map<String, Boolean> flagOverrides =
+                            DeveloperModeUtils.getFlagOverrides(webViewPackageName);
+                    helper.applyFlagOverrides(flagOverrides);
+
+                    RecordHistogram.recordCount100Histogram(
+                            "Android.WebView.DevUi.ToggledFlagCount", flagOverrides.size());
+                } finally {
+                    long end = SystemClock.elapsedRealtime();
+                    RecordHistogram.recordTimesHistogram(
+                            "Android.WebView.DevUi.FlagLoadingBlockingTime", end - start);
+                }
             }
 
             ThreadUtils.setWillOverrideUiThread(true);

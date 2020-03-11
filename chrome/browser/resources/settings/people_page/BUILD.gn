@@ -339,8 +339,6 @@ js_modulizer("modulize") {
     "profile_info_browser_proxy.js",
     "sync_browser_proxy.js",
   ]
-  namespace_rewrites = settings_namespace_rewrites + [
-                         "settings.StoredAccount|StoredAccount",
-                         "settings.SyncPrefs|SyncPrefs",
-                       ]
+  namespace_rewrites =
+      settings_namespace_rewrites + [ "settings.StoredAccount|StoredAccount" ]
 }

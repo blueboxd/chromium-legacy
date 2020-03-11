@@ -17,8 +17,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/color_palette.h"
@@ -37,7 +37,7 @@ const int kReloadMenuItems[]  = {
 
 const gfx::VectorIcon& GetIconForMode(ReloadButton::IconStyle icon_style,
                                       bool is_reload) {
-  const bool touch_ui = ui::MaterialDesignController::GetInstance()->touch_ui();
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
 
 #if defined(OS_WIN)
   if (icon_style == ReloadButton::IconStyle::kMinimalUi &&

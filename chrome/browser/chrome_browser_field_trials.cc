@@ -26,8 +26,8 @@
 #include "components/version_info/version_info.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/cached_feature_flags.h"
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
+#include "chrome/browser/flags/android/cached_feature_flags.h"
 #else
 #include "chrome/browser/chrome_browser_field_trials_desktop.h"
 #endif

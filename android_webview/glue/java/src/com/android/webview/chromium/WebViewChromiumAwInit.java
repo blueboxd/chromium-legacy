@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
-import android.os.SystemClock;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
@@ -36,9 +35,6 @@ import org.chromium.android_webview.R;
 import org.chromium.android_webview.VariationsSeedLoader;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
 import org.chromium.android_webview.common.AwResource;
-import org.chromium.android_webview.common.DeveloperModeUtils;
-import org.chromium.android_webview.common.FlagOverrideHelper;
-import org.chromium.android_webview.common.ProductionSupportedFlagList;
 import org.chromium.android_webview.gfx.AwDrawFnImpl;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
@@ -57,8 +53,6 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ResourceBundle;
-
-import java.util.Map;
 
 /**
  * Class controlling the Chromium initialization for WebView.
@@ -176,29 +170,6 @@ public class WebViewChromiumAwInit {
             // finishVariationsInitLocked() must precede native initialization so the seed is
             // available when AwFeatureListCreator::SetUpFieldTrials() runs.
             finishVariationsInitLocked();
-
-            String webViewPackageName = AwBrowserProcess.getWebViewPackageName();
-            boolean isDeveloperModeEnabled =
-                    DeveloperModeUtils.isDeveloperModeEnabled(webViewPackageName);
-            RecordHistogram.recordBooleanHistogram(
-                    "Android.WebView.DevUi.DeveloperModeEnabled", isDeveloperModeEnabled);
-            if (isDeveloperModeEnabled) {
-                long start = SystemClock.elapsedRealtime();
-                try {
-                    FlagOverrideHelper helper =
-                            new FlagOverrideHelper(ProductionSupportedFlagList.sFlagList);
-                    Map<String, Boolean> flagOverrides =
-                            DeveloperModeUtils.getFlagOverrides(webViewPackageName);
-                    helper.applyFlagOverrides(flagOverrides);
-
-                    RecordHistogram.recordCount100Histogram(
-                            "Android.WebView.DevUi.ToggledFlagCount", flagOverrides.size());
-                } finally {
-                    long end = SystemClock.elapsedRealtime();
-                    RecordHistogram.recordTimesHistogram(
-                            "Android.WebView.DevUi.FlagLoadingBlockingTime", end - start);
-                }
-            }
 
             AwBrowserProcess.start();
             AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(true /* updateMetricsConsent */);

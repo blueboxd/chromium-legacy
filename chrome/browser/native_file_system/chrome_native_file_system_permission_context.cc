@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -219,10 +220,10 @@ void DoSafeBrowsingCheckOnUIThread(
     std::unique_ptr<content::NativeFileSystemWriteItem> item,
     safe_browsing::CheckDownloadCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
+  // Download Protection Service is not supported on Android.
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
-
   if (!sb_service || !sb_service->download_protection_service() ||
       !sb_service->download_protection_service()->enabled()) {
     std::move(callback).Run(safe_browsing::DownloadCheckResult::UNKNOWN);
@@ -248,6 +249,7 @@ void DoSafeBrowsingCheckOnUIThread(
 
   sb_service->download_protection_service()->CheckNativeFileSystemWrite(
       std::move(item), std::move(callback));
+#endif
 }
 
 ChromeNativeFileSystemPermissionContext::AfterWriteCheckResult

@@ -9,4 +9,5 @@ dictionary UADataValues {
   DOMString platformVersion = "";
   DOMString architecture = "";
   DOMString model = "";
+  DOMString uaFullVersion = "";
 };

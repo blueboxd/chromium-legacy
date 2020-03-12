@@ -13,12 +13,13 @@ NavigatorUAData* NavigatorUserAgent::userAgentData() {
 
   blink::UserAgentMetadata metadata = GetUserAgentMetadata();
   ua_data->AddBrand(String::FromUTF8(metadata.brand),
-                    String::FromUTF8(metadata.full_version));
+                    String::FromUTF8(metadata.major_version));
   ua_data->SetMobile(metadata.mobile);
   ua_data->SetPlatform(String::FromUTF8(metadata.platform),
                        String::FromUTF8(metadata.platform_version));
   ua_data->SetArchitecture(String::FromUTF8(metadata.architecture));
   ua_data->SetModel(String::FromUTF8(metadata.model));
+  ua_data->SetUAFullVersion(String::FromUTF8(metadata.full_version));
 
   return ua_data;
 }

@@ -45,6 +45,7 @@ class RenderProcessHost;
 class ServiceWorkerContentSettingsProxyImpl;
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
+class CrossOriginEmbedderPolicyReporter;
 
 namespace service_worker_new_script_loader_unittest {
 class ServiceWorkerNewScriptLoaderTest;
@@ -372,6 +373,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // ServiceWorker COEP header will be known.
   std::vector<mojo::PendingReceiver<blink::mojom::CacheStorage>>
       pending_cache_storage_receivers_;
+
+  std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
 
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_{this};
 

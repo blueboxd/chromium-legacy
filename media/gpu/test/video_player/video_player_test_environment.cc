@@ -9,6 +9,7 @@
 #include "base/system/sys_info.h"
 #include "media/base/video_types.h"
 #include "media/gpu/test/video.h"
+#include "media/gpu/test/video_player/video_decoder_client.h"
 
 namespace media {
 namespace test {
@@ -22,7 +23,7 @@ VideoPlayerTestEnvironment* VideoPlayerTestEnvironment::Create(
     const base::FilePath& video_path,
     const base::FilePath& video_metadata_path,
     bool enable_validator,
-    bool use_vd,
+    const DecoderImplementation implementation,
     const base::FilePath& output_folder,
     const FrameOutputConfig& frame_output_config) {
   auto video = std::make_unique<media::test::Video>(
@@ -34,19 +35,19 @@ VideoPlayerTestEnvironment* VideoPlayerTestEnvironment::Create(
   }
 
   return new VideoPlayerTestEnvironment(std::move(video), enable_validator,
-                                        use_vd, output_folder,
+                                        implementation, output_folder,
                                         frame_output_config);
 }
 
 VideoPlayerTestEnvironment::VideoPlayerTestEnvironment(
     std::unique_ptr<media::test::Video> video,
     bool enable_validator,
-    bool use_vd,
+    const DecoderImplementation implementation,
     const base::FilePath& output_folder,
     const FrameOutputConfig& frame_output_config)
     : video_(std::move(video)),
       enable_validator_(enable_validator),
-      use_vd_(use_vd),
+      implementation_(implementation),
       frame_output_config_(frame_output_config),
       output_folder_(output_folder),
       gpu_memory_buffer_factory_(
@@ -74,7 +75,7 @@ void VideoPlayerTestEnvironment::SetUp() {
 #endif  // defined(OS_CHROMEOS)
 
   // VideoDecoders always require import mode to be supported.
-  DCHECK(!use_vd_ || import_supported_);
+  DCHECK(import_supported_ || implementation_ == DecoderImplementation::kVDA);
 }
 
 const media::test::Video* VideoPlayerTestEnvironment::Video() const {
@@ -90,8 +91,9 @@ bool VideoPlayerTestEnvironment::IsValidatorEnabled() const {
   return enable_validator_;
 }
 
-bool VideoPlayerTestEnvironment::UseVD() const {
-  return use_vd_;
+DecoderImplementation VideoPlayerTestEnvironment::GetDecoderImplementation()
+    const {
+  return implementation_;
 }
 
 FrameOutputMode VideoPlayerTestEnvironment::GetFrameOutputMode() const {

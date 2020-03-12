@@ -5,22 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow div id='contentBox'",
-          "rect": [8, 68, 402, 402],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [47, 107, 324, 324],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [8, 150, 102, 238],
-          "reason": "paint property change"
-        }
+      "invalidations": [
+        [8, 68, 402, 402]
       ]
     }
   ]

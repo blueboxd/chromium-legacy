@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'PASS'",
-          "rect": [488, 8, 80, 20],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [488, 8, 80, 20]
       ]
     }
   ]

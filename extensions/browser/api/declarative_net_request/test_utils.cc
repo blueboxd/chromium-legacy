@@ -222,6 +222,18 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
     case ParseResult::ERROR_INVALID_REGEX_FILTER:
       output << "ERROR_INVALID_REGEX_FILTER";
       break;
+    case ParseResult::ERROR_NO_HEADERS_SPECIFIED:
+      output << "ERROR_NO_HEADERS_SPECIFIED";
+      break;
+    case ParseResult::ERROR_EMPTY_REQUEST_HEADERS_LIST:
+      output << "ERROR_EMPTY_REQUEST_HEADERS_LIST";
+      break;
+    case ParseResult::ERROR_EMPTY_RESPONSE_HEADERS_LIST:
+      output << "ERROR_EMPTY_RESPONSE_HEADERS_LIST";
+      break;
+    case ParseResult::ERROR_INVALID_HEADER_NAME:
+      output << "ERROR_INVALID_HEADER_NAME";
+      break;
     case ParseResult::ERROR_REGEX_TOO_LARGE:
       output << "ERROR_REGEX_TOO_LARGE";
       break;
@@ -294,6 +306,22 @@ RulesetSource CreateTemporarySource(size_t id,
       id, source_type, rule_count_limit, std::move(extension_id));
   CHECK(source);
   return source->Clone();
+}
+
+dnr_api::ModifyHeaderInfo CreateModifyHeaderInfo(
+    dnr_api::HeaderOperation operation,
+    std::string header) {
+  dnr_api::ModifyHeaderInfo header_info;
+
+  header_info.operation = operation;
+  header_info.header = header;
+
+  return header_info;
+}
+
+bool EqualsForTesting(const dnr_api::ModifyHeaderInfo& lhs,
+                      const dnr_api::ModifyHeaderInfo& rhs) {
+  return lhs.operation == rhs.operation && lhs.header == rhs.header;
 }
 
 }  // namespace declarative_net_request

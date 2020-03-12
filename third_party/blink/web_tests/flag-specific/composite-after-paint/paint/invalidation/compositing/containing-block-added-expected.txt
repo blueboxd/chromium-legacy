@@ -10,12 +10,8 @@
       "name": "LayoutNGBlockFlow (positioned) DIV id='container'",
       "bounds": [125, 125],
       "backgroundColor": "#0000FF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
-          "rect": [50, 50, 75, 75],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [50, 50, 75, 75]
       ],
       "transform": 1
     }

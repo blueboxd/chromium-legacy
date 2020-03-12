@@ -17,10 +17,20 @@
 
 namespace blink {
 
-const char* const kClientHintsNameMapping[] = {
-    "device-memory", "dpr",  "width", "viewport-width", "rtt",      "downlink",
-    "ect",           "lang", "ua",    "arch",           "platform", "model",
-    "mobile"};
+const char* const kClientHintsNameMapping[] = {"device-memory",
+                                               "dpr",
+                                               "width",
+                                               "viewport-width",
+                                               "rtt",
+                                               "downlink",
+                                               "ect",
+                                               "lang",
+                                               "ua",
+                                               "ua-arch",
+                                               "ua-platform",
+                                               "ua-model",
+                                               "ua-mobile",
+                                               "ua-full-version"};
 
 const char* const kClientHintsHeaderMapping[] = {
     "device-memory",
@@ -36,6 +46,7 @@ const char* const kClientHintsHeaderMapping[] = {
     "sec-ch-ua-platform",
     "sec-ch-ua-model",
     "sec-ch-ua-mobile",
+    "sec-ch-ua-full-version",
 };
 
 const size_t kClientHintsMappingsCount = base::size(kClientHintsNameMapping);
@@ -143,6 +154,7 @@ base::Optional<std::vector<blink::mojom::WebClientHintsType>> ParseAcceptCH(
         case mojom::WebClientHintsType::kUAPlatform:
         case mojom::WebClientHintsType::kUAModel:
         case mojom::WebClientHintsType::kUAMobile:
+        case mojom::WebClientHintsType::kUAFullVersion:
           if (permit_ua_hints)
             result.push_back(hint);
           break;

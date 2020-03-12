@@ -6,6 +6,8 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("service_worker") {
   sources = [
+    "cross_origin_resource_policy_checker.cc",
+    "cross_origin_resource_policy_checker.h",
     "extendable_event.cc",
     "extendable_event.h",
     "extendable_message_event.cc",

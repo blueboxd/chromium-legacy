@@ -28,7 +28,8 @@ const breadCrumbTemplate = `
       background-color: currentColor;
       display: inline-flex;
       height: 20px;
-      margin: 8px 0;
+      padding: 8px 0;
+      min-width: 20px;
       width: 20px;
     }
 
@@ -43,14 +44,14 @@ const breadCrumbTemplate = `
       border-radius: 4px;
       color: var(--google-grey-700);
       cursor: pointer;
-      display: inline-flex;
+      display: inline-block;
 
       /* don't use browser's button font. */
       font: inherit;
       margin: 0;
 
       /* text rendering debounce: fix a minimum width. */
-      min-width: 1.2em;
+      min-width: calc(12px + 1em);
 
       /* elide wide text */
       max-width: 200px;
@@ -70,6 +71,7 @@ const breadCrumbTemplate = `
       color: var(--google-grey-900);
       cursor: default;
       font-weight: 500;
+      margin-inline-end: 4px;
     }
 
     span[elider] {
@@ -84,12 +86,15 @@ const breadCrumbTemplate = `
       min-width: 48px;
       position: relative;
       transform: rotate(90deg);
+      width: 48px;
     }
 
     button[elider] {
       border-radius: 50%;
       box-sizing: border-box;
+      display: inline-flex;
       height: 36px;
+      min-width: 36px;
       padding: 0;
       width: 36px;
     }

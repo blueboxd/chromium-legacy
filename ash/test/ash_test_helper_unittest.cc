@@ -4,6 +4,7 @@
 
 #include "ash/test/ash_test_helper.h"
 
+#include "ash/shell.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -43,7 +44,8 @@ class AshTestHelperTest : public testing::Test {
 // Ensure that we have initialized enough of Ash to create and show a window.
 TEST_F(AshTestHelperTest, AshTestHelper) {
   // Check initial state.
-  EXPECT_TRUE(ash_test_helper()->test_shell_delegate());
+  ASSERT_TRUE(Shell::HasInstance());
+  EXPECT_TRUE(Shell::Get()->shell_delegate());
   EXPECT_TRUE(ash_test_helper()->GetContext());
 
   // Enough state is initialized to create a window.

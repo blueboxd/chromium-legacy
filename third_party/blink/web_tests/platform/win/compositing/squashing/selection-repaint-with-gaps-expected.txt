@@ -16,17 +16,8 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='item')",
       "position": [7, 27],
       "bounds": [100, 210],
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'ipsum'",
-          "rect": [0, 80, 38, 40],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'lorem'",
-          "rect": [0, 80, 38, 40],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [0, 80, 38, 40]
       ],
       "transform": 1
     }
@@ -61,27 +52,9 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='item')",
       "position": [7, 27],
       "bounds": [100, 210],
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'ipsum'",
-          "rect": [0, 160, 38, 40],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'lorem'",
-          "rect": [0, 160, 38, 40],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'ipsum'",
-          "rect": [0, 80, 38, 40],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'lorem'",
-          "rect": [0, 80, 38, 40],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [0, 160, 38, 40],
+        [0, 80, 38, 40]
       ],
       "transform": 1
     }

@@ -11,22 +11,8 @@
       "position": [-2, -2],
       "bounds": [69, 26],
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 69, 26],
-          "reason": "full layer"
-        },
-        {
-          "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 65, 22],
-          "reason": "full layer"
-        },
-        {
-          "object": "Caret",
-          "rect": [61, 5, 1, 16],
-          "reason": "caret"
-        }
+      "invalidations": [
+        [0, 0, 69, 26]
       ],
       "transform": 1
     }

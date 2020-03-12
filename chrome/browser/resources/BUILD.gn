@@ -292,13 +292,14 @@ if (!is_android) {
 
 if (is_chromeos) {
   grit("os_settings_resources") {
+    deps = [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js" ]
     if (optimize_webui) {
       source = "settings/os_settings_resources_vulcanized.grd"
 
       # The .grd contains references to generated files.
       source_is_generated = true
 
-      deps = [ "//chrome/browser/resources/settings/chromeos:build" ]
+      deps += [ "//chrome/browser/resources/settings/chromeos:build" ]
 
       grit_flags = [
         "-E",

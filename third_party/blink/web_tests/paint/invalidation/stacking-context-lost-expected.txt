@@ -12,17 +12,8 @@
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='inner'",
-          "rect": [0, 0, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='outer'",
-          "rect": [0, 0, 100, 100],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [0, 0, 100, 100]
       ],
       "transform": 1
     }

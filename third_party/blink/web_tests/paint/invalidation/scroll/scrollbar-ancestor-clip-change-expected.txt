@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "HorizontalScrollbar",
-          "rect": [8, 108, 100, 100],
-          "reason": "incremental"
-        }
+      "invalidations": [
+        [8, 108, 100, 100]
       ]
     }
   ]

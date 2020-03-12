@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'Some text in vertical mode'",
-          "rect": [185, 201, 18, 173],
-          "reason": "selection"
-        }
+      "invalidations": [
+        [185, 201, 18, 173]
       ]
     }
   ]

@@ -17,12 +17,8 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
       "position": [42, 42],
       "bounds": [200, 200],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [0, 0, 200, 200],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [0, 0, 200, 200]
       ],
       "transform": 1
     },
@@ -31,12 +27,8 @@
       "bounds": [200, 200],
       "contentsOpaque": true,
       "backgroundColor": "#ADD8E6",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [0, 0, 200, 200],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 200, 200]
       ],
       "transform": 2
     }

@@ -13,7 +13,6 @@
 #include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/compositor/test/test_context_factories.h"
 #include "ui/events/event_dispatcher.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -66,15 +65,8 @@ void AuraTestBase::SetUp() {
   gesture_config->set_velocity_tracker_strategy(
       ui::VelocityTracker::Strategy::LSQ2_RESTRICTED);
 
-  // The ContextFactory must exist before any Compositors are created.
-  ui::ContextFactory* context_factory = nullptr;
-  const bool enable_pixel_output = false;
-  context_factories_ =
-      std::make_unique<ui::TestContextFactories>(enable_pixel_output);
-  context_factory = context_factories_->GetContextFactory();
-
   helper_ = std::make_unique<AuraTestHelper>();
-  helper_->SetUp(context_factory);
+  helper_->SetUp();
 }
 
 void AuraTestBase::TearDown() {
@@ -85,7 +77,6 @@ void AuraTestBase::TearDown() {
   RunAllPendingInMessageLoop();
 
   helper_->TearDown();
-  context_factories_.reset();
   testing::Test::TearDown();
 }
 

@@ -336,12 +336,12 @@ void WebApps::Uninstall(const std::string& app_id,
 }
 
 void WebApps::PauseApp(const std::string& app_id) {
-  if (!paused_apps_.MaybeAddApp(app_id)) {
-    return;
-  }
+  paused_apps_.MaybeAddApp(app_id);
+  constexpr bool kPaused = true;
+  Publish(paused_apps_.GetAppWithPauseStatus(apps::mojom::AppType::kWeb, app_id,
+                                             kPaused));
 
   SetIconEffect(app_id);
-
   for (auto* browser : *BrowserList::GetInstance()) {
     if (!browser->is_type_app()) {
       continue;
@@ -353,9 +353,10 @@ void WebApps::PauseApp(const std::string& app_id) {
 }
 
 void WebApps::UnpauseApps(const std::string& app_id) {
-  if (!paused_apps_.MaybeRemoveApp(app_id)) {
-    return;
-  }
+  paused_apps_.MaybeRemoveApp(app_id);
+  constexpr bool kPaused = false;
+  Publish(paused_apps_.GetAppWithPauseStatus(apps::mojom::AppType::kWeb, app_id,
+                                             kPaused));
 
   SetIconEffect(app_id);
 }

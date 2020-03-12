@@ -379,6 +379,28 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialBrowserTest,
   EXPECT_EQ(0, file_handler_manager().TriggerFileHandlerCleanupForTesting());
 }
 
+IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialBrowserTest,
+                       DisableForceEnabledFileHandlingOriginTrial) {
+  InstallFileHandlingPWA();
+  SetUpInterceptorNavigateToAppAndMaybeWait();
+
+  ASSERT_TRUE(file_handler_manager().AreFileHandlersEnabled(app_id()));
+  ASSERT_TRUE(file_handler_manager().GetEnabledFileHandlers(app_id()));
+
+  // Calling this on non-force-enabled origin trial should have no effect.
+  file_handler_manager().DisableForceEnabledFileHandlingOriginTrial(app_id());
+  EXPECT_TRUE(file_handler_manager().AreFileHandlersEnabled(app_id()));
+  EXPECT_TRUE(file_handler_manager().GetEnabledFileHandlers(app_id()));
+
+  // Force enables file handling.
+  file_handler_manager().ForceEnableFileHandlingOriginTrial(app_id());
+
+  // Calling this on force enabled origin trial should remove file handlers.
+  file_handler_manager().DisableForceEnabledFileHandlingOriginTrial(app_id());
+  EXPECT_FALSE(file_handler_manager().AreFileHandlersEnabled(app_id()));
+  EXPECT_EQ(nullptr, file_handler_manager().GetEnabledFileHandlers(app_id()));
+}
+
 namespace {
 static constexpr char kBaseDataDir[] = "chrome/test/data/web_app_file_handling";
 

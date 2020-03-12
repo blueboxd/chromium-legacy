@@ -5,17 +5,9 @@
       "bounds": [785, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
-          "rect": [108, 308, 100, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container' class='fixed blue'",
-          "rect": [8, 208, 100, 100],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [108, 308, 100, 100],
+        [8, 208, 100, 100]
       ]
     },
     {

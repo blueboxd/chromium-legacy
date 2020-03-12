@@ -5,24 +5,16 @@
       "bounds": [785, 1895],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='ul'",
-          "rect": [677, 52, 100, 100],
-          "reason": "chunk disappeared"
-        }
+      "invalidations": [
+        [677, 52, 100, 100]
       ],
       "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='scrollpanel'",
       "bounds": [100, 100],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='scrollpanel'",
-          "rect": [0, 0, 100, 100],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 100, 100]
       ],
       "transform": 2
     },

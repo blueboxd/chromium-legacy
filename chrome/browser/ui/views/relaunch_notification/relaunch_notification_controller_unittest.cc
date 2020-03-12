@@ -751,7 +751,7 @@ class RelaunchNotificationControllerPlatformImplTest : public ::testing::Test {
   void SetUp() override {
     ash::AshTestHelper::InitParams init_params;
     init_params.start_session = false;
-    ash_test_helper_.SetUp(init_params);
+    ash_test_helper_.SetUp(std::move(init_params));
 
     user_manager_ = new chromeos::FakeChromeUserManager();
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(

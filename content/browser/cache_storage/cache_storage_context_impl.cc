@@ -102,6 +102,8 @@ void CacheStorageContextImpl::Shutdown() {
 
 void CacheStorageContextImpl::AddReceiver(
     const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -112,8 +114,8 @@ void CacheStorageContextImpl::AddReceiver(
                           base::RetainedRef(this));
   }
   dispatcher_host_.Post(FROM_HERE, &CacheStorageDispatcherHost::AddReceiver,
-                        cross_origin_embedder_policy, origin,
-                        std::move(receiver));
+                        cross_origin_embedder_policy, std::move(coep_reporter),
+                        origin, std::move(receiver));
 }
 
 scoped_refptr<CacheStorageManager> CacheStorageContextImpl::CacheManager() {

@@ -136,6 +136,10 @@ void LaunchTerminalSettings(Profile* profile, Browser* terminal) {
   params->disposition = WindowOpenDisposition::NEW_POPUP;
   // If |terminal| is not set, we open the settings window with the
   // default bounds and then resize it later.
+  if (!terminal) {
+    terminal = web_app::FindSystemWebAppBrowser(
+        profile, web_app::SystemAppType::TERMINAL);
+  }
   if (terminal) {
     const gfx::Rect& bounds = terminal->window()->GetBounds();
     params->override_bounds.set_origin(

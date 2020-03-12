@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
-          "rect": [100, 100, 100, 100],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [100, 100, 100, 100]
       ]
     }
   ]

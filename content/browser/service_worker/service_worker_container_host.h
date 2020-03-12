@@ -267,7 +267,9 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   void OnBeginNavigationCommit(
       int container_process_id,
       int container_frame_id,
-      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy);
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter);
 
   // For service worker clients that are shared workers or dedicated workers.
   // Called when the web worker main script resource has finished loading.
@@ -599,6 +601,10 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // response commit.
   base::Optional<network::CrossOriginEmbedderPolicy>
       cross_origin_embedder_policy_;
+  // An endpoint connected to the COEP reporter. A clone of this connection is
+  // passed to the service worker.
+  mojo::Remote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_;
 
   // TODO(yuzus): This bit will be unnecessary once ServiceWorkerContainerHost
   // and RenderFrameHost have the same lifetime.

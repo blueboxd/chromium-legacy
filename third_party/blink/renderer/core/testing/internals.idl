@@ -193,10 +193,11 @@
     readonly attribute unsigned long workerThreadCount;
     readonly attribute boolean isFormControlsRefreshEnabled;
 
-    // Flag for layerTreeAsText.
-    // The value must be kept in sync with the value of LayerTreeFlags in layers_as_json.h.
+    // Flag for layerTreeAsText. The value must be kept in sync with the value
+    // of LayerTreeFlags in layers_as_json.h.
     // Other flags in LayerTreeFlags are not supported in internals API.
-    const unsigned short LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS = 2;
+    const unsigned short LAYER_TREE_INCLUDES_INVALIDATIONS = 2;
+    const unsigned short LAYER_TREE_INCLUDES_DETAILED_INVALIDATIONS = 4;
 
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
 

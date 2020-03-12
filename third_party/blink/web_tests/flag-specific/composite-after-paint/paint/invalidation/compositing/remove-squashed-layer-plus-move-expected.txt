@@ -32,12 +32,8 @@
       "position": [8, 8],
       "bounds": [1000, 105],
       "backgroundColor": "#ADD8E6",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV class='mv-tile'",
-          "rect": [0, 0, 1000, 105],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 1000, 105]
       ]
     }
   ],

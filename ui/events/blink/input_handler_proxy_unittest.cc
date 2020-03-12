@@ -165,6 +165,11 @@ class MockInputHandler : public cc::InputHandler {
 
   void MouseLeave() override {}
 
+  cc::ElementId FindFrameElementIdAtPoint(
+      const gfx::PointF& mouse_position) override {
+    return cc::ElementId();
+  }
+
   cc::InputHandlerPointerResult MouseMoveAt(
       const gfx::Point& mouse_position) override {
     return cc::InputHandlerPointerResult();

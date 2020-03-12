@@ -17,12 +17,8 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV)",
       "position": [0, -8],
       "bounds": [592, 600],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='imgElement'",
-          "rect": [392, 400, 200, 200],
-          "reason": "background"
-        }
+      "invalidations": [
+        [392, 400, 200, 200]
       ],
       "transform": 1
     },

@@ -452,6 +452,7 @@ void MockRenderProcessHost::LockToOrigin(
 
 void MockRenderProcessHost::BindCacheStorage(
     const network::CrossOriginEmbedderPolicy&,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   cache_storage_receiver_ = std::move(receiver);

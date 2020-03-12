@@ -5,17 +5,9 @@
       "bounds": [808, 621],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'Passes, if text is at 200x20'",
-          "rect": [208, 13, 161, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'Passes, if text is at 200x20'",
-          "rect": [18, 193, 161, 19],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [208, 13, 161, 19],
+        [18, 193, 161, 19]
       ]
     },
     {

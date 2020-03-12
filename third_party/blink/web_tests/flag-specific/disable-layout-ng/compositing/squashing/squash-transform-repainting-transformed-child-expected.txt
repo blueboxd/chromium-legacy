@@ -54,12 +54,8 @@ CASE 2, hovering over the outer div
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
       "position": [-96, -96],
       "bounds": [276, 276],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
-          "rect": [0, 0, 132, 132],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 132, 132]
       ],
       "transform": 1
     }
@@ -97,17 +93,8 @@ CASE 3, hovering over the inner div
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
       "position": [-96, -96],
       "bounds": [276, 276],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
-          "rect": [0, 0, 132, 132],
-          "reason": "background"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='smallbox'",
-          "rect": [26, 28, 71, 72],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 132, 132]
       ],
       "transform": 1
     }

@@ -42,9 +42,12 @@ void ContentLayerClientImpl::AppendAdditionalInfoAsJSON(
     json.SetValue("paintChunkContents", paint_chunk_debug_data_->Clone());
 #endif
 
-  if ((flags & kLayerTreeIncludesPaintInvalidations) &&
-      raster_invalidator_.GetTracking())
-    raster_invalidator_.GetTracking()->AsJSON(&json);
+  if ((flags & (kLayerTreeIncludesInvalidations |
+                kLayerTreeIncludesDetailedInvalidations)) &&
+      raster_invalidator_.GetTracking()) {
+    raster_invalidator_.GetTracking()->AsJSON(
+        &json, flags & kLayerTreeIncludesDetailedInvalidations);
+  }
 
 #if DCHECK_IS_ON()
   if (flags & kLayerTreeIncludesPaintRecords) {

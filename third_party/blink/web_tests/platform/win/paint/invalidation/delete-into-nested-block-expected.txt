@@ -5,32 +5,10 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'three'",
-          "rect": [8, 167, 30, 20],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'three'",
-          "rect": [8, 127, 30, 20],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'one'",
-          "rect": [8, 127, 26, 20],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'two'",
-          "rect": [8, 147, 23, 20],
-          "reason": "disappeared"
-        },
-        {
-          "object": "Caret",
-          "rect": [8, 127, 1, 20],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [8, 167, 30, 20],
+        [8, 127, 30, 20],
+        [8, 147, 23, 20]
       ]
     }
   ]

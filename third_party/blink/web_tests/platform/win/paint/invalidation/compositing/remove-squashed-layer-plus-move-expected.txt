@@ -15,17 +15,9 @@
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV class='mv-tile')",
       "bounds": [1000, 105],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV class='mv-tile'",
-          "rect": [0, 55, 100, 50],
-          "reason": "compositing update"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV class='mv-tile'",
-          "rect": [0, 0, 100, 50],
-          "reason": "compositing update"
-        }
+      "invalidations": [
+        [0, 55, 100, 50],
+        [0, 0, 100, 50]
       ],
       "transform": 1
     },

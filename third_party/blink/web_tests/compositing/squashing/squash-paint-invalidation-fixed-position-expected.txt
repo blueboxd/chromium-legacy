@@ -26,12 +26,8 @@
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='foo'",
-          "rect": [0, 0, 100, 100],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 100, 100]
       ]
     }
   ],
@@ -75,12 +71,8 @@
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='foo'",
-          "rect": [0, 0, 100, 100],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 100, 100]
       ]
     }
   ],

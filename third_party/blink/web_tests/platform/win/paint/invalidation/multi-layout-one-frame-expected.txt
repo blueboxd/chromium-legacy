@@ -5,32 +5,10 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'PASSED'",
-          "rect": [193, 10, 53, 18],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'PASSED'",
-          "rect": [12, 10, 53, 18],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'FAILED'",
-          "rect": [193, 10, 44, 18],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'FAILED'",
-          "rect": [12, 10, 44, 18],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment ' '",
-          "rect": [185, 9, 4, 19],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [193, 10, 53, 18],
+        [12, 10, 53, 18],
+        [185, 9, 4, 19]
       ]
     }
   ]

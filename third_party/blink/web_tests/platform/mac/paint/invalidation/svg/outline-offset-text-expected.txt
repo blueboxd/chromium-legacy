@@ -5,27 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'Foo'",
-          "rect": [103, 24, 160, 116],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [103, 24, 160, 116],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Foo'",
-          "rect": [63, 24, 160, 116],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [63, 24, 160, 116],
-          "reason": "full"
-        }
+      "invalidations": [
+        [103, 24, 160, 116],
+        [63, 24, 160, 116]
       ]
     }
   ]

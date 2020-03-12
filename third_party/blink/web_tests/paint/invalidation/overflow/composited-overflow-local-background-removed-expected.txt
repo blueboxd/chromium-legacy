@@ -9,24 +9,16 @@
     {
       "name": "LayoutNGBlockFlow DIV id='scroller'",
       "bounds": [200, 200],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 200, 200],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 200, 200]
       ],
       "transform": 1
     },
     {
       "name": "Scrolling Contents Layer",
       "bounds": [185, 352],
-      "paintInvalidations": [
-        {
-          "object": "Scrolling Contents Layer",
-          "rect": [0, 0, 185, 352],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 185, 352]
       ],
       "transform": 1
     },

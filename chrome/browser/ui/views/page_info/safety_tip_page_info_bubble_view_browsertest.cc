@@ -183,9 +183,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest
             {{security_state::features::kSafetyTipUI,
               {{"topsites", "false"},
                {"editdistance", "false"},
-               {"editdistance_siteengagement", "false"}}},
-             {features::kLookalikeUrlNavigationSuggestionsUI,
-              {{"topsites", "true"}}}},
+               {"editdistance_siteengagement", "false"}}}},
             {});
         break;
       case UIStatus::kEnabledWithAllFeatures:
@@ -193,9 +191,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest
             {{security_state::features::kSafetyTipUI,
               {{"topsites", "true"},
                {"editdistance", "true"},
-               {"editdistance_siteengagement", "true"}}},
-             {features::kLookalikeUrlNavigationSuggestionsUI,
-              {{"topsites", "true"}}}},
+               {"editdistance_siteengagement", "true"}}}},
             {});
     }
 

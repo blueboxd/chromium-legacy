@@ -44,6 +44,7 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/web_client_hints/web_client_hints_types.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -547,19 +548,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   //
   // https://github.com/WICG/ua-client-hints
   blink::UserAgentMetadata ua = GetUserAgentMetadata();
-  bool use_full_ua =
-      (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
-       (policy && policy->IsFeatureEnabledForOrigin(
-                      mojom::blink::FeaturePolicyFeature::kClientHintUA,
-                      resource_origin))) &&
-      ShouldSendClientHint(mojom::WebClientHintsType::kUA, hints_preferences,
-                           enabled_hints);
   if (RuntimeEnabledFeatures::UserAgentClientHintEnabled()) {
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUA)],
-        AddBrandVersionQuotes(
-            ua.brand, use_full_ua ? ua.full_version : ua.major_version));
+        AddBrandVersionQuotes(ua.brand, ua.major_version));
 
     // We also send Sec-CH-UA-Mobile to all hints. It is a one-bit header
     // identifying if the browser has opted for a "mobile" experience
@@ -769,6 +762,20 @@ void FrameFetchContext::AddClientHintsIfNecessary(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAModel)],
         AddQuotes(ua.model));
+  }
+
+  if ((can_always_send_hints ||
+       (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
+        policy->IsFeatureEnabledForOrigin(
+            mojom::blink::FeaturePolicyFeature::kClientHintUAFullVersion,
+            resource_origin))) &&
+      ShouldSendClientHint(mojom::blink::WebClientHintsType::kUAFullVersion,
+
+                           hints_preferences, enabled_hints)) {
+    request.SetHttpHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            mojom::blink::WebClientHintsType::kUAFullVersion)],
+        AddQuotes(ua.full_version));
   }
 }
 

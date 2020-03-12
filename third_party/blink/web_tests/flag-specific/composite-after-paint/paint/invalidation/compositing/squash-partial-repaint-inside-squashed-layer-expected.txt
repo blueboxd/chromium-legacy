@@ -18,12 +18,8 @@
       "position": [180, 180],
       "bounds": [262, 200],
       "backgroundColor": "#00FF00",
-      "paintInvalidations": [
-        {
-          "object": "LayoutImage (positioned) IMG id='repaintdiv' class='repaintdiv'",
-          "rect": [80, 80, 182, 29],
-          "reason": "background"
-        }
+      "invalidations": [
+        [80, 80, 182, 29]
       ]
     }
   ],

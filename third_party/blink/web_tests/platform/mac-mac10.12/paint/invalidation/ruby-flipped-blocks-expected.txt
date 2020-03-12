@@ -5,32 +5,10 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'b'",
-          "rect": [7, 28, 22, 20],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'b'",
-          "rect": [7, 28, 22, 20],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'a'",
-          "rect": [7, 8, 22, 20],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'a'",
-          "rect": [7, 8, 22, 20],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'c'",
-          "rect": [27, 33, 12, 10],
-          "reason": "style change"
-        }
+      "invalidations": [
+        [7, 28, 22, 20],
+        [7, 8, 22, 20],
+        [27, 33, 12, 10]
       ]
     }
   ]

@@ -5,42 +5,12 @@
       "bounds": [1026, 1016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'pservers-pattern-01-b \u2190'",
-          "rect": [177, 992, 202, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment '\u2192 script-handle-01-b'",
-          "rect": [432, 992, 177, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutInline A",
-          "rect": [380, 989, 51, 25],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'index'",
-          "rect": [383, 992, 45, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'index'",
-          "rect": [383, 992, 45, 19],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment ' '",
-          "rect": [427, 992, 6, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment ' '",
-          "rect": [378, 992, 6, 19],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [177, 992, 202, 20],
+        [432, 992, 177, 20],
+        [380, 989, 51, 25],
+        [427, 992, 6, 19],
+        [378, 992, 6, 19]
       ],
       "transform": 1
     },

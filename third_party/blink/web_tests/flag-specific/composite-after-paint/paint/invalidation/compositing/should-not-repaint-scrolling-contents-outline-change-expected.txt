@@ -40,12 +40,8 @@
       "name": "LayoutNGBlockFlow DIV id='target'",
       "position": [-10, -10],
       "bounds": [220, 220],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [0, 0, 220, 220],
-          "reason": "style change"
-        }
+      "invalidations": [
+        [0, 0, 220, 220]
       ],
       "transform": 1
     }

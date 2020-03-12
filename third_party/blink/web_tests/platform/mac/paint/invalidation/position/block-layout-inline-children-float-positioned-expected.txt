@@ -5,27 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [0, 34, 602, 102],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [0, 34, 602, 102],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'the quick brown fox jumped over the lazy dog'",
-          "rect": [305, 35, 296, 18],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'the quick brown fox jumped over the lazy dog'",
-          "rect": [153, 35, 296, 18],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [0, 34, 602, 102]
       ]
     }
   ]

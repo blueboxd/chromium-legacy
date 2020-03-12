@@ -37,12 +37,8 @@
     {
       "name": "Decoration Layer",
       "bounds": [200, 200],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 200, 200],
-          "reason": "style change"
-        }
+      "invalidations": [
+        [0, 0, 200, 200]
       ],
       "transform": 1
     }

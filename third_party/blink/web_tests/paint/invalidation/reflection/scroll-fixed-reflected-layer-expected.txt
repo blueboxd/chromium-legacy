@@ -11,12 +11,8 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='reflected fixed'",
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green reflected'",
-          "rect": [0, 0, 100, 100],
-          "reason": "chunk reordered"
-        }
+      "invalidations": [
+        [0, 0, 100, 100]
       ],
       "transform": 2
     },

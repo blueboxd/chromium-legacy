@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "ui/base/test/scoped_fake_nswindow_focus.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #include "ui/base/test/ui_controls.h"
@@ -18,9 +17,8 @@
 namespace views {
 
 // static
-std::unique_ptr<ViewsTestHelper> ViewsTestHelper::Create(
-    ui::ContextFactory* context_factory) {
-  return base::WrapUnique(new ViewsTestHelperMac());
+std::unique_ptr<ViewsTestHelper> ViewsTestHelper::Create() {
+  return std::make_unique<ViewsTestHelperMac>();
 }
 
 ViewsTestHelperMac::ViewsTestHelperMac() {
@@ -58,6 +56,10 @@ ViewsTestHelperMac::~ViewsTestHelperMac() {
     ui::test::EventGeneratorDelegate::SetFactoryFunction(
         ui::test::EventGeneratorDelegate::FactoryFunction());
   }
+}
+
+ui::ContextFactory* ViewsTestHelperMac::GetContextFactory() {
+  return context_factories_.GetContextFactory();
 }
 
 }  // namespace views

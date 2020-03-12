@@ -5,27 +5,9 @@
       "bounds": [785, 2350],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'This test checks that switching opacity'",
-          "rect": [8, 2046, 774, 107],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'invalidates the full subtree.'",
-          "rect": [8, 2046, 774, 107],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'This text should be visible in the'",
-          "rect": [8, 2196, 655, 107],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'output.'",
-          "rect": [8, 2196, 655, 107],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [8, 2046, 774, 107],
+        [8, 2196, 655, 107]
       ],
       "transform": 1
     },

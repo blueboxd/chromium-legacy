@@ -294,6 +294,15 @@ class WebAppInstallManagerTest : public WebAppTest {
     return result;
   }
 
+  int GetNumFullyInstalledApps() const {
+    int num_apps = 0;
+    for (const WebApp& app : test_registry_controller_->registrar().AllApps()) {
+      if (!app.is_in_sync_install())
+        ++num_apps;
+    }
+    return num_apps;
+  }
+
   bool UninstallExternalWebAppByUrl(
       const GURL& app_url,
       ExternalInstallSource external_install_source) {
@@ -365,17 +374,28 @@ class WebAppInstallManagerTest : public WebAppTest {
   TestFileUtils* file_utils_ = nullptr;
 };
 
-// TODO(crbug.com/1020037): Move this test out into
-// install_manager_bookmark_app_unittest.cc.
 TEST_F(WebAppInstallManagerTest,
-       InstallBookmarkAppFromSync_TwoConcurrentInstallsAreRunInOrder) {
-  InitEmptyRegistrar();
-
+       InstallWebAppsAfterSync_TwoConcurrentInstallsAreRunInOrder) {
   const GURL url1{"https://example.com/path"};
   const AppId app1_id = GenerateAppIdFromURL(url1);
 
   const GURL url2{"https://example.org/path"};
   const AppId app2_id = GenerateAppIdFromURL(url2);
+  {
+    std::unique_ptr<WebApp> app1 = CreateWebAppInSyncInstall(
+        url1, "Name1 from sync", DisplayMode::kStandalone, SK_ColorRED,
+        /*is_locally_installed=*/false, /*icon_infos=*/{});
+
+    std::unique_ptr<WebApp> app2 = CreateWebAppInSyncInstall(
+        url2, "Name2 from sync", DisplayMode::kBrowser, SK_ColorGREEN,
+        /*is_locally_installed=*/true, /*icon_infos=*/{});
+
+    Registry registry;
+    registry.emplace(app1_id, std::move(app1));
+    registry.emplace(app2_id, std::move(app2));
+
+    InitRegistrarWithRegistry(registry);
+  }
 
   // 1 InstallTask == 1 DataRetriever, their lifetime matches.
   base::flat_set<TestDataRetriever*> task_data_retrievers;
@@ -402,6 +422,10 @@ TEST_F(WebAppInstallManagerTest,
       base::BindLambdaForTesting([&]() {
         auto data_retriever = std::make_unique<TestDataRetriever>();
         task_index++;
+
+        GURL launch_url = task_index == 1 ? url1 : url2;
+        data_retriever->BuildDefaultDataToRetrieve(launch_url,
+                                                   /*scope=*/launch_url);
 
         TestDataRetriever* data_retriever_ptr = data_retriever.get();
         task_data_retrievers.insert(data_retriever_ptr);
@@ -436,48 +460,56 @@ TEST_F(WebAppInstallManagerTest,
 
   EXPECT_FALSE(install_manager().has_web_contents_for_testing());
 
+  WebApp* web_app1 =
+      controller().mutable_registrar().GetAppByIdMutable(app1_id);
+  WebApp* web_app2 =
+      controller().mutable_registrar().GetAppByIdMutable(app2_id);
+  ASSERT_TRUE(web_app1);
+  ASSERT_TRUE(web_app2);
+
+  url_loader().SetNextLoadUrlResult(url1, WebAppUrlLoader::Result::kUrlLoaded);
+  url_loader().SetNextLoadUrlResult(url2, WebAppUrlLoader::Result::kUrlLoaded);
+
   // Enqueue a request to install the 1st app.
-  install_manager().InstallBookmarkAppFromSync(
-      app1_id, CreateWebAppInfo(url1),
-      base::BindLambdaForTesting(
-          [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
-            EXPECT_EQ(app1_id, installed_app_id);
-            event_order.push_back(Event::App1_CallbackCalled);
-            app1_installed_run_loop.Quit();
-          }));
+  install_manager().InstallWebAppsAfterSync(
+      {web_app1}, base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                                 InstallResultCode code) {
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+        EXPECT_EQ(app1_id, installed_app_id);
+        event_order.push_back(Event::App1_CallbackCalled);
+        app1_installed_run_loop.Quit();
+      }));
 
   EXPECT_TRUE(install_manager().has_web_contents_for_testing());
-  EXPECT_EQ(0u, registrar().GetAppIds().size());
+  EXPECT_EQ(0, GetNumFullyInstalledApps());
   EXPECT_EQ(1u, task_data_retrievers.size());
 
   // Immediately enqueue a request to install the 2nd app, WebContents is not
   // ready.
-  install_manager().InstallBookmarkAppFromSync(
-      app2_id, CreateWebAppInfo(url2),
-      base::BindLambdaForTesting(
-          [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
-            EXPECT_EQ(app2_id, installed_app_id);
-            event_order.push_back(Event::App2_CallbackCalled);
-            app2_installed_run_loop.Quit();
-          }));
+  install_manager().InstallWebAppsAfterSync(
+      {web_app2}, base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                                 InstallResultCode code) {
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+        EXPECT_EQ(app2_id, installed_app_id);
+        event_order.push_back(Event::App2_CallbackCalled);
+        app2_installed_run_loop.Quit();
+      }));
 
   EXPECT_TRUE(install_manager().has_web_contents_for_testing());
   EXPECT_EQ(2u, task_data_retrievers.size());
-  EXPECT_EQ(0u, registrar().GetAppIds().size());
+  EXPECT_EQ(0, GetNumFullyInstalledApps());
 
   // Wait for the 1st app installed.
   app1_installed_run_loop.Run();
   EXPECT_TRUE(install_manager().has_web_contents_for_testing());
   EXPECT_EQ(1u, task_data_retrievers.size());
-  EXPECT_EQ(1u, registrar().GetAppIds().size());
+  EXPECT_EQ(1, GetNumFullyInstalledApps());
 
   // Wait for the 2nd app installed.
   app2_installed_run_loop.Run();
   EXPECT_FALSE(install_manager().has_web_contents_for_testing());
   EXPECT_EQ(0u, task_data_retrievers.size());
-  EXPECT_EQ(2u, registrar().GetAppIds().size());
+  EXPECT_EQ(2, GetNumFullyInstalledApps());
 
   const std::vector<Event> expected_event_order{
       Event::Task1_Queued,    Event::Task2_Queued,        Event::Task1_Started,
@@ -488,21 +520,26 @@ TEST_F(WebAppInstallManagerTest,
   EXPECT_EQ(expected_event_order, event_order);
 }
 
-// TODO(crbug.com/1020037): Move this test out into
-// install_manager_bookmark_app_unittest.cc.
 TEST_F(WebAppInstallManagerTest,
-       InstallBookmarkAppFromSync_InstallManagerDestroyed) {
-  InitEmptyRegistrar();
+       InstallWebAppsAfterSync_InstallManagerDestroyed) {
+  const GURL launch_url{"https://example.com/path"};
+  const AppId app_id = GenerateAppIdFromURL(launch_url);
 
-  const GURL app_url("https://example.com/path");
-  const AppId app_id = GenerateAppIdFromURL(app_url);
-  NavigateAndCommit(app_url);
+  {
+    std::unique_ptr<WebApp> app_in_sync_install = CreateWebAppInSyncInstall(
+        launch_url, "Name from sync", DisplayMode::kStandalone, SK_ColorRED,
+        /*is_locally_installed=*/true, /*icon_infos=*/{});
+
+    InitRegistrarWithApp(std::move(app_in_sync_install));
+  }
 
   base::RunLoop run_loop;
 
   install_manager().SetDataRetrieverFactoryForTesting(
       base::BindLambdaForTesting([&]() {
         auto data_retriever = std::make_unique<TestDataRetriever>();
+        data_retriever->BuildDefaultDataToRetrieve(launch_url,
+                                                   /*scope=*/launch_url);
 
         // Every InstallTask starts with WebAppDataRetriever::GetIcons step.
         data_retriever->SetGetIconsDelegate(base::BindLambdaForTesting(
@@ -519,12 +556,16 @@ TEST_F(WebAppInstallManagerTest,
         return std::unique_ptr<WebAppDataRetriever>(std::move(data_retriever));
       }));
 
-  install_manager().InstallBookmarkAppFromSync(
-      app_id, CreateWebAppInfo(app_url),
-      base::BindLambdaForTesting(
-          [](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kWebContentsDestroyed, code);
-          }));
+  WebApp* web_app = controller().mutable_registrar().GetAppByIdMutable(app_id);
+
+  url_loader().SetNextLoadUrlResult(launch_url,
+                                    WebAppUrlLoader::Result::kUrlLoaded);
+
+  bool callback_called = false;
+  install_manager().InstallWebAppsAfterSync(
+      {web_app}, base::BindLambdaForTesting(
+                     [&](const AppId& installed_app_id,
+                         InstallResultCode code) { callback_called = true; }));
   EXPECT_TRUE(install_manager().has_web_contents_for_testing());
 
   // Wait for the task to start.
@@ -533,6 +574,8 @@ TEST_F(WebAppInstallManagerTest,
 
   // Simulate Profile getting destroyed.
   DestroyManagers();
+
+  EXPECT_FALSE(callback_called);
 }
 
 TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {

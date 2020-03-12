@@ -125,10 +125,16 @@ TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp() {
 
 // static
 std::unique_ptr<TestSystemWebAppInstallation>
-TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchDirectory() {
+TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchFiles(
+    IncludeLaunchDirectory include_launch_directory) {
   SystemAppInfo media_system_app_info(
       "Media", GURL("chrome://test-system-app/pwa.html"));
-  media_system_app_info.include_launch_directory = true;
+
+  if (include_launch_directory == IncludeLaunchDirectory::kYes)
+    media_system_app_info.include_launch_directory = true;
+  else
+    media_system_app_info.include_launch_directory = false;
+
   return base::WrapUnique(new TestSystemWebAppInstallation(
       SystemAppType::MEDIA, media_system_app_info));
 }

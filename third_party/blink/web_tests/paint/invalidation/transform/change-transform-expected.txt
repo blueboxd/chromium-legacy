@@ -5,27 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='square'",
-          "rect": [10, 10, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='overlay'",
-          "rect": [35, 35, 50, 50],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='overlay'",
-          "rect": [35, 35, 50, 50],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='square'",
-          "rect": [35, 35, 50, 50],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [10, 10, 100, 100]
       ]
     }
   ]

@@ -44,7 +44,9 @@ class CONTENT_EXPORT ServiceWorkerMainResourceHandleCore {
   void OnBeginNavigationCommit(
       int render_process_id,
       int render_frame_id,
-      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy);
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter);
   void OnBeginWorkerCommit(
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy);
 

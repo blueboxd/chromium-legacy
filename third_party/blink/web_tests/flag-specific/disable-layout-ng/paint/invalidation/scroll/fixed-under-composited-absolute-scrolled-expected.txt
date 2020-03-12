@@ -20,12 +20,8 @@
       "bounds": [100, 200],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "rect": [0, 100, 100, 100],
-          "reason": "incremental"
-        }
+      "invalidations": [
+        [0, 100, 100, 100]
       ]
     },
     {

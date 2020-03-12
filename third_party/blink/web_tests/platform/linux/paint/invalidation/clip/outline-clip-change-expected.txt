@@ -5,17 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) A id='link' class='updated'",
-          "rect": [48, 88, 90, 25],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Lorem Ipsum'",
-          "rect": [48, 88, 86, 19],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [48, 88, 90, 25]
       ]
     }
   ]

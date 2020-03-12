@@ -26,6 +26,7 @@
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 
 using platform_util::OpenOperationResult;
 using web_app::SystemAppType;
@@ -51,7 +52,10 @@ constexpr char kFileVideoVP9[] = "world.webm";
 class MediaAppIntegrationTest : public SystemWebAppIntegrationTest {
  public:
   MediaAppIntegrationTest() {
-    scoped_feature_list_.InitWithFeatures({chromeos::features::kMediaApp}, {});
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kMediaApp, blink::features::kNativeFileSystemAPI,
+         blink::features::kFileHandlingAPI},
+        {});
   }
 
  private:

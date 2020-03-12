@@ -37,14 +37,12 @@ class AppDialogViewBrowserTest : public DialogBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    profile_ = browser()->profile();
-
-    arc::SetArcPlayStoreEnabledForProfile(profile_, true);
+    arc::SetArcPlayStoreEnabledForProfile(browser()->profile(), true);
 
     // Validating decoded content does not fit well for unit tests.
     ArcAppIcon::DisableSafeDecodingForTesting();
 
-    arc_app_list_pref_ = ArcAppListPrefs::Get(profile_);
+    arc_app_list_pref_ = ArcAppListPrefs::Get(browser()->profile());
     DCHECK(arc_app_list_pref_);
     base::RunLoop run_loop;
     arc_app_list_pref_->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
@@ -70,6 +68,10 @@ class AppDialogViewBrowserTest : public DialogBrowserTest {
     return AppPauseDialogView::GetActiveViewForTesting();
   }
 
+  const std::string& app_id() const { return app_id_; }
+
+  apps::AppServiceProxy* app_service_proxy() { return app_service_proxy_; }
+
   void ShowUi(const std::string& name) override {
     arc::mojom::AppInfo app;
     app.name = "Fake App 0";
@@ -82,55 +84,54 @@ class AppDialogViewBrowserTest : public DialogBrowserTest {
     EXPECT_EQ(1u, arc_app_list_pref_->GetAppIds().size());
     EXPECT_EQ(nullptr, ActiveView(name));
 
-    auto* app_service_proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile_);
-    ASSERT_TRUE(app_service_proxy);
+    app_service_proxy_ =
+        apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+    ASSERT_TRUE(app_service_proxy_);
 
     base::RunLoop run_loop;
-    std::string app_id =
-        arc_app_list_pref_->GetAppId(app.package_name, app.activity);
+    app_id_ = arc_app_list_pref_->GetAppId(app.package_name, app.activity);
     if (name == "block") {
       app.suspended = true;
-      app_service_proxy->SetDialogCreatedCallbackForTesting(
+      app_service_proxy_->SetDialogCreatedCallbackForTesting(
           run_loop.QuitClosure());
       app_instance_->SendRefreshAppList(
           std::vector<arc::mojom::AppInfo>(1, app));
-      app_service_proxy->FlushMojoCallsForTesting();
-      app_service_proxy->Launch(app_id, ui::EventFlags::EF_NONE,
-                                apps::mojom::LaunchSource::kFromChromeInternal,
-                                display::kInvalidDisplayId);
+      app_service_proxy_->FlushMojoCallsForTesting();
+      app_service_proxy_->Launch(app_id_, ui::EventFlags::EF_NONE,
+                                 apps::mojom::LaunchSource::kFromChromeInternal,
+                                 display::kInvalidDisplayId);
     } else {
       std::map<std::string, apps::PauseData> pause_data;
-      pause_data[app_id].hours = 3;
-      pause_data[app_id].minutes = 30;
-      pause_data[app_id].should_show_pause_dialog = true;
-      app_service_proxy->SetDialogCreatedCallbackForTesting(
+      pause_data[app_id_].hours = 3;
+      pause_data[app_id_].minutes = 30;
+      pause_data[app_id_].should_show_pause_dialog = true;
+      app_service_proxy_->SetDialogCreatedCallbackForTesting(
           run_loop.QuitClosure());
-      app_service_proxy->PauseApps(pause_data);
+      app_service_proxy_->PauseApps(pause_data);
     }
     run_loop.Run();
 
     ASSERT_NE(nullptr, ActiveView(name));
     EXPECT_EQ(ui::DIALOG_BUTTON_OK, ActiveView(name)->GetDialogButtons());
 
-    app_service_proxy->FlushMojoCallsForTesting();
-    bool state_is_set = false;
-    app_service_proxy->AppRegistryCache().ForOneApp(
-        app_id, [&state_is_set, name](const apps::AppUpdate& update) {
-          if (name == "block") {
+    if (name == "block") {
+      app_service_proxy_->FlushMojoCallsForTesting();
+      bool state_is_set = false;
+      app_service_proxy_->AppRegistryCache().ForOneApp(
+          app_id_, [&state_is_set](const apps::AppUpdate& update) {
             state_is_set = (update.Readiness() ==
                             apps::mojom::Readiness::kDisabledByPolicy);
-          } else {
-            state_is_set =
-                (update.Paused() == apps::mojom::OptionalBool::kTrue);
-          }
-        });
+          });
 
-    EXPECT_TRUE(state_is_set);
+      EXPECT_TRUE(state_is_set);
+    } else {
+      ActiveView(name)->AcceptDialog();
+    }
   }
 
  private:
-  Profile* profile_ = nullptr;
+  std::string app_id_;
+  apps::AppServiceProxy* app_service_proxy_ = nullptr;
   ArcAppListPrefs* arc_app_list_pref_ = nullptr;
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
 };
@@ -141,4 +142,14 @@ IN_PROC_BROWSER_TEST_F(AppDialogViewBrowserTest, InvokeUi_block) {
 
 IN_PROC_BROWSER_TEST_F(AppDialogViewBrowserTest, InvokeUi_pause) {
   ShowAndVerifyUi();
+
+  app_service_proxy()->FlushMojoCallsForTesting();
+
+  bool state_is_set = false;
+  app_service_proxy()->AppRegistryCache().ForOneApp(
+      app_id(), [&state_is_set](const apps::AppUpdate& update) {
+        state_is_set = (update.Paused() == apps::mojom::OptionalBool::kTrue);
+      });
+
+  EXPECT_TRUE(state_is_set);
 }

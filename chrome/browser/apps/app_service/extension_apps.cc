@@ -605,9 +605,9 @@ void ExtensionApps::Uninstall(const std::string& app_id,
 }
 
 void ExtensionApps::PauseApp(const std::string& app_id) {
-  if (!paused_apps_.MaybeAddApp(app_id)) {
-    return;
-  }
+  paused_apps_.MaybeAddApp(app_id);
+  constexpr bool kPaused = true;
+  Publish(paused_apps_.GetAppWithPauseStatus(app_type_, app_id, kPaused));
 
   SetIconEffect(app_id);
 
@@ -642,9 +642,9 @@ void ExtensionApps::PauseApp(const std::string& app_id) {
 }
 
 void ExtensionApps::UnpauseApps(const std::string& app_id) {
-  if (!paused_apps_.MaybeRemoveApp(app_id)) {
-    return;
-  }
+  paused_apps_.MaybeRemoveApp(app_id);
+  constexpr bool kPaused = false;
+  Publish(paused_apps_.GetAppWithPauseStatus(app_type_, app_id, kPaused));
 
   SetIconEffect(app_id);
 

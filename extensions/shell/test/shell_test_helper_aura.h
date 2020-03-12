@@ -16,10 +16,6 @@ class AuraTestHelper;
 }
 }  // namespace aura
 
-namespace ui {
-class TestContextFactories;
-}
-
 namespace extensions {
 
 class AppWindow;
@@ -40,7 +36,6 @@ class ShellTestHelperAura {
   void InitAppWindow(AppWindow* app_window, const gfx::Rect& bounds = {});
 
  private:
-  std::unique_ptr<ui::TestContextFactories> context_factories_;
   std::unique_ptr<aura::test::AuraTestHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellTestHelperAura);

@@ -52,6 +52,8 @@ const char kQueryKeyKey[] = "key";
 const char kQueryValueKey[] = "value";
 const char kRegexSubstitutionKey[] = "regexSubstitution";
 const char kRegexSubstitutionPath[] = "action.redirect.regexSubstitution";
+const char kRequestHeadersPath[] = "action.requestHeaders";
+const char kResponseHeadersPath[] = "action.responseHeaders";
 
 }  // namespace declarative_net_request
 }  // namespace extensions

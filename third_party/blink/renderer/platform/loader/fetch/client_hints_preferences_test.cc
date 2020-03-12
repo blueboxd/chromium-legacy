@@ -28,31 +28,33 @@ TEST_F(ClientHintsPreferencesTest, BasicSecure) {
     bool expectation_ua_arch;
     bool expectation_ua_platform;
     bool expectation_ua_model;
+    bool expectation_ua_full_version;
   } cases[] = {
       {"width, dpr, viewportWidth", true, true, false, false, false, false,
-       false, false, false, false, false},
+       false, false, false, false, false, false},
       {"WiDtH, dPr, viewport-width, rtt, downlink, ect, lang", true, true, true,
-       true, true, true, true, false, false, false, false},
+       true, true, true, true, false, false, false, false, false},
       {"WiDtH, dPr, viewport-width, rtt, downlink, effective-connection-type",
-       true, true, true, true, true, false, false, false, false, false, false},
+       true, true, true, true, true, false, false, false, false, false, false,
+       false},
       {"WIDTH, DPR, VIWEPROT-Width", true, true, false, false, false, false,
-       false, false, false, false, false},
+       false, false, false, false, false, false},
       {"VIewporT-Width, wutwut, width", true, false, true, false, false, false,
-       false, false, false, false, false},
+       false, false, false, false, false, false},
       {"dprw", false, false, false, false, false, false, false, false, false,
-       false, false},
+       false, false, false},
       {"DPRW", false, false, false, false, false, false, false, false, false,
-       false, false},
+       false, false, false},
       {"ua", false, false, false, false, false, false, false, true, false,
-       false, false},
-      {"arch", false, false, false, false, false, false, false, false, true,
-       false, false},
-      {"platform", false, false, false, false, false, false, false, false,
-       false, true, false},
-      {"model", false, false, false, false, false, false, false, false, false,
-       false, true},
-      {"ua, arch, platform, model", false, false, false, false, false, false,
-       false, true, true, true, true},
+       false, false, false},
+      {"ua-arch", false, false, false, false, false, false, false, false, true,
+       false, false, false},
+      {"ua-platform", false, false, false, false, false, false, false, false,
+       false, true, false, false},
+      {"ua-model", false, false, false, false, false, false, false, false,
+       false, false, true, false},
+      {"ua, ua-arch, ua-platform, ua-model, ua-full-version", false, false,
+       false, false, false, false, false, true, true, true, true, true},
   };
 
   for (const auto& test_case : cases) {
@@ -214,23 +216,25 @@ TEST_F(ClientHintsPreferencesTest, ParseHeaders) {
     bool expect_ua_arch;
     bool expect_ua_platform;
     bool expect_ua_model;
+    bool expect_ua_full_version;
   } test_cases[] = {
       {"width, dpr, viewportWidth, lang", "", 0, false, true, true, false,
-       false, false, false, true, false, false, false, false},
+       false, false, false, true, false, false, false, false, false},
       {"width, dpr, viewportWidth", "-1000", 0, false, true, true, false, false,
-       false, false, false, false, false, false, false},
-      {"width, dpr, viewportWidth", "1000s", 0, false, true, true, false, false,
-       false, false, false, false, false, false, false},
-      {"width, dpr, viewportWidth", "1000.5", 0, false, true, true, false,
        false, false, false, false, false, false, false, false},
+      {"width, dpr, viewportWidth", "1000s", 0, false, true, true, false, false,
+       false, false, false, false, false, false, false, false},
+      {"width, dpr, viewportWidth", "1000.5", 0, false, true, true, false,
+       false, false, false, false, false, false, false, false, false},
       {"width, dpr, rtt, downlink, ect", "1000", 1000, false, true, true, false,
-       true, true, true, false, false, false, false, false},
+       true, true, true, false, false, false, false, false, false},
       {"device-memory", "-1000", 0, true, false, false, false, false, false,
-       false, false, false, false, false, false},
+       false, false, false, false, false, false, false},
       {"dpr rtt", "1000", 1000, false, false, false, false, false, false, false,
-       false, false, false, false, false},
-      {"ua, arch, platform, model", "1000", 1000, false, false, false, false,
-       false, false, false, false, true, true, true, true},
+       false, false, false, false, false, false},
+      {"ua, ua-arch, ua-platform, ua-model, ua-full-version", "1000", 1000,
+       false, false, false, false, false, false, false, false, true, true, true,
+       true, true},
   };
 
   for (const auto& test : test_cases) {

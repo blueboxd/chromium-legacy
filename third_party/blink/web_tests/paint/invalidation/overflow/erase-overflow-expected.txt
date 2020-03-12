@@ -5,22 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV class='square'",
-          "rect": [8, 108, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV class='square'",
-          "rect": [8, 8, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='target' class='square'",
-          "rect": [8, 8, 100, 100],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [8, 108, 100, 100],
+        [8, 8, 100, 100]
       ]
     }
   ]

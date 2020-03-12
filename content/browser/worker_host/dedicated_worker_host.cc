@@ -397,7 +397,16 @@ void DedicatedWorkerHost::CreateQuicTransportConnector(
 void DedicatedWorkerHost::BindCacheStorage(
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_remote;
+  // coep_reporter is avaible only when PlzDedicatedWorker is enabled.
+  // TODO(arthursonzogni): Add similar support when PlzDedicatedWorker is
+  if (coep_reporter_) {
+    coep_reporter_->Clone(
+        coep_reporter_remote.InitWithNewPipeAndPassReceiver());
+  }
   worker_process_host_->BindCacheStorage(cross_origin_embedder_policy_,
+                                         std::move(coep_reporter_remote),
                                          worker_origin_, std::move(receiver));
 }
 

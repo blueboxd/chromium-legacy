@@ -24,6 +24,7 @@
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
+#include "ash/shell_init_params.h"
 #include "ash/system/message_center/test_notifier_settings_controller.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/screen_layout_observer.h"
@@ -65,6 +66,10 @@
 
 namespace ash {
 
+AshTestHelper::InitParams::InitParams() = default;
+AshTestHelper::InitParams::InitParams(InitParams&&) = default;
+AshTestHelper::InitParams::~InitParams() = default;
+
 AshTestHelper::AshTestHelper()
     : command_line_(std::make_unique<base::test::ScopedCommandLine>()) {}
 
@@ -74,8 +79,7 @@ AshTestHelper::~AshTestHelper() {
   ScreenAsh::DeleteScreenForShutdown();
 }
 
-void AshTestHelper::SetUp(const InitParams& init_params,
-                          base::Optional<ShellInitParams> shell_init_params) {
+void AshTestHelper::SetUp(InitParams init_params) {
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
@@ -116,10 +120,6 @@ void AshTestHelper::SetUp(const InitParams& init_params,
   if (!views::ViewsDelegate::GetInstance())
     test_views_delegate_ = std::make_unique<AshTestViewsDelegate>();
 
-  // Creates Shell and hook with Desktop.
-  if (!test_shell_delegate_)
-    test_shell_delegate_ = new TestShellDelegate;
-
   if (!bluez::BluezDBusManager::IsInitialized()) {
     bluez::BluezDBusManager::InitializeFake();
     bluez_dbus_manager_initialized_ = true;
@@ -143,7 +143,19 @@ void AshTestHelper::SetUp(const InitParams& init_params,
   // last cursor visibility state, etc.
   ::wm::CursorManager::ResetCursorVisibilityStateForTest();
 
-  CreateShell(std::move(shell_init_params), init_params.local_state);
+  ShellInitParams shell_init_params;
+  shell_init_params.delegate = std::move(init_params.delegate);
+  if (!shell_init_params.delegate)
+    shell_init_params.delegate = std::make_unique<TestShellDelegate>();
+  shell_init_params.context_factory = init_params.context_factory;
+  if (!shell_init_params.context_factory) {
+    context_factories_ = std::make_unique<ui::TestContextFactories>(false);
+    shell_init_params.context_factory = context_factories_->GetContextFactory();
+  }
+  shell_init_params.local_state = init_params.local_state;
+  shell_init_params.keyboard_ui_factory =
+      std::make_unique<TestKeyboardUIFactory>();
+  Shell::CreateInstance(std::move(shell_init_params));
 
   // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
   aura::test::EnvTestHelper env_helper(aura::Env::GetInstance());
@@ -293,23 +305,6 @@ aura::Window* AshTestHelper::GetContext() {
 display::Display AshTestHelper::GetSecondaryDisplay() const {
   return display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .GetSecondaryDisplay();
-}
-
-void AshTestHelper::CreateShell(base::Optional<ShellInitParams> init_params,
-                                PrefService* local_state) {
-  if (init_params == base::nullopt) {
-    context_factories_ = std::make_unique<ui::TestContextFactories>(
-        /*enable_pixel_output=*/false);
-    init_params.emplace(ShellInitParams());
-    init_params->delegate.reset(test_shell_delegate_);
-    init_params->context_factory = context_factories_->GetContextFactory();
-    init_params->keyboard_ui_factory =
-        std::make_unique<TestKeyboardUIFactory>();
-  }
-  if (local_state)
-    init_params->local_state = local_state;
-
-  Shell::CreateInstance(std::move(*init_params));
 }
 
 }  // namespace ash

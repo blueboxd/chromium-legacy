@@ -29,6 +29,7 @@ import org.chromium.ui.modelutil.PropertyModel;
         implements BottomSheetObserver, PaymentHandlerToolbarObserver, View.OnLayoutChangeListener {
     // The value is picked in order to allow users to see the tab behind this UI.
     /* package */ static final float FULL_HEIGHT_RATIO = 0.9f;
+    /* package */ static final float HALF_HEIGHT_RATIO = 0.5f;
 
     private final PropertyModel mModel;
     // Whenever invoked, invoked outside of the WebContentsObserver callbacks.

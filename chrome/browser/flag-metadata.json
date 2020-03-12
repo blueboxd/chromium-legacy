@@ -3312,6 +3312,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "query-tiles",
+    "owners": [ "shaktisahu", "qinmin"],
+    "expiry_milestone": 86
+  },
+  {
     "name": "quiet-notification-prompts",
     "owners": [ "engedy", "mkwst", "andypaicu", "hkamila" ],
     "expiry_milestone": 83

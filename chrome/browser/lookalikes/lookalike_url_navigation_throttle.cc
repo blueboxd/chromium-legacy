@@ -34,9 +34,6 @@
 
 namespace {
 
-const base::FeatureParam<bool> kEnableInterstitialForTopSites{
-    &features::kLookalikeUrlNavigationSuggestionsUI, "topsites", true};
-
 using MatchType = LookalikeUrlBlockingPage::MatchType;
 using UserAction = LookalikeUrlBlockingPage::UserAction;
 using url_formatter::TopDomainEntry;
@@ -462,7 +459,6 @@ bool LookalikeUrlNavigationThrottle::ShouldDisplayInterstitial(
     return true;
   }
   return match_type == MatchType::kTopSite &&
-         kEnableInterstitialForTopSites.Get() &&
          navigated_domain.idn_result.matching_top_domain.is_top_500;
 }
 

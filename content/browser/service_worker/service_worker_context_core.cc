@@ -827,9 +827,7 @@ void ServiceWorkerContextCore::OnMainScriptResponseSet(
 
 void ServiceWorkerContextCore::OnRunningStateChanged(
     ServiceWorkerVersion* version) {
-  if (!version->context())
-    return;
-
+  DCHECK_EQ(this, version->context().get());
   switch (version->running_status()) {
     case EmbeddedWorkerStatus::STOPPED:
       observer_list_->Notify(FROM_HERE,
@@ -857,6 +855,7 @@ void ServiceWorkerContextCore::OnRunningStateChanged(
 
 void ServiceWorkerContextCore::OnVersionStateChanged(
     ServiceWorkerVersion* version) {
+  DCHECK_EQ(this, version->context().get());
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnVersionStateChanged,
       version->version_id(), version->scope(), version->status());
@@ -864,6 +863,7 @@ void ServiceWorkerContextCore::OnVersionStateChanged(
 
 void ServiceWorkerContextCore::OnDevToolsRoutingIdChanged(
     ServiceWorkerVersion* version) {
+  DCHECK_EQ(this, version->context().get());
   if (!version->embedded_worker())
     return;
   observer_list_->Notify(
@@ -879,6 +879,7 @@ void ServiceWorkerContextCore::OnErrorReported(
     int line_number,
     int column_number,
     const GURL& source_url) {
+  DCHECK_EQ(this, version->context().get());
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnErrorReported,
       version->version_id(),
@@ -894,6 +895,7 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
     int line_number,
     const GURL& source_url) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK_EQ(this, version->context().get());
   // NOTE: This differs slightly from
   // RenderFrameHostImpl::DidAddMessageToConsole, which also asks the
   // content embedder whether to classify the message as a builtin component.
@@ -915,6 +917,7 @@ void ServiceWorkerContextCore::OnControlleeAdded(
     ServiceWorkerVersion* version,
     const std::string& client_uuid,
     const ServiceWorkerClientInfo& client_info) {
+  DCHECK_EQ(this, version->context().get());
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnControlleeAdded,
       version->version_id(), version->scope(), client_uuid, client_info);
@@ -923,12 +926,14 @@ void ServiceWorkerContextCore::OnControlleeAdded(
 void ServiceWorkerContextCore::OnControlleeRemoved(
     ServiceWorkerVersion* version,
     const std::string& client_uuid) {
+  DCHECK_EQ(this, version->context().get());
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextCoreObserver::OnControlleeRemoved,
                          version->version_id(), version->scope(), client_uuid);
 }
 
 void ServiceWorkerContextCore::OnNoControllees(ServiceWorkerVersion* version) {
+  DCHECK_EQ(this, version->context().get());
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextCoreObserver::OnNoControllees,
                          version->version_id(), version->scope());

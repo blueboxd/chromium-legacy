@@ -233,7 +233,8 @@ bool Label::GetMultiLine() const {
 
 void Label::SetMultiLine(bool multi_line) {
   DCHECK(!multi_line || (elide_behavior_ == gfx::ELIDE_TAIL ||
-                         elide_behavior_ == gfx::NO_ELIDE));
+                         elide_behavior_ == gfx::NO_ELIDE ||
+                         elide_behavior_ == gfx::TRUNCATE_HEAD));
   if (this->GetMultiLine() == multi_line)
     return;
   multi_line_ = multi_line;
@@ -297,7 +298,8 @@ gfx::ElideBehavior Label::GetElideBehavior() const {
 
 void Label::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
   DCHECK(!GetMultiLine() || (elide_behavior == gfx::ELIDE_TAIL ||
-                             elide_behavior == gfx::NO_ELIDE));
+                             elide_behavior == gfx::NO_ELIDE ||
+                             elide_behavior == gfx::TRUNCATE_HEAD));
   if (elide_behavior_ == elide_behavior)
     return;
   elide_behavior_ = elide_behavior;
@@ -565,11 +567,14 @@ void Label::OnHandlePropertyChangeEffects(PropertyEffects property_effects) {
 }
 
 std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
-  // Multi-line labels only support NO_ELIDE and ELIDE_TAIL for now.
+  // Multi-line labels only support NO_ELIDE, ELIDE_TAIL, and TRUNCATE_HEAD
+  // for now.
   // TODO(warx): Investigate more elide text support.
-  gfx::ElideBehavior elide_behavior =
-      GetMultiLine() && (elide_behavior_ != gfx::NO_ELIDE) ? gfx::ELIDE_TAIL
-                                                           : elide_behavior_;
+  gfx::ElideBehavior elide_behavior = elide_behavior_;
+  if (GetMultiLine() && elide_behavior_ != gfx::NO_ELIDE &&
+      elide_behavior_ != gfx::TRUNCATE_HEAD) {
+    elide_behavior = gfx::ELIDE_TAIL;
+  }
 
   std::unique_ptr<gfx::RenderText> render_text =
       gfx::RenderText::CreateRenderText();

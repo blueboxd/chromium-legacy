@@ -10,17 +10,8 @@
       "name": "LayoutBlockFlow DIV id='parent'",
       "position": [-1, -1],
       "bounds": [745, 102],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='parent'",
-          "rect": [0, 0, 745, 102],
-          "reason": "full layer"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='parent'",
-          "rect": [0, 0, 744, 100],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 745, 102]
       ],
       "transform": 1
     }

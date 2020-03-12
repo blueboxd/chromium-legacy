@@ -84,6 +84,11 @@ import org.chromium.content_public.browser.WebContents;
     }
 
     @Override
+    public float getHalfHeightRatio() {
+        return PaymentHandlerMediator.HALF_HEIGHT_RATIO;
+    }
+
+    @Override
     public boolean hasCustomScrimLifecycle() {
         return true;
     }

@@ -21,9 +21,8 @@ namespace views {
 ScopedViewsTestHelper::ScopedViewsTestHelper(
     std::unique_ptr<TestViewsDelegate> test_views_delegate)
     : test_views_delegate_(std::move(test_views_delegate)) {
-  ui::ContextFactory* context_factory = context_factories_.GetContextFactory();
-  test_views_delegate_->set_context_factory(context_factory);
-  test_helper_ = ViewsTestHelper::Create(context_factory);
+  test_helper_ = ViewsTestHelper::Create();
+  test_views_delegate_->set_context_factory(test_helper_->GetContextFactory());
 
   ui::InitializeInputMethodForTesting();
   ui::TestClipboard::CreateForCurrentThread();

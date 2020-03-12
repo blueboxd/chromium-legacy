@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [508, 27, 80, 22],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [508, 27, 80, 22]
       ]
     }
   ]

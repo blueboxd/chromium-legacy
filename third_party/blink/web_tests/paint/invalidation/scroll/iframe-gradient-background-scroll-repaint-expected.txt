@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [10, 10, 300, 150],
-          "reason": "background"
-        }
+      "invalidations": [
+        [10, 10, 300, 150]
       ]
     }
   ]

@@ -2508,6 +2508,9 @@ const char kProcessSharingWithStrictSiteInstancesDescription[] =
     "separated like strict site isolation, but process selection puts multiple "
     "site instances in a single process.";
 
+const char kQueryTilesName[] = "Show query tiles";
+const char kQueryTilesDescription[] = "Shows query tiles in Chrome";
+
 const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
 const char kReaderModeHeuristicsDescription[] =
     "Determines what pages the Reader Mode infobar is shown on.";

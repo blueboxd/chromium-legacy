@@ -11,12 +11,8 @@
       "position": [8, 96],
       "bounds": [186, 64],
       "backgroundColor": "#ADD8E6",
-      "paintInvalidations": [
-        {
-          "object": "LayoutTableRow TR id='target'",
-          "rect": [0, 0, 186, 64],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 186, 64]
       ]
     },
     {

@@ -11,12 +11,8 @@
       "position": [-50, 0],
       "bounds": [150, 100],
       "backgroundColor": "#0000FF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='div'",
-          "rect": [0, 0, 150, 100],
-          "reason": "style change"
-        }
+      "invalidations": [
+        [0, 0, 150, 100]
       ],
       "transform": 1
     }

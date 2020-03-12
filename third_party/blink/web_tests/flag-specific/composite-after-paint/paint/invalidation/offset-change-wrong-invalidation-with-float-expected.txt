@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) UL id='submenu'",
-          "rect": [48, 94, 40, 20],
-          "reason": "chunk disappeared"
-        }
+      "invalidations": [
+        [48, 94, 40, 20]
       ]
     }
   ]

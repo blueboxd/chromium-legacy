@@ -10,12 +10,8 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
       "bounds": [14, 14],
       "backgroundColor": "#FF0000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='target' class='green'",
-          "rect": [0, 0, 14, 14],
-          "reason": "style change"
-        }
+      "invalidations": [
+        [0, 0, 14, 14]
       ],
       "transform": 1
     }

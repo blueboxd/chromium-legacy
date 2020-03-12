@@ -272,8 +272,11 @@ void AppServiceProxy::PauseApps(
       continue;
     }
 
-    constexpr bool kPaused = true;
-    UpdatePausedStatus(app_type, data.first, kPaused);
+    cache_.ForOneApp(data.first, [this](const apps::AppUpdate& update) {
+      if (update.Paused() != apps::mojom::OptionalBool::kTrue) {
+        pending_pause_requests_.MaybeAddApp(update.AppId());
+      }
+    });
 
     // The app pause dialog can't be loaded for unit tests.
     if (!data.second.should_show_pause_dialog || is_using_testing_profile_) {
@@ -301,9 +304,6 @@ void AppServiceProxy::UnpauseApps(const std::set<std::string>& app_ids) {
     if (app_type == apps::mojom::AppType::kUnknown) {
       continue;
     }
-
-    constexpr bool kPaused = false;
-    UpdatePausedStatus(app_type, app_id, kPaused);
 
     app_service_->UnpauseApps(app_type, app_id);
   }
@@ -536,7 +536,8 @@ bool AppServiceProxy::MaybeShowLaunchPreventionDialog(
 
   // Return true, and load the icon for the app pause dialog when the app
   // is paused.
-  if (update.Paused() == apps::mojom::OptionalBool::kTrue) {
+  if (update.Paused() == apps::mojom::OptionalBool::kTrue ||
+      pending_pause_requests_.IsPaused(update.AppId())) {
     chromeos::app_time::AppTimeLimitInterface* app_limit =
         chromeos::app_time::AppTimeLimitInterface::Get(profile_);
     DCHECK(app_limit);
@@ -626,19 +627,6 @@ void AppServiceProxy::OnLoadIconForPauseDialog(
   }
 }
 
-void AppServiceProxy::UpdatePausedStatus(apps::mojom::AppType app_type,
-                                         const std::string& app_id,
-                                         bool paused) {
-  std::vector<apps::mojom::AppPtr> apps;
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = app_type;
-  app->app_id = app_id;
-  app->paused = (paused) ? apps::mojom::OptionalBool::kTrue
-                         : apps::mojom::OptionalBool::kFalse;
-  apps.push_back(std::move(app));
-  cache_.OnApps(std::move(apps));
-}
-
 void AppServiceProxy::OnPauseDialogClosed(apps::mojom::AppType app_type,
                                           const std::string& app_id) {
   app_service_->PauseApp(app_type, app_id);
@@ -646,6 +634,15 @@ void AppServiceProxy::OnPauseDialogClosed(apps::mojom::AppType app_type,
 #endif  // OS_CHROMEOS
 
 void AppServiceProxy::OnAppUpdate(const apps::AppUpdate& update) {
+#if defined(OS_CHROMEOS)
+  if ((update.PausedChanged() &&
+       update.Paused() == apps::mojom::OptionalBool::kTrue) ||
+      (update.ReadinessChanged() &&
+       update.Readiness() == apps::mojom::Readiness::kUninstalledByUser)) {
+    pending_pause_requests_.MaybeRemoveApp(update.AppId());
+  }
+#endif  // OS_CHROMEOS
+
   if (!update.ReadinessChanged() ||
       update.Readiness() != apps::mojom::Readiness::kUninstalledByUser) {
     return;

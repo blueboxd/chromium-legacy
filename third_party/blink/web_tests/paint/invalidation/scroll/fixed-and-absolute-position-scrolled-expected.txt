@@ -20,12 +20,8 @@
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
-          "rect": [0, 0, 100, 100],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 100, 100]
       ],
       "transform": 1
     },

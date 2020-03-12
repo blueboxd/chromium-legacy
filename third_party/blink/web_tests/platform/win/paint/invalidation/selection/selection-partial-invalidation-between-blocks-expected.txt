@@ -5,17 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'Second cell'",
-          "rect": [11, 35, 70, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'First cell'",
-          "rect": [11, 11, 55, 20],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [11, 35, 70, 20],
+        [11, 11, 55, 20]
       ]
     }
   ]

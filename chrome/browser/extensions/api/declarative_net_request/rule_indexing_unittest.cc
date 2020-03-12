@@ -55,12 +55,11 @@ InstallWarning GetLargeRegexWarning(int rule_id) {
       manifest_keys::kDeclarativeRuleResourcesKey);
 }
 
-// Fixure testing that declarative rules corresponding to the Declarative Net
-// Request API are correctly indexed, for both packed and unpacked
-// extensions.
+// Fixture testing that declarative rules corresponding to the Declarative Net
+// Request API are correctly indexed, for both packed and unpacked extensions.
 class RuleIndexingTest : public DNRTestBase {
  public:
-  RuleIndexingTest() {}
+  RuleIndexingTest() = default;
 
   // DNRTestBase override.
   void SetUp() override {

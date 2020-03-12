@@ -17,12 +17,8 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box middle')",
       "position": [80, 80],
       "bounds": [262, 200],
-      "paintInvalidations": [
-        {
-          "object": "LayoutImage (positioned) IMG id='repaintdiv' class='repaintdiv'",
-          "rect": [80, 80, 182, 29],
-          "reason": "background"
-        }
+      "invalidations": [
+        [80, 80, 182, 29]
       ],
       "transform": 1
     }

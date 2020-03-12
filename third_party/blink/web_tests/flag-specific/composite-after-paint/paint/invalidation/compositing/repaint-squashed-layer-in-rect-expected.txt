@@ -33,12 +33,8 @@
       "position": [8, 0],
       "bounds": [592, 600],
       "backgroundColor": "#ADD8E6",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='imgElement'",
-          "rect": [392, 400, 200, 200],
-          "reason": "background"
-        }
+      "invalidations": [
+        [392, 400, 200, 200]
       ]
     }
   ],

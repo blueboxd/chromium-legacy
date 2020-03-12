@@ -5102,6 +5102,13 @@ void LayerTreeHostImpl::MouseLeave() {
   scroll_element_id_mouse_currently_over_ = ElementId();
 }
 
+ElementId LayerTreeHostImpl::FindFrameElementIdAtPoint(
+    const gfx::PointF& viewport_point) {
+  gfx::PointF device_viewport_point = gfx::ScalePoint(
+      gfx::PointF(viewport_point), active_tree_->device_scale_factor());
+  return active_tree_->FindFrameElementIdAtPoint(device_viewport_point);
+}
+
 void LayerTreeHostImpl::PinchGestureBegin() {
   pinch_gesture_active_ = true;
   client_->RenewTreePriority();

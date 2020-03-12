@@ -34,6 +34,7 @@
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
+#include "third_party/blink/renderer/core/page/page_popup_supplement.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
@@ -58,13 +59,6 @@ void PagePopupController::setValue(const String& value) {
 void PagePopupController::closePopup() {
   if (popup_client_)
     popup_client_->CancelPopup();
-}
-
-void PagePopupController::selectFontsFromOwnerDocument(
-    Document* target_document) {
-  DCHECK(target_document);
-  if (popup_client_)
-    popup_client_->SelectFontsFromOwnerDocument(*target_document);
 }
 
 String PagePopupController::localizeNumberString(const String& number_string) {
@@ -110,6 +104,19 @@ void PagePopupController::ClearPagePopupClient() {
 
 void PagePopupController::setWindowRect(int x, int y, int width, int height) {
   popup_.SetWindowRect(IntRect(x, y, width, height));
+}
+
+// static
+CSSFontSelector* PagePopupController::CreateCSSFontSelector(
+    Document& popup_document) {
+  LocalFrame* frame = popup_document.GetFrame();
+  DCHECK(frame);
+  DCHECK(frame->PagePopupOwner());
+
+  auto* controller = PagePopupSupplement::From(*frame).GetPagePopupController();
+
+  DCHECK(controller->popup_client_);
+  return controller->popup_client_->CreateCSSFontSelector(popup_document);
 }
 
 }  // namespace blink

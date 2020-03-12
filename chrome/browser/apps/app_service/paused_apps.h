@@ -8,6 +8,8 @@
 #include <set>
 #include <string>
 
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
+
 namespace apps {
 
 // PausedApps saves apps which have been paused for a specific publisher. The
@@ -19,6 +21,11 @@ class PausedApps {
 
   PausedApps(const PausedApps&) = delete;
   PausedApps& operator=(const PausedApps&) = delete;
+
+  static apps::mojom::AppPtr GetAppWithPauseStatus(
+      apps::mojom::AppType app_type,
+      const std::string& app_id,
+      bool paused);
 
   // Returns true if the app was added to the paused set, and false if it was
   // already there.

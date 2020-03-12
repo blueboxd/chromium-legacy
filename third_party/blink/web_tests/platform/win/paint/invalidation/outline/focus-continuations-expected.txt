@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalBoxFragment LayoutInline SPAN id='outer'",
-          "rect": [6, 86, 87, 24],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [6, 86, 87, 24]
       ]
     }
   ]

@@ -2671,16 +2671,22 @@ void NavigationRequest::CommitNavigation() {
     }
   }
 
+  CreateCoepReporter(render_frame_host_->GetProcess()->GetStoragePartition());
+
   blink::mojom::ServiceWorkerProviderInfoForClientPtr
       service_worker_provider_info;
   if (service_worker_handle_) {
+    DCHECK(coep_reporter());
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        reporter_remote;
+    coep_reporter()->Clone(reporter_remote.InitWithNewPipeAndPassReceiver());
     // Notify the service worker navigation handle that navigation commit is
     // about to go.
     service_worker_handle_->OnBeginNavigationCommit(
         render_frame_host_->GetProcess()->GetID(),
         render_frame_host_->GetRoutingID(),
         render_frame_host_->cross_origin_embedder_policy(),
-        &service_worker_provider_info);
+        std::move(reporter_remote), &service_worker_provider_info);
   }
 
   if (web_bundle_handle_ && web_bundle_handle_->navigation_info()) {

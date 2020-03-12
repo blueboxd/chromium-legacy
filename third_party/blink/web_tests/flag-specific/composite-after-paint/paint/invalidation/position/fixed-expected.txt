@@ -16,12 +16,8 @@
       "name": "LayoutNGBlockFlow (positioned) DIV id='t'",
       "bounds": [100, 100],
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='t'",
-          "rect": [0, 0, 100, 100],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 100, 100]
       ],
       "transform": 2
     }

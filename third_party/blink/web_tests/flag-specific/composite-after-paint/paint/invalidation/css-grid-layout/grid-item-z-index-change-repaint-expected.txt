@@ -5,47 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 16, 454, 320],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'This test checks that grid items correctly repaint when 'z-index' changes.'",
-          "rect": [8, 16, 454, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutGrid DIV class='grid fit-content'",
-          "rect": [8, 236, 400, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutGrid DIV class='grid fit-content'",
-          "rect": [8, 126, 400, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'For this test to pass, there should be no red below.'",
-          "rect": [8, 52, 314, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV class='sizedToGridArea red'",
-          "rect": [208, 236, 200, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV class='sizedToGridArea red'",
-          "rect": [208, 126, 200, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='item2' class='sizedToGridArea green'",
-          "rect": [8, 236, 200, 100],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [8, 16, 454, 320]
       ]
     }
   ]

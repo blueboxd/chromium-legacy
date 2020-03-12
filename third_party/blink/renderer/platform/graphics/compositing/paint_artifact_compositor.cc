@@ -80,8 +80,10 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
          paint_artifact);
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !tracks_raster_invalidations_)
-    flags &= ~kLayerTreeIncludesPaintInvalidations;
+      !tracks_raster_invalidations_) {
+    flags &= ~(kLayerTreeIncludesInvalidations |
+               kLayerTreeIncludesDetailedInvalidations);
+  }
 
   LayersAsJSON layers_as_json(flags);
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -1636,7 +1638,7 @@ cc::LayerList LayerListBuilder::Finalize() {
 #if DCHECK_IS_ON()
 void PaintArtifactCompositor::ShowDebugData() {
   LOG(ERROR) << GetLayersAsJSON(kLayerTreeIncludesDebugInfo |
-                                kLayerTreeIncludesPaintInvalidations)
+                                kLayerTreeIncludesDetailedInvalidations)
                     ->ToPrettyJSONString()
                     .Utf8();
 }

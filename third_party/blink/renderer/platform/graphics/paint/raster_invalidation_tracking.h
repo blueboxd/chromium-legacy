@@ -95,7 +95,7 @@ class PLATFORM_EXPORT RasterInvalidationTracking {
                                sk_sp<PaintRecord> new_record,
                                const IntRect& new_interest_rect);
 
-  void AsJSON(JSONObject*) const;
+  void AsJSON(JSONObject*, bool detailed) const;
 
   void AddToLayerDebugInfo(cc::LayerDebugInfo&) const;
 

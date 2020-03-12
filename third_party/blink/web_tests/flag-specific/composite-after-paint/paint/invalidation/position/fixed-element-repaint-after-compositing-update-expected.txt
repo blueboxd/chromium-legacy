@@ -11,17 +11,9 @@
       "position": [8, 88],
       "bounds": [792, 512],
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='moveMe'",
-          "rect": [142, 62, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='moveMe'",
-          "rect": [0, 0, 100, 100],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [142, 62, 100, 100],
+        [0, 0, 100, 100]
       ]
     }
   ]

@@ -48,6 +48,8 @@
 
 namespace {
 
+const unsigned expected_client_hints_number = 11u;
+
 // An interceptor that records count of fetches and client hint headers for
 // requests to https://foo.com/non-existing-image.jpg.
 class ThirdPartyURLLoaderInterceptor {
@@ -439,6 +441,10 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     return main_frame_ua_observed_;
   }
 
+  const std::string& main_frame_ua_full_version_observed() const {
+    return main_frame_ua_full_version_observed_;
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::string intercept_iframe_resource_;
@@ -521,6 +527,13 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     if (is_main_frame_navigation) {
       if (request.headers.find("sec-ch-ua") != request.headers.end())
         main_frame_ua_observed_ = request.headers.find("sec-ch-ua")->second;
+
+      if (request.headers.find("sec-ch-ua-full-version") !=
+          request.headers.end())
+        main_frame_ua_full_version_observed_ =
+            request.headers.find("sec-ch-ua-full-version")->second;
+      else
+        main_frame_ua_full_version_observed_.clear();
 
       VerifyClientHintsReceived(expect_client_hints_on_main_frame_, request);
       if (expect_client_hints_on_main_frame_) {
@@ -722,6 +735,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   GURL redirect_url_;
 
   std::string main_frame_ua_observed_;
+  std::string main_frame_ua_full_version_observed_;
 
   double main_frame_dpr_observed_ = -1;
   double main_frame_viewport_width_observed_ = -1;
@@ -800,8 +814,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, ClientHintsHttps) {
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  // client_hints_url() sets twelve client hints.
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 12, 1);
+  // client_hints_url() sets the expected number of client hints.
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                      expected_client_hints_number, 1);
   // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
   // seconds.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
@@ -858,9 +873,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Ten other client hints are attached to the image request, and ten to the
-  // main frame request.
-  EXPECT_EQ(20u, count_client_hints_headers_seen());
+  // Expected number of hints attached to the image request, and the same number
+  // to the main frame request.
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
 
   // Navigating to without_accept_ch_without_lifetime_img_foo_com() should not
   // attach client hints to the image subresouce contained in that page since
@@ -873,9 +889,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // The device-memory and dprheader is attached to the main frame request.
 #if defined(OS_ANDROID)
-  EXPECT_EQ(10u, count_client_hints_headers_seen());
+  EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
 #else
-  EXPECT_EQ(30u, count_client_hints_headers_seen());
+  EXPECT_EQ(expected_client_hints_number * 3,
+            count_client_hints_headers_seen());
 #endif
 
   // Requests to third party servers should have only one client hint attached
@@ -910,9 +927,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Ten other client hints are attached to the image request, and ten to the
-  // main frame request.
-  EXPECT_EQ(20u, count_client_hints_headers_seen());
+  // Expected number of hints attached to the image request, and the same number
+  // to the main frame request.
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
 
   // OTR profile should get neither.
   Browser* otr_browser = CreateIncognitoBrowser(browser()->profile());
@@ -923,7 +941,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 }
 
 // Verify that we send only major version information in the `Sec-CH-UA` header
-// by default, and full version information after an opt-in.
+// by default, regardless of opt-in.
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UserAgentVersion) {
   const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
                                : accept_ch_with_lifetime_url();
@@ -934,20 +952,18 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UserAgentVersion) {
   // the major version, and not contain the full version.
   SetClientHintExpectationsOnMainFrame(false);
   ui_test_utils::NavigateToURL(browser(), gurl);
-  std::string version = ua.major_version;
-  version.append(1, '"');
-  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), version,
-                             base::CompareCase::SENSITIVE));
-  EXPECT_EQ(std::string::npos, main_frame_ua_observed().find(ua.full_version));
+  std::string expected_ua =
+      "\"" + ua.brand + "\"; v=\"" + ua.major_version + "\"";
+  EXPECT_EQ(main_frame_ua_observed(), expected_ua);
+  EXPECT_TRUE(main_frame_ua_full_version_observed().empty());
 
-  // Navigate again, after the opt-in: the value should end with the full
+  // Navigate again, after the opt-in: the value should stay the major
   // version.
   SetClientHintExpectationsOnMainFrame(true);
   ui_test_utils::NavigateToURL(browser(), gurl);
-  version = ua.full_version;
-  version.append(1, '"');
-  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), version,
-                             base::CompareCase::SENSITIVE));
+  std::string expected_full_version = "\"" + ua.full_version + "\"";
+  EXPECT_EQ(main_frame_ua_observed(), expected_ua);
+  EXPECT_EQ(main_frame_ua_full_version_observed(), expected_full_version);
 }
 
 void ClientHintsBrowserTest::TestProfilesIndependent(Browser* browser_a,
@@ -961,23 +977,24 @@ void ClientHintsBrowserTest::TestProfilesIndependent(Browser* browser_a,
   // end with the major version, and not contain the full version.
   SetClientHintExpectationsOnMainFrame(false);
   ui_test_utils::NavigateToURL(browser_a, gurl);
-  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.major_version + "\"",
-                             base::CompareCase::SENSITIVE));
-  EXPECT_EQ(std::string::npos, main_frame_ua_observed().find(ua.full_version));
+  std::string expected_ua =
+      "\"" + ua.brand + "\"; v=\"" + ua.major_version + "\"";
+  EXPECT_EQ(main_frame_ua_observed(), expected_ua);
+  EXPECT_TRUE(main_frame_ua_full_version_observed().empty());
 
   // Try again on |browser_a|, the header should have an effect there.
   SetClientHintExpectationsOnMainFrame(true);
   ui_test_utils::NavigateToURL(browser_a, gurl);
-  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.full_version + "\"",
-                             base::CompareCase::SENSITIVE));
+  std::string expected_full_version = "\"" + ua.full_version + "\"";
+  EXPECT_EQ(main_frame_ua_observed(), expected_ua);
+  EXPECT_EQ(main_frame_ua_full_version_observed(), expected_full_version);
 
   // Navigate on |browser_b|. That should still only have the major
   // version.
   SetClientHintExpectationsOnMainFrame(false);
   ui_test_utils::NavigateToURL(browser_b, gurl);
-  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.major_version + "\"",
-                             base::CompareCase::SENSITIVE));
-  EXPECT_EQ(std::string::npos, main_frame_ua_observed().find(ua.full_version));
+  EXPECT_EQ(main_frame_ua_observed(), expected_ua);
+  EXPECT_TRUE(main_frame_ua_full_version_observed().empty());
 }
 
 // Check that client hints attached to navigation inside OTR profiles
@@ -1011,7 +1028,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsAllowThirdPartyBrowserTest,
   ui_test_utils::NavigateToURL(browser(), gurl);
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 
-  EXPECT_EQ(10u, count_client_hints_headers_seen());
+  EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
 
   // Requests to third party servers should not have client hints attached.
   EXPECT_EQ(1u, third_party_request_count_seen());
@@ -1040,7 +1057,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
-  EXPECT_EQ(10u, count_client_hints_headers_seen());
+  EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
 
   // Requests to third party servers should not have client hints attached.
   EXPECT_EQ(1u, third_party_request_count_seen());
@@ -1210,7 +1227,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 12u, 1);
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                      expected_client_hints_number, 1);
   // |gurl| sets client hints persist duration to 3600 seconds.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
                                       3600 * 1000, 1);
@@ -1232,9 +1250,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Ten other client hints are attached to the image request, and ten to the
-  // main frame request.
-  EXPECT_EQ(20u, count_client_hints_headers_seen());
+  // Expected number of hints attached to the image request, and the same number
+  // to the main frame request.
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
 }
 
 // Loads a webpage that does not request persisting of client hints.
@@ -1274,7 +1293,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 12u, 1);
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                      expected_client_hints_number, 1);
   // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
   // seconds.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
@@ -1296,9 +1316,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Ten other client hints are attached to the image request, and ten to the
-  // main frame request.
-  EXPECT_EQ(20u, count_client_hints_headers_seen());
+  // Expected number of hints attached to the image request, and the same number
+  // to the main frame request.
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
 }
 
 // Verify that expired persistent client hint preferences are not used.
@@ -1325,7 +1346,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 12u, 1);
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                      expected_client_hints_number, 1);
   // |gurl| sets client hints persist duration to 1 second.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration", 1 * 1000,
                                       1);
@@ -1382,7 +1404,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 12u, 1);
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                      expected_client_hints_number, 1);
   // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
   // seconds.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
@@ -1403,9 +1426,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Ten other client hints are attached to the image request, and ten to the
-  // main frame request.
-  EXPECT_EQ(20u, count_client_hints_headers_seen());
+  // Expected number of hints attached to the image request, and the same number
+  // to the main frame request.
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
 }
 
 // Ensure that even when cookies are blocked, client hint preferences are
@@ -1457,7 +1481,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 12u, 1);
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                      expected_client_hints_number, 1);
   // |gurl_with| tries to set client hints persist duration to 3600 seconds.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
                                       3600 * 1000, 1);
@@ -1484,9 +1509,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Ten other client hints are attached to the image request, and ten to the
-  // main frame request.
-  EXPECT_EQ(20u, count_client_hints_headers_seen());
+  // Expected number of hints attached to the image request, and the same number
+  // to the main frame request.
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -1560,7 +1586,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(1u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(1u, count_ua_mobile_client_hints_headers_seen());
 
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 12u, 1);
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                      expected_client_hints_number, 1);
   // accept_ch_with_lifetime_url() tries to set client hints persist duration to
   // 3600 seconds.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
@@ -1615,9 +1642,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Ten other client hints are attached to the image request, and ten to the
-  // main frame request.
-  EXPECT_EQ(20u, count_client_hints_headers_seen());
+  // Expected number of hints attached to the image request, and the same number
+  // to the main frame request.
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -1701,7 +1729,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
-  EXPECT_EQ(10u, count_client_hints_headers_seen());
+  EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
   EXPECT_EQ(2u, third_party_request_count_seen());
   EXPECT_EQ(2u, third_party_client_hints_count_seen());
   VerifyContentSettingsNotNotified();
@@ -1721,7 +1749,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
                                accept_ch_without_lifetime_img_localhost());
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
-  EXPECT_EQ(10u, count_client_hints_headers_seen());
+  EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
   EXPECT_EQ(3u, third_party_request_count_seen());
   EXPECT_EQ(2u, third_party_client_hints_count_seen());
 
@@ -1759,7 +1787,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), gurl);
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
-  EXPECT_EQ(10u, count_client_hints_headers_seen());
+  EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
   EXPECT_EQ(1u, third_party_request_count_seen());
   EXPECT_EQ(2u, third_party_client_hints_count_seen());
 
@@ -1792,7 +1820,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 12u, 1);
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                      expected_client_hints_number, 1);
   // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
   // seconds.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
@@ -1814,9 +1843,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Ten other client hints are attached to the image request, and ten to the
-  // main frame request.
-  EXPECT_EQ(20u, count_client_hints_headers_seen());
+  // Expected number of hints attached to the image request, and the same number
+  // to the main frame request.
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
 
   // Navigate using regular profile. Client hints should not be send.
   SetClientHintExpectationsOnMainFrame(false);
@@ -1829,7 +1859,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(5u, count_ua_mobile_client_hints_headers_seen());
 
   // No additional hints are sent.
-  EXPECT_EQ(20u, count_client_hints_headers_seen());
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
 }
 
 class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
@@ -1902,7 +1933,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsWebHoldbackBrowserTest,
 
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
-  EXPECT_EQ(20u, count_client_hints_headers_seen());
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
   EXPECT_EQ(0u, third_party_request_count_seen());
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
 }

@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='scroller'",
-          "rect": [8, 8, 220, 220],
-          "reason": "background"
-        }
+      "invalidations": [
+        [8, 8, 220, 220]
       ]
     },
     {
@@ -25,12 +21,8 @@
       "position": [10, 10],
       "bounds": [185, 300],
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "Scrolling background of LayoutNGBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 185, 300],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 185, 300]
       ],
       "transform": 1
     },

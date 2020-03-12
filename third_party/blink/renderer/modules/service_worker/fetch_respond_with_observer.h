@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class CrossOriginResourcePolicyChecker;
 class ExecutionContext;
 class ScriptValue;
 class WaitUntilObserver;
@@ -29,11 +30,12 @@ class FetchAPIRequest;
 // notifies the client.
 class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
  public:
-  FetchRespondWithObserver(ExecutionContext*,
-                           int fetch_event_id,
-                           const network::CrossOriginEmbedderPolicy&,
-                           const mojom::blink::FetchAPIRequest&,
-                           WaitUntilObserver*);
+  FetchRespondWithObserver(
+      ExecutionContext*,
+      int fetch_event_id,
+      base::WeakPtr<CrossOriginResourcePolicyChecker> corp_checker,
+      const mojom::blink::FetchAPIRequest&,
+      WaitUntilObserver*);
   ~FetchRespondWithObserver() override = default;
 
   void OnResponseRejected(mojom::ServiceWorkerResponseError) override;
@@ -52,7 +54,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
   const network::mojom::RedirectMode redirect_mode_;
   const mojom::RequestContextFrameType frame_type_;
   const mojom::RequestContextType request_context_;
-  const network::CrossOriginEmbedderPolicy requestor_coep_;
+  base::WeakPtr<CrossOriginResourcePolicyChecker> corp_checker_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 

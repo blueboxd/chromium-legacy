@@ -1137,10 +1137,17 @@ class VolumeItem extends DirectoryItem {
       this.setContextMenu_(tree.contextMenuForRootItems);
     }
 
+    /**
+     * Whether the display root has been resolved.
+     * @private {boolean}
+     */
+    this.resolved_ = false;
+
     // Populate children of this volume using resolved display root. For SMB
     // shares, avoid prefetching sub directories to delay authentication.
     if (modelItem.volumeInfo_.providerId !== '@smb') {
       this.volumeInfo_.resolveDisplayRoot((displayRoot) => {
+        this.resolved_ = true;
         this.updateSubDirectories(false /* recursive */);
       });
     }
@@ -1150,6 +1157,10 @@ class VolumeItem extends DirectoryItem {
    * @override
    */
   updateSubDirectories(recursive, opt_successCallback, opt_errorCallback) {
+    if (!this.resolved_) {
+      return;
+    }
+
     if (this.volumeInfo.volumeType ===
         VolumeManagerCommon.VolumeType.MEDIA_VIEW) {
       // If this is a media-view volume, we don't show child directories.
@@ -1168,6 +1179,7 @@ class VolumeItem extends DirectoryItem {
   activate() {
     const directoryModel = this.parentTree_.directoryModel;
     const onEntryResolved = (entry) => {
+      this.resolved_ = true;
       // Changes directory to the model item's root directory if needed.
       if (!util.isSameEntry(directoryModel.getCurrentDirEntry(), entry)) {
         directoryModel.changeDirectoryEntry(entry);

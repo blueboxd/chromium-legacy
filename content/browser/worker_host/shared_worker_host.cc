@@ -343,8 +343,15 @@ void SharedWorkerHost::BindCacheStorage(
   // TODO(https://crbug.com/1031542): Add support enforcing CORP in
   // cache.match() for SharedWorker by providing the correct value here.
   network::CrossOriginEmbedderPolicy cross_origin_embedder_policy;
+
+  // TODO(https://crbug.com/1031542): Plumb a CrossOriginEmbedderPolicyReporter
+  // here to handle reports.
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter;
+
   const url::Origin origin = url::Origin::Create(instance().url());
-  worker_process_host_->BindCacheStorage(cross_origin_embedder_policy, origin,
+  worker_process_host_->BindCacheStorage(cross_origin_embedder_policy,
+                                         std::move(coep_reporter), origin,
                                          std::move(receiver));
 }
 

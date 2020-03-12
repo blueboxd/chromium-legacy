@@ -5,17 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'abc'",
-          "rect": [18, 18, 23, 18],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'abc'",
-          "rect": [8, 184, 23, 18],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [18, 18, 23, 18],
+        [8, 184, 23, 18]
       ]
     }
   ]

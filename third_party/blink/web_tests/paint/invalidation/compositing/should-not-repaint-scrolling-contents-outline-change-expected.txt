@@ -11,12 +11,8 @@
       "position": [-10, -10],
       "bounds": [220, 220],
       "backgroundColor": "#0000FF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [0, 0, 220, 220],
-          "reason": "style change"
-        }
+      "invalidations": [
+        [0, 0, 220, 220]
       ],
       "transform": 1
     },

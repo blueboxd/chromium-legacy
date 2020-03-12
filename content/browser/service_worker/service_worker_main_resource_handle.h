@@ -12,8 +12,13 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace network {
+namespace mojom {
+class CrossOriginEmbedderPolicyReporter;
+}  // namespace mojom
+
 struct CrossOriginEmbedderPolicy;
-}
+
+}  // namespace network
 
 namespace content {
 
@@ -74,6 +79,8 @@ class CONTENT_EXPORT ServiceWorkerMainResourceHandle {
       int render_process_id,
       int render_frame_id,
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
 
   // Similar to OnBeginNavigationCommit() for shared workers (and dedicated

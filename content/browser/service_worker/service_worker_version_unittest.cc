@@ -1214,12 +1214,18 @@ TEST_F(ServiceWorkerVersionTest,
   // This is necessary to make OnBeginNavigationCommit() work.
   auto remote_controller = container_host->GetRemoteControllerServiceWorker();
 
+  // Establish a dummy connection to allow sending messages without errors.
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      reporter;
+  auto dummy = reporter.InitWithNewPipeAndPassReceiver();
+
   // Now begin the navigation commit with the same process id used by the
   // worker. This should cause the worker to stop being considered foreground
   // priority.
   container_host->OnBeginNavigationCommit(
       version_->embedded_worker()->process_id(),
-      /* render_frame_id = */ 1, network::CrossOriginEmbedderPolicy());
+      /* render_frame_id = */ 1, network::CrossOriginEmbedderPolicy(),
+      std::move(reporter));
 
   // RenderProcessHost should be notified of foreground worker.
   base::RunLoop().RunUntilIdle();

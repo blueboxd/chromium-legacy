@@ -565,6 +565,7 @@ if (use_v4l2_codec || use_vaapi) {
   }
 
   test("video_encode_accelerator_perf_tests") {
+    testonly = true
     sources = [ "video_encode_accelerator_perf_tests.cc" ]
     data = [ "//media/test/data/" ]
     deps = [

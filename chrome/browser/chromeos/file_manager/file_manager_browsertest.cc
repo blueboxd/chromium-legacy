@@ -723,8 +723,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestCase("tabindexSearchBoxFocus").FilesNg(),
         TestCase("tabindexSearchBoxFocus").DisableFilesNg(),
-        TestCase("tabindexFocusBody").DisableFilesNg(),
-        TestCase("tabindexFocusBody").FilesNg(),
         TestCase("tabindexFocus").DisableFilesNg(),
         TestCase("tabindexFocusDownloads").FilesNg(),
         TestCase("tabindexFocusDownloads").DisableFilesNg(),
@@ -958,7 +956,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("breadcrumbsNavigate").DisableFilesNg(),
                       TestCase("breadcrumbsLeafNoFocus").DisableFilesNg(),
-                      TestCase("breadcrumbsTooltip"),
+                      TestCase("breadcrumbsTooltip").DisableFilesNg(),
                       TestCase("breadcrumbsDownloadsTranslation")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

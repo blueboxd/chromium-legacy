@@ -129,10 +129,12 @@ void GraphicsLayer::AppendAdditionalInfoAsJSON(LayerTreeFlags flags,
   if (&layer != layer_.get())
     return;
 
-  if ((flags & kLayerTreeIncludesPaintInvalidations) &&
+  if ((flags & (kLayerTreeIncludesInvalidations |
+                kLayerTreeIncludesDetailedInvalidations)) &&
       Client().IsTrackingRasterInvalidations() &&
       GetRasterInvalidationTracking()) {
-    GetRasterInvalidationTracking()->AsJSON(&json);
+    GetRasterInvalidationTracking()->AsJSON(
+        &json, flags & kLayerTreeIncludesDetailedInvalidations);
   }
 
   GraphicsLayerPaintingPhase painting_phase = PaintingPhase();

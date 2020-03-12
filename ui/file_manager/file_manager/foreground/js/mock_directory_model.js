@@ -54,6 +54,25 @@ function createFakeDirectoryModel() {
     getFileFilter() {
       return this.fileFilter_;
     }
+
+    /**
+     * @return {DirectoryEntry|FakeEntry|FilesAppDirEntry} Current directory.
+     */
+    getCurrentDirEntry() {
+      return null;
+    }
+
+    /**
+     * @param {!DirectoryEntry|!FilesAppDirEntry} dirEntry The entry of the new
+     *     directory to be changed to.
+     * @param {function()=} opt_callback Executed if the directory loads
+     *     successfully.
+     */
+    changeDirectoryEntry(dirEntry, opt_callback) {
+      if (opt_callback) {
+        opt_callback();
+      }
+    }
   }
 
   const model = /** @type {!Object} */ (new FakeDirectoryModel());

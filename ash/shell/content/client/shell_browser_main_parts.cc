@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/display/privacy_screen_controller.h"
-#include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/session/test_pref_service_provider.h"
@@ -21,7 +20,6 @@
 #include "ash/shell/shell_views_delegate.h"
 #include "ash/shell/window_type_launcher.h"
 #include "ash/shell/window_watcher.h"
-#include "ash/shell_init_params.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/bind.h"
@@ -85,9 +83,9 @@ void ShellBrowserMainParts::ToolkitInitialized() {
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext(false));
 
-  ash_test_helper_ = std::make_unique<AshTestHelper>();
-
   AshTestHelper::InitParams init_params;
+  init_params.delegate = std::make_unique<ShellDelegateImpl>();
+  init_params.context_factory = content::GetContextFactory();
   // TODO(oshima): Separate the class for ash_shell to reduce the test binary
   // size.
   if (parameters_.ui_task) {
@@ -96,14 +94,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     new_window_delegate_ = std::make_unique<ShellNewWindowDelegate>();
     init_params.config_type = AshTestHelper::kShell;
   }
-
-  ShellInitParams shell_init_params;
-  shell_init_params.delegate = std::make_unique<ShellDelegateImpl>();
-  shell_init_params.context_factory = content::GetContextFactory();
-  shell_init_params.keyboard_ui_factory =
-      std::make_unique<TestKeyboardUIFactory>();
-
-  ash_test_helper_->SetUp(init_params, std::move(shell_init_params));
+  ash_test_helper_ = std::make_unique<AshTestHelper>();
+  ash_test_helper_->SetUp(std::move(init_params));
 
   window_watcher_ = std::make_unique<WindowWatcher>();
 

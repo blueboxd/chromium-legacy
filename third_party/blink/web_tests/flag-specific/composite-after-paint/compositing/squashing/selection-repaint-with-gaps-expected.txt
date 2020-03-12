@@ -17,17 +17,8 @@
       "position": [15, 35],
       "bounds": [100, 210],
       "backgroundColor": "#D3D3D3",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'ipsum'",
-          "rect": [0, 80, 40, 40],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'lorem'",
-          "rect": [0, 80, 40, 40],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [0, 80, 40, 40]
       ]
     }
   ],
@@ -62,27 +53,9 @@
       "position": [15, 35],
       "bounds": [100, 210],
       "backgroundColor": "#D3D3D3",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'ipsum'",
-          "rect": [0, 160, 40, 40],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'lorem'",
-          "rect": [0, 160, 40, 40],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'ipsum'",
-          "rect": [0, 80, 40, 40],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'lorem'",
-          "rect": [0, 80, 40, 40],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [0, 160, 40, 40],
+        [0, 80, 40, 40]
       ]
     }
   ],

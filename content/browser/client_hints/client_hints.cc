@@ -517,16 +517,20 @@ void AddNavigationRequestClientHintsHeaders(
     //
     // TODO(morlovich): This should probably be using ShouldAddClientHint,
     // to check FP?
-    std::string version =
-        web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kUA)
-            ? ua.full_version
-            : ua.major_version;
     AddUAHeader(headers, blink::mojom::WebClientHintsType::kUA,
-                AddBrandVersionQuotes(ua.brand, version));
+                AddBrandVersionQuotes(ua.brand, ua.major_version));
     // The `Sec-CH-UA-Mobile client hint was also deemed "low entropy" and can
     // safely be sent with every request.
     AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAMobile,
                 ua.mobile ? "?1" : "?0");
+
+    if (ShouldAddClientHint(
+            web_client_hints, is_main_frame, is_1p_origin, feature_policy,
+            resource_origin, blink::mojom::WebClientHintsType::kUAFullVersion,
+            blink::mojom::FeaturePolicyFeature::kClientHintUAFullVersion)) {
+      AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAFullVersion,
+                  AddQuotes(ua.full_version));
+    }
 
     if (ShouldAddClientHint(
             web_client_hints, is_main_frame, is_1p_origin, feature_policy,
@@ -558,7 +562,7 @@ void AddNavigationRequestClientHintsHeaders(
   // If possible, logic should be added above so that the request headers for
   // the newly added client hint can be added to the request.
   static_assert(
-      blink::mojom::WebClientHintsType::kUAMobile ==
+      blink::mojom::WebClientHintsType::kUAFullVersion ==
           blink::mojom::WebClientHintsType::kMaxValue,
       "Consider adding client hint request headers from the browser process");
 

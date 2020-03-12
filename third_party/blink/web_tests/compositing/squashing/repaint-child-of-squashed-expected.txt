@@ -54,12 +54,8 @@ CASE 2, change color of "inner" to red
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box top')",
       "position": [80, 80],
       "bounds": [100, 100],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='inner'",
-          "rect": [10, 10, 50, 50],
-          "reason": "background"
-        }
+      "invalidations": [
+        [10, 10, 50, 50]
       ],
       "transform": 1
     }

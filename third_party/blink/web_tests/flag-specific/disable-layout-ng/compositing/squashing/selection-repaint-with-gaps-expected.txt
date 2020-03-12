@@ -16,17 +16,8 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='item')",
       "position": [7, 27],
       "bounds": [100, 210],
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'ipsum'",
-          "rect": [0, 80, 40, 39],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'lorem'",
-          "rect": [0, 80, 40, 39],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [0, 80, 40, 39]
       ],
       "transform": 1
     }
@@ -61,27 +52,9 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='item')",
       "position": [7, 27],
       "bounds": [100, 210],
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'ipsum'",
-          "rect": [0, 80, 42, 39],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'lorem'",
-          "rect": [0, 80, 42, 39],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'ipsum'",
-          "rect": [0, 160, 40, 39],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'lorem'",
-          "rect": [0, 160, 40, 39],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [0, 80, 42, 39],
+        [0, 160, 40, 39]
       ],
       "transform": 1
     }

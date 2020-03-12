@@ -9,6 +9,7 @@
 #include <ostream>
 #include <vector>
 
+#include "base/optional.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/common/api/declarative_net_request.h"
@@ -72,6 +73,14 @@ RulesetSource CreateTemporarySource(
         api::declarative_net_request::SOURCE_TYPE_MANIFEST,
     size_t rule_count_limit = 100,
     ExtensionId extension_id = "extensionid");
+
+api::declarative_net_request::ModifyHeaderInfo CreateModifyHeaderInfo(
+    api::declarative_net_request::HeaderOperation operation,
+    std::string header);
+
+bool EqualsForTesting(
+    const api::declarative_net_request::ModifyHeaderInfo& lhs,
+    const api::declarative_net_request::ModifyHeaderInfo& rhs);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

@@ -397,7 +397,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Note regarding BackForwardCache:
   // Clients in back-forward cache don't count as controllees.
   bool HasControllee() const { return !controllee_map_.empty(); }
-  std::map<std::string, ServiceWorkerContainerHost*> controllee_map() {
+  const std::map<std::string, ServiceWorkerContainerHost*>& controllee_map()
+      const {
     return controllee_map_;
   }
 

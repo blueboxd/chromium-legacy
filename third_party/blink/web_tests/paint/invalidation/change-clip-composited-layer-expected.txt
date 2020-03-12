@@ -9,12 +9,8 @@
     {
       "name": "LayoutNGBlockFlow DIV id='target'",
       "bounds": [100, 10],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV",
-          "rect": [0, 0, 50, 10],
-          "reason": "chunk disappeared"
-        }
+      "invalidations": [
+        [0, 0, 50, 10]
       ],
       "transform": 1
     }

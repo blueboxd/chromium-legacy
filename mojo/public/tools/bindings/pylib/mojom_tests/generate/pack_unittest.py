@@ -92,13 +92,13 @@ class PackTest(unittest.TestCase):
     ordinal order and pack order for fields are all different.
     """
     struct = mojom.Struct('test')
-    struct.AddField('field_3', mojom.BOOL, ordinal=3,
-                    attributes={'MinVersion': 3})
+    struct.AddField(
+        'field_3', mojom.BOOL, ordinal=3, attributes={'MinVersion': 3})
     struct.AddField('field_0', mojom.INT32, ordinal=0)
-    struct.AddField('field_1', mojom.INT64, ordinal=1,
-                    attributes={'MinVersion': 2})
-    struct.AddField('field_2', mojom.INT64, ordinal=2,
-                    attributes={'MinVersion': 3})
+    struct.AddField(
+        'field_1', mojom.INT64, ordinal=1, attributes={'MinVersion': 2})
+    struct.AddField(
+        'field_2', mojom.INT64, ordinal=2, attributes={'MinVersion': 3})
     ps = pack.PackedStruct(struct)
 
     versions = pack.GetVersionInfo(ps)

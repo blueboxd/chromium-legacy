@@ -1443,6 +1443,9 @@ extern const char kProcessSharingWithDefaultSiteInstancesDescription[];
 extern const char kProcessSharingWithStrictSiteInstancesName[];
 extern const char kProcessSharingWithStrictSiteInstancesDescription[];
 
+extern const char kQueryTilesName[];
+extern const char kQueryTilesDescription[];
+
 extern const char kReaderModeHeuristicsName[];
 extern const char kReaderModeHeuristicsDescription[];
 extern const char kReaderModeHeuristicsMarkup[];

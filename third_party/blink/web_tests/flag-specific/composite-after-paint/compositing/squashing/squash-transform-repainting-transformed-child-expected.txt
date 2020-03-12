@@ -55,12 +55,8 @@ CASE 2, hovering over the outer div
       "position": [4, 4],
       "bounds": [276, 276],
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='box middle'",
-          "rect": [0, 0, 132, 132],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 132, 132]
       ]
     }
   ],
@@ -98,17 +94,8 @@ CASE 3, hovering over the inner div
       "position": [4, 4],
       "bounds": [276, 276],
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='box middle'",
-          "rect": [0, 0, 132, 132],
-          "reason": "background"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='smallbox'",
-          "rect": [26, 28, 71, 72],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 132, 132]
       ]
     }
   ],

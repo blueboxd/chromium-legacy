@@ -11,12 +11,8 @@
       "position": [8, 28],
       "bounds": [186, 134],
       "backgroundColor": "#ADD8E6",
-      "paintInvalidations": [
-        {
-          "object": "LayoutTableSection TBODY id='target'",
-          "rect": [0, 0, 186, 134],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [0, 0, 186, 134]
       ]
     },
     {

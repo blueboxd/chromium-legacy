@@ -16,12 +16,8 @@
       "name": "LayoutNGBlockFlow DIV id='target'",
       "bounds": [200, 200],
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [0, 0, 200, 200],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 200, 200]
       ],
       "transform": 1
     }

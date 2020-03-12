@@ -14,6 +14,7 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/scoped_observer.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/color_analysis.h"
@@ -23,6 +24,15 @@
 namespace ash {
 
 namespace {
+
+// Used in as a value in histogram to record the reason shelf navigation buttons
+// are shown in tablet mode.
+// The values assigned to enum items should not be changed/reassigned.
+constexpr int kControlButtonsShownForShelfNavigationButtonsSetting = 1;
+constexpr int kControlButtonsShownForSpokenFeedback = 1 << 1;
+constexpr int kControlButtonsShownForSwitchAccess = 1 << 2;
+constexpr int kControlButtonsShownForAutoclick = 1 << 3;
+constexpr int kControlButtonsShownReasonCount = 1 << 4;
 
 // When any edge of the primary display is less than or equal to this threshold,
 // dense shelf will be active.
@@ -38,6 +48,33 @@ bool ShelfControlsForcedShownForAccessibility() {
          accessibility_controller->switch_access_enabled() ||
          accessibility_controller
              ->tablet_mode_shelf_navigation_buttons_enabled();
+}
+
+// Records the histogram value tracking the reason shelf control buttons are
+// shown in tablet mode.
+void RecordReasonForShowingShelfControls() {
+  AccessibilityControllerImpl* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  int buttons_shown_reason_mask = 0;
+
+  if (accessibility_controller
+          ->tablet_mode_shelf_navigation_buttons_enabled()) {
+    buttons_shown_reason_mask |=
+        kControlButtonsShownForShelfNavigationButtonsSetting;
+  }
+
+  if (accessibility_controller->spoken_feedback_enabled())
+    buttons_shown_reason_mask |= kControlButtonsShownForSpokenFeedback;
+
+  if (accessibility_controller->switch_access_enabled())
+    buttons_shown_reason_mask |= kControlButtonsShownForSwitchAccess;
+
+  if (accessibility_controller->autoclick_enabled())
+    buttons_shown_reason_mask |= kControlButtonsShownForAutoclick;
+
+  base::UmaHistogramExactLinear(
+      "Ash.Shelf.NavigationButtonsInTabletMode.ReasonShown",
+      buttons_shown_reason_mask, kControlButtonsShownReasonCount);
 }
 
 }  // namespace
@@ -71,7 +108,8 @@ class ShelfConfig::ShelfAccessibilityObserver : public AccessibilityObserver {
 };
 
 ShelfConfig::ShelfConfig()
-    : is_dense_(false),
+    : in_tablet_mode_(false),
+      is_dense_(false),
       shelf_controls_shown_(true),
       is_virtual_keyboard_shown_(false),
       is_app_list_visible_(false),
@@ -273,11 +311,16 @@ void ShelfConfig::UpdateConfig(bool app_list_visible) {
        (screen_size.width() <= kDenseShelfScreenSizeThreshold ||
         screen_size.height() <= kDenseShelfScreenSizeThreshold));
 
-  // TODO(http::crbug.com/1008956): Add a user preference that would allow the
-  // user or a policy to override this behavior.
+  const bool can_hide_shelf_controls =
+      in_tablet_mode && features::IsHideShelfControlsInTabletModeEnabled();
   const bool new_shelf_controls_shown =
-      !(in_tablet_mode && features::IsHideShelfControlsInTabletModeEnabled()) ||
-      ShelfControlsForcedShownForAccessibility();
+      !can_hide_shelf_controls || ShelfControlsForcedShownForAccessibility();
+  // Record reason to show shelf control buttons only if tablet mode changes, or
+  // if the buttons visibility state changes
+  if (can_hide_shelf_controls && new_shelf_controls_shown &&
+      (!in_tablet_mode_ || !shelf_controls_shown_)) {
+    RecordReasonForShowingShelfControls();
+  }
 
   // TODO(https://crbug.com/1058205): Test this behavior.
   // If the virtual keyboard is shown, the back button and in-app shelf should
@@ -287,6 +330,8 @@ void ShelfConfig::UpdateConfig(bool app_list_visible) {
       Shell::Get()->system_tray_model()
           ? Shell::Get()->system_tray_model()->virtual_keyboard()->visible()
           : false;
+
+  in_tablet_mode_ = in_tablet_mode;
 
   if (new_is_dense == is_dense_ &&
       shelf_controls_shown_ == new_shelf_controls_shown &&

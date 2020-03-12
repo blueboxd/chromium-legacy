@@ -17,10 +17,10 @@ async_test(function(t) {
 
     video.addEventListener('ended', t.step_func(function() {
         var layerTree = internals.layerTreeAsText(
-            document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+            document, internals.LAYER_TREE_INCLUDES_DETAILED_INVALIDATIONS);
         var layers = JSON.parse(layerTree)['layers'];
         var scrollingContentsLayer = layers[0];
-        var paintInvalidations = scrollingContentsLayer.paintInvalidations;
+        var invalidations = scrollingContentsLayer.invalidations;
         internals.stopTrackingRepaints(document);
 
         // Manually verify the number of repaints instead of using a repaint
@@ -36,8 +36,8 @@ async_test(function(t) {
                         '. Actual layer tree: ' + layerTree);
         });
 
-        for (var i = 0; i < paintInvalidations.length; ++i) {
-            if (paintInvalidations[i].object.includes('InlineTextBox'))
+        for (var i = 0; i < invalidations.length; ++i) {
+            if (invalidations[i].object.includes('InlineTextBox'))
                 actual++;
         }
         assert_between_inclusive(actual, minExpected, maxExpected);

@@ -5,22 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [6, 40, 788, 58],
-          "reason": "geometry"
-        },
-        {
-          "object": "Caret",
-          "rect": [8, 78, 1, 18],
-          "reason": "caret"
-        },
-        {
-          "object": "Caret",
-          "rect": [8, 60, 1, 18],
-          "reason": "caret"
-        }
+      "invalidations": [
+        [6, 40, 788, 58]
       ]
     }
   ]

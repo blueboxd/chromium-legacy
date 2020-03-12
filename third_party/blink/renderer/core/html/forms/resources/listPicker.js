@@ -40,7 +40,6 @@ function handleArgumentsTimeout() {
  */
 function ListPicker(element, config) {
   Picker.call(this, element, config);
-  window.pagePopupController.selectFontsFromOwnerDocument(document);
   this._selectElement = createElement('select');
   this._selectElement.size = 20;
   this._element.appendChild(this._selectElement);

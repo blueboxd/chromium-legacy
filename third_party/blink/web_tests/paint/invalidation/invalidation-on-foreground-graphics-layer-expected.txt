@@ -29,12 +29,8 @@
     {
       "name": "LayoutNGBlockFlow DIV (foreground) Layer",
       "bounds": [300, 300],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [100, 100, 200, 200],
-          "reason": "background"
-        }
+      "invalidations": [
+        [100, 100, 200, 200]
       ],
       "transform": 1
     },

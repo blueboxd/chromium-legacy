@@ -224,6 +224,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Updates shelf config - called when the accessibility state changes.
   void UpdateConfigForAccessibilityState();
 
+  // Whether shelf config was calculated for tablet mode.
+  bool in_tablet_mode_;
+
   // Whether shelf is currently standard or dense.
   bool is_dense_;
 

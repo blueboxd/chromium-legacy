@@ -5,22 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) P",
-          "rect": [8, 146, 784, 18],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) P",
-          "rect": [8, 130, 784, 18],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'SUCCESS'",
-          "rect": [8, 130, 70, 18],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [8, 146, 784, 18],
+        [8, 130, 784, 18]
       ]
     }
   ]

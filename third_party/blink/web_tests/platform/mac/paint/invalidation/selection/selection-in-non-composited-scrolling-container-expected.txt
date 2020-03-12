@@ -5,22 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutTextControl INPUT id='target'",
-          "rect": [6, 6, 52, 25],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [12, 11, 40, 15],
-          "reason": "paint property change"
-        },
-        {
-          "object": "InlineTextBox 'test test test'",
-          "rect": [32, 11, 20, 15],
-          "reason": "selection"
-        }
+      "invalidations": [
+        [6, 6, 52, 25]
       ]
     }
   ]

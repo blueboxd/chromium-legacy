@@ -368,6 +368,7 @@ public abstract class ChromeFeatureList {
             "PredictivePrefetchingAllowedOnAllConnectionTypes";
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";
     public static final String PROFILE_CARD = "ProfileCard";
+    public static final String QUERY_TILES = "QueryTiles";
     public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
     public static final String QUIET_NOTIFICATION_PROMPTS = "QuietNotificationPrompts";
     public static final String REACHED_CODE_PROFILER = "ReachedCodeProfiler";

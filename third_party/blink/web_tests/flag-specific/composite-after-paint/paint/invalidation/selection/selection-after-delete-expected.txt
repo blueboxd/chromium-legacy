@@ -5,64 +5,11 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [39, 79, 154, 99],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [39, 79, 154, 99],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [39, 79, 154, 99],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [39, 79, 154, 99],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'hello world hello world'",
-          "rect": [39, 79, 154, 99],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'hello world hello world'",
-          "rect": [39, 79, 154, 99],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'hello world hello world'",
-          "rect": [39, 79, 154, 99],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'hello world hello world'",
-          "rect": [39, 79, 154, 99],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'hello'",
-          "rect": [39, 79, 154, 99],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='test'",
-          "rect": [38, 78, 152, 102],
-          "reason": "geometry"
-        },
-        {
-          "object": "Caret",
-          "rect": [39, 79, 1, 19],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [39, 79, 154, 99],
+        [38, 78, 152, 102]
       ],
-      "underPaintInvalidations": [
+      "underInvalidations": [
         {
           "x": 194,
           "y": 79,

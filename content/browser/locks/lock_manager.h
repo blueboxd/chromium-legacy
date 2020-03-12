@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
 #include "url/origin.h"

@@ -5,47 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 778, 54],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'REGRESSION (r41203): Facebook friend suggestions disappear on update. Make sure when a layer'",
-          "rect": [8, 8, 778, 54],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'see a 100x100 green square below. If you see any red, the test has failed.'",
-          "rect": [8, 8, 778, 54],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'switches from being self-painting to non-self-painting that a layout happens to fix up the floating objects lists. You should'",
-          "rect": [8, 8, 778, 54],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Repaint test for '",
-          "rect": [8, 8, 103, 18],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (floating) DIV class='green'",
-          "rect": [8, 78, 100, 100],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (floating) DIV class='red'",
-          "rect": [8, 78, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (floating) DIV class='red'",
-          "rect": [8, 78, 100, 100],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [8, 8, 778, 54],
+        [8, 78, 100, 100]
       ]
     }
   ]

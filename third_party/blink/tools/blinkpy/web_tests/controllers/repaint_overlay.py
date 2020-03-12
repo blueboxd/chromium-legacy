@@ -6,7 +6,7 @@ import re
 
 
 def result_contains_repaint_rects(text):
-    return isinstance(text, str) and re.search(r'"paintInvalidations": \[$', text, re.MULTILINE) is not None
+    return isinstance(text, str) and re.search(r'"invalidations": \[$', text, re.MULTILINE) is not None
 
 
 def extract_layer_tree(input_str):
@@ -117,15 +117,8 @@ function draw_layer_rects(context, transforms, layer) {
     }
     if (layer.position)
         context.translate(layer.position[0], layer.position[1]);
-
-    if (layer.paintInvalidations) {
-        var rects = [];
-        for (var i = 0; i < layer.paintInvalidations.length; ++i) {
-            if (layer.paintInvalidations[i].rect)
-                rects.push(layer.paintInvalidations[i].rect);
-        }
-        draw_rects(context, rects);
-    }
+    if (layer.invalidations)
+        draw_rects(context, layer.invalidations);
     context.restore();
 }
 

@@ -68,6 +68,12 @@ bool CrostiniRecoveryView::ShouldShowCloseButton() const {
   return false;
 }
 
+bool CrostiniRecoveryView::IsDialogButtonEnabled(
+    ui::DialogButton button) const {
+  // Buttons are disabled after Accept or Cancel have been clicked.
+  return closed_reason_ == views::Widget::ClosedReason::kUnspecified;
+}
+
 gfx::Size CrostiniRecoveryView::CalculatePreferredSize() const {
   const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                                DISTANCE_STANDALONE_BUBBLE_PREFERRED_WIDTH) -
@@ -90,6 +96,7 @@ bool CrostiniRecoveryView::Accept() {
             }
           },
           weak_ptr_factory_.GetWeakPtr()));
+  DialogModelChanged();
   return false;
 }
 
@@ -116,6 +123,7 @@ bool CrostiniRecoveryView::Cancel() {
   }
   app_id_ = crostini::GetTerminalId();
   ScheduleAppLaunch();
+  DialogModelChanged();
   return false;
 }
 

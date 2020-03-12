@@ -1278,8 +1278,11 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
         default_factory_receiver) {
   mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
       coep_reporter_remote;
-  DCHECK(coep_reporter_);
-  coep_reporter_->Clone(coep_reporter_remote.InitWithNewPipeAndPassReceiver());
+  if (coep_reporter_) {
+    coep_reporter_->Clone(
+        coep_reporter_remote.InitWithNewPipeAndPassReceiver());
+  }
+
   // We use the last committed Origin and ClientSecurityState. If the caller
   // wanted a factory associated to a navigation about to commit, the params
   // generated won't be correct. There is no good way of fixing this before
@@ -5260,9 +5263,6 @@ void RenderFrameHostImpl::CommitNavigation(
     blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
     const base::UnguessableToken& devtools_navigation_token,
     std::unique_ptr<WebBundleHandle> web_bundle_handle) {
-  if (navigation_request) {
-    navigation_request->CreateCoepReporter(GetProcess()->GetStoragePartition());
-  }
   web_bundle_handle_ = std::move(web_bundle_handle);
 
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
@@ -6838,7 +6838,14 @@ RenderFrameHostImpl::BindFileChooserForTesting() {
 
 void RenderFrameHostImpl::BindCacheStorage(
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_remote;
+  if (coep_reporter_) {
+    coep_reporter_->Clone(
+        coep_reporter_remote.InitWithNewPipeAndPassReceiver());
+  }
   GetProcess()->BindCacheStorage(cross_origin_embedder_policy_,
+                                 std::move(coep_reporter_remote),
                                  GetLastCommittedOrigin(), std::move(receiver));
 }
 

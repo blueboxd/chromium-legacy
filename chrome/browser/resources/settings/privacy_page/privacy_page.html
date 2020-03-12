@@ -21,6 +21,7 @@
 <link rel="import" href="../router.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
+<link rel="import" href="../site_settings/site_settings_prefs_browser_proxy.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../site_settings/constants.html">
 
@@ -127,7 +128,7 @@
               on-click="onClearBrowsingDataTap_"></cr-link-row>
           <cr-link-row id="cookiesLinkRow" start-icon="settings:cookie"
               class="hr" label="$i18n{cookiePageTitle}"
-              sub-label="$i18n{cookiePageDescription}"
+              sub-label="[[cookieSettingDescription_]]"
               on-click="onCookiesClick_"></cr-link-row>
           <cr-link-row id="securityLinkRow" start-icon="cr:security"
               class="hr" label="$i18n{securityPageTitle}"

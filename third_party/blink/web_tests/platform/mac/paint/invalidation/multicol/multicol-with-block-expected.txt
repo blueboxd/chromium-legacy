@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [328, 8, 240, 40],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [328, 8, 240, 40]
       ]
     }
   ]

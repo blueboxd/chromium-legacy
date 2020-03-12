@@ -78,47 +78,48 @@ static bool CompareRasterInvalidationInfo(const RasterInvalidationInfo& a,
   return a.reason < b.reason;
 }
 
-void RasterInvalidationTracking::AsJSON(JSONObject* json) const {
+void RasterInvalidationTracking::AsJSON(JSONObject* json, bool detailed) const {
   if (!invalidations_.IsEmpty()) {
     // Sort to make the output more readable and easier to see the differences
     // by a human.
-    auto sorted_invalidations = invalidations_;
-    std::sort(sorted_invalidations.begin(), sorted_invalidations.end(),
-              &CompareRasterInvalidationInfo);
-    auto paint_invalidations_json = std::make_unique<JSONArray>();
-    for (auto& info : sorted_invalidations) {
-      auto info_json = std::make_unique<JSONObject>();
-      info_json->SetString("object", info.client_debug_name);
-      if (!info.rect.IsEmpty()) {
-        if (info.rect == LayoutRect::InfiniteIntRect())
-          info_json->SetString("rect", "infinite");
-        else
-          info_json->SetArray("rect", RectAsJSONArray(info.rect));
+    auto sorted = invalidations_;
+    std::sort(sorted.begin(), sorted.end(), &CompareRasterInvalidationInfo);
+    auto invalidations_json = std::make_unique<JSONArray>();
+    IntRect last_rect;
+    for (auto* it = sorted.begin(); it != sorted.end(); it++) {
+      const auto& info = *it;
+      if (detailed) {
+        auto info_json = std::make_unique<JSONObject>();
+        info_json->SetArray("rect", RectAsJSONArray(info.rect));
+        info_json->SetString("object", info.client_debug_name);
+        info_json->SetString("reason",
+                             PaintInvalidationReasonToString(info.reason));
+        invalidations_json->PushObject(std::move(info_json));
+      } else if (std::none_of(sorted.begin(), it, [&info](auto& previous) {
+                   return previous.rect.Contains(info.rect);
+                 })) {
+        invalidations_json->PushArray(RectAsJSONArray(info.rect));
+        last_rect = info.rect;
       }
-      info_json->SetString("reason",
-                           PaintInvalidationReasonToString(info.reason));
-      paint_invalidations_json->PushObject(std::move(info_json));
     }
-    json->SetArray("paintInvalidations", std::move(paint_invalidations_json));
+    json->SetArray("invalidations", std::move(invalidations_json));
   }
 
   if (!under_invalidations_.IsEmpty()) {
-    auto under_paint_invalidations_json = std::make_unique<JSONArray>();
-    for (auto& under_paint_invalidation : under_invalidations_) {
-      auto under_paint_invalidation_json = std::make_unique<JSONObject>();
-      under_paint_invalidation_json->SetDouble("x", under_paint_invalidation.x);
-      under_paint_invalidation_json->SetDouble("y", under_paint_invalidation.y);
-      under_paint_invalidation_json->SetString(
+    auto under_invalidations_json = std::make_unique<JSONArray>();
+    for (auto& under_invalidation : under_invalidations_) {
+      auto under_invalidation_json = std::make_unique<JSONObject>();
+      under_invalidation_json->SetDouble("x", under_invalidation.x);
+      under_invalidation_json->SetDouble("y", under_invalidation.y);
+      under_invalidation_json->SetString(
           "oldPixel",
-          Color(under_paint_invalidation.old_pixel).NameForLayoutTreeAsText());
-      under_paint_invalidation_json->SetString(
+          Color(under_invalidation.old_pixel).NameForLayoutTreeAsText());
+      under_invalidation_json->SetString(
           "newPixel",
-          Color(under_paint_invalidation.new_pixel).NameForLayoutTreeAsText());
-      under_paint_invalidations_json->PushObject(
-          std::move(under_paint_invalidation_json));
+          Color(under_invalidation.new_pixel).NameForLayoutTreeAsText());
+      under_invalidations_json->PushObject(std::move(under_invalidation_json));
     }
-    json->SetArray("underPaintInvalidations",
-                   std::move(under_paint_invalidations_json));
+    json->SetArray("underInvalidations", std::move(under_invalidations_json));
   }
 }
 

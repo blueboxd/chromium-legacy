@@ -201,11 +201,16 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     container_host->UpdateUrls(url, net::SiteForCookies::FromUrl(url),
                                url::Origin::Create(url));
 
+    // Establish a dummy connection to allow sending messages without errors.
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        reporter;
+    auto dummy = reporter.InitWithNewPipeAndPassReceiver();
+
     // In production code this is called from NavigationRequest in the browser
     // process right before navigation commit.
     container_host->OnBeginNavigationCommit(
         helper_->mock_render_process_id(), 1 /* route_id */,
-        network::CrossOriginEmbedderPolicy());
+        network::CrossOriginEmbedderPolicy(), std::move(reporter));
   }
 
   blink::mojom::ServiceWorkerErrorType Register(

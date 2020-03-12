@@ -413,6 +413,11 @@ TEST(GoogleUtilTest, YoutubeDomains) {
                                   google_util::ALLOW_SUBDOMAIN,
                                   google_util::DISALLOW_NON_STANDARD_PORTS));
 
+  // Non-YouTube TLD.
+  EXPECT_FALSE(IsYoutubeDomainUrl(GURL("http://www.youtube.biz.tj"),
+                                  google_util::ALLOW_SUBDOMAIN,
+                                  google_util::DISALLOW_NON_STANDARD_PORTS));
+
   // Subdomain checks.
   EXPECT_TRUE(IsYoutubeDomainUrl(GURL("http://images.youtube.com"),
                                  google_util::ALLOW_SUBDOMAIN,

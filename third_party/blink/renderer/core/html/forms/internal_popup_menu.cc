@@ -414,11 +414,11 @@ void InternalPopupMenu::AddSeparator(ItemIterationContext& context,
   PagePopupClient::AddString("},\n", data);
 }
 
-void InternalPopupMenu::SelectFontsFromOwnerDocument(Document& document) {
+CSSFontSelector* InternalPopupMenu::CreateCSSFontSelector(
+    Document& popup_document) {
   Document& owner_document = OwnerElement().GetDocument();
-  document.GetStyleEngine().SetFontSelector(
-      MakeGarbageCollected<PopupMenuCSSFontSelector>(
-          &document, owner_document.GetStyleEngine().GetFontSelector()));
+  return MakeGarbageCollected<PopupMenuCSSFontSelector>(
+      &popup_document, owner_document.GetStyleEngine().GetFontSelector());
 }
 
 void InternalPopupMenu::SetValueAndClosePopup(int num_value,

@@ -167,6 +167,24 @@ void ParseInfo::SetError(ParseResult error_reason, const int* rule_id) {
       error_ = ErrorUtils::FormatErrorMessage(
           kErrorInvalidKey, base::NumberToString(*rule_id), kRegexFilterKey);
       break;
+    case ParseResult::ERROR_NO_HEADERS_SPECIFIED:
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorNoHeaderListsSpecified, base::NumberToString(*rule_id),
+          kRequestHeadersPath, kResponseHeadersPath);
+      break;
+    case ParseResult::ERROR_EMPTY_REQUEST_HEADERS_LIST:
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorEmptyList, base::NumberToString(*rule_id), kRequestHeadersPath);
+      break;
+    case ParseResult::ERROR_EMPTY_RESPONSE_HEADERS_LIST:
+      error_ = ErrorUtils::FormatErrorMessage(kErrorEmptyList,
+                                              base::NumberToString(*rule_id),
+                                              kResponseHeadersPath);
+      break;
+    case ParseResult::ERROR_INVALID_HEADER_NAME:
+      error_ = ErrorUtils::FormatErrorMessage(kErrorInvalidHeaderName,
+                                              base::NumberToString(*rule_id));
+      break;
     case ParseResult::ERROR_REGEX_TOO_LARGE:
       // These rules are ignored while indexing and so SetError won't be called
       // for them. See AddRegexLimitExceededRule().

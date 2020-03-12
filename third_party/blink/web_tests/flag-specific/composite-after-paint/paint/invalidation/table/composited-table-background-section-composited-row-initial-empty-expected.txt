@@ -11,17 +11,8 @@
       "position": [8, 28],
       "bounds": [186, 134],
       "backgroundColor": "#ADD8E6",
-      "paintInvalidations": [
-        {
-          "object": "LayoutTableSection TBODY id='target'",
-          "rect": [0, 0, 186, 134],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutTableSection TBODY id='target'",
-          "rect": [26, 22, 134, 19],
-          "reason": "paint property change"
-        }
+      "invalidations": [
+        [0, 0, 186, 134]
       ]
     },
     {

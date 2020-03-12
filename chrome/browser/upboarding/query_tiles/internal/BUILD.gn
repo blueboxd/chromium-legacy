@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
 source_set("internal") {
-  visibility = [
-    ":*",
-    "//chrome/browser/upboarding/query_tiles:*",
-  ]
   sources = [
     "image_loader.cc",
     "image_loader.h",
@@ -14,6 +15,7 @@ source_set("internal") {
 
   deps = [
     "//base",
+    "//chrome/browser/upboarding/query_tiles:public",
     "//skia",
     "//url",
   ]

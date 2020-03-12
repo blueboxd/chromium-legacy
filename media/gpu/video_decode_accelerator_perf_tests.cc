@@ -29,7 +29,7 @@ namespace {
 constexpr const char* usage_msg =
     "usage: video_decode_accelerator_perf_tests\n"
     "           [-v=<level>] [--vmodule=<config>] [--output_folder]\n"
-    "           [--use_vd] [--gtest_help] [--help]\n"
+    "           ([--use_vd]|[--use_vd_vda]) [--gtest_help] [--help]\n"
     "           [<video path>] [<video metadata path>]\n";
 
 // Video decoder perf tests help message.
@@ -49,6 +49,10 @@ constexpr const char* help_msg =
     "                       will be stored in the current working directory.\n"
     "  --use_vd             use the new VD-based video decoders, instead of\n"
     "                       the default VDA-based video decoders.\n"
+    "  --use_vd_vda         use the new VD-based video decoders with a wrapper"
+    "                       that translates to the VDA interface, used to test"
+    "                       interaction with older components expecting the VDA"
+    "                       interface.\n"
     "  --gtest_help         display the gtest help and exit.\n"
     "  --help               display this help and exit.\n";
 
@@ -316,7 +320,7 @@ class VideoDecoderTest : public ::testing::Test {
 
     // Use the new VD-based video decoders if requested.
     VideoDecoderClientConfig config;
-    config.use_vd = g_env->UseVD();
+    config.implementation = g_env->GetDecoderImplementation();
 
     // Force allocate mode if import mode is not supported.
     if (!g_env->ImportSupported())
@@ -399,6 +403,9 @@ int main(int argc, char** argv) {
   // Parse command line arguments.
   base::FilePath::StringType output_folder = media::test::kDefaultOutputFolder;
   bool use_vd = false;
+  bool use_vd_vda = false;
+  media::test::DecoderImplementation implementation =
+      media::test::DecoderImplementation::kVDA;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
@@ -411,6 +418,10 @@ int main(int argc, char** argv) {
       output_folder = it->second;
     } else if (it->first == "use_vd") {
       use_vd = true;
+      implementation = media::test::DecoderImplementation::kVD;
+    } else if (it->first == "use_vd_vda") {
+      use_vd_vda = true;
+      implementation = media::test::DecoderImplementation::kVDVDA;
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
@@ -418,12 +429,18 @@ int main(int argc, char** argv) {
     }
   }
 
+  if (use_vd && use_vd_vda) {
+    std::cout << "--use_vd and --use_vd_vda cannot be enabled together.\n"
+              << media::test::usage_msg;
+    return EXIT_FAILURE;
+  }
+
   testing::InitGoogleTest(&argc, argv);
 
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
-          video_path, video_metadata_path, false, use_vd,
+          video_path, video_metadata_path, false, implementation,
           base::FilePath(output_folder));
   if (!test_environment)
     return EXIT_FAILURE;

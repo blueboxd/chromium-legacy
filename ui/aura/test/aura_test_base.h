@@ -19,10 +19,6 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
-namespace ui {
-class TestContextFactories;
-}
-
 namespace aura {
 class Window;
 class WindowDelegate;
@@ -74,7 +70,6 @@ class AuraTestBase : public testing::Test {
 
   bool setup_called_ = false;
   bool teardown_called_ = false;
-  std::unique_ptr<ui::TestContextFactories> context_factories_;
   std::unique_ptr<AuraTestHelper> helper_;
   std::unique_ptr<AuraTestContextFactory> mus_context_factory_;
 

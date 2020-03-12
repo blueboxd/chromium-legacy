@@ -52,12 +52,9 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
-namespace network {
-struct CrossOriginEmbedderPolicy;
-}
-
 namespace blink {
 
+class CrossOriginResourcePolicyChecker;
 class ExceptionState;
 class FetchEvent;
 class PendingURLLoaderFactoryBundle;
@@ -378,9 +375,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
           response_callback,
       DispatchFetchEventForSubresourceCallback callback) override;
   void Clone(
-      mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> reciever,
-      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy)
-      override;
+      mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> receiver,
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      mojo::PendingRemote<
+          network::mojom::blink::CrossOriginEmbedderPolicyReporter>
+          coep_reporter) override;
 
   // Implements mojom::blink::ServiceWorker.
   void InitializeGlobalScope(
@@ -472,7 +471,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // the event queue, and executed immediately or sometimes later.
   void StartFetchEvent(
       mojom::blink::DispatchFetchEventParamsPtr params,
-      const network::CrossOriginEmbedderPolicy& requestor_coep,
+      base::WeakPtr<CrossOriginResourcePolicyChecker> corp_checker,
       mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
           response_callback,
       DispatchFetchEventInternalCallback callback,
@@ -672,7 +671,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // to the ControllerServiceWorker. It should be referred to before sending the
   // response back to the client.
   mojo::ReceiverSet<mojom::blink::ControllerServiceWorker,
-                    network::CrossOriginEmbedderPolicy>
+                    std::unique_ptr<CrossOriginResourcePolicyChecker>>
       controller_receivers_;
 };
 

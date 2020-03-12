@@ -35,12 +35,8 @@
       "bounds": [1000, 1000],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='content'",
-          "rect": [0, 0, 1000, 1000],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 1000, 1000]
       ],
       "transform": 2
     }

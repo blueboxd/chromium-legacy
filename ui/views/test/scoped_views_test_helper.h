@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/compositor/test/test_context_factories.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace views {
@@ -23,8 +22,7 @@ class Widget;
 // by ViewsTestBase.
 class ScopedViewsTestHelper {
  public:
-  // Initialize with the given TestViewsDelegate instance, after setting the
-  // ContextFactory.
+  // Initialize with the given TestViewsDelegate instance.
   explicit ScopedViewsTestHelper(
       std::unique_ptr<TestViewsDelegate> test_views_delegate =
           std::make_unique<TestViewsDelegate>());
@@ -43,7 +41,6 @@ class ScopedViewsTestHelper {
   }
 
  private:
-  ui::TestContextFactories context_factories_{false};
   std::unique_ptr<TestViewsDelegate> test_views_delegate_;
   std::unique_ptr<ViewsTestHelper> test_helper_;
 

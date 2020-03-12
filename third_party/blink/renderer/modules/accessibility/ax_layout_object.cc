@@ -2143,23 +2143,60 @@ AXObject* AXLayoutObject::ComputeParentIfExists() const {
   return nullptr;
 }
 
+bool AXLayoutObject::ShouldUseDOMTraversal() const {
+  // TODO(accessibility) Look into having one method of traversal, otherwise
+  // it's possible for the same object to become a child of 2 different nodes,
+  // e.g. if it has a different layout parent and DOM parent.
+
+  bool is_continuation = layout_object_->IsElementContinuation();
+
+  // Avoid calling AXNodeObject logic for continuations.
+  if (is_continuation)
+    return false;
+
+  Node* node = GetNode();
+  if (!node)
+    return false;
+
+  // <map>: Handled in AddImageMapChildren (img).
+  if (IsA<HTMLMapElement>(*node))
+    return false;
+
+  // <ruby>: special layout handling
+  if (IsA<HTMLRubyElement>(*node))
+    return false;
+
+  // <table>: thead/tfoot move around
+  // This may mean a thead/tfoot in the middle will be bumped to the top/bottom.
+  // TODO(aleventhal): not sure about this, try to remove and see what breaks.
+  // Alternatively, we may decide to simply not support this, to simplify.
+  if (IsA<HTMLTableElement>(*node))
+    return false;
+
+  // For now, at least the #docment node needs to use layout traversal, because
+  // of validation messages, dialog, etc.
+  // TODO(aleventhal) figure out how to avoid double <dialog> nodes.
+  Element* element = GetElement();
+  if (!element)
+    return false;
+
+  // Pseudo elements are not visited in layout tree builder traversal, used by
+  // AXDOMNode::AddChildren()
+  // TODO(aleventhal) Actually LayoutTreeBuilderTraversal does visit pseudo
+  // elements, so we should try removing this check and see if anything breaks.
+  if (element->IsPseudoElement())
+    return false;
+
+  return true;
+}
+
 void AXLayoutObject::AddChildren() {
   if (IsDetached())
     return;
 
-  // Avoid calling AXNodeObject logic for continuations.
-  bool is_continuation = layout_object_->IsElementContinuation();
-
-  if (auto* element = DynamicTo<Element>(GetNode())) {
-    if (!is_continuation &&
-        !IsA<HTMLMapElement>(
-            *element) &&  // Handled in AddImageMapChildren (img)
-        !IsA<HTMLRubyElement>(*element) &&   // Special layout handling
-        !IsA<HTMLTableElement>(*element) &&  // thead/tfoot move around
-        !element->IsPseudoElement()) {       // Not visited in layout traversal
-      AXNodeObject::AddChildren();
-      return;
-    }
+  if (ShouldUseDOMTraversal()) {
+    AXNodeObject::AddChildren();
+    return;
   }
 
   // If the need to add more children in addition to existing children arises,
@@ -2187,6 +2224,7 @@ void AXLayoutObject::AddChildren() {
   for (const auto& owned_child : owned_children)
     AddChild(owned_child);
 
+  bool is_continuation = layout_object_->IsElementContinuation();
   for (const auto& child : children_) {
     if (!is_continuation && !child->CachedParentObject()) {
       // Never set continuations as a parent object. The first layout object

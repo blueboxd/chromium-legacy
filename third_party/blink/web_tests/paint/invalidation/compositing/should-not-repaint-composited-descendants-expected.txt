@@ -13,17 +13,8 @@
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='composited-box'",
-          "rect": [0, 0, 20, 70],
-          "reason": "full layer"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='composited-box'",
-          "rect": [0, 0, 10, 60],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 20, 70]
       ],
       "transform": 1
     },

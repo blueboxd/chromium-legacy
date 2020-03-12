@@ -5,17 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'When an absolute positioned element is set display:none, we should not invalidate the whole body.'",
-          "rect": [8, 8, 621, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='absolute'",
-          "rect": [100, 100, 100, 100],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [8, 8, 621, 19],
+        [100, 100, 100, 100]
       ]
     }
   ]

@@ -121,12 +121,6 @@
     const appId = await setupAndWaitUntilReady(
         RootPath.DOWNLOADS, nestedFolderTestEntries, []);
 
-    // files-ng bail out: it does not have breadcrumb tooltips.
-    const body = await remoteCall.waitForElement(appId, 'body');
-    if (body.attributes['class'] === 'files-ng') {
-      return;
-    }
-
     // Navigate to deepest folder.
     const breadcrumb = '/My files/Downloads/' +
         nestedFolderTestEntries.map(e => e.nameText).join('/');

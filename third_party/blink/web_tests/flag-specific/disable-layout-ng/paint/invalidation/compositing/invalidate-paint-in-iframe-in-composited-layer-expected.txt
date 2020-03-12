@@ -9,12 +9,8 @@
     {
       "name": "LayoutBlockFlow DIV",
       "bounds": [304, 200],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [10, 10, 50, 50],
-          "reason": "background"
-        }
+      "invalidations": [
+        [10, 10, 50, 50]
       ],
       "transform": 1
     },

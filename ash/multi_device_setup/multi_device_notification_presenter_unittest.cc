@@ -97,19 +97,19 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
   MultiDeviceNotificationPresenterTest() = default;
 
   void SetUp() override {
-    NoSessionAshTestBase::SetUp();
+    fake_multidevice_setup_ =
+        std::make_unique<chromeos::multidevice_setup::FakeMultiDeviceSetup>();
+    auto delegate = std::make_unique<TestShellDelegate>();
+    delegate->SetMultiDeviceSetupBinder(base::BindRepeating(
+        &chromeos::multidevice_setup::MultiDeviceSetupBase::BindReceiver,
+        base::Unretained(fake_multidevice_setup_.get())));
+    NoSessionAshTestBase::SetUp(std::move(delegate));
 
     test_system_tray_client_ = GetSystemTrayClient();
 
-    fake_multidevice_setup_ =
-        std::make_unique<chromeos::multidevice_setup::FakeMultiDeviceSetup>();
     notification_presenter_ =
         std::make_unique<MultiDeviceNotificationPresenter>(
             &test_message_center_);
-    ash_test_helper()->test_shell_delegate()->SetMultiDeviceSetupBinder(
-        base::BindRepeating(
-            &chromeos::multidevice_setup::MultiDeviceSetupBase::BindReceiver,
-            base::Unretained(fake_multidevice_setup_.get())));
   }
 
   void TearDown() override {

@@ -21,14 +21,14 @@ namespace views {
 
 class ViewsTestHelperAura : public ViewsTestHelper {
  public:
-  explicit ViewsTestHelperAura(ui::ContextFactory* context_factory);
+  ViewsTestHelperAura();
   ~ViewsTestHelperAura() override;
 
   // ViewsTestHelper:
   gfx::NativeWindow GetContext() override;
+  ui::ContextFactory* GetContextFactory() override;
 
  private:
-  ui::ContextFactory* context_factory_;
   aura::test::AuraTestHelper aura_test_helper_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 

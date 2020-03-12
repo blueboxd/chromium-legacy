@@ -2247,6 +2247,37 @@ LayerTreeImpl::FindLayersHitByPointInNonFastScrollableRegion(
   return layers;
 }
 
+struct HitTestFramedVisibleScrollableOrTouchableFunctor {
+  bool operator()(LayerImpl* layer) const {
+    return layer->HitTestable() && layer->frame_element_id();
+  }
+};
+
+ElementId LayerTreeImpl::FindFrameElementIdAtPoint(
+    const gfx::PointF& screen_space_point) {
+  if (layer_list_.empty())
+    return {};
+  if (!UpdateDrawProperties())
+    return {};
+  FindClosestMatchingLayerState state;
+  FindClosestMatchingLayer(screen_space_point, layer_list_[0].get(),
+                           HitTestFramedVisibleScrollableOrTouchableFunctor(),
+                           &state);
+
+  if (auto* layer = state.closest_match) {
+    // TODO(https://crbug.com/1058870): Permit hit testing only if the framed
+    // element hit has a simple mask/clip. We don't have enough information
+    // about complex masks/clips on the impl-side to do accurate hit testing.
+    bool layer_hit_test_region_is_masked =
+        property_trees()->effect_tree.HitTestMayBeAffectedByMask(
+            layer->effect_tree_index());
+
+    if (!layer_hit_test_region_is_masked)
+      return layer->frame_element_id();
+  }
+  return {};
+}
+
 void LayerTreeImpl::RegisterSelection(const LayerSelection& selection) {
   if (selection_ == selection)
     return;

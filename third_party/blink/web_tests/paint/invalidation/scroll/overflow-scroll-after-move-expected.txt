@@ -14,17 +14,9 @@
     {
       "name": "Scrolling Contents Layer",
       "bounds": [285, 900],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='block'",
-          "rect": [50, 310, 200, 50],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='block'",
-          "rect": [50, 200, 200, 50],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [50, 310, 200, 50],
+        [50, 200, 200, 50]
       ],
       "transform": 2
     },

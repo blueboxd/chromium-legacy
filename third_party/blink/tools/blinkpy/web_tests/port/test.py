@@ -168,13 +168,12 @@ def unit_test_list():
               actual_text=None, expected_text=None,
               actual_image=None, expected_image=None,
               actual_checksum=None)
-    tests.add('failures/unexpected/text-mismatch-overlay.html',
-              actual_text='"paintInvalidations": [\nfail',
-              expected_text='"paintInvalidations": [\npass')
-    tests.add('failures/unexpected/no-text-baseline.html',
-              actual_text='"paintInvalidations": [\nfail', expected_text=None)
-    tests.add('failures/unexpected/no-text-generated.html',
-              actual_text=None, expected_text='"paintInvalidations": [\npass')
+    tests.add(
+        'failures/unexpected/text-mismatch-overlay.html',
+        actual_text='"invalidations": [\nfail',
+        expected_text='"invalidations": [\npass')
+    tests.add('failures/unexpected/no-text-baseline.html', actual_text='"invalidations": [\nfail', expected_text=None)
+    tests.add('failures/unexpected/no-text-generated.html', actual_text=None, expected_text='"invalidations": [\npass')
     tests.add('failures/expected/keyboard.html', keyboard=True)
     tests.add('failures/expected/newlines_leading.html',
               expected_text='\nfoo\n', actual_text='foo\n')

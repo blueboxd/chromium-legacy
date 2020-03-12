@@ -12,7 +12,7 @@
 
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/session/test_session_controller_client.h"
-#include "ash/shell_init_params.h"
+#include "ash/shell_delegate.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/test/scoped_command_line.h"
@@ -34,6 +34,7 @@ class Display;
 }
 
 namespace ui {
+class ContextFactory;
 class ScopedAnimationDurationScaleMode;
 class TestContextFactories;
 }
@@ -50,7 +51,6 @@ class TestKeyboardControllerObserver;
 class TestNewWindowDelegate;
 class TestNotifierSettingsController;
 class TestPrefServiceProvider;
-class TestShellDelegate;
 class TestSystemTrayClient;
 class TestPhotoController;
 
@@ -75,18 +75,23 @@ class AshTestHelper {
   };
 
   struct InitParams {
+    InitParams();
+    InitParams(InitParams&&);
+    InitParams& operator=(InitParams&&) = default;
+    ~InitParams();
+
     // True if the user should log in.
-    InitParams() {}  // Work around https://bugs.llvm.org/show_bug.cgi?id=15886.
     bool start_session = true;
+    // If this is not set, a TestShellDelegate will be used automatically.
+    std::unique_ptr<ShellDelegate> delegate;
+    ui::ContextFactory* context_factory = nullptr;
     PrefService* local_state = nullptr;
     ConfigType config_type = kUnitTest;
   };
 
   // Creates the ash::Shell and performs associated initialization according
-  // to |init_params|. |shell_init_params| is used to initialize ash::Shell,
-  // or it uses test settings if omitted.
-  void SetUp(const InitParams& init_params = InitParams(),
-             base::Optional<ShellInitParams> shell_init_params = base::nullopt);
+  // to |init_params|.
+  void SetUp(InitParams init_params = InitParams());
 
   // Destroys the ash::Shell and performs associated cleanup.
   void TearDown();
@@ -98,10 +103,6 @@ class AshTestHelper {
 
   PrefService* GetLocalStatePrefService();
 
-  TestShellDelegate* test_shell_delegate() { return test_shell_delegate_; }
-  void set_test_shell_delegate(TestShellDelegate* test_shell_delegate) {
-    test_shell_delegate_ = test_shell_delegate;
-  }
   AshTestViewsDelegate* test_views_delegate() {
     return test_views_delegate_.get();
   }
@@ -138,14 +139,9 @@ class AshTestHelper {
   void reset_commandline() { command_line_.reset(); }
 
  private:
-  // Called when running in ash to create Shell.
-  void CreateShell(base::Optional<ShellInitParams> init_params,
-                   PrefService* local_state);
-
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;
 
-  TestShellDelegate* test_shell_delegate_ = nullptr;  // Owned by ash::Shell.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   std::unique_ptr<::wm::WMState> wm_state_;

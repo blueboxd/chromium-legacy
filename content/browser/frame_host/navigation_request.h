@@ -554,7 +554,7 @@ class CONTENT_EXPORT NavigationRequest
   CrossOriginEmbedderPolicyReporter* coep_reporter() {
     return coep_reporter_.get();
   }
-  void CreateCoepReporter(StoragePartition* storage_partition);
+
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> TakeCoepReporter();
 
  private:
@@ -876,6 +876,8 @@ class CONTENT_EXPORT NavigationRequest
   void RestartBackForwardCachedNavigationImpl();
 
   void ForceEnableOriginTrials(const std::vector<std::string>& trials) override;
+
+  void CreateCoepReporter(StoragePartition* storage_partition);
 
   base::Optional<network::BlockedByResponseReason> IsBlockedByCorp();
 

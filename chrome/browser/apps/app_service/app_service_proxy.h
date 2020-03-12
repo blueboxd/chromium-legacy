@@ -306,10 +306,6 @@ class AppServiceProxy : public KeyedService,
                                 const PauseData& pause_data,
                                 apps::mojom::IconValuePtr icon_value);
 
-  void UpdatePausedStatus(apps::mojom::AppType app_type,
-                          const std::string& app_id,
-                          bool paused);
-
   // Invoked when the user clicks the 'OK' button of the pause app dialog.
   // AppService stops the running app and applies the paused app icon effect.
   void OnPauseDialogClosed(apps::mojom::AppType app_type,
@@ -356,6 +352,13 @@ class AppServiceProxy : public KeyedService,
   bool arc_is_registered_ = false;
 
   apps::InstanceRegistry instance_registry_;
+
+  // When PauseApps is called, the app is added to |pending_pause_requests|.
+  // When the user clicks the OK from the pause app dialog, the pause status is
+  // updated in AppRegistryCache by the publisher, then the app is removed from
+  // |pending_pause_requests|. If the app status is paused in AppRegistryCache
+  // or pending_pause_requests, the app can't be launched.
+  PausedApps pending_pause_requests_;
 #endif  // OS_CHROMEOS
 
   Profile* profile_;

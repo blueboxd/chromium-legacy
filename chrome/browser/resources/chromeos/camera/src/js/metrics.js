@@ -156,7 +156,7 @@ function perfType(event, duration, extras = {}) {
       // Round the duration here since GA expects that the value is an integer.
       // Reference: https://support.google.com/analytics/answer/1033068
       .value(Math.round(duration))
-      .dimen(3, `${resolution}`);
+      .dimen(10, `${resolution}`);
 }
 
 /**

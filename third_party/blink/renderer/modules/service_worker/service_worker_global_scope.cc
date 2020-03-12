@@ -40,6 +40,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
@@ -94,6 +95,7 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_event.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_message_data.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_change_event.h"
+#include "third_party/blink/renderer/modules/service_worker/cross_origin_resource_policy_checker.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_event.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_message_event.h"
 #include "third_party/blink/renderer/modules/service_worker/fetch_event.h"
@@ -628,7 +630,7 @@ void ServiceWorkerGlobalScope::BindControllerServiceWorker(
   // and "handle functional event task source" defined in the service worker
   // spec and use them when dispatching events.
   controller_receivers_.Add(
-      this, std::move(receiver), network::CrossOriginEmbedderPolicy(),
+      this, std::move(receiver), /*context=*/nullptr,
       GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 
@@ -1405,7 +1407,7 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
 
 void ServiceWorkerGlobalScope::StartFetchEvent(
     mojom::blink::DispatchFetchEventParamsPtr params,
-    const network::CrossOriginEmbedderPolicy& requestor_coep,
+    base::WeakPtr<CrossOriginResourcePolicyChecker> corp_checker,
     mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
         response_callback,
     DispatchFetchEventInternalCallback callback,
@@ -1438,7 +1440,8 @@ void ServiceWorkerGlobalScope::StartFetchEvent(
   auto* wait_until_observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kFetch, event_id);
   auto* respond_with_observer = MakeGarbageCollected<FetchRespondWithObserver>(
-      this, event_id, requestor_coep, fetch_request, wait_until_observer);
+      this, event_id, std::move(corp_checker), fetch_request,
+      wait_until_observer);
   Request* request =
       Request::Create(ScriptController()->GetScriptState(), fetch_request,
                       Request::ForServiceWorkerFetchEvent::kTrue);
@@ -1487,20 +1490,20 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
                "ServiceWorkerGlobalScope::DispatchFetchEventForSubresource",
                "url", params->request->url.ElidedString().Utf8(), "queued",
                RequestedTermination() ? "true" : "false");
-  const network::CrossOriginEmbedderPolicy& requestor_coep =
-      controller_receivers_.current_context();
+  base::WeakPtr<CrossOriginResourcePolicyChecker> corp_checker =
+      controller_receivers_.current_context()->GetWeakPtr();
   if (RequestedTermination()) {
     event_queue_->EnqueuePending(
         WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
                   WrapWeakPersistent(this), std::move(params),
-                  std::move(requestor_coep), std::move(response_callback),
+                  std::move(corp_checker), std::move(response_callback),
                   std::move(callback)),
         CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
   } else {
     event_queue_->EnqueueNormal(
         WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
                   WrapWeakPersistent(this), std::move(params),
-                  std::move(requestor_coep), std::move(response_callback),
+                  std::move(corp_checker), std::move(response_callback),
                   std::move(callback)),
         CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
   }
@@ -1508,10 +1511,16 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
 
 void ServiceWorkerGlobalScope::Clone(
     mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> receiver,
-    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy) {
+    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+    mojo::PendingRemote<
+        network::mojom::blink::CrossOriginEmbedderPolicyReporter>
+        coep_reporter) {
   DCHECK(IsContextThread());
+  auto checker = std::make_unique<CrossOriginResourcePolicyChecker>(
+      cross_origin_embedder_policy, std::move(coep_reporter));
+
   controller_receivers_.Add(
-      this, std::move(receiver), cross_origin_embedder_policy,
+      this, std::move(receiver), std::move(checker),
       GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 
@@ -1833,21 +1842,21 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForMainResource(
     DispatchFetchEventForMainResourceCallback callback) {
   DCHECK(IsContextThread());
 
-  // We can use kNone as a |requestor_coep| for the main resource because it
+  // We can use nullptr as a |corp_checker| for the main resource because it
   // must be the same origin.
   if (params->is_offline_capability_check) {
     event_queue_->EnqueueOffline(
         WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
                   WrapWeakPersistent(this), std::move(params),
-                  network::CrossOriginEmbedderPolicy(),
-                  std::move(response_callback), std::move(callback)),
+                  /*corp_checker=*/nullptr, std::move(response_callback),
+                  std::move(callback)),
         CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
   } else {
     event_queue_->EnqueueNormal(
         WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
                   WrapWeakPersistent(this), std::move(params),
-                  network::CrossOriginEmbedderPolicy(),
-                  std::move(response_callback), std::move(callback)),
+                  /*corp_checker=*/nullptr, std::move(response_callback),
+                  std::move(callback)),
         CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
   }
 }

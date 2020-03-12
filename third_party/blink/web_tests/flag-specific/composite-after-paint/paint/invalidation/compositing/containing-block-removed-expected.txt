@@ -11,12 +11,8 @@
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
-          "rect": [50, 50, 75, 75],
-          "reason": "chunk disappeared"
-        }
+      "invalidations": [
+        [50, 50, 75, 75]
       ],
       "transform": 1
     },
@@ -26,12 +22,8 @@
       "bounds": [75, 75],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
-          "rect": [0, 0, 75, 75],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 75, 75]
       ]
     }
   ],

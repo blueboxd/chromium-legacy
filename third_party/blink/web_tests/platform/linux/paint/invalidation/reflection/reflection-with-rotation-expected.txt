@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'PASS'",
-          "rect": [23, 51, 72, 110],
-          "reason": "full"
-        }
+      "invalidations": [
+        [23, 51, 72, 110]
       ]
     }
   ]

@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_popup_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -93,6 +94,18 @@
 
 namespace blink {
 
+namespace {
+
+CSSFontSelector* CreateCSSFontSelectorFor(Document& document) {
+  DCHECK(document.GetFrame());
+  if (UNLIKELY(document.GetFrame()->PagePopupOwner())) {
+    return PagePopupController::CreateCSSFontSelector(document);
+  }
+  return MakeGarbageCollected<CSSFontSelector>(&document);
+}
+
+}  // namespace
+
 StyleEngine::StyleEngine(Document& document)
     : document_(&document),
       is_master_(!document.IsHTMLImport()),
@@ -101,7 +114,7 @@ StyleEngine::StyleEngine(Document& document)
   if (document.GetFrame()) {
     // We don't need to create CSSFontSelector for imported document or
     // HTMLTemplateElement's document, because those documents have no frame.
-    font_selector_ = MakeGarbageCollected<CSSFontSelector>(&document);
+    font_selector_ = CreateCSSFontSelectorFor(document);
     font_selector_->RegisterForInvalidationCallbacks(this);
   }
   if (document.IsInMainFrame())
@@ -877,14 +890,6 @@ void StyleEngine::FontsNeedUpdate(FontSelector*) {
 
   probe::FontsUpdated(document_->ToExecutionContext(), nullptr, String(),
                       nullptr);
-}
-
-void StyleEngine::SetFontSelector(CSSFontSelector* font_selector) {
-  if (font_selector_)
-    font_selector_->UnregisterForInvalidationCallbacks(this);
-  font_selector_ = font_selector;
-  if (font_selector_)
-    font_selector_->RegisterForInvalidationCallbacks(this);
 }
 
 void StyleEngine::PlatformColorsChanged() {

@@ -7,6 +7,7 @@ import os.path
 import sys
 import unittest
 
+
 def _GetDirAbove(dirname):
   """Returns the directory "above" this file containing |dirname| (which must
   also be "above" this file)."""
@@ -16,6 +17,7 @@ def _GetDirAbove(dirname):
     assert tail
     if tail == dirname:
       return path
+
 
 try:
   imp.find_module("mojom")
@@ -30,12 +32,12 @@ class StringManipulationTest(unittest.TestCase):
   def testToCamel(self):
     self.assertEquals("CamelCase", generator.ToCamel("camel_case"))
     self.assertEquals("CAMELCASE", generator.ToCamel("CAMEL_CASE"))
-    self.assertEquals("camelCase", generator.ToCamel("camel_case",
-                                                     lower_initial=True))
-    self.assertEquals("CamelCase", generator.ToCamel("camel case",
-                                                     dilimiter=' '))
+    self.assertEquals("camelCase",
+                      generator.ToCamel("camel_case", lower_initial=True))
+    self.assertEquals("CamelCase", generator.ToCamel(
+        "camel case", dilimiter=' '))
     self.assertEquals("CaMelCaSe", generator.ToCamel("caMel_caSe"))
+
 
 if __name__ == "__main__":
   unittest.main()
-

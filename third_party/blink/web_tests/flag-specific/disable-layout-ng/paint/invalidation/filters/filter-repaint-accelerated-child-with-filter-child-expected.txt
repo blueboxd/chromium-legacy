@@ -15,17 +15,8 @@
       "name": "LayoutBlockFlow DIV class='accelerated'",
       "position": [-12, -12],
       "bounds": [212, 257],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow'",
-          "rect": [0, 0, 212, 257],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow'",
-          "rect": [0, 0, 158, 257],
-          "reason": "paint property change"
-        }
+      "invalidations": [
+        [0, 0, 212, 257]
       ],
       "transform": 1
     }

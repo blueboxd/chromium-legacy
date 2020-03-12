@@ -17,12 +17,8 @@
       "bounds": [185, 300],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "Scrolling background of LayoutNGBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 185, 300],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 185, 300]
       ],
       "transform": 1
     },

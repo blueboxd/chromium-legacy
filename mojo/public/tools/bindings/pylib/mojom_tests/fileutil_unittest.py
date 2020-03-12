@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 
+
 def _GetDirAbove(dirname):
   """Returns the directory "above" this file containing |dirname| (which must
   also be "above" this file)."""
@@ -19,6 +20,7 @@ def _GetDirAbove(dirname):
     if tail == dirname:
       return path
 
+
 try:
   imp.find_module("mojom")
 except ImportError:
@@ -27,7 +29,6 @@ from mojom import fileutil
 
 
 class FileUtilTest(unittest.TestCase):
-
   def testEnsureDirectoryExists(self):
     """Test that EnsureDirectoryExists fuctions correctly."""
 

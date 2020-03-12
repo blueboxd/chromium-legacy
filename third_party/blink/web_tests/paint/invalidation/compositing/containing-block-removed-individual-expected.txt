@@ -6,12 +6,8 @@ CONSOLE MESSAGE: line 30: debug
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
-          "rect": [50, 50, 75, 75],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [50, 50, 75, 75]
       ]
     },
     {
@@ -19,17 +15,9 @@ CONSOLE MESSAGE: line 30: debug
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='container'",
-          "rect": [0, 0, 100, 100],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
-          "rect": [50, 50, 75, 75],
-          "reason": "chunk disappeared"
-        }
+      "invalidations": [
+        [0, 0, 100, 100],
+        [50, 50, 75, 75]
       ],
       "transform": 1
     }

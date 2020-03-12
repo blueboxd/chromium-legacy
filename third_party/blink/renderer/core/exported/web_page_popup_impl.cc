@@ -303,12 +303,12 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
                                        /* InterfaceRegistry* */ nullptr);
   frame->SetPagePopupOwner(popup_client_->OwnerElement());
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
+  PagePopupSupplement::Install(*frame, *this, popup_client_);
   frame->Init();
   frame->View()->SetParentVisible(true);
   frame->View()->SetSelfVisible(true);
 
   DCHECK(frame->DomWindow());
-  PagePopupSupplement::Install(*frame, *this, popup_client_);
   DCHECK_EQ(popup_client_->OwnerElement().GetDocument().ExistingAXObjectCache(),
             frame->GetDocument()->ExistingAXObjectCache());
   if (AXObjectCache* cache = frame->GetDocument()->ExistingAXObjectCache()) {

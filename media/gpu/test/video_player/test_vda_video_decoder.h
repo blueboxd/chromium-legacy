@@ -37,6 +37,7 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   // whether allocating video frames will be done by the TestVDAVideoDecoder, or
   // delegated to the underlying VDA.
   TestVDAVideoDecoder(AllocationMode allocation_mode,
+                      bool use_vd_vda,
                       const gfx::ColorSpace& target_color_space,
                       FrameRenderer* const frame_renderer,
                       gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
@@ -104,6 +105,9 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
 
   // Video decode accelerator output mode.
   const VideoDecodeAccelerator::Config::OutputMode output_mode_;
+
+  // Whether VdVideoDecodeAccelerator is used.
+  bool use_vd_vda_;
 
   // Output color space, used as hint to decoder to avoid conversions.
   const gfx::ColorSpace target_color_space_;

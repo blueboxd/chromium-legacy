@@ -7,6 +7,7 @@ import os.path
 import sys
 import unittest
 
+
 def _GetDirAbove(dirname):
   """Returns the directory "above" this file containing |dirname| (which must
   also be "above" this file)."""
@@ -16,6 +17,7 @@ def _GetDirAbove(dirname):
     assert tail
     if tail == dirname:
       return path
+
 
 try:
   imp.find_module("mojom")

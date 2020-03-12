@@ -28,6 +28,14 @@
     <!-- Search box -->
     <include layout="@layout/fake_search_box_layout"/>
 
+    <!-- Query tiles -->
+    <FrameLayout
+        android:id="@+id/query_tiles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"/>
+
     <!-- Explore offline card -->
     <ViewStub
         android:id="@+id/explore_offline_card_stub"

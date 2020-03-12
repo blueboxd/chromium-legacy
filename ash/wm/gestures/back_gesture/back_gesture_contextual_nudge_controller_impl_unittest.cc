@@ -28,17 +28,19 @@ constexpr char kUser2Email[] = "user2@test.com";
 
 class BackGestureContextualNudgeControllerTest : public NoSessionAshTestBase {
  public:
-  BackGestureContextualNudgeControllerTest() = default;
-  BackGestureContextualNudgeControllerTest(
-      const BackGestureContextualNudgeControllerTest&) = delete;
-  BackGestureContextualNudgeControllerTest& operator=(
-      const BackGestureContextualNudgeControllerTest&) = delete;
-
+  explicit BackGestureContextualNudgeControllerTest(bool can_go_back = true)
+      : can_go_back_(can_go_back) {}
   ~BackGestureContextualNudgeControllerTest() override = default;
 
   // NoSessionAshTestBase:
   void SetUp() override {
-    NoSessionAshTestBase::SetUp();
+    std::unique_ptr<TestShellDelegate> delegate;
+    if (!can_go_back_) {
+      delegate = std::make_unique<TestShellDelegate>();
+      delegate->SetCanGoBack(false);
+    }
+    NoSessionAshTestBase::SetUp(std::move(delegate));
+
     scoped_feature_list_.InitAndEnableFeature(features::kContextualNudges);
     nudge_controller_ =
         std::make_unique<BackGestureContextualNudgeControllerImpl>();
@@ -87,9 +89,17 @@ class BackGestureContextualNudgeControllerTest : public NoSessionAshTestBase {
   BackGestureContextualNudge* nudge() { return nudge_controller()->nudge(); }
 
  private:
+  bool can_go_back_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<BackGestureContextualNudgeControllerImpl> nudge_controller_;
+};
+
+class BackGestureContextualNudgeControllerTestCantGoBack
+    : public BackGestureContextualNudgeControllerTest {
+ public:
+  BackGestureContextualNudgeControllerTestCantGoBack()
+      : BackGestureContextualNudgeControllerTest(false) {}
 };
 
 // Tests the timing when BackGestureContextualNudgeControllerImpl should monitor
@@ -167,9 +177,7 @@ TEST_F(BackGestureContextualNudgeControllerTest,
 }
 
 // Do not show nudge ui on window that can't perform "go back" operation.
-TEST_F(BackGestureContextualNudgeControllerTest, CanNotGoBackWindowTest) {
-  ash_test_helper()->test_shell_delegate()->SetCanGoBack(false);
-
+TEST_F(BackGestureContextualNudgeControllerTestCantGoBack, WindowTest) {
   EXPECT_FALSE(nudge());
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
       user1_perf_service(), contextual_tooltip::TooltipType::kBackGesture));

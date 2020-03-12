@@ -5,57 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='box'",
-          "rect": [135, 361, 159, 195],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "InlineTextBox 'A B C'",
-          "rect": [300, 302, 80, 177],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'D E F'",
-          "rect": [300, 302, 80, 177],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'G H I'",
-          "rect": [300, 302, 80, 177],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'J K L'",
-          "rect": [300, 302, 80, 177],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'M N O'",
-          "rect": [300, 302, 80, 177],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'P Q R'",
-          "rect": [300, 302, 80, 177],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'S T U'",
-          "rect": [300, 302, 80, 177],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'V W X'",
-          "rect": [300, 302, 80, 177],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'Y Z'",
-          "rect": [300, 302, 80, 177],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [135, 361, 159, 195],
+        [300, 302, 80, 177]
       ]
     }
   ]

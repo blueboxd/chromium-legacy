@@ -51,11 +51,11 @@
     }
 
     function finish() {
-        var layerTree = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+        var layerTree = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_DETAILED_INVALIDATIONS);
         var invalidatedObjects = {};
         for (var layer of JSON.parse(layerTree).layers) {
-            if (layer.paintInvalidations) {
-                for (var invalidation of layer.paintInvalidations)
+            if (layer.invalidations) {
+                for (var invalidation of layer.invalidations)
                     invalidatedObjects[invalidation.object] = true;
             }
         }

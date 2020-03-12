@@ -231,6 +231,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool IsPlaceholder() const;
   ax::mojom::Dropeffect ParseDropeffect(String& dropeffect) const;
   bool SelectionShouldFollowFocus() const;
+  bool ShouldUseDOMTraversal() const;
 
   static ax::mojom::TextDecorationStyle
   TextDecorationStyleToAXTextDecorationStyle(

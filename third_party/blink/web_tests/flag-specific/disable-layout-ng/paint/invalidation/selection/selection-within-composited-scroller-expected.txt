@@ -17,12 +17,8 @@
       "bounds": [200, 1620],
       "contentsOpaque": true,
       "backgroundColor": "#D3D3D3",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'test'",
-          "rect": [0, 610, 21, 19],
-          "reason": "selection"
-        }
+      "invalidations": [
+        [0, 610, 21, 19]
       ],
       "transform": 2
     },

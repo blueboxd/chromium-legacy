@@ -26,11 +26,14 @@ ServiceWorkerMainResourceHandleCore::~ServiceWorkerMainResourceHandleCore() {
 void ServiceWorkerMainResourceHandleCore::OnBeginNavigationCommit(
     int render_process_id,
     int render_frame_id,
-    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy) {
+    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (container_host_) {
     container_host_->OnBeginNavigationCommit(render_process_id, render_frame_id,
-                                             cross_origin_embedder_policy);
+                                             cross_origin_embedder_policy,
+                                             std::move(coep_reporter));
   }
 }
 

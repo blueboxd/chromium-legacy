@@ -16,12 +16,8 @@
       "bounds": [100, 200],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'",
-          "rect": [0, 0, 100, 200],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [0, 0, 100, 200]
       ],
       "transform": 1
     }

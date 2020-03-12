@@ -38,6 +38,13 @@ enum class AllocationMode {
   kAllocate,  // Video decoder allocates video frame memory.
 };
 
+// The supported video decoding implementation.
+enum class DecoderImplementation {
+  kVDA,    // VDA-based video decoder.
+  kVD,     // VD-based video decoder.
+  kVDVDA,  // VD-based video decoder with VdVDA.
+};
+
 // Video decoder client configuration.
 struct VideoDecoderClientConfig {
   // The maximum number of bitstream buffer decodes that can be requested
@@ -45,8 +52,7 @@ struct VideoDecoderClientConfig {
   size_t max_outstanding_decode_requests = 1;
   // How the pictures buffers should be allocated.
   AllocationMode allocation_mode = AllocationMode::kImport;
-  // Use VD-based video decoders instead of VDA-based video decoders.
-  bool use_vd = false;
+  DecoderImplementation implementation = DecoderImplementation::kVDA;
 };
 
 // The video decoder client is responsible for the communication between the

@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.query_tiles.QueryTileSection;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
@@ -89,6 +90,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private ImageView mVoiceSearchButton;
     private View mTileGridPlaceholder;
     private View mNoSearchLogoSpacer;
+    private QueryTileSection mQueryTileSection;
 
     @Nullable
     private View mExploreSectionView; // View is null if explore flag is disabled.
@@ -244,6 +246,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
         mSiteSectionViewHolder = SiteSection.createViewHolder(getSiteSectionView(), mUiConfig);
         mSiteSectionViewHolder.bindDataSource(mTileGroup, tileRenderer);
+
+        mQueryTileSection = new QueryTileSection(findViewById(R.id.query_tiles), profile);
 
         int variation = ExploreSitesBridge.getVariation();
         if (ExploreSitesBridge.isExperimental(variation)) {

@@ -5,22 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV",
-          "rect": [8, 58, 110, 63],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutTextControl INPUT id='target'",
-          "rect": [8, 58, 110, 63],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [12, 58, 1, 57],
-          "reason": "incremental"
-        }
+      "invalidations": [
+        [8, 58, 110, 63]
       ]
     }
   ]

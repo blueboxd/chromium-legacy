@@ -5,22 +5,10 @@
       "bounds": [785, 742],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutIFrame IFRAME id='iframe'",
-          "rect": [8, 92, 732, 94],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [58, 241, 489, 537],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [58, 142, 489, 537],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [8, 92, 732, 94],
+        [58, 241, 489, 537],
+        [58, 142, 489, 537]
       ]
     },
     {

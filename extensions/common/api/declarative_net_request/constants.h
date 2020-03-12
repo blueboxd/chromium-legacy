@@ -66,6 +66,8 @@ extern const char kQueryKeyKey[];
 extern const char kQueryValueKey[];
 extern const char kRegexSubstitutionKey[];
 extern const char kRegexSubstitutionPath[];
+extern const char kRequestHeadersPath[];
+extern const char kResponseHeadersPath[];
 
 }  // namespace declarative_net_request
 }  // namespace extensions

@@ -7,6 +7,7 @@ import os.path
 import sys
 import unittest
 
+
 def _GetDirAbove(dirname):
   """Returns the directory "above" this file containing |dirname| (which must
   also be "above" this file)."""
@@ -17,6 +18,7 @@ def _GetDirAbove(dirname):
     if tail == dirname:
       return path
 
+
 try:
   imp.find_module("mojom")
 except ImportError:
@@ -25,7 +27,6 @@ from mojom.generate import module as mojom
 
 
 class ModuleTest(unittest.TestCase):
-
   def testNonInterfaceAsInterfaceRequest(self):
     """Tests that a non-interface cannot be used for interface requests."""
     module = mojom.Module('test_module', 'test_namespace')

@@ -87,7 +87,7 @@ class MapFileParserGold(object):
   def __init__(self):
     self._common_symbols = []
     self._symbols = []
-    self._section_sizes = {}
+    self._section_ranges = {}
     self._lines = None
 
   def Parse(self, lines):
@@ -98,7 +98,7 @@ class MapFileParserGold(object):
       identify file type.
 
     Returns:
-      A tuple of (section_sizes, symbols, extras).
+      A tuple of (section_ranges, symbols, extras).
     """
     self._lines = iter(lines)
     logging.debug('Scanning for Header')
@@ -112,7 +112,7 @@ class MapFileParserGold(object):
       elif line.startswith('Memory map'):
         self._ParseSections()
       break
-    return self._section_sizes, self._symbols, {}
+    return self._section_ranges, self._symbols, {}
 
   def _SkipToLineWithPrefix(self, prefix, prefix2=None):
     for l in self._lines:
@@ -192,7 +192,7 @@ class MapFileParserGold(object):
         section_name, section_address_str, section_size_str = parts
         section_address = int(section_address_str[2:], 16)
         section_size = int(section_size_str[2:], 16)
-        self._section_sizes[section_name] = section_size
+        self._section_ranges[section_name] = (section_address, section_size)
         if (section_name in models.BSS_SECTIONS
             or section_name in (models.SECTION_RODATA, models.SECTION_TEXT)
             or section_name.startswith(models.SECTION_DATA)):
@@ -338,7 +338,7 @@ class MapFileParserLld(object):
   def __init__(self, linker_name):
     self._linker_name = linker_name
     self._common_symbols = []
-    self._section_sizes = {}
+    self._section_ranges = {}
 
   @staticmethod
   def ParseArmAnnotations(tok):
@@ -428,7 +428,7 @@ class MapFileParserLld(object):
       identify file type.
 
     Returns:
-      A tuple of (section_sizes, symbols).
+      A tuple of (section_ranges, symbols).
     """
     # Newest format:
     #     VMA      LMA     Size Align Out     In      Symbol
@@ -513,7 +513,7 @@ class MapFileParserLld(object):
           cur_section_is_useful = False
         else:
           if not tok.startswith('PROVIDE_HIDDEN'):
-            self._section_sizes[tok] = size
+            self._section_ranges[tok] = (address, size)
           cur_section = tok
           # E.g., Want to convert "(.text._name)" -> "_name" later.
           mangled_start_idx = len(cur_section) + 2
@@ -657,7 +657,7 @@ class MapFileParserLld(object):
     if jump_tables_count:
       logging.info('Found %d CFI jump tables with %d total entries',
                    jump_tables_count, jump_entries_count)
-    return self._section_sizes, syms, {'thin_map': thin_map}
+    return self._section_ranges, syms, {'thin_map': thin_map}
 
 
 def _DetectLto(lines):
@@ -727,7 +727,7 @@ class MapFileParser(object):
       lines: Iterable of lines from the linker map.
 
     Returns:
-      A tuple of (section_sizes, symbols, extras).
+      A tuple of (section_ranges, symbols, extras).
     """
     next(lines)  # Consume the first line of headers.
     if linker_name.startswith('lld'):
@@ -737,13 +737,13 @@ class MapFileParser(object):
     else:
       raise Exception('.map file is from a unsupported linker.')
 
-    section_sizes, syms, extras = inner_parser.Parse(lines)
+    section_ranges, syms, extras = inner_parser.Parse(lines)
     for sym in syms:
       if sym.object_path and not sym.object_path.endswith(')'):
         # Don't want '' to become '.'.
         # Thin archives' paths will get fixed in |ar.CreateThinObjectPath|.
         sym.object_path = os.path.normpath(sym.object_path)
-    return (section_sizes, syms, extras)
+    return (section_ranges, syms, extras)
 
 
 def DeduceObjectPathsFromThinMap(raw_symbols, extras):
@@ -820,20 +820,24 @@ def main():
   print('Linker type: %s' % linker_name)
 
   with open(args.linker_file, 'r') as map_file:
-    section_sizes, syms, extras = MapFileParser().Parse(linker_name, map_file)
+    section_ranges, syms, extras = MapFileParser().Parse(linker_name, map_file)
 
   if args.dump:
-    print(section_sizes)
+    print(section_ranges)
     for sym in syms:
       print(sym)
   else:
     # Enter interactive shell.
     readline.parse_and_bind('tab: complete')
-    variables = {'section_sizes': section_sizes, 'syms': syms, 'extras': extras}
+    variables = {
+        'section_ranges': section_ranges,
+        'syms': syms,
+        'extras': extras
+    }
     banner_lines = [
         '*' * 80,
         'Variables:',
-        '  section_sizes: Map from section to sizes.',
+        '  section_ranges: Map from section name to (address, size).',
         '  syms: Raw symbols parsed from the linker map file.',
         '  extras: Format-specific extra data.',
         '*' * 80,

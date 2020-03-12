@@ -10,17 +10,8 @@
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
       "bounds": [100, 100],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
-          "rect": [0, 0, 100, 100],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute red'",
-          "rect": [0, 0, 100, 100],
-          "reason": "chunk disappeared"
-        }
+      "invalidations": [
+        [0, 0, 100, 100]
       ],
       "transform": 2
     },

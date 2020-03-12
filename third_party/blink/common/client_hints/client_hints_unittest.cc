@@ -120,9 +120,10 @@ TEST(ClientHintsTest, ParseAcceptCHFlag) {
               UnorderedElementsAre(mojom::WebClientHintsType::kRtt,
                                    mojom::WebClientHintsType::kLang));
 
-  result = ParseAcceptCH("rtt, lang, ua, arch, platform, model, mobile",
-                         /* permit_lang_hints = */ true,
-                         /* permit_ua_hints = */ true);
+  result =
+      ParseAcceptCH("rtt, lang, ua, ua-arch, ua-platform, ua-model, ua-mobile",
+                    /* permit_lang_hints = */ true,
+                    /* permit_ua_hints = */ true);
   ASSERT_TRUE(result.has_value());
   EXPECT_THAT(result.value(),
               UnorderedElementsAre(mojom::WebClientHintsType::kRtt,

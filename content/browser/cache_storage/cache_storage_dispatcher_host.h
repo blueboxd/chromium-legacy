@@ -46,6 +46,8 @@ class CacheStorageDispatcherHost {
   // client to provide its origin at every method call.
   void AddReceiver(
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
 

@@ -181,24 +181,32 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
   DCHECK_EQ(decoder_client_state_, VideoDecoderClientState::kUninitialized);
   ASSERT_TRUE(!decoder_) << "Can't create decoder: already created";
 
-  if (decoder_client_config_.use_vd) {
+  switch (decoder_client_config_.implementation) {
+    case DecoderImplementation::kVD:
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    if (decoder_client_config_.allocation_mode == AllocationMode::kImport) {
-      decoder_ = ChromeosVideoDecoderFactory::Create(
-          base::ThreadTaskRunnerHandle::Get(),
-          std::make_unique<PlatformVideoFramePool>(gpu_memory_buffer_factory_),
-          std::make_unique<VideoFrameConverter>(), gpu_memory_buffer_factory_);
-    } else {
-      LOG(ERROR) << "VD-based video decoders only support import mode";
-    }
+      if (decoder_client_config_.allocation_mode == AllocationMode::kImport) {
+        decoder_ = ChromeosVideoDecoderFactory::Create(
+            base::ThreadTaskRunnerHandle::Get(),
+            std::make_unique<PlatformVideoFramePool>(
+                gpu_memory_buffer_factory_),
+            std::make_unique<VideoFrameConverter>(),
+            gpu_memory_buffer_factory_);
+      } else {
+        LOG(ERROR) << "VD-based video decoders only support import mode";
+      }
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  } else {
-    // The video decoder client expects decoders to use the VD interface. We
-    // can use the TestVDAVideoDecoder wrapper here to test VDA-based video
-    // decoders.
-    decoder_ = std::make_unique<TestVDAVideoDecoder>(
-        decoder_client_config_.allocation_mode, gfx::ColorSpace(),
-        frame_renderer_.get(), gpu_memory_buffer_factory_);
+      break;
+    case DecoderImplementation::kVDA:
+    case DecoderImplementation::kVDVDA:
+      // The video decoder client expects decoders to use the VD interface. We
+      // can use the TestVDAVideoDecoder wrapper here to test VDA-based video
+      // decoders.
+      decoder_ = std::make_unique<TestVDAVideoDecoder>(
+          decoder_client_config_.allocation_mode,
+          decoder_client_config_.implementation ==
+              DecoderImplementation::kVDVDA,
+          gfx::ColorSpace(), frame_renderer_.get(), gpu_memory_buffer_factory_);
+      break;
   }
 
   *success = (decoder_ != nullptr);

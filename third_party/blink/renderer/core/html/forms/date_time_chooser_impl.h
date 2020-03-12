@@ -60,7 +60,6 @@ class CORE_EXPORT DateTimeChooserImpl final : public DateTimeChooser,
  private:
   // PagePopupClient functions:
   void WriteDocument(SharedBuffer*) override;
-  void SelectFontsFromOwnerDocument(Document&) override {}
   Locale& GetLocale() override;
   void SetValueAndClosePopup(int, const String&) override;
   void SetValue(const String&) override;

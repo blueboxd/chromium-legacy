@@ -5,17 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutFlexibleBox DIV id='container'",
-          "rect": [8, 11, 285, 42],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutDeprecatedFlexibleBox DIV id='container' class='folded'",
-          "rect": [8, 8, 285, 24],
-          "reason": "chunk disappeared"
-        }
+      "invalidations": [
+        [8, 11, 285, 42],
+        [8, 8, 285, 24]
       ]
     }
   ]

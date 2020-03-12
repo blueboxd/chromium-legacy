@@ -11,32 +11,8 @@
       "position": [-2, -2],
       "bounds": [69, 26],
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 69, 26],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 65, 22],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [4, 3, 57, 16],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [6, 5, 56, 16],
-          "reason": "paint property change"
-        },
-        {
-          "object": "Caret",
-          "rect": [61, 5, 1, 16],
-          "reason": "caret"
-        }
+      "invalidations": [
+        [0, 0, 69, 26]
       ],
       "transform": 1
     }

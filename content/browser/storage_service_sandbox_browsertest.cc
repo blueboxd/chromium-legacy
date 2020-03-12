@@ -11,6 +11,7 @@
 #include "components/services/storage/public/mojom/test_api.test-mojom.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"

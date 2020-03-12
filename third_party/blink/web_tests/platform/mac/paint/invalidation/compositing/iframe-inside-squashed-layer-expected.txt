@@ -17,17 +17,9 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV)",
       "position": [0, -8],
       "bounds": [300, 654],
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'test1'",
-          "rect": [8, 508, 31, 18],
-          "reason": "geometry"
-        },
-        {
-          "object": "VerticalScrollbar",
-          "rect": [285, 500, 15, 150],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [8, 508, 31, 18],
+        [285, 500, 15, 150]
       ],
       "transform": 1
     },

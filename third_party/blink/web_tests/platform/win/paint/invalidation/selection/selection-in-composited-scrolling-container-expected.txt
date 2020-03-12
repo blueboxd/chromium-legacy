@@ -5,27 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutTextControl INPUT id='target'",
-          "rect": [6, 6, 76, 26],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [12, 11, 64, 16],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [12, 11, 63, 16],
-          "reason": "paint property change"
-        },
-        {
-          "object": "InlineTextBox 'test test test'",
-          "rect": [27, 11, 26, 16],
-          "reason": "selection"
-        }
+      "invalidations": [
+        [6, 6, 76, 26]
       ]
     }
   ]

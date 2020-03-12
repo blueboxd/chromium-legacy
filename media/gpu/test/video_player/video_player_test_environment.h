@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/gpu/test/video_frame_file_writer.h"
+#include "media/gpu/test/video_player/video_decoder_client.h"
 #include "media/gpu/test/video_test_environment.h"
 
 namespace media {
@@ -47,7 +48,7 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
       const base::FilePath& video_path,
       const base::FilePath& video_metadata_path,
       bool enable_validator,
-      bool use_vd,
+      const DecoderImplementation implementation,
       const base::FilePath& output_folder = base::FilePath(),
       const FrameOutputConfig& frame_output_config = FrameOutputConfig());
   ~VideoPlayerTestEnvironment() override;
@@ -59,8 +60,8 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
   const media::test::Video* Video() const;
   // Check whether frame validation is enabled.
   bool IsValidatorEnabled() const;
-  // Check whether we should use VD-based video decoders instead of VDA-based.
-  bool UseVD() const;
+  // Return which implementation is used.
+  DecoderImplementation GetDecoderImplementation() const;
 
   // Get the frame output mode.
   FrameOutputMode GetFrameOutputMode() const;
@@ -83,13 +84,13 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
  private:
   VideoPlayerTestEnvironment(std::unique_ptr<media::test::Video> video,
                              bool enable_validator,
-                             bool use_vd,
+                             const DecoderImplementation implementation,
                              const base::FilePath& output_folder,
                              const FrameOutputConfig& frame_output_config);
 
   const std::unique_ptr<media::test::Video> video_;
   const bool enable_validator_;
-  const bool use_vd_;
+  const DecoderImplementation implementation_;
 
   const FrameOutputConfig frame_output_config_;
   const base::FilePath output_folder_;

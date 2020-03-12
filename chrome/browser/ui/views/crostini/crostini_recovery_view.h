@@ -29,6 +29,7 @@ class CrostiniRecoveryView : public views::BubbleDialogDelegateView {
   gfx::Size CalculatePreferredSize() const override;
   bool Accept() override;
   bool Cancel() override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
   static CrostiniRecoveryView* GetActiveViewForTesting();
 

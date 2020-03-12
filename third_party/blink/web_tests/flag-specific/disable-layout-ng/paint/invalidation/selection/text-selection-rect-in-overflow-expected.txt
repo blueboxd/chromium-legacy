@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'Should have green background'",
-          "rect": [8, 8, 197, 19],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [8, 8, 197, 19]
       ]
     }
   ]

@@ -5,22 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
-          "rect": [314, 114, 435, 450],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV class='relative red'",
-          "rect": [314, 114, 435, 450],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "HorizontalScrollbar",
-          "rect": [314, 564, 435, 15],
-          "reason": "scroll control"
-        }
+      "invalidations": [
+        [314, 114, 435, 450],
+        [314, 564, 435, 15]
       ]
     }
   ]

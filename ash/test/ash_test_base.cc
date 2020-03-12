@@ -126,6 +126,10 @@ AshTestBase::~AshTestBase() {
 }
 
 void AshTestBase::SetUp() {
+  SetUp(nullptr);
+}
+
+void AshTestBase::SetUp(std::unique_ptr<TestShellDelegate> delegate) {
   // At this point, the task APIs should already be provided either by
   // |task_environment_| or by the subclass in the
   // SubclassManagesTaskEnvironment mode.
@@ -140,13 +144,13 @@ void AshTestBase::SetUp() {
 
   AshTestHelper::InitParams params;
   params.start_session = start_session_;
+  params.delegate = std::move(delegate);
   if (register_local_state_) {
     DCHECK(local_state_.get());
     RegisterLocalStatePrefs(local_state_->registry(), true);
   }
   params.local_state = local_state_.get();
-  params.config_type = AshTestHelper::kUnitTest;
-  ash_test_helper_.SetUp(params);
+  ash_test_helper_.SetUp(std::move(params));
 
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->GetHost()->Show();

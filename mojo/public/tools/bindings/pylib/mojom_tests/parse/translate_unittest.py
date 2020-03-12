@@ -7,6 +7,7 @@ import os.path
 import sys
 import unittest
 
+
 def _GetDirAbove(dirname):
   """Returns the directory "above" this file containing |dirname| (which must
   also be "above" this file)."""
@@ -16,6 +17,7 @@ def _GetDirAbove(dirname):
     assert tail
     if tail == dirname:
       return path
+
 
 try:
   imp.find_module("mojom")
@@ -46,34 +48,45 @@ class TranslateTest(unittest.TestCase):
 
   def testTranslateSimpleUnions(self):
     """Makes sure that a simple union is translated correctly."""
-    tree = ast.Mojom(
-        None,
-        ast.ImportList(),
-        [ast.Union("SomeUnion", None, ast.UnionBody(
-          [ast.UnionField("a", None, None, "int32"),
-           ast.UnionField("b", None, None, "string")]))])
+    tree = ast.Mojom(None, ast.ImportList(), [
+        ast.Union(
+            "SomeUnion", None,
+            ast.UnionBody([
+                ast.UnionField("a", None, None, "int32"),
+                ast.UnionField("b", None, None, "string")
+            ]))
+    ])
     expected = [{
-      "name": "SomeUnion",
-      "fields": [{"kind": "i32", "name": "a"},
-                 {"kind": "s", "name": "b"}]}]
+        "name":
+        "SomeUnion",
+        "fields": [{
+            "kind": "i32",
+            "name": "a"
+        }, {
+            "kind": "s",
+            "name": "b"
+        }]
+    }]
     actual = translate.Translate(tree, "mojom_tree")
     self.assertEquals(actual["unions"], expected)
 
   def testMapTreeForTypeRaisesWithDuplicate(self):
     """Verifies _MapTreeForType() raises when passed two values with the same
        name."""
-    methods = [ast.Method('dup', None, None, ast.ParameterList(), None),
-               ast.Method('dup', None, None, ast.ParameterList(), None)]
+    methods = [
+        ast.Method('dup', None, None, ast.ParameterList(), None),
+        ast.Method('dup', None, None, ast.ParameterList(), None)
+    ]
     self.assertRaises(Exception, translate._MapTreeForType,
                       (lambda x: x, methods, '', 'scope'))
 
   def testAssociatedKinds(self):
     """Tests type spec translation of associated interfaces and requests."""
     # pylint: disable=W0212
-    self.assertEquals(translate._MapKind("asso<SomeInterface>?"),
-                      "?asso:x:SomeInterface")
-    self.assertEquals(translate._MapKind("asso<SomeInterface&>?"),
-                      "?asso:r:x:SomeInterface")
+    self.assertEquals(
+        translate._MapKind("asso<SomeInterface>?"), "?asso:x:SomeInterface")
+    self.assertEquals(
+        translate._MapKind("asso<SomeInterface&>?"), "?asso:r:x:SomeInterface")
 
 
 if __name__ == "__main__":

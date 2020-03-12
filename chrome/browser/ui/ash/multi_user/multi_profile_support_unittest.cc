@@ -289,8 +289,7 @@ void MultiProfileSupportTest::SetUp() {
   chromeos::DeviceSettingsService::Initialize();
   chromeos::CrosSettings::Initialize(
       TestingBrowserProcess::GetGlobal()->local_state());
-  ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
-  ChromeAshTestBase::SetUp();
+  ChromeAshTestBase::SetUp(std::make_unique<TestShellDelegateChromeOS>());
   ash_test_helper()
       ->test_session_controller_client()
       ->set_use_lower_case_user_id(false);

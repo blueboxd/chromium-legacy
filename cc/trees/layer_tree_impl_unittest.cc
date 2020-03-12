@@ -2549,6 +2549,91 @@ TEST_F(LayerTreeImplTest, ElementIdToAnimationMapsTrackOnlyOnSyncTree) {
   EXPECT_EQ(filter_map.size(), 1u);
 }
 
+TEST_F(LayerTreeImplTest, FrameElementIdHitTestSimple) {
+  LayerImpl* frame_layer = AddLayer<LayerImpl>();
+  frame_layer->SetBounds(gfx::Size(50, 50));
+  frame_layer->SetDrawsContent(true);
+  frame_layer->SetHitTestable(true);
+  frame_layer->SetFrameElementId(ElementId(0x10));
+  CopyProperties(root_layer(), frame_layer);
+
+  UpdateDrawProperties(host_impl().active_tree());
+
+  EXPECT_EQ(host_impl().FindFrameElementIdAtPoint(gfx::PointF(10, 10)),
+            ElementId(0x10));
+}
+
+TEST_F(LayerTreeImplTest, FrameElementIdHitTestOverlap) {
+  LayerImpl* frame_layer = AddLayer<LayerImpl>();
+  frame_layer->SetBounds(gfx::Size(50, 50));
+  frame_layer->SetHitTestable(true);
+  frame_layer->SetFrameElementId(ElementId(0x10));
+  CopyProperties(root_layer(), frame_layer);
+
+  LayerImpl* occluding_frame_layer = AddLayer<LayerImpl>();
+  occluding_frame_layer->SetBounds(gfx::Size(50, 50));
+  occluding_frame_layer->SetHitTestable(true);
+  occluding_frame_layer->SetFrameElementId(ElementId(0x20));
+  CopyProperties(root_layer(), occluding_frame_layer);
+  occluding_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  UpdateDrawProperties(host_impl().active_tree());
+
+  EXPECT_EQ(host_impl().FindFrameElementIdAtPoint(gfx::PointF(30, 30)),
+            ElementId(0x20));
+}
+
+TEST_F(LayerTreeImplTest, FrameElementIdHitTestOverlapSimpleClip) {
+  LayerImpl* frame_layer = AddLayer<LayerImpl>();
+  frame_layer->SetBounds(gfx::Size(50, 50));
+  frame_layer->SetHitTestable(true);
+  frame_layer->SetFrameElementId(ElementId(0x10));
+  CopyProperties(root_layer(), frame_layer);
+
+  LayerImpl* clipped_frame_layer = AddLayer<LayerImpl>();
+  clipped_frame_layer->SetBounds(gfx::Size(50, 50));
+  clipped_frame_layer->SetHitTestable(true);
+  clipped_frame_layer->SetFrameElementId(ElementId(0x20));
+  CopyProperties(root_layer(), clipped_frame_layer);
+  clipped_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  // Create a clip excluding the overlapped region.
+  auto& clip_node = CreateClipNode(clipped_frame_layer);
+  clip_node.clip = gfx::RectF(40, 40, 10, 10);
+
+  UpdateDrawProperties(host_impl().active_tree());
+
+  // Ensure that the overlapping (clipped) layer isn't targeted.
+  EXPECT_EQ(host_impl().FindFrameElementIdAtPoint(gfx::PointF(30, 30)),
+            ElementId(0x10));
+}
+
+TEST_F(LayerTreeImplTest, FrameElementIdHitTestOverlapRoundedCorners) {
+  LayerImpl* frame_layer = AddLayer<LayerImpl>();
+  frame_layer->SetBounds(gfx::Size(50, 50));
+  frame_layer->SetHitTestable(true);
+  frame_layer->SetFrameElementId(ElementId(0x10));
+  CopyProperties(root_layer(), frame_layer);
+
+  LayerImpl* rounded_frame_layer = AddLayer<LayerImpl>();
+  rounded_frame_layer->SetBounds(gfx::Size(50, 50));
+  rounded_frame_layer->SetHitTestable(true);
+  rounded_frame_layer->SetFrameElementId(ElementId(0x20));
+  CopyProperties(root_layer(), rounded_frame_layer);
+  rounded_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  // Add rounded corners to the layer, which are unable to be hit tested by the
+  // simple quad-based logic.
+  CreateEffectNode(rounded_frame_layer).rounded_corner_bounds =
+      gfx::RRectF(25, 25, 50, 50, 5);
+
+  UpdateDrawProperties(host_impl().active_tree());
+
+  // The lookup should bail out in the presence of a complex clip/mask on the
+  // target chain.
+  EXPECT_FALSE(host_impl().FindFrameElementIdAtPoint(gfx::PointF(30, 30)));
+}
+
 class LayerTreeImplOcclusionSettings : public LayerListSettings {
  public:
   explicit LayerTreeImplOcclusionSettings(bool enabled) {

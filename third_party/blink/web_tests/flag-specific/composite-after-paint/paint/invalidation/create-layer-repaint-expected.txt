@@ -5,17 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='test' class='big stretchy'",
-          "rect": [28, 56, 500, 50],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='test' class='stretchy'",
-          "rect": [28, 56, 250, 50],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [28, 56, 500, 50]
       ]
     }
   ]

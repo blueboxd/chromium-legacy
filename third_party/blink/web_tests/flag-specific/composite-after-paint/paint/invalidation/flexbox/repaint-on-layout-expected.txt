@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='badge'",
-          "rect": [712, 8, 80, 20],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [712, 8, 80, 20]
       ]
     },
     {

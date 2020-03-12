@@ -78,6 +78,14 @@ class FileHandlerManager : public AppRegistrarObserver {
   void UpdateFileHandlingOriginTrialExpiry(content::WebContents* web_contents,
                                            const AppId& app_id);
 
+  // Force enables File Handling origin trial. This will register the App's file
+  // handlers even if the App does not have a valid origin trial token.
+  void ForceEnableFileHandlingOriginTrial(const AppId& app_id);
+
+  // Disable a force enabled File Handling origin trial. This will unregister
+  // App's file handlers.
+  void DisableForceEnabledFileHandlingOriginTrial(const AppId& app_id);
+
   // Gets all enabled file handlers for |app_id|. |nullptr| if the app has no
   // enabled file handlers. Note: The lifetime of the file handlers are tied to
   // the app they belong to.
@@ -114,6 +122,10 @@ class FileHandlerManager : public AppRegistrarObserver {
       mojo::AssociatedRemote<blink::mojom::FileHandlingExpiry> /*interface*/,
       const AppId& app_id,
       base::Time expiry_time);
+
+  void UpdateFileHandlersForOriginTrialExpiryTime(
+      const AppId& app_id,
+      const base::Time& expiry_time);
 
   // Removes file handlers whose origin trials have expired (assuming
   // kFileHandlingAPI isn't enabled). Returns the number of apps that had file

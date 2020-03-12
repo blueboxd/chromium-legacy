@@ -25,6 +25,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/wm_state.h"
 
@@ -96,6 +97,10 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   env_helper.ResetEnvForTesting();
 
   context_factory_to_restore_ = env->context_factory();
+  if (!context_factory) {
+    context_factories_ = std::make_unique<ui::TestContextFactories>(false);
+    context_factory = context_factories_->GetContextFactory();
+  }
   env->set_context_factory(context_factory);
   // Unit tests generally don't want to query the system, rather use the state
   // from RootWindow.
@@ -146,6 +151,8 @@ void AuraTestHelper::TearDown() {
 
   ui::ShutdownInputMethodForTesting();
 
+  context_factories_.reset();
+
   if (env_) {
     env_.reset();
   } else {
@@ -179,6 +186,12 @@ client::CaptureClient* AuraTestHelper::capture_client() {
 
 Env* AuraTestHelper::GetEnv() {
   return env_ ? env_.get() : Env::HasInstance() ? Env::GetInstance() : nullptr;
+}
+
+ui::ContextFactory* AuraTestHelper::GetContextFactory() {
+  Env* env = GetEnv();
+  DCHECK(env);
+  return env->context_factory();
 }
 
 }  // namespace test

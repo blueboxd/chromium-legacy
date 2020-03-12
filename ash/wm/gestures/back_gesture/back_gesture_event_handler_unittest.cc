@@ -43,14 +43,20 @@ class BackGestureEventHandlerTest : public AshTestBase {
   // activated state.
   static constexpr int kSwipingDistanceForGoingBack = 80;
 
-  BackGestureEventHandlerTest() = default;
+  explicit BackGestureEventHandlerTest(bool can_go_back = true)
+      : can_go_back_(can_go_back) {}
   BackGestureEventHandlerTest(const BackGestureEventHandlerTest&) = delete;
   BackGestureEventHandlerTest& operator=(const BackGestureEventHandlerTest&) =
       delete;
   ~BackGestureEventHandlerTest() override = default;
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    std::unique_ptr<TestShellDelegate> delegate;
+    if (!can_go_back_) {
+      delegate = std::make_unique<TestShellDelegate>();
+      delegate->SetCanGoBack(false);
+    }
+    AshTestBase::SetUp(std::move(delegate));
 
     feature_list_.InitAndEnableFeature(features::kSwipingFromLeftEdgeToGoBack);
     RecreateTopWindow(AppType::BROWSER);
@@ -104,8 +110,16 @@ class BackGestureEventHandlerTest : public AshTestBase {
   aura::Window* top_window() { return top_window_.get(); }
 
  private:
+  bool can_go_back_;
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<aura::Window> top_window_;
+};
+
+class BackGestureEventHandlerTestCantGoBack
+    : public BackGestureEventHandlerTest {
+ public:
+  BackGestureEventHandlerTestCantGoBack()
+      : BackGestureEventHandlerTest(false) {}
 };
 
 TEST_F(BackGestureEventHandlerTest, SwipingFromLeftEdgeToGoBack) {
@@ -170,11 +184,10 @@ TEST_F(BackGestureEventHandlerTest, FlingFromLeftEdgeToGoBack) {
   EXPECT_EQ(2, target_back_release.accelerator_count());
 }
 
-TEST_F(BackGestureEventHandlerTest, GoBackInOverviewMode) {
+TEST_F(BackGestureEventHandlerTestCantGoBack, GoBackInOverviewMode) {
   ui::TestAcceleratorTarget target_back_press, target_back_release;
   RegisterBackPressAndRelease(&target_back_press, &target_back_release);
 
-  ash_test_helper()->test_shell_delegate()->SetCanGoBack(false);
   ASSERT_FALSE(WindowState::Get(top_window())->IsMinimized());
   ASSERT_TRUE(TabletModeWindowManager::ShouldMinimizeTopWindowOnBack());
   GenerateBackSequence();

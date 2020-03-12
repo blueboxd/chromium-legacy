@@ -20,6 +20,7 @@
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/net/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
@@ -301,14 +302,16 @@ void BindCacheStorageOnUIThread(
     int process_id,
     url::Origin origin,
     network::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* rph = RenderProcessHost::FromID(process_id);
   if (!rph)
     return;
 
-  rph->BindCacheStorage(cross_origin_embedder_policy, origin,
-                        std::move(receiver));
+  rph->BindCacheStorage(cross_origin_embedder_policy, std::move(coep_reporter),
+                        origin, std::move(receiver));
 }
 
 }  // namespace
@@ -1350,14 +1353,20 @@ void EmbeddedWorkerInstance::BindCacheStorageInternal() {
   // loaded the headers and the COEP one is known.
   if (!owner_version_->cross_origin_embedder_policy())
     return;
+  network::CrossOriginEmbedderPolicy coep =
+      owner_version_->cross_origin_embedder_policy().value();
+
+  // TODO(https://crbug.com/1059727) Plumb a CrossOriginEmbedderPolicyReporter
+  // to handle reports.
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_remote;
 
   for (auto& receiver : pending_cache_storage_receivers_) {
     RunOrPostTaskOnThread(
         FROM_HERE, BrowserThread::UI,
         base::BindOnce(content::BindCacheStorageOnUIThread, process_id(),
-                       owner_version_->script_origin(),
-                       owner_version_->cross_origin_embedder_policy().value(),
-                       std::move(receiver)));
+                       owner_version_->script_origin(), coep,
+                       std::move(coep_reporter_remote), std::move(receiver)));
   }
   pending_cache_storage_receivers_.clear();
 }

@@ -5,27 +5,11 @@
       "bounds": [785, 829],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "Scrolling background of LayoutView #document",
-          "rect": [0, 735, 785, 94],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutIFrame IFRAME id='iframe'",
-          "rect": [8, 86, 732, 94],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [58, 230, 489, 537],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [58, 136, 489, 537],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [0, 735, 785, 94],
+        [8, 86, 732, 94],
+        [58, 230, 489, 537],
+        [58, 136, 489, 537]
       ]
     },
     {

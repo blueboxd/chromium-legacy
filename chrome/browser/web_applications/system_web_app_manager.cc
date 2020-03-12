@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
@@ -50,6 +51,10 @@
 namespace web_app {
 
 namespace {
+
+// Copy the origin trial name from runtime_enabled_features.json5, to avoid
+// complex dependencies.
+const char kFileHandlingOriginTrial[] = "FileHandling";
 
 // Use #if defined to avoid compiler error on unused function.
 #if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
@@ -238,12 +243,15 @@ void SystemWebAppManager::Shutdown() {
   shutting_down_ = true;
 }
 
-void SystemWebAppManager::SetSubsystems(PendingAppManager* pending_app_manager,
-                                        AppRegistrar* registrar,
-                                        WebAppUiManager* ui_manager) {
+void SystemWebAppManager::SetSubsystems(
+    PendingAppManager* pending_app_manager,
+    AppRegistrar* registrar,
+    WebAppUiManager* ui_manager,
+    FileHandlerManager* file_handler_manager) {
   pending_app_manager_ = pending_app_manager;
   registrar_ = registrar;
   ui_manager_ = ui_manager;
+  file_handler_manager_ = file_handler_manager;
 }
 
 void SystemWebAppManager::Start() {
@@ -356,6 +364,13 @@ const std::vector<std::string>* SystemWebAppManager::GetEnabledOriginTrials(
     return nullptr;
 
   return &iter_trials->second;
+}
+
+bool SystemWebAppManager::AppHasFileHandlingOriginTrial(SystemAppType type) {
+  const auto& info = system_app_infos_.at(type);
+  const std::vector<std::string>* trials =
+      GetEnabledOriginTrials(type, info.install_url);
+  return trials && base::Contains(*trials, kFileHandlingOriginTrial);
 }
 
 void SystemWebAppManager::OnReadyToCommitNavigation(
@@ -486,6 +501,23 @@ void SystemWebAppManager::OnAppsSynchronized(
     const base::TimeTicks& install_start_time,
     std::map<GURL, InstallResultCode> install_results,
     std::map<GURL, bool> uninstall_results) {
+  // TODO(crbug.com/1053371): Clean up File Handler install. We install SWA file
+  // handlers here, because the code that registers file handlers for regular
+  // Web Apps, does not run when for apps installed in the background.
+  for (const auto& it : system_app_infos_) {
+    const SystemAppType& type = it.first;
+    base::Optional<AppId> app_id = GetAppIdForSystemApp(type);
+    if (!app_id)
+      continue;
+
+    if (AppHasFileHandlingOriginTrial(type)) {
+      file_handler_manager_->ForceEnableFileHandlingOriginTrial(app_id.value());
+    } else {
+      file_handler_manager_->DisableForceEnabledFileHandlingOriginTrial(
+          app_id.value());
+    }
+  }
+
   const base::TimeDelta install_duration =
       install_start_time - base::TimeTicks::Now();
 

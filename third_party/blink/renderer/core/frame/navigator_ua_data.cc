@@ -41,6 +41,10 @@ void NavigatorUAData::SetModel(const String& model) {
   model_ = model;
 }
 
+void NavigatorUAData::SetUAFullVersion(const String& ua_full_version) {
+  ua_full_version_ = ua_full_version;
+}
+
 bool NavigatorUAData::mobile() const {
   if (GetFrame() && GetFrame()->GetPage()) {
     return is_mobile_;
@@ -71,6 +75,8 @@ ScriptPromise NavigatorUAData::getHighEntropyValues(
       values->setArchitecture(architecture_);
     } else if (hint == "model") {
       values->setModel(model_);
+    } else if (hint == "uaFullVersion") {
+      values->setUaFullVersion(ua_full_version_);
     }
   }
   resolver->Resolve(values);

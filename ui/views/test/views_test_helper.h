@@ -10,7 +10,7 @@
 
 namespace ui {
 class ContextFactory;
-}  // namespace ui
+}
 
 namespace views {
 
@@ -19,14 +19,15 @@ namespace views {
 class ViewsTestHelper {
  public:
   // Create a platform specific instance.
-  static std::unique_ptr<ViewsTestHelper> Create(
-      ui::ContextFactory* context_factory);
+  static std::unique_ptr<ViewsTestHelper> Create();
 
   virtual ~ViewsTestHelper() = default;
 
-  // Returns a context view. In aura builds, this will be the
-  // RootWindow. Everywhere else, NULL.
+  // Returns a context view. In aura builds, this will be the RootWindow.
+  // Everywhere else, null.
   virtual gfx::NativeWindow GetContext();
+
+  virtual ui::ContextFactory* GetContextFactory() = 0;
 
  protected:
   ViewsTestHelper() = default;

@@ -137,7 +137,7 @@ class ConditionalFeaturesTest(unittest.TestCase):
 
   def testFilterStruct(self):
     """Test that definitions are correctly filtered from a Struct."""
-    struct_source =  """
+    struct_source = """
       struct MyStruct {
         [EnableIf=blue]
         enum MyEnum {
@@ -225,8 +225,9 @@ class ConditionalFeaturesTest(unittest.TestCase):
     """
     definition = parser.Parse(source, "my_file.mojom")
     self.assertRaises(conditional_features.EnableIfError,
-      conditional_features.RemoveDisabledDefinitions,
-      definition, ENABLED_FEATURES)
+                      conditional_features.RemoveDisabledDefinitions,
+                      definition, ENABLED_FEATURES)
+
 
 if __name__ == '__main__':
   unittest.main()

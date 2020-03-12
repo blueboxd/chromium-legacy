@@ -705,6 +705,11 @@ def _CollectModuleSizes(minimal_apks_path):
   return sizes_by_module
 
 
+def _ExtendSectionRange(section_range_by_name, section_name, delta_size):
+  (prev_address, prev_size) = section_range_by_name.get(section_name, (0, 0))
+  section_range_by_name[section_name] = (prev_address, prev_size + delta_size)
+
+
 def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path,
                    tool_prefix, output_directory, linker_name):
   """Creates metadata dict.
@@ -834,7 +839,7 @@ def _NameStringLiterals(raw_symbols, elf_path, tool_prefix):
 
 def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
                   outdir_context=None, linker_name=None):
-  """Adds ELF section sizes and symbols."""
+  """Adds ELF section ranges and symbols."""
   if elf_path:
     # Run nm on the elf file to retrieve the list of symbol names per-address.
     # This list is required because the .map file contains only a single name
@@ -859,7 +864,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
 
   logging.info('Parsing Linker Map')
   with _OpenMaybeGz(map_path) as map_file:
-    map_section_sizes, raw_symbols, linker_map_extras = (
+    map_section_ranges, raw_symbols, linker_map_extras = (
         linker_map_parser.MapFileParser().Parse(linker_name, map_file))
 
     if outdir_context and outdir_context.thin_archives:
@@ -867,13 +872,16 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
 
   if elf_path:
     logging.debug('Validating section sizes')
-    _, elf_section_sizes = _SectionInfoFromElf(elf_path, tool_prefix)
+    elf_section_ranges = _SectionInfoFromElf(elf_path, tool_prefix)
     differing_elf_section_sizes = {}
     differing_map_section_sizes = {}
-    for k, v in elf_section_sizes.iteritems():
-      if k not in _SECTION_SIZE_BLACKLIST and v != map_section_sizes.get(k):
-        differing_map_section_sizes[k] = map_section_sizes.get(k)
-        differing_elf_section_sizes[k] = v
+    for k, (_, elf_size) in elf_section_ranges.iteritems():
+      if k in _SECTION_SIZE_BLACKLIST:
+        continue
+      (_, map_size) = map_section_ranges.get(k)
+      if map_size != elf_size:
+        differing_map_section_sizes[k] = map_size
+        differing_elf_section_sizes[k] = elf_size
     if differing_map_section_sizes:
       logging.error('ELF file and .map file do not agree on section sizes.')
       logging.error('readelf: %r', differing_elf_section_sizes)
@@ -947,9 +955,9 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
   if elf_path:
     _NameStringLiterals(raw_symbols, elf_path, tool_prefix)
 
-  # If we have an ELF file, use its sizes as the source of truth, since some
+  # If we have an ELF file, use its ranges as the source of truth, since some
   # sections can differ from the .map.
-  return (elf_section_sizes if elf_path else map_section_sizes, raw_symbols,
+  return (elf_section_ranges if elf_path else map_section_ranges, raw_symbols,
           object_paths_by_name)
 
 
@@ -1086,10 +1094,10 @@ def _ParsePakSymbols(symbols_by_id, object_paths_by_pak_id):
   return raw_symbols
 
 
-def _ParseApkElfSectionSize(section_sizes, metadata, apk_elf_result):
+def _ParseApkElfSectionRanges(section_ranges, metadata, apk_elf_result):
   if metadata:
     logging.debug('Extracting section sizes from .so within .apk')
-    apk_build_id, _, apk_section_sizes, elf_overhead_size = apk_elf_result.get()
+    apk_build_id, apk_section_ranges, elf_overhead_size = apk_elf_result.get()
     assert apk_build_id == metadata[models.METADATA_ELF_BUILD_ID], (
         'BuildID from apk_elf_result did not match')
 
@@ -1102,15 +1110,16 @@ def _ParseApkElfSectionSize(section_sizes, metadata, apk_elf_result):
       packed_section_name = '.rela.dyn'
 
     if packed_section_name:
-      unpacked_size = section_sizes.get(packed_section_name)
-      if unpacked_size is None:
+      unpacked_range = section_ranges.get(packed_section_name)
+      if unpacked_range is None:
         logging.warning('Packed section not present: %s', packed_section_name)
-      elif unpacked_size != apk_section_sizes.get(packed_section_name):
-        # These sizes are different only when using relocation_packer, which
+      elif unpacked_range != apk_section_ranges.get(packed_section_name):
+        # These ranges are different only when using relocation_packer, which
         # hasn't been used since switching from gold -> lld.
-        apk_section_sizes['%s (unpacked)' % packed_section_name] = unpacked_size
-    return apk_section_sizes, elf_overhead_size
-  return section_sizes, 0
+        apk_section_ranges['%s (unpacked)' %
+                           packed_section_name] = unpacked_range
+    return apk_section_ranges, elf_overhead_size
+  return section_ranges, 0
 
 
 class _ResourcePathDeobfuscator:
@@ -1151,7 +1160,7 @@ class _ResourcePathDeobfuscator:
     return path
 
 
-def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path,
+def _ParseApkOtherSymbols(section_ranges, apk_path, apk_so_path,
                           resources_pathmap_path, size_info_prefix, knobs):
   res_source_mapper = _ResourceSourceMapper(size_info_prefix, knobs)
   resource_deobfuscator = _ResourcePathDeobfuscator(resources_pathmap_path)
@@ -1185,9 +1194,8 @@ def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path,
   zip_overhead_symbol = models.Symbol(
       models.SECTION_OTHER, overhead_size, full_name='Overhead: APK file')
   apk_symbols.append(zip_overhead_symbol)
-  prev = section_sizes.setdefault(models.SECTION_OTHER, 0)
-  section_sizes[models.SECTION_OTHER] = prev + sum(s.size for s in apk_symbols)
-
+  _ExtendSectionRange(section_ranges, models.SECTION_OTHER,
+                      sum(s.size for s in apk_symbols))
   return dex_size, apk_symbols
 
 
@@ -1206,7 +1214,7 @@ def _CreatePakObjectMap(object_paths_by_name):
   return object_paths_by_pak_id
 
 
-def _FindPakSymbolsFromApk(section_sizes, apk_path, size_info_prefix, knobs):
+def _FindPakSymbolsFromApk(section_ranges, apk_path, size_info_prefix, knobs):
   with zipfile.ZipFile(apk_path) as z:
     pak_zip_infos = (f for f in z.infolist() if f.filename.endswith('.pak'))
     pak_info_path = size_info_prefix + '.pak.info'
@@ -1224,8 +1232,7 @@ def _FindPakSymbolsFromApk(section_sizes, apk_path, size_info_prefix, knobs):
       section_name = _ComputePakFileSymbols(
           zip_info.filename, contents,
           res_info, symbols_by_id, compression_ratio=compression_ratio)
-      prev_size = section_sizes.get(section_name, 0)
-      section_sizes[section_name] = prev_size + zip_info.compress_size
+      _ExtendSectionRange(section_ranges, section_name, zip_info.compress_size)
 
     if total_uncompressed_size > 0:
       actual_ratio = (
@@ -1237,8 +1244,8 @@ def _FindPakSymbolsFromApk(section_sizes, apk_path, size_info_prefix, knobs):
   return symbols_by_id
 
 
-def _FindPakSymbolsFromFiles(
-    section_sizes, pak_files, pak_info_path, output_directory):
+def _FindPakSymbolsFromFiles(section_ranges, pak_files, pak_info_path,
+                             output_directory):
   """Uses files from args to find and add pak symbols."""
   res_info = _ParsePakInfoFile(pak_info_path)
   symbols_by_id = {}
@@ -1248,15 +1255,16 @@ def _FindPakSymbolsFromFiles(
     section_name = _ComputePakFileSymbols(
         os.path.relpath(pak_file_path, output_directory), contents, res_info,
         symbols_by_id)
-    prev_size = section_sizes.get(section_name, 0)
-    section_sizes[section_name] = prev_size + os.path.getsize(pak_file_path)
+    _ExtendSectionRange(section_ranges, section_name,
+                        os.path.getsize(pak_file_path))
   return symbols_by_id
 
 
-def _CalculateElfOverhead(section_sizes, elf_path):
+def _CalculateElfOverhead(section_ranges, elf_path):
   if elf_path:
     section_sizes_total_without_bss = sum(
-        s for k, s in section_sizes.iteritems() if k not in models.BSS_SECTIONS)
+        size for k, (address, size) in section_ranges.iteritems()
+        if k not in models.BSS_SECTIONS)
     elf_overhead_size = (
         os.path.getsize(elf_path) - section_sizes_total_without_bss)
     assert elf_overhead_size >= 0, (
@@ -1306,22 +1314,22 @@ def _OverwriteSymbolSizesWithRelocationCount(raw_symbols, tool_prefix,
   raw_symbols[:] = [sym for sym in raw_symbols if sym.size or sym.IsNative()]
 
 
-def _AddUnattributedSectionSymbols(raw_symbols, section_sizes, elf_result):
+def _AddUnattributedSectionSymbols(raw_symbols, section_ranges, elf_result):
   # Create symbols for ELF sections not covered by existing symbols.
   logging.info('Searching for symbol gaps...')
-  section_addresses = elf_result.get()[1]
+  _, section_ranges, _ = elf_result.get()
   last_symbol_ends = collections.defaultdict(int)
   for sym in raw_symbols:
     if sym.end_address > last_symbol_ends[sym.section_name]:
       last_symbol_ends[sym.section_name] = sym.end_address
   for section_name, last_symbol_end in last_symbol_ends.iteritems():
-    size_from_syms = last_symbol_end - section_addresses[section_name]
-    overhead = section_sizes[section_name] - size_from_syms
+    size_from_syms = last_symbol_end - section_ranges[section_name][0]
+    overhead = section_ranges[section_name][1] - size_from_syms
     assert overhead >= 0, (
         ('End of last symbol (%x) in section %s is %d bytes after the end of '
-         'section from readelf (%x).') %
-        (last_symbol_end, section_name, -overhead,
-         section_sizes[section_name] + section_addresses[section_name]))
+         'section from readelf (%x).') % (last_symbol_end, section_name,
+                                          -overhead,
+                                          sum(section_ranges[section_name])))
     if overhead > 0 and section_name not in models.BSS_SECTIONS:
       raw_symbols.append(
           models.Symbol(
@@ -1332,19 +1340,20 @@ def _AddUnattributedSectionSymbols(raw_symbols, section_sizes, elf_result):
       logging.info('Last symbol in %s does not reach end of section, gap=%d',
                    section_name, overhead)
 
-  for section_name in section_addresses:
+  # Sort keys to ensure consistent order (> 1 sections may have address = 0).
+  for section_name in sorted(section_ranges.keys()):
     # Handle sections that don't appear in |raw_symbols|.
     if section_name not in last_symbol_ends:
-      section_size = section_sizes[section_name]
+      address, section_size = section_ranges[section_name]
       logging.info('All bytes in %s are unattributed, gap=%d', section_name,
                    overhead)
       raw_symbols.append(
           models.Symbol(
               models.SECTION_OTHER,
               section_size,
-              full_name='** ELF Section: {}'.format(section_name)))
-      prev = section_sizes.setdefault(models.SECTION_OTHER, 0)
-      section_sizes[models.SECTION_OTHER] = prev + section_size
+              full_name='** ELF Section: {}'.format(section_name),
+              address=address))
+      _ExtendSectionRange(section_ranges, models.SECTION_OTHER, section_size)
 
 
 def CreateSectionSizesAndSymbols(map_path=None,
@@ -1386,8 +1395,8 @@ def CreateSectionSizesAndSymbols(map_path=None,
 
   Returns:
     A tuple of (section_sizes, raw_symbols).
-    section_sizes is a dict mapping section names to their size
-    raw_symbols is a list of Symbol objects
+    section_ranges is a dict mapping section names to their (address, size).
+    raw_symbols is a list of Symbol objects.
   """
   knobs = knobs or SectionSizeKnobs()
   if apk_path and elf_path:
@@ -1444,7 +1453,7 @@ def CreateSectionSizesAndSymbols(map_path=None,
         thin_archives=thin_archives)
 
   if knobs.analyze_native:
-    section_sizes, raw_symbols, object_paths_by_name = _ParseElfInfo(
+    section_ranges, raw_symbols, object_paths_by_name = _ParseElfInfo(
         map_path,
         elf_path,
         tool_prefix,
@@ -1452,22 +1461,25 @@ def CreateSectionSizesAndSymbols(map_path=None,
         outdir_context=outdir_context,
         linker_name=linker_name)
   else:
-    section_sizes, raw_symbols, object_paths_by_name = {}, [], None
+    section_ranges, raw_symbols, object_paths_by_name = {}, [], None
 
-  elf_overhead_size = _CalculateElfOverhead(section_sizes, elf_path)
+  elf_overhead_size = _CalculateElfOverhead(section_ranges, elf_path)
 
   pak_symbols_by_id = None
   if apk_path and size_info_prefix:
     if elf_path:
-      section_sizes, elf_overhead_size = _ParseApkElfSectionSize(
-          section_sizes, metadata, apk_elf_result)
-      _AddUnattributedSectionSymbols(raw_symbols, section_sizes, apk_elf_result)
+      section_ranges, elf_overhead_size = _ParseApkElfSectionRanges(
+          section_ranges, metadata, apk_elf_result)
+      _AddUnattributedSectionSymbols(raw_symbols, section_ranges,
+                                     apk_elf_result)
 
-    pak_symbols_by_id = _FindPakSymbolsFromApk(
-        section_sizes, apk_path, size_info_prefix, knobs)
+    # Can modify |section_ranges|.
+    pak_symbols_by_id = _FindPakSymbolsFromApk(section_ranges, apk_path,
+                                               size_info_prefix, knobs)
 
+    # Can modify |section_ranges|.
     dex_size, other_symbols = _ParseApkOtherSymbols(
-        section_sizes, apk_path, apk_so_path, resources_pathmap_path,
+        section_ranges, apk_path, apk_so_path, resources_pathmap_path,
         size_info_prefix, knobs)
 
     if knobs.analyze_java:
@@ -1482,14 +1494,14 @@ def CreateSectionSizesAndSymbols(map_path=None,
           round(
               sum(s.pss for s in dex_symbols
                   if s.section_name == models.SECTION_DEX_METHOD)))
-      section_sizes[models.SECTION_DEX_METHOD] = dex_method_size
-      section_sizes[models.SECTION_DEX] = dex_size - dex_method_size
+      section_ranges[models.SECTION_DEX_METHOD] = (0, dex_method_size)
+      section_ranges[models.SECTION_DEX] = (0, dex_size - dex_method_size)
 
       dex_other_size = int(
           round(
               sum(s.pss for s in dex_symbols
                   if s.section_name == models.SECTION_DEX)))
-      unattributed_dex = section_sizes[models.SECTION_DEX] - dex_other_size
+      unattributed_dex = section_ranges[models.SECTION_DEX][1] - dex_other_size
       # Compare against -5 instead of 0 to guard against round-off errors.
       assert unattributed_dex >= -5, ('Dex symbols take up more space than '
                                       'the dex sections have available')
@@ -1503,14 +1515,14 @@ def CreateSectionSizesAndSymbols(map_path=None,
     raw_symbols.extend(other_symbols)
 
   elif pak_files and pak_info_file:
+    # Can modify |section_ranges|.
     pak_symbols_by_id = _FindPakSymbolsFromFiles(
-        section_sizes, pak_files, pak_info_file, output_directory)
+        section_ranges, pak_files, pak_info_file, output_directory)
 
   if elf_path:
     elf_overhead_symbol = models.Symbol(
         models.SECTION_OTHER, elf_overhead_size, full_name='Overhead: ELF file')
-    prev = section_sizes.setdefault(models.SECTION_OTHER, 0)
-    section_sizes[models.SECTION_OTHER] = prev + elf_overhead_size
+    _ExtendSectionRange(section_ranges, models.SECTION_OTHER, elf_overhead_size)
     raw_symbols.append(elf_overhead_symbol)
 
   if pak_symbols_by_id:
@@ -1532,6 +1544,7 @@ def CreateSectionSizesAndSymbols(map_path=None,
   if elf_path and knobs.relocations_mode:
     _OverwriteSymbolSizesWithRelocationCount(raw_symbols, tool_prefix, elf_path)
 
+  section_sizes = {k: size for k, (address, size) in section_ranges.items()}
   return section_sizes, raw_symbols
 
 
@@ -1581,19 +1594,17 @@ def BuildIdFromElf(elf_path, tool_prefix):
 def _SectionInfoFromElf(elf_path, tool_prefix):
   args = [path_util.GetReadElfPath(tool_prefix), '-S', '--wide', elf_path]
   stdout = subprocess.check_output(args)
-  section_addresses = {}
-  section_sizes = {}
+  section_ranges = {}
   # Matches  [ 2] .hash HASH 00000000006681f0 0001f0 003154 04   A  3   0  8
   for match in re.finditer(r'\[[\s\d]+\] (\..*)$', stdout, re.MULTILINE):
     items = match.group(1).split()
-    section_addresses[items[0]] = int(items[2], 16)
-    section_sizes[items[0]] = int(items[4], 16)
-  return section_addresses, section_sizes
+    section_ranges[items[0]] = (int(items[2], 16), int(items[4], 16))
+  return section_ranges
 
 
 def _ElfIsMainPartition(elf_path, tool_prefix):
-  _, section_sizes = _SectionInfoFromElf(elf_path, tool_prefix)
-  return models.SECTION_PART_END in section_sizes.keys()
+  section_ranges = _SectionInfoFromElf(elf_path, tool_prefix)
+  return models.SECTION_PART_END in section_ranges.keys()
 
 
 def _ArchFromElf(elf_path, tool_prefix):
@@ -1637,15 +1648,15 @@ def _DetectLinkerName(map_path):
 
 
 def _ElfInfoFromApk(apk_path, apk_so_path, tool_prefix):
-  """Returns a tuple of (build_id, section_sizes, elf_overhead_size)."""
+  """Returns a tuple of (build_id, section_ranges, elf_overhead_size)."""
   with zipfile.ZipFile(apk_path) as apk, \
        tempfile.NamedTemporaryFile() as f:
     f.write(apk.read(apk_so_path))
     f.flush()
     build_id = BuildIdFromElf(f.name, tool_prefix)
-    section_addresses, section_sizes = _SectionInfoFromElf(f.name, tool_prefix)
-    elf_overhead_size = _CalculateElfOverhead(section_sizes, f.name)
-    return build_id, section_addresses, section_sizes, elf_overhead_size
+    section_ranges = _SectionInfoFromElf(f.name, tool_prefix)
+    elf_overhead_size = _CalculateElfOverhead(section_ranges, f.name)
+    return build_id, section_ranges, elf_overhead_size
 
 
 def _AutoIdentifyInputFile(args):

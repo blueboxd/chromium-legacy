@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow INPUT id='checkbox'",
-          "rect": [12, 61, 30, 30],
-          "reason": "subtree"
-        }
+      "invalidations": [
+        [12, 61, 30, 30]
       ]
     }
   ]

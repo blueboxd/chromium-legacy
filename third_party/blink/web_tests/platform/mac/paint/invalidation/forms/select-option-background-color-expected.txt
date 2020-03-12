@@ -5,22 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "VerticalScrollbar",
-          "rect": [14, 35, 15, 68],
-          "reason": "disappeared"
-        },
-        {
-          "object": "VerticalScrollbar",
-          "rect": [14, 35, 15, 68],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutBlockFlow SELECT",
-          "rect": [1, 35, 13, 17],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [14, 35, 15, 68],
+        [1, 35, 13, 17]
       ]
     }
   ]

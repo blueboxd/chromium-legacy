@@ -590,6 +590,12 @@ class CC_EXPORT LayerTreeImpl {
   std::vector<const LayerImpl*> FindLayersHitByPointInNonFastScrollableRegion(
       const gfx::PointF& screen_space_point);
 
+  // Returns the ElementId representing a frame's document at the given point.
+  // In cases where cc doesn't have enough information to perform accurate
+  // attribution (e.g. in the presence of a complex clip), kInvalidElementId is
+  // returned.
+  ElementId FindFrameElementIdAtPoint(const gfx::PointF& screen_space_point);
+
   void RegisterSelection(const LayerSelection& selection);
 
   bool HandleVisibilityChanged() const { return handle_visibility_changed_; }

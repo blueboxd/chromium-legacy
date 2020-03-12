@@ -70,6 +70,7 @@ namespace ash {
 class AppListTestHelper;
 class Shelf;
 class TestScreenshotDelegate;
+class TestShellDelegate;
 class TestSystemTrayClient;
 class UnifiedSystemTray;
 class WorkAreaInsets;
@@ -95,6 +96,7 @@ class AshTestBase : public testing::Test {
 
   // testing::Test:
   void SetUp() override;
+  void SetUp(std::unique_ptr<TestShellDelegate> delegate);
   void TearDown() override;
 
   // Returns the Shelf for the primary display.

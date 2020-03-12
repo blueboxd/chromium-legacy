@@ -22,12 +22,15 @@ namespace web_app {
 // WaitForAppInstall() to finish the installation.
 class TestSystemWebAppInstallation {
  public:
+  enum IncludeLaunchDirectory { kYes, kNo };
+
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpTabbedMultiWindowApp();
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpStandaloneSingleWindowApp();
   static std::unique_ptr<TestSystemWebAppInstallation>
-  SetUpAppThatReceivesLaunchDirectory();
+  SetUpAppThatReceivesLaunchFiles(
+      IncludeLaunchDirectory include_launch_directory);
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppWithEnabledOriginTrials(const OriginTrialsMap& origin_to_trials);
   static std::unique_ptr<TestSystemWebAppInstallation>

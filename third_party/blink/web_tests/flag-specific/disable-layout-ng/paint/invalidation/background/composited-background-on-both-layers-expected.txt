@@ -11,12 +11,8 @@
       "bounds": [240, 240],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [0, 0, 240, 240],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 240, 240]
       ],
       "transform": 1
     },
@@ -26,12 +22,8 @@
       "bounds": [185, 3000],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "Scrolling background of LayoutBlockFlow DIV id='target'",
-          "rect": [0, 0, 185, 3000],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 185, 3000]
       ],
       "transform": 1
     },

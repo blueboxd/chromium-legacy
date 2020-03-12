@@ -2005,6 +2005,7 @@ jumbo_static_library("browser") {
     "//chrome/browser/touch_to_fill",
     "//chrome/browser/ui",
     "//chrome/browser/ui/webui/bluetooth_internals",
+    "//chrome/browser/upboarding",
     "//chrome/browser/updates/announcement_notification",
     "//chrome/common:channel_info",
     "//chrome/common/net",
@@ -2960,6 +2961,7 @@ jumbo_static_library("browser") {
       "touch_to_fill/touch_to_fill_controller.h",
       "translate/android/translate_bridge.cc",
       "translate/android/translate_bridge.h",
+      "upboarding/query_tiles/android/tile_provider_factory.cc",
       "updates/update_notification_client.cc",
       "updates/update_notification_client.h",
       "updates/update_notification_service_bridge_android.cc",
@@ -5603,10 +5605,7 @@ grit("resources") {
   if (is_android) {
     deps +=
         [ "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings_js" ]
-  } else {
-    deps += [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js" ]
   }
-
   if (is_chromeos) {
     deps += [
       "//chrome/browser/resources/chromeos/crostini_installer:polymer3_elements",
@@ -5616,6 +5615,7 @@ grit("resources") {
       "//chrome/browser/resources/chromeos/set_time_dialog:polymer3_elements",
       "//chrome/browser/resources/chromeos/smb_shares:polymer3_elements",
       "//chrome/browser/supervised_user:supervised_user_unscaled_resources",
+      "//chrome/browser/ui/webui/app_management:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings_js",

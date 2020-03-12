@@ -832,6 +832,104 @@ TEST_F(IndexedRuleTest, InvalidAllowAllRequestsResourceType) {
   }
 }
 
+TEST_F(IndexedRuleTest, ModifyHeadersParsing) {
+  struct RawHeaderInfo {
+    dnr_api::HeaderOperation operation;
+    std::string header;
+  };
+
+  using RawHeaderInfoList = std::vector<RawHeaderInfo>;
+  using ModifyHeaderInfoList = std::vector<dnr_api::ModifyHeaderInfo>;
+
+  // A copy-able version of dnr_api::ModifyHeaderInfo is used for ease of
+  // specifying test cases because elements are copied when initializing a
+  // vector from an array.
+  struct {
+    base::Optional<RawHeaderInfoList> request_headers;
+    base::Optional<RawHeaderInfoList> response_headers;
+    ParseResult expected_result;
+  } cases[] = {
+      // Raise an error if no headers are specified.
+      {base::nullopt, base::nullopt, ParseResult::ERROR_NO_HEADERS_SPECIFIED},
+
+      // Raise an error if the request or response headers list is specified,
+      // but empty.
+      {RawHeaderInfoList(),
+       RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, "set-cookie"}}),
+       ParseResult::ERROR_EMPTY_REQUEST_HEADERS_LIST},
+
+      {base::nullopt, RawHeaderInfoList(),
+       ParseResult::ERROR_EMPTY_RESPONSE_HEADERS_LIST},
+
+      // Raise an error if a header list contains an empty or invalid header
+      // name.
+      {base::nullopt,
+       RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, ""}}),
+       ParseResult::ERROR_INVALID_HEADER_NAME},
+
+      {base::nullopt,
+       RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, "<<invalid>>"}}),
+       ParseResult::ERROR_INVALID_HEADER_NAME},
+
+      // Parsing should succeed if only one non-empty header list is specified.
+      {RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, "cookie"}}),
+       base::nullopt, ParseResult::SUCCESS},
+
+      // Parsing should succeed if both header lists are specified and
+      // non-empty.
+      {RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, "referer"}}),
+       RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, "set-cookie"}}),
+       ParseResult::SUCCESS},
+  };
+
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.action.type = dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS;
+
+    ModifyHeaderInfoList expected_request_headers;
+    if (cases[i].request_headers) {
+      rule.action.request_headers = std::make_unique<ModifyHeaderInfoList>();
+      for (auto header : *cases[i].request_headers) {
+        rule.action.request_headers->push_back(
+            CreateModifyHeaderInfo(header.operation, header.header));
+
+        expected_request_headers.push_back(
+            CreateModifyHeaderInfo(header.operation, header.header));
+      }
+    }
+
+    ModifyHeaderInfoList expected_response_headers;
+    if (cases[i].response_headers) {
+      rule.action.response_headers = std::make_unique<ModifyHeaderInfoList>();
+      for (auto header : *cases[i].response_headers) {
+        rule.action.response_headers->push_back(
+            CreateModifyHeaderInfo(header.operation, header.header));
+
+        expected_response_headers.push_back(
+            CreateModifyHeaderInfo(header.operation, header.header));
+      }
+    }
+
+    IndexedRule indexed_rule;
+    ParseResult result = IndexedRule::CreateIndexedRule(
+        std::move(rule), GetBaseURL(), &indexed_rule);
+    EXPECT_EQ(cases[i].expected_result, result);
+    if (result != ParseResult::SUCCESS)
+      continue;
+
+    EXPECT_EQ(dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS,
+              indexed_rule.action_type);
+
+    EXPECT_TRUE(std::equal(
+        expected_request_headers.begin(), expected_request_headers.end(),
+        indexed_rule.request_headers.begin(), EqualsForTesting));
+    EXPECT_TRUE(std::equal(
+        expected_response_headers.begin(), expected_response_headers.end(),
+        indexed_rule.response_headers.begin(), EqualsForTesting));
+  }
+}
+
 }  // namespace
 }  // namespace declarative_net_request
 }  // namespace extensions

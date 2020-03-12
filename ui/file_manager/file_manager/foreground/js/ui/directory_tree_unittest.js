@@ -936,6 +936,62 @@ function testAddProviders(callback) {
       callback);
 }
 
+/**
+ * Test sub directories are not fetched for SMB, until the directory is
+ * clicked.
+ * @param {!function(boolean)} callback A callback function which is called with
+ *     test result.
+ */
+function testSmbNotFetchedUntilClick(callback) {
+  // Add a volume representing an Smb provider to the mock filesystem.
+  volumeManager.createVolumeInfo(
+      VolumeManagerCommon.VolumeType.PROVIDED, 'smb', 'SMB_LABEL', '@smb');
+
+  // Add a sub directory to the Smb provider.
+  const smbProvider = assert(volumeManager.volumeInfoList.item(2).fileSystem);
+  fakeFileSystemURLEntries['filesystem:smb/child'] =
+      MockDirectoryEntry.create(smbProvider, '/smb_child');
+
+  // Populate the directory tree with the mock filesystem.
+  let directoryTree = createElements();
+  const metadataModel = createMockMetadataModel();
+  directoryTree.metadataModel = metadataModel;
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, metadataModel,
+      fileOperationManager, true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+
+  // Coerce to DirectoryTree type and draw the tree.
+  directoryTree = /** @type {!DirectoryTree} */ (directoryTree);
+  directoryTree.redraw(true);
+  // Draw the tree again, as this triggers a different code path which tries to
+  // refresh the sub directory list.
+  directoryTree.redraw(true);
+
+  // At top level, Drive and downloads should be listed.
+  assertEquals(3, directoryTree.items.length);
+  assertEquals(str('DRIVE_DIRECTORY_LABEL'), directoryTree.items[0].label);
+  assertEquals(str('DOWNLOADS_DIRECTORY_LABEL'), directoryTree.items[1].label);
+  assertEquals('SMB_LABEL', directoryTree.items[2].label);
+
+  // Expect the SMB share has no children.
+  const smbItem = directoryTree.items[2];
+  assertEquals(0, smbItem.items.length);
+
+  // Click on the SMB volume.
+  smbItem.click();
+
+  reportPromise(
+      waitUntil(() => {
+        // Wait until the SMB share item has been updated with its sub
+        // directories.
+        return smbItem.items.length == 1;
+      }).then(() => {
+        assertEquals('smb_child', smbItem.items[0].label);
+      }),
+      callback);
+}
+
 /** Test EntryListItem.sortEntries doesn't fail sorting empty array. */
 function testEntryListItemSortEntriesEmpty() {
   const rootType = VolumeManagerCommon.RootType.MY_FILES;

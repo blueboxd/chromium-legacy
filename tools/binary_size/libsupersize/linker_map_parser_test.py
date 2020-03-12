@@ -51,8 +51,9 @@ def _ReadMapFile(map_file):
 def _RenderSectionSizesAndRawSymbols(section_sizes, raw_symbols):
   ret = []
   ret.append('******** section_sizes ********')
-  for k, v in sorted(section_sizes.iteritems()):
-    ret.append('%-24s %d' % (k, v))
+  for k, (address, size) in sorted(section_sizes.items()):
+    address_text = '@%x' % address
+    ret.append('%-24s %-9s %d' % (k, address_text, size))
   ret.append('')
   ret.append('******** raw_symbols ********')
   for sym in raw_symbols:

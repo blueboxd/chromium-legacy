@@ -11,12 +11,8 @@
       "position": [8, 8],
       "bounds": [76, 22],
       "backgroundColor": "#FF0000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGTableCell TD id='target'",
-          "rect": [0, 0, 38, 21],
-          "reason": "appeared"
-        }
+      "invalidations": [
+        [0, 0, 38, 21]
       ]
     }
   ]

@@ -17,12 +17,8 @@
       "bounds": [185, 552],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "paintInvalidations": [
-        {
-          "object": "Scrolling background of LayoutBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 185, 552],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 185, 552]
       ],
       "transform": 2
     },

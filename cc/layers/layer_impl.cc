@@ -365,6 +365,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   // depend on it. Referencing element id on a layer is
   // deprecated. http://crbug.com/709137
   layer->SetElementId(element_id_);
+  layer->SetFrameElementId(frame_element_id_);
 
   layer->has_transform_node_ = has_transform_node_;
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;

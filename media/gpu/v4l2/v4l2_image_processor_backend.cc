@@ -55,7 +55,7 @@ base::Optional<gfx::GpuMemoryBufferHandle> CreateHandle(
 
 void FillV4L2BufferByGpuMemoryBufferHandle(
     const Fourcc& fourcc,
-    const gfx::Size& buffer_size,
+    const gfx::Size& coded_size,
     const gfx::GpuMemoryBufferHandle& gmb_handle,
     V4L2WritableBufferRef* buffer) {
   DCHECK_EQ(buffer->Memory(), V4L2_MEMORY_DMABUF);
@@ -66,7 +66,7 @@ void FillV4L2BufferByGpuMemoryBufferHandle(
 
   for (size_t i = 0; i < num_planes; ++i) {
     const int bytes_used =
-        VideoFrame::PlaneSize(fourcc.ToVideoPixelFormat(), i, buffer_size)
+        VideoFrame::PlaneSize(fourcc.ToVideoPixelFormat(), i, coded_size)
             .GetArea();
 
     if (fourcc.IsMultiPlanar()) {
@@ -77,7 +77,7 @@ void FillV4L2BufferByGpuMemoryBufferHandle(
       buffer->SetPlaneDataOffset(i, planes[i].offset);
 
       // V4L2 counts data_offset as used bytes
-      buffer->SetPlaneSize(i, bytes_used + planes[i].offset);
+      buffer->SetPlaneSize(i, planes[i].size + planes[i].offset);
       // Workaround: filling length should not be needed. This is a bug of
       // videobuf2 library.
       buffer->SetPlaneBytesUsed(i, bytes_used + planes[i].offset);
@@ -284,9 +284,10 @@ V4L2ImageProcessorBackend::CreateWithOutputMode(
     return nullptr;
   }
 
-  const v4l2_memory output_memory_type = output_mode == OutputMode::ALLOCATE
-                                             ? V4L2_MEMORY_MMAP
-                                             : V4L2_MEMORY_DMABUF;
+  const v4l2_memory output_memory_type =
+      output_mode == OutputMode::ALLOCATE
+          ? V4L2_MEMORY_MMAP
+          : InputStorageTypeToV4L2Memory(output_storage_type);
 
   if (!device->IsImageProcessingSupported()) {
     VLOGF(1) << "V4L2ImageProcessorBackend not supported in this platform";

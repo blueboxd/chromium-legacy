@@ -14,17 +14,9 @@
     {
       "name": "Scrolling Contents Layer",
       "bounds": [685, 600],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='block'",
-          "rect": [300, 200, 120, 50],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='block'",
-          "rect": [50, 200, 120, 50],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [300, 200, 120, 50],
+        [50, 200, 120, 50]
       ],
       "transform": 2
     },

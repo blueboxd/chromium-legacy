@@ -5,17 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) A id='link' class='updated'",
-          "rect": [48, 108, 90, 25],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "InlineTextBox 'Lorem Ipsum'",
-          "rect": [48, 108, 86, 19],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [48, 108, 90, 25]
       ]
     }
   ]

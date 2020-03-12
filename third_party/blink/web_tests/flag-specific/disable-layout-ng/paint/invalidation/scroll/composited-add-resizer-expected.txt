@@ -27,12 +27,8 @@
       "name": "Scroll Corner Layer",
       "position": [85, 85],
       "bounds": [15, 15],
-      "paintInvalidations": [
-        {
-          "object": "Scroll Corner Layer",
-          "rect": [0, 0, 15, 15],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 15, 15]
       ],
       "transform": 1
     }

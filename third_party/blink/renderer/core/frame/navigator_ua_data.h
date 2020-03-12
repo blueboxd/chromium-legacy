@@ -31,6 +31,7 @@ class NavigatorUAData : public ScriptWrappable, DOMWindowClient {
   void SetPlatform(const String& brand, const String& version);
   void SetArchitecture(const String& architecture);
   void SetModel(const String& model);
+  void SetUAFullVersion(const String& uaFullVersion);
 
   // IDL implementation
   const HeapVector<Member<NavigatorUABrandVersion>>& uaList() const;
@@ -47,6 +48,7 @@ class NavigatorUAData : public ScriptWrappable, DOMWindowClient {
   String platform_version_;
   String architecture_;
   String model_;
+  String ua_full_version_;
 };
 
 }  // namespace blink

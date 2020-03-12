@@ -17,17 +17,8 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) SPAN class='child')",
       "position": [42, 42],
       "bounds": [50, 50],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) SPAN class='child embiggen'",
-          "rect": [0, 0, 50, 50],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) SPAN class='child'",
-          "rect": [0, 0, 40, 40],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [0, 0, 50, 50]
       ],
       "transform": 1
     }

@@ -25,12 +25,8 @@
       "name": "LayoutNGBlockFlow (positioned) DIV id='fixed'",
       "bounds": [100, 200],
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='fixed'",
-          "rect": [0, 100, 100, 100],
-          "reason": "incremental"
-        }
+      "invalidations": [
+        [0, 100, 100, 100]
       ]
     }
   ],

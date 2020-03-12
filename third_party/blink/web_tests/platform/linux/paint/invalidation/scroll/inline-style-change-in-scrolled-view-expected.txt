@@ -5,12 +5,8 @@
       "bounds": [2000, 2000],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'Text Text Text Text Text Text Text Text Text Text Text Text Text'",
-          "rect": [0, 320, 413, 19],
-          "reason": "style change"
-        }
+      "invalidations": [
+        [0, 320, 413, 19]
       ],
       "transform": 1
     },

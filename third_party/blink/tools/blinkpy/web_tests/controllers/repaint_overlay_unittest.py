@@ -19,19 +19,9 @@ LAYER_TREE = """{
       "bounds": [800.00, 600.00],
       "contentsOpaque": true,
       "drawsContent": true,
-      "paintInvalidations": [
-        {
-          "object": "object1",
-          "rect": [8, 108, 100, 100],
-          "reason": "full"
-        }, {
-          "object": "object2",
-          "rect": [0, 216, 800, 100],
-          "reason": "full"
-        }, {
-          "object": "object1",
-          "reason": "location change"
-        }
+      "invalidations": [
+        [8, 108, 100, 100],
+        [0, 216, 800, 100],
       ]
     }
   ]

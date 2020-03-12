@@ -38,6 +38,7 @@ class Profile;
 namespace web_app {
 
 class WebAppUiManager;
+class FileHandlerManager;
 
 // An enum that lists the different System Apps that exist. Can be used to
 // retrieve the App ID from the underlying Web App system.
@@ -121,7 +122,8 @@ class SystemWebAppManager {
 
   void SetSubsystems(PendingAppManager* pending_app_manager,
                      AppRegistrar* registrar,
-                     WebAppUiManager* ui_manager);
+                     WebAppUiManager* ui_manager,
+                     FileHandlerManager* file_handler_manager);
 
   void Start();
 
@@ -198,6 +200,8 @@ class SystemWebAppManager {
   const std::vector<std::string>* GetEnabledOriginTrials(SystemAppType type,
                                                          const GURL& url);
 
+  bool AppHasFileHandlingOriginTrial(SystemAppType type);
+
   void OnAppsSynchronized(const base::TimeTicks& install_start_time,
                           std::map<GURL, InstallResultCode> install_results,
                           std::map<GURL, bool> uninstall_results);
@@ -229,6 +233,8 @@ class SystemWebAppManager {
   AppRegistrar* registrar_ = nullptr;
 
   WebAppUiManager* ui_manager_ = nullptr;
+
+  FileHandlerManager* file_handler_manager_ = nullptr;
 
   base::WeakPtrFactory<SystemWebAppManager> weak_ptr_factory_{this};
 

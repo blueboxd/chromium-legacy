@@ -53,6 +53,11 @@ enum class ParseResult {
   ERROR_REGEX_SUBSTITUTION_WITHOUT_FILTER,
   ERROR_INVALID_REGEX_SUBSTITUTION,
   ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE,
+
+  ERROR_NO_HEADERS_SPECIFIED,
+  ERROR_EMPTY_REQUEST_HEADERS_LIST,
+  ERROR_EMPTY_RESPONSE_HEADERS_LIST,
+  ERROR_INVALID_HEADER_NAME
 };
 
 // Describes the ways in which updating dynamic rules can fail.
@@ -105,6 +110,8 @@ extern const char kErrorRegexSubstitutionWithoutFilter[];
 extern const char kErrorInvalidAllowAllRequestsResourceType[];
 extern const char kErrorRegexTooLarge[];
 extern const char kErrorRegexesTooLarge[];
+extern const char kErrorNoHeaderListsSpecified[];
+extern const char kErrorInvalidHeaderName[];
 
 extern const char kErrorListNotPassed[];
 

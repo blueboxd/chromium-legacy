@@ -16,12 +16,8 @@
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='foo')",
       "bounds": [100, 1000],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='foo'",
-          "rect": [0, 0, 100, 1000],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 100, 1000]
       ],
       "transform": 1
     }

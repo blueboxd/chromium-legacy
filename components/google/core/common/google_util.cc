@@ -58,13 +58,13 @@ void StripTrailingDot(base::StringPiece* host) {
 }
 
 // True if the given canonical |host| is "[www.]<domain_in_lower_case>.<TLD>"
-// with a valid TLD. If |subdomain_permission| is ALLOW_SUBDOMAIN, we check
-// against host "*.<domain_in_lower_case>.<TLD>" instead. Will return the TLD
-// string in |tld|, if specified and the |host| can be parsed.
+// with a valid TLD that appears in |allowed_tlds|. If |subdomain_permission| is
+// ALLOW_SUBDOMAIN, we check against host "*.<domain_in_lower_case>.<TLD>"
+// instead.
 bool IsValidHostName(base::StringPiece host,
                      base::StringPiece domain_in_lower_case,
                      SubdomainPermission subdomain_permission,
-                     base::StringPiece* tld) {
+                     const base::flat_set<base::StringPiece>& allowed_tlds) {
   // Fast path to avoid searching the registry set.
   if (host.find(domain_in_lower_case) == base::StringPiece::npos)
     return false;
@@ -80,8 +80,12 @@ bool IsValidHostName(base::StringPiece host,
   base::StringPiece host_minus_tld =
       host.substr(0, host.length() - tld_length - 1);
 
-  if (tld)
-    *tld = host.substr(host.length() - tld_length);
+  base::StringPiece tld = host.substr(host.length() - tld_length);
+  // Remove the trailing dot from tld if present, as for Google domains it's the
+  // same page.
+  StripTrailingDot(&tld);
+  if (!allowed_tlds.contains(tld))
+    return false;
 
   if (base::LowerCaseEqualsASCII(host_minus_tld, domain_in_lower_case))
     return true;
@@ -111,17 +115,19 @@ bool IsCanonicalHostGoogleHostname(base::StringPiece canonical_host,
   if (base_url.is_valid() && (canonical_host == base_url.host_piece()))
     return true;
 
-  base::StringPiece tld;
-  if (!IsValidHostName(canonical_host, "google", subdomain_permission, &tld))
-    return false;
-
-  // Remove the trailing dot from tld if present, as for google domain it's the
-  // same page.
-  StripTrailingDot(&tld);
-
   static const base::NoDestructor<base::flat_set<base::StringPiece>>
       google_tlds(std::initializer_list<base::StringPiece>({GOOGLE_TLD_LIST}));
-  return google_tlds->contains(tld);
+  return IsValidHostName(canonical_host, "google", subdomain_permission,
+                         *google_tlds);
+}
+
+bool IsCanonicalHostYoutubeHostname(base::StringPiece canonical_host,
+                                    SubdomainPermission subdomain_permission) {
+  static const base::NoDestructor<base::flat_set<base::StringPiece>>
+      youtube_tlds(
+          std::initializer_list<base::StringPiece>({YOUTUBE_TLD_LIST}));
+  return IsValidHostName(canonical_host, "youtube", subdomain_permission,
+                         *youtube_tlds);
 }
 
 // True if |url| is a valid URL with a host that is in the static list of
@@ -286,8 +292,7 @@ bool IsYoutubeDomainUrl(const GURL& url,
                         SubdomainPermission subdomain_permission,
                         PortPermission port_permission) {
   return IsValidURL(url, port_permission) &&
-         IsValidHostName(url.host_piece(), "youtube", subdomain_permission,
-                         nullptr);
+         IsCanonicalHostYoutubeHostname(url.host_piece(), subdomain_permission);
 }
 
 bool IsGoogleAssociatedDomainUrl(const GURL& url) {

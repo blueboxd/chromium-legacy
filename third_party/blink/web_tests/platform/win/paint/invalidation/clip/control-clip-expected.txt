@@ -5,27 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'SUCCESS'",
-          "rect": [76, 116, 64, 18],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "InlineTextBox 'SUCCESS'",
-          "rect": [9, 86, 63, 18],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'FAILURE'",
-          "rect": [81, 116, 54, 18],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "InlineTextBox 'FAILURE'",
-          "rect": [9, 86, 53, 18],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [76, 116, 64, 18],
+        [9, 86, 63, 18]
       ]
     }
   ]

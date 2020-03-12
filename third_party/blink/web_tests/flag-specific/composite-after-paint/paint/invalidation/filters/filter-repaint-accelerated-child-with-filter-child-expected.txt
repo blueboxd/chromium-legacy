@@ -17,17 +17,8 @@
       "position": [-14, -14],
       "bounds": [214, 260],
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow'",
-          "rect": [0, 0, 214, 260],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow'",
-          "rect": [0, 0, 160, 260],
-          "reason": "paint property change"
-        }
+      "invalidations": [
+        [0, 0, 214, 260]
       ],
       "transform": 1
     }

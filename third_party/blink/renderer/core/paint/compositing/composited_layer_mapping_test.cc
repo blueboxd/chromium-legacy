@@ -10,7 +10,9 @@
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -1825,6 +1827,44 @@ TEST_F(CompositedLayerMappingTest, IsolationClippingContainer) {
   PaintLayer* squash_container_a_layer =
       ToLayoutBoxModelObject(squash_container_a->GetLayoutObject())->Layer();
   EXPECT_EQ(squash_container_a_layer->ClippingContainer(), isolation_a_object);
+}
+
+TEST_F(CompositedLayerMappingTest, FrameAttribution) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='child' style='will-change: transform;'></div>
+    <iframe id='subframe' style='will-change: transform;'></iframe>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  // Ensure that we correctly attribute child layers in the main frame to their
+  // containing document.
+  Element* child = GetDocument().getElementById("child");
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  auto* child_layer = child_paint_layer->GraphicsLayerBacking()->CcLayer();
+  EXPECT_TRUE(child_layer->frame_element_id());
+
+  EXPECT_EQ(child_layer->frame_element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                DOMNodeIds::IdForNode(&GetDocument()),
+                CompositorElementIdNamespace::kDOMNodeId));
+
+  // Test that a layerized subframe's element ID is that of its containing
+  // document.
+  auto* subframe =
+      To<HTMLFrameOwnerElement>(GetDocument().getElementById("subframe"));
+  EXPECT_TRUE(subframe);
+  PaintLayer* subframe_paint_layer =
+      ToLayoutBoxModelObject(subframe->GetLayoutObject())->Layer();
+  auto* subframe_layer =
+      subframe_paint_layer->GraphicsLayerBacking()->CcLayer();
+  EXPECT_TRUE(subframe_layer->frame_element_id());
+
+  EXPECT_EQ(subframe_layer->frame_element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                DOMNodeIds::IdForNode(subframe->contentDocument()),
+                CompositorElementIdNamespace::kDOMNodeId));
 }
 
 }  // namespace blink

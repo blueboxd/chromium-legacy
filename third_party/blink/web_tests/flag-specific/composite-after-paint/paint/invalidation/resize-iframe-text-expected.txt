@@ -5,27 +5,9 @@
       "bounds": [500, 400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "Scrolling background of LayoutView #document",
-          "rect": [0, 200, 500, 200],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 300, 60, 22],
-          "reason": "incremental"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Success'",
-          "rect": [8, 300, 60, 22],
-          "reason": "appeared"
-        },
-        {
-          "object": "VerticalScrollbar",
-          "rect": [485, 0, 15, 200],
-          "reason": "chunk disappeared"
-        }
+      "invalidations": [
+        [0, 200, 500, 200],
+        [485, 0, 15, 200]
       ]
     }
   ]

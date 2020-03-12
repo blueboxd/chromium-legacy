@@ -15,17 +15,9 @@
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='mv-tile')",
       "bounds": [1000, 105],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
-          "rect": [0, 55, 100, 50],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
-          "rect": [0, 0, 100, 50],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [0, 55, 100, 50],
+        [0, 0, 100, 50]
       ],
       "transform": 1
     },

@@ -5,12 +5,8 @@
       "bounds": [1008, 1016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [8, 8, 1000, 1000],
-          "reason": "background"
-        }
+      "invalidations": [
+        [8, 8, 1000, 1000]
       ]
     },
     {
@@ -29,12 +25,8 @@
       "name": "Scroll Corner Layer",
       "position": [585, 235],
       "bounds": [15, 15],
-      "paintInvalidations": [
-        {
-          "object": "Scroll Corner Layer",
-          "rect": [0, 0, 15, 15],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 15, 15]
       ]
     }
   ]
@@ -46,12 +38,8 @@
       "bounds": [1008, 1016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [8, 8, 1000, 1000],
-          "reason": "background"
-        }
+      "invalidations": [
+        [8, 8, 1000, 1000]
       ]
     },
     {
@@ -70,12 +58,8 @@
       "name": "Scroll Corner Layer",
       "position": [385, 235],
       "bounds": [15, 15],
-      "paintInvalidations": [
-        {
-          "object": "Scroll Corner Layer",
-          "rect": [0, 0, 15, 15],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 15, 15]
       ]
     }
   ]
@@ -87,12 +71,8 @@
       "bounds": [1008, 1016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [8, 8, 1000, 1000],
-          "reason": "background"
-        }
+      "invalidations": [
+        [8, 8, 1000, 1000]
       ]
     },
     {
@@ -111,12 +91,8 @@
       "name": "Scroll Corner Layer",
       "position": [385, 585],
       "bounds": [15, 15],
-      "paintInvalidations": [
-        {
-          "object": "Scroll Corner Layer",
-          "rect": [0, 0, 15, 15],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 15, 15]
       ]
     }
   ]
@@ -128,12 +104,8 @@
       "bounds": [1008, 1016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [8, 8, 1000, 1000],
-          "reason": "background"
-        }
+      "invalidations": [
+        [8, 8, 1000, 1000]
       ]
     },
     {
@@ -152,12 +124,8 @@
       "name": "Scroll Corner Layer",
       "position": [785, 585],
       "bounds": [15, 15],
-      "paintInvalidations": [
-        {
-          "object": "Scroll Corner Layer",
-          "rect": [0, 0, 15, 15],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 15, 15]
       ]
     }
   ]

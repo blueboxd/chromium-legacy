@@ -4,7 +4,6 @@
 
 #include "ui/views/test/views_test_helper_aura.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/default_activation_client.h"
@@ -13,14 +12,12 @@
 namespace views {
 
 // static
-std::unique_ptr<ViewsTestHelper> ViewsTestHelper::Create(
-    ui::ContextFactory* context_factory) {
-  return base::WrapUnique(new ViewsTestHelperAura(context_factory));
+std::unique_ptr<ViewsTestHelper> ViewsTestHelper::Create() {
+  return std::make_unique<ViewsTestHelperAura>();
 }
 
-ViewsTestHelperAura::ViewsTestHelperAura(ui::ContextFactory* context_factory)
-    : context_factory_(context_factory) {
-  aura_test_helper_.SetUp(context_factory_);
+ViewsTestHelperAura::ViewsTestHelperAura() {
+  aura_test_helper_.SetUp();
 
   gfx::NativeWindow root_window = GetContext();
   if (root_window) {
@@ -59,6 +56,10 @@ ViewsTestHelperAura::~ViewsTestHelperAura() {
 
 gfx::NativeWindow ViewsTestHelperAura::GetContext() {
   return aura_test_helper_.root_window();
+}
+
+ui::ContextFactory* ViewsTestHelperAura::GetContextFactory() {
+  return aura_test_helper_.GetContextFactory();
 }
 
 }  // namespace views

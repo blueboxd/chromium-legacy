@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/test/background_sync_test_util.h"

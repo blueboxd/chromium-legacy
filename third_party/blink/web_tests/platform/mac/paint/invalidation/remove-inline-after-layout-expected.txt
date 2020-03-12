@@ -5,27 +5,11 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalTextFragment 'This span should disappear. '",
-          "rect": [111, 194, 182, 18],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV",
-          "rect": [292, 108, 101, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV",
-          "rect": [111, 108, 101, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment ' '",
-          "rect": [108, 194, 4, 18],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [111, 194, 182, 18],
+        [292, 108, 101, 100],
+        [111, 108, 101, 100],
+        [108, 194, 4, 18]
       ]
     }
   ]

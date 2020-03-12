@@ -5,27 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalBoxFragment LayoutInline SPAN",
-          "rect": [206, 230, 104, 104],
-          "reason": "outline"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutInline SPAN",
-          "rect": [6, 230, 104, 104],
-          "reason": "outline"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='block'",
-          "rect": [208, 232, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='block'",
-          "rect": [8, 232, 100, 100],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [206, 230, 104, 104],
+        [6, 230, 104, 104]
       ]
     }
   ]

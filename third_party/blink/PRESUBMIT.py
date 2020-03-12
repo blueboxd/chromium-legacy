@@ -60,7 +60,8 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
     # So far, non-blink interfaces are allowed only for loading / loader
     # interfaces so that we don't need type conversions to get through the
     # boundary between Blink and non-Blink.
-    allowed_interfaces = (r'services/network/public/mojom/load_timing_info',
+    allowed_interfaces = (r'services/network/public/mojom/cross_origin_embedder_policy', r'services/network/public/mojom/fetch_api',
+                          r'services/network/public/mojom/load_timing_info',
                           r'third_party/blink/public/mojom/worker/subresource_loader_updater')
 
     for f in input_api.AffectedFiles(file_filter=source_file_filter):

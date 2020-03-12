@@ -68,6 +68,13 @@ struct IndexedRule {
   // List of headers to remove, valid iff this is a remove headers rule.
   std::set<api::declarative_net_request::RemoveHeaderType> remove_headers_set;
 
+  // List of request headers to modify. Valid iff this is a modify headers rule.
+  std::vector<api::declarative_net_request::ModifyHeaderInfo> request_headers;
+
+  // List of response headers to modify. Valid iff this is a modify headers
+  // rule.
+  std::vector<api::declarative_net_request::ModifyHeaderInfo> response_headers;
+
   DISALLOW_COPY_AND_ASSIGN(IndexedRule);
 };
 

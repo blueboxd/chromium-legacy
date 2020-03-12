@@ -5,22 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='elm'",
-          "rect": [8, 8, 792, 500],
-          "reason": "background"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='elm'",
-          "rect": [0, 8, 508, 500],
-          "reason": "background"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='elm'",
-          "rect": [8, 8, 500, 500],
-          "reason": "background"
-        }
+      "invalidations": [
+        [8, 8, 792, 500],
+        [0, 8, 508, 500]
       ]
     }
   ]

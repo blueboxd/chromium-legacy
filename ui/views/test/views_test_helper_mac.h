@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "ui/base/test/scoped_fake_full_keyboard_access.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/views/test/views_test_helper.h"
 
 namespace ui {
@@ -26,7 +27,12 @@ class ViewsTestHelperMac : public ViewsTestHelper {
   ViewsTestHelperMac();
   ~ViewsTestHelperMac() override;
 
+  // ViewsTestHelper:
+  ui::ContextFactory* GetContextFactory() override;
+
  private:
+  ui::TestContextFactories context_factories_{false};
+
   // Disable animations during tests.
   ui::ScopedAnimationDurationScaleMode zero_duration_mode_{
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION};

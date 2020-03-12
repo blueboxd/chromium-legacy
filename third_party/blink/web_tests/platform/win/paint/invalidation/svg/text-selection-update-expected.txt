@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "InlineTextBox 'foobar'",
-          "rect": [22, 0, 23, 14],
-          "reason": "selection"
-        }
+      "invalidations": [
+        [22, 0, 23, 14]
       ]
     }
   ]

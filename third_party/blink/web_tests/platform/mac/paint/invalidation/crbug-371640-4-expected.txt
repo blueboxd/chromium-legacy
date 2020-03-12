@@ -5,37 +5,9 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='keep' class='item'",
-          "rect": [408, 84, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='to_remove' class='item'",
-          "rect": [408, 84, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='keep' class='item'",
-          "rect": [208, 84, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment '\u00A0'",
-          "rect": [408, 84, 4, 18],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment '\u00A0'",
-          "rect": [408, 84, 4, 18],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment '\u00A0'",
-          "rect": [208, 84, 4, 18],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [408, 84, 100, 100],
+        [208, 84, 100, 100]
       ]
     }
   ]

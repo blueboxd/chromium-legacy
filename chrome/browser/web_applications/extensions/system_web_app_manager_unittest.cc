@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
+#include "chrome/browser/web_applications/test/test_file_handler_manager.h"
 #include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
@@ -88,6 +89,11 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     test_pending_app_manager_ = test_pending_app_manager.get();
     provider->SetPendingAppManager(std::move(test_pending_app_manager));
 
+    auto test_file_handler_manager =
+        std::make_unique<TestFileHandlerManager>(profile());
+    test_file_handler_manager_ = test_file_handler_manager.get();
+    provider->SetFileHandlerManager(std::move(test_file_handler_manager));
+
     auto system_web_app_manager =
         std::make_unique<TestSystemWebAppManager>(profile());
     system_web_app_manager_ = system_web_app_manager.get();
@@ -124,6 +130,7 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
   base::test::ScopedFeatureList scoped_feature_list_;
   TestAppRegistrar* test_app_registrar_ = nullptr;
   TestPendingAppManager* test_pending_app_manager_ = nullptr;
+  TestFileHandlerManager* test_file_handler_manager_ = nullptr;
   TestSystemWebAppManager* system_web_app_manager_ = nullptr;
   TestWebAppUiManager* ui_manager_ = nullptr;
 

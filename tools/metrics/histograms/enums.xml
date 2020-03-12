@@ -26791,6 +26791,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3186" label="QuicTransportDatagramApis"/>
   <int value="3187" label="V8Document_GetAnimations_Method"/>
   <int value="3188" label="V8ShadowRoot_GetAnimations_Method"/>
+  <int value="3189" label="ClientHintsUAFullVersion"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -26805,7 +26806,8 @@ Called by update_use_counter_feature_enum.py.-->
 </enum>
 
 <enum name="FeaturePolicyFeature">
-<!-- Generated from third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.-->
+<!-- Generated from third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.
+Called by update_feature_policy_enum.py.-->
 
 <!-- Obsolete / deprecated features in this enum should be prefixed with
 "Deprecated: " -->
@@ -26881,6 +26883,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="68" label="Clipboard"/>
   <int value="69" label="ClientHintUAMobile"/>
   <int value="70" label="StorageAccessAPI"/>
+  <int value="71" label="ClientHintUAFullVersion"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -40452,6 +40455,7 @@ from previous Chrome versions.
   <int value="1717987538" label="NTPTilesLowerResolutionFavicons:enabled"/>
   <int value="1718341860" label="NTPButton:enabled"/>
   <int value="1719189460" label="EnablePasswordSelection:disabled"/>
+  <int value="1719958026" label="QueryTiles:enabled"/>
   <int value="1722748383" label="EnableAppReinstallZeroState:disabled"/>
   <int value="1723601083" label="enable-app-window-controls"/>
   <int value="1724800383" label="AsmJsToWebAssembly:disabled"/>
@@ -40737,6 +40741,7 @@ from previous Chrome versions.
   <int value="2058439723" label="CalculateNativeWinOcclusion:disabled"/>
   <int value="2059322877" label="new-avatar-menu"/>
   <int value="2063091429" label="OfflinePagesSharing:enabled"/>
+  <int value="2066015302" label="QueryTiles:disabled"/>
   <int value="2067634730" label="LsdPermissionPrompt:disabled"/>
   <int value="2067735898" label="WebVrAutopresentFromIntent:enabled"/>
   <int value="2067903732"
@@ -54953,6 +54958,27 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
   <int value="2" label="Will retry"/>
+</enum>
+
+<enum name="ReasonToShowShelfNavigationButtons">
+  <int value="0" label="None"/>
+  <int value="1" label="Navigation buttons"/>
+  <int value="2" label="Spoken feedback"/>
+  <int value="3" label="Navigation buttons + spoken feedback"/>
+  <int value="4" label="Switch access enabled"/>
+  <int value="5" label="Navigation buttons + switch access"/>
+  <int value="6" label="Spoken feedback + switch access"/>
+  <int value="7" label="Navigation buttons + spoken feedback + switch acecss"/>
+  <int value="8" label="Auto-click"/>
+  <int value="9" label="Shelf navigation buttons + auto-click"/>
+  <int value="10" label="Spoken feedback + auto-click"/>
+  <int value="11" label="Navigation buttons + spoken feedback + auto-click"/>
+  <int value="12" label="Switch access + auto-click"/>
+  <int value="13" label="Navigation buttons + switch access + auto-click"/>
+  <int value="14" label="Spoken feedback + switch access + auto-click"/>
+  <int value="15"
+      label="Navigation buttons + spoken feedback + switch access +
+             auto-click"/>
 </enum>
 
 <enum name="RecentTabsAction">

@@ -14,12 +14,8 @@
     {
       "name": "LayoutHTMLCanvas (positioned) CANVAS",
       "bounds": [200, 200],
-      "paintInvalidations": [
-        {
-          "object": "LayoutHTMLCanvas (positioned) CANVAS",
-          "rect": [0, 0, 200, 200],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 200, 200]
       ]
     },
     {

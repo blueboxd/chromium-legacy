@@ -10,24 +10,16 @@
       "name": "LayoutNGBlockFlow DIV",
       "bounds": [200, 200],
       "backgroundColor": "#0000FF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV",
-          "rect": [0, 0, 200, 200],
-          "reason": "full"
-        }
+      "invalidations": [
+        [0, 0, 200, 200]
       ],
       "transform": 1
     },
     {
       "name": "Mask Layer",
       "bounds": [200, 200],
-      "paintInvalidations": [
-        {
-          "object": "Mask Layer",
-          "rect": [0, 0, 200, 200],
-          "reason": "paint property change"
-        }
+      "invalidations": [
+        [0, 0, 200, 200]
       ],
       "transform": 1
     }

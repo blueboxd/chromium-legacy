@@ -215,7 +215,6 @@ public class CrashesListActivity extends Activity {
         }
 
         // Child View where more info about the crash is shown:
-        //    - Variation keys for the crash.
         //    - Crash report upload status.
         @Override
         public View getChildView(int groupPosition, final int childPosition, boolean isLastChild,
@@ -227,25 +226,6 @@ public class CrashesListActivity extends Activity {
             }
 
             CrashInfo crashInfo = (CrashInfo) getChild(groupPosition, childPosition);
-            // Variations keys
-            View variationsView = view.findViewById(R.id.variations);
-            setTwoLineListItemText(variationsView, "Variations",
-                    crashInfo.variations == null ? "Not available"
-                                                 : crashInfo.variations.toString());
-            variationsView.setOnLongClickListener(v -> {
-                if (crashInfo.variations != null) {
-                    ClipboardManager clipboard =
-                            (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                    ClipData clip =
-                            ClipData.newPlainText("variations", crashInfo.variations.toString());
-                    clipboard.setPrimaryClip(clip);
-                    // Show a toast that the text has been copied.
-                    Toast.makeText(CrashesListActivity.this, "Copied variations keys",
-                                 Toast.LENGTH_SHORT)
-                            .show();
-                }
-                return true;
-            });
 
             // Upload info
             String uploadState = uploadStateString(crashInfo.uploadState);

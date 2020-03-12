@@ -11,12 +11,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test image'",
-          "rect": [0, 40, 60, 4],
-          "reason": "incremental"
-        }
+      "invalidations": [
+        [0, 40, 60, 4]
       ],
       "transform": 1
     },
@@ -25,12 +21,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test image size-cover'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 2
     },
@@ -39,12 +31,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test image size-contain'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 3
     },
@@ -53,12 +41,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test image fixed-height'",
-          "rect": [0, 40, 60, 4],
-          "reason": "incremental"
-        }
+      "invalidations": [
+        [0, 40, 60, 4]
       ],
       "transform": 4
     },
@@ -67,12 +51,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test image percent-height'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 5
     },
@@ -81,12 +61,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test image top'",
-          "rect": [0, 40, 60, 4],
-          "reason": "incremental"
-        }
+      "invalidations": [
+        [0, 40, 60, 4]
       ],
       "transform": 6
     },
@@ -95,12 +71,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test image bottom'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 7
     },
@@ -109,12 +81,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test image center'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 8
     },
@@ -122,12 +90,8 @@
       "name": "LayoutBlockFlow (positioned) DIV class='test image no-repeat'",
       "bounds": [60, 44],
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test image no-repeat'",
-          "rect": [0, 40, 60, 4],
-          "reason": "incremental"
-        }
+      "invalidations": [
+        [0, 40, 60, 4]
       ],
       "transform": 9
     },
@@ -135,12 +99,8 @@
       "name": "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
       "bounds": [60, 44],
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 10
     },
@@ -149,12 +109,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-round'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 11
     },
@@ -163,12 +119,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test generated'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 12
     },
@@ -177,12 +129,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test generated size-cover'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 13
     },
@@ -191,12 +139,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test generated size-contain'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 14
     },
@@ -205,12 +149,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test generated percent-height'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 15
     },
@@ -219,12 +159,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test generated top'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 16
     },
@@ -233,12 +169,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test generated bottom'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 17
     },
@@ -247,12 +179,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test generated center'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 18
     },
@@ -260,12 +188,8 @@
       "name": "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
       "bounds": [60, 44],
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 19
     },
@@ -273,12 +197,8 @@
       "name": "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
       "bounds": [60, 44],
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 20
     },
@@ -287,12 +207,8 @@
       "bounds": [60, 44],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 60, 44]
       ],
       "transform": 21
     }

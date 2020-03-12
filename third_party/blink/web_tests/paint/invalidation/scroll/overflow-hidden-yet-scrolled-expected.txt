@@ -10,12 +10,8 @@
       "name": "LayoutNGBlockFlow DIV id='scroller'",
       "bounds": [302, 302],
       "backfaceVisibility": "hidden",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='scroller'",
-          "rect": [1, 201, 100, 100],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [1, 201, 100, 100]
       ],
       "transform": 1
     }

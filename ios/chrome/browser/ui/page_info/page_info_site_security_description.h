@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 // Types of the different actions the page info site security button can have.
-typedef NS_ENUM(NSUInteger, PageInfoButtonAction) {
+typedef NS_ENUM(NSUInteger, PageInfoSiteSecurityButtonAction) {
   // No action.
   PageInfoSiteSecurityButtonActionNone,
   // Show the help page.
@@ -23,7 +23,7 @@ typedef NS_ENUM(NSUInteger, PageInfoButtonAction) {
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic, copy) NSString* message;
 @property(nonatomic, strong) UIImage* image;
-@property(nonatomic, assign) PageInfoButtonAction buttonAction;
+@property(nonatomic, assign) PageInfoSiteSecurityButtonAction buttonAction;
 
 @end
 

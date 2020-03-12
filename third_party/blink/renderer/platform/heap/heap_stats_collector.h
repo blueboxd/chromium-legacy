@@ -259,6 +259,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     size_t marked_bytes = 0;
     size_t compaction_freed_bytes = 0;
     size_t compaction_freed_pages = 0;
+    bool compaction_recorded_events = false;
     base::TimeDelta scope_data[kNumScopeIds];
     base::subtle::Atomic32 concurrent_scope_data[kNumConcurrentScopeIds]{0};
     BlinkGC::GCReason reason = static_cast<BlinkGC::GCReason>(0);

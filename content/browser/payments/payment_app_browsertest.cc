@@ -25,6 +25,7 @@ namespace {
 
 using ::payments::mojom::CanMakePaymentEventData;
 using ::payments::mojom::CanMakePaymentEventDataPtr;
+using ::payments::mojom::CanMakePaymentResponsePtr;
 using ::payments::mojom::PaymentCurrencyAmount;
 using ::payments::mojom::PaymentDetailsModifier;
 using ::payments::mojom::PaymentDetailsModifierPtr;
@@ -43,8 +44,8 @@ void GetAllPaymentAppsCallback(base::OnceClosure done_callback,
 
 void CaptureCanMakePaymentResult(base::OnceClosure done_callback,
                                  bool* out_payment_event_result,
-                                 bool payment_event_result) {
-  *out_payment_event_result = payment_event_result;
+                                 CanMakePaymentResponsePtr response) {
+  *out_payment_event_result = response->can_make_payment;
   std::move(done_callback).Run();
 }
 

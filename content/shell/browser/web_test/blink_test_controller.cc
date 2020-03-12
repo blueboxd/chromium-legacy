@@ -70,7 +70,6 @@
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_first_device_bluetooth_chooser.h"
-#include "content/shell/common/web_test/blink_test_messages.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/common/web_test/web_test_utils.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
@@ -79,6 +78,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/platform/web_rect.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -851,17 +851,6 @@ std::unique_ptr<BluetoothChooser> BlinkTestController::RunBluetoothChooser(
   }
 
   return std::make_unique<WebTestFirstDeviceBluetoothChooser>(event_handler);
-}
-
-bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(BlinkTestController, message)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_PrintMessage, OnPrintMessage)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
 }
 
 void BlinkTestController::PluginCrashed(const base::FilePath& plugin_path,

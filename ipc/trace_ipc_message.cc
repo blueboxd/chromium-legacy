@@ -67,9 +67,6 @@ void WriteIpcMessageIdAsProtozero(uint32_t message_id,
     case TextInputClientMsgStart:
       message_class = ChromeLegacyIpc::CLASS_TEXT_INPUT_CLIENT;
       break;
-    case BlinkTestMsgStart:
-      message_class = ChromeLegacyIpc::CLASS_BLINK_TEST;
-      break;
     case AccessibilityMsgStart:
       message_class = ChromeLegacyIpc::CLASS_ACCESSIBILITY;
       break;

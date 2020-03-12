@@ -182,6 +182,9 @@ class VectorBackedLinkedList {
   // terminator.
   wtf_size_t free_head_index_ = anchor_index_;
   wtf_size_t size_ = 0;
+
+  template <typename T>
+  friend class NewLinkedHashSet;
 };
 
 template <typename VectorBackedLinkedListType>
@@ -241,8 +244,17 @@ class VectorBackedLinkedListConstIterator {
   using Node = typename VectorBackedLinkedListType::Node;
 
  public:
+  PointerType Get() const {
+    DCHECK(container_->IsIndexValid(index_));
+    DCHECK(!container_->IsAnchor(index_));
+    const Node& node = container_->nodes_[index_];
+    return &node.value_;
+  }
+
   ReferenceType operator*() const { return *Get(); }
   PointerType operator->() const { return Get(); }
+
+  wtf_size_t GetIndex() const { return index_; }
 
   VectorBackedLinkedListConstIterator& operator++() {
     DCHECK(container_->IsIndexValid(index_));
@@ -271,19 +283,12 @@ class VectorBackedLinkedListConstIterator {
   }
 
  protected:
-  PointerType Get() const {
-    DCHECK(container_->IsIndexValid(index_));
-    DCHECK(!container_->IsAnchor(index_));
-    const Node& node = container_->nodes_[index_];
-    return &node.value_;
-  }
-
   VectorBackedLinkedListConstIterator(
       wtf_size_t index,
       const VectorBackedLinkedListType* container)
-      : index_(index), container_(container) {}
-
-  wtf_size_t GetIndex() const { return index_; }
+      : index_(index), container_(container) {
+    DCHECK(container_->IsIndexValid(index_));
+  }
 
  private:
   wtf_size_t index_;

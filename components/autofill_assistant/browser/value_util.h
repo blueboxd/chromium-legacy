@@ -13,9 +13,11 @@
 
 namespace autofill_assistant {
 
-// Custom comparison operator for |ValueProto|, because we can't use
+// Custom comparison operators for |ValueProto|, because we can't use
 // |MessageDifferencer| for protobuf lite and can't rely on serialization.
 bool operator==(const ValueProto& value_a, const ValueProto& value_b);
+bool operator<(const ValueProto& value_a, const ValueProto& value_b);
+bool operator>(const ValueProto& value_a, const ValueProto& value_b);
 
 // Custom comparison operator for |ModelValue|.
 bool operator==(const ModelProto::ModelValue& value_a,
@@ -31,8 +33,9 @@ bool operator==(const DirectActionProto& value_a,
 // Custom comparison operator for |UserActionProto|.
 bool operator==(const UserActionProto& value_a, const UserActionProto& value_b);
 
-// Custom comparison operator for |DateProto|.
+// Custom comparison operators for |DateProto|.
 bool operator==(const DateProto& value_a, const DateProto& value_b);
+bool operator<(const DateProto& value_a, const DateProto& value_b);
 
 // Intended for debugging.
 std::ostream& operator<<(std::ostream& out, const ValueProto& value);

@@ -47,7 +47,8 @@ public final class ProxyNativeTask extends NativeBackgroundTask {
                     ProxyNativeTask.this, Profile.getLastUsedRegularProfile());
         } else {
             ProxyNativeTaskJni.get().startBackgroundTaskInReducedMode(mNativeProxyNativeTask,
-                    ProxyNativeTask.this, ProfileKey.getLastUsedProfileKey().getOriginalKey());
+                    ProxyNativeTask.this,
+                    ProfileKey.getLastUsedRegularProfileKey());
             BrowserStartupController.getInstance().addStartupCompletedObserver(
                     new BrowserStartupController.StartupCallback() {
                         @Override

@@ -66,7 +66,9 @@ class URLLoaderFactoryParamsHelper {
   static network::mojom::URLLoaderFactoryParamsPtr CreateForWorker(
       RenderProcessHost* process,
       const url::Origin& request_initiator,
-      const net::NetworkIsolationKey& network_isolation_key);
+      const net::NetworkIsolationKey& network_isolation_key,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter);
 
   // TODO(kinuko, lukasza): https://crbug.com/891872: Remove, once all
   // URLLoaderFactories vended to a renderer process are associated with a

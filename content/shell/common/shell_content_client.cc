@@ -12,7 +12,6 @@
 #include "content/app/resources/grit/content_resources.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/common/web_test/blink_test_messages.h"
 #include "content/shell/grit/shell_resources.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -122,6 +122,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos.emplace(SystemAppType::MEDIA,
                   SystemAppInfo("Media", GURL("chrome://media-app/pwa.html")));
     infos.at(SystemAppType::MEDIA).include_launch_directory = true;
+    infos.at(SystemAppType::MEDIA).show_in_launcher = false;
   }
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::PRINT_MANAGEMENT)) {

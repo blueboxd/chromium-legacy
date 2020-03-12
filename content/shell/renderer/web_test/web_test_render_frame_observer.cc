@@ -64,7 +64,7 @@ void WebTestRenderFrameObserver::DidCommitProvisionalLoad(
         render_frame()->GetWebFrame());
   }
   BlinkTestRunner::Get(render_frame()->GetRenderView())
-      ->DidCommitNavigationInMainFrame(is_secondary_window_);
+      ->DidCommitNavigationInMainFrame();
 }
 
 void WebTestRenderFrameObserver::DidFailProvisionalLoad() {
@@ -114,7 +114,6 @@ void WebTestRenderFrameObserver::SetTestConfiguration(
 void WebTestRenderFrameObserver::SetupSecondaryRenderer() {
   BlinkTestRunner::Get(render_frame()->GetRenderView())
       ->OnSetupSecondaryRenderer();
-  is_secondary_window_ = true;
 }
 
 void WebTestRenderFrameObserver::Reset() {

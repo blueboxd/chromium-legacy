@@ -597,9 +597,10 @@ class IdlCompiler(object):
                 idl_def = StubUserDefinedType(ref.identifier)
             if isinstance(idl_def, UserDefinedType):
                 idl_type = self._idl_type_factory.definition_type(
-                    user_defined_type=idl_def)
+                    reference_type=ref, user_defined_type=idl_def)
             elif isinstance(idl_def, Typedef):
-                idl_type = self._idl_type_factory.typedef_type(typedef=idl_def)
+                idl_type = self._idl_type_factory.typedef_type(
+                    reference_type=ref, typedef=idl_def)
             else:
                 assert False
             ref.set_target_object(idl_type)

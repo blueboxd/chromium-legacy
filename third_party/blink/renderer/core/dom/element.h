@@ -215,10 +215,17 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool HasExplicitlySetAttrAssociatedElements(const QualifiedName& name);
   Element* GetElementAttribute(const QualifiedName& name);
   void SetElementAttribute(const QualifiedName&, Element*);
-  HeapVector<Member<Element>> GetElementArrayAttribute(
+  base::Optional<HeapVector<Member<Element>>> GetElementArrayAttribute(
+      const QualifiedName& name);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  HeapVector<Member<Element>> GetElementArrayAttribute(  // DEPRECATED
       const QualifiedName& name,
       bool& is_null);
-  void SetElementArrayAttribute(const QualifiedName&,
+  void SetElementArrayAttribute(
+      const QualifiedName&,
+      const base::Optional<HeapVector<Member<Element>>>&);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  void SetElementArrayAttribute(const QualifiedName&,  // DEPRECATED
                                 HeapVector<Member<Element>>,
                                 bool is_null);
 

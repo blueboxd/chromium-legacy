@@ -46,6 +46,8 @@ void TestSystemTrayClient::ShowAccessibilityHelp() {}
 
 void TestSystemTrayClient::ShowAccessibilitySettings() {}
 
+void TestSystemTrayClient::ShowGestureEducationHelp() {}
+
 void TestSystemTrayClient::ShowPaletteHelp() {}
 
 void TestSystemTrayClient::ShowPaletteSettings() {}

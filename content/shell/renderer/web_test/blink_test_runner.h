@@ -153,7 +153,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void OnReplicateTestConfiguration(mojom::ShellTestConfigurationPtr params);
   void OnSetupSecondaryRenderer();
   void CaptureDump(mojom::BlinkTestControl::CaptureDumpCallback callback);
-  void DidCommitNavigationInMainFrame(bool is_secondary_window);
+  void DidCommitNavigationInMainFrame();
   void OnReset();
   void OnTestFinishedInSecondaryRenderer();
   void OnLayoutDumpCompleted(std::string completed_layout_dump);
@@ -196,6 +196,7 @@ class BlinkTestRunner : public RenderViewObserver,
       get_bluetooth_events_callbacks_;
 
   bool is_main_window_ = false;
+  bool is_secondary_window_ = false;
 
   bool waiting_for_reset_ = false;
 

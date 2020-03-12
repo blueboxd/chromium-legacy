@@ -1066,9 +1066,7 @@ public class ExternalNavigationHandler {
      */
     private boolean launchWebApkIfSoleIntentHandler(
             List<ResolveInfo> resolvingInfos, Intent targetIntent) {
-        ArrayList<String> packages =
-                ExternalNavigationDelegateImpl.getSpecializedHandlersWithFilter(
-                        resolvingInfos, null);
+        ArrayList<String> packages = mDelegate.getSpecializedHandlers(resolvingInfos);
         if (packages.size() != 1 || !mDelegate.isValidWebApk(packages.get(0))) return false;
         Intent webApkIntent = new Intent(targetIntent);
         webApkIntent.setPackage(packages.get(0));

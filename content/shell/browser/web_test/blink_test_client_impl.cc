@@ -33,6 +33,10 @@ void BlinkTestClientImpl::PrintMessageToStderr(const std::string& message) {
   BlinkTestController::Get()->OnPrintMessageToStderr(message);
 }
 
+void BlinkTestClientImpl::PrintMessage(const std::string& message) {
+  BlinkTestController::Get()->OnPrintMessage(message);
+}
+
 void BlinkTestClientImpl::Reload() {
   BlinkTestController::Get()->OnReload();
 }

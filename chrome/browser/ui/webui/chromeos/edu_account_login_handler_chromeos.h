@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_EDU_ACCOUNT_LOGIN_HANDLER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_EDU_ACCOUNT_LOGIN_HANDLER_CHROMEOS_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/child_accounts/family_info_fetcher.h"
+#include "components/image_fetcher/core/image_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -31,6 +34,49 @@ class EduAccountLoginHandler : public content::WebUIMessageHandler,
   EduAccountLoginHandler& operator=(const EduAccountLoginHandler&) = delete;
 
  private:
+  class ProfileImageFetcher {
+   public:
+    // Create a new instance to fetch a set of images.
+    // |profile_image_urls| is a map from obfuscated Gaia id to profile image
+    // url. After all images are fetched, |callback| will be resolved with a
+    // map from obfuscated Gaia id to gfx::Image. If image cannot be fetched
+    // an empty gfx::Image() will be returned.
+    ProfileImageFetcher(
+        image_fetcher::ImageFetcher* image_fetcher,
+        const std::map<std::string, GURL>& profile_image_urls,
+        base::OnceCallback<
+            void(std::map<std::string, gfx::Image> profile_images)> callback);
+    ProfileImageFetcher(const ProfileImageFetcher&) = delete;
+    ProfileImageFetcher& operator=(const ProfileImageFetcher&) = delete;
+    ~ProfileImageFetcher();
+
+    // Start fetching profile images.
+    void FetchProfileImages();
+
+   private:
+    FRIEND_TEST_ALL_PREFIXES(EduAccountLoginHandlerTest,
+                             ProfileImageFetcherTest);
+
+    // Called for each profile provided in |profile_image_urls_|. If
+    // |profile_image_url| is valid - fetches the image. Otherwise calls
+    // |OnImageFetched| with an empty image.
+    void FetchProfileImage(const std::string& obfuscated_gaia_id,
+                           const GURL& profile_image_url);
+
+    // Called for each profile provided in |profile_image_urls_|. After all
+    // images are fetched resolves |callback_| with profile images.
+    void OnImageFetched(const std::string& obfuscated_gaia_id,
+                        const gfx::Image& image,
+                        const image_fetcher::RequestMetadata& metadata);
+
+    image_fetcher::ImageFetcher* image_fetcher_ = nullptr;
+    const std::map<std::string, GURL> profile_image_urls_;
+    base::OnceCallback<void(std::map<std::string, gfx::Image> profile_images)>
+        callback_;
+    std::map<std::string, gfx::Image> fetched_profile_images_;
+    base::WeakPtrFactory<ProfileImageFetcher> weak_ptr_factory_{this};
+  };
+
   FRIEND_TEST_ALL_PREFIXES(EduAccountLoginHandlerTest, HandleGetParentsSuccess);
   FRIEND_TEST_ALL_PREFIXES(EduAccountLoginHandlerTest, HandleGetParentsFailure);
   FRIEND_TEST_ALL_PREFIXES(EduAccountLoginHandlerTest,
@@ -39,6 +85,7 @@ class EduAccountLoginHandler : public content::WebUIMessageHandler,
                            HandleParentSigninAccessTokenFailure);
   FRIEND_TEST_ALL_PREFIXES(EduAccountLoginHandlerTest,
                            HandleParentSigninReAuthProofTokenFailure);
+  FRIEND_TEST_ALL_PREFIXES(EduAccountLoginHandlerTest, ProfileImageFetcherTest);
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
@@ -49,6 +96,9 @@ class EduAccountLoginHandler : public content::WebUIMessageHandler,
   void HandleParentSignin(const base::ListValue* args);
 
   virtual void FetchFamilyMembers();
+  virtual void FetchParentImages(
+      base::ListValue parents,
+      std::map<std::string, GURL> profile_image_urls);
   virtual void FetchAccessToken(const std::string& obfuscated_gaia_id,
                                 const std::string& password);
 
@@ -61,6 +111,11 @@ class EduAccountLoginHandler : public content::WebUIMessageHandler,
   void OnGetFamilyMembersSuccess(
       const std::vector<FamilyInfoFetcher::FamilyMember>& members) override;
   void OnFailure(FamilyInfoFetcher::ErrorCode error) override;
+
+  // ProfileImageFetcher callback
+  void OnParentProfileImagesFetched(
+      base::ListValue parents,
+      std::map<std::string, gfx::Image> profile_images);
 
   // signin::PrimaryAccountAccessTokenFetcher callback
   void CreateReAuthProofTokenForParent(
@@ -83,6 +138,8 @@ class EduAccountLoginHandler : public content::WebUIMessageHandler,
       access_token_fetcher_;
   base::RepeatingClosure close_dialog_closure_;
   std::unique_ptr<FamilyInfoFetcher> family_fetcher_;
+
+  std::unique_ptr<ProfileImageFetcher> profile_image_fetcher_;
   std::string get_parents_callback_id_;
   std::string parent_signin_callback_id_;
 };

@@ -122,16 +122,21 @@ cr.define('autofill_test_util', function() {
    * @param {string=} url
    * @param {string=} username
    * @param {string=} type
+   * @param {number=} id
+   * @param {number=} createTime
    * @return {chrome.passwordsPrivate.CompromisedCredential}
    * @private
    */
-  /* #export */ function makeCompromisedCredential(url, username, type) {
+  /* #export */ function makeCompromisedCredential(
+      url, username, type, id, createTime) {
     return {
+      id: id,
       formattedOrigin: url,
       changePasswordUrl: 'http://${url}/',
       username: username,
       elapsedTimeSinceCompromise:
           (Math.floor(Math.random() * 60)).toString() + ' min ago',
+      compromiseTime: createTime,
       compromiseType: type,
     };
   }

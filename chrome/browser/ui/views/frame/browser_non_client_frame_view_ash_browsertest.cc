@@ -1066,10 +1066,18 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
   EXPECT_TRUE(web_app_menu_button_->HasFocus());
 }
 
+// TODO(): Flaky crash on Chrome OS debug.
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_BrowserCommandFocusToolbarGeolocation \
+  DISABLED_BrowserCommandFocusToolbarGeolocation
+#else
+#define MAYBE_BrowserCommandFocusToolbarGeolocation \
+  BrowserCommandFocusToolbarGeolocation
+#endif
 // Tests that the focus toolbar command focuses content settings icons before
 // the app menu button when present in web-app windows.
 IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
-                       BrowserCommandFocusToolbarGeolocation) {
+                       MAYBE_BrowserCommandFocusToolbarGeolocation) {
   SetUpWebApp();
   ContentSettingImageView* geolocation_icon = GrantGeolocationPermission();
 

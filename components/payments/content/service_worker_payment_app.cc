@@ -214,10 +214,10 @@ void ServiceWorkerPaymentApp::OnCanMakePaymentEventSkipped(
 
 void ServiceWorkerPaymentApp::OnCanMakePaymentEventResponded(
     ValidateCanMakePaymentCallback callback,
-    bool result) {
+    mojom::CanMakePaymentResponsePtr response) {
   // |can_make_payment| is true as long as there is a matching payment handler.
   can_make_payment_result_ = true;
-  has_enrolled_instrument_result_ = result;
+  has_enrolled_instrument_result_ = response->can_make_payment;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), this, can_make_payment_result_));

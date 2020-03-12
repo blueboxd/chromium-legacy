@@ -266,12 +266,7 @@
       name: "BuiltInModuleInfra",
       origin_trial_feature_name: "BuiltInModuleInfra",
       implied_by: ["ExperimentalProductivityFeatures",
-                   "BuiltInModuleAll",
-                   "BuiltInModuleSwitchElement"],
-    },
-    {
-      name: "BuiltInModuleSwitchElement",
-      implied_by: ["BuiltInModuleAll"],
+                   "BuiltInModuleAll"],
     },
     {
       name: "CacheInlineScriptCode"

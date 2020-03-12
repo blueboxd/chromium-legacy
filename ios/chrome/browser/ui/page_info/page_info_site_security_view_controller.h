@@ -9,6 +9,8 @@
 
 #import "ios/chrome/browser/ui/page_info/page_info_site_security_description.h"
 
+@protocol BrowserCommands;
+
 // View Controller for displaying the site security.
 @interface PageInfoSiteSecurityViewController : UIViewController
 
@@ -19,6 +21,9 @@
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
+
+// Handler used to navigate outside the page info.
+@property(nonatomic, weak) id<BrowserCommands> handler;
 
 @end
 

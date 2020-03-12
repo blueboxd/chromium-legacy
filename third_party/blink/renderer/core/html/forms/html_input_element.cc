@@ -608,6 +608,20 @@ bool HTMLInputElement::CanStartSelection() const {
   return TextControlElement::CanStartSelection();
 }
 
+base::Optional<uint32_t> HTMLInputElement::selectionStartForBinding(
+    ExceptionState& exception_state) const {
+  if (!input_type_->SupportsSelectionAPI())
+    return base::nullopt;
+  return TextControlElement::selectionStart();
+}
+
+base::Optional<uint32_t> HTMLInputElement::selectionEndForBinding(
+    ExceptionState& exception_state) const {
+  if (!input_type_->SupportsSelectionAPI())
+    return base::nullopt;
+  return TextControlElement::selectionEnd();
+}
+
 unsigned HTMLInputElement::selectionStartForBinding(
     bool& is_null,
     ExceptionState& exception_state) const {
@@ -634,6 +648,32 @@ String HTMLInputElement::selectionDirectionForBinding(
     return String();
   }
   return TextControlElement::selectionDirection();
+}
+
+void HTMLInputElement::setSelectionStartForBinding(
+    base::Optional<uint32_t> start,
+    ExceptionState& exception_state) {
+  if (!input_type_->SupportsSelectionAPI()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The input element's type ('" +
+                                          input_type_->FormControlType() +
+                                          "') does not support selection.");
+    return;
+  }
+  TextControlElement::setSelectionStart(start.value_or(0));
+}
+
+void HTMLInputElement::setSelectionEndForBinding(
+    base::Optional<uint32_t> end,
+    ExceptionState& exception_state) {
+  if (!input_type_->SupportsSelectionAPI()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The input element's type ('" +
+                                          input_type_->FormControlType() +
+                                          "') does not support selection.");
+    return;
+  }
+  TextControlElement::setSelectionEnd(end.value_or(0));
 }
 
 void HTMLInputElement::setSelectionStartForBinding(

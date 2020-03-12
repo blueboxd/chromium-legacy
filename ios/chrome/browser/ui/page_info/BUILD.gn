@@ -37,6 +37,7 @@ source_set("page_info") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/util",
     "//ios/web",
     "//ios/web/public/security",
     "//ui/base",

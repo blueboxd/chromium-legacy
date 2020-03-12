@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_BOOKMARKS_BOOKMARK_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_BOOKMARKS_BOOKMARK_BRIDGE_H_
 
+#include <memory>
+#include <set>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/compiler_specific.h"
@@ -56,11 +59,6 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       const base::android::JavaParamRef<jobject>& obj,
       jlong id,
       jint type);
-
-  void GetPermanentNodeIDs(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_result_obj);
 
   void GetTopLevelFolderParentIDs(
       JNIEnv* env,

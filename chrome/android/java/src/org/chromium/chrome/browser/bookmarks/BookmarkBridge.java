@@ -384,18 +384,6 @@ public class BookmarkBridge {
     }
 
     /**
-     * @return All the permanent nodes.
-     */
-    public List<BookmarkId> getPermanentNodeIDs() {
-        ThreadUtils.assertOnUiThread();
-        assert mIsNativeBookmarkModelLoaded;
-        List<BookmarkId> result = new ArrayList<BookmarkId>();
-        BookmarkBridgeJni.get().getPermanentNodeIDs(
-                mNativeBookmarkBridge, BookmarkBridge.this, result);
-        return result;
-    }
-
-    /**
      * @return The top level folder's parents.
      */
     public List<BookmarkId> getTopLevelFolderParentIDs() {
@@ -1006,8 +994,6 @@ public class BookmarkBridge {
         long getBookmarkIdForWebContents(WebContents webContents, boolean onlyEditable);
         BookmarkItem getBookmarkByID(
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type);
-        void getPermanentNodeIDs(
-                long nativeBookmarkBridge, BookmarkBridge caller, List<BookmarkId> bookmarksList);
         void getTopLevelFolderParentIDs(
                 long nativeBookmarkBridge, BookmarkBridge caller, List<BookmarkId> bookmarksList);
         void getTopLevelFolderIDs(long nativeBookmarkBridge, BookmarkBridge caller,

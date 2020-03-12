@@ -320,9 +320,12 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
     DCHECK(factory_bundle_for_browser_info);
 
     const url::Origin& request_initiator = *resource_request->request_initiator;
+    // TODO(https://crbug.com/1060837): Pass the Mojo remote which is connected
+    // to the COEP reporter in DedicatedWorkerHost.
     network::mojom::URLLoaderFactoryParamsPtr factory_params =
         URLLoaderFactoryParamsHelper::CreateForWorker(
-            factory_process, request_initiator, trusted_network_isolation_key);
+            factory_process, request_initiator, trusted_network_isolation_key,
+            /*coep_reporter=*/mojo::NullRemote());
 
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver =

@@ -42,6 +42,13 @@
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/extension_app_item.h"
+#include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
+#endif
+
 namespace web_app {
 
 SystemWebAppManagerBrowserTestBase::SystemWebAppManagerBrowserTestBase(
@@ -72,6 +79,11 @@ void SystemWebAppManagerBrowserTestBase::WaitForTestSystemAppInstall() {
   } else {
     GetManager().InstallSystemAppsForTesting();
   }
+  // Ensure apps are registered with the |AppService| and populated in
+  // |AppListModel|.
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  proxy->FlushMojoCallsForTesting();
 }
 
 content::WebContents*
@@ -571,6 +583,26 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInLauncherTest,
           EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInLauncher());
         }
       });
+  // OS Integration only relevant for Chrome OS.
+#if defined(OS_CHROMEOS)
+  // The |AppList| should have all apps visible in the launcher, apps get
+  // removed from the |AppList| when they are hidden.
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  ASSERT_TRUE(client);
+  AppListModelUpdater* model_updater = test::GetModelUpdater(client);
+  const ChromeAppListItem* mock_app = model_updater->FindItem(app_id);
+  // |mock_app| shouldn't be found in |AppList| because it should be hidden in
+  // launcher.
+  if (provider == ProviderType::kWebApps) {
+    // TODO(crbug.com/877898): |mock_app| should be hidden but web_apps.cc does
+    // not currently read from system_web_app_manager.cc. When
+    // DesktopPWAsWithoutExtensions launches this should change to
+    // EXPECT_FALSE().
+    EXPECT_TRUE(mock_app);
+  } else {
+    EXPECT_FALSE(mock_app);
+  }
+#endif  // defined(OS_CHROMEOS)
 }
 
 class SystemWebAppManagerAdditionalSearchTermsTest

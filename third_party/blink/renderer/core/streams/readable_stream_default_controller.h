@@ -28,7 +28,9 @@ class ReadableStreamDefaultController : public ScriptWrappable {
   ReadableStreamDefaultController();
 
   // https://streams.spec.whatwg.org/#rs-default-controller-desired-size
-  double desiredSize(bool& is_null) const;
+  base::Optional<double> desiredSize() const { return GetDesiredSize(); }
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  double desiredSize(bool& is_null) const;  // DEPRECATED
 
   // https://streams.spec.whatwg.org/#rs-default-controller-close
   void close(ScriptState*, ExceptionState&);

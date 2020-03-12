@@ -319,6 +319,9 @@ const char kChromeOSAssetPath[] = "/usr/share/chromeos-assets/";
 const char kChromeOSCreditsPath[] =
     "/opt/google/chrome/resources/about_os_credits.html";
 
+const char kChromeOSGestureEducationHelpURL[] =
+    "https://support.google.com/chromebook?p=tablet_mode_gestures";
+
 const char kChromePaletteHelpURL[] =
     "https://support.google.com/chromebook?p=stylus_help";
 

@@ -758,12 +758,11 @@ Element* Element::GetElementAttribute(const QualifiedName& name) {
 
 void Element::SetElementArrayAttribute(
     const QualifiedName& name,
-    HeapVector<Member<Element>> given_elements,
-    bool is_null) {
+    const base::Optional<HeapVector<Member<Element>>>& given_elements) {
   ExplicitlySetAttrElementsMap* element_attribute_map =
       GetDocument().GetExplicitlySetAttrElementsMap(this);
 
-  if (is_null) {
+  if (!given_elements) {
     element_attribute_map->erase(name);
     removeAttribute(name);
     return;
@@ -780,7 +779,7 @@ void Element::SetElementArrayAttribute(
     elements->clear();
   SpaceSplitString value;
 
-  for (auto element : given_elements) {
+  for (auto element : given_elements.value()) {
     // Elements that are not descendants of this element's shadow including
     // ancestors are dropped.
     if (!ElementIsDescendantOfShadowIncludingAncestor(*this, *element))
@@ -821,13 +820,21 @@ void Element::SetElementArrayAttribute(
   element_attribute_map->Set(name, elements);
 }
 
-HeapVector<Member<Element>> Element::GetElementArrayAttribute(
+void Element::SetElementArrayAttribute(
     const QualifiedName& name,
-    bool& is_null) {
+    HeapVector<Member<Element>> given_elements,
+    bool is_null) {
+  if (is_null)
+    SetElementArrayAttribute(name, base::nullopt);
+  else
+    SetElementArrayAttribute(name, std::move(given_elements));
+}
+
+base::Optional<HeapVector<Member<Element>>> Element::GetElementArrayAttribute(
+    const QualifiedName& name) {
   HeapVector<Member<Element>>* explicitly_set_elements =
       GetExplicitlySetElementsForAttr(this, name);
 
-  is_null = false;
   if (explicitly_set_elements) {
     return *explicitly_set_elements;
   }
@@ -855,8 +862,16 @@ HeapVector<Member<Element>> Element::GetElementArrayAttribute(
       content_elements.push_back(candidate);
   }
   if (content_elements.IsEmpty())
-    is_null = true;
+    return base::nullopt;
   return content_elements;
+}
+
+HeapVector<Member<Element>> Element::GetElementArrayAttribute(
+    const QualifiedName& name,
+    bool& is_null) {
+  const auto& result = GetElementArrayAttribute(name);
+  is_null = !result.has_value();
+  return result.value_or(HeapVector<Member<Element>>());
 }
 
 NamedNodeMap* Element::attributesForBindings() const {

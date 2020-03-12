@@ -85,7 +85,7 @@ Polymer({
 
     const statusChangeListener = status => this.status_ = status;
     const setLeakedCredentialsListener = compromisedCredentials => {
-      this.leakedPasswords = compromisedCredentials;
+      this.updateList(compromisedCredentials);
 
       settings.PluralStringProxyImpl.getInstance()
           .getPluralString('compromisedPasswords', this.leakedPasswords.length)
@@ -412,5 +412,40 @@ Polymer({
     }
     throw 'Not specified whether to show passwords for state: ' + status.state;
   },
+
+  /**
+   * Function to update compromised credentials in a proper way. New entities
+   * should appear in the bottom.
+   * @param {!Array<!PasswordManagerProxy.CompromisedCredential>} newList
+   * @private
+   */
+  updateList(newList) {
+    const oldList = this.leakedPasswords.slice();
+    const map = new Map();
+    newList.forEach(item => map.set(item.id, item));
+
+    const resultList = [];
+
+    oldList.forEach((item, index) => {
+      // If element is present in newList
+      if (map.has(item.id)) {
+        // Replace old version with new
+        resultList.push(map.get(item.id));
+        map.delete(item.id);
+      }
+    });
+
+    const addedResults = Array.from(map.values());
+    addedResults.sort((lhs, rhs) => {
+      // Phished passwords are always shown above
+      if (lhs.compromiseType != rhs.compromiseType) {
+        return lhs.compromiseType ==
+                chrome.passwordsPrivate.CompromiseType.PHISHED ? -1 : 1;
+      }
+      return rhs.compromiseTime - lhs.compromiseTime;
+    });
+    this.leakedPasswords = resultList.concat(addedResults);
+  },
+
 });
 })();

@@ -17,6 +17,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/extension_id.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -30,10 +33,13 @@ constexpr char kUpdatesEvent[] = "safety-check-updates-status-changed";
 constexpr char kPasswordsEvent[] = "safety-check-passwords-status-changed";
 constexpr char kSafeBrowsingEvent[] =
     "safety-check-safe-browsing-status-changed";
+constexpr char kExtensionsEvent[] = "safety-check-extensions-status-changed";
 constexpr char kPerformSafetyCheck[] = "performSafetyCheck";
 constexpr char kNewState[] = "newState";
 constexpr char kDisplayString[] = "displayString";
 constexpr char kPasswordsCompromised[] = "passwordsCompromised";
+constexpr char kExtensionsReenabledByUser[] = "extensionsReenabledByUser";
+constexpr char kExtensionsReenabledByAdmin[] = "extensionsReenabledByAdmin";
 
 // Converts the VersionUpdater::Status to the UpdateStatus enum to be passed
 // to the safety check frontend. Note: if the VersionUpdater::Status gets
@@ -71,27 +77,46 @@ SafetyCheckHandler::~SafetyCheckHandler() = default;
 void SafetyCheckHandler::PerformSafetyCheck() {
   AllowJavascript();
   base::RecordAction(base::UserMetricsAction("SafetyCheck.Started"));
+
   if (!version_updater_) {
     version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
   }
   CheckUpdates();
+
   CheckSafeBrowsing();
+
   if (!leak_service_) {
     leak_service_ = BulkLeakCheckServiceFactory::GetForProfile(
         Profile::FromWebUI(web_ui()));
   }
   DCHECK(leak_service_);
   CheckPasswords();
+
+  if (!extension_prefs_) {
+    extension_prefs_ = extensions::ExtensionPrefsFactory::GetForBrowserContext(
+        Profile::FromWebUI(web_ui()));
+  }
+  DCHECK(extension_prefs_);
+  if (!extension_service_) {
+    extension_service_ =
+        extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()))
+            ->extension_service();
+  }
+  DCHECK(extension_service_);
+  CheckExtensions();
 }
 
 SafetyCheckHandler::SafetyCheckHandler(
     std::unique_ptr<VersionUpdater> version_updater,
-    password_manager::BulkLeakCheckService* leak_service)
+    password_manager::BulkLeakCheckService* leak_service,
+    extensions::ExtensionPrefs* extension_prefs,
+    extensions::ExtensionServiceInterface* extension_service)
     : version_updater_(std::move(version_updater)),
-      leak_service_(leak_service) {}
+      leak_service_(leak_service),
+      extension_prefs_(extension_prefs),
+      extension_service_(extension_service) {}
 
-void SafetyCheckHandler::HandlePerformSafetyCheck(
-    const base::ListValue* /*args*/) {
+void SafetyCheckHandler::HandlePerformSafetyCheck(const base::ListValue* args) {
   PerformSafetyCheck();
 }
 
@@ -131,6 +156,60 @@ void SafetyCheckHandler::CheckPasswords() {
   // crrev.com/c/2072742 and follow up CLs).
 }
 
+void SafetyCheckHandler::CheckExtensions() {
+  extensions::ExtensionIdList extensions;
+  extension_prefs_->GetExtensions(&extensions);
+  int blocklisted = 0;
+  int reenabled_by_user = 0;
+  int reenabled_by_admin = 0;
+  for (auto extension_id : extensions) {
+    extensions::BlacklistState state =
+        extension_prefs_->GetExtensionBlacklistState(extension_id);
+    if (state == extensions::BLACKLISTED_UNKNOWN) {
+      // If any of the extensions are in the unknown blacklist state, that means
+      // there was an error the last time the blacklist was fetched. That means
+      // the results cannot be relied upon.
+      OnExtensionsCheckResult(ExtensionsStatus::kError, Blocklisted(0),
+                              ReenabledUser(0), ReenabledAdmin(0));
+      return;
+    }
+    if (state == extensions::NOT_BLACKLISTED) {
+      continue;
+    }
+    ++blocklisted;
+    if (!extension_service_->IsExtensionEnabled(extension_id)) {
+      continue;
+    }
+    if (extension_service_->UserCanDisableInstalledExtension(extension_id)) {
+      ++reenabled_by_user;
+    } else {
+      ++reenabled_by_admin;
+    }
+  }
+  if (blocklisted == 0) {
+    OnExtensionsCheckResult(ExtensionsStatus::kNoneBlocklisted, Blocklisted(0),
+                            ReenabledUser(0), ReenabledAdmin(0));
+  } else if (reenabled_by_user == 0 && reenabled_by_admin == 0) {
+    OnExtensionsCheckResult(ExtensionsStatus::kBlocklistedAllDisabled,
+                            Blocklisted(blocklisted), ReenabledUser(0),
+                            ReenabledAdmin(0));
+  } else if (reenabled_by_user > 0 && reenabled_by_admin == 0) {
+    OnExtensionsCheckResult(ExtensionsStatus::kBlocklistedReenabledAllByUser,
+                            Blocklisted(blocklisted),
+                            ReenabledUser(reenabled_by_user),
+                            ReenabledAdmin(0));
+  } else if (reenabled_by_admin > 0 && reenabled_by_user == 0) {
+    OnExtensionsCheckResult(ExtensionsStatus::kBlocklistedReenabledAllByAdmin,
+                            Blocklisted(blocklisted), ReenabledUser(0),
+                            ReenabledAdmin(reenabled_by_admin));
+  } else {
+    OnExtensionsCheckResult(ExtensionsStatus::kBlocklistedReenabledSomeByUser,
+                            Blocklisted(blocklisted),
+                            ReenabledUser(reenabled_by_user),
+                            ReenabledAdmin(reenabled_by_admin));
+  }
+}
+
 void SafetyCheckHandler::OnUpdateCheckResult(VersionUpdater::Status status,
                                              int progress,
                                              bool rollback,
@@ -162,6 +241,27 @@ void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
   event.SetStringKey(kDisplayString,
                      GetStringForPasswords(status, num_compromised));
   FireWebUIListener(kPasswordsEvent, event);
+}
+
+void SafetyCheckHandler::OnExtensionsCheckResult(
+    ExtensionsStatus status,
+    Blocklisted blocklisted,
+    ReenabledUser reenabled_user,
+    ReenabledAdmin reenabled_admin) {
+  base::DictionaryValue event;
+  event.SetIntKey(kNewState, static_cast<int>(status));
+  if (status == ExtensionsStatus::kBlocklistedReenabledAllByUser ||
+      status == ExtensionsStatus::kBlocklistedReenabledSomeByUser) {
+    event.SetIntKey(kExtensionsReenabledByUser, reenabled_user.value());
+  }
+  if (status == ExtensionsStatus::kBlocklistedReenabledAllByAdmin ||
+      status == ExtensionsStatus::kBlocklistedReenabledSomeByUser) {
+    event.SetIntKey(kExtensionsReenabledByAdmin, reenabled_admin.value());
+  }
+  event.SetStringKey(kDisplayString,
+                     GetStringForExtensions(status, Blocklisted(blocklisted),
+                                            reenabled_user, reenabled_admin));
+  FireWebUIListener(kExtensionsEvent, event);
 }
 
 base::string16 SafetyCheckHandler::GetStringForUpdates(UpdateStatus status) {
@@ -243,6 +343,46 @@ base::string16 SafetyCheckHandler::GetStringForPasswords(PasswordsStatus status,
     case PasswordsStatus::kError:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_ERROR);
+  }
+}
+
+base::string16 SafetyCheckHandler::GetStringForExtensions(
+    ExtensionsStatus status,
+    Blocklisted blocklisted,
+    ReenabledUser reenabled_user,
+    ReenabledAdmin reenabled_admin) {
+  switch (status) {
+    case ExtensionsStatus::kChecking:
+      return l10n_util::GetStringUTF16(IDS_SETTINGS_SAFETY_CHECK_RUNNING);
+    case ExtensionsStatus::kError:
+      return l10n_util::GetStringUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_ERROR);
+    case ExtensionsStatus::kNoneBlocklisted:
+      return l10n_util::GetStringUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SAFE);
+    case ExtensionsStatus::kBlocklistedAllDisabled:
+      return l10n_util::GetPluralStringFUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_OFF,
+          blocklisted.value());
+    case ExtensionsStatus::kBlocklistedReenabledAllByUser:
+      return l10n_util::GetPluralStringFUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_USER,
+          reenabled_user.value());
+    case ExtensionsStatus::kBlocklistedReenabledSomeByUser:
+      // TODO(crbug/1060625): Make string concatenation with a period
+      // internationalized (see go/i18n-concatenation).
+      return l10n_util::GetPluralStringFUTF16(
+                 IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_USER,
+                 reenabled_user.value()) +
+             base::ASCIIToUTF16(". ") +
+             l10n_util::GetPluralStringFUTF16(
+                 IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_ADMIN,
+                 reenabled_admin.value()) +
+             base::ASCIIToUTF16(".");
+    case ExtensionsStatus::kBlocklistedReenabledAllByAdmin:
+      return l10n_util::GetPluralStringFUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_ADMIN,
+          reenabled_admin.value());
   }
 }
 

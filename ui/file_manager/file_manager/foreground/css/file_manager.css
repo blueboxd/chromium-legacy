@@ -137,7 +137,8 @@ body.files-ng .dialog-navigation-list {
   top: 0;
 }
 
-html.col-resize #directory-tree {
+html.col-resize #directory-tree,
+html.breadcrumb-elider-expanded #directory-tree {
   overflow-y: hidden;
 }
 
@@ -1486,6 +1487,10 @@ body.check-select #read-only-indicator {
 
 .list-view .loading-indicator {
   top: 40px;
+}
+
+body.files-ng .loading-indicator {
+    --paper-progress-active-color: var(--google-blue-600);
 }
 
 body.files-ng .list-view .loading-indicator {

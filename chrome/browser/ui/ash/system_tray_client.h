@@ -66,6 +66,7 @@ class SystemTrayClient : public ash::SystemTrayClient,
   void ShowHelp() override;
   void ShowAccessibilityHelp() override;
   void ShowAccessibilitySettings() override;
+  void ShowGestureEducationHelp() override;
   void ShowPaletteHelp() override;
   void ShowPaletteSettings() override;
   void ShowPublicAccountInfo() override;

@@ -67,6 +67,9 @@ class ASH_PUBLIC_EXPORT SystemTrayClient {
   // Shows the settings related to accessibility.
   virtual void ShowAccessibilitySettings() = 0;
 
+  // Shows gesture education help.
+  virtual void ShowGestureEducationHelp() = 0;
+
   // Shows the help center article for the stylus tool palette.
   virtual void ShowPaletteHelp() = 0;
 

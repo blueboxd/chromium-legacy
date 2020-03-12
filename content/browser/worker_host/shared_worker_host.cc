@@ -263,10 +263,13 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
           pending_default_factory.InitWithNewPipeAndPassReceiver();
 
   const url::Origin& origin = instance_.constructor_origin();
+  // TODO(https://crbug.com/1060832): Implement COEP reporter for shared
+  // workers.
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
       URLLoaderFactoryParamsHelper::CreateForWorker(
           worker_process_host_, origin,
-          net::NetworkIsolationKey(origin, origin));
+          net::NetworkIsolationKey(origin, origin),
+          /*coep_reporter=*/mojo::NullRemote());
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       worker_process_host_->GetBrowserContext(),
       /*frame=*/nullptr, worker_process_host_->GetID(),

@@ -67,8 +67,8 @@ class MediaAppIntegrationWithFilesAppTest : public MediaAppIntegrationTest {
     file_manager::test::AddDefaultComponentExtensionsOnMainThread(profile());
     // Add the Files App, but remove the Gallery app, since its own file
     // handling may interfere. Long term, the Galley app will be removed.
-    // TODO(crbug/1030935): Rely on flags alone to remove the Gallery App (i.e.
-    // migrate this step to release code).
+    // TODO(crbug.com/1030935): Rely on flags alone to remove the Gallery App
+    // (i.e. migrate this step to release code).
     extensions::ExtensionService* service =
         extensions::ExtensionSystem::Get(profile())->extension_service();
     service->component_loader()->Remove(file_manager::kGalleryAppId);
@@ -210,6 +210,14 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaAppEligibleOpenTask) {
   }
 }
 
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, HiddenInLauncher) {
+  WaitForTestSystemAppInstall();
+
+  // Check system_web_app_manager has the correct attributes for Media App.
+  EXPECT_FALSE(
+      GetManager().ShouldShowInLauncher(web_app::SystemAppType::MEDIA));
+}
+
 // End-to-end test to ensure that the MediaApp successfully registers as a file
 // handler with the ChromeOS file manager on startup and acts as the default
 // handler for a given file.
@@ -267,7 +275,7 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
   EXPECT_EQ("640x480", WaitForOpenedImage(web_ui));
 
   // Clear the <img> src attribute to ensure we can detect changes reliably.
-  // TODO(crbug/893226): Use the alt-text to find the image instead.
+  // TODO(crbug.com/893226): Use the alt-text to find the image instead.
   ClearOpenedImage(web_ui);
 
   // Navigate to the next file in the directory.

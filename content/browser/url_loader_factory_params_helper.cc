@@ -169,7 +169,9 @@ network::mojom::URLLoaderFactoryParamsPtr
 URLLoaderFactoryParamsHelper::CreateForWorker(
     RenderProcessHost* process,
     const url::Origin& request_initiator,
-    const net::NetworkIsolationKey& network_isolation_key) {
+    const net::NetworkIsolationKey& network_isolation_key,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter) {
   return CreateParams(process,
                       request_initiator,  // origin
                       request_initiator,  // request_initiator_site_lock
@@ -177,8 +179,8 @@ URLLoaderFactoryParamsHelper::CreateForWorker(
                       false,              // is_trusted
                       base::nullopt,      // top_frame_token
                       network_isolation_key,
-                      nullptr,             // client_security_state
-                      mojo::NullRemote(),  // coep_reporter
+                      nullptr,  // client_security_state
+                      std::move(coep_reporter),
                       false,   // allow_universal_access_from_file_urls
                       false);  // is_for_isolated_world
 }

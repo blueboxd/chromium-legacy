@@ -232,7 +232,6 @@ class CORE_EXPORT HTMLSelectElement final
   void ResetToDefaultSelection(ResetReason = kResetReasonOthers);
   void TypeAheadFind(const KeyboardEvent&);
   void SaveLastSelection();
-  void SaveListboxActiveSelection();
   // Returns the first selected OPTION, or nullptr.
   HTMLOptionElement* SelectedOption() const;
 
@@ -287,7 +286,6 @@ class CORE_EXPORT HTMLSelectElement final
   // HTMLHRElement objects.
   mutable ListItems list_items_;
   Vector<bool> last_on_change_selection_;
-  Vector<bool> cached_state_for_active_selection_;
   TypeAhead type_ahead_;
   unsigned size_;
   Member<HTMLOptionElement> last_on_change_option_;

@@ -27,12 +27,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_CHOOSER_UI_CONTROLLER_H_
 
 #include <memory>
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
@@ -45,7 +45,6 @@ class CORE_EXPORT ColorChooserUIController
       public mojom::blink::ColorChooserClient,
       public ColorChooser {
   USING_GARBAGE_COLLECTED_MIXIN(ColorChooserUIController);
-  USING_PRE_FINALIZER(ColorChooserUIController, Dispose);
 
  public:
   ColorChooserUIController(LocalFrame*, blink::ColorChooserClient*);
@@ -73,7 +72,7 @@ class CORE_EXPORT ColorChooserUIController
 
  private:
   mojo::Remote<mojom::blink::ColorChooserFactory> color_chooser_factory_;
-  mojo::Receiver<mojom::blink::ColorChooserClient> receiver_{this};
+  HeapMojoReceiver<mojom::blink::ColorChooserClient> receiver_;
 };
 
 }  // namespace blink

@@ -786,9 +786,6 @@ struct HashTraits<blink::Member<T>> : SimpleClassHashTraits<blink::Member<T>> {
   static void ConstructDeletedValue(blink::Member<T>& slot, bool) {
     slot = WTF::kHashTableDeletedValue;
   }
-  static bool IsDeletedValue(const blink::Member<T>& value) {
-    return value.IsHashTableDeletedValue();
-  }
 };
 
 template <typename T>
@@ -819,6 +816,10 @@ struct HashTraits<blink::WeakMember<T>>
   }
 
   static PeekOutType Peek(const blink::WeakMember<T>& value) { return value; }
+
+  static void ConstructDeletedValue(blink::WeakMember<T>& slot, bool) {
+    slot = WTF::kHashTableDeletedValue;
+  }
 };
 
 template <typename T>

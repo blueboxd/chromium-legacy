@@ -13,6 +13,7 @@ import org.chromium.base.PackageManagerUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,6 +44,11 @@ interface ExternalNavigationDelegate {
      * handlers are intent handlers which handle only a few URLs (e.g. google maps or youtube).
      */
     int countSpecializedHandlers(List<ResolveInfo> infos);
+
+    /**
+     * Returns the subset of {@params infos} that are specialized intent handlers.
+     */
+    ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos);
 
     /**
      * Start an activity for the intent. Used for intents that must be handled externally.

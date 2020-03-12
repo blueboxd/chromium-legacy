@@ -20,12 +20,10 @@ import * as sound from '../../sound.js';
 import * as state from '../../state.js';
 import * as toast from '../../toast.js';
 import {
+  Facing,
+  Mode,
   Resolution,
   ResolutionList,  // eslint-disable-line no-unused-vars
-} from '../../type.js';
-import {
-  Facing,  // eslint-disable-line no-unused-vars
-  Mode,
 } from '../../type.js';
 import * as util from '../../util.js';
 import {RecordTime} from './recordtime.js';
@@ -213,11 +211,11 @@ export class Modes {
         {
           aspectRatio: {ideal: videoMode ? 1.7777777778 : 1.3333333333},
           width: {min: 1280},
-          frameRate: {min: 24},
+          frameRate: {min: 20, ideal: 30},
         },
         {
           width: {min: 640},
-          frameRate: {min: 24},
+          frameRate: {min: 20, ideal: 30},
         },
       ].map((/** !MediaTrackConstraints */ constraint) => {
         if (deviceId) {
@@ -459,7 +457,7 @@ export class Modes {
     this.current = this.allModes_[mode].captureFactory();
     if (deviceId && this.captureResolution_) {
       this.allModes_[mode].constraintsPreferrer.updateValues(
-          deviceId, stream, this.captureResolution_);
+          deviceId, stream, facing, this.captureResolution_);
     }
     await this.updateSaveMetadata_();
   }

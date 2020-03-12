@@ -46,11 +46,10 @@ void CSSAnimation::reverse(ExceptionState& exception_state) {
   Animation::reverse(exception_state);
 }
 
-void CSSAnimation::setStartTime(double start_time,
-                                bool is_null,
+void CSSAnimation::setStartTime(base::Optional<double> start_time_ms,
                                 ExceptionState& exception_state) {
   PlayStateTransitionScope scope(*this);
-  Animation::setStartTime(start_time, is_null, exception_state);
+  Animation::setStartTime(start_time_ms, exception_state);
 }
 
 void CSSAnimation::FlushStyles() const {

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/page_info/page_info_mediator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_navigation_commands.h"
@@ -65,7 +66,7 @@
 
 - (void)stop {
   [self.dispatcher stopDispatchingToTarget:self];
-  [self.baseViewController.presentingViewController
+  [self.baseViewController.presentedViewController
       dismissViewControllerAnimated:YES
                          completion:nil];
   self.dispatcher = nil;
@@ -95,6 +96,7 @@
       [[PageInfoSiteSecurityViewController alloc]
           initWitDescription:description];
 
+  viewController.handler = HandlerForProtocol(self.dispatcher, BrowserCommands);
   [self.navigationController pushViewController:viewController animated:YES];
 }
 

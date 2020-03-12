@@ -271,12 +271,12 @@ base::Optional<double> Animation::TimelineTime() const {
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-current-time-of-an-animation.
-void Animation::setCurrentTime(double new_current_time,
-                               bool is_null,
-                               ExceptionState& exception_state) {
+void Animation::setCurrentTimeForBinding(
+    base::Optional<double> new_current_time,
+    ExceptionState& exception_state) {
   // TODO(crbug.com/924159): Update this after we add support for inactive
   // timelines and unresolved timeline.currentTime
-  if (is_null) {
+  if (!new_current_time) {
     // If the current time is resolved, then throw a TypeError.
     if (CurrentTimeInternal()) {
       exception_state.ThrowTypeError(
@@ -285,11 +285,11 @@ void Animation::setCurrentTime(double new_current_time,
     return;
   }
 
-  SetCurrentTimeInternal(MillisecondsToSeconds(new_current_time));
+  SetCurrentTimeInternal(MillisecondsToSeconds(new_current_time.value()));
 
   // Synchronously resolve pending pause task.
   if (pending_pause_) {
-    hold_time_ = MillisecondsToSeconds(new_current_time);
+    hold_time_ = MillisecondsToSeconds(new_current_time.value());
     ApplyPendingPlaybackRate();
     start_time_ = base::nullopt;
     pending_pause_ = false;
@@ -304,6 +304,22 @@ void Animation::setCurrentTime(double new_current_time,
 
   // Notify of potential state change.
   NotifyProbe();
+}
+
+void Animation::setCurrentTimeForBinding(double new_current_time,
+                                         bool is_null,
+                                         ExceptionState& exception_state) {
+  setCurrentTimeForBinding(
+      is_null ? base::nullopt : base::make_optional(new_current_time),
+      exception_state);
+}
+
+void Animation::setCurrentTime(double new_current_time,
+                               bool is_null,
+                               ExceptionState& exception_state) {
+  setCurrentTimeForBinding(
+      is_null ? base::nullopt : base::make_optional(new_current_time),
+      exception_state);
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-current-time-of-an-animation
@@ -334,25 +350,20 @@ void Animation::SetCurrentTimeInternal(double new_current_time) {
     SetOutdated();
 }
 
+base::Optional<double> Animation::startTime() const {
+  return start_time_
+             ? base::make_optional(SecondsToMilliseconds(start_time_.value()))
+             : base::nullopt;
+}
+
 double Animation::startTime(bool& is_null) const {
   base::Optional<double> result = startTime();
   is_null = !result;
   return result.value_or(0);
 }
 
-base::Optional<double> Animation::startTime() const {
-  return start_time_ ? base::make_optional(start_time_.value() * 1000)
-                     : base::nullopt;
-}
-
-double Animation::currentTime(bool& is_null) {
-  double result = currentTime();
-  is_null = std::isnan(result);
-  return result;
-}
-
 // https://drafts.csswg.org/web-animations/#the-current-time-of-an-animation
-double Animation::currentTime() {
+base::Optional<double> Animation::currentTimeForBinding() const {
   // 1. If the animation’s hold time is resolved,
   //    The current time is the animation’s hold time.
   if (hold_time_.has_value())
@@ -363,9 +374,8 @@ double Animation::currentTime() {
   //    * the associated timeline is inactive, or
   //    * the animation’s start time is unresolved.
   // The current time is an unresolved time value.
-  if (!timeline_ || !timeline_->IsActive() || !start_time_) {
-    return NullValue();
-  }
+  if (!timeline_ || !timeline_->IsActive() || !start_time_)
+    return base::nullopt;
 
   // 3. Otherwise,
   // current time = (timeline time - start time) × playback rate
@@ -378,6 +388,22 @@ double Animation::currentTime() {
   double current_time =
       (timeline_time.value() - start_time_.value()) * playback_rate_;
   return SecondsToMilliseconds(current_time);
+}
+
+double Animation::currentTimeForBinding(bool& is_null) {
+  base::Optional<double> result = currentTimeForBinding();
+  is_null = !result;
+  return result.value_or(0);
+}
+
+double Animation::currentTime() const {
+  return currentTimeForBinding().value_or(NullValue());
+}
+
+double Animation::currentTime(bool& is_null) {
+  base::Optional<double> result = currentTimeForBinding();
+  is_null = !result;
+  return result.value_or(0);
 }
 
 base::Optional<double> Animation::CurrentTimeInternal() const {
@@ -673,8 +699,7 @@ base::Optional<double> Animation::CalculateCurrentTime() const {
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-start-time-of-an-animation
-void Animation::setStartTime(double start_time_ms,
-                             bool is_null,
+void Animation::setStartTime(base::Optional<double> start_time_ms,
                              ExceptionState& exception_state) {
   // TODO(crbug.com/916117): Implement setting start time for scroll-linked
   // animations.
@@ -701,7 +726,7 @@ void Animation::setStartTime(double start_time_ms,
   // This preserves the invariant that when we don’t have an active timeline it
   // is only possible to set either the start time or the animation’s current
   // time.
-  if (!timeline_time && !is_null)
+  if (!timeline_time && start_time_ms)
     hold_time_ = base::nullopt;
 
   // 3. Let previous current time be animation’s current time.
@@ -712,8 +737,8 @@ void Animation::setStartTime(double start_time_ms,
 
   // 5. Set animation’s start time to new start time.
   base::Optional<double> new_start_time;
-  if (!is_null)
-    new_start_time = MillisecondsToSeconds(start_time_ms);
+  if (start_time_ms)
+    new_start_time = MillisecondsToSeconds(start_time_ms.value());
   start_time_ = new_start_time;
 
   // 6. Update animation’s hold time based on the first matching condition from
@@ -758,6 +783,13 @@ void Animation::setStartTime(double start_time_ms,
   SetCompositorPending(/*effect_changed=*/false);
 
   NotifyProbe();
+}
+
+void Animation::setStartTime(double start_time_ms,
+                             bool is_null,
+                             ExceptionState& exception_state) {
+  setStartTime(is_null ? base::nullopt : base::make_optional(start_time_ms),
+               exception_state);
 }
 
 // https://drafts.csswg.org/web-animations-1/#setting-the-associated-effect

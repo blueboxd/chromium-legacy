@@ -62,7 +62,7 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
 
         assert BrowserStartupController.getInstance().isFullBrowserStarted()
                 || mStartsServiceManagerOnly;
-        ProfileKey key = ProfileKey.getLastUsedProfileKey().getOriginalKey();
+        ProfileKey key = ProfileKey.getLastUsedRegularProfileKey();
         DownloadBackgroundTaskJni.get().startBackgroundTask(DownloadBackgroundTask.this, key,
                 mCurrentTaskType, needsReschedule -> callback.taskFinished(needsReschedule));
     }
@@ -81,7 +81,7 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
     protected boolean onStopTaskWithNative(Context context, TaskParameters taskParameters) {
         @DownloadTaskType
         int taskType = taskParameters.getExtras().getInt(DownloadTaskScheduler.EXTRA_TASK_TYPE);
-        ProfileKey key = ProfileKey.getLastUsedProfileKey().getOriginalKey();
+        ProfileKey key = ProfileKey.getLastUsedRegularProfileKey();
         return DownloadBackgroundTaskJni.get().stopBackgroundTask(
                 DownloadBackgroundTask.this, key, taskType);
     }

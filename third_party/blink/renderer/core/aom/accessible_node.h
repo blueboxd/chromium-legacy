@@ -141,11 +141,17 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
                           HeapVector<Member<Element>>&);
 
   // Returns the given boolean property.
-  bool GetProperty(AOMBooleanProperty, bool& is_null) const;
+  base::Optional<bool> GetProperty(AOMBooleanProperty) const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool GetProperty(AOMBooleanProperty, bool& is_null) const;  // DEPRECATED
 
   // Returns the value of the given property if the
   // Element has an AccessibleNode. Sets |isNull| if the property and
   // attribute are not present.
+  static base::Optional<int32_t> GetProperty(Element*, AOMIntProperty);
+  static base::Optional<uint32_t> GetProperty(Element*, AOMUIntProperty);
+  static base::Optional<float> GetProperty(Element*, AOMFloatProperty);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
   static float GetProperty(Element*, AOMFloatProperty, bool& is_null);
   static int32_t GetProperty(Element*, AOMIntProperty, bool& is_null);
   static uint32_t GetProperty(Element*, AOMUIntProperty, bool& is_null);
@@ -201,26 +207,41 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   AccessibleNode* activeDescendant() const;
   void setActiveDescendant(AccessibleNode*);
 
-  bool atomic(bool& is_null) const;
-  void setAtomic(bool, bool is_null);
+  base::Optional<bool> atomic() const;
+  void setAtomic(base::Optional<bool>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool atomic(bool& is_null) const;    // DEPRECATED
+  void setAtomic(bool, bool is_null);  // DEPRECATED
 
   AtomicString autocomplete() const;
   void setAutocomplete(const AtomicString&);
 
-  bool busy(bool& is_null) const;
-  void setBusy(bool, bool is_null);
+  base::Optional<bool> busy() const;
+  void setBusy(base::Optional<bool>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool busy(bool& is_null) const;    // DEPRECATED
+  void setBusy(bool, bool is_null);  // DEPRECATED
 
   AtomicString checked() const;
   void setChecked(const AtomicString&);
 
-  int32_t colCount(bool& is_null) const;
-  void setColCount(int32_t, bool is_null);
+  base::Optional<int32_t> colCount() const;
+  void setColCount(base::Optional<int32_t>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  int32_t colCount(bool& is_null) const;    // DEPRECATED
+  void setColCount(int32_t, bool is_null);  // DEPRECATED
 
-  uint32_t colIndex(bool& is_null) const;
-  void setColIndex(uint32_t, bool is_null);
+  base::Optional<uint32_t> colIndex() const;
+  void setColIndex(base::Optional<uint32_t>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint32_t colIndex(bool& is_null) const;    // DEPRECATED
+  void setColIndex(uint32_t, bool is_null);  // DEPRECATED
 
-  uint32_t colSpan(bool& is_null) const;
-  void setColSpan(uint32_t, bool is_null);
+  base::Optional<uint32_t> colSpan() const;
+  void setColSpan(base::Optional<uint32_t>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint32_t colSpan(bool& is_null) const;    // DEPRECATED
+  void setColSpan(uint32_t, bool is_null);  // DEPRECATED
 
   AccessibleNodeList* controls() const;
   void setControls(AccessibleNodeList*);
@@ -237,14 +258,20 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   AccessibleNodeList* details() const;
   void setDetails(AccessibleNodeList*);
 
-  bool disabled(bool& is_null) const;
-  void setDisabled(bool, bool is_null);
+  base::Optional<bool> disabled() const;
+  void setDisabled(base::Optional<bool>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool disabled(bool& is_null) const;    // DEPRECATED
+  void setDisabled(bool, bool is_null);  // DEPRECATED
 
   AccessibleNode* errorMessage() const;
   void setErrorMessage(AccessibleNode*);
 
-  bool expanded(bool& is_null) const;
-  void setExpanded(bool, bool is_null);
+  base::Optional<bool> expanded() const;
+  void setExpanded(base::Optional<bool>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool expanded(bool& is_null) const;    // DEPRECATED
+  void setExpanded(bool, bool is_null);  // DEPRECATED
 
   AccessibleNodeList* flowTo() const;
   void setFlowTo(AccessibleNodeList*);
@@ -252,8 +279,11 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   AtomicString hasPopUp() const;
   void setHasPopUp(const AtomicString&);
 
-  bool hidden(bool& is_null) const;
-  void setHidden(bool, bool is_null);
+  base::Optional<bool> hidden() const;
+  void setHidden(base::Optional<bool>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool hidden(bool& is_null) const;    // DEPRECATED
+  void setHidden(bool, bool is_null);  // DEPRECATED
 
   AtomicString invalid() const;
   void setInvalid(const AtomicString&);
@@ -267,20 +297,32 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   AccessibleNodeList* labeledBy();
   void setLabeledBy(AccessibleNodeList*);
 
-  uint32_t level(bool& is_null) const;
-  void setLevel(uint32_t, bool is_null);
+  base::Optional<uint32_t> level() const;
+  void setLevel(base::Optional<uint32_t>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint32_t level(bool& is_null) const;    // DEPRECATED
+  void setLevel(uint32_t, bool is_null);  // DEPRECATED
 
   AtomicString live() const;
   void setLive(const AtomicString&);
 
-  bool modal(bool& is_null) const;
-  void setModal(bool, bool is_null);
+  base::Optional<bool> modal() const;
+  void setModal(base::Optional<bool>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool modal(bool& is_null) const;    // DEPRECATED
+  void setModal(bool, bool is_null);  // DEPRECATED
 
-  bool multiline(bool& is_null) const;
-  void setMultiline(bool, bool is_null);
+  base::Optional<bool> multiline() const;
+  void setMultiline(base::Optional<bool>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool multiline(bool& is_null) const;    // DEPRECATED
+  void setMultiline(bool, bool is_null);  // DEPRECATED
 
-  bool multiselectable(bool& is_null) const;
-  void setMultiselectable(bool, bool is_null);
+  base::Optional<bool> multiselectable() const;
+  void setMultiselectable(base::Optional<bool>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool multiselectable(bool& is_null) const;    // DEPRECATED
+  void setMultiselectable(bool, bool is_null);  // DEPRECATED
 
   AtomicString orientation() const;
   void setOrientation(const AtomicString&);
@@ -291,20 +333,29 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   AtomicString placeholder() const;
   void setPlaceholder(const AtomicString&);
 
-  uint32_t posInSet(bool& is_null) const;
-  void setPosInSet(uint32_t, bool is_null);
+  base::Optional<uint32_t> posInSet() const;
+  void setPosInSet(base::Optional<uint32_t>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint32_t posInSet(bool& is_null) const;    // DEPRECATED
+  void setPosInSet(uint32_t, bool is_null);  // DEPRECATED
 
   AtomicString pressed() const;
   void setPressed(const AtomicString&);
 
-  bool readOnly(bool& is_null) const;
-  void setReadOnly(bool, bool is_null);
+  base::Optional<bool> readOnly() const;
+  void setReadOnly(base::Optional<bool>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool readOnly(bool& is_null) const;    // DEPRECATED
+  void setReadOnly(bool, bool is_null);  // DEPRECATED
 
   AtomicString relevant() const;
   void setRelevant(const AtomicString&);
 
-  bool required(bool& is_null) const;
-  void setRequired(bool, bool is_null);
+  base::Optional<bool> required() const;
+  void setRequired(base::Optional<bool>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool required(bool& is_null) const;    // DEPRECATED
+  void setRequired(bool, bool is_null);  // DEPRECATED
 
   AtomicString role() const;
   void setRole(const AtomicString&);
@@ -312,32 +363,56 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   AtomicString roleDescription() const;
   void setRoleDescription(const AtomicString&);
 
-  int32_t rowCount(bool& is_null) const;
-  void setRowCount(int32_t, bool is_null);
+  base::Optional<int32_t> rowCount() const;
+  void setRowCount(base::Optional<int32_t>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  int32_t rowCount(bool& is_null) const;    // DEPRECATED
+  void setRowCount(int32_t, bool is_null);  // DEPRECATED
 
-  uint32_t rowIndex(bool& is_null) const;
-  void setRowIndex(uint32_t, bool is_null);
+  base::Optional<uint32_t> rowIndex() const;
+  void setRowIndex(base::Optional<uint32_t>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint32_t rowIndex(bool& is_null) const;    // DEPRECATED
+  void setRowIndex(uint32_t, bool is_null);  // DEPRECATED
 
-  uint32_t rowSpan(bool& is_null) const;
-  void setRowSpan(uint32_t, bool is_null);
+  base::Optional<uint32_t> rowSpan() const;
+  void setRowSpan(base::Optional<uint32_t>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint32_t rowSpan(bool& is_null) const;    // DEPRECATED
+  void setRowSpan(uint32_t, bool is_null);  // DEPRECATED
 
-  bool selected(bool& is_null) const;
-  void setSelected(bool, bool is_null);
+  base::Optional<bool> selected() const;
+  void setSelected(base::Optional<bool>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool selected(bool& is_null) const;    // DEPRECATED
+  void setSelected(bool, bool is_null);  // DEPRECATED
 
-  int32_t setSize(bool& is_null) const;
-  void setSetSize(int32_t, bool is_null);
+  base::Optional<int32_t> setSize() const;
+  void setSetSize(base::Optional<int32_t>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  int32_t setSize(bool& is_null) const;    // DEPRECATED
+  void setSetSize(int32_t, bool is_null);  // DEPRECATED
 
   AtomicString sort() const;
   void setSort(const AtomicString&);
 
-  float valueMax(bool& is_null) const;
-  void setValueMax(float, bool is_null);
+  base::Optional<float> valueMax() const;
+  void setValueMax(base::Optional<float>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  float valueMax(bool& is_null) const;    // DEPRECATED
+  void setValueMax(float, bool is_null);  // DEPRECATED
 
-  float valueMin(bool& is_null) const;
-  void setValueMin(float, bool is_null);
+  base::Optional<float> valueMin() const;
+  void setValueMin(base::Optional<float>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  float valueMin(bool& is_null) const;    // DEPRECATED
+  void setValueMin(float, bool is_null);  // DEPRECATED
 
-  float valueNow(bool& is_null) const;
-  void setValueNow(float, bool is_null);
+  base::Optional<float> valueNow() const;
+  void setValueNow(base::Optional<float>);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  float valueNow(bool& is_null) const;    // DEPRECATED
+  void setValueNow(float, bool is_null);  // DEPRECATED
 
   AtomicString valueText() const;
   void setValueText(const AtomicString&);
@@ -374,10 +449,23 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   void SetStringProperty(AOMStringProperty, const AtomicString&);
   void SetRelationProperty(AOMRelationProperty, AccessibleNode*);
   void SetRelationListProperty(AOMRelationListProperty, AccessibleNodeList*);
-  void SetBooleanProperty(AOMBooleanProperty, bool value, bool is_null);
-  void SetFloatProperty(AOMFloatProperty, float value, bool is_null);
-  void SetUIntProperty(AOMUIntProperty, uint32_t value, bool is_null);
-  void SetIntProperty(AOMIntProperty, int32_t value, bool is_null);
+  void SetBooleanProperty(AOMBooleanProperty, base::Optional<bool> value);
+  void SetIntProperty(AOMIntProperty, base::Optional<int32_t> value);
+  void SetUIntProperty(AOMUIntProperty, base::Optional<uint32_t> value);
+  void SetFloatProperty(AOMFloatProperty, base::Optional<float> value);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  void SetBooleanProperty(AOMBooleanProperty,
+                          bool value,
+                          bool is_null);  // DEPRECATED
+  void SetFloatProperty(AOMFloatProperty,
+                        float value,
+                        bool is_null);  // DEPRECATED
+  void SetUIntProperty(AOMUIntProperty,
+                       uint32_t value,
+                       bool is_null);  // DEPRECATED
+  void SetIntProperty(AOMIntProperty,
+                      int32_t value,
+                      bool is_null);  // DEPRECATED
   void NotifyAttributeChanged(const blink::QualifiedName&);
   AXObjectCache* GetAXObjectCache();
 

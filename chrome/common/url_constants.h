@@ -267,6 +267,9 @@ extern const char kChromeOSAssetPath[];
 
 extern const char kChromeOSCreditsPath[];
 
+// Chrome OS tablet gestures education help link for Chrome.
+extern const char kChromeOSGestureEducationHelpURL[];
+
 // Palette help link for Chrome.
 extern const char kChromePaletteHelpURL[];
 

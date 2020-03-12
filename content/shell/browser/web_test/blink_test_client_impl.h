@@ -25,6 +25,7 @@ class BlinkTestClientImpl : public mojom::BlinkTestClient {
   void InitiateLayoutDump() override;
   void ResetDone() override;
   void PrintMessageToStderr(const std::string& message) override;
+  void PrintMessage(const std::string& message) override;
   void Reload() override;
   void OverridePreferences(
       const content::WebPreferences& web_preferences) override;

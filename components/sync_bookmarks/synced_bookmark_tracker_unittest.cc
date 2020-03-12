@@ -741,9 +741,8 @@ TEST(SyncedBookmarkTrackerTest,
   const int64_t kManagedNodeId = 100;
   auto owned_managed_node = std::make_unique<bookmarks::BookmarkPermanentNode>(
       kManagedNodeId, bookmarks::BookmarkNode::FOLDER);
-  bookmarks::BookmarkPermanentNode* managed_node = owned_managed_node.get();
   auto client = std::make_unique<bookmarks::TestBookmarkClient>();
-  client->SetManagedNodeToLoad(std::move(owned_managed_node));
+  bookmarks::BookmarkNode* managed_node = client->EnableManagedNode();
 
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));

@@ -52,7 +52,9 @@ class CustomLayoutFragment : public ScriptWrappable {
   void setInlineOffset(double inline_offset) { inline_offset_ = inline_offset; }
   void setBlockOffset(double block_offset) { block_offset_ = block_offset; }
 
-  double baseline(bool& is_null) const;
+  base::Optional<double> baseline() const { return baseline_; }
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  double baseline(bool& is_null) const;  // DEPRECATED
 
   ScriptValue data(ScriptState*) const;
 
@@ -92,8 +94,7 @@ class CustomLayoutFragment : public ScriptWrappable {
   double block_offset_ = 0;
 
   // The first-line baseline.
-  const double baseline_;
-  const bool is_baseline_null_;
+  const base::Optional<double> baseline_;
 
   TraceWrapperV8Reference<v8::Value> layout_worklet_world_v8_data_;
 

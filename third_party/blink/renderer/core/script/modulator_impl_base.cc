@@ -73,13 +73,6 @@ bool ModulatorImplBase::BuiltInModuleEnabled(layered_api::Module module) const {
   switch (module) {
     case layered_api::Module::kBlank:
       return true;
-    case layered_api::Module::kElementsInternal:
-      // Union of conditions of KElementsSwitch and kElementsToast.
-      return RuntimeEnabledFeatures::BuiltInModuleSwitchElementEnabled();
-    case layered_api::Module::kElementsSwitch:
-      return RuntimeEnabledFeatures::BuiltInModuleSwitchElementEnabled();
-    case layered_api::Module::kElementsToast:
-      return RuntimeEnabledFeatures::BuiltInModuleAllEnabled();
     case layered_api::Module::kElementsVirtualScroller:
       return false;
   }
@@ -89,9 +82,6 @@ bool ModulatorImplBase::BuiltInModuleRequireSecureContext(
     layered_api::Module module) {
   switch (module) {
     case layered_api::Module::kBlank:
-    case layered_api::Module::kElementsInternal:
-    case layered_api::Module::kElementsSwitch:
-    case layered_api::Module::kElementsToast:
     case layered_api::Module::kElementsVirtualScroller:
       return false;
   }
@@ -103,15 +93,6 @@ void ModulatorImplBase::BuiltInModuleUseCount(
   DCHECK(BuiltInModuleEnabled(module));
   switch (module) {
     case layered_api::Module::kBlank:
-      break;
-    case layered_api::Module::kElementsInternal:
-      break;
-    case layered_api::Module::kElementsSwitch:
-      UseCounter::Count(GetExecutionContext(),
-                        WebFeature::kBuiltInModuleSwitchImported);
-      break;
-    case layered_api::Module::kElementsToast:
-      UseCounter::Count(GetExecutionContext(), WebFeature::kBuiltInModuleToast);
       break;
     case layered_api::Module::kElementsVirtualScroller:
       UseCounter::Count(GetExecutionContext(),

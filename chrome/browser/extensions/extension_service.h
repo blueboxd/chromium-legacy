@@ -56,7 +56,7 @@ class Profile;
 namespace base {
 class CommandLine;
 class OneShotEvent;
-}
+}  // namespace base
 
 FORWARD_DECLARE_TEST(BlacklistedExtensionSyncServiceTest,
                      SyncBlacklistedExtension);
@@ -144,6 +144,10 @@ class ExtensionServiceInterface
 
   // Whether the extension service is ready.
   virtual bool is_ready() = 0;
+
+  // Whether a user is able to disable a given extension.
+  virtual bool UserCanDisableInstalledExtension(
+      const std::string& extension_id) = 0;
 };
 
 // Manages installed and running Chromium extensions. An instance is shared
@@ -338,6 +342,11 @@ class ExtensionService : public ExtensionServiceInterface,
   void RegisterInstallGate(ExtensionPrefs::DelayReason reason,
                            InstallGate* install_delayer);
   void UnregisterInstallGate(InstallGate* install_delayer);
+
+  // Returns whether a user is able to disable a given extension or if that is
+  // not possible (for instance, extension was enabled by policy).
+  bool UserCanDisableInstalledExtension(
+      const std::string& extension_id) override;
 
   //////////////////////////////////////////////////////////////////////////////
   // Simple Accessors
@@ -682,15 +691,12 @@ class ExtensionService : public ExtensionServiceInterface,
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            WillNotLoadBlacklistedExtensionsFromDirectory);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, ReloadBlacklistedExtension);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           RemoveExtensionFromBlacklist);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, RemoveExtensionFromBlacklist);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, BlacklistedInPrefsFromStartup);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           GreylistedExtensionDisabled);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, GreylistedExtensionDisabled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            GreylistDontEnableManuallyDisabled);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           GreylistUnknownDontChange);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, GreylistUnknownDontChange);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            ManagementPolicyProhibitsEnableOnInstalled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,

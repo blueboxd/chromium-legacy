@@ -5,20 +5,27 @@
 #include "chrome/browser/ui/webui/settings/safety_check_handler.h"
 
 #include <string>
+#include <unordered_map>
 
 #include "base/bind.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/ui/webui/help/test_version_updater.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/crx_file/id_util.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_web_ui.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,6 +37,11 @@
 constexpr char kUpdates[] = "updates";
 constexpr char kPasswords[] = "passwords";
 constexpr char kSafeBrowsing[] = "safe-browsing";
+constexpr char kExtensions[] = "extensions";
+
+namespace {
+using Enabled = util::StrongAlias<class EnabledTag, bool>;
+using UserCanDisable = util::StrongAlias<class UserCanDisableTag, bool>;
 
 class TestingSafetyCheckHandler : public SafetyCheckHandler {
  public:
@@ -39,9 +51,51 @@ class TestingSafetyCheckHandler : public SafetyCheckHandler {
 
   TestingSafetyCheckHandler(
       std::unique_ptr<VersionUpdater> version_updater,
-      password_manager::BulkLeakCheckService* leak_service)
-      : SafetyCheckHandler(std::move(version_updater), leak_service) {}
+      password_manager::BulkLeakCheckService* leak_service,
+      extensions::ExtensionPrefs* extension_prefs,
+      extensions::ExtensionServiceInterface* extension_service)
+      : SafetyCheckHandler(std::move(version_updater),
+                           leak_service,
+                           extension_prefs,
+                           extension_service) {}
 };
+
+class TestSafetyCheckExtensionService : public TestExtensionService {
+ public:
+  void AddExtensionState(const std::string& extension_id,
+                         Enabled enabled,
+                         UserCanDisable user_can_disable) {
+    state_map_.emplace(extension_id, ExtensionState{enabled.value(),
+                                                    user_can_disable.value()});
+  }
+
+  bool IsExtensionEnabled(const std::string& extension_id) const override {
+    auto it = state_map_.find(extension_id);
+    if (it == state_map_.end()) {
+      return false;
+    }
+    return it->second.enabled;
+  }
+
+  bool UserCanDisableInstalledExtension(
+      const std::string& extension_id) override {
+    auto it = state_map_.find(extension_id);
+    if (it == state_map_.end()) {
+      return false;
+    }
+    return it->second.user_can_disable;
+  }
+
+ private:
+  struct ExtensionState {
+    bool enabled;
+    bool user_can_disable;
+  };
+
+  std::unordered_map<std::string, ExtensionState> state_map_;
+};
+
+}  // namespace
 
 class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -54,6 +108,8 @@ class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
       const std::string& component,
       int new_state);
 
+  std::string GenerateExtensionId(char char_to_repeat);
+
   void VerifyDisplayString(const base::DictionaryValue* event,
                            const base::string16& expected);
   void VerifyDisplayString(const base::DictionaryValue* event,
@@ -62,6 +118,8 @@ class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
  protected:
   TestVersionUpdater* version_updater_ = nullptr;
   std::unique_ptr<password_manager::BulkLeakCheckService> test_leak_service_;
+  extensions::ExtensionPrefs* test_extension_prefs_ = nullptr;
+  TestSafetyCheckExtensionService test_extension_service_;
   content::TestWebUI test_web_ui_;
   std::unique_ptr<TestingSafetyCheckHandler> safety_check_;
 
@@ -82,8 +140,10 @@ void SafetyCheckHandlerTest::SetUp() {
       nullptr, nullptr);
   version_updater_ = version_updater.get();
   test_web_ui_.set_web_contents(web_contents());
+  test_extension_prefs_ = extensions::ExtensionPrefs::Get(profile());
   safety_check_ = std::make_unique<TestingSafetyCheckHandler>(
-      std::move(version_updater), test_leak_service_.get());
+      std::move(version_updater), test_leak_service_.get(),
+      test_extension_prefs_, &test_extension_service_);
   test_web_ui_.ClearTrackedCalls();
   safety_check_->set_web_ui(&test_web_ui_);
   safety_check_->AllowJavascript();
@@ -114,6 +174,10 @@ SafetyCheckHandlerTest::GetSafetyCheckStatusChangedWithDataIfExists(
     }
   }
   return nullptr;
+}
+
+std::string SafetyCheckHandlerTest::GenerateExtensionId(char char_to_repeat) {
+  return std::string(crx_file::id_util::kIdSize * 2, char_to_repeat);
 }
 
 void SafetyCheckHandlerTest::VerifyDisplayString(
@@ -411,4 +475,166 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_StartedTwice) {
   ASSERT_TRUE(event2);
   VerifyDisplayString(event2,
                       "Browser can't check your passwords. Try again later.");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckExtensions_NoExtensions) {
+  safety_check_->PerformSafetyCheck();
+  EXPECT_TRUE(GetSafetyCheckStatusChangedWithDataIfExists(
+      kExtensions,
+      static_cast<int>(
+          SafetyCheckHandler::ExtensionsStatus::kNoneBlocklisted)));
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckExtensions_NoneBlocklisted) {
+  std::string extension_id = GenerateExtensionId('a');
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder(extension_id).Build();
+  test_extension_prefs_->OnExtensionInstalled(
+      extension.get(), extensions::Extension::State::ENABLED,
+      syncer::StringOrdinal(), "");
+  test_extension_prefs_->SetExtensionBlacklistState(
+      extension_id, extensions::NOT_BLACKLISTED);
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kExtensions,
+          static_cast<int>(
+              SafetyCheckHandler::ExtensionsStatus::kNoneBlocklisted));
+  EXPECT_TRUE(event);
+  VerifyDisplayString(event,
+                      "You're protected from potentially harmful extensions");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedAllDisabled) {
+  std::string extension_id = GenerateExtensionId('a');
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("test0").SetID(extension_id).Build();
+  test_extension_prefs_->OnExtensionInstalled(
+      extension.get(), extensions::Extension::State::DISABLED,
+      syncer::StringOrdinal(), "");
+  test_extension_prefs_->SetExtensionBlacklistState(
+      extension_id, extensions::BLACKLISTED_MALWARE);
+  test_extension_service_.AddExtensionState(extension_id, Enabled(false),
+                                            UserCanDisable(false));
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kExtensions,
+          static_cast<int>(
+              SafetyCheckHandler::ExtensionsStatus::kBlocklistedAllDisabled));
+  EXPECT_TRUE(event);
+  VerifyDisplayString(
+      event, "1 potentially harmful extension is off. You can also remove it.");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledAllByUser) {
+  std::string extension_id = GenerateExtensionId('a');
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("test0").SetID(extension_id).Build();
+  test_extension_prefs_->OnExtensionInstalled(
+      extension.get(), extensions::Extension::State::ENABLED,
+      syncer::StringOrdinal(), "");
+  test_extension_prefs_->SetExtensionBlacklistState(
+      extension_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED);
+  test_extension_service_.AddExtensionState(extension_id, Enabled(true),
+                                            UserCanDisable(true));
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kExtensions, static_cast<int>(SafetyCheckHandler::ExtensionsStatus::
+                                            kBlocklistedReenabledAllByUser));
+  EXPECT_TRUE(event);
+  VerifyDisplayString(event,
+                      "You turned 1 potentially harmful extension back on");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledAllByAdmin) {
+  std::string extension_id = GenerateExtensionId('a');
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("test0").SetID(extension_id).Build();
+  test_extension_prefs_->OnExtensionInstalled(
+      extension.get(), extensions::Extension::State::ENABLED,
+      syncer::StringOrdinal(), "");
+  test_extension_prefs_->SetExtensionBlacklistState(
+      extension_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED);
+  test_extension_service_.AddExtensionState(extension_id, Enabled(true),
+                                            UserCanDisable(false));
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kExtensions, static_cast<int>(SafetyCheckHandler::ExtensionsStatus::
+                                            kBlocklistedReenabledAllByAdmin));
+  VerifyDisplayString(
+      event,
+      "Your administrator turned 1 potentially harmful extension back on");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledSomeByUser) {
+  std::string extension_id = GenerateExtensionId('a');
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("test0").SetID(extension_id).Build();
+  test_extension_prefs_->OnExtensionInstalled(
+      extension.get(), extensions::Extension::State::ENABLED,
+      syncer::StringOrdinal(), "");
+  test_extension_prefs_->SetExtensionBlacklistState(
+      extension_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED);
+  test_extension_service_.AddExtensionState(extension_id, Enabled(true),
+                                            UserCanDisable(true));
+
+  std::string extension2_id = GenerateExtensionId('b');
+  scoped_refptr<const extensions::Extension> extension2 =
+      extensions::ExtensionBuilder("test1").SetID(extension2_id).Build();
+  test_extension_prefs_->OnExtensionInstalled(
+      extension2.get(), extensions::Extension::State::ENABLED,
+      syncer::StringOrdinal(), "");
+  test_extension_prefs_->SetExtensionBlacklistState(
+      extension2_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED);
+  test_extension_service_.AddExtensionState(extension2_id, Enabled(true),
+                                            UserCanDisable(false));
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kExtensions, static_cast<int>(SafetyCheckHandler::ExtensionsStatus::
+                                            kBlocklistedReenabledSomeByUser));
+  EXPECT_TRUE(event);
+  VerifyDisplayString(
+      event,
+      "You turned 1 potentially harmful extension back on. Your administrator "
+      "turned 1 potentially harmful extension back on.");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckExtensions_Error) {
+  // One extension in the error state.
+  std::string extension_id = GenerateExtensionId('a');
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("test0").SetID(extension_id).Build();
+  test_extension_prefs_->OnExtensionInstalled(
+      extension.get(), extensions::Extension::State::ENABLED,
+      syncer::StringOrdinal(), "");
+  test_extension_prefs_->SetExtensionBlacklistState(
+      extension_id, extensions::BLACKLISTED_UNKNOWN);
+  test_extension_service_.AddExtensionState(extension_id, Enabled(true),
+                                            UserCanDisable(true));
+
+  // Another extension blocklisted.
+  std::string extension2_id = GenerateExtensionId('b');
+  scoped_refptr<const extensions::Extension> extension2 =
+      extensions::ExtensionBuilder("test1").SetID(extension2_id).Build();
+  test_extension_prefs_->OnExtensionInstalled(
+      extension2.get(), extensions::Extension::State::ENABLED,
+      syncer::StringOrdinal(), "");
+  test_extension_prefs_->SetExtensionBlacklistState(
+      extension2_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED);
+  test_extension_service_.AddExtensionState(extension2_id, Enabled(true),
+                                            UserCanDisable(false));
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kExtensions,
+          static_cast<int>(SafetyCheckHandler::ExtensionsStatus::kError));
+  EXPECT_TRUE(event);
+  VerifyDisplayString(event,
+                      "Browser can't check your extensions. Try again later.");
 }

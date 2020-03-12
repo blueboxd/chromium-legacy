@@ -374,7 +374,7 @@
   <message name="IDS_SETTINGS_A11Y_TABLET_MODE_SHELF_BUTTONS_DESCRIPTION" desc="The description for the setting within accessibility settings that controls whether Chrome OS system shelf navigation buttons should be shown when the device is in tablet mode. The buttons whose visibility the setting controls are the button to go home (to launcher), the button to go back, and the button to go to overview.">
     Show Launcher, Back, Overview buttons in Shelf in tablet mode. Turned on when ChromeVox (spoken feedback) or Switch Access is enabled.
   </message>
-  
+
   <!-- A11y (OS Settings) -->
   <message name="IDS_SETTINGS_OPTIONS_IN_MENU_LABEL" desc="Label for checkbox which enables showing accessibility options in the system menu.">
     Always show accessibility options in the system menu
@@ -697,7 +697,10 @@
 
   <!-- Account Manager (OS settings) -->
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION" desc="Description of the Account Manager Settings page. Shown just below the title of the page.">
-    Manage your signed-in accounts. Websites, apps, and extensions in Chrome and Google Play may use these accounts to customize your experience, depending on permissions. &lt;a&gt;Learn more&lt;/a&gt;
+    Manage your signed-in accounts. Websites, apps, and extensions in Chrome and Google Play may use these accounts to customize your experience, depending on permissions. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_DESCRIPTION" desc="Description of the Account Manager Settings page for child users. Shown just below the title of the page.">
+    Add a school account or manage child accounts here. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER" desc="List header for Account List in Account Manager Settings page.">
     Accounts
@@ -945,8 +948,8 @@
   </message>
   <message name="IDS_SETTINGS_CROSTINI_MIC_TITLE" desc="Title for sharing mic with Crostini.">
     Give access to microphone
-  </message>  
-  
+  </message>
+
   <!-- Android apps page (OS settings) -->
   <message name="IDS_SETTINGS_ANDROID_APPS_LABEL" desc="The text associated with the primary section setting.">
     Google Play Store
@@ -969,7 +972,7 @@
   <message name="IDS_SETTINGS_ANDROID_APPS_MANAGE_APP_LINKS" desc="Label for accessing app preferrences on ARC side.">
     Manage Play app links
   </message>
-  
+
   <!-- Device Stylus (OS settings) -->
   <message name="IDS_SETTINGS_STYLUS_TITLE" desc="Title of the stylus settings page.">
     Stylus
@@ -1004,7 +1007,7 @@
   <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_WAITING_FOR_ANDROID" desc="Secondary label used when the list of note-taking apps is not yet available, because the internal android container has not yet finished starting.">
     Loading apps...
   </message>
-  
+
   <!-- Bluetooth page (OS settings) -->
   <message name="IDS_SETTINGS_BLUETOOTH_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is already connected.">
     Connected
@@ -1696,7 +1699,7 @@
   <message name="IDS_SETTINGS_USER_EXISTS_ERROR" desc="Error message for attempting to add a user that already exists">
     This user already exists
   </message>
-  
+
   <!-- Multidevice Page (OS settings) -->
   <message name="IDS_SETTINGS_MULTIDEVICE" desc="Title of a section of settings. This section describes settings for devices that are connected to the Chromebook, like phones.">
     Connected devices
@@ -2225,7 +2228,7 @@
   <message name="IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TEXT" desc="In Device Settings > Displays, the sublabel for initiating touch calibration.">
     Set up and adjust the accuracy of your touchscreen
   </message>
-  
+
   <!-- Smart Lock Page (OS settings) -->
   <message name="IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE" desc="The title of the Easy Unlock section on the settings page.">
     Smart Lock
@@ -2236,7 +2239,7 @@
   <message name="IDS_SETTINGS_EASY_UNLOCK_UNLOCK_DEVICE_AND_ALLOW_SIGNIN" desc="This option lets the user unlock their Chromebook from their phone as well as log into their Chromebook without a password if their phone is nearby and unlocked.">
     Unlock device and sign in to Google Account
   </message>
-  
+
   <!-- Fingerprint Page (OS settings) -->
   <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_ADD_FINGERPRINT_BUTTON" desc="Button that is used to add a new fingerprint.">
     Add Fingerprint
@@ -2322,7 +2325,7 @@
   <message name="IDS_SETTINGS_SET_DATE_TIME" desc="Label for the button that shows the dialog for setting the system date and time.">
     Set date and time
   </message>
-  
+
   <!-- Device Keyboard page (OS settings) -->
   <message name="IDS_SETTINGS_KEYBOARD_TITLE" desc="In Device Settings, the title of the keyboard settings subpage.">
     Keyboard
@@ -2405,7 +2408,7 @@
   <message name="IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION" desc="In Device Settings, the label describing how to use the top-row keys' original actions when they are set to behave like function keys.">
     Hold the Search key to switch the behavior of the top-row keys
   </message>
-  
+
   <!-- Apps Section Page -->
   <message name="IDS_SETTINGS_APPS_TITLE" desc="The title of Apps section.">
     Apps

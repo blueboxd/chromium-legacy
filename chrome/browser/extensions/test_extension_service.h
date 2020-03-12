@@ -13,9 +13,9 @@
 namespace extensions {
 class CrxInstaller;
 class Extension;
-}
+}  // namespace extensions
 
-// Implemention of ExtensionServiceInterface with default
+// Implementation of ExtensionServiceInterface with default
 // implementations for methods that add failures.  You should subclass
 // this and override the methods you care about.
 class TestExtensionService : public extensions::ExtensionServiceInterface {
@@ -45,6 +45,9 @@ class TestExtensionService : public extensions::ExtensionServiceInterface {
   void UnloadExtension(const std::string& extension_id,
                        extensions::UnloadedExtensionReason reason) override;
   void RemoveComponentExtension(const std::string& extension_id) override;
+
+  bool UserCanDisableInstalledExtension(
+      const std::string& extension_id) override;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SERVICE_H_

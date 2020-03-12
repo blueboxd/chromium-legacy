@@ -14,4 +14,11 @@ TEST(NewLinkedHashSetTest, Construct) {
   NewLinkedHashSet<int> test;
 }
 
+TEST(NewLinkedHashSetTest, Iterator) {
+  using Set = NewLinkedHashSet<int>;
+  Set set;
+  EXPECT_TRUE(set.begin() == set.end());
+  EXPECT_TRUE(set.rbegin() == set.rend());
+}
+
 }  // namespace WTF

@@ -260,6 +260,10 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
     return TextType() == NGTextType::kSymbolMarker;
   }
 
+  bool IsBlockFormattingContextRoot() const {
+    return BoxFragment() && !IsInlineBox();
+  }
+
   const ShapeResultView* TextShapeResult() const;
   NGTextOffset TextOffset() const;
   unsigned StartOffset() const { return TextOffset().start; }

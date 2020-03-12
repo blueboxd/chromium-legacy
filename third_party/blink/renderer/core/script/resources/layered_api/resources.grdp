@@ -7,11 +7,6 @@
        third_party/blink/public/blink_resources.grd.
     -->
   <include name="IDR_LAYERED_API_BLANK_INDEX_MJS" file="../renderer/core/script/resources/layered_api/blank/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
-  <include name="IDR_LAYERED_API_ELEMENTS_INTERNAL_REFLECTION_MJS" file="../renderer/core/script/resources/layered_api/elements/internal/reflection.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
-  <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_FACE_UTILS_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/face_utils.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
-  <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_INDEX_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
-  <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_STYLE_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/style.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
-  <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_TRACK_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/track.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_VIRTUAL_SCROLLER_FIND_ELEMENT_MJS" file="../renderer/core/script/resources/layered_api/elements/virtual-scroller/find-element.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_VIRTUAL_SCROLLER_INDEX_MJS" file="../renderer/core/script/resources/layered_api/elements/virtual-scroller/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_VIRTUAL_SCROLLER_SETS_MJS" file="../renderer/core/script/resources/layered_api/elements/virtual-scroller/sets.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>

@@ -235,5 +235,55 @@ TEST_F(ValueUtilTest, CombineValues) {
   EXPECT_THAT(CombineValues({value_a, value_b, value_c}), expected);
 }
 
+TEST_F(ValueUtilTest, SmallerOperatorForValueProto) {
+  EXPECT_TRUE(SimpleValue(1) < SimpleValue(2));
+  EXPECT_TRUE(SimpleValue(std::string("a")) < SimpleValue(std::string("b")));
+  EXPECT_TRUE(SimpleValue(CreateDateProto(2020, 4, 19)) <
+              SimpleValue(CreateDateProto(2020, 4, 20)));
+  EXPECT_TRUE(SimpleValue(CreateDateProto(2020, 3, 21)) <
+              SimpleValue(CreateDateProto(2020, 4, 20)));
+  EXPECT_TRUE(SimpleValue(CreateDateProto(2019, 5, 21)) <
+              SimpleValue(CreateDateProto(2020, 4, 20)));
+
+  EXPECT_FALSE(SimpleValue(2) < SimpleValue(1));
+  EXPECT_FALSE(SimpleValue(std::string("b")) < SimpleValue(std::string("a")));
+  EXPECT_FALSE(SimpleValue(CreateDateProto(2020, 4, 20)) <
+               SimpleValue(CreateDateProto(2020, 4, 19)));
+  EXPECT_FALSE(SimpleValue(CreateDateProto(2020, 4, 20)) <
+               SimpleValue(CreateDateProto(2020, 3, 21)));
+  EXPECT_FALSE(SimpleValue(CreateDateProto(2020, 4, 20)) <
+               SimpleValue(CreateDateProto(2019, 5, 21)));
+
+  EXPECT_FALSE(SimpleValue(1) < SimpleValue(1));
+  EXPECT_FALSE(SimpleValue(std::string("a")) < SimpleValue(std::string("a")));
+  EXPECT_FALSE(SimpleValue(CreateDateProto(2020, 4, 19)) <
+               SimpleValue(CreateDateProto(2020, 4, 19)));
+
+  // Empty values.
+  ValueProto value_a;
+  ValueProto value_b;
+  EXPECT_FALSE(value_a < value_b || value_b < value_a);
+
+  // Different types.
+  value_a = SimpleValue(std::string("a"));
+  value_b = SimpleValue(1);
+  EXPECT_FALSE(value_a < value_b || value_b < value_a);
+
+  // Size != 1.
+  value_a = SimpleValue(1);
+  value_b.mutable_booleans()->add_values(2);
+  value_b.mutable_booleans()->add_values(3);
+  EXPECT_FALSE(value_a < value_b || value_b < value_a);
+
+  // Unsupported types.
+  value_a.mutable_user_actions();
+  value_b.mutable_user_actions();
+  EXPECT_FALSE(value_a < value_b || value_b < value_a);
+
+  value_a.mutable_booleans();
+  value_b.mutable_booleans();
+  EXPECT_FALSE(value_a < value_b || value_b < value_a);
+}
+
 }  // namespace value_util
 }  // namespace autofill_assistant

@@ -38,12 +38,15 @@ class CORE_EXPORT LocationReportBody : public ReportBody {
 
   String sourceFile() const { return source_file_; }
 
-  uint32_t lineNumber(bool& is_null) const {
+  base::Optional<uint32_t> lineNumber() const { return line_number_; }
+  base::Optional<uint32_t> columnNumber() const { return column_number_; }
+
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint32_t lineNumber(bool& is_null) const {  // DEPRECATED
     is_null = !line_number_.has_value();
     return line_number_.value_or(0);
   }
-
-  uint32_t columnNumber(bool& is_null) const {
+  uint32_t columnNumber(bool& is_null) const {  // DEPRECATED
     is_null = !column_number_.has_value();
     return column_number_.value_or(0);
   }

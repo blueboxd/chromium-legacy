@@ -215,4 +215,102 @@ TEST_F(BasicInteractionsTest, EndActionWithCallbackSucceeds) {
   EXPECT_TRUE(basic_interactions_.EndAction(proto));
 }
 
+TEST_F(BasicInteractionsTest, ComputeValueCompare) {
+  user_model_.SetValue("value_a", ValueProto());
+  user_model_.SetValue("value_b", ValueProto());
+
+  ComputeValueProto proto;
+  proto.mutable_comparison();
+
+  // Fields are missing.
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  proto.mutable_comparison()->set_model_identifier_a("value_a");
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  proto.mutable_comparison()->set_model_identifier_b("value_b");
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  proto.set_result_model_identifier("result");
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+
+  // EQUAL supported for all value types.
+  proto.mutable_comparison()->set_mode(ValueComparisonProto::EQUAL);
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  user_model_.SetValue("value_a", SimpleValue(std::string("string_a")));
+  user_model_.SetValue("value_b", SimpleValue(std::string("string_b")));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  user_model_.SetValue("value_a", SimpleValue(true));
+  user_model_.SetValue("value_b", SimpleValue(false));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  user_model_.SetValue("value_a", SimpleValue(1));
+  user_model_.SetValue("value_b", SimpleValue(2));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  user_model_.SetValue("value_a", SimpleValue(CreateDateProto(2020, 8, 7)));
+  user_model_.SetValue("value_b", SimpleValue(CreateDateProto(2020, 11, 5)));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  ValueProto user_actions_value;
+  user_actions_value.mutable_user_actions();
+  user_model_.SetValue("value_a", user_actions_value);
+  user_model_.SetValue("value_b", user_actions_value);
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+
+  // Some types are not supported for comparison mode != EQUAL.
+  proto.mutable_comparison()->set_mode(ValueComparisonProto::LESS);
+  user_model_.SetValue("value_a", ValueProto());
+  user_model_.SetValue("value_b", ValueProto());
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  user_model_.SetValue("value_a", SimpleValue(true));
+  user_model_.SetValue("value_b", SimpleValue(false));
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  user_model_.SetValue("value_a", user_actions_value);
+  user_model_.SetValue("value_b", user_actions_value);
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+
+  // Different types fail for mode != EQUAL.
+  user_model_.SetValue("value_a", SimpleValue(1));
+  user_model_.SetValue("value_b", SimpleValue(std::string("a")));
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+
+  // Size != 1 fails for mode != EQUAL.
+  ValueProto multi_value;
+  multi_value.mutable_booleans()->add_values(true);
+  multi_value.mutable_booleans()->add_values(false);
+  user_model_.SetValue("value_a", multi_value);
+  user_model_.SetValue("value_b", multi_value);
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+
+  // Check comparison results.
+  proto.mutable_comparison()->set_mode(ValueComparisonProto::LESS);
+  user_model_.SetValue("value_a", SimpleValue(1));
+  user_model_.SetValue("value_b", SimpleValue(2));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(true));
+
+  user_model_.SetValue("value_a", SimpleValue(1));
+  user_model_.SetValue("value_b", SimpleValue(1));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(false));
+
+  proto.mutable_comparison()->set_mode(ValueComparisonProto::LESS_OR_EQUAL);
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(true));
+
+  proto.mutable_comparison()->set_mode(ValueComparisonProto::GREATER_OR_EQUAL);
+  user_model_.SetValue("value_a", SimpleValue(1));
+  user_model_.SetValue("value_b", SimpleValue(2));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(false));
+
+  user_model_.SetValue("value_a", SimpleValue(1));
+  user_model_.SetValue("value_b", SimpleValue(1));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(true));
+
+  proto.mutable_comparison()->set_mode(ValueComparisonProto::GREATER);
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(false));
+
+  user_model_.SetValue("value_a", SimpleValue(2));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(true));
+}
+
 }  // namespace autofill_assistant

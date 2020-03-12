@@ -41,9 +41,7 @@ class CORE_EXPORT CSSAnimation : public Animation {
   void pause(ExceptionState& = ASSERT_NO_EXCEPTION) override;
   void play(ExceptionState& = ASSERT_NO_EXCEPTION) override;
   void reverse(ExceptionState& = ASSERT_NO_EXCEPTION) override;
-  void setStartTime(double,
-                    bool is_null,
-                    ExceptionState& = ASSERT_NO_EXCEPTION) override;
+  void setStartTime(base::Optional<double>, ExceptionState&) override;
 
   // When set, subsequent changes to animation-play-state no longer affect the
   // play state.

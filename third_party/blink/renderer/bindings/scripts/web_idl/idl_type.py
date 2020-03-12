@@ -48,13 +48,8 @@ class IdlTypeFactory(object):
     def __init__(self):
         self._idl_types = []
         # Factory to initialize instances of ReferenceType.
-        attrs_to_be_proxied = (
-            set(RefById.get_all_attributes(IdlType)).difference(
-                # attributes not to be proxied
-                set(('debug_info', 'extended_attributes', 'is_optional',
-                     'optionality'))))
         self._ref_by_id_factory = RefByIdFactory(
-            target_attrs_with_priority=attrs_to_be_proxied)
+            target_attrs_with_priority=RefById.get_all_attributes(IdlType))
         # |_is_frozen| is initially False and you can create new instances of
         # IdlType.  The first invocation of |for_each| freezes the factory and
         # you can no longer create a new instance of IdlType.
@@ -202,6 +197,12 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         https://heycam.github.io/webidl/#dfn-type-name
         Note that a type name is not necessarily unique.
         """
+        return '{}{}'.format(
+            self.type_name_without_extended_attributes, ''.join(
+                sorted(self.effective_annotations.keys())))
+
+    @property
+    def type_name_without_extended_attributes(self):
         raise exceptions.NotImplementedError()
 
     @property
@@ -267,6 +268,23 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
                 switches[arg] = default
 
         return self._unwrap(switches)
+
+    @property
+    def effective_annotations(self):
+        """
+        Returns the extended attributes associated with this IDL type.
+        https://heycam.github.io/webidl/#idl-type-extended-attribute-associated-with
+
+        For example, given the following IDL fragments,
+
+          typedef [ExtAttr1] long NewLong;
+          void f([ExtAttr2] NewLong arg);
+
+        arg.idl_type.extended_attributes returns [ExtAttr2],
+        arg.idl_type.unwrap().extended_attributes returns [ExtAttr1], and
+        arg.idl_type.effective_annotations returns [ExtAttr1, ExtAttr2].
+        """
+        return self.extended_attributes
 
     @property
     def does_include_nullable_type(self):
@@ -438,11 +456,6 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         return False
 
     @property
-    def is_annotated(self):
-        """Returns True if this is annotated."""
-        return bool(self.extended_attributes)
-
-    @property
     def is_optional(self):
         """
         Returns True if this type is used for a non-required dictionary member
@@ -547,11 +560,6 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         return '{}{}{}'.format(optional_form, ext_attr_form,
                                syntactic_form_inner)
 
-    def _format_type_name(self, type_name_inner):
-        """Helper function to implement |type_name|."""
-        return '{}{}'.format(type_name_inner, ''.join(
-            sorted(self.extended_attributes.keys())))
-
     def _unwrap(self, switches):
         return self
 
@@ -615,10 +623,9 @@ class SimpleType(IdlType):
         return self._format_syntactic_form(self._name)
 
     @property
-    def type_name(self):
+    def type_name_without_extended_attributes(self):
         name = 'String' if self._name == 'DOMString' else self._name
-        return self._format_type_name(
-            NameStyleConverter(name).to_upper_camel_case())
+        return NameStyleConverter(name).to_upper_camel_case()
 
     @property
     def keyword_typename(self):
@@ -731,14 +738,14 @@ class DefinitionType(IdlType, WithIdentifier):
     TypedefType and UnionType respectively.
     """
 
-    def __init__(self,
-                 user_defined_type,
-                 debug_info=None,
-                 pass_key=None):
+    def __init__(self, reference_type, user_defined_type, pass_key=None):
+        assert isinstance(reference_type, ReferenceType)
         assert isinstance(user_defined_type, UserDefinedType)
         IdlType.__init__(
             self,
-            debug_info=debug_info,
+            is_optional=reference_type.is_optional,
+            extended_attributes=reference_type.extended_attributes,
+            debug_info=reference_type.debug_info,
             pass_key=pass_key)
         WithIdentifier.__init__(self, user_defined_type.identifier)
         self._type_definition_object = user_defined_type
@@ -752,14 +759,10 @@ class DefinitionType(IdlType, WithIdentifier):
 
     @property
     def syntactic_form(self):
-        assert not self.extended_attributes
-        assert not self.is_optional
-        return self.identifier
+        return self._format_syntactic_form(self.identifier)
 
     @property
-    def type_name(self):
-        assert not self.extended_attributes
-        assert not self.is_optional
+    def type_name_without_extended_attributes(self):
         return self.identifier
 
     @property
@@ -802,14 +805,14 @@ class TypedefType(IdlType, WithIdentifier):
     can track down the typedef'ed type to |original_type|.
     """
 
-    def __init__(self,
-                 typedef,
-                 debug_info=None,
-                 pass_key=None):
+    def __init__(self, reference_type, typedef, pass_key=None):
+        assert isinstance(reference_type, ReferenceType)
         assert isinstance(typedef, Typedef)
         IdlType.__init__(
             self,
-            debug_info=debug_info,
+            is_optional=reference_type.is_optional,
+            extended_attributes=reference_type.extended_attributes,
+            debug_info=reference_type.debug_info,
             pass_key=pass_key)
         WithIdentifier.__init__(self, typedef.identifier)
         self._typedef = typedef
@@ -823,15 +826,11 @@ class TypedefType(IdlType, WithIdentifier):
 
     @property
     def syntactic_form(self):
-        assert not self.extended_attributes
-        assert not self.is_optional
-        return self.identifier
+        return self._format_syntactic_form(self.identifier)
 
     @property
-    def type_name(self):
-        assert not self.extended_attributes
-        assert not self.is_optional
-        return self.original_type.type_name
+    def type_name_without_extended_attributes(self):
+        return self.original_type.type_name_without_extended_attributes
 
     def apply_to_all_composing_elements(self, callback):
         try:
@@ -839,6 +838,16 @@ class TypedefType(IdlType, WithIdentifier):
         except StopIteration:
             return
         self.original_type.apply_to_all_composing_elements(callback)
+
+    @property
+    def effective_annotations(self):
+        original_annotations = self.original_type.effective_annotations
+        if not self.extended_attributes:
+            return original_annotations
+        if not original_annotations:
+            return self.extended_attributes
+        return ExtendedAttributes(
+            list(self.extended_attributes) + list(original_annotations))
 
     @property
     def does_include_nullable_type(self):
@@ -920,9 +929,8 @@ class SequenceType(_ArrayLikeType):
             self.element_type.syntactic_form))
 
     @property
-    def type_name(self):
-        return self._format_type_name('{}Sequence'.format(
-            self.element_type.type_name))
+    def type_name_without_extended_attributes(self):
+        return '{}Sequence'.format(self.element_type.type_name)
 
     @property
     def is_sequence(self):
@@ -952,9 +960,8 @@ class FrozenArrayType(_ArrayLikeType):
             self.element_type.syntactic_form))
 
     @property
-    def type_name(self):
-        return self._format_type_name('{}Array'.format(
-            self.element_type.type_name))
+    def type_name_without_extended_attributes(self):
+        return '{}Array'.format(self.element_type.type_name)
 
     @property
     def is_frozen_array(self):
@@ -981,10 +988,11 @@ class VariadicType(_ArrayLikeType):
         return '{}...'.format(self.element_type.syntactic_form)
 
     @property
-    def type_name(self):
+    def type_name_without_extended_attributes(self):
         # Blink-specific expansion of type name
         # The type name of a variadic type is the concatenation of the type
         # name of the element type and the string "Variadic".
+        assert not self.extended_attributes
         return '{}Variadic'.format(self.element_type.type_name)
 
     @property
@@ -1031,9 +1039,9 @@ class RecordType(IdlType):
             self.key_type.syntactic_form, self.value_type.syntactic_form))
 
     @property
-    def type_name(self):
-        return self._format_type_name('{}{}Record'.format(
-            self.key_type.type_name, self.value_type.type_name))
+    def type_name_without_extended_attributes(self):
+        return '{}{}Record'.format(self.key_type.type_name,
+                                   self.value_type.type_name)
 
     def apply_to_all_composing_elements(self, callback):
         try:
@@ -1087,9 +1095,8 @@ class PromiseType(IdlType):
             self.result_type.syntactic_form))
 
     @property
-    def type_name(self):
-        return self._format_type_name('{}Promise'.format(
-            self.result_type.type_name))
+    def type_name_without_extended_attributes(self):
+        return '{}Promise'.format(self.result_type.type_name)
 
     def apply_to_all_composing_elements(self, callback):
         try:
@@ -1154,9 +1161,8 @@ class UnionType(IdlType):
             [member.syntactic_form for member in self.member_types])))
 
     @property
-    def type_name(self):
-        return self._format_type_name('Or'.join(
-            [member.type_name for member in self.member_types]))
+    def type_name_without_extended_attributes(self):
+        return 'Or'.join([member.type_name for member in self.member_types])
 
     def apply_to_all_composing_elements(self, callback):
         try:
@@ -1243,18 +1249,16 @@ class NullableType(IdlType):
         return '{}?'.format(self.inner_type.syntactic_form)
 
     @property
-    def type_name(self):
-        assert not self.extended_attributes
+    def type_name_without_extended_attributes(self):
         # https://heycam.github.io/webidl/#idl-annotated-types
         # Web IDL seems not supposing a case of [X] ([Y] Type)?, i.e. something
         # like [X] nullable<[Y] Type>, which should turn into "TypeYOrNullX".
         #
         # In case of '[Clamp] long?', it's interpreted as '([Clamp] long)?' but
         # the type name must be "LongOrNullClamp" instead of "LongClampOrNull".
-        name = self.inner_type.type_name
-        ext_attrs = ''.join(sorted(self.inner_type.extended_attributes.keys()))
-        sep_index = len(name) - len(ext_attrs)
-        return '{}OrNull{}'.format(name[0:sep_index], name[sep_index:])
+        assert not self.extended_attributes
+        return '{}OrNull'.format(
+            self.inner_type.type_name_without_extended_attributes)
 
     def apply_to_all_composing_elements(self, callback):
         try:
@@ -1262,6 +1266,11 @@ class NullableType(IdlType):
         except StopIteration:
             return
         self.inner_type.apply_to_all_composing_elements(callback)
+
+    @property
+    def effective_annotations(self):
+        assert not self.extended_attributes
+        return self.inner_type.effective_annotations
 
     @property
     def does_include_nullable_type(self):

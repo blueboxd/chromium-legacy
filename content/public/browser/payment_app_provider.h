@@ -45,7 +45,8 @@ class CONTENT_EXPORT PaymentAppProvider {
       base::OnceCallback<void(int64_t registration_id)>;
   using InvokePaymentAppCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerResponsePtr)>;
-  using CanMakePaymentCallback = base::OnceCallback<void(bool)>;
+  using CanMakePaymentCallback =
+      base::OnceCallback<void(payments::mojom::CanMakePaymentResponsePtr)>;
   using AbortCallback = base::OnceCallback<void(bool)>;
 
   // Should be accessed only on the UI thread.

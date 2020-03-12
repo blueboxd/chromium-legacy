@@ -268,6 +268,8 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
         "secondaryGoogleAccountSigninAllowed",
         profile->GetPrefs()->GetBoolean(
             chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
+    html_source->AddBoolean("isEduCoexistenceEnabled",
+                            features::IsEduCoexistenceEnabled());
   }
 
   web_ui()->AddMessageHandler(

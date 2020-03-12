@@ -408,9 +408,12 @@ class BreadCrumb extends HTMLElement {
     dialog.style['overflow'] = 'hidden auto';
     dialog.style['max-height'] = '40vh';
 
-    // Update state and emit rendered signal.
+    // Update global <html> and |this| element state.
+    document.documentElement.classList.add('breadcrumb-elider-expanded');
     elider.setAttribute('aria-expanded', 'true');
     this.setAttribute('checked', '');
+
+    // Emit rendered signal.
     this.signal_('path-rendered');
   }
 
@@ -420,9 +423,13 @@ class BreadCrumb extends HTMLElement {
    * @private
    */
   closeMenu_() {
+    // Update global <html> and |this| element state.
+    document.documentElement.classList.remove('breadcrumb-elider-expanded');
     const elider = this.shadowRoot.querySelector('button[elider]');
     elider.setAttribute('aria-expanded', 'false');
     this.removeAttribute('checked');
+
+    // Close the drop-down <dialog> if needed.
     const menu = this.shadowRoot.querySelector('cr-action-menu');
     if (menu.getDialog().hasAttribute('open')) {
       menu.close();

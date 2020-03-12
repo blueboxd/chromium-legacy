@@ -47,9 +47,6 @@ external/wpt/html/interaction/focus/the-autofocus-attribute/update-the-rendering
 external/wpt/html/rendering/widgets/baseline-alignment-and-overflow.tentative.html [ Pass ] # wpt_subtest_failure
 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_anchor_download_block_downloads.sub.tentative.html [ Pass ] # wpt_subtest_failure
 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_block_downloads.sub.tentative.html [ Pass ] # wpt_subtest_failure
-external/wpt/import-maps/builtin-support.tentative/imported/parsing-schema.tentative.html [ Pass ] # wpt_subtest_failure
-external/wpt/import-maps/builtin-support.tentative/imported/resolving-not-yet-implemented.tentative.html [ Pass ] # wpt_subtest_failure
-external/wpt/import-maps/builtin-support.tentative/imported/resolving-scopes.tentative.html [ Pass ] # wpt_subtest_failure
 external/wpt/import-maps/common/resolving.tentative.html [ Pass ] # wpt_subtest_failure
 external/wpt/navigation-timing/test_performance_attributes.sub.html [ Pass ] # wpt_subtest_failure
 external/wpt/offscreen-canvas/text/2d.text.measure.actualBoundingBox.html [ Pass ] # wpt_subtest_failure

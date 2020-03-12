@@ -4,6 +4,8 @@
 
 #include "components/autofill_assistant/browser/value_util.h"
 #include <algorithm>
+#include "base/i18n/case_conversion.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace autofill_assistant {
 
@@ -57,6 +59,36 @@ bool operator==(const ValueProto& value_a, const ValueProto& value_b) {
   return true;
 }
 
+bool operator<(const ValueProto& value_a, const ValueProto& value_b) {
+  if (value_a.kind_case() != value_b.kind_case()) {
+    return false;
+  }
+  if (!AreAllValuesOfSize({value_a, value_b}, 1)) {
+    return false;
+  }
+  switch (value_a.kind_case()) {
+    case ValueProto::kStrings:
+      return base::i18n::FoldCase(
+                 base::UTF8ToUTF16(value_a.strings().values(0))) <
+             base::i18n::FoldCase(
+                 base::UTF8ToUTF16(value_b.strings().values(0)));
+    case ValueProto::kInts:
+      return value_a.ints().values(0) < value_b.ints().values(0);
+    case ValueProto::kDates:
+      return value_a.dates().values(0) < value_b.dates().values(0);
+    case ValueProto::kUserActions:
+    case ValueProto::kBooleans:
+    case ValueProto::KIND_NOT_SET:
+      NOTREACHED();
+      return false;
+  }
+  return true;
+}
+
+bool operator>(const ValueProto& value_a, const ValueProto& value_b) {
+  return value_b < value_a && !(value_b == value_a);
+}
+
 // Compares two |ModelValue| instances and returns true if they exactly match.
 bool operator==(const ModelProto::ModelValue& value_a,
                 const ModelProto::ModelValue& value_b) {
@@ -95,6 +127,14 @@ bool operator==(const UserActionProto& value_a,
 bool operator==(const DateProto& value_a, const DateProto& value_b) {
   return value_a.year() == value_b.year() &&
          value_a.month() == value_b.month() && value_a.day() == value_b.day();
+}
+
+bool operator<(const DateProto& value_a, const DateProto& value_b) {
+  auto tuple_a =
+      std::make_tuple(value_a.year(), value_a.month(), value_a.day());
+  auto tuple_b =
+      std::make_tuple(value_b.year(), value_b.month(), value_b.day());
+  return tuple_a < tuple_b;
 }
 
 // Intended for debugging. Writes a string representation of |values| to |out|.

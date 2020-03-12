@@ -69,13 +69,13 @@ parentMessagePipe.registerHandler(Message.LOAD_FILE, (message) => {
 /**
  * A delegate which exposes privileged WebUI functionality to the media
  * app.
- * @implements mediaApp.ClientApiDelegate
+ * @type {!mediaApp.ClientApiDelegate}
  */
-class Delegate {
+const DELEGATE = {
   /** @override */
   async openFeedbackDialog() {
-    const response = await parentMessagePipe.sendMessage(
-      Message.OPEN_FEEDBACK_DIALOG);
+    const response =
+        await parentMessagePipe.sendMessage(Message.OPEN_FEEDBACK_DIALOG);
     return /** @type {?string} */ (response['errorMessage']);
   }
 };
@@ -113,7 +113,7 @@ async function loadFile(token, file) {
  * @param {!mediaApp.ClientApi} app
  */
 function initializeApp(app) {
-  app.setDelegate(new Delegate());
+  app.setDelegate(DELEGATE);
 }
 
 /**

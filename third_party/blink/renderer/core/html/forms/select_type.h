@@ -45,6 +45,7 @@ class SelectType : public GarbageCollected<SelectType> {
   virtual void MaximumOptionWidthMightBeChanged() const;
 
   virtual void SelectAll();
+  virtual void SaveListboxActiveSelection();
 
   virtual void ShowPopup();
   virtual void HidePopup();

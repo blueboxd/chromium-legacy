@@ -7,14 +7,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <memory>
+#include <algorithm>
+#include <queue>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/containers/stack.h"
-#include "base/containers/stack_container.h"
 #include "base/guid.h"
 #include "base/i18n/string_compare.h"
 #include "base/strings/string16.h"
@@ -240,36 +243,6 @@ bool BookmarkBridge::IsDoingExtensiveChanges(
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return bookmark_model_->IsDoingExtensiveChanges();
-}
-
-void BookmarkBridge::GetPermanentNodeIDs(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& j_result_obj) {
-  // TODO(kkimlabs): Remove this function.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(IsLoaded());
-
-  base::StackVector<const BookmarkNode*, 8> permanent_nodes;
-
-  // Save all the permanent nodes.
-  const BookmarkNode* root_node = bookmark_model_->root_node();
-  permanent_nodes->push_back(root_node);
-  for (const auto& child : root_node->children())
-    permanent_nodes->push_back(child.get());
-  permanent_nodes->push_back(
-      partner_bookmarks_shim_->GetPartnerBookmarksRoot());
-
-  // Write the permanent nodes to |j_result_obj|.
-  for (base::StackVector<const BookmarkNode*, 8>::ContainerType::const_iterator
-           it = permanent_nodes->begin();
-       it != permanent_nodes->end();
-       ++it) {
-    if (*it != NULL) {
-      Java_BookmarkBridge_addToBookmarkIdList(
-          env, j_result_obj, (*it)->id(), GetBookmarkType(*it));
-    }
-  }
 }
 
 void BookmarkBridge::GetTopLevelFolderParentIDs(

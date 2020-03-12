@@ -969,8 +969,10 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, object_size_freed_by_heap_compaction,
       ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
-  object_size_freed_by_heap_compaction.Count(
-      CappedSizeInKB(event.compaction_freed_bytes));
+  if (event.compaction_recorded_events) {
+    object_size_freed_by_heap_compaction.Count(
+        CappedSizeInKB(event.compaction_freed_bytes));
+  }
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_before_gc_histogram,
                       ("BlinkGC.ObjectSizeBeforeGC", 1, 4 * 1024 * 1024, 50));

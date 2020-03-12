@@ -8,7 +8,10 @@
 
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
+#include "base/test/bind_test_util.h"
 #include "base/values.h"
+#include "components/image_fetcher/core/mock_image_fetcher.h"
+#include "components/image_fetcher/core/request_metadata.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/test_web_ui.h"
@@ -17,12 +20,21 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_unittest_util.h"
+
+using testing::_;
 
 namespace chromeos {
 
 namespace {
 
 constexpr char kFakeParentGaiaId[] = "someObfuscatedGaiaId";
+constexpr char kFakeParentGaiaId2[] = "anotherObfuscatedGaiaId";
 constexpr char kFakeParentCredential[] = "someParentCredential";
 constexpr char kFakeAccessToken[] = "someAccessToken";
 
@@ -33,7 +45,7 @@ std::vector<FamilyInfoFetcher::FamilyMember> GetFakeFamilyMembers() {
       "homer@simpson.com", "http://profile.url/homer",
       "http://profile.url/homer/image"));
   members.push_back(FamilyInfoFetcher::FamilyMember(
-      "anotherObfuscatedGaiaId", FamilyInfoFetcher::PARENT, "Marge Simpson",
+      kFakeParentGaiaId2, FamilyInfoFetcher::PARENT, "Marge Simpson",
       std::string(), "http://profile.url/marge", std::string()));
   members.push_back(FamilyInfoFetcher::FamilyMember(
       "obfuscatedGaiaId3", FamilyInfoFetcher::CHILD, "Lisa Simpson",
@@ -47,6 +59,69 @@ std::vector<FamilyInfoFetcher::FamilyMember> GetFakeFamilyMembers() {
   return members;
 }
 
+std::map<std::string, GURL> GetFakeProfileImageUrlMap() {
+  return {
+      {kFakeParentGaiaId, GURL("http://profile.url/homer/image")},
+      {kFakeParentGaiaId2, GURL()},
+  };
+}
+
+gfx::Image GetFakeImage() {
+  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_LOGIN_DEFAULT_USER);
+}
+
+std::map<std::string, gfx::Image> GetFakeProfileImageMap() {
+  return {
+      {kFakeParentGaiaId, GetFakeImage()},
+      {kFakeParentGaiaId2, gfx::Image()},
+  };
+}
+
+base::ListValue GetFakeParentsWithoutImage() {
+  base::ListValue parents;
+
+  base::DictionaryValue parent1;
+  parent1.SetStringKey("email", "homer@simpson.com");
+  parent1.SetStringKey("displayName", "Homer Simpson");
+  parent1.SetStringKey("obfuscatedGaiaId", kFakeParentGaiaId);
+  parents.Append(std::move(parent1));
+
+  base::DictionaryValue parent2;
+  parent2.SetStringKey("email", std::string());
+  parent2.SetStringKey("displayName", "Marge Simpson");
+  parent2.SetStringKey("obfuscatedGaiaId", kFakeParentGaiaId2);
+  parents.Append(std::move(parent2));
+
+  return parents;
+}
+
+base::ListValue GetFakeParentsWithImage() {
+  base::ListValue parents = GetFakeParentsWithoutImage();
+  std::map<std::string, gfx::Image> profile_images = GetFakeProfileImageMap();
+
+  for (auto& parent : parents.GetList()) {
+    const std::string* obfuscated_gaia_id =
+        parent.FindStringKey("obfuscatedGaiaId");
+    DCHECK(obfuscated_gaia_id);
+    std::string profile_image;
+    if (profile_images[*obfuscated_gaia_id].IsEmpty()) {
+      gfx::ImageSkia default_icon =
+          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+              IDR_LOGIN_DEFAULT_USER);
+
+      profile_image = webui::GetBitmapDataUrl(
+          default_icon.GetRepresentation(1.0f).GetBitmap());
+    } else {
+      profile_image = webui::GetBitmapDataUrl(
+          profile_images[*obfuscated_gaia_id].AsBitmap());
+    }
+    parent.SetStringKey("profileImage", profile_image);
+  }
+
+  return parents;
+}
+
 base::DictionaryValue GetFakeParent() {
   base::DictionaryValue parent;
   parent.SetStringKey("email", "homer@simpson.com");
@@ -54,20 +129,6 @@ base::DictionaryValue GetFakeParent() {
   parent.SetStringKey("profileImageUrl", "http://profile.url/homer/image");
   parent.SetStringKey("obfuscatedGaiaId", kFakeParentGaiaId);
   return parent;
-}
-
-base::ListValue GetFakeParentsListValue() {
-  base::ListValue parents;
-  parents.Append(GetFakeParent());
-
-  base::DictionaryValue parent2;
-  parent2.SetStringKey("email", std::string());
-  parent2.SetStringKey("displayName", "Marge Simpson");
-  parent2.SetStringKey("profileImageUrl", std::string());
-  parent2.SetStringKey("obfuscatedGaiaId", "anotherObfuscatedGaiaId");
-  parents.Append(std::move(parent2));
-
-  return parents;
 }
 
 class MockEduAccountLoginHandler : public EduAccountLoginHandler {
@@ -89,6 +150,11 @@ class MockEduAccountLoginHandler : public EduAccountLoginHandler {
                const std::string& parent_obfuscated_gaia_id,
                const std::string& parent_credential),
               (override));
+  MOCK_METHOD(void,
+              FetchParentImages,
+              (base::ListValue parents,
+               (std::map<std::string, GURL> profile_image_urls)),
+              (override));
 };
 }  // namespace
 
@@ -97,6 +163,7 @@ class EduAccountLoginHandlerTest : public testing::Test {
   EduAccountLoginHandlerTest() {}
 
   void SetUp() override {
+    mock_image_fetcher_ = std::make_unique<image_fetcher::MockImageFetcher>();
     handler_ = std::make_unique<MockEduAccountLoginHandler>(base::DoNothing());
     handler_->set_web_ui(web_ui());
   }
@@ -116,11 +183,16 @@ class EduAccountLoginHandlerTest : public testing::Test {
     EXPECT_EQ(success, callback_success);
   }
 
+  image_fetcher::MockImageFetcher* mock_image_fetcher() const {
+    return mock_image_fetcher_.get();
+  }
+
   MockEduAccountLoginHandler* handler() const { return handler_.get(); }
 
   content::TestWebUI* web_ui() { return &web_ui_; }
 
  private:
+  std::unique_ptr<image_fetcher::MockImageFetcher> mock_image_fetcher_;
   std::unique_ptr<MockEduAccountLoginHandler> handler_;
   content::TestWebUI web_ui_;
 };
@@ -133,12 +205,20 @@ TEST_F(EduAccountLoginHandlerTest, HandleGetParentsSuccess) {
   EXPECT_CALL(*handler(), FetchFamilyMembers());
   handler()->HandleGetParents(&list_args);
 
-  // Simulate successful fetching of family members.
+  EXPECT_CALL(*handler(), FetchParentImages(_, GetFakeProfileImageUrlMap()));
+  // Simulate successful fetching of family members -> expect FetchParentImages
+  // to be called.
   handler()->OnGetFamilyMembersSuccess(GetFakeFamilyMembers());
+
+  // Simulate successful fetching of the images -> expect JavascriptCallack to
+  // be resolved.
+  handler()->OnParentProfileImagesFetched(GetFakeParentsWithoutImage(),
+                                          GetFakeProfileImageMap());
+
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   VerifyJavascriptCallbackResolved(data, callback_id);
 
-  ASSERT_EQ(GetFakeParentsListValue(), *data.arg3());
+  ASSERT_EQ(GetFakeParentsWithImage(), *data.arg3());
 }
 
 TEST_F(EduAccountLoginHandlerTest, HandleGetParentsFailure) {
@@ -246,6 +326,38 @@ TEST_F(EduAccountLoginHandlerTest, HandleParentSigninReAuthProofTokenFailure) {
   base::DictionaryValue result;
   result.SetBoolKey("wrongPassword", true);
   ASSERT_EQ(result, *data.arg3());
+}
+
+TEST_F(EduAccountLoginHandlerTest, ProfileImageFetcherTest) {
+  std::map<std::string, gfx::Image> expected_profile_images =
+      GetFakeProfileImageMap();
+
+  // Expect callback to be called with all images in GetFakeProfileImageMap.
+  auto callback = base::BindLambdaForTesting(
+      [&](std::map<std::string, gfx::Image> profile_images) {
+        EXPECT_EQ(expected_profile_images.size(), profile_images.size());
+
+        for (const auto& profile_image_pair : profile_images) {
+          gfx::Image expected_image =
+              expected_profile_images[profile_image_pair.first];
+          EXPECT_TRUE(gfx::test::AreImagesEqual(expected_image,
+                                                profile_image_pair.second));
+        }
+      });
+
+  // Expect to be called 1 time (only for image with URL). For profile with
+  // empty image URL - default gfx::Image() should be returned.
+  EXPECT_CALL(*mock_image_fetcher(), FetchImageAndData_(_, _, _, _)).Times(1);
+
+  auto profile_image_fetcher =
+      std::make_unique<EduAccountLoginHandler::ProfileImageFetcher>(
+          mock_image_fetcher(), GetFakeProfileImageUrlMap(), callback);
+  profile_image_fetcher->FetchProfileImages();
+
+  // Simulate successful image fetching (for image with URL) -> expect the
+  // callback to be called.
+  profile_image_fetcher->OnImageFetched(kFakeParentGaiaId, GetFakeImage(),
+                                        image_fetcher::RequestMetadata());
 }
 
 }  // namespace chromeos

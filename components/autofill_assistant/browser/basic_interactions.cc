@@ -149,6 +149,80 @@ bool ValueToString(UserModel* user_model,
   return true;
 }
 
+bool Compare(UserModel* user_model,
+             const std::string& result_model_identifier,
+             const ValueComparisonProto& proto) {
+  auto value_a = user_model->GetValue(proto.model_identifier_a());
+  if (!value_a.has_value()) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": "
+             << proto.model_identifier_a() << " not found in model";
+    return false;
+  }
+  auto value_b = user_model->GetValue(proto.model_identifier_b());
+  if (!value_b.has_value()) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": "
+             << proto.model_identifier_b() << " not found in model";
+    return false;
+  }
+  if (proto.mode() == ValueComparisonProto::UNDEFINED) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": mode not set";
+    return false;
+  }
+
+  if (proto.mode() == ValueComparisonProto::EQUAL) {
+    user_model->SetValue(result_model_identifier,
+                         SimpleValue(*value_a == *value_b));
+    return true;
+  }
+
+  // All modes except EQUAL require a size of 1 and a common value type and
+  // are only supported for a subset of value types.
+  if (!AreAllValuesOfSize({*value_a, *value_b}, 1)) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": comparison mode "
+             << proto.mode() << "requires all input values to have size 1";
+    return false;
+  }
+
+  if (!AreAllValuesOfType({*value_a, *value_b}, value_a->kind_case())) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": comparison mode "
+             << proto.mode()
+             << "requires all input values to share the same type, but got "
+             << value_a->kind_case() << " and " << value_b->kind_case();
+    return false;
+  }
+
+  if (value_a->kind_case() != ValueProto::kInts &&
+      value_a->kind_case() != ValueProto::kDates &&
+      value_a->kind_case() != ValueProto::kStrings) {
+    DVLOG(2) << "Error evaluating " << __func__
+             << ": the selected comparison mode is only supported for "
+                "integers, strings, and dates";
+    return false;
+  }
+
+  bool result = false;
+  switch (proto.mode()) {
+    case ValueComparisonProto::LESS:
+      result = *value_a < *value_b;
+      break;
+    case ValueComparisonProto::LESS_OR_EQUAL:
+      result = *value_a < *value_b || value_a == value_b;
+      break;
+    case ValueComparisonProto::GREATER_OR_EQUAL:
+      result = *value_a > *value_b || value_a == value_b;
+      break;
+    case ValueComparisonProto::GREATER:
+      result = *value_a > *value_b;
+      break;
+    case ValueComparisonProto::EQUAL:
+    case ValueComparisonProto::UNDEFINED:
+      NOTREACHED();
+      return false;
+  }
+  user_model->SetValue(result_model_identifier, SimpleValue(result));
+  return true;
+}
+
 }  // namespace
 
 base::WeakPtr<BasicInteractions> BasicInteractions::GetWeakPtr() {
@@ -208,6 +282,9 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
       }
       return ValueToString(delegate_->GetUserModel(),
                            proto.result_model_identifier(), proto.to_string());
+    case ComputeValueProto::kComparison:
+      return Compare(delegate_->GetUserModel(), proto.result_model_identifier(),
+                     proto.comparison());
     case ComputeValueProto::KIND_NOT_SET:
       DVLOG(2) << "Error computing value: kind not set";
       return false;

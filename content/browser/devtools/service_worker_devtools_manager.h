@@ -17,6 +17,7 @@
 #include "base/unguessable_token.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "url/gurl.h"
@@ -59,18 +60,21 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
       BrowserContext* browser_context,
       std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>* result);
 
-  void WorkerCreated(int worker_process_id,
-                     int worker_route_id,
-                     const ServiceWorkerContextCore* context,
-                     base::WeakPtr<ServiceWorkerContextCore> context_weak,
-                     int64_t version_id,
-                     const GURL& url,
-                     const GURL& scope,
-                     bool is_installed_version,
-                     base::Optional<network::CrossOriginEmbedderPolicy>
-                         cross_origin_embedder_policy,
-                     base::UnguessableToken* devtools_worker_token,
-                     bool* pause_on_start);
+  void WorkerCreated(
+      int worker_process_id,
+      int worker_route_id,
+      const ServiceWorkerContextCore* context,
+      base::WeakPtr<ServiceWorkerContextCore> context_weak,
+      int64_t version_id,
+      const GURL& url,
+      const GURL& scope,
+      bool is_installed_version,
+      base::Optional<network::CrossOriginEmbedderPolicy>
+          cross_origin_embedder_policy,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter,
+      base::UnguessableToken* devtools_worker_token,
+      bool* pause_on_start);
   void WorkerReadyForInspection(
       int worker_process_id,
       int worker_route_id,
@@ -79,7 +83,9 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   void UpdateCrossOriginEmbedderPolicy(
       int worker_process_id,
       int worker_route_id,
-      network::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
+      network::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter);
   void WorkerVersionInstalled(int worker_process_id, int worker_route_id);
   void WorkerVersionDoomed(int worker_process_id, int worker_route_id);
   void WorkerDestroyed(int worker_process_id, int worker_route_id);

@@ -160,7 +160,6 @@ class BlinkTestController : public WebContentsObserver,
   void SetFilePathForMockFileDialog(const base::FilePath& path);
 
   // WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
   void PluginCrashed(const base::FilePath& plugin_path,
                      base::ProcessId plugin_pid) override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
@@ -194,6 +193,7 @@ class BlinkTestController : public WebContentsObserver,
   void OnInitiateLayoutDump();
   void OnResetDone();
   void OnPrintMessageToStderr(const std::string& message);
+  void OnPrintMessage(const std::string& message);
   void OnReload();
   void OnOverridePreferences(const WebPreferences& prefs);
   void OnCloseRemainingWindows();
@@ -237,7 +237,6 @@ class BlinkTestController : public WebContentsObserver,
   void OnTextDump(const std::string& dump);
   void OnDumpFrameLayoutResponse(int frame_tree_node_id,
                                  const std::string& dump);
-  void OnPrintMessage(const std::string& message);
   void OnTestFinished();
   void OnCaptureSessionHistory();
   void OnLeakDetectionDone(const LeakDetector::LeakDetectionReport& report);

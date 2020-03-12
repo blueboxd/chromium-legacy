@@ -44,6 +44,22 @@ cr.define('settings_passwords_check', function() {
   }
 
   /**
+   * Helper method used to randomize array.
+   * @param {!Array<!chrome.passwordsPrivate.CompromisedCredential>} array
+   * @return {!Array<!chrome.passwordsPrivate.CompromisedCredential>}
+   */
+  function shuffleArray(array) {
+    const copy = array.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = copy[i];
+      copy[i] = copy[j];
+      copy[j] = temp;
+    }
+    return copy;
+  }
+
+  /**
    * Helper method that validates a that elements in the compromised credentials
    * list match the expected data.
    * @param {!Element} checkPasswordSection The section element that will be
@@ -235,9 +251,9 @@ cr.define('settings_passwords_check', function() {
     test('testSomeCompromisedCredentials', function() {
       const leakedPasswords = [
         autofill_test_util.makeCompromisedCredential(
-            'one.com', 'test4', 'LEAKED'),
+            'one.com', 'test4', 'PHISHED', 1, 1),
         autofill_test_util.makeCompromisedCredential(
-            'two.com', 'test3', 'PHISHED'),
+            'two.com', 'test3', 'LEAKED', 2, 2),
       ];
       passwordManager.data.leakedCredentials = leakedPasswords;
       const checkPasswordSection = createCheckPasswordSection();
@@ -748,6 +764,58 @@ cr.define('settings_passwords_check', function() {
         Polymer.dom.flush();
         expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
       });
+    });
+
+    // Test verifies that new credentials are added to the bottom
+    test('testAppendCompromisedCredentials', function() {
+      const leakedPasswords = [
+        autofill_test_util.makeCompromisedCredential(
+            'one.com', 'test4', 'LEAKED', 1, 0),
+        autofill_test_util.makeCompromisedCredential(
+            'two.com', 'test3', 'LEAKED', 2, 0),
+      ];
+      const checkPasswordSection = createCheckPasswordSection();
+      checkPasswordSection.updateList(leakedPasswords);
+      Polymer.dom.flush();
+
+      validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
+
+      leakedPasswords.push(autofill_test_util.makeCompromisedCredential(
+          'three.com', 'test2', 'PHISHED', 3, 3));
+      leakedPasswords.push(autofill_test_util.makeCompromisedCredential(
+          'four.com', 'test1', 'LEAKED', 4, 5));
+      leakedPasswords.push(autofill_test_util.makeCompromisedCredential(
+          'five.com', 'test0', 'LEAKED', 5, 4));
+      checkPasswordSection.updateList(shuffleArray(leakedPasswords));
+      Polymer.dom.flush();
+      validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
+    });
+
+    // Test verifies that deleting and adding works as it should
+    test('testDeleteComrpomisedCredemtials', function() {
+      const leakedPasswords = [
+        autofill_test_util.makeCompromisedCredential(
+            'one.com', 'test4', 'PHISHED', 0, 0),
+        autofill_test_util.makeCompromisedCredential(
+            'two.com', 'test3', 'LEAKED', 1, 2),
+        autofill_test_util.makeCompromisedCredential(
+            'three.com', 'test2', 'LEAKED', 2, 2),
+        autofill_test_util.makeCompromisedCredential(
+            'four.com', 'test2', 'LEAKED', 3, 2),
+      ];
+      const checkPasswordSection = createCheckPasswordSection();
+      checkPasswordSection.updateList(leakedPasswords);
+      Polymer.dom.flush();
+      validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
+
+      // remove 2nd and 3rd elements
+      leakedPasswords.splice(1, 2);
+      leakedPasswords.push(autofill_test_util.makeCompromisedCredential(
+          'five.com', 'test2', 'LEAKED', 4, 3));
+
+      checkPasswordSection.updateList(shuffleArray(leakedPasswords));
+      Polymer.dom.flush();
+      validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
     });
   });
   // #cr_define_end

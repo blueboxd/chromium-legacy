@@ -47,7 +47,6 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
 
   mojo::AssociatedReceiver<mojom::BlinkTestControl> receiver_{this};
   bool focus_on_next_commit_ = false;
-  bool is_secondary_window_ = false;
   DISALLOW_COPY_AND_ASSIGN(WebTestRenderFrameObserver);
 };
 

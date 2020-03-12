@@ -139,11 +139,22 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   void cancel();
 
+  base::Optional<double> currentTimeForBinding() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  double currentTimeForBinding(bool& is_null);  // DEPRECATED
+  void setCurrentTimeForBinding(base::Optional<double> new_current_time,
+                                ExceptionState& exception_state);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  void setCurrentTimeForBinding(double new_current_time,  // DEPRECATED
+                                bool is_null,
+                                ExceptionState& exception_state);
+
+  double currentTime() const;
   double currentTime(bool& is_null);
-  double currentTime();
   void setCurrentTime(double new_current_time,
                       bool is_null,
                       ExceptionState& = ASSERT_NO_EXCEPTION);
+
   base::Optional<double> UnlimitedCurrentTime() const;
 
   // https://drafts.csswg.org/web-animations/#play-states
@@ -199,12 +210,15 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   AnimationTimeline* timeline() { return timeline_; }
   Document* GetDocument() const;
 
-  double startTime(bool& is_null) const;
   base::Optional<double> startTime() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  double startTime(bool& is_null) const;  // DEPRECATED
   base::Optional<double> StartTimeInternal() const { return start_time_; }
-  virtual void setStartTime(double,
-                            bool is_null,
-                            ExceptionState& = ASSERT_NO_EXCEPTION);
+  virtual void setStartTime(base::Optional<double>, ExceptionState&);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  void setStartTime(double,  // DEPRECATED
+                    bool is_null,
+                    ExceptionState& = ASSERT_NO_EXCEPTION);
 
   const AnimationEffect* effect() const { return content_.Get(); }
   AnimationEffect* effect() { return content_.Get(); }

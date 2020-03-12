@@ -609,6 +609,7 @@ class ListBoxSelectType final : public SelectType {
   bool DefaultEventHandler(const Event& event) override;
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
   void SelectAll() override;
+  void SaveListboxActiveSelection() override;
 
  private:
   HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
@@ -625,6 +626,7 @@ class ListBoxSelectType final : public SelectType {
                            SelectionMode mode);
   void UpdateListBoxSelection(bool deselect_other_options, bool scroll = true);
 
+  Vector<bool> cached_state_for_active_selection_;
   bool is_in_non_contiguous_selection_ = false;
 };
 
@@ -1014,11 +1016,11 @@ void ListBoxSelectType::UpdateListBoxSelection(bool deselect_other_options,
       option->SetDirty(true);
     } else if (deselect_other_options ||
                i >= static_cast<int>(
-                        select_->cached_state_for_active_selection_.size())) {
+                        cached_state_for_active_selection_.size())) {
       option->SetSelectedState(false);
       option->SetDirty(true);
     } else {
-      option->SetSelectedState(select_->cached_state_for_active_selection_[i]);
+      option->SetSelectedState(cached_state_for_active_selection_[i]);
     }
     ++i;
   }
@@ -1028,6 +1030,25 @@ void ListBoxSelectType::UpdateListBoxSelection(bool deselect_other_options,
   if (scroll)
     select_->ScrollToSelection();
   select_->NotifyFormStateChanged();
+}
+
+void ListBoxSelectType::SaveListboxActiveSelection() {
+  // Cache the selection state so we can restore the old selection as the new
+  // selection pivots around this anchor index.
+  // Example:
+  // 1. Press the mouse button on the second OPTION
+  //   active_selection_anchor_ points the second OPTION.
+  // 2. Drag the mouse pointer onto the fifth OPTION
+  //   active_selection_end_ points the fifth OPTION, OPTIONs at 1-4 indices
+  //   are selected.
+  // 3. Drag the mouse pointer onto the fourth OPTION
+  //   active_selection_end_ points the fourth OPTION, OPTIONs at 1-3 indices
+  //   are selected.
+  //   UpdateListBoxSelection needs to clear selection of the fifth OPTION.
+  cached_state_for_active_selection_.resize(0);
+  for (auto* const option : select_->GetOptionList()) {
+    cached_state_for_active_selection_.push_back(option->Selected());
+  }
 }
 
 // ============================================================================
@@ -1083,6 +1104,8 @@ void SelectType::MaximumOptionWidthMightBeChanged() const {}
 void SelectType::SelectAll() {
   NOTREACHED();
 }
+
+void SelectType::SaveListboxActiveSelection() {}
 
 void SelectType::ShowPopup() {
   NOTREACHED();

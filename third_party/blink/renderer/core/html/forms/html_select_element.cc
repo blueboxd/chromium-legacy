@@ -339,8 +339,7 @@ void HTMLSelectElement::ParseAttribute(
       UpdateUserAgentShadowTree(*UserAgentShadowRoot());
       ResetToDefaultSelection();
       select_type_->UpdateTextStyleAndContent();
-      if (!UsesMenuList())
-        SaveListboxActiveSelection();
+      select_type_->SaveListboxActiveSelection();
     }
   } else if (params.name == html_names::kMultipleAttr) {
     ParseMultipleAttribute(params.new_value);
@@ -527,27 +526,7 @@ void HTMLSelectElement::SaveLastSelection() {
 
 void HTMLSelectElement::SetActiveSelectionAnchor(HTMLOptionElement* option) {
   active_selection_anchor_ = option;
-  if (!UsesMenuList())
-    SaveListboxActiveSelection();
-}
-
-void HTMLSelectElement::SaveListboxActiveSelection() {
-  // Cache the selection state so we can restore the old selection as the new
-  // selection pivots around this anchor index.
-  // Example:
-  // 1. Press the mouse button on the second OPTION
-  //   active_selection_anchor_ points the second OPTION.
-  // 2. Drag the mouse pointer onto the fifth OPTION
-  //   active_selection_end_ points the fifth OPTION, OPTIONs at 1-4 indices
-  //   are selected.
-  // 3. Drag the mouse pointer onto the fourth OPTION
-  //   active_selection_end_ points the fourth OPTION, OPTIONs at 1-3 indices
-  //   are selected.
-  //   UpdateListBoxSelection needs to clear selection of the fifth OPTION.
-  cached_state_for_active_selection_.resize(0);
-  for (auto* const option : GetOptionList()) {
-    cached_state_for_active_selection_.push_back(option->Selected());
-  }
+  select_type_->SaveListboxActiveSelection();
 }
 
 void HTMLSelectElement::SetActiveSelectionEnd(HTMLOptionElement* option) {

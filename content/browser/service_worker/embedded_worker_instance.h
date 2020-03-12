@@ -41,6 +41,7 @@
 
 namespace content {
 
+class CrossOriginEmbedderPolicyReporter;
 class RenderProcessHost;
 class ServiceWorkerContentSettingsProxyImpl;
 class ServiceWorkerContextCore;
@@ -235,7 +236,16 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
       const url::Origin& origin,
       const base::Optional<network::CrossOriginEmbedderPolicy>&
           cross_origin_embedder_policy,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter,
       ContentBrowserClient::URLLoaderFactoryType factory_type);
+
+  // Creates a set of factory bundles for scripts and subresources. This must be
+  // called after the COEP value for the worker script is known.
+  using CreateFactoryBundlesCallback = base::OnceCallback<void(
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresouce_bundle)>;
+  void CreateFactoryBundles(CreateFactoryBundlesCallback callback);
 
  private:
   typedef base::ObserverList<Listener>::Unchecked ListenerList;
@@ -311,6 +321,13 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   void BindCacheStorageInternal();
 
+  void OnCreatedFactoryBundles(
+      CreateFactoryBundlesCallback callback,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresouce_bundle,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter);
+
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerVersion* owner_version_;
 
@@ -374,7 +391,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   std::vector<mojo::PendingReceiver<blink::mojom::CacheStorage>>
       pending_cache_storage_receivers_;
 
-  std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
+  // COEP Reporter connected to the URLLoaderFactories that handles subresource
+  // requests initiated from the service worker. The impl lives on the UI
+  // thread, and |coep_reporter_| has the ownership of the impl instance.
+  mojo::Remote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_;
 
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_{this};
 

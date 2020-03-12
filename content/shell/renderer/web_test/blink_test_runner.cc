@@ -42,7 +42,6 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/test/web_test_support.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/common/web_test/blink_test_messages.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
 #include "content/shell/test_runner/app_banner_service.h"
@@ -185,7 +184,8 @@ void BlinkTestRunner::PrintMessageToStderr(const std::string& message) {
 }
 
 void BlinkTestRunner::PrintMessage(const std::string& message) {
-  Send(new BlinkTestHostMsg_PrintMessage(routing_id(), message));
+  if (!is_secondary_window_)
+    GetBlinkTestClientRemote().PrintMessage(message);
 }
 
 void BlinkTestRunner::PostTask(base::OnceClosure task) {
@@ -700,7 +700,7 @@ void BlinkTestRunner::CaptureDump(
   CaptureDumpComplete();
 }
 
-void BlinkTestRunner::DidCommitNavigationInMainFrame(bool is_secondary_window) {
+void BlinkTestRunner::DidCommitNavigationInMainFrame() {
   WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
   if (!waiting_for_reset_ || !main_frame->IsWebLocalFrame())
     return;
@@ -710,7 +710,7 @@ void BlinkTestRunner::DidCommitNavigationInMainFrame(bool is_secondary_window) {
 
   // Avoid a situation where ResetDone is called twice, because
   // ResetDone should be called once if a secondary renderer exists.
-  if (is_secondary_window)
+  if (is_secondary_window_)
     return;
 
   waiting_for_reset_ = false;
@@ -747,6 +747,11 @@ mojom::WebTestClient& BlinkTestRunner::GetWebTestClientRemote() {
 
 void BlinkTestRunner::OnSetupSecondaryRenderer() {
   DCHECK(!is_main_window_);
+
+  // TODO(https://crbug.com/1039247): Consider to use |is_main_window_| instead
+  // of |is_secondary_window_|. But, there are many test failures when using
+  // |!is_main_window_|.
+  is_secondary_window_ = true;
 
   test_runner::WebTestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();

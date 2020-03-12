@@ -48,35 +48,61 @@ class ComputedAccessibleNode : public ScriptWrappable {
 
  public:
   ComputedAccessibleNode(AXID, WebComputedAXTree*, Document*);
-  ~ComputedAccessibleNode() override;
+  ~ComputedAccessibleNode() override = default;
 
   void Trace(Visitor*) override;
 
   // TODO(meredithl): add accessors for state properties.
-  bool atomic(bool& is_null) const;
-  bool busy(bool& is_null) const;
-  bool disabled(bool& is_null) const;
-  bool readOnly(bool& is_null) const;
-  bool expanded(bool& is_null) const;
-  bool modal(bool& is_null) const;
-  bool multiline(bool& is_null) const;
-  bool multiselectable(bool& is_null) const;
-  bool required(bool& is_null) const;
-  bool selected(bool& is_null) const;
+  base::Optional<bool> atomic() const;
+  base::Optional<bool> busy() const;
+  base::Optional<bool> disabled() const;
+  base::Optional<bool> readOnly() const;
+  base::Optional<bool> expanded() const;
+  base::Optional<bool> modal() const;
+  base::Optional<bool> multiline() const;
+  base::Optional<bool> multiselectable() const;
+  base::Optional<bool> required() const;
+  base::Optional<bool> selected() const;
 
-  int32_t colCount(bool& is_null) const;
-  int32_t colIndex(bool& is_null) const;
-  int32_t colSpan(bool& is_null) const;
-  int32_t level(bool& is_null) const;
-  int32_t posInSet(bool& is_null) const;
-  int32_t rowCount(bool& is_null) const;
-  int32_t rowIndex(bool& is_null) const;
-  int32_t rowSpan(bool& is_null) const;
-  int32_t setSize(bool& is_null) const;
+  base::Optional<int32_t> colCount() const;
+  base::Optional<int32_t> colIndex() const;
+  base::Optional<int32_t> colSpan() const;
+  base::Optional<int32_t> level() const;
+  base::Optional<int32_t> posInSet() const;
+  base::Optional<int32_t> rowCount() const;
+  base::Optional<int32_t> rowIndex() const;
+  base::Optional<int32_t> rowSpan() const;
+  base::Optional<int32_t> setSize() const;
 
-  float valueMax(bool& is_null) const;
-  float valueMin(bool& is_null) const;
-  float valueNow(bool& is_null) const;
+  base::Optional<float> valueMax() const;
+  base::Optional<float> valueMin() const;
+  base::Optional<float> valueNow() const;
+
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  bool atomic(bool& is_null) const;           // DEPRECATED
+  bool busy(bool& is_null) const;             // DEPRECATED
+  bool disabled(bool& is_null) const;         // DEPRECATED
+  bool readOnly(bool& is_null) const;         // DEPRECATED
+  bool expanded(bool& is_null) const;         // DEPRECATED
+  bool modal(bool& is_null) const;            // DEPRECATED
+  bool multiline(bool& is_null) const;        // DEPRECATED
+  bool multiselectable(bool& is_null) const;  // DEPRECATED
+  bool required(bool& is_null) const;         // DEPRECATED
+  bool selected(bool& is_null) const;         // DEPRECATED
+
+  int32_t colCount(bool& is_null) const;  // DEPRECATED
+  int32_t colIndex(bool& is_null) const;  // DEPRECATED
+  int32_t colSpan(bool& is_null) const;   // DEPRECATED
+  int32_t level(bool& is_null) const;     // DEPRECATED
+  int32_t posInSet(bool& is_null) const;  // DEPRECATED
+  int32_t rowCount(bool& is_null) const;  // DEPRECATED
+  int32_t rowIndex(bool& is_null) const;  // DEPRECATED
+  int32_t rowSpan(bool& is_null) const;   // DEPRECATED
+  int32_t setSize(bool& is_null) const;   // DEPRECATED
+
+  float valueMax(bool& is_null) const;  // DEPRECATED
+  float valueMin(bool& is_null) const;  // DEPRECATED
+  float valueNow(bool& is_null) const;  // DEPRECATED
 
   const String autocomplete() const;
   const String checked() const;
@@ -96,6 +122,10 @@ class ComputedAccessibleNode : public ScriptWrappable {
   ScriptPromise ensureUpToDate(ScriptState*);
 
  private:
+  base::Optional<bool> GetBoolAttribute(WebAOMBoolAttribute) const;
+  base::Optional<int32_t> GetIntAttribute(WebAOMIntAttribute) const;
+  base::Optional<float> GetFloatAttribute(WebAOMFloatAttribute) const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
   bool GetBoolAttribute(WebAOMBoolAttribute, bool& is_null) const;
   int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
   float GetFloatAttribute(WebAOMFloatAttribute, bool& is_null) const;

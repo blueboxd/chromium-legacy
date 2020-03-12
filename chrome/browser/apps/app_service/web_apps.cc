@@ -522,6 +522,8 @@ void WebApps::OnArcAppListPrefsDestroyed() {
 
 void WebApps::SetShowInFields(apps::mojom::AppPtr& app,
                               const web_app::WebApp* web_app) {
+  // TODO(crbug.com/1054195): Make web_apps read this from
+  // system_web_app_manager.
   auto show = apps::mojom::OptionalBool::kTrue;
   app->show_in_launcher = show;
   app->show_in_search = show;

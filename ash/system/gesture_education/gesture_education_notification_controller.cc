@@ -81,7 +81,7 @@ void GestureEducationNotificationController::
 }
 
 void GestureEducationNotificationController::HandleNotificationClick() {
-  Shell::Get()->system_tray_model()->client()->ShowHelp();
+  Shell::Get()->system_tray_model()->client()->ShowGestureEducationHelp();
 }
 
 base::string16 GestureEducationNotificationController::GetNotificationMessage()

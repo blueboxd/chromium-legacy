@@ -1778,14 +1778,20 @@ public class ExternalNavigationHandlerTest {
 
         @Override
         public int countSpecializedHandlers(List<ResolveInfo> infos) {
-            int count = 0;
+            return getSpecializedHandlers(infos).size();
+        }
+
+        @Override
+        public ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
+            ArrayList<String> result = new ArrayList<>();
             List<IntentActivity> matchingIntentActivities = findMatchingIntentActivities(infos);
             for (IntentActivity intentActivity : matchingIntentActivities) {
                 if (intentActivity.isSpecialized()) {
-                    ++count;
+                    result.add(intentActivity.packageName());
                 }
             }
-            return count;
+
+            return result;
         }
 
         private ArrayList<IntentActivity> findMatchingIntentActivities(List<ResolveInfo> infos) {

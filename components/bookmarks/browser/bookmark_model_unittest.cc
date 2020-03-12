@@ -432,12 +432,8 @@ class BookmarkModelTest : public testing::Test,
   BookmarkPermanentNode* ReloadModelWithManagedNode() {
     model_->RemoveObserver(this);
 
-    auto owned_managed_node =
-        std::make_unique<BookmarkPermanentNode>(100, BookmarkNode::FOLDER);
-    BookmarkPermanentNode* managed_node = owned_managed_node.get();
-
-    std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient);
-    client->SetManagedNodeToLoad(std::move(owned_managed_node));
+    auto client = std::make_unique<TestBookmarkClient>();
+    BookmarkPermanentNode* managed_node = client->EnableManagedNode();
 
     model_ = TestBookmarkClient::CreateModelWithClient(std::move(client));
     model_->AddObserver(this);

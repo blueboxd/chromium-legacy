@@ -38,6 +38,7 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
     // |generated_text_.text_| instead copying, |generated_text_.text = ...|.
     new (&generated_text_.text) String(text.Text().ToString());
   }
+  DCHECK(!IsBlockFormattingContextRoot());
 }
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
@@ -50,7 +51,9 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
       style_variant_(static_cast<unsigned>(line.StyleVariant())),
       is_hidden_for_paint_(false),
       text_direction_(static_cast<unsigned>(line.BaseDirection())),
-      ink_overflow_computed_(false) {}
+      ink_overflow_computed_(false) {
+  DCHECK(!IsBlockFormattingContextRoot());
+}
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
                                TextDirection resolved_direction)
@@ -61,7 +64,9 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
       style_variant_(static_cast<unsigned>(box.StyleVariant())),
       is_hidden_for_paint_(box.IsHiddenForPaint()),
       text_direction_(static_cast<unsigned>(resolved_direction)),
-      ink_overflow_computed_(false) {}
+      ink_overflow_computed_(false) {
+  DCHECK_EQ(IsBlockFormattingContextRoot(), box.IsBlockFormattingContextRoot());
+}
 
 NGFragmentItem::NGFragmentItem(const NGInlineItem& inline_item,
                                const PhysicalSize& size)
@@ -76,6 +81,7 @@ NGFragmentItem::NGFragmentItem(const NGInlineItem& inline_item,
   DCHECK_EQ(inline_item.Type(), NGInlineItem::kOpenTag);
   DCHECK(layout_object_);
   DCHECK(layout_object_->IsLayoutInline());
+  DCHECK(!IsBlockFormattingContextRoot());
 }
 
 NGFragmentItem::~NGFragmentItem() {

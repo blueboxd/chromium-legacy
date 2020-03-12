@@ -42,12 +42,13 @@ std::unique_ptr<BookmarkModel> TestBookmarkClient::CreateModelWithClient(
   return bookmark_model;
 }
 
-void TestBookmarkClient::SetManagedNodeToLoad(
-    std::unique_ptr<BookmarkPermanentNode> managed_node) {
-  managed_node_ = std::move(managed_node);
+BookmarkPermanentNode* TestBookmarkClient::EnableManagedNode() {
+  managed_node_ = std::make_unique<BookmarkPermanentNode>(
+      100, BookmarkNode::FOLDER, /*visible_when_empty=*/false);
   // Keep a copy of the node in |unowned_managed_node_| for the accessor
   // functions.
   unowned_managed_node_ = managed_node_.get();
+  return unowned_managed_node_;
 }
 
 bool TestBookmarkClient::IsManagedNodeRoot(const BookmarkNode* node) {

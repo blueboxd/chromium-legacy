@@ -14,11 +14,13 @@ namespace blink {
 void ThreadHeapStatsCollector::IncreaseCompactionFreedSize(size_t bytes) {
   DCHECK(is_started_);
   current_.compaction_freed_bytes += bytes;
+  current_.compaction_recorded_events = true;
 }
 
 void ThreadHeapStatsCollector::IncreaseCompactionFreedPages(size_t pages) {
   DCHECK(is_started_);
   current_.compaction_freed_pages += pages;
+  current_.compaction_recorded_events = true;
 }
 
 void ThreadHeapStatsCollector::IncreaseAllocatedObjectSize(size_t bytes) {

@@ -299,13 +299,13 @@ def bind_callback_local_vars(code_node, cg_context):
         if (not cg_context.member_like or
                 "CrossOrigin" in cg_context.member_like.extended_attributes):
             text = ("DOMWindow* ${blink_receiver} = "
-                    "${class_name}::ToBlinkUnsafe(${v8_receiver});")
+                    "${class_name}::ToWrappableUnsafe(${v8_receiver});")
         else:
             text = ("LocalDOMWindow* ${blink_receiver} = To<LocalDOMWindow>("
-                    "${class_name}::ToBlinkUnsafe(${v8_receiver}));")
+                    "${class_name}::ToWrappableUnsafe(${v8_receiver}));")
     else:
         pattern = ("{_1}* ${blink_receiver} = "
-                   "${class_name}::ToBlinkUnsafe(${v8_receiver});")
+                   "${class_name}::ToWrappableUnsafe(${v8_receiver});")
         _1 = blink_class_name(cg_context.class_like)
         text = _format(pattern, _1=_1)
     local_vars.append(S("blink_receiver", text))

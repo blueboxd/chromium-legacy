@@ -93,7 +93,7 @@ interface BlinkTestClient {
   // Asks the browser process to perform a layout dump spanning all the
   // (potentially cross-process) frames.  This goes through multiple
   // BlinkTestControl.DumpFrameLayout calls and ends with sending of
-  // BlinkTestMsg_LayoutDumpCompleted.
+  // LayoutDumpCompleted of BlinkTestControl interface.
   InitiateLayoutDump();
 
   // Notify the browser process the reset was done.
@@ -102,6 +102,9 @@ interface BlinkTestClient {
   // Add a message to stderr (not saved to expected output files, for debugging
   // only).
   PrintMessageToStderr(string message);
+
+  // Add a message.
+  PrintMessage(string message);
 
   // Update changed WebKit preferences.
   OverridePreferences(WebPreferences web_preferences);

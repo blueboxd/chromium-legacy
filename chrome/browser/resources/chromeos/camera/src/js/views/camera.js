@@ -22,7 +22,7 @@ import * as sound from '../sound.js';
 import * as state from '../state.js';
 import * as toast from '../toast.js';
 import {
-  Facing,  // eslint-disable-line no-unused-vars
+  Facing,
   Mode,
 } from '../type.js';
 import * as util from '../util.js';

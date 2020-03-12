@@ -178,9 +178,9 @@ void OnGetServiceWorkerPaymentAppsInfo(
 
 void OnCanMakePayment(const JavaRef<jobject>& jcallback,
                       const JavaRef<jobject>& japp,
-                      bool can_make_payment) {
+                      payments::mojom::CanMakePaymentResponsePtr response) {
   Java_PaymentHandlerFinder_onCanMakePaymentEventResponse(
-      AttachCurrentThread(), jcallback, japp, can_make_payment);
+      AttachCurrentThread(), jcallback, japp, response->can_make_payment);
 }
 
 void OnPaymentAppInvoked(

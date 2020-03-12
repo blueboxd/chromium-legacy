@@ -84,6 +84,8 @@ message ComputeValueProto {
     BooleanNotProto boolean_not = 4;
     // Creates a string representation of the specified value.
     ToStringProto to_string = 5;
+    // Compares two values.
+    ValueComparisonProto comparison = 6;
   }
 
   // The model identifier to write the result to.
@@ -123,6 +125,27 @@ message ToStringProto {
 // http://userguide.icu-project.org/formatparse/datetime for full specification.
 message DateFormatProto {
   optional string date_format = 1;
+}
+
+// A comparison of two values in the form |value_a| <mode> |value_b|. EQUAL is
+// supported for all values. All other comparison modes are only supported for
+// single integers, strings, and dates.
+message ValueComparisonProto {
+  enum Mode {
+    UNDEFINED = 0;
+    LESS = 1;
+    LESS_OR_EQUAL = 2;
+    EQUAL = 3;
+    GREATER_OR_EQUAL = 4;
+    GREATER = 5;
+  }
+
+  // The first value to compare.
+  optional string model_identifier_a = 1;
+  // The second value to compare.
+  optional string model_identifier_b = 2;
+  // The comparison mode.
+  optional Mode mode = 3;
 }
 
 // Displays a standard info popup.

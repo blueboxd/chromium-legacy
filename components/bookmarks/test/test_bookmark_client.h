@@ -28,13 +28,10 @@ class TestBookmarkClient : public BookmarkClient {
   static std::unique_ptr<BookmarkModel> CreateModelWithClient(
       std::unique_ptr<BookmarkClient> client);
 
-  // Sets the managed node to be returned by the next call to CreateModel() or
-  // GetLoadManagedNodeCallback().
-  void SetManagedNodeToLoad(
-      std::unique_ptr<BookmarkPermanentNode> managed_node);
-
-  // Returns the current managed_node, set via SetManagedNodeToLoad().
-  BookmarkPermanentNode* managed_node() { return unowned_managed_node_; }
+  // Causes the the next call to CreateModel() or GetLoadManagedNodeCallback()
+  // to return a node representing managed bookmarks. The raw pointer of this
+  // node is returned for convenience.
+  BookmarkPermanentNode* EnableManagedNode();
 
   // Returns true if |node| is the |managed_node_|.
   bool IsManagedNodeRoot(const BookmarkNode* node);

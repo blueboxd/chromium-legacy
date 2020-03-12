@@ -247,6 +247,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return getSpecializedHandlersWithFilter(infos, null).size();
     }
 
+    @Override
+    public ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
+        return getSpecializedHandlersWithFilter(infos, null);
+    }
+
     @VisibleForTesting
     public static ArrayList<String> getSpecializedHandlersWithFilter(
             List<ResolveInfo> infos, String filterPackageName) {

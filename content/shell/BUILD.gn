@@ -45,28 +45,6 @@ source_set("android_shell_descriptors") {
   public_deps = [ "//content/public/common:content_descriptors" ]
 }
 
-source_set("web_test_messages") {
-  testonly = true
-  sources = [
-    # Note that if this target becomes jumbofied, it should use
-    # jumbo_excluded_sources to exclude the messages.cc files.
-    # IPC uses multiple inclusions in different macro contexts to
-    # generate the code. This is not compatible with jumbo
-    # compilations since all other files need the "clean" version of
-    # the message headers.
-    "common/web_test/blink_test_messages.cc",
-    "common/web_test/blink_test_messages.h",
-  ]
-
-  deps = [
-    "//content/public/common",
-    "//ipc",
-    "//net",
-    "//skia",
-    "//url/ipc:url_ipc",
-  ]
-}
-
 source_set("web_test_switches") {
   testonly = true
   sources = [
@@ -271,7 +249,6 @@ jumbo_static_library("content_shell_lib") {
   deps = [
     ":client_hints_util",
     ":resources",
-    ":web_test_messages",
     ":web_test_switches",
     ":web_test_utils",
     "//base",

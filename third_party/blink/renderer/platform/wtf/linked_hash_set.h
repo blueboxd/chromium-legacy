@@ -1045,6 +1045,10 @@ class NewLinkedHashSet {
   using Map = HashMap<Value, wtf_size_t>;
 
  public:
+  using const_iterator = typename VectorBackedLinkedList<Value>::const_iterator;
+  using const_reverse_iterator =
+      typename VectorBackedLinkedList<Value>::const_reverse_iterator;
+
   // TODO(keinakashima): add security check
   struct AddResult final {
     STACK_ALLOCATED();
@@ -1070,7 +1074,11 @@ class NewLinkedHashSet {
 
   // TODO(keinakashima): implement size-related functions
 
-  // TODO(keinakashima): implement begin/end, rbegin/rend
+  const_iterator begin() const { return list_.cbegin(); }
+  const_iterator end() const { return list_.cend(); }
+
+  const_reverse_iterator rbegin() const { return list_.crbegin(); }
+  const_reverse_iterator rend() const { return list_.crend(); }
 
   // TODO(keinakashima): implement front/back
 

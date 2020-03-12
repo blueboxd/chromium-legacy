@@ -40,10 +40,11 @@ void GetAllPaymentAppsCallback(PaymentAppProvider::PaymentApps* out_apps,
   *out_apps = std::move(apps);
 }
 
-void CaptureCanMakePaymentResult(base::OnceClosure callback,
-                                 bool* out_payment_event_result,
-                                 bool payment_event_result) {
-  *out_payment_event_result = payment_event_result;
+void CaptureCanMakePaymentResult(
+    base::OnceClosure callback,
+    bool* out_payment_event_result,
+    payments::mojom::CanMakePaymentResponsePtr response) {
+  *out_payment_event_result = response->can_make_payment;
   std::move(callback).Run();
 }
 

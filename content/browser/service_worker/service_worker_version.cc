@@ -205,36 +205,6 @@ base::TimeDelta GetUpdateDelay() {
   return base::TimeDelta::FromMilliseconds(kUpdateDelayParam.Get());
 }
 
-using CreateFactoryBundleForSubresourceOnUICallback = base::OnceCallback<void(
-    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
-    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresouce_bundle)>;
-void CreateFactoryBundleForSubresourceOnUI(
-    int process_id,
-    int routing_id,
-    const url::Origin& origin,
-    base::Optional<network::CrossOriginEmbedderPolicy>
-        cross_origin_embedder_policy,
-    CreateFactoryBundleForSubresourceOnUICallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* rph = RenderProcessHost::FromID(process_id);
-  if (!rph) {
-    // Return nullptr because we can't create a factory bundle because of
-    // missing renderer.
-    ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
-        FROM_HERE, base::BindOnce(std::move(callback), nullptr, nullptr));
-    return;
-  }
-  auto script_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-      rph, routing_id, origin, cross_origin_embedder_policy,
-      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript);
-  auto subresource_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-      rph, routing_id, origin, cross_origin_embedder_policy,
-      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
-  ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(script_bundle),
-                                std::move(subresource_bundle)));
-}
-
 }  // namespace
 
 constexpr base::TimeDelta ServiceWorkerVersion::kTimeoutTimerDelay;
@@ -997,15 +967,9 @@ void ServiceWorkerVersion::OnMainScriptLoaded() {
   // TODO(https://crbug.com/1039613): Update the loader factories passed to the
   // script loader factory too.
   DCHECK_EQ(NEW, status());
-  RunOrPostTaskOnThread(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(
-          &CreateFactoryBundleForSubresourceOnUI,
-          embedded_worker()->process_id(),
-          embedded_worker()->worker_devtools_agent_route_id(), script_origin(),
-          cross_origin_embedder_policy(),
-          base::BindOnce(&ServiceWorkerVersion::InitializeGlobalScope,
-                         weak_factory_.GetWeakPtr())));
+  embedded_worker_->CreateFactoryBundles(
+      base::BindOnce(&ServiceWorkerVersion::InitializeGlobalScope,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerVersion::InitializeGlobalScope(

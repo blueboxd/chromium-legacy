@@ -25,6 +25,13 @@ CustomLayoutConstraints::CustomLayoutConstraints(
 
 CustomLayoutConstraints::~CustomLayoutConstraints() = default;
 
+base::Optional<double> CustomLayoutConstraints::fixedBlockSize() const {
+  // Check if we've been passed an indefinite block-size.
+  if (fixed_block_size_ < 0.0)
+    return base::nullopt;
+  return fixed_block_size_;
+}
+
 double CustomLayoutConstraints::fixedBlockSize(bool& is_null) const {
   // Check if we've been passed an indefinite block-size.
   if (fixed_block_size_ < 0.0) {

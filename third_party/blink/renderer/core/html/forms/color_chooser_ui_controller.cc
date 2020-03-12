@@ -27,6 +27,7 @@
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser_client.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -37,18 +38,17 @@ namespace blink {
 ColorChooserUIController::ColorChooserUIController(
     LocalFrame* frame,
     blink::ColorChooserClient* client)
-    : client_(client), frame_(frame) {}
+    : client_(client),
+      frame_(frame),
+      receiver_(this, frame->DomWindow()->GetExecutionContext()) {}
 
-ColorChooserUIController::~ColorChooserUIController() {}
+ColorChooserUIController::~ColorChooserUIController() = default;
 
 void ColorChooserUIController::Trace(Visitor* visitor) {
+  visitor->Trace(receiver_);
   visitor->Trace(frame_);
   visitor->Trace(client_);
   ColorChooser::Trace(visitor);
-}
-
-void ColorChooserUIController::Dispose() {
-  receiver_.reset();
 }
 
 void ColorChooserUIController::OpenUI() {
@@ -80,8 +80,10 @@ void ColorChooserUIController::OpenColorChooser() {
       color_chooser_factory_.BindNewPipeAndPassReceiver());
   color_chooser_factory_->OpenColorChooser(
       chooser_.BindNewPipeAndPassReceiver(),
-      receiver_.BindNewPipeAndPassRemote(), client_->CurrentColor().Rgb(),
-      client_->Suggestions());
+      receiver_.BindNewPipeAndPassRemote(
+          frame_->DomWindow()->GetExecutionContext()->GetTaskRunner(
+              TaskType::kUserInteraction)),
+      client_->CurrentColor().Rgb(), client_->Suggestions());
   receiver_.set_disconnect_handler(WTF::Bind(
       &ColorChooserUIController::EndChooser, WrapWeakPersistent(this)));
 }

@@ -99,6 +99,8 @@ class MetaBuildWrapper(object):
     self.masters = {}
     self.buckets = {}
     self.mixins = {}
+    self.isolate_exe = 'isolate.exe' if self.platform.startswith(
+        'win') else 'isolate'
 
   def Main(self, args):
     self.ParseArgs(args)
@@ -564,11 +566,10 @@ class MetaBuildWrapper(object):
     try:
       zip_dir = self.TempDir()
       remap_cmd = [
-          self.executable,
-          self.PathJoin(self.chromium_src_dir, 'tools', 'swarming_client',
-                        'isolate.py'), 'remap', '--collapse_symlinks', '-s',
-          self.PathJoin(self.args.path, self.args.target + '.isolated'), '-o',
-          zip_dir
+          self.PathJoin(self.chromium_src_dir, 'tools', 'luci-go',
+                        self.isolate_exe), 'remap', '-i',
+          self.PathJoin(self.args.path, self.args.target + '.isolate'),
+          '-outdir', zip_dir
       ]
       self.Run(remap_cmd)
 
@@ -647,13 +648,16 @@ class MetaBuildWrapper(object):
       dimensions += ['-d', k, v]
 
     cmd = [
-        self.executable,
-        self.PathJoin('tools', 'swarming_client', 'isolate.py'),
+        self.PathJoin(self.chromium_src_dir, 'tools', 'luci-go',
+                      self.isolate_exe),
         'archive',
-        '-s', self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target)),
-        '-I', isolate_server,
-        '--namespace', namespace,
-      ]
+        '-s',
+        self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target)),
+        '-I',
+        isolate_server,
+        '-namespace',
+        namespace,
+    ]
 
     # Talking to the isolateserver may fail because we're not logged in.
     # We trap the command explicitly and rewrite the error output so that
@@ -694,12 +698,12 @@ class MetaBuildWrapper(object):
 
   def _RunLocallyIsolated(self, build_dir, target):
     cmd = [
-        self.executable,
-        self.PathJoin('tools', 'swarming_client', 'isolate.py'),
+        self.PathJoin(self.chromium_src_dir, 'tools', 'luci-go',
+                      self.isolate_exe),
         'run',
-        '-s',
-        self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target)),
-      ]
+        '-i',
+        self.ToSrcRelPath('%s/%s.isolate' % (build_dir, target)),
+    ]
     if self.args.extra_args:
       cmd += ['--'] + self.args.extra_args
     ret, _, _ = self.Run(cmd, force_verbose=True, buffer_output=False)
@@ -1287,14 +1291,13 @@ class MetaBuildWrapper(object):
       return ret
 
     ret, _, _ = self.Run([
-        self.executable,
-        self.PathJoin('tools', 'swarming_client', 'isolate.py'),
+        self.PathJoin(self.chromium_src_dir, 'tools', 'luci-go',
+                      self.isolate_exe),
         'check',
         '-i',
         self.ToSrcRelPath('%s/%s.isolate' % (build_dir, target)),
-        '-s',
-        self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target))],
-        buffer_output=False)
+    ],
+                         buffer_output=False)
 
     return ret
 

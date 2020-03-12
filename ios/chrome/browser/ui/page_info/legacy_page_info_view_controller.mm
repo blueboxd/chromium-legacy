@@ -481,7 +481,7 @@ const CGFloat kButtonXOffset = kTextXPosition;
 }
 
 // Returns a button with title and action configured for |buttonAction|.
-- (UIButton*)buttonForAction:(PageInfoButtonAction)buttonAction {
+- (UIButton*)buttonForAction:(PageInfoSiteSecurityButtonAction)buttonAction {
   if (buttonAction == PageInfoSiteSecurityButtonActionNone) {
     return nil;
   }
@@ -519,7 +519,7 @@ const CGFloat kButtonXOffset = kTextXPosition;
 
 // Adds the the button |buttonAction| that explains the icons. Returns the y
 // position delta for the next offset.
-- (CGFloat)addButton:(PageInfoButtonAction)buttonAction
+- (CGFloat)addButton:(PageInfoSiteSecurityButtonAction)buttonAction
           toSubviews:(NSMutableArray*)subviews
             atOffset:(CGFloat)offset {
   UIButton* button = [self buttonForAction:buttonAction];

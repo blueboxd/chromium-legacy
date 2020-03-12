@@ -34,6 +34,7 @@ enum CanMakePaymentEventResponseType {
   NO_RESPONSE,
   REJECT,
   SUCCESS,
+  TIMEOUT,
 
   // Response types specifically used in respondWithMinimalUI(), which is
   // available when features::kWebPaymentsMinimalUI is ebabled.

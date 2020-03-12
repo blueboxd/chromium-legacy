@@ -426,11 +426,8 @@ TEST_F(BookmarkUtilsTest, MAYBE_CutToClipboard) {
 
 TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
   // Load a model with an managed node that is not editable.
-  std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient());
-  auto owned_managed_node =
-      std::make_unique<BookmarkPermanentNode>(100, BookmarkNode::FOLDER);
-  BookmarkPermanentNode* managed_node = owned_managed_node.get();
-  client->SetManagedNodeToLoad(std::move(owned_managed_node));
+  auto client = std::make_unique<TestBookmarkClient>();
+  BookmarkNode* managed_node = client->EnableManagedNode();
 
   std::unique_ptr<BookmarkModel> model(
       TestBookmarkClient::CreateModelWithClient(std::move(client)));
@@ -577,11 +574,8 @@ TEST_F(BookmarkUtilsTest, CloneFolderResetsNonClonedKey) {
 
 TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
   // Load a model with an managed node that is not editable.
-  std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient());
-  auto owned_managed_node =
-      std::make_unique<BookmarkPermanentNode>(100, BookmarkNode::FOLDER);
-  BookmarkPermanentNode* managed_node = owned_managed_node.get();
-  client->SetManagedNodeToLoad(std::move(owned_managed_node));
+  auto client = std::make_unique<TestBookmarkClient>();
+  BookmarkNode* managed_node = client->EnableManagedNode();
 
   std::unique_ptr<BookmarkModel> model(
       TestBookmarkClient::CreateModelWithClient(std::move(client)));

@@ -78,12 +78,24 @@ Polymer({
   },
 
   /**
+   * @return {string} account manager description text.
+   * @private
+   */
+  getAccountManagerDescription_() {
+    if (this.isChildUser_ &&
+        loadTimeData.getBoolean('isEduCoexistenceEnabled')) {
+      return loadTimeData.getString('accountManagerChildDescription');
+    }
+    return loadTimeData.getString('accountManagerDescription');
+  },
+
+  /**
    * @return {string} 'Secondary Accounts disabled' message depending on
    *    account type
    * @private
    */
   getSecondaryAccountsDisabledUserMessage_() {
-    return loadTimeData.getBoolean('isChild')
+    return this.isChildUser_
       ? this.i18n('accountManagerSecondaryAccountsDisabledChildText')
       : this.i18n('accountManagerSecondaryAccountsDisabledText');
   },
